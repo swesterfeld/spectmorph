@@ -1,6 +1,29 @@
 AC_INIT([spectmorph], [0.0.1])
 AM_INIT_AUTOMAKE
-AC_CONFIG_SRCDIR([src/main.cc])
+AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_PROG_CXX
+
+dnl
+dnl Define package requirements.
+dnl
+AC_DEFUN(AC_GLIB_REQUIREMENTS,
+[
+    dnl We need GLib with friends
+    PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.6 gobject-2.0 gmodule-2.0 gthread-2.0)
+    AC_SUBST(GLIB_CFLAGS)
+    AC_SUBST(GLIB_LIBS)
+])
+AC_DEFUN(AC_BSE_REQUIREMENTS,
+[
+    dnl We need GLib with friends
+    PKG_CHECK_MODULES(BSE, bse)
+    AC_SUBST(BSE_CFLAGS)
+    AC_SUBST(BSE_LIBS)
+])
+
+# Check requirement sets
+AC_GLIB_REQUIREMENTS
+AC_BSE_REQUIREMENTS
+
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
