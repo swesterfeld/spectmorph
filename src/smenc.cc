@@ -521,7 +521,10 @@ main (int argc, char **argv)
 
                   double dummy_freq;
                   tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
-                  if ((mag2 > -30 || tracksel.is_harmonic) && tracksel.freq > 10)
+                  // FIXME: need a different criterion here
+                  // mag2 > -30 doesn't track all partials
+                  // mag2 > -60 tracks lots of junk, too
+                  if ((mag2 > -60 || tracksel.is_harmonic) && tracksel.freq > 10)
                     frame_tracksels[n].push_back (tracksel);
                 }
 #if 0
