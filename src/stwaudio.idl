@@ -1,0 +1,35 @@
+#include <bse/bse.idl>
+
+namespace Stw {
+
+using namespace Sfi;
+
+namespace Codec {
+
+record AudioBlock {
+//  FBlock position;
+  FBlock meaning;
+  FBlock freqs;
+  FBlock mags;
+  FBlock phases;
+
+  // debugging data
+  FBlock original_fft;
+};
+
+sequence AudioBlockSeq {
+  AudioBlock block;
+};
+
+record Audio {
+  Real          mix_freq;
+  Real          frame_size_ms;
+  Real          frame_step_ms;
+  Real          fundamental_freq;
+  Int           zeropad;
+  AudioBlockSeq contents;
+};
+
+};
+
+};
