@@ -1,6 +1,6 @@
-AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) -O3
+AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3
 
-bin_PROGRAMS = smenc smplay
+bin_PROGRAMS = smenc smplay smvisualize
 
 SMHDRS =  frame.hh stwafile.hh noisedecoder.hh sinedecoder.hh stwutils.hh stwaudio.idl
 
@@ -11,6 +11,9 @@ smenc_LDADD = $(BSE_LIBS)
 
 smplay_SOURCES = smplay.cc sinedecoder.cc noisedecoder.cc stwafile.cc frame.cc $(SMHDRS)
 smplay_LDADD = $(BSE_LIBS) $(AO_LIBS)
+
+smvisualize_SOURCES = smvisualize.cc stwafile.cc $(SMHDRS)
+smvisualize_LDADD = $(BSE_LIBS) $(GTK_LIBS)
 
 $(srcdir)/smenc.cc: stwaudio.hh
 $(srcdir)/smplay.cc: stwaudio.hh
