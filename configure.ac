@@ -15,15 +15,23 @@ AC_DEFUN(AC_GLIB_REQUIREMENTS,
 ])
 AC_DEFUN(AC_BSE_REQUIREMENTS,
 [
-    dnl We need GLib with friends
+    dnl We need libbse
     PKG_CHECK_MODULES(BSE, bse)
     AC_SUBST(BSE_CFLAGS)
     AC_SUBST(BSE_LIBS)
+])
+AC_DEFUN(AC_AO_REQUIREMENTS,
+[
+    dnl We need libao
+    PKG_CHECK_MODULES(AO, ao)
+    AC_SUBST(AO_CFLAGS)
+    AC_SUBST(AO_LIBS)
 ])
 
 # Check requirement sets
 AC_GLIB_REQUIREMENTS
 AC_BSE_REQUIREMENTS
+AC_AO_REQUIREMENTS
 
 AC_CONFIG_FILES([Makefile src/Makefile])
 AC_OUTPUT
