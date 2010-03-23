@@ -1,0 +1,6 @@
+Overview of Changes in spectmorph-0.0.1:
+
+* initial public release with three programs
+  - smenc       - builds model of a sample
+  - smplay      - resynthesizes sample from model
+  - smvisualize - visualizes model
