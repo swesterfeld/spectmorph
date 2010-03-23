@@ -1,1 +1,6 @@
 *.o
+Makefile
+Makefile.in
+smenc
+smplay
+smvisualize
