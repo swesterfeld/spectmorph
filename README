@@ -1,0 +1,33 @@
+SpectMorph
+==========
+
+SpectMorph can build a model of a sample. This model can then be
+used to create new samples
+
+Building a model
+================
+
+Assuming that you have a wave file of a piano called piano.wav
+
+$ smenc piano.wav piano.sm
+
+will build a model from the sample
+
+Resynthesis from a model
+========================
+
+$ smplay piano.sm
+
+will play the model
+
+Visualizing a model
+===================
+
+$ smvisualize piano.sm piano.png db
+
+will produce a png in which the original fft analysis data (black/white)
+will be drawn, as well as the partials used by the model (red)
+
+
+Comments/Questions:
+stefan@space.twc.de
