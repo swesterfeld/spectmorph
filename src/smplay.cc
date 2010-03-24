@@ -182,6 +182,11 @@ main (int argc, char **argv)
   };
   bse_init_inprocess (&argc, &argv, NULL, values);
   options.parse (&argc, &argv);
+  if (argc < 2)
+    {
+      options.print_usage();
+      exit (1);
+    }
 
   /* open input */
   BseErrorType error;
