@@ -4,3 +4,4 @@ Makefile.in
 smenc
 smplay
 smvisualize
+smextract
