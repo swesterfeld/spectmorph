@@ -22,8 +22,10 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-#include "stwaudio.hh"
+#include "smaudio.hh"
 #include "stwafile.hh"
+
+using std::vector;
 
 bool db_mode = false;
 
@@ -59,7 +61,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  Stw::Codec::AudioHandle audio;
+  SpectMorph::Audio audio;
   BseErrorType file_error = STWAFile::load (argv[1], audio);
   if (file_error)
     {
@@ -67,36 +69,36 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  const double mix_freq = audio->mix_freq;
-  const uint64 block_size = audio->contents[0]->original_fft.length() - 2;
+  const double mix_freq = audio.mix_freq;
+  const uint64 block_size = audio.contents[0].original_fft.size() - 2;
 
   GdkPixbuf *pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, /* has_alpha */ false, 8,
-                      audio->contents.length() * 2, (block_size + 2) / 2);
+                      audio.contents.size() * 2, (block_size + 2) / 2);
 
   double max_value = 0.0;
   // compute magnitudes from FFT data and figure out max peak
-  for (size_t n = 0; n < audio->contents.length(); n++)
+  for (size_t n = 0; n < audio.contents.size(); n++)
     {
-      Sfi::FBlock& original_fft = audio->contents[n]->original_fft;
-      for (size_t d = 0; d < original_fft.length(); d += 2)
+      vector<float>& original_fft = audio.contents[n].original_fft;
+      for (size_t d = 0; d < original_fft.size(); d += 2)
         {
-          double re = *(original_fft.begin() + d);
-          double im = *(original_fft.begin() + d + 1);
+          double re = original_fft[d];
+          double im = original_fft[d + 1];
           double value = value_scale (re, im);
 	  max_value = std::max (value, max_value);
-          *(original_fft.begin() + d) = value;     // magnitude
-          *(original_fft.begin() + d + 1) = 0;     // phase - not computed for now
+          original_fft[d] = value;     // magnitude
+          original_fft[d + 1] = 0;     // phase - not computed for now
         }
     }
 
   guchar *p = gdk_pixbuf_get_pixels (pixbuf);
   uint row_stride = gdk_pixbuf_get_rowstride (pixbuf);
-  for (size_t n = 0; n < audio->contents.length(); n++)
+  for (size_t n = 0; n < audio.contents.size(); n++)
     {
-      Sfi::FBlock& original_fft = audio->contents[n]->original_fft;
-      for (size_t d = 0; d < original_fft.length(); d += 2)
+      const vector<float>& original_fft = audio.contents[n].original_fft;
+      for (size_t d = 0; d < original_fft.size(); d += 2)
         {
-          double value = *(original_fft.begin() + d);
+          double value = original_fft[d];
           float f = value / max_value;
           int y = (block_size/2) - (d/2);
           p[row_stride * y] = f * 255;
@@ -110,16 +112,16 @@ main (int argc, char **argv)
 	  if (f > 0.1)
 	    delta_p = *(meaning.begin() + d + 1) / (f > 0 ? f : 1) + 0.5;
 
-	  p[row_stride * (d/2) + 6 * audio->contents.length()] = delta_p * 255;
-	  p[row_stride * (d/2) + 6 * audio->contents.length() + 1] = delta_p * 255;
-	  p[row_stride * (d/2) + 6 * audio->contents.length() + 2] = delta_p * 255;
-	  p[row_stride * (d/2) + 6 * audio->contents.length() + 3] = delta_p * 255;
-	  p[row_stride * (d/2) + 6 * audio->contents.length() + 4] = delta_p * 255;
-	  p[row_stride * (d/2) + 6 * audio->contents.length() + 5] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size()] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size() + 1] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size() + 2] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size() + 3] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size() + 4] = delta_p * 255;
+	  p[row_stride * (d/2) + 6 * audio->contents.size() + 5] = delta_p * 255;
 #endif
 	}
-      Sfi::FBlock::iterator fi;
-      for (fi = audio->contents[n]->freqs.begin(); fi != audio->contents[n]->freqs.end(); fi++)
+      vector<float>::const_iterator fi;
+      for (fi = audio.contents[n].freqs.begin(); fi != audio.contents[n].freqs.end(); fi++)
         {
           double freq = *fi;
           int d_2 = CLAMP (freq / mix_freq * block_size, 0, block_size);

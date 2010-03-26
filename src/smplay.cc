@@ -24,13 +24,14 @@
 #include <bse/gsldatahandle.h>
 #include <bse/bseblockutils.hh>
 #include <sfi/sfiparams.h>
-#include "stwaudio.hh"
+#include "smaudio.hh"
 #include "stwafile.hh"
 #include "frame.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <ao/ao.h>
 #include <assert.h>
+#include <math.h>
 #include "noisedecoder.hh"
 #include "sinedecoder.hh"
 
@@ -191,14 +192,14 @@ main (int argc, char **argv)
   /* open input */
   BseErrorType error;
 
-  Stw::Codec::AudioHandle audio;
+  SpectMorph::Audio audio;
   error = STWAFile::load (argv[1], audio);
   if (error)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
       exit (1);
     }
-  fprintf (stderr, "%d blocks\n", audio->contents.length());
+  fprintf (stderr, "%d blocks\n", audio.contents.size());
 
   ao_sample_format format;
 
@@ -222,11 +223,11 @@ main (int argc, char **argv)
         }
     }
 
-  size_t frame_size = audio->frame_size_ms * format.rate / 1000;
-  fprintf (stderr, "frame size: %f ms\n", audio->frame_size_ms);
+  size_t frame_size = audio.frame_size_ms * format.rate / 1000;
+  fprintf (stderr, "frame size: %f ms\n", audio.frame_size_ms);
   fprintf (stderr, "frame size: %zd samples\n", frame_size);
 
-  size_t frame_step = audio->frame_step_ms * format.rate / 1000;
+  size_t frame_step = audio.frame_step_ms * format.rate / 1000;
   fprintf (stderr, "frame step: %zd samples\n", frame_step);
 
   size_t block_size = 1;
@@ -238,23 +239,23 @@ main (int argc, char **argv)
     window[i] = bse_window_cos (2.0 * i / window.size() - 1.0);
 
   fprintf (stderr, "rate: %d Hz\n", format.rate);
-  uint loop_point = audio->contents.length() - 5;
+  uint loop_point = audio.contents.size() - 5;
   fprintf (stderr, "loop point: %d\n", loop_point);
 
   vector<float> sample;
 
-  NoiseDecoder noise_decoder (audio->mix_freq, format.rate);
+  NoiseDecoder noise_decoder (audio.mix_freq, format.rate);
   SineDecoder  sine_decoder (format.rate, frame_size, frame_step);
 
   size_t pos = 0;
-  size_t end_point = audio->contents.length();
+  size_t end_point = audio.contents.size();
 
   if (options.loop)
     end_point *= 10;
 
   // decode one frame before actual data
   Stw::Codec::Frame zero_frame (frame_size);
-  Stw::Codec::Frame one_frame (audio->contents[0], frame_size);
+  Stw::Codec::Frame one_frame (audio.contents[0], frame_size);
   sine_decoder.process (zero_frame, one_frame, window);
   sample.resize (pos + frame_size);
   for (size_t i = 0; i < frame_size; i++)
@@ -267,8 +268,8 @@ main (int argc, char **argv)
       size_t n4 = n / 1;
       size_t n4_1 = (n + 1) / 1;
 
-      Stw::Codec::Frame frame (audio->contents[n4 > loop_point ? loop_point : n4], frame_size);
-      Stw::Codec::Frame next_frame (audio->contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
+      Stw::Codec::Frame frame (audio.contents[n4 > loop_point ? loop_point : n4], frame_size);
+      Stw::Codec::Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
 
       noise_decoder.process (frame, window);
       sine_decoder.process (frame, next_frame, window);

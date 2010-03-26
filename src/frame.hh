@@ -19,7 +19,7 @@
 #ifndef __STWFRAME_HH__
 #define __STWFRAME_HH__
 
-#include "stwaudio.hh"
+#include "smaudio.hh"
 
 namespace Stw {
 namespace Codec {
@@ -29,7 +29,7 @@ class Frame
   size_t frame_size;
 public:
   Frame (size_t frame_size);
-  Frame (Stw::Codec::AudioBlockHandle audio_block, size_t frame_size);
+  Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size);
 
   std::vector<double> freqs;
   std::vector<double> phases;

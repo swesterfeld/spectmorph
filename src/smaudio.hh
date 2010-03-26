@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009-2010 Stefan Westerfeld
+ * Copyright (C) 2010 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -15,12 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smaudio.hh"
-#include <bse/bsecxxplugin.hh>
-#include <string>
+#ifndef SPECTMORPH_AUDIO_HH
+#define SPECTMORPH_AUDIO_HH
 
-namespace STWAFile
+#include <vector>
+
+namespace SpectMorph
 {
-    BseErrorType load (const std::string& filename, SpectMorph::Audio& audio_data);
-    BseErrorType save (const std::string& filename, const SpectMorph::Audio& audio_data);
+
+class AudioBlock
+{
+public:
+  std::vector<float> meaning;
+  std::vector<float> freqs;
+  std::vector<float> mags;
+  std::vector<float> phases;
+  std::vector<float> original_fft;
+  std::vector<float> debug_samples;
 };
+
+class Audio
+{
+public:
+  float fundamental_freq;
+  float mix_freq;
+  float frame_size_ms;
+  float frame_step_ms;
+  int   zeropad;
+  std::vector<AudioBlock> contents;
+};
+
+}
+
+#endif

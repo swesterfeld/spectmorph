@@ -17,7 +17,9 @@
 
 #include "noisedecoder.hh"
 #include <bse/gslfft.h>
+#include <bse/bsemathsignal.h>
 #include <stdio.h>
+#include <math.h>
 
 using std::vector;
 using Stw::Codec::NoiseDecoder;

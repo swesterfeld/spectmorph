@@ -27,11 +27,11 @@ Frame::Frame (size_t frame_size)
   noise_envelope.resize (256);
 }
 
-Frame::Frame (Stw::Codec::AudioBlockHandle audio_block, size_t frame_size) :
+Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
     frame_size (frame_size),
-    freqs (audio_block->freqs.begin(), audio_block->freqs.end()),
-    phases (audio_block->phases.begin(), audio_block->phases.end()),
-    noise_envelope (audio_block->meaning.begin(), audio_block->meaning.end())
+    freqs (audio_block.freqs.begin(), audio_block.freqs.end()),
+    phases (audio_block.phases.begin(), audio_block.phases.end()),
+    noise_envelope (audio_block.meaning.begin(), audio_block.meaning.end())
 {
   decoded_residue.resize (frame_size);
   decoded_sines.resize (frame_size);

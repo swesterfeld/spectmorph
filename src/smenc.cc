@@ -25,8 +25,9 @@
 #include <unistd.h>
 #include <bse/gsldatautils.h>
 #include <assert.h>
+#include <bse/bsecxxplugin.hh>   // FIXME: remove me
 
-#include "stwaudio.hh"
+#include "smaudio.hh"
 #include "stwafile.hh"
 
 #define STWENC_VERSION "0.0.1"
@@ -39,8 +40,7 @@ using std::max;
 
 using namespace Birnet;
 
-using Stw::Codec::AudioBlockSeq;
-using Stw::Codec::AudioBlock;
+using SpectMorph::AudioBlock;
 
 float
 freqFromNote (float note)
@@ -160,7 +160,7 @@ Options::print_usage ()
 
 const uint64   n_dimensions = 7;
 
-Stw::Codec::AudioBlockSeq audio_blocks;
+vector< SpectMorph::AudioBlock > audio_blocks;
 vector< vector<double> > codebook;
 vector< vector<double> > codebook_centroid;
 vector< int > codebook_usage (1);
@@ -239,7 +239,7 @@ check_harmonic (double freq, double& new_freq, double mix_freq)
 }
 
 double
-magnitude (Sfi::FBlock::iterator i)
+magnitude (vector<float>::iterator i)
 {
   return sqrt (*i * *i + *(i+1) * *(i+1));
 }
@@ -449,10 +449,11 @@ main (int argc, char **argv)
       SfiFBlock *m = sfi_fblock_new_sized (block_size * zeropad + 2);
 
       std::copy (position.begin(), position.end(), p->values);
-      std::copy (out.begin(), out.end(), m->values);
-
       //block.position = *p;
-      audio_block.meaning = *m;           // <- will be overwritten by noise spectrum later on
+
+      audio_block.meaning.resize (out.size());
+      std::copy (out.begin(), out.end(), audio_block.meaning.begin()); // <- will be overwritten by noise spectrum later on
+
       audio_block.original_fft.resize (m->n_values);
       std::copy (out.begin(), out.end(), audio_block.original_fft.begin());
       if (options.debug)
@@ -461,25 +462,25 @@ main (int argc, char **argv)
           std::copy (debug_samples.begin(), debug_samples.begin() + frame_size, audio_block.debug_samples.begin());
         }
       //audio_block.original_fft = *m;
-      audio_blocks += audio_block;
+      audio_blocks.push_back (audio_block);
     }
   // Track frequencies step #0: find maximum of all values
   double max_mag = 0;
-  for (size_t n = 0; n < audio_blocks.length(); n++)
+  for (size_t n = 0; n < audio_blocks.size(); n++)
     {
       for (size_t d = 2; d < block_size * zeropad; d += 2)
 	{
-	  max_mag = std::max (max_mag, magnitude (audio_blocks[n]->meaning.begin() + d));
+	  max_mag = std::max (max_mag, magnitude (audio_blocks[n].meaning.begin() + d));
 	}
     }
 
   // Track frequencies step #1: search for local maxima as potential track candidates
-  vector< vector<Tracksel> > frame_tracksels (audio_blocks.length()); /* Analog to Canny Algorithms edgels */
-  for (size_t n = 0; n < audio_blocks.length(); n++)
+  vector< vector<Tracksel> > frame_tracksels (audio_blocks.size()); /* Analog to Canny Algorithms edgels */
+  for (size_t n = 0; n < audio_blocks.size(); n++)
     {
-      vector<double> mag_values (audio_blocks[n]->meaning.length() / 2);
+      vector<double> mag_values (audio_blocks[n].meaning.size() / 2);
       for (size_t d = 0; d < block_size * zeropad; d += 2)
-        mag_values[d / 2] = magnitude (audio_blocks[n]->meaning.begin() + d);
+        mag_values[d / 2] = magnitude (audio_blocks[n].meaning.begin() + d);
 
       for (size_t d = 2; d < block_size * zeropad; d += 2)
 	{
@@ -538,7 +539,7 @@ main (int argc, char **argv)
     }
 
   // Track frequencies step #2: link lists together
-  for (size_t n = 0; n + 1 < audio_blocks.length(); n++)
+  for (size_t n = 0; n + 1 < audio_blocks.size(); n++)
     {
       Tracksel *crosslink_i, *crosslink_j;
       do
@@ -575,7 +576,7 @@ main (int argc, char **argv)
     }
   // Track frequencies step #3: discard edges where -25 dB is not exceeded once
   map<Tracksel *, bool> processed_tracksel;
-  for (size_t n = 0; n < audio_blocks.length(); n++)
+  for (size_t n = 0; n < audio_blocks.size(); n++)
     {
       vector<Tracksel>::iterator i, j;
       for (i = frame_tracksels[n].begin(); i != frame_tracksels[n].end(); i++)
@@ -601,9 +602,9 @@ main (int argc, char **argv)
 			t->freq = new_freq;
 #endif
 
-		      audio_blocks[t->frame]->freqs.append (t->freq);
-		      audio_blocks[t->frame]->phases.append (t->mag);
-		      audio_blocks[t->frame]->phases.append (0);
+		      audio_blocks[t->frame].freqs.push_back (t->freq);
+		      audio_blocks[t->frame].phases.push_back (t->mag);
+		      audio_blocks[t->frame].phases.push_back (0);
 #if 0  /* better: spectrum subtraction */
 		      for (int clean = t->d - 4; clean <= t->d + 4; clean += 2)
 			{
@@ -620,19 +621,19 @@ main (int argc, char **argv)
 	}
     }
 
-  for (uint64 frame = 0; frame < audio_blocks.length(); frame++)
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       fill (in.begin(), in.end(), 0);
 
       // compute spectrum of isolated sine frequencies from audio spectrum
-      for (size_t i = 0; i < audio_blocks[frame]->freqs.length(); i++)
+      for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
 	{
 	  double phase = 0;
 	  for (size_t k = 0; k < block_size; k++)
 	    {
-	      double freq = *(audio_blocks[frame]->freqs.begin() + i);
-	      double re = *(audio_blocks[frame]->phases.begin() + i * 2);
-	      double im = *(audio_blocks[frame]->phases.begin() + i * 2 + 1);
+	      double freq = audio_blocks[frame].freqs[i];
+	      double re = audio_blocks[frame].phases[i * 2];
+	      double im = audio_blocks[frame].phases[i * 2 + 1];
 	      double mag = sqrt (re * re + im * im);
 	      phase += freq / mix_freq * 2 * M_PI;
 	      in[k] += mag * sin (phase) * window[k];
@@ -650,17 +651,17 @@ main (int argc, char **argv)
 	  double sub_mag = sqrt (re * re + im * im);
 	  debug ("subspectrum:%lld %g\n", frame, sub_mag);
 
-	  double mag = magnitude (audio_blocks[frame]->meaning.begin() + d);
+	  double mag = magnitude (audio_blocks[frame].meaning.begin() + d);
 	  debug ("spectrum:%lld %g\n", frame, mag);
 	  if (mag > 0)
 	    {
-	      *(audio_blocks[frame]->meaning.begin() + d) /= mag;
-	      *(audio_blocks[frame]->meaning.begin() + d + 1) /= mag;
+	      audio_blocks[frame].meaning[d] /= mag;
+	      audio_blocks[frame].meaning[d + 1] /= mag;
 	      mag -= sub_mag;
 	      if (mag < 0)
 		mag = 0;
-	      *(audio_blocks[frame]->meaning.begin() + d) *= mag;
-	      *(audio_blocks[frame]->meaning.begin() + d + 1) *= mag;
+	      audio_blocks[frame].meaning[d] *= mag;
+	      audio_blocks[frame].meaning[d + 1] *= mag;
 	    }
 	  debug ("finalspectrum:%lld %g\n", frame, mag);
 	}
@@ -693,10 +694,10 @@ main (int argc, char **argv)
     }
 #endif
 
-  for (uint64 frame = 0; frame < audio_blocks.length(); frame++)
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       vector<double> noise_envelope (256);
-      vector<double> spectrum (audio_blocks[frame]->meaning.begin(), audio_blocks[frame]->meaning.end());
+      vector<double> spectrum (audio_blocks[frame].meaning.begin(), audio_blocks[frame].meaning.end());
 
       approximate_noise_spectrum (frame, spectrum, noise_envelope);
 
@@ -704,15 +705,15 @@ main (int argc, char **argv)
       xnoise_envelope_to_spectrum (noise_envelope, approx_spectrum);
       for (int i = 0; i < 2048; i += 2)
 	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
-      audio_blocks[frame]->meaning.resize (noise_envelope.size());
-      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame]->meaning.begin());
+      audio_blocks[frame].meaning.resize (noise_envelope.size());
+      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].meaning.begin());
     }
 
   codebook.push_back (vector<double> (block_size + 2));
   codebook_centroid.push_back (vector<double> (block_size + 2));
   if (options.quantize_entries)
     {
-      for (size_t CBS = 0; CBS < std::min (options.quantize_entries, audio_blocks.length()); CBS++)
+      for (size_t CBS = 0; CBS < std::min (options.quantize_entries, audio_blocks.size()); CBS++)
 	{
 	  fprintf (stderr, "%zd", CBS);
 	  double max_adj = 1;
@@ -724,12 +725,12 @@ main (int argc, char **argv)
 		  codebook_usage[k] = 0;
 		  std::fill (codebook_centroid[k].begin(), codebook_centroid[k].end(), 0);
 		}
-	      for (size_t n = 0; n < audio_blocks.length(); n++)
+	      for (size_t n = 0; n < audio_blocks.size(); n++)
 		{
 		  size_t dist_k = search_nearest_codebook_entry (n);
 		  codebook_usage[dist_k]++;
 		  for (size_t i = 0; i < block_size + 2; i++)
-		    codebook_centroid[dist_k][i] += *(audio_blocks[n]->meaning.begin() + i);
+		    codebook_centroid[dist_k][i] += audio_blocks[n].meaning[i];
 		}
 	      biggest_usage = 0;
 	      biggest_usage_k = -1;
@@ -762,12 +763,12 @@ main (int argc, char **argv)
 	      //printf ("(%d/%d) changes\n", ch, codebook.size());
 	    }
 	  vector<double> codebook_error (codebook.size());
-	  for (size_t n = 0; n < audio_blocks.length(); n++)
+	  for (size_t n = 0; n < audio_blocks.size(); n++)
 	    {
 	      size_t k = search_nearest_codebook_entry (n);
 	      for (size_t i = 0; i < block_size + 2; i++)
 		{
-		  double error = codebook[k][i] - *(audio_blocks[n]->meaning.begin() + i);
+		  double error = codebook[k][i] - audio_blocks[n].meaning[i];
 		  codebook_error[k] += error * error;
 		}
 	    }
@@ -782,13 +783,13 @@ main (int argc, char **argv)
 		}
 	      error_sum += codebook_error[k];
 	    }
-	  fprintf (stderr, " %f errorDB\r", 10 * log10 (error_sum / block_size / audio_blocks.length()));
+	  fprintf (stderr, " %f errorDB\r", 10 * log10 (error_sum / block_size / audio_blocks.size()));
 	  //printf ("*** %f\n", error_sum);
 	  /* figure out 2 biggest_usage_k representants */
 	  vector<size_t> cbadd;
 	  while (cbadd.size() != 2)
 	    {
-	      size_t n = rand() % audio_blocks.length();
+	      size_t n = rand() % audio_blocks.size();
 	      size_t dist_k = search_nearest_codebook_entry (n);
 	      if (dist_k == biggest_error_k)
 		{
@@ -802,32 +803,34 @@ main (int argc, char **argv)
 		       * since using twice the same vector will not actually
 		       * split the cluster
 		       */
-		      if (!std::equal (audio_blocks[cbadd[0]]->meaning.begin(),
-				       audio_blocks[cbadd[0]]->meaning.end(),
-				       audio_blocks[n]->meaning.begin()))
+		      if (!std::equal (audio_blocks[cbadd[0]].meaning.begin(),
+				       audio_blocks[cbadd[0]].meaning.end(),
+				       audio_blocks[n].meaning.begin()))
 			cbadd.push_back (n);
 		    }
 		}
 	    }
 	  //printf ("%d %d\n", cbadd[0], cbadd[1]);
-	  Sfi::FBlock& b = audio_blocks[cbadd[0]]->meaning;
+#if 0 //////////////////// FIXME: doesn't compile for now
+	  Sfi::FBlock& b = audio_blocks[cbadd[0]].meaning;
 	  std::copy (b.begin(), b.end(), codebook[biggest_usage_k].begin());
 	  codebook_centroid[biggest_error_k] = vector<double> (block_size + 2);
 	  codebook.push_back (vector<double> (block_size + 2));
 	  codebook_centroid.push_back (vector<double> (block_size + 2));
-	  Sfi::FBlock& b1 = audio_blocks[cbadd[1]]->meaning;
+	  Sfi::FBlock& b1 = audio_blocks[cbadd[1]].meaning;
 	  std::copy (b1.begin(), b1.end(), codebook[codebook.size() - 1].begin());
+#endif
 	  //printf ("%d\n", search_nearest_codebook_entry (cbadd[0]));
 	  //printf ("%d\n", search_nearest_codebook_entry (cbadd[1]));
 	}
 
-      for (size_t n = 0; n < audio_blocks.length(); n++)
+      for (size_t n = 0; n < audio_blocks.size(); n++)
         {
 	  size_t k = search_nearest_codebook_entry (n);
-	  std::copy (codebook[k].begin(), codebook[k].end(), audio_blocks[n]->meaning.begin());
+	  std::copy (codebook[k].begin(), codebook[k].end(), audio_blocks[n].meaning.begin());
 	}
     }
-  Stw::Codec::Audio audio;
+  SpectMorph::Audio audio;
   audio.fundamental_freq = options.fundamental_freq;
   audio.mix_freq = enc_params.mix_freq;
   audio.frame_size_ms = enc_params.frame_size_ms;

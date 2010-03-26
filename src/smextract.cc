@@ -29,7 +29,7 @@ main (int argc, char **argv)
 {
   bse_init_inprocess (&argc, &argv, NULL, NULL);
 
-  Stw::Codec::AudioHandle audio;
+  SpectMorph::Audio audio;
   BseErrorType error = STWAFile::load (argv[1], audio);
   if (error)
     {
@@ -37,7 +37,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  int frame_size = audio->frame_size_ms * audio->mix_freq / 1000;
+  int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
 
   if (strcmp (argv[2], "freq") == 0)
     {
@@ -45,9 +45,9 @@ main (int argc, char **argv)
       float freq_max = atof (argv[4]);
 
 
-      for (size_t i = 0; i < audio->contents.length(); i++)
+      for (size_t i = 0; i < audio.contents.size(); i++)
         {
-          Frame frame (audio->contents[i], frame_size);
+          Frame frame (audio.contents[i], frame_size);
           for (size_t n = 0; n < frame.freqs.size(); n++)
             {
               if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
@@ -62,10 +62,10 @@ main (int argc, char **argv)
       int i = atoi (argv[3]);
       vector<double> spectrum;
 
-      for (size_t n = 0; n < audio->contents[i]->original_fft.length(); n += 2)
+      for (size_t n = 0; n < audio.contents[i].original_fft.size(); n += 2)
         {
-          double re = *(audio->contents[i]->original_fft.begin() + n);
-          double im = *(audio->contents[i]->original_fft.begin() + n + 1);
+          double re = audio.contents[i].original_fft[n];
+          double im = audio.contents[i].original_fft[n + 1];
           spectrum.push_back (sqrt (re * re + im * im));
         }
       for (size_t n = 0; n < spectrum.size(); n++)
@@ -78,24 +78,24 @@ main (int argc, char **argv)
               if (r < n)
                 s = std::max (s, spectrum[n - r]);
             }
-          printf ("%f %f\n", n * 0.5 * audio->mix_freq / spectrum.size(), s);
+          printf ("%f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s);
         }
     }
   else if (strcmp (argv[2], "frame") == 0)
     {
       int i = atoi (argv[3]);
-      size_t frame_size = audio->contents[i]->debug_samples.length();
+      size_t frame_size = audio.contents[i].debug_samples.size();
       vector<double> sines (frame_size);
-      for (size_t partial = 0; partial < audio->contents[i]->freqs.length(); partial++)
+      for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
         {
-          double f = *(audio->contents[i]->freqs.begin() + partial);
-          double mag = *(audio->contents[i]->phases.begin() + 2 * partial);
+          double f = audio.contents[i].freqs[partial];
+          double mag = audio.contents[i].phases[2 * partial];
           double phase = 0;
           double smag = 0, cmag = 0;
           for (size_t n = 0; n < frame_size; n++)
             {
-              double v = *(audio->contents[i]->debug_samples.begin() + n);
-              phase += f / audio->mix_freq * 2.0 * M_PI;
+              double v = audio.contents[i].debug_samples[n];
+              phase += f / audio.mix_freq * 2.0 * M_PI;
               smag += sin (phase) * v;
               cmag += cos (phase) * v;
             }
@@ -105,14 +105,14 @@ main (int argc, char **argv)
           phase = 0;
           for (size_t n = 0; n < frame_size; n++)
             {
-              phase += f / audio->mix_freq * 2.0 * M_PI;
+              phase += f / audio.mix_freq * 2.0 * M_PI;
               sines[n] += sin (phase) * smag;
               sines[n] += cos (phase) * cmag;
             }
         }
-      for (size_t n = 0; n < audio->contents[i]->debug_samples.length(); n++)
+      for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
         {
-          double v = *(audio->contents[i]->debug_samples.begin() + n);
+          double v = audio.contents[i].debug_samples[n];
           printf ("%zd %f %f\n", n, v, sines[n]);
         }
     }

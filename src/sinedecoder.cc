@@ -18,6 +18,7 @@
 #include "sinedecoder.hh"
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 
 using Stw::Codec::SineDecoder;
 using Stw::Codec::Frame;

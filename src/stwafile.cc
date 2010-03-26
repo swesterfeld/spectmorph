@@ -16,11 +16,12 @@
  */
 
 #include "stwafile.hh"
-#include "stwaudio.hh"
+#include "smaudio.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
 #include <assert.h>
+#include <bse/bse.h>
 
 using std::string;
 using std::vector;
@@ -206,10 +207,10 @@ IFile::event_float_block()
 
 BseErrorType
 STWAFile::load (const string& file_name,
-                Stw::Codec::AudioHandle& audio_out)
+                SpectMorph::Audio& audio_out)
 {
-  Stw::Codec::Audio audio;
-  Stw::Codec::AudioBlock *audio_block = NULL;
+  SpectMorph::Audio audio;
+  SpectMorph::AudioBlock *audio_block = NULL;
 
   IFile  ifile (file_name);
   string section;
@@ -229,7 +230,7 @@ STWAFile::load (const string& file_name,
           if (section == "frame")
             {
               assert (audio_block == NULL);
-              audio_block = new Stw::Codec::AudioBlock();
+              audio_block = new SpectMorph::AudioBlock();
             }
         }
       else if (ifile.event() == IFile::END_SECTION)
@@ -238,7 +239,7 @@ STWAFile::load (const string& file_name,
             {
               assert (audio_block);
 
-              audio.contents += *audio_block;
+              audio.contents.push_back (*audio_block);
               delete audio_block;
               audio_block = NULL;
             }
@@ -345,7 +346,7 @@ public:
 
   void write_int (const string& s, int i);
   void write_float (const string& s, double f);
-  void write_float_block (const string& s, Sfi::FBlock fb);
+  void write_float_block (const string& s, const vector<float>& fb);
 };
 
 void
@@ -406,22 +407,22 @@ OFile::write_int (const string& s,
 
 void
 OFile::write_float_block (const string& s,
-                          Sfi::FBlock fb)
+                          const vector<float>& fb)
 {
   fputc ('F', file);
 
   write_raw_string (s);
-  write_raw_int (fb.length());
+  write_raw_int (fb.size());
 
-  vector<unsigned char> buffer (fb.length() * 4);
+  vector<unsigned char> buffer (fb.size() * 4);
   size_t bpos = 0;
-  for (size_t i = 0; i < fb.length(); i++)
+  for (size_t i = 0; i < fb.size(); i++)
     {
       union {
         float f;
         int i;
       } u;
-      u.f = *(fb.begin() + i);
+      u.f = fb[i];
       // write_raw_int (u.i);
       buffer[bpos++] = u.i >> 24;
       buffer[bpos++] = u.i >> 16;
@@ -434,7 +435,7 @@ OFile::write_float_block (const string& s,
 
 BseErrorType
 STWAFile::save (const string& file_name,
-                const Stw::Codec::Audio& audio)
+                const SpectMorph::Audio& audio)
 {
   OFile of (file_name.c_str());
   if (!of.open_ok())
@@ -451,15 +452,15 @@ STWAFile::save (const string& file_name,
   of.write_int ("zeropad", audio.zeropad);
   of.end_section();
 
-  for (size_t i = 0; i < audio.contents.length(); i++)
+  for (size_t i = 0; i < audio.contents.size(); i++)
     {
       of.begin_section ("frame");
-      of.write_float_block ("meaning", audio.contents[i]->meaning);
-      of.write_float_block ("freqs", audio.contents[i]->freqs);
-      of.write_float_block ("mags", audio.contents[i]->mags);
-      of.write_float_block ("phases", audio.contents[i]->phases);
-      of.write_float_block ("original_fft", audio.contents[i]->original_fft);
-      of.write_float_block ("debug_samples", audio.contents[i]->debug_samples);
+      of.write_float_block ("meaning", audio.contents[i].meaning);
+      of.write_float_block ("freqs", audio.contents[i].freqs);
+      of.write_float_block ("mags", audio.contents[i].mags);
+      of.write_float_block ("phases", audio.contents[i].phases);
+      of.write_float_block ("original_fft", audio.contents[i].original_fft);
+      of.write_float_block ("debug_samples", audio.contents[i].debug_samples);
       of.end_section();
     }
   return BSE_ERROR_NONE;
