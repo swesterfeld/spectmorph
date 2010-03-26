@@ -306,6 +306,11 @@ STWAFile::load (const string& file_name,
               audio_block->original_fft.resize (fb.size());
               std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
             }
+          else if (ifile.event_name() == "debug_samples")
+            {
+              audio_block->debug_samples.resize (fb.size());
+              std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
+            }
           else
             {
               printf ("unhandled fblock %s %s\n", section.c_str(), ifile.event_name().c_str());
@@ -454,6 +459,7 @@ STWAFile::save (const string& file_name,
       of.write_float_block ("mags", audio.contents[i]->mags);
       of.write_float_block ("phases", audio.contents[i]->phases);
       of.write_float_block ("original_fft", audio.contents[i]->original_fft);
+      of.write_float_block ("debug_samples", audio.contents[i]->debug_samples);
       of.end_section();
     }
   return BSE_ERROR_NONE;

@@ -429,7 +429,7 @@ main (int argc, char **argv)
           while (r < block.size())
             block[r++] = 0;
         }
-
+      vector<float> debug_samples (block.begin(), block.end());
       Bse::Block::mul (block_size, &block[0], &window[0]);
       std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
 
@@ -455,6 +455,11 @@ main (int argc, char **argv)
       audio_block.meaning = *m;           // <- will be overwritten by noise spectrum later on
       audio_block.original_fft.resize (m->n_values);
       std::copy (out.begin(), out.end(), audio_block.original_fft.begin());
+      if (options.debug)
+        {
+          audio_block.debug_samples.resize (frame_size);
+          std::copy (debug_samples.begin(), debug_samples.begin() + frame_size, audio_block.debug_samples.begin());
+        }
       //audio_block.original_fft = *m;
       audio_blocks += audio_block;
     }

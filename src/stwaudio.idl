@@ -15,6 +15,7 @@ record AudioBlock {
 
   // debugging data
   FBlock original_fft;
+  FBlock debug_samples;
 };
 
 sequence AudioBlockSeq {

@@ -81,4 +81,26 @@ main (int argc, char **argv)
           printf ("%f %f\n", n * 0.5 * audio->mix_freq / spectrum.size(), s);
         }
     }
+  else if (strcmp (argv[2], "frame") == 0)
+    {
+      int i = atoi (argv[3]);
+      size_t frame_size = audio->contents[i]->debug_samples.length();
+      vector<double> sines (frame_size);
+      for (size_t partial = 0; partial < audio->contents[i]->freqs.length(); partial++)
+        {
+          double f = *(audio->contents[i]->freqs.begin() + partial);
+          double mag = *(audio->contents[i]->phases.begin() + 2 * partial);
+          double phase = 0;
+          for (size_t n = 0; n < frame_size; n++)
+            {
+              phase += f / audio->mix_freq * 2.0 * M_PI;
+              sines[n] += sin (phase) * mag;
+            }
+        }
+      for (size_t n = 0; n < audio->contents[i]->debug_samples.length(); n++)
+        {
+          double v = *(audio->contents[i]->debug_samples.begin() + n);
+          printf ("%zd %f %f\n", n, v, sines[n]);
+        }
+    }
 }
