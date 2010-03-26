@@ -20,9 +20,21 @@
 #include <bse/bsemain.h>
 #include "stwafile.hh"
 #include "frame.hh"
+#include <assert.h>
 
 using Stw::Codec::Frame;
 using std::vector;
+
+double
+float_vector_delta (const vector<float>& a, const vector<float>& b)
+{
+  assert (a.size() == b.size());
+
+  double d = 0;
+  for (size_t i = 0; i < a.size(); i++)
+    d += (a[i] - b[i]) * (a[i] - b[i]);
+  return d;
+}
 
 int
 main (int argc, char **argv)
@@ -85,7 +97,7 @@ main (int argc, char **argv)
     {
       int i = atoi (argv[3]);
       size_t frame_size = audio.contents[i].debug_samples.size();
-      vector<double> sines (frame_size);
+      vector<float> sines (frame_size);
       for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
         {
           double f = audio.contents[i].freqs[partial];
@@ -103,12 +115,17 @@ main (int argc, char **argv)
           cmag *= 2.0 / frame_size;
           printf ("%f %f %f %f\n", mag, smag, cmag, sqrt (smag * smag + cmag * cmag));
           phase = 0;
+          vector<float> old_sines = sines;
+          double delta = float_vector_delta (sines, audio.contents[i].debug_samples);
           for (size_t n = 0; n < frame_size; n++)
             {
               phase += f / audio.mix_freq * 2.0 * M_PI;
               sines[n] += sin (phase) * smag;
               sines[n] += cos (phase) * cmag;
             }
+          double new_delta = float_vector_delta (sines, audio.contents[i].debug_samples);
+          if (new_delta > delta)      // approximation is _not_ better
+            sines = old_sines;
         }
       for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
         {
