@@ -91,10 +91,23 @@ main (int argc, char **argv)
           double f = *(audio->contents[i]->freqs.begin() + partial);
           double mag = *(audio->contents[i]->phases.begin() + 2 * partial);
           double phase = 0;
+          double smag = 0, cmag = 0;
+          for (size_t n = 0; n < frame_size; n++)
+            {
+              double v = *(audio->contents[i]->debug_samples.begin() + n);
+              phase += f / audio->mix_freq * 2.0 * M_PI;
+              smag += sin (phase) * v;
+              cmag += cos (phase) * v;
+            }
+          smag *= 2.0 / frame_size;
+          cmag *= 2.0 / frame_size;
+          printf ("%f %f %f %f\n", mag, smag, cmag, sqrt (smag * smag + cmag * cmag));
+          phase = 0;
           for (size_t n = 0; n < frame_size; n++)
             {
               phase += f / audio->mix_freq * 2.0 * M_PI;
-              sines[n] += sin (phase) * mag;
+              sines[n] += sin (phase) * smag;
+              sines[n] += cos (phase) * cmag;
             }
         }
       for (size_t n = 0; n < audio->contents[i]->debug_samples.length(); n++)
