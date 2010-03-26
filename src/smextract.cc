@@ -36,6 +36,76 @@ float_vector_delta (const vector<float>& a, const vector<float>& b)
   return d;
 }
 
+struct TransientModel
+{
+  double start_volume;
+  double end_volume;
+  int start;
+  int end;
+};
+
+void
+transient_scale (const TransientModel& m, const vector<float>& in, vector<float>& out)
+{
+  out.resize (in.size());
+
+  for (size_t n = 0; n < in.size(); n++)
+    {
+      if (n <= m.start)
+        {
+          out[n] = in[n] * m.start_volume;
+        }
+      else if (n < m.end)
+        {
+          double d = double (n - m.start) / double (m.end - m.start);
+          out[n] = in[n] * ((1 - d) * m.start_volume + d * m.end_volume);
+        }
+      else // (n >= end)
+        {
+          out[n] = in[n] * m.end_volume;
+        }
+    }
+}
+
+void
+optimize_transient_model (TransientModel& m, vector<float>& signal, const vector<float>& desired_signal)
+{
+  int nomod = 0;
+
+  vector<float> trsignal;
+  while (nomod < 3000)
+    {
+      transient_scale (m, signal, trsignal);
+      double m_delta = float_vector_delta (trsignal, desired_signal);
+
+      TransientModel new_m = m;
+      new_m.start += g_random_int_range (-5, 5);
+      new_m.end += g_random_int_range (-5, 5);
+      new_m.start_volume += g_random_double_range (-0.001, 0.001);
+      new_m.end_volume += g_random_double_range (-0.001, 0.001);
+
+      if (new_m.end > signal.size())
+        new_m.end = signal.size();
+      if (new_m.start + 10 > new_m.end)
+        new_m.start = new_m.end - 10;
+      if (new_m.start < 0)
+        new_m.start = 0;
+      transient_scale (new_m, signal, trsignal);
+
+      double new_m_delta = float_vector_delta (trsignal, desired_signal);
+
+      if (new_m_delta < m_delta)
+        {
+          m = new_m;
+          nomod = 0;
+        }
+      else
+        {
+          nomod++;
+        }
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -154,10 +224,20 @@ main (int argc, char **argv)
             }
         }
       while (max_mag > 0);
+      
+      // optimize transient parameter set
+      vector<float> trsines;
+      TransientModel m;
+      m.start_volume = 1;
+      m.end_volume = 1;
+      m.start = 0;
+      m.end = sines.size();
+      optimize_transient_model (m, sines, audio.contents[i].debug_samples);
+      transient_scale (m, sines, trsines);
       for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
         {
           double v = audio.contents[i].debug_samples[n];
-          printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
+          printf ("%zd %f %f %f\n", n, v, trsines[n], v - trsines[n]);
         }
     }
 }
