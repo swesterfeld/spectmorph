@@ -236,7 +236,12 @@ main (int argc, char **argv)
 
   vector<double> window (block_size);
   for (guint i = 0; i < window.size(); i++)
-    window[i] = bse_window_cos (2.0 * i / window.size() - 1.0);
+    {
+      if (i < frame_size)
+        window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+      else
+        window[i] = 0;
+    }
 
   fprintf (stderr, "rate: %d Hz\n", format.rate);
   uint loop_point = audio.contents.size() - 5;
