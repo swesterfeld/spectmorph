@@ -29,6 +29,34 @@ SineDecoder::process (Frame& frame,
                       Frame& next_frame,
 		      const vector<double>& window)
 {
+  fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
+
+  const bool PHASE_SYNC_OVERLAP = true;
+
+  /* phase synchronous reconstruction (no loops) */
+  if (PHASE_SYNC_OVERLAP)
+    {
+      for (size_t i = 0; i < frame.freqs.size(); i++)
+        {
+          const double SA = 0.25;
+          const double smag = frame.phases[i * 2];
+          const double cmag = frame.phases[i * 2 + 1];
+          const double phase_delta = 2 * M_PI * frame.freqs[i] / mix_freq;
+
+          double phase = 0; // could be done in one pass
+          for (size_t t = 0; t < frame_size; t++)
+            {
+	      frame.decoded_sines [t] += sin (phase) * window[t] * smag * SA
+                                      +  cos (phase) * window[t] * cmag * SA;
+              phase += phase_delta;
+              while (phase > 2 * M_PI)
+                phase -= 2 * M_PI;
+            }
+        }
+      return;
+    }
+
+  /* phase distorted reconstruction */
   vector<double> freqs = frame.freqs;
   vector<double> nfreqs = next_frame.freqs;
   vector<double>::iterator phase_it = frame.phases.begin(), nphase_it = next_frame.phases.begin();
@@ -38,8 +66,6 @@ SineDecoder::process (Frame& frame,
   synth_fixed_phase = next_synth_fixed_phase;
   synth_fixed_phase.resize (freqs.size());
   next_synth_fixed_phase.resize (nfreqs.size());
-
-  fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
 
   const double SIN_AMP = 1.0;
   const bool TRACKING_SYNTH = true;
