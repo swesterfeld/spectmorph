@@ -28,6 +28,7 @@
 using std::vector;
 
 bool db_mode = false;
+const int BORDER_PIXELS = 10;
 
 float
 value_scale (float rvalue, float ivalue = 0)
@@ -73,7 +74,7 @@ main (int argc, char **argv)
   const uint64 block_size = audio.contents[0].original_fft.size() - 2;
 
   GdkPixbuf *pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, /* has_alpha */ false, 8,
-                      audio.contents.size() * 2, (block_size + 2) / 2);
+                      audio.contents.size() * 2 + BORDER_PIXELS * 2, (block_size + 2) / 2);
 
   double max_value = 0.0;
   // compute magnitudes from FFT data and figure out max peak
@@ -91,8 +92,22 @@ main (int argc, char **argv)
         }
     }
 
-  guchar *p = gdk_pixbuf_get_pixels (pixbuf);
+  guchar *p = gdk_pixbuf_get_pixels (pixbuf) + 3 * BORDER_PIXELS;
   uint row_stride = gdk_pixbuf_get_rowstride (pixbuf);
+  for (size_t n = 0; n < BORDER_PIXELS; n++)
+    {
+      for (size_t y = 0; y < block_size / 2; y++)
+        {
+          for (int i = 0; i < 3 * BORDER_PIXELS; i++)
+            {
+              // draw a black border left of the analysis
+              p[-30 + row_stride * y + i] = 0;
+
+              // draw a black border right of the analysis
+              p[row_stride * y + i + 6 * audio.contents.size()] = 0;
+            }
+        }
+    }
   for (size_t n = 0; n < audio.contents.size(); n++)
     {
       const vector<float>& original_fft = audio.contents[n].original_fft;
