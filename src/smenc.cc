@@ -25,7 +25,7 @@
 #include <unistd.h>
 #include <bse/gsldatautils.h>
 #include <assert.h>
-#include <bse/bsecxxplugin.hh>   // FIXME: remove me
+#include <complex>
 
 #include "smaudio.hh"
 #include "stwafile.hh"
@@ -213,6 +213,8 @@ struct Tracksel {
   double   freq;
   double   mag;
   double   mag2;      /* magnitude in dB */
+  double   phasea;    /* sine amplitude */
+  double   phaseb;    /* cosine amplitude */
   bool     is_harmonic;
   Tracksel *prev, *next;
 };
@@ -510,6 +512,15 @@ main (int argc, char **argv)
 
                   double peak_mag_db = a * x_max * x_max + b * x_max + c;
                   double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
+
+                  // use the interpolation formula for the complex values to find the phase
+                  std::complex<double> c1 (audio_blocks[n].meaning[d-2], audio_blocks[n].meaning[d-1]);
+                  std::complex<double> c2 (audio_blocks[n].meaning[d], audio_blocks[n].meaning[d+1]);
+                  std::complex<double> c3 (audio_blocks[n].meaning[d+2], audio_blocks[n].meaning[d+3]);
+                  std::complex<double> ca = (c1 + c3 - 2.0*c2) / 2.0;
+                  std::complex<double> cb = c3 - c2 - ca;
+                  std::complex<double> cc = c2;
+                  std::complex<double> interp_c = ca * x_max * x_max + cb * x_max + cc;
 /*
                   if (mag2 > -20)
                     printf ("%f %f %f %f %f\n", phase, last_phase[d], phase_diff, phase_diff * mix_freq / (block_size * zeropad) * overlap, tfreq);
@@ -520,6 +531,8 @@ main (int argc, char **argv)
                   tracksel.freq = tfreq;
                   tracksel.mag = peak_mag / frame_size * zeropad;
                   tracksel.mag2 = mag2;
+                  tracksel.phasea = interp_c.real() / frame_size * zeropad;
+                  tracksel.phaseb = interp_c.imag() / frame_size * zeropad;
                   tracksel.next = 0;
                   tracksel.prev = 0;
 
@@ -603,8 +616,25 @@ main (int argc, char **argv)
 #endif
 
 		      audio_blocks[t->frame].freqs.push_back (t->freq);
-		      audio_blocks[t->frame].phases.push_back (t->mag);
-		      audio_blocks[t->frame].phases.push_back (0);
+		      //audio_blocks[t->frame].phases.push_back (t->mag);
+		      audio_blocks[t->frame].phases.push_back (t->phaseb);
+		      audio_blocks[t->frame].phases.push_back (t->phasea);
+                      // empiric phasea / phaseb
+#if 0
+                      double esa = 0;
+                      double eca = 0;
+                      double phase = 0;
+                      for (size_t x = 0; x < frame_size; x++)
+                        {
+                          double v = audio_blocks[t->frame].debug_samples[x];
+                          esa += sin (phase) * v / 1000;
+                          eca += cos (phase) * v / 1000;
+                          phase += t->freq / mix_freq * 2.0 * M_PI;
+                        }
+#endif
+		      //audio_blocks[t->frame].phases.push_back (esa);
+		      //audio_blocks[t->frame].phases.push_back (eca);
+                      //printf ("%f %f %f %f\n", atan (t->phaseb / t->phasea), atan (esa / eca), t->phaseb, esa);
 #if 0  /* better: spectrum subtraction */
 		      for (int clean = t->d - 4; clean <= t->d + 4; clean += 2)
 			{
