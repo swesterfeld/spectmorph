@@ -211,6 +211,17 @@ magnitude (vector<float>::iterator i)
   return sqrt (*i * *i + *(i+1) * *(i+1));
 }
 
+double
+float_vector_delta (const vector<float>& a, const vector<float>& b)
+{
+  assert (a.size() == b.size());
+
+  double d = 0;
+  for (size_t i = 0; i < a.size(); i++)
+    d += (a[i] - b[i]) * (a[i] - b[i]);
+  return d;
+}
+
 void
 approximate_noise_spectrum (int frame,
                             const vector<double>& spectrum,
@@ -595,6 +606,78 @@ main (int argc, char **argv)
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
+      vector<float> sines (frame_size);
+      vector<float> good_freqs;
+      vector<float> good_phases;
+
+      double max_mag;
+      size_t partial = 0;
+      do
+        {
+          max_mag = 0;
+
+          // search biggest partial
+          for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
+            {
+              double p_re = audio_blocks[frame].phases[2 * i];
+              double p_im = audio_blocks[frame].phases[2 * i + 1];
+              double p_mag = sqrt (p_re * p_re + p_im * p_im);
+              if (p_mag > max_mag)
+                {
+                  partial = i;
+                  max_mag = p_mag;
+                }
+            }
+          // compute reconstruction of that partial
+          if (max_mag > 0)
+            {
+              // remove partial, so we only do each partial once
+              double smag = audio_blocks[frame].phases[2 * partial];
+              double cmag = audio_blocks[frame].phases[2 * partial + 1];
+              double f = audio_blocks[frame].freqs[partial];
+
+              audio_blocks[frame].phases[2 * partial] = 0;
+              audio_blocks[frame].phases[2 * partial + 1] = 0;
+
+#if 0
+              // determine "perfect" phase and magnitude instead of using interpolated fft phase
+              double phase = 0;
+              double smag = 0, cmag = 0;
+              for (size_t n = 0; n < frame_size; n++)
+                {
+                  double v = audio_blocks[frame].debug_samples[n];
+                  phase += f / mix_freq * 2.0 * M_PI;
+                  smag += sin (phase) * v * window[n];
+                  cmag += cos (phase) * v * window[n];
+                }
+              smag *= 4.0 / frame_size;
+              cmag *= 4.0 / frame_size;
+#endif
+              vector<float> old_sines = sines;
+              double delta = float_vector_delta (sines, audio_blocks[frame].debug_samples);
+              double phase = 0;
+              for (size_t n = 0; n < frame_size; n++)
+                {
+                  phase += f / mix_freq * 2.0 * M_PI;
+                  sines[n] += sin (phase) * smag;
+                  sines[n] += cos (phase) * cmag;
+                }
+              double new_delta = float_vector_delta (sines, audio_blocks[frame].debug_samples);
+              if (new_delta > delta)      // approximation is _not_ better
+                sines = old_sines;
+              else
+                {
+                  good_freqs.push_back (f);
+                  good_phases.push_back (smag);
+                  good_phases.push_back (cmag);
+                }
+            }
+        }
+      while (max_mag > 0);
+
+      audio_blocks[frame].freqs = good_freqs;
+      audio_blocks[frame].phases = good_phases;
+
       fill (in.begin(), in.end(), 0);
 
       // compute spectrum of isolated sine frequencies from audio spectrum
