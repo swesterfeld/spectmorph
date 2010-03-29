@@ -59,8 +59,6 @@ struct Options
   Options ();
   void parse (int *argc_p, char **argv_p[]);
   static void print_usage ();
-
-  list<string>  encodelists;
 } options;
 
 #include "stwutils.hh"
@@ -113,10 +111,6 @@ Options::parse (int   *argc_p,
 	{
 	  verbose = true;
 	}
-      else if (check_arg (argc, argv, &i, "-q", &opt_arg))
-	{
-	  quantize_entries = atoi (opt_arg);
-        }
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
 	  fundamental_freq = atof (opt_arg);
@@ -125,10 +119,6 @@ Options::parse (int   *argc_p,
         {
           fundamental_freq = freqFromNote (atoi (opt_arg));
         }
-      else if (check_arg (argc, argv, &i, "--list", &opt_arg) || check_arg (argc, argv, &i, "-@", &opt_arg))
-	{
-	  options.encodelists.push_back (opt_arg);
-	}
     }
 
   /* resort argc/argv */
@@ -182,31 +172,6 @@ debug (const char *dbg, ...)
     va_end (ap);
 }
 
-/* search nearest codebook entry for audio_block n */
-size_t
-search_nearest_codebook_entry (size_t n)
-{
-  assert (false);   // FIXME
-#if 0
-  double min_dist = 1e30;
-  size_t dist_k = -1;
-  for (size_t k = 0; k < codebook.size(); k++)
-    {
-      double dist = 0;
-      for (size_t i = 0; i < block_size + 2; i++)
-        {
-          double d = *(audio_blocks[n]->meaning.begin() + i) - codebook[k][i];
-          dist += d * d;
-        }
-      if (dist < min_dist)
-        {
-          min_dist = dist;
-          dist_k = k;
-        }
-    }
-  return dist_k;
-#endif
-}
 struct Tracksel {
   size_t   frame;
   size_t   d;         /* FFT position */
@@ -391,8 +356,6 @@ main (int argc, char **argv)
   vector<float> window (block.size());
   vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
   vector<double> last_phase (block_size * zeropad + 2);
-  vector< vector<double> > state_positions;
-  vector< vector<double> > state_meanings;
 
   for (guint i = 0; i < window.size(); i++)
     {
@@ -410,21 +373,13 @@ main (int argc, char **argv)
       exit (1);
     }
   fprintf (stderr, "block_size = %lld\n", block_size);
-#if 0
-  double speedup_factor;
-  if (options.fundamental_freq > 0)
-    speedup_factor = (mix_freq/2048*16) / options.fundamental_freq;
-  else
-    speedup_factor = 1; /* no resampling */
-  MiniResampler resampler (dhandle, speedup_factor);
-#endif
+
   for (uint64 pos = 0; pos < n_values; pos += frame_step)
     {
       AudioBlock audio_block;
 
       /* read data from file, zeropad last blocks */
       uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-             //  resampler.read (pos, block.size(), &block[0]);
 
       if (r != block.size())
         {
@@ -440,23 +395,10 @@ main (int argc, char **argv)
       out[block_size * zeropad + 1] = 0;
       out[1] = 0;
 
-      vector<double> position;
-      for (size_t n = 0; n < n_dimensions; n++)
-        position.push_back (g_random_double_range (0, 1));
-
-      state_positions.push_back (position);
-      state_meanings.push_back (out);
-
-      SfiFBlock *p = sfi_fblock_new_sized (n_dimensions);
-      SfiFBlock *m = sfi_fblock_new_sized (block_size * zeropad + 2);
-
-      std::copy (position.begin(), position.end(), p->values);
-      //block.position = *p;
-
       audio_block.meaning.resize (out.size());
       std::copy (out.begin(), out.end(), audio_block.meaning.begin()); // <- will be overwritten by noise spectrum later on
 
-      audio_block.original_fft.resize (m->n_values);
+      audio_block.original_fft.resize (out.size());
       std::copy (out.begin(), out.end(), audio_block.original_fft.begin());
       if (options.debug)
         {
@@ -739,127 +681,6 @@ main (int argc, char **argv)
       copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].meaning.begin());
     }
 
-  codebook.push_back (vector<double> (block_size + 2));
-  codebook_centroid.push_back (vector<double> (block_size + 2));
-  if (options.quantize_entries)
-    {
-      for (size_t CBS = 0; CBS < std::min (options.quantize_entries, audio_blocks.size()); CBS++)
-	{
-	  fprintf (stderr, "%zd", CBS);
-	  double max_adj = 1;
-	  while (max_adj > 1e-10)
-	    {
-	      max_adj = 0;
-	      for (size_t k = 0; k < codebook.size(); k++)
-		{
-		  codebook_usage[k] = 0;
-		  std::fill (codebook_centroid[k].begin(), codebook_centroid[k].end(), 0);
-		}
-	      for (size_t n = 0; n < audio_blocks.size(); n++)
-		{
-		  size_t dist_k = search_nearest_codebook_entry (n);
-		  codebook_usage[dist_k]++;
-		  for (size_t i = 0; i < block_size + 2; i++)
-		    codebook_centroid[dist_k][i] += audio_blocks[n].meaning[i];
-		}
-	      biggest_usage = 0;
-	      biggest_usage_k = -1;
-	      int ch = 0;
-	      for (size_t k = 0; k < codebook.size(); k++)
-		{
-		  double adj = 0;
-		  for (size_t i = 0; i < block_size + 2; i++)
-		    {
-		      codebook_centroid[k][i] /= codebook_usage[k];
-		      double a = codebook_centroid[k][i] - codebook[k][i];
-		      adj += a * a;
-		    }
-		  if (codebook[k] != codebook_centroid[k])
-		    {
-		      ch++;
-		    }
-		  codebook[k] = codebook_centroid[k];
-		  if (codebook_usage[k] > biggest_usage)
-		    {
-		      biggest_usage = codebook_usage[k];
-		      biggest_usage_k = k;
-		    }
-		  if (adj > max_adj)
-		    max_adj = adj;
-		  //printf ("adjusted codebook centroid k=%d adj=%f\n", k, adj);
-		}
-	      //printf ("biggest_usage = %d\n", biggest_usage);
-	      //printf ("biggest_usage_k = %d\n", biggest_usage_k);
-	      //printf ("(%d/%d) changes\n", ch, codebook.size());
-	    }
-	  vector<double> codebook_error (codebook.size());
-	  for (size_t n = 0; n < audio_blocks.size(); n++)
-	    {
-	      size_t k = search_nearest_codebook_entry (n);
-	      for (size_t i = 0; i < block_size + 2; i++)
-		{
-		  double error = codebook[k][i] - audio_blocks[n].meaning[i];
-		  codebook_error[k] += error * error;
-		}
-	    }
-	  size_t biggest_error_k = 0;
-	  double biggest_error = 0.0, error_sum = 0;
-	  for (size_t k = 0; k < codebook.size(); k++)
-	    {
-	      if (codebook_error[k] > biggest_error)
-		{
-		  biggest_error = codebook_error[k];
-		  biggest_error_k = k;
-		}
-	      error_sum += codebook_error[k];
-	    }
-	  fprintf (stderr, " %f errorDB\r", 10 * log10 (error_sum / block_size / audio_blocks.size()));
-	  //printf ("*** %f\n", error_sum);
-	  /* figure out 2 biggest_usage_k representants */
-	  vector<size_t> cbadd;
-	  while (cbadd.size() != 2)
-	    {
-	      size_t n = rand() % audio_blocks.size();
-	      size_t dist_k = search_nearest_codebook_entry (n);
-	      if (dist_k == biggest_error_k)
-		{
-		  if (cbadd.empty())
-		    {
-		      cbadd.push_back (n);
-		    }
-		  else if (cbadd[0] != n) // cbadd.size() == 1
-		    {
-		      /* use second vector only if it differs from the first,
-		       * since using twice the same vector will not actually
-		       * split the cluster
-		       */
-		      if (!std::equal (audio_blocks[cbadd[0]].meaning.begin(),
-				       audio_blocks[cbadd[0]].meaning.end(),
-				       audio_blocks[n].meaning.begin()))
-			cbadd.push_back (n);
-		    }
-		}
-	    }
-	  //printf ("%d %d\n", cbadd[0], cbadd[1]);
-#if 0 //////////////////// FIXME: doesn't compile for now
-	  Sfi::FBlock& b = audio_blocks[cbadd[0]].meaning;
-	  std::copy (b.begin(), b.end(), codebook[biggest_usage_k].begin());
-	  codebook_centroid[biggest_error_k] = vector<double> (block_size + 2);
-	  codebook.push_back (vector<double> (block_size + 2));
-	  codebook_centroid.push_back (vector<double> (block_size + 2));
-	  Sfi::FBlock& b1 = audio_blocks[cbadd[1]].meaning;
-	  std::copy (b1.begin(), b1.end(), codebook[codebook.size() - 1].begin());
-#endif
-	  //printf ("%d\n", search_nearest_codebook_entry (cbadd[0]));
-	  //printf ("%d\n", search_nearest_codebook_entry (cbadd[1]));
-	}
-
-      for (size_t n = 0; n < audio_blocks.size(); n++)
-        {
-	  size_t k = search_nearest_codebook_entry (n);
-	  std::copy (codebook[k].begin(), codebook[k].end(), audio_blocks[n].meaning.begin());
-	}
-    }
   SpectMorph::Audio audio;
   audio.fundamental_freq = options.fundamental_freq;
   audio.mix_freq = enc_params.mix_freq;
