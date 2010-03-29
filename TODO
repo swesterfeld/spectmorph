@@ -7,4 +7,7 @@ smenc:
 smplay:
 - add commandline switches allowing to enable/disable noise/sine decoder
 
+tools:
+- wav2ascii
+
 implement smstrip
