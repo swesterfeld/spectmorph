@@ -11,3 +11,8 @@ tools:
 - wav2ascii
 
 implement smstrip
+
+adventure:
+- implement wav->midi
+  * trumpet (silent brass)
+  * piano
