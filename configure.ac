@@ -41,5 +41,5 @@ AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile tools/Makefile])
 AC_OUTPUT
