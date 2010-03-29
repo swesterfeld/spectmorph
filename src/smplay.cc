@@ -249,8 +249,9 @@ main (int argc, char **argv)
 
   vector<float> sample;
 
+  SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
   NoiseDecoder noise_decoder (audio.mix_freq, format.rate);
-  SineDecoder  sine_decoder (format.rate, frame_size, frame_step);
+  SineDecoder  sine_decoder (format.rate, frame_size, frame_step, mode);
 
   size_t pos = 0;
   size_t end_point = audio.contents.size();
@@ -258,14 +259,18 @@ main (int argc, char **argv)
   if (options.loop)
     end_point *= 10;
 
-  // decode one frame before actual data
-  Stw::Codec::Frame zero_frame (frame_size);
-  Stw::Codec::Frame one_frame (audio.contents[0], frame_size);
-  sine_decoder.process (zero_frame, one_frame, window);
-  sample.resize (pos + frame_size);
-  for (size_t i = 0; i < frame_size; i++)
-    sample[pos + i] += zero_frame.decoded_sines[i];
-  pos += frame_step;
+  // decode one frame before actual data (required for tracking decoder)
+
+  if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)
+    {
+      Stw::Codec::Frame zero_frame (frame_size);
+      Stw::Codec::Frame one_frame (audio.contents[0], frame_size);
+      sine_decoder.process (zero_frame, one_frame, window);
+      sample.resize (pos + frame_size);
+      for (size_t i = 0; i < frame_size; i++)
+        sample[pos + i] += zero_frame.decoded_sines[i];
+      pos += frame_step;
+    }
 
   // decode actual data
   for (size_t n = 0; n < end_point; n++)

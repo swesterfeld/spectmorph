@@ -31,14 +31,12 @@ SineDecoder::process (Frame& frame,
 {
   fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
 
-  const bool PHASE_SYNC_OVERLAP = true;
-
   /* phase synchronous reconstruction (no loops) */
-  if (PHASE_SYNC_OVERLAP)
+  if (mode == MODE_PHASE_SYNC_OVERLAP)
     {
       for (size_t i = 0; i < frame.freqs.size(); i++)
         {
-          const double SA = 0.25;
+          const double SA = 0.5;
           const double smag = frame.phases[i * 2];
           const double cmag = frame.phases[i * 2 + 1];
           const double phase_delta = 2 * M_PI * frame.freqs[i] / mix_freq;

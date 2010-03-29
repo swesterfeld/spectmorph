@@ -28,15 +28,23 @@ namespace Codec {
 
 class SineDecoder
 {
+public:
+  enum Mode {
+    MODE_PHASE_SYNC_OVERLAP,
+    MODE_TRACKING
+  };
+private:
   double mix_freq;
   size_t frame_size;
   size_t frame_step;
   std::vector<double> synth_fixed_phase, next_synth_fixed_phase;
+  Mode mode;
 public:
-  SineDecoder (double mix_freq, size_t frame_size, size_t frame_step)
+  SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode)
     : mix_freq (mix_freq),
       frame_size (frame_size),
-      frame_step (frame_step)
+      frame_step (frame_step),
+      mode (mode)
   {
   }
   void process (Frame& frame,
