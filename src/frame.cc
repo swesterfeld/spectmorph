@@ -31,7 +31,8 @@ Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
     frame_size (frame_size),
     freqs (audio_block.freqs.begin(), audio_block.freqs.end()),
     phases (audio_block.phases.begin(), audio_block.phases.end()),
-    noise_envelope (audio_block.meaning.begin(), audio_block.meaning.end())
+    noise_envelope (audio_block.meaning.begin(), audio_block.meaning.end()),
+    debug_samples (audio_block.debug_samples)
 {
   decoded_residue.resize (frame_size);
   decoded_sines.resize (frame_size);

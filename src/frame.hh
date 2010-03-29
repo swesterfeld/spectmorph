@@ -36,6 +36,7 @@ public:
   std::vector<double> noise_envelope;
   std::vector<double> decoded_residue;
   std::vector<double> decoded_sines;
+  std::vector<float>  debug_samples;
 };
 
 }
