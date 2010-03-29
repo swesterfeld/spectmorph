@@ -2,3 +2,9 @@ smenc:
 - "perfect" phase estimation
 - transient representation
 - compute peak over nearest minimum in dB
+- move debugging information generated with -d to main file
+
+smplay:
+- add commandline switches allowing to enable/disable noise/sine decoder
+
+implement smstrip
