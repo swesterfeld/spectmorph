@@ -9,8 +9,14 @@ smenc:
 smplay:
 - add commandline switches allowing to enable/disable noise/sine decoder
 
+smlive:
+- implement efficient (IFFT) live decoder
+
 tools:
 - wav2ascii
+
+tests:
+- add test cases
 
 implement smstrip
 
