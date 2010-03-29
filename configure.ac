@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.0.1])
+AC_INIT([spectmorph], [0.0.2])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_PROG_CXX
