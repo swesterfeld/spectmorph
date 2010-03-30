@@ -19,6 +19,7 @@ tests:
 - add test cases
 
 implement smstrip
+lag diagrams of note start
 
 adventure:
 - implement wav->midi
