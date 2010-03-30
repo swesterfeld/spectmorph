@@ -406,17 +406,10 @@ main (int argc, char **argv)
       out[block_size * zeropad + 1] = 0;
       out[1] = 0;
 
-      audio_block.meaning.resize (out.size());
-      std::copy (out.begin(), out.end(), audio_block.meaning.begin()); // <- will be overwritten by noise spectrum later on
+      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
+      audio_block.original_fft.assign (out.begin(), out.end());
+      audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
 
-      audio_block.original_fft.resize (out.size());
-      std::copy (out.begin(), out.end(), audio_block.original_fft.begin());
-      if (options.debug)
-        {
-          audio_block.debug_samples.resize (frame_size);
-          std::copy (debug_samples.begin(), debug_samples.begin() + frame_size, audio_block.debug_samples.begin());
-        }
-      //audio_block.original_fft = *m;
       audio_blocks.push_back (audio_block);
     }
   // Track frequencies step #0: find maximum of all values
