@@ -1,6 +1,6 @@
 AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3
 
-bin_PROGRAMS = smenc smplay smvisualize smextract
+bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
 
 SMHDRS =  frame.hh stwafile.hh noisedecoder.hh sinedecoder.hh stwutils.hh smaudio.hh
 
@@ -17,3 +17,6 @@ smvisualize_LDADD = $(BSE_LIBS) $(GTK_LIBS)
 
 smextract_SOURCES = smextract.cc stwafile.cc frame.cc $(SMHDRS)
 smextract_LDADD = $(BSE_LIBS)
+
+smstrip_SOURCES = smstrip.cc stwafile.cc $(SMHDRS)
+smstrip_LDADD = $(BSE_LIBS)
