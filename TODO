@@ -2,6 +2,7 @@ smenc:
 - "perfect" phase estimation
 - transient representation
 - compute peak over nearest minimum in dB
+- compute peak over local (frame) maximum in dB
 - move debugging information generated with -d to main file
 - normalize noise
 - use averaging to estimate noise
