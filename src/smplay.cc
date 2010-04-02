@@ -50,6 +50,8 @@ struct Options
   String	program_name; /* FIXME: what to do with that */
   bool          verbose;
   bool          loop;
+  bool          noise_enabled;
+  bool          sines_enabled;
   int           rate;
   String        export_wav;
 
@@ -66,6 +68,8 @@ struct Options
 Options::Options () :
   program_name ("stwplay"),
   loop (false),
+  noise_enabled (true),
+  sines_enabled (true),
   rate (44100)
 {
 }
@@ -115,7 +119,6 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
 	{
-          printf ("opt_arg is %s\n", opt_arg);
 	  rate = atoi (opt_arg);
 	}
       else if (check_arg (argc, argv, &i, "--export", &opt_arg) || check_arg (argc, argv, &i, "-x", &opt_arg))
@@ -125,6 +128,14 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--loop") || check_arg (argc, argv, &i, "-l"))
         {
           loop = true;
+        }
+      else if (check_arg (argc, argv, &i, "--no-noise"))
+        {
+          noise_enabled = false;
+        }
+      else if (check_arg (argc, argv, &i, "--no-sines"))
+        {
+          sines_enabled = false;
         }
     }
 
@@ -151,6 +162,8 @@ Options::print_usage ()
   g_printerr (" --version                   print version\n");
   g_printerr (" --verbose                   print verbose information\n");
   g_printerr (" --rate <sampling rate>      set replay rate manually\n");
+  g_printerr (" --no-noise                  disable noise decoder\n");
+  g_printerr (" --no-sines                  disable sine decoder\n");
   g_printerr (" --export <wav filename>     export to wav file\n");
   g_printerr ("\n");
 }
@@ -265,10 +278,14 @@ main (int argc, char **argv)
     {
       Stw::Codec::Frame zero_frame (frame_size);
       Stw::Codec::Frame one_frame (audio.contents[0], frame_size);
-      sine_decoder.process (zero_frame, one_frame, window);
       sample.resize (pos + frame_size);
-      for (size_t i = 0; i < frame_size; i++)
-        sample[pos + i] += zero_frame.decoded_sines[i];
+
+      if (options.sines_enabled)
+        {
+          sine_decoder.process (zero_frame, one_frame, window);
+          for (size_t i = 0; i < frame_size; i++)
+            sample[pos + i] += zero_frame.decoded_sines[i];
+        }
       pos += frame_step;
     }
 
@@ -281,14 +298,20 @@ main (int argc, char **argv)
       Stw::Codec::Frame frame (audio.contents[n4 > loop_point ? loop_point : n4], frame_size);
       Stw::Codec::Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
 
-      noise_decoder.process (frame, window);
-      sine_decoder.process (frame, next_frame, window);
       sample.resize (pos + frame_size);
-      for (size_t i = 0; i < frame_size; i++)
-	{
-	  sample[pos + i] += frame.decoded_sines[i];
-	  sample[pos + i] += frame.decoded_residue[i];
-	}
+
+      if (options.sines_enabled)
+        {
+          sine_decoder.process (frame, next_frame, window);
+          for (size_t i = 0; i < frame_size; i++)
+            sample[pos + i] += frame.decoded_sines[i];
+        }
+      if (options.noise_enabled)
+        {
+          noise_decoder.process (frame, window);
+          for (size_t i = 0; i < frame_size; i++)
+            sample[pos + i] += frame.decoded_residue[i];
+        }
       pos += frame_step;
     }
 

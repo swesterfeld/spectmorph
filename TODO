@@ -7,9 +7,6 @@ smenc:
 - normalize noise
 - use averaging to estimate noise
 
-smplay:
-- add commandline switches allowing to enable/disable noise/sine decoder
-
 smlive:
 - implement efficient (IFFT) live decoder
 
