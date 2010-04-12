@@ -27,7 +27,7 @@ using SpectMorph::AudioBlock;
 using std::vector;
 
 double
-float_vector_delta (const vector<float>& a, const vector<float>& b)
+float_vector_delta (const vector<double>& a, const vector<double>& b)
 {
   assert (a.size() == b.size());
 
@@ -46,7 +46,7 @@ struct TransientModel
 };
 
 void
-transient_scale (const TransientModel& m, const vector<float>& in, vector<float>& out)
+transient_scale (const TransientModel& m, const vector<double>& in, vector<double>& out)
 {
   out.resize (in.size());
 
@@ -69,11 +69,11 @@ transient_scale (const TransientModel& m, const vector<float>& in, vector<float>
 }
 
 void
-optimize_transient_model (TransientModel& m, vector<float>& signal, const vector<float>& desired_signal)
+optimize_transient_model (TransientModel& m, vector<double>& signal, const vector<double>& desired_signal)
 {
   int nomod = 0;
 
-  vector<float> trsignal;
+  vector<double> trsignal;
   while (nomod < 3000)
     {
       transient_scale (m, signal, trsignal);
@@ -103,6 +103,28 @@ optimize_transient_model (TransientModel& m, vector<float>& signal, const vector
       else
         {
           nomod++;
+        }
+    }
+}
+
+static void
+reconstruct (AudioBlock&     audio_block,
+             vector<double>& signal,
+             double          mix_freq)
+{
+  for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
+    {
+      double smag = audio_block.phases[2 * partial];
+      double cmag = audio_block.phases[2 * partial + 1];
+      double f    = audio_block.freqs[partial];
+      double phase = 0;
+
+      // do a phase optimal reconstruction of that partial
+      for (size_t n = 0; n < signal.size(); n++)
+        {
+          phase += f / mix_freq * 2.0 * M_PI;
+          signal[n] += sin (phase) * smag;
+          signal[n] += cos (phase) * cmag;
         }
     }
 }
@@ -179,32 +201,18 @@ main (int argc, char **argv)
     {
       int i = atoi (argv[3]);
       size_t frame_size = audio.contents[i].debug_samples.size();
-      vector<float> sines (frame_size);
-
-      for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
-        {
-          double smag = audio.contents[i].phases[2 * partial];
-          double cmag = audio.contents[i].phases[2 * partial + 1];
-          double f    = audio.contents[i].freqs[partial];
-          double phase = 0;
-
-          // do a phase optimal reconstruction of that partial
-          for (size_t n = 0; n < frame_size; n++)
-            {
-              phase += f / audio.mix_freq * 2.0 * M_PI;
-              sines[n] += sin (phase) * smag;
-              sines[n] += cos (phase) * cmag;
-            }
-        }
-      
+      vector<double> sines (frame_size);
+      reconstruct (audio.contents[i], sines, audio.mix_freq);
+     
       // optimize transient parameter set
-      vector<float> trsines;
+      vector<double> trsines;
       TransientModel m;
       m.start_volume = 1;
       m.end_volume = 1;
       m.start = 0;
       m.end = sines.size();
-      optimize_transient_model (m, sines, audio.contents[i].debug_samples);
+      vector<double> debug_samples (audio.contents[i].debug_samples.begin(), audio.contents[i].debug_samples.end());
+      optimize_transient_model (m, sines, debug_samples);
       transient_scale (m, sines, trsines);
       for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
         {
