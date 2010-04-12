@@ -1,3 +1,6 @@
+autostuff:
+- add liblapack header check
+
 smenc:
 - "perfect" phase estimation
 - transient representation

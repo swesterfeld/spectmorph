@@ -23,6 +23,7 @@
 #include <assert.h>
 
 using Stw::Codec::Frame;
+using SpectMorph::AudioBlock;
 using std::vector;
 
 double
@@ -104,6 +105,11 @@ optimize_transient_model (TransientModel& m, vector<float>& signal, const vector
           nomod++;
         }
     }
+}
+
+vector<double>
+spectrum (AudioBlock& block)
+{
 }
 
 float
