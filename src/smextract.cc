@@ -106,6 +106,12 @@ optimize_transient_model (TransientModel& m, vector<float>& signal, const vector
     }
 }
 
+float
+mag (float re, float im)
+{
+  return sqrt (re * re + im * im);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -238,6 +244,34 @@ main (int argc, char **argv)
         {
           double v = audio.contents[i].debug_samples[n];
           printf ("%zd %f %f %f\n", n, v, trsines[n], v - trsines[n]);
+        }
+    }
+  else if (strcmp (argv[2], "frameparams") == 0)
+    {
+      int i = atoi (argv[3]);
+      for(;;)
+        {
+          double maxm = 0;
+          size_t maxp = 0;
+          for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
+            {
+              double m = mag (audio.contents[i].phases[partial * 2], audio.contents[i].phases[partial * 2 + 1]);
+              if (m > maxm)
+                {
+                  maxm = m;
+                  maxp = partial;
+                }
+            }
+          if (maxm > 0)
+            {
+              printf ("%f Hz: %f\n", audio.contents[i].freqs[maxp], bse_db_from_factor (maxm, -200));
+              audio.contents[i].phases[maxp * 2] = 0;
+              audio.contents[i].phases[maxp * 2 + 1] = 0;
+            }
+          else
+            {
+              break;
+            }
         }
     }
 }
