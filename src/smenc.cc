@@ -386,6 +386,96 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq)
     audio_block.phases[i] = MIo(i, 0);
 }
 
+void
+refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
+{
+  const size_t frame_size = audio_block.debug_samples.size();
+
+  vector<float> sines (frame_size);
+  vector<float> good_freqs;
+  vector<float> good_phases;
+
+  double max_mag;
+  size_t partial = 0;
+  do
+    {
+      max_mag = 0;
+      // search biggest partial
+      for (size_t i = 0; i < audio_block.freqs.size(); i++)
+        {
+          double p_re = audio_block.phases[2 * i];
+          double p_im = audio_block.phases[2 * i + 1];
+          double p_mag = sqrt (p_re * p_re + p_im * p_im);
+          if (p_mag > max_mag)
+            {
+              partial = i;
+              max_mag = p_mag;
+            }
+        }
+        // compute reconstruction of that partial
+        if (max_mag > 0)
+          {
+            // remove partial, so we only do each partial once
+            double smag = audio_block.phases[2 * partial];
+            double cmag = audio_block.phases[2 * partial + 1];
+            double f = audio_block.freqs[partial];
+
+            audio_block.phases[2 * partial] = 0;
+            audio_block.phases[2 * partial + 1] = 0;
+
+#if 0
+            double phase;
+            // determine "perfect" phase and magnitude instead of using interpolated fft phase
+            smag = 0;
+            cmag = 0;
+            double snorm = 0, cnorm = 0;
+            for (size_t n = 0; n < frame_size; n++)
+              {
+                double v = audio_block.debug_samples[n]; // - sines[n];
+                phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
+                smag += sin (phase) * v;
+                cmag += cos (phase) * v;
+                snorm += sin (phase) * sin (phase);
+                cnorm += cos (phase) * cos (phase);
+              }
+            smag /= snorm;
+            cmag /= cnorm;
+
+            double magnitude = sqrt (smag * smag + cmag * cmag);
+            phase = atan2 (smag, cmag);
+            phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
+            smag = sin (phase) * magnitude;
+            cmag = cos (phase) * magnitude;
+#endif
+
+            vector<float> old_sines = sines;
+            double delta = float_vector_delta (sines, audio_block.debug_samples);
+            double phase = 0;
+            for (size_t n = 0; n < frame_size; n++)
+              {
+                phase += f / mix_freq * 2.0 * M_PI;
+                sines[n] += sin (phase) * smag;
+                sines[n] += cos (phase) * cmag;
+                if (frame == 20)
+                  printf ("%d %f %f\n", partial, sines[n], audio_block.debug_samples[n]);
+              }
+            double new_delta = float_vector_delta (sines, audio_block.debug_samples);
+            if (new_delta > delta)      // approximation is _not_ better
+              sines = old_sines;
+            else
+              {
+                good_freqs.push_back (f);
+                good_phases.push_back (smag);
+                good_phases.push_back (cmag);
+              }
+          }
+      }
+  while (max_mag > 0);
+
+  audio_block.freqs = good_freqs;
+  audio_block.phases = good_phases;
+}
+
 struct EncoderParams
 {
   float mix_freq;       /* mix_freq of the original audio file */
@@ -550,54 +640,61 @@ main (int argc, char **argv)
               /* need [] operater in fblock */
               double mag2 = bse_db_from_factor (mag_values[d / 2] / max_mag, -100);
               debug ("dbspectrum:%zd %f\n", n, mag2);
-              if (mag2 > -60)
+              if (mag2 > -90)
                 {
-                  double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
-                  double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
-                  //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
+                  size_t ds, de;
+                  for (ds = d / 2 - 1; ds > 0 && mag_values[ds] < mag_values[ds + 1]; ds--);
+                  for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] < mag_values[de + 1]; de++);
+                  if (de - ds > 10)
+                    {
+                      printf ("%d %f\n", de-ds, mag2);
+                      double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
+                      double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
+                      //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
 
-                  /* a*x^2 + b*x + c */
-                  double a = (mag1 + mag3 - 2*mag2) / 2;
-                  double b = mag3 - mag2 - a;
-                  double c = mag2;
-                  //printf ("f%d(x) = %f * x * x + %f * x + %f\n", n, a, b, c);
-                  double x_max = -b / (2 * a);
-                  //printf ("x_max%d=%f\n", n, x_max);
-                  double tfreq = (d / 2 + x_max) * mix_freq / (block_size * zeropad);
+                      /* a*x^2 + b*x + c */
+                      double a = (mag1 + mag3 - 2*mag2) / 2;
+                      double b = mag3 - mag2 - a;
+                      double c = mag2;
+                      //printf ("f%d(x) = %f * x * x + %f * x + %f\n", n, a, b, c);
+                      double x_max = -b / (2 * a);
+                      //printf ("x_max%d=%f\n", n, x_max);
+                      double tfreq = (d / 2 + x_max) * mix_freq / (block_size * zeropad);
 
-                  double peak_mag_db = a * x_max * x_max + b * x_max + c;
-                  double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
+                      double peak_mag_db = a * x_max * x_max + b * x_max + c;
+                      double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
 
-                  // use the interpolation formula for the complex values to find the phase
-                  std::complex<double> c1 (audio_blocks[n].meaning[d-2], audio_blocks[n].meaning[d-1]);
-                  std::complex<double> c2 (audio_blocks[n].meaning[d], audio_blocks[n].meaning[d+1]);
-                  std::complex<double> c3 (audio_blocks[n].meaning[d+2], audio_blocks[n].meaning[d+3]);
-                  std::complex<double> ca = (c1 + c3 - 2.0*c2) / 2.0;
-                  std::complex<double> cb = c3 - c2 - ca;
-                  std::complex<double> cc = c2;
-                  std::complex<double> interp_c = ca * x_max * x_max + cb * x_max + cc;
-/*
-                  if (mag2 > -20)
-                    printf ("%f %f %f %f %f\n", phase, last_phase[d], phase_diff, phase_diff * mix_freq / (block_size * zeropad) * overlap, tfreq);
-*/
-                  Tracksel tracksel;
-                  tracksel.frame = n;
-                  tracksel.d = d;
-                  tracksel.freq = tfreq;
-                  tracksel.mag = peak_mag / frame_size * zeropad;
-                  tracksel.mag2 = mag2;
-                  tracksel.phasea = interp_c.real() / frame_size * zeropad;
-                  tracksel.phaseb = interp_c.imag() / frame_size * zeropad;
-                  tracksel.next = 0;
-                  tracksel.prev = 0;
+                      // use the interpolation formula for the complex values to find the phase
+                      std::complex<double> c1 (audio_blocks[n].meaning[d-2], audio_blocks[n].meaning[d-1]);
+                      std::complex<double> c2 (audio_blocks[n].meaning[d], audio_blocks[n].meaning[d+1]);
+                      std::complex<double> c3 (audio_blocks[n].meaning[d+2], audio_blocks[n].meaning[d+3]);
+                      std::complex<double> ca = (c1 + c3 - 2.0*c2) / 2.0;
+                      std::complex<double> cb = c3 - c2 - ca;
+                      std::complex<double> cc = c2;
+                      std::complex<double> interp_c = ca * x_max * x_max + cb * x_max + cc;
+    /*
+                      if (mag2 > -20)
+                        printf ("%f %f %f %f %f\n", phase, last_phase[d], phase_diff, phase_diff * mix_freq / (block_size * zeropad) * overlap, tfreq);
+    */
+                      Tracksel tracksel;
+                      tracksel.frame = n;
+                      tracksel.d = d;
+                      tracksel.freq = tfreq;
+                      tracksel.mag = peak_mag / frame_size * zeropad;
+                      tracksel.mag2 = mag2;
+                      tracksel.phasea = interp_c.real() / frame_size * zeropad;
+                      tracksel.phaseb = interp_c.imag() / frame_size * zeropad;
+                      tracksel.next = 0;
+                      tracksel.prev = 0;
 
-                  double dummy_freq;
-                  tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
-                  // FIXME: need a different criterion here
-                  // mag2 > -30 doesn't track all partials
-                  // mag2 > -60 tracks lots of junk, too
-                  if ((mag2 > -60 || tracksel.is_harmonic) && tracksel.freq > 10)
-                    frame_tracksels[n].push_back (tracksel);
+                      double dummy_freq;
+                      tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
+                      // FIXME: need a different criterion here
+                      // mag2 > -30 doesn't track all partials
+                      // mag2 > -60 tracks lots of junk, too
+                      if ((mag2 > -90 || tracksel.is_harmonic) && tracksel.freq > 10)
+                        frame_tracksels[n].push_back (tracksel);
+                    }
                 }
 #if 0
               last_phase[d] = phase;
@@ -660,7 +757,7 @@ main (int argc, char **argv)
 		    is_harmonic = true;
 		  processed_tracksel[t] = true;
 		}
-	      if (biggest_mag > -45 || is_harmonic)
+	      if (biggest_mag > -90 || is_harmonic)
 		{
 		  for (Tracksel *t = &(*i); t->next; t = t->next)
 		    {
@@ -708,6 +805,7 @@ main (int argc, char **argv)
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
+      //refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
       if (options.optimize)
         {
           refine_sine_params (audio_blocks[frame], mix_freq);
