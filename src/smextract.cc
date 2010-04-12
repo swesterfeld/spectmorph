@@ -21,13 +21,15 @@
 #include "stwafile.hh"
 #include "frame.hh"
 #include <assert.h>
+#include <bse/bsemathsignal.h>
+#include <bse/gslfft.h>
 
 using Stw::Codec::Frame;
 using SpectMorph::AudioBlock;
 using std::vector;
 
 double
-float_vector_delta (const vector<double>& a, const vector<double>& b)
+vector_delta (const vector<double>& a, const vector<double>& b)
 {
   assert (a.size() == b.size());
 
@@ -77,7 +79,7 @@ optimize_transient_model (TransientModel& m, vector<double>& signal, const vecto
   while (nomod < 3000)
     {
       transient_scale (m, signal, trsignal);
-      double m_delta = float_vector_delta (trsignal, desired_signal);
+      double m_delta = vector_delta (trsignal, desired_signal);
 
       TransientModel new_m = m;
       new_m.start += g_random_int_range (-5, 5);
@@ -93,7 +95,7 @@ optimize_transient_model (TransientModel& m, vector<double>& signal, const vecto
         new_m.start = 0;
       transient_scale (new_m, signal, trsignal);
 
-      double new_m_delta = float_vector_delta (trsignal, desired_signal);
+      double new_m_delta = vector_delta (trsignal, desired_signal);
 
       if (new_m_delta < m_delta)
         {
@@ -177,12 +179,44 @@ main (int argc, char **argv)
     {
       int i = atoi (argv[3]);
       vector<double> spectrum;
+      vector<double> sines (frame_size);
 
+      reconstruct (audio.contents[i], sines, audio.mix_freq);
+
+      /* compute block size from frame size (smallest 2^k value >= frame_size) */
+      uint64 block_size = 1;
+      while (block_size < frame_size)
+        block_size *= 2;
+
+      // construct window
+      vector<float> window (block_size);
+      for (guint i = 0; i < window.size(); i++)
+        {
+          if (i < frame_size)
+            window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+          else
+            window[i] = 0;
+        }
+
+      // apply window to reconstructed signal
+      sines.resize (block_size);
+      for (guint i = 0; i < sines.size(); i++)
+        sines[i] *= window[i];
+
+      // zeropad
+      const int    zeropad  = 4;
+      sines.resize (block_size * zeropad);
+      vector<double> out (block_size * zeropad);
+
+      gsl_power2_fftar (block_size * zeropad, &sines[0], &out[0]);
+
+      vector<double> sines_spectrum;
       for (size_t n = 0; n < audio.contents[i].original_fft.size(); n += 2)
         {
           double re = audio.contents[i].original_fft[n];
           double im = audio.contents[i].original_fft[n + 1];
           spectrum.push_back (sqrt (re * re + im * im));
+          sines_spectrum.push_back (mag (out[n], out[n+1]));
         }
       for (size_t n = 0; n < spectrum.size(); n++)
         {
@@ -194,7 +228,7 @@ main (int argc, char **argv)
               if (r < n)
                 s = std::max (s, spectrum[n - r]);
             }
-          printf ("%f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s);
+          printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
         }
     }
   else if (strcmp (argv[2], "frame") == 0)
