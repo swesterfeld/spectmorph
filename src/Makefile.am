@@ -1,4 +1,4 @@
-AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3
+AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3 -I/usr/local/boost-numeric-bindings/include/boost-numeric-bindings
 
 bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
 
