@@ -174,62 +174,22 @@ main (int argc, char **argv)
       int i = atoi (argv[3]);
       size_t frame_size = audio.contents[i].debug_samples.size();
       vector<float> sines (frame_size);
-      double max_mag;
-      do
-        {
-          max_mag = 0;
 
-          //  search for the partial with the highest magnitude
-          size_t max_partial = 0;
-          for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
-            {
-              double p_re = audio.contents[i].phases[2 * partial];
-              double p_im = audio.contents[i].phases[2 * partial + 1];
-              double p_mag = sqrt (p_re * p_re + p_im * p_im);
-              if (p_mag > max_mag)
-                {
-                  max_partial = partial;
-                  max_mag = p_mag;
-                }
-            }
+      for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
+        {
+          double smag = audio.contents[i].phases[2 * partial];
+          double cmag = audio.contents[i].phases[2 * partial + 1];
+          double f    = audio.contents[i].freqs[partial];
+          double phase = 0;
 
           // do a phase optimal reconstruction of that partial
-          if (max_mag > 0)
+          for (size_t n = 0; n < frame_size; n++)
             {
-              size_t partial = max_partial;
-              double f = audio.contents[i].freqs[partial];
-              double mag = audio.contents[i].phases[2 * partial];
-
-              // remove partial, so we only do each partial once
-              audio.contents[i].phases[2 * partial] = 0;
-              audio.contents[i].phases[2 * partial + 1] = 0;
-
-              double phase = 0;
-              double smag = 0, cmag = 0;
-              for (size_t n = 0; n < frame_size; n++)
-                {
-                  double v = audio.contents[i].debug_samples[n];
-                  phase += f / audio.mix_freq * 2.0 * M_PI;
-                  smag += sin (phase) * v;
-                  cmag += cos (phase) * v;
-                }
-              smag *= 2.0 / frame_size;
-              cmag *= 2.0 / frame_size;
-              phase = 0;
-              vector<float> old_sines = sines;
-              double delta = float_vector_delta (sines, audio.contents[i].debug_samples);
-              for (size_t n = 0; n < frame_size; n++)
-                {
-                  phase += f / audio.mix_freq * 2.0 * M_PI;
-                  sines[n] += sin (phase) * smag;
-                  sines[n] += cos (phase) * cmag;
-                }
-              double new_delta = float_vector_delta (sines, audio.contents[i].debug_samples);
-              if (new_delta > delta)      // approximation is _not_ better
-                sines = old_sines;
+              phase += f / audio.mix_freq * 2.0 * M_PI;
+              sines[n] += sin (phase) * smag;
+              sines[n] += cos (phase) * cmag;
             }
         }
-      while (max_mag > 0);
       
       // optimize transient parameter set
       vector<float> trsines;
