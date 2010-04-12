@@ -27,6 +27,14 @@
 #include <assert.h>
 #include <complex>
 
+#include <boost/numeric/ublas/vector.hpp>
+#include <boost/numeric/ublas/vector_proxy.hpp>
+#include <boost/numeric/ublas/matrix.hpp>
+#include <boost/numeric/ublas/triangular.hpp>
+#include <boost/numeric/ublas/lu.hpp>
+#include <boost/numeric/ublas/io.hpp>
+#include <boost/numeric/bindings/lapack/lapack.hpp>
+
 #include "smaudio.hh"
 #include "stwafile.hh"
 
@@ -42,6 +50,34 @@ using namespace Birnet;
 
 using SpectMorph::AudioBlock;
 
+namespace ublas = boost::numeric::ublas;
+using ublas::matrix;
+
+/* Matrix inversion routine.
+  Uses lu_factorize and lu_substitute in uBLAS to invert a matrix */
+template<class T>
+bool invert_matrix (const ublas::matrix<T>& input, ublas::matrix<T>& inverse)
+{
+  using namespace boost::numeric::ublas;
+  typedef permutation_matrix<std::size_t> pmatrix;
+  // create a working copy of the input
+  matrix<T> A(input);
+  // create a permutation matrix for the LU-factorization
+  pmatrix pm(A.size1());
+
+  // perform LU-factorization
+  int res = lu_factorize(A,pm);
+  if( res != 0 ) return false;
+
+  // create identity matrix of "inverse"
+  inverse.assign(ublas::identity_matrix<T>(A.size1()));
+
+  // backsubstitute to get the inverse
+  lu_substitute(A, pm, inverse);
+
+  return true;
+}
+
 float
 freqFromNote (float note)
 {
@@ -54,6 +90,7 @@ struct Options
   bool          verbose;
   uint          quantize_entries;
   float         fundamental_freq;
+  bool          optimize;
   FILE         *debug;
 
   Options ();
@@ -70,6 +107,7 @@ Options::Options ()
   debug = 0;
   quantize_entries = 0;
   verbose = false;
+  optimize = false;
 }
 
 void
@@ -118,6 +156,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           fundamental_freq = freqFromNote (atoi (opt_arg));
+        }
+      else if (check_arg (argc, argv, &i, "-O"))
+        {
+          optimize = true;
         }
     }
 
@@ -275,6 +317,73 @@ xnoise_envelope_to_spectrum (const vector<double>& envelope,
       spectrum[d+1] = 0;
       debug ("noiseint %f\n", spectrum[d]);
     }
+}
+
+void
+refine_sine_params (AudioBlock& audio_block, double mix_freq)
+{
+  const size_t freq_count = audio_block.freqs.size();
+  const size_t signal_size = audio_block.debug_samples.size();
+
+  if (freq_count == 0)
+    return;
+
+  // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
+  matrix<double, ublas::column_major> A (signal_size, freq_count * 2); 
+
+  boost::numeric::ublas::vector<double> S (freq_count * 2);                    // output: <not used> N element vector
+  matrix<double, ublas::column_major> U (signal_size, freq_count * 2);         // output: M x N matrix containing orthogonal base of the vector subspace, consisting of N M-dimensional vectors
+  matrix<double, ublas::column_major> Vt (freq_count * 2,freq_count * 2);      // output: <not used> N x N matrix
+
+  for (int i = 0; i < freq_count; i++)
+    {
+      for (size_t x = 0; x < signal_size; x++)
+        {
+          A(x, i * 2) = sin (x / mix_freq * audio_block.freqs[i] * 2 * M_PI);
+          A(x, i * 2 + 1) = cos (x / mix_freq * audio_block.freqs[i] * 2 * M_PI);
+        }
+    }
+
+  // compute SVD to obtain an orthogonal base
+
+  // A is modified during SVD, so we copy A before doing it
+  matrix<double, ublas::column_major> Acopy = A;
+  boost::numeric::bindings::lapack::gesdd (Acopy, S, U, Vt); 
+
+  // compute coordinates of the signal in vector space of orthogonal base
+  matrix<double> ortho (freq_count * 2, 1);
+  for (int a = 0; a < freq_count * 2; a++)
+    {
+      double d = 0;
+      for (size_t x = 0; x < signal_size; x++)
+        d += U(x,a) * audio_block.debug_samples[x]; // compute dot product
+      ortho (a,0) = d;
+    }
+
+  // fill M with the transformation from sine/cosine base to orthogonal base
+  matrix<double> M (freq_count * 2, freq_count * 2);
+  for (int a = 0; a < freq_count * 2; a++)
+    {
+      for (int i = 0; i < freq_count * 2; i++)
+        {
+          double d = 0;
+          for (size_t x = 0; x < signal_size; x++)
+            d += U(x,i) * A(x,a);                   // compute dot product
+          M(i,a) = d;
+        }
+    }
+
+  // invert matrix to get the transformation from orthogonal base to sine/cosine base
+  matrix<double> MI (freq_count * 2, freq_count * 2);
+  invert_matrix (M, MI);
+
+  // transform orthogonal coordinates into sine/cosine coordinates
+  matrix<double> MIo = prod (MI, ortho);
+
+  // store improved phase/amplitude information
+  assert (audio_block.phases.size() == freq_count * 2);
+  for (int i = 0; i < freq_count * 2; i++)
+    audio_block.phases[i] = MIo(i, 0);
 }
 
 struct EncoderParams
@@ -599,6 +708,13 @@ main (int argc, char **argv)
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
+      if (options.optimize)
+        {
+          refine_sine_params (audio_blocks[frame], mix_freq);
+          printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
+          fflush (stdout);
+        }
+#if 0
       vector<float> sines (frame_size);
       vector<float> good_freqs;
       vector<float> good_phases;
@@ -608,7 +724,6 @@ main (int argc, char **argv)
       do
         {
           max_mag = 0;
-
           // search biggest partial
           for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
             {
@@ -632,23 +747,32 @@ main (int argc, char **argv)
               audio_blocks[frame].phases[2 * partial] = 0;
               audio_blocks[frame].phases[2 * partial + 1] = 0;
 
-#if 0
-              // determine "perfect" phase and magnitude instead of using interpolated fft phase
               double phase = 0;
-              double smag = 0, cmag = 0;
+              // determine "perfect" phase and magnitude instead of using interpolated fft phase
+              smag = 0;
+              cmag = 0;
+              double snorm = 0, cnorm = 0;
               for (size_t n = 0; n < frame_size; n++)
                 {
                   double v = audio_blocks[frame].debug_samples[n];
-                  phase += f / mix_freq * 2.0 * M_PI;
-                  smag += sin (phase) * v * window[n];
-                  cmag += cos (phase) * v * window[n];
+                  phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
+                  smag += sin (phase) * v;
+                  cmag += cos (phase) * v;
+                  snorm += sin (phase) * sin (phase);
+                  cnorm += cos (phase) * cos (phase);
                 }
-              smag *= 4.0 / frame_size;
-              cmag *= 4.0 / frame_size;
-#endif
+              smag /= snorm;
+              cmag /= cnorm;
+
+              double magnitude = sqrt (smag * smag + cmag * cmag);
+              phase = atan2 (smag, cmag);
+              phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
+              smag = sin (phase) * magnitude;
+              cmag = cos (phase) * magnitude;
+
               vector<float> old_sines = sines;
               double delta = float_vector_delta (sines, audio_blocks[frame].debug_samples);
-              double phase = 0;
+              phase = 0;
               for (size_t n = 0; n < frame_size; n++)
                 {
                   phase += f / mix_freq * 2.0 * M_PI;
@@ -670,6 +794,7 @@ main (int argc, char **argv)
 
       audio_blocks[frame].freqs = good_freqs;
       audio_blocks[frame].phases = good_phases;
+#endif
 
       fill (in.begin(), in.end(), 0);
 
