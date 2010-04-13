@@ -216,10 +216,8 @@ STWAFile::load (const string& file_name,
   string section;
 
   if (!ifile.open_ok())
-    {
-      fprintf (stderr, "error: can't open output file '%s'.\n", file_name.c_str());
-      exit (1);
-    }
+    return BSE_ERROR_FILE_NOT_FOUND;
+
   while (ifile.event() != IFile::END_OF_FILE)
     {
       if (ifile.event() == IFile::BEGIN_SECTION)
