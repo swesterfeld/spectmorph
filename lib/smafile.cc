@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "stwafile.hh"
+#include "smafile.hh"
 #include "smaudio.hh"
 #include <fcntl.h>
 #include <errno.h>

@@ -25,7 +25,7 @@
 #include <bse/bseblockutils.hh>
 #include <sfi/sfiparams.h>
 #include "smaudio.hh"
-#include "stwafile.hh"
+#include "smafile.hh"
 #include "frame.hh"
 #include <fcntl.h>
 #include <errno.h>

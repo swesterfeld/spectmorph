@@ -2,6 +2,7 @@ AC_INIT([spectmorph], [0.0.2])
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_PROG_CXX
+AC_PROG_LIBTOOL
 
 dnl
 dnl Define package requirements.
@@ -48,5 +49,5 @@ AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
 
-AC_CONFIG_FILES([Makefile src/Makefile tools/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile])
 AC_OUTPUT

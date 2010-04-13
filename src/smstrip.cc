@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include "stwafile.hh"
+#include "smafile.hh"
 
 int
 main (int argc, char **argv)

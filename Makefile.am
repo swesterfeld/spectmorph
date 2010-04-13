@@ -1,1 +1,1 @@
-SUBDIRS = src tools
+SUBDIRS = lib src tools

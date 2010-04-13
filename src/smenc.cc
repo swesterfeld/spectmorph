@@ -36,7 +36,7 @@
 #include <boost/numeric/bindings/lapack/lapack.hpp>
 
 #include "smaudio.hh"
-#include "stwafile.hh"
+#include "smafile.hh"
 
 #define STWENC_VERSION "0.0.1"
 

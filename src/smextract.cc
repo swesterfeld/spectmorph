@@ -18,7 +18,7 @@
 #include <vector>
 #include <stdio.h>
 #include <bse/bsemain.h>
-#include "stwafile.hh"
+#include "smafile.hh"
 #include "frame.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>

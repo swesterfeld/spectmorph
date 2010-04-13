@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "smaudio.hh"
-#include "stwafile.hh"
+#include "smafile.hh"
 
 using std::vector;
 
