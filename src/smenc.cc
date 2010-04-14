@@ -190,13 +190,6 @@ Options::print_usage ()
   g_printerr ("\n");
 }
 
-vector< SpectMorph::AudioBlock > audio_blocks;
-vector< vector<double> > codebook;
-vector< vector<double> > codebook_centroid;
-vector< int > codebook_usage (1);
-size_t biggest_usage = 0;
-size_t biggest_usage_k = -1;
-
 void debug (const char *dbg, ...) G_GNUC_PRINTF (1, 2);
 
 void
@@ -575,6 +568,7 @@ main (int argc, char **argv)
   vector<float> window (block.size());
   vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
   vector<double> last_phase (block_size * zeropad + 2);
+  vector<AudioBlock> audio_blocks;
 
   for (guint i = 0; i < window.size(); i++)
     {
