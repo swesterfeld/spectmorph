@@ -124,9 +124,9 @@ reconstruct (AudioBlock&     audio_block,
       // do a phase optimal reconstruction of that partial
       for (size_t n = 0; n < signal.size(); n++)
         {
-          phase += f / mix_freq * 2.0 * M_PI;
           signal[n] += sin (phase) * smag;
           signal[n] += cos (phase) * cmag;
+          phase += f / mix_freq * 2.0 * M_PI;
         }
     }
 }
