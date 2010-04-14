@@ -49,5 +49,5 @@ AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
 
-AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile])
 AC_OUTPUT

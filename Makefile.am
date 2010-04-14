@@ -1,1 +1,1 @@
-SUBDIRS = lib src tools
+SUBDIRS = lib src tools python
