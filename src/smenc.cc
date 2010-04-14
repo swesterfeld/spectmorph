@@ -414,7 +414,6 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
             audio_block.phases[2 * partial] = 0;
             audio_block.phases[2 * partial + 1] = 0;
 
-#if 0
             double phase;
             // determine "perfect" phase and magnitude instead of using interpolated fft phase
             smag = 0;
@@ -422,7 +421,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
             double snorm = 0, cnorm = 0;
             for (size_t n = 0; n < frame_size; n++)
               {
-                double v = audio_block.debug_samples[n]; // - sines[n];
+                double v = audio_block.debug_samples[n] - sines[n];
                 phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
                 smag += sin (phase) * v;
                 cmag += cos (phase) * v;
@@ -437,18 +436,17 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
             phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
             smag = sin (phase) * magnitude;
             cmag = cos (phase) * magnitude;
-#endif
 
             vector<float> old_sines = sines;
             double delta = float_vector_delta (sines, audio_block.debug_samples);
-            double phase = 0;
+            phase = 0;
             for (size_t n = 0; n < frame_size; n++)
               {
-                phase += f / mix_freq * 2.0 * M_PI;
                 sines[n] += sin (phase) * smag;
                 sines[n] += cos (phase) * cmag;
                 if (frame == 20)
                   printf ("%d %f %f\n", partial, sines[n], audio_block.debug_samples[n]);
+                phase += f / mix_freq * 2.0 * M_PI;
               }
             double new_delta = float_vector_delta (sines, audio_block.debug_samples);
             if (new_delta > delta)      // approximation is _not_ better
@@ -808,7 +806,7 @@ main (int argc, char **argv)
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      //refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
+      refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
       if (options.optimize)
         {
           refine_sine_params (audio_blocks[frame], mix_freq);
