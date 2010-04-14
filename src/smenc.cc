@@ -190,8 +190,6 @@ Options::print_usage ()
   g_printerr ("\n");
 }
 
-const uint64   n_dimensions = 7;
-
 vector< SpectMorph::AudioBlock > audio_blocks;
 vector< vector<double> > codebook;
 vector< vector<double> > codebook_centroid;
@@ -474,6 +472,17 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
 
   audio_block.freqs = good_freqs;
   audio_block.phases = good_phases;
+}
+
+static void
+remove_small_partials (AudioBlock& audio_block)
+{
+  /*
+   * this function mainly serves to eliminate side peaks introduced by windowing
+   * since these side peaks are typically much smaller than the main peak, we can
+   * get rid of them by comparing peaks to the nearest peak, and removing them
+   * if the nearest peak is much larger
+   */
 }
 
 struct EncoderParams
@@ -812,6 +821,7 @@ main (int argc, char **argv)
           printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
           fflush (stdout);
         }
+      remove_small_partials (audio_blocks[frame]);
 #if 0
       vector<float> sines (frame_size);
       vector<float> good_freqs;
