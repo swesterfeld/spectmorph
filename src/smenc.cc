@@ -444,8 +444,6 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
               {
                 sines[n] += sin (phase) * smag;
                 sines[n] += cos (phase) * cmag;
-                if (frame == 20)
-                  printf ("%d %f %f\n", partial, sines[n], audio_block.debug_samples[n]);
                 phase += f / mix_freq * 2.0 * M_PI;
               }
             double new_delta = float_vector_delta (sines, audio_block.debug_samples);
@@ -645,10 +643,9 @@ main (int argc, char **argv)
                 {
                   size_t ds, de;
                   for (ds = d / 2 - 1; ds > 0 && mag_values[ds] < mag_values[ds + 1]; ds--);
-                  for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] < mag_values[de + 1]; de++);
-                  if (de - ds > 10)
+                  for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] > mag_values[de + 1]; de++);
+                  if (de - ds > 16)
                     {
-                      printf ("%d %f\n", de-ds, mag2);
                       double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
                       double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
                       //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
