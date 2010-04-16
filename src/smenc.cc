@@ -487,6 +487,41 @@ remove_small_partials (AudioBlock& audio_block)
    * get rid of them by comparing peaks to the nearest peak, and removing them
    * if the nearest peak is much larger
    */
+  vector<double> dbmags;
+  for (vector<float>::iterator pi = audio_block.phases.begin(); pi != audio_block.phases.end(); pi += 2)
+    dbmags.push_back (bse_db_from_factor (magnitude (pi), -200));
+
+  vector<bool> remove (dbmags.size());
+
+  for (size_t i = 0; i < dbmags.size(); i++)
+    {
+      for (size_t j = 0; j < dbmags.size(); j++)
+        {
+          if (i != j)
+            {
+              double octaves = log (abs (audio_block.freqs[i] - audio_block.freqs[j])) / log (2);
+              double mask = -30 - 15 * octaves; /* theoretical values -31 and -18 */
+              if (dbmags[j] < dbmags[i] + mask)
+                ;
+                // remove[j] = true;
+            }
+        }
+    }
+
+  vector<float> good_freqs;
+  vector<float> good_phases;
+
+  for (size_t i = 0; i < dbmags.size(); i++)
+    {
+      if (!remove[i])
+        {
+          good_freqs.push_back (audio_block.freqs[i]);
+          good_phases.push_back (audio_block.phases[i * 2]);
+          good_phases.push_back (audio_block.phases[i * 2 + 1]);
+        }
+    }
+  audio_block.freqs = good_freqs;
+  audio_block.phases = good_phases;
 }
 
 struct EncoderParams
@@ -496,6 +531,33 @@ struct EncoderParams
   float frame_size_ms;  /* size of one analysis frame */
   int   zeropad;        /* lower bound for zero padding during analysis */
 };
+
+void
+wintrans (const vector<float>& window)
+{
+  vector<double> in (window.begin(), window.end());
+  vector<double> out;
+  const int zpad = 4;
+
+  in.resize (in.size() * 4);
+  out.resize (in.size());
+
+  double amp = 0;
+  for (size_t i = 0; i < in.size(); i++)
+    amp += in[i];
+
+  for (size_t i = 0; i < in.size(); i++)
+    in[i] /= amp;
+
+  gsl_power2_fftar (in.size(), &in[0], &out[0]);
+  for (int i = 0; i < out.size(); i += 2)
+    {
+      double re = out[i];
+      double im = out[i + 1];
+      double mag = sqrt (re * re + im * im);
+      printf ("%d %g\n", i / 2, mag);
+    }
+}
 
 int
 main (int argc, char **argv)
@@ -598,6 +660,8 @@ main (int argc, char **argv)
     }
   fprintf (stderr, "block_size = %lld\n", block_size);
 
+  //wintrans (window);
+
   for (uint64 pos = 0; pos < n_values; pos += frame_step)
     {
       AudioBlock audio_block;
@@ -659,7 +723,7 @@ main (int argc, char **argv)
                   size_t ds, de;
                   for (ds = d / 2 - 1; ds > 0 && mag_values[ds] < mag_values[ds + 1]; ds--);
                   for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] > mag_values[de + 1]; de++);
-                  if (de - ds > 16)
+                  if (de - ds > 12)
                     {
                       double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
                       double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
