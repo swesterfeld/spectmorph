@@ -329,7 +329,7 @@ print_matrix (const string& name, const matrix<X,Y>& A)
 
 // find best fit of amplitudes / phases to the observed signal
 void
-refine_sine_params (AudioBlock& audio_block, double mix_freq)
+refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float>& window)
 {
   const size_t freq_count = audio_block.freqs.size();
   const size_t signal_size = audio_block.debug_samples.size();
@@ -340,24 +340,29 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq)
   // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
   matrix<double, ublas::column_major> A (signal_size, freq_count * 2); 
 
-  boost::numeric::ublas::vector<double> S (freq_count * 2);                    // output: <not used> N element vector
+  boost::numeric::ublas::vector<double> S (freq_count * 2);                    // output: N element vector containing singular values
   matrix<double, ublas::column_major> U (signal_size, freq_count * 2);         // output: M x N matrix containing orthogonal base of the vector subspace, consisting of N M-dimensional vectors
-  matrix<double, ublas::column_major> Vt (freq_count * 2,freq_count * 2);      // output: <not used> N x N matrix
+  matrix<double, ublas::column_major> Vt (freq_count * 2,freq_count * 2);      // output: N x N matrix
 
   for (int i = 0; i < freq_count; i++)
     {
+      double phase = 0;
+      const double delta_phase = audio_block.freqs[i] * 2 * M_PI / mix_freq;
+
       for (size_t x = 0; x < signal_size; x++)
         {
-          A(x, i * 2) = sin (x / mix_freq * audio_block.freqs[i] * 2 * M_PI);
-          A(x, i * 2 + 1) = cos (x / mix_freq * audio_block.freqs[i] * 2 * M_PI);
+          double s, c;
+          sincos (phase, &s, &c);
+          A(x, i * 2) = s * window[x];
+          A(x, i * 2 + 1) = c * window[x];
+          phase += delta_phase;
         }
     }
 
   // compute SVD to obtain an orthogonal base
 
-  // A is modified during SVD, so we copy A before doing it
-  matrix<double, ublas::column_major> Acopy = A;
-  boost::numeric::bindings::lapack::gesdd (Acopy, S, U, Vt); 
+  // A is modified during SVD; don't use it afterwards
+  boost::numeric::bindings::lapack::gesdd (A, S, U, Vt);
 
   // compute coordinates of the signal in vector space of orthogonal base
   matrix<double> ortho (freq_count * 2, 1);
@@ -365,7 +370,7 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq)
     {
       double d = 0;
       for (size_t x = 0; x < signal_size; x++)
-        d += U(x,a) * audio_block.debug_samples[x]; // compute dot product
+        d += U(x,a) * audio_block.debug_samples[x] * window[x]; // compute dot product
       ortho (a,0) = d;
     }
 
@@ -816,7 +821,7 @@ main (int argc, char **argv)
       refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
       if (options.optimize)
         {
-          refine_sine_params (audio_blocks[frame], mix_freq);
+          refine_sine_params (audio_blocks[frame], mix_freq, window);
           printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
           fflush (stdout);
         }
