@@ -310,6 +310,24 @@ xnoise_envelope_to_spectrum (const vector<double>& envelope,
     }
 }
 
+template<class X, class Y>
+void
+print_matrix (const string& name, const matrix<X,Y>& A)
+{
+  printf ("%s = {\n", name.c_str());
+  for (size_t i = 0; i < A.size1(); i++)
+    {
+      printf ("  ");
+      for (size_t j = 0; j < A.size2(); j++)
+        {
+          printf ("%+2.8f ", A(i,j));
+        }
+      printf ("\n");
+    }
+  printf ("}\n");
+}
+
+// find best fit of amplitudes / phases to the observed signal
 void
 refine_sine_params (AudioBlock& audio_block, double mix_freq)
 {
@@ -351,22 +369,14 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq)
       ortho (a,0) = d;
     }
 
-  // fill M with the transformation from sine/cosine base to orthogonal base
-  matrix<double> M (freq_count * 2, freq_count * 2);
-  for (int a = 0; a < freq_count * 2; a++)
+  // calculate matrix MI which maps coordinates from orthogonal base to sine/cosine coordinates
+  matrix<double> WVt = Vt;
+  for (int s = 0; s < freq_count * 2; s++)
     {
-      for (int i = 0; i < freq_count * 2; i++)
-        {
-          double d = 0;
-          for (size_t x = 0; x < signal_size; x++)
-            d += U(x,i) * A(x,a);                   // compute dot product
-          M(i,a) = d;
-        }
+      for (int a = 0; a < freq_count * 2; a++)
+        WVt(s,a) /= S[s];
     }
-
-  // invert matrix to get the transformation from orthogonal base to sine/cosine base
-  matrix<double> MI (freq_count * 2, freq_count * 2);
-  invert_matrix (M, MI);
+  matrix<double> MI = trans (WVt);
 
   // transform orthogonal coordinates into sine/cosine coordinates
   matrix<double> MIo = prod (MI, ortho);
