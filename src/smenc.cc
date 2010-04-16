@@ -339,11 +339,6 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float
 
   // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
   matrix<double, ublas::column_major> A (signal_size, freq_count * 2); 
-
-  boost::numeric::ublas::vector<double> S (freq_count * 2);                    // output: N element vector containing singular values
-  matrix<double, ublas::column_major> U (signal_size, freq_count * 2);         // output: M x N matrix containing orthogonal base of the vector subspace, consisting of N M-dimensional vectors
-  matrix<double, ublas::column_major> Vt (freq_count * 2,freq_count * 2);      // output: N x N matrix
-
   for (int i = 0; i < freq_count; i++)
     {
       double phase = 0;
@@ -359,37 +354,17 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float
         }
     }
 
-  // compute SVD to obtain an orthogonal base
+  // input: M dimensional target vector
+  ublas::vector<double> b (signal_size);
+  for (size_t x = 0; x < signal_size; x++)
+    b[x] = audio_block.debug_samples[x] * window[x];
 
-  // A is modified during SVD; don't use it afterwards
-  boost::numeric::bindings::lapack::gesdd (A, S, U, Vt);
+  // generalized least squares algorithm minimizing residual r = Ax - b
+  boost::numeric::bindings::lapack::gels ('N', A, b, boost::numeric::bindings::lapack::optimal_workspace());
 
-  // compute coordinates of the signal in vector space of orthogonal base
-  matrix<double> ortho (freq_count * 2, 1);
-  for (int a = 0; a < freq_count * 2; a++)
-    {
-      double d = 0;
-      for (size_t x = 0; x < signal_size; x++)
-        d += U(x,a) * audio_block.debug_samples[x] * window[x]; // compute dot product
-      ortho (a,0) = d;
-    }
-
-  // calculate matrix MI which maps coordinates from orthogonal base to sine/cosine coordinates
-  matrix<double> WVt = Vt;
-  for (int s = 0; s < freq_count * 2; s++)
-    {
-      for (int a = 0; a < freq_count * 2; a++)
-        WVt(s,a) /= S[s];
-    }
-  matrix<double> MI = trans (WVt);
-
-  // transform orthogonal coordinates into sine/cosine coordinates
-  matrix<double> MIo = prod (MI, ortho);
-
-  // store improved phase/amplitude information
-  assert (audio_block.phases.size() == freq_count * 2);
+  // => output: vector containing optimal choice for phases and magnitudes
   for (int i = 0; i < freq_count * 2; i++)
-    audio_block.phases[i] = MIo(i, 0);
+    audio_block.phases[i] = b[i];
 }
 
 void
