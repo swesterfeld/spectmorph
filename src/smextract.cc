@@ -237,7 +237,12 @@ main (int argc, char **argv)
       size_t frame_size = audio.contents[i].debug_samples.size();
       vector<double> sines (frame_size);
       reconstruct (audio.contents[i], sines, audio.mix_freq);
-     
+      for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
+        {
+          double v = audio.contents[i].debug_samples[n];
+          printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
+        }
+#if 0     
       // optimize transient parameter set
       vector<double> trsines;
       TransientModel m;
@@ -253,6 +258,7 @@ main (int argc, char **argv)
           double v = audio.contents[i].debug_samples[n];
           printf ("%zd %f %f %f\n", n, v, trsines[n], v - trsines[n]);
         }
+#endif
     }
   else if (strcmp (argv[2], "frameparams") == 0)
     {
