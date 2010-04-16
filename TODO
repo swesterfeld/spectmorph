@@ -2,13 +2,17 @@ autostuff:
 - add liblapack header check
 
 smenc:
-- "perfect" phase estimation
 - transient representation
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
 - move debugging information generated with -d to main file
 - normalize noise
 - use averaging to estimate noise
+- use odd - centered - fft
+- make window function configurable
+
+python:
+- add api which is good enough to implement smabc in python
 
 smlive:
 - implement efficient (IFFT) live decoder
@@ -19,10 +23,12 @@ tools:
 tests:
 - add test cases
 
-implement smstrip
 lag diagrams of note start
 
 adventure:
 - implement wav->midi
   * trumpet (silent brass)
   * piano
+
+docs:
+- write document documenting basic functionality
