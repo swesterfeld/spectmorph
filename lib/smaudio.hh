@@ -23,17 +23,22 @@
 namespace SpectMorph
 {
 
+/**
+ * Block of audio data, encoded in SpectMorph parametric format
+ */
 class AudioBlock
 {
 public:
   std::vector<float> meaning;
   std::vector<float> freqs;
-  std::vector<float> mags;
   std::vector<float> phases;
   std::vector<float> original_fft;
   std::vector<float> debug_samples;
 };
 
+/**
+ * Audio sample containing many blocks
+ */
 class Audio
 {
 public:

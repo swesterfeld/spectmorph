@@ -290,11 +290,6 @@ STWAFile::load (const string& file_name,
               audio_block->freqs.resize (fb.size());
               std::copy (fb.begin(), fb.end(), audio_block->freqs.begin());
             }
-          else if (ifile.event_name() == "mags")
-            {
-              audio_block->mags.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->mags.begin());
-            }
           else if (ifile.event_name() == "phases")
             {
               audio_block->phases.resize (fb.size());
@@ -455,7 +450,6 @@ STWAFile::save (const string& file_name,
       of.begin_section ("frame");
       of.write_float_block ("meaning", audio.contents[i].meaning);
       of.write_float_block ("freqs", audio.contents[i].freqs);
-      of.write_float_block ("mags", audio.contents[i].mags);
       of.write_float_block ("phases", audio.contents[i].phases);
       of.write_float_block ("original_fft", audio.contents[i].original_fft);
       of.write_float_block ("debug_samples", audio.contents[i].debug_samples);
