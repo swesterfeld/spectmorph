@@ -32,3 +32,7 @@ adventure:
 
 docs:
 - write document documenting basic functionality
+
+release:
+- configure should fail if lapack check fails
+- configure should fail if boost-numeric is missing
