@@ -8,4 +8,6 @@ try:
 except:
   print "cannot load file:", sys.argv[1]
 
-print audio
+print "Audio File:"
+print "fundamental_freq = %f Hz" % audio.fundamental_freq
+print "mix_freq = %f Hz" % audio.mix_freq

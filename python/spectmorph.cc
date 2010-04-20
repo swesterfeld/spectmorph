@@ -1,6 +1,30 @@
 #include <Python.h>
 #include "smaudio.hh"
 #include "smafile.hh"
+#include <string>
+
+using std::string;
+
+static int
+attr_float_set (float& d, PyObject *value, const string& name)
+{
+  if (value == NULL) {
+    PyErr_Format (PyExc_TypeError, "Cannot delete the %s attribute", name.c_str());
+    return -1;
+  }
+  if (!PyNumber_Check (value)) {
+    PyErr_Format (PyExc_TypeError, "The %s attribute value must be a number", name.c_str());
+    return -1;
+  }
+  PyObject* number = PyNumber_Float (value);
+  if (!number) {
+    PyErr_Format (PyExc_TypeError, "The %s attribute value must be a float", name.c_str());
+    return -1;
+  }
+  d = PyFloat_AsDouble (value);
+  Py_DECREF (number);
+  return 0;
+}
 
 /*---------------------------- wrap SpectMorph::Audio ---------------------------*/
 typedef struct {
@@ -50,36 +74,35 @@ static PyMethodDef Audio_methods[] = {
 static PyObject *
 Audio_get_fundamental_freq (spectmorph_AudioObject *self, void *closure)
 {
-    return Py_BuildValue ("d", self->audio->fundamental_freq);
+  return Py_BuildValue ("d", self->audio->fundamental_freq);
+}
+
+static PyObject *
+Audio_get_mix_freq (spectmorph_AudioObject *self, void *closure)
+{
+  return Py_BuildValue ("d", self->audio->mix_freq);
 }
 
 static int
-Audio_set_fundamental_freq(spectmorph_AudioObject *self, PyObject *value, void *closure)
+Audio_set_fundamental_freq (spectmorph_AudioObject *self, PyObject *value, void *closure)
 {
-  printf ("FIXME!\n");
-#if 0
-  if (value == NULL) {
-    PyErr_SetString(PyExc_TypeError, "Cannot delete the first attribute");
-    return -1;
-  }
-  
-  if (! PyString_Check(value)) {
-    PyErr_SetString(PyExc_TypeError, 
-                    "The first attribute value must be a string");
-    return -1;
-  }
-      
-  Py_DECREF(self->first);
-  Py_INCREF(value);
-  self->first = value;    
-#endif
-  return 0;
+  return attr_float_set (self->audio->fundamental_freq, value, "fundamental_freq");
+}
+
+static int
+Audio_set_mix_freq (spectmorph_AudioObject *self, PyObject *value, void *closure)
+{
+  return attr_float_set (self->audio->mix_freq, value, "mix_freq");
 }
 
 static PyGetSetDef Audio_getseters[] = {
     {"fundamental_freq", 
      (getter)Audio_get_fundamental_freq, (setter)Audio_set_fundamental_freq,
      "fundamental freq",
+     NULL},
+    {"mix_freq", 
+     (getter)Audio_get_mix_freq, (setter)Audio_set_mix_freq,
+     "mix freq",
      NULL},
     {NULL}  /* Sentinel */
 };
