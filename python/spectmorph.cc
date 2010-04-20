@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2010 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <Python.h>
 #include "smaudio.hh"
 #include "smafile.hh"
@@ -8,26 +25,47 @@ using std::string;
 static int
 attr_float_set (float& d, PyObject *value, const string& name)
 {
-  if (value == NULL) {
-    PyErr_Format (PyExc_TypeError, "Cannot delete the %s attribute", name.c_str());
-    return -1;
-  }
-  if (!PyNumber_Check (value)) {
-    PyErr_Format (PyExc_TypeError, "The %s attribute value must be a number", name.c_str());
-    return -1;
-  }
+  if (value == NULL)
+    {
+      PyErr_Format (PyExc_TypeError, "Cannot delete the %s attribute", name.c_str());
+      return -1;
+    }
+  if (!PyNumber_Check (value))
+    {
+      PyErr_Format (PyExc_TypeError, "The %s attribute value must be a number", name.c_str());
+      return -1;
+    }
   PyObject* number = PyNumber_Float (value);
-  if (!number) {
-    PyErr_Format (PyExc_TypeError, "The %s attribute value must be a float", name.c_str());
-    return -1;
-  }
-  d = PyFloat_AsDouble (value);
+  if (!number)
+    {
+      PyErr_Format (PyExc_TypeError, "The %s attribute value must be a float", name.c_str());
+      return -1;
+    }
+  d = PyFloat_AsDouble (number);
   Py_DECREF (number);
   return 0;
 }
 
+static int
+attr_float_int (int& i, PyObject *value, const string& name)
+{
+  if (value == NULL)
+    {
+      PyErr_Format (PyExc_TypeError, "Cannot delete the %s attribute", name.c_str());
+      return -1;
+    }
+  i = PyLong_AsLong (value);
+  if (PyErr_Occurred())
+    {
+      PyErr_Format (PyExc_TypeError, "The %s attribute value must be an integer", name.c_str());
+      return -1;
+    }
+  return 0;
+}
+
 /*---------------------------- wrap SpectMorph::Audio ---------------------------*/
-typedef struct {
+typedef struct
+{
   PyObject_HEAD
   /* my fields */
   SpectMorph::Audio *audio;
@@ -83,6 +121,24 @@ Audio_get_mix_freq (spectmorph_AudioObject *self, void *closure)
   return Py_BuildValue ("d", self->audio->mix_freq);
 }
 
+static PyObject *
+Audio_get_frame_size_ms (spectmorph_AudioObject *self, void *closure)
+{
+  return Py_BuildValue ("d", self->audio->frame_size_ms);
+}
+
+static PyObject *
+Audio_get_frame_step_ms (spectmorph_AudioObject *self, void *closure)
+{
+  return Py_BuildValue ("d", self->audio->frame_step_ms);
+}
+
+static PyObject *
+Audio_get_zeropad (spectmorph_AudioObject *self, void *closure)
+{
+  return Py_BuildValue ("i", self->audio->zeropad);
+}
+
 static int
 Audio_set_fundamental_freq (spectmorph_AudioObject *self, PyObject *value, void *closure)
 {
@@ -95,6 +151,24 @@ Audio_set_mix_freq (spectmorph_AudioObject *self, PyObject *value, void *closure
   return attr_float_set (self->audio->mix_freq, value, "mix_freq");
 }
 
+static int
+Audio_set_frame_size_ms (spectmorph_AudioObject *self, PyObject *value, void *closure)
+{
+  return attr_float_set (self->audio->frame_size_ms, value, "frame_size_ms");
+}
+
+static int
+Audio_set_frame_step_ms (spectmorph_AudioObject *self, PyObject *value, void *closure)
+{
+  return attr_float_set (self->audio->frame_step_ms, value, "frame_step_ms");
+}
+
+static int
+Audio_set_zeropad (spectmorph_AudioObject *self, PyObject *value, void *closure)
+{
+  return attr_float_int (self->audio->zeropad, value, "zeropad");
+}
+
 static PyGetSetDef Audio_getseters[] = {
     {"fundamental_freq", 
      (getter)Audio_get_fundamental_freq, (setter)Audio_set_fundamental_freq,
@@ -103,6 +177,18 @@ static PyGetSetDef Audio_getseters[] = {
     {"mix_freq", 
      (getter)Audio_get_mix_freq, (setter)Audio_set_mix_freq,
      "mix freq",
+     NULL},
+    {"frame_size_ms",
+     (getter)Audio_get_frame_size_ms, (setter)Audio_set_frame_size_ms,
+     "frame size in ms",
+     NULL},
+    {"frame_step_ms",
+     (getter)Audio_get_frame_step_ms, (setter)Audio_set_frame_step_ms,
+     "frame step in ms",
+     NULL},
+    {"zeropad",
+     (getter)Audio_get_zeropad, (setter)Audio_set_zeropad,
+     "zeropadding",
      NULL},
     {NULL}  /* Sentinel */
 };
