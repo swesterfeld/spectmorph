@@ -36,3 +36,4 @@ docs:
 release:
 - configure should fail if lapack check fails
 - configure should fail if boost-numeric is missing
+- configure should fail if beast is too old
