@@ -47,7 +47,7 @@ attr_float_set (float& d, PyObject *value, const string& name)
 }
 
 static int
-attr_float_int (int& i, PyObject *value, const string& name)
+attr_int_set (int& i, PyObject *value, const string& name)
 {
   if (value == NULL)
     {
@@ -55,7 +55,7 @@ attr_float_int (int& i, PyObject *value, const string& name)
       return -1;
     }
   i = PyLong_AsLong (value);
-  if (PyErr_Occurred())
+  if (i == -1 && PyErr_Occurred())
     {
       PyErr_Format (PyExc_TypeError, "The %s attribute value must be an integer", name.c_str());
       return -1;
@@ -166,31 +166,19 @@ Audio_set_frame_step_ms (spectmorph_AudioObject *self, PyObject *value, void *cl
 static int
 Audio_set_zeropad (spectmorph_AudioObject *self, PyObject *value, void *closure)
 {
-  return attr_float_int (self->audio->zeropad, value, "zeropad");
+  return attr_int_set (self->audio->zeropad, value, "zeropad");
 }
 
-static PyGetSetDef Audio_getseters[] = {
-    {"fundamental_freq", 
-     (getter)Audio_get_fundamental_freq, (setter)Audio_set_fundamental_freq,
-     "fundamental freq",
-     NULL},
-    {"mix_freq", 
-     (getter)Audio_get_mix_freq, (setter)Audio_set_mix_freq,
-     "mix freq",
-     NULL},
-    {"frame_size_ms",
-     (getter)Audio_get_frame_size_ms, (setter)Audio_set_frame_size_ms,
-     "frame size in ms",
-     NULL},
-    {"frame_step_ms",
-     (getter)Audio_get_frame_step_ms, (setter)Audio_set_frame_step_ms,
-     "frame step in ms",
-     NULL},
-    {"zeropad",
-     (getter)Audio_get_zeropad, (setter)Audio_set_zeropad,
-     "zeropadding",
-     NULL},
-    {NULL}  /* Sentinel */
+#define GETSETER(foo) {const_cast<char*> (#foo), (getter)Audio_get_##foo, (setter)Audio_set_##foo, const_cast<char*> (#foo), NULL}
+
+static PyGetSetDef Audio_getseters[] =
+{
+  GETSETER (fundamental_freq),
+  GETSETER (mix_freq),
+  GETSETER (frame_size_ms),
+  GETSETER (frame_step_ms),
+  GETSETER (zeropad),
+  {NULL}  /* Sentinel */
 };
 
 static PyTypeObject spectmorph_AudioType = {
