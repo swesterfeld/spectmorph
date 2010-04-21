@@ -235,7 +235,7 @@ load_stwafile (PyObject* self, PyObject* args)
 
   spectmorph_AudioObject *newaudio;
 
-  newaudio = (spectmorph_AudioObject *)spectmorph_AudioType.tp_alloc(&spectmorph_AudioType, 0);
+  newaudio = PyObject_New (spectmorph_AudioObject, &spectmorph_AudioType);
   if (newaudio != NULL)
     {
       newaudio->audio = new SpectMorph::Audio();
