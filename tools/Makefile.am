@@ -1,5 +1,7 @@
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3
 
+EXTRA_DIST = delta.py
+
 noinst_PROGRAMS = ascii2wav wav2ascii
 
 ascii2wav_SOURCES = ascii2wav.cc
