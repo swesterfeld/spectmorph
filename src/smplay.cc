@@ -34,10 +34,9 @@
 #include <math.h>
 #include "noisedecoder.hh"
 #include "sinedecoder.hh"
+#include "config.h"
 
 #include <list>
-
-#define STWPLAY_VERSION "0.0.1"
 
 using namespace Birnet;
 using Stw::Codec::NoiseDecoder;
@@ -102,7 +101,7 @@ Options::parse (int   *argc_p,
 	}
       else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
 	{
-	  printf ("%s %s\n", program_name.c_str(), STWPLAY_VERSION);
+	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
       else if (check_arg (argc, argv, &i, "--verbose"))

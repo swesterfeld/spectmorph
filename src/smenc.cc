@@ -37,8 +37,7 @@
 
 #include "smaudio.hh"
 #include "smafile.hh"
-
-#define STWENC_VERSION "0.0.1"
+#include "config.h"
 
 using std::string;
 using std::vector;
@@ -138,7 +137,7 @@ Options::parse (int   *argc_p,
 	}
       else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
 	{
-	  printf ("%s %s\n", program_name.c_str(), STWENC_VERSION);
+	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
       else if (check_arg (argc, argv, &i, "-d"))
