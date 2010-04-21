@@ -6,3 +6,5 @@ smplay
 smvisualize
 smextract
 smstrip
+.deps
+.libs

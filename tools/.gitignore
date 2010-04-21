@@ -2,3 +2,5 @@ Makefile
 Makefile.in
 ascii2wav
 *.o
+.deps
+.libs
