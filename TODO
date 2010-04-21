@@ -10,15 +10,14 @@ smenc:
 - use averaging to estimate noise
 - use odd - centered - fft
 - make window function configurable
+- debug performance problems
+- move partial tracking from decoder to encoder
 
 python:
 - add api which is good enough to implement smabc in python
 
 smlive:
 - implement efficient (IFFT) live decoder
-
-tools:
-- wav2ascii
 
 tests:
 - add test cases
