@@ -12,9 +12,11 @@ smenc:
 - make window function configurable
 - debug performance problems
 - move partial tracking from decoder to encoder
+- use GPU for linear least squares
 
 python:
 - add api which is good enough to implement smabc in python
+- http://docs.python.org/c-api/typeobj.html
 
 smlive:
 - implement efficient (IFFT) live decoder
