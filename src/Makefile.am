@@ -1,4 +1,4 @@
-AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3 -I/usr/local/boost-numeric-bindings/include/boost-numeric-bindings -I$(top_srcdir)/lib
+AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3 -I$(top_srcdir)/lib
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
@@ -7,7 +7,7 @@ bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
 SMHDRS =  frame.hh noisedecoder.hh sinedecoder.hh stwutils.hh
 
 smenc_SOURCES = smenc.cc $(SMHDRS)
-smenc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+smenc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(LAPACK_LIBS)
 
 smplay_SOURCES = smplay.cc sinedecoder.cc noisedecoder.cc frame.cc $(SMHDRS)
 smplay_LDADD = $(BSE_LIBS) $(AO_LIBS) $(SPECTMORPH_LIBS)
