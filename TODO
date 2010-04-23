@@ -17,6 +17,7 @@ smenc:
 python:
 - add api which is good enough to implement smabc in python
 - http://docs.python.org/c-api/typeobj.html
+- http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
 - implement efficient (IFFT) live decoder
