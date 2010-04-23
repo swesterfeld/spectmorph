@@ -43,14 +43,15 @@ AC_DEFUN([AC_AO_REQUIREMENTS],
 AC_DEFUN([AC_LAPACK_REQUIREMENTS],
 [
     dnl We need liblapack
-    AC_CHECK_LIB(lapack,sgesv_)
+    AC_CHECK_LIB(lapack,sgesv_,[:],[
+      AC_MSG_ERROR([You need to install liblapack to build this package.])
+    ])
 ])
 
 # We need pkg-config
 AC_CHECK_PROG(HAVE_PKG_CONFIG,pkg-config,yes,no)
 if test "$HAVE_PKG_CONFIG" == "no"; then
-  echo "You need to have pkg-config installed to build this package"
-  exit 1
+  AC_MSG_ERROR([You need to have pkg-config installed to build this package.])
 fi
 
 # Check requirement sets
