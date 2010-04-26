@@ -65,6 +65,291 @@ attr_int_set (int& i, PyObject *value, const string& name)
   return 0;
 }
 
+/*----------- access wrapper for AudioBlock parameters -----------*/
+
+typedef struct
+{
+  PyObject_HEAD
+  /* my fields */
+  SpectMorph::Audio *audio;
+  size_t             index;
+  enum {
+    FREQS, PHASES, DEBUG_SAMPLES
+  }                  part;
+} spectmorph_AudioBlockVecObject;
+
+static PyObject *
+AudioBlockVec_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  spectmorph_AudioBlockVecObject *self;
+
+  self = (spectmorph_AudioBlockVecObject *)type->tp_alloc(type, 0);
+  if (self != NULL)
+    {
+      self->audio = new SpectMorph::Audio();
+      self->index = 0;
+      self->part = spectmorph_AudioBlockVecObject::FREQS;
+    }
+
+  return (PyObject *)self;
+}
+
+static void
+AudioBlockVec_dealloc (spectmorph_AudioBlockVecObject *self)
+{
+#if 0        // FIXME: reference counting
+  if (self->audio_blocks)
+    delete self->audio_blocks;
+#endif
+  self->ob_type->tp_free ((PyObject *)self);
+}
+
+static PyMethodDef AudioBlockVec_methods[] =
+{
+  {NULL}  /* Sentinel */
+};
+
+static PyGetSetDef AudioBlockVec_getseters[] =
+{
+  {NULL}  /* Sentinel */
+};
+
+static Py_ssize_t
+AudioBlockVec_length (spectmorph_AudioBlockVecObject *self)
+{
+  if (self->part == spectmorph_AudioBlockVecObject::FREQS)
+    return self->audio->contents[self->index].freqs.size();
+  else if (self->part == spectmorph_AudioBlockVecObject::PHASES)
+    return self->audio->contents[self->index].phases.size();
+  else if (self->part == spectmorph_AudioBlockVecObject::DEBUG_SAMPLES)
+    return self->audio->contents[self->index].debug_samples.size();
+  return -1;
+}
+
+static PyObject*
+AudioBlockVec_item (spectmorph_AudioBlockVecObject *self, Py_ssize_t i)
+{
+  if (self->part == spectmorph_AudioBlockVecObject::FREQS)
+    return Py_BuildValue ("d", self->audio->contents[self->index].freqs[i]);
+  if (self->part == spectmorph_AudioBlockVecObject::PHASES)
+    return Py_BuildValue ("d", self->audio->contents[self->index].phases[i]);
+  if (self->part == spectmorph_AudioBlockVecObject::DEBUG_SAMPLES)
+    return Py_BuildValue ("d", self->audio->contents[self->index].debug_samples[i]);
+  Py_RETURN_FALSE;
+#if 0
+  spectmorph_AudioBlockObject *audio_block = PyObject_New (spectmorph_AudioBlockObject, &spectmorph_AudioBlockType);
+  PyObject *obj = (PyObject *)audio_block;
+  Py_IncRef (obj);
+  return obj;
+#endif
+}
+
+static PySequenceMethods spectmorph_AudioBlockVecType_as_sequence =
+{
+  (lenfunc)AudioBlockVec_length,          /* sq_length */
+  0,                                      /* sq_concat */
+  0,                                      /* sq_repeat */
+  (ssizeargfunc)AudioBlockVec_item,       /* sq_item */
+  0,                                      /* sq_slice */
+  0,                                      /* sq_ass_item */
+  0,                                      /* sq_ass_slice */
+  0,                                      /* sq_contains */
+};
+
+static PyTypeObject spectmorph_AudioBlockVecType =
+{
+  PyObject_HEAD_INIT(NULL)
+  0,                                        /*ob_size (always set to zero)*/
+  "spectmorph.AudioBlockVec",               /*tp_name*/
+  sizeof(spectmorph_AudioBlockVecObject),   /*tp_basicsize*/
+  0,                                        /*tp_itemsize*/
+  (destructor) AudioBlockVec_dealloc,       /*tp_dealloc*/
+  0,                                        /*tp_print*/
+  0,                                        /*tp_getattr*/
+  0,                                        /*tp_setattr*/
+  0,                                        /*tp_compare*/
+  0,                                        /*tp_repr*/
+  0,                                        /*tp_as_number*/
+  &spectmorph_AudioBlockVecType_as_sequence,/*tp_as_sequence*/
+  0,                                        /*tp_as_mapping*/
+  0,                                        /*tp_hash */
+  0,                                        /*tp_call*/
+  0,                                        /*tp_str*/
+  0,                                        /*tp_getattro*/
+  0,                                        /*tp_setattro*/
+  0,                                        /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT,                       /*tp_flags*/
+  "AudioBlockVec object",                   /* tp_doc */
+  0,                                        /* tp_traverse */
+  0,                                        /* tp_clear */
+  0,                                        /* tp_richcompare */
+  0,                                        /* tp_weaklistoffset */
+  0,                                        /* tp_iter */
+  0,                                        /* tp_iternext */
+  AudioBlockVec_methods,                    /* tp_methods */
+  0,                                        /* tp_members */
+  AudioBlockVec_getseters,                  /* tp_getset */
+  0,                                        /* tp_base */
+  0,                                        /* tp_dict */
+  0,                                        /* tp_descr_get */
+  0,                                        /* tp_descr_set */
+  0,                                        /* tp_dictoffset */
+  0,                                        /* tp_init */
+  0,                                        /* tp_alloc */
+  AudioBlockVec_new,                        /* tp_new */
+};
+
+
+/*---------------------------- wrap AudioBlock -------------------*/
+
+typedef struct
+{
+  PyObject_HEAD
+  /* my fields */
+  SpectMorph::Audio *audio;
+  size_t             index;
+} spectmorph_AudioBlockObject;
+
+static PyObject *
+AudioBlock_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
+{
+  spectmorph_AudioBlockObject *self;
+
+  self = (spectmorph_AudioBlockObject *)type->tp_alloc(type, 0);
+  if (self != NULL)
+    {
+      self->audio = new SpectMorph::Audio();
+      self->index = 0;
+    }
+
+  return (PyObject *)self;
+}
+
+static void
+AudioBlock_dealloc (spectmorph_AudioBlockObject *self)
+{
+#if 0        // FIXME: reference counting
+  if (self->audio_blocks)
+    delete self->audio_blocks;
+#endif
+  self->ob_type->tp_free ((PyObject *)self);
+}
+
+static PyMethodDef AudioBlock_methods[] =
+{
+  {NULL}  /* Sentinel */
+};
+
+static PyObject *
+AudioBlock_get_freqs (spectmorph_AudioBlockObject *self, void *closure)
+{
+  spectmorph_AudioBlockVecObject *audio_block_vec = PyObject_New (spectmorph_AudioBlockVecObject, &spectmorph_AudioBlockVecType);
+  audio_block_vec->audio = self->audio;
+  audio_block_vec->index = self->index;
+  audio_block_vec->part = spectmorph_AudioBlockVecObject::FREQS;
+  PyObject *obj = (PyObject *)audio_block_vec;
+  Py_IncRef (obj);
+  return obj;
+}
+
+static PyObject *
+AudioBlock_get_phases (spectmorph_AudioBlockObject *self, void *closure)
+{
+  spectmorph_AudioBlockVecObject *audio_block_vec = PyObject_New (spectmorph_AudioBlockVecObject, &spectmorph_AudioBlockVecType);
+  audio_block_vec->audio = self->audio;
+  audio_block_vec->index = self->index;
+  audio_block_vec->part = spectmorph_AudioBlockVecObject::PHASES;
+  PyObject *obj = (PyObject *)audio_block_vec;
+  Py_IncRef (obj);
+  return obj;
+}
+
+static PyObject *
+AudioBlock_get_debug_samples (spectmorph_AudioBlockObject *self, void *closure)
+{
+  spectmorph_AudioBlockVecObject *audio_block_vec = PyObject_New (spectmorph_AudioBlockVecObject, &spectmorph_AudioBlockVecType);
+  audio_block_vec->audio = self->audio;
+  audio_block_vec->index = self->index;
+  audio_block_vec->part = spectmorph_AudioBlockVecObject::DEBUG_SAMPLES;
+  PyObject *obj = (PyObject *)audio_block_vec;
+  Py_IncRef (obj);
+  return obj;
+}
+
+static int
+AudioBlock_set_freqs (spectmorph_AudioBlockObject *self, PyObject *value, void *closure)
+{
+  printf ("FIXME\n");
+}
+
+static int
+AudioBlock_set_phases (spectmorph_AudioBlockObject *self, PyObject *value, void *closure)
+{
+  printf ("FIXME\n");
+}
+
+static int
+AudioBlock_set_debug_samples (spectmorph_AudioBlockObject *self, PyObject *value, void *closure)
+{
+  printf ("FIXME\n");
+}
+
+#define GETSETER(foo) {const_cast<char*> (#foo), (getter)AudioBlock_get_##foo, (setter)AudioBlock_set_##foo, const_cast<char*> (#foo), NULL}
+
+static PyGetSetDef AudioBlock_getseters[] =
+{
+  GETSETER(freqs),
+  GETSETER(phases),
+  GETSETER(debug_samples),
+  {NULL}  /* Sentinel */
+};
+
+#undef GETSETER
+
+
+static PyTypeObject spectmorph_AudioBlockType =
+{
+  PyObject_HEAD_INIT(NULL)
+  0,                                        /*ob_size (always set to zero)*/
+  "spectmorph.AudioBlock",                  /*tp_name*/
+  sizeof(spectmorph_AudioBlockObject),      /*tp_basicsize*/
+  0,                                        /*tp_itemsize*/
+  (destructor) AudioBlock_dealloc,          /*tp_dealloc*/
+  0,                                        /*tp_print*/
+  0,                                        /*tp_getattr*/
+  0,                                        /*tp_setattr*/
+  0,                                        /*tp_compare*/
+  0,                                        /*tp_repr*/
+  0,                                        /*tp_as_number*/
+  0,                                        /*tp_as_sequence*/
+  0,                                        /*tp_as_mapping*/
+  0,                                        /*tp_hash */
+  0,                                        /*tp_call*/
+  0,                                        /*tp_str*/
+  0,                                        /*tp_getattro*/
+  0,                                        /*tp_setattro*/
+  0,                                        /*tp_as_buffer*/
+  Py_TPFLAGS_DEFAULT,                       /*tp_flags*/
+  "AudioBlock object",                      /* tp_doc */
+  0,                                        /* tp_traverse */
+  0,                                        /* tp_clear */
+  0,                                        /* tp_richcompare */
+  0,                                        /* tp_weaklistoffset */
+  0,                                        /* tp_iter */
+  0,                                        /* tp_iternext */
+  AudioBlock_methods,                       /* tp_methods */
+  0,                                        /* tp_members */
+  AudioBlock_getseters,                     /* tp_getset */
+  0,                                        /* tp_base */
+  0,                                        /* tp_dict */
+  0,                                        /* tp_descr_get */
+  0,                                        /* tp_descr_set */
+  0,                                        /* tp_dictoffset */
+  0,                                        /* tp_init */
+  0,                                        /* tp_alloc */
+  AudioBlock_new,                           /* tp_new */
+};
+
 /*---------------------------- wrap Audio contents ---------------*/
 
 typedef struct
@@ -112,12 +397,23 @@ AudioContents_length (spectmorph_AudioContentsObject *self)
   return self->audio->contents.size();
 }
 
+static PyObject*
+AudioContents_item (spectmorph_AudioContentsObject *self, Py_ssize_t i)
+{
+  spectmorph_AudioBlockObject *audio_block = PyObject_New (spectmorph_AudioBlockObject, &spectmorph_AudioBlockType);
+  audio_block->audio = self->audio;
+  audio_block->index = i;
+  PyObject *obj = (PyObject *)audio_block;
+  Py_IncRef (obj);
+  return obj;
+}
+
 static PySequenceMethods spectmorph_AudioContentsType_as_sequence =
 {
   (lenfunc)AudioContents_length,          /* sq_length */
   0,                                      /* sq_concat */
   0,                                      /* sq_repeat */
-  0,                                      /* sq_item */
+  (ssizeargfunc)AudioContents_item,       /* sq_item */
   0,                                      /* sq_slice */
   0,                                      /* sq_ass_item */
   0,                                      /* sq_ass_slice */
@@ -384,10 +680,16 @@ initspectmorph(void)
     return;
   if (PyType_Ready (&spectmorph_AudioContentsType) < 0)
     return;
+  if (PyType_Ready (&spectmorph_AudioBlockType) < 0)
+    return;
+  if (PyType_Ready (&spectmorph_AudioBlockVecType) < 0)
+    return;
 
   m = Py_InitModule3("spectmorph", SpectMorphMethods, "SpectMorph spectral analysis/morphing/resynthesis");
 
   Py_INCREF (&spectmorph_AudioType);
   PyModule_AddObject (m, "Audio", (PyObject *)&spectmorph_AudioType);
   PyModule_AddObject (m, "AudioContents", (PyObject *)&spectmorph_AudioContentsType);
+  PyModule_AddObject (m, "AudioBlock", (PyObject *)&spectmorph_AudioBlockType);
+  PyModule_AddObject (m, "AudioBlockVec", (PyObject *)&spectmorph_AudioBlockVecType);
 }
