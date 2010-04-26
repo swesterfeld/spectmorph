@@ -1,6 +1,3 @@
-autostuff:
-- add liblapack header check
-
 smenc:
 - transient representation
 - compute peak over nearest minimum in dB
@@ -34,11 +31,6 @@ adventure:
 
 docs:
 - write document documenting basic functionality
-
-release:
-- configure should fail if lapack check fails
-- configure should fail if boost-numeric is missing
-- configure should fail if beast is too old
 
 samples:
 - test with samples from the net
