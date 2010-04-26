@@ -104,7 +104,11 @@ dnl
 AC_DEFUN([AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS],
 [
     AC_ARG_WITH(boost-numeric-bindings, [AC_HELP_STRING([--with-boost-numeric-bindings=PREFIX],[where boost-numeric-bindings is installed @<:@$PREFIX@:>@])],
-                                        BOOST_NUMERIC_BINDINGS_PREFIX="$withval", BOOST_NUMERIC_BINDINGS_PREFIX='${prefix}')
+                                        BOOST_NUMERIC_BINDINGS_PREFIX="$withval", BOOST_NUMERIC_BINDINGS_PREFIX="$prefix")
+    if test "$BOOST_NUMERIC_BINDINGS_PREFIX" == "NONE"
+    then
+        BOOST_NUMERIC_BINDINGS_PREFIX=$ac_default_prefix
+    fi
 
     BOOST_NUMERIC_BINDINGS_CPPFLAGS="-I$BOOST_NUMERIC_BINDINGS_PREFIX/include/boost-numeric-bindings"
     bnb_save_CPPFLAGS="$CPPFLAGS"
