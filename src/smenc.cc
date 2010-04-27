@@ -27,14 +27,6 @@
 #include <assert.h>
 #include <complex>
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/vector_proxy.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/bindings/lapack/lapack.hpp>
-
 #include "smaudio.hh"
 #include "smafile.hh"
 #include "smencoder.hh"
@@ -52,9 +44,6 @@ using SpectMorph::AudioBlock;
 using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
-
-namespace ublas = boost::numeric::ublas;
-using ublas::matrix;
 
 float
 freqFromNote (float note)
@@ -187,189 +176,6 @@ double
 magnitude (vector<float>::iterator i)
 {
   return sqrt (*i * *i + *(i+1) * *(i+1));
-}
-
-double
-float_vector_delta (const vector<float>& a, const vector<float>& b)
-{
-  assert (a.size() == b.size());
-
-  double d = 0;
-  for (size_t i = 0; i < a.size(); i++)
-    d += (a[i] - b[i]) * (a[i] - b[i]);
-  return d;
-}
-
-// find best fit of amplitudes / phases to the observed signal
-void
-refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float>& window)
-{
-  const size_t freq_count = audio_block.freqs.size();
-  const size_t signal_size = audio_block.debug_samples.size();
-
-  if (freq_count == 0)
-    return;
-
-  // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
-  matrix<double, ublas::column_major> A (signal_size, freq_count * 2); 
-  for (int i = 0; i < freq_count; i++)
-    {
-      double phase = 0;
-      const double delta_phase = audio_block.freqs[i] * 2 * M_PI / mix_freq;
-
-      for (size_t x = 0; x < signal_size; x++)
-        {
-          double s, c;
-          sincos (phase, &s, &c);
-          A(x, i * 2) = s * window[x];
-          A(x, i * 2 + 1) = c * window[x];
-          phase += delta_phase;
-        }
-    }
-
-  // input: M dimensional target vector
-  ublas::vector<double> b (signal_size);
-  for (size_t x = 0; x < signal_size; x++)
-    b[x] = audio_block.debug_samples[x] * window[x];
-
-  // generalized least squares algorithm minimizing residual r = Ax - b
-  boost::numeric::bindings::lapack::gels ('N', A, b, boost::numeric::bindings::lapack::optimal_workspace());
-
-  // => output: vector containing optimal choice for phases and magnitudes
-  for (int i = 0; i < freq_count * 2; i++)
-    audio_block.phases[i] = b[i];
-}
-
-void
-refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
-{
-  const size_t frame_size = audio_block.debug_samples.size();
-
-  vector<float> sines (frame_size);
-  vector<float> good_freqs;
-  vector<float> good_phases;
-
-  double max_mag;
-  size_t partial = 0;
-  do
-    {
-      max_mag = 0;
-      // search biggest partial
-      for (size_t i = 0; i < audio_block.freqs.size(); i++)
-        {
-          double p_re = audio_block.phases[2 * i];
-          double p_im = audio_block.phases[2 * i + 1];
-          double p_mag = sqrt (p_re * p_re + p_im * p_im);
-          if (p_mag > max_mag)
-            {
-              partial = i;
-              max_mag = p_mag;
-            }
-        }
-        // compute reconstruction of that partial
-        if (max_mag > 0)
-          {
-            // remove partial, so we only do each partial once
-            double smag = audio_block.phases[2 * partial];
-            double cmag = audio_block.phases[2 * partial + 1];
-            double f = audio_block.freqs[partial];
-
-            audio_block.phases[2 * partial] = 0;
-            audio_block.phases[2 * partial + 1] = 0;
-
-            double phase;
-            // determine "perfect" phase and magnitude instead of using interpolated fft phase
-            smag = 0;
-            cmag = 0;
-            double snorm = 0, cnorm = 0;
-            for (size_t n = 0; n < frame_size; n++)
-              {
-                double v = audio_block.debug_samples[n] - sines[n];
-                phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
-                smag += sin (phase) * v;
-                cmag += cos (phase) * v;
-                snorm += sin (phase) * sin (phase);
-                cnorm += cos (phase) * cos (phase);
-              }
-            smag /= snorm;
-            cmag /= cnorm;
-
-            double magnitude = sqrt (smag * smag + cmag * cmag);
-            phase = atan2 (smag, cmag);
-            phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
-            smag = sin (phase) * magnitude;
-            cmag = cos (phase) * magnitude;
-
-            vector<float> old_sines = sines;
-            double delta = float_vector_delta (sines, audio_block.debug_samples);
-            phase = 0;
-            for (size_t n = 0; n < frame_size; n++)
-              {
-                sines[n] += sin (phase) * smag;
-                sines[n] += cos (phase) * cmag;
-                phase += f / mix_freq * 2.0 * M_PI;
-              }
-            double new_delta = float_vector_delta (sines, audio_block.debug_samples);
-            if (new_delta > delta)      // approximation is _not_ better
-              sines = old_sines;
-            else
-              {
-                good_freqs.push_back (f);
-                good_phases.push_back (smag);
-                good_phases.push_back (cmag);
-              }
-          }
-      }
-  while (max_mag > 0);
-
-  audio_block.freqs = good_freqs;
-  audio_block.phases = good_phases;
-}
-
-static void
-remove_small_partials (AudioBlock& audio_block)
-{
-  /*
-   * this function mainly serves to eliminate side peaks introduced by windowing
-   * since these side peaks are typically much smaller than the main peak, we can
-   * get rid of them by comparing peaks to the nearest peak, and removing them
-   * if the nearest peak is much larger
-   */
-  vector<double> dbmags;
-  for (vector<float>::iterator pi = audio_block.phases.begin(); pi != audio_block.phases.end(); pi += 2)
-    dbmags.push_back (bse_db_from_factor (magnitude (pi), -200));
-
-  vector<bool> remove (dbmags.size());
-
-  for (size_t i = 0; i < dbmags.size(); i++)
-    {
-      for (size_t j = 0; j < dbmags.size(); j++)
-        {
-          if (i != j)
-            {
-              double octaves = log (abs (audio_block.freqs[i] - audio_block.freqs[j])) / log (2);
-              double mask = -30 - 15 * octaves; /* theoretical values -31 and -18 */
-              if (dbmags[j] < dbmags[i] + mask)
-                ;
-                // remove[j] = true;
-            }
-        }
-    }
-
-  vector<float> good_freqs;
-  vector<float> good_phases;
-
-  for (size_t i = 0; i < dbmags.size(); i++)
-    {
-      if (!remove[i])
-        {
-          good_freqs.push_back (audio_block.freqs[i]);
-          good_phases.push_back (audio_block.phases[i * 2]);
-          good_phases.push_back (audio_block.phases[i * 2 + 1]);
-        }
-    }
-  audio_block.freqs = good_freqs;
-  audio_block.phases = good_phases;
 }
 
 void
@@ -544,19 +350,9 @@ main (int argc, char **argv)
   encoder.link_partials (frame_tracksels);
   // Track frequencies step #3: discard edges where -25 dB is not exceeded once
   encoder.validate_partials (frame_tracksels);
-  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
-    {
-      refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
-      if (options.optimize)
-        {
-          refine_sine_params (audio_blocks[frame], mix_freq, window);
-          printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
-          fflush (stdout);
-        }
-      remove_small_partials (audio_blocks[frame]);
 
-      fill (in.begin(), in.end(), 0);
-    }
+  encoder.optimize_partials (window, options.optimize);
+
   encoder.spectral_subtract (window);
   encoder.approx_noise();
   encoder.save (argv[2], options.fundamental_freq);
