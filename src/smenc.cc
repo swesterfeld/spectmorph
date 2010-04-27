@@ -69,7 +69,7 @@ struct Options
 
 Options::Options ()
 {
-  program_name = "stwenc";
+  program_name = "smenc";
   fundamental_freq = 0; // unset
   debug = 0;
   quantize_entries = 0;
@@ -170,12 +170,6 @@ debug (const char *dbg, ...)
     va_start (ap, dbg);
     vfprintf (options.debug, dbg, ap);
     va_end (ap);
-}
-
-double
-magnitude (vector<float>::iterator i)
-{
-  return sqrt (*i * *i + *(i+1) * *(i+1));
 }
 
 void
