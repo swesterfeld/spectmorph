@@ -548,6 +548,9 @@ public:
   void search_local_maxima (vector< vector<Tracksel> >& frame_tracksels);
   void link_partials (vector< vector<Tracksel> >& frame_tracksels);
   void validate_partials (vector< vector<Tracksel> >& frame_tracksels);
+  void spectral_subtract (const vector<float>& window);
+  void approx_noise();
+  void save (const string& filename, double fundamental_freq);
 };
 
 void
@@ -729,6 +732,91 @@ Encoder::validate_partials (vector< vector<Tracksel> >& frame_tracksels)
     }
 }
 
+void
+Encoder::spectral_subtract (const vector<float>& window)
+{
+  const size_t block_size = enc_params.block_size;
+  const size_t zeropad = enc_params.zeropad;
+
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
+    {
+      vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
+
+      // compute spectrum of isolated sine frequencies from audio spectrum
+      for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
+	{
+	  double phase = 0;
+	  for (size_t k = 0; k < enc_params.block_size; k++)
+	    {
+	      double freq = audio_blocks[frame].freqs[i];
+	      double re = audio_blocks[frame].phases[i * 2];
+	      double im = audio_blocks[frame].phases[i * 2 + 1];
+	      double mag = sqrt (re * re + im * im);
+	      phase += freq / enc_params.mix_freq * 2 * M_PI;
+	      in[k] += mag * sin (phase) * window[k];
+	    }
+	}
+      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
+      out[block_size * zeropad] = out[1];
+      out[block_size * zeropad + 1] = 0;
+      out[1] = 0;
+
+      // subtract spectrum from audio spectrum
+      for (size_t d = 0; d < block_size * zeropad; d += 2)
+	{
+	  double re = out[d], im = out[d + 1];
+	  double sub_mag = sqrt (re * re + im * im);
+	  debug ("subspectrum:%lld %g\n", frame, sub_mag);
+
+	  double mag = magnitude (audio_blocks[frame].meaning.begin() + d);
+	  debug ("spectrum:%lld %g\n", frame, mag);
+	  if (mag > 0)
+	    {
+	      audio_blocks[frame].meaning[d] /= mag;
+	      audio_blocks[frame].meaning[d + 1] /= mag;
+	      mag -= sub_mag;
+	      if (mag < 0)
+		mag = 0;
+	      audio_blocks[frame].meaning[d] *= mag;
+	      audio_blocks[frame].meaning[d + 1] *= mag;
+	    }
+	  debug ("finalspectrum:%lld %g\n", frame, mag);
+	}
+    }
+}
+
+void
+Encoder::approx_noise()
+{
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
+    {
+      vector<double> noise_envelope (256);
+      vector<double> spectrum (audio_blocks[frame].meaning.begin(), audio_blocks[frame].meaning.end());
+
+      approximate_noise_spectrum (frame, spectrum, noise_envelope);
+
+      vector<double> approx_spectrum (2050);
+      xnoise_envelope_to_spectrum (noise_envelope, approx_spectrum);
+      for (int i = 0; i < 2048; i += 2)
+	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
+      audio_blocks[frame].meaning.resize (noise_envelope.size());
+      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].meaning.begin());
+    }
+}
+
+void
+Encoder::save (const string& filename, double fundamental_freq)
+{
+  SpectMorph::Audio audio;
+  audio.fundamental_freq = fundamental_freq;
+  audio.mix_freq = enc_params.mix_freq;
+  audio.frame_size_ms = enc_params.frame_size_ms;
+  audio.frame_step_ms = enc_params.frame_step_ms;
+  audio.zeropad = enc_params.zeropad;
+  audio.contents = audio_blocks;
+  STWAFile::save (filename, audio);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -883,180 +971,10 @@ main (int argc, char **argv)
           fflush (stdout);
         }
       remove_small_partials (audio_blocks[frame]);
-#if 0
-      vector<float> sines (frame_size);
-      vector<float> good_freqs;
-      vector<float> good_phases;
-
-      double max_mag;
-      size_t partial = 0;
-      do
-        {
-          max_mag = 0;
-          // search biggest partial
-          for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
-            {
-              double p_re = audio_blocks[frame].phases[2 * i];
-              double p_im = audio_blocks[frame].phases[2 * i + 1];
-              double p_mag = sqrt (p_re * p_re + p_im * p_im);
-              if (p_mag > max_mag)
-                {
-                  partial = i;
-                  max_mag = p_mag;
-                }
-            }
-          // compute reconstruction of that partial
-          if (max_mag > 0)
-            {
-              // remove partial, so we only do each partial once
-              double smag = audio_blocks[frame].phases[2 * partial];
-              double cmag = audio_blocks[frame].phases[2 * partial + 1];
-              double f = audio_blocks[frame].freqs[partial];
-
-              audio_blocks[frame].phases[2 * partial] = 0;
-              audio_blocks[frame].phases[2 * partial + 1] = 0;
-
-              double phase = 0;
-              // determine "perfect" phase and magnitude instead of using interpolated fft phase
-              smag = 0;
-              cmag = 0;
-              double snorm = 0, cnorm = 0;
-              for (size_t n = 0; n < frame_size; n++)
-                {
-                  double v = audio_blocks[frame].debug_samples[n];
-                  phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
-                  smag += sin (phase) * v;
-                  cmag += cos (phase) * v;
-                  snorm += sin (phase) * sin (phase);
-                  cnorm += cos (phase) * cos (phase);
-                }
-              smag /= snorm;
-              cmag /= cnorm;
-
-              double magnitude = sqrt (smag * smag + cmag * cmag);
-              phase = atan2 (smag, cmag);
-              phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
-              smag = sin (phase) * magnitude;
-              cmag = cos (phase) * magnitude;
-
-              vector<float> old_sines = sines;
-              double delta = float_vector_delta (sines, audio_blocks[frame].debug_samples);
-              phase = 0;
-              for (size_t n = 0; n < frame_size; n++)
-                {
-                  phase += f / mix_freq * 2.0 * M_PI;
-                  sines[n] += sin (phase) * smag;
-                  sines[n] += cos (phase) * cmag;
-                }
-              double new_delta = float_vector_delta (sines, audio_blocks[frame].debug_samples);
-              if (new_delta > delta)      // approximation is _not_ better
-                sines = old_sines;
-              else
-                {
-                  good_freqs.push_back (f);
-                  good_phases.push_back (smag);
-                  good_phases.push_back (cmag);
-                }
-            }
-        }
-      while (max_mag > 0);
-
-      audio_blocks[frame].freqs = good_freqs;
-      audio_blocks[frame].phases = good_phases;
-#endif
 
       fill (in.begin(), in.end(), 0);
-
-      // compute spectrum of isolated sine frequencies from audio spectrum
-      for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
-	{
-	  double phase = 0;
-	  for (size_t k = 0; k < block_size; k++)
-	    {
-	      double freq = audio_blocks[frame].freqs[i];
-	      double re = audio_blocks[frame].phases[i * 2];
-	      double im = audio_blocks[frame].phases[i * 2 + 1];
-	      double mag = sqrt (re * re + im * im);
-	      phase += freq / mix_freq * 2 * M_PI;
-	      in[k] += mag * sin (phase) * window[k];
-	    }
-	}
-      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
-      out[block_size * zeropad] = out[1];
-      out[block_size * zeropad + 1] = 0;
-      out[1] = 0;
-
-      // subtract spectrum from audio spectrum
-      for (size_t d = 0; d < block_size * zeropad; d += 2)
-	{
-	  double re = out[d], im = out[d + 1];
-	  double sub_mag = sqrt (re * re + im * im);
-	  debug ("subspectrum:%lld %g\n", frame, sub_mag);
-
-	  double mag = magnitude (audio_blocks[frame].meaning.begin() + d);
-	  debug ("spectrum:%lld %g\n", frame, mag);
-	  if (mag > 0)
-	    {
-	      audio_blocks[frame].meaning[d] /= mag;
-	      audio_blocks[frame].meaning[d + 1] /= mag;
-	      mag -= sub_mag;
-	      if (mag < 0)
-		mag = 0;
-	      audio_blocks[frame].meaning[d] *= mag;
-	      audio_blocks[frame].meaning[d + 1] *= mag;
-	    }
-	  debug ("finalspectrum:%lld %g\n", frame, mag);
-	}
     }
-
-#if 0 // FIXME
-  if (options.debug)
-    {
-      /* residual resynthesis */
-      FILE *res = fopen ("/tmp/stwenc.res", "w");
-      vector<double> residual;
-      for (uint64 frame = 0; frame < audio_blocks.length(); frame++)
-	{
-	  vector<double> res (audio_blocks[frame]->meaning.begin(), audio_blocks[frame]->meaning.end());
-	  vector<double> rout (res.size());
-	  gsl_power2_fftsr (block_size * zeropad, &res[0], &rout[0]);
-	  for (int i = 0; i < block_size; i++)
-	    {
-	      size_t pos = frame * block_size / overlap + i;
-	      residual.resize (max (residual.size(), pos + 1));
-	      residual[pos] += rout[i] * window[i];
-	    }
-	}
-      for (uint64 i = 0; i < residual.size(); i++)
-	{
-	  short s = residual[i] * 32760;
-	  fwrite (&s, 2, 1, res);
-	}
-      fclose (res);
-    }
-#endif
-
-  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
-    {
-      vector<double> noise_envelope (256);
-      vector<double> spectrum (audio_blocks[frame].meaning.begin(), audio_blocks[frame].meaning.end());
-
-      approximate_noise_spectrum (frame, spectrum, noise_envelope);
-
-      vector<double> approx_spectrum (2050);
-      xnoise_envelope_to_spectrum (noise_envelope, approx_spectrum);
-      for (int i = 0; i < 2048; i += 2)
-	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
-      audio_blocks[frame].meaning.resize (noise_envelope.size());
-      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].meaning.begin());
-    }
-
-  SpectMorph::Audio audio;
-  audio.fundamental_freq = options.fundamental_freq;
-  audio.mix_freq = enc_params.mix_freq;
-  audio.frame_size_ms = enc_params.frame_size_ms;
-  audio.frame_step_ms = enc_params.frame_step_ms;
-  audio.zeropad = zeropad;
-  audio.contents = audio_blocks;
-  STWAFile::save (argv[2], audio);
+  encoder.spectral_subtract (window);
+  encoder.approx_noise();
+  encoder.save (argv[2], options.fundamental_freq);
 }
