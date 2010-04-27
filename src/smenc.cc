@@ -500,10 +500,12 @@ remove_small_partials (AudioBlock& audio_block)
 
 struct EncoderParams
 {
-  float mix_freq;       /* mix_freq of the original audio file */
-  float frame_step_ms;  /* step size for analysis frames */
-  float frame_size_ms;  /* size of one analysis frame */
-  int   zeropad;        /* lower bound for zero padding during analysis */
+  float   mix_freq;       /* mix_freq of the original audio file */
+  float   frame_step_ms;  /* step size for analysis frames */
+  float   frame_size_ms;  /* size of one analysis frame */
+  int     zeropad;        /* lower bound for zero padding during analysis */
+  size_t  frame_size;     /* frame size */
+  size_t  block_size;     /* analysis block size */
 };
 
 void
@@ -533,137 +535,30 @@ wintrans (const vector<float>& window)
     }
 }
 
-int
-main (int argc, char **argv)
+class Encoder
 {
   EncoderParams enc_params;
-
-  /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
-  options.parse (&argc, &argv);
-
-  if (argc != 3)
-    {
-      options.print_usage();
-      exit (1);
-    }
-
-  /* open input */
-  BseErrorType error;
-
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
-  if (!wave_file_info)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  error = gsl_data_handle_open (dhandle);
-  if (error)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  const double mix_freq = gsl_data_handle_mix_freq (dhandle);
-  const int    zeropad  = 4;
-
-  enc_params.mix_freq = mix_freq;
-  enc_params.zeropad  = zeropad;
-  enc_params.frame_size_ms = 40;
-  if (options.fundamental_freq > 0)
-    {
-      enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
-    }
-  enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
-
-  const size_t  frame_size = mix_freq * 0.001 * enc_params.frame_size_ms;
-
-  /* compute block size from frame size (smallest 2^k value >= frame_size) */
-  uint64 block_size = 1;
-  while (block_size < frame_size)
-    block_size *= 2;
-
-  const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
-
-  if (options.fundamental_freq > 0)
-    fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
-  fprintf (stderr, "frame_size = %zd (%f ms)\n", frame_size, enc_params.frame_size_ms);
-  vector<float>  block (block_size);
-  vector<float> window (block.size());
-  vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
-  vector<double> last_phase (block_size * zeropad + 2);
+public:
+  Encoder (const EncoderParams& enc_params)
+  {
+    this->enc_params = enc_params;
+  }
   vector<AudioBlock> audio_blocks;
 
-  for (guint i = 0; i < window.size(); i++)
-    {
-      if (i < frame_size)
-        window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
-      else
-        window[i] = 0;
-    }
+  void search_local_maxima (vector< vector<Tracksel> >& frame_tracksels);
+  void link_partials (vector< vector<Tracksel> >& frame_tracksels);
+  void validate_partials (vector< vector<Tracksel> >& frame_tracksels);
+};
 
-  fprintf (stderr, "%s: %d channels, %lld values\n", argv[1], gsl_data_handle_n_channels (dhandle), n_values);
+void
+Encoder::search_local_maxima (vector< vector<Tracksel> >& frame_tracksels)
+{
+  const size_t block_size = enc_params.block_size;
+  const size_t frame_size = enc_params.frame_size;
+  const int    zeropad    = enc_params.zeropad;
+  const double mix_freq   = enc_params.mix_freq;
 
-  if (gsl_data_handle_n_channels (dhandle) != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
-      exit (1);
-    }
-  fprintf (stderr, "block_size = %lld\n", block_size);
-
-  //wintrans (window);
-
-  for (uint64 pos = 0; pos < n_values; pos += frame_step)
-    {
-      AudioBlock audio_block;
-
-      /* read data from file, zeropad last blocks */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      if (r != block.size())
-        {
-          while (r < block.size())
-            block[r++] = 0;
-        }
-      vector<float> debug_samples (block.begin(), block.end());
-      Bse::Block::mul (block_size, &block[0], &window[0]);
-      std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
-
-      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
-      out[block_size * zeropad] = out[1];
-      out[block_size * zeropad + 1] = 0;
-      out[1] = 0;
-
-      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
-      audio_block.original_fft.assign (out.begin(), out.end());
-      audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
-
-      audio_blocks.push_back (audio_block);
-    }
-  // Track frequencies step #0: find maximum of all values
+  // find maximum of all values
   double max_mag = 0;
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
@@ -673,8 +568,7 @@ main (int argc, char **argv)
 	}
     }
 
-  // Track frequencies step #1: search for local maxima as potential track candidates
-  vector< vector<Tracksel> > frame_tracksels (audio_blocks.size()); /* Analog to Canny Algorithms edgels */
+
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
       vector<double> mag_values (audio_blocks[n].meaning.size() / 2);
@@ -753,8 +647,11 @@ main (int argc, char **argv)
             }
 	}
     }
+}
 
-  // Track frequencies step #2: link lists together
+void
+Encoder::link_partials (vector< vector<Tracksel> >& frame_tracksels)
+{
   for (size_t n = 0; n + 1 < audio_blocks.size(); n++)
     {
       Tracksel *crosslink_i, *crosslink_j;
@@ -790,7 +687,11 @@ main (int argc, char **argv)
 	    }
 	} while (crosslink_i);
     }
-  // Track frequencies step #3: discard edges where -25 dB is not exceeded once
+}
+
+void
+Encoder::validate_partials (vector< vector<Tracksel> >& frame_tracksels)
+{
   map<Tracksel *, bool> processed_tracksel;
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
@@ -819,41 +720,159 @@ main (int argc, char **argv)
 #endif
 
 		      audio_blocks[t->frame].freqs.push_back (t->freq);
-		      //audio_blocks[t->frame].phases.push_back (t->mag);
 		      audio_blocks[t->frame].phases.push_back (t->phaseb);
 		      audio_blocks[t->frame].phases.push_back (t->phasea);
-                      // empiric phasea / phaseb
-#if 0
-                      double esa = 0;
-                      double eca = 0;
-                      double phase = 0;
-                      for (size_t x = 0; x < frame_size; x++)
-                        {
-                          double v = audio_blocks[t->frame].debug_samples[x];
-                          esa += sin (phase) * v / 1000;
-                          eca += cos (phase) * v / 1000;
-                          phase += t->freq / mix_freq * 2.0 * M_PI;
-                        }
-#endif
-		      //audio_blocks[t->frame].phases.push_back (esa);
-		      //audio_blocks[t->frame].phases.push_back (eca);
-                      //printf ("%f %f %f %f\n", atan (t->phaseb / t->phasea), atan (esa / eca), t->phaseb, esa);
-#if 0  /* better: spectrum subtraction */
-		      for (int clean = t->d - 4; clean <= t->d + 4; clean += 2)
-			{
-			  if (clean >= 0 && clean < block_size)
-			    {
-			      *(audio_blocks[t->frame]->meaning.begin() + clean) = 0.0;
-			      *(audio_blocks[t->frame]->meaning.begin() + clean + 1) = 0.0;
-			    }
-			}
-#endif
 		    }
 		}
 	    }
 	}
     }
+}
 
+int
+main (int argc, char **argv)
+{
+  EncoderParams enc_params;
+
+  /* init */
+  SfiInitValue values[] = {
+    { "stand-alone",            "true" }, /* no rcfiles etc. */
+    { "wave-chunk-padding",     NULL, 1, },
+    { "dcache-block-size",      NULL, 8192, },
+    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
+    { NULL }
+  };
+  bse_init_inprocess (&argc, &argv, NULL, values);
+  options.parse (&argc, &argv);
+
+  if (argc != 3)
+    {
+      options.print_usage();
+      exit (1);
+    }
+
+  /* open input */
+  BseErrorType error;
+
+  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
+  if (!wave_file_info)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      exit (1);
+    }
+
+  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
+  if (!waveDsc)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      exit (1);
+    }
+
+  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
+  if (!dhandle)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      exit (1);
+    }
+
+  error = gsl_data_handle_open (dhandle);
+  if (error)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      exit (1);
+    }
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  const double mix_freq = gsl_data_handle_mix_freq (dhandle);
+  const int    zeropad  = 4;
+
+  enc_params.mix_freq = mix_freq;
+  enc_params.zeropad  = zeropad;
+  enc_params.frame_size_ms = 40;
+  if (options.fundamental_freq > 0)
+    {
+      enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
+    }
+  enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
+
+  const size_t  frame_size = mix_freq * 0.001 * enc_params.frame_size_ms;
+
+  /* compute block size from frame size (smallest 2^k value >= frame_size) */
+  uint64 block_size = 1;
+  while (block_size < frame_size)
+    block_size *= 2;
+
+  enc_params.frame_size = frame_size;
+  enc_params.block_size = block_size;
+
+  const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
+
+  if (options.fundamental_freq > 0)
+    fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
+  fprintf (stderr, "frame_size = %zd (%f ms)\n", frame_size, enc_params.frame_size_ms);
+
+  Encoder encoder (enc_params);
+
+  vector<float>  block (block_size);
+  vector<float> window (block.size());
+  vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
+  vector<AudioBlock>& audio_blocks = encoder.audio_blocks;
+
+  for (guint i = 0; i < window.size(); i++)
+    {
+      if (i < frame_size)
+        window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+      else
+        window[i] = 0;
+    }
+
+  fprintf (stderr, "%s: %d channels, %lld values\n", argv[1], gsl_data_handle_n_channels (dhandle), n_values);
+
+  if (gsl_data_handle_n_channels (dhandle) != 1)
+    {
+      fprintf (stderr, "Currently, only mono files are supported.\n");
+      exit (1);
+    }
+  fprintf (stderr, "block_size = %lld\n", block_size);
+
+  //wintrans (window);
+
+  for (uint64 pos = 0; pos < n_values; pos += frame_step)
+    {
+      AudioBlock audio_block;
+
+      /* read data from file, zeropad last blocks */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      if (r != block.size())
+        {
+          while (r < block.size())
+            block[r++] = 0;
+        }
+      vector<float> debug_samples (block.begin(), block.end());
+      Bse::Block::mul (block_size, &block[0], &window[0]);
+      std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
+
+      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
+      out[block_size * zeropad] = out[1];
+      out[block_size * zeropad + 1] = 0;
+      out[1] = 0;
+
+      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
+      audio_block.original_fft.assign (out.begin(), out.end());
+      audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
+
+      audio_blocks.push_back (audio_block);
+    }
+  // Track frequencies step #0: find maximum of all values
+  // Track frequencies step #1: search for local maxima as potential track candidates
+  vector< vector<Tracksel> > frame_tracksels (audio_blocks.size()); /* Analog to Canny Algorithms edgels */
+  encoder.search_local_maxima (frame_tracksels);
+
+  // Track frequencies step #2: link lists together
+  encoder.link_partials (frame_tracksels);
+  // Track frequencies step #3: discard edges where -25 dB is not exceeded once
+  encoder.validate_partials (frame_tracksels);
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
