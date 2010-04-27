@@ -56,31 +56,6 @@ using SpectMorph::Tracksel;
 namespace ublas = boost::numeric::ublas;
 using ublas::matrix;
 
-/* Matrix inversion routine.
-  Uses lu_factorize and lu_substitute in uBLAS to invert a matrix */
-template<class T>
-bool invert_matrix (const ublas::matrix<T>& input, ublas::matrix<T>& inverse)
-{
-  using namespace boost::numeric::ublas;
-  typedef permutation_matrix<std::size_t> pmatrix;
-  // create a working copy of the input
-  matrix<T> A(input);
-  // create a permutation matrix for the LU-factorization
-  pmatrix pm(A.size1());
-
-  // perform LU-factorization
-  int res = lu_factorize(A,pm);
-  if( res != 0 ) return false;
-
-  // create identity matrix of "inverse"
-  inverse.assign(ublas::identity_matrix<T>(A.size1()));
-
-  // backsubstitute to get the inverse
-  lu_substitute(A, pm, inverse);
-
-  return true;
-}
-
 float
 freqFromNote (float note)
 {
@@ -208,27 +183,6 @@ debug (const char *dbg, ...)
     va_end (ap);
 }
 
-bool
-check_harmonic (double freq, double& new_freq, double mix_freq)
-{
-  if (options.fundamental_freq > 0)
-    {
-      for (int i = 1; i < 100; i++)
-	{
-	  double base_freq = (mix_freq/2048*16);
-	  double harmonic_freq = i * base_freq;
-	  double diff = fabs (harmonic_freq - freq) / base_freq;
-	  if (diff < 0.125)
-	    {
-	      new_freq = harmonic_freq;
-	      return true;
-	    }
-	}
-    }
-  new_freq = freq;
-  return false;
-}
-
 double
 magnitude (vector<float>::iterator i)
 {
@@ -244,23 +198,6 @@ float_vector_delta (const vector<float>& a, const vector<float>& b)
   for (size_t i = 0; i < a.size(); i++)
     d += (a[i] - b[i]) * (a[i] - b[i]);
   return d;
-}
-
-template<class X, class Y>
-void
-print_matrix (const string& name, const matrix<X,Y>& A)
-{
-  printf ("%s = {\n", name.c_str());
-  for (size_t i = 0; i < A.size1(); i++)
-    {
-      printf ("  ");
-      for (size_t j = 0; j < A.size2(); j++)
-        {
-          printf ("%+2.8f ", A(i,j));
-        }
-      printf ("\n");
-    }
-  printf ("}\n");
 }
 
 // find best fit of amplitudes / phases to the observed signal
