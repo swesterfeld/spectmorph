@@ -63,7 +63,7 @@ main (int argc, char **argv)
     }
 
   SpectMorph::Audio audio;
-  BseErrorType file_error = STWAFile::load (argv[1], audio);
+  BseErrorType file_error = SpectMorph::AudioFile::load (argv[1], audio);
   if (file_error)
     {
       fprintf (stderr, "can't read input file: %s\n", bse_error_blurb (file_error));

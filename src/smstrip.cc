@@ -27,7 +27,7 @@ main (int argc, char **argv)
       exit (1);
     }
   SpectMorph::Audio audio;
-  BseErrorType error = STWAFile::load (argv[1], audio);
+  BseErrorType error = SpectMorph::AudioFile::load (argv[1], audio);
   if (error)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
@@ -38,5 +38,5 @@ main (int argc, char **argv)
       audio.contents[i].debug_samples.clear();
       audio.contents[i].original_fft.clear();
     }
-  STWAFile::save (argv[1], audio);
+  SpectMorph::AudioFile::save (argv[1], audio);
 }

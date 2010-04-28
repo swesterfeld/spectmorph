@@ -15,12 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_AFILE_HH
+#define SPECTMORPH_AFILE_HH
+
 #include "smaudio.hh"
 #include <bse/bsecxxplugin.hh>
 #include <string>
 
-namespace STWAFile
+namespace SpectMorph
+{
+
+namespace AudioFile
 {
     BseErrorType load (const std::string& filename, SpectMorph::Audio& audio_data);
     BseErrorType save (const std::string& filename, const SpectMorph::Audio& audio_data);
 };
+
+};
+
+#endif

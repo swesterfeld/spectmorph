@@ -669,7 +669,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.frame_step_ms = enc_params.frame_step_ms;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
-  STWAFile::save (filename, audio);
+  SpectMorph::AudioFile::save (filename, audio);
 }
 
 

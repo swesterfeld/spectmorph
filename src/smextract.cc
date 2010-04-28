@@ -148,7 +148,7 @@ main (int argc, char **argv)
   bse_init_inprocess (&argc, &argv, NULL, NULL);
 
   SpectMorph::Audio audio;
-  BseErrorType error = STWAFile::load (argv[1], audio);
+  BseErrorType error = SpectMorph::AudioFile::load (argv[1], audio);
   if (error)
     {
       fprintf (stderr, "can't load file: %s\n", argv[1]);

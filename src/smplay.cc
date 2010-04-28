@@ -205,7 +205,7 @@ main (int argc, char **argv)
   BseErrorType error;
 
   SpectMorph::Audio audio;
-  error = STWAFile::load (argv[1], audio);
+  error = SpectMorph::AudioFile::load (argv[1], audio);
   if (error)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));

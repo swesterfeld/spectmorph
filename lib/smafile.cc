@@ -206,8 +206,8 @@ IFile::event_float_block()
 }
 
 BseErrorType
-STWAFile::load (const string& file_name,
-                SpectMorph::Audio& audio_out)
+SpectMorph::AudioFile::load (const string& file_name,
+                             SpectMorph::Audio& audio_out)
 {
   SpectMorph::Audio audio;
   SpectMorph::AudioBlock *audio_block = NULL;
@@ -427,8 +427,8 @@ OFile::write_float_block (const string& s,
 }
 
 BseErrorType
-STWAFile::save (const string& file_name,
-                const SpectMorph::Audio& audio)
+SpectMorph::AudioFile::save (const string& file_name,
+                             const SpectMorph::Audio& audio)
 {
   OFile of (file_name.c_str());
   if (!of.open_ok())
