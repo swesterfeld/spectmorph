@@ -36,6 +36,7 @@
 
 using SpectMorph::Encoder;
 using SpectMorph::AudioBlock;
+using SpectMorph::Tracksel;
 using std::vector;
 using std::string;
 using std::map;
@@ -189,43 +190,102 @@ Encoder::search_local_maxima (vector< vector<Tracksel> >& frame_tracksels)
     }
 }
 
+struct
+PeakIndex
+{
+  double                      freq;
+  vector<Tracksel>::iterator  i;
+  PeakIndex                  *prev;
+  double                      prev_delta;
+
+  PeakIndex (double freq, vector<Tracksel>::iterator i)
+    : freq (freq), i (i), prev (0), prev_delta (0)
+  {
+  }
+};
+
+bool
+partial_index_cmp (const PeakIndex& a, const PeakIndex& b)
+{
+  return a.freq < b.freq;
+}
+
+/**
+ * This function links the spectral peaks (contained in the Tracksel structure)
+ * of successive frames together by setting the prev and next pointers. It
+ * tries to minimize the frequency difference between the peaks that are linked
+ * together, while using a threshold of 5% frequency derivation.
+ */
 void
 Encoder::link_partials (vector< vector<Tracksel> >& frame_tracksels)
 {
   for (size_t n = 0; n + 1 < audio_blocks.size(); n++)
     {
-      Tracksel *crosslink_i, *crosslink_j;
-      do
-	{
-	  /* find a good pair of edges to link together */
-	  crosslink_i = crosslink_j = 0;
-	  double best_crossmag = -200;
-	  vector<Tracksel>::iterator i, j;
-	  for (i = frame_tracksels[n].begin(); i != frame_tracksels[n].end(); i++)
-	    {
-	      for (j = frame_tracksels[n + 1].begin(); j != frame_tracksels[n + 1].end(); j++)
-		{
-		  if (!i->next && !j->prev)
-		    {
-		      if (fabs (i->freq - j->freq) / i->freq < 0.05) /* 5% frequency derivation */
-			{
-			  double crossmag = i->mag2 + j->mag2;
-			  if (crossmag > best_crossmag)
-			    {
-			      best_crossmag = crossmag;
-			      crosslink_i = &(*i);
-			      crosslink_j = &(*j);
-			    }
-			}
-		    }
-		}
-	    }
-	  if (crosslink_i && crosslink_j)
-	    {
-	      crosslink_i->next = crosslink_j;
-	      crosslink_j->prev = crosslink_i;
-	    }
-	} while (crosslink_i);
+      // build sorted index for this frame
+      vector<PeakIndex> current_index;
+      for (vector<Tracksel>::iterator i = frame_tracksels[n].begin(); i != frame_tracksels[n].end(); i++)
+        current_index.push_back (PeakIndex (i->freq, i));
+      sort (current_index.begin(), current_index.end(), partial_index_cmp);
+
+      // build sorted index for next frame
+      vector<PeakIndex> next_index;
+      for (vector<Tracksel>::iterator i = frame_tracksels[n + 1].begin(); i != frame_tracksels[n + 1].end(); i++)
+        next_index.push_back (PeakIndex (i->freq, i));
+      sort (next_index.begin(), next_index.end(), partial_index_cmp);
+
+      vector<PeakIndex>::iterator ci = current_index.begin();
+      vector<PeakIndex>::iterator ni = next_index.begin();
+      if (ni != next_index.end())    // if current or next frame are empty (no peaks) there is nothing to do
+        {
+          while (ci != current_index.end())
+            {
+              /*
+               * increment ni as long as incrementing it makes ni point to a
+               * better (closer) peak below ci's frequency
+               */
+              vector<PeakIndex>::iterator inc_ni;
+              do
+                {
+                  inc_ni = ni + 1;
+                  if (inc_ni < next_index.end() && inc_ni->freq < ci->freq)
+                    ni = inc_ni;
+                }
+              while (ni == inc_ni);
+
+              /*
+               * possible candidates for a match are
+               * - ni      - which contains the greatest peak with a smaller frequency than ci->freq
+               * - ni + 1  - which contains the smallest peak with a greater frequency that ci->freq
+               * => choose the candidate which is closer to ci->freq
+               */
+              vector<PeakIndex>::iterator besti = ni;
+              if (ni + 1 < next_index.end() && fabs (ci->freq - (ni + 1)->freq) < fabs (ci->freq - ni->freq))
+                besti = ni + 1;
+
+              const double delta = fabs (ci->freq - besti->freq) / ci->freq;
+              if (delta < 0.05) /* less than 5% frequency derivation */
+                {
+                  if (!besti->prev || besti->prev_delta > delta)
+                    {
+                      besti->prev = &(*ci);
+                      besti->prev_delta = delta;
+                    }
+                }
+              ci++;
+            }
+
+          /* link best matches (with the smallest frequency derivation) */
+          for (ni = next_index.begin(); ni != next_index.end(); ni++)
+            {
+              if (ni->prev)
+                {
+                  Tracksel *crosslink_a = &(*ni->prev->i);
+                  Tracksel *crosslink_b = &(*ni->i);
+                  crosslink_a->next = crosslink_b;
+                  crosslink_b->prev = crosslink_a;
+                }
+            }
+        }
     }
 }
 

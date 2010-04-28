@@ -7,7 +7,7 @@ bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
 SMHDRS =  frame.hh noisedecoder.hh sinedecoder.hh stwutils.hh
 
 smenc_SOURCES = smenc.cc $(SMHDRS)
-smenc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(LAPACK_LIBS)
+smenc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smplay_SOURCES = smplay.cc sinedecoder.cc noisedecoder.cc frame.cc $(SMHDRS)
 smplay_LDADD = $(BSE_LIBS) $(AO_LIBS) $(SPECTMORPH_LIBS)
