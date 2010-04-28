@@ -33,7 +33,7 @@
 #include <assert.h>
 #include <math.h>
 #include "smnoisedecoder.hh"
-#include "sinedecoder.hh"
+#include "smsinedecoder.hh"
 #include "config.h"
 
 #include <list>

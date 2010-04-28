@@ -4,12 +4,12 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
 
-SMHDRS = sinedecoder.hh stwutils.hh
+SMHDRS = stwutils.hh
 
 smenc_SOURCES = smenc.cc $(SMHDRS)
 smenc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
-smplay_SOURCES = smplay.cc sinedecoder.cc $(SMHDRS)
+smplay_SOURCES = smplay.cc $(SMHDRS)
 smplay_LDADD = $(BSE_LIBS) $(AO_LIBS) $(SPECTMORPH_LIBS)
 
 smvisualize_SOURCES = smvisualize.cc $(SMHDRS)
