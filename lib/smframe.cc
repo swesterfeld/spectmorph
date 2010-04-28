@@ -17,7 +17,7 @@
 
 #include "smframe.hh"
 
-using Stw::Codec::Frame;
+using SpectMorph::Frame;
 
 Frame::Frame (size_t frame_size)
   : frame_size (frame_size)

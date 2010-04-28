@@ -39,9 +39,7 @@
 #include <list>
 
 using namespace Birnet;
-using Stw::Codec::NoiseDecoder;
-using Stw::Codec::SineDecoder;
-using Stw::Codec::Frame;
+using namespace SpectMorph;
 using std::max;
 
 struct Options
@@ -275,8 +273,8 @@ main (int argc, char **argv)
 
   if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)
     {
-      Stw::Codec::Frame zero_frame (frame_size);
-      Stw::Codec::Frame one_frame (audio.contents[0], frame_size);
+      Frame zero_frame (frame_size);
+      Frame one_frame (audio.contents[0], frame_size);
       sample.resize (pos + frame_size);
 
       if (options.sines_enabled)
@@ -294,8 +292,8 @@ main (int argc, char **argv)
       size_t n4 = n / 1;
       size_t n4_1 = (n + 1) / 1;
 
-      Stw::Codec::Frame frame (audio.contents[n4 > loop_point ? loop_point : n4], frame_size);
-      Stw::Codec::Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
+      Frame frame (audio.contents[n4 > loop_point ? loop_point : n4], frame_size);
+      Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
 
       sample.resize (pos + frame_size);
 

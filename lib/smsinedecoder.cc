@@ -20,8 +20,8 @@
 #include <stdio.h>
 #include <math.h>
 
-using Stw::Codec::SineDecoder;
-using Stw::Codec::Frame;
+using SpectMorph::SineDecoder;
+using SpectMorph::Frame;
 using std::vector;
 
 void

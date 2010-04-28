@@ -16,13 +16,12 @@
  */
 
 
-#ifndef __STWFRAME_HH__
-#define __STWFRAME_HH__
+#ifndef SPECTMORPH_FRAME_HH
+#define SPECTMORPH_FRAME_HH
 
 #include "smaudio.hh"
 
-namespace Stw {
-namespace Codec {
+namespace SpectMorph {
 
 class Frame
 {
@@ -39,7 +38,6 @@ public:
   std::vector<float>  debug_samples;
 };
 
-}
 }
 
 #endif

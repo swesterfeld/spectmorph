@@ -22,7 +22,8 @@
 #include <math.h>
 
 using std::vector;
-using Stw::Codec::NoiseDecoder;
+using SpectMorph::NoiseDecoder;
+using SpectMorph::Frame;
 
 NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq) :
   orig_mix_freq (orig_mix_freq),
@@ -88,7 +89,7 @@ next_power2 (size_t i)
 }
 
 void
-NoiseDecoder::process (Stw::Codec::Frame& frame,
+NoiseDecoder::process (Frame& frame,
 		       const vector<double>& window)
 {
   const size_t block_size = next_power2 (frame.decoded_residue.size());

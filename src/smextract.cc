@@ -24,7 +24,7 @@
 #include <bse/bsemathsignal.h>
 #include <bse/gslfft.h>
 
-using Stw::Codec::Frame;
+using SpectMorph::Frame;
 using SpectMorph::AudioBlock;
 using std::vector;
 

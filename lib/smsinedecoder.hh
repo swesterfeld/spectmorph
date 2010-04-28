@@ -16,15 +16,13 @@
  */
 
 
-#ifndef __SINEDECODER_HH__
-#define __SINEDECODER_HH__
+#ifndef SPECTMORPH_SINEDECODER_HH
+#define SPECTMORPH_SINEDECODER_HH
 
 #include "smframe.hh"
 #include <vector>
 
-namespace Stw {
-
-namespace Codec {
+namespace SpectMorph {
 
 class SineDecoder
 {
@@ -51,8 +49,6 @@ public:
                 Frame& next_frame,
                 const std::vector<double>& window);
 };
-
-}
 
 }
 #endif

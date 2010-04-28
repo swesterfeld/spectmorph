@@ -16,15 +16,12 @@
  */
 
 
-#ifndef __STW_NOISE_DECODER_HH__
-#define __STW_NOISE_DECODER_HH__ 
+#ifndef SPECTMORPH_NOISE_DECODER_HH
+#define SPECTMORPH_NOISE_DECODER_HH
 
 #include "smframe.hh"
 
-namespace Stw
-{
-
-namespace Codec
+namespace SpectMorph
 {
 
 class NoiseDecoder
@@ -37,11 +34,10 @@ public:
   NoiseDecoder (double orig_mix_freq,
                 double mix_freq);
 
-  void process (Stw::Codec::Frame& frame,
+  void process (Frame& frame,
                 const std::vector<double>& window);
 };
 
-}
 }
 
 #endif
