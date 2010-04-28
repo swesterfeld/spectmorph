@@ -15,33 +15,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "smframe.hh"
 
-#ifndef __STW_NOISE_DECODER_HH__
-#define __STW_NOISE_DECODER_HH__ 
+using Stw::Codec::Frame;
 
-#include "frame.hh"
-
-namespace Stw
+Frame::Frame (size_t frame_size)
+  : frame_size (frame_size)
 {
-
-namespace Codec
-{
-
-class NoiseDecoder
-{
-  double orig_mix_freq;
-  double mix_freq;
-
-  void noise_envelope_to_spectrum (const std::vector<double>& envelope, std::vector<double>& spectrum);
-public:
-  NoiseDecoder (double orig_mix_freq,
-                double mix_freq);
-
-  void process (Stw::Codec::Frame& frame,
-                const std::vector<double>& window);
-};
-
-}
+  decoded_residue.resize (frame_size);
+  decoded_sines.resize (frame_size);
+  noise_envelope.resize (256);
 }
 
-#endif
+Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
+    frame_size (frame_size),
+    freqs (audio_block.freqs.begin(), audio_block.freqs.end()),
+    phases (audio_block.phases.begin(), audio_block.phases.end()),
+    noise_envelope (audio_block.meaning.begin(), audio_block.meaning.end()),
+    debug_samples (audio_block.debug_samples)
+{
+  decoded_residue.resize (frame_size);
+  decoded_sines.resize (frame_size);
+}

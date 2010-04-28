@@ -19,7 +19,7 @@
 #ifndef __SINEDECODER_HH__
 #define __SINEDECODER_HH__
 
-#include "frame.hh"
+#include "smframe.hh"
 #include <vector>
 
 namespace Stw {

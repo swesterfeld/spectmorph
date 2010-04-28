@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <bse/bsemain.h>
 #include "smafile.hh"
-#include "frame.hh"
+#include "smframe.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
 #include <bse/gslfft.h>

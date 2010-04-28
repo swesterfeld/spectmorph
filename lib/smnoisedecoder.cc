@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "noisedecoder.hh"
+#include "smnoisedecoder.hh"
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
 #include <stdio.h>

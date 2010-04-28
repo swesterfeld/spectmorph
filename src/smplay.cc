@@ -26,13 +26,13 @@
 #include <sfi/sfiparams.h>
 #include "smaudio.hh"
 #include "smafile.hh"
-#include "frame.hh"
+#include "smframe.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <ao/ao.h>
 #include <assert.h>
 #include <math.h>
-#include "noisedecoder.hh"
+#include "smnoisedecoder.hh"
 #include "sinedecoder.hh"
 #include "config.h"
 
