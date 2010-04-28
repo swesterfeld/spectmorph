@@ -379,18 +379,21 @@ Encoder::spectral_subtract (const vector<float>& window)
     {
       vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
 
-      // compute spectrum of isolated sine frequencies from audio spectrum
       for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
 	{
+          const double freq = audio_blocks[frame].freqs[i];
+	  const double smag = audio_blocks[frame].phases[i * 2];
+	  const double cmag = audio_blocks[frame].phases[i * 2 + 1];
+
 	  double phase = 0;
+          double s, c;
 	  for (size_t k = 0; k < enc_params.block_size; k++)
 	    {
-	      double freq = audio_blocks[frame].freqs[i];
-	      double re = audio_blocks[frame].phases[i * 2];
-	      double im = audio_blocks[frame].phases[i * 2 + 1];
-	      double mag = sqrt (re * re + im * im);
+              sincos (phase, &s, &c);
+	      in[k] += (smag * s + cmag * c) * window[k];
 	      phase += freq / enc_params.mix_freq * 2 * M_PI;
-	      in[k] += mag * sin (phase) * window[k];
+              while (phase > 2 * M_PI)
+                phase -= 2 * M_PI;
 	    }
 	}
       gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
