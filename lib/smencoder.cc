@@ -27,6 +27,7 @@
 #include <boost/numeric/bindings/lapack/lapack.hpp>
 
 #include <bse/bsemathsignal.h>
+#include <bse/bseblockutils.hh>
 #include <bse/gslfft.h>
 #include <math.h>
 #include <stdio.h>
@@ -90,6 +91,45 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
   return false;
 }
 
+void
+Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
+{
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  const size_t frame_size = enc_params.frame_size;
+  const size_t block_size = enc_params.block_size;
+  const int    zeropad    = enc_params.zeropad;
+
+  vector<float> block (block_size);
+  vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
+
+  for (uint64 pos = 0; pos < n_values; pos += enc_params.frame_step)
+    {
+      AudioBlock audio_block;
+
+      /* read data from file, zeropad last blocks */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      if (r != block.size())
+        {
+          while (r < block.size())
+            block[r++] = 0;
+        }
+      vector<float> debug_samples (block.begin(), block.end());
+      Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
+      std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
+
+      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
+      out[block_size * zeropad] = out[1];
+      out[block_size * zeropad + 1] = 0;
+      out[1] = 0;
+
+      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
+      audio_block.original_fft.assign (out.begin(), out.end());
+      audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
+
+      audio_blocks.push_back (audio_block);
+    }
+}
 
 void
 Encoder::search_local_maxima (vector< vector<Tracksel> >& frame_tracksels)

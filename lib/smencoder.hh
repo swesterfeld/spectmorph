@@ -21,6 +21,7 @@
 #include <sys/types.h>
 #include <vector>
 #include <string>
+#include <bse/gsldatautils.h>
 
 #include "smaudio.hh"
 
@@ -33,6 +34,7 @@ struct EncoderParams
   float   frame_step_ms;    /* step size for analysis frames */
   float   frame_size_ms;    /* size of one analysis frame */
   int     zeropad;          /* lower bound for zero padding during analysis */
+  size_t  frame_step;       /* frame step */
   size_t  frame_size;       /* frame size */
   size_t  block_size;       /* analysis block size */
   double  fundamental_freq; /* user defined fundamental freq */
@@ -63,6 +65,7 @@ public:
   }
   std::vector<AudioBlock> audio_blocks;
 
+  void compute_stft (GslDataHandle *dhandle, const std::vector<float>& window);
   void search_local_maxima (std::vector< std::vector<Tracksel> >& frame_tracksels);
   void link_partials (std::vector< std::vector<Tracksel> >& frame_tracksels);
   void validate_partials (std::vector< std::vector<Tracksel> >& frame_tracksels);

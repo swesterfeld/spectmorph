@@ -267,16 +267,16 @@ main (int argc, char **argv)
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
 
   const size_t  frame_size = mix_freq * 0.001 * enc_params.frame_size_ms;
+  const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
 
   /* compute block size from frame size (smallest 2^k value >= frame_size) */
   uint64 block_size = 1;
   while (block_size < frame_size)
     block_size *= 2;
 
+  enc_params.frame_step = frame_step;
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
-
-  const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
 
   if (options.fundamental_freq > 0)
     fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
@@ -308,33 +308,7 @@ main (int argc, char **argv)
 
   //wintrans (window);
 
-  for (uint64 pos = 0; pos < n_values; pos += frame_step)
-    {
-      AudioBlock audio_block;
-
-      /* read data from file, zeropad last blocks */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      if (r != block.size())
-        {
-          while (r < block.size())
-            block[r++] = 0;
-        }
-      vector<float> debug_samples (block.begin(), block.end());
-      Bse::Block::mul (block_size, &block[0], &window[0]);
-      std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
-
-      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
-      out[block_size * zeropad] = out[1];
-      out[block_size * zeropad + 1] = 0;
-      out[1] = 0;
-
-      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
-      audio_block.original_fft.assign (out.begin(), out.end());
-      audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
-
-      audio_blocks.push_back (audio_block);
-    }
+  encoder.compute_stft (dhandle, window);
   // Track frequencies step #0: find maximum of all values
   // Track frequencies step #1: search for local maxima as potential track candidates
   vector< vector<Tracksel> > frame_tracksels (audio_blocks.size()); /* Analog to Canny Algorithms edgels */
