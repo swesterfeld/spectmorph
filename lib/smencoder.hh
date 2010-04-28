@@ -63,12 +63,13 @@ public:
   {
     this->enc_params = enc_params;
   }
-  std::vector<AudioBlock> audio_blocks;
+  std::vector<AudioBlock>              audio_blocks;
+  std::vector< std::vector<Tracksel> > frame_tracksels; /* Analog to Canny Algorithms edgels */
 
   void compute_stft (GslDataHandle *dhandle, const std::vector<float>& window);
-  void search_local_maxima (std::vector< std::vector<Tracksel> >& frame_tracksels);
-  void link_partials (std::vector< std::vector<Tracksel> >& frame_tracksels);
-  void validate_partials (std::vector< std::vector<Tracksel> >& frame_tracksels);
+  void search_local_maxima();
+  void link_partials();
+  void validate_partials();
   void optimize_partials (const std::vector<float>& window, bool optimize);
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise();

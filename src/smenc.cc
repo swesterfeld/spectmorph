@@ -311,13 +311,12 @@ main (int argc, char **argv)
   encoder.compute_stft (dhandle, window);
   // Track frequencies step #0: find maximum of all values
   // Track frequencies step #1: search for local maxima as potential track candidates
-  vector< vector<Tracksel> > frame_tracksels (audio_blocks.size()); /* Analog to Canny Algorithms edgels */
-  encoder.search_local_maxima (frame_tracksels);
+  encoder.search_local_maxima();
 
   // Track frequencies step #2: link lists together
-  encoder.link_partials (frame_tracksels);
+  encoder.link_partials();
   // Track frequencies step #3: discard edges where -25 dB is not exceeded once
-  encoder.validate_partials (frame_tracksels);
+  encoder.validate_partials();
 
   encoder.optimize_partials (window, options.optimize);
 

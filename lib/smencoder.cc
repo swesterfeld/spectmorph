@@ -132,12 +132,16 @@ Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
 }
 
 void
-Encoder::search_local_maxima (vector< vector<Tracksel> >& frame_tracksels)
+Encoder::search_local_maxima()
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
   const int    zeropad    = enc_params.zeropad;
   const double mix_freq   = enc_params.mix_freq;
+
+  // initialize tracksel structure
+  frame_tracksels.clear();
+  frame_tracksels.resize (audio_blocks.size());
 
   // find maximum of all values
   double max_mag = 0;
@@ -148,7 +152,6 @@ Encoder::search_local_maxima (vector< vector<Tracksel> >& frame_tracksels)
 	  max_mag = std::max (max_mag, magnitude (audio_blocks[n].meaning.begin() + d));
 	}
     }
-
 
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
@@ -257,7 +260,7 @@ partial_index_cmp (const PeakIndex& a, const PeakIndex& b)
  * together, while using a threshold of 5% frequency derivation.
  */
 void
-Encoder::link_partials (vector< vector<Tracksel> >& frame_tracksels)
+Encoder::link_partials()
 {
   for (size_t n = 0; n + 1 < audio_blocks.size(); n++)
     {
@@ -330,7 +333,7 @@ Encoder::link_partials (vector< vector<Tracksel> >& frame_tracksels)
 }
 
 void
-Encoder::validate_partials (vector< vector<Tracksel> >& frame_tracksels)
+Encoder::validate_partials()
 {
   map<Tracksel *, bool> processed_tracksel;
   for (size_t n = 0; n < audio_blocks.size(); n++)
