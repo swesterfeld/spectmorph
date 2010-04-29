@@ -8,3 +8,5 @@ aclocal.m4
 config.log
 config.status
 autom4te.cache
+config.h
+config.h.in
