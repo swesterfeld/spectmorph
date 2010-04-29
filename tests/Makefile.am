@@ -3,9 +3,9 @@ SMPLAY = $(top_builddir)/src/smplay
 WAV2ASCII = $(top_builddir)/tools/wav2ascii
 DELTA = $(top_srcdir)/tools/delta.py
 
-EXTRA_DIST = saw440.wav
+EXTRA_DIST = saw440.wav sin440.wav sin440.py
 
-check: saw440-test
+check: saw440-test sin440-test
 
 saw440-test:
 	$(SMENC) -O $(srcdir)/saw440.wav saw440.sm
@@ -14,3 +14,11 @@ saw440-test:
 	$(WAV2ASCII) saw440-dec.wav > saw440-dec.txt
 	$(DELTA) saw440.txt saw440-dec.txt | LANG=C awk 'FNR > 3000 && FNR < 24000 { r += $$1 * $$1; c += 1 } END { print "Residual value: ",r/c; if (r/c > 5e-8) exit(1); else exit (0);}'
 	rm -f saw440.sm saw440-dec.wav saw440.txt saw440-dec.txt
+
+sin440-test:
+	$(SMENC) -O $(srcdir)/sin440.wav sin440.sm
+	$(SMPLAY) sin440.sm --rate=96000 --export sin440-dec.wav
+	$(WAV2ASCII) $(srcdir)/sin440.wav > sin440.txt
+	$(WAV2ASCII) sin440-dec.wav > sin440-dec.txt
+	$(DELTA) sin440.txt sin440-dec.txt | LANG=C awk 'FNR > 2900 && FNR < 16300 { r += $$1 * $$1; c += 1 } END { print "Residual value: ",r/c; if (r/c > 5e-10) exit(1); else exit (0);}'
+	rm -f sin440.sm sin440-dec.wav sin440.txt sin440-dec.txt
