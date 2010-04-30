@@ -162,14 +162,14 @@ void debug (const char *dbg, ...) G_GNUC_PRINTF (1, 2);
 void
 debug (const char *dbg, ...)
 {
-    va_list ap;
+  va_list ap;
 
-    if (!options.debug)
-	return;
+  if (!options.debug)
+    return;
 
-    va_start (ap, dbg);
-    vfprintf (options.debug, dbg, ap);
-    va_end (ap);
+  va_start (ap, dbg);
+  vfprintf (options.debug, dbg, ap);
+  va_end (ap);
 }
 
 void
@@ -199,6 +199,13 @@ wintrans (const vector<float>& window)
     }
 }
 
+size_t
+make_odd (size_t n)
+{
+  if (n & 1)
+    return n;
+  return n - 1;
+}
 
 int
 main (int argc, char **argv)
@@ -266,7 +273,7 @@ main (int argc, char **argv)
     }
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
 
-  const size_t  frame_size = mix_freq * 0.001 * enc_params.frame_size_ms;
+  const size_t  frame_size = make_odd (mix_freq * 0.001 * enc_params.frame_size_ms);
   const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
 
   /* compute block size from frame size (smallest 2^k value >= frame_size) */
