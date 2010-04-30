@@ -140,4 +140,5 @@ BOOST_REQUIRE([1.34])
 AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile])
+AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_OUTPUT

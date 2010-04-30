@@ -1,0 +1,24 @@
+#!/bin/bash
+
+SMENC=@top_builddir@/src/smenc
+SMPLAY=@top_builddir@/src/smplay
+SMENCFLAGS="-O"
+WAV2ASCII=@top_builddir@/tools/wav2ascii
+DELTA=@top_builddir@/tools/delta.py
+
+WAV="$1"
+START="$2"
+STOP="$3"
+RATE="$4"
+
+SM=$(echo "$1" | sed s/.wav$/.sm/g)
+DWAV=$(echo "$1" | sed s/.wav$/-dec.wav/g)
+TWAV=$(echo "$1" | sed s/.wav$/.txt/g)
+TDWAV=$(echo "$1" | sed s/.wav$/-dec.txt/g)
+
+$SMENC $SMENCFLAGS @srcdir@/$WAV $SM
+$SMPLAY $SM --no-noise --rate=$RATE --export $DWAV
+$WAV2ASCII @srcdir@/$WAV > $TWAV
+$WAV2ASCII $DWAV > $TDWAV
+$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 5e-8) exit(1); else exit (0);}' || exit 1
+rm $TWAV $TDWAV $DWAV
