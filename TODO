@@ -5,7 +5,6 @@ smenc:
 - move debugging information generated with -d to main file
 - normalize noise
 - use averaging to estimate noise
-- use odd - centered - fft
 - make window function configurable
 - debug performance problems
 - move partial tracking from decoder to encoder
