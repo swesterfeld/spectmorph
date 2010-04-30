@@ -55,17 +55,17 @@ magnitude (vector<float>::iterator i)
 void
 debug (const char *dbg, ...)
 {
-    va_list ap;
+  va_list ap;
 
-    // FIXME!
-    return;
+  // FIXME!
+  return;
 #if 0
-    if (!options.debug)
-	return;
+  if (!options.debug)
+    return;
 
-    va_start (ap, dbg);
-    vfprintf (options.debug, dbg, ap);
-    va_end (ap);
+  va_start (ap, dbg);
+  vfprintf (options.debug, dbg, ap);
+  va_end (ap);
 #endif
 }
 
@@ -116,7 +116,10 @@ Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
         }
       vector<float> debug_samples (block.begin(), block.end());
       Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
-      std::copy (block.begin(), block.end(), in.begin());    /* in is zeropadded */
+
+      int j = in.size() - enc_params.frame_size / 2;
+      for (vector<float>::const_iterator i = block.begin(); i != block.end(); i++)
+        in[(j++) % in.size()] = *i;
 
       gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
       out[block_size * zeropad] = out[1];
@@ -215,6 +218,20 @@ Encoder::search_local_maxima()
                       tracksel.phaseb = interp_c.imag() / frame_size * zeropad;
                       tracksel.next = 0;
                       tracksel.prev = 0;
+
+                      // correct for the odd-centered analysis
+                        {
+                          double smag = tracksel.phasea;
+                          double cmag = tracksel.phaseb;
+                          double magnitude = sqrt (smag * smag + cmag * cmag);
+                          double phase = atan2 (smag, cmag);
+                          phase -= (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
+                          smag = sin (phase) * magnitude;
+                          cmag = cos (phase) * magnitude;
+                          tracksel.phasea = smag;
+                          tracksel.phaseb = cmag;
+                        }
+
 
                       double dummy_freq;
                       tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
