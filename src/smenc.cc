@@ -303,8 +303,6 @@ main (int argc, char **argv)
         window[i] = 0;
     }
 
-  fprintf (stderr, "%s: %d channels, %lld values\n", argv[1], gsl_data_handle_n_channels (dhandle), n_values);
-
   if (gsl_data_handle_n_channels (dhandle) != 1)
     {
       fprintf (stderr, "Currently, only mono files are supported.\n");

@@ -209,7 +209,6 @@ main (int argc, char **argv)
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
       exit (1);
     }
-  fprintf (stderr, "%d blocks\n", audio.contents.size());
 
   ao_sample_format format;
 
