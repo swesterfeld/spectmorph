@@ -280,7 +280,6 @@ main (int argc, char **argv)
 
   if (options.fundamental_freq > 0)
     fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
-  fprintf (stderr, "frame_size = %zd (%f ms)\n", frame_size, enc_params.frame_size_ms);
 
   Encoder encoder (enc_params);
 
@@ -304,7 +303,6 @@ main (int argc, char **argv)
       fprintf (stderr, "Currently, only mono files are supported.\n");
       exit (1);
     }
-  fprintf (stderr, "block_size = %lld\n", block_size);
 
   //wintrans (window);
 

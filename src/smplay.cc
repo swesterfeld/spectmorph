@@ -234,11 +234,7 @@ main (int argc, char **argv)
     }
 
   size_t frame_size = audio.frame_size_ms * format.rate / 1000;
-  fprintf (stderr, "frame size: %f ms\n", audio.frame_size_ms);
-  fprintf (stderr, "frame size: %zd samples\n", frame_size);
-
   size_t frame_step = audio.frame_step_ms * format.rate / 1000;
-  fprintf (stderr, "frame step: %zd samples\n", frame_step);
 
   size_t block_size = 1;
   while (block_size < frame_size)
@@ -253,9 +249,7 @@ main (int argc, char **argv)
         window[i] = 0;
     }
 
-  fprintf (stderr, "rate: %d Hz\n", format.rate);
   uint loop_point = audio.contents.size() - 5;
-  fprintf (stderr, "loop point: %d\n", loop_point);
 
   vector<float> sample;
 
