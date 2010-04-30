@@ -480,7 +480,7 @@ float_vector_delta (const vector<float>& a, const vector<float>& b)
 }
 
 void
-refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
+refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
@@ -525,10 +525,16 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame)
               {
                 double v = audio_block.debug_samples[n] - sines[n];
                 phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
-                smag += sin (phase) * v;
-                cmag += cos (phase) * v;
-                snorm += sin (phase) * sin (phase);
-                cnorm += cos (phase) * cos (phase);
+
+                double swin, cwin;
+                sincos (phase, &swin, &cwin);
+                swin *= window[n];
+                cwin *= window[n];
+
+                smag += v * window[n] * swin;
+                cmag += v * window[n] * cwin;
+                snorm += swin * swin;
+                cnorm += cwin * cwin;
               }
             smag /= snorm;
             cmag /= cnorm;
@@ -619,7 +625,7 @@ Encoder::optimize_partials (const vector<float>& window, bool optimize)
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      refine_sine_params_fast (audio_blocks[frame], mix_freq, frame);
+      refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, window);
       if (optimize)
         {
           refine_sine_params (audio_blocks[frame], mix_freq, window);
