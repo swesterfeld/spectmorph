@@ -63,7 +63,7 @@ struct Options
 #include "stwutils.hh"
 
 Options::Options () :
-  program_name ("stwplay"),
+  program_name ("smplay"),
   loop (false),
   noise_enabled (true),
   sines_enabled (true),
