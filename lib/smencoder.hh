@@ -28,16 +28,35 @@
 namespace SpectMorph
 {
 
+/**
+ * Encoder parameters - these define parameters that configure the
+ * encoder algorithm.
+ */
 struct EncoderParams
 {
-  float   mix_freq;         /* mix_freq of the original audio file */
-  float   frame_step_ms;    /* step size for analysis frames */
-  float   frame_size_ms;    /* size of one analysis frame */
-  int     zeropad;          /* lower bound for zero padding during analysis */
-  size_t  frame_step;       /* frame step */
-  size_t  frame_size;       /* frame size */
-  size_t  block_size;       /* analysis block size */
-  double  fundamental_freq; /* user defined fundamental freq */
+  /** sample rate of the original audio file */
+  float   mix_freq;         
+
+  /** step size for analysis frames in milliseconds */
+  float   frame_step_ms;
+
+  /** size of one analysis frame in milliseconds */
+  float   frame_size_ms;
+
+  /** lower bound for the amount of zero padding used during analysis */
+  int     zeropad;
+
+  /** size of the frame step in samples */
+  size_t  frame_step;
+
+  /** size of the analysis frame in samples */
+  size_t  frame_size;
+
+  /** analysis block size in samples, must be the smallest power of N greater than frame_size */
+  size_t  block_size;
+
+  /** user defined fundamental freq */
+  double  fundamental_freq;
 };
 
 struct Tracksel {
@@ -52,6 +71,9 @@ struct Tracksel {
   Tracksel *prev, *next;
 };
 
+/**
+ * Encoder producing SpectMorph parametric data from sample data
+ */
 class Encoder
 {
   EncoderParams enc_params;
@@ -59,13 +81,10 @@ class Encoder
   bool check_harmonic (double freq, double& new_freq, double mix_freq);
 
 public:
-  Encoder (const EncoderParams& enc_params)
-  {
-    this->enc_params = enc_params;
-  }
   std::vector<AudioBlock>              audio_blocks;
   std::vector< std::vector<Tracksel> > frame_tracksels; /* Analog to Canny Algorithms edgels */
 
+  Encoder (const EncoderParams& enc_params);
   void compute_stft (GslDataHandle *dhandle, const std::vector<float>& window);
   void search_local_maxima();
   void link_partials();

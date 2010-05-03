@@ -24,6 +24,9 @@
 
 namespace SpectMorph {
 
+/**
+ * Decoder for the sine component (deterministic component) of the signal
+ */
 class SineDecoder
 {
 public:

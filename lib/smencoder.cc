@@ -69,6 +69,14 @@ debug (const char *dbg, ...)
 #endif
 }
 
+/**
+ * Constructor which initializes the Encoders parameters.
+ */
+Encoder::Encoder (const EncoderParams& enc_params)
+{
+  this->enc_params = enc_params;
+}
+
 bool
 Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
 {
@@ -91,8 +99,12 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
   return false;
 }
 
+/**
+ * This function computes the short-time-fourier-transform (STFT) of the input
+ * signal using a window to cut the individual frames out of the sample.
+ */
 void
-Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
+Encoder::compute_stft (GslDataHandle *dhandle, const std::vector<float>& window)
 {
   const uint64 n_values = gsl_data_handle_length (dhandle);
   const size_t frame_size = enc_params.frame_size;
@@ -134,6 +146,9 @@ Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
     }
 }
 
+/**
+ * This function searches for peaks in the frame ffts. These are stored in frame_tracksels.
+ */
 void
 Encoder::search_local_maxima()
 {
@@ -349,6 +364,10 @@ Encoder::link_partials()
     }
 }
 
+/**
+ * This function validates that the partials found by the peak linking have
+ * good quality.
+ */
 void
 Encoder::validate_partials()
 {
@@ -389,8 +408,12 @@ Encoder::validate_partials()
     }
 }
 
+/**
+ * This function subtracts the partials from the audio signal, to get the
+ * residue (remaining energy not corresponding to sine frequencies).
+ */
 void
-Encoder::spectral_subtract (const vector<float>& window)
+Encoder::spectral_subtract (const std::vector<float>& window)
 {
   const size_t block_size = enc_params.block_size;
   const size_t zeropad = enc_params.zeropad;
@@ -634,9 +657,12 @@ remove_small_partials (AudioBlock& audio_block)
   audio_block.phases = good_phases;
 }
 
-
+/**
+ * This function reestimates the magnitudes and phases of the partials found
+ * in the previous steps.
+ */
 void
-Encoder::optimize_partials (const vector<float>& window, bool optimize)
+Encoder::optimize_partials (const std::vector<float>& window, bool optimize)
 {
   const double mix_freq = enc_params.mix_freq;
 
@@ -708,7 +734,10 @@ xnoise_envelope_to_spectrum (const vector<double>& envelope,
     }
 }
 
-
+/**
+ * This function tries to approximate the residual by a spectral envelope
+ * for a noise signal.
+ */
 void
 Encoder::approx_noise()
 {
@@ -728,8 +757,11 @@ Encoder::approx_noise()
     }
 }
 
+/**
+ * This function saves the data produced by the encoder to a SpectMorph file.
+ */
 void
-Encoder::save (const string& filename, double fundamental_freq)
+Encoder::save (const std::string& filename, double fundamental_freq)
 {
   SpectMorph::Audio audio;
   audio.fundamental_freq = fundamental_freq;
