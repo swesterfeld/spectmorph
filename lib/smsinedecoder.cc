@@ -39,18 +39,20 @@ SineDecoder::process (Frame& frame,
           const double SA = 0.5;
           const double smag = frame.phases[i * 2];
           const double cmag = frame.phases[i * 2 + 1];
+          const double mag = sqrt (smag * smag + cmag * cmag) * SA;
           const double phase_delta = 2 * M_PI * frame.freqs[i] / mix_freq;
 
-          double phase = 0; // could be done in one pass
+          double phase = atan2 (cmag, smag);
           for (size_t t = 0; t < frame_size; t++)
             {
-	      frame.decoded_sines [t] += sin (phase) * window[t] * smag * SA
-                                      +  cos (phase) * window[t] * cmag * SA;
+	      frame.decoded_sines[t] += sin (phase) * mag;
               phase += phase_delta;
               while (phase > 2 * M_PI)
                 phase -= 2 * M_PI;
             }
         }
+      for (size_t t = 0; t < frame_size; t++)
+        frame.decoded_sines[t] *= window[t];
       return;
     }
 
