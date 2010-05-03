@@ -46,13 +46,13 @@ using std::max;
 namespace ublas = boost::numeric::ublas;
 using ublas::matrix;
 
-double
+static double
 magnitude (vector<float>::iterator i)
 {
   return sqrt (*i * *i + *(i+1) * *(i+1));
 }
 
-void
+static void
 debug (const char *dbg, ...)
 {
   va_list ap;
@@ -264,7 +264,7 @@ PeakIndex
   }
 };
 
-bool
+static bool
 partial_index_cmp (const PeakIndex& a, const PeakIndex& b)
 {
   return a.freq < b.freq;
@@ -446,7 +446,7 @@ Encoder::spectral_subtract (const vector<float>& window)
 }
 
 // find best fit of amplitudes / phases to the observed signal
-void
+static void
 refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float>& window)
 {
   const size_t freq_count = audio_block.freqs.size();
@@ -485,7 +485,7 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float
     audio_block.phases[i] = b[i];
 }
 
-double
+static double
 float_vector_delta (const vector<float>& a, const vector<float>& b)
 {
   assert (a.size() == b.size());
@@ -496,7 +496,7 @@ float_vector_delta (const vector<float>& a, const vector<float>& b)
   return d;
 }
 
-void
+static void
 refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
 {
   const size_t frame_size = audio_block.debug_samples.size();
@@ -653,7 +653,7 @@ Encoder::optimize_partials (const vector<float>& window, bool optimize)
     }
 }
 
-void
+static void
 approximate_noise_spectrum (int frame,
                             const vector<double>& spectrum,
 			    vector<double>& envelope)
@@ -680,7 +680,7 @@ approximate_noise_spectrum (int frame,
     }
 }
 
-void
+static void
 xnoise_envelope_to_spectrum (const vector<double>& envelope,
 			    vector<double>& spectrum)
 {
