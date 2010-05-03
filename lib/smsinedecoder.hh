@@ -30,8 +30,20 @@ namespace SpectMorph {
 class SineDecoder
 {
 public:
+  /**
+   * Different supported modes for decoding.
+   */
   enum Mode {
+    /**
+     * This mode preserves the phases of the original signal, but signal modifications like
+     * looping a frame are not possible (without recomputing the phases in the frames at least).
+     */
     MODE_PHASE_SYNC_OVERLAP,
+    /**
+     * This mode uses sine waves with phases derived from their frequency for reconstruction.
+     * in general this does not preserve the original phase information, but should still sound
+     * the same - also the frames can be reordered (for instance loops are possible).
+     */
     MODE_TRACKING
   };
 private:
@@ -41,15 +53,9 @@ private:
   std::vector<double> synth_fixed_phase, next_synth_fixed_phase;
   Mode mode;
 public:
-  SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode)
-    : mix_freq (mix_freq),
-      frame_size (frame_size),
-      frame_step (frame_step),
-      mode (mode)
-  {
-  }
+  SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
   void process (Frame& frame,
-                Frame& next_frame,
+                const Frame& next_frame,
                 const std::vector<double>& window);
 };
 

@@ -24,10 +24,34 @@ using SpectMorph::SineDecoder;
 using SpectMorph::Frame;
 using std::vector;
 
+/**
+ * Constructor setting up the various decoding parameters
+ *
+ * @param mix_freq    sample rate to be used for reconstruction
+ * @param frame_size  frame size (in samples)
+ * @param frame_step  frame step (in samples)
+ * @param mode        selects decoding algorithm to be used
+ */
+SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode)
+  : mix_freq (mix_freq),
+    frame_size (frame_size),
+    frame_step (frame_step),
+    mode (mode)
+{
+}
+
+/**
+ * Function which decodes a part of the signal; this needs two adjecant
+ * frames as arguments.
+ *
+ * @param frame        the current frame (the frame to be decoded)
+ * @param next_frame   the frame after the current frame
+ * @param window       the reconstruction window used for MODE_PHASE_SYNC_OVERLAP
+ */
 void
 SineDecoder::process (Frame& frame,
-                      Frame& next_frame,
-		      const vector<double>& window)
+                      const Frame& next_frame,
+		      const std::vector<double>& window)
 {
   fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
 
@@ -59,7 +83,7 @@ SineDecoder::process (Frame& frame,
   /* phase distorted reconstruction */
   vector<double> freqs = frame.freqs;
   vector<double> nfreqs = next_frame.freqs;
-  vector<double>::iterator phase_it = frame.phases.begin(), nphase_it = next_frame.phases.begin();
+  vector<double>::const_iterator phase_it = frame.phases.begin(), nphase_it = next_frame.phases.begin();
 
   int todo = freqs.size() + nfreqs.size();
 
