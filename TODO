@@ -16,7 +16,7 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- implement efficient (IFFT) live decoder
+- implement efficient (IFFT) live decoder   [0.0.3]
 
 tests:
 - add test cases
@@ -29,7 +29,10 @@ adventure:
   * piano
 
 docs:
-- write document documenting basic functionality
+- write document documenting basic functionality  [0.0.2]
+
+evaluation:
+- reevaluate [0.0.2]
 
 samples:
 - test with samples from the net
