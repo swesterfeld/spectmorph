@@ -36,3 +36,6 @@ evaluation:
 
 samples:
 - test with samples from the net
+
+debian:
+- package boost-numeric-bindings
