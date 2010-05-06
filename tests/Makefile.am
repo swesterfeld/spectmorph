@@ -1,10 +1,5 @@
-SMENC = $(top_builddir)/src/smenc
-SMPLAY = $(top_builddir)/src/smplay
-WAV2ASCII = $(top_builddir)/tools/wav2ascii
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
-DELTA = $(top_srcdir)/tools/delta.py
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
-SMENCFLAGS = -O
 SMRESVALUE = $(srcdir)/smresvalue.sh
 
 EXTRA_DIST = saw440.wav sin440.wav sin440.py
@@ -21,4 +16,4 @@ sin440-4567-test: sin440-4567.wav
 	@$(SMRESVALUE) sin440-4567.wav 3000 5500 96000
 
 sin440-4567.wav: Makefile
-	../python/sinsignal.py 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav 96000
+	$(SINSIGNAL) 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav 96000
