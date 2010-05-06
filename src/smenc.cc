@@ -57,7 +57,7 @@ struct Options
   bool          verbose;
   uint          quantize_entries;
   float         fundamental_freq;
-  bool          optimize;
+  int           optimization_level;
   FILE         *debug;
 
   Options ();
@@ -74,7 +74,7 @@ Options::Options ()
   debug = 0;
   quantize_entries = 0;
   verbose = false;
-  optimize = false;
+  optimization_level = 0;
 }
 
 void
@@ -124,9 +124,21 @@ Options::parse (int   *argc_p,
         {
           fundamental_freq = freqFromNote (atoi (opt_arg));
         }
-      else if (check_arg (argc, argv, &i, "-O"))
+      else if (check_arg (argc, argv, &i, "-O0"))
         {
-          optimize = true;
+          optimization_level = 0;
+        }
+      else if (check_arg (argc, argv, &i, "-O1"))
+        {
+          optimization_level = 1;
+        }
+      else if (check_arg (argc, argv, &i, "-O2"))
+        {
+          optimization_level = 2;
+        }
+      else if (check_arg (argc, argv, &i, "-O", &opt_arg))
+        {
+          optimization_level = atoi (opt_arg);
         }
     }
 
@@ -154,6 +166,7 @@ Options::print_usage ()
   g_printerr (" --verbose                   print verbose information\n");
   g_printerr (" -f <freq>                   specify fundamental frequency in Hz\n");
   g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
+  g_printerr (" -O <level>                  set optimization level\n");
   g_printerr ("\n");
 }
 
@@ -321,7 +334,7 @@ main (int argc, char **argv)
   // Track frequencies step #3: discard edges where -25 dB is not exceeded once
   encoder.validate_partials();
 
-  encoder.optimize_partials (window, options.optimize);
+  encoder.optimize_partials (window, options.optimization_level);
 
   encoder.spectral_subtract (window);
   encoder.approx_noise();

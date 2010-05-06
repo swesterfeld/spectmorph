@@ -662,15 +662,18 @@ remove_small_partials (AudioBlock& audio_block)
  * in the previous steps.
  */
 void
-Encoder::optimize_partials (const std::vector<float>& window, bool optimize)
+Encoder::optimize_partials (const std::vector<float>& window, int optimization_level)
 {
   const double mix_freq = enc_params.mix_freq;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, window);
-      if (optimize)
+      if (optimization_level >= 1) // redo FFT estmates, only better
+        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, window);
+
+      if (optimization_level >= 2)
         {
+          // do "perfect" magnitude and phase estimation using linear least squares
           refine_sine_params (audio_blocks[frame], mix_freq, window);
           printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
           fflush (stdout);

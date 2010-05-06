@@ -89,7 +89,7 @@ public:
   void search_local_maxima();
   void link_partials();
   void validate_partials();
-  void optimize_partials (const std::vector<float>& window, bool optimize);
+  void optimize_partials (const std::vector<float>& window, int optimization_level);
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise();
   void save (const std::string& filename, double fundamental_freq);
