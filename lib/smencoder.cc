@@ -229,22 +229,22 @@ Encoder::search_local_maxima()
                       tracksel.freq = tfreq;
                       tracksel.mag = peak_mag / frame_size * zeropad;
                       tracksel.mag2 = mag2;
-                      tracksel.phasea = interp_c.real() / frame_size * zeropad;
-                      tracksel.phaseb = interp_c.imag() / frame_size * zeropad;
+                      tracksel.cmag = interp_c.real() / frame_size * zeropad;
+                      tracksel.smag = interp_c.imag() / frame_size * zeropad;
                       tracksel.next = 0;
                       tracksel.prev = 0;
 
                       // correct for the odd-centered analysis
                         {
-                          double smag = tracksel.phasea;
-                          double cmag = tracksel.phaseb;
+                          double smag = tracksel.smag;
+                          double cmag = tracksel.cmag;
                           double magnitude = sqrt (smag * smag + cmag * cmag);
                           double phase = atan2 (smag, cmag);
-                          phase -= (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
+                          phase += (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
                           smag = sin (phase) * magnitude;
                           cmag = cos (phase) * magnitude;
-                          tracksel.phasea = smag;
-                          tracksel.phaseb = cmag;
+                          tracksel.smag = smag;
+                          tracksel.cmag = cmag;
                         }
 
 
@@ -399,8 +399,8 @@ Encoder::validate_partials()
 #endif
 
 		      audio_blocks[t->frame].freqs.push_back (t->freq);
-		      audio_blocks[t->frame].phases.push_back (t->phaseb);
-		      audio_blocks[t->frame].phases.push_back (t->phasea);
+		      audio_blocks[t->frame].phases.push_back (t->smag);
+		      audio_blocks[t->frame].phases.push_back (t->cmag);
 		    }
 		}
 	    }
@@ -536,13 +536,14 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
       // search biggest partial
       for (size_t i = 0; i < audio_block.freqs.size(); i++)
         {
-          double p_re = audio_block.phases[2 * i];
-          double p_im = audio_block.phases[2 * i + 1];
-          double p_mag = sqrt (p_re * p_re + p_im * p_im);
-          if (p_mag > max_mag)
+          const double smag = audio_block.phases[2 * i];
+          const double cmag = audio_block.phases[2 * i + 1];
+          const double mag = sqrt (smag * smag + cmag * cmag);
+
+          if (mag > max_mag)
             {
               partial = i;
-              max_mag = p_mag;
+              max_mag = mag;
             }
         }
         // compute reconstruction of that partial
