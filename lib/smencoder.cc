@@ -427,18 +427,22 @@ Encoder::spectral_subtract (const std::vector<float>& window)
           const double freq = audio_blocks[frame].freqs[i];
 	  const double smag = audio_blocks[frame].phases[i * 2];
 	  const double cmag = audio_blocks[frame].phases[i * 2 + 1];
+          const double mag = sqrt (smag * smag + cmag * cmag);
+          const double phase_delta = freq / enc_params.mix_freq * 2 * M_PI;
 
-	  double phase = 0;
-          double s, c;
+          double phase = atan2 (cmag, smag);
 	  for (size_t k = 0; k < enc_params.block_size; k++)
 	    {
-              sincos (phase, &s, &c);
-	      in[k] += (smag * s + cmag * c) * window[k];
-	      phase += freq / enc_params.mix_freq * 2 * M_PI;
+	      in[k] += sin (phase) * mag;
+	      phase += phase_delta;
               while (phase > 2 * M_PI)
                 phase -= 2 * M_PI;
 	    }
 	}
+      // apply window
+      for (size_t k = 0; k < enc_params.block_size; k++)
+        in[k] *= window[k];
+      // FFT
       gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
       out[block_size * zeropad] = out[1];
       out[block_size * zeropad + 1] = 0;
