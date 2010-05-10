@@ -2,7 +2,7 @@
 
 SMENC=@top_builddir@/src/smenc
 SMPLAY=@top_builddir@/src/smplay
-SMENCFLAGS="-O"
+SMENCFLAGS="-O0"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
 DELTA=@top_builddir@/tools/delta.py
 
