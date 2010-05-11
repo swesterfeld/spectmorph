@@ -4,9 +4,16 @@ SMENC=@top_builddir@/src/smenc
 SMPLAY=@top_builddir@/src/smplay
 SMENCFLAGS="-O0"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
-DELTA=@top_builddir@/tools/delta.py
+DELTA=@top_srcdir@/tools/delta.py
 
-WAV="$1"
+if test -f "@srcdir@/$1"; then
+  WAV="@srcdir@/$1"
+elif test -f "@top_builddir@/tests/$1"; then
+  WAV="@top_builddir@/tests/$1"
+else
+  echo "$0: $1 not found"
+  exit 1
+fi
 START="$2"
 STOP="$3"
 RATE="$4"
@@ -16,9 +23,9 @@ DWAV=$(echo "$1" | sed s/.wav$/-dec.wav/g)
 TWAV=$(echo "$1" | sed s/.wav$/.txt/g)
 TDWAV=$(echo "$1" | sed s/.wav$/-dec.txt/g)
 
-$SMENC $SMENCFLAGS @srcdir@/$WAV $SM
+$SMENC $SMENCFLAGS $WAV $SM
 $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV
-$WAV2ASCII @srcdir@/$WAV > $TWAV
+$WAV2ASCII $WAV > $TWAV
 $WAV2ASCII $DWAV > $TDWAV
 $DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 5e-8) exit(1); else exit (0);}' || exit 1
-rm $TWAV $TDWAV $DWAV
+rm $SM $TWAV $TDWAV $DWAV

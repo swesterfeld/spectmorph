@@ -1,8 +1,9 @@
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
-SMRESVALUE = $(srcdir)/smresvalue.sh
+SMRESVALUE = $(top_builddir)/tests/smresvalue.sh
 
 EXTRA_DIST = saw440.wav sin440.wav sin440.py
+CLEANFILES = sin440-4567.wav
 
 check: saw440-test sin440-test sin440-4567-test
 
