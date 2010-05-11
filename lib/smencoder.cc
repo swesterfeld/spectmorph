@@ -17,6 +17,7 @@
 
 #include "smencoder.hh"
 #include "smafile.hh"
+#include "smmath.hh"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
@@ -427,17 +428,14 @@ Encoder::spectral_subtract (const std::vector<float>& window)
           const double freq = audio_blocks[frame].freqs[i];
 	  const double smag = audio_blocks[frame].phases[i * 2];
 	  const double cmag = audio_blocks[frame].phases[i * 2 + 1];
-          const double mag = sqrt (smag * smag + cmag * cmag);
-          const double phase_delta = freq / enc_params.mix_freq * 2 * M_PI;
 
-          double phase = atan2 (cmag, smag);
-	  for (size_t k = 0; k < enc_params.block_size; k++)
-	    {
-	      in[k] += sin (phase) * mag;
-	      phase += phase_delta;
-              while (phase > 2 * M_PI)
-                phase -= 2 * M_PI;
-	    }
+          VectorSinParams params;
+          params.mix_freq = enc_params.mix_freq;
+          params.freq = freq;
+          params.phase = atan2 (cmag, smag);
+          params.mag = sqrt (smag * smag + cmag * cmag);
+
+          fast_vector_sin_add (params, &in[0], &in[enc_params.frame_size]);
 	}
       // apply window
       for (size_t k = 0; k < enc_params.block_size; k++)
