@@ -29,6 +29,7 @@
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
+#include <bse/bseresamplerimpl.hh> // AlignedArray
 #include <bse/gslfft.h>
 #include <math.h>
 #include <stdio.h>
@@ -40,6 +41,7 @@ using SpectMorph::Encoder;
 using SpectMorph::AudioBlock;
 using SpectMorph::Tracksel;
 using SpectMorph::VectorSinParams;
+using Bse::Resampler::AlignedArray;
 using std::vector;
 using std::string;
 using std::map;
@@ -418,12 +420,12 @@ void
 Encoder::spectral_subtract (const std::vector<float>& window)
 {
   const size_t block_size = enc_params.block_size;
+  const size_t frame_size = enc_params.frame_size;
   const size_t zeropad = enc_params.zeropad;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
-
+      AlignedArray<float,16> signal (frame_size);
       for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
 	{
           const double freq = audio_blocks[frame].freqs[i];
@@ -436,11 +438,12 @@ Encoder::spectral_subtract (const std::vector<float>& window)
           params.phase = atan2 (cmag, smag);
           params.mag = sqrt (smag * smag + cmag * cmag);
 
-          fast_vector_sin_add (params, &in[0], &in[enc_params.frame_size]);
+          float_fast_vector_sin_add (params, &signal[0], &signal[frame_size]);
 	}
+      vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
       // apply window
       for (size_t k = 0; k < enc_params.block_size; k++)
-        in[k] *= window[k];
+        in[k] = window[k] * signal[k];
       // FFT
       gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
       out[block_size * zeropad] = out[1];
