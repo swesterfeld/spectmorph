@@ -538,6 +538,8 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
   vector<float> good_freqs;
   vector<float> good_phases;
 
+  // delta against null vector
+  double delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
   double max_mag;
   size_t partial = 0;
   do
@@ -607,7 +609,6 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             cmag = cos (phase) * magnitude;
 
             vector<float> old_sines (&sines[0], &sines[frame_size]);
-            double delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
 
             // restore partial => sines; keep params.freq & params.mix_freq
             params.phase = atan2 (cmag, smag);
@@ -615,12 +616,13 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             float_fast_vector_sin_add (params, &sines[0], &sines[frame_size]);
 
             double new_delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
-            if (new_delta > delta)      // approximation is _not_ better
+            if (new_delta >= delta)      // approximation is _not_ better
               {
                 std::copy (old_sines.begin(), old_sines.end(), &sines[0]);
               }
             else
               {
+                delta = new_delta;
                 good_freqs.push_back (f);
                 good_phases.push_back (smag);
                 good_phases.push_back (cmag);
