@@ -437,8 +437,9 @@ Encoder::spectral_subtract (const std::vector<float>& window)
           params.freq = freq;
           params.phase = atan2 (cmag, smag);
           params.mag = sqrt (smag * smag + cmag * cmag);
+          params.mode = VectorSinParams::ADD;
 
-          float_fast_vector_sin_add (params, &signal[0], &signal[frame_size]);
+          fast_vector_sinf (params, &signal[0], &signal[frame_size]);
 	}
       vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
       // apply window
@@ -583,10 +584,9 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             params.phase = -((frame_size - 1) / 2.0) * f / mix_freq * 2.0 * M_PI;
             while (params.phase < -M_PI)
               params.phase += 2 * M_PI;
+            params.mode = VectorSinParams::REPLACE;
 
-            std::fill (&sin_vec[0], &sin_vec[frame_size], 0);
-            std::fill (&cos_vec[0], &cos_vec[frame_size], 0);
-            float_fast_vector_sincos_add (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
+            fast_vector_sincosf (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
 
             for (size_t n = 0; n < frame_size; n++)
               {
@@ -613,7 +613,8 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             // restore partial => sines; keep params.freq & params.mix_freq
             params.phase = atan2 (cmag, smag);
             params.mag = sqrt (smag * smag + cmag * cmag);
-            float_fast_vector_sin_add (params, &sines[0], &sines[frame_size]);
+            params.mode = VectorSinParams::ADD;
+            fast_vector_sinf (params, &sines[0], &sines[frame_size]);
 
             double new_delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
             if (new_delta >= delta)      // approximation is _not_ better

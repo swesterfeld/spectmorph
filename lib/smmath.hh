@@ -27,26 +27,36 @@
 namespace SpectMorph
 {
 
+/***************************** API ***************************/
 struct
 VectorSinParams
 {
-  VectorSinParams() :
-    mix_freq (-1),
-    freq (-1),
-    phase (-100),
-    mag (-1)
-  {
-  }
   double mix_freq;
   double freq;
   double phase;
   double mag;
+
+  enum {
+    NONE = -1,
+    ADD  = 1,
+    REPLACE = 2
+  } mode;
+
+  VectorSinParams() :
+    mix_freq (-1),
+    freq (-1),
+    phase (-100),
+    mag (-1),
+    mode (NONE)
+  {
+  }
 };
 
+/********************** IMPLEMENTATION ***********************/
 
-template<class Iterator>
+template<class Iterator, int MODE>
 inline void
-fast_vector_sin_add (const VectorSinParams& params, Iterator begin, Iterator end)
+internal_fast_vector_sin (const VectorSinParams& params, Iterator begin, Iterator end)
 {
   g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
 
@@ -64,7 +74,60 @@ fast_vector_sin_add (const VectorSinParams& params, Iterator begin, Iterator end
 
   for (Iterator x = begin; x != end; x++)
     {
-      *x += state_im;
+      if (MODE == VectorSinParams::REPLACE)
+        *x = state_im;
+      else
+        *x += state_im;
+      if ((n++ & 255) == 255)
+        {
+          sincos (phase_inc * n + params.phase, &state_im, &state_re);
+          state_re *= params.mag;
+          state_im *= params.mag;
+        }
+      else
+        {
+          /*
+           * (state_re + i * state_im) * (inc_re + i * inc_im) =
+           *   state_re * inc_re - state_im * inc_im + i * (state_re * inc_im + state_im * inc_re)
+           */
+          const double re = state_re * inc_re - state_im * inc_im;
+          const double im = state_re * inc_im + state_im * inc_re;
+          state_re = re;
+          state_im = im;
+        }
+    }
+}
+
+template<class Iterator, int MODE>
+inline void
+internal_fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, Iterator sin_end, Iterator cos_begin)
+{
+  g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
+
+  const double phase_inc = params.freq / params.mix_freq * 2 * M_PI;
+  const double inc_re = cos (phase_inc);
+  const double inc_im = sin (phase_inc);
+  int n = 0;
+
+  double state_re;
+  double state_im;
+
+  sincos (params.phase, &state_im, &state_re);
+  state_re *= params.mag;
+  state_im *= params.mag;
+
+  for (Iterator x = sin_begin, y = cos_begin; x != sin_end; x++, y++)
+    {
+      if (MODE == VectorSinParams::REPLACE)
+        {
+          *x = state_im;
+          *y = state_re;
+        }
+      else
+        {
+          *x += state_im;
+          *y += state_re;
+        }
       if ((n++ & 255) == 255)
         {
           sincos (phase_inc * n + params.phase, &state_im, &state_re);
@@ -87,45 +150,40 @@ fast_vector_sin_add (const VectorSinParams& params, Iterator begin, Iterator end
 
 template<class Iterator>
 inline void
-fast_vector_sincos_add (const VectorSinParams& params, Iterator sin_begin, Iterator sin_end, Iterator cos_begin)
+fast_vector_sin (const VectorSinParams& params, Iterator sin_begin, Iterator sin_end)
 {
-  g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
-
-  const double phase_inc = params.freq / params.mix_freq * 2 * M_PI;
-  const double inc_re = cos (phase_inc);
-  const double inc_im = sin (phase_inc);
-  int n = 0;
-
-  double state_re;
-  double state_im;
-
-  sincos (params.phase, &state_im, &state_re);
-  state_re *= params.mag;
-  state_im *= params.mag;
-
-  for (Iterator x = sin_begin, y = cos_begin; x != sin_end; x++, y++)
+  if (params.mode == VectorSinParams::ADD)
     {
-      *x += state_im;
-      *y += state_re;
-      if ((n++ & 255) == 255)
-        {
-          sincos (phase_inc * n + params.phase, &state_im, &state_re);
-          state_re *= params.mag;
-          state_im *= params.mag;
-        }
-      else
-        {
-          /*
-           * (state_re + i * state_im) * (inc_re + i * inc_im) =
-           *   state_re * inc_re - state_im * inc_im + i * (state_re * inc_im + state_im * inc_re)
-           */
-          const double re = state_re * inc_re - state_im * inc_im;
-          const double im = state_re * inc_im + state_im * inc_re;
-          state_re = re;
-          state_im = im;
-        }
+      internal_fast_vector_sin<Iterator, VectorSinParams::ADD> (params, sin_begin, sin_end);
+    }
+  else if (params.mode == VectorSinParams::REPLACE)
+    {
+      internal_fast_vector_sin<Iterator, VectorSinParams::REPLACE> (params, sin_begin, sin_end);
+    }
+  else
+    {
+      g_assert_not_reached();
     }
 }
+
+template<class Iterator>
+inline void
+fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, Iterator sin_end, Iterator cos_begin)
+{
+  if (params.mode == VectorSinParams::ADD)
+    {
+      internal_fast_vector_sincos<Iterator, VectorSinParams::ADD> (params, sin_begin, sin_end, cos_begin);
+    }
+  else if (params.mode == VectorSinParams::REPLACE)
+    {
+      internal_fast_vector_sincos<Iterator, VectorSinParams::REPLACE> (params, sin_begin, sin_end, cos_begin);
+    }
+  else
+    {
+      g_assert_not_reached();
+    }
+}
+
 
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
@@ -136,9 +194,9 @@ union F4Vector
 #endif
 };
 
-template<bool NEED_COS>
+template<bool NEED_COS, int MODE>
 inline void
-internal_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
+internal_fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
 {
 #ifdef __SSE__
   g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
@@ -157,15 +215,15 @@ internal_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin
   state_re *= params.mag;
   state_im *= params.mag;
 
-
-  F4Vector incf_re[TABLE_SIZE] = {0, };
-  F4Vector incf_im[TABLE_SIZE] = {0, };
+  F4Vector incf_re[TABLE_SIZE];
+  F4Vector incf_im[TABLE_SIZE];
 
   // compute tables using FPU
   VectorSinParams table_params = params;
   table_params.phase = 0;
   table_params.mag = 1;
-  fast_vector_sincos_add (table_params, incf_im[0].f, incf_im[0].f + (TABLE_SIZE * 4), incf_re[0].f);
+  table_params.mode = VectorSinParams::REPLACE;
+  fast_vector_sincos (table_params, incf_im[0].f, incf_im[0].f + (TABLE_SIZE * 4), incf_re[0].f);
 
   // inner loop using SSE instructions
   int todo = sin_end - sin_begin;
@@ -192,13 +250,26 @@ internal_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin
       F4Vector *new_re = reinterpret_cast<F4Vector *> (cos_begin + n);
       for (int k = 0; k < TABLE_SIZE; k++)
         {
-          if (NEED_COS)
+          if (MODE == VectorSinParams::ADD)
             {
-              new_re[k].v = _mm_add_ps (new_re[k].v, _mm_sub_ps (_mm_mul_ps (sf_re.v, incf_re[k].v),
-                                                                 _mm_mul_ps (sf_im.v, incf_im[k].v)));
+              if (NEED_COS)
+                {
+                  new_re[k].v = _mm_add_ps (new_re[k].v, _mm_sub_ps (_mm_mul_ps (sf_re.v, incf_re[k].v),
+                                                                     _mm_mul_ps (sf_im.v, incf_im[k].v)));
+                }
+              new_im[k].v = _mm_add_ps (new_im[k].v, _mm_add_ps (_mm_mul_ps (sf_re.v, incf_im[k].v),
+                                                     _mm_mul_ps (sf_im.v, incf_re[k].v)));
             }
-          new_im[k].v = _mm_add_ps (new_im[k].v, _mm_add_ps (_mm_mul_ps (sf_re.v, incf_im[k].v),
-                                                 _mm_mul_ps (sf_im.v, incf_re[k].v)));
+          else
+            {
+              if (NEED_COS)
+                {
+                  new_re[k].v = _mm_sub_ps (_mm_mul_ps (sf_re.v, incf_re[k].v),
+                                            _mm_mul_ps (sf_im.v, incf_im[k].v));
+                }
+              new_im[k].v = _mm_add_ps (_mm_mul_ps (sf_re.v, incf_im[k].v),
+                                        _mm_mul_ps (sf_im.v, incf_re[k].v));
+            }
         }
 
       n += 4 * TABLE_SIZE;
@@ -219,27 +290,49 @@ internal_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin
   VectorSinParams rest_params = params;
   rest_params.phase += n * phase_inc;
   if (NEED_COS)
-    fast_vector_sincos_add (rest_params, sin_begin + n, sin_end, cos_begin + n);
+    fast_vector_sincos (rest_params, sin_begin + n, sin_end, cos_begin + n);
   else
-    fast_vector_sin_add (rest_params, sin_begin + n, sin_end);
+    fast_vector_sin (rest_params, sin_begin + n, sin_end);
 #else
   if (NEED_COS)
-    fast_vector_sincos_add (params, sin_begin, sin_end, cos_begin);
+    fast_vector_sincos (params, sin_begin, sin_end, cos_begin);
   else
-    fast_vector_sin_add (params, sin_begin, sin_end);
+    fast_vector_sin (params, sin_begin, sin_end);
 #endif
 }
 
 inline void
-float_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
+fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
 {
-  internal_fast_vector_sincos_add<true> (params, sin_begin, sin_end, cos_begin);
+  if (params.mode == VectorSinParams::ADD)
+    {
+      internal_fast_vector_sincosf<true, VectorSinParams::ADD> (params, sin_begin, sin_end, cos_begin);
+    }
+  else if (params.mode == VectorSinParams::REPLACE)
+    {
+      internal_fast_vector_sincosf<true, VectorSinParams::REPLACE> (params, sin_begin, sin_end, cos_begin);
+    }
+  else
+    {
+      g_assert_not_reached();
+    }
 }
 
 inline void
-float_fast_vector_sin_add (const VectorSinParams& params, float *sin_begin, float *sin_end)
+fast_vector_sinf (const VectorSinParams& params, float *sin_begin, float *sin_end)
 {
-  internal_fast_vector_sincos_add<false> (params, sin_begin, sin_end, NULL);
+  if (params.mode == VectorSinParams::ADD)
+    {
+      internal_fast_vector_sincosf<false, VectorSinParams::ADD> (params, sin_begin, sin_end, NULL);
+    }
+  else if (params.mode == VectorSinParams::REPLACE)
+    {
+      internal_fast_vector_sincosf<false, VectorSinParams::REPLACE> (params, sin_begin, sin_end, NULL);
+    }
+  else
+    {
+      g_assert_not_reached();
+    }
 }
 
 } // namespace SpectMorph

@@ -73,8 +73,9 @@ SineDecoder::process (Frame& frame,
           params.freq = frame.freqs[i];
           params.phase = atan2 (cmag, smag);
           params.mag = sqrt (smag * smag + cmag * cmag) * SA;
+          params.mode = VectorSinParams::ADD;
 
-          float_fast_vector_sin_add (params, &decoded_sines[0], &decoded_sines[frame_size]);
+          fast_vector_sinf (params, &decoded_sines[0], &decoded_sines[frame_size]);
         }
       for (size_t t = 0; t < frame_size; t++)
         frame.decoded_sines[t] = decoded_sines[t] * window[t];
