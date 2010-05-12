@@ -82,6 +82,48 @@ fast_vector_sin_add (const VectorSinParams& params, Iterator begin, Iterator end
     }
 }
 
+template<class Iterator>
+void
+fast_vector_sincos_add (const VectorSinParams& params, Iterator sin_begin, Iterator sin_end, Iterator cos_begin)
+{
+  g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
+
+  const double phase_inc = params.freq / params.mix_freq * 2 * M_PI;
+  const double inc_re = cos (phase_inc);
+  const double inc_im = sin (phase_inc);
+  int n = 0;
+
+  double state_re;
+  double state_im;
+
+  sincos (params.phase, &state_im, &state_re);
+  state_re *= params.mag;
+  state_im *= params.mag;
+
+  for (Iterator x = sin_begin, y = cos_begin; x != sin_end; x++, y++)
+    {
+      *x += state_im;
+      *y += state_re;
+      if ((n++ & 255) == 255)
+        {
+          sincos (phase_inc * n + params.phase, &state_im, &state_re);
+          state_re *= params.mag;
+          state_im *= params.mag;
+        }
+      else
+        {
+          /*
+           * (state_re + i * state_im) * (inc_re + i * inc_im) =
+           *   state_re * inc_re - state_im * inc_im + i * (state_re * inc_im + state_im * inc_re)
+           */
+          const double re = state_re * inc_re - state_im * inc_im;
+          const double im = state_re * inc_im + state_im * inc_re;
+          state_re = re;
+          state_im = im;
+        }
+    }
+}
+
 } // namespace SpectMorph
 
 #endif
