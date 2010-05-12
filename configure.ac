@@ -129,6 +129,23 @@ package in, you may need to use:
     AC_SUBST([BOOST_NUMERIC_BINDINGS_CPPFLAGS])
 ])
 
+dnl ----------------------------- from acbirnet.m4 -------------------------------
+dnl Check whether cc accepts a certain option
+dnl MC_PROG_CC_SUPPORTS_OPTION(OPTIONS, ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND])
+AC_DEFUN([MC_PROG_CC_SUPPORTS_OPTION], [
+AC_MSG_CHECKING([whether ${CC-cc} supports $1])
+echo >conftest.c;
+if ${CC-cc} [$1] -c $CFLAGS conftest.c >/dev/null 2>&1 ; then
+    AC_MSG_RESULT(yes)
+    [$2]
+else
+    AC_MSG_RESULT(no)
+    [$3]
+fi
+rm -fr conftest*
+])dnl
+
+
 
 # Check requirement sets
 AC_GLIB_REQUIREMENTS
@@ -138,6 +155,12 @@ AC_GTK_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
 BOOST_REQUIRE([1.34])
 AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS
+MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
+  SSE_FLAGS="-msse -mmmx -ftree-vectorize"
+],[
+  SSE_FLAGS=""
+])
+AC_SUBST(SSE_FLAGS)
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])

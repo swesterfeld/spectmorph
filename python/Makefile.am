@@ -1,6 +1,6 @@
 EXTRA_DIST = sinsignal.py
 
-AM_CXXFLAGS = $(PYTHON_INCLUDES) -I$(top_srcdir)/lib $(BSE_CFLAGS)
+AM_CXXFLAGS = $(PYTHON_INCLUDES) -I$(top_srcdir)/lib $(BSE_CFLAGS) $(SSE_FLAGS)
 
 pyexec_LTLIBRARIES = spectmorph.la
 spectmorph_la_SOURCES = spectmorph.cc

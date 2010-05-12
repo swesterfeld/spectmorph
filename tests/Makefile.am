@@ -1,4 +1,4 @@
-AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 -mmmx -msse -ftree-vectorize
+AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 $(SSE_FLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
