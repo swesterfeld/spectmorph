@@ -514,14 +514,16 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float
     audio_block.phases[i] = b[i];
 }
 
+template<class AIter, class BIter>
 static double
-float_vector_delta (const vector<float>& a, const vector<float>& b)
+float_vector_delta (AIter ai, AIter aend, BIter bi)
 {
-  assert (a.size() == b.size());
-
   double d = 0;
-  for (size_t i = 0; i < a.size(); i++)
-    d += (a[i] - b[i]) * (a[i] - b[i]);
+  while (ai != aend)
+    {
+      double dd = *ai++ - *bi++;
+      d += dd * dd;
+    }
   return d;
 }
 
@@ -532,7 +534,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
 
   AlignedArray<float, 16> sin_vec (frame_size);
   AlignedArray<float, 16> cos_vec (frame_size);
-  vector<float> sines (frame_size);
+  AlignedArray<float, 16> sines (frame_size);
   vector<float> good_freqs;
   vector<float> good_phases;
 
@@ -604,17 +606,19 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             smag = sin (phase) * magnitude;
             cmag = cos (phase) * magnitude;
 
-            vector<float> old_sines = sines;
-            double delta = float_vector_delta (sines, audio_block.debug_samples);
+            vector<float> old_sines (&sines[0], &sines[frame_size]);
+            double delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
 
             // restore partial => sines; keep params.freq & params.mix_freq
             params.phase = atan2 (cmag, smag);
             params.mag = sqrt (smag * smag + cmag * cmag);
-            fast_vector_sin_add (params, sines.begin(), sines.end());
+            float_fast_vector_sin_add (params, &sines[0], &sines[frame_size]);
 
-            double new_delta = float_vector_delta (sines, audio_block.debug_samples);
+            double new_delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
             if (new_delta > delta)      // approximation is _not_ better
-              sines = old_sines;
+              {
+                std::copy (old_sines.begin(), old_sines.end(), &sines[0]);
+              }
             else
               {
                 good_freqs.push_back (f);
