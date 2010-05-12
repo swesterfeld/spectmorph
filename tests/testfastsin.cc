@@ -97,6 +97,19 @@ perftest()
 
   // assume 2Ghz processor and compute cycles per value
   printf ("fast float sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
+
+  start_time = gettime();
+  for (int reps = 0; reps < REPS; reps++)
+    {
+      std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
+      float_fast_vector_sin_add (params, sin_vecf, sin_vecf + TEST_SIZE);
+
+      volatile double yy = sin_vecf[reps & 1023]; // do not optimize loop out
+    }
+  end_time = gettime();
+
+  // assume 2Ghz processor and compute cycles per value
+  printf ("fast float sin: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 }
 
 int
@@ -167,6 +180,12 @@ main (int argc, char **argv)
 
                   // test fast float approximations
                   float sin_vecf[TEST_SIZE], cos_vecf[TEST_SIZE];
+                  std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
+                  float_fast_vector_sin_add (params, sin_vecf, sin_vecf + TEST_SIZE);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    max_err_f = std::max (max_err_f, fabs (sin_vecf[i] - libm_sin_vec[i]));
+
                   std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
                   std::fill (cos_vecf, cos_vecf + TEST_SIZE, 0);
                   float_fast_vector_sincos_add (params, sin_vecf, sin_vecf + TEST_SIZE, cos_vecf);

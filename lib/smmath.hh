@@ -136,8 +136,9 @@ union F4Vector
 #endif
 };
 
+template<bool NEED_COS>
 inline void
-float_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
+internal_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
 {
 #ifdef __SSE__
   g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
@@ -191,8 +192,11 @@ float_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, f
       F4Vector *new_re = reinterpret_cast<F4Vector *> (cos_begin + n);
       for (int k = 0; k < TABLE_SIZE; k++)
         {
-          new_re[k].v = _mm_add_ps (new_re[k].v, _mm_sub_ps (_mm_mul_ps (sf_re.v, incf_re[k].v),
-                                                             _mm_mul_ps (sf_im.v, incf_im[k].v)));
+          if (NEED_COS)
+            {
+              new_re[k].v = _mm_add_ps (new_re[k].v, _mm_sub_ps (_mm_mul_ps (sf_re.v, incf_re[k].v),
+                                                                 _mm_mul_ps (sf_im.v, incf_im[k].v)));
+            }
           new_im[k].v = _mm_add_ps (new_im[k].v, _mm_add_ps (_mm_mul_ps (sf_re.v, incf_im[k].v),
                                                  _mm_mul_ps (sf_im.v, incf_re[k].v)));
         }
@@ -214,10 +218,28 @@ float_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, f
   // compute the remaining sin/cos values using the FPU
   VectorSinParams rest_params = params;
   rest_params.phase += n * phase_inc;
-  fast_vector_sincos_add (rest_params, sin_begin + n, sin_end, cos_begin + n);
+  if (NEED_COS)
+    fast_vector_sincos_add (rest_params, sin_begin + n, sin_end, cos_begin + n);
+  else
+    fast_vector_sin_add (rest_params, sin_begin + n, sin_end);
 #else
-  fast_vector_sincos_add (params, sin_begin, sin_end, cos_begin);
+  if (NEED_COS)
+    fast_vector_sincos_add (params, sin_begin, sin_end, cos_begin);
+  else
+    fast_vector_sin_add (params, sin_begin, sin_end);
 #endif
+}
+
+inline void
+float_fast_vector_sincos_add (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
+{
+  internal_fast_vector_sincos_add<true> (params, sin_begin, sin_end, cos_begin);
+}
+
+inline void
+float_fast_vector_sin_add (const VectorSinParams& params, float *sin_begin, float *sin_end)
+{
+  internal_fast_vector_sincos_add<false> (params, sin_begin, sin_end, NULL);
 }
 
 } // namespace SpectMorph
