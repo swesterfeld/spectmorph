@@ -530,8 +530,8 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
-  vector<double> sin_vec (frame_size);
-  vector<double> cos_vec (frame_size);
+  AlignedArray<float, 16> sin_vec (frame_size);
+  AlignedArray<float, 16> cos_vec (frame_size);
   vector<float> sines (frame_size);
   vector<float> good_freqs;
   vector<float> good_phases;
@@ -571,7 +571,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             cmag = 0;
             double snorm = 0, cnorm = 0;
 
-           VectorSinParams params;
+            VectorSinParams params;
 
             params.mix_freq = mix_freq;
             params.freq = f;
@@ -580,9 +580,9 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             while (params.phase < -M_PI)
               params.phase += 2 * M_PI;
 
-            std::fill (sin_vec.begin(), sin_vec.end(), 0);
-            std::fill (cos_vec.begin(), cos_vec.end(), 0);
-            fast_vector_sincos_add (params, sin_vec.begin(), sin_vec.end(), cos_vec.begin());
+            std::fill (&sin_vec[0], &sin_vec[frame_size], 0);
+            std::fill (&cos_vec[0], &cos_vec[frame_size], 0);
+            float_fast_vector_sincos_add (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
 
             for (size_t n = 0; n < frame_size; n++)
               {
