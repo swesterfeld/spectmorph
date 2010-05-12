@@ -37,10 +37,11 @@ gettime ()
 void
 perftest()
 {
-  const size_t TEST_SIZE = 3000;
-  const int REPS = 20000;
+  const size_t TEST_SIZE = 3001;
+  int REPS = 20000;
 
   double sin_vec[TEST_SIZE], cos_vec[TEST_SIZE];
+  float  sin_vecf[TEST_SIZE], cos_vecf[TEST_SIZE];
   double start_time, end_time;
 
   VectorSinParams params;
@@ -68,6 +69,7 @@ perftest()
   // assume 2Ghz processor and compute cycles per value
   printf ("libm sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
+  REPS *= 10; // optimized versions are a lot faster
   start_time = gettime();
   for (int reps = 0; reps < REPS; reps++)
     {
@@ -80,7 +82,21 @@ perftest()
   end_time = gettime();
 
   // assume 2Ghz processor and compute cycles per value
-  printf ("fast sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
+  printf ("fast double sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
+
+  start_time = gettime();
+  for (int reps = 0; reps < REPS; reps++)
+    {
+      std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
+      std::fill (cos_vecf, cos_vecf + TEST_SIZE, 0);
+      float_fast_vector_sincos_add (params, sin_vecf, sin_vecf + TEST_SIZE, cos_vecf);
+
+      volatile double yy = sin_vecf[reps & 1023] + cos_vecf[reps & 2047]; // do not optimize loop out
+    }
+  end_time = gettime();
+
+  // assume 2Ghz processor and compute cycles per value
+  printf ("fast float sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 }
 
 int
@@ -98,9 +114,10 @@ main (int argc, char **argv)
   double phases[] = { -0.9, 0.0, 0.3, M_PI * 0.5, M_PI * 0.95, -100 };
   double mags[] = { 0.01, 0.1, 0.54321, 1.0, 2.24, -1 };
 
-  const size_t TEST_SIZE = 3000;
+  const size_t TEST_SIZE = 3001;  // not dividable by 4 to expose SSE corner case code
 
   double max_err = 0.0;
+  double max_err_f = 0.0;
 
   for (int f = 0; freqs[f] > 0; f++)
     {
@@ -129,7 +146,7 @@ main (int argc, char **argv)
                       libm_cos_vec[i] = c * params.mag;
                     }
 
-                  // test fast approximation
+                  // test fast double approximations
                   double sin_vec[TEST_SIZE], cos_vec[TEST_SIZE];
 
                   std::fill (sin_vec, sin_vec + TEST_SIZE, 0);
@@ -145,13 +162,27 @@ main (int argc, char **argv)
                   for (int i = 0; i < TEST_SIZE; i++)
                     {
                       max_err = std::max (max_err, fabs (sin_vec[i] - libm_sin_vec[i]));
-                      max_err = std::max (max_err, fabs (cos_vec[i] - libm_cos_vec[i]));
+                      max_err = std::max (max_err, fabs (sin_vec[i] - libm_sin_vec[i]));
+                    }
+
+                  // test fast float approximations
+                  float sin_vecf[TEST_SIZE], cos_vecf[TEST_SIZE];
+                  std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
+                  std::fill (cos_vecf, cos_vecf + TEST_SIZE, 0);
+                  float_fast_vector_sincos_add (params, sin_vecf, sin_vecf + TEST_SIZE, cos_vecf);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    {
+                      max_err_f = std::max (max_err_f, fabs (sin_vecf[i] - libm_sin_vec[i]));
+                      max_err_f = std::max (max_err_f, fabs (cos_vecf[i] - libm_cos_vec[i]));
                     }
 
                 }
             }
         }
     }
-  printf ("testfastsin: maximum error: %.17g\n", max_err);
+  printf ("testfastsin: maximum double error: %.17g\n", max_err);
+  printf ("testfastsin: maximum float error: %.17g\n", max_err_f);
   assert (max_err < 3e-12);
+  assert (max_err_f < 5e-7);
 }
