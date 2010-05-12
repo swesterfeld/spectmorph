@@ -39,6 +39,7 @@
 using SpectMorph::Encoder;
 using SpectMorph::AudioBlock;
 using SpectMorph::Tracksel;
+using SpectMorph::VectorSinParams;
 using std::vector;
 using std::string;
 using std::map;
@@ -526,6 +527,8 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
+  vector<double> sin_vec (frame_size);
+  vector<double> cos_vec (frame_size);
   vector<float> sines (frame_size);
   vector<float> good_freqs;
   vector<float> good_phases;
@@ -564,15 +567,25 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
             smag = 0;
             cmag = 0;
             double snorm = 0, cnorm = 0;
+
+           VectorSinParams params;
+
+            params.mix_freq = mix_freq;
+            params.freq = f;
+            params.mag = 1;
+            params.phase = -((frame_size - 1) / 2.0) * f / mix_freq * 2.0 * M_PI;
+            while (params.phase < -M_PI)
+              params.phase += 2 * M_PI;
+
+            std::fill (sin_vec.begin(), sin_vec.end(), 0);
+            std::fill (cos_vec.begin(), cos_vec.end(), 0);
+            fast_vector_sincos_add (params, sin_vec.begin(), sin_vec.end(), cos_vec.begin());
+
             for (size_t n = 0; n < frame_size; n++)
               {
-                double v = audio_block.debug_samples[n] - sines[n];
-                phase = ((n - (frame_size - 1) / 2.0) * f) / mix_freq * 2.0 * M_PI;
-
-                double swin, cwin;
-                sincos (phase, &swin, &cwin);
-                swin *= window[n];
-                cwin *= window[n];
+                const double v = audio_block.debug_samples[n] - sines[n];
+                const double swin = sin_vec[n] * window[n];
+                const double cwin = cos_vec[n] * window[n];
 
                 smag += v * window[n] * swin;
                 cmag += v * window[n] * cwin;
@@ -590,13 +603,12 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
 
             vector<float> old_sines = sines;
             double delta = float_vector_delta (sines, audio_block.debug_samples);
-            phase = 0;
-            for (size_t n = 0; n < frame_size; n++)
-              {
-                sines[n] += sin (phase) * smag;
-                sines[n] += cos (phase) * cmag;
-                phase += f / mix_freq * 2.0 * M_PI;
-              }
+
+            // restore partial => sines; keep params.freq & params.mix_freq
+            params.phase = atan2 (cmag, smag);
+            params.mag = sqrt (smag * smag + cmag * cmag);
+            fast_vector_sin_add (params, sines.begin(), sines.end());
+
             double new_delta = float_vector_delta (sines, audio_block.debug_samples);
             if (new_delta > delta)      // approximation is _not_ better
               sines = old_sines;
