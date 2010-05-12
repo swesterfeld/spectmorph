@@ -27,7 +27,6 @@
 namespace SpectMorph
 {
 
-/***************************** API ***************************/
 struct
 VectorSinParams
 {
@@ -51,8 +50,6 @@ VectorSinParams
   {
   }
 };
-
-/********************** IMPLEMENTATION ***********************/
 
 template<class Iterator, int MODE>
 inline void
