@@ -7,8 +7,12 @@ smenc:
 - use averaging to estimate noise
 - make window function configurable
 - debug performance problems
+  => implement downsampling for really low notes      [0.0.2]
+  => use symmetry to speed up optimize_partials       [0.0.2]
+  => make a squared window table (optimize_partials)  [0.0.2]
 - move partial tracking from decoder to encoder
 - use GPU for linear least squares
+- move smmath.hh code to libbse
 
 python:
 - add api which is good enough to implement smabc in python
