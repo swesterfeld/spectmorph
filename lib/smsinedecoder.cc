@@ -17,12 +17,14 @@
 
 #include "smsinedecoder.hh"
 #include "smmath.hh"
+#include <bse/bseresamplerimpl.hh> // AlignedArray
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
 
 using SpectMorph::SineDecoder;
 using SpectMorph::Frame;
+using Bse::Resampler::AlignedArray;
 using std::vector;
 
 /**
@@ -59,6 +61,7 @@ SineDecoder::process (Frame& frame,
   /* phase synchronous reconstruction (no loops) */
   if (mode == MODE_PHASE_SYNC_OVERLAP)
     {
+      AlignedArray<float, 16> decoded_sines (frame_size);
       for (size_t i = 0; i < frame.freqs.size(); i++)
         {
           const double SA = 0.5;
@@ -71,10 +74,10 @@ SineDecoder::process (Frame& frame,
           params.phase = atan2 (cmag, smag);
           params.mag = sqrt (smag * smag + cmag * cmag) * SA;
 
-          fast_vector_sin_add (params, &frame.decoded_sines[0], &frame.decoded_sines[frame_size]);
+          float_fast_vector_sin_add (params, &decoded_sines[0], &decoded_sines[frame_size]);
         }
       for (size_t t = 0; t < frame_size; t++)
-        frame.decoded_sines[t] *= window[t];
+        frame.decoded_sines[t] = decoded_sines[t] * window[t];
       return;
     }
 
