@@ -55,6 +55,7 @@ struct Options
 {
   string	program_name; /* FIXME: what to do with that */
   bool          verbose;
+  bool          strip_models;
   uint          quantize_entries;
   float         fundamental_freq;
   int           optimization_level;
@@ -75,6 +76,7 @@ Options::Options ()
   quantize_entries = 0;
   verbose = false;
   optimization_level = 0;
+  strip_models = false;
 }
 
 void
@@ -140,6 +142,10 @@ Options::parse (int   *argc_p,
         {
           optimization_level = atoi (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "-s"))
+        {
+          strip_models = true;
+        }
     }
 
   /* resort argc/argv */
@@ -167,6 +173,7 @@ Options::print_usage ()
   g_printerr (" -f <freq>                   specify fundamental frequency in Hz\n");
   g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
   g_printerr (" -O <level>                  set optimization level\n");
+  g_printerr (" -s                          produced stripped models\n");
   g_printerr ("\n");
 }
 
@@ -338,5 +345,14 @@ main (int argc, char **argv)
 
   encoder.spectral_subtract (window);
   encoder.approx_noise();
+
+  if (options.strip_models)
+    {
+      for (size_t i = 0; i < audio_blocks.size(); i++)
+        {
+          audio_blocks[i].debug_samples.clear();
+          audio_blocks[i].original_fft.clear();
+        }
+    }
   encoder.save (argv[2], options.fundamental_freq);
 }
