@@ -16,6 +16,7 @@
  */
 
 #include "smmath.hh"
+#include <bse/bseresamplerimpl.hh>
 #include <algorithm>
 #include <stdio.h>
 #include <sys/time.h>
@@ -23,6 +24,7 @@
 #include <string>
 
 using namespace SpectMorph;
+using Bse::Resampler::AlignedArray;
 using std::string;
 
 double
@@ -41,7 +43,7 @@ perftest()
   int REPS = 20000;
 
   double sin_vec[TEST_SIZE], cos_vec[TEST_SIZE];
-  float  sin_vecf[TEST_SIZE], cos_vecf[TEST_SIZE];
+  AlignedArray<float, 16> sin_vecf (TEST_SIZE), cos_vecf (TEST_SIZE);
   double start_time, end_time;
 
   VectorSinParams params;
@@ -50,6 +52,7 @@ perftest()
   params.mix_freq = 44100;
   params.phase = 0.12345;
   params.mag = 0.73;
+  params.mode = VectorSinParams::REPLACE;
 
   start_time = gettime();
   for (int reps = 0; reps < REPS; reps++)
@@ -69,13 +72,11 @@ perftest()
   // assume 2Ghz processor and compute cycles per value
   printf ("libm sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
-  REPS *= 10; // optimized versions are a lot faster
+  REPS *= 20; // optimized versions are a lot faster
   start_time = gettime();
   for (int reps = 0; reps < REPS; reps++)
     {
-      std::fill (sin_vec, sin_vec + TEST_SIZE, 0);
-      std::fill (cos_vec, cos_vec + TEST_SIZE, 0);
-      fast_vector_sincos_add (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
+      fast_vector_sincos (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
 
       volatile double yy = sin_vec[reps & 1023] + cos_vec[reps & 2047]; // do not optimize loop out
     }
@@ -87,9 +88,7 @@ perftest()
   start_time = gettime();
   for (int reps = 0; reps < REPS; reps++)
     {
-      std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
-      std::fill (cos_vecf, cos_vecf + TEST_SIZE, 0);
-      float_fast_vector_sincos_add (params, sin_vecf, sin_vecf + TEST_SIZE, cos_vecf);
+      fast_vector_sincosf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE], &cos_vecf[0]);
 
       volatile double yy = sin_vecf[reps & 1023] + cos_vecf[reps & 2047]; // do not optimize loop out
     }
@@ -98,11 +97,12 @@ perftest()
   // assume 2Ghz processor and compute cycles per value
   printf ("fast float sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
+  REPS *= 2; // sin version: even faster
+
   start_time = gettime();
   for (int reps = 0; reps < REPS; reps++)
     {
-      std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
-      float_fast_vector_sin_add (params, sin_vecf, sin_vecf + TEST_SIZE);
+      fast_vector_sinf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE]);
 
       volatile double yy = sin_vecf[reps & 1023]; // do not optimize loop out
     }
@@ -129,6 +129,10 @@ main (int argc, char **argv)
 
   const size_t TEST_SIZE = 3001;  // not dividable by 4 to expose SSE corner case code
 
+  double small_random[TEST_SIZE];
+  for (int i = 0; i < TEST_SIZE; i++)
+    small_random[i] = g_random_double_range (-0.01, 0.01);
+
   double max_err = 0.0;
   double max_err_f = 0.0;
 
@@ -146,6 +150,7 @@ main (int argc, char **argv)
                   params.mix_freq = rates[r];
                   params.phase = phases[p];
                   params.mag = mags[m];
+                  params.mode = VectorSinParams::REPLACE;
 
                   // compute correct result
                   double libm_sin_vec[TEST_SIZE], libm_cos_vec[TEST_SIZE];
@@ -162,33 +167,44 @@ main (int argc, char **argv)
                   // test fast double approximations
                   double sin_vec[TEST_SIZE], cos_vec[TEST_SIZE];
 
-                  std::fill (sin_vec, sin_vec + TEST_SIZE, 0);
-                  fast_vector_sin_add (params, sin_vec, sin_vec + TEST_SIZE);
+                  // random data should be overwritten
+                  std::copy (small_random, small_random + TEST_SIZE, sin_vec);
+                  fast_vector_sin (params, sin_vec, sin_vec + TEST_SIZE);
 
                   for (int i = 0; i < TEST_SIZE; i++)
                     max_err = std::max (max_err, fabs (sin_vec[i] - libm_sin_vec[i]));
 
-                  std::fill (sin_vec, sin_vec + TEST_SIZE, 0);
-                  std::fill (cos_vec, cos_vec + TEST_SIZE, 0);
-                  fast_vector_sincos_add (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
+                  assert (max_err < 1e-5);
+
+                  // random data should be overwritten
+                  std::copy (small_random, small_random + TEST_SIZE, sin_vec);
+                  std::copy (small_random, small_random + TEST_SIZE, cos_vec);
+                  fast_vector_sincos (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
 
                   for (int i = 0; i < TEST_SIZE; i++)
                     {
                       max_err = std::max (max_err, fabs (sin_vec[i] - libm_sin_vec[i]));
-                      max_err = std::max (max_err, fabs (sin_vec[i] - libm_sin_vec[i]));
+                      max_err = std::max (max_err, fabs (cos_vec[i] - libm_cos_vec[i]));
                     }
+                  assert (max_err < 1e-5);
 
                   // test fast float approximations
-                  float sin_vecf[TEST_SIZE], cos_vecf[TEST_SIZE];
-                  std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
-                  float_fast_vector_sin_add (params, sin_vecf, sin_vecf + TEST_SIZE);
+                  AlignedArray<float, 16> sin_vecf (TEST_SIZE);
+                  AlignedArray<float, 16> cos_vecf (TEST_SIZE);
+
+                  // random data should be overwritten
+                  std::copy (small_random, small_random + TEST_SIZE, &sin_vecf[0]);
+                  fast_vector_sinf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE]);
 
                   for (int i = 0; i < TEST_SIZE; i++)
                     max_err_f = std::max (max_err_f, fabs (sin_vecf[i] - libm_sin_vec[i]));
 
-                  std::fill (sin_vecf, sin_vecf + TEST_SIZE, 0);
-                  std::fill (cos_vecf, cos_vecf + TEST_SIZE, 0);
-                  float_fast_vector_sincos_add (params, sin_vecf, sin_vecf + TEST_SIZE, cos_vecf);
+                  assert (max_err_f < 1e-5);
+
+                  // random data should be overwritten
+                  std::copy (small_random, small_random + TEST_SIZE, &sin_vecf[0]);
+                  std::copy (small_random, small_random + TEST_SIZE, &cos_vecf[0]);
+                  fast_vector_sincosf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE], &cos_vecf[0]);
 
                   for (int i = 0; i < TEST_SIZE; i++)
                     {
@@ -196,6 +212,56 @@ main (int argc, char **argv)
                       max_err_f = std::max (max_err_f, fabs (cos_vecf[i] - libm_cos_vec[i]));
                     }
 
+                  assert (max_err_f < 1e-5);
+
+                  // test mode = ADD for doubles
+                  params.mode = VectorSinParams::ADD;
+
+                  // random data should be preserved
+                  std::copy (small_random, small_random + TEST_SIZE, sin_vec);
+                  fast_vector_sin (params, sin_vec, sin_vec + TEST_SIZE);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    max_err = std::max (max_err, fabs (sin_vec[i] - small_random[i] - libm_sin_vec[i]));
+
+                  assert (max_err < 1e-5);
+
+                  // random data should be preserved
+                  std::copy (small_random, small_random + TEST_SIZE, sin_vec);
+                  std::copy (small_random, small_random + TEST_SIZE, cos_vec);
+                  fast_vector_sincos (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    {
+                      max_err = std::max (max_err, fabs (sin_vec[i] - small_random[i] - libm_sin_vec[i]));
+                      max_err = std::max (max_err, fabs (cos_vec[i] - small_random[i] - libm_cos_vec[i]));
+                    }
+
+                  assert (max_err < 1e-5);
+
+                  // test mode = ADD for floats
+
+                  // random data should be preserved
+                  std::copy (small_random, small_random + TEST_SIZE, &sin_vecf[0]);
+                  fast_vector_sinf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE]);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    max_err_f = std::max (max_err_f, fabs (sin_vecf[i] - small_random[i] - libm_sin_vec[i]));
+
+                  assert (max_err_f < 1e-5);
+
+                  // random data should be preserved
+                  std::copy (small_random, small_random + TEST_SIZE, &sin_vecf[0]);
+                  std::copy (small_random, small_random + TEST_SIZE, &cos_vecf[0]);
+                  fast_vector_sincosf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE], &cos_vecf[0]);
+
+                  for (int i = 0; i < TEST_SIZE; i++)
+                    {
+                      max_err_f = std::max (max_err_f, fabs (sin_vecf[i] - small_random[i] - libm_sin_vec[i]));
+                      max_err_f = std::max (max_err_f, fabs (cos_vecf[i] - small_random[i] - libm_cos_vec[i]));
+                    }
+
+                  assert (max_err_f < 1e-5);
                 }
             }
         }
@@ -203,5 +269,5 @@ main (int argc, char **argv)
   printf ("testfastsin: maximum double error: %.17g\n", max_err);
   printf ("testfastsin: maximum float error: %.17g\n", max_err_f);
   assert (max_err < 3e-12);
-  assert (max_err_f < 5e-7);
+  assert (max_err_f < 7e-7);
 }
