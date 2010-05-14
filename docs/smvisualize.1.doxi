@@ -30,4 +30,5 @@ smvisualize - program to visualize a SpectMorph model by displaying its contents
         using a db scale. This is the more natural mode.
 
 @heading SEE ALSO
+@uri{smenc.1.html,smenc(1)},
 @longuri{http://space.twc.de/~stefan/spectmorph.php, SpectMorph Website}

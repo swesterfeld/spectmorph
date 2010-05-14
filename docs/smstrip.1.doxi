@@ -23,4 +23,6 @@ smstrip - program to remove extra data from SpectMorph model files
         There are no options. Exactly one SpectMorph model needs to be specified as argument.
 
 @heading SEE ALSO
+@uri{smenc.1.html,smenc(1)},
+@uri{smplay.1.html,smplay(1)},
 @longuri{http://space.twc.de/~stefan/spectmorph.php, SpectMorph Website}

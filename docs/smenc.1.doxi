@@ -66,4 +66,7 @@ smenc - Program to encode a wav file into a SpectMorph model
 @done
 
 @heading SEE ALSO
+@uri{smplay.1.html,smplay(1)},
+@uri{smvisualize.1.html,smvisualize(1)},
+@uri{smstrip.1.html,smstrip(1)},
 @longuri{http://space.twc.de/~stefan/spectmorph.php, SpectMorph Website}

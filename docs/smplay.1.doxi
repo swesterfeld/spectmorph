@@ -41,4 +41,5 @@ smplay - Program to play a SpectMorph model
 @done
 
 @heading SEE ALSO
+@uri{smenc.1.html,smenc(1)},
 @longuri{http://space.twc.de/~stefan/spectmorph.php, SpectMorph Website}
