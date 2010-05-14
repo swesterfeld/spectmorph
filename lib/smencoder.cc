@@ -802,3 +802,12 @@ Encoder::save (const std::string& filename, double fundamental_freq)
 }
 
 
+
+
+/**
+ * \mainpage SpectMorph Index Page
+ *
+ * \section intro_sec Introduction
+ *
+ * SpectMorph
+ */

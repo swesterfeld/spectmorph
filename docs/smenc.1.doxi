@@ -14,11 +14,19 @@ smenc - Program to encode a wav file into a SpectMorph model
 	@manb{smenc} [@mani{OPTIONS}] @mani{WAV-File} @mani{SM-File}
 
 @heading DESCRIPTION
-	@manb{gst123} is a command line based media player released as free
-	software under the GNU LGPL.
+        @manb{smenc} is a command line tool to create SpectMorph models from
+        audio files. Usually the input file should contain a single note of
+        some instrument, like a single C4 note. Since lower notes require
+        different analysis parameters than higher notes, its usually a good
+        idea to use the -m option to let the encoding algorithm know which
+        note is being encoded.
+
+        There is also a quality / time tradeoff, which means you can use the
+        -O0, -O1 or -O2 option to specify how accurate the analysis should be,
+        with higher numbers meaning better quality, but longer analysis time.
 
 @heading OPTIONS
-	@manb{gst123} follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+	@manb{smenc} follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 
 @itemize{none}
 @item @manb{-h}, @manb{--help} @*

@@ -54,9 +54,7 @@ freqFromNote (float note)
 struct Options
 {
   string	program_name; /* FIXME: what to do with that */
-  bool          verbose;
   bool          strip_models;
-  uint          quantize_entries;
   float         fundamental_freq;
   int           optimization_level;
   FILE         *debug;
@@ -73,8 +71,6 @@ Options::Options ()
   program_name = "smenc";
   fundamental_freq = 0; // unset
   debug = 0;
-  quantize_entries = 0;
-  verbose = false;
   optimization_level = 0;
   strip_models = false;
 }
@@ -113,10 +109,6 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-d"))
 	{
           debug = fopen ("/tmp/stwenc.log", "w");
-	}
-      else if (check_arg (argc, argv, &i, "--verbose"))
-	{
-	  verbose = true;
 	}
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
@@ -163,13 +155,11 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  g_printerr ("usage: %s [ <options> ] <src_audio_file> <dest_stwa_file>\n", options.program_name.c_str());
+  g_printerr ("usage: %s [ <options> ] <src_audio_file> <dest_sm_file>\n", options.program_name.c_str());
   g_printerr ("\n");
   g_printerr ("options:\n");
   g_printerr (" -h, --help                  help for %s\n", options.program_name.c_str());
-  g_printerr (" -@, --list <filename>       read files and URIs from \"filename\"\n");
   g_printerr (" --version                   print version\n");
-  g_printerr (" --verbose                   print verbose information\n");
   g_printerr (" -f <freq>                   specify fundamental frequency in Hz\n");
   g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
   g_printerr (" -O <level>                  set optimization level\n");
