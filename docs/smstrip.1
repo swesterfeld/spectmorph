@@ -1,134 +1,34 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010-05-14T17:20:24
-.TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "beast-" "smenc Manual Page"
+.\" generation: 2010-05-14T21:29:45
+.TH "smstrip" "1" "Wed Apr 19 00:50:37 2006" "beast-" "smstrip Manual Page"
 
 .SH
 NAME
 
 
 .PP
-smenc - Program to encode a wav file into a SpectMorph model
+smstrip - program to remove extra data from SpectMorph model files
 .SH
 SYNOPSIS
 
 
 .PP
-\fBsmenc\fP [\fIOPTIONS\fP] \fIWAV-File\fP \fISM-File\fP
+\fBsmstrip\fP \fISM-File\fP
 .SH
 DESCRIPTION
 
 
 .PP
-\fBgst123\fP is a command line based media player released as free
-software under the GNU LGPL.
+\fBsmstrip\fP is a tool which removes all debugging data from a SpectMorph model.
+By default, smenc includes more data than is required for playback in the SM-File.
+This extra data can be removed, thereby shrinking the file size considerably. Note
+that stripped models can be created directly by the encoder using \fBsmenc -s\fP.
 .SH
 OPTIONS
 
 
 .PP
-\fBgst123\fP follows the usual GNU command line syntax, with long options starting with two dashes ('-').
-.br
-
-.br
-
-
-
-.TP
-\fB-h\fP, \fB--help\fP 
-.br
-Shows a brief help message.
-
-.TP
-\fB-v\fP, \fB--version\fP 
-.br
-Prints out \fBbeast\fP and component versions and file paths.
-
-.TP
-\fB-z\fP, \fB--shuffle\fP 
-.br
-Play files in pseudo random order.
-
-.TP
-\fB-@\fP \fI<playlist>\fP, \fB--list\fP \fI<playlist>\fP 
-.br
-Load files to play from the playlist file.
-
-.TP
-\fB--verbose\fP 
-.br
-Print GStreamer pipeline used to play files
-
-.PP
-
-Besides filenames, playlist entries or command line args can be
-directories. In this case, gst123 recursively searches the directory and
-plays all files contained in it.
-.SH
-INTERRUPT
-
-
-.PP
-You can abort gst123 at any time by pressing Ctrl-C. If you are
-playing multiple files, this will stop the current file and begin playing the
-next one. If you want to abort playing immediately instead of skipping to the
-next file, press Ctrl-C within the first second of the playback of a new file.
-.SH
-KEYBOARD INPUT
-
-
-.PP
-
-
-
-
-.TP
-\fBcursor left/right\fP 
-.br
-Seek 10 seconds backwards/forwards.
-
-.TP
-\fBcursor down/up\fP 
-.br
-Seek 1 minute backwards/forwards.
-
-.TP
-\fBpage down/up\fP 
-.br
-Seek 10 minute backwards/forwards.
-
-.TP
-\fBspace\fP 
-.br
-Toggle pause.
-
-.TP
-\fBm\fP 
-.br
-Toggle mute/unmute.
-
-.TP
-\fBf\fP 
-.br
-Toggle fullscreen display (only for videos).
-
-.TP
-\fB1\fP 
-.br
-Normal video size (only for videos).
-
-.TP
-\fBq\fP 
-.br
-Quit gst123.
-
-.TP
-\fB?\fP 
-.br
-Show keyboad help.
-
-.PP
-
-
+There are no options. Exactly one SpectMorph model needs to be specified as argument.
 .SH
 SEE ALSO
 
