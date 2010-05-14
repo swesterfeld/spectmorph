@@ -45,7 +45,6 @@ using std::max;
 struct Options
 {
   String	program_name; /* FIXME: what to do with that */
-  bool          verbose;
   bool          loop;
   bool          noise_enabled;
   bool          sines_enabled;
@@ -55,9 +54,6 @@ struct Options
   Options ();
   void parse (int *argc_p, char **argv_p[]);
   static void print_usage ();
-
-  std::list<String>  playlists;
-  FILE              *debug;
 } options;
 
 #include "stwutils.hh"
@@ -102,18 +98,6 @@ Options::parse (int   *argc_p,
 	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
-      else if (check_arg (argc, argv, &i, "--verbose"))
-	{
-	  verbose = true;
-	}
-      else if (check_arg (argc, argv, &i, "-d"))
-	{
-          debug = fopen ("/tmp/stwplay.log", "w");
-	}
-      else if (check_arg (argc, argv, &i, "--list", &opt_arg) || check_arg (argc, argv, &i, "-@", &opt_arg))
-	{
-	  playlists.push_back (opt_arg);
-	}
       else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
 	{
 	  rate = atoi (opt_arg);
@@ -151,33 +135,16 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  g_printerr ("usage: %s [ <options> ] <URI> ...\n", options.program_name.c_str());
+  g_printerr ("usage: %s [ <options> ] <sm_file>\n", options.program_name.c_str());
   g_printerr ("\n");
   g_printerr ("options:\n");
   g_printerr (" -h, --help                  help for %s\n", options.program_name.c_str());
-  g_printerr (" -@, --list <filename>       read files and URIs from \"filename\"\n");
-  g_printerr (" --version                   print version\n");
-  g_printerr (" --verbose                   print verbose information\n");
+  g_printerr (" -v, --version               print version\n");
   g_printerr (" --rate <sampling rate>      set replay rate manually\n");
   g_printerr (" --no-noise                  disable noise decoder\n");
   g_printerr (" --no-sines                  disable sine decoder\n");
   g_printerr (" --export <wav filename>     export to wav file\n");
   g_printerr ("\n");
-}
-
-void debug (const char *dbg, ...) G_GNUC_PRINTF (1, 2);
-
-void
-debug (const char *dbg, ...)
-{
-  va_list ap;
-
-  if (!options.debug)
-    return;
-
-  va_start (ap, dbg);
-  vfprintf (options.debug, dbg, ap);
-  va_end (ap);
 }
 
 int
@@ -193,7 +160,7 @@ main (int argc, char **argv)
   };
   bse_init_inprocess (&argc, &argv, NULL, values);
   options.parse (&argc, &argv);
-  if (argc < 2)
+  if (argc != 2)
     {
       options.print_usage();
       exit (1);
