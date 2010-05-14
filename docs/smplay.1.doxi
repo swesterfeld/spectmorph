@@ -1,67 +1,43 @@
 @doxer_dnl      # emacs: -*- mode: texinfo; texinfo-open-quote: "\""; texinfo-close-quote: "\""; -*-
 @doxer_set{rvstamp,parse_date} $Date: 2006/04/19 00:50:37 $
 @include "smdefs.doxi"
-@doxer_set{title}	smenc - SpectMorph encoder
-@doxer_set{man-title}	smenc
+@doxer_set{title}	smplay - SpectMorph player
+@doxer_set{man-title}	smplay
 @doxer_set{man-date}	@doxer_get{rvstamp}
-@doxer_set{man-source}	beast-@doxer_get{BST_VERSION}
-@doxer_set{man-manual}	smenc Manual Page
+@doxer_set{man-source}	spectmorph-@doxer_get{VERSION}
+@doxer_set{man-manual}	smplay Manual Page
 
 @heading NAME
-smenc - Program to encode a wav file into a SpectMorph model
+smplay - Program to play a SpectMorph model
 
 @heading SYNOPSIS
-	@manb{smenc} [@mani{OPTIONS}] @mani{WAV-File} @mani{SM-File}
+	@manb{smplay} [@mani{OPTIONS}] @mani{SM-File}
 
 @heading DESCRIPTION
-	@manb{gst123} is a command line based media player released as free
-	software under the GNU LGPL.
+        @manb{smplay} is a command line based player for SpectMorph models
+        (which can be created using @manb{smenc}). Playing can use the audio card,
+        so that the model will be heard directly, or create a wav file instead
+        if the @manb{--export} option is used. Since the SpectMorph model consists
+        of sine waves and noise, options to disable one of these components exist.
 
 @heading OPTIONS
-	@manb{gst123} follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+	@manb{smplay} follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 
 @itemize{none}
 @item @manb{-h}, @manb{--help} @*
 	Shows a brief help message.
 @item @manb{-v}, @manb{--version} @*
 	Prints out @manb{beast} and component versions and file paths.
-@item @manb{-z}, @manb{--shuffle} @*
-        Play files in pseudo random order.
-@item @manb{-@@} @mani{<playlist>}, @manb{--list} @mani{<playlist>} @*
-        Load files to play from the playlist file.
-@item @manb{--verbose} @*
-        Print GStreamer pipeline used to play files
-@done
-       Besides filenames, playlist entries or command line args can be
-       directories. In this case, gst123 recursively searches the directory and
-       plays all files contained in it.
-@heading INTERRUPT
-       You  can  abort  gst123  at any time by pressing Ctrl-C.  If you are
-       playing multiple files, this will stop the current file and begin playing the
-       next one.  If you want to abort playing immediately instead of skipping to the
-       next file, press Ctrl-C within the first second of the playback of a new file.
-
-@heading KEYBOARD INPUT
-
-@itemize{none}
-@item @manb{cursor left/right} @*
-    Seek 10 seconds backwards/forwards.
-@item @manb{cursor down/up} @*
-    Seek 1  minute  backwards/forwards.
-@item @manb{page down/up} @*
-    Seek 10 minute  backwards/forwards.
-@item @manb{space} @*
-    Toggle pause.
-@item @manb{m} @*
-    Toggle mute/unmute.
-@item @manb{f} @*
-    Toggle fullscreen display (only for videos).
-@item @manb{1} @*
-    Normal video size (only for videos).
-@item @manb{q} @*
-    Quit gst123.
-@item @manb{?} @*
-    Show keyboad help.
+@item @manb{--rate} @mani{<sampling rate>} @*
+        Set replay rate manually; also useful for specifying the desired rate of
+        the wav file, if --export is used.
+@item @manb{--no-noise} @*
+        Disable noise decoder, so that only the sine wave part of the signal is
+        decoded.
+@item @manb{--no-sines} @*
+        Disable sine decoder, so that only the noise part of the signal is decoded.
+@item @manb{--export} @mani{<wav filename>} @*
+        Instead of playing the file, write the output to a wav file.
 @done
 
 @heading SEE ALSO
