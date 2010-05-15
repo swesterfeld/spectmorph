@@ -40,7 +40,6 @@ adventure:
 
 docs:
 - write document documenting basic functionality  [0.0.2]
-- complete API documentation [0.0.2]
 
 evaluation:
 - reevaluate [0.0.2]

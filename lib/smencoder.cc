@@ -269,6 +269,7 @@ Encoder::search_local_maxima()
     }
 }
 
+/// @cond
 struct
 PeakIndex
 {
@@ -282,6 +283,7 @@ PeakIndex
   {
   }
 };
+/// @endcond
 
 static bool
 partial_index_cmp (const PeakIndex& a, const PeakIndex& b)

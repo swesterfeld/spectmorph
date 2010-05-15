@@ -68,6 +68,8 @@ check_arg (uint         argc,
   exit (1);
 }
 
+/// @cond
+// not used at the moment
 class MiniResampler
 {
   GslDataHandle    *m_dhandle;
@@ -79,6 +81,7 @@ public:
   int read (uint64 pos, size_t block_size, float *out);
   uint64 length();
 };
+/// @endcond
 
 MiniResampler::MiniResampler (GslDataHandle *dhandle, double speedup_factor)
 {

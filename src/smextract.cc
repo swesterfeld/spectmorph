@@ -39,6 +39,8 @@ vector_delta (const vector<double>& a, const vector<double>& b)
   return d;
 }
 
+/// @cond
+// not yet part of the public API
 struct TransientModel
 {
   double start_volume;
@@ -46,6 +48,7 @@ struct TransientModel
   int start;
   int end;
 };
+/// @endcond
 
 void
 transient_scale (const TransientModel& m, const vector<double>& in, vector<double>& out)

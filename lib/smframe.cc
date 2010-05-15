@@ -19,6 +19,12 @@
 
 using SpectMorph::Frame;
 
+/**
+ * \brief Constructor for an empty frame
+ *
+ * This constructor sets up all data members of frame for an empty frame; it is intended
+ * to be used when constructing new data from existing data.
+ */
 Frame::Frame (size_t frame_size)
   : frame_size (frame_size)
 {
@@ -27,6 +33,12 @@ Frame::Frame (size_t frame_size)
   noise_envelope.resize (256);
 }
 
+/**
+ * \brief Constructor for a frame from an AudioBlock
+ *
+ * This constructor copies all parameters from the AudioBlock. The frame_size is used to
+ * setup the decoder buffers correctly.
+ */
 Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
     frame_size (frame_size),
     freqs (audio_block.freqs.begin(), audio_block.freqs.end()),

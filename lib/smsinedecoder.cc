@@ -28,7 +28,7 @@ using Bse::Resampler::AlignedArray;
 using std::vector;
 
 /**
- * Constructor setting up the various decoding parameters
+ * \brief Constructor setting up the various decoding parameters
  *
  * @param mix_freq    sample rate to be used for reconstruction
  * @param frame_size  frame size (in samples)
@@ -44,8 +44,9 @@ SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step,
 }
 
 /**
- * Function which decodes a part of the signal; this needs two adjecant
- * frames as arguments.
+ * \brief Function which decodes a part of the signal.
+ *
+ * This needs two adjecant frames as arguments.
  *
  * @param frame        the current frame (the frame to be decoded)
  * @param next_frame   the frame after the current frame

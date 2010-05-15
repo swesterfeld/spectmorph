@@ -42,6 +42,7 @@ using namespace Birnet;
 using namespace SpectMorph;
 using std::max;
 
+/// @cond
 struct Options
 {
   String	program_name; /* FIXME: what to do with that */
@@ -55,6 +56,7 @@ struct Options
   void parse (int *argc_p, char **argv_p[]);
   static void print_usage ();
 } options;
+/// @endcond
 
 #include "stwutils.hh"
 

@@ -24,6 +24,7 @@
 using std::string;
 using std::vector;
 
+/// @cond
 static int
 attr_float_set (float& d, PyObject *value, const string& name)
 {
@@ -693,3 +694,5 @@ initspectmorph(void)
   PyModule_AddObject (m, "AudioBlock", (PyObject *)&spectmorph_AudioBlockType);
   PyModule_AddObject (m, "AudioBlockVec", (PyObject *)&spectmorph_AudioBlockVecType);
 }
+
+/// @endcond

@@ -60,6 +60,7 @@ struct EncoderParams
   double  fundamental_freq;
 };
 
+/// @cond
 struct Tracksel {
   size_t   frame;
   size_t   d;         /* FFT position */
@@ -71,6 +72,7 @@ struct Tracksel {
   bool     is_harmonic;
   Tracksel *prev, *next;
 };
+/// @endcond
 
 /**
  * \brief Encoder producing SpectMorph parametric data from sample data

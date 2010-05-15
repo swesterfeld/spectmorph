@@ -25,13 +25,16 @@
 namespace SpectMorph {
 
 /**
- * Decoder for the sine component (deterministic component) of the signal
+ * \brief Decoder for the sine component (deterministic component) of the signal
+ *
+ * To decode a signal, create a SineDecoder and always call process with two
+ * frames, the current frame and the next frame.
  */
 class SineDecoder
 {
 public:
   /**
-   * Different supported modes for decoding.
+   * \brief Different supported modes for decoding.
    */
   enum Mode {
     /**

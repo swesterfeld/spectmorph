@@ -27,6 +27,9 @@
 namespace SpectMorph
 {
 
+/**
+ * \brief parameter structure for the various optimized vector sine functions
+ */
 struct
 VectorSinParams
 {
@@ -182,6 +185,7 @@ fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, Iterator 
 }
 
 
+/// @cond
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
 {
@@ -190,6 +194,7 @@ union F4Vector
   __m128 v;   // vector of four single floats
 #endif
 };
+/// @endcond
 
 template<bool NEED_COS, int MODE>
 inline void

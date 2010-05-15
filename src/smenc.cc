@@ -51,6 +51,7 @@ freqFromNote (float note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
+/// @cond
 struct Options
 {
   string	program_name; /* FIXME: what to do with that */
@@ -63,6 +64,7 @@ struct Options
   void parse (int *argc_p, char **argv_p[]);
   static void print_usage ();
 } options;
+/// @endcond
 
 #include "stwutils.hh"
 

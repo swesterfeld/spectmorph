@@ -25,10 +25,12 @@
 using std::string;
 using std::vector;
 
+/// @cond
 struct Options
 {
   string program_name;
 } options;
+/// @endcond
 
 int
 main (int argc, char **argv)

@@ -24,7 +24,7 @@
 namespace SpectMorph {
 
 /**
- * This class represents a single frame to be decoded.
+ * \brief This class represents a single frame to be decoded.
  */
 class Frame
 {

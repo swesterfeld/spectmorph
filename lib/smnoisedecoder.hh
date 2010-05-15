@@ -25,7 +25,7 @@ namespace SpectMorph
 {
 
 /**
- * Decoder for the noise component (stochastic component) of the signal
+ * \brief Decoder for the noise component (stochastic component) of the signal
  */
 class NoiseDecoder
 {

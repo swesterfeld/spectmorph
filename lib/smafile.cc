@@ -26,6 +26,7 @@
 using std::string;
 using std::vector;
 
+/// @cond
 class IFile
 {
 public:
@@ -70,6 +71,7 @@ public:
   const vector<float>& event_float_block();
   void  next_event();
 };
+/// @endcond
 
 IFile::Event
 IFile::event()
@@ -324,6 +326,7 @@ SpectMorph::AudioFile::load (const std::string& file_name,
   return BSE_ERROR_NONE;
 }
 
+/// @cond
 class OFile
 {
   FILE *file;
@@ -348,6 +351,7 @@ public:
   void write_float (const string& s, double f);
   void write_float_block (const string& s, const vector<float>& fb);
 };
+/// @endcond
 
 void
 OFile::begin_section (const string& s)
