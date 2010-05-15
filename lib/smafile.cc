@@ -280,10 +280,10 @@ SpectMorph::AudioFile::load (const string& file_name,
           const vector<float>& fb = ifile.event_float_block();
 
           assert (audio_block != NULL);
-          if (ifile.event_name() == "meaning")
+          if (ifile.event_name() == "noise")
             {
-              audio_block->meaning.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->meaning.begin());
+              audio_block->noise.resize (fb.size());
+              std::copy (fb.begin(), fb.end(), audio_block->noise.begin());
             }
           else if (ifile.event_name() == "freqs")
             {
@@ -448,7 +448,7 @@ SpectMorph::AudioFile::save (const string& file_name,
   for (size_t i = 0; i < audio.contents.size(); i++)
     {
       of.begin_section ("frame");
-      of.write_float_block ("meaning", audio.contents[i].meaning);
+      of.write_float_block ("noise", audio.contents[i].noise);
       of.write_float_block ("freqs", audio.contents[i].freqs);
       of.write_float_block ("phases", audio.contents[i].phases);
       of.write_float_block ("original_fft", audio.contents[i].original_fft);

@@ -142,7 +142,7 @@ Encoder::compute_stft (GslDataHandle *dhandle, const std::vector<float>& window)
       out[block_size * zeropad + 1] = 0;
       out[1] = 0;
 
-      audio_block.meaning.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
+      audio_block.noise.assign (out.begin(), out.end()); // <- will be overwritten by noise spectrum later on
       audio_block.original_fft.assign (out.begin(), out.end());
       audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
 
@@ -171,21 +171,21 @@ Encoder::search_local_maxima()
     {
       for (size_t d = 2; d < block_size * zeropad; d += 2)
 	{
-	  max_mag = std::max (max_mag, magnitude (audio_blocks[n].meaning.begin() + d));
+	  max_mag = std::max (max_mag, magnitude (audio_blocks[n].noise.begin() + d));
 	}
     }
 
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
-      vector<double> mag_values (audio_blocks[n].meaning.size() / 2);
+      vector<double> mag_values (audio_blocks[n].noise.size() / 2);
       for (size_t d = 0; d < block_size * zeropad; d += 2)
-        mag_values[d / 2] = magnitude (audio_blocks[n].meaning.begin() + d);
+        mag_values[d / 2] = magnitude (audio_blocks[n].noise.begin() + d);
 
       for (size_t d = 2; d < block_size * zeropad; d += 2)
 	{
 #if 0
-	  double phase = atan2 (*(audio_blocks[n]->meaning.begin() + d),
-	                        *(audio_blocks[n]->meaning.begin() + d + 1)) / 2 / M_PI;  /* range [-0.5 .. 0.5] */
+	  double phase = atan2 (*(audio_blocks[n]->noise.begin() + d),
+	                        *(audio_blocks[n]->noise.begin() + d + 1)) / 2 / M_PI;  /* range [-0.5 .. 0.5] */
 #endif
           if (mag_values[d/2] > mag_values[d/2-1] && mag_values[d/2] > mag_values[d/2+1])   /* search for peaks in fft magnitudes */
             {
@@ -216,9 +216,9 @@ Encoder::search_local_maxima()
                       double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
 
                       // use the interpolation formula for the complex values to find the phase
-                      std::complex<double> c1 (audio_blocks[n].meaning[d-2], audio_blocks[n].meaning[d-1]);
-                      std::complex<double> c2 (audio_blocks[n].meaning[d], audio_blocks[n].meaning[d+1]);
-                      std::complex<double> c3 (audio_blocks[n].meaning[d+2], audio_blocks[n].meaning[d+3]);
+                      std::complex<double> c1 (audio_blocks[n].noise[d-2], audio_blocks[n].noise[d-1]);
+                      std::complex<double> c2 (audio_blocks[n].noise[d], audio_blocks[n].noise[d+1]);
+                      std::complex<double> c3 (audio_blocks[n].noise[d+2], audio_blocks[n].noise[d+3]);
                       std::complex<double> ca = (c1 + c3 - 2.0*c2) / 2.0;
                       std::complex<double> cb = c3 - c2 - ca;
                       std::complex<double> cc = c2;
@@ -458,17 +458,17 @@ Encoder::spectral_subtract (const std::vector<float>& window)
 	  double sub_mag = sqrt (re * re + im * im);
 	  debug ("subspectrum:%lld %g\n", frame, sub_mag);
 
-	  double mag = magnitude (audio_blocks[frame].meaning.begin() + d);
+	  double mag = magnitude (audio_blocks[frame].noise.begin() + d);
 	  debug ("spectrum:%lld %g\n", frame, mag);
 	  if (mag > 0)
 	    {
-	      audio_blocks[frame].meaning[d] /= mag;
-	      audio_blocks[frame].meaning[d + 1] /= mag;
+	      audio_blocks[frame].noise[d] /= mag;
+	      audio_blocks[frame].noise[d + 1] /= mag;
 	      mag -= sub_mag;
 	      if (mag < 0)
 		mag = 0;
-	      audio_blocks[frame].meaning[d] *= mag;
-	      audio_blocks[frame].meaning[d + 1] *= mag;
+	      audio_blocks[frame].noise[d] *= mag;
+	      audio_blocks[frame].noise[d + 1] *= mag;
 	    }
 	  debug ("finalspectrum:%lld %g\n", frame, mag);
 	}
@@ -772,7 +772,7 @@ Encoder::approx_noise()
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       vector<double> noise_envelope (256);
-      vector<double> spectrum (audio_blocks[frame].meaning.begin(), audio_blocks[frame].meaning.end());
+      vector<double> spectrum (audio_blocks[frame].noise.begin(), audio_blocks[frame].noise.end());
 
       approximate_noise_spectrum (frame, spectrum, noise_envelope);
 
@@ -780,8 +780,8 @@ Encoder::approx_noise()
       xnoise_envelope_to_spectrum (noise_envelope, approx_spectrum);
       for (int i = 0; i < 2048; i += 2)
 	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
-      audio_blocks[frame].meaning.resize (noise_envelope.size());
-      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].meaning.begin());
+      audio_blocks[frame].noise.resize (noise_envelope.size());
+      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].noise.begin());
     }
 }
 
@@ -809,5 +809,13 @@ Encoder::save (const std::string& filename, double fundamental_freq)
  *
  * \section intro_sec Introduction
  *
- * SpectMorph
+ * SpectMorph is a software which analyzes wav files and builds a frame based model of these wav files,
+ * where each frame contains information about the spectrum. Each frame is represented as a sum of sine
+ * waves, and a noise component. There are command line tools like smenc and smplay for encoding and
+ * decoding SpectMorph models, which are documented in the manual pages. Technically, these tools are frontends
+ * to the C++ classes in libspectmorph, which are documented here.
+ *
+ * The encoder is implemented in SpectMorph::Encoder. It can be used to encode an audio file; the frames
+ * (short snippets of the audio file, maybe 40 ms or so) are then available as vector containing
+ * SpectMorph::AudioBlock objects.
  */

@@ -10,10 +10,10 @@ rebuild-manpage:
 	for i in $(dist_man_MANS); do $(DOXER) doxi2man $$i.doxi; done
 
 publish-docs:
-	mkdir -p $(DOCS_DIR)
+	mkdir -p $(DOCS_DIR)/api
 	for i in $(dist_man_MANS); do \
 	  $(DOXER) doxi2html $$i.doxi; \
 	  cp $$i.html $(DOCS_DIR); \
         done
-	cd $(top_srcdir); doxygen Doxyfile; cp -av html $(DOCS_DIR)/api
+	cd $(top_srcdir); doxygen Doxyfile; cp -av html/* $(DOCS_DIR)/api
 	cd $(DOCS_DIR) && find . -type f -print0 | xargs -0 git add

@@ -29,11 +29,11 @@ namespace SpectMorph
 class AudioBlock
 {
 public:
-  std::vector<float> meaning;
-  std::vector<float> freqs;
-  std::vector<float> phases;
-  std::vector<float> original_fft;
-  std::vector<float> debug_samples;
+  std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
+  std::vector<float> freqs;          //!< frequencies of the sine components of this frame
+  std::vector<float> phases;         //!< phases of the sine components, represented as sine and cosine magnitude
+  std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
+  std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };
 
 /**
