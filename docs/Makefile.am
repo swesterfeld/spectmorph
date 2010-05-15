@@ -15,5 +15,5 @@ publish-docs:
 	  $(DOXER) doxi2html $$i.doxi; \
 	  cp $$i.html $(DOCS_DIR); \
         done
-	cd $(top_srcdir); doxygen Doxyfile; cp -av html/* $(DOCS_DIR)/api
+	cd $(top_srcdir); doxygen Doxyfile; cp -a html/* $(DOCS_DIR)/api
 	cd $(DOCS_DIR) && find . -type f -print0 | xargs -0 git add

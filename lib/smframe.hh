@@ -23,6 +23,9 @@
 
 namespace SpectMorph {
 
+/**
+ * This class represents a single frame to be decoded.
+ */
 class Frame
 {
   size_t frame_size;
@@ -30,12 +33,12 @@ public:
   Frame (size_t frame_size);
   Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size);
 
-  std::vector<double> freqs;
-  std::vector<double> phases;
-  std::vector<double> noise_envelope;
-  std::vector<double> decoded_residue;
-  std::vector<double> decoded_sines;
-  std::vector<float>  debug_samples;
+  std::vector<double> freqs;                 //!< frequencies of the sine waves in this frame
+  std::vector<double> phases;                //!< magnitude and phase of the sine waves, as sin and cos magnitude
+  std::vector<double> noise_envelope;        //!< noise envelope representing residue spectrum without sines
+  std::vector<double> decoded_residue;       //!< residue decoded by SpectMorph::NoiseDecoder
+  std::vector<double> decoded_sines;         //!< sine waves decoded by SpectMorph::SineDecoder
+  std::vector<float>  debug_samples;         //!< original sample values - debugging only
 };
 
 }

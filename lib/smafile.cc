@@ -205,8 +205,15 @@ IFile::event_float_block()
   return current_event_float_block;
 }
 
+/**
+ * This function loads a SM-File.
+ *
+ * \param file_name the name of the SM-File to be loaded
+ * \param audio_out the audio object to be filled with the data from the file
+ * \returns a BseErrorType indicating whether loading was successful
+ */
 BseErrorType
-SpectMorph::AudioFile::load (const string& file_name,
+SpectMorph::AudioFile::load (const std::string& file_name,
                              SpectMorph::Audio& audio_out)
 {
   SpectMorph::Audio audio;
@@ -426,8 +433,15 @@ OFile::write_float_block (const string& s,
   fwrite (&buffer[0], 1, buffer.size(), file);
 }
 
+/**
+ * This function saves a SM-File.
+ *
+ * \param file_name the name of the SM-File to be written
+ * \param audio the audio object to be stored
+ * \returns a BseErrorType indicating saving loading was successful
+ */
 BseErrorType
-SpectMorph::AudioFile::save (const string& file_name,
+SpectMorph::AudioFile::save (const std::string& file_name,
                              const SpectMorph::Audio& audio)
 {
   OFile of (file_name.c_str());

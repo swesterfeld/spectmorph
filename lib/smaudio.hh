@@ -24,30 +24,39 @@ namespace SpectMorph
 {
 
 /**
- * Block of audio data, encoded in SpectMorph parametric format
+ * \brief Block of audio data, encoded in SpectMorph parametric format
+ *
+ * This represents a single analysis frame, usually containing sine waves in freqs
+ * and phases, and a noise envelope for everything that remained after subtracting
+ * the sine waves. The parameters original_fft and debug_samples are optional and
+ * are used for debugging only.
  */
 class AudioBlock
 {
 public:
   std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
   std::vector<float> freqs;          //!< frequencies of the sine components of this frame
-  std::vector<float> phases;         //!< phases of the sine components, represented as sine and cosine magnitude
+  std::vector<float> phases;         //!< phases and magnitude of the sine components, represented as sin and cos magnitude
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };
 
 /**
- * Audio sample containing many blocks
+ * \brief Audio sample containing many blocks
+ *
+ * This class contains the information the SpectMorph::Encoder creates for a wav file. The
+ * time dependant parameters are stored in contents, as a vector of audio frames; the
+ * parameters that are the same for all frames are stored in this class.
  */
 class Audio
 {
 public:
-  float fundamental_freq;
-  float mix_freq;
-  float frame_size_ms;
-  float frame_step_ms;
-  int   zeropad;
-  std::vector<AudioBlock> contents;
+  float fundamental_freq;            //!< fundamental frequency (note which was encoded), or 0 if not available
+  float mix_freq;                    //!< mix freq (sampling rate) of the original audio data
+  float frame_size_ms;               //!< length of each audio frame in milliseconds
+  float frame_step_ms;               //!< stepping of the audio frames in milliseconds
+  int   zeropad;                     //!< FFT zeropadding used during analysis
+  std::vector<AudioBlock> contents;  //!< the actual frame data
 };
 
 }

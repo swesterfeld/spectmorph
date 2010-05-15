@@ -815,7 +815,20 @@ Encoder::save (const std::string& filename, double fundamental_freq)
  * decoding SpectMorph models, which are documented in the manual pages. Technically, these tools are frontends
  * to the C++ classes in libspectmorph, which are documented here.
  *
+ * \section enc_sec Encoding, loading and saving
+ *
  * The encoder is implemented in SpectMorph::Encoder. It can be used to encode an audio file; the frames
  * (short snippets of the audio file, maybe 40 ms or so) are then available as vector containing
  * SpectMorph::AudioBlock objects.
+ *
+ * Many SpectMorph::AudioBlock objects are needed to represent a whole sound file, and the SpectMorph::Audio
+ * class is used to store all parameters of an encoded file, along with the actual frames. Information like
+ * the sampling rate (mix_freq) or the original note (fundamental freq) are stored in the SpectMorph::Audio
+ * class. Functions for storing and loading SpectMorph::Audio objects exist in namespace SpectMorph::AudioFile.
+ *
+ * \section dec_sec Decoding
+ *
+ * The decoding process is frame oriented. For each SpectMorph::AudioBlock, a SpectMorph::Frame object needs
+ * to be created. For each frame, a SpectMorph::SineDecoder and a SpectMorph::NoiseDecoder can be used to
+ * reconstruct (something which sounds like) the original signal.
  */

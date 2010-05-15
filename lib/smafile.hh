@@ -25,6 +25,9 @@
 namespace SpectMorph
 {
 
+/**
+ * This namespace contains functions for loading and storing SpectMorph::Audio objects.
+ */
 namespace AudioFile
 {
     BseErrorType load (const std::string& filename, SpectMorph::Audio& audio_data);

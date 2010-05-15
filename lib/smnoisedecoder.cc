@@ -25,6 +25,12 @@ using std::vector;
 using SpectMorph::NoiseDecoder;
 using SpectMorph::Frame;
 
+/**
+ * Creates a noise decoder object.
+ *
+ * \param orig_mix_freq   original mix freq (sample rate) of the audio file that was encoded
+ * \param mix_freq        mix freq (sample rate) of the output sample data
+ */
 NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq) :
   orig_mix_freq (orig_mix_freq),
   mix_freq (mix_freq)
@@ -88,9 +94,16 @@ next_power2 (size_t i)
   return p;
 }
 
+/**
+ * This function decodes the noise contained in the frame and
+ * fills the decoded_residue vector of the frame.
+ *
+ * \param frame   frame to be decoded; also: location of the output sample data
+ * \param window  window function to be used; should be the same or similar to the one used in encoding
+ */
 void
 NoiseDecoder::process (Frame& frame,
-		       const vector<double>& window)
+		       const std::vector<double>& window)
 {
   const size_t block_size = next_power2 (frame.decoded_residue.size());
 

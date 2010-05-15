@@ -30,16 +30,16 @@ namespace SpectMorph
 struct
 VectorSinParams
 {
-  double mix_freq;
-  double freq;
-  double phase;
-  double mag;
+  double mix_freq;         //!< the mix freq (sampling rate) of the sin (and cos) wave to be created
+  double freq;             //!< the frequency of the sin (and cos) wave to be created
+  double phase;            //!< the start phase of the wave
+  double mag;              //!< the magnitude (amplitude) of the wave
 
   enum {
     NONE = -1,
-    ADD  = 1,
-    REPLACE = 2
-  } mode;
+    ADD  = 1,              //!< add computed values to the values that are in the output array
+    REPLACE = 2            //!< replace values in the output array with computed values 
+  } mode;                  //!< whether to overwrite or add output
 
   VectorSinParams() :
     mix_freq (-1),

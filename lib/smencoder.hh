@@ -29,8 +29,9 @@ namespace SpectMorph
 {
 
 /**
- * Encoder parameters - these define parameters that configure the
- * encoder algorithm.
+ * \brief Encoder parameters
+ *
+ * This struct contains parameters that configure the encoder algorithm.
  */
 struct EncoderParams
 {
@@ -72,7 +73,12 @@ struct Tracksel {
 };
 
 /**
- * Encoder producing SpectMorph parametric data from sample data
+ * \brief Encoder producing SpectMorph parametric data from sample data
+ *
+ * The encoder needs to perform a number of analysis steps to get from the input
+ * signal to a parametric representation (which is built in audio_blocks). At the
+ * moment, this process needs to be controlled by the caller, but a simpler
+ * interface should be added.
  */
 class Encoder
 {
@@ -80,9 +86,10 @@ class Encoder
 
   bool check_harmonic (double freq, double& new_freq, double mix_freq);
 
+  std::vector< std::vector<Tracksel> > frame_tracksels; //!< Analog to Canny Algorithms edgels - only used internally
+
 public:
-  std::vector<AudioBlock>              audio_blocks;
-  std::vector< std::vector<Tracksel> > frame_tracksels; /* Analog to Canny Algorithms edgels */
+  std::vector<AudioBlock>              audio_blocks;    //!< current state, and end result of the encoding algorithm
 
   Encoder (const EncoderParams& enc_params);
   void compute_stft (GslDataHandle *dhandle, const std::vector<float>& window);
