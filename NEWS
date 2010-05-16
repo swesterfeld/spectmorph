@@ -1,3 +1,23 @@
+Overview of Changes in spectmorph-0.0.2:
+
+* bugfixes
+* include proper phases, so phase-correct reconstruction of samples is possible
+* new programs:
+  - smstrip     - removes debugging information from SpectMorph model files
+  - smextract   - extracts data from SpectMorph models, for developers only for now
+* added --no-noise / --no-sines switches for smplay
+* added -s switch for smenc, to create stripped models
+* use boost numeric bindings + lapack for ideal phase/magnitude estimation (smenc -O2) - slow!
+* SSE optimizations and other speedups for fast phase/magnitude estimation (smenc -O1)
+* use odd/centered FFT to be able to reconstruct phases from FFT data  (smenc -O0)
+* use different thresholding scheme for encoder, detecting more partials
+* document API with doxygen
+* move Encoder and other classes to libspectmorph
+* added python binding, capable of reading SpectMorph model files
+* added automated tests
+* added manual pages for smenc, smplay, smvisualize and smstrip
+* added overview document in docs directory
+
 Overview of Changes in spectmorph-0.0.1:
 
 * initial public release with three programs
