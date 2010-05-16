@@ -7,12 +7,13 @@ smenc:
 - use averaging to estimate noise
 - make window function configurable
 - debug performance problems
-  => implement downsampling for really low notes      [0.0.2]
-  => use symmetry to speed up optimize_partials       [0.0.2]
-  => make a squared window table (optimize_partials)  [0.0.2]
+  => implement downsampling for really low notes      [0.0.3]
+  => use symmetry to speed up optimize_partials       [0.0.3]
+  => make a squared window table (optimize_partials)  [0.0.3]
 - move partial tracking from decoder to encoder
 - use GPU for linear least squares
 - move smmath.hh code to libbse
+- implement sinc interpolation for spectrum phase
 
 refactoring:
 - make load() and save() methods of SpectMorph::Audio
