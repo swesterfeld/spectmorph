@@ -91,7 +91,7 @@ dnl
 AC_DEFUN([AC_PKG_CONFIG_REQUIREMENTS],
 [
     AC_CHECK_PROG(HAVE_PKG_CONFIG,pkg-config,yes,no)
-    if test "$HAVE_PKG_CONFIG" == "no"; then
+    if test "$HAVE_PKG_CONFIG" = "no"; then
       AC_MSG_ERROR([You need to have pkg-config installed to build this package.
 
 Debian users: aptitude install pkg-config
@@ -105,7 +105,7 @@ AC_DEFUN([AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS],
 [
     AC_ARG_WITH(boost-numeric-bindings, [AC_HELP_STRING([--with-boost-numeric-bindings=PREFIX],[where boost-numeric-bindings is installed @<:@$PREFIX@:>@])],
                                         BOOST_NUMERIC_BINDINGS_PREFIX="$withval", BOOST_NUMERIC_BINDINGS_PREFIX="$prefix")
-    if test "$BOOST_NUMERIC_BINDINGS_PREFIX" == "NONE"
+    if test "$BOOST_NUMERIC_BINDINGS_PREFIX" = "NONE"
     then
         BOOST_NUMERIC_BINDINGS_PREFIX=$ac_default_prefix
     fi
