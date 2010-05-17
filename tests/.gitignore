@@ -1,0 +1,5 @@
+smresvalue.sh
+testfastsin
+testfastsin.o
+.libs
+.deps
