@@ -10,3 +10,4 @@ config.status
 autom4te.cache
 config.h
 config.h.in
+stamp-h1
