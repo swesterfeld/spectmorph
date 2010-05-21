@@ -39,6 +39,12 @@ main (int argc, char **argv)
 
   options.program_name = "wav2ascii";
 
+  if (argc != 2)
+    {
+      printf ("usage: %s audiofile.wav\n", options.program_name.c_str());
+      exit (1);
+    }
+
   /* open input */
   BseErrorType error;
 
