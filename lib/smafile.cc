@@ -54,9 +54,9 @@ protected:
   void   read_raw_float_block (vector<float>& fb);
 
 public:
-  IFile (const string& file_name)
+  IFile (const string& filename)
   {
-    file = fopen (file_name.c_str(), "r");
+    file = fopen (filename.c_str(), "r");
     current_event = NONE;
   }
   bool
@@ -210,18 +210,18 @@ IFile::event_float_block()
 /**
  * This function loads a SM-File.
  *
- * \param file_name the name of the SM-File to be loaded
+ * \param filename the name of the SM-File to be loaded
  * \param audio_out the audio object to be filled with the data from the file
  * \returns a BseErrorType indicating whether loading was successful
  */
 BseErrorType
-SpectMorph::AudioFile::load (const std::string& file_name,
+SpectMorph::AudioFile::load (const string& filename,
                              SpectMorph::Audio& audio_out)
 {
   SpectMorph::Audio audio;
   SpectMorph::AudioBlock *audio_block = NULL;
 
-  IFile  ifile (file_name);
+  IFile  ifile (filename);
   string section;
 
   if (!ifile.open_ok())
@@ -335,9 +335,9 @@ protected:
   void write_raw_int (int i);
 
 public:
-  OFile (const string& file_name)
+  OFile (const string& filename)
   {
-    file = fopen (file_name.c_str(), "w");
+    file = fopen (filename.c_str(), "w");
   }
   bool
   open_ok()
@@ -440,18 +440,18 @@ OFile::write_float_block (const string& s,
 /**
  * This function saves a SM-File.
  *
- * \param file_name the name of the SM-File to be written
+ * \param filename the name of the SM-File to be written
  * \param audio the audio object to be stored
  * \returns a BseErrorType indicating saving loading was successful
  */
 BseErrorType
-SpectMorph::AudioFile::save (const std::string& file_name,
+SpectMorph::AudioFile::save (const string& filename,
                              const SpectMorph::Audio& audio)
 {
-  OFile of (file_name.c_str());
+  OFile of (filename.c_str());
   if (!of.open_ok())
     {
-      fprintf (stderr, "error: can't open output file '%s'.\n", file_name.c_str());
+      fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
       exit (1);
     }
 

@@ -108,7 +108,7 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
  * signal using a window to cut the individual frames out of the sample.
  */
 void
-Encoder::compute_stft (GslDataHandle *dhandle, const std::vector<float>& window)
+Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
 {
   const uint64 n_values = gsl_data_handle_length (dhandle);
   const size_t frame_size = enc_params.frame_size;
@@ -419,7 +419,7 @@ Encoder::validate_partials()
  * residue (remaining energy not corresponding to sine frequencies).
  */
 void
-Encoder::spectral_subtract (const std::vector<float>& window)
+Encoder::spectral_subtract (const vector<float>& window)
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
@@ -689,7 +689,7 @@ remove_small_partials (AudioBlock& audio_block)
  * in the previous steps.
  */
 void
-Encoder::optimize_partials (const std::vector<float>& window, int optimization_level)
+Encoder::optimize_partials (const vector<float>& window, int optimization_level)
 {
   const double mix_freq = enc_params.mix_freq;
 
@@ -791,7 +791,7 @@ Encoder::approx_noise()
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
 void
-Encoder::save (const std::string& filename, double fundamental_freq)
+Encoder::save (const string& filename, double fundamental_freq)
 {
   SpectMorph::Audio audio;
   audio.fundamental_freq = fundamental_freq;
