@@ -55,7 +55,7 @@ SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step,
 void
 SineDecoder::process (Frame& frame,
                       const Frame& next_frame,
-		      const std::vector<double>& window)
+		      const vector<double>& window)
 {
   fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
 
