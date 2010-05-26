@@ -148,8 +148,8 @@ mag (float re, float im)
 
 struct Attack
 {
-  double start_of_attack_ms;
-  double end_of_attack_ms;
+  double attack_start_ms;
+  double attack_end_ms;
 };
 
 double
@@ -168,16 +168,16 @@ attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& un
           const double n_ms = f * audio.frame_step_ms + n * 1000.0 / audio.mix_freq;
           const double scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
           double env;
-          if (n_ms < attack.start_of_attack_ms)
+          if (n_ms < attack.attack_start_ms)
             {
               env = 0;
               zero_values++;
             }
-          else if (n_ms < attack.end_of_attack_ms)  // during attack
+          else if (n_ms < attack.attack_end_ms)  // during attack
             {
-              const double attack_len_ms = attack.end_of_attack_ms - attack.start_of_attack_ms;
+              const double attack_len_ms = attack.attack_end_ms - attack.attack_start_ms;
 
-              env = (n_ms - attack.start_of_attack_ms) / attack_len_ms;
+              env = (n_ms - attack.attack_start_ms) / attack_len_ms;
             }
           else // after attack
             {
@@ -342,6 +342,11 @@ main (int argc, char **argv)
       const size_t frame_size = audio.contents[0].debug_samples.size();
       const size_t frames = 20;
 
+      if (audio.attack_start_ms > 0.01 || audio.attack_end_ms > 0.01)
+        {
+          printf ("attack values already present: soa=%f, eoa=%f\n", audio.attack_start_ms, audio.attack_end_ms);
+          exit (1);
+        }
       vector< vector<double> > unscaled_signal;
       for (size_t f = 0; f < frames; f++)
         {
@@ -370,8 +375,8 @@ main (int argc, char **argv)
       int no_modification = 0;
       double error = 1e7;
 
-      attack.start_of_attack_ms = 0;
-      attack.end_of_attack_ms = 10;
+      attack.attack_start_ms = 0;
+      attack.attack_end_ms = 10;
       while (no_modification < 3000)
         {
           double R;
@@ -387,17 +392,17 @@ main (int argc, char **argv)
           else if (no_modification < 2500)
             R = 0.01;
 
-          new_attack.start_of_attack_ms += g_random_double_range (-R, R);
-          new_attack.end_of_attack_ms += g_random_double_range (-R, R);
+          new_attack.attack_start_ms += g_random_double_range (-R, R);
+          new_attack.attack_end_ms += g_random_double_range (-R, R);
 
-          if (new_attack.start_of_attack_ms < new_attack.end_of_attack_ms &&
-              new_attack.start_of_attack_ms >= 0 &&
-              new_attack.end_of_attack_ms < 200)
+          if (new_attack.attack_start_ms < new_attack.attack_end_ms &&
+              new_attack.attack_start_ms >= 0 &&
+              new_attack.attack_end_ms < 200)
             {
               const double new_error = attack_error (audio, unscaled_signal, new_attack);
 #if 0
-              printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.start_of_attack_ms, attack.end_of_attack_ms, error,
-                                                                                           new_attack.start_of_attack_ms, new_attack.end_of_attack_ms, new_error);
+              printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.attack_start_ms, attack.attack_end_ms, error,
+                                                                                           new_attack.attack_start_ms, new_attack.attack_end_ms, new_error);
 #endif
               if (new_error < error)
                 {
@@ -412,7 +417,11 @@ main (int argc, char **argv)
                 }
             }
         }
-      printf ("## soa=%f, eoa=%f, min_total_error = %f\n", attack.start_of_attack_ms, attack.end_of_attack_ms, error);
+      printf ("## soa=%f, eoa=%f, min_total_error = %f\n", attack.attack_start_ms, attack.attack_end_ms, error);
+      audio.attack_start_ms = attack.attack_start_ms;
+      audio.attack_end_ms = attack.attack_end_ms;
+
+      SpectMorph::AudioFile::save (argv[1], audio);
 #if 0
       size_t GRID_I = 297;
       size_t GRID_J = 297;
@@ -423,11 +432,11 @@ main (int argc, char **argv)
             {
               Attack attack;
 
-              attack.start_of_attack_ms = (100.0 * i) / GRID_I; // 100 ms attack len max
-              attack.end_of_attack_ms = attack.start_of_attack_ms + (100.0 * j) / GRID_J; // 100 ms attack len max
+              attack.attack_start_ms = (100.0 * i) / GRID_I; // 100 ms attack len max
+              attack.attack_end_ms = attack.attack_start_ms + (100.0 * j) / GRID_J; // 100 ms attack len max
 
               double total_error = attack_error (audio, unscaled_signal, attack);
-              printf ("%f %f %f\n", attack.start_of_attack_ms, attack.end_of_attack_ms, total_error);
+              printf ("%f %f %f\n", attack.attack_start_ms, attack.attack_end_ms, total_error);
               min_total_error = min (total_error, min_total_error);
             }
         }
