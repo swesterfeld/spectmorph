@@ -274,6 +274,26 @@ main (int argc, char **argv)
       pos += frame_step;
     }
 
+  // decode envelope
+  for (size_t i = 0; i < sample.size(); i++)
+    {
+      const double time_ms = i * 1000.0 / options.rate;
+      double env;
+      if (time_ms < audio.attack_start_ms)
+        {
+          env = 0;
+        }
+      else if (time_ms < audio.attack_end_ms)
+        {
+          env = (time_ms - audio.attack_start_ms) / (audio.attack_end_ms - audio.attack_start_ms);
+        }
+      else
+        {
+          env = 1;
+        }
+      sample[i] *= env;
+    }
+
   if (options.export_wav == "")     /* no export -> play */
     {
       pos = 0;
