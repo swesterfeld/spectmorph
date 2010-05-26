@@ -153,7 +153,7 @@ struct Attack
 };
 
 double
-attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& unscaled_signal, const Attack& attack)
+attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& unscaled_signal, const Attack& attack, vector<double>& out_scale)
 {
   const size_t frames = unscaled_signal.size();
   double total_error = 0;
@@ -162,12 +162,13 @@ attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& un
     {
       const vector<double>& frame_signal = unscaled_signal[f];
       size_t zero_values = 0;
+      double scale;
 
       for (size_t n = 0; n < frame_signal.size(); n++)
         {
           const double n_ms = f * audio.frame_step_ms + n * 1000.0 / audio.mix_freq;
-          const double scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
           double env;
+          scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
           if (n_ms < attack.attack_start_ms)
             {
               env = 0;
@@ -187,6 +188,7 @@ attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& un
           const double error = value - audio.contents[f].debug_samples[n];
           total_error += error * error;
         }
+      out_scale[f] = scale;
     }
   return total_error;
 }
@@ -374,6 +376,7 @@ main (int argc, char **argv)
       Attack attack;
       int no_modification = 0;
       double error = 1e7;
+      vector<double> scale (frames);
 
       attack.attack_start_ms = 0;
       attack.attack_end_ms = 10;
@@ -399,7 +402,7 @@ main (int argc, char **argv)
               new_attack.attack_start_ms >= 0 &&
               new_attack.attack_end_ms < 200)
             {
-              const double new_error = attack_error (audio, unscaled_signal, new_attack);
+              const double new_error = attack_error (audio, unscaled_signal, new_attack, scale);
 #if 0
               printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.attack_start_ms, attack.attack_end_ms, error,
                                                                                            new_attack.attack_start_ms, new_attack.attack_end_ms, new_error);
@@ -416,6 +419,11 @@ main (int argc, char **argv)
                   no_modification++;
                 }
             }
+        }
+      for (size_t f = 0; f < frames; f++)
+        {
+          for (size_t i = 0; i < audio.contents[f].phases.size(); i++)
+            audio.contents[f].phases[i] *= scale[f];
         }
       printf ("## soa=%f, eoa=%f, min_total_error = %f\n", attack.attack_start_ms, attack.attack_end_ms, error);
       audio.attack_start_ms = attack.attack_start_ms;
