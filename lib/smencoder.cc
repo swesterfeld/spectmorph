@@ -798,6 +798,8 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.mix_freq = enc_params.mix_freq;
   audio.frame_size_ms = enc_params.frame_size_ms;
   audio.frame_step_ms = enc_params.frame_step_ms;
+  audio.attack_start_ms = 0;
+  audio.attack_end_ms = 0;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
   SpectMorph::AudioFile::save (filename, audio);

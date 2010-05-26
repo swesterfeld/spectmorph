@@ -55,6 +55,8 @@ public:
   float mix_freq;                    //!< mix freq (sampling rate) of the original audio data
   float frame_size_ms;               //!< length of each audio frame in milliseconds
   float frame_step_ms;               //!< stepping of the audio frames in milliseconds
+  float attack_start_ms;             //!< start of attack in milliseconds
+  float attack_end_ms;               //!< end of attack in milliseconds
   int   zeropad;                     //!< FFT zeropadding used during analysis
   std::vector<AudioBlock> contents;  //!< the actual frame data
 };

@@ -276,6 +276,10 @@ SpectMorph::AudioFile::load (const string& filename,
                 audio.frame_size_ms = ifile.event_float();
               else if (ifile.event_name() == "frame_step_ms")
                 audio.frame_step_ms = ifile.event_float();
+              else if (ifile.event_name() == "attack_start_ms")
+                audio.attack_start_ms = ifile.event_float();
+              else if (ifile.event_name() == "attack_end_ms")
+                audio.attack_end_ms = ifile.event_float();
               else if (ifile.event_name() == "fundamental_freq")
                 audio.fundamental_freq = ifile.event_float();
               else
@@ -459,6 +463,8 @@ SpectMorph::AudioFile::save (const string& filename,
   of.write_float ("mix_freq", audio.mix_freq);
   of.write_float ("frame_size_ms", audio.frame_size_ms);
   of.write_float ("frame_step_ms", audio.frame_step_ms);
+  of.write_float ("attack_start_ms", audio.attack_start_ms);
+  of.write_float ("attack_end_ms", audio.attack_end_ms);
   of.write_float ("fundamental_freq", audio.fundamental_freq);
   of.write_int ("zeropad", audio.zeropad);
   of.end_section();
