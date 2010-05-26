@@ -27,6 +27,7 @@
 using SpectMorph::Frame;
 using SpectMorph::AudioBlock;
 using std::vector;
+using std::min;
 
 double
 vector_delta (const vector<double>& a, const vector<double>& b)
@@ -143,6 +144,51 @@ float
 mag (float re, float im)
 {
   return sqrt (re * re + im * im);
+}
+
+struct Attack
+{
+  double start_of_attack_ms;
+  double end_of_attack_ms;
+};
+
+double
+attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& unscaled_signal, const Attack& attack)
+{
+  const size_t frames = unscaled_signal.size();
+  double total_error = 0;
+
+  for (size_t f = 0; f < frames; f++)
+    {
+      const vector<double>& frame_signal = unscaled_signal[f];
+      size_t zero_values = 0;
+
+      for (size_t n = 0; n < frame_signal.size(); n++)
+        {
+          const double n_ms = f * audio.frame_step_ms + n * 1000.0 / audio.mix_freq;
+          const double scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
+          double env;
+          if (n_ms < attack.start_of_attack_ms)
+            {
+              env = 0;
+              zero_values++;
+            }
+          else if (n_ms < attack.end_of_attack_ms)  // during attack
+            {
+              const double attack_len_ms = attack.end_of_attack_ms - attack.start_of_attack_ms;
+
+              env = (n_ms - attack.start_of_attack_ms) / attack_len_ms;
+            }
+          else // after attack
+            {
+              env = 1.0;
+            }
+          const double value = frame_signal[n] * scale * env;
+          const double error = value - audio.contents[f].debug_samples[n];
+          total_error += error * error;
+        }
+    }
+  return total_error;
 }
 
 int
@@ -290,5 +336,102 @@ main (int argc, char **argv)
               break;
             }
         }
+    }
+  else if (strcmp (argv[2], "attack") == 0)
+    {
+      const size_t frame_size = audio.contents[0].debug_samples.size();
+      const size_t frames = 20;
+
+      vector< vector<double> > unscaled_signal;
+      for (size_t f = 0; f < frames; f++)
+        {
+          const AudioBlock& audio_block = audio.contents[f];
+          vector<double> frame_signal (frame_size);
+
+          for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
+            {
+              double smag = audio_block.phases[2 * partial];
+              double cmag = audio_block.phases[2 * partial + 1];
+              double f    = audio_block.freqs[partial];
+              double phase = 0;
+
+              // do a phase optimal reconstruction of that partial
+              for (size_t n = 0; n < frame_signal.size(); n++)
+                {
+                  frame_signal[n] += sin (phase) * smag;
+                  frame_signal[n] += cos (phase) * cmag;
+                  phase += f / audio.mix_freq * 2.0 * M_PI;
+                }
+            }
+          unscaled_signal.push_back (frame_signal);
+        }
+
+      Attack attack;
+      int no_modification = 0;
+      double error = 1e7;
+
+      attack.start_of_attack_ms = 0;
+      attack.end_of_attack_ms = 10;
+      while (no_modification < 3000)
+        {
+          double R;
+          Attack new_attack = attack;
+          if (no_modification < 500)
+            R = 100;
+          else if (no_modification < 1000)
+            R = 20;
+          else if (no_modification < 1500)
+            R = 1;
+          else if (no_modification < 2000)
+            R = 0.2;
+          else if (no_modification < 2500)
+            R = 0.01;
+
+          new_attack.start_of_attack_ms += g_random_double_range (-R, R);
+          new_attack.end_of_attack_ms += g_random_double_range (-R, R);
+
+          if (new_attack.start_of_attack_ms < new_attack.end_of_attack_ms &&
+              new_attack.start_of_attack_ms >= 0 &&
+              new_attack.end_of_attack_ms < 200)
+            {
+              const double new_error = attack_error (audio, unscaled_signal, new_attack);
+#if 0
+              printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.start_of_attack_ms, attack.end_of_attack_ms, error,
+                                                                                           new_attack.start_of_attack_ms, new_attack.end_of_attack_ms, new_error);
+#endif
+              if (new_error < error)
+                {
+                  error = new_error;
+                  attack = new_attack;
+
+                  no_modification = 0;
+                }
+              else
+                {
+                  no_modification++;
+                }
+            }
+        }
+      printf ("## soa=%f, eoa=%f, min_total_error = %f\n", attack.start_of_attack_ms, attack.end_of_attack_ms, error);
+#if 0
+      size_t GRID_I = 297;
+      size_t GRID_J = 297;
+      double min_total_error = 1e7;
+      for (int i = 0; i < GRID_I; i++)
+        {
+          for (int j = 0; j < GRID_J; j++)
+            {
+              Attack attack;
+
+              attack.start_of_attack_ms = (100.0 * i) / GRID_I; // 100 ms attack len max
+              attack.end_of_attack_ms = attack.start_of_attack_ms + (100.0 * j) / GRID_J; // 100 ms attack len max
+
+              double total_error = attack_error (audio, unscaled_signal, attack);
+              printf ("%f %f %f\n", attack.start_of_attack_ms, attack.end_of_attack_ms, total_error);
+              min_total_error = min (total_error, min_total_error);
+            }
+        }
+      printf ("## min_total_error = %f\n", min_total_error);
+#endif
     }
 }
