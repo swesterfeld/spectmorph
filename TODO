@@ -1,5 +1,6 @@
 smenc:
 - transient representation
+- implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
 - move debugging information generated with -d to main file
@@ -11,10 +12,8 @@ smenc:
   => use symmetry to speed up optimize_partials       [0.0.3]
   => make a squared window table (optimize_partials)  [0.0.3]
 - move partial tracking from decoder to encoder
-- use GPU for linear least squares
 - move smmath.hh code to libbse
 - implement sinc interpolation for spectrum phase
-- implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 
 refactoring:
 - make load() and save() methods of SpectMorph::Audio
