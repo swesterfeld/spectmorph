@@ -337,6 +337,7 @@ main (int argc, char **argv)
 
   encoder.spectral_subtract (window);
   encoder.approx_noise();
+  encoder.compute_attack_params();
 
   if (options.strip_models)
     {

@@ -79,6 +79,8 @@ debug (const char *dbg, ...)
 Encoder::Encoder (const EncoderParams& enc_params)
 {
   this->enc_params = enc_params;
+  optimal_attack.attack_start_ms = 0;
+  optimal_attack.attack_end_ms = 0;
 }
 
 bool
@@ -787,6 +789,133 @@ Encoder::approx_noise()
     }
 }
 
+double
+Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const Attack& attack, vector<double>& out_scale)
+{
+  const size_t frames = unscaled_signal.size();
+  double total_error = 0;
+
+  for (size_t f = 0; f < frames; f++)
+    {
+      const vector<double>& frame_signal = unscaled_signal[f];
+      size_t zero_values = 0;
+      double scale;
+
+      for (size_t n = 0; n < frame_signal.size(); n++)
+        {
+          const double n_ms = f * enc_params.frame_step_ms + n * 1000.0 / enc_params.mix_freq;
+          double env;
+          scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
+          if (n_ms < attack.attack_start_ms)
+            {
+              env = 0;
+              zero_values++;
+            }
+          else if (n_ms < attack.attack_end_ms)  // during attack
+            {
+              const double attack_len_ms = attack.attack_end_ms - attack.attack_start_ms;
+
+              env = (n_ms - attack.attack_start_ms) / attack_len_ms;
+            }
+          else // after attack
+            {
+              env = 1.0;
+            }
+          const double value = frame_signal[n] * scale * env;
+          const double error = value - audio_blocks[f].debug_samples[n];
+          total_error += error * error;
+        }
+      out_scale[f] = scale;
+    }
+  return total_error;
+}
+
+void
+Encoder::compute_attack_params()
+{
+  const double mix_freq   = enc_params.mix_freq;
+  const size_t frame_size = enc_params.frame_size;
+  const size_t frames = 20;
+
+  vector< vector<double> > unscaled_signal;
+  for (size_t f = 0; f < frames; f++)
+    {
+      const AudioBlock& audio_block = audio_blocks[f];
+      vector<double> frame_signal (frame_size);
+
+      for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
+        {
+          double smag = audio_block.phases[2 * partial];
+          double cmag = audio_block.phases[2 * partial + 1];
+          double f    = audio_block.freqs[partial];
+          double phase = 0;
+
+          // do a phase optimal reconstruction of that partial
+          for (size_t n = 0; n < frame_signal.size(); n++)
+            {
+              frame_signal[n] += sin (phase) * smag;
+              frame_signal[n] += cos (phase) * cmag;
+              phase += f / mix_freq * 2.0 * M_PI;
+            }
+        }
+      unscaled_signal.push_back (frame_signal);
+    }
+
+  Attack attack;
+  int no_modification = 0;
+  double error = 1e7;
+  vector<double> scale (frames);
+
+  attack.attack_start_ms = 0;
+  attack.attack_end_ms = 10;
+  while (no_modification < 3000)
+    {
+      double R;
+      Attack new_attack = attack;
+      if (no_modification < 500)
+        R = 100;
+      else if (no_modification < 1000)
+        R = 20;
+      else if (no_modification < 1500)
+        R = 1;
+      else if (no_modification < 2000)
+        R = 0.2;
+      else if (no_modification < 2500)
+        R = 0.01;
+
+      new_attack.attack_start_ms += g_random_double_range (-R, R);
+      new_attack.attack_end_ms += g_random_double_range (-R, R);
+
+      if (new_attack.attack_start_ms < new_attack.attack_end_ms &&
+          new_attack.attack_start_ms >= 0 &&
+          new_attack.attack_end_ms < 200)
+        {
+          const double new_error = attack_error (unscaled_signal, new_attack, scale);
+#if 0
+          printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.attack_start_ms, attack.attack_end_ms, error,
+                                                                                       new_attack.attack_start_ms, new_attack.attack_end_ms, new_error);
+#endif
+          if (new_error < error)
+            {
+              error = new_error;
+              attack = new_attack;
+
+              no_modification = 0;
+            }
+          else
+            {
+              no_modification++;
+            }
+        }
+    }
+  for (size_t f = 0; f < frames; f++)
+    {
+      for (size_t i = 0; i < audio_blocks[f].phases.size(); i++)
+        audio_blocks[f].phases[i] *= scale[f];
+    }
+  optimal_attack = attack;
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -798,8 +927,8 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.mix_freq = enc_params.mix_freq;
   audio.frame_size_ms = enc_params.frame_size_ms;
   audio.frame_step_ms = enc_params.frame_step_ms;
-  audio.attack_start_ms = 0;
-  audio.attack_end_ms = 0;
+  audio.attack_start_ms = optimal_attack.attack_start_ms;
+  audio.attack_end_ms = optimal_attack.attack_end_ms;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
   SpectMorph::AudioFile::save (filename, audio);
