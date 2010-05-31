@@ -11,7 +11,7 @@
 smstrip - program to remove extra data from SpectMorph model files
 
 @heading SYNOPSIS
-	@manb{smstrip} @mani{SM-File}
+	@manb{smstrip} @mani{SM-File...}
 
 @heading DESCRIPTION
 	@manb{smstrip} is a tool which removes all debugging data from a SpectMorph model.
@@ -20,7 +20,8 @@ smstrip - program to remove extra data from SpectMorph model files
         that stripped models can be created directly by the encoder using @manb{smenc -s}.
 
 @heading OPTIONS
-        There are no options. Exactly one SpectMorph model needs to be specified as argument.
+        There are no options. A number of SpectMorph model files can be specified as
+        command line arguments.
 
 @heading SEE ALSO
 @uri{smenc.1.html,smenc(1)},
