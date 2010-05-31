@@ -21,22 +21,25 @@
 int
 main (int argc, char **argv)
 {
-  if (argc != 2)
+  if (argc < 2)
     {
-      fprintf (stderr, "usage: smstrip <filename.sm>\n");
+      fprintf (stderr, "usage: smstrip <filename.sm> [...]\n");
       exit (1);
     }
-  SpectMorph::Audio audio;
-  BseErrorType error = SpectMorph::AudioFile::load (argv[1], audio);
-  if (error)
+  for (int n = 1; n < argc; n++)
     {
-      fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
-      exit (1);
+      SpectMorph::Audio audio;
+      BseErrorType error = SpectMorph::AudioFile::load (argv[n], audio);
+      if (error)
+        {
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[n], bse_error_blurb (error));
+          exit (1);
+        }
+      for (size_t i = 0; i < audio.contents.size(); i++)
+        {
+          audio.contents[i].debug_samples.clear();
+          audio.contents[i].original_fft.clear();
+        }
+      SpectMorph::AudioFile::save (argv[n], audio);
     }
-  for (size_t i = 0; i < audio.contents.size(); i++)
-    {
-      audio.contents[i].debug_samples.clear();
-      audio.contents[i].original_fft.clear();
-    }
-  SpectMorph::AudioFile::save (argv[1], audio);
 }
