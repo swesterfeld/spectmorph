@@ -16,7 +16,6 @@
  */
 
 #include "smencoder.hh"
-#include "smafile.hh"
 #include "smmath.hh"
 
 #include <boost/numeric/ublas/vector.hpp>
@@ -931,7 +930,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.attack_end_ms = optimal_attack.attack_end_ms;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
-  SpectMorph::AudioFile::save (filename, audio);
+  audio.save (filename);
 }
 
 

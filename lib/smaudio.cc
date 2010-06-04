@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smafile.hh"
 #include "smaudio.hh"
 #include "smoutfile.hh"
 #include "sminfile.hh"
@@ -32,14 +31,11 @@ using std::vector;
  * This function loads a SM-File.
  *
  * \param filename the name of the SM-File to be loaded
- * \param audio_out the audio object to be filled with the data from the file
  * \returns a BseErrorType indicating whether loading was successful
  */
 BseErrorType
-SpectMorph::AudioFile::load (const string& filename,
-                             SpectMorph::Audio& audio_out)
+SpectMorph::Audio::load (const string& filename)
 {
-  SpectMorph::Audio audio;
   SpectMorph::AudioBlock *audio_block = NULL;
 
   InFile  ifile (filename);
@@ -67,7 +63,7 @@ SpectMorph::AudioFile::load (const string& filename,
             {
               assert (audio_block);
 
-              audio.contents.push_back (*audio_block);
+              contents.push_back (*audio_block);
               delete audio_block;
               audio_block = NULL;
             }
@@ -80,7 +76,7 @@ SpectMorph::AudioFile::load (const string& filename,
           if (section == "header")
             {
               if (ifile.event_name() == "zeropad")
-                audio.zeropad = ifile.event_int();
+                zeropad = ifile.event_int();
               else
                 printf ("unhandled int %s %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -92,17 +88,17 @@ SpectMorph::AudioFile::load (const string& filename,
           if (section == "header")
             {
               if (ifile.event_name() == "mix_freq")
-                audio.mix_freq = ifile.event_float();
+                mix_freq = ifile.event_float();
               else if (ifile.event_name() == "frame_size_ms")
-                audio.frame_size_ms = ifile.event_float();
+                frame_size_ms = ifile.event_float();
               else if (ifile.event_name() == "frame_step_ms")
-                audio.frame_step_ms = ifile.event_float();
+                frame_step_ms = ifile.event_float();
               else if (ifile.event_name() == "attack_start_ms")
-                audio.attack_start_ms = ifile.event_float();
+                attack_start_ms = ifile.event_float();
               else if (ifile.event_name() == "attack_end_ms")
-                audio.attack_end_ms = ifile.event_float();
+                attack_end_ms = ifile.event_float();
               else if (ifile.event_name() == "fundamental_freq")
-                audio.fundamental_freq = ifile.event_float();
+                fundamental_freq = ifile.event_float();
               else
                 printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -147,7 +143,6 @@ SpectMorph::AudioFile::load (const string& filename,
         }
       ifile.next_event();
     }
-  audio_out = audio;
   return BSE_ERROR_NONE;
 }
 
@@ -160,8 +155,7 @@ SpectMorph::AudioFile::load (const string& filename,
  * \returns a BseErrorType indicating saving loading was successful
  */
 BseErrorType
-SpectMorph::AudioFile::save (const string& filename,
-                             const SpectMorph::Audio& audio)
+SpectMorph::Audio::save (const string& filename)
 {
   OutFile of (filename.c_str());
   if (!of.open_ok())
@@ -171,23 +165,23 @@ SpectMorph::AudioFile::save (const string& filename,
     }
 
   of.begin_section ("header");
-  of.write_float ("mix_freq", audio.mix_freq);
-  of.write_float ("frame_size_ms", audio.frame_size_ms);
-  of.write_float ("frame_step_ms", audio.frame_step_ms);
-  of.write_float ("attack_start_ms", audio.attack_start_ms);
-  of.write_float ("attack_end_ms", audio.attack_end_ms);
-  of.write_float ("fundamental_freq", audio.fundamental_freq);
-  of.write_int ("zeropad", audio.zeropad);
+  of.write_float ("mix_freq", mix_freq);
+  of.write_float ("frame_size_ms", frame_size_ms);
+  of.write_float ("frame_step_ms", frame_step_ms);
+  of.write_float ("attack_start_ms", attack_start_ms);
+  of.write_float ("attack_end_ms", attack_end_ms);
+  of.write_float ("fundamental_freq", fundamental_freq);
+  of.write_int ("zeropad", zeropad);
   of.end_section();
 
-  for (size_t i = 0; i < audio.contents.size(); i++)
+  for (size_t i = 0; i < contents.size(); i++)
     {
       of.begin_section ("frame");
-      of.write_float_block ("noise", audio.contents[i].noise);
-      of.write_float_block ("freqs", audio.contents[i].freqs);
-      of.write_float_block ("phases", audio.contents[i].phases);
-      of.write_float_block ("original_fft", audio.contents[i].original_fft);
-      of.write_float_block ("debug_samples", audio.contents[i].debug_samples);
+      of.write_float_block ("noise", contents[i].noise);
+      of.write_float_block ("freqs", contents[i].freqs);
+      of.write_float_block ("phases", contents[i].phases);
+      of.write_float_block ("original_fft", contents[i].original_fft);
+      of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();
     }
   return BSE_ERROR_NONE;

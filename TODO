@@ -16,7 +16,6 @@ smenc:
 - implement sinc interpolation for spectrum phase
 
 refactoring:
-- make load() and save() methods of SpectMorph::Audio
 - try to refactor SpectMorph::Frame into something less duplicating
 - possibly rename SpectMorph::Audio to SpectMorph::Model
 - simplify Encoder API

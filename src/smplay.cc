@@ -25,7 +25,6 @@
 #include <bse/bseblockutils.hh>
 #include <sfi/sfiparams.h>
 #include "smaudio.hh"
-#include "smafile.hh"
 #include "smframe.hh"
 #include <fcntl.h>
 #include <errno.h>
@@ -172,7 +171,7 @@ main (int argc, char **argv)
   BseErrorType error;
 
   SpectMorph::Audio audio;
-  error = SpectMorph::AudioFile::load (argv[1], audio);
+  error = audio.load (argv[1]);
   if (error)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));

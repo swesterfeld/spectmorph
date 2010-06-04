@@ -18,7 +18,6 @@
 #include <vector>
 #include <stdio.h>
 #include <bse/bsemain.h>
-#include "smafile.hh"
 #include "smframe.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
@@ -199,7 +198,7 @@ main (int argc, char **argv)
   bse_init_inprocess (&argc, &argv, NULL, NULL);
 
   SpectMorph::Audio audio;
-  BseErrorType error = SpectMorph::AudioFile::load (argv[1], audio);
+  BseErrorType error = audio.load (argv[1]);
   if (error)
     {
       fprintf (stderr, "can't load file: %s\n", argv[1]);

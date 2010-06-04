@@ -16,7 +16,7 @@
  */
 
 #include <stdio.h>
-#include "smafile.hh"
+#include "smaudio.hh"
 
 int
 main (int argc, char **argv)
@@ -29,7 +29,7 @@ main (int argc, char **argv)
   for (int n = 1; n < argc; n++)
     {
       SpectMorph::Audio audio;
-      BseErrorType error = SpectMorph::AudioFile::load (argv[n], audio);
+      BseErrorType error = audio.load (argv[n]);
       if (error)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[n], bse_error_blurb (error));
@@ -40,6 +40,6 @@ main (int argc, char **argv)
           audio.contents[i].debug_samples.clear();
           audio.contents[i].original_fft.clear();
         }
-      SpectMorph::AudioFile::save (argv[n], audio);
+      audio.save (argv[n]);
     }
 }

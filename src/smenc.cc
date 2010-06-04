@@ -28,7 +28,6 @@
 #include <complex>
 
 #include "smaudio.hh"
-#include "smafile.hh"
 #include "smencoder.hh"
 #include "config.h"
 

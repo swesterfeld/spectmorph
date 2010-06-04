@@ -23,7 +23,6 @@
 #include <fcntl.h>
 #include <errno.h>
 #include "smaudio.hh"
-#include "smafile.hh"
 
 using std::vector;
 
@@ -63,7 +62,7 @@ main (int argc, char **argv)
     }
 
   SpectMorph::Audio audio;
-  BseErrorType file_error = SpectMorph::AudioFile::load (argv[1], audio);
+  BseErrorType file_error = audio.load (argv[1]);
   if (file_error)
     {
       fprintf (stderr, "can't read input file: %s\n", bse_error_blurb (file_error));

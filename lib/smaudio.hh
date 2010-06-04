@@ -18,6 +18,7 @@
 #ifndef SPECTMORPH_AUDIO_HH
 #define SPECTMORPH_AUDIO_HH
 
+#include <bse/bsecxxplugin.hh>
 #include <vector>
 
 namespace SpectMorph
@@ -59,6 +60,9 @@ public:
   float attack_end_ms;               //!< end of attack in milliseconds
   int   zeropad;                     //!< FFT zeropadding used during analysis
   std::vector<AudioBlock> contents;  //!< the actual frame data
+
+  BseErrorType load (const std::string& filename);
+  BseErrorType save (const std::string& filename);
 };
 
 }
