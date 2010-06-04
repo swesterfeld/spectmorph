@@ -2,7 +2,7 @@ AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3 -I$(top_srcdir)/lib $(B
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-bin_PROGRAMS = smenc smplay smvisualize smextract smstrip
+bin_PROGRAMS = smenc smplay smvisualize smextract smstrip smwavset
 
 SMHDRS = stwutils.hh
 
@@ -20,3 +20,6 @@ smextract_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smstrip_SOURCES = smstrip.cc $(SMHDRS)
 smstrip_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+smwavset_SOURCES = smwavset.cc $(SMHDRS)
+smwavset_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
