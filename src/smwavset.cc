@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include <smwavset.hh>
+#include <smaudio.hh>
 
 #include <string>
 
@@ -35,7 +36,9 @@ using SpectMorph::WavSetWave;
 struct Options
 {
   string	program_name; /* FIXME: what to do with that */
-  enum { NONE, INIT, ADD, LIST } mode;
+  string        data_dir;
+  string        args;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE } mode;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -46,6 +49,8 @@ struct Options
 Options::Options ()
 {
   program_name = "smwavset";
+  data_dir = "/tmp";
+  args = "";
   mode = NONE;
 }
 
@@ -93,6 +98,22 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-l") || check_arg (argc, argv, &i, "--list"))
         {
           mode = LIST;
+        }
+      else if (check_arg (argc, argv, &i, "-e") || check_arg (argc, argv, &i, "--encode"))
+        {
+          mode = ENCODE;
+        }
+      else if (check_arg (argc, argv, &i, "-d") || check_arg (argc, argv, &i, "--decode"))
+        {
+          mode = DECODE;
+        }
+      else if (check_arg (argc, argv, &i, "--args", &opt_arg))
+        {
+          args = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "-D", &opt_arg))
+	{
+	  data_dir = opt_arg;
         }
 #if 0
       else if (check_arg (argc, argv, &i, "-d"))
@@ -157,6 +178,13 @@ Options::print_usage ()
   g_printerr ("\n");
 }
 
+string
+int2str (int i)
+{
+  char buffer[512];
+  sprintf (buffer, "%d", i);
+  return buffer;
+}
 
 int
 main (int argc, char **argv)
@@ -193,9 +221,57 @@ main (int argc, char **argv)
           printf ("%d %s\n", wi->midi_note, wi->path.c_str());
         }
     }
+  else if (options.mode == Options::ENCODE)
+    {
+      assert (argc == 3);
+
+      SpectMorph::WavSet wset, smset;
+      wset.load (argv[1]);
+
+      for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        {
+          string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
+          string cmd = "smenc -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
+          printf ("## %s\n", cmd.c_str());
+          system (cmd.c_str());
+
+          SpectMorph::WavSetWave new_wave = *wi;
+          new_wave.path = smpath;
+          smset.waves.push_back (new_wave);
+        }
+      smset.save (argv[2]);
+    }
+  else if (options.mode == Options::DECODE)
+    {
+      assert (argc == 3);
+
+      SpectMorph::WavSet smset, wset;
+      smset.load (argv[1]);
+
+      for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
+        {
+          SpectMorph::Audio audio;
+          if (audio.load (si->path) != BSE_ERROR_NONE)
+            {
+              printf ("can't load %s\n", si->path.c_str());
+              exit (1);
+            }
+
+          string wavpath = options.data_dir + "/" + int2str (si->midi_note) + ".wav";
+          string cmd = "smplay --rate=" + int2str (audio.mix_freq) + " " +si->path.c_str() + " --export " + wavpath + " " + options.args;
+          printf ("## %s\n", cmd.c_str());
+          system (cmd.c_str());
+
+          SpectMorph::WavSetWave new_wave = *si;
+          new_wave.path = wavpath;
+          wset.waves.push_back (new_wave);
+        }
+      wset.save (argv[2]);
+    }
   else
     {
       g_printerr ("You need to specify a mode (-i)\n");
+      Options::print_usage();
       exit (1);
     }
 }
