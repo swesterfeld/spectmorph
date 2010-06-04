@@ -835,7 +835,7 @@ Encoder::compute_attack_params()
 {
   const double mix_freq   = enc_params.mix_freq;
   const size_t frame_size = enc_params.frame_size;
-  const size_t frames = 20;
+  const size_t frames = MIN (20, audio_blocks.size());
 
   vector< vector<double> > unscaled_signal;
   for (size_t f = 0; f < frames; f++)
