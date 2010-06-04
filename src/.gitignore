@@ -6,5 +6,6 @@ smplay
 smvisualize
 smextract
 smstrip
+smwavset
 .deps
 .libs
