@@ -14,6 +14,7 @@ smenc:
 - move partial tracking from decoder to encoder
 - move smmath.hh code to libbse
 - implement sinc interpolation for spectrum phase
+- make load() function of SpectMorph::Audio and SpectMorph::WavSet reset state
 
 refactoring:
 - try to refactor SpectMorph::Frame into something less duplicating
