@@ -24,11 +24,16 @@
 #include "config.h"
 #include <smwavset.hh>
 #include <smaudio.hh>
+#include <bse/bsemain.h>
+#include <bse/bseloader.h>
 
 #include <string>
+#include <map>
 
 using std::string;
 using std::vector;
+using std::map;
+
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
 
@@ -38,7 +43,7 @@ struct Options
   string	program_name; /* FIXME: what to do with that */
   string        data_dir;
   string        args;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE } mode;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA } mode;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -106,6 +111,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-d") || check_arg (argc, argv, &i, "--decode"))
         {
           mode = DECODE;
+        }
+      else if (check_arg (argc, argv, &i, "--delta"))
+        {
+          mode = DELTA;
         }
       else if (check_arg (argc, argv, &i, "--args", &opt_arg))
         {
@@ -186,9 +195,98 @@ int2str (int i)
   return buffer;
 }
 
+vector<WavSetWave>::iterator
+find_wave (WavSet& wset, int midi_note)
+{
+  vector<WavSetWave>::iterator wi = wset.waves.begin(); 
+
+  while (wi != wset.waves.end())
+    {
+      if (wi->midi_note == midi_note)
+        return wi;
+      wi++;
+    }
+
+  return wi;
+}
+
+bool
+load_wav_file (const string& filename, vector<float>& data_out)
+{
+  /* open input */
+  BseErrorType error;
+
+  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
+  if (!wave_file_info)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+      return false;
+    }
+
+  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
+  if (!waveDsc)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+      return false;
+    }
+
+  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
+  if (!dhandle)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+      return false;
+    }
+
+  error = gsl_data_handle_open (dhandle);
+  if (error)
+    {
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+      return false;
+    }
+
+  if (gsl_data_handle_n_channels (dhandle) != 1)
+    {
+      fprintf (stderr, "Currently, only mono files are supported.\n");
+      return false;
+    }
+
+  data_out.clear();
+
+  vector<float> block (1024);
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  for (uint64 pos = 0; pos < n_values; pos += block.size())
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      for (uint64 t = 0; t < r; t++)
+        data_out.push_back (block[t]);
+    }
+  return true;
+}
+
+double
+delta (vector<float>& d0, vector<float>& d1)
+{
+  double error = 0;
+  for (size_t t = 0; t < MAX (d0.size(), d1.size()); t++)
+    {
+      double a0 = 0, a1 = 0;
+      if (t < d0.size())
+        a0 = d0[t];
+      if (t < d1.size())
+        a1 = d1[t];
+      error += (a0 - a1) * (a0 - a1);
+    }
+  return error / MAX (d0.size(), d1.size());
+}
+
 int
 main (int argc, char **argv)
 {
+  bse_init_inprocess (&argc, &argv, NULL, NULL);
+
   options.parse (&argc, &argv);
 
   if (options.mode == Options::INIT)
@@ -267,6 +365,48 @@ main (int argc, char **argv)
           wset.waves.push_back (new_wave);
         }
       wset.save (argv[2]);
+    }
+  else if (options.mode == Options::DELTA)
+    {
+      assert (argc >= 2);
+
+      vector<SpectMorph::WavSet> wsets;
+      map<int,bool>              midi_note_used;
+
+      for (int i = 1; i < argc; i++)
+        {
+          WavSet wset;
+          wset.load (argv[i]);
+          wsets.push_back (wset);
+          for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+            midi_note_used[wi->midi_note] = true;              
+        }
+      for (int i = 0; i < 128; i++)
+        {
+          if (midi_note_used[i])
+            {
+              printf ("%3d: ", i);
+              vector<WavSetWave>::iterator w0 = find_wave (wsets[0], i);
+              assert (w0 != wsets[0].waves.end());
+              for (size_t w = 1; w < wsets.size(); w++)
+                {
+                  vector<WavSetWave>::iterator w1 = find_wave (wsets[w], i);
+                  assert (w1 != wsets[w].waves.end());
+
+                  vector<float> data0, data1;
+                  if (load_wav_file (w0->path, data0) && load_wav_file (w1->path, data1))
+                    {
+                      printf ("%.8e ", delta (data0, data1));
+                    }
+                  else
+                    {
+                      printf ("an error occured during loading the files.\n");
+                      exit (1);
+                    }
+                }
+              printf ("\n");
+            }
+        }
     }
   else
     {
