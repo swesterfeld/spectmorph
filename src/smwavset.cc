@@ -1,3 +1,20 @@
+/* 
+ * Copyright (C) 2010 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,12 +27,15 @@
 #include <string>
 
 using std::string;
+using std::vector;
+using SpectMorph::WavSet;
+using SpectMorph::WavSetWave;
 
 /// @cond
 struct Options
 {
   string	program_name; /* FIXME: what to do with that */
-  enum { NONE, INIT, ADD } mode;
+  enum { NONE, INIT, ADD, LIST } mode;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -69,6 +89,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-a") || check_arg (argc, argv, &i, "--add"))
         {
           mode = ADD;
+        }
+      else if (check_arg (argc, argv, &i, "-l") || check_arg (argc, argv, &i, "--list"))
+        {
+          mode = LIST;
         }
 #if 0
       else if (check_arg (argc, argv, &i, "-d"))
@@ -158,6 +182,16 @@ main (int argc, char **argv)
       new_wave.path = argv[3];
       wset.waves.push_back (new_wave);
       wset.save (argv[1]);
+    }
+  else if (options.mode == Options::LIST)
+    {
+      SpectMorph::WavSet wset;
+      wset.load (argv[1]);
+
+      for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        {
+          printf ("%d %s\n", wi->midi_note, wi->path.c_str());
+        }
     }
   else
     {
