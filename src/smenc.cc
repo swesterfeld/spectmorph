@@ -301,9 +301,7 @@ main (int argc, char **argv)
 
   Encoder encoder (enc_params);
 
-  vector<float>  block (block_size);
-  vector<float> window (block.size());
-  vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
+  vector<float> window (block_size);
   vector<AudioBlock>& audio_blocks = encoder.audio_blocks;
 
   for (guint i = 0; i < window.size(); i++)
