@@ -92,74 +92,18 @@ Options::parse (int   *argc_p,
 	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
-      else if (check_arg (argc, argv, &i, "-i") || check_arg (argc, argv, &i, "--init"))
-        {
-          mode = INIT;
-        }
-      else if (check_arg (argc, argv, &i, "-a") || check_arg (argc, argv, &i, "--add"))
-        {
-          mode = ADD;
-        }
-      else if (check_arg (argc, argv, &i, "-l") || check_arg (argc, argv, &i, "--list"))
-        {
-          mode = LIST;
-        }
-      else if (check_arg (argc, argv, &i, "-e") || check_arg (argc, argv, &i, "--encode"))
-        {
-          mode = ENCODE;
-        }
-      else if (check_arg (argc, argv, &i, "-d") || check_arg (argc, argv, &i, "--decode"))
-        {
-          mode = DECODE;
-        }
-      else if (check_arg (argc, argv, &i, "--delta"))
-        {
-          mode = DELTA;
-        }
       else if (check_arg (argc, argv, &i, "--args", &opt_arg))
         {
           args = opt_arg;
         }
-      else if (check_arg (argc, argv, &i, "-D", &opt_arg))
+      else if (check_arg (argc, argv, &i, "-d", &opt_arg) ||
+               check_arg (argc, argv, &i, "-data-dir", &opt_arg))
 	{
 	  data_dir = opt_arg;
         }
-#if 0
-      else if (check_arg (argc, argv, &i, "-d"))
-	{
-          debug = fopen ("/tmp/stwenc.log", "w");
-	}
-      else if (check_arg (argc, argv, &i, "-f", &opt_arg))
-	{
-	  fundamental_freq = atof (opt_arg);
-        }
-      else if (check_arg (argc, argv, &i, "-m", &opt_arg))
-        {
-          fundamental_freq = freqFromNote (atoi (opt_arg));
-        }
-      else if (check_arg (argc, argv, &i, "-O0"))
-        {
-          optimization_level = 0;
-        }
-      else if (check_arg (argc, argv, &i, "-O1"))
-        {
-          optimization_level = 1;
-        }
-      else if (check_arg (argc, argv, &i, "-O2"))
-        {
-          optimization_level = 2;
-        }
-      else if (check_arg (argc, argv, &i, "-O", &opt_arg))
-        {
-          optimization_level = atoi (opt_arg);
-        }
-      else if (check_arg (argc, argv, &i, "-s"))
-        {
-          strip_models = true;
-        }
-#endif
     }
 
+resort:
   /* resort argc/argv */
   e = 1;
   for (i = 1; i < argc; i++)
@@ -170,21 +114,63 @@ Options::parse (int   *argc_p,
           argv[i] = NULL;
       }
   *argc_p = e;
+
+  // parse mode
+  if (*argc_p >= 2 && mode == NONE)
+    {
+      if (strcmp (argv[1], "init") == 0)
+        {
+          mode = INIT;
+        }
+      else if (strcmp (argv[1], "add") == 0)
+        {
+          mode = ADD;
+        }
+      else if (strcmp (argv[1], "list") == 0)
+        {
+          mode = LIST;
+        }
+      else if (strcmp (argv[1], "encode") == 0)
+        {
+          mode = ENCODE;
+        }
+      else if (strcmp (argv[1], "decode") == 0)
+        {
+          mode = DECODE;
+        }
+      else if (strcmp (argv[1], "delta") == 0)
+        {
+          mode = DELTA;
+        }
+
+      if (mode != NONE)
+        {
+          argv[1] = NULL;
+          goto resort;
+        }
+    }
 }
 
 void
 Options::print_usage ()
 {
-  g_printerr ("usage: %s [ <options> ] <src_audio_file> <dest_sm_file>\n", options.program_name.c_str());
-  g_printerr ("\n");
-  g_printerr ("options:\n");
-  g_printerr (" -h, --help                  help for %s\n", options.program_name.c_str());
-  g_printerr (" --version                   print version\n");
-  g_printerr (" -f <freq>                   specify fundamental frequency in Hz\n");
-  g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
-  g_printerr (" -O <level>                  set optimization level\n");
-  g_printerr (" -s                          produced stripped models\n");
-  g_printerr ("\n");
+  printf ("usage: %s <mode> [ <options> ] [ <mode specific args...> ]\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("mode specific args:\n");
+  printf ("\n");
+  printf (" smwavset init [ <options> ] <wset_filename>...\n");
+  printf (" smwavset add [ <options> ] <wset_filename> <midi_note> <path>\n");
+  printf (" smwavset list [ <options> ] <wset_filename>\n");
+  printf (" smwavset encode [ <options> ] <wset_filename> <smset_filename>\n");
+  printf (" smwavset decode [ <options> ] <smset_filename> <wset_filename>\n");
+  printf (" smwavset delta [ <options> ] <wset_filename1>...<wset_filenameN>\n");
+  printf ("\n");
+  printf ("options:\n");
+  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  printf (" --version                   print version\n");
+  printf (" --args \"<args>\"             arguments for decoder or encoder\n");
+  printf (" --data-dir <dir>            set data directory for newly created .sm or .wav files\n");
+  printf ("\n");
 }
 
 string
@@ -410,7 +396,7 @@ main (int argc, char **argv)
     }
   else
     {
-      g_printerr ("You need to specify a mode (-i)\n");
+      printf ("You need to specify a mode (init, add, list, encode, decode, delta).\n\n");
       Options::print_usage();
       exit (1);
     }
