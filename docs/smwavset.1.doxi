@@ -1,17 +1,17 @@
 @doxer_dnl      # emacs: -*- mode: texinfo; texinfo-open-quote: "\""; texinfo-close-quote: "\""; -*-
 @doxer_set{rvstamp,parse_date} $Date: 2006/04/19 00:50:37 $
 @include "smdefs.doxi"
-@doxer_set{title}	smenc - SpectMorph encoder
-@doxer_set{man-title}	smenc
+@doxer_set{title}	smwavset - SpectMorph wavset utility
+@doxer_set{man-title}	smwavset
 @doxer_set{man-date}	@doxer_get{rvstamp}
 @doxer_set{man-source}	spectmorph-@doxer_get{SM_VERSION}
-@doxer_set{man-manual}	smenc Manual Page
+@doxer_set{man-manual}	smwavset Manual Page
 
 @heading NAME
-smenc - Program to encode a wav file into a SpectMorph model
+smwavset - Program to manage spectmorph multiwave files
 
 @heading SYNOPSIS
-	@manb{smenc} [@mani{OPTIONS}] @mani{WAV-File} @mani{SM-File}
+	@manb{smwavset} [@mani{OPTIONS}] @mani{WAV-File} @mani{SM-File}
 
 @heading DESCRIPTION
         @manb{smenc} is a command line tool to create SpectMorph models from

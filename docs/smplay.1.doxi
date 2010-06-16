@@ -4,7 +4,7 @@
 @doxer_set{title}	smplay - SpectMorph player
 @doxer_set{man-title}	smplay
 @doxer_set{man-date}	@doxer_get{rvstamp}
-@doxer_set{man-source}	spectmorph-@doxer_get{VERSION}
+@doxer_set{man-source}	spectmorph-@doxer_get{SM_VERSION}
 @doxer_set{man-manual}	smplay Manual Page
 
 @heading NAME

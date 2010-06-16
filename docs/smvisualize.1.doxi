@@ -4,7 +4,7 @@
 @doxer_set{title}	smvisualize - SpectMorph visualization program
 @doxer_set{man-title}	smvisualize
 @doxer_set{man-date}	@doxer_get{rvstamp}
-@doxer_set{man-source}	spectmorph-@doxer_get{BST_VERSION}
+@doxer_set{man-source}	spectmorph-@doxer_get{SM_VERSION}
 @doxer_set{man-manual}	smvisualize Manual Page
 
 @heading NAME

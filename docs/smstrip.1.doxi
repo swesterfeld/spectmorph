@@ -4,7 +4,7 @@
 @doxer_set{title}	smstrip - SpectMorph strip program
 @doxer_set{man-title}	smstrip
 @doxer_set{man-date}	@doxer_get{rvstamp}
-@doxer_set{man-source}	beast-@doxer_get{BST_VERSION}
+@doxer_set{man-source}	spectmorph-@doxer_get{SM_VERSION}
 @doxer_set{man-manual}	smstrip Manual Page
 
 @heading NAME
