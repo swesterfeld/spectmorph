@@ -17,14 +17,14 @@
 
 #include "smsinedecoder.hh"
 #include "smmath.hh"
-#include <bse/bseresamplerimpl.hh> // AlignedArray
+#include <birnet/birnetutils.hh>
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
 
 using SpectMorph::SineDecoder;
 using SpectMorph::Frame;
-using Bse::Resampler::AlignedArray;
+using Birnet::AlignedArray;
 using std::vector;
 
 /**

@@ -1,4 +1,6 @@
+
 smenc:
++            if (false) //new_delta >= delta)      // approximation is _not_ better
 - transient representation
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB

@@ -28,7 +28,6 @@
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
-#include <bse/bseresamplerimpl.hh> // AlignedArray
 #include <bse/gslfft.h>
 #include <math.h>
 #include <stdio.h>
@@ -40,7 +39,7 @@ using SpectMorph::Encoder;
 using SpectMorph::AudioBlock;
 using SpectMorph::Tracksel;
 using SpectMorph::VectorSinParams;
-using Bse::Resampler::AlignedArray;
+using Birnet::AlignedArray;
 using std::vector;
 using std::string;
 using std::map;

@@ -16,7 +16,7 @@
  */
 
 #include "smmath.hh"
-#include <bse/bseresamplerimpl.hh>
+#include <birnet/birnetutils.hh>
 #include <algorithm>
 #include <stdio.h>
 #include <sys/time.h>
@@ -24,7 +24,7 @@
 #include <string>
 
 using namespace SpectMorph;
-using Bse::Resampler::AlignedArray;
+using Birnet::AlignedArray;
 using std::string;
 
 double
