@@ -97,7 +97,7 @@ Options::parse (int   *argc_p,
           args = opt_arg;
         }
       else if (check_arg (argc, argv, &i, "-d", &opt_arg) ||
-               check_arg (argc, argv, &i, "-data-dir", &opt_arg))
+               check_arg (argc, argv, &i, "--data-dir", &opt_arg))
 	{
 	  data_dir = opt_arg;
         }
@@ -169,7 +169,7 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" --version                   print version\n");
   printf (" --args \"<args>\"             arguments for decoder or encoder\n");
-  printf (" --data-dir <dir>            set data directory for newly created .sm or .wav files\n");
+  printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
   printf ("\n");
 }
 
@@ -371,6 +371,8 @@ main (int argc, char **argv)
         {
           if (midi_note_used[i])
             {
+              double ref_delta;
+
               printf ("%3d: ", i);
               vector<WavSetWave>::iterator w0 = find_wave (wsets[0], i);
               assert (w0 != wsets[0].waves.end());
@@ -382,7 +384,10 @@ main (int argc, char **argv)
                   vector<float> data0, data1;
                   if (load_wav_file (w0->path, data0) && load_wav_file (w1->path, data1))
                     {
-                      printf ("%.8e ", delta (data0, data1));
+                      double this_delta = delta (data0, data1);
+                      if (w == 1)
+                        ref_delta = this_delta;
+                      printf ("%3.4f%% ", 100 * this_delta / ref_delta);
                     }
                   else
                     {
