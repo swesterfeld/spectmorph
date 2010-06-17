@@ -541,8 +541,6 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
   vector<float> good_freqs;
   vector<float> good_phases;
 
-  // delta against null vector
-  double delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
   double max_mag;
   size_t partial = 0;
   do
@@ -561,77 +559,67 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
               max_mag = mag;
             }
         }
-        // compute reconstruction of that partial
-        if (max_mag > 0)
-          {
-            // remove partial, so we only do each partial once
-            double smag = audio_block.phases[2 * partial];
-            double cmag = audio_block.phases[2 * partial + 1];
-            double f = audio_block.freqs[partial];
+      // compute reconstruction of that partial
+      if (max_mag > 0)
+        {
+          // remove partial, so we only do each partial once
+          double smag = audio_block.phases[2 * partial];
+          double cmag = audio_block.phases[2 * partial + 1];
+          double f = audio_block.freqs[partial];
 
-            audio_block.phases[2 * partial] = 0;
-            audio_block.phases[2 * partial + 1] = 0;
+          audio_block.phases[2 * partial] = 0;
+          audio_block.phases[2 * partial + 1] = 0;
 
-            double phase;
-            // determine "perfect" phase and magnitude instead of using interpolated fft phase
-            smag = 0;
-            cmag = 0;
-            double snorm = 0, cnorm = 0;
+          double phase;
+          // determine "perfect" phase and magnitude instead of using interpolated fft phase
+          smag = 0;
+          cmag = 0;
+          double snorm = 0, cnorm = 0;
 
-            VectorSinParams params;
+          VectorSinParams params;
 
-            params.mix_freq = mix_freq;
-            params.freq = f;
-            params.mag = 1;
-            params.phase = -((frame_size - 1) / 2.0) * f / mix_freq * 2.0 * M_PI;
-            while (params.phase < -M_PI)
-              params.phase += 2 * M_PI;
-            params.mode = VectorSinParams::REPLACE;
+          params.mix_freq = mix_freq;
+          params.freq = f;
+          params.mag = 1;
+          params.phase = -((frame_size - 1) / 2.0) * f / mix_freq * 2.0 * M_PI;
+          while (params.phase < -M_PI)
+            params.phase += 2 * M_PI;
+          params.mode = VectorSinParams::REPLACE;
 
-            fast_vector_sincosf (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
+          fast_vector_sincosf (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
 
-            for (size_t n = 0; n < frame_size; n++)
-              {
-                const double v = audio_block.debug_samples[n] - sines[n];
-                const double swin = sin_vec[n] * window[n];
-                const double cwin = cos_vec[n] * window[n];
+          for (size_t n = 0; n < frame_size; n++)
+            {
+              const double v = audio_block.debug_samples[n] - sines[n];
+              const double swin = sin_vec[n] * window[n];
+              const double cwin = cos_vec[n] * window[n];
 
-                smag += v * window[n] * swin;
-                cmag += v * window[n] * cwin;
-                snorm += swin * swin;
-                cnorm += cwin * cwin;
-              }
-            smag /= snorm;
-            cmag /= cnorm;
+              smag += v * window[n] * swin;
+              cmag += v * window[n] * cwin;
+              snorm += swin * swin;
+              cnorm += cwin * cwin;
+            }
+          smag /= snorm;
+          cmag /= cnorm;
 
-            double magnitude = sqrt (smag * smag + cmag * cmag);
-            phase = atan2 (smag, cmag);
-            phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
-            smag = sin (phase) * magnitude;
-            cmag = cos (phase) * magnitude;
+          double magnitude = sqrt (smag * smag + cmag * cmag);
+          phase = atan2 (smag, cmag);
+          phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
+          smag = sin (phase) * magnitude;
+          cmag = cos (phase) * magnitude;
 
-            vector<float> old_sines (&sines[0], &sines[frame_size]);
+          // restore partial => sines; keep params.freq & params.mix_freq
+          params.phase = atan2 (cmag, smag);
+          params.mag = sqrt (smag * smag + cmag * cmag);
+          params.mode = VectorSinParams::ADD;
+          fast_vector_sinf (params, &sines[0], &sines[frame_size]);
 
-            // restore partial => sines; keep params.freq & params.mix_freq
-            params.phase = atan2 (cmag, smag);
-            params.mag = sqrt (smag * smag + cmag * cmag);
-            params.mode = VectorSinParams::ADD;
-            fast_vector_sinf (params, &sines[0], &sines[frame_size]);
-
-            double new_delta = float_vector_delta (&sines[0], &sines[frame_size], audio_block.debug_samples.begin());
-            if (new_delta >= delta)      // approximation is _not_ better
-              {
-                std::copy (old_sines.begin(), old_sines.end(), &sines[0]);
-              }
-            else
-              {
-                delta = new_delta;
-                good_freqs.push_back (f);
-                good_phases.push_back (smag);
-                good_phases.push_back (cmag);
-              }
-          }
-      }
+          // store refined freq, mag and phase
+          good_freqs.push_back (f);
+          good_phases.push_back (smag);
+          good_phases.push_back (cmag);
+        }
+    }
   while (max_mag > 0);
 
   audio_block.freqs = good_freqs;
@@ -920,6 +908,24 @@ Encoder::compute_attack_params (const vector<float>& window)
         audio_blocks[f].phases[i] *= scale[f];
     }
   optimal_attack = attack;
+}
+
+void
+Encoder::encode (GslDataHandle *dhandle, const vector<float>& window, int optimization_level, bool attack)
+{
+  compute_stft (dhandle, window);
+
+  search_local_maxima();
+  link_partials();
+  validate_partials();
+
+  optimize_partials (window, optimization_level);
+
+  spectral_subtract (window);
+  approx_noise();
+
+  if (attack)
+    compute_attack_params (window);
 }
 
 /**

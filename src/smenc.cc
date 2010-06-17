@@ -55,6 +55,7 @@ struct Options
 {
   string	program_name; /* FIXME: what to do with that */
   bool          strip_models;
+  bool          attack;
   float         fundamental_freq;
   int           optimization_level;
   FILE         *debug;
@@ -74,6 +75,7 @@ Options::Options ()
   debug = 0;
   optimization_level = 0;
   strip_models = false;
+  attack = true;        // perform attack time optimization
 }
 
 void
@@ -139,7 +141,11 @@ Options::parse (int   *argc_p,
         {
           strip_models = true;
         }
-    }
+      else if (check_arg (argc, argv, &i, "--no-attack"))
+        {
+          attack = false;
+        }
+     }
 
   /* resort argc/argv */
   e = 1;
@@ -165,6 +171,7 @@ Options::print_usage ()
   g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
   g_printerr (" -O <level>                  set optimization level\n");
   g_printerr (" -s                          produced stripped models\n");
+  g_printerr (" --no-attack                 skip attack time optimization\n");
   g_printerr ("\n");
 }
 
@@ -320,22 +327,7 @@ main (int argc, char **argv)
 
   //wintrans (window);
 
-  encoder.compute_stft (dhandle, window);
-  // Track frequencies step #0: find maximum of all values
-  // Track frequencies step #1: search for local maxima as potential track candidates
-  encoder.search_local_maxima();
-
-  // Track frequencies step #2: link lists together
-  encoder.link_partials();
-  // Track frequencies step #3: discard edges where -25 dB is not exceeded once
-  encoder.validate_partials();
-
-  encoder.optimize_partials (window, options.optimization_level);
-
-  encoder.spectral_subtract (window);
-  encoder.approx_noise();
-  encoder.compute_attack_params (window);
-
+  encoder.encode (dhandle, window, options.optimization_level, options.attack);
   if (options.strip_models)
     {
       for (size_t i = 0; i < audio_blocks.size(); i++)
