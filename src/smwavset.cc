@@ -43,7 +43,7 @@ struct Options
   string	program_name; /* FIXME: what to do with that */
   string        data_dir;
   string        args;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA } mode;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -56,7 +56,7 @@ Options::Options ()
   program_name = "smwavset";
   data_dir = "/tmp";
   args = "";
-  mode = NONE;
+  command = NONE;
 }
 
 #include "stwutils.hh"
@@ -119,35 +119,35 @@ Options::parse (int   *argc_p,
       *argc_p = e;
       resort_required = false;
 
-      // parse mode
-      if (*argc_p >= 2 && mode == NONE)
+      // parse command
+      if (*argc_p >= 2 && command == NONE)
         {
           if (strcmp (argv[1], "init") == 0)
             {
-              mode = INIT;
+              command = INIT;
             }
           else if (strcmp (argv[1], "add") == 0)
             {
-              mode = ADD;
+              command = ADD;
             }
           else if (strcmp (argv[1], "list") == 0)
             {
-              mode = LIST;
+              command = LIST;
             }
           else if (strcmp (argv[1], "encode") == 0)
             {
-              mode = ENCODE;
+              command = ENCODE;
             }
           else if (strcmp (argv[1], "decode") == 0)
             {
-              mode = DECODE;
+              command = DECODE;
             }
           else if (strcmp (argv[1], "delta") == 0)
             {
-              mode = DELTA;
+              command = DELTA;
             }
 
-          if (mode != NONE)
+          if (command != NONE)
             {
               argv[1] = NULL;
               resort_required = true;
@@ -159,9 +159,9 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  printf ("usage: %s <mode> [ <options> ] [ <mode specific args...> ]\n", options.program_name.c_str());
+  printf ("usage: %s <command> [ <options> ] [ <command specific args...> ]\n", options.program_name.c_str());
   printf ("\n");
-  printf ("mode specific args:\n");
+  printf ("command specific args:\n");
   printf ("\n");
   printf (" smwavset init [ <options> ] <wset_filename>...\n");
   printf (" smwavset add [ <options> ] <wset_filename> <midi_note> <path>\n");
@@ -172,7 +172,7 @@ Options::print_usage ()
   printf ("\n");
   printf ("options:\n");
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
-  printf (" --version                   print version\n");
+  printf (" -v, --version               print version\n");
   printf (" --args \"<args>\"             arguments for decoder or encoder\n");
   printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
   printf ("\n");
@@ -280,7 +280,7 @@ main (int argc, char **argv)
 
   options.parse (&argc, &argv);
 
-  if (options.mode == Options::INIT)
+  if (options.command == Options::INIT)
     {
       for (int i = 1; i < argc; i++)
         {
@@ -288,7 +288,7 @@ main (int argc, char **argv)
           wset.save (argv[i]);
         }
     }
-  else if (options.mode == Options::ADD)
+  else if (options.command == Options::ADD)
     {
       assert (argc == 4);
 
@@ -300,7 +300,7 @@ main (int argc, char **argv)
       wset.waves.push_back (new_wave);
       wset.save (argv[1]);
     }
-  else if (options.mode == Options::LIST)
+  else if (options.command == Options::LIST)
     {
       SpectMorph::WavSet wset;
       wset.load (argv[1]);
@@ -310,7 +310,7 @@ main (int argc, char **argv)
           printf ("%d %s\n", wi->midi_note, wi->path.c_str());
         }
     }
-  else if (options.mode == Options::ENCODE)
+  else if (options.command == Options::ENCODE)
     {
       assert (argc == 3);
 
@@ -330,7 +330,7 @@ main (int argc, char **argv)
         }
       smset.save (argv[2]);
     }
-  else if (options.mode == Options::DECODE)
+  else if (options.command == Options::DECODE)
     {
       assert (argc == 3);
 
@@ -357,7 +357,7 @@ main (int argc, char **argv)
         }
       wset.save (argv[2]);
     }
-  else if (options.mode == Options::DELTA)
+  else if (options.command == Options::DELTA)
     {
       assert (argc >= 2);
 
@@ -406,7 +406,7 @@ main (int argc, char **argv)
     }
   else
     {
-      printf ("You need to specify a mode (init, add, list, encode, decode, delta).\n\n");
+      printf ("You need to specify a command (init, add, list, encode, decode, delta).\n\n");
       Options::print_usage();
       exit (1);
     }
