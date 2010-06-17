@@ -57,7 +57,7 @@ main (int argc, char **argv)
     }
   if (argc != 3)
     {
-      fprintf (stderr, "usage: %s <stwa-file> <png-file> [ db ]\n", argv[0]);
+      printf ("usage: %s <stwa-file> <png-file> [ db ]\n", argv[0]);
       exit (1);
     }
 

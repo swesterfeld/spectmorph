@@ -162,17 +162,17 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  g_printerr ("usage: %s [ <options> ] <src_audio_file> <dest_sm_file>\n", options.program_name.c_str());
-  g_printerr ("\n");
-  g_printerr ("options:\n");
-  g_printerr (" -h, --help                  help for %s\n", options.program_name.c_str());
-  g_printerr (" --version                   print version\n");
-  g_printerr (" -f <freq>                   specify fundamental frequency in Hz\n");
-  g_printerr (" -m <note>                   specify midi note for fundamental frequency\n");
-  g_printerr (" -O <level>                  set optimization level\n");
-  g_printerr (" -s                          produced stripped models\n");
-  g_printerr (" --no-attack                 skip attack time optimization\n");
-  g_printerr ("\n");
+  printf ("usage: %s [ <options> ] <src_audio_file> <dest_sm_file>\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("options:\n");
+  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  printf (" --version                   print version\n");
+  printf (" -f <freq>                   specify fundamental frequency in Hz\n");
+  printf (" -m <note>                   specify midi note for fundamental frequency\n");
+  printf (" -O <level>                  set optimization level\n");
+  printf (" -s                          produced stripped models\n");
+  printf (" --no-attack                 skip attack time optimization\n");
+  printf ("\n");
 }
 
 void debug (const char *dbg, ...) G_GNUC_PRINTF (1, 2);

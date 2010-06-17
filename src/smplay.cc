@@ -136,16 +136,16 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  g_printerr ("usage: %s [ <options> ] <sm_file>\n", options.program_name.c_str());
-  g_printerr ("\n");
-  g_printerr ("options:\n");
-  g_printerr (" -h, --help                  help for %s\n", options.program_name.c_str());
-  g_printerr (" -v, --version               print version\n");
-  g_printerr (" --rate <sampling rate>      set replay rate manually\n");
-  g_printerr (" --no-noise                  disable noise decoder\n");
-  g_printerr (" --no-sines                  disable sine decoder\n");
-  g_printerr (" --export <wav filename>     export to wav file\n");
-  g_printerr ("\n");
+  printf ("usage: %s [ <options> ] <sm_file>\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("options:\n");
+  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  printf (" -v, --version               print version\n");
+  printf (" --rate <sampling rate>      set replay rate manually\n");
+  printf (" --no-noise                  disable noise decoder\n");
+  printf (" --no-sines                  disable sine decoder\n");
+  printf (" --export <wav filename>     export to wav file\n");
+  printf ("\n");
 }
 
 int

@@ -23,7 +23,7 @@ main (int argc, char **argv)
 {
   if (argc < 2)
     {
-      fprintf (stderr, "usage: smstrip <filename.sm> [...]\n");
+      printf ("usage: smstrip <filename.sm> [...]\n");
       exit (1);
     }
   for (int n = 1; n < argc; n++)
