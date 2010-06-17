@@ -103,50 +103,55 @@ Options::parse (int   *argc_p,
         }
     }
 
-resort:
-  /* resort argc/argv */
-  e = 1;
-  for (i = 1; i < argc; i++)
-    if (argv[i])
-      {
-        argv[e++] = argv[i];
-        if (i >= e)
-          argv[i] = NULL;
-      }
-  *argc_p = e;
+  bool resort_required = true;
 
-  // parse mode
-  if (*argc_p >= 2 && mode == NONE)
+  while (resort_required)
     {
-      if (strcmp (argv[1], "init") == 0)
-        {
-          mode = INIT;
-        }
-      else if (strcmp (argv[1], "add") == 0)
-        {
-          mode = ADD;
-        }
-      else if (strcmp (argv[1], "list") == 0)
-        {
-          mode = LIST;
-        }
-      else if (strcmp (argv[1], "encode") == 0)
-        {
-          mode = ENCODE;
-        }
-      else if (strcmp (argv[1], "decode") == 0)
-        {
-          mode = DECODE;
-        }
-      else if (strcmp (argv[1], "delta") == 0)
-        {
-          mode = DELTA;
-        }
+      /* resort argc/argv */
+      e = 1;
+      for (i = 1; i < argc; i++)
+        if (argv[i])
+          {
+            argv[e++] = argv[i];
+            if (i >= e)
+              argv[i] = NULL;
+          }
+      *argc_p = e;
+      resort_required = false;
 
-      if (mode != NONE)
+      // parse mode
+      if (*argc_p >= 2 && mode == NONE)
         {
-          argv[1] = NULL;
-          goto resort;
+          if (strcmp (argv[1], "init") == 0)
+            {
+              mode = INIT;
+            }
+          else if (strcmp (argv[1], "add") == 0)
+            {
+              mode = ADD;
+            }
+          else if (strcmp (argv[1], "list") == 0)
+            {
+              mode = LIST;
+            }
+          else if (strcmp (argv[1], "encode") == 0)
+            {
+              mode = ENCODE;
+            }
+          else if (strcmp (argv[1], "decode") == 0)
+            {
+              mode = DECODE;
+            }
+          else if (strcmp (argv[1], "delta") == 0)
+            {
+              mode = DELTA;
+            }
+
+          if (mode != NONE)
+            {
+              argv[1] = NULL;
+              resort_required = true;
+            }
         }
     }
 }
