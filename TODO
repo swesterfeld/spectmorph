@@ -1,11 +1,8 @@
-
 smenc:
-+            if (false) //new_delta >= delta)      // approximation is _not_ better
-- transient representation
+- move partial pruning step to seperate step to be performed after attack optimization
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
-- move debugging information generated with -d to main file
 - normalize noise
 - use averaging to estimate noise
 - make window function configurable
@@ -43,6 +40,7 @@ adventure:
 
 samples:
 - test with samples from the net
+- piano samples are not properly clipped at the beginning
 
 debian:
 - package boost-numeric-bindings
