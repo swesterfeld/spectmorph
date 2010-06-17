@@ -95,7 +95,7 @@ class Encoder
     double attack_start_ms;
     double attack_end_ms;
   };
-  double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const Attack& attack, std::vector<double>& out_scale);
+  double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const std::vector<float>& window, const Attack& attack, std::vector<double>& out_scale);
 
 public:
   std::vector<AudioBlock>              audio_blocks;    //!< current state, and end result of the encoding algorithm
@@ -109,7 +109,7 @@ public:
   void optimize_partials (const std::vector<float>& window, int optimization_level);
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise();
-  void compute_attack_params();
+  void compute_attack_params (const std::vector<float>& window);
   void save (const std::string& filename, double fundamental_freq);
 };
 

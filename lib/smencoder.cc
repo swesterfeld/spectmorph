@@ -788,10 +788,12 @@ Encoder::approx_noise()
 }
 
 double
-Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const Attack& attack, vector<double>& out_scale)
+Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const vector<float>& window, const Attack& attack, vector<double>& out_scale)
 {
   const size_t frames = unscaled_signal.size();
   double total_error = 0;
+  vector<double> decoded_signal (enc_params.frame_size + enc_params.frame_step * frames);
+  vector<double> orig_signal (decoded_signal.size());
 
   for (size_t f = 0; f < frames; f++)
     {
@@ -819,17 +821,22 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const At
             {
               env = 1.0;
             }
-          const double value = frame_signal[n] * scale * env;
-          const double error = value - audio_blocks[f].debug_samples[n];
-          total_error += error * error;
+          decoded_signal[f * enc_params.frame_step + n] += frame_signal[n] * scale * env * window[n];
+          orig_signal[f * enc_params.frame_step + n] = audio_blocks[f].debug_samples[n];
         }
       out_scale[f] = scale;
+    }
+  for (size_t i = 0; i < decoded_signal.size(); i++)
+    {
+      double error = orig_signal[i] - decoded_signal[i];
+      //printf ("%d %f %f\n", i,orig_signal[i], decoded_signal[i]);
+      total_error += error * error;
     }
   return total_error;
 }
 
 void
-Encoder::compute_attack_params()
+Encoder::compute_attack_params (const vector<float>& window)
 {
   const double mix_freq   = enc_params.mix_freq;
   const size_t frame_size = enc_params.frame_size;
@@ -843,8 +850,9 @@ Encoder::compute_attack_params()
 
       for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
         {
-          double smag = audio_block.phases[2 * partial];
-          double cmag = audio_block.phases[2 * partial + 1];
+          const double SA = 0.5;
+          double smag = audio_block.phases[2 * partial] * SA;
+          double cmag = audio_block.phases[2 * partial + 1] * SA;
           double f    = audio_block.freqs[partial];
           double phase = 0;
 
@@ -888,7 +896,7 @@ Encoder::compute_attack_params()
           new_attack.attack_start_ms >= 0 &&
           new_attack.attack_end_ms < 200)
         {
-          const double new_error = attack_error (unscaled_signal, new_attack, scale);
+          const double new_error = attack_error (unscaled_signal, window, new_attack, scale);
 #if 0
           printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.attack_start_ms, attack.attack_end_ms, error,
                                                                                        new_attack.attack_start_ms, new_attack.attack_end_ms, new_error);
