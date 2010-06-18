@@ -343,4 +343,21 @@ main (int argc, char **argv)
       printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
       printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
     }
+  else if (strcmp (argv[2], "size") == 0)
+    {
+      size_t phase_bytes = 0, freq_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
+      for (size_t f = 0; f < audio.contents.size(); f++)
+        {
+          phase_bytes += audio.contents[f].phases.size() * sizeof (float);
+          freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
+          debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
+          original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
+          noise_bytes += audio.contents[f].noise.size() * sizeof (float);
+        }
+      printf ("phases       : %d bytes\n", phase_bytes);
+      printf ("frequencies  : %d bytes\n", freq_bytes);
+      printf ("dbgsamples   : %d bytes\n", debug_samples_bytes);
+      printf ("orig_fft     : %d bytes\n", original_fft_bytes);
+      printf ("noise        : %d bytes\n", noise_bytes);
+    }
 }
