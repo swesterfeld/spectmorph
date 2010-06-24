@@ -20,6 +20,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <sys/time.h>
 
 #include "config.h"
 #include <smwavset.hh>
@@ -201,6 +202,28 @@ find_wave (WavSet& wset, int midi_note)
   return wi;
 }
 
+double
+gettime ()
+{
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+string
+time2str (double t)
+{
+  long long ms = t * 1000;
+  long long s = ms / 1000;
+  long long m = s / 60;
+  long long h = m / 60;
+
+  char buf[1024];
+  sprintf (buf, "%02lld:%02lld:%02lld.%03lld", h, m % 60, s % 60, ms % 1000);
+  return buf;
+}
+
 bool
 load_wav_file (const string& filename, vector<float>& data_out)
 {
@@ -276,6 +299,8 @@ delta (vector<float>& d0, vector<float>& d1)
 int
 main (int argc, char **argv)
 {
+  double start_time = gettime();
+
   bse_init_inprocess (&argc, &argv, NULL, NULL);
 
   options.parse (&argc, &argv);
@@ -321,7 +346,7 @@ main (int argc, char **argv)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
           string cmd = "smenc -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
-          printf ("## %s\n", cmd.c_str());
+          printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           system (cmd.c_str());
 
           SpectMorph::WavSetWave new_wave = *wi;
@@ -348,7 +373,7 @@ main (int argc, char **argv)
 
           string wavpath = options.data_dir + "/" + int2str (si->midi_note) + ".wav";
           string cmd = "smplay --rate=" + int2str (audio.mix_freq) + " " +si->path.c_str() + " --export " + wavpath + " " + options.args;
-          printf ("## %s\n", cmd.c_str());
+          printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           system (cmd.c_str());
 
           SpectMorph::WavSetWave new_wave = *si;
