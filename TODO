@@ -1,5 +1,6 @@
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
+- merge new-pruning-scaling branch somehow
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
