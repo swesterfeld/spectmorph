@@ -1,0 +1,85 @@
+EXTRA_DIST=$(GENERATED_EXTRA_DIST)
+
+# === Release Configuration ===
+# RELEASE_VERSION   # defaults to, default: $(VERSION)
+# RELEASE_REVNAME   # micro revision variable name, default: VERSION_PATCHLEVEL
+# RELEASE_TARBALL   # release tarball name, default: $(distdir).tar.?z*
+# RELEASE_DESTHOST  # destination host for tarball uploads
+# RELEASE_DESTPATH  # destination host path for tarball uploads
+# RELEASE_REVISION  # micro revision, defaults to expanding $(RELEASE_REVNAME)
+# RELEASE_REVNEXT   # next micro revision, defaults to incrementing $(RELEASE_REVISION)
+# RELEASE_CHANGELOG # generated ChangeLog file name, if generation desired
+# RELEASE_CHL_RANGE # ChangeLog revision range for git log, default: HEAD
+# RELEASE_CHL_ADD   # plaint text file to be appended to generated ChangeLog
+# === Release auxillary rule defaults ===
+RELAUX_VERSION   = $(strip $(or $(RELEASE_VERSION), $(VERSION)))
+RELAUX_REVNAME   = $(strip $(or $(RELEASE_REVNAME), VERSION_PATCHLEVEL))
+RELAUX_FILE      = $(strip $(or $(RELEASE_TARBALL), $(word 1, $(shell echo $(distdir).tar.?z*))))
+RELAUX_DESTHOST  = $(strip $(or $(RELEASE_DESTHOST), example.com))
+RELAUX_DESTPATH  = $(strip $(or $(RELEASE_DESTPATH), distpath/projectname))
+RELAUX_REVISION  = $($(RELAUX_REVNAME))
+RELAUX_REVNEXT   = $(strip $(or $(RELEASE_REVNEXT), $(shell echo '1 + $(RELAUX_REVISION)' | bc)))
+RELAUX_CHANGELOG = $(strip $(RELEASE_CHANGELOG))
+RELAUX_CHL_RANGE = $(strip $(or $(RELEASE_CHL_RANGE), HEAD))
+RELAUX_CHL_ADD   = $(strip $(RELEASE_CHL_ADD))
+# --- ChangeLog ---
+RELAUX_GITSTAMPS = $(shell ls "$${GIT_DIR:-.git}/`git symbolic-ref -q HEAD || echo HEAD`" \
+			   "$${GIT_DIR:-.git}/packed-refs"  "$${GIT_DIR:-.git}/HEAD" 2>/dev/null )
+${RELAUX_CHANGELOG}:	${RELAUX_CHL_ADD} ${RELAUX_GITSTAMPS} Makefile.am
+	@ # Generate ChangeLog with -prefixed records
+	git log ${RELAUX_CHL_RANGE} > xgen-0$(@F) \
+	   --pretty='tformat:%ai  %an 	# %h%n%n%s%n%n%b'
+	@ # Append old style ChangeLog
+	cat xgen-0$(@F) ${RELAUX_CHL_ADD} > xgen-1$(@F)
+	@ # Tab-indent ChangeLog, except for record start
+	sed 's/^/	/; s/^	//; /^[ 	]*<unknown>$$/d' < xgen-1$(@F) > xgen-0$(@F)
+	@ # Kill trailing whitespaces
+	sed 's/[[:space:]]\+$$//' < xgen-0$(@F) > xgen-1$(@F)
+	@ # Compress multiple newlines
+	sed '/^\s*$$/{ N; /^\s*\n\s*$$/D }' < xgen-1$(@F) > xgen-0$(@F)
+	@ # Cleanup, replace atomically
+	rm -f xgen-1$(@F)
+	mv xgen-0$(@F) $@
+all-am: ${RELAUX_CHANGELOG}
+EXTRA_DIST  += ${RELAUX_CHANGELOG}
+# --- release-upload ---
+release-upload: $(RELAUX_CHANGELOG) # serialized steps, for parallel invocation
+	@echo -n "  Checking for a clean $(RELAUX_VERSION) working tree...                    "
+	@test 0 = `git diff HEAD | wc -l` \
+	|| (echo FAIL && echo "note: use 'git diff HEAD' to view working tree changes" && false)
+	@echo "OK"
+	@echo -n "  Checking untagged revision $(RELAUX_VERSION)...                           "
+	@! git rev-parse --verify -q "$(RELAUX_VERSION)" > /dev/null \
+	|| (echo FAIL && echo -n "note: tag $(RELAUX_VERSION) exists: " \
+            && git rev-parse $(RELAUX_VERSION) && false)
+	@echo "OK"
+	@echo -n "  Checking release file $(RELAUX_FILE)...                  "
+	@test -e "$(RELAUX_FILE)" || (echo "FAIL" && false)
+	@echo "OK"
+	@echo -n "  Checking age of release file $(RELAUX_FILE)...           "
+	@test "$(RELAUX_FILE)" -nt $(RELAUX_CHANGELOG) \
+	|| (echo FAIL && echo "note: $(RELAUX_CHANGELOG) appears to be newer; make distcheck" && false)
+	@echo "OK"
+	@echo -n "  Checking uniqueness of release tarball $(RELAUX_FILE)... "
+	@ssh $(RELAUX_DESTHOST) test ! -e "$(RELAUX_DESTPATH)/$(RELAUX_FILE)" \
+	|| ( echo "FAIL (already existing)" && false )
+	@echo "OK"
+	@echo -n "  Checking version $(RELAUX_VERSION) for even revision...                   "
+	@test "$(RELAUX_REVISION)" = "`echo '$(RELAUX_REVISION) / 2 * 2' | bc`" \
+	|| (echo FAIL && echo "note: not uploading an odd revision, see configure.ac:$(RELAUX_REVNAME)" && false)
+	@echo "OK"
+	@echo -n "  Uploading release tarball $(RELAUX_FILE)...              "
+	@rsync -lpt --delay-updates "$(RELAUX_FILE)" "$(RELAUX_DESTHOST):$(RELAUX_DESTPATH)"
+	@echo "OK" && echo -n "    "
+	@ssh $(RELAUX_DESTHOST) ls -l \`readlink -f "$(RELAUX_DESTPATH)/$(RELAUX_FILE)"\`
+	@echo -n "  Tagging HEAD as '$(RELAUX_VERSION)' release...                            "
+	@git tag -m "Released $(distdir)" "$(RELAUX_VERSION)"
+	@echo "OK" && echo -n "    "
+	@git tag -n1 -l "$(RELAUX_VERSION)"
+	@echo "  Bump configure.ac:$(RELAUX_REVNAME)... "
+	@sed '0,/^\($(RELAUX_REVNAME)\)=[0-9]\+/s//\1=$(RELAUX_REVNEXT)/' \
+	    < $(top_srcdir)/configure.ac > xgen_$$$$Z-configure.ac \
+	&& diff -uU2 $(top_srcdir)/configure.ac xgen_$$$$Z-configure.ac | sed "s/xgen_$$$$Z-//" \
+	&& mv -iv xgen_$$$$Z-configure.ac $(top_srcdir)/configure.ac \
+	&& rm -f xgen_$$$$Z-configure.ac
+.PHONY: release-upload
