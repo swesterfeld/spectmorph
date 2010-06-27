@@ -123,12 +123,25 @@ Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
       AudioBlock audio_block;
 
       /* read data from file, zeropad last blocks */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      if (r != block.size())
+      uint64 todo = block.size(), offset = 0;
+      while (todo)
         {
-          while (r < block.size())
-            block[r++] = 0;
+          uint64 r = 0;
+          if (pos + offset < gsl_data_handle_n_values (dhandle))
+            r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
+          if (r > 0)
+            {
+              offset += r;
+              todo -= r;
+            }
+          else  // last block
+            {
+              while (todo)
+                {
+                  block[offset++] = 0;
+                  todo--;
+                }
+            }
         }
       vector<float> debug_samples (block.begin(), block.end());
       Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
