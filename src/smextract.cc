@@ -27,6 +27,7 @@ using SpectMorph::Frame;
 using SpectMorph::AudioBlock;
 using std::vector;
 using std::min;
+using std::string;
 
 double
 vector_delta (const vector<double>& a, const vector<double>& b)
@@ -192,6 +193,16 @@ attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& un
   return total_error;
 }
 
+void
+check_usage (int argc, int need_argc, const string& usage)
+{
+  if (argc != need_argc)
+    {
+      printf ("usage: smextract %s\n", usage.c_str());
+      exit (1);
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -209,6 +220,8 @@ main (int argc, char **argv)
 
   if (strcmp (argv[2], "freq") == 0)
     {
+      check_usage (argc, 5, "freq <freq_min> <freq_max>");
+
       float freq_min = atof (argv[3]);
       float freq_max = atof (argv[4]);
 
@@ -359,5 +372,9 @@ main (int argc, char **argv)
       printf ("dbgsamples   : %d bytes\n", debug_samples_bytes);
       printf ("orig_fft     : %d bytes\n", original_fft_bytes);
       printf ("noise        : %d bytes\n", noise_bytes);
+    }
+  else if (strcmp (argv[2], "fundamental-freq") == 0)
+    {
+      printf ("fundamental-freq: %f\n", audio.fundamental_freq);
     }
 }
