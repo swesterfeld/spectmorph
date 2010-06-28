@@ -1,3 +1,16 @@
+Overview of Changes in spectmorph-0.0.3:
+
+* added encoder algorithm to find attack envelope, this makes piano sound much
+  more realistic
+* introduced smwavset tool, which allows managing instruments consisting of
+  many samples
+  - encoding/decoding a set of samples
+  - delta operation for comparing errors of sets of samples
+* smextract can now provide an overview of how many bytes in an .sm file can be
+  attributed to which fields
+* documentation updates
+* refactoring, cleanups
+
 Overview of Changes in spectmorph-0.0.2:
 
 * bugfixes
