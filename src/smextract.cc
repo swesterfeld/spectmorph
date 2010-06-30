@@ -198,7 +198,7 @@ check_usage (int argc, int need_argc, const string& usage)
 {
   if (argc != need_argc)
     {
-      printf ("usage: smextract %s\n", usage.c_str());
+      printf ("usage: smextract <sm_file> %s\n", usage.c_str());
       exit (1);
     }
 }
@@ -207,6 +207,12 @@ int
 main (int argc, char **argv)
 {
   bse_init_inprocess (&argc, &argv, NULL, NULL);
+
+  if (argc < 3)
+    {
+      printf ("usage: smextract <sm_file> <mode> [ <mode_specific_args> ]\n");
+      exit (1);
+    }
 
   SpectMorph::Audio audio;
   BseErrorType error = audio.load (argv[1]);
@@ -240,6 +246,8 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[2], "spectrum") == 0)
     {
+      check_usage (argc, 4, "spectrum <frame_no>");
+
       int i = atoi (argv[3]);
       vector<double> spectrum;
       vector<double> sines (frame_size);
@@ -296,6 +304,8 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[2], "frame") == 0)
     {
+      check_usage (argc, 4, "frame <frame_no>");
+
       int i = atoi (argv[3]);
       size_t frame_size = audio.contents[i].debug_samples.size();
       vector<double> sines (frame_size);
@@ -353,11 +363,15 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[2], "attack") == 0)
     {
+      check_usage (argc, 3, "attack");
+
       printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
       printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
     }
   else if (strcmp (argv[2], "size") == 0)
     {
+      check_usage (argc, 3, "size");
+
       size_t phase_bytes = 0, freq_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
       for (size_t f = 0; f < audio.contents.size(); f++)
         {
@@ -375,6 +389,8 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[2], "fundamental-freq") == 0)
     {
+      check_usage (argc, 3, "fundamental-freq");
+
       printf ("fundamental-freq: %f\n", audio.fundamental_freq);
     }
 }
