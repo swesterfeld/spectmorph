@@ -184,7 +184,7 @@ Encoder::search_local_maxima()
     {
       for (size_t d = 2; d < block_size * zeropad; d += 2)
 	{
-	  max_mag = std::max (max_mag, magnitude (audio_blocks[n].noise.begin() + d));
+	  max_mag = max (max_mag, magnitude (audio_blocks[n].noise.begin() + d));
 	}
     }
 
@@ -402,7 +402,7 @@ Encoder::validate_partials()
 	      bool   is_harmonic = false;
 	      for (Tracksel *t = &(*i); t->next; t = t->next)
 		{
-		  biggest_mag = std::max (biggest_mag, t->mag2);
+		  biggest_mag = max (biggest_mag, t->mag2);
 		  if (t->is_harmonic)
 		    is_harmonic = true;
 		  processed_tracksel[t] = true;
@@ -892,6 +892,9 @@ Encoder::compute_attack_params (const vector<float>& window)
 
       new_attack.attack_start_ms += g_random_double_range (-R, R);
       new_attack.attack_end_ms += g_random_double_range (-R, R);
+
+      // constrain attack to at least 5ms to avoid clickiness at start
+      new_attack.attack_end_ms = max (new_attack.attack_end_ms, new_attack.attack_start_ms + 5);
 
       if (new_attack.attack_start_ms < new_attack.attack_end_ms &&
           new_attack.attack_start_ms >= 0 &&
