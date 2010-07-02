@@ -19,6 +19,7 @@
 #include "smaudio.hh"
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"
+#include "smwavset.hh"
 #include <bse/bsemathsignal.h>
 
 using std::string;
@@ -32,18 +33,31 @@ using namespace Bse;
 class AudioRepo {
   Birnet::Mutex mutex;
   map<string, Audio *> audio_map;
+  map<string, WavSet *> wav_set_map;
 public:
-  Audio *get (const string& filename)
+  Audio *get_audio (const string& filename)
   {
     Birnet::AutoLocker lock (mutex);
 
     return audio_map[filename];
   }
-  void put (const string& filename, Audio *audio)
+  void put_audio (const string& filename, Audio *audio)
   {
     Birnet::AutoLocker lock (mutex);
 
     audio_map[filename] = audio;
+  }
+  WavSet *get_wav_set (const string& filename)
+  {
+    Birnet::AutoLocker lock (mutex);
+
+    return wav_set_map[filename];
+  }
+  void put_wav_set (const string& filename, WavSet *wav_set)
+  {
+    Birnet::AutoLocker lock (mutex);
+
+    wav_set_map[filename] = wav_set;
   }
 } audio_repo;
 
@@ -57,6 +71,7 @@ class Osc : public OscBase {
   class Module : public SynthesisModule {
   private:
     Audio *audio;
+    WavSet *wav_set;
     SineDecoder *sine_decoder;
     NoiseDecoder *noise_decoder;
     size_t frame_size, frame_step;
@@ -65,6 +80,7 @@ class Osc : public OscBase {
     size_t env_pos;
     size_t frame_idx;
     float last_sync_level;
+    float current_freq;
     Frame last_frame;
     vector<double> window;
     vector<double> samples;
@@ -83,7 +99,8 @@ class Osc : public OscBase {
       env_pos = 0;
       pos = 0;
       have_samples = 0;
-      last_frame = Frame (frame_size);
+      current_freq = 0;
+      last_frame = Frame (0);
     }
     inline double fmatch (double f1, double f2)
     {
@@ -94,6 +111,11 @@ class Osc : public OscBase {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
       const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
       gfloat *audio_out = ostream (OCHANNEL_AUDIO_OUT).values;
+      float new_freq = BSE_SIGNAL_TO_FREQ (freq_in[0]);
+      if (new_freq != current_freq)
+        {
+          retrigger (new_freq);
+        }
 
       for (unsigned int i = 0; i < n_values; i++)
         {
@@ -182,13 +204,27 @@ class Osc : public OscBase {
         }
     }
     void
-    config (Properties *properties)
+    retrigger (float freq)
     {
+      double best_diff = 1e10;
+      Audio *best_audio = 0;
 
-      audio = audio_repo.get (properties->filename.c_str());
-      printf ("cfg: %s %p\n", properties->filename.c_str(), audio);
-      if (audio)
+      // find best audio candidate
+      for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
         {
+          Audio *audio = audio_repo.get_audio (wi->path);
+          // FIXME: use logarithmic distance
+          if (fabs (audio->fundamental_freq - freq) < best_diff)
+            {
+              best_diff = fabs (audio->fundamental_freq - freq);
+              best_audio = audio;
+            }
+        }
+
+      if (best_audio)
+        {
+          audio = best_audio;
+
           frame_size = audio->frame_size_ms * mix_freq() / 1000;
           frame_step = audio->frame_step_ms * mix_freq() / 1000;
 
@@ -205,35 +241,53 @@ class Osc : public OscBase {
                 window[i] = 0;
             }
 
-            if (noise_decoder)
-              delete noise_decoder;
-            noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq());
+          if (noise_decoder)
+            delete noise_decoder;
+          noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq());
 
-            if (sine_decoder)
-              delete sine_decoder;
+          if (sine_decoder)
+            delete sine_decoder;
+          SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
+          sine_decoder = new SineDecoder (mix_freq(), frame_size, frame_step, mode);
 
-            SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
-            sine_decoder = new SineDecoder (mix_freq(), frame_size, frame_step, mode);
-
-            samples.resize (frame_size);
-            std::fill (samples.begin(), samples.end(), 0);
-            have_samples = 0;
-            pos = 0;
-            frame_idx = 0;
-            env_pos = 0;
-          }
+          samples.resize (frame_size);
+          std::fill (samples.begin(), samples.end(), 0);
+          have_samples = 0;
+          pos = 0;
+          frame_idx = 0;
+          env_pos = 0;
+        }
+      current_freq = freq;
+    }
+    void
+    config (Properties *properties)
+    {
+      wav_set = audio_repo.get_wav_set (properties->filename.c_str());
     }
   };
 public:
   void
   load_file (const string& filename)
   {
-    SpectMorph::Audio *audio = new SpectMorph::Audio;
-    BseErrorType error = audio->load (filename);
+    BseErrorType error;
+
+    WavSet *wav_set = new WavSet;
+    error = wav_set->load (filename);
     if (!error)
-      audio_repo.put (filename, audio);
+      {
+        audio_repo.put_wav_set (filename, wav_set);
+        for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
+          {
+            SpectMorph::Audio *audio = new SpectMorph::Audio;
+            error = audio->load (wi->path);
+            if (!error)
+              audio_repo.put_audio (wi->path, audio);
+            else
+              delete audio;
+          }
+      }
     else
-      delete audio;
+      delete wav_set;
   }
   bool
   property_changed (OscPropertyID prop_id)
