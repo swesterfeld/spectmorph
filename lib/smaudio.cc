@@ -34,7 +34,7 @@ using std::vector;
  * \returns a BseErrorType indicating whether loading was successful
  */
 BseErrorType
-SpectMorph::Audio::load (const string& filename)
+SpectMorph::Audio::load (const string& filename, bool load_debug_info)
 {
   SpectMorph::AudioBlock *audio_block = NULL;
 
@@ -127,13 +127,19 @@ SpectMorph::Audio::load (const string& filename)
             }
           else if (ifile.event_name() == "original_fft")
             {
-              audio_block->original_fft.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
+              if (load_debug_info)
+                {
+                  audio_block->original_fft.resize (fb.size());
+                  std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
+                }
             }
           else if (ifile.event_name() == "debug_samples")
             {
-              audio_block->debug_samples.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
+              if (load_debug_info)
+                {
+                  audio_block->debug_samples.resize (fb.size());
+                  std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
+                }
             }
           else
             {

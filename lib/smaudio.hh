@@ -61,7 +61,7 @@ public:
   int   zeropad;                     //!< FFT zeropadding used during analysis
   std::vector<AudioBlock> contents;  //!< the actual frame data
 
-  BseErrorType load (const std::string& filename);
+  BseErrorType load (const std::string& filename, bool load_debug_info = true);
   BseErrorType save (const std::string& filename);
 };
 

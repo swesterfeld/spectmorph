@@ -279,7 +279,7 @@ public:
         for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
           {
             SpectMorph::Audio *audio = new SpectMorph::Audio;
-            error = audio->load (wi->path);
+            error = audio->load (wi->path, false);
             if (!error)
               audio_repo.put_audio (wi->path, audio);
             else
@@ -295,7 +295,6 @@ public:
     switch (prop_id)
       {
         case PROP_FILENAME:
-          printf ("nfn: %s\n", filename.c_str());
           load_file (filename.c_str());
           break;
         default:
