@@ -30,6 +30,10 @@ class Osc : Effect {
   IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
   OStream audio_out   = (_("Audio Out"), _("Audio Output"));
 
+  group _("Source") {
+    String filename       = String (_("Filename"), _("Name of the SpectMorph file"), "", STANDARD);
+  };
+
   group _("Frequency") {
     Real    frequency	     = Freq(_("Frequency"), _("Constant Frequency (used when frequency input is not connected"), 440.0, STANDARD);
     Int     fine_tune        = FineTune (_("Fine Tune"), _("Amount of detuning in cent (hundredth part of a note)"), STANDARD);
