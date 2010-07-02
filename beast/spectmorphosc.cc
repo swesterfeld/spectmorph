@@ -125,6 +125,7 @@ class Osc : public OscBase {
                       double cmag = frame.phases[partial * 2 + 1];
                       double mag = sqrt (smag * smag + cmag * cmag);
                       double phase = atan2 (smag, cmag);
+                      double best_fdiff = 1e12;
 
                       for (size_t old_partial = 0; old_partial < last_frame.freqs.size(); old_partial++)
                         {
@@ -136,7 +137,14 @@ class Osc : public OscBase {
                               double phase_delta = 2 * M_PI * last_frame.freqs[old_partial] / mix_freq();
                               // FIXME: I have no idea why we have to /subtract/ the phase
                               // here, and not /add/, but this way it works
-                              phase = lphase - frame_step * phase_delta;
+
+                              // find best phase
+                              double fdiff = fabs (last_frame.freqs[old_partial] - frame.freqs[partial]);
+                              if (fdiff < best_fdiff)
+                                {
+                                  phase = lphase - frame_step * phase_delta;
+                                  best_fdiff = fdiff;
+                                }
                             }
                         }
                       frame.phases[partial * 2] = sin (phase) * mag;
