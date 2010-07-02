@@ -65,13 +65,15 @@ class Osc : public OscBase {
     size_t env_pos;
     size_t frame_idx;
     float last_sync_level;
+    Frame last_frame;
     vector<double> window;
     vector<double> samples;
   public:
     Module() :
       audio (NULL),
       sine_decoder (NULL),
-      noise_decoder (NULL)
+      noise_decoder (NULL),
+      last_frame (0)
     {
       //
     }
@@ -81,10 +83,16 @@ class Osc : public OscBase {
       env_pos = 0;
       pos = 0;
       have_samples = 0;
+      last_frame = Frame (frame_size);
+    }
+    inline double fmatch (double f1, double f2)
+    {
+      return f2 < (f1 * 1.05) && f2 > (f1 * 0.95);
     }
     void process (unsigned int n_values)
     {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
+      const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
       gfloat *audio_out = ostream (OCHANNEL_AUDIO_OUT).values;
 
       for (unsigned int i = 0; i < n_values; i++)
@@ -101,13 +109,40 @@ class Osc : public OscBase {
 #endif
           if (have_samples == 0)
             {
+              double want_freq = BSE_SIGNAL_TO_FREQ (freq_in[i]);
               std::copy (samples.begin() + frame_step, samples.end(), samples.begin());
               std::fill (samples.begin() + frame_size - frame_step, samples.end(), 0);
 
               if ((frame_idx + 1) < audio->contents.size())
                 {
                   Frame frame (audio->contents[frame_idx], frame_size);
-                  Frame next_frame (audio->contents[frame_idx + 1], frame_size);
+                  Frame next_frame (frame_size); // not used
+
+                  for (size_t partial = 0; partial < frame.freqs.size(); partial++)
+                    {
+                      frame.freqs[partial] *= want_freq / audio->fundamental_freq;
+                      double smag = frame.phases[partial * 2];
+                      double cmag = frame.phases[partial * 2 + 1];
+                      double mag = sqrt (smag * smag + cmag * cmag);
+                      double phase = atan2 (smag, cmag);
+
+                      for (size_t old_partial = 0; old_partial < last_frame.freqs.size(); old_partial++)
+                        {
+                          if (fmatch (last_frame.freqs[old_partial], frame.freqs[partial]))
+                            {
+                              double lsmag = last_frame.phases[old_partial * 2];
+                              double lcmag = last_frame.phases[old_partial * 2 + 1];
+                              double lphase = atan2 (lsmag, lcmag);
+                              double phase_delta = 2 * M_PI * last_frame.freqs[old_partial] / mix_freq();
+                              // FIXME: I have no idea why we have to /subtract/ the phase
+                              // here, and not /add/, but this way it works
+                              phase = lphase - frame_step * phase_delta;
+                            }
+                        }
+                      frame.phases[partial * 2] = sin (phase) * mag;
+                      frame.phases[partial * 2 + 1] = cos (phase) * mag;
+                    }
+                  last_frame = frame;
 
                   sine_decoder->process (frame, next_frame, window);
                   for (size_t i = 0; i < frame_size; i++)
