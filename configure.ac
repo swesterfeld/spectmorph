@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.0.3])
+AC_INIT([spectmorph], [0.1.0])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -162,6 +162,8 @@ MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
 ])
 AC_SUBST(SSE_FLAGS)
 
-AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile])
+AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
+beast/Makefile
+])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_OUTPUT

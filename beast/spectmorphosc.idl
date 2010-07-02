@@ -1,0 +1,38 @@
+/* BseNoise - BSE FM Operator		-*-mode: c++;-*-
+ * Copyright (C) 2006 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+#include <bse/bsecxxmodule.idl>
+
+namespace SpectMorph {
+
+using namespace Bse;
+
+class Osc : Effect {
+  Info    authors     = "Stefan Westerfeld";
+  Info    license     = _("GNU Lesser General Public License");
+  Info    category    = _("/Audio Sources/SpectMorph Oscillator");
+  Info    blurb       = _("Oscillator based on SpectMorph instruments.");
+  IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
+  OStream audio_out   = (_("Audio Out"), _("Audio Output"));
+
+  group _("Frequency") {
+    Real    frequency	     = Freq(_("Frequency"), _("Constant Frequency (used when frequency input is not connected"), 440.0, STANDARD);
+    Int     fine_tune        = FineTune (_("Fine Tune"), _("Amount of detuning in cent (hundredth part of a note)"), STANDARD);
+  };
+};
+};
