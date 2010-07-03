@@ -35,8 +35,7 @@ using std::string;
 using std::vector;
 using std::map;
 
-using SpectMorph::WavSet;
-using SpectMorph::WavSetWave;
+using namespace SpectMorph;
 
 /// @cond
 struct Options
@@ -309,7 +308,7 @@ main (int argc, char **argv)
     {
       for (int i = 1; i < argc; i++)
         {
-          SpectMorph::WavSet wset;
+          WavSet wset;
           wset.save (argv[i]);
         }
     }
@@ -317,29 +316,29 @@ main (int argc, char **argv)
     {
       assert (argc == 4);
 
-      SpectMorph::WavSet wset;
+      WavSet wset;
       wset.load (argv[1]);
-      SpectMorph::WavSetWave new_wave;
+
+      WavSetWave new_wave;
       new_wave.midi_note = atoi (argv[2]);
       new_wave.path = argv[3];
+
       wset.waves.push_back (new_wave);
       wset.save (argv[1]);
     }
   else if (options.command == Options::LIST)
     {
-      SpectMorph::WavSet wset;
+      WavSet wset;
       wset.load (argv[1]);
 
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
-        {
-          printf ("%d %s\n", wi->midi_note, wi->path.c_str());
-        }
+        printf ("%d %s\n", wi->midi_note, wi->path.c_str());
     }
   else if (options.command == Options::ENCODE)
     {
       assert (argc == 3);
 
-      SpectMorph::WavSet wset, smset;
+      WavSet wset, smset;
       wset.load (argv[1]);
 
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
@@ -349,7 +348,7 @@ main (int argc, char **argv)
           printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           system (cmd.c_str());
 
-          SpectMorph::WavSetWave new_wave = *wi;
+          WavSetWave new_wave = *wi;
           new_wave.path = smpath;
           smset.waves.push_back (new_wave);
         }
@@ -359,13 +358,13 @@ main (int argc, char **argv)
     {
       assert (argc == 3);
 
-      SpectMorph::WavSet smset, wset;
+      WavSet smset, wset;
       smset.load (argv[1]);
 
       for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
         {
-          SpectMorph::Audio audio;
-          if (audio.load (si->path) != BSE_ERROR_NONE)
+          Audio audio;
+          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != BSE_ERROR_NONE)
             {
               printf ("can't load %s\n", si->path.c_str());
               exit (1);
@@ -376,7 +375,7 @@ main (int argc, char **argv)
           printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           system (cmd.c_str());
 
-          SpectMorph::WavSetWave new_wave = *si;
+          WavSetWave new_wave = *si;
           new_wave.path = wavpath;
           wset.waves.push_back (new_wave);
         }
@@ -386,7 +385,7 @@ main (int argc, char **argv)
     {
       assert (argc >= 2);
 
-      vector<SpectMorph::WavSet> wsets;
+      vector<WavSet> wsets;
       map<int,bool>              midi_note_used;
 
       for (int i = 1; i < argc; i++)
