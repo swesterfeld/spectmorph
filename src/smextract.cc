@@ -208,7 +208,8 @@ load_or_die (const string& filename, const string& mode)
   Audio audio;
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
-  if (mode == "fundamental-freq" || mode == "freq")
+  if (mode == "fundamental-freq" || mode == "freq"
+  ||  mode == "frameparams" || mode == "attack")
     load_options = AUDIO_SKIP_DEBUG;
 
   BseErrorType error = audio.load (filename, load_options);
@@ -344,6 +345,8 @@ main (int argc, char **argv)
     }
   else if (strcmp (argv[2], "frameparams") == 0)
     {
+      check_usage (argc, 4, "frameparams <frame_no>");
+
       int i = atoi (argv[3]);
       for(;;)
         {
