@@ -23,8 +23,7 @@
 #include <bse/bsemathsignal.h>
 #include <bse/gslfft.h>
 
-using SpectMorph::Frame;
-using SpectMorph::AudioBlock;
+using namespace SpectMorph;
 using std::vector;
 using std::min;
 using std::string;
@@ -203,6 +202,24 @@ check_usage (int argc, int need_argc, const string& usage)
     }
 }
 
+Audio
+load_or_die (const string& filename, const string& mode)
+{
+  Audio audio;
+  AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
+
+  if (mode == "fundamental-freq" || mode == "freq")
+    load_options = AUDIO_SKIP_DEBUG;
+
+  BseErrorType error = audio.load (filename, load_options);
+  if (error)
+    {
+      fprintf (stderr, "can't load file: %s\n",filename.c_str());
+      exit (1);
+    }
+  return audio;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -214,14 +231,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  SpectMorph::Audio audio;
-  BseErrorType error = audio.load (argv[1]);
-  if (error)
-    {
-      fprintf (stderr, "can't load file: %s\n", argv[1]);
-      exit (1);
-    }
-
+  Audio audio = load_or_die (argv[1], argv[2]);
   int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
 
   if (strcmp (argv[2], "freq") == 0)
@@ -230,7 +240,6 @@ main (int argc, char **argv)
 
       float freq_min = atof (argv[3]);
       float freq_max = atof (argv[4]);
-
 
       for (size_t i = 0; i < audio.contents.size(); i++)
         {

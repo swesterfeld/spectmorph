@@ -81,7 +81,16 @@ InFile::next_event()
     {
       current_event = FLOAT_BLOCK;
       current_event_str = read_raw_string();
-      read_raw_float_block (current_event_float_block);
+
+      if (skip_events.find (current_event_str) != skip_events.end())
+        {
+          skip_raw_float_block();
+          return next_event();
+        }
+      else
+        {
+          read_raw_float_block (current_event_float_block);
+        }
     }
   else
     {
@@ -137,6 +146,14 @@ InFile::read_raw_float_block (vector<float>& fb)
     }
 }
 
+void
+InFile::skip_raw_float_block()
+{
+  size_t size = read_raw_int();
+  fseek (file, size * 4, SEEK_CUR);
+}
+
+
 string
 InFile::event_name()
 {
@@ -167,4 +184,8 @@ InFile::event_float_block()
   return current_event_float_block;
 }
 
-
+void
+InFile::add_skip_event (const string& skip_event)
+{
+  skip_events.insert (skip_event);
+}

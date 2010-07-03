@@ -34,7 +34,7 @@ using std::vector;
  * \returns a BseErrorType indicating whether loading was successful
  */
 BseErrorType
-SpectMorph::Audio::load (const string& filename, bool load_debug_info)
+SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
   SpectMorph::AudioBlock *audio_block = NULL;
 
@@ -43,6 +43,12 @@ SpectMorph::Audio::load (const string& filename, bool load_debug_info)
 
   if (!ifile.open_ok())
     return BSE_ERROR_FILE_NOT_FOUND;
+
+  if (load_options == AUDIO_SKIP_DEBUG)
+    {
+      ifile.add_skip_event ("original_fft");
+      ifile.add_skip_event ("debug_samples");
+    }
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -127,19 +133,13 @@ SpectMorph::Audio::load (const string& filename, bool load_debug_info)
             }
           else if (ifile.event_name() == "original_fft")
             {
-              if (load_debug_info)
-                {
-                  audio_block->original_fft.resize (fb.size());
-                  std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
-                }
+              audio_block->original_fft.resize (fb.size());
+              std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
             }
           else if (ifile.event_name() == "debug_samples")
             {
-              if (load_debug_info)
-                {
-                  audio_block->debug_samples.resize (fb.size());
-                  std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
-                }
+              audio_block->debug_samples.resize (fb.size());
+              std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
             }
           else
             {

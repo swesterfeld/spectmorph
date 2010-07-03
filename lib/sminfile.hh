@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-
+#include <set>
 
 class InFile
 {
@@ -43,10 +43,13 @@ protected:
   float              current_event_float;
   std::vector<float> current_event_float_block;
 
+  std::set<std::string> skip_events;
+
   std::string read_raw_string();
   int         read_raw_int();
   float       read_raw_float();
   void        read_raw_float_block (std::vector<float>& fb);
+  void        skip_raw_float_block();
 
 public:
   InFile (const std::string& filename)
@@ -66,4 +69,5 @@ public:
   std::string  event_data();
   const std::vector<float>& event_float_block();
   void         next_event();
+  void         add_skip_event (const std::string& event);
 };

@@ -42,6 +42,12 @@ public:
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };
 
+enum AudioLoadOptions
+{
+  AUDIO_LOAD_DEBUG,
+  AUDIO_SKIP_DEBUG
+};
+
 /**
  * \brief Audio sample containing many blocks
  *
@@ -61,7 +67,7 @@ public:
   int   zeropad;                     //!< FFT zeropadding used during analysis
   std::vector<AudioBlock> contents;  //!< the actual frame data
 
-  BseErrorType load (const std::string& filename, bool load_debug_info = true);
+  BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   BseErrorType save (const std::string& filename);
 };
 

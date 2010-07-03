@@ -279,7 +279,7 @@ public:
         for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
           {
             SpectMorph::Audio *audio = new SpectMorph::Audio;
-            error = audio->load (wi->path, false);
+            error = audio->load (wi->path, AUDIO_SKIP_DEBUG);
             if (!error)
               audio_repo.put_audio (wi->path, audio);
             else
