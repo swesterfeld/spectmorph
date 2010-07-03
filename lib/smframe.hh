@@ -39,6 +39,8 @@ public:
   std::vector<double> decoded_residue;       //!< residue decoded by SpectMorph::NoiseDecoder
   std::vector<double> decoded_sines;         //!< sine waves decoded by SpectMorph::SineDecoder
   std::vector<float>  debug_samples;         //!< original sample values - debugging only
+
+  double magnitude (size_t partial) const;
 };
 
 }

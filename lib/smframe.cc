@@ -49,3 +49,12 @@ Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
   decoded_residue.resize (frame_size);
   decoded_sines.resize (frame_size);
 }
+
+double
+Frame::magnitude (size_t partial) const
+{
+  double a = phases[partial * 2];
+  double b = phases[partial * 2 + 1];
+
+  return sqrt (a * a + b * b);
+}

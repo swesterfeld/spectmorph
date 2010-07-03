@@ -248,7 +248,7 @@ main (int argc, char **argv)
             {
               if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
                 {
-                  printf ("%zd %f %f\n", i, frame.freqs[n], frame.phases[n*2] /* optimistic */);
+                  printf ("%zd %f %f\n", i, frame.freqs[n], frame.magnitude(n));
                 }
             }
         }
