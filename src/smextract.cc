@@ -209,7 +209,8 @@ load_or_die (const string& filename, const string& mode)
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
   if (mode == "fundamental-freq" || mode == "freq"
-  ||  mode == "frameparams" || mode == "attack")
+  ||  mode == "frameparams" || mode == "attack"
+  ||  mode == "auto-tune")
     load_options = AUDIO_SKIP_DEBUG;
 
   BseErrorType error = audio.load (filename, load_options);
@@ -404,5 +405,52 @@ main (int argc, char **argv)
       check_usage (argc, 3, "fundamental-freq");
 
       printf ("fundamental-freq: %f\n", audio.fundamental_freq);
+    }
+  else if (strcmp (argv[2], "auto-tune") == 0)
+    {
+      check_usage (argc, 3, "auto-tune");
+
+      const double freq_min = audio.fundamental_freq * 0.8;
+      const double freq_max = audio.fundamental_freq / 0.8;
+      double freq_sum = 0, mag_sum = 0;
+
+      for (size_t f = 0; f < audio.contents.size(); f++)
+        {
+          double position_percent = f * 100.0 / audio.contents.size();
+          if (position_percent >= 40 && position_percent <= 60)
+            {
+              Frame frame (audio.contents[f], frame_size);
+              double best_freq = -1;
+              double best_mag = 0;
+              for (size_t n = 0; n < frame.freqs.size(); n++)
+                {
+                  if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
+                    {
+                      double mag = frame.magnitude (n);
+                      if (mag > best_mag)
+                        {
+                          best_mag = mag;
+                          best_freq = frame.freqs[n];
+                        }
+                    }
+                }
+              if (best_mag > 0)
+                {
+                  freq_sum += best_freq * best_mag;
+                  mag_sum += best_mag;
+                }
+            }
+        }
+      if (mag_sum > 0)
+        {
+          double fundamental_freq = freq_sum / mag_sum;
+          audio.fundamental_freq = fundamental_freq;
+          printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
+          if (audio.save (argv[1]) != BSE_ERROR_NONE)
+            {
+              fprintf (stderr, "error saving file: %s\n", argv[1]);
+              exit (1);
+            }
+        }
     }
 }
