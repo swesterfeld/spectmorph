@@ -83,6 +83,8 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
             {
               if (ifile.event_name() == "zeropad")
                 zeropad = ifile.event_int();
+              else if (ifile.event_name() == "loop_point")
+                loop_point = ifile.event_int();
               else
                 printf ("unhandled int %s %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -153,6 +155,12 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 }
 
 
+SpectMorph::Audio::Audio() :
+  zeropad (0),
+  loop_point (-1) /* no loop */
+{
+}
+
 /**
  * This function saves a SM-File.
  *
@@ -178,6 +186,7 @@ SpectMorph::Audio::save (const string& filename)
   of.write_float ("attack_end_ms", attack_end_ms);
   of.write_float ("fundamental_freq", fundamental_freq);
   of.write_int ("zeropad", zeropad);
+  of.write_int ("loop_point", loop_point);
   of.end_section();
 
   for (size_t i = 0; i < contents.size(); i++)

@@ -209,8 +209,7 @@ load_or_die (const string& filename, const string& mode)
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
   if (mode == "fundamental-freq" || mode == "freq"
-  ||  mode == "frameparams" || mode == "attack"
-  ||  mode == "auto-tune")
+  ||  mode == "frameparams" || mode == "attack")
     load_options = AUDIO_SKIP_DEBUG;
 
   BseErrorType error = audio.load (filename, load_options);
@@ -233,10 +232,13 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  Audio audio = load_or_die (argv[1], argv[2]);
-  int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
+  const string& mode = argv[2];
 
-  if (strcmp (argv[2], "freq") == 0)
+  Audio audio = load_or_die (argv[1], mode);
+  int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
+  bool need_save = true;
+
+  if (mode == "freq")
     {
       check_usage (argc, 5, "freq <freq_min> <freq_max>");
 
@@ -255,7 +257,7 @@ main (int argc, char **argv)
             }
         }
     }
-  else if (strcmp (argv[2], "spectrum") == 0)
+  else if (mode == "spectrum")
     {
       check_usage (argc, 4, "spectrum <frame_no>");
 
@@ -313,7 +315,7 @@ main (int argc, char **argv)
           printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
         }
     }
-  else if (strcmp (argv[2], "frame") == 0)
+  else if (mode == "frame")
     {
       check_usage (argc, 4, "frame <frame_no>");
 
@@ -344,7 +346,7 @@ main (int argc, char **argv)
         }
 #endif
     }
-  else if (strcmp (argv[2], "frameparams") == 0)
+  else if (mode == "frameparams")
     {
       check_usage (argc, 4, "frameparams <frame_no>");
 
@@ -374,14 +376,14 @@ main (int argc, char **argv)
             }
         }
     }
-  else if (strcmp (argv[2], "attack") == 0)
+  else if (mode == "attack")
     {
       check_usage (argc, 3, "attack");
 
       printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
       printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
     }
-  else if (strcmp (argv[2], "size") == 0)
+  else if (mode == "size")
     {
       check_usage (argc, 3, "size");
 
@@ -400,13 +402,13 @@ main (int argc, char **argv)
       printf ("orig_fft     : %d bytes\n", original_fft_bytes);
       printf ("noise        : %d bytes\n", noise_bytes);
     }
-  else if (strcmp (argv[2], "fundamental-freq") == 0)
+  else if (mode == "fundamental-freq")
     {
       check_usage (argc, 3, "fundamental-freq");
 
       printf ("fundamental-freq: %f\n", audio.fundamental_freq);
     }
-  else if (strcmp (argv[2], "auto-tune") == 0)
+  else if (mode == "auto-tune")
     {
       check_usage (argc, 3, "auto-tune");
 
@@ -446,11 +448,42 @@ main (int argc, char **argv)
           double fundamental_freq = freq_sum / mag_sum;
           audio.fundamental_freq = fundamental_freq;
           printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
-          if (audio.save (argv[1]) != BSE_ERROR_NONE)
-            {
-              fprintf (stderr, "error saving file: %s\n", argv[1]);
-              exit (1);
-            }
+
+          need_save = true;
+        }
+    }
+  else if (mode == "loopparams")
+    {
+      check_usage (argc, 3, "loopparams");
+
+      printf ("frames: %d\n", audio.contents.size());
+      printf ("loop point: %d\n", audio.loop_point);
+    }
+  else if (mode == "auto-loop")
+    {
+      check_usage (argc, 4, "auto-loop <percent>");
+
+      double percent = atof (argv[3]);
+      if (percent < 0 || percent > 100)
+        {
+          fprintf (stderr, "bad loop percentage: %f\n", percent);
+          exit (1);
+        }
+
+      audio.loop_point = audio.contents.size() * percent / 100;
+      if (audio.loop_point < 0)
+        audio.loop_point = 0;
+      if (audio.loop_point >= (audio.contents.size() - 1))
+        audio.loop_point = audio.contents.size() - 1;
+
+      need_save = true;
+    }
+  if (need_save)
+    {
+      if (audio.save (argv[1]) != BSE_ERROR_NONE)
+        {
+          fprintf (stderr, "error saving file: %s\n", argv[1]);
+          exit (1);
         }
     }
 }

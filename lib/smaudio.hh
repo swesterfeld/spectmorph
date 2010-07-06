@@ -58,6 +58,8 @@ enum AudioLoadOptions
 class Audio
 {
 public:
+  Audio();
+
   float fundamental_freq;            //!< fundamental frequency (note which was encoded), or 0 if not available
   float mix_freq;                    //!< mix freq (sampling rate) of the original audio data
   float frame_size_ms;               //!< length of each audio frame in milliseconds
@@ -65,6 +67,7 @@ public:
   float attack_start_ms;             //!< start of attack in milliseconds
   float attack_end_ms;               //!< end of attack in milliseconds
   int   zeropad;                     //!< FFT zeropadding used during analysis
+  int   loop_point;                  //!< loop point to be used during sustain phase of playback
   std::vector<AudioBlock> contents;  //!< the actual frame data
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);

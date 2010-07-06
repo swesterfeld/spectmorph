@@ -79,6 +79,7 @@ class Osc : public OscBase {
     size_t pos;
     size_t env_pos;
     size_t frame_idx;
+    int    loop_point;
     float last_sync_level;
     float current_freq;
     Frame last_frame;
@@ -178,7 +179,8 @@ class Osc : public OscBase {
                   for (size_t i = 0; i < frame_size; i++)
                     samples[i] += frame.decoded_sines[i];
 
-                  frame_idx++;
+                  if (frame_idx != loop_point) /* if in loop mode: loop current frame */
+                    frame_idx++;
                 }
               pos = 0;
               have_samples = frame_step;
@@ -227,6 +229,7 @@ class Osc : public OscBase {
 
           frame_size = audio->frame_size_ms * mix_freq() / 1000;
           frame_step = audio->frame_step_ms * mix_freq() / 1000;
+          loop_point = audio->loop_point;
 
           size_t block_size = 1;
           while (block_size < frame_size)
