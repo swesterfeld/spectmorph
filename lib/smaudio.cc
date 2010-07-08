@@ -31,6 +31,7 @@ using std::vector;
  * This function loads a SM-File.
  *
  * \param filename the name of the SM-File to be loaded
+ * \param load_options specify whether to load or skip debug information
  * \returns a BseErrorType indicating whether loading was successful
  */
 BseErrorType
@@ -165,7 +166,6 @@ SpectMorph::Audio::Audio() :
  * This function saves a SM-File.
  *
  * \param filename the name of the SM-File to be written
- * \param audio the audio object to be stored
  * \returns a BseErrorType indicating saving loading was successful
  */
 BseErrorType

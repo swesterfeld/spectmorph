@@ -836,6 +836,10 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const ve
   return total_error;
 }
 
+/**
+ * This function computes the optimal attack parameters, by finding the optimal
+ * attack envelope (attack_start_ms and attack_end_ms) given the data.
+ */
 void
 Encoder::compute_attack_params (const vector<float>& window)
 {
@@ -926,6 +930,14 @@ Encoder::compute_attack_params (const vector<float>& window)
   optimal_attack = attack;
 }
 
+/**
+ * This function calls all steps necessary for encoding in the right order.
+ *
+ * \param dhandle a data handle containing the signal to be encoded
+ * \param window the analysis window
+ * \param optimization_level determines if fast (0), medium (1), or very slow (2) algorithm is used
+ * \param attack whether to find the optimal attack parameters
+ */
 void
 Encoder::encode (GslDataHandle *dhandle, const vector<float>& window, int optimization_level, bool attack)
 {

@@ -50,6 +50,10 @@ Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
   decoded_sines.resize (frame_size);
 }
 
+/**
+ * computes the magnitude of a partial (complex abs)
+ * \param partial the partial (numbered in the same way as the freq index)
+ */
 double
 Frame::magnitude (size_t partial) const
 {
