@@ -1,6 +1,5 @@
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
-- pre-zero-padding for more realistic trumpet attack
 - merge new-pruning-scaling branch somehow
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB

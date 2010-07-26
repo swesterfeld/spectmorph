@@ -118,7 +118,8 @@ class Osc : public OscBase {
           retrigger (new_freq);
         }
 
-      for (unsigned int i = 0; i < n_values; i++)
+      unsigned int i = 0;
+      while (i < n_values)
         {
 #if 0
           if (UNLIKELY (BSE_SIGNAL_RAISING_EDGE (last_sync_level, sync_in[i])))
@@ -187,18 +188,28 @@ class Osc : public OscBase {
             }
 
           g_assert (have_samples > 0);
-          audio_out[i] = samples[pos];
+          if (env_pos >= audio->zero_values_at_start)
+            {
+              audio_out[i] = samples[pos];
 
-          // decode envelope
-          const double time_ms = env_pos * 1000.0 / mix_freq();
-          if (time_ms < audio->attack_start_ms)
-            {
-              audio_out[i] = 0;
+              // decode envelope
+              const double time_ms = env_pos * 1000.0 / mix_freq();
+              if (time_ms < audio->attack_start_ms)
+                {
+                  audio_out[i] = 0;
+                }
+              else if (time_ms < audio->attack_end_ms)
+                {
+                  audio_out[i] *= (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+                } // else envelope is 1
+
+              // do not skip sample
+              i++;
             }
-          else if (time_ms < audio->attack_end_ms)
+          else
             {
-              audio_out[i] *= (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
-            } // else envelope is 1
+              // skip sample
+            }
 
           pos++;
           env_pos++;

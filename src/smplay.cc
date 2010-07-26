@@ -293,6 +293,10 @@ main (int argc, char **argv)
       sample[i] *= env;
     }
 
+  // strip zero values at start:
+  std::copy (sample.begin() + audio.zero_values_at_start, sample.end(), sample.begin());
+  sample.resize (sample.size() - audio.zero_values_at_start);
+
   if (options.export_wav == "")     /* no export -> play */
     {
       pos = 0;

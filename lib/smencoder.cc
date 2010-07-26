@@ -110,6 +110,12 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
 void
 Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
 {
+  zero_values_at_start = enc_params.frame_size - enc_params.frame_step / 2;
+  vector<float> zero_values (zero_values_at_start);
+
+  dhandle = gsl_data_handle_new_insert (dhandle, 32, 0, zero_values_at_start, &zero_values[0], NULL);
+  gsl_data_handle_open (dhandle);
+
   const uint64 n_values = gsl_data_handle_length (dhandle);
   const size_t frame_size = enc_params.frame_size;
   const size_t block_size = enc_params.block_size;
@@ -969,6 +975,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.frame_step_ms = enc_params.frame_step_ms;
   audio.attack_start_ms = optimal_attack.attack_start_ms;
   audio.attack_end_ms = optimal_attack.attack_end_ms;
+  audio.zero_values_at_start = zero_values_at_start;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
   audio.save (filename);

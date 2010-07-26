@@ -100,6 +100,7 @@ class Encoder
 public:
   std::vector<AudioBlock>              audio_blocks;    //!< current state, and end result of the encoding algorithm
   Attack                               optimal_attack;
+  size_t                               zero_values_at_start;
 
   Encoder (const EncoderParams& enc_params);
 

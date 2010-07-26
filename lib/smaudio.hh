@@ -68,6 +68,7 @@ public:
   float attack_end_ms;               //!< end of attack in milliseconds
   int   zeropad;                     //!< FFT zeropadding used during analysis
   int   loop_point;                  //!< loop point to be used during sustain phase of playback
+  int   zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
   std::vector<AudioBlock> contents;  //!< the actual frame data
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
