@@ -1,4 +1,5 @@
 EXTRA_DIST=$(GENERATED_EXTRA_DIST)
+CLEANFILES=
 
 # === Release Configuration ===
 # RELEASE_VERSION   # defaults to, default: $(VERSION)

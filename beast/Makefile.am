@@ -21,3 +21,4 @@ spectmorphosc.genidl.hh: $(srcdir)/spectmorphosc.idl
 
 spectmorphosc.cc: spectmorphosc.genidl.hh
 
+CLEANFILES += spectmorphosc.genidl.hh
