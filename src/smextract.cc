@@ -209,7 +209,8 @@ load_or_die (const string& filename, const string& mode)
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
   if (mode == "fundamental-freq" || mode == "freq"
-  ||  mode == "frameparams" || mode == "attack")
+  ||  mode == "frameparams" || mode == "attack" ||
+      mode == "zero-values-at-start")
     load_options = AUDIO_SKIP_DEBUG;
 
   BseErrorType error = audio.load (filename, load_options);
@@ -477,6 +478,12 @@ main (int argc, char **argv)
         audio.loop_point = audio.contents.size() - 1;
 
       need_save = true;
+    }
+  else if (mode == "zero-values-at-start")
+    {
+      check_usage (argc, 3, "zero-values-at-start");
+
+      printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
     }
   if (need_save)
     {

@@ -294,8 +294,10 @@ main (int argc, char **argv)
     }
 
   // strip zero values at start:
-  std::copy (sample.begin() + audio.zero_values_at_start, sample.end(), sample.begin());
-  sample.resize (sample.size() - audio.zero_values_at_start);
+  unsigned int zero_values_at_start = audio.zero_values_at_start;
+  zero_values_at_start *= double (options.rate) / audio.mix_freq;
+  std::copy (sample.begin() + zero_values_at_start, sample.end(), sample.begin());
+  sample.resize (sample.size() - zero_values_at_start);
 
   if (options.export_wav == "")     /* no export -> play */
     {

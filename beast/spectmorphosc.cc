@@ -75,6 +75,7 @@ class Osc : public OscBase {
     SineDecoder *sine_decoder;
     NoiseDecoder *noise_decoder;
     size_t frame_size, frame_step;
+    size_t zero_values_at_start_scaled;
     size_t have_samples;
     size_t pos;
     size_t env_pos;
@@ -188,7 +189,7 @@ class Osc : public OscBase {
             }
 
           g_assert (have_samples > 0);
-          if (env_pos >= audio->zero_values_at_start)
+          if (env_pos >= zero_values_at_start_scaled)
             {
               audio_out[i] = samples[pos];
 
@@ -240,6 +241,7 @@ class Osc : public OscBase {
 
           frame_size = audio->frame_size_ms * mix_freq() / 1000;
           frame_step = audio->frame_step_ms * mix_freq() / 1000;
+          zero_values_at_start_scaled = audio->zero_values_at_start * double (mix_freq()) / audio->mix_freq;
           loop_point = audio->loop_point;
 
           size_t block_size = 1;
