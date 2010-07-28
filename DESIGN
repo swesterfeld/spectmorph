@@ -1,0 +1,21 @@
+FileFormat Design:
+
+Spectmorph File:
+* multiple "named" instruments
+* should be compressable with xz
+* should be relocatable (if samples are referred to and not included)
+
+Instrument:
+* multiple samples for
+  - multiple midi notes
+  - multiple velocity layers
+
+Samples:
+* multiple frames
+  -> noise component
+  -> deterministic component
+* loop start, loop end, ping pong stuff
+
+
+TODO:
+* articulation (staccato vs. true legato)
