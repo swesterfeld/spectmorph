@@ -128,6 +128,17 @@ package in, you may need to use:
     AC_SUBST([BOOST_NUMERIC_BINDINGS_PREFIX])
     AC_SUBST([BOOST_NUMERIC_BINDINGS_CPPFLAGS])
 ])
+dnl
+dnl JACK
+dnl
+AC_DEFUN([AC_JACK_REQUIREMENTS],
+[
+    dnl We need JACK libs and cflags
+    PKG_CHECK_MODULES(JACK, [jack])
+    AC_SUBST(JACK_CFLAGS)
+    AC_SUBST(JACK_LIBS)
+])
+
 
 dnl ----------------------------- from acbirnet.m4 -------------------------------
 dnl Check whether cc accepts a certain option
@@ -153,6 +164,7 @@ AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
+AC_JACK_REQUIREMENTS
 BOOST_REQUIRE([1.34])
 AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS
 MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
