@@ -3,7 +3,7 @@ include $(top_srcdir)/Makefile.decl
 AUTOMAKE_OPTIONS = 1.9 dist-bzip2 no-dist-gzip
 ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 
-SUBDIRS = lib src tools beast python tests docs
+SUBDIRS = lib src tools beast jack python tests docs
 EXTRA_DIST += TODO
 
 # === Release auxillary rule configuration ===

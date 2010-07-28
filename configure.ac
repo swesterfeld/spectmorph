@@ -163,7 +163,7 @@ MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
 AC_SUBST(SSE_FLAGS)
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
-beast/Makefile
+beast/Makefile jack/Makefile
 ])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_OUTPUT
