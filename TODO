@@ -1,3 +1,7 @@
+SpectMorph-0.1.0:
+- jack support
+- (dropbox) all-in-one file format
+
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
