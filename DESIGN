@@ -2,7 +2,7 @@ FileFormat Design:
 
 Spectmorph File:
 * multiple "named" instruments
-* should be compressable with xz
+* should be compressable with xz/gzip
 * should be relocatable (if samples are referred to and not included)
 
 Instrument:
@@ -17,6 +17,8 @@ Samples:
 * loop start, loop end, ping pong stuff
 
 * cross vector quantization to save space
+* mmap loadable
+* demand-loading of instruments (should not need all instruments to be loaded at start)
 
 TODO:
 * articulation (staccato vs. true legato)
@@ -42,4 +44,8 @@ CURRENT:
   FB debug_samples
 </frame>
 
-
+SmWavSet:
+<wave>*
+  I midi_note
+  S path
+</wave>
