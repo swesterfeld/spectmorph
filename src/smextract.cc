@@ -237,7 +237,7 @@ main (int argc, char **argv)
 
   Audio audio = load_or_die (argv[1], mode);
   int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
-  bool need_save = true;
+  bool need_save = false;
 
   if (mode == "freq")
     {
