@@ -16,6 +16,7 @@ Samples:
   -> deterministic component
 * loop start, loop end, ping pong stuff
 
+* cross vector quantization to save space
 
 TODO:
 * articulation (staccato vs. true legato)
