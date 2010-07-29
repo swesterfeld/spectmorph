@@ -34,6 +34,8 @@ string
 InFile::read_raw_string()
 {
   string s;
+  s.reserve (64); // in normal files, this limit will almost never be exceeded
+
   int c;
   while ((c = fgetc (file)) > 0)
     s += c;
