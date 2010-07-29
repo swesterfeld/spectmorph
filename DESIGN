@@ -20,3 +20,26 @@ Samples:
 
 TODO:
 * articulation (staccato vs. true legato)
+
+CURRENT:
+<header>
+  F mix_freq
+  F frame_size_ms
+  F frame_step_ms
+  F attack_start_ms
+  F attack_end_ms
+  F fundamental_freq
+  I zeropad
+  I loop_point
+  I zero_values_at_start
+</header>
+
+<frame>*
+  FB noise
+  FB freqs
+  FB phases
+  FB original_fft
+  FB debug_samples
+</frame>
+
+
