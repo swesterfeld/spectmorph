@@ -17,6 +17,7 @@
 
 #include "sminfile.hh"
 #include <assert.h>
+#include <glib.h>
 
 using std::string;
 using std::vector;
@@ -128,24 +129,12 @@ InFile::read_raw_float_block (vector<float>& fb)
 {
   size_t size = read_raw_int();
 
-  vector<unsigned char> buffer (size * 4);
-  fread (&buffer[0], 1, buffer.size(), file);
-
   fb.resize (size);
+  int *buffer = reinterpret_cast <int*> (&fb[0]);
+
+  fread (&buffer[0], 1, fb.size() * 4, file);
   for (size_t x = 0; x < fb.size(); x++)
-    {
-      // fb[x] = read_raw_float();
-      union {
-        float f;
-        int   i;
-      } u;
-      int a = buffer[x * 4];
-      int b = buffer[x * 4 + 1];
-      int c = buffer[x * 4 + 2];
-      int d = buffer[x * 4 + 3];
-      u.i = ((a & 0xff) << 24) + ((b & 0xff) << 16) + ((c & 0xff) << 8) + (d & 0xff);
-      fb[x] = u.f;
-    }
+    buffer[x] = GINT32_FROM_BE (buffer[x]);
 }
 
 void
