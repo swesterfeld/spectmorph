@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_STDIO_IN_HH
+#define SPECTMORPH_STDIO_IN_HH
+
 #include <string>
 #include "smgenericin.hh"
 
@@ -35,3 +38,5 @@ public:
 };
 
 }
+
+#endif /* SPECTMORPH_STDIO_IN_HH */

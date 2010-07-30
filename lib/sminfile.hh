@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_INFILE_HH
+#define SPECTMORPH_INFILE_HH
+
 #include <stdio.h>
 #include <string>
 #include <vector>
@@ -79,3 +82,5 @@ public:
 };
 
 }
+
+#endif /* SPECTMORPH_INFILE_HH */

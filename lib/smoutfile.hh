@@ -15,9 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_OUT_FILE_HH
+#define SPECTMORPH_OUT_FILE_HH
+
 #include <stdio.h>
 #include <string>
 #include <vector>
+
+namespace SpectMorph
+{
 
 class OutFile
 {
@@ -44,3 +50,7 @@ public:
   void write_float (const std::string& s, double f);
   void write_float_block (const std::string& s, const std::vector<float>& fb);
 };
+
+}
+
+#endif /* SPECTMORPH_OUT_FILE_HH */

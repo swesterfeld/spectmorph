@@ -21,6 +21,7 @@
 
 using std::string;
 using std::vector;
+using SpectMorph::OutFile;
 
 void
 OutFile::begin_section (const string& s)

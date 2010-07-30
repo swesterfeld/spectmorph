@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_MMAP_IN_HH
+#define SPECTMORPH_MMAP_IN_HH
+
 #include <string>
 
 #include "smgenericin.hh"
@@ -39,3 +42,5 @@ public:
 };
 
 }
+
+#endif /* SPECTMORPH_MMAP_IN_HH */
