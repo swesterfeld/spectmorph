@@ -42,6 +42,8 @@ public:
   {
     return file != NULL;
   }
+  ~OutFile();
+
   void begin_section (const std::string& s);
   void end_section();
 

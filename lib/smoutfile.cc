@@ -23,6 +23,15 @@ using std::string;
 using std::vector;
 using SpectMorph::OutFile;
 
+OutFile::~OutFile()
+{
+  if (file != NULL)
+    {
+      fclose (file);
+      file = NULL;
+    }
+}
+
 void
 OutFile::begin_section (const string& s)
 {
