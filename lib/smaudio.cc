@@ -41,6 +41,7 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 
   InFile  ifile (filename);
   string section;
+  int contents_pos;
 
   if (!ifile.open_ok())
     return BSE_ERROR_FILE_NOT_FOUND;
@@ -61,7 +62,9 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
           if (section == "frame")
             {
               assert (audio_block == NULL);
-              audio_block = new SpectMorph::AudioBlock();
+              assert (contents_pos < contents.size());
+
+              audio_block = &contents[contents_pos];
             }
         }
       else if (ifile.event() == InFile::END_SECTION)
@@ -70,8 +73,7 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
             {
               assert (audio_block);
 
-              contents.push_back (*audio_block);
-              delete audio_block;
+              contents_pos++;
               audio_block = NULL;
             }
 
@@ -88,6 +90,14 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
                 loop_point = ifile.event_int();
               else if (ifile.event_name() == "zero_values_at_start")
                 zero_values_at_start = ifile.event_int();
+              else if (ifile.event_name() == "frame_count")
+                {
+                  int frame_count = ifile.event_int();
+
+                  contents.clear();
+                  contents.resize (frame_count);
+                  contents_pos = 0;
+                }
               else
                 printf ("unhandled int %s %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -190,6 +200,7 @@ SpectMorph::Audio::save (const string& filename)
   of.write_int ("zeropad", zeropad);
   of.write_int ("loop_point", loop_point);
   of.write_int ("zero_values_at_start", zero_values_at_start);
+  of.write_int ("frame_count", contents.size());
   of.end_section();
 
   for (size_t i = 0; i < contents.size(); i++)

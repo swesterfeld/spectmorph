@@ -20,6 +20,12 @@
 #include <vector>
 #include <set>
 
+#include "smstdioin.hh"
+#include "smmmapin.hh"
+
+namespace SpectMorph
+{
+
 class InFile
 {
 public:
@@ -35,7 +41,7 @@ public:
   };
 
 protected:
-  FILE *file;
+  GenericIn         *file;
   Event              current_event;
   std::string        current_event_str;
   int                current_event_int;
@@ -54,7 +60,7 @@ protected:
 public:
   InFile (const std::string& filename)
   {
-    file = fopen (filename.c_str(), "r");
+    file = MMapIn::open (filename);
     current_event = NONE;
   }
   bool
@@ -71,3 +77,5 @@ public:
   void         next_event();
   void         add_skip_event (const std::string& event);
 };
+
+}

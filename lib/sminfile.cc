@@ -21,6 +21,7 @@
 
 using std::string;
 using std::vector;
+using SpectMorph::InFile;
 
 InFile::Event
 InFile::event()
@@ -38,7 +39,7 @@ InFile::read_raw_string()
   s.reserve (64); // in normal files, this limit will almost never be exceeded
 
   int c;
-  while ((c = fgetc (file)) > 0)
+  while ((c = file->get_byte()) > 0)
     s += c;
   return s;
 }
@@ -46,7 +47,7 @@ InFile::read_raw_string()
 void
 InFile::next_event()
 {
-  int c = fgetc (file);
+  int c = file->get_byte();
 
   if (c == EOF)
     {
@@ -106,10 +107,10 @@ int
 InFile::read_raw_int()
 {
   int a, b, c, d;
-  a = fgetc (file);
-  b = fgetc (file);
-  c = fgetc (file);
-  d = fgetc (file);
+  a = file->get_byte();
+  b = file->get_byte();
+  c = file->get_byte();
+  d = file->get_byte();
   return ((a & 0xff) << 24) + ((b & 0xff) << 16) + ((c & 0xff) << 8) + (d & 0xff);
 }
 
@@ -132,7 +133,7 @@ InFile::read_raw_float_block (vector<float>& fb)
   fb.resize (size);
   int *buffer = reinterpret_cast <int*> (&fb[0]);
 
-  fread (&buffer[0], 1, fb.size() * 4, file);
+  file->read (&buffer[0], fb.size() * 4);
   for (size_t x = 0; x < fb.size(); x++)
     buffer[x] = GINT32_FROM_BE (buffer[x]);
 }
@@ -141,7 +142,7 @@ void
 InFile::skip_raw_float_block()
 {
   size_t size = read_raw_int();
-  fseek (file, size * 4, SEEK_CUR);
+  file->seek (size * 4, SEEK_CUR);
 }
 
 
