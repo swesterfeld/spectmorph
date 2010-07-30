@@ -133,28 +133,23 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
           assert (audio_block != NULL);
           if (ifile.event_name() == "noise")
             {
-              audio_block->noise.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->noise.begin());
+              audio_block->noise = fb;
             }
           else if (ifile.event_name() == "freqs")
             {
-              audio_block->freqs.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->freqs.begin());
+              audio_block->freqs = fb;
             }
           else if (ifile.event_name() == "phases")
             {
-              audio_block->phases.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->phases.begin());
+              audio_block->phases = fb;
             }
           else if (ifile.event_name() == "original_fft")
             {
-              audio_block->original_fft.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->original_fft.begin());
+              audio_block->original_fft = fb;
             }
           else if (ifile.event_name() == "debug_samples")
             {
-              audio_block->debug_samples.resize (fb.size());
-              std::copy (fb.begin(), fb.end(), audio_block->debug_samples.begin());
+              audio_block->debug_samples = fb;
             }
           else
             {

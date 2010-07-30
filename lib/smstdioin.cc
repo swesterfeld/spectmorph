@@ -55,3 +55,9 @@ StdioIn::seek (long offset, int whence)
 {
   fseek (file, offset, whence);
 }
+
+unsigned char*
+StdioIn::mmap_mem (size_t& remaining)
+{
+  return NULL;
+}

@@ -91,3 +91,10 @@ MMapIn::seek (long offset, int whence)
       return -1;
     }
 }
+
+unsigned char *
+MMapIn::mmap_mem (size_t& remaining)
+{
+  remaining = mapend - pos;
+  return pos;
+}

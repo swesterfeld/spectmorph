@@ -32,16 +32,29 @@ InFile::event()
   return current_event;
 }
 
-string
-InFile::read_raw_string()
+void
+InFile::read_raw_string (string& str)
 {
-  string s;
-  s.reserve (64); // in normal files, this limit will almost never be exceeded
+  size_t remaining;
+  unsigned char *mem = file->mmap_mem (remaining);
+  if (mem) /* fast variant of reading strings for the mmap case */
+    {
+      for (size_t i = 0; i < remaining; i++)
+        {
+          if (mem[i] == 0)
+            {
+              file->seek (i + 1, SEEK_CUR);
+              str.assign (reinterpret_cast <char *> (mem), i);
+              return;
+            }
+        }
+    }
+
+  str.clear();
 
   int c;
   while ((c = file->get_byte()) > 0)
-    s += c;
-  return s;
+    str += c;
 }
 
 void
@@ -57,7 +70,7 @@ InFile::next_event()
   else if (c == 'B')
     {
       current_event = BEGIN_SECTION;
-      current_event_str = read_raw_string();
+      read_raw_string (current_event_str);
     }
   else if (c == 'E')
     {
@@ -66,25 +79,25 @@ InFile::next_event()
   else if (c == 'f')
     {
       current_event = FLOAT;
-      current_event_str = read_raw_string();
+      read_raw_string (current_event_str);
       current_event_float = read_raw_float();
     }
   else if (c == 'i')
     {
       current_event = INT;
-      current_event_str = read_raw_string();
+      read_raw_string (current_event_str);
       current_event_int = read_raw_int();
     }
   else if (c == 's')
     {
       current_event = STRING;
-      current_event_str  = read_raw_string();
-      current_event_data = read_raw_string();
+      read_raw_string (current_event_str);
+      read_raw_string (current_event_data);
     }
   else if (c == 'F')
     {
       current_event = FLOAT_BLOCK;
-      current_event_str = read_raw_string();
+      read_raw_string (current_event_str);
 
       if (skip_events.find (current_event_str) != skip_events.end())
         {

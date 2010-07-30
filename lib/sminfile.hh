@@ -51,7 +51,7 @@ protected:
 
   std::set<std::string> skip_events;
 
-  std::string read_raw_string();
+  void        read_raw_string (std::string& str);
   int         read_raw_int();
   float       read_raw_float();
   void        read_raw_float_block (std::vector<float>& fb);

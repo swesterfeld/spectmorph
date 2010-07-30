@@ -31,6 +31,7 @@ public:
   int get_byte();     // like fgetc
   int read (void *ptr, size_t size);
   int seek (long offset, int whence);
+  unsigned char *mmap_mem (size_t& remaining);
 };
 
 }
