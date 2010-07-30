@@ -21,6 +21,8 @@
 #include <bse/bsecxxplugin.hh>
 #include <vector>
 
+#include "smgenericin.hh"
+
 namespace SpectMorph
 {
 
@@ -72,6 +74,7 @@ public:
   std::vector<AudioBlock> contents;  //!< the actual frame data
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  BseErrorType load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   BseErrorType save (const std::string& filename);
 };
 

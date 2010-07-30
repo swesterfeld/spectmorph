@@ -27,6 +27,8 @@
 using std::string;
 using std::vector;
 
+using SpectMorph::GenericIn;
+
 /**
  * This function loads a SM-File.
  *
@@ -37,9 +39,16 @@ using std::vector;
 BseErrorType
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
+  load (MMapIn::open (filename));
+}
+
+BseErrorType
+SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
+{
   SpectMorph::AudioBlock *audio_block = NULL;
 
-  InFile  ifile (filename);
+  InFile ifile (file);
+
   string section;
   int contents_pos;
 

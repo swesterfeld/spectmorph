@@ -22,6 +22,8 @@
 #include <string>
 #include <bse/bsecxxplugin.hh>
 
+#include "smaudio.hh"
+
 namespace SpectMorph
 {
 
@@ -30,15 +32,21 @@ class WavSetWave
 public:
   int         midi_note;
   std::string path;
+  Audio      *audio;
+
+  WavSetWave();
+  ~WavSetWave();
 };
 
 class WavSet
 {
 public:
+  ~WavSet();
+
   std::vector<WavSetWave>  waves;
 
   BseErrorType load (const std::string& filename);
-  BseErrorType save (const std::string& filename);
+  BseErrorType save (const std::string& filename, bool embed_models = false);
 };
 
 }

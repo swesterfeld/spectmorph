@@ -24,6 +24,18 @@ using std::vector;
 using SpectMorph::InFile;
 using SpectMorph::GenericIn;
 
+InFile::InFile (const string& filename)
+{
+  file = MMapIn::open (filename);
+  current_event = NONE;
+}
+
+InFile::InFile (GenericIn *file)
+  : file (file)
+{
+  current_event = NONE;
+}
+
 InFile::Event
 InFile::event()
 {

@@ -43,7 +43,7 @@ struct Options
   string	program_name; /* FIXME: what to do with that */
   string        data_dir;
   string        args;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA } command;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -145,6 +145,10 @@ Options::parse (int   *argc_p,
           else if (strcmp (argv[1], "delta") == 0)
             {
               command = DELTA;
+            }
+          else if (strcmp (argv[1], "link") == 0)
+            {
+              command = LINK;
             }
 
           if (command != NONE)
@@ -427,6 +431,14 @@ main (int argc, char **argv)
               printf ("\n");
             }
         }
+    }
+  else if (options.command == Options::LINK)
+    {
+      assert (argc == 2);
+
+      WavSet wset;
+      wset.load (argv[1]);
+      wset.save (argv[1], true);
     }
   else
     {

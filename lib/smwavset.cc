@@ -21,10 +21,14 @@
 
 #include <assert.h>
 
+using std::vector;
 using std::string;
 
+using SpectMorph::WavSet;
+using SpectMorph::WavSetWave;
+
 BseErrorType
-SpectMorph::WavSet::save (const string& filename)
+WavSet::save (const string& filename, bool embed_models)
 {
   OutFile of (filename.c_str());
   if (!of.open_ok())
@@ -38,15 +42,33 @@ SpectMorph::WavSet::save (const string& filename)
       of.begin_section ("wave");
       of.write_int ("midi_note", waves[i].midi_note);
       of.write_string ("path", waves[i].path);
+      if (embed_models)
+        {
+          FILE *in = fopen (waves[i].path.c_str(), "r");
+          if (in)
+            {
+              vector<unsigned char> data;
+              int ch;
+              while ((ch = fgetc (in)) >= 0)
+                data.push_back (ch);
+              of.write_blob ("audio", &data[0], data.size());
+
+              fclose (in);
+            }
+          else
+            {
+              fprintf (stderr, "wavset save: missing file: %s\n", waves[i].path.c_str());
+            }
+        }
       of.end_section();
     }
   return BSE_ERROR_NONE;
 }
 
 BseErrorType
-SpectMorph::WavSet::load (const string& filename)
+WavSet::load (const string& filename)
 {
-  SpectMorph::WavSetWave *wave = NULL;
+  WavSetWave *wave = NULL;
 
   InFile  ifile (filename);
   string section;
@@ -64,7 +86,7 @@ SpectMorph::WavSet::load (const string& filename)
           if (section == "wave")
             {
               assert (wave == NULL);
-              wave = new SpectMorph::WavSetWave();
+              wave = new WavSetWave();
             }
         }
       else if (ifile.event() == InFile::END_SECTION)
@@ -111,6 +133,24 @@ SpectMorph::WavSet::load (const string& filename)
           else
             assert (false);
         }
+      else if (ifile.event() == InFile::BLOB)
+        {
+          if (section == "wave")
+            {
+              if (ifile.event_name() == "audio")
+                {
+                  assert (wave);
+                  assert (!wave->audio);
+
+                  wave->audio = new Audio();
+                  wave->audio->load (ifile.open_blob());
+                }
+              else
+                printf ("unhandled string %s %s\n", section.c_str(), ifile.event_name().c_str());
+            }
+          else
+            assert (false);
+        }
       else
         {
           assert (false);
@@ -118,4 +158,26 @@ SpectMorph::WavSet::load (const string& filename)
       ifile.next_event();
     }
   return BSE_ERROR_NONE;
+}
+
+WavSetWave::WavSetWave()
+{
+  audio = NULL;
+}
+
+WavSetWave::~WavSetWave()
+{
+  // delete audio; // <- don't do it here, because of the constructor/destructor calls in the vector
+}
+
+WavSet::~WavSet()
+{
+  for (vector<WavSetWave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
+    {
+      if (wi->audio)
+        {
+          delete wi->audio;
+          wi->audio = NULL;
+        }
+    }
 }

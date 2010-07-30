@@ -64,11 +64,8 @@ protected:
   void        skip_raw_float_block();
 
 public:
-  InFile (const std::string& filename)
-  {
-    file = MMapIn::open (filename);
-    current_event = NONE;
-  }
+  InFile (const std::string& filename);
+  InFile (GenericIn *file);
   bool
   open_ok()
   {

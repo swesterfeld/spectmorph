@@ -292,14 +292,25 @@ public:
     if (!error)
       {
         audio_repo.put_wav_set (filename, wav_set);
+        int ID = 1;
         for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
           {
-            SpectMorph::Audio *audio = new SpectMorph::Audio;
-            error = audio->load (wi->path, AUDIO_SKIP_DEBUG);
-            if (!error)
-              audio_repo.put_audio (wi->path, audio);
+            if (wi->audio)
+              {
+                gchar *gen_path = g_strdup_printf ("!genpath!%s!%d!", filename.c_str(), ID++);
+                wi->path = gen_path;
+                audio_repo.put_audio (wi->path, wi->audio);
+                g_free (gen_path);
+              }
             else
-              delete audio;
+              {
+                SpectMorph::Audio *audio = new SpectMorph::Audio;
+                error = audio->load (wi->path, AUDIO_SKIP_DEBUG);
+                if (!error)
+                  audio_repo.put_audio (wi->path, audio);
+                else
+                  delete audio;
+              }
           }
       }
     else
