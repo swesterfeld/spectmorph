@@ -15,6 +15,7 @@ spectmorphosc_la_LDFLAGS = -module $(plugin_ldflags)
 spectmorphosc_la_LIBADD  = $(plugin_libs)
 plugin_LTLIBRARIES += spectmorphosc.la
 
+EXTRA_DIST += spectmorphosc.idl
 
 spectmorphosc.genidl.hh: $(srcdir)/spectmorphosc.idl
 	sfidl --plugin $(srcdir)/spectmorphosc.idl > spectmorphosc.genidl.hh
