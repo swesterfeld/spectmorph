@@ -18,6 +18,7 @@
 #include "smstdioin.hh"
 
 #include <stdio.h>
+#include <assert.h>
 
 using SpectMorph::StdioIn;
 using SpectMorph::GenericIn;
@@ -60,4 +61,17 @@ unsigned char*
 StdioIn::mmap_mem (size_t& remaining)
 {
   return NULL;
+}
+
+size_t
+StdioIn::get_pos()
+{
+  return ftell (file);
+}
+
+GenericIn *
+StdioIn::open_subfile (size_t pos, size_t len)
+{
+  assert (false); // implement me
+  return 0;
 }

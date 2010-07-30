@@ -6,15 +6,20 @@ ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
 SMRESVALUE = $(top_builddir)/tests/smresvalue.sh
 
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+
 EXTRA_DIST = saw440.wav sin440.wav sin440.py
 CLEANFILES += sin440-4567.wav
 
-TESTS = testfastsin
+TESTS = testfastsin testblob
 
 noinst_PROGRAMS = $(TESTS)
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
+
+testblob_SOURCES = testblob.cc
+testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 check: saw440-test sin440-test sin440-4567-test
 

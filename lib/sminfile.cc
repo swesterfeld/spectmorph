@@ -22,6 +22,7 @@
 using std::string;
 using std::vector;
 using SpectMorph::InFile;
+using SpectMorph::GenericIn;
 
 InFile::Event
 InFile::event()
@@ -109,6 +110,16 @@ InFile::next_event()
           read_raw_float_block (current_event_float_block);
         }
     }
+  else if (c == 'O')
+    {
+      current_event = BLOB;
+      read_raw_string (current_event_str);
+      current_event_blob_size = read_raw_int();
+      current_event_blob_pos  = file->get_pos();
+
+      // skip actual blob data
+      file->seek (current_event_blob_size, SEEK_CUR);
+    }
   else
     {
       printf ("unhandled char '%c'\n", c);
@@ -158,6 +169,11 @@ InFile::skip_raw_float_block()
   file->seek (size * 4, SEEK_CUR);
 }
 
+GenericIn *
+InFile::open_blob()
+{
+  return file->open_subfile (current_event_blob_pos, current_event_blob_size);
+}
 
 string
 InFile::event_name()

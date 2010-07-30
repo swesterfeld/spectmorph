@@ -98,3 +98,15 @@ MMapIn::mmap_mem (size_t& remaining)
   remaining = mapend - pos;
   return pos;
 }
+
+size_t
+MMapIn::get_pos()
+{
+  return pos - mapfile;
+}
+
+GenericIn *
+MMapIn::open_subfile (size_t pos, size_t len)
+{
+  return new MMapIn (mapfile + pos, mapfile + pos + len);
+}

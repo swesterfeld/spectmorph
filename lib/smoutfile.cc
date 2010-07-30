@@ -125,3 +125,16 @@ OutFile::write_float_block (const string& s,
   assert (bpos == buffer.size());
   fwrite (&buffer[0], 1, buffer.size(), file);
 }
+
+void
+OutFile::write_blob (const string& s,
+                     const void   *data,
+                     size_t        size)
+{
+  fputc ('O', file);    // BLOB => Object
+
+  write_raw_string (s);
+  write_raw_int (size);
+
+  fwrite (data, 1, size, file);
+}

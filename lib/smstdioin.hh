@@ -35,6 +35,8 @@ public:
   int read (void *ptr, size_t size);
   int seek (long offset, int whence);
   unsigned char *mmap_mem (size_t& remaining);
+  size_t get_pos();
+  GenericIn *open_subfile (size_t pos, size_t len);
 };
 
 }

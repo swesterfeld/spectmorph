@@ -40,7 +40,8 @@ public:
     INT,
     STRING,
     FLOAT,
-    FLOAT_BLOCK
+    FLOAT_BLOCK,
+    BLOB
   };
 
 protected:
@@ -51,6 +52,8 @@ protected:
   std::string        current_event_data;
   float              current_event_float;
   std::vector<float> current_event_float_block;
+  size_t             current_event_blob_pos;
+  size_t             current_event_blob_size;
 
   std::set<std::string> skip_events;
 
@@ -79,6 +82,8 @@ public:
   const std::vector<float>& event_float_block();
   void         next_event();
   void         add_skip_event (const std::string& event);
+
+  GenericIn   *open_blob();
 };
 
 }
