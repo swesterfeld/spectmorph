@@ -54,6 +54,7 @@ protected:
   std::vector<float> current_event_float_block;
   size_t             current_event_blob_pos;
   size_t             current_event_blob_size;
+  std::string        m_file_type;
 
   std::set<std::string> skip_events;
 
@@ -62,6 +63,8 @@ protected:
   float       read_raw_float();
   void        read_raw_float_block (std::vector<float>& fb);
   void        skip_raw_float_block();
+
+  void        read_file_type();
 
 public:
   InFile (const std::string& filename);
@@ -79,6 +82,7 @@ public:
   const std::vector<float>& event_float_block();
   void         next_event();
   void         add_skip_event (const std::string& event);
+  std::string  file_type();
 
   GenericIn   *open_blob();
 };

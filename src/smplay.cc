@@ -33,6 +33,8 @@
 #include <math.h>
 #include "smnoisedecoder.hh"
 #include "smsinedecoder.hh"
+#include "sminfile.hh"
+#include "smwavset.hh"
 #include "config.h"
 
 #include <list>
@@ -40,6 +42,7 @@
 using namespace Birnet;
 using namespace SpectMorph;
 using std::max;
+using std::string;
 
 /// @cond
 struct Options
@@ -49,6 +52,7 @@ struct Options
   bool          noise_enabled;
   bool          sines_enabled;
   int           rate;
+  int           midi_note;
   String        export_wav;
 
   Options ();
@@ -64,7 +68,8 @@ Options::Options () :
   loop (false),
   noise_enabled (true),
   sines_enabled (true),
-  rate (44100)
+  rate (44100),
+  midi_note (-1)
 {
 }
 
@@ -111,6 +116,10 @@ Options::parse (int   *argc_p,
         {
           loop = true;
         }
+      else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
+        {
+          midi_note = atoi (opt_arg);
+        }
       else if (check_arg (argc, argv, &i, "--no-noise"))
         {
           noise_enabled = false;
@@ -145,6 +154,7 @@ Options::print_usage ()
   printf (" --no-noise                  disable noise decoder\n");
   printf (" --no-sines                  disable sine decoder\n");
   printf (" --export <wav filename>     export to wav file\n");
+  printf (" -m, --midi-note <note>      set midi note to play for wavsets\n");
   printf ("\n");
 }
 
@@ -170,15 +180,51 @@ main (int argc, char **argv)
   /* open input */
   BseErrorType error;
 
-  SpectMorph::Audio audio;
-  error = audio.load (argv[1], AUDIO_SKIP_DEBUG);
-  if (error)
+  /* figure out file type (we support SpectMorph::WavSet and SpectMorph::Audio) */
+  InFile *file = new InFile (argv[1]);
+  if (!file->open_ok())
     {
-      fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open input file: %s\n", argv[0], argv[1]);
       exit (1);
     }
+  string file_type = file->file_type();
+  delete file;
 
-  ao_sample_format format;
+  SpectMorph::Audio *audio_ptr;
+  SpectMorph::WavSet wset;
+
+  if (file_type == "SpectMorph::WavSet")    // load wavset
+    {
+      error = wset.load (argv[1]);
+      if (error)
+        {
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          exit (1);
+        }
+      for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        {
+          if (wi->midi_note == options.midi_note)
+            audio_ptr = wi->audio;
+        }
+      if (audio_ptr == NULL)
+        {
+          fprintf (stderr, "%s: wavset %s does not contain midi note %d\n", argv[0], argv[1], options.midi_note);
+          exit (1);
+        }
+    }
+  else                                     // load single audio file
+    {
+      audio_ptr = new SpectMorph::Audio();
+      error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
+      if (error)
+        {
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          exit (1);
+        }
+    }
+
+  SpectMorph::Audio& audio = *audio_ptr;
+  ao_sample_format format = { 0, };
 
   format.bits = 16;
   format.rate = options.rate;

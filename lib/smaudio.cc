@@ -39,7 +39,7 @@ using SpectMorph::GenericIn;
 BseErrorType
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
-  load (MMapIn::open (filename));
+  load (MMapIn::open (filename), load_options);
 }
 
 BseErrorType
@@ -54,6 +54,9 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 
   if (!ifile.open_ok())
     return BSE_ERROR_FILE_NOT_FOUND;
+
+  if (ifile.file_type() != "SpectMorph::Audio")
+    return BSE_ERROR_FORMAT_INVALID;
 
   if (load_options == AUDIO_SKIP_DEBUG)
     {
@@ -187,7 +190,7 @@ SpectMorph::Audio::Audio() :
 BseErrorType
 SpectMorph::Audio::save (const string& filename)
 {
-  OutFile of (filename.c_str());
+  OutFile of (filename.c_str(), "SpectMorph::Audio");
   if (!of.open_ok())
     {
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());

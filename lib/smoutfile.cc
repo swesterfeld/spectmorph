@@ -33,6 +33,13 @@ OutFile::~OutFile()
 }
 
 void
+OutFile::write_file_type (const string& file_type)
+{
+  fputc ('T', file);  // type
+  write_raw_string (file_type);
+}
+
+void
 OutFile::begin_section (const string& s)
 {
   fputc ('B', file); // begin section

@@ -299,6 +299,17 @@ delta (vector<float>& d0, vector<float>& d1)
   return error / MAX (d0.size(), d1.size());
 }
 
+void
+load_or_die (WavSet& wset, string name)
+{
+  BseErrorType error = wset.load (name);
+  if (error)
+    {
+      fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), name.c_str(), bse_error_blurb (error));
+      exit (1);
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -321,7 +332,7 @@ main (int argc, char **argv)
       assert (argc == 4);
 
       WavSet wset;
-      wset.load (argv[1]);
+      load_or_die (wset, argv[1]);
 
       WavSetWave new_wave;
       new_wave.midi_note = atoi (argv[2]);
@@ -333,7 +344,7 @@ main (int argc, char **argv)
   else if (options.command == Options::LIST)
     {
       WavSet wset;
-      wset.load (argv[1]);
+      load_or_die (wset, argv[1]);
 
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         printf ("%d %s\n", wi->midi_note, wi->path.c_str());
@@ -343,7 +354,7 @@ main (int argc, char **argv)
       assert (argc == 3);
 
       WavSet wset, smset;
-      wset.load (argv[1]);
+      load_or_die (wset, argv[1]);
 
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
@@ -363,7 +374,7 @@ main (int argc, char **argv)
       assert (argc == 3);
 
       WavSet smset, wset;
-      smset.load (argv[1]);
+      load_or_die (smset, argv[1]);
 
       for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
         {
@@ -395,7 +406,7 @@ main (int argc, char **argv)
       for (int i = 1; i < argc; i++)
         {
           WavSet wset;
-          wset.load (argv[i]);
+          load_or_die (wset, argv[i]);
           wsets.push_back (wset);
           for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
             midi_note_used[wi->midi_note] = true;              
@@ -437,7 +448,7 @@ main (int argc, char **argv)
       assert (argc == 2);
 
       WavSet wset;
-      wset.load (argv[1]);
+      load_or_die (wset, argv[1]);
       wset.save (argv[1], true);
     }
   else

@@ -35,7 +35,7 @@ vector<unsigned char> xdata;
 void
 create_testblob()
 {
-  OutFile outfile ("testblob.out");
+  OutFile outfile ("testblob.out", "SpectMorph::TestBlob");
 
   for (int i = 0; i < 1024; i++)
     xdata.push_back (g_random_int());

@@ -31,11 +31,13 @@ class OutFile
 protected:
   void write_raw_string (const std::string& s);
   void write_raw_int (int i);
+  void write_file_type (const std::string& file_type);
 
 public:
-  OutFile (const std::string& filename)
+  OutFile (const std::string& filename, const std::string& file_type)
   {
     file = fopen (filename.c_str(), "w");
+    write_file_type (file_type);
   }
   bool
   open_ok()

@@ -30,7 +30,7 @@ using SpectMorph::WavSetWave;
 BseErrorType
 WavSet::save (const string& filename, bool embed_models)
 {
-  OutFile of (filename.c_str());
+  OutFile of (filename.c_str(), "SpectMorph::WavSet");
   if (!of.open_ok())
     {
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
@@ -75,6 +75,9 @@ WavSet::load (const string& filename)
 
   if (!ifile.open_ok())
     return BSE_ERROR_FILE_NOT_FOUND;
+
+  if (ifile.file_type() != "SpectMorph::WavSet")
+    return BSE_ERROR_FORMAT_INVALID;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {

@@ -28,12 +28,27 @@ InFile::InFile (const string& filename)
 {
   file = MMapIn::open (filename);
   current_event = NONE;
+
+  read_file_type();
 }
 
 InFile::InFile (GenericIn *file)
   : file (file)
 {
   current_event = NONE;
+  read_file_type();
+}
+
+void
+InFile::read_file_type()
+{
+  m_file_type = "unknown";
+
+  if (file)
+    {
+      if (file->get_byte() == 'T')
+        read_raw_string (m_file_type);
+    }
 }
 
 InFile::Event
@@ -221,4 +236,10 @@ void
 InFile::add_skip_event (const string& skip_event)
 {
   skip_events.insert (skip_event);
+}
+
+string
+InFile::file_type()
+{
+  return m_file_type;
 }
