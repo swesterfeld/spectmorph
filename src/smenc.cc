@@ -208,12 +208,12 @@ wintrans (const vector<float>& window)
     in[i] /= amp;
 
   gsl_power2_fftar (in.size(), &in[0], &out[0]);
-  for (int i = 0; i < out.size(); i += 2)
+  for (size_t i = 0; i < out.size(); i += 2)
     {
       double re = out[i];
       double im = out[i + 1];
       double mag = sqrt (re * re + im * im);
-      printf ("%d %g\n", i / 2, mag);
+      printf ("%zd %g\n", i / 2, mag);
     }
 }
 
@@ -278,7 +278,6 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  const uint64 n_values = gsl_data_handle_length (dhandle);
   const double mix_freq = gsl_data_handle_mix_freq (dhandle);
   const int    zeropad  = 4;
 

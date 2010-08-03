@@ -201,7 +201,7 @@ SineDecoder::process (Frame& frame,
 		  todo--;
 		}
 	    }
-	  for (int to = 0; to < nfreqs.size(); to++)
+	  for (size_t to = 0; to < nfreqs.size(); to++)
 	    {
 	      if (nfreqs[to] > -1)
 		{
