@@ -63,10 +63,11 @@ OutFile::write_raw_string (const string& s)
 void
 OutFile::write_raw_int (int i)
 {
-  fputc ((i >> 24) & 0xff, file);
-  fputc ((i >> 16) & 0xff, file);
-  fputc ((i >> 8) & 0xff, file);
+  // little endian encoding
   fputc (i & 0xff, file);
+  fputc ((i >> 8) & 0xff, file);
+  fputc ((i >> 16) & 0xff, file);
+  fputc ((i >> 24) & 0xff, file);
 }
 
 void
@@ -124,10 +125,12 @@ OutFile::write_float_block (const string& s,
       } u;
       u.f = fb[i];
       // write_raw_int (u.i);
-      buffer[bpos++] = u.i >> 24;
-      buffer[bpos++] = u.i >> 16;
-      buffer[bpos++] = u.i >> 8;
+
+      // little endian encoding
       buffer[bpos++] = u.i;
+      buffer[bpos++] = u.i >> 8;
+      buffer[bpos++] = u.i >> 16;
+      buffer[bpos++] = u.i >> 24;
     }
   assert (bpos == buffer.size());
   fwrite (&buffer[0], 1, buffer.size(), file);

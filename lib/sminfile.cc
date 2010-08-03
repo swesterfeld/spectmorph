@@ -157,12 +157,11 @@ InFile::next_event()
 int
 InFile::read_raw_int()
 {
-  int a, b, c, d;
-  a = file->get_byte();
-  b = file->get_byte();
-  c = file->get_byte();
-  d = file->get_byte();
-  return ((a & 0xff) << 24) + ((b & 0xff) << 16) + ((c & 0xff) << 8) + (d & 0xff);
+  int i;
+  file->read (&i, 4);
+
+  // little endian encoding
+  return GINT32_FROM_LE (i);
 }
 
 float
@@ -185,8 +184,11 @@ InFile::read_raw_float_block (vector<float>& fb)
   int *buffer = reinterpret_cast <int*> (&fb[0]);
 
   file->read (&buffer[0], fb.size() * 4);
+
+#if G_BYTE_ORDER != G_LITTLE_ENDIAN
   for (size_t x = 0; x < fb.size(); x++)
-    buffer[x] = GINT32_FROM_BE (buffer[x]);
+    buffer[x] = GINT32_FROM_LE (buffer[x]);
+#endif
 }
 
 void
