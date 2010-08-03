@@ -16,18 +16,37 @@
  */
 
 #include "smoutfile.hh"
+#include "smstdioout.hh"
 
 #include <assert.h>
 
 using std::string;
 using std::vector;
 using SpectMorph::OutFile;
+using SpectMorph::GenericOut;
+using SpectMorph::StdioOut;
+
+OutFile::OutFile (const string& filename, const string& file_type)
+{
+  file = StdioOut::open (filename);
+  delete_file = true;
+  write_file_type (file_type);
+}
+
+OutFile::OutFile (GenericOut *outfile, const string& file_type)
+{
+  file = outfile;
+  delete_file = false;
+  write_file_type (file_type);
+}
 
 OutFile::~OutFile()
 {
   if (file != NULL)
     {
-      fclose (file);
+      if (delete_file)
+        delete file;
+
       file = NULL;
     }
 }
@@ -35,39 +54,42 @@ OutFile::~OutFile()
 void
 OutFile::write_file_type (const string& file_type)
 {
-  fputc ('T', file);  // type
-  write_raw_string (file_type);
+  if (file)
+    {
+      file->put_byte ('T');  // type
+      write_raw_string (file_type);
+    }
 }
 
 void
 OutFile::begin_section (const string& s)
 {
-  fputc ('B', file); // begin section
+  file->put_byte ('B'); // begin section
   write_raw_string (s);
 }
 
 void
 OutFile::end_section()
 {
-  fputc ('E', file); // end section
+  file->put_byte ('E'); // end section
 }
 
 void
 OutFile::write_raw_string (const string& s)
 {
   for (size_t i = 0; i < s.size(); i++)
-    fputc (s[i], file);
-  fputc (0, file);
+    file->put_byte (s[i]);
+  file->put_byte (0);
 }
 
 void
 OutFile::write_raw_int (int i)
 {
   // little endian encoding
-  fputc (i & 0xff, file);
-  fputc ((i >> 8) & 0xff, file);
-  fputc ((i >> 16) & 0xff, file);
-  fputc ((i >> 24) & 0xff, file);
+  file->put_byte (i & 0xff);
+  file->put_byte ((i >> 8) & 0xff);
+  file->put_byte ((i >> 16) & 0xff);
+  file->put_byte ((i >> 24) & 0xff);
 }
 
 void
@@ -80,7 +102,7 @@ OutFile::write_float (const string& s,
   } u;
   u.f = f;
 
-  fputc ('f', file); // float
+  file->put_byte ('f'); // float
 
   write_raw_string (s);
   write_raw_int (u.i);
@@ -90,7 +112,7 @@ void
 OutFile::write_int (const string& s,
                     int   i)
 {
-  fputc ('i', file); // int
+  file->put_byte ('i'); // int
 
   write_raw_string (s);
   write_raw_int (i);
@@ -100,7 +122,7 @@ void
 OutFile::write_string (const string& s,
                        const string& data)
 {
-  fputc ('s', file); // string
+  file->put_byte ('s'); // string
 
   write_raw_string (s);
   write_raw_string (data);
@@ -110,7 +132,7 @@ void
 OutFile::write_float_block (const string& s,
                             const vector<float>& fb)
 {
-  fputc ('F', file);
+  file->put_byte ('F');
 
   write_raw_string (s);
   write_raw_int (fb.size());
@@ -133,7 +155,7 @@ OutFile::write_float_block (const string& s,
       buffer[bpos++] = u.i >> 24;
     }
   assert (bpos == buffer.size());
-  fwrite (&buffer[0], 1, buffer.size(), file);
+  file->write (&buffer[0], buffer.size());
 }
 
 void
@@ -141,10 +163,10 @@ OutFile::write_blob (const string& s,
                      const void   *data,
                      size_t        size)
 {
-  fputc ('O', file);    // BLOB => Object
+  file->put_byte ('O');    // BLOB => Object
 
   write_raw_string (s);
   write_raw_int (size);
 
-  fwrite (data, 1, size, file);
+  file->write (data, size);
 }

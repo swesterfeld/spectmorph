@@ -21,24 +21,25 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include "smgenericout.hh"
 
 namespace SpectMorph
 {
 
 class OutFile
 {
-  FILE *file;
+  GenericOut *file;
+  bool        delete_file;
+
 protected:
   void write_raw_string (const std::string& s);
   void write_raw_int (int i);
   void write_file_type (const std::string& file_type);
 
 public:
-  OutFile (const std::string& filename, const std::string& file_type)
-  {
-    file = fopen (filename.c_str(), "w");
-    write_file_type (file_type);
-  }
+  OutFile (const std::string& filename, const std::string& file_type);
+  OutFile (GenericOut *outfile, const std::string& file_type);
+
   bool
   open_ok()
   {
