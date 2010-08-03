@@ -76,7 +76,7 @@ read_testblob()
           contents += "<blob>";
           GenericIn *in_blob = infile.open_blob();
           assert (in_blob);
-          for (int i = 0; i < xdata.size(); i++)
+          for (size_t i = 0; i < xdata.size(); i++)
             {
               assert (in_blob->get_byte() == xdata[i]);
             }
