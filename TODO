@@ -1,6 +1,8 @@
 SpectMorph-0.1.0:
 - jack support
 - (dropbox) all-in-one file format
+- switch to little endian encoding
+- error handling improvements (no assert()) for loading .sm/.smset files
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
