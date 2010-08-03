@@ -18,6 +18,7 @@
 #include "smaudio.hh"
 #include "smoutfile.hh"
 #include "sminfile.hh"
+#include "smstdioout.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -28,6 +29,8 @@ using std::string;
 using std::vector;
 
 using SpectMorph::GenericIn;
+using SpectMorph::GenericOut;
+using SpectMorph::StdioOut;
 
 /**
  * This function loads a SM-File.
@@ -191,12 +194,23 @@ SpectMorph::Audio::Audio() :
 BseErrorType
 SpectMorph::Audio::save (const string& filename)
 {
-  OutFile of (filename.c_str(), "SpectMorph::Audio");
-  if (!of.open_ok())
+  GenericOut *out = StdioOut::open (filename);
+  if (!out)
     {
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
       exit (1);
     }
+  BseErrorType result = save (out);
+  delete out; // close file
+
+  return result;
+}
+
+BseErrorType
+SpectMorph::Audio::save (GenericOut *file)
+{
+  OutFile of (file, "SpectMorph::Audio");
+  assert (of.open_ok());
 
   of.begin_section ("header");
   of.write_float ("mix_freq", mix_freq);

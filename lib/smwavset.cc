@@ -18,6 +18,7 @@
 #include "smwavset.hh"
 #include "smoutfile.hh"
 #include "sminfile.hh"
+#include "smmemout.hh"
 
 #include <assert.h>
 
@@ -26,6 +27,7 @@ using std::string;
 
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
+using SpectMorph::MemOut;
 
 BseErrorType
 WavSet::save (const string& filename, bool embed_models)
@@ -42,7 +44,15 @@ WavSet::save (const string& filename, bool embed_models)
       of.begin_section ("wave");
       of.write_int ("midi_note", waves[i].midi_note);
       of.write_string ("path", waves[i].path);
-      if (embed_models)
+      if (waves[i].audio)
+        {
+          vector<unsigned char> data;
+
+          MemOut mem_out (&data);
+          waves[i].audio->save (&mem_out);
+          of.write_blob ("audio", &data[0], data.size());
+        }
+      else if (embed_models)
         {
           FILE *in = fopen (waves[i].path.c_str(), "r");
           if (in)
