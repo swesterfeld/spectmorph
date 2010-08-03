@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 
 using SpectMorph::MMapIn;
 using SpectMorph::GenericIn;
@@ -31,6 +32,9 @@ using SpectMorph::GenericIn;
 GenericIn*
 MMapIn::open (const std::string& filename)
 {
+  if (getenv ("SPECTMORPH_NOMMAP"))
+    return NULL;
+
   int fd = ::open (filename.c_str(), O_RDONLY);
   if (fd >= 0)
     {
@@ -39,7 +43,7 @@ MMapIn::open (const std::string& filename)
       if (fstat (fd, &st) == 0)
         {
           unsigned char *mapfile = static_cast<unsigned char *> (mmap (NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
-          if (mapfile)
+          if (mapfile != MAP_FAILED)
             {
               return new MMapIn (mapfile, mapfile + st.st_size);
             }
@@ -78,12 +82,11 @@ MMapIn::read (void *ptr, size_t size)
 }
 
 int
-MMapIn::seek (long offset, int whence)
+MMapIn::skip (size_t size)
 {
-  assert (whence == SEEK_CUR);
-  if (pos + offset <= mapend)
+  if (pos + size <= mapend)
     {
-      pos += offset;
+      pos += size;
       return 0;
     }
   else

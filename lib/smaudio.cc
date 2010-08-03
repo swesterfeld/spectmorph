@@ -39,7 +39,8 @@ using SpectMorph::GenericIn;
 BseErrorType
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
-  load (MMapIn::open (filename), load_options);
+  GenericIn *file = GenericIn::open (filename);
+  load (file, load_options);
 }
 
 BseErrorType

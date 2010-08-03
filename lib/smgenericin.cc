@@ -15,27 +15,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_GENERIC_IN_HH
-#define SPECTMORPH_GENERIC_IN_HH
+#include "smgenericin.hh"
+#include "smmmapin.hh"
+#include "smstdioin.hh"
 
-#include <string>
+using SpectMorph::GenericIn;
+using SpectMorph::MMapIn;
+using SpectMorph::StdioIn;
+using std::string;
 
-namespace SpectMorph
+GenericIn*
+GenericIn::open (const std::string& filename)
 {
-
-class GenericIn
-{
-public:
-  static GenericIn* open (const std::string& filename);
-
-  virtual int get_byte() = 0;     // like fgetc
-  virtual int read (void *ptr, size_t size) = 0;
-  virtual int skip (size_t size) = 0;
-  virtual size_t get_pos() = 0;
-  virtual unsigned char *mmap_mem (size_t& remaining) = 0;
-  virtual GenericIn *open_subfile (size_t pos, size_t len) = 0;
-};
-
+  GenericIn *file = MMapIn::open (filename);
+  if (!file)
+    file = StdioIn::open (filename);
+  return file;
 }
 
-#endif /* SPECTMORPH_GENERIC_IN_HH */
+

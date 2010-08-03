@@ -26,7 +26,7 @@ using SpectMorph::GenericIn;
 
 InFile::InFile (const string& filename)
 {
-  file = MMapIn::open (filename);
+  file = GenericIn::open (filename);
   current_event = NONE;
 
   read_file_type();
@@ -71,7 +71,7 @@ InFile::read_raw_string (string& str)
         {
           if (mem[i] == 0)
             {
-              file->seek (i + 1, SEEK_CUR);
+              file->skip (i + 1);
               str.assign (reinterpret_cast <char *> (mem), i);
               return;
             }
@@ -145,7 +145,7 @@ InFile::next_event()
       current_event_blob_pos  = file->get_pos();
 
       // skip actual blob data
-      file->seek (current_event_blob_size, SEEK_CUR);
+      file->skip (current_event_blob_size);
     }
   else
     {
@@ -193,7 +193,7 @@ void
 InFile::skip_raw_float_block()
 {
   size_t size = read_raw_int();
-  file->seek (size * 4, SEEK_CUR);
+  file->skip (size * 4);
 }
 
 GenericIn *

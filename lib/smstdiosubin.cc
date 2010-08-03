@@ -15,67 +15,89 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smstdioin.hh"
 #include "smstdiosubin.hh"
 
 #include <stdio.h>
 #include <assert.h>
 
-using SpectMorph::StdioIn;
 using SpectMorph::StdioSubIn;
 using SpectMorph::GenericIn;
 
-using std::string;
-
 GenericIn*
-StdioIn::open (const string& filename)
+StdioSubIn::open (const std::string& filename, size_t pos, size_t len)
 {
   FILE *file = fopen (filename.c_str(), "r");
 
   if (file)
-    return new StdioIn (file, filename);
+    return new StdioSubIn (file, pos, len);
   else
     return NULL;
 }
 
-StdioIn::StdioIn (FILE *file, const string& filename) :
-  file (file),
-  filename (filename)
+StdioSubIn::StdioSubIn (FILE *file, size_t pos, size_t len) :
+  file (file)
 {
+  fseek (file, pos, SEEK_SET);
+  file_pos = 0;
+  file_len = len;
 }
 
 int
-StdioIn::get_byte()
+StdioSubIn::get_byte()
 {
-  return fgetc (file);
+  if (file_pos < file_len)
+    {
+      int result = fgetc (file);
+      file_pos++;
+      return result;
+    }
+  else
+    {
+      return EOF;
+    }
 }
 
 int
-StdioIn::read (void *ptr, size_t size)
+StdioSubIn::read (void *ptr, size_t size)
 {
-  fread (ptr, 1, size, file);
+  if (file_pos < file_len)
+    {
+      fread (ptr, 1, size, file);
+      file_pos += size;
+    }
+  else
+    {
+      return EOF;
+    }
 }
 
 int
-StdioIn::skip (size_t size)
+StdioSubIn::skip (size_t size)
 {
-  fseek (file, size, SEEK_CUR);
+  if (file_pos + size <= file_len)
+    {
+      fseek (file, size, SEEK_CUR);
+      file_pos += size;
+    }
+  else
+    assert (false);
 }
 
 unsigned char*
-StdioIn::mmap_mem (size_t& remaining)
+StdioSubIn::mmap_mem (size_t& remaining)
 {
   return NULL;
 }
 
 size_t
-StdioIn::get_pos()
+StdioSubIn::get_pos()
 {
-  return ftell (file);
+  return file_pos;
 }
 
 GenericIn *
-StdioIn::open_subfile (size_t pos, size_t len)
+StdioSubIn::open_subfile (size_t pos, size_t len)
 {
-  return StdioSubIn::open (filename, pos, len);
+  assert (false); // implement me
+  return 0;
 }
