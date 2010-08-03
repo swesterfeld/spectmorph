@@ -55,6 +55,3 @@ debian:
 
 jack:
 - jack spectmorph player
-
-beast:
-- don't crash if files are not found

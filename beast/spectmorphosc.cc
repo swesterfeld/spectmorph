@@ -119,6 +119,12 @@ class Osc : public OscBase {
           retrigger (new_freq);
         }
 
+      if (!audio)   // nothing loaded
+        {
+          std::fill (audio_out, audio_out + n_values, 0);
+          return;
+        }
+
       unsigned int i = 0;
       while (i < n_values)
         {
@@ -223,15 +229,21 @@ class Osc : public OscBase {
       double best_diff = 1e10;
       Audio *best_audio = 0;
 
-      // find best audio candidate
-      for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
+      if (wav_set)
         {
-          Audio *audio = audio_repo.get_audio (wi->path);
-          // FIXME: use logarithmic distance
-          if (fabs (audio->fundamental_freq - freq) < best_diff)
+          // find best audio candidate
+          for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
             {
-              best_diff = fabs (audio->fundamental_freq - freq);
-              best_audio = audio;
+              Audio *audio = audio_repo.get_audio (wi->path);
+              if (audio)
+                {
+                  // FIXME: use logarithmic distance
+                  if (fabs (audio->fundamental_freq - freq) < best_diff)
+                    {
+                      best_diff = fabs (audio->fundamental_freq - freq);
+                      best_audio = audio;
+                    }
+                }
             }
         }
 
