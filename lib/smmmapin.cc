@@ -81,17 +81,17 @@ MMapIn::read (void *ptr, size_t size)
     return 0;
 }
 
-int
+bool
 MMapIn::skip (size_t size)
 {
   if (pos + size <= mapend)
     {
       pos += size;
-      return 0;
+      return true;
     }
   else
     {
-      return -1;
+      return false;
     }
 }
 

@@ -30,7 +30,7 @@ public:
 
   virtual int get_byte() = 0;     // like fgetc
   virtual int read (void *ptr, size_t size) = 0;
-  virtual int skip (size_t size) = 0;
+  virtual bool skip (size_t size) = 0;
   virtual size_t get_pos() = 0;
   virtual unsigned char *mmap_mem (size_t& remaining) = 0;
   virtual GenericIn *open_subfile (size_t pos, size_t len) = 0;

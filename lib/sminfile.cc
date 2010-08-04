@@ -74,9 +74,11 @@ InFile::read_raw_string (string& str)
         {
           if (mem[i] == 0)
             {
-              file->skip (i + 1);
-              str.assign (reinterpret_cast <char *> (mem), i);
-              return true;
+              if (file->skip (i + 1))
+                {
+                  str.assign (reinterpret_cast <char *> (mem), i);
+                  return true;
+                }
             }
         }
     }
@@ -164,20 +166,18 @@ InFile::next_event()
           int blob_size;
           if (read_raw_int (blob_size))
             {
-              current_event = BLOB;
-              current_event_blob_size = blob_size;
-              current_event_blob_pos  = file->get_pos();
-
-              // skip actual blob data
-              file->skip (current_event_blob_size); // FIXME: error handling
+              if (file->skip (blob_size)) // skip actual blob data
+                {
+                  current_event = BLOB;
+                  current_event_blob_size = blob_size;
+                  current_event_blob_pos  = file->get_pos();
+                }
             }
         }
     }
   else
     {
       current_event = READ_ERROR;
-      //printf ("unhandled char '%c'\n", c);
-      //assert (false);
     }
 }
 
@@ -218,7 +218,7 @@ InFile::read_raw_float_block (vector<float>& fb)
   fb.resize (size);
   int *buffer = reinterpret_cast <int*> (&fb[0]);
 
-  if (file->read (&buffer[0], fb.size() * 4) != fb.size() * 4)
+  if (file->read (&buffer[0], fb.size() * 4) != size * 4)
     return false;
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
@@ -235,8 +235,7 @@ InFile::skip_raw_float_block()
   if (!read_raw_int (size))
     return false;
 
-  file->skip (size * 4); // FIXME: error handling
-  return true;
+  return file->skip (size * 4);
 }
 
 GenericIn *

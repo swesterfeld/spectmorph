@@ -53,13 +53,15 @@ StdioIn::get_byte()
 int
 StdioIn::read (void *ptr, size_t size)
 {
-  fread (ptr, 1, size, file);
+  return fread (ptr, 1, size, file);
 }
 
-int
+bool
 StdioIn::skip (size_t size)
 {
-  fseek (file, size, SEEK_CUR);
+  if (fseek (file, size, SEEK_CUR) == 0)
+    return true;
+  return false;
 }
 
 unsigned char*

@@ -62,8 +62,9 @@ StdioSubIn::read (void *ptr, size_t size)
 {
   if (file_pos < file_len)
     {
-      fread (ptr, 1, size, file);
-      file_pos += size;
+      int read_bytes = fread (ptr, 1, size, file);
+      file_pos += read_bytes;
+      return read_bytes;
     }
   else
     {
@@ -71,16 +72,18 @@ StdioSubIn::read (void *ptr, size_t size)
     }
 }
 
-int
+bool
 StdioSubIn::skip (size_t size)
 {
   if (file_pos + size <= file_len)
     {
-      fseek (file, size, SEEK_CUR);
-      file_pos += size;
+      if (fseek (file, size, SEEK_CUR) == 0)
+        {
+          file_pos += size;
+          return true;
+        }
     }
-  else
-    assert (false);
+  return false;
 }
 
 unsigned char*
