@@ -166,11 +166,12 @@ InFile::next_event()
           int blob_size;
           if (read_raw_int (blob_size))
             {
+              int blob_pos = file->get_pos();
               if (file->skip (blob_size)) // skip actual blob data
                 {
                   current_event = BLOB;
                   current_event_blob_size = blob_size;
-                  current_event_blob_pos  = file->get_pos();
+                  current_event_blob_pos  = blob_pos;
                 }
             }
         }
