@@ -1,6 +1,7 @@
 SpectMorph-0.1.0:
 - jack support
 - (dropbox) all-in-one file format
+- recut piano samples
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
