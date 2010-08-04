@@ -35,6 +35,7 @@ public:
   enum Event {
     NONE,
     END_OF_FILE,
+    READ_ERROR,
     BEGIN_SECTION,
     END_SECTION,
     INT,
@@ -55,16 +56,17 @@ protected:
   size_t             current_event_blob_pos;
   size_t             current_event_blob_size;
   std::string        m_file_type;
+  int                m_file_version;
 
   std::set<std::string> skip_events;
 
-  void        read_raw_string (std::string& str);
-  int         read_raw_int();
-  float       read_raw_float();
-  void        read_raw_float_block (std::vector<float>& fb);
-  void        skip_raw_float_block();
+  bool        read_raw_string (std::string& str);
+  bool        read_raw_int (int &i);
+  bool        read_raw_float (float &f);
+  bool        read_raw_float_block (std::vector<float>& fb);
+  bool        skip_raw_float_block();
 
-  void        read_file_type();
+  void        read_file_type_and_version();
 
 public:
   InFile (const std::string& filename);
@@ -83,6 +85,7 @@ public:
   void         next_event();
   void         add_skip_event (const std::string& event);
   std::string  file_type();
+  int          file_version();
 
   GenericIn   *open_blob();
 };

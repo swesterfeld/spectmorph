@@ -34,11 +34,11 @@ class OutFile
 protected:
   void write_raw_string (const std::string& s);
   void write_raw_int (int i);
-  void write_file_type (const std::string& file_type);
+  void write_file_type_and_version (const std::string& file_type, int file_version);
 
 public:
-  OutFile (const std::string& filename, const std::string& file_type);
-  OutFile (GenericOut *outfile, const std::string& file_type);
+  OutFile (const std::string& filename, const std::string& file_type, int file_version);
+  OutFile (GenericOut *outfile, const std::string& file_type, int file_version);
 
   bool
   open_ok()

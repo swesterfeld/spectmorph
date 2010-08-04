@@ -32,7 +32,7 @@ using SpectMorph::MemOut;
 BseErrorType
 WavSet::save (const string& filename, bool embed_models)
 {
-  OutFile of (filename.c_str(), "SpectMorph::WavSet");
+  OutFile of (filename.c_str(), "SpectMorph::WavSet", SPECTMORPH_BINARY_FILE_VERSION);
   if (!of.open_ok())
     {
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
@@ -163,6 +163,10 @@ WavSet::load (const string& filename)
             }
           else
             assert (false);
+        }
+      else if (ifile.event() == InFile::READ_ERROR)
+        {
+          return BSE_ERROR_PARSE_ERROR;
         }
       else
         {

@@ -26,24 +26,25 @@ using SpectMorph::OutFile;
 using SpectMorph::GenericOut;
 using SpectMorph::StdioOut;
 
-OutFile::OutFile (const string& filename, const string& file_type)
+OutFile::OutFile (const string& filename, const string& file_type, int file_version)
 {
   file = StdioOut::open (filename);
   delete_file = true;
-  write_file_type (file_type);
+  write_file_type_and_version (file_type, file_version);
 }
 
-OutFile::OutFile (GenericOut *outfile, const string& file_type)
+OutFile::OutFile (GenericOut *outfile, const string& file_type, int file_version)
 {
   file = outfile;
   delete_file = false;
-  write_file_type (file_type);
+  write_file_type_and_version (file_type, file_version);
 }
 
 OutFile::~OutFile()
 {
   if (file != NULL)
     {
+      file->put_byte ('Z');  // eof
       if (delete_file)
         delete file;
 
@@ -52,12 +53,14 @@ OutFile::~OutFile()
 }
 
 void
-OutFile::write_file_type (const string& file_type)
+OutFile::write_file_type_and_version (const string& file_type, int file_version)
 {
   if (file)
     {
       file->put_byte ('T');  // type
       write_raw_string (file_type);
+      file->put_byte ('V');  // version
+      write_raw_int (file_version);
     }
 }
 

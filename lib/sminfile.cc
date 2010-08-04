@@ -29,26 +29,29 @@ InFile::InFile (const string& filename)
   file = GenericIn::open (filename);
   current_event = NONE;
 
-  read_file_type();
+  read_file_type_and_version();
 }
 
 InFile::InFile (GenericIn *file)
   : file (file)
 {
   current_event = NONE;
-  read_file_type();
+  read_file_type_and_version();
 }
 
 void
-InFile::read_file_type()
+InFile::read_file_type_and_version()
 {
-  m_file_type = "unknown";
-
   if (file)
     {
       if (file->get_byte() == 'T')
-        read_raw_string (m_file_type);
+        if (read_raw_string (m_file_type))
+          if (file->get_byte() == 'V')
+            if (read_raw_int (m_file_version))
+              return;
     }
+  m_file_type = "unknown";
+  m_file_version = 0;
 }
 
 InFile::Event
@@ -60,7 +63,7 @@ InFile::event()
   return current_event;
 }
 
-void
+bool
 InFile::read_raw_string (string& str)
 {
   size_t remaining;
@@ -73,7 +76,7 @@ InFile::read_raw_string (string& str)
             {
               file->skip (i + 1);
               str.assign (reinterpret_cast <char *> (mem), i);
-              return;
+              return true;
             }
         }
     }
@@ -83,6 +86,10 @@ InFile::read_raw_string (string& str)
   int c;
   while ((c = file->get_byte()) > 0)
     str += c;
+
+  if (c == 0)
+    return true;
+  return false;
 }
 
 void
@@ -90,15 +97,19 @@ InFile::next_event()
 {
   int c = file->get_byte();
 
-  if (c == EOF)
+  if (c == 'Z')  // eof
     {
-      current_event = END_OF_FILE;
+      if (file->get_byte() == EOF)   // Z needs to be followed by EOF
+        current_event = END_OF_FILE;
+      else                           // Z and more stuff is an error
+        current_event = READ_ERROR;
       return;
     }
   else if (c == 'B')
     {
-      current_event = BEGIN_SECTION;
-      read_raw_string (current_event_str);
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        current_event = BEGIN_SECTION;
     }
   else if (c == 'E')
     {
@@ -106,96 +117,126 @@ InFile::next_event()
     }
   else if (c == 'f')
     {
-      current_event = FLOAT;
-      read_raw_string (current_event_str);
-      current_event_float = read_raw_float();
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        if (read_raw_float (current_event_float))
+          current_event = FLOAT;
     }
   else if (c == 'i')
     {
-      current_event = INT;
-      read_raw_string (current_event_str);
-      current_event_int = read_raw_int();
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        if (read_raw_int (current_event_int))
+          current_event = INT;
     }
   else if (c == 's')
     {
-      current_event = STRING;
-      read_raw_string (current_event_str);
-      read_raw_string (current_event_data);
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        if (read_raw_string (current_event_data))
+          current_event = STRING;
     }
   else if (c == 'F')
     {
-      current_event = FLOAT_BLOCK;
-      read_raw_string (current_event_str);
-
-      if (skip_events.find (current_event_str) != skip_events.end())
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
         {
-          skip_raw_float_block();
-          return next_event();
-        }
-      else
-        {
-          read_raw_float_block (current_event_float_block);
+          if (skip_events.find (current_event_str) != skip_events.end())
+            {
+              if (skip_raw_float_block())
+                {
+                  next_event();
+                  return;
+                }
+            }
+          else
+            {
+              if (read_raw_float_block (current_event_float_block))
+                current_event = FLOAT_BLOCK;
+            }
         }
     }
   else if (c == 'O')
     {
-      current_event = BLOB;
-      read_raw_string (current_event_str);
-      current_event_blob_size = read_raw_int();
-      current_event_blob_pos  = file->get_pos();
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        {
+          int blob_size;
+          if (read_raw_int (blob_size))
+            {
+              current_event = BLOB;
+              current_event_blob_size = blob_size;
+              current_event_blob_pos  = file->get_pos();
 
-      // skip actual blob data
-      file->skip (current_event_blob_size);
+              // skip actual blob data
+              file->skip (current_event_blob_size); // FIXME: error handling
+            }
+        }
     }
   else
     {
-      printf ("unhandled char '%c'\n", c);
-      assert (false);
+      current_event = READ_ERROR;
+      //printf ("unhandled char '%c'\n", c);
+      //assert (false);
     }
 }
 
-int
-InFile::read_raw_int()
+bool
+InFile::read_raw_int (int& i)
 {
-  int i;
-  file->read (&i, 4);
-
-  // little endian encoding
-  return GINT32_FROM_LE (i);
+  if (file->read (&i, 4) == 4)
+    {
+      // little endian encoding
+      i = GINT32_FROM_LE (i);
+      return true;
+    }
+  else
+    {
+      return false;
+    }
 }
 
-float
-InFile::read_raw_float()
+bool
+InFile::read_raw_float (float &f)
 {
   union {
     float f;
     int i;
   } u;
-  u.i = read_raw_int();
-  return u.f;
+  bool result = read_raw_int (u.i);
+  f = u.f;
+  return result;
 }
 
-void
+bool
 InFile::read_raw_float_block (vector<float>& fb)
 {
-  size_t size = read_raw_int();
+  int size;
+  if (!read_raw_int (size))
+    return false;
 
   fb.resize (size);
   int *buffer = reinterpret_cast <int*> (&fb[0]);
 
-  file->read (&buffer[0], fb.size() * 4);
+  if (file->read (&buffer[0], fb.size() * 4) != fb.size() * 4)
+    return false;
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
   for (size_t x = 0; x < fb.size(); x++)
     buffer[x] = GINT32_FROM_LE (buffer[x]);
 #endif
+  return true;
 }
 
-void
+bool
 InFile::skip_raw_float_block()
 {
-  size_t size = read_raw_int();
-  file->skip (size * 4);
+  int size;
+  if (!read_raw_int (size))
+    return false;
+
+  file->skip (size * 4); // FIXME: error handling
+  return true;
 }
 
 GenericIn *
@@ -244,4 +285,10 @@ string
 InFile::file_type()
 {
   return m_file_type;
+}
+
+int
+InFile::file_version()
+{
+  return m_file_version;
 }

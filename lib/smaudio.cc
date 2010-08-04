@@ -62,6 +62,9 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
   if (ifile.file_type() != "SpectMorph::Audio")
     return BSE_ERROR_FORMAT_INVALID;
 
+  if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
+    return BSE_ERROR_FORMAT_INVALID;
+
   if (load_options == AUDIO_SKIP_DEBUG)
     {
       ifile.add_skip_event ("original_fft");
@@ -173,6 +176,10 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
               assert (false);
             }
         }
+      else if (ifile.event() == InFile::READ_ERROR)
+        {
+          return BSE_ERROR_PARSE_ERROR;
+        }
       ifile.next_event();
     }
   return BSE_ERROR_NONE;
@@ -209,7 +216,7 @@ SpectMorph::Audio::save (const string& filename)
 BseErrorType
 SpectMorph::Audio::save (GenericOut *file)
 {
-  OutFile of (file, "SpectMorph::Audio");
+  OutFile of (file, "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);
   assert (of.open_ok());
 
   of.begin_section ("header");
