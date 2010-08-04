@@ -11,7 +11,7 @@
 smenc - Program to encode a wav file into a SpectMorph model
 
 @heading SYNOPSIS
-	@manb{smenc} [@mani{OPTIONS}] @mani{WAV-File} @mani{SM-File}
+	@manb{smenc} [@mani{OPTIONS}] @mani{WAV-File} [ @mani{SM-File} ]
 
 @heading DESCRIPTION
         @manb{smenc} is a command line tool to create SpectMorph models from

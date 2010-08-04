@@ -1,19 +1,19 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010-07-02T13:11:32
-.TH "smplay" "1" "Wed Apr 19 00:50:37 2006" "spectmorph-0.1.0" "smplay Manual Page"
+.\" generation: 2010\-08\-04T13:19:52
+.TH "smplay" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.0" "smplay Manual Page"
 
 .SH
 NAME
 
 
 .PP
-smplay - Program to play a SpectMorph model
+smplay \- Program to play a SpectMorph model
 .SH
 SYNOPSIS
 
 
 .PP
-\fBsmplay\fP [\fIOPTIONS\fP] \fISM-File\fP
+\fBsmplay\fP [\fIOPTIONS\fP] \fISM\-File\fP
 .SH
 DESCRIPTION
 
@@ -22,14 +22,14 @@ DESCRIPTION
 \fBsmplay\fP is a command line based player for SpectMorph models
 (which can be created using \fBsmenc\fP). Playing can use the audio card,
 so that the model will be heard directly, or create a wav file instead
-if the \fB--export\fP option is used. Since the SpectMorph model consists
+if the \fB\-\-export\fP option is used. Since the SpectMorph model consists
 of sine waves and noise, options to disable one of these components exist.
 .SH
 OPTIONS
 
 
 .PP
-\fBsmplay\fP follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+\fBsmplay\fP follows the usual GNU command line syntax, with long options starting with two dashes ('\-').
 .br
 
 .br
@@ -37,34 +37,34 @@ OPTIONS
 
 
 .TP
-\fB-h\fP, \fB--help\fP 
+\fB\-h\fP, \fB\-\-help\fP 
 .br
 Shows a brief help message.
 
 .TP
-\fB-v\fP, \fB--version\fP 
+\fB\-v\fP, \fB\-\-version\fP 
 .br
 Prints out \fBbeast\fP and component versions and file paths.
 
 .TP
-\fB--rate\fP \fI<sampling rate>\fP 
+\fB\-\-rate\fP \fI<sampling rate>\fP 
 .br
 Set replay rate manually; also useful for specifying the desired rate of
-the wav file, if --export is used.
+the wav file, if \-\-export is used.
 
 .TP
-\fB--no-noise\fP 
+\fB\-\-no\-noise\fP 
 .br
 Disable noise decoder, so that only the sine wave part of the signal is
 decoded.
 
 .TP
-\fB--no-sines\fP 
+\fB\-\-no\-sines\fP 
 .br
 Disable sine decoder, so that only the noise part of the signal is decoded.
 
 .TP
-\fB--export\fP \fI<wav filename>\fP 
+\fB\-\-export\fP \fI<wav filename>\fP 
 .br
 Instead of playing the file, write the output to a wav file.
 

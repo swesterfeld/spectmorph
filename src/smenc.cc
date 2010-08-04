@@ -162,7 +162,7 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  printf ("usage: %s [ <options> ] <src_audio_file> <dest_sm_file>\n", options.program_name.c_str());
+  printf ("usage: %s [ <options> ] <src_audio_file> [ <dest_sm_file> ]\n", options.program_name.c_str());
   printf ("\n");
   printf ("options:\n");
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
@@ -241,7 +241,24 @@ main (int argc, char **argv)
   bse_init_inprocess (&argc, &argv, NULL, values);
   options.parse (&argc, &argv);
 
-  if (argc != 3)
+  string input_file, sm_file;
+  if (argc == 2)
+    {
+      input_file = argv[1];
+
+      // replace suffix: foo.wav => foo.sm
+      size_t dot_pos = input_file.rfind ('.');
+      if (dot_pos == string::npos)
+        sm_file = input_file + ".sm";
+      else
+        sm_file = input_file.substr (0, dot_pos) + ".sm";
+    }
+  else if (argc == 3)
+    {
+      input_file = argv[1];
+      sm_file = argv[2];
+    }
+  else
     {
       options.print_usage();
       exit (1);
@@ -250,31 +267,31 @@ main (int argc, char **argv)
   /* open input */
   BseErrorType error;
 
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
+  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (input_file.c_str(), &error);
   if (!wave_file_info)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
       exit (1);
     }
 
   BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
   if (!waveDsc)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
       exit (1);
     }
 
   GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
   if (!dhandle)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
       exit (1);
     }
 
   error = gsl_data_handle_open (dhandle);
   if (error)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
       exit (1);
     }
 
@@ -335,5 +352,5 @@ main (int argc, char **argv)
           audio_blocks[i].original_fft.clear();
         }
     }
-  encoder.save (argv[2], options.fundamental_freq);
+  encoder.save (sm_file, options.fundamental_freq);
 }

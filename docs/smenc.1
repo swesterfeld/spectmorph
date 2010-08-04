@@ -1,19 +1,19 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010-07-02T13:11:32
-.TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "spectmorph-0.1.0" "smenc Manual Page"
+.\" generation: 2010\-08\-04T13:19:52
+.TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.0" "smenc Manual Page"
 
 .SH
 NAME
 
 
 .PP
-smenc - Program to encode a wav file into a SpectMorph model
+smenc \- Program to encode a wav file into a SpectMorph model
 .SH
 SYNOPSIS
 
 
 .PP
-\fBsmenc\fP [\fIOPTIONS\fP] \fIWAV-File\fP \fISM-File\fP
+\fBsmenc\fP [\fIOPTIONS\fP] \fIWAV\-File\fP [ \fISM\-File\fP ]
 .SH
 DESCRIPTION
 
@@ -23,20 +23,20 @@ DESCRIPTION
 audio files. Usually the input file should contain a single note of
 some instrument, like a single C4 note. Since lower notes require
 different analysis parameters than higher notes, its usually a good
-idea to use the -m option to let the encoding algorithm know which
+idea to use the \-m option to let the encoding algorithm know which
 note is being encoded.
 .br
 
 .br
 There is also a quality / time tradeoff, which means you can use the
--O0, -O1 or -O2 option to specify how accurate the analysis should be,
+\-O0, \-O1 or \-O2 option to specify how accurate the analysis should be,
 with higher numbers meaning better quality, but longer analysis time.
 .SH
 OPTIONS
 
 
 .PP
-\fBsmenc\fP follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+\fBsmenc\fP follows the usual GNU command line syntax, with long options starting with two dashes ('\-').
 .br
 
 .br
@@ -44,53 +44,53 @@ OPTIONS
 
 
 .TP
-\fB-h\fP, \fB--help\fP 
+\fB\-h\fP, \fB\-\-help\fP 
 .br
 Shows a brief help message.
 
 .TP
-\fB-v\fP, \fB--version\fP 
+\fB\-v\fP, \fB\-\-version\fP 
 .br
 Prints out \fBsmenc\fP version.
 
 .TP
-\fB-f\fP \fI<frequency>\fP 
+\fB\-f\fP \fI<frequency>\fP 
 .br
-Specify fundamental frequency in Hz - this information is optional, but
+Specify fundamental frequency in Hz \- this information is optional, but
 should be supplied when known, to increase the accuracy of the model.
-It is equivalent to specifying the midi note; only one of -m and -f
+It is equivalent to specifying the midi note; only one of \-m and \-f
 should be used.
 
 .TP
-\fB-m\fP \fI<midi-note>\fP 
+\fB\-m\fP \fI<midi\-note>\fP 
 .br
 Specify the midi note of the input; this will be used to set the fundamental
 frequency in Hz. Adding this information is not required, but increases the
 accuracy of the analysis algorithm.
-Only one of -m and -f should be used.
+Only one of \-m and \-f should be used.
 
 .TP
-\fB-O\fP \fI<level>\fP 
+\fB\-O\fP \fI<level>\fP 
 .br
 For all frames of the input file, once smenc has found out which sine waves
 can be used to describe the frame, it needs to estimate the magnitude and
 phase of each sine wave for this frame. The optimization level chooses the
 algorithm used for finding the magnitude and phase; the higher the level,
-the more accurate the result will be. However, it defaults to -O0, since
+the more accurate the result will be. However, it defaults to \-O0, since
 this is the fastest algorithm: estimating the magnitude/phase from the
-FFT result. A good choice is also -O1, which is somewhat slower, but also
-somewhat better. Finally, -O2 is the highest possible optimization level,
+FFT result. A good choice is also \-O1, which is somewhat slower, but also
+somewhat better. Finally, \-O2 is the highest possible optimization level,
 and should give "optimal" results in a well defined mathematical optimization
 problem. It is however so slow that it is often not possible to use this
 setting.
 
 .TP
-\fB-s\fP 
+\fB\-s\fP 
 .br
 Right now, smenc defaults to including lots of information in the output
 .sm file, that is helpful for debugging smenc, but not essential for
 replaying the file. Therefore the files created by smenc are very large
-by default. To limit the file size, using the -s option instruct smenc
+by default. To limit the file size, using the \-s option instruct smenc
 to create a "stripped" model, that contains only the information needed
 to play it. These stripped models are usually much smaller than unstripped
 models.
