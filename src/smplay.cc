@@ -47,13 +47,14 @@ using std::string;
 /// @cond
 struct Options
 {
-  String	program_name; /* FIXME: what to do with that */
-  bool          loop;
-  bool          noise_enabled;
-  bool          sines_enabled;
-  int           rate;
-  int           midi_note;
-  String        export_wav;
+  String	      program_name; /* FIXME: what to do with that */
+  SineDecoder::Mode   decoder_mode;
+  bool                loop;
+  bool                noise_enabled;
+  bool                sines_enabled;
+  int                 rate;
+  int                 midi_note;
+  String              export_wav;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -65,6 +66,7 @@ struct Options
 
 Options::Options () :
   program_name ("smplay"),
+  decoder_mode (SineDecoder::MODE_PHASE_SYNC_OVERLAP),
   loop (false),
   noise_enabled (true),
   sines_enabled (true),
@@ -127,6 +129,18 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--no-sines"))
         {
           sines_enabled = false;
+        }
+      else if (check_arg (argc, argv, &i, "--decoder-mode", &opt_arg) || check_arg (argc, argv, &i, "-M", &opt_arg))
+        {
+          if (strcmp (opt_arg, "phase-sync") == 0)
+            decoder_mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
+          else if (strcmp (opt_arg, "tracking") == 0)
+            decoder_mode = SineDecoder::MODE_TRACKING;
+          else
+            {
+              g_printerr ("unknown decoder mode: %s\n", opt_arg);
+              exit (1);
+            }
         }
     }
 
@@ -266,7 +280,7 @@ main (int argc, char **argv)
 
   vector<float> sample;
 
-  SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
+  SineDecoder::Mode mode = options.decoder_mode;
   NoiseDecoder noise_decoder (audio.mix_freq, format.rate);
   SineDecoder  sine_decoder (format.rate, frame_size, frame_step, mode);
 
