@@ -1,4 +1,6 @@
-EXTRA_DIST = sinsignal.py
+include $(top_srcdir)/Makefile.decl
+
+EXTRA_DIST += sinsignal.py
 
 AM_CXXFLAGS = $(PYTHON_INCLUDES) -I$(top_srcdir)/lib $(BSE_CFLAGS) $(SSE_FLAGS)
 

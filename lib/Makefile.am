@@ -1,3 +1,5 @@
+include $(top_srcdir)/Makefile.decl
+
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(SSE_FLAGS)
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \

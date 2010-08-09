@@ -1,3 +1,5 @@
+include $(top_srcdir)/Makefile.decl
+
 AM_CXXFLAGS=$(BSE_CFLAGS) $(AO_CFLAGS) $(GTK_CFLAGS) -O3 -I$(top_srcdir)/lib $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(SSE_FLAGS)
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
