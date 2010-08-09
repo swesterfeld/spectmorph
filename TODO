@@ -35,6 +35,7 @@ smlive:
 
 tests:
 - add test cases
+- add deterministic random to noise decoder for tests
 
 lag diagrams of note start
 
