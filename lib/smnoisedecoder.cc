@@ -102,7 +102,7 @@ next_power2 (size_t i)
  * \param window  window function to be used; should be the same or similar to the one used in encoding
  */
 void
-NoiseDecoder::process (Frame& frame,
+NoiseDecoder::process (const Frame& frame,
 		       const vector<double>& window,
                        vector<float>& decoded_residue)
 {

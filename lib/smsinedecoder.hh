@@ -57,9 +57,10 @@ private:
   Mode mode;
 public:
   SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
-  void process (Frame& frame,
+  void process (const Frame& frame,
                 const Frame& next_frame,
-                const std::vector<double>& window);
+                const std::vector<double>& window,
+                std::vector<float>& decoded_sines);
 };
 
 }

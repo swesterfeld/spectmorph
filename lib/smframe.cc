@@ -28,7 +28,6 @@ using SpectMorph::Frame;
 Frame::Frame (size_t frame_size)
   : frame_size (frame_size)
 {
-  decoded_sines.resize (frame_size);
   noise_envelope.resize (256);
 }
 
@@ -45,7 +44,6 @@ Frame::Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size) :
     noise_envelope (audio_block.noise.begin(), audio_block.noise.end()),
     debug_samples (audio_block.debug_samples)
 {
-  decoded_sines.resize (frame_size);
 }
 
 /**

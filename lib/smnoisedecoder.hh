@@ -37,7 +37,7 @@ public:
   NoiseDecoder (double orig_mix_freq,
                 double mix_freq);
 
-  void process (Frame& frame,
+  void process (const Frame& frame,
                 const std::vector<double>& window,
                 std::vector<float>& decoded_residue);
 };

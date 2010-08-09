@@ -183,9 +183,11 @@ class Osc : public OscBase {
                     }
                   last_frame = frame;
 
-                  sine_decoder->process (frame, next_frame, window);
+                  vector<float> decoded_sines (frame_size);   // FIXME: performance problem
+
+                  sine_decoder->process (frame, next_frame, window, decoded_sines);
                   for (size_t i = 0; i < frame_size; i++)
-                    samples[i] += frame.decoded_sines[i];
+                    samples[i] += decoded_sines[i];
 
                   if (frame_idx != loop_point) /* if in loop mode: loop current frame */
                     frame_idx++;

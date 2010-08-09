@@ -53,16 +53,17 @@ SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step,
  * @param window       the reconstruction window used for MODE_PHASE_SYNC_OVERLAP
  */
 void
-SineDecoder::process (Frame& frame,
+SineDecoder::process (const Frame& frame,
                       const Frame& next_frame,
-		      const vector<double>& window)
+		      const vector<double>& window,
+                      vector<float>& decoded_sines)
 {
-  fill (frame.decoded_sines.begin(), frame.decoded_sines.end(), 0.0);
+  fill (decoded_sines.begin(), decoded_sines.end(), 0.0);
 
   /* phase synchronous reconstruction (no loops) */
   if (mode == MODE_PHASE_SYNC_OVERLAP)
     {
-      AlignedArray<float, 16> decoded_sines (frame_size);
+      AlignedArray<float, 16> aligned_decoded_sines (frame_size);
       for (size_t i = 0; i < frame.freqs.size(); i++)
         {
           const double SA = 0.5;
@@ -76,10 +77,10 @@ SineDecoder::process (Frame& frame,
           params.mag = sqrt (smag * smag + cmag * cmag) * SA;
           params.mode = VectorSinParams::ADD;
 
-          fast_vector_sinf (params, &decoded_sines[0], &decoded_sines[frame_size]);
+          fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
         }
       for (size_t t = 0; t < frame_size; t++)
-        frame.decoded_sines[t] = decoded_sines[t] * window[t];
+        decoded_sines[t] = aligned_decoded_sines[t] * window[t];
       return;
     }
 
@@ -138,7 +139,7 @@ SineDecoder::process (Frame& frame,
 		{
 		  double inter = i / double (frame_step);
 
-		  frame.decoded_sines [i] += sin (phase) * ((1 - inter) * mag + inter * nmag) * SIN_AMP;
+		  decoded_sines [i] += sin (phase) * ((1 - inter) * mag + inter * nmag) * SIN_AMP;
 		  phase += (1 - inter) * phase_delta + inter * nphase_delta;
 		  while (phase > 2 * M_PI)
 		    phase -= 2 * M_PI;
@@ -149,7 +150,7 @@ SineDecoder::process (Frame& frame,
 	    {
 	      for (size_t i = 0; i < frame_size; i++)
 		{
-		  frame.decoded_sines [i] += sin (phase) * window[i] * mag * SIN_AMP;
+		  decoded_sines [i] += sin (phase) * window[i] * mag * SIN_AMP;
 		  phase += phase_delta;
 		  while (phase > 2 * M_PI)
 		    phase -= 2 * M_PI;
@@ -182,7 +183,7 @@ SineDecoder::process (Frame& frame,
 			{
 			  double inter = i / double (frame_step);
 
-			  frame.decoded_sines [i] += sin (phase) * (1 - inter) * mag * SIN_AMP;
+			  decoded_sines [i] += sin (phase) * (1 - inter) * mag * SIN_AMP;
 			  phase += phase_delta;
 			  while (phase > 2 * M_PI)
 			    phase -= 2 * M_PI;
@@ -192,7 +193,7 @@ SineDecoder::process (Frame& frame,
 		    {
 		      for (size_t i = 0; i < frame_size; i++)
 			{
-			  frame.decoded_sines [i] += sin (phase) * window[i] * mag * SIN_AMP;
+			  decoded_sines [i] += sin (phase) * window[i] * mag * SIN_AMP;
 			  phase += phase_delta;
 			  while (phase > 2 * M_PI)
 			    phase -= 2 * M_PI;
@@ -221,7 +222,7 @@ SineDecoder::process (Frame& frame,
 			{
 			  double inter = i / double (frame_step);
 
-			  frame.decoded_sines[i] += sin (phase) * inter * mag * SIN_AMP; /* XXX */
+			  decoded_sines[i] += sin (phase) * inter * mag * SIN_AMP; /* XXX */
 			  phase += phase_delta;
 			  while (phase > 2 * M_PI)
 			    phase -= 2 * M_PI;

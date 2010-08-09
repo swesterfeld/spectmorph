@@ -276,6 +276,9 @@ main (int argc, char **argv)
   if (options.loop)
     end_point *= 10;
 
+  vector<float> decoded_residue (frame_size);
+  vector<float> decoded_sines (frame_size);
+
   // decode one frame before actual data (required for tracking decoder)
 
   if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)
@@ -286,14 +289,12 @@ main (int argc, char **argv)
 
       if (options.sines_enabled)
         {
-          sine_decoder.process (zero_frame, one_frame, window);
+          sine_decoder.process (zero_frame, one_frame, window, decoded_sines);
           for (size_t i = 0; i < frame_size; i++)
-            sample[pos + i] += zero_frame.decoded_sines[i];
+            sample[pos + i] += decoded_sines[i];
         }
       pos += frame_step;
     }
-
-  vector<float> decoded_residue (frame_size);
 
   // decode actual data
   for (size_t n = 0; n < end_point; n++)
@@ -308,9 +309,9 @@ main (int argc, char **argv)
 
       if (options.sines_enabled)
         {
-          sine_decoder.process (frame, next_frame, window);
+          sine_decoder.process (frame, next_frame, window, decoded_sines);
           for (size_t i = 0; i < frame_size; i++)
-            sample[pos + i] += frame.decoded_sines[i];
+            sample[pos + i] += decoded_sines[i];
         }
       if (options.noise_enabled)
         {
