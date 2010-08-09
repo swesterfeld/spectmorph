@@ -83,6 +83,7 @@ class Osc : public OscBase {
     int    loop_point;
     float last_sync_level;
     float current_freq;
+    bool   need_retrigger;
     Frame last_frame;
     vector<double> window;
     vector<double> samples;
@@ -91,6 +92,7 @@ class Osc : public OscBase {
       audio (NULL),
       sine_decoder (NULL),
       noise_decoder (NULL),
+      need_retrigger (false),
       last_frame (0)
     {
       //
@@ -103,6 +105,7 @@ class Osc : public OscBase {
       have_samples = 0;
       current_freq = 0;
       last_frame = Frame (0);
+      need_retrigger = true;
     }
     inline double fmatch (double f1, double f2)
     {
@@ -114,9 +117,10 @@ class Osc : public OscBase {
       const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
       gfloat *audio_out = ostream (OCHANNEL_AUDIO_OUT).values;
       float new_freq = BSE_SIGNAL_TO_FREQ (freq_in[0]);
-      if (new_freq != current_freq)
+      if (need_retrigger)
         {
           retrigger (new_freq);
+          need_retrigger = false;
         }
 
       if (!audio)   // nothing loaded
