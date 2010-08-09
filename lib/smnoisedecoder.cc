@@ -103,9 +103,10 @@ next_power2 (size_t i)
  */
 void
 NoiseDecoder::process (Frame& frame,
-		       const vector<double>& window)
+		       const vector<double>& window,
+                       vector<float>& decoded_residue)
 {
-  const size_t block_size = next_power2 (frame.decoded_residue.size());
+  const size_t block_size = next_power2 (decoded_residue.size());
 
   vector<double> interpolated_spectrum (block_size + 2);
   noise_envelope_to_spectrum (frame.noise_envelope, interpolated_spectrum);
@@ -135,10 +136,10 @@ NoiseDecoder::process (Frame& frame,
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   vector<double> in (block_size);
   gsl_power2_fftsr (block_size, &interpolated_spectrum[0], &in[0]);
-  for (size_t i = 0; i < frame.decoded_residue.size(); i++)
+  for (size_t i = 0; i < decoded_residue.size(); i++)
     {
       // double windowing will allow phase modifications
-      frame.decoded_residue[i] = in[i] * window[i];
+      decoded_residue[i] = in[i] * window[i];
       //debug ("out:%lld %f\n", pos * overlap / block_size, out_sample[i]);
     }
 }

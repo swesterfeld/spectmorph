@@ -293,6 +293,8 @@ main (int argc, char **argv)
       pos += frame_step;
     }
 
+  vector<float> decoded_residue (frame_size);
+
   // decode actual data
   for (size_t n = 0; n < end_point; n++)
     {
@@ -312,9 +314,9 @@ main (int argc, char **argv)
         }
       if (options.noise_enabled)
         {
-          noise_decoder.process (frame, window);
+          noise_decoder.process (frame, window, decoded_residue);
           for (size_t i = 0; i < frame_size; i++)
-            sample[pos + i] += frame.decoded_residue[i];
+            sample[pos + i] += decoded_residue[i];
         }
       pos += frame_step;
     }

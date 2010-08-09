@@ -36,7 +36,6 @@ public:
   std::vector<double> freqs;                 //!< frequencies of the sine waves in this frame
   std::vector<double> phases;                //!< magnitude and phase of the sine waves, as sin and cos magnitude
   std::vector<double> noise_envelope;        //!< noise envelope representing residue spectrum without sines
-  std::vector<double> decoded_residue;       //!< residue decoded by SpectMorph::NoiseDecoder
   std::vector<double> decoded_sines;         //!< sine waves decoded by SpectMorph::SineDecoder
   std::vector<float>  debug_samples;         //!< original sample values - debugging only
 

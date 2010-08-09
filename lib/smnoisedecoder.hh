@@ -38,7 +38,8 @@ public:
                 double mix_freq);
 
   void process (Frame& frame,
-                const std::vector<double>& window);
+                const std::vector<double>& window,
+                std::vector<float>& decoded_residue);
 };
 
 }
