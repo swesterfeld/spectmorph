@@ -1,5 +1,7 @@
 smresvalue.sh
 testfastsin
 testfastsin.o
+testblob
+testblob.o
 .libs
 .deps

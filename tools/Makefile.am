@@ -13,6 +13,3 @@ ascii2wav_LDADD = $(BSE_LIBS)
 
 wav2ascii_SOURCES = wav2ascii.cc
 wav2ascii_LDADD = $(BSE_LIBS)
-
-smsetload_SOURCES = smsetload.cc
-smsetload_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
