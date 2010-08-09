@@ -1,8 +1,10 @@
+include $(top_srcdir)/Makefile.decl
+
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-EXTRA_DIST = delta.py
+EXTRA_DIST += delta.py
 
 noinst_PROGRAMS = ascii2wav wav2ascii smsetload
 

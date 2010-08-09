@@ -1,4 +1,6 @@
-EXTRA_DIST = spectmorph.odt
+include $(top_srcdir)/Makefile.decl
+
+EXTRA_DIST += spectmorph.odt
 
 dist_man_MANS = smenc.1 smplay.1 smvisualize.1 smstrip.1 smwavset.1
 EXTRA_DIST += smenc.1.doxi smplay.1.doxi smvisualize.1.doxi smstrip.1.doxi smwavset.1.doxi
