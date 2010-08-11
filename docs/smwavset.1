@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-08\-04T13:19:52
+.\" generation: 2010\-08\-11T15:06:34
 .TH "smwavset" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.0" "smwavset Manual Page"
 
 .SH
@@ -117,6 +117,14 @@ delta [ <options> ] <wset_filename1>...<wset_filenameN>
 Computes the difference between many wavsets. The differencce between
 the first and second wavset is the reference which is 100%. The other
 wavsets are measured against that reference.
+.SS
+link <smset>
+
+
+.PP
+
+This command includes all .sm files that are referred to by the smset
+in one big file. This is useful as final step when building instruments.
 .SH
 SEE ALSO
 

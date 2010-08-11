@@ -73,6 +73,10 @@ smwavset - Program to manage spectmorph multiwave files
         the first and second wavset is the reference which is 100%. The other
         wavsets are measured against that reference.
 
+@subheading link <smset>
+
+        This command includes all .sm files that are referred to by the smset
+        in one big file. This is useful as final step when building instruments.
 
 @heading SEE ALSO
 @uri{smenc.1.html,smenc(1)},
