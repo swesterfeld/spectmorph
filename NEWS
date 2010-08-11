@@ -1,3 +1,20 @@
+Overview of Changes in spectmorph-0.1.0:
+
+* file format changes
+  - instruments based on more than one sample can be shipped as one single file
+  - various performance optimizations
+  - store data as little endian (since this is more likely to be the host endianness)
+  - broken files or old files can be recognized and rejected
+* automated tuning algorithm (smextract auto-tune)
+* supported looping (for playing notes that is longer than original sample)
+* added beast plugin for playing SpectMorph instruments
+* added jack client for playing SpectMorph instruments
+* added zero padding before start of a sample to get better initial frames
+* compile with -Wall
+* allow single file argument for smenc (output filename will be constructed with .sm extension)
+* support setting smplay decoder mode via command line parameter
+* refactoring, cleanups
+
 Overview of Changes in spectmorph-0.0.3:
 
 * added encoder algorithm to find attack envelope, this makes piano sound much
