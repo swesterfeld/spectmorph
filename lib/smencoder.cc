@@ -883,8 +883,9 @@ Encoder::compute_attack_params (const vector<float>& window)
   double error = 1e7;
   vector<double> scale (frames);
 
-  attack.attack_start_ms = 0;
-  attack.attack_end_ms = 10;
+  double zero_values_at_start_ms = zero_values_at_start / mix_freq * 1000;
+  attack.attack_start_ms = zero_values_at_start_ms;
+  attack.attack_end_ms = zero_values_at_start_ms + 10;
   while (no_modification < 3000)
     {
       double R;
@@ -907,7 +908,7 @@ Encoder::compute_attack_params (const vector<float>& window)
       new_attack.attack_end_ms = max (new_attack.attack_end_ms, new_attack.attack_start_ms + 5);
 
       if (new_attack.attack_start_ms < new_attack.attack_end_ms &&
-          new_attack.attack_start_ms >= 0 &&
+          new_attack.attack_start_ms >= zero_values_at_start_ms &&
           new_attack.attack_end_ms < 200)
         {
           const double new_error = attack_error (unscaled_signal, window, new_attack, scale);
