@@ -179,6 +179,14 @@ MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
 ])
 AC_SUBST(SSE_FLAGS)
 
+AC_ARG_ENABLE(oprofile,AS_HELP_STRING([--enable-oprofile], [setup compiler flags to allow oprofile usage]),
+[
+MC_PROG_CC_SUPPORTS_OPTION([-fno-omit-frame-pointer], [
+  CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+  CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
+])
+])
+
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile
 ])
