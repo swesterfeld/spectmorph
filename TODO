@@ -1,7 +1,3 @@
-SpectMorph-0.1.0:
-- jack support
-- recut piano samples
-
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
@@ -12,9 +8,9 @@ smenc:
 - use averaging to estimate noise
 - make window function configurable
 - debug performance problems
-  => implement downsampling for really low notes      [0.0.3]
-  => use symmetry to speed up optimize_partials       [0.0.3]
-  => make a squared window table (optimize_partials)  [0.0.3]
+  => implement downsampling for really low notes
+  => use symmetry to speed up optimize_partials
+  => make a squared window table (optimize_partials)
 - move partial tracking from decoder to encoder
 - move smmath.hh code to libbse
 - implement sinc interpolation for spectrum phase
@@ -31,7 +27,7 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- implement efficient (IFFT) live decoder   [0.0.3]
+- implement efficient (IFFT) live decoder
 
 tests:
 - add test cases
@@ -52,6 +48,3 @@ samples:
 
 debian:
 - package boost-numeric-bindings
-
-jack:
-- jack spectmorph player
