@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-EXTRA_DIST += spectmorph.odt
+EXTRA_DIST += spectmorph.odt spectmorph.pdf
 
 dist_man_MANS = smenc.1 smplay.1 smvisualize.1 smstrip.1 smwavset.1
 EXTRA_DIST += smenc.1.doxi smplay.1.doxi smvisualize.1.doxi smstrip.1.doxi smwavset.1.doxi
@@ -18,5 +18,6 @@ publish-docs:
 	  $(DOXER) doxi2html $$i.doxi; \
 	  cp $$i.html $(DOCS_DIR); \
         done
+	cp spectmorph.pdf $(DOCS_DIR)
 	cd $(top_srcdir); doxygen Doxyfile; cp -a html/* $(DOCS_DIR)/api
 	cd $(DOCS_DIR) && find . -type f -print0 | xargs -0 git add
