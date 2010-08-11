@@ -48,3 +48,6 @@ samples:
 
 debian:
 - package boost-numeric-bindings
+
+documentation:
+- update API documentation with new classes (LiveDecoder, GenericIn*)
