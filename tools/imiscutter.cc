@@ -216,7 +216,7 @@ main (int argc, char **argv)
       silence_threshold -= .1;
     }
 
-  assert (best_silence_threshold < -5 && best_silence_threshold > -59);
+  assert (best_silence_threshold < -5);
 
   bool  in_region = false;
   int   region_number = first_region;
