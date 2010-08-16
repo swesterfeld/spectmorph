@@ -385,6 +385,7 @@ main (int argc, char **argv)
 
           pos += todo;
         }
+      ao_close (play_device);
     }
   else /* export wav */
     {
