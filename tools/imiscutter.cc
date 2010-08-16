@@ -204,13 +204,17 @@ main (int argc, char **argv)
     max_peak = max (max_peak, peaks[i]);
 
   for (size_t i = 0; i < peaks.size(); i++)
-    peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
+    {
+      peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
+      // printf ("%.17g\n", peaks[i]);
+    }
 
 
   double best_silence_threshold = 0, silence_threshold = 0;
   while (silence_threshold > -60)
     {
-      if (count_regions (peaks, silence_threshold) == region_count)
+      if (count_regions (peaks, silence_threshold) == region_count
+      &&  peaks.front() < silence_threshold && peaks.back() < silence_threshold)
         best_silence_threshold = silence_threshold;
 
       silence_threshold -= .1;
