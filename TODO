@@ -43,9 +43,9 @@ adventure:
 
 samples:
 - test with samples from the net
-- piano samples are not properly clipped at the beginning
 - write automatic cutter for IMIS samples
 - preserve microintonanation by using ping pong loops
+- write sf2 to smset converter
 
 debian:
 - package boost-numeric-bindings
