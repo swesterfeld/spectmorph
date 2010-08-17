@@ -19,6 +19,7 @@ Samples:
 * cross vector quantization to save space
 * mmap loadable
 * demand-loading of instruments (should not need all instruments to be loaded at start)
+* author, descripion and license fields
 
 TODO:
 * articulation (staccato vs. true legato)
