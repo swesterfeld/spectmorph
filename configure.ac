@@ -57,6 +57,18 @@ Debian users: aptitude install libgtk2.0-dev
     AC_SUBST(GTK_LIBS)
 ])
 dnl
+dnl libgtkmm
+dnl
+AC_DEFUN([AC_GTKMM_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(GTKMM, [gtkmm-2.4],[:],[
+      AC_MSG_ERROR([You need to install libgtkmm 2.4 to build this package.
+
+Debian users: aptitude install libgtkmm-2.4-dev
+])
+    ])
+])
+dnl
 dnl libao
 dnl
 AC_DEFUN([AC_AO_REQUIREMENTS],
@@ -163,6 +175,7 @@ AC_GLIB_REQUIREMENTS
 AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
+AC_GTKMM_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
 AC_JACK_REQUIREMENTS
 BOOST_REQUIRE([1.34])
