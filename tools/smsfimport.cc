@@ -25,7 +25,7 @@
 
 #if 1
 static inline void
-debug (char *fmt, ...)
+debug (const char *fmt, ...)
 {
 }
 #else
@@ -425,7 +425,7 @@ main (int argc, char **argv)
       sample_data.push_back (read_si16 (in) * (1 / 32768.0));
       len -= 2;
     }
-  printf ("sample_data len: %d\n", sample_data.size());
+  printf ("sample_data len: %zd\n", sample_data.size());
 
   fcc = read_fourcc (in);
   printf ("fcc<list> = %s\n", fcc.c_str());
