@@ -21,6 +21,8 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
+#include <bse/bsemain.h>
+
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -227,6 +229,8 @@ is_newline (char ch)
 int
 main(int argc, char **argv)
 {
+  bse_init_inprocess (&argc, &argv, NULL, NULL);
+
   if (argc != 2)
     {
       printf ("usage: smjack <smset_filename>\n");
