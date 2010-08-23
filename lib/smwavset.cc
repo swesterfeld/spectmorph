@@ -89,6 +89,9 @@ WavSet::load (const string& filename)
   if (ifile.file_type() != "SpectMorph::WavSet")
     return BSE_ERROR_FORMAT_INVALID;
 
+  if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
+    return BSE_ERROR_FORMAT_INVALID;
+
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
