@@ -43,9 +43,10 @@ using std::string;
 using std::vector;
 
 enum {
-  GEN_INSTRUMENT = 41,
-  GEN_SAMPLE     = 53,
-  GEN_ROOT_KEY   = 58
+  GEN_INSTRUMENT    = 41,
+  GEN_SAMPLE        = 53,
+  GEN_SAMPLE_MODES  = 54,
+  GEN_ROOT_KEY      = 58
 };
 
 struct Generator
@@ -433,8 +434,9 @@ gen2name (int i)
     { 41, "instrument" },
     { 43, "key-range" },
     { 44, "velocity-range" },
-    { 53, "sample-id" },
-    { GEN_ROOT_KEY, "root-key" },
+    { GEN_SAMPLE,       "sample-id" },
+    { GEN_SAMPLE_MODES, "sample-modes" },
+    { GEN_ROOT_KEY,     "root-key" },
     { 0, NULL }
   };
   for (int k = 0; g2n[k].name; k++)
@@ -698,7 +700,7 @@ main (int argc, char **argv)
                 }
               printf ("%s\n", preset_xname.c_str());
 
-              string cmd = Birnet::string_printf ("smwavset init %s.wset", preset_xname.c_str());
+              string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
               xsystem (cmd);
 
               Zone& zone = pi->zones[0];
@@ -715,17 +717,23 @@ main (int argc, char **argv)
               Instrument instrument = instruments[inst_index];
               printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
 
-              int root_key = -1;
               for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
                 {
                   const size_t zone_index = zi - instrument.zones.begin();
 
                   printf ("zone %zd:\n", zone_index);
                   string filename = Birnet::string_printf ("zone%zd.wav", zone_index);
+                  string smname = Birnet::string_printf ("zone%zd.sm", zone_index);
 
+                  int root_key = -1;
                   Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
                   if (gi)
                     root_key = gi->amount;
+
+                  int sample_modes = 0;
+                  gi = find_gen (GEN_SAMPLE_MODES, zi->generators);
+                  if (gi)
+                    sample_modes = gi->amount;
 
                   gi = find_gen (GEN_SAMPLE, zi->generators);
                   if (gi)
@@ -754,9 +762,16 @@ main (int argc, char **argv)
                         }
                       close (fd);
 
-                      xsystem (Birnet::string_printf ("smwavset add %s.wset %d %s", preset_xname.c_str(), midi_note, filename.c_str()));
+                      xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
+                      if (sample_modes & 1)
+                        {
+                          xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                        }
+                      xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
+                      xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s", preset_xname.c_str(), midi_note, smname.c_str()));
                     }
                 }
+              xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
             }
         }
     }
