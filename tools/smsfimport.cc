@@ -17,11 +17,16 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include <vector>
 
 #include "smgenericin.hh"
 #include <stdlib.h>
+#include <bse/gsldatahandle.h>
+#include <bse/gsldatautils.h>
+#include <bse/bsemain.h>
 
 #if 1
 static inline void
@@ -37,12 +42,31 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+enum {
+  GEN_INSTRUMENT = 41,
+  GEN_SAMPLE     = 53,
+  GEN_ROOT_KEY   = 58
+};
+
+struct Generator
+{
+  int generator;
+  int amount;
+};
+
+struct Zone
+{
+  vector<Generator> generators;
+};
+
 struct Preset
 {
-  string name;
-  int    preset;
-  int    bank;
-  int    preset_bag_index;
+  string       name;
+  int          preset;
+  int          bank;
+  int          preset_bag_index;
+
+  vector<Zone> zones;
 };
 
 struct BagEntry
@@ -51,8 +75,32 @@ struct BagEntry
   int mod_index;
 };
 
-vector<Preset> presets;
-vector<BagEntry> preset_bag;
+struct Instrument
+{
+  string       name;
+  int          instrument_bag_index;
+  vector<Zone> zones;
+};
+
+struct Sample
+{
+  string name;
+  int    start, end;
+  int    startloop, endloop;
+  int    srate;
+  int    origpitch;
+  int    pitchcorrect;
+  int    samplelink;
+  int    sampletype;
+};
+
+vector<Preset>      presets;
+vector<BagEntry>    preset_bag;
+vector<Generator>   preset_gen;
+vector<Instrument>  instruments;
+vector<BagEntry>    instrument_bag;
+vector<Generator>   instrument_gen;
+vector<Sample>      samples;
 
 string
 read_fourcc (GenericIn *in)
@@ -261,8 +309,13 @@ read_pgen (GenericIn *in, int len)
   debug ("pgen len = %d\n", len);
   while (len >= 4)
     {
-      debug ("generator %d\n", read_ui16 (in));
-      debug ("amount %d\n", read_ui16 (in));
+      Generator g;
+      g.generator = read_ui16 (in);
+      g.amount    = read_ui16 (in);
+      preset_gen.push_back (g);
+
+      debug ("generator %d\n", g.generator);
+      debug ("amount %d\n", g.amount);
       len -= 4;
     }
 }
@@ -273,8 +326,13 @@ read_inst (GenericIn *in, int len)
   debug ("inst len = %d\n", len);
   while (len >= 22)
     {
-      debug ("instname %s\n", read_fixed_string (in, 20).c_str());
-      debug ("bagindex %d\n", read_ui16 (in));
+      Instrument i;
+      i.name = read_fixed_string (in, 20);
+      i.instrument_bag_index = read_ui16 (in);
+      instruments.push_back (i);
+
+      debug ("instname %s\n", i.name.c_str());
+      debug ("bagindex %d\n", i.instrument_bag_index);
       len -= 22;
     }
 }
@@ -285,8 +343,13 @@ read_ibag (GenericIn *in, int len)
   debug ("ibag len = %d\n", len);
   while (len >= 4)
     {
-      debug ("instgenidx %d\n", read_ui16 (in));
-      debug ("instmodidx %d\n", read_ui16 (in));
+      BagEntry b;
+      b.gen_index = read_ui16 (in);
+      b.mod_index = read_ui16 (in);
+      instrument_bag.push_back (b);
+
+      debug ("instgenidx %d\n", b.gen_index);
+      debug ("instmodidx %d\n", b.mod_index);
       len -= 4;
     }
 }
@@ -312,8 +375,13 @@ read_igen (GenericIn *in, int len)
   debug ("igen len = %d\n", len);
   while (len >= 4)
     {
-      debug ("generator %d\n", read_ui16 (in));
-      debug ("amount %d\n", read_ui16 (in));
+      Generator g;
+      g.generator = read_ui16 (in);
+      g.amount    = read_ui16 (in);
+      instrument_gen.push_back (g);
+
+      debug ("generator %d\n", g.generator);
+      debug ("amount %d\n", g.amount);
       len -= 4;
     }
 }
@@ -321,27 +389,96 @@ read_igen (GenericIn *in, int len)
 void
 read_shdr (GenericIn *in, int len)
 {
-  debug ("igen len = %d\n", len);
+  debug ("shdr len = %d\n", len);
   while (len >= 46)
     {
-      debug ("samplename %s\n", read_fixed_string (in, 20).c_str());
-      debug ("start %d\n", read_ui32 (in));
-      debug ("end %d\n", read_ui32 (in));
-      debug ("startloop %d\n", read_ui32 (in));
-      debug ("endloop %d\n", read_ui32 (in));
-      debug ("srate %d\n", read_ui32 (in));
-      debug ("origpitch %d\n", in->get_byte());
-      debug ("pitchcorrect %d\n", in->get_byte());
-      debug ("samplelink %d\n", read_ui16 (in));
-      debug ("sampletype %d\n", read_ui16 (in));
+      Sample s;
+      s.name = read_fixed_string (in, 20);
+      s.start = read_ui32 (in);
+      s.end = read_ui32 (in);
+      s.startloop = read_ui32 (in);
+      s.endloop = read_ui32 (in);
+      s.srate = read_ui32 (in);
+      s.origpitch = in->get_byte();
+      s.pitchcorrect = in->get_byte();
+      s.samplelink = read_ui16 (in);
+      s.sampletype = read_ui16 (in);
+      samples.push_back (s);
+
+      debug ("samplename %s\n", s.name.c_str());
+      debug ("start %d\n", s.start);
+      debug ("end %d\n", s.end);
+      debug ("startloop %d\n", s.startloop);
+      debug ("endloop %d\n", s.endloop);
+      debug ("srate %d\n", s.srate);
+      debug ("origpitch %d\n", s.origpitch);
+      debug ("pitchcorrect %d\n", s.pitchcorrect);
+      debug ("samplelink %d\n", s.samplelink);
+      debug ("sampletype %d\n", s.sampletype);
       len -= 46;
+    }
+}
+
+const char *
+gen2name (int i)
+{
+  struct G2N
+  {
+    int         gen;
+    const char *name;
+  } g2n[] = {
+    { 8,  "initial-filter-fc" },
+    { 35, "vol-env-hold" },
+    { 36, "vol-env-decay" },
+    { 41, "instrument" },
+    { 43, "key-range" },
+    { 44, "velocity-range" },
+    { 53, "sample-id" },
+    { GEN_ROOT_KEY, "root-key" },
+    { 0, NULL }
+  };
+  for (int k = 0; g2n[k].name; k++)
+    if (g2n[k].gen == i)
+      return g2n[k].name;
+  return "unknown";
+}
+
+Generator *
+find_gen (int id, vector<Generator>& generators)
+{
+  for (vector<Generator>::iterator gi = generators.begin(); gi != generators.end(); gi++)
+    if (gi->generator == id)
+      return &(*gi);
+
+  return NULL; // not found
+}
+
+void
+xsystem (const string& cmd)
+{
+  printf ("# %s\n", cmd.c_str());
+  int rc = system (cmd.c_str());
+  if (rc != 0)
+    {
+      printf ("command execution failed: %d\n", rc);
+      exit (1);
     }
 }
 
 int
 main (int argc, char **argv)
 {
-  assert (argc == 2);
+  /* init */
+  SfiInitValue values[] = {
+    { "stand-alone",            "true" }, /* no rcfiles etc. */
+    { "wave-chunk-padding",     NULL, 1, },
+    { "dcache-block-size",      NULL, 8192, },
+    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
+    { NULL }
+  };
+  bse_init_inprocess (&argc, &argv, NULL, values);
+
+  assert (argc == 2 || argc == 3);
 
   GenericIn *in = GenericIn::open (argv[1]);
   if (!in)
@@ -473,13 +610,153 @@ main (int argc, char **argv)
       printf ("Preset %s\n", pi->name.c_str());
       printf ("  bank %d\n", pi->bank);
       printf ("  preset %d\n", pi->preset);
+
       if ((pi + 1) < presets.end())
         {
+          Zone zone; // FIXME! needs to be in inner loop
+
           int start = pi->preset_bag_index, end = (pi + 1)->preset_bag_index;
           for (vector<BagEntry>::iterator bi = preset_bag.begin() + start; bi != preset_bag.begin() + end; bi++)
             {
               printf ("    genndx %d\n", bi->gen_index);
               printf ("    modndx %d\n", bi->mod_index);
+              if ((bi + 1) < preset_bag.end())
+                for (int gndx = bi->gen_index; gndx < (bi + 1)->gen_index; gndx++)
+                  {
+                    printf ("      generator %d (%s)\n", preset_gen[gndx].generator, gen2name (preset_gen[gndx].generator));
+                    printf ("      amount %d\n", preset_gen[gndx].amount);
+                    if (preset_gen[gndx].generator == 41) // instrument id
+                      {
+                        size_t id = preset_gen[gndx].amount;
+                        assert (id >= 0 && id < instruments.size());
+                        printf ("        -> %s\n", instruments[id].name.c_str());
+                      }
+                    zone.generators.push_back (preset_gen[gndx]);
+                  }
+            }
+          pi->zones.push_back (zone);
+        }
+    }
+  for (vector<Instrument>::iterator ii = instruments.begin(); ii != instruments.end(); ii++)
+    {
+      printf ("Instrument %s\n", ii->name.c_str());
+      if ((ii + 1) < instruments.end())
+        {
+
+          int start = ii->instrument_bag_index, end = (ii + 1)->instrument_bag_index;
+          for (vector<BagEntry>::iterator bi = instrument_bag.begin() + start; bi != instrument_bag.begin() + end; bi++)
+            {
+              Zone zone;
+
+              printf ("    genndx %d\n", bi->gen_index);
+              printf ("    modndx %d\n", bi->mod_index);
+              if ((bi + 1) < instrument_bag.end())
+                for (int gndx = bi->gen_index; gndx < (bi + 1)->gen_index; gndx++)
+                  {
+                    printf ("      generator %d (%s)\n", instrument_gen[gndx].generator, gen2name (instrument_gen[gndx].generator));
+                    printf ("      amount %d\n", instrument_gen[gndx].amount);
+                    if (instrument_gen[gndx].generator == 53) // sample id
+                      {
+                        size_t id = instrument_gen[gndx].amount;
+                        assert (id >= 0 && id < samples.size());
+                        printf ("        -> %s\n", samples[id].name.c_str());
+                      }
+                    zone.generators.push_back (instrument_gen[gndx]);
+                  }
+              ii->zones.push_back (zone);
+            }
+        }
+    }
+  for (vector<Sample>::iterator si = samples.begin(); si != samples.end(); si++)
+    {
+      printf ("Sample %s\n", si->name.c_str());
+    }
+  if (argc == 3)
+    {
+      for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
+        {
+          if (pi->name == argv[2])
+            {
+              printf ("importing preset %s\n", argv[2]);
+              if (pi->zones.size() != 1)
+                {
+                  printf ("preset has %zd zones (should be 1) - can't import\n", pi->zones.size());
+                  return 1;
+                }
+
+              string preset_xname;
+              for (int i = 0; argv[2][i]; i++)
+                {
+                  char c = argv[2][i];
+                  if (isupper (c))
+                    c = tolower (c);
+                  else if (islower (c))
+                    ;
+                  else
+                    c = '_';
+                  preset_xname += c;
+                }
+              printf ("%s\n", preset_xname.c_str());
+
+              string cmd = Birnet::string_printf ("smwavset init %s.wset", preset_xname.c_str());
+              xsystem (cmd);
+
+              Zone& zone = pi->zones[0];
+              int inst_index = -1;
+              for (vector<Generator>::iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
+                {
+                  if (gi->generator == GEN_INSTRUMENT)
+                    {
+                      assert (inst_index == -1);
+                      inst_index = gi->amount;
+                    }
+                }
+              assert (inst_index >= 0);
+              Instrument instrument = instruments[inst_index];
+              printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
+
+              int root_key = -1;
+              for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
+                {
+                  const size_t zone_index = zi - instrument.zones.begin();
+
+                  printf ("zone %zd:\n", zone_index);
+                  string filename = Birnet::string_printf ("zone%zd.wav", zone_index);
+
+                  Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
+                  if (gi)
+                    root_key = gi->amount;
+
+                  gi = find_gen (GEN_SAMPLE, zi->generators);
+                  if (gi)
+                    {
+                      size_t id = gi->amount;
+                      assert (id >= 0 && id < samples.size());
+                      int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
+
+                      printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
+
+                      GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
+                      gsl_data_handle_open (dhandle);
+
+                      int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                      if (fd < 0)
+                        {
+                          BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+                          sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                        }
+
+                      int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
+                      if (xerrno)
+                        {
+                          BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+                          sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                        }
+                      close (fd);
+
+                      xsystem (Birnet::string_printf ("smwavset add %s.wset %d %s", preset_xname.c_str(), midi_note, filename.c_str()));
+                    }
+                }
             }
         }
     }
