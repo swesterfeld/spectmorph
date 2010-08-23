@@ -121,6 +121,8 @@ Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
   const size_t block_size = enc_params.block_size;
   const int    zeropad    = enc_params.zeropad;
 
+  sample_count = n_values;
+
   vector<float> block (block_size);
   vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
 
@@ -979,6 +981,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.zero_values_at_start = zero_values_at_start;
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
+  audio.sample_count = sample_count;
   audio.save (filename);
 }
 

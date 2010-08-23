@@ -109,6 +109,8 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                 loop_point = ifile.event_int();
               else if (ifile.event_name() == "zero_values_at_start")
                 zero_values_at_start = ifile.event_int();
+              else if (ifile.event_name() == "sample_count")
+                sample_count = ifile.event_int();
               else if (ifile.event_name() == "frame_count")
                 {
                   int frame_count = ifile.event_int();
@@ -230,6 +232,7 @@ SpectMorph::Audio::save (GenericOut *file)
   of.write_int ("loop_point", loop_point);
   of.write_int ("zero_values_at_start", zero_values_at_start);
   of.write_int ("frame_count", contents.size());
+  of.write_int ("sample_count", sample_count);
   of.end_section();
 
   for (size_t i = 0; i < contents.size(); i++)
