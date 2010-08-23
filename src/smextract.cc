@@ -479,6 +479,22 @@ main (int argc, char **argv)
 
       need_save = true;
     }
+  else if (mode == "tail-loop")
+    {
+      check_usage (argc, 3, "tail-loop");
+
+      int loop_point = -1;
+      const int frame_step = audio.frame_step_ms * audio.mix_freq / 1000;
+
+      // we need the largest frame that doesn't include any data beyond the original file end
+      for (size_t i = 0; i < audio.contents.size(); i++)
+        {
+          if (i * frame_step + frame_size < audio.sample_count)
+            loop_point = i;
+        }
+      audio.loop_point = loop_point;
+      need_save = true;
+    }
   else if (mode == "zero-values-at-start")
     {
       check_usage (argc, 3, "zero-values-at-start");
