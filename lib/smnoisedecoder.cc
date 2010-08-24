@@ -113,7 +113,7 @@ NoiseDecoder::process (const Frame& frame,
   vector<double> noise_spectrum (block_size);
   vector<double> noise (block_size);
   for (size_t i = 0; i < noise.size(); i++)
-    noise[i] = g_random_double_range (-1, 1) * window[i];
+    noise[i] = random_gen.random_double_range (-1, 1) * window[i];
   gsl_power2_fftar (block_size, &noise[0], &noise_spectrum[0]);
   double noise_mag = 0;
   for (size_t i = 0; i < block_size; i += 2)

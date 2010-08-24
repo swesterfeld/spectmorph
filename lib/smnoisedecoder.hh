@@ -20,6 +20,7 @@
 #define SPECTMORPH_NOISE_DECODER_HH
 
 #include "smframe.hh"
+#include "smrandom.hh"
 
 namespace SpectMorph
 {
@@ -31,6 +32,7 @@ class NoiseDecoder
 {
   double orig_mix_freq;
   double mix_freq;
+  Random random_gen;
 
   void noise_envelope_to_spectrum (const std::vector<double>& envelope, std::vector<double>& spectrum);
 public:
