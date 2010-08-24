@@ -13,13 +13,16 @@ CLEANFILES += sin440-4567.wav
 
 TESTS = testfastsin testblob
 
-noinst_PROGRAMS = $(TESTS)
+noinst_PROGRAMS = $(TESTS) testrandom
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
 testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testrandom_SOURCES = testrandom.cc
+testrandom_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 check: saw440-test sin440-test sin440-4567-test
 
