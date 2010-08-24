@@ -184,6 +184,7 @@ JackSynth::process (jack_nframes_t nframes)
                 }
              }
         }
+      out[i] *= 0.333;    /* empiric */
     }
   return 0;
 }
