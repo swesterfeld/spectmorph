@@ -16,11 +16,16 @@
  */
 
 #include <stdio.h>
+
+#include <bse/bsemain.h>
+
 #include "smaudio.hh"
 
 int
 main (int argc, char **argv)
 {
+  bse_init_inprocess (&argc, &argv, NULL, NULL);
+
   if (argc < 2)
     {
       printf ("usage: smstrip <filename.sm> [...]\n");
