@@ -103,13 +103,52 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
   return false;
 }
 
+BseErrorType
+read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
+{
+  signal.clear();
+
+  vector<float> block (1024);
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+      if (r > 0)
+        signal.insert (signal.end(), block.begin(), block.begin() + r);
+      else
+        return BSE_ERROR_FILE_READ_FAILED;
+      pos += r;
+    }
+  return BSE_ERROR_NONE;
+}
+
 /**
  * This function computes the short-time-fourier-transform (STFT) of the input
  * signal using a window to cut the individual frames out of the sample.
  */
 void
-Encoder::compute_stft (GslDataHandle *dhandle, const vector<float>& window)
+Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const vector<float>& window)
 {
+  /* deinterleave multi channel signal */
+  vector<float> multi_channel_signal;
+  vector<float> single_channel_signal;
+
+  BseErrorType error = read_dhandle (multi_channel_dhandle, multi_channel_signal);
+  assert (error == BSE_ERROR_NONE); // FIXME
+
+  const int n_channels = gsl_data_handle_n_channels (multi_channel_dhandle);
+  const int mix_freq = gsl_data_handle_mix_freq (multi_channel_dhandle);
+  for (int i = channel; i < multi_channel_signal.size(); i += n_channels)
+    single_channel_signal.push_back (multi_channel_signal[i]);
+
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048,
+                                                    single_channel_signal.size(),
+                                                    &single_channel_signal[0], NULL);
+
+  /* encode single channel */
   zero_values_at_start = enc_params.frame_size - enc_params.frame_step / 2;
   vector<float> zero_values (zero_values_at_start);
 
@@ -948,9 +987,9 @@ Encoder::compute_attack_params (const vector<float>& window)
  * \param attack whether to find the optimal attack parameters
  */
 void
-Encoder::encode (GslDataHandle *dhandle, const vector<float>& window, int optimization_level, bool attack)
+Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level, bool attack)
 {
-  compute_stft (dhandle, window);
+  compute_stft (dhandle, channel, window);
 
   search_local_maxima();
   link_partials();

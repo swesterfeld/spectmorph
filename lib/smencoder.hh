@@ -106,7 +106,7 @@ public:
   Encoder (const EncoderParams& enc_params);
 
   // single encoder steps:
-  void compute_stft (GslDataHandle *dhandle, const std::vector<float>& window);
+  void compute_stft (GslDataHandle *dhandle, int channel, const std::vector<float>& window);
   void search_local_maxima();
   void link_partials();
   void validate_partials();
@@ -116,7 +116,7 @@ public:
   void compute_attack_params (const std::vector<float>& window);
 
   // all-in-one encoding function:
-  void encode (GslDataHandle *dhandle, const std::vector<float>& window, int optimization_level, bool attack);
+  void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level, bool attack);
 
   void save (const std::string& filename, double fundamental_freq);
 };

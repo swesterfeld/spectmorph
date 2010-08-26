@@ -44,10 +44,45 @@ using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
 
-float
+static float
 freqFromNote (float note)
 {
   return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
+/*
+ * for ch == 'X', substitute searches for occurrences of %X
+ * in pattern and replaces them with the string subst
+ */
+static void
+substitute (string& pattern,
+            char    ch,
+            const   string& subst)
+{
+  string result;
+  bool need_subst = false;
+
+  for (size_t i = 0; i < pattern.size(); i++)
+    {
+      if (need_subst)
+        {
+          if (pattern[i] == ch)
+            result += subst;
+          else
+            {
+              result += '%';
+              result += pattern[i];
+            }
+          need_subst = false;
+        }
+      else if (pattern[i] == '%')
+        need_subst = true;
+      else
+        result += pattern[i];
+    }
+  if (need_subst)
+    pattern += '%';
+  pattern = result;
 }
 
 /// @cond
@@ -241,24 +276,7 @@ main (int argc, char **argv)
   bse_init_inprocess (&argc, &argv, NULL, values);
   options.parse (&argc, &argv);
 
-  string input_file, sm_file;
-  if (argc == 2)
-    {
-      input_file = argv[1];
-
-      // replace suffix: foo.wav => foo.sm
-      size_t dot_pos = input_file.rfind ('.');
-      if (dot_pos == string::npos)
-        sm_file = input_file + ".sm";
-      else
-        sm_file = input_file.substr (0, dot_pos) + ".sm";
-    }
-  else if (argc == 3)
-    {
-      input_file = argv[1];
-      sm_file = argv[2];
-    }
-  else
+  if (argc != 2 && argc != 3)
     {
       options.print_usage();
       exit (1);
@@ -266,6 +284,8 @@ main (int argc, char **argv)
 
   /* open input */
   BseErrorType error;
+
+  string input_file = argv[1];
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (input_file.c_str(), &error);
   if (!wave_file_info)
@@ -322,35 +342,59 @@ main (int argc, char **argv)
   if (options.fundamental_freq > 0)
     fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
 
-  Encoder encoder (enc_params);
+  int n_channels = gsl_data_handle_n_channels (dhandle);
 
-  vector<float> window (block_size);
-  vector<AudioBlock>& audio_blocks = encoder.audio_blocks;
-
-  for (guint i = 0; i < window.size(); i++)
+  for (int channel = 0; channel < n_channels; channel++)
     {
-      if (i < frame_size)
-        window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
-      else
-        window[i] = 0;
-    }
-
-  if (gsl_data_handle_n_channels (dhandle) != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
-      exit (1);
-    }
-
-  //wintrans (window);
-
-  encoder.encode (dhandle, window, options.optimization_level, options.attack);
-  if (options.strip_models)
-    {
-      for (size_t i = 0; i < audio_blocks.size(); i++)
+      string sm_file;
+      if (argc == 2)
         {
-          audio_blocks[i].debug_samples.clear();
-          audio_blocks[i].original_fft.clear();
+
+          // replace suffix: foo.wav => foo.sm   (or foo-ch1.sm for channel 1)
+          size_t dot_pos = input_file.rfind ('.');
+          if (dot_pos == string::npos)
+            sm_file = input_file;
+          else
+            sm_file = input_file.substr (0, dot_pos);
+
+          if (n_channels != 1)
+            sm_file += Birnet::string_printf ("-ch%d", channel);
+          sm_file += ".sm";
         }
+      else if (argc == 3)
+        {
+          input_file = argv[1];
+          sm_file = argv[2];
+          substitute (sm_file, 'c', Birnet::string_printf ("%d", channel));
+          if (sm_file == argv[2] && n_channels > 1)
+            {
+              fprintf (stderr, "%s: input file '%s' has more than one channel, need pattern %%c in output file name.\n", options.program_name.c_str(), input_file.c_str());
+              exit (1);
+            }
+        }
+
+      Encoder encoder (enc_params);
+
+      vector<float> window (block_size);
+      vector<AudioBlock>& audio_blocks = encoder.audio_blocks;
+
+      for (guint i = 0; i < window.size(); i++)
+        {
+          if (i < frame_size)
+            window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+          else
+            window[i] = 0;
+        }
+
+      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack);
+      if (options.strip_models)
+        {
+          for (size_t i = 0; i < audio_blocks.size(); i++)
+            {
+              audio_blocks[i].debug_samples.clear();
+              audio_blocks[i].original_fft.clear();
+            }
+        }
+      encoder.save (sm_file, options.fundamental_freq);
     }
-  encoder.save (sm_file, options.fundamental_freq);
 }
