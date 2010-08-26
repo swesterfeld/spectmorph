@@ -43,6 +43,7 @@ struct Options
   string	program_name; /* FIXME: what to do with that */
   string        data_dir;
   string        args;
+  int           channel;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK } command;
 
   Options ();
@@ -57,6 +58,7 @@ Options::Options ()
   data_dir = "/tmp";
   args = "";
   command = NONE;
+  channel = 0;
 }
 
 #include "stwutils.hh"
@@ -100,6 +102,11 @@ Options::parse (int   *argc_p,
                check_arg (argc, argv, &i, "--data-dir", &opt_arg))
 	{
 	  data_dir = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "-c", &opt_arg) ||
+               check_arg (argc, argv, &i, "--channel", &opt_arg))
+	{
+	  channel = atoi (opt_arg);
         }
     }
 
@@ -179,6 +186,7 @@ Options::print_usage ()
   printf (" -v, --version               print version\n");
   printf (" --args \"<args>\"             arguments for decoder or encoder\n");
   printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
+  printf (" -c, --channel <ch>          set channel for added .sm file\n");
   printf ("\n");
 }
 
@@ -337,6 +345,7 @@ main (int argc, char **argv)
       WavSetWave new_wave;
       new_wave.midi_note = atoi (argv[2]);
       new_wave.path = argv[3];
+      new_wave.channel = options.channel;
 
       wset.waves.push_back (new_wave);
       wset.save (argv[1]);
