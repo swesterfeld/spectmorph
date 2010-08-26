@@ -49,7 +49,7 @@ main (int argc, char **argv)
       double start_t = gettime();
       for (int l = 0; l < 40; l++)
         {
-          decoder.retrigger (50, 48000);
+          decoder.retrigger (0, 50, 48000);
           decoder.process (n, 0, 0, &audio_out[0]);
         }
       double end_t = gettime();

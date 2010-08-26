@@ -53,7 +53,7 @@ class LiveDecoder
 public:
   LiveDecoder (WavSet *smset);
 
-  void retrigger (float freq, float mix_freq);
+  void retrigger (int channel, float freq, float mix_freq);
   void process (size_t       n_values,
                 const float *freq_in,
                 const float *freq_mod_in,

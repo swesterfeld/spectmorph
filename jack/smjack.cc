@@ -34,6 +34,7 @@ using SpectMorph::LiveDecoder;
 
 using std::vector;
 using std::string;
+using std::max;
 
 class Voice
 {
@@ -43,39 +44,38 @@ public:
     STATE_ON,
     STATE_RELEASE
   };
-  LiveDecoder *decoder;
+  vector<LiveDecoder *> decoders;
+
   State        state;
   int          midi_note;
   double       env;
 
   Voice() :
-    decoder (NULL),
     state (STATE_IDLE)
   {
   }
   ~Voice()
   {
-    if (decoder)
-      {
-        delete decoder;
-        decoder = NULL;
-      }
+    for (vector<LiveDecoder *>::iterator di = decoders.begin(); di != decoders.end(); di++)
+      delete *di;
+    decoders.clear();
   }
 };
 
 class JackSynth
 {
 protected:
-  double        jack_mix_freq;
-  jack_port_t  *input_port;
-  jack_port_t  *output_port;
-  WavSet       *smset;
+  double                jack_mix_freq;
+  jack_port_t          *input_port;
+  vector<jack_port_t *> output_ports;
+  WavSet               *smset;
+  int                   channels;
 
   double        release_ms;
   vector<Voice> voices;
 
 public:
-  void init (jack_client_t *client, WavSet *wset);
+  void init (jack_client_t *client, WavSet *wset, int channels);
   int  process (jack_nframes_t nframes);
 };
 
@@ -114,7 +114,10 @@ freq_from_note (float note)
 int
 JackSynth::process (jack_nframes_t nframes)
 {
-  jack_default_audio_sample_t *out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
+  vector<jack_default_audio_sample_t *> outputs (channels);  /* FIXME: could be malloc-free */
+  for (int c = 0; c < channels; c++)
+    outputs[c] = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[c], nframes);
+
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
   jack_midi_event_t in_event;
@@ -136,7 +139,8 @@ JackSynth::process (jack_nframes_t nframes)
                 vi++;
               if (vi != voices.end())
                 {
-                  vi->decoder->retrigger (freq_from_note (midi_note), jack_mix_freq);
+                  for (int c = 0; c < channels; c++)
+                    vi->decoders[c]->retrigger (c, freq_from_note (midi_note), jack_mix_freq);
                   vi->state = Voice::STATE_ON;
                   vi->midi_note = midi_note;
                 }
@@ -160,14 +164,18 @@ JackSynth::process (jack_nframes_t nframes)
           if (event_index < event_count)
             jack_midi_event_get (&in_event, port_buf, event_index);
         }
-      out[i] = 0.0;
+      for (int c = 0; c < channels; c++)
+        outputs[c][i] = 0.0;
       for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
         {
           if (vi->state == Voice::STATE_ON)
             {
-              float f;
-              vi->decoder->process (1, NULL, NULL, &f);
-              out[i] += f;
+              for (int c = 0; c < channels; c++)
+                {
+                  float f;
+                  vi->decoders[c]->process (1, NULL, NULL, &f);
+                  outputs[c][i] += f;
+                }
             }
           else if (vi->state == Voice::STATE_RELEASE)
             {
@@ -178,13 +186,17 @@ JackSynth::process (jack_nframes_t nframes)
                 }
               else
                 {
-                  float f;
-                  vi->decoder->process (1, NULL, NULL, &f);
-                  out[i] += f * vi->env;
+                  for (int c = 0; c < channels; c++)
+                    {
+                      float f;
+                      vi->decoders[c]->process (1, NULL, NULL, &f);
+                      outputs[c][i] += f * vi->env;
+                    }
                 }
              }
         }
-      out[i] *= 0.333;    /* empiric */
+      for (int c = 0; c < channels; c++)
+        outputs[c][i] *= 0.333;    /* empiric */
     }
   return 0;
 }
@@ -197,14 +209,16 @@ jack_process (jack_nframes_t nframes, void *arg)
 }
 
 void
-JackSynth::init (jack_client_t *client, WavSet *smset)
+JackSynth::init (jack_client_t *client, WavSet *smset, int channels)
 {
   this->smset = smset;
+  this->channels = channels;
   release_ms = 50;
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
     {
-      vi->decoder = new LiveDecoder (smset);
+      for (int c = 0; c < channels; c++)
+        vi->decoders.push_back (new LiveDecoder (smset));
     }
 
   jack_set_process_callback (client, jack_process, this);
@@ -212,7 +226,18 @@ JackSynth::init (jack_client_t *client, WavSet *smset)
   jack_mix_freq = jack_get_sample_rate (client);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-  output_port = jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+
+  const char *pattern;
+  if (channels == 0)
+    pattern = "audio_out";
+  else
+    pattern = "audio_out_%d";
+
+  for (int c = 0; c < channels; c++)
+    {
+      string port_name = Birnet::string_printf (pattern, c + 1);
+      output_ports.push_back (jack_port_register (client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
+    }
 
   if (jack_activate (client))
     {
@@ -228,7 +253,7 @@ is_newline (char ch)
 }
 
 int
-main(int argc, char **argv)
+main (int argc, char **argv)
 {
   bse_init_inprocess (&argc, &argv, NULL, NULL);
 
@@ -249,7 +274,10 @@ main(int argc, char **argv)
       fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
       exit (1);
     }
-  printf ("%zd audio entries found.\n", wset.waves.size());
+  int n_channels = 1;
+  for (int i = 0; i < wset.waves.size(); i++)
+    n_channels = max (n_channels, wset.waves[i].channel + 1);
+  printf ("%zd audio entries with %d channels found.\n", wset.waves.size(), n_channels);
 
   jack_client_t *client;
   client = jack_client_open ("smjack", JackNullOption, NULL);
@@ -261,7 +289,7 @@ main(int argc, char **argv)
     }
 
   JackSynth synth;
-  synth.init (client, &wset);
+  synth.init (client, &wset, n_channels);
 
   while (1)
     {

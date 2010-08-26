@@ -98,7 +98,7 @@ class Osc : public OscBase {
     retrigger (float freq)
     {
       if (live_decoder)
-        live_decoder->retrigger (freq, mix_freq());
+        live_decoder->retrigger (0, freq, mix_freq()); /* FIXME: channel should be module parameter */
 
       current_freq = freq;
     }

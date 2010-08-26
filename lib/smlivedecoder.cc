@@ -45,7 +45,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
 }
 
 void
-LiveDecoder::retrigger (float freq, float mix_freq)
+LiveDecoder::retrigger (int channel, float freq, float mix_freq)
 {
   double best_diff = 1e10;
   Audio *best_audio = 0;
@@ -58,7 +58,7 @@ LiveDecoder::retrigger (float freq, float mix_freq)
       for (vector<WavSetWave>::iterator wi = smset->waves.begin(); wi != smset->waves.end(); wi++)
         {
           Audio *audio = wi->audio;
-          if (audio)
+          if (audio && wi->channel == channel)
             {
               float audio_note = freq_to_note (audio->fundamental_freq);
 
