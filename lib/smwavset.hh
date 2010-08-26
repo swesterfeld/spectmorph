@@ -31,6 +31,7 @@ class WavSetWave
 {
 public:
   int         midi_note;
+  int         channel;
   std::string path;
   Audio      *audio;
 

@@ -43,6 +43,7 @@ WavSet::save (const string& filename, bool embed_models)
     {
       of.begin_section ("wave");
       of.write_int ("midi_note", waves[i].midi_note);
+      of.write_int ("channel", waves[i].channel);
       of.write_string ("path", waves[i].path);
       if (waves[i].audio)
         {
@@ -128,6 +129,11 @@ WavSet::load (const string& filename)
                   assert (wave);
                   wave->midi_note = ifile.event_int();
                 }
+              else if (ifile.event_name() == "channel")
+                {
+                  assert (wave);
+                  wave->channel = ifile.event_int();
+                }
               else
                 printf ("unhandled int %s %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -183,6 +189,8 @@ WavSet::load (const string& filename)
 WavSetWave::WavSetWave()
 {
   audio = NULL;
+  channel = 0;
+  midi_note = -1;
 }
 
 WavSetWave::~WavSetWave()
