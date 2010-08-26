@@ -71,9 +71,9 @@ count_regions (const vector<double>& peaks, double silence_threshold)
 }
 
 static void
-dump_wav (string filename, const vector<float>& sample, double mix_freq)
+dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
 {
-  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, mix_freq, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
+  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
   BseErrorType error = gsl_data_handle_open (out_dhandle);
   if (error)
     {
@@ -124,21 +124,21 @@ read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
 }
 
 static void
-compute_peaks (int note_len, const vector<float>& input_data, vector<double>& peaks, size_t block_size)
+compute_peaks (int channel, int note_len, const vector<float>& input_data, vector<double>& peaks, size_t block_size, int n_channels)
 {
   peaks.clear();
 
   const size_t nl = note_len;
-  printf ("# NL = %zd\n", nl);
 
-  for (size_t offset = 0; offset < input_data.size(); offset += block_size)
+  for (size_t offset = channel; offset < input_data.size(); offset += block_size * n_channels)
     {
       vector<float> block;
 
       for (size_t i = 0; i < nl; i++)
         {
-          if (offset + i < input_data.size())
-            block.push_back (input_data[offset + i]);
+          int pos = offset + i * n_channels;
+          if (pos < input_data.size())
+            block.push_back (input_data[pos]);
           else
             block.push_back (0);
         }
@@ -172,17 +172,12 @@ compute_peaks (int note_len, const vector<float>& input_data, vector<double>& pe
       out[fft_size + 1] = 0;
       out[1] = 0;
 
-      for (int i = 0; i < in.size(); i++)
-        {
-          //printf ("B%d %d %f\n", offset / block_size, i, in[i]);
-        }
       /* find peak */
       double peak = 0;
       for (uint64 t = 2; t < in.size(); t += 2)  // ignore DC
         {
           double a = out[t];
           double b = out[t+1];
-          //printf ("S%d %f\n", offset / block_size, sqrt (a * a + b * b));
           peak = max (peak, sqrt (a * a + b * b));
         }
       peaks.push_back (peak);
@@ -244,15 +239,11 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  if (gsl_data_handle_n_channels (dhandle) != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
-      exit (1);
-    }
+  const int n_channels = gsl_data_handle_n_channels (dhandle);
   const int mix_freq = gsl_data_handle_mix_freq (dhandle);
 
-  const int    region_count = atoi (argv[2]);
-  const int    first_region = atoi (argv[3]);
+  const int region_count = atoi (argv[2]);
+  const int first_region = atoi (argv[3]);
 
   vector<float> input_data;
   vector<double> peaks;
@@ -270,7 +261,16 @@ main (int argc, char **argv)
   for (int region = first_region; region < first_region + region_count; region++)
     {
       int note_len = 0.5 + mix_freq / freq_from_note (region);
-      compute_peaks (note_len, input_data, peaks, block_size);
+
+      peaks.clear();
+      for (int channel = 0; channel < n_channels; channel++)
+        {
+          vector<double> channel_peaks;
+          compute_peaks (channel, note_len, input_data, channel_peaks, block_size, n_channels);
+          peaks.resize (channel_peaks.size(), -500);
+          for (int peak = 0; peak < channel_peaks.size(); peak++)
+            peaks[peak] = max (peaks[peak], channel_peaks[peak]);
+        }
 
       int pi = last_region_end;
       while (pi < peaks.size() && peaks[pi] < signal_threshold)
@@ -287,12 +287,13 @@ main (int argc, char **argv)
         end_pi++;
 
       last_region_end = end_pi;
-      printf ("%d %d %d\n", region, start_pi, end_pi);
-      vector<float> sample (input_data.begin() + start_pi * block_size, input_data.begin() + end_pi * block_size);
+      //printf ("%d %d %d\n", region, start_pi, end_pi);
+      vector<float> sample (input_data.begin() + start_pi * block_size * n_channels,
+                            input_data.begin() + end_pi * block_size * n_channels);
 
       char buffer[64];
       sprintf (buffer, argv[4], region);
-      dump_wav (buffer, sample, mix_freq);
+      dump_wav (buffer, sample, mix_freq, n_channels);
       sample.clear();
     }
 }
