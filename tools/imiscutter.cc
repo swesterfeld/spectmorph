@@ -95,6 +95,111 @@ dump_wav (string filename, const vector<float>& sample, double mix_freq)
     }
 }
 
+static float
+freq_from_note (float note)
+{
+  return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
+BseErrorType
+read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
+{
+  signal.clear();
+
+  vector<float> block (1024);
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+      if (r > 0)
+        signal.insert (signal.end(), block.begin(), block.begin() + r);
+      else
+        return BSE_ERROR_FILE_READ_FAILED;
+      pos += r;
+    }
+  return BSE_ERROR_NONE;
+}
+
+static void
+compute_peaks (int note_len, const vector<float>& input_data, vector<double>& peaks, size_t block_size)
+{
+  peaks.clear();
+
+  const size_t nl = note_len;
+  printf ("# NL = %zd\n", nl);
+
+  for (size_t offset = 0; offset < input_data.size(); offset += block_size)
+    {
+      vector<float> block;
+
+      for (size_t i = 0; i < nl; i++)
+        {
+          if (offset + i < input_data.size())
+            block.push_back (input_data[offset + i]);
+          else
+            block.push_back (0);
+        }
+
+      int fft_size = 1;
+      while (fft_size < block.size() * 4)
+        fft_size *= 2;
+
+      vector<double> out (fft_size + 2);
+      vector<double> in (fft_size);
+
+      // produce fft-size periodic signal via linear interpolation from block-size periodic signal
+      for (size_t in_pos = 0; in_pos < fft_size; in_pos++)
+        {
+          double pos = in_pos;
+
+          pos /= fft_size;
+          pos *= block.size();
+
+          int ipos = pos;
+          double dpos = pos - ipos;
+
+          double left = block[ipos % block.size()];
+          double right = block[(ipos + 1) % block.size()];
+
+          in[in_pos] = left * (1.0 - dpos) + right * dpos;
+        }
+
+      gsl_power2_fftar (fft_size, &in[0], &out[0]);
+      out[fft_size] = out[1];
+      out[fft_size + 1] = 0;
+      out[1] = 0;
+
+      for (int i = 0; i < in.size(); i++)
+        {
+          //printf ("B%d %d %f\n", offset / block_size, i, in[i]);
+        }
+      /* find peak */
+      double peak = 0;
+      for (uint64 t = 2; t < in.size(); t += 2)  // ignore DC
+        {
+          double a = out[t];
+          double b = out[t+1];
+          //printf ("S%d %f\n", offset / block_size, sqrt (a * a + b * b));
+          peak = max (peak, sqrt (a * a + b * b));
+        }
+      peaks.push_back (peak);
+    }
+  // normalize peaks with the biggest peak
+
+  double max_peak = 0;
+  for (size_t i = 0; i < peaks.size(); i++)
+    max_peak = max (max_peak, peaks[i]);
+
+  for (size_t i = 0; i < peaks.size(); i++)
+    {
+      peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
+      //printf ("%.17g\n", peaks[i]);
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -148,111 +253,46 @@ main (int argc, char **argv)
 
   const int    region_count = atoi (argv[2]);
   const int    first_region = atoi (argv[3]);
-  const size_t block_size = 256;
 
-  vector<float> block (block_size);
   vector<float> input_data;
   vector<double> peaks;
 
-  vector<double> window (block_size);
-  window.resize (block_size);
-  for (guint i = 0; i < window.size(); i++)
-    window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  for (uint64 pos = 0; pos < n_values; pos += block.size())
+  error = read_dhandle (dhandle, input_data);
+  if (error)
     {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      /* for short reads (EOF) fill the rest with zeros */
-      std::fill (block.begin() + r, block.end(), 0);
-
-      /* build input data vector (containing the whole file) */
-      input_data.insert (input_data.end(), block.begin(), block.end());
-
-      /* FFT windowed block */
-      vector<double> in (block.begin(), block.end());
-      vector<double> out (block_size + 2);
-
-      for (uint64 t = 0; t < block.size(); t += 2)
-        in[t] *= window[t];
-
-      gsl_power2_fftar (block_size, &in[0], &out[0]);
-      out[block_size] = out[1];
-      out[block_size + 1] = 0;
-      out[1] = 0;
-
-      /* find peak */
-      double peak = 0;
-      for (uint64 t = 2; t < block.size(); t += 2)  // ignore DC
-        {
-          double a = out[t];
-          double b = out[t+1];
-          peak = max (peak, sqrt (a * a + b * b));
-        }
-      peaks.push_back (peak);
-#if 0
-      for (uint64 t = 0; t < block.size(); t++)
-        printf ("%.17g %.17g\n", block[t], peak);
-#endif
+      printf ("error reading input file %s: %s\n", argv[1], bse_error_blurb (error));
+      exit (1);
     }
 
-  // normalize peaks with the biggest peak
-  double max_peak = 0;
-  for (size_t i = 0; i < peaks.size(); i++)
-    max_peak = max (max_peak, peaks[i]);
-
-  for (size_t i = 0; i < peaks.size(); i++)
+  const size_t block_size = 256;
+  int last_region_end = 0;
+  double signal_threshold = -20, silence_threshold = -60;
+  for (int region = first_region; region < first_region + region_count; region++)
     {
-      peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
-      // printf ("%.17g\n", peaks[i]);
+      int note_len = 0.5 + mix_freq / freq_from_note (region);
+      compute_peaks (note_len, input_data, peaks, block_size);
+
+      int pi = last_region_end;
+      while (pi < peaks.size() && peaks[pi] < signal_threshold)
+        pi++;
+
+      // search backwards for region start
+      int start_pi = pi;
+      while (start_pi > 0 && peaks[start_pi] > silence_threshold)
+        start_pi--;
+
+      // search forwards for region end
+      int end_pi = pi;
+      while (end_pi < peaks.size() && peaks[end_pi] > silence_threshold)
+        end_pi++;
+
+      last_region_end = end_pi;
+      printf ("%d %d %d\n", region, start_pi, end_pi);
+      vector<float> sample (input_data.begin() + start_pi * block_size, input_data.begin() + end_pi * block_size);
+
+      char buffer[64];
+      sprintf (buffer, argv[4], region);
+      dump_wav (buffer, sample, mix_freq);
+      sample.clear();
     }
-
-
-  double best_silence_threshold = 0, silence_threshold = 0;
-  while (silence_threshold > -60)
-    {
-      if (count_regions (peaks, silence_threshold) == region_count
-      &&  peaks.front() < silence_threshold && peaks.back() < silence_threshold)
-        best_silence_threshold = silence_threshold;
-
-      silence_threshold -= .1;
-    }
-
-  assert (best_silence_threshold < -5);
-
-  bool  in_region = false;
-  int   region_number = first_region;
-  size_t region_start;
-  for (size_t p = 0; p < peaks.size(); p++)
-    {
-      if (peaks[p] > best_silence_threshold)
-        {
-          if (!in_region)
-            {
-              in_region = true;
-              region_start = p;
-            }
-        }
-      else
-        {
-          if (in_region)
-            {
-              if (region_start > 0)   // include one extra block at the beginning to prevent clicks
-                region_start--;
-
-              size_t region_end = p + 1; // and one extra_block at the end
-
-              vector<float> sample (input_data.begin() + region_start * block_size, input_data.begin() + region_end * block_size);
-
-              char buffer[64];
-              sprintf (buffer, argv[4], region_number++);
-              dump_wav (buffer, sample, mix_freq);
-              sample.clear();
-              in_region = false;
-            }
-        }
-    }
-  printf ("%f\n", best_silence_threshold);
 }
