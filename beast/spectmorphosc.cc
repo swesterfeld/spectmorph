@@ -51,7 +51,6 @@ class Osc : public OscBase {
   struct Properties : public OscProperties {
     Properties (Osc *osc) : OscProperties (osc)
     {
-      // TODO
     }
   };
   class Module : public SynthesisModule {
@@ -61,6 +60,7 @@ class Osc : public OscBase {
     float          last_sync_level;
     float          current_freq;
     bool           need_retrigger;
+    int            channel;
   public:
     Module() :
       wav_set (NULL),
@@ -98,7 +98,7 @@ class Osc : public OscBase {
     retrigger (float freq)
     {
       if (live_decoder)
-        live_decoder->retrigger (0, freq, mix_freq()); /* FIXME: channel should be module parameter */
+        live_decoder->retrigger (channel, freq, mix_freq()); /* FIXME: channel should be module parameter */
 
       current_freq = freq;
     }
@@ -106,6 +106,7 @@ class Osc : public OscBase {
     config (Properties *properties)
     {
       wav_set = audio_repo.get_wav_set (properties->filename.c_str());
+      channel = properties->channel - 1;
 
       if (live_decoder)
         delete live_decoder;
