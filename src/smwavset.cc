@@ -37,13 +37,35 @@ using std::map;
 
 using namespace SpectMorph;
 
+static vector<string>
+string_tokenize (const string& str)
+{
+  vector<string> words;
+
+  string::const_iterator word_start = str.begin();
+  for (string::const_iterator si = str.begin(); si != str.end(); si++)
+    {
+      if (*si == ',') /* colon indicates word boundary */
+        {
+          words.push_back (string (word_start, si));
+          word_start = si + 1;
+        }
+    }
+
+  if (!str.empty()) /* handle last word in string */
+    words.push_back (string (word_start, str.end()));
+
+  return words;
+}
+
 /// @cond
 struct Options
 {
-  string	program_name; /* FIXME: what to do with that */
-  string        data_dir;
-  string        args;
-  int           channel;
+  string	  program_name; /* FIXME: what to do with that */
+  string          data_dir;
+  string          args;
+  int             channel;
+  vector<string>  format;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK } command;
 
   Options ();
@@ -59,6 +81,7 @@ Options::Options ()
   args = "";
   command = NONE;
   channel = 0;
+  format = string_tokenize ("midi-note,filename");
 }
 
 #include "stwutils.hh"
@@ -107,6 +130,10 @@ Options::parse (int   *argc_p,
                check_arg (argc, argv, &i, "--channel", &opt_arg))
 	{
 	  channel = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--format", &opt_arg))
+        {
+          format = string_tokenize (opt_arg);
         }
     }
 
@@ -356,7 +383,25 @@ main (int argc, char **argv)
       load_or_die (wset, argv[1]);
 
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
-        printf ("%d %s\n", wi->midi_note, wi->path.c_str());
+        {
+          for (vector<string>::const_iterator fi = options.format.begin(); fi != options.format.end(); fi++)
+            {
+              if (fi != options.format.begin()) // not first field
+                printf (" ");
+              if (*fi == "midi-note")
+                printf ("%d", wi->midi_note);
+              else if (*fi == "filename")
+                printf ("%s", wi->path.c_str());
+              else if (*fi == "channel")
+                printf ("%d", wi->channel);
+              else
+                {
+                  sfi_error ("list command: invalid field for format: %s", fi->c_str());
+                  exit (1);
+                }
+            }
+          printf ("\n");
+        }
     }
   else if (options.command == Options::ENCODE)
     {

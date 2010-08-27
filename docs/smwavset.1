@@ -1,6 +1,6 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-08\-11T15:06:34
-.TH "smwavset" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.0" "smwavset Manual Page"
+.\" generation: 2010\-08\-27T21:58:39
+.TH "smwavset" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smwavset Manual Page"
 
 .SH
 NAME
@@ -65,6 +65,11 @@ directory which is different for each wavset is usually necessary. The
 default value is /tmp, which is only appropriate for testing; you should
 ensure that scripts setup a different value.
 
+.TP
+\fB\-\-format\fP \fI<field1>\fP,\fI<field2>\fP,\fI<field3>\fP,...,\fI<fieldN>\fP 
+.br
+Set the output format for the list command.
+
 .PP
 
 
@@ -93,7 +98,32 @@ list [ <options> ] <wavset>
 
 .PP
 
-Lists the wave files that are contained within the wavset.
+Lists the wave files that are contained within the wavset. The output
+format for the list command can be specified using the format option
+(comma seperated fields).
+.br
+
+.br
+\fBValid fields:\fP
+
+
+
+.TP
+midi\-note 
+.br
+Midi note of the audio entry (0\-127) 
+.TP
+channel 
+.br
+Channel for the audio entry (0 is the first channel) 
+.TP
+filename 
+.br
+Filename of the audio entry
+
+.PP
+
+
 .SS
 encode [ <options> ] <wset_filename> <smset_filename>
 

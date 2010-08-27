@@ -41,6 +41,8 @@ smwavset - Program to manage spectmorph multiwave files
        directory which is different for each wavset is usually necessary. The
        default value is /tmp, which is only appropriate for testing; you should
        ensure that scripts setup a different value.
+@item @manb{--format} @mani{<field1>},@mani{<field2>},@mani{<field3>},...,@mani{<fieldN>} @*
+       Set the output format for the list command.
 @done
 
 @heading COMMANDS
@@ -57,7 +59,16 @@ smwavset - Program to manage spectmorph multiwave files
 
 @subheading list [ <options> ] <wavset>
 
-        Lists the wave files that are contained within the wavset.
+        Lists the wave files that are contained within the wavset. The output
+        format for the list command can be specified using the format option
+        (comma seperated fields).
+
+        @manb{Valid fields:}
+        @itemize{none}
+        @item midi-note    @* Midi note of the audio entry (0-127)
+        @item channel      @* Channel for the audio entry (0 is the first channel)
+        @item filename     @* Filename of the audio entry
+        @done
 
 @subheading encode [ <options> ] <wset_filename> <smset_filename>
 
