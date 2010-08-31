@@ -20,6 +20,6 @@ EXTRA_DIST += spectmorphosc.idl
 spectmorphosc.genidl.hh: $(srcdir)/spectmorphosc.idl
 	sfidl --plugin $(srcdir)/spectmorphosc.idl > spectmorphosc.genidl.hh
 
-spectmorphosc.cc: spectmorphosc.genidl.hh
+$(srcdir)/spectmorphosc.cc: spectmorphosc.genidl.hh
 
 CLEANFILES += spectmorphosc.genidl.hh
