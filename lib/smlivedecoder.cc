@@ -169,6 +169,23 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                             }
                         }
                     }
+                  // anti alias filter:
+                  double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+                  double norm_freq   = frame.freqs[partial] / current_mix_freq;
+                  if (norm_freq > filter_fact)
+                    {
+                      if (norm_freq > 0.5)
+                        {
+                          // above nyquist freq
+                          mag = 0;
+                        }
+                      else
+                        {
+                          // between filter_fact and 0.5 (db linear filter)
+                          const double db_at_nyquist = -60;
+                          mag *= bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
+                        }
+                    }
                   frame.phases[partial * 2] = sin (phase) * mag;
                   frame.phases[partial * 2 + 1] = cos (phase) * mag;
                 }

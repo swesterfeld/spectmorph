@@ -69,15 +69,19 @@ SineDecoder::process (const Frame& frame,
           const double SA = 0.5;
           const double smag = frame.phases[i * 2];
           const double cmag = frame.phases[i * 2 + 1];
+          const double mag_epsilon = 1e-8;
 
           VectorSinParams params;
-          params.mix_freq = mix_freq;
-          params.freq = frame.freqs[i];
-          params.phase = atan2 (cmag, smag);
           params.mag = sqrt (smag * smag + cmag * cmag) * SA;
-          params.mode = VectorSinParams::ADD;
+          if (params.mag > mag_epsilon)
+            {
+              params.mix_freq = mix_freq;
+              params.freq = frame.freqs[i];
+              params.phase = atan2 (cmag, smag);
+              params.mode = VectorSinParams::ADD;
 
-          fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
+              fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
+            }
         }
       for (size_t t = 0; t < frame_size; t++)
         decoded_sines[t] = aligned_decoded_sines[t] * window[t];
