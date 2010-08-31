@@ -18,10 +18,13 @@
 #include <assert.h>
 #include <stdio.h>
 #include <fcntl.h>
+#include <string.h>
 #include <errno.h>
 
 #include <vector>
+#include <algorithm>
 
+#include "config.h"
 #include "smgenericin.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.h>
@@ -41,18 +44,29 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::sort;
 
 enum {
-  GEN_INSTRUMENT    = 41,
-  GEN_SAMPLE        = 53,
-  GEN_SAMPLE_MODES  = 54,
-  GEN_ROOT_KEY      = 58
+  GEN_INSTRUMENT     = 41,
+  GEN_KEY_RANGE      = 43,
+  GEN_VELOCITY_RANGE = 44,
+  GEN_SAMPLE         = 53,
+  GEN_SAMPLE_MODES   = 54,
+  GEN_ROOT_KEY       = 58
 };
 
 struct Generator
 {
   int generator;
+
+  // amount generators:
   int amount;
+
+  // range generators:
+  int range_min;
+  int range_max;
+
+  void read (GenericIn *in);
 };
 
 struct Zone
@@ -180,6 +194,22 @@ read_fixed_string (GenericIn *in, int len)
       len--;
     }
   return result;
+}
+
+void
+Generator::read (GenericIn *in)
+{
+  generator = read_ui16 (in);
+  range_min = range_max = amount = 0;
+  if (generator == GEN_KEY_RANGE || generator == GEN_VELOCITY_RANGE)
+    {
+      range_min = in->get_byte();
+      range_max = in->get_byte();
+    }
+  else
+    {
+      amount    = read_ui16 (in);
+    }
 }
 
 void
@@ -311,8 +341,7 @@ read_pgen (GenericIn *in, int len)
   while (len >= 4)
     {
       Generator g;
-      g.generator = read_ui16 (in);
-      g.amount    = read_ui16 (in);
+      g.read (in);
       preset_gen.push_back (g);
 
       debug ("generator %d\n", g.generator);
@@ -377,8 +406,7 @@ read_igen (GenericIn *in, int len)
   while (len >= 4)
     {
       Generator g;
-      g.generator = read_ui16 (in);
-      g.amount    = read_ui16 (in);
+      g.read (in);
       instrument_gen.push_back (g);
 
       debug ("generator %d\n", g.generator);
@@ -445,10 +473,10 @@ gen2name (int i)
   return "unknown";
 }
 
-Generator *
-find_gen (int id, vector<Generator>& generators)
+const Generator *
+find_gen (int id, const vector<Generator>& generators)
 {
-  for (vector<Generator>::iterator gi = generators.begin(); gi != generators.end(); gi++)
+  for (vector<Generator>::const_iterator gi = generators.begin(); gi != generators.end(); gi++)
     if (gi->generator == id)
       return &(*gi);
 
@@ -467,25 +495,119 @@ xsystem (const string& cmd)
     }
 }
 
-int
-main (int argc, char **argv)
+vector<float> sample_data;
+
+struct Options
 {
-  /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  string              program_name;
+  enum { NONE, LIST, DUMP, IMPORT } command;
 
-  assert (argc == 2 || argc == 3);
+  Options();
+  void parse (int *argc_p, char **argv_p[]);
+  static void print_usage();
+} options;
 
-  GenericIn *in = GenericIn::open (argv[1]);
+Options::Options()
+{
+  command = NONE;
+  program_name = "smsfimport";
+}
+
+#include "stwutils.hh"
+
+void
+Options::parse (int   *argc_p,
+                char **argv_p[])
+{
+  guint argc = *argc_p;
+  gchar **argv = *argv_p;
+  unsigned int i, e;
+
+  g_return_if_fail (argc >= 0);
+
+  for (i = 1; i < argc; i++)
+    {
+      const char *opt_arg;
+      if (strcmp (argv[i], "--help") == 0 ||
+          strcmp (argv[i], "-h") == 0)
+	{
+	  print_usage();
+	  exit (0);
+	}
+      else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
+	{
+	  printf ("%s %s\n", program_name.c_str(), VERSION);
+	  exit (0);
+	}
+    }
+
+  bool resort_required = true;
+
+  while (resort_required)
+    {
+      /* resort argc/argv */
+      e = 1;
+      for (i = 1; i < argc; i++)
+        if (argv[i])
+          {
+            argv[e++] = argv[i];
+            if (i >= e)
+              argv[i] = NULL;
+          }
+      *argc_p = e;
+      resort_required = false;
+
+      // parse command
+      if (*argc_p >= 2 && command == NONE)
+        {
+          string str = argv[1];
+          if (str == "list")
+            {
+              command = LIST;
+            }
+          else if (str == "dump")
+            {
+              command = DUMP;
+            }
+          else if (str == "import")
+            {
+              command = IMPORT;
+            }
+
+          if (command != NONE)
+            {
+              argv[1] = NULL;
+              resort_required = true;
+            }
+        }
+    }
+}
+
+
+void
+Options::print_usage ()
+{
+  printf ("usage: %s <command> [ <options> ] [ <command specific args...> ]\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("command specific args:\n");
+  printf ("\n");
+  printf (" %s list [ <options> ] <sf2_filename>\n", options.program_name.c_str());
+  printf (" %s dump [ <options> ] <sf2_filename> [ <preset_name> ]\n", options.program_name.c_str());
+  printf (" %s import [ <options> ] <sf2_filename> <preset_name>\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("options:\n");
+  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  printf (" -v, --version               print version\n");
+  printf ("\n");
+}
+
+int
+read_sf2 (const string& filename)
+{
+  GenericIn *in = GenericIn::open (filename.c_str());
   if (!in)
     {
-      fprintf (stderr, "%s: error opening file %s\n", argv[0], argv[1]);
+      fprintf (stderr, "%s: error opening file %s\n", options.program_name.c_str(), filename.c_str());
       return 1;
     }
 
@@ -497,7 +619,7 @@ main (int argc, char **argv)
     }
 
   int len = read_ui32 (in);
-  printf ("len = %d\n", len);
+  debug ("len = %d\n", len);
 
   fcc = read_fourcc (in);
   if (fcc != "sfbk")
@@ -506,14 +628,14 @@ main (int argc, char **argv)
       return 1;
     }
   fcc = read_fourcc (in);
-  printf ("fcc<list> = %s\n", fcc.c_str());
+  debug ("fcc<list> = %s\n", fcc.c_str());
   len = read_ui32 (in);
-  printf ("len = %d\n", len);
+  debug ("len = %d\n", len);
 
   size_t list_end_pos = len + in->get_pos();
 
   fcc = read_fourcc (in);
-  printf ("fcc<info> = %s\n", fcc.c_str());
+  debug ("fcc<info> = %s\n", fcc.c_str());
 
   while (in->get_pos() < list_end_pos)
     {
@@ -545,36 +667,35 @@ main (int argc, char **argv)
         }
     }
 
-  printf ("position = %zd\n", in->get_pos());
+  debug ("position = %zd\n", in->get_pos());
   fcc = read_fourcc (in);
-  printf ("fcc<list> = %s\n", fcc.c_str());
+  debug ("fcc<list> = %s\n", fcc.c_str());
   len = read_ui32 (in);
-  printf ("len = %d\n", len);
+  debug ("len = %d\n", len);
 
   fcc = read_fourcc (in);
-  printf ("fcc<info> = %s\n", fcc.c_str());
+  debug ("fcc<info> = %s\n", fcc.c_str());
   fcc = read_fourcc (in);
-  printf ("fcc<info> = %s\n", fcc.c_str());
+  debug ("fcc<info> = %s\n", fcc.c_str());
   len = read_ui32 (in);
-  printf ("len = %d\n", len);
+  debug ("len = %d\n", len);
 
-  vector<float> sample_data;
   while (len)
     {
       sample_data.push_back (read_si16 (in) * (1 / 32768.0));
       len -= 2;
     }
-  printf ("sample_data len: %zd\n", sample_data.size());
+  debug ("sample_data len: %zd\n", sample_data.size());
 
   fcc = read_fourcc (in);
-  printf ("fcc<list> = %s\n", fcc.c_str());
+  debug ("fcc<list> = %s\n", fcc.c_str());
   len = read_ui32 (in);
-  printf ("len = %d\n", len);
+  debug ("len = %d\n", len);
 
   list_end_pos = len + in->get_pos();
 
   fcc = read_fourcc (in);
-  printf ("fcc<pdta> = %s\n", fcc.c_str());
+  debug ("fcc<pdta> = %s\n", fcc.c_str());
 
   while (in->get_pos() < list_end_pos)
     {
@@ -609,39 +730,40 @@ main (int argc, char **argv)
 
   for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
     {
-      printf ("Preset %s\n", pi->name.c_str());
-      printf ("  bank %d\n", pi->bank);
-      printf ("  preset %d\n", pi->preset);
+      debug ("Preset %s\n", pi->name.c_str());
+      debug ("  bank %d\n", pi->bank);
+      debug ("  preset %d\n", pi->preset);
 
       if ((pi + 1) < presets.end())
         {
-          Zone zone; // FIXME! needs to be in inner loop
 
           int start = pi->preset_bag_index, end = (pi + 1)->preset_bag_index;
           for (vector<BagEntry>::iterator bi = preset_bag.begin() + start; bi != preset_bag.begin() + end; bi++)
             {
-              printf ("    genndx %d\n", bi->gen_index);
-              printf ("    modndx %d\n", bi->mod_index);
+              Zone zone; // FIXME! needs to be in inner loop
+
+              debug ("    genndx %d\n", bi->gen_index);
+              debug ("    modndx %d\n", bi->mod_index);
               if ((bi + 1) < preset_bag.end())
                 for (int gndx = bi->gen_index; gndx < (bi + 1)->gen_index; gndx++)
                   {
-                    printf ("      generator %d (%s)\n", preset_gen[gndx].generator, gen2name (preset_gen[gndx].generator));
-                    printf ("      amount %d\n", preset_gen[gndx].amount);
+                    debug ("      generator %d (%s)\n", preset_gen[gndx].generator, gen2name (preset_gen[gndx].generator));
+                    debug ("      amount %d\n", preset_gen[gndx].amount);
                     if (preset_gen[gndx].generator == 41) // instrument id
                       {
                         size_t id = preset_gen[gndx].amount;
                         assert (id >= 0 && id < instruments.size());
-                        printf ("        -> %s\n", instruments[id].name.c_str());
+                        debug ("        -> %s\n", instruments[id].name.c_str());
                       }
                     zone.generators.push_back (preset_gen[gndx]);
                   }
+              pi->zones.push_back (zone);
             }
-          pi->zones.push_back (zone);
         }
     }
   for (vector<Instrument>::iterator ii = instruments.begin(); ii != instruments.end(); ii++)
     {
-      printf ("Instrument %s\n", ii->name.c_str());
+      debug ("Instrument %s\n", ii->name.c_str());
       if ((ii + 1) < instruments.end())
         {
 
@@ -650,18 +772,18 @@ main (int argc, char **argv)
             {
               Zone zone;
 
-              printf ("    genndx %d\n", bi->gen_index);
-              printf ("    modndx %d\n", bi->mod_index);
+              debug ("    genndx %d\n", bi->gen_index);
+              debug ("    modndx %d\n", bi->mod_index);
               if ((bi + 1) < instrument_bag.end())
                 for (int gndx = bi->gen_index; gndx < (bi + 1)->gen_index; gndx++)
                   {
-                    printf ("      generator %d (%s)\n", instrument_gen[gndx].generator, gen2name (instrument_gen[gndx].generator));
-                    printf ("      amount %d\n", instrument_gen[gndx].amount);
+                    debug ("      generator %d (%s)\n", instrument_gen[gndx].generator, gen2name (instrument_gen[gndx].generator));
+                    debug ("      amount %d\n", instrument_gen[gndx].amount);
                     if (instrument_gen[gndx].generator == 53) // sample id
                       {
                         size_t id = instrument_gen[gndx].amount;
                         assert (id >= 0 && id < samples.size());
-                        printf ("        -> %s\n", samples[id].name.c_str());
+                        debug ("        -> %s\n", samples[id].name.c_str());
                       }
                     zone.generators.push_back (instrument_gen[gndx]);
                   }
@@ -669,111 +791,268 @@ main (int argc, char **argv)
             }
         }
     }
+#if 0
   for (vector<Sample>::iterator si = samples.begin(); si != samples.end(); si++)
     {
       printf ("Sample %s\n", si->name.c_str());
     }
-  if (argc == 3)
+#endif
+  return 0;
+}
+
+string
+check_import (const Preset& p)
+{
+  if (p.zones.size() == 1)
     {
-      for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
+      printf ("PRESET: %s\n", p.name.c_str());
+      const Zone& zone = p.zones[0];
+      int inst_index = -1;
+      for (vector<Generator>::const_iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
         {
-          if (pi->name == argv[2])
+          if (gi->generator == GEN_INSTRUMENT)
             {
-              printf ("importing preset %s\n", argv[2]);
-              if (pi->zones.size() != 1)
+              assert (inst_index == -1);
+              inst_index = gi->amount;
+            }
+        }
+      assert (inst_index >= 0);
+      printf ("inst_index=%d\n", inst_index);
+
+      vector<int> key_count (128);
+
+      const Instrument& instrument = instruments[inst_index];
+      for (vector<Zone>::const_iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
+        {
+          const size_t zone_index = zi - instrument.zones.begin();
+
+          printf ("zone %zd:\n", zone_index);
+          //int root_key = -1;
+          const Generator *gi; // = find_gen (GEN_ROOT_KEY, zi->generators);
+          //if (gi)
+          //root_key = gi->amount;
+
+          gi = find_gen (GEN_SAMPLE, zi->generators);
+          if (gi)
+            {
+              size_t id = gi->amount;
+              assert (id >= 0 && id < samples.size());
+              printf (" * sample = %s\n", samples[id].name.c_str());
+
+              /* default: map to all keys */
+              int kr_min = 0;
+              int kr_max = 127;
+
+              gi = find_gen (GEN_KEY_RANGE, zi->generators);
+              if (gi)
                 {
-                  printf ("preset has %zd zones (should be 1) - can't import\n", pi->zones.size());
-                  return 1;
+                  kr_min = gi->range_min;
+                  kr_max = gi->range_max;
                 }
+              printf (" * key range = %d..%d\n", kr_min, kr_max);
+              for (int i = kr_min; i < kr_max; i++)
+                key_count[i] += 1;
+            }
+        }
+      for (int i = 0; i < key_count.size(); i++)
+        if (key_count[i] > 1)
+          return "noimport (key range overlap)";
 
-              string preset_xname;
-              for (int i = 0; argv[2][i]; i++)
+      return "importable";
+    }
+  else
+    return "noimport (> 1 zone)";
+}
+
+void
+list_sf2()
+{
+  vector<string> preset_out;
+  for (vector<Preset>::iterator pi = presets.begin(); pi < presets.end() - 1; pi++)
+    preset_out.push_back (Birnet::string_printf ("%03d:%03d %s %s", pi->bank, pi->preset, pi->name.c_str(),
+                                                 check_import (*pi).c_str()));
+  sort (preset_out.begin(), preset_out.end());
+  for (vector<string>::iterator poi = preset_out.begin(); poi != preset_out.end(); poi++)
+    printf ("%s\n", poi->c_str());
+}
+
+int
+import_preset (const string& import_name)
+{
+  for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
+    {
+      if (pi->name == import_name)
+        {
+          printf ("importing preset %s\n", import_name.c_str());
+          if (pi->zones.size() != 1)
+            {
+              printf ("preset has %zd zones (should be 1) - can't import\n", pi->zones.size());
+              return 1;
+            }
+
+          string preset_xname;
+          for (string::const_iterator ni = import_name.begin(); ni != import_name.end(); ni++)
+            {
+              char c = *ni;
+              if (isupper (c))
+                c = tolower (c);
+              else if (islower (c))
+                ;
+              else
+                c = '_';
+              preset_xname += c;
+            }
+          printf ("%s\n", preset_xname.c_str());
+
+          string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
+          xsystem (cmd);
+
+          Zone& zone = pi->zones[0];
+          int inst_index = -1;
+          for (vector<Generator>::iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
+            {
+              if (gi->generator == GEN_INSTRUMENT)
                 {
-                  char c = argv[2][i];
-                  if (isupper (c))
-                    c = tolower (c);
-                  else if (islower (c))
-                    ;
-                  else
-                    c = '_';
-                  preset_xname += c;
+                  assert (inst_index == -1);
+                  inst_index = gi->amount;
                 }
-              printf ("%s\n", preset_xname.c_str());
+            }
+          assert (inst_index >= 0);
+          Instrument instrument = instruments[inst_index];
+          printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
 
-              string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
-              xsystem (cmd);
+          for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
+            {
+              const size_t zone_index = zi - instrument.zones.begin();
 
-              Zone& zone = pi->zones[0];
-              int inst_index = -1;
-              for (vector<Generator>::iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
+              printf ("zone %zd:\n", zone_index);
+              string filename = Birnet::string_printf ("zone%zd.wav", zone_index);
+              string smname = Birnet::string_printf ("zone%zd.sm", zone_index);
+
+              int root_key = -1;
+              const Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
+              if (gi)
+                root_key = gi->amount;
+
+              int sample_modes = 0;
+              gi = find_gen (GEN_SAMPLE_MODES, zi->generators);
+              if (gi)
+                sample_modes = gi->amount;
+
+              gi = find_gen (GEN_SAMPLE, zi->generators);
+              if (gi)
                 {
-                  if (gi->generator == GEN_INSTRUMENT)
+                  size_t id = gi->amount;
+                  assert (id >= 0 && id < samples.size());
+                  int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
+
+                  printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
+
+                  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
+                  gsl_data_handle_open (dhandle);
+
+                  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                  if (fd < 0)
                     {
-                      assert (inst_index == -1);
-                      inst_index = gi->amount;
+                      BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
                     }
-                }
-              assert (inst_index >= 0);
-              Instrument instrument = instruments[inst_index];
-              printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
 
-              for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
-                {
-                  const size_t zone_index = zi - instrument.zones.begin();
-
-                  printf ("zone %zd:\n", zone_index);
-                  string filename = Birnet::string_printf ("zone%zd.wav", zone_index);
-                  string smname = Birnet::string_printf ("zone%zd.sm", zone_index);
-
-                  int root_key = -1;
-                  Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
-                  if (gi)
-                    root_key = gi->amount;
-
-                  int sample_modes = 0;
-                  gi = find_gen (GEN_SAMPLE_MODES, zi->generators);
-                  if (gi)
-                    sample_modes = gi->amount;
-
-                  gi = find_gen (GEN_SAMPLE, zi->generators);
-                  if (gi)
+                  int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
+                  if (xerrno)
                     {
-                      size_t id = gi->amount;
-                      assert (id >= 0 && id < samples.size());
-                      int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
-
-                      printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
-
-                      GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
-                      gsl_data_handle_open (dhandle);
-
-                      int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                      if (fd < 0)
-                        {
-                          BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
-                          sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                        }
-
-                      int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-                      if (xerrno)
-                        {
-                          BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
-                          sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                        }
-                      close (fd);
-
-                      xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
-                      if (sample_modes & 1)
-                        {
-                          xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
-                        }
-                      xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
-                      xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s", preset_xname.c_str(), midi_note, smname.c_str()));
+                      BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
                     }
+                  close (fd);
+
+                  xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
+                  if (sample_modes & 1)
+                    {
+                      xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                    }
+                  xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
+                  xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s", preset_xname.c_str(), midi_note, smname.c_str()));
                 }
-              xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
+            }
+          xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
+        }
+    }
+}
+
+void
+dump (const string& preset_name = "")
+{
+  for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
+    {
+      if (pi->name == preset_name || preset_name.empty())
+        {
+          printf ("PRESET %s\n", pi->name.c_str());
+          for (vector<Zone>::iterator zi = pi->zones.begin(); zi != pi->zones.end(); zi++)
+            {
+              const size_t zone_index = zi - pi->zones.begin();
+              printf ("  Zone #%zd\n", zone_index);
+
             }
         }
     }
+}
+
+int
+main (int argc, char **argv)
+{
+  /* init */
+  SfiInitValue values[] = {
+    { "stand-alone",            "true" }, /* no rcfiles etc. */
+    { "wave-chunk-padding",     NULL, 1, },
+    { "dcache-block-size",      NULL, 8192, },
+    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
+    { NULL }
+  };
+  bse_init_inprocess (&argc, &argv, NULL, values);
+  options.parse (&argc, &argv);
+
+  if (options.command == Options::LIST)
+    {
+      assert (argc == 2);
+      if (read_sf2 (argv[1]) != 0)
+        {
+          printf ("can't load sf2: %s\n", argv[1]);
+          return 1;
+        }
+      list_sf2();
+    }
+  else if (options.command == Options::IMPORT)
+    {
+      assert (argc == 3);
+      if (read_sf2 (argv[1]) != 0)
+        {
+          printf ("can't load sf2: %s\n", argv[1]);
+          return 1;
+        }
+      import_preset (argv[2]);
+    }
+  else if (options.command == Options::DUMP)
+    {
+      assert (argc == 2 || argc == 3);
+
+      if (read_sf2 (argv[1]) != 0)
+        {
+          printf ("can't load sf2: %s\n", argv[1]);
+          return 1;
+        }
+
+      if (argc == 2)
+        dump();
+      else
+        dump (argv[2]);
+    }
+  else
+    {
+      printf ("You need to specify a command (import, list, dump).\n\n");
+      Options::print_usage();
+      exit (1);
+    }
+
   return 0;
 }
