@@ -29,6 +29,8 @@ python:
 
 smlive:
 - implement efficient (IFFT) live decoder
+- get rid of analysis FFT in noise synthesis
+- use fftw
 
 tests:
 - add test cases
