@@ -210,7 +210,7 @@ load_or_die (const string& filename, const string& mode)
 
   if (mode == "fundamental-freq" || mode == "freq"
   ||  mode == "frameparams" || mode == "attack" ||
-      mode == "zero-values-at-start")
+      mode == "zero-values-at-start" || mode == "mix-freq")
     load_options = AUDIO_SKIP_DEBUG;
 
   BseErrorType error = audio.load (filename, load_options);
@@ -408,6 +408,12 @@ main (int argc, char **argv)
       check_usage (argc, 3, "fundamental-freq");
 
       printf ("fundamental-freq: %f\n", audio.fundamental_freq);
+    }
+  else if (mode == "mix-freq")
+    {
+      check_usage (argc, 3, "mix-freq");
+
+      printf ("mix-freq: %f\n", audio.mix_freq);
     }
   else if (mode == "auto-tune")
     {
