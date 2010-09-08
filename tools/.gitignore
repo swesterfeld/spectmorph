@@ -2,6 +2,9 @@ Makefile
 Makefile.in
 ascii2wav
 wav2ascii
+imiscutter
+smsfimport
+tld
 *.o
 .deps
 .libs
