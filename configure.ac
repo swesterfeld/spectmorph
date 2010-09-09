@@ -151,6 +151,11 @@ AC_DEFUN([AC_JACK_REQUIREMENTS],
     AC_SUBST(JACK_LIBS)
 ])
 
+dnl FFTW3 (optional requirement)
+AC_DEFUN([AC_FFTW_CHECK],
+[
+    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
+])
 
 dnl ----------------------------- from acbirnet.m4 -------------------------------
 dnl Check whether cc accepts a certain option
@@ -178,6 +183,7 @@ AC_GTK_REQUIREMENTS
 AC_GTKMM_REQUIREMENTS
 AC_LAPACK_REQUIREMENTS
 AC_JACK_REQUIREMENTS
+AC_FFTW_CHECK
 BOOST_REQUIRE([1.34])
 AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
