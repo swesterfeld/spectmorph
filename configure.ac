@@ -154,7 +154,12 @@ AC_DEFUN([AC_JACK_REQUIREMENTS],
 dnl FFTW3 (optional requirement)
 AC_DEFUN([AC_FFTW_CHECK],
 [
-    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
+    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f],[
+       SPECTMORPH_HAVE_FFTW=1
+    ],[
+       SPECTMORPH_HAVE_FFTW=0
+    ])
+    AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
 ])
 
 dnl ----------------------------- from acbirnet.m4 -------------------------------

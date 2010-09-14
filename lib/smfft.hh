@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2009-2010 Stefan Westerfeld
+ * Copyright (C) 2010 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -16,34 +16,26 @@
  */
 
 
-#ifndef SPECTMORPH_NOISE_DECODER_HH
-#define SPECTMORPH_NOISE_DECODER_HH
+#ifndef SPECTMORPH_FFT_HH
+#define SPECTMORPH_FFT_HH
 
-#include "smframe.hh"
-#include "smrandom.hh"
+#include <sys/types.h>
 
 namespace SpectMorph
 {
 
-/**
- * \brief Decoder for the noise component (stochastic component) of the signal
- */
-class NoiseDecoder
+namespace FFT
 {
-  double orig_mix_freq;
-  double mix_freq;
-  Random random_gen;
 
-  void noise_envelope_to_spectrum (const std::vector<double>& envelope, float *spectrum, size_t spectrum_size);
-public:
-  NoiseDecoder (double orig_mix_freq,
-                double mix_freq);
+float *new_array_float (size_t N);
+void   free_array_float (float *f);
 
-  void set_seed (int seed);
-  void process (const Frame& frame,
-                const std::vector<double>& window,
-                std::vector<float>& decoded_residue);
-};
+void   fftar_float (size_t N, float *in, float *out);
+void   fftsr_float (size_t N, float *in, float *out);
+
+void   use_gsl_fft (bool enabled);
+
+}
 
 }
 

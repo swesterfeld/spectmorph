@@ -11,7 +11,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 EXTRA_DIST += saw440.wav sin440.wav sin440.py
 CLEANFILES += sin440-4567.wav
 
-TESTS = testfastsin testblob
+TESTS = testfastsin testblob testfft
 
 noinst_PROGRAMS = $(TESTS) testrandom
 
@@ -20,6 +20,9 @@ testfastsin_LDADD = $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
 testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testfft_SOURCES = testfft.cc
+testfft_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testrandom_SOURCES = testrandom.cc
 testrandom_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)

@@ -16,6 +16,7 @@
  */
 
 #include "smnoisedecoder.hh"
+#include "smfft.hh"
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
 #include <stdio.h>
@@ -45,11 +46,11 @@ NoiseDecoder::set_seed (int seed)
 
 void
 NoiseDecoder::noise_envelope_to_spectrum (const vector<double>& envelope,
-			                  vector<double>& spectrum)
+			                  float *spectrum, size_t spectrum_size)
 {
-  for (size_t d = 0; d < spectrum.size(); d += 2)
+  for (size_t d = 0; d < spectrum_size; d += 2)
     {
-      double freq = (d * mix_freq * 0.5) / spectrum.size();
+      double freq = (d * mix_freq * 0.5) / spectrum_size;
       double pos = freq / orig_mix_freq * envelope.size() * 2;
       size_t ipos = pos;
       if (ipos + 1 < envelope.size())
@@ -114,13 +115,13 @@ NoiseDecoder::process (const Frame& frame,
 {
   const size_t block_size = next_power2 (decoded_residue.size());
 
-  vector<double> interpolated_spectrum (block_size + 2);
-  noise_envelope_to_spectrum (frame.noise_envelope, interpolated_spectrum);
-  vector<double> noise_spectrum (block_size);
-  vector<double> noise (block_size);
-  for (size_t i = 0; i < noise.size(); i++)
+  float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
+  noise_envelope_to_spectrum (frame.noise_envelope, interpolated_spectrum, block_size + 2);
+  float *noise_spectrum = FFT::new_array_float (block_size);
+  float *noise = FFT::new_array_float (block_size);
+  for (size_t i = 0; i < block_size; i++)
     noise[i] = random_gen.random_double_range (-1, 1) * window[i];
-  gsl_power2_fftar (block_size, &noise[0], &noise_spectrum[0]);
+  FFT::fftar_float (block_size, &noise[0], &noise_spectrum[0]);
   double noise_mag = 0;
   for (size_t i = 0; i < block_size; i += 2)
     {
@@ -140,14 +141,19 @@ NoiseDecoder::process (const Frame& frame,
       //debug ("noise:%lld %f %f\n", pos * overlap / block_size, interpolated_spectrum[i], interpolated_spectrum[i+1]);
     }
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
-  vector<double> in (block_size);
-  gsl_power2_fftsr (block_size, &interpolated_spectrum[0], &in[0]);
+  float *in = FFT::new_array_float (block_size);
+  FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
   for (size_t i = 0; i < decoded_residue.size(); i++)
     {
       // double windowing will allow phase modifications
       decoded_residue[i] = in[i] * window[i];
       //debug ("out:%lld %f\n", pos * overlap / block_size, out_sample[i]);
     }
+
+  FFT::free_array_float (in);
+  FFT::free_array_float (noise);
+  FFT::free_array_float (noise_spectrum);
+  FFT::free_array_float (interpolated_spectrum);
 }
 
 
