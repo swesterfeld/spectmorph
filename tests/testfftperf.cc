@@ -10,7 +10,7 @@ using std::string;
 unsigned int block_size;
 float *in, *out;
 
-double
+static double
 gettime()
 {
   timeval tv;
@@ -19,19 +19,31 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
-void
+static void
 time_fftar()
 {
   FFT::fftar_float (block_size, in, out);
 }
 
-void
+static void
 time_fftsr()
 {
   FFT::fftsr_float (block_size, in, out);
 }
 
-double
+static void
+time_fftac()
+{
+  FFT::fftac_float (block_size / 2, in, out);
+}
+
+static void
+time_fftsc()
+{
+  FFT::fftsc_float (block_size / 2, in, out);
+}
+
+static double
 measure (const string& name, void (*func)())
 {
   double clocks_per_sec = 2500.0 * 1000 * 1000;
@@ -42,7 +54,7 @@ measure (const string& name, void (*func)())
 
   // timed runs:
   double start = gettime();
-  for (int i = 0; i < runs; i++)
+  for (unsigned int i = 0; i < runs; i++)
     func();
   double end = gettime();
   printf ("%s: %f clocks/sample\n", name.c_str(), clocks_per_sec * (end - start) / block_size / runs);
@@ -50,7 +62,7 @@ measure (const string& name, void (*func)())
   return (end - start);
 }
 
-void
+static void
 compare (const string& name, void (*func)())
 {
   FFT::use_gsl_fft (false);
@@ -72,13 +84,16 @@ main()
       out = FFT::new_array_float (block_size);
 
       SpectMorph::Random random;
-      for (int i = 0; i < block_size; i++)
+      for (unsigned int i = 0; i < block_size; i++)
         in[i] = random.random_double_range (-1, 1);
 
       printf ("========================= BLOCK_SIZE = %d =========================\n", block_size);
 
       compare ("fftar", time_fftar);
       compare ("fftsr", time_fftsr);
+
+      compare ("fftac", time_fftac);
+      compare ("fftsc", time_fftsc);
 
       FFT::free_array_float (in);
       FFT::free_array_float (out);

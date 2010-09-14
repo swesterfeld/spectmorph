@@ -10,7 +10,7 @@ main()
 {
   SpectMorph::Random random;
 
-  const int block_size = 4;
+  const int block_size = 8;
 
   float *in = FFT::new_array_float (block_size);
   float *out = FFT::new_array_float (block_size);
@@ -45,5 +45,25 @@ main()
   for (int i = 0; i < block_size; i++)
     printf ("%d %.17g %.17g %.17g\n", i, in[i], back[i], back_gsl[i]);
 
+  FFT::use_gsl_fft (false);
+  FFT::fftac_float (block_size / 2, in, out);
+  FFT::fftsc_float (block_size / 2, out, back);
+
+  FFT::use_gsl_fft (true);
+  FFT::fftac_float (block_size / 2, in, out_gsl);
+  FFT::fftsc_float (block_size / 2, out_gsl, back_gsl);
+
+  printf ("data:\n");
+  for (int i = 0; i < block_size; i += 2)
+    printf ("%d %.8f %.8f\n", i / 2, in[i], in[i + 1]);
+  printf ("fftac:\n");
+  for (int i = 0; i < block_size; i += 2)
+    printf ("fftw: %d %.8f %.8f\n", i / 2, out[i], out[i + 1]);
+  for (int i = 0; i < block_size; i += 2)
+    printf ("gslf: %d %.8f %.8f\n", i / 2, out_gsl[i], out_gsl[i + 1]);
+  printf ("===\n");
+  printf ("fftsc:\n");
+  for (int i = 0; i < block_size; i++)
+    printf ("%d %.17g %.17g %.17g\n", i, in[i], back[i], back_gsl[i]);
   return 0;
 }

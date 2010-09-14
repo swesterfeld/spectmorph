@@ -26,7 +26,7 @@
 using namespace SpectMorph;
 using std::map;
 
-static bool enable_gsl_fft = true;
+static bool enable_gsl_fft = false;
 
 void
 FFT::use_gsl_fft (bool new_enable_gsl_fft)
@@ -46,6 +46,18 @@ gsl_fftar_float (size_t N, float* in, float* out)
 }
 
 static inline void
+gsl_fftac_float (size_t N, float* in, float* out)
+{
+  const int ARRAY_SIZE = N * 2;
+  double ind[ARRAY_SIZE];
+  double outd[ARRAY_SIZE];
+
+  std::copy (in, in + ARRAY_SIZE, ind);
+  gsl_power2_fftac (N, ind, outd);
+  std::copy (outd, outd + ARRAY_SIZE, out);
+}
+
+static inline void
 gsl_fftsr_float (size_t N, float* in, float* out)
 {
   double ind[N];
@@ -54,6 +66,18 @@ gsl_fftsr_float (size_t N, float* in, float* out)
   std::copy (in, in + N, ind);
   gsl_power2_fftsr (N, ind, outd);
   std::copy (outd, outd + N, out);
+}
+
+static inline void
+gsl_fftsc_float (size_t N, float* in, float* out)
+{
+  const int ARRAY_SIZE = N * 2;
+  double ind[ARRAY_SIZE];
+  double outd[ARRAY_SIZE];
+
+  std::copy (in, in + ARRAY_SIZE, ind);
+  gsl_power2_fftsc (N, ind, outd);
+  std::copy (outd, outd + ARRAY_SIZE, out);
 }
 
 #if SPECTMORPH_HAVE_FFTW
@@ -123,6 +147,59 @@ FFT::fftsr_float (size_t N, float *in, float *out)
     out[i] *= scale;
 }
 
+static map<int, fftwf_plan> fftac_float_plan;
+
+void
+FFT::fftac_float (size_t N, float *in, float *out)
+{
+  if (enable_gsl_fft)
+    {
+      gsl_fftac_float (N, in, out);
+      return;
+    }
+
+  fftwf_plan& plan = fftac_float_plan[N];
+  if (!plan)
+    {
+      float *plan_in = new_array_float (N * 2);
+      float *plan_out = new_array_float (N * 2);
+      /*
+       * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
+       * we need to use a backward FFTW for forward gsl FFT.
+       */
+      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out, FFTW_BACKWARD, FFTW_PATIENT);
+    }
+
+  fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
+}
+
+static map<int, fftwf_plan> fftsc_float_plan;
+
+void
+FFT::fftsc_float (size_t N, float *in, float *out)
+{
+  if (enable_gsl_fft)
+    {
+      gsl_fftsc_float (N, in, out);
+      return;
+    }
+
+  fftwf_plan& plan = fftsc_float_plan[N];
+  if (!plan)
+    {
+      float *plan_in = new_array_float (N * 2);
+      float *plan_out = new_array_float (N * 2);
+      /*
+       * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
+       * we need to use a forward FFTW for backward gsl FFT.
+       */
+      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out, FFTW_FORWARD, FFTW_PATIENT);
+     }
+  fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
+  const double scale = 1.0 / N;
+  for (size_t i = 0; i < N * 2; i++)
+    out[i] *= scale;
+}
 #else
 
 float *
