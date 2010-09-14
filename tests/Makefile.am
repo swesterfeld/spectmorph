@@ -13,7 +13,7 @@ CLEANFILES += sin440-4567.wav
 
 TESTS = testfastsin testblob testfft
 
-noinst_PROGRAMS = $(TESTS) testrandom
+noinst_PROGRAMS = $(TESTS) testrandom testfftperf
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
@@ -23,6 +23,9 @@ testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testfft_SOURCES = testfft.cc
 testfft_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testfftperf_SOURCES = testfftperf.cc
+testfftperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testrandom_SOURCES = testrandom.cc
 testrandom_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
