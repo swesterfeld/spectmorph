@@ -113,7 +113,8 @@ FFT::fftar_float (size_t N, float *in, float *out)
     {
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
-      plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, FFTW_PATIENT);
+      plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
+                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT);
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
   out[1] = out[N];
@@ -136,7 +137,8 @@ FFT::fftsr_float (size_t N, float *in, float *out)
     {
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
-      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, FFTW_PATIENT);
+      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
+                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT);
     }
   in[N] = in[1];
   in[N+1] = 0;
@@ -167,7 +169,8 @@ FFT::fftac_float (size_t N, float *in, float *out)
        * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
        * we need to use a backward FFTW for forward gsl FFT.
        */
-      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out, FFTW_BACKWARD, FFTW_PATIENT);
+      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
+                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
     }
 
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
@@ -193,7 +196,8 @@ FFT::fftsc_float (size_t N, float *in, float *out)
        * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
        * we need to use a forward FFTW for backward gsl FFT.
        */
-      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out, FFTW_FORWARD, FFTW_PATIENT);
+      plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
+                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
   const double scale = 1.0 / N;
