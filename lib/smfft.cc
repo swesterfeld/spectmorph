@@ -22,6 +22,7 @@
 
 #include <glib.h>
 #include <bse/gslfft.h>
+#include <bse/bseblockutils.hh>
 
 using namespace SpectMorph;
 using std::map;
@@ -144,9 +145,7 @@ FFT::fftsr_float (size_t N, float *in, float *out)
   in[N+1] = 0;
   in[1] = 0;
   fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
-  const double scale = 1.0 / N;
-  for (size_t i = 0; i < N; i++)
-    out[i] *= scale;
+  Bse::Block::scale (N, out, out, 1.0 / N);
 }
 
 static map<int, fftwf_plan> fftac_float_plan;
@@ -200,9 +199,7 @@ FFT::fftsc_float (size_t N, float *in, float *out)
                                 FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
-  const double scale = 1.0 / N;
-  for (size_t i = 0; i < N * 2; i++)
-    out[i] *= scale;
+  Bse::Block::scale (N * 2, out, out, 1.0 / N);
 }
 #else
 
