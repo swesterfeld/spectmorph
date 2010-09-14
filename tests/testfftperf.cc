@@ -3,6 +3,8 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string>
+#include <bse/bsemain.h>
+#include <bse/bseblockutils.hh>
 
 using namespace SpectMorph;
 using std::string;
@@ -76,8 +78,20 @@ compare (const string& name, void (*func)())
 }
 
 int
-main()
+main (int argc, char **argv)
 {
+  SfiInitValue values[] = {
+    { "stand-alone",            "true" }, /* no rcfiles etc. */
+    { "wave-chunk-padding",     NULL, 1, },
+    { "dcache-block-size",      NULL, 8192, },
+    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
+    { "load-core-plugins", "1" },
+    { NULL }
+  };
+  bse_init_inprocess (&argc, &argv, NULL, values);
+
+  printf ("Block Utils Implementation: %s\n", bse_block_impl_name());
+
   for (block_size = 256; block_size < 8192; block_size *= 2)
     {
       in = FFT::new_array_float (block_size);
