@@ -87,7 +87,7 @@ gsl_fftsc_float (size_t N, float* in, float* out)
 float *
 FFT::new_array_float (size_t N)
 {
-  return (float *) fftwf_malloc (sizeof (float) * N + 2);   /* extra space for r2c extra complex output */
+  return (float *) fftwf_malloc (sizeof (float) * (N + 2));   /* extra space for r2c extra complex output */
 }
 
 void
