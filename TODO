@@ -35,6 +35,7 @@ smlive:
 - don't do anything for inaudible partials
 - store phases for phase continous resynthesis rather than recomputing them (atan2)
 - use faster random number generation
+- use thin resynthesis (factor 2 overlap)
 
 tests:
 - add test cases
