@@ -17,6 +17,7 @@
 
 #include "smencoder.hh"
 #include "smmath.hh"
+#include "smfft.hh"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
@@ -165,6 +166,9 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
   vector<float> block (block_size);
   vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
 
+  float *fft_in = FFT::new_array_float (in.size());
+  float *fft_out = FFT::new_array_float (in.size());
+
   for (uint64 pos = 0; pos < n_values; pos += enc_params.frame_step)
     {
       AudioBlock audio_block;
@@ -197,7 +201,10 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
       for (vector<float>::const_iterator i = block.begin(); i != block.end(); i++)
         in[(j++) % in.size()] = *i;
 
-      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
+      std::copy (in.begin(), in.end(), fft_in);
+      FFT::fftar_float (in.size(), fft_in, fft_out);
+      std::copy (fft_out, fft_out + in.size(), out.begin());
+
       out[block_size * zeropad] = out[1];
       out[block_size * zeropad + 1] = 0;
       out[1] = 0;
@@ -208,6 +215,8 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
 
       audio_blocks.push_back (audio_block);
     }
+  FFT::free_array_float (fft_in);
+  FFT::free_array_float (fft_out);
 }
 
 /**
@@ -485,6 +494,9 @@ Encoder::spectral_subtract (const vector<float>& window)
   const size_t frame_size = enc_params.frame_size;
   const size_t zeropad = enc_params.zeropad;
 
+  float *fft_in = FFT::new_array_float (block_size * zeropad);
+  float *fft_out = FFT::new_array_float (block_size * zeropad);
+
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       AlignedArray<float,16> signal (frame_size);
@@ -503,12 +515,14 @@ Encoder::spectral_subtract (const vector<float>& window)
 
           fast_vector_sinf (params, &signal[0], &signal[frame_size]);
 	}
-      vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
+      vector<double> out (block_size * zeropad + 2);
       // apply window
+      std::fill (fft_in, fft_in + block_size * zeropad, 0);
       for (size_t k = 0; k < enc_params.block_size; k++)
-        in[k] = window[k] * signal[k];
+        fft_in[k] = window[k] * signal[k];
       // FFT
-      gsl_power2_fftar (block_size * zeropad, &in[0], &out[0]);
+      FFT::fftar_float (block_size * zeropad, fft_in, fft_out);
+      std::copy (fft_out, fft_out + block_size * zeropad, out.begin());
       out[block_size * zeropad] = out[1];
       out[block_size * zeropad + 1] = 0;
       out[1] = 0;
@@ -535,6 +549,8 @@ Encoder::spectral_subtract (const vector<float>& window)
 	  debug ("finalspectrum:%lld %g\n", frame, mag);
 	}
     }
+  FFT::free_array_float (fft_in);
+  FFT::free_array_float (fft_out);
 }
 
 // find best fit of amplitudes / phases to the observed signal
