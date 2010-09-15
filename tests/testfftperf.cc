@@ -1,5 +1,23 @@
+/*
+ * Copyright (C) 2010 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "smrandom.hh"
 #include "smfft.hh"
+#include "smmain.hh"
 #include <sys/time.h>
 #include <stdio.h>
 #include <string>
@@ -46,7 +64,7 @@ time_fftsc()
 }
 
 static double
-measure (const string& name, void (*func)())
+measure (const string& name, void (*func)(), bool is_complex)
 {
   double clocks_per_sec = 2500.0 * 1000 * 1000;
   unsigned int runs = 10000;
@@ -59,19 +77,19 @@ measure (const string& name, void (*func)())
   for (unsigned int i = 0; i < runs; i++)
     func();
   double end = gettime();
-  printf ("%s: %f clocks/sample\n", name.c_str(), clocks_per_sec * (end - start) / block_size / runs);
+  printf ("%s: %f clocks/sample\n", name.c_str(), clocks_per_sec * (end - start) / (is_complex ? (block_size / 2) : block_size) / runs);
 
   return (end - start);
 }
 
 static void
-compare (const string& name, void (*func)())
+compare (const string& name, void (*func)(), bool is_complex)
 {
   FFT::use_gsl_fft (false);
-  double fftw = measure (name + "(fftw)", func);
+  double fftw = measure (name + "(fftw)", func, is_complex);
 
   FFT::use_gsl_fft (true);
-  double gsl = measure (name + "(gsl)", func);
+  double gsl = measure (name + "(gsl)", func, is_complex);
 
   printf (" => speedup: %.3f\n", gsl / fftw);
   printf ("\n");
@@ -80,15 +98,7 @@ compare (const string& name, void (*func)())
 int
 main (int argc, char **argv)
 {
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { "load-core-plugins", "1" },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
 
   printf ("Block Utils Implementation: %s\n", bse_block_impl_name());
 
@@ -103,11 +113,11 @@ main (int argc, char **argv)
 
       printf ("========================= BLOCK_SIZE = %d =========================\n", block_size);
 
-      compare ("fftar", time_fftar);
-      compare ("fftsr", time_fftsr);
+      compare ("fftar", time_fftar, false);
+      compare ("fftsr", time_fftsr, false);
 
-      compare ("fftac", time_fftac);
-      compare ("fftsc", time_fftsc);
+      compare ("fftac", time_fftac, true);
+      compare ("fftsc", time_fftsc, true);
 
       FFT::free_array_float (in);
       FFT::free_array_float (out);
