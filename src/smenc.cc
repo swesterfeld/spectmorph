@@ -29,7 +29,6 @@
 #include "smaudio.hh"
 #include "smencoder.hh"
 #include "smmain.hh"
-#include "smfft.hh"
 
 #include "config.h"
 
@@ -393,5 +392,4 @@ main (int argc, char **argv)
         }
       encoder.save (sm_file, options.fundamental_freq);
     }
-  SpectMorph::FFT::save_wisdom();
 }
