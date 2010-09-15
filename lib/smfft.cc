@@ -146,6 +146,8 @@ FFT::fftsr_float (size_t N, float *in, float *out)
   in[1] = 0;
   fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
   Bse::Block::scale (N, out, out, 1.0 / N);
+
+  in[1] = in[N]; // we need to preserve the input array
 }
 
 static map<int, fftwf_plan> fftac_float_plan;
