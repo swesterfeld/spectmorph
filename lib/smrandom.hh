@@ -30,6 +30,8 @@ class Random
 public:
   Random();
 
+  void set_seed (int seed);
+
   inline double
   random_double_range (double begin, double end)
   {

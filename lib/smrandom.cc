@@ -31,3 +31,9 @@ Random::Random()
 
   initstate_r (g_random_int(), state, sizeof (state), &buf);
 }
+
+void
+Random::set_seed (int seed)
+{
+  srandom_r (seed, &buf);
+}

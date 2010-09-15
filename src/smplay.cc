@@ -52,6 +52,7 @@ struct Options
   bool                loop;
   bool                noise_enabled;
   bool                sines_enabled;
+  bool                deterministic_random;
   int                 rate;
   int                 midi_note;
   String              export_wav;
@@ -70,6 +71,7 @@ Options::Options () :
   loop (false),
   noise_enabled (true),
   sines_enabled (true),
+  deterministic_random (false),
   rate (44100),
   midi_note (-1)
 {
@@ -130,6 +132,10 @@ Options::parse (int   *argc_p,
         {
           sines_enabled = false;
         }
+      else if (check_arg (argc, argv, &i, "--det-random"))
+        {
+          deterministic_random = true;
+        }
       else if (check_arg (argc, argv, &i, "--decoder-mode", &opt_arg) || check_arg (argc, argv, &i, "-M", &opt_arg))
         {
           if (strcmp (opt_arg, "phase-sync") == 0)
@@ -167,6 +173,7 @@ Options::print_usage ()
   printf (" --rate <sampling rate>      set replay rate manually\n");
   printf (" --no-noise                  disable noise decoder\n");
   printf (" --no-sines                  disable sine decoder\n");
+  printf (" --det-random                use deterministic/reproducable random generator\n");
   printf (" --export <wav filename>     export to wav file\n");
   printf (" -m, --midi-note <note>      set midi note to play for wavsets\n");
   printf ("\n");
@@ -283,6 +290,9 @@ main (int argc, char **argv)
   SineDecoder::Mode mode = options.decoder_mode;
   NoiseDecoder noise_decoder (audio.mix_freq, format.rate);
   SineDecoder  sine_decoder (format.rate, frame_size, frame_step, mode);
+
+  if (options.deterministic_random)
+    noise_decoder.set_seed (0x123456);
 
   size_t pos = 0;
   size_t end_point = audio.contents.size();

@@ -36,6 +36,10 @@ smplay - Program to play a SpectMorph model
         decoded.
 @item @manb{--no-sines} @*
         Disable sine decoder, so that only the noise part of the signal is decoded.
+@item @manb{--det-random} @*
+        Use deterministic random generator; this will produce identical noise
+        components if the same file is decoded twice, making the audio output
+        exactly the same.
 @item @manb{--export} @mani{<wav filename>} @*
         Instead of playing the file, write the output to a wav file.
 @done

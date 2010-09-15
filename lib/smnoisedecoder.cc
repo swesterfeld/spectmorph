@@ -38,6 +38,12 @@ NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq) :
 }
 
 void
+NoiseDecoder::set_seed (int seed)
+{
+  random_gen.set_seed (seed);
+}
+
+void
 NoiseDecoder::noise_envelope_to_spectrum (const vector<double>& envelope,
 			                  vector<double>& spectrum)
 {
