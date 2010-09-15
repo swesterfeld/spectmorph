@@ -23,6 +23,7 @@
 #include <glib.h>
 #include <bse/gslfft.h>
 #include <bse/bseblockutils.hh>
+#include <string.h>
 
 using namespace SpectMorph;
 using std::map;
@@ -116,7 +117,13 @@ FFT::fftar_float (size_t N, float *in, float *out)
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      if (!plan) /* missing from wisdom -> create plan and save it */
+        {
+          plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
+                                        FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          FFT::save_wisdom();
+        }
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
 
@@ -149,7 +156,13 @@ FFT::fftsr_float (size_t N, float *in, float *out)
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
-                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      if (!plan) /* missing from wisdom -> create plan and save it */
+        {
+          plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
+                                        FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          FFT::save_wisdom();
+        }
     }
   in[N] = in[1];
   in[N+1] = 0;
@@ -192,7 +205,13 @@ FFT::fftac_float (size_t N, float *in, float *out)
        * we need to use a backward FFTW for forward gsl FFT.
        */
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      if (!plan) /* missing from wisdom -> create plan and save it */
+        {
+          plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
+                                    FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          FFT::save_wisdom();
+        }
     }
 
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
@@ -219,7 +238,13 @@ FFT::fftsc_float (size_t N, float *in, float *out)
        * we need to use a forward FFTW for backward gsl FFT.
        */
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      if (!plan) /* missing from wisdom -> create plan and save it */
+        {
+          plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
+                                    FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          FFT::save_wisdom();
+        }
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
   Bse::Block::scale (N * 2, out, out, 1.0 / N);
@@ -236,12 +261,31 @@ wisdom_filename()
 void
 FFT::save_wisdom()
 {
+  /* detect if we're running in valgrind - in this case newly accumulated wisdom is probably flawed */
+  bool valgrind = false;
+
+  FILE *maps = fopen (Birnet::string_printf ("/proc/%d/maps", getpid()).c_str(), "r");
+  if (maps)
+    {
+      char buffer[1024];
+      while (fgets (buffer, 1024, maps))
+        {
+          if (strstr (buffer, "vgpreload"))
+            valgrind = true;
+        }
+      fclose (maps);
+    }
+  if (valgrind)
+    {
+      printf ("FFT::save_wisdom(): not saving fft wisdom (running under valgrind)\n");
+      return;
+    }
   /* atomically replace old wisdom file with new wisdom file
    *
    * its theoretically possible (but highly unlikely) that we leak a *wisdom*.new.12345 file
    */
   string new_wisdom_filename = Birnet::string_printf ("%s.new.%d", wisdom_filename().c_str(), getpid());
-  FILE *outfile = fopen (wisdom_filename().c_str(), "w");
+  FILE *outfile = fopen (new_wisdom_filename.c_str(), "w");
   if (outfile)
     {
       fftwf_export_wisdom_to_file (outfile);
