@@ -19,7 +19,6 @@
 #include <birnet/birnet.hh>
 #include <bse/bse.h>
 #include <bse/gslfft.h>
-#include <bse/bsemain.h>
 #include <bse/bsemathsignal.h>
 #include <bse/gsldatahandle.h>
 #include <bse/bseblockutils.hh>
@@ -35,6 +34,7 @@
 #include "smsinedecoder.hh"
 #include "sminfile.hh"
 #include "smwavset.hh"
+#include "smmain.hh"
 #include "config.h"
 
 #include <list>
@@ -183,14 +183,7 @@ int
 main (int argc, char **argv)
 {
   /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
   options.parse (&argc, &argv);
   if (argc != 2)
     {

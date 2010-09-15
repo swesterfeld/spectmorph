@@ -17,14 +17,15 @@
 
 #include <stdio.h>
 
-#include <bse/bsemain.h>
-
 #include "smaudio.hh"
+#include "smmain.hh"
+
+using SpectMorph::sm_init;
 
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   if (argc < 2)
     {

@@ -16,7 +16,6 @@
  */
 
 #include <sfi/sfistore.h>
-#include <bse/bsemain.h>
 #include <bse/bseloader.h>
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
@@ -29,6 +28,8 @@
 
 #include "smaudio.hh"
 #include "smencoder.hh"
+#include "smmain.hh"
+
 #include "config.h"
 
 using std::string;
@@ -43,6 +44,7 @@ using SpectMorph::AudioBlock;
 using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
+using SpectMorph::sm_init;
 
 static float
 freqFromNote (float note)
@@ -266,14 +268,7 @@ main (int argc, char **argv)
   EncoderParams enc_params;
 
   /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (argc != 2 && argc != 3)

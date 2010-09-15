@@ -15,11 +15,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bse/bsemain.h>
 #include <bse/bseloader.h>
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
 #include <bse/gsldatautils.h>
+
+#include "smmain.hh"
 
 #include <assert.h>
 #include <stdio.h>
@@ -35,6 +36,7 @@
 using std::string;
 using std::vector;
 using std::max;
+using SpectMorph::sm_init;
 
 /// @cond
 struct Options
@@ -198,7 +200,7 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   options.program_name = "imiscutter";
 

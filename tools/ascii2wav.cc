@@ -25,10 +25,11 @@
 #include <bse/gsldatahandle.h>
 #include <bse/gsldatautils.h>
 #include <errno.h>
-#include <bse/bsemain.h>
+#include "smmain.hh"
 
 using std::string;
 using std::vector;
+using SpectMorph::sm_init;
 
 int
 main (int argc, char **argv)
@@ -43,14 +44,7 @@ main (int argc, char **argv)
       exit (1);
     }
   /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
 
   string filename = argv[1];
   int    srate    = atoi (argv[2]);

@@ -25,7 +25,7 @@
 #include "config.h"
 #include <smwavset.hh>
 #include <smaudio.hh>
-#include <bse/bsemain.h>
+#include <smmain.hh>
 #include <bse/bseloader.h>
 
 #include <string>
@@ -350,7 +350,7 @@ main (int argc, char **argv)
 {
   double start_time = gettime();
 
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   options.parse (&argc, &argv);
 

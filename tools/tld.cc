@@ -1,7 +1,6 @@
-#include <bse/bsemain.h>
-
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
+#include "smmain.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -9,6 +8,8 @@
 
 using SpectMorph::WavSet;
 using SpectMorph::LiveDecoder;
+using SpectMorph::sm_init;
+
 using std::vector;
 
 double
@@ -24,14 +25,7 @@ int
 main (int argc, char **argv)
 {
   /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
 
   assert (argc == 2);
 

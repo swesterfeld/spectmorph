@@ -17,14 +17,16 @@
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <bse/bse.h>
-#include <bse/bsemain.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 #include "smaudio.hh"
+#include "smmain.hh"
 
 using std::vector;
+
+using SpectMorph::sm_init;
 
 bool db_mode = false;
 const int BORDER_PIXELS = 10;
@@ -49,7 +51,7 @@ value_scale (float rvalue, float ivalue = 0)
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
   if (argc == 4 && strcmp (argv[3], "db") == 0)
     {
       argc--;

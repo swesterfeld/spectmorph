@@ -21,7 +21,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string>
-#include <bse/bsemain.h>
 #include <bse/bseblockutils.hh>
 
 using namespace SpectMorph;

@@ -21,7 +21,7 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include <bse/bsemain.h>
+#include "smmain.hh"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -31,6 +31,7 @@ using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
 using SpectMorph::Audio;
 using SpectMorph::LiveDecoder;
+using SpectMorph::sm_init;
 
 using std::vector;
 using std::string;
@@ -255,7 +256,7 @@ is_newline (char ch)
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   if (argc != 2)
     {

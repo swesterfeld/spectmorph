@@ -15,15 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <bse/bsemain.h>
 #include <bse/bseloader.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
 #include <vector>
 
+#include "smmain.hh"
+
 using std::string;
 using std::vector;
+
+using SpectMorph::sm_init;
 
 /// @cond
 struct Options
@@ -35,7 +38,7 @@ struct Options
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   options.program_name = "wav2ascii";
 

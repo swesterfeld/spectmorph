@@ -26,10 +26,10 @@
 
 #include "config.h"
 #include "smgenericin.hh"
+#include "smmain.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.h>
 #include <bse/gsldatautils.h>
-#include <bse/bsemain.h>
 
 #if 1
 static inline void
@@ -1001,15 +1001,7 @@ dump (const string& preset_name = "")
 int
 main (int argc, char **argv)
 {
-  /* init */
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { NULL }
-  };
-  bse_init_inprocess (&argc, &argv, NULL, values);
+  sm_init (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (options.command == Options::LIST)

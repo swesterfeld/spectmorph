@@ -17,8 +17,8 @@
 
 #include <vector>
 #include <stdio.h>
-#include <bse/bsemain.h>
 #include "smframe.hh"
+#include "smmain.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
 #include <bse/gslfft.h>
@@ -225,7 +225,7 @@ load_or_die (const string& filename, const string& mode)
 int
 main (int argc, char **argv)
 {
-  bse_init_inprocess (&argc, &argv, NULL, NULL);
+  sm_init (&argc, &argv);
 
   if (argc < 3)
     {
