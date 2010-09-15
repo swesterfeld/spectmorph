@@ -22,7 +22,6 @@
 #include <jack/midiport.h>
 
 #include "smmain.hh"
-#include "smfft.hh"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -306,7 +305,6 @@ main (int argc, char **argv)
       if (strcmp (buffer, "q") == 0 || strcmp (buffer, "quit") == 0)
         {
           jack_deactivate (client);
-          SpectMorph::FFT::save_wisdom();
           return 0;
         }
     }
