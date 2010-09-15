@@ -37,6 +37,9 @@ void   fftsc_float (size_t N, float *in, float *out);
 
 void   use_gsl_fft (bool enabled);
 
+void   save_wisdom();
+void   load_wisdom();
+
 }
 
 }

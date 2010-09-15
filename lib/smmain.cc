@@ -16,6 +16,7 @@
  */
 
 #include "smmain.hh"
+#include "smfft.hh"
 #include <bse/bsemain.h>
 
 namespace SpectMorph
@@ -32,6 +33,7 @@ void sm_init (int *argc_p, char ***argv_p)
     { NULL }
   };
   bse_init_inprocess (argc_p, argv_p, NULL, values);
+  FFT::load_wisdom();
 }
 
 }

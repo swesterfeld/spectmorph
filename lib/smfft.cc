@@ -26,6 +26,7 @@
 
 using namespace SpectMorph;
 using std::map;
+using std::string;
 
 static bool enable_gsl_fft = false;
 
@@ -223,6 +224,43 @@ FFT::fftsc_float (size_t N, float *in, float *out)
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
   Bse::Block::scale (N * 2, out, out, 1.0 / N);
 }
+
+static string
+wisdom_filename()
+{
+  const char *homedir = g_get_home_dir();
+  const char *hostname = g_get_host_name();
+  return homedir + string ("/.spectmorph_fftw_wisdom_") + hostname;
+}
+
+void
+FFT::save_wisdom()
+{
+  /* atomically replace old wisdom file with new wisdom file
+   *
+   * its theoretically possible (but highly unlikely) that we leak a *wisdom*.new.12345 file
+   */
+  string new_wisdom_filename = Birnet::string_printf ("%s.new.%d", wisdom_filename().c_str(), getpid());
+  FILE *outfile = fopen (wisdom_filename().c_str(), "w");
+  if (outfile)
+    {
+      fftwf_export_wisdom_to_file (outfile);
+      fclose (outfile);
+      rename (new_wisdom_filename.c_str(), wisdom_filename().c_str());
+    }
+}
+
+void
+FFT::load_wisdom()
+{
+  FILE *infile = fopen (wisdom_filename().c_str(), "r");
+  if (infile)
+    {
+      fftwf_import_wisdom_from_file (infile);
+      fclose (infile);
+    }
+}
+
 #else
 
 float *

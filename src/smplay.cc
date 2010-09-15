@@ -35,6 +35,7 @@
 #include "sminfile.hh"
 #include "smwavset.hh"
 #include "smmain.hh"
+#include "smfft.hh"
 #include "config.h"
 
 #include <list>
@@ -413,4 +414,6 @@ main (int argc, char **argv)
           sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), bse_error_blurb (error));
         }
     }
+
+  FFT::save_wisdom();
 }

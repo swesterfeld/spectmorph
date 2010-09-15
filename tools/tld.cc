@@ -1,5 +1,6 @@
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
+#include "smfft.hh"
 #include "smmain.hh"
 
 #include <stdio.h>
@@ -49,4 +50,5 @@ main (int argc, char **argv)
       double end_t = gettime();
       printf ("%d %.17g\n", n, end_t - start_t);
     }
+  SpectMorph::FFT::save_wisdom();
 }
