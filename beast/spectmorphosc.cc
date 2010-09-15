@@ -19,6 +19,7 @@
 #include "smaudio.hh"
 #include "smlivedecoder.hh"
 #include "smwavset.hh"
+#include "smfft.hh"
 #include <bse/bsemathsignal.h>
 
 using std::string;
@@ -118,6 +119,12 @@ public:
   void
   load_file (const string& filename)
   {
+    static bool read_wisdom = false;
+    if (!read_wisdom)
+      {
+        FFT::load_wisdom();
+        read_wisdom = true;
+      }
     BseErrorType error;
 
     WavSet *wav_set = new WavSet;
