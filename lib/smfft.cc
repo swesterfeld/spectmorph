@@ -118,6 +118,15 @@ FFT::fftar_float (size_t N, float *in, float *out)
                                     FFTW_PATIENT | FFTW_PRESERVE_INPUT);
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
+
+  /*
+   * Numerical recipies uses a slightly different definition of the FFT than FFTW does.
+   * The real value of this FFT is correct, but the imaginary part needs to be
+   * fixed to get the same results gsl_fft produces.
+   */
+  for (size_t i = 3; i < N; i += 2)
+    out[i] = -out[i];
+
   out[1] = out[N];
 }
 
@@ -144,10 +153,21 @@ FFT::fftsr_float (size_t N, float *in, float *out)
   in[N] = in[1];
   in[N+1] = 0;
   in[1] = 0;
+  /*
+   * Numerical recipies uses a slightly different definition of the FFT than FFTW does.
+   * The real value of this FFT is correct, but the imaginary part needs to be
+   * fixed to get the same results gsl_fft produces.
+   */
+  for (size_t i = 3; i < N; i += 2)
+    in[i] = -in[i];
+
   fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
   Bse::Block::scale (N, out, out, 1.0 / N);
 
   in[1] = in[N]; // we need to preserve the input array
+
+  for (size_t i = 3; i < N; i += 2)
+    in[i] = -in[i];
 }
 
 static map<int, fftwf_plan> fftac_float_plan;
