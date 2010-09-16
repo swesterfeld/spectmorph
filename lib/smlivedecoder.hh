@@ -51,7 +51,8 @@ class LiveDecoder
 
   Frame               last_frame;
   std::vector<double> window;
-  std::vector<double> samples;
+  std::vector<float>  samples;
+  std::vector<float>  decoded_data;
 
 public:
   LiveDecoder (WavSet *smset);

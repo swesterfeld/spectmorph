@@ -16,6 +16,7 @@
  */
 
 #include "smlivedecoder.hh"
+#include "smmath.hh"
 
 #include <bse/bsemathsignal.h>
 
@@ -105,7 +106,7 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       sine_decoder = new SineDecoder (mix_freq, frame_size, frame_step, mode);
 
       samples.resize (frame_size);
-      std::fill (samples.begin(), samples.end(), 0);
+      zero_float_block (frame_size, &samples[0]);
 
       have_samples = 0;
       pos = 0;
@@ -135,7 +136,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
 
           std::copy (samples.begin() + frame_step, samples.end(), samples.begin());
-          std::fill (samples.begin() + frame_size - frame_step, samples.end(), 0);
+          zero_float_block (frame_step, &samples[frame_size - frame_step]);
 
           if ((frame_idx + 1) < audio->contents.size())
             {
@@ -194,7 +195,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               last_frame = frame;
 
-              vector<float> decoded_data (frame_size);   // FIXME: performance problem
+              decoded_data.resize (frame_size);
 
               if (sines_enabled)
                 {

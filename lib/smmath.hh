@@ -20,6 +20,7 @@
 
 #include <math.h>
 #include <glib.h>
+#include <string.h>
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
@@ -335,6 +336,12 @@ fast_vector_sinf (const VectorSinParams& params, float *sin_begin, float *sin_en
     {
       g_assert_not_reached();
     }
+}
+
+inline void
+zero_float_block (size_t n_values, float *values)
+{
+  memset (values, 0, n_values * sizeof (float));
 }
 
 } // namespace SpectMorph

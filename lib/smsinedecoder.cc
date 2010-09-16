@@ -58,8 +58,6 @@ SineDecoder::process (const Frame& frame,
 		      const vector<double>& window,
                       vector<float>& decoded_sines)
 {
-  fill (decoded_sines.begin(), decoded_sines.end(), 0.0);
-
   /* phase synchronous reconstruction (no loops) */
   if (mode == MODE_PHASE_SYNC_OVERLAP)
     {
@@ -87,6 +85,8 @@ SineDecoder::process (const Frame& frame,
         decoded_sines[t] = aligned_decoded_sines[t] * window[t];
       return;
     }
+
+  zero_float_block (decoded_sines.size(), &decoded_sines[0]);
 
   /* phase distorted reconstruction */
   vector<double> freqs = frame.freqs;
