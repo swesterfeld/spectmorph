@@ -36,6 +36,7 @@ smlive:
 - store phases for phase continous resynthesis rather than recomputing them (atan2)
 - use faster random number generation
 - use thin resynthesis (factor 2 overlap)
+- noise masking (no noise resynthesis if its inaudible anyway)
 
 tests:
 - add test cases
