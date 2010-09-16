@@ -37,6 +37,7 @@ smlive:
 - use faster random number generation
 - use thin resynthesis (factor 2 overlap)
 - noise masking (no noise resynthesis if its inaudible anyway)
+- do not recompute the window each time we retrigger
 
 tests:
 - add test cases
