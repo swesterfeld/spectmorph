@@ -87,6 +87,8 @@ gsl_fftsc_float (size_t N, float* in, float* out)
 
 #include <fftw3.h>
 
+static void save_wisdom();
+
 float *
 FFT::new_array_float (size_t N)
 {
@@ -122,7 +124,7 @@ FFT::fftar_float (size_t N, float *in, float *out)
         {
           plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
                                         FFTW_PATIENT | FFTW_PRESERVE_INPUT);
-          FFT::save_wisdom();
+          save_wisdom();
         }
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
@@ -161,7 +163,7 @@ FFT::fftsr_float (size_t N, float *in, float *out)
         {
           plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
                                         FFTW_PATIENT | FFTW_PRESERVE_INPUT);
-          FFT::save_wisdom();
+          save_wisdom();
         }
     }
   in[N] = in[1];
@@ -210,7 +212,7 @@ FFT::fftac_float (size_t N, float *in, float *out)
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
                                     FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
-          FFT::save_wisdom();
+          save_wisdom();
         }
     }
 
@@ -243,7 +245,7 @@ FFT::fftsc_float (size_t N, float *in, float *out)
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
                                     FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
-          FFT::save_wisdom();
+          save_wisdom();
         }
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
@@ -258,8 +260,8 @@ wisdom_filename()
   return homedir + string ("/.spectmorph_fftw_wisdom_") + hostname;
 }
 
-void
-FFT::save_wisdom()
+static void
+save_wisdom()
 {
   /* detect if we're running in valgrind - in this case newly accumulated wisdom is probably flawed */
   bool valgrind = false;
@@ -348,12 +350,5 @@ FFT::load_wisdom()
 {
   /* no FFTW */
 }
-
-void
-FFT::save_wisdom()
-{
-  /* no FFTW */
-}
-
 
 #endif
