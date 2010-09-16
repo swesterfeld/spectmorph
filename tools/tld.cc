@@ -12,6 +12,7 @@ using SpectMorph::LiveDecoder;
 using SpectMorph::sm_init;
 
 using std::vector;
+using std::string;
 
 double
 gettime ()
@@ -28,7 +29,7 @@ main (int argc, char **argv)
   /* init */
   sm_init (&argc, &argv);
 
-  assert (argc == 2);
+  assert (argc == 3 || argc == 4);
 
   WavSet smset;
   if (smset.load (argv[1]))
@@ -37,18 +38,41 @@ main (int argc, char **argv)
       return 1;
     }
 
+  const float freq = atof (argv[2]);
+  assert (freq >= 20 && freq < 22000);
+
+  double clocks_per_sec = 2500.0 * 1000 * 1000;
+
   LiveDecoder decoder (&smset);
-  for (int n = 64; n <= 4096; n += 64)
+  if (argc == 4 && string (argv[3]) == "avg")
     {
+      const int n = 20000;
+      const int runs = 350;
+
       vector<float> audio_out (n);
       double start_t = gettime();
-      for (int l = 0; l < 40; l++)
+      for (int l = 0; l < runs; l++)
         {
-          decoder.retrigger (0, 50, 48000);
+          decoder.retrigger (0, freq, 48000);
           decoder.process (n, 0, 0, &audio_out[0]);
         }
       double end_t = gettime();
-      printf ("%d %.17g\n", n, end_t - start_t);
+      printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
     }
-  SpectMorph::FFT::save_wisdom();
+  else
+    {
+      for (int n = 64; n <= 4096; n += 64)
+        {
+          vector<float> audio_out (n);
+          double start_t = gettime();
+          const int runs = 40;
+          for (int l = 0; l < runs; l++)
+            {
+              decoder.retrigger (0, freq, 48000);
+              decoder.process (n, 0, 0, &audio_out[0]);
+            }
+          double end_t = gettime();
+          printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
+        }
+    }
 }
