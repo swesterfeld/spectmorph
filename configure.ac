@@ -41,6 +41,8 @@ AC_DEFUN([AC_BSE_REQUIREMENTS],
     PKG_CHECK_MODULES(BSE, bse >= 0.7.2)
     AC_SUBST(BSE_CFLAGS)
     AC_SUBST(BSE_LIBS)
+    BSE_VERSION=`pkg-config --modversion bse`
+    AC_SUBST(BSE_VERSION)
 ])
 dnl
 dnl libgtk

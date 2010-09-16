@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-plugindir=/usr/local/beast/lib/bse/v0.7.2/plugins
+plugindir=/usr/local/beast/lib/bse/v$(BSE_VERSION)/plugins
 
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3 -D_BIRNET_SOURCE_EXTENSIONS -I$(top_srcdir)/lib
 
