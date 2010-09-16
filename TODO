@@ -6,6 +6,7 @@ smenc:
 - compute peak over local (frame) maximum in dB
 - normalize noise
 - use averaging to estimate noise
+- noise coefficient should not be equidistant, but perceptually equidistant
 - make window function configurable
 - debug performance problems
   => implement downsampling for really low notes
