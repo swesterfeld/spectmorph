@@ -328,7 +328,32 @@ FFT::fftar_float (size_t N, float* in, float* out)
 void
 FFT::fftsr_float (size_t N, float* in, float* out)
 {
-  gsl_fftsr_float (N, in, out)
+  gsl_fftsr_float (N, in, out);
 }
+
+void
+FFT::fftac_float (size_t N, float *in, float *out)
+{
+  gsl_fftac_float (N, in, out);
+}
+
+void
+FFT::fftsc_float (size_t N, float *in, float *out)
+{
+  gsl_fftsc_float (N, in, out);
+}
+
+void
+FFT::load_wisdom()
+{
+  /* no FFTW */
+}
+
+void
+FFT::save_wisdom()
+{
+  /* no FFTW */
+}
+
 
 #endif
