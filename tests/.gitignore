@@ -3,5 +3,7 @@ smresvalue.sh
 testfastsin
 testblob
 testrandom
+testfft
+testfftperf
 .libs
 .deps
