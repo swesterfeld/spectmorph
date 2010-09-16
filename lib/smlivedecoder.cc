@@ -40,6 +40,8 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   audio (NULL),
   sine_decoder (NULL),
   noise_decoder (NULL),
+  sines_enabled (true),
+  noise_enabled (true),
   last_frame (0)
 {
 }
@@ -194,12 +196,19 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               vector<float> decoded_data (frame_size);   // FIXME: performance problem
 
-              sine_decoder->process (frame, next_frame, window, decoded_data);
-              for (size_t i = 0; i < frame_size; i++)
-                samples[i] += decoded_data[i];
-              noise_decoder->process (frame, window, decoded_data);
-              for (size_t i = 0; i < frame_size; i++)
-                samples[i] += decoded_data[i];
+              if (sines_enabled)
+                {
+                  sine_decoder->process (frame, next_frame, window, decoded_data);
+                  for (size_t i = 0; i < frame_size; i++)
+                    samples[i] += decoded_data[i];
+                }
+
+              if (noise_enabled)
+                {
+                  noise_decoder->process (frame, window, decoded_data);
+                  for (size_t i = 0; i < frame_size; i++)
+                    samples[i] += decoded_data[i];
+                }
 
               if (frame_idx != loop_point) /* if in loop mode: loop current frame */
                 frame_idx++;
@@ -235,4 +244,16 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
       env_pos++;
       have_samples--;
     }
+}
+
+void
+LiveDecoder::enable_noise (bool en)
+{
+  noise_enabled = en;
+}
+
+void
+LiveDecoder::enable_sines (bool es)
+{
+  sines_enabled = es;
 }

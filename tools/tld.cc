@@ -46,18 +46,25 @@ main (int argc, char **argv)
   LiveDecoder decoder (&smset);
   if (argc == 4 && string (argv[3]) == "avg")
     {
-      const int n = 20000;
-      const int runs = 350;
-
-      vector<float> audio_out (n);
-      double start_t = gettime();
-      for (int l = 0; l < runs; l++)
+      for (int i = 0; i < 4; i++)
         {
-          decoder.retrigger (0, freq, 48000);
-          decoder.process (n, 0, 0, &audio_out[0]);
+          bool en = (i & 1) == 0;
+          bool es = (i & 2) == 0;
+          decoder.enable_noise (en);
+          decoder.enable_sines (es);
+          const int n = 20000;
+          const int runs = 350;
+
+          vector<float> audio_out (n);
+          double start_t = gettime();
+          for (int l = 0; l < runs; l++)
+            {
+              decoder.retrigger (0, freq, 48000);
+              decoder.process (n, 0, 0, &audio_out[0]);
+            }
+          double end_t = gettime();
+          printf ("%s %s %.17g\n", en ? "noise" : "  -  ", es ? "sines" : "  -  ", (end_t - start_t) * clocks_per_sec / n / runs);
         }
-      double end_t = gettime();
-      printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
     }
   else
     {

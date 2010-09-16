@@ -35,6 +35,9 @@ class LiveDecoder
   SineDecoder        *sine_decoder;
   NoiseDecoder       *noise_decoder;
 
+  bool                sines_enabled;
+  bool                noise_enabled;
+
   size_t              frame_size, frame_step;
   size_t              zero_values_at_start_scaled;
   int                 loop_point;
@@ -52,6 +55,9 @@ class LiveDecoder
 
 public:
   LiveDecoder (WavSet *smset);
+
+  void enable_noise (bool ne);
+  void enable_sines (bool se);
 
   void retrigger (int channel, float freq, float mix_freq);
   void process (size_t       n_values,
