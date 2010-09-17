@@ -17,6 +17,8 @@ smenc:
 - implement sinc interpolation for spectrum phase
 - make load() function of SpectMorph::Audio and SpectMorph::WavSet reset state
 - optimize memory usage of encoder
+- reanalyze residual after first pass
+- increase time resolution for residual for low notes
 
 refactoring:
 - try to refactor SpectMorph::Frame into something less duplicating
