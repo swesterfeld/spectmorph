@@ -113,6 +113,8 @@ class Osc : public OscBase {
         delete live_decoder;
 
       live_decoder = new LiveDecoder (wav_set);
+      live_decoder->enable_sines (properties->sines);
+      live_decoder->enable_noise (properties->noise);
     }
   };
 public:
