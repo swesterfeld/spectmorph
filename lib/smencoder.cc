@@ -18,6 +18,7 @@
 #include "smencoder.hh"
 #include "smmath.hh"
 #include "smfft.hh"
+#include "smdebug.hh"
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/vector_proxy.hpp>
@@ -55,22 +56,7 @@ magnitude (vector<float>::iterator i)
   return sqrt (*i * *i + *(i+1) * *(i+1));
 }
 
-static void
-debug (const char *dbg, ...)
-{
-  va_list ap;
-
-  // FIXME!
-  return;
-#if 0
-  if (!options.debug)
-    return;
-
-  va_start (ap, dbg);
-  vfprintf (options.debug, dbg, ap);
-  va_end (ap);
-#endif
-}
+#define debug(...) SpectMorph::Debug::debug ("encoder", __VA_ARGS__)
 
 /**
  * Constructor which initializes the Encoders parameters.

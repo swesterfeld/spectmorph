@@ -29,6 +29,7 @@
 #include "smaudio.hh"
 #include "smencoder.hh"
 #include "smmain.hh"
+#include "smdebug.hh"
 
 #include "config.h"
 
@@ -95,7 +96,6 @@ struct Options
   bool          attack;
   float         fundamental_freq;
   int           optimization_level;
-  FILE         *debug;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -109,7 +109,6 @@ Options::Options ()
 {
   program_name = "smenc";
   fundamental_freq = 0; // unset
-  debug = 0;
   optimization_level = 0;
   strip_models = false;
   attack = true;        // perform attack time optimization
@@ -148,7 +147,7 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "-d"))
 	{
-          debug = fopen ("/tmp/stwenc.log", "w");
+          SpectMorph::Debug::debug_enable ("encoder");
 	}
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
@@ -210,21 +209,6 @@ Options::print_usage ()
   printf (" -s                          produced stripped models\n");
   printf (" --no-attack                 skip attack time optimization\n");
   printf ("\n");
-}
-
-void debug (const char *dbg, ...) G_GNUC_PRINTF (1, 2);
-
-void
-debug (const char *dbg, ...)
-{
-  va_list ap;
-
-  if (!options.debug)
-    return;
-
-  va_start (ap, dbg);
-  vfprintf (options.debug, dbg, ap);
-  va_end (ap);
 }
 
 void
