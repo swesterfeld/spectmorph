@@ -209,7 +209,7 @@ load_or_die (const string& filename, const string& mode)
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
   if (mode == "fundamental-freq" || mode == "freq"
-  ||  mode == "frameparams" || mode == "attack" ||
+  ||  mode == "frameparams" || mode == "noiseparams" || mode == "attack" ||
       mode == "zero-values-at-start" || mode == "mix-freq")
     load_options = AUDIO_SKIP_DEBUG;
 
@@ -375,6 +375,16 @@ main (int argc, char **argv)
             {
               break;
             }
+        }
+    }
+  else if (mode == "noiseparams")
+    {
+      check_usage (argc, 4, "noiseparams <frame_no>");
+
+      int f = atoi (argv[3]);
+      for (int i = 0; i < audio.contents[f].noise.size(); i++)
+        {
+          printf ("%f\n", audio.contents[f].noise[i]);
         }
     }
   else if (mode == "attack")
