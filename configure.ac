@@ -164,7 +164,7 @@ AC_DEFUN([AC_FFTW_CHECK],
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
     AC_MSG_CHECKING([whether FFTW is recent enough])
       AC_COMPILE_IFELSE([
-        #include "fftw3"
+        #include "fftw3.h"
         int x = FFTW_WISDOM_ONLY;
       ],[
         AC_MSG_RESULT([yes])
