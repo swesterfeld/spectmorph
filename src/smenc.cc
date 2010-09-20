@@ -94,6 +94,7 @@ struct Options
   string	program_name; /* FIXME: what to do with that */
   bool          strip_models;
   bool          attack;
+  bool          track_sines;
   float         fundamental_freq;
   int           optimization_level;
 
@@ -111,6 +112,7 @@ Options::Options ()
   fundamental_freq = 0; // unset
   optimization_level = 0;
   strip_models = false;
+  track_sines = true;   // perform peak tracking to find sine components
   attack = true;        // perform attack time optimization
 }
 
@@ -181,6 +183,10 @@ Options::parse (int   *argc_p,
         {
           attack = false;
         }
+      else if (check_arg (argc, argv, &i, "--no-sines"))
+        {
+          track_sines = false;
+        }
      }
 
   /* resort argc/argv */
@@ -208,6 +214,7 @@ Options::print_usage ()
   printf (" -O <level>                  set optimization level\n");
   printf (" -s                          produced stripped models\n");
   printf (" --no-attack                 skip attack time optimization\n");
+  printf (" --no-sines                  skip partial tracking\n");
   printf ("\n");
 }
 
@@ -365,7 +372,7 @@ main (int argc, char **argv)
             window[i] = 0;
         }
 
-      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack);
+      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack, options.track_sines);
       if (options.strip_models)
         {
           for (size_t i = 0; i < audio_blocks.size(); i++)

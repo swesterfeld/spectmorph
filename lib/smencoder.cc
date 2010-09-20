@@ -989,17 +989,21 @@ Encoder::compute_attack_params (const vector<float>& window)
  * \param attack whether to find the optimal attack parameters
  */
 void
-Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level, bool attack)
+Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level,
+                 bool attack, bool track_sines)
 {
   compute_stft (dhandle, channel, window);
 
-  search_local_maxima();
-  link_partials();
-  validate_partials();
+  if (track_sines)
+    {
+      search_local_maxima();
+      link_partials();
+      validate_partials();
 
-  optimize_partials (window, optimization_level);
+      optimize_partials (window, optimization_level);
 
-  spectral_subtract (window);
+      spectral_subtract (window);
+    }
   approx_noise();
 
   if (attack)

@@ -116,7 +116,8 @@ public:
   void compute_attack_params (const std::vector<float>& window);
 
   // all-in-one encoding function:
-  void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level, bool attack);
+  void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
+               bool attack, bool track_sines);
 
   void save (const std::string& filename, double fundamental_freq);
 };
