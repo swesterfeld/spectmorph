@@ -557,7 +557,7 @@ refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float
     return;
 
   // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
-  matrix<double, ublas::column_major> A (signal_size, freq_count * 2); 
+  matrix<double, ublas::column_major> A (signal_size, freq_count * 2);
   for (int i = 0; i < freq_count; i++)
     {
       double phase = 0;
@@ -899,21 +899,33 @@ Encoder::approx_noise (const vector<float>& window)
 
   const size_t fft_size = block_size * zeropad;
 
-  double Eww = 0;
+  double expected_value_w2 = 0;
   for (int x = 0; x < frame_size; x++)
-    Eww += window[x] * window[x];
-  Eww /= frame_size;
-  printf ("Eww %f\n", Eww);
+    expected_value_w2 += window[x] * window[x];
+  expected_value_w2 /= frame_size;
 
-  const double norm = fft_size * frame_size * 0.5 * Eww;
+  const double norm = fft_size * frame_size * 0.5 * expected_value_w2;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       vector<double> noise_envelope (32);
       vector<double> spectrum (audio_blocks[frame].noise.begin(), audio_blocks[frame].noise.end());
 
+      /* A complex FFT would preserve the energy of the input signal exactly; the difference to
+       * our (real) FFT is that every value in the complex spectrum occurs twice, once as "positive"
+       * frequency, once as "negative" frequency - except for two spectrum values: the value
+       * for frequency 0, and the value for frequency mix_freq / 2.
+       *
+       * To make this FFT energy preserving, we scale those values with a factor of sqrt (2) so
+       * that their energy is twice as big (energy == squared value). Then we scale the whole
+       * thing with a factor of 0.5, and we get an energy preserving transformation.
+       */
+      spectrum[0] /= sqrt (2);
+      spectrum[spectrum.size() - 2] /= sqrt (2);
+
       approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, norm);
 
+      /// DEBUG CODE {
       vector<double> approx_spectrum (2050);
       xnoise_envelope_to_spectrum (enc_params.mix_freq, noise_envelope, approx_spectrum);
       for (int i = 0; i < 2048; i += 2)
@@ -927,15 +939,12 @@ Encoder::approx_noise (const vector<float>& window)
       for (vector<double>::iterator si = spectrum.begin(); si != spectrum.end(); si++)
         b4_energy += *si * *si / norm;
 
-      int    x = 0;
       double r_energy = 0;
       for (vector<float>::iterator ri = audio_blocks[frame].debug_samples.begin(); ri != audio_blocks[frame].debug_samples.end(); ri++)
-        {
-          r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size();
-          x++;
-        }
+        r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size() * expected_value_w2;
 
-      printf ("%lld %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
+      debug ("noiseenergy:%lld %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
+      /// } DEBUG_CODE
       audio_blocks[frame].noise.assign (noise_envelope.begin(), noise_envelope.end());
     }
 }
