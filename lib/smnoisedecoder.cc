@@ -151,6 +151,8 @@ NoiseDecoder::process (const Frame& frame,
       // compensate for overlap
       decoded_residue[i] /= 2;
     }
+
+#if 0 // DEBUG
   r_energy /= decoded_residue.size();
   double s_energy = 0;
   for (size_t i = 0; i < dinterpolated_spectrum.size(); i++)
@@ -167,6 +169,7 @@ NoiseDecoder::process (const Frame& frame,
   for (size_t i = 0; i < block_size; i++)
     i_energy += interpolated_spectrum[i] * interpolated_spectrum[i] / norm;
   printf ("RE %f SE %f XE %f IE %f\n", r_energy, s_energy, xs_energy, i_energy);
+#endif
 
   FFT::free_array_float (in);
   FFT::free_array_float (interpolated_spectrum);
