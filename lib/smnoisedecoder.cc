@@ -21,6 +21,7 @@
 #include <bse/bsemathsignal.h>
 #include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 using std::vector;
 using SpectMorph::NoiseDecoder;
@@ -36,60 +37,22 @@ NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq) :
   orig_mix_freq (orig_mix_freq),
   mix_freq (mix_freq)
 {
+  noise_band_partition = 0;
+}
+
+NoiseDecoder::~NoiseDecoder()
+{
+  if (noise_band_partition)
+    {
+      delete noise_band_partition;
+      noise_band_partition = 0;
+    }
 }
 
 void
 NoiseDecoder::set_seed (int seed)
 {
   random_gen.set_seed (seed);
-}
-
-void
-NoiseDecoder::noise_envelope_to_spectrum (const vector<double>& envelope,
-			                  float *spectrum, size_t spectrum_size)
-{
-  for (size_t d = 0; d < spectrum_size; d += 2)
-    {
-      double freq = (d * mix_freq * 0.5) / spectrum_size;
-      double pos = freq / orig_mix_freq * envelope.size() * 2;
-      size_t ipos = pos;
-      if (ipos + 1 < envelope.size())
-        {
-          double f = pos - ipos;
-	  spectrum[d] = bse_db_to_factor (envelope[ipos] * (1 - f)
-                                        + envelope[ipos + 1] * f);
-        }
-      else
-        {
-          // else: outside envelope
-          spectrum[d] = 0;
-        }
-      spectrum[d+1] = 0;
-    }
-#if 0
-  g_return_if_fail (spectrum.size() == 2050);
-  int section_size = 2048 / envelope.size();
-  for (int d = 0; d < spectrum.size(); d += 2)
-    {
-      if (d <= section_size / 2)
-	{
-	  spectrum[d] = bse_db_to_factor (envelope[0]);
-	}
-      else if (d >= spectrum.size() - section_size / 2 - 2)
-	{
-	  spectrum[d] = bse_db_to_factor (envelope[envelope.size() - 1]);
-	}
-      else
-	{
-	  int dd = d - section_size / 2;
-	  double f = double (dd % section_size) / section_size;
-	  spectrum[d] = bse_db_to_factor (envelope[dd / section_size] * (1 - f)
-                                        + envelope[dd / section_size + 1] * f);
-	}
-      spectrum[d+1] = 0;
-      //debug ("noiseint %f\n", spectrum[d]);
-    }
-#endif
 }
 
 static size_t
@@ -121,7 +84,14 @@ NoiseDecoder::process (const Frame& frame,
   const size_t block_size = next_power2 (decoded_residue.size());
 
   vector<double> dinterpolated_spectrum (block_size + 2);
-  xnoise_envelope_to_spectrum (mix_freq, frame.noise_envelope, dinterpolated_spectrum);
+
+  if (!noise_band_partition)
+    noise_band_partition = new NoiseBandPartition (frame.noise_envelope.size(), dinterpolated_spectrum.size(), mix_freq);
+
+  assert (noise_band_partition->n_bands() == frame.noise_envelope.size());
+  assert (noise_band_partition->n_spectrum_bins() == dinterpolated_spectrum.size());
+
+  noise_band_partition->noise_envelope_to_spectrum (frame.noise_envelope, dinterpolated_spectrum);
 
   const double Eww = 0.375;
   const double norm = block_size * block_size * 0.5 / Eww;

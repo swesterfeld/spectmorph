@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -16,35 +16,25 @@
  */
 
 
-#ifndef SPECTMORPH_NOISE_DECODER_HH
-#define SPECTMORPH_NOISE_DECODER_HH
+#ifndef SPECTMORPH_NOISE_BAND_PARTITION_HH
+#define SPECTMORPH_NOISE_BAND_PARTITION_HH
 
-#include "smframe.hh"
-#include "smrandom.hh"
-#include "smnoisebandpartition.hh"
+#include <vector>
 
 namespace SpectMorph
 {
 
-/**
- * \brief Decoder for the noise component (stochastic component) of the signal
- */
-class NoiseDecoder
+class NoiseBandPartition
 {
-  double orig_mix_freq;
-  double mix_freq;
-  Random random_gen;
-  NoiseBandPartition *noise_band_partition;
+  std::vector<int> band_count;
+  std::vector<int> band_from_d;
 
 public:
-  NoiseDecoder (double orig_mix_freq,
-                double mix_freq);
-  ~NoiseDecoder();
+  NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, double mix_freq);
+  void noise_envelope_to_spectrum (const std::vector<double>& envelope, std::vector<double>& spectrum);
 
-  void set_seed (int seed);
-  void process (const Frame& frame,
-                const std::vector<double>& window,
-                std::vector<float>& decoded_residue);
+  size_t n_bands();
+  size_t n_spectrum_bins();
 };
 
 }
