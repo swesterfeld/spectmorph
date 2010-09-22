@@ -501,6 +501,13 @@ Encoder::spectral_subtract (const vector<float>& window)
 
           fast_vector_sinf (params, &signal[0], &signal[frame_size]);
 	}
+      double Renergy = 0;
+      for (size_t i = 0; i < frame_size; i++)
+        {
+          double R = audio_blocks[frame].debug_samples[i] - signal[i];
+          Renergy += R * R / frame_size;
+        }
+      printf ("%lld %f ##R\n", frame, Renergy);
       vector<double> out (block_size * zeropad + 2);
       // apply window
       std::fill (fft_in, fft_in + block_size * zeropad, 0);
@@ -759,55 +766,120 @@ Encoder::optimize_partials (const vector<float>& window, int optimization_level)
     }
 }
 
+static double
+mel_to_hz (double mel)
+{
+  return 700 * (exp (mel / 1127.0) - 1);
+}
+
 static void
 approximate_noise_spectrum (int frame,
+                            double mix_freq,
                             const vector<double>& spectrum,
-			    vector<double>& envelope)
+			    vector<double>& envelope,
+                            double norm)
 {
-  g_return_if_fail ((spectrum.size() - 2) % envelope.size() == 0);
-  int section_size = (spectrum.size() - 2) / envelope.size() / 2;
-  int d = 0;
   for (size_t t = 0; t < spectrum.size(); t += 2)
     {
       debug ("noise2red:%d %f\n", frame, sqrt (spectrum[t] * spectrum[t] + spectrum[t + 1] * spectrum[t + 1]));
     }
-  for (vector<double>::iterator ei = envelope.begin(); ei != envelope.end(); ei++)
-    {
-      double max_mag = 0;
 
-      /* represent each spectrum section by its maximum value */
-      for (int i = 0; i < section_size; i++)
-	{
-	  max_mag = max (max_mag, sqrt (spectrum[d] * spectrum[d] + spectrum[d + 1] * spectrum[d + 1]));
-	  d += 2;
-	}
-      *ei = bse_db_from_factor (max_mag, -200);
-      debug ("noisered:%d %f\n", frame, *ei);
+  size_t bands = envelope.size();
+  int d = 0;
+  for (size_t band = 0; band < envelope.size(); band++)
+    {
+      double mel_low = 30 + 4000.0 / bands * band;
+      double mel_high = 30 + 4000.0 / bands * (band + 1);
+      double hz_low = mel_to_hz (mel_low);
+      double hz_high = mel_to_hz (mel_high);
+
+      envelope[band] = 0;
+
+      /* skip frequencies which are too low to be in lowest band */
+      if (band == 0)
+        {
+          double f_hz = mix_freq / 2.0 * d / spectrum.size();
+          while (f_hz < hz_low)
+            {
+              d += 2;
+              f_hz = mix_freq / 2.0 * d / spectrum.size();
+            }
+        }
+      double f_hz = mix_freq / 2.0 * d / spectrum.size();
+      while (f_hz < hz_high)
+        {
+          if (d < spectrum.size())
+            {
+              envelope[band] += (spectrum[d] * spectrum[d] + spectrum[d + 1] * spectrum[d + 1]);
+            }
+          d += 2;
+          f_hz = mix_freq / 2.0 * d / spectrum.size();
+        }
+      envelope[band] /= norm;
     }
 }
 
-static void
-xnoise_envelope_to_spectrum (const vector<double>& envelope,
-			    vector<double>& spectrum)
+void
+xnoise_envelope_to_spectrum (double mix_freq,
+                             const vector<double>& envelope,
+			     vector<double>& spectrum)
 {
-  g_return_if_fail (spectrum.size() == 2050);
-  int section_size = 2048 / envelope.size();
+  vector<int>  band_from_d (spectrum.size());
+  vector<int>  band_count (envelope.size());
+
+  size_t bands = envelope.size();
+  int d = 0;
+  /* assign each d to a band */
+  std::fill (band_from_d.begin(), band_from_d.end(), -1);
+  for (size_t band = 0; band < envelope.size(); band++)
+    {
+      double mel_low = 30 + 4000.0 / bands * band;
+      double mel_high = 30 + 4000.0 / bands * (band + 1);
+      double hz_low = mel_to_hz (mel_low);
+      double hz_high = mel_to_hz (mel_high);
+
+      /* skip frequencies which are too low to be in lowest band */
+      double f_hz = mix_freq / 2.0 * d / spectrum.size();
+      if (band == 0)
+        {
+          while (f_hz < hz_low)
+            {
+              d += 2;
+              f_hz = mix_freq / 2.0 * d / spectrum.size();
+            }
+        }
+      while (f_hz < hz_high && d < spectrum.size())
+        {
+          if (d < band_from_d.size())
+            {
+              band_from_d[d] = band;
+              band_from_d[d + 1] = band;
+            }
+          d += 2;
+          f_hz = mix_freq / 2.0 * d / spectrum.size();
+        }
+    }
+  /* count bins per band */
+  for (size_t band = 0; band < bands; band++)
+    {
+      for (int d = 0; d < spectrum.size(); d += 2)
+        {
+          int b = band_from_d[d];
+          if (b == band)
+            band_count[b]++;
+        }
+    }
+
   for (int d = 0; d < spectrum.size(); d += 2)
     {
-      if (d <= section_size / 2)
+      int b = band_from_d[d];
+      if (b == -1)    /* d is not in a band */
 	{
-	  spectrum[d] = bse_db_to_factor (envelope[0]);
-	}
-      else if (d >= spectrum.size() - section_size / 2 - 2)
-	{
-	  spectrum[d] = bse_db_to_factor (envelope[envelope.size() - 1]);
+	  spectrum[d] = 0;
 	}
       else
 	{
-	  int dd = d - section_size / 2;
-	  double f = double (dd % section_size) / section_size;
-	  spectrum[d] = bse_db_to_factor (envelope[dd / section_size] * (1 - f)
-                                        + envelope[dd / section_size + 1] * f);
+	  spectrum[d] = sqrt (envelope[b] / band_count[b]);
 	}
       spectrum[d+1] = 0;
       debug ("noiseint %f\n", spectrum[d]);
@@ -819,21 +891,52 @@ xnoise_envelope_to_spectrum (const vector<double>& envelope,
  * for a noise signal.
  */
 void
-Encoder::approx_noise()
+Encoder::approx_noise (const vector<float>& window)
 {
+  const size_t block_size = enc_params.block_size;
+  const size_t frame_size = enc_params.frame_size;
+  const size_t zeropad = enc_params.zeropad;
+
+  const size_t fft_size = block_size * zeropad;
+
+  double Eww = 0;
+  for (int x = 0; x < frame_size; x++)
+    Eww += window[x] * window[x];
+  Eww /= frame_size;
+  printf ("Eww %f\n", Eww);
+
+  const double norm = fft_size * frame_size 0.5 * Eww;
+
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      vector<double> noise_envelope (256);
+      vector<double> noise_envelope (32);
       vector<double> spectrum (audio_blocks[frame].noise.begin(), audio_blocks[frame].noise.end());
 
-      approximate_noise_spectrum (frame, spectrum, noise_envelope);
+      approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, norm);
 
       vector<double> approx_spectrum (2050);
-      xnoise_envelope_to_spectrum (noise_envelope, approx_spectrum);
+      xnoise_envelope_to_spectrum (enc_params.mix_freq, noise_envelope, approx_spectrum);
       for (int i = 0; i < 2048; i += 2)
 	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
-      audio_blocks[frame].noise.resize (noise_envelope.size());
-      copy (noise_envelope.begin(), noise_envelope.end(), audio_blocks[frame].noise.begin());
+
+      double spect_energy = 0;
+      for (vector<double>::iterator si = noise_envelope.begin(); si != noise_envelope.end(); si++)
+        spect_energy += *si;
+
+      double b4_energy = 0;
+      for (vector<double>::iterator si = spectrum.begin(); si != spectrum.end(); si++)
+        b4_energy += *si * *si / norm;
+
+      int    x = 0;
+      double r_energy = 0;
+      for (vector<float>::iterator ri = audio_blocks[frame].debug_samples.begin(); ri != audio_blocks[frame].debug_samples.end(); ri++)
+        {
+          r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size();
+          x++;
+        }
+
+      printf ("%lld %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
+      audio_blocks[frame].noise.assign (noise_envelope.begin(), noise_envelope.end());
     }
 }
 
@@ -1004,7 +1107,7 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
 
       spectral_subtract (window);
     }
-  approx_noise();
+  approx_noise (window);
 
   if (attack)
     compute_attack_params (window);

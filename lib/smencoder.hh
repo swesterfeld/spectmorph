@@ -112,7 +112,7 @@ public:
   void validate_partials();
   void optimize_partials (const std::vector<float>& window, int optimization_level);
   void spectral_subtract (const std::vector<float>& window);
-  void approx_noise();
+  void approx_noise (const std::vector<float>& window);
   void compute_attack_params (const std::vector<float>& window);
 
   // all-in-one encoding function:

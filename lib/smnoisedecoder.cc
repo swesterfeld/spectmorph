@@ -101,6 +101,11 @@ next_power2 (size_t i)
   return p;
 }
 
+void
+xnoise_envelope_to_spectrum (double mix_freq,
+                             const vector<double>& envelope,
+			     vector<double>& spectrum);
+
 /**
  * This function decodes the noise contained in the frame and
  * fills the decoded_residue vector of the frame.
@@ -115,44 +120,55 @@ NoiseDecoder::process (const Frame& frame,
 {
   const size_t block_size = next_power2 (decoded_residue.size());
 
+  vector<double> dinterpolated_spectrum (block_size + 2);
+  xnoise_envelope_to_spectrum (mix_freq, frame.noise_envelope, dinterpolated_spectrum);
+
+  const double Eww = 0.375;
+  const double norm = block_size * block_size * 0.5 / Eww;
+
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
-  noise_envelope_to_spectrum (frame.noise_envelope, interpolated_spectrum, block_size + 2);
-  float *noise_spectrum = FFT::new_array_float (block_size);
-  float *noise = FFT::new_array_float (block_size);
-  for (size_t i = 0; i < block_size; i++)
-    noise[i] = random_gen.random_double_range (-1, 1) * window[i];
-  FFT::fftar_float (block_size, &noise[0], &noise_spectrum[0]);
-  double noise_mag = 0;
   for (size_t i = 0; i < block_size; i += 2)
     {
-      double a = noise_spectrum[i];
-      double b = noise_spectrum[i+1];
-      noise_mag = std::max (noise_mag, sqrt (a * a + b * b));
-    }
-  for (size_t i = 0; i < block_size; i += 2)
-    {
-      double a = noise_spectrum[i] / noise_mag;
-      double b = noise_spectrum[i+1] / noise_mag;
-      //debug ("noises:%lld %f %f\n", pos * overlap / block_size, noise_spectrum[i], noise_spectrum[i+1]);
-      double m = sqrt (interpolated_spectrum[i] * interpolated_spectrum[i]
-                     + interpolated_spectrum[i+1] * interpolated_spectrum[i+1]);
-      interpolated_spectrum[i] = a * m;
-      interpolated_spectrum[i+1] = b * m;
+      double phase = random_gen.random_double_range (0, 2 * M_PI);
+      double a = sin (phase);
+      double b = cos (phase);
+      interpolated_spectrum[i] = a * dinterpolated_spectrum[i] * sqrt (norm);
+      interpolated_spectrum[i+1] = b * dinterpolated_spectrum[i] * sqrt (norm);
       //debug ("noise:%lld %f %f\n", pos * overlap / block_size, interpolated_spectrum[i], interpolated_spectrum[i+1]);
     }
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
+
+  double r_energy = 0;
   for (size_t i = 0; i < decoded_residue.size(); i++)
     {
       // double windowing will allow phase modifications
       decoded_residue[i] = in[i] * window[i];
       //debug ("out:%lld %f\n", pos * overlap / block_size, out_sample[i]);
+      r_energy += decoded_residue[i] * decoded_residue[i];
+
+      // compensate for overlap
+      decoded_residue[i] /= 2;
+    }
+  r_energy /= decoded_residue.size();
+  double s_energy = 0;
+  for (size_t i = 0; i < dinterpolated_spectrum.size(); i++)
+    {
+      double d = dinterpolated_spectrum[i];
+      s_energy += d * d;
     }
 
+  double xs_energy = 0;
+  for (vector<double>::const_iterator fni = frame.noise_envelope.begin(); fni != frame.noise_envelope.end(); fni++)
+    xs_energy += *fni;
+
+  double i_energy = 0;
+  for (size_t i = 0; i < block_size; i++)
+    i_energy += interpolated_spectrum[i] * interpolated_spectrum[i] / norm;
+  printf ("RE %f SE %f XE %f IE %f\n", r_energy, s_energy, xs_energy, i_energy);
+
   FFT::free_array_float (in);
-  FFT::free_array_float (noise);
-  FFT::free_array_float (noise_spectrum);
   FFT::free_array_float (interpolated_spectrum);
 }
 
