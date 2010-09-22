@@ -25,15 +25,11 @@ using SpectMorph::Random;
 
 Random::Random()
 {
-  memset (&buf, 0, sizeof (buf));
-  for (size_t i = 0; i < sizeof (state); i++)
-    state[i] = g_random_int();
-
-  initstate_r (g_random_int(), state, sizeof (state), &buf);
+  accu = g_random_int();
 }
 
 void
-Random::set_seed (int seed)
+Random::set_seed (guint32 seed)
 {
-  srandom_r (seed, &buf);
+  accu = seed;
 }

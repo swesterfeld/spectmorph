@@ -19,26 +19,34 @@
 #define SPECTMORPH_RANDOM_HH
 
 #include <stdlib.h>
+#include <glib.h>
 
 namespace SpectMorph
 {
 
 class Random
 {
-  char                state[32];
-  struct random_data  buf;
+  guint32 accu;
+
+  // from rapicorn
+  inline guint32
+  quick_rand32 ()
+  {
+    accu = 1664525 * accu + 1013904223;
+    return accu;
+  }
+
 public:
   Random();
 
-  void set_seed (int seed);
+  void set_seed (guint32 seed);
 
   inline double
   random_double_range (double begin, double end)
   {
-    int32_t r;
-    random_r (&buf, &r);
+    guint32 r = quick_rand32();
 
-    const double scale = 1.0 / (double (RAND_MAX) + 1.0);
+    const double scale = 1.0 / 4294967296.0;
     return r * scale * (end - begin) + begin;
   }
 };
