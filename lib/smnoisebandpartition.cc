@@ -90,7 +90,7 @@ NoiseBandPartition::n_spectrum_bins()
 }
 
 void
-NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, vector<double>& spectrum)
+NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, vector<double>& spectrum, double scale)
 {
   assert (spectrum.size() == n_spectrum_bins());
   assert (envelope.size() == n_bands());
@@ -100,7 +100,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, 
   /* precompute spectrum values for all bands and -1 (which means no band has been assigned) */
   band_value[0] = 0;
   for (size_t b = 0; b < n_bands(); b++)
-    band_value[1 + b] = sqrt (envelope[b] / band_count[b]);
+    band_value[1 + b] = sqrt (envelope[b] / band_count[b]) * scale;
 
   for (size_t d = 0; d < spectrum.size(); d += 2)
     {

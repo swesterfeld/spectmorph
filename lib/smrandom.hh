@@ -49,6 +49,12 @@ public:
     const double scale = 1.0 / 4294967296.0;
     return r * scale * (end - begin) + begin;
   }
+
+  inline guint32
+  random_uint32()
+  {
+    return quick_rand32();
+  }
 };
 
 }

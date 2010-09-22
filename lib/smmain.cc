@@ -17,10 +17,13 @@
 
 #include "smmain.hh"
 #include "smfft.hh"
+#include "smmath.hh"
 #include <bse/bsemain.h>
 
 namespace SpectMorph
 {
+
+float *int_sincos_table;
 
 void sm_init (int *argc_p, char ***argv_p)
 {
@@ -34,6 +37,7 @@ void sm_init (int *argc_p, char ***argv_p)
   };
   bse_init_inprocess (argc_p, argv_p, NULL, values);
   FFT::load_wisdom();
+  int_sincos_init();
 }
 
 }

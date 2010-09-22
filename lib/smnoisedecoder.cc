@@ -16,6 +16,7 @@
  */
 
 #include "smnoisedecoder.hh"
+#include "smmath.hh"
 #include "smfft.hh"
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
@@ -91,19 +92,19 @@ NoiseDecoder::process (const Frame& frame,
   assert (noise_band_partition->n_bands() == frame.noise_envelope.size());
   assert (noise_band_partition->n_spectrum_bins() == dinterpolated_spectrum.size());
 
-  noise_band_partition->noise_envelope_to_spectrum (frame.noise_envelope, dinterpolated_spectrum);
 
   const double Eww = 0.375;
   const double norm = block_size * block_size * 0.5 / Eww;
 
+  noise_band_partition->noise_envelope_to_spectrum (frame.noise_envelope, dinterpolated_spectrum, sqrt (norm) / 2);
+
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
   for (size_t i = 0; i < block_size; i += 2)
     {
-      double phase = random_gen.random_double_range (0, 2 * M_PI);
-      double a = sin (phase);
-      double b = cos (phase);
-      interpolated_spectrum[i] = a * dinterpolated_spectrum[i] * sqrt (norm);
-      interpolated_spectrum[i+1] = b * dinterpolated_spectrum[i] * sqrt (norm);
+      double a, b;
+      int_sincos (random_gen.random_uint32(), &a, &b);
+      interpolated_spectrum[i] = a * dinterpolated_spectrum[i];
+      interpolated_spectrum[i+1] = b * dinterpolated_spectrum[i];
       //debug ("noise:%lld %f %f\n", pos * overlap / block_size, interpolated_spectrum[i], interpolated_spectrum[i+1]);
     }
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
@@ -117,9 +118,6 @@ NoiseDecoder::process (const Frame& frame,
       decoded_residue[i] = in[i] * window[i];
       //debug ("out:%lld %f\n", pos * overlap / block_size, out_sample[i]);
       r_energy += decoded_residue[i] * decoded_residue[i];
-
-      // compensate for overlap
-      decoded_residue[i] /= 2;
     }
 
 #if 0 // DEBUG

@@ -344,6 +344,27 @@ zero_float_block (size_t n_values, float *values)
   memset (values, 0, n_values * sizeof (float));
 }
 
+inline void
+int_sincos (guint32 i, double *si, double *ci)
+{
+  extern float *int_sincos_table;
+
+  i &= 0xff;
+
+  *si = int_sincos_table[i];
+  *ci = int_sincos_table[(i + 64) & 0xff];
+}
+
+inline void
+int_sincos_init()
+{
+  extern float *int_sincos_table;
+
+  int_sincos_table = (float *) malloc (sizeof (float) * 256);
+  for (int i = 0; i < 256; i++)
+    int_sincos_table[i] = sin (double (i / 256.0) * 2 * M_PI);
+}
+
 } // namespace SpectMorph
 
 #endif
