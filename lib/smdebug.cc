@@ -30,8 +30,12 @@ static set<string> active_areas;
 static FILE       *debug_file = NULL;
 
 void
-Debug::debug (const string& area, const char *fmt, ...)
+Debug::debug (const char *area, const char *fmt, ...)
 {
+  // no debugging -> return as quickly as possible
+  if (active_areas.empty())
+    return;
+
   if (active_areas.find (area) != active_areas.end())
     {
       if (!debug_file)
