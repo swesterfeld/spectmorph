@@ -111,13 +111,10 @@ NoiseDecoder::process (const Frame& frame,
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-  double r_energy = 0;
   for (size_t i = 0; i < decoded_residue.size(); i++)
     {
-      // double windowing will allow phase modifications
+      // apply synthesis window
       decoded_residue[i] = in[i] * window[i];
-      //debug ("out:%lld %f\n", pos * overlap / block_size, out_sample[i]);
-      r_energy += decoded_residue[i] * decoded_residue[i];
     }
 
 #if 0 // DEBUG
