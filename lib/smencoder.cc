@@ -905,7 +905,7 @@ Encoder::approx_noise (const vector<float>& window)
   Eww /= frame_size;
   printf ("Eww %f\n", Eww);
 
-  const double norm = fft_size * frame_size 0.5 * Eww;
+  const double norm = fft_size * frame_size * 0.5 * Eww;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
