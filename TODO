@@ -5,8 +5,6 @@ smenc:
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
 - normalize noise
-- use averaging to estimate noise
-- noise coefficient should not be equidistant, but perceptually equidistant
 - make window function configurable
 - debug performance problems
   => implement downsampling for really low notes
@@ -19,6 +17,7 @@ smenc:
 - optimize memory usage of encoder
 - reanalyze residual after first pass
 - increase time resolution for residual for low notes
+- use NoiseBandPartition class to get faster noise band splitting
 
 refactoring:
 - try to refactor SpectMorph::Frame into something less duplicating
