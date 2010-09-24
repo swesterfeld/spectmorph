@@ -70,6 +70,7 @@ main (int argc, char **argv)
       printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[0]);
       printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[0]);
       printf ("other:  %f\n", clocks_per_sample[0]);
+      printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
     }
   else
     {
