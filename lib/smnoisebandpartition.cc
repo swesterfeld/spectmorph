@@ -66,13 +66,13 @@ NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, 
         }
     }
   /* count bins per band */
-  for (size_t band = 0; band < n_bands; band++)
+  for (int d = 0; d < n_spectrum_bins; d += 2)
     {
-      for (int d = 0; d < n_spectrum_bins; d += 2)
+      int b = band_from_d[d];
+      if (b != -1)
         {
-          int b = band_from_d[d];
-          if (b == band)
-            band_count[b]++;
+          assert (b >= 0 && b < n_bands);
+          band_count[b]++;
         }
     }
 }
