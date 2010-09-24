@@ -98,32 +98,64 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 void
 avg_spectrum (const char *label, vector<float>& signal)
 {
-  const int block_size = 2048;
-  int offset = 0;
+  const size_t block_size = 2048;
+  size_t offset = 0;
 
-  vector<float> avg (block_size / 2);
+  vector<float> avg (block_size / 2 + 1);
   vector<float> window (block_size);
 
   for (guint i = 0; i < window.size(); i++)
     window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
 
   float *in = FFT::new_array_float (block_size);
-  float *out = FFT::new_array_float (block_size);
+  float *out = FFT::new_array_float (block_size + 2);
 
   while (offset + block_size < signal.size())
     {
       std::copy (signal.begin() + offset, signal.begin() + offset + block_size, in);
-      for (int i = 0; i < block_size; i++)
+      for (size_t i = 0; i < block_size; i++)
         in[i] *= window[i];
 
       FFT::fftar_float (block_size, in, out);
-      for (int d = 0; d < block_size; d += 2)
+
+      out[block_size] = out[1];
+      out[block_size+1] = 0;
+      out[1] = 0;
+
+      for (size_t d = 0; d < block_size + 2; d += 2)
         avg[d/2] += out[d] * out[d] + out[d+1] * out[d+1];
       offset += block_size / 4;
     }
 
-  for (int i = 0; i < avg.size(); i++)
-    printf ("%s %d %g\n", label, i, avg[i]);
+  for (size_t i = 0; i < avg.size(); i++)
+    printf ("%s %g %g\n", label, i * 44100.0 / block_size, avg[i]);
+}
+
+void
+highpass (vector<float>& audio_in, vector<float>& audio_out, double cutoff_freq)
+{
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), &audio_in[0], NULL);
+  BseErrorType error = gsl_data_handle_open (dhandle);
+  assert (!error);
+
+  GslDataHandle *highpass_dhandle = bse_data_handle_new_fir_highpass (dhandle, cutoff_freq, 64);
+  error = gsl_data_handle_open (highpass_dhandle);
+  assert (!error);
+
+  GslDataPeekBuffer peek_buffer = { 0, };
+  audio_out.resize (audio_in.size());
+  for (size_t i = 0; i < audio_out.size(); i++)
+    audio_out[i] = gsl_data_handle_peek_value (highpass_dhandle, i, &peek_buffer);
+}
+
+void
+energy (vector<float>& audio, const char *label)
+{
+  double e = 0;
+  for (size_t i = 0; i < audio.size(); i++)
+    e += audio[i] * audio[i];
+
+  printf ("%s %g\n", label, e);
 }
 
 int
@@ -141,16 +173,21 @@ main (int argc, char **argv)
 
   encode_decode (noise, audio_out);
 
-  double e0 = 0, e1 = 0;
-  for (size_t i = 0; i < noise.size(); i++)
-    {
-      e0 += noise[i] * noise[i];
-      e1 += audio_out[i] * audio_out[i];
-    }
-  printf ("%f %f\n", e0, e1);
+  energy (noise, "white-noise-in-energy");
+  energy (audio_out, "white-noise-out-energy");
 
   avg_spectrum ("white-noise-in", noise);
   avg_spectrum ("white-noise-out", audio_out);
+
+  vector<float> hp_noise;
+  highpass (noise, hp_noise, 3000);
+  encode_decode (hp_noise, audio_out);
+
+  energy (hp_noise, "hp-noise-in-energy");
+  energy (audio_out, "hp-noise-out-energy");
+
+  avg_spectrum ("hp-noise-in", hp_noise);
+  avg_spectrum ("hp-noise-out", audio_out);
 
   unlink ("testnoise.tmp.sm");
   unlink ("testnoise.tmp.smset");
