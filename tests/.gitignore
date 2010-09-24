@@ -5,5 +5,7 @@ testblob
 testrandom
 testfft
 testfftperf
+testisincos
+testnoise
 .libs
 .deps
