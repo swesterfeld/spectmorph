@@ -99,7 +99,7 @@ NoiseDecoder::process (const Frame& frame,
   noise_band_partition->noise_envelope_to_spectrum (frame.noise_envelope, dinterpolated_spectrum, sqrt (norm) / 2);
 
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
-  for (size_t i = 0; i < block_size; i += 2)
+  for (size_t i = 0; i < block_size + 2; i += 2)
     {
       double a, b;
       int_sincos (random_gen.random_uint32(), &a, &b);

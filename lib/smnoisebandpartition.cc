@@ -104,7 +104,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, 
 
   for (size_t d = 0; d < spectrum.size(); d += 2)
     {
-      int b = band_from_d[d];
+      int b = band_from_d[d] + 1;
 
       spectrum[d] = band_value[b];
       spectrum[d+1] = 0;
