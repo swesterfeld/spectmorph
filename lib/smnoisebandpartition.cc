@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include "smnoisebandpartition.hh"
+#include "smmath.hh"
 
 using namespace SpectMorph;
 using std::vector;
@@ -90,9 +91,8 @@ NoiseBandPartition::n_spectrum_bins()
 }
 
 void
-NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, vector<double>& spectrum, double scale)
+NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<double>& envelope, float *spectrum, double scale)
 {
-  assert (spectrum.size() == n_spectrum_bins());
   assert (envelope.size() == n_bands());
 
   double band_value[1 + n_bands()];
@@ -102,11 +102,16 @@ NoiseBandPartition::noise_envelope_to_spectrum (const vector<double>& envelope, 
   for (size_t b = 0; b < n_bands(); b++)
     band_value[1 + b] = sqrt (envelope[b] / band_count[b]) * scale;
 
-  for (size_t d = 0; d < spectrum.size(); d += 2)
+  size_t spectrum_size = n_spectrum_bins();
+  for (size_t d = 0; d < spectrum_size; d += 2)
     {
       int b = band_from_d[d] + 1;
 
-      spectrum[d] = band_value[b];
-      spectrum[d+1] = 0;
+      const double value = band_value[b];
+
+      double sinr, cosr;
+      int_sincos (random_gen.random_int32(), &sinr, &cosr);
+      spectrum[d] = sinr * value;
+      spectrum[d+1] = cosr * value;
     }
 }

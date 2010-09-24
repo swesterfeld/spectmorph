@@ -21,6 +21,8 @@
 
 #include <vector>
 
+#include "smrandom.hh"
+
 namespace SpectMorph
 {
 
@@ -31,7 +33,7 @@ class NoiseBandPartition
 
 public:
   NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, double mix_freq);
-  void noise_envelope_to_spectrum (const std::vector<double>& envelope, std::vector<double>& spectrum, double scale);
+  void noise_envelope_to_spectrum (SpectMorph::Random& random_gen, const std::vector<double>& envelope, float *spectrum, double scale);
 
   size_t n_bands();
   size_t n_spectrum_bins();
