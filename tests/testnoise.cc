@@ -19,6 +19,7 @@
 #include "smrandom.hh"
 #include "smencoder.hh"
 #include "smlivedecoder.hh"
+#include "smfft.hh"
 
 #include <bse/bsemathsignal.h>
 
@@ -38,18 +39,9 @@ make_odd (size_t n)
   return n - 1;
 }
 
-int
-main (int argc, char **argv)
+void
+encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 {
-  Random random;
-
-  sm_init (&argc, &argv);
-
-  vector<float> noise (44100 * 5);
-
-  for (size_t i = 0; i < noise.size(); i++)
-    noise[i] = random.random_double_range (-0.5, 0.5);
-
   EncoderParams enc_params;
   enc_params.mix_freq = 44100;
   enc_params.zeropad = 4;
@@ -75,7 +67,7 @@ main (int argc, char **argv)
 
   Encoder encoder (enc_params);
 
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, noise.size(), &noise[0], NULL);
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, audio_in.size(), &audio_in[0], NULL);
   BseErrorType error = gsl_data_handle_open (dhandle);
   assert (!error);
 
@@ -99,9 +91,55 @@ main (int argc, char **argv)
   assert (!error);
 
   float freq = 440;
-  vector<float> audio_out (noise.size());
   decoder.retrigger (0, freq, enc_params.mix_freq);
   decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+}
+
+void
+avg_spectrum (const char *label, vector<float>& signal)
+{
+  const int block_size = 2048;
+  int offset = 0;
+
+  vector<float> avg (block_size / 2);
+  vector<float> window (block_size);
+
+  for (guint i = 0; i < window.size(); i++)
+    window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+
+  float *in = FFT::new_array_float (block_size);
+  float *out = FFT::new_array_float (block_size);
+
+  while (offset + block_size < signal.size())
+    {
+      std::copy (signal.begin() + offset, signal.begin() + offset + block_size, in);
+      for (int i = 0; i < block_size; i++)
+        in[i] *= window[i];
+
+      FFT::fftar_float (block_size, in, out);
+      for (int d = 0; d < block_size; d += 2)
+        avg[d/2] += out[d] * out[d] + out[d+1] * out[d+1];
+      offset += block_size / 4;
+    }
+
+  for (int i = 0; i < avg.size(); i++)
+    printf ("%s %d %g\n", label, i, avg[i]);
+}
+
+int
+main (int argc, char **argv)
+{
+  Random random;
+
+  sm_init (&argc, &argv);
+
+  vector<float> noise (44100 * 5);
+  vector<float> audio_out (noise.size());
+
+  for (size_t i = 0; i < noise.size(); i++)
+    noise[i] = random.random_double_range (-0.5, 0.5);
+
+  encode_decode (noise, audio_out);
 
   double e0 = 0, e1 = 0;
   for (size_t i = 0; i < noise.size(); i++)
@@ -110,6 +148,10 @@ main (int argc, char **argv)
       e1 += audio_out[i] * audio_out[i];
     }
   printf ("%f %f\n", e0, e1);
+
+  avg_spectrum ("white-noise-in", noise);
+  avg_spectrum ("white-noise-out", audio_out);
+
   unlink ("testnoise.tmp.sm");
   unlink ("testnoise.tmp.smset");
 }
