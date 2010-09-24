@@ -65,11 +65,6 @@ next_power2 (size_t i)
   return p;
 }
 
-void
-xnoise_envelope_to_spectrum (double mix_freq,
-                             const vector<double>& envelope,
-			     vector<double>& spectrum);
-
 /**
  * This function decodes the noise contained in the frame and
  * fills the decoded_residue vector of the frame.
