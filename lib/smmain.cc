@@ -25,7 +25,15 @@ namespace SpectMorph
 
 float *int_sincos_table;
 
-void sm_init (int *argc_p, char ***argv_p)
+void
+sm_init_plugin()
+{
+  FFT::load_wisdom();
+  int_sincos_init();
+}
+
+void
+sm_init (int *argc_p, char ***argv_p)
 {
   SfiInitValue values[] = {
     { "stand-alone",            "true" }, /* no rcfiles etc. */
@@ -36,8 +44,7 @@ void sm_init (int *argc_p, char ***argv_p)
     { NULL }
   };
   bse_init_inprocess (argc_p, argv_p, NULL, values);
-  FFT::load_wisdom();
-  int_sincos_init();
+  sm_init_plugin();
 }
 
 }

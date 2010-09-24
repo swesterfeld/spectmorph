@@ -19,8 +19,11 @@
 #include "smaudio.hh"
 #include "smlivedecoder.hh"
 #include "smwavset.hh"
-#include "smfft.hh"
+#include "smmain.hh"
+
 #include <bse/bsemathsignal.h>
+
+#include <stdio.h>
 
 using std::string;
 using std::map;
@@ -121,11 +124,11 @@ public:
   void
   load_file (const string& filename)
   {
-    static bool read_wisdom = false;
-    if (!read_wisdom)
+    static bool sm_init_ok = false;
+    if (!sm_init_ok)
       {
-        FFT::load_wisdom();
-        read_wisdom = true;
+        sm_init_plugin();
+        sm_init_ok = true;
       }
     BseErrorType error;
 

@@ -22,6 +22,7 @@
 namespace SpectMorph
 {
 
+void sm_init_plugin();
 void sm_init (int *argc_p, char ***argv_p);
 
 }
