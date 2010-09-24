@@ -102,7 +102,7 @@ NoiseDecoder::process (const Frame& frame,
   for (size_t i = 0; i < block_size + 2; i += 2)
     {
       double a, b;
-      int_sincos (random_gen.random_uint32(), &a, &b);
+      int_sincos (random_gen.random_int32(), &a, &b);
       interpolated_spectrum[i] = a * dinterpolated_spectrum[i];
       interpolated_spectrum[i+1] = b * dinterpolated_spectrum[i];
       //debug ("noise:%lld %f %f\n", pos * overlap / block_size, interpolated_spectrum[i], interpolated_spectrum[i+1]);
