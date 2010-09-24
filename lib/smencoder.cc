@@ -501,13 +501,6 @@ Encoder::spectral_subtract (const vector<float>& window)
 
           fast_vector_sinf (params, &signal[0], &signal[frame_size]);
 	}
-      double Renergy = 0;
-      for (size_t i = 0; i < frame_size; i++)
-        {
-          double R = audio_blocks[frame].debug_samples[i] - signal[i];
-          Renergy += R * R / frame_size;
-        }
-      printf ("%lld %f ##R\n", frame, Renergy);
       vector<double> out (block_size * zeropad + 2);
       // apply window
       std::fill (fft_in, fft_in + block_size * zeropad, 0);
