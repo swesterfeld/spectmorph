@@ -18,6 +18,7 @@ smenc:
 - reanalyze residual after first pass
 - increase time resolution for residual for low notes
 - use NoiseBandPartition class to get faster noise band splitting
+- adjust noise bands according to frequency specs
 
 refactoring:
 - try to refactor SpectMorph::Frame into something less duplicating
