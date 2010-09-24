@@ -110,4 +110,6 @@ main (int argc, char **argv)
       e1 += audio_out[i] * audio_out[i];
     }
   printf ("%f %f\n", e0, e1);
+  unlink ("testnoise.tmp.sm");
+  unlink ("testnoise.tmp.smset");
 }
