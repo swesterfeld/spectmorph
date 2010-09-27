@@ -19,6 +19,8 @@
 #define SPECTMORPH_RANDOM_HH
 
 #include <stdlib.h>
+#include <stdio.h>
+#include <glib.h>
 
 namespace SpectMorph
 {
@@ -47,6 +49,25 @@ public:
     int32_t r;
     random_r (&buf, &r);
     return r;
+  }
+  inline void
+  random_block (size_t   n_values,
+                guint32 *values)
+  {
+    guint64 random_data = 0;
+    int     random_bits = 0;
+
+    while (n_values--)
+      {
+        while (random_bits < 32)
+          {
+            random_data ^= guint64 (random_int32()) << random_bits;
+            random_bits += 31;
+          }
+        *values++ = random_data;
+        random_data >>= 32;
+        random_bits -= 32;
+      }
   }
 };
 
