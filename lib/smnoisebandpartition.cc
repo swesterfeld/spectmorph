@@ -103,6 +103,12 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
     band_value[1 + b] = sqrt (envelope[b] / band_count[b]) * scale;
 
   size_t spectrum_size = n_spectrum_bins();
+
+  guint32 random_data[(spectrum_size + 7) / 8];
+
+  random_gen.random_block ((spectrum_size + 7) / 8, random_data);
+
+  const guint8 *random_data_byte = reinterpret_cast<guint8 *> (&random_data[0]);
   for (size_t d = 0; d < spectrum_size; d += 2)
     {
       int b = band_from_d[d] + 1;
@@ -110,7 +116,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
       const double value = band_value[b];
 
       double sinr, cosr;
-      int_sincos (random_gen.random_int32(), &sinr, &cosr);
+      int_sincos (random_data_byte[d / 2], &sinr, &cosr);
       spectrum[d] = sinr * value;
       spectrum[d+1] = cosr * value;
     }
