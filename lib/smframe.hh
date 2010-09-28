@@ -28,10 +28,9 @@ namespace SpectMorph {
  */
 class Frame
 {
-  size_t frame_size;
 public:
-  Frame (size_t frame_size);
-  Frame (const SpectMorph::AudioBlock& audio_block, size_t frame_size);
+  Frame();
+  Frame (const SpectMorph::AudioBlock& audio_block);
 
   std::vector<double> freqs;                 //!< frequencies of the sine waves in this frame
   std::vector<double> phases;                //!< magnitude and phase of the sine waves, as sin and cos magnitude
