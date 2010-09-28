@@ -96,11 +96,13 @@ main (int argc, char **argv)
     }
   else if (argc == 4 && string (argv[3]) == "export")
     {
-      vector<float> audio_out (48000 * 20);
-      decoder.retrigger (0, freq, 48000);
+      const int SR = 48000;
+
+      vector<float> audio_out (SR * 20);
+      decoder.retrigger (0, freq, SR);
       decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
-      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, 48000, 48000 / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
       BseErrorType error = gsl_data_handle_open (out_dhandle);
       if (error)
         {
