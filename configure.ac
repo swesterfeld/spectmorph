@@ -226,7 +226,7 @@ MC_PROG_CC_SUPPORTS_OPTION([-fno-omit-frame-pointer], [
 ])
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
-beast/Makefile jack/Makefile
+beast/Makefile jack/Makefile spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_OUTPUT
