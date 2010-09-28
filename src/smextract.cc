@@ -248,7 +248,7 @@ main (int argc, char **argv)
 
       for (size_t i = 0; i < audio.contents.size(); i++)
         {
-          Frame frame (audio.contents[i], frame_size);
+          Frame frame (audio.contents[i]);
           for (size_t n = 0; n < frame.freqs.size(); n++)
             {
               if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
@@ -438,7 +438,7 @@ main (int argc, char **argv)
           double position_percent = f * 100.0 / audio.contents.size();
           if (position_percent >= 40 && position_percent <= 60)
             {
-              Frame frame (audio.contents[f], frame_size);
+              Frame frame (audio.contents[f]);
               double best_freq = -1;
               double best_mag = 0;
               for (size_t n = 0; n < frame.freqs.size(); n++)
