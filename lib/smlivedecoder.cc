@@ -43,7 +43,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
-  last_frame (0)
+  last_frame()
 {
 }
 
@@ -108,12 +108,17 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       samples.resize (frame_size);
       zero_float_block (frame_size, &samples[0]);
 
+      noise_block_size = noise_decoder->preferred_block_size();
+      noise_samples.resize (noise_block_size * 2);
+      zero_float_block (noise_block_size * 2, &noise_samples[0]);
+
+      have_noise_samples = 0;
       have_samples = 0;
       pos = 0;
       frame_idx = 0;
       env_pos = 0;
 
-      last_frame = Frame (0);
+      last_frame = Frame();
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
@@ -140,8 +145,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
           if ((frame_idx + 1) < audio->contents.size())
             {
-              Frame frame (audio->contents[frame_idx], frame_size);
-              Frame next_frame (frame_size); // not used
+              Frame frame (audio->contents[frame_idx]);
+              Frame next_frame; // not used
 
               for (size_t partial = 0; partial < frame.freqs.size(); partial++)
                 {
@@ -204,24 +209,32 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                     samples[i] += decoded_data[i];
                 }
 
-              if (noise_enabled)
-                {
-                  noise_decoder->process (frame, window, decoded_data);
-                  for (size_t i = 0; i < frame_size; i++)
-                    samples[i] += decoded_data[i];
-                }
-
               if (frame_idx != loop_point) /* if in loop mode: loop current frame */
                 frame_idx++;
             }
           pos = 0;
           have_samples = frame_step;
+
+          std::copy (noise_samples.begin() + frame_step, noise_samples.end(), noise_samples.begin());
+          zero_float_block (frame_step, &noise_samples[noise_samples.size() - frame_step]);
+          while (have_noise_samples < frame_step)
+            {
+              decoded_data.resize (noise_block_size);
+              if (noise_enabled)
+                {
+                  noise_decoder->process (last_frame, window, decoded_data);
+                  for (size_t i = 0; i < noise_block_size; i++)
+                    noise_samples[have_noise_samples + i] += decoded_data[i];
+                }
+              have_noise_samples += noise_block_size / 2;
+            }
+          have_noise_samples -= have_samples;
         }
 
       g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
-          audio_out[i] = samples[pos];
+          audio_out[i] = samples[pos] + noise_samples[pos];
 
           // decode envelope
           const double time_ms = env_pos * 1000.0 / current_mix_freq;
