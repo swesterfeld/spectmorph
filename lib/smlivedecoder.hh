@@ -45,8 +45,7 @@ class LiveDecoder
   float               current_mix_freq;
 
   size_t              have_samples;
-  size_t              have_noise_samples;
-  size_t              noise_block_size;
+  size_t              block_size;
   size_t              pos;
   size_t              env_pos;
   size_t              frame_idx;
@@ -54,7 +53,6 @@ class LiveDecoder
   Frame               last_frame;
   std::vector<double> window;
   std::vector<float>  samples;
-  std::vector<float>  noise_samples;
   std::vector<float>  decoded_data;
 
 public:

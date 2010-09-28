@@ -83,36 +83,24 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       zero_values_at_start_scaled = audio->zero_values_at_start * mix_freq / audio->mix_freq;
       loop_point = audio->loop_point;
 
-      size_t block_size = 1;
-      while (block_size < frame_size)
-        block_size *= 2;
-
-      window.resize (block_size);
-      for (guint i = 0; i < window.size(); i++)
-        {
-          if (i < frame_size)
-            window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
-          else
-            window[i] = 0;
-        }
-
       if (noise_decoder)
         delete noise_decoder;
       noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq);
 
+      block_size = noise_decoder->preferred_block_size();
+
+      window.resize (block_size);
+      for (guint i = 0; i < window.size(); i++)
+        window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+
       if (sine_decoder)
         delete sine_decoder;
       SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
-      sine_decoder = new SineDecoder (mix_freq, frame_size, frame_step, mode);
+      sine_decoder = new SineDecoder (mix_freq, block_size, block_size / 2, mode);
 
-      samples.resize (frame_size);
-      zero_float_block (frame_size, &samples[0]);
+      samples.resize (block_size);
+      zero_float_block (block_size, &samples[0]);
 
-      noise_block_size = noise_decoder->preferred_block_size();
-      noise_samples.resize (noise_block_size * 2);
-      zero_float_block (noise_block_size * 2, &noise_samples[0]);
-
-      have_noise_samples = 0;
       have_samples = 0;
       pos = 0;
       frame_idx = 0;
@@ -140,10 +128,14 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
         {
           double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
 
-          std::copy (samples.begin() + frame_step, samples.end(), samples.begin());
-          zero_float_block (frame_step, &samples[frame_size - frame_step]);
+          std::copy (samples.begin() + block_size / 2, samples.end(), samples.begin());
+          zero_float_block (block_size / 2, &samples[block_size / 2]);
 
-          if ((frame_idx + 1) < audio->contents.size())
+          frame_idx = env_pos / frame_step;
+          if (loop_point != -1 && frame_idx > loop_point) /* if in loop mode: loop current frame */
+            frame_idx = loop_point;
+
+          if ((frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
             {
               Frame frame (audio->contents[frame_idx]);
               Frame next_frame; // not used
@@ -172,7 +164,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                           double fdiff = fabs (last_frame.freqs[old_partial] - frame.freqs[partial]);
                           if (fdiff < best_fdiff)
                             {
-                              phase = lphase - frame_step * phase_delta;
+                              phase = lphase - block_size / 2 * phase_delta;
                               best_fdiff = fdiff;
                             }
                         }
@@ -200,41 +192,29 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               last_frame = frame;
 
-              decoded_data.resize (frame_size);
+              decoded_data.resize (block_size);
 
               if (sines_enabled)
                 {
                   sine_decoder->process (frame, next_frame, window, decoded_data);
-                  for (size_t i = 0; i < frame_size; i++)
+                  for (size_t i = 0; i < block_size; i++)
                     samples[i] += decoded_data[i];
                 }
-
-              if (frame_idx != loop_point) /* if in loop mode: loop current frame */
-                frame_idx++;
-            }
-          pos = 0;
-          have_samples = frame_step;
-
-          std::copy (noise_samples.begin() + frame_step, noise_samples.end(), noise_samples.begin());
-          zero_float_block (frame_step, &noise_samples[noise_samples.size() - frame_step]);
-          while (have_noise_samples < frame_step)
-            {
-              decoded_data.resize (noise_block_size);
               if (noise_enabled)
                 {
-                  noise_decoder->process (last_frame, window, decoded_data);
-                  for (size_t i = 0; i < noise_block_size; i++)
-                    noise_samples[have_noise_samples + i] += decoded_data[i];
+                  noise_decoder->process (frame, window, decoded_data);
+                  for (size_t i = 0; i < block_size; i++)
+                    samples[i] += decoded_data[i];
                 }
-              have_noise_samples += noise_block_size / 2;
             }
-          have_noise_samples -= have_samples;
+          pos = 0;
+          have_samples = block_size / 2;
         }
 
       g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
-          audio_out[i] = samples[pos] + noise_samples[pos];
+          audio_out[i] = samples[pos];
 
           // decode envelope
           const double time_ms = env_pos * 1000.0 / current_mix_freq;

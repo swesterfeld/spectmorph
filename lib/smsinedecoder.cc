@@ -64,7 +64,7 @@ SineDecoder::process (const Frame& frame,
       AlignedArray<float, 16> aligned_decoded_sines (frame_size);
       for (size_t i = 0; i < frame.freqs.size(); i++)
         {
-          const double SA = 0.5;
+          const double SA = 1;
           const double smag = frame.phases[i * 2];
           const double cmag = frame.phases[i * 2 + 1];
           const double mag_epsilon = 1e-8;
