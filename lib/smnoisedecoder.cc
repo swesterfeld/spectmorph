@@ -78,6 +78,7 @@ NoiseDecoder::process (const Frame& frame,
                        vector<float>& decoded_residue)
 {
   const size_t block_size = next_power2 (decoded_residue.size());
+  assert (decoded_residue.size() == block_size);
 
   if (!noise_band_partition)
     noise_band_partition = new NoiseBandPartition (frame.noise_envelope.size(), block_size + 2, mix_freq);
@@ -88,7 +89,7 @@ NoiseDecoder::process (const Frame& frame,
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
 
   const double Eww = 0.375;
-  const double norm = block_size * block_size * 0.5 / Eww;
+  const double norm = block_size * block_size * 0.5 * 0.5 / Eww;
 
   noise_band_partition->noise_envelope_to_spectrum (random_gen, frame.noise_envelope, interpolated_spectrum, sqrt (norm) / 2);
 
@@ -96,11 +97,7 @@ NoiseDecoder::process (const Frame& frame,
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-  for (size_t i = 0; i < decoded_residue.size(); i++)
-    {
-      // apply synthesis window
-      decoded_residue[i] = in[i] * window[i];
-    }
+  memcpy (&decoded_residue[0], in, decoded_residue.size() * sizeof (float));
 
 #if 0 // DEBUG
   r_energy /= decoded_residue.size();
@@ -125,4 +122,13 @@ NoiseDecoder::process (const Frame& frame,
   FFT::free_array_float (interpolated_spectrum);
 }
 
+size_t
+NoiseDecoder::preferred_block_size()
+{
+  size_t bs = 1;
 
+  while (bs * 2 / mix_freq < 0.040)    /* block size should not exceed 40ms (and be power of 2) */
+    bs *= 2;
+
+  return bs;
+}
