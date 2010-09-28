@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -243,7 +243,7 @@ main (int argc, char **argv)
   format.bits = 16;
   format.rate = options.rate;
   format.channels = 1;
-  format.byte_format = AO_FMT_NATIVE; 
+  format.byte_format = AO_FMT_NATIVE;
 
   ao_device *play_device = NULL;
 
@@ -293,15 +293,14 @@ main (int argc, char **argv)
   if (options.loop)
     end_point *= 10;
 
-  vector<float> decoded_residue (frame_size);
   vector<float> decoded_sines (frame_size);
 
   // decode one frame before actual data (required for tracking decoder)
 
   if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)
     {
-      Frame zero_frame (frame_size);
-      Frame one_frame (audio.contents[0], frame_size);
+      Frame zero_frame;
+      Frame one_frame (audio.contents[0]);
       sample.resize (pos + frame_size);
 
       if (options.sines_enabled)
@@ -313,14 +312,14 @@ main (int argc, char **argv)
       pos += frame_step;
     }
 
-  // decode actual data
+  // decode sine part of the data
   for (size_t n = 0; n < end_point; n++)
     {
       size_t n4 = n / 1;
       size_t n4_1 = (n + 1) / 1;
 
-      Frame frame (audio.contents[n4 > loop_point ? loop_point : n4], frame_size);
-      Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1], frame_size);
+      Frame frame (audio.contents[n4 > loop_point ? loop_point : n4]);
+      Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1]);
 
       sample.resize (pos + frame_size);
 
@@ -330,13 +329,24 @@ main (int argc, char **argv)
           for (size_t i = 0; i < frame_size; i++)
             sample[pos + i] += decoded_sines[i];
         }
+      pos += frame_step;
+    }
+
+  // decode noise part of the data
+  size_t noise_block_size = noise_decoder.preferred_block_size();
+  vector<float> decoded_residue (noise_block_size);
+
+  for (pos = 0; pos < sample.size() - noise_block_size; pos += noise_block_size / 2)
+    {
+      int idx = pos / (noise_block_size / 2);
+      Frame frame (audio.contents[idx]);
+
       if (options.noise_enabled)
         {
           noise_decoder.process (frame, window, decoded_residue);
-          for (size_t i = 0; i < frame_size; i++)
+          for (size_t i = 0; i < noise_block_size; i++)
             sample[pos + i] += decoded_residue[i];
         }
-      pos += frame_step;
     }
 
   // decode envelope
