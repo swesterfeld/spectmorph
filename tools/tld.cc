@@ -1,11 +1,33 @@
+/*
+ * Copyright (C) 2009-2010 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 #include "smmain.hh"
 
+#include <bse/gsldatahandle.h>
+#include <bse/gsldatautils.h>
+
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <fcntl.h>
+#include <errno.h>
 
 using SpectMorph::WavSet;
 using SpectMorph::LiveDecoder;
@@ -71,6 +93,34 @@ main (int argc, char **argv)
       printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[0]);
       printf ("other:  %f\n", clocks_per_sample[0]);
       printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
+    }
+  else if (argc == 4 && string (argv[3]) == "export")
+    {
+      vector<float> audio_out (48000 * 20);
+      decoder.retrigger (0, freq, 48000);
+      decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, 48000, 48000 / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
+      BseErrorType error = gsl_data_handle_open (out_dhandle);
+      if (error)
+        {
+          fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
+          exit (1);
+        }
+
+      std::string export_wav = "tld.wav";
+      int fd = open (export_wav.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+      if (fd < 0)
+        {
+          BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+          sfi_error ("export to file %s failed: %s", export_wav.c_str(), bse_error_blurb (error));
+        }
+      int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
+      if (xerrno)
+        {
+          BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+          sfi_error ("export to file %s failed: %s", export_wav.c_str(), bse_error_blurb (error));
+        }
     }
   else
     {
