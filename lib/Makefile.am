@@ -16,3 +16,6 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smrandom.cc smfft.cc smmain.cc smdebug.cc smnoisebandpartition.cc \
                            $(SMHDRS)
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS)
+
+spectmorphincludedir = $(includedir)/spectmorph
+spectmorphinclude_HEADERS = $(SMHDRS)
