@@ -365,6 +365,17 @@ int_sincos_init()
     int_sincos_table[i] = sin (double (i / 256.0) * 2 * M_PI);
 }
 
+inline double
+window_blackman_harris_92 (double x)
+{
+  if (fabs (x) > 1)
+    return 0;
+
+  const double a0 = 0.35875, a1 = 0.48829, a2 = 0.14128, a3 = 0.01168;
+
+  return a0 + a1 * cos (M_PI * x) + a2 * cos (2.0 * M_PI * x) + a3 * cos (3.0 * M_PI * x);
+}
+
 } // namespace SpectMorph
 
 #endif
