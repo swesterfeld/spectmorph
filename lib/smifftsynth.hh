@@ -24,10 +24,11 @@
 
 namespace SpectMorph {
 
+class IFFTSynthTable;
+
 class IFFTSynth
 {
-  std::vector<float> win_trans;
-  int                win_trans_center;
+  IFFTSynthTable    *table;
 
   int                zero_padding;
   size_t             block_size;

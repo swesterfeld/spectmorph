@@ -8,6 +8,17 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::map;
+
+struct SpectMorph::IFFTSynthTable
+{
+  std::vector<float> win_trans;
+  int                win_trans_center;
+
+  std::vector<float> win_bh92;
+};
+
+static map<size_t, IFFTSynthTable *> table_for_block_size;
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
   block_size (block_size),
@@ -15,27 +26,41 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
 {
   zero_padding = 256;
 
-  vector<double> win (block_size * zero_padding);
-  vector<double> wspectrum (block_size * zero_padding);
-
-  for (size_t i = 0; i < block_size; i++)
+  table = table_for_block_size[block_size];
+  if (!table)
     {
-      if (i < block_size / 2)
-        win[i] = window_blackman_harris_92 (double (block_size / 2 - i) / block_size * 2 - 1.0);
-      else
-        win[win.size() - block_size + i] = window_blackman_harris_92 (double (i - block_size / 2) / block_size * 2 - 1.0);
-    }
+      table = new IFFTSynthTable();
 
-  gsl_power2_fftar (block_size * zero_padding, &win[0], &wspectrum[0]);
+      vector<double> win (block_size * zero_padding);
+      vector<double> wspectrum (block_size * zero_padding);
 
-  // compute complete (symmetric) expanded window transform
-  win_trans.resize (zero_padding * 12);  /* > zero_padding * range * 2 */
-  win_trans_center = zero_padding * 6;
-  for (size_t i = 0; i < win_trans.size(); i++)
-    {
-      int pos = i - win_trans_center;
-      assert (abs (pos * 2) < wspectrum.size());
-      win_trans[i] = wspectrum[abs (pos * 2)];
+      for (size_t i = 0; i < block_size; i++)
+        {
+          if (i < block_size / 2)
+            win[i] = window_blackman_harris_92 (double (block_size / 2 - i) / block_size * 2 - 1.0);
+          else
+            win[win.size() - block_size + i] = window_blackman_harris_92 (double (i - block_size / 2) / block_size * 2 - 1.0);
+        }
+
+      gsl_power2_fftar (block_size * zero_padding, &win[0], &wspectrum[0]);
+
+      // compute complete (symmetric) expanded window transform
+      table->win_trans.resize (zero_padding * 12);  /* > zero_padding * range * 2 */
+      table->win_trans_center = zero_padding * 6;
+      for (size_t i = 0; i < table->win_trans.size(); i++)
+        {
+          int pos = i - table->win_trans_center;
+          assert (abs (pos * 2) < wspectrum.size());
+          table->win_trans[i] = wspectrum[abs (pos * 2)];
+        }
+
+      // store a blackman harris window
+      table->win_bh92.resize (block_size);
+      for (size_t i = 0; i < block_size; i++)
+        table->win_bh92[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+
+      // we only need to do this once per block size (FIXME: not thread safe yet)
+      table_for_block_size[block_size] = table;
     }
 }
 
@@ -60,15 +85,16 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   const double phase_rcmag = 0.5 * mag * cos (-phase - phase_adjust);
   const double phase_rsmag = 0.5 * mag * sin (-phase - phase_adjust);
 
-  assert (2 * (ibin - range) >= 0 && 2 * (ibin + range) < block_size);
-
-  index += win_trans_center;
-  for (int i = 0; i <= 2 * range; i++)
+  if (2 * (ibin - range) >= 0 && 2 * (ibin + range) < block_size)
     {
-      const double wmag = win_trans[index];
-      *sp++ += phase_rcmag * wmag;
-      *sp++ += phase_rsmag * wmag;
-      index += zero_padding;
+      index += table->win_trans_center;
+      for (int i = 0; i <= 2 * range; i++)
+        {
+          const double wmag = table->win_trans[index];
+          *sp++ += phase_rcmag * wmag;
+          *sp++ += phase_rsmag * wmag;
+          index += zero_padding;
+        }
     }
 }
 
@@ -83,7 +109,7 @@ IFFTSynth::get_samples (const float *buffer, float *samples, const float *window
   memcpy (&samples[block_size / 2], fft_out, sizeof (float) * block_size / 2);
 
   for (size_t i = 0; i < block_size; i++)
-    samples[i] *= window[i] / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+    samples[i] *= window[i] / table->win_bh92[i];
 
   FFT::free_array_float (fft_out);
 }
