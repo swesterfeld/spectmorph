@@ -61,8 +61,8 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   for (int i = 0; i <= 2 * range; i++)
     {
       const double wmag = win_trans[index];
-      *sp++ = phase_rcmag * wmag;
-      *sp++ = phase_rsmag * wmag;
+      *sp++ += phase_rcmag * wmag;
+      *sp++ += phase_rsmag * wmag;
       index += zero_padding;
     }
 }
