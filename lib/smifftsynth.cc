@@ -113,3 +113,15 @@ IFFTSynth::get_samples (const float *buffer, float *samples, const float *window
 
   FFT::free_array_float (fft_out);
 }
+
+double
+IFFTSynth::quantized_freq (double mf_freq)
+{
+  const double freq = mf_freq / mix_freq * block_size;
+  int ibin = freq;
+  const double frac = freq - ibin;
+  const double qfreq = ibin + int (frac * zero_padding) * (1. / zero_padding);
+  const double mf_qfreq = qfreq / block_size * mix_freq;
+
+  return mf_qfreq;
+}

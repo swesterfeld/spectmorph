@@ -39,6 +39,8 @@ public:
 
   void render_partial (float *buffer, double freq, double mag, double phase);
   void get_samples (const float *buffer, float *samples, const float *window);
+
+  double quantized_freq (double freq);
 };
 
 }
