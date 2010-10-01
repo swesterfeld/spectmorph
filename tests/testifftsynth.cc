@@ -23,15 +23,55 @@
 
 #include <vector>
 #include <stdio.h>
+#include <sys/time.h>
 
 using namespace SpectMorph;
 
 using std::vector;
 using Birnet::AlignedArray;
 
-int
-main()
+double
+gettime()
 {
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+void
+perf_test()
+{
+  const double mix_freq = 48000;
+  const size_t block_size = 1024;
+
+  vector<float> spectrum (block_size);
+
+  IFFTSynth synth (block_size, mix_freq);
+
+  const double freq  = 440;
+  const double mag   = 0.1;
+  const double phase = 0.7;
+  const double clocks_per_sec = 2500.0 * 1000 * 1000;
+
+  const size_t RUNS = 1000 * 1000;
+
+  double start = gettime();
+  for (int r = 0; r < RUNS; r++)
+    synth.render_partial (&spectrum[0], freq, mag, phase);
+  double end = gettime();
+
+  printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
+}
+
+int
+main (int argc, char **argv)
+{
+  if (argc == 2 && strcmp (argv[1], "perf") == 0)
+    {
+      perf_test();
+      return 0;
+    }
   const double mix_freq = 48000;
   const size_t block_size = 1024;
 
