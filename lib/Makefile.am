@@ -6,7 +6,8 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smframe.hh smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
          smstdioin.hh smstdiosubin.hh smmmapin.hh smgenericin.hh \
          smgenericout.hh smstdioout.hh smmemout.hh smlivedecoder.hh \
-         smrandom.hh smfft.hh smmain.hh smdebug.hh smnoisebandpartition.hh
+         smrandom.hh smfft.hh smmain.hh smdebug.hh smnoisebandpartition.hh \
+         smifftsynth.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -14,7 +15,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smstdioin.cc smstdiosubin.cc smmmapin.cc smgenericin.cc \
                            smgenericout.cc smstdioout.cc smmemout.cc smlivedecoder.cc \
                            smrandom.cc smfft.cc smmain.cc smdebug.cc smnoisebandpartition.cc \
-                           $(SMHDRS)
+                           smifftsynth.cc $(SMHDRS)
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS)
 
 spectmorphincludedir = $(includedir)/spectmorph
