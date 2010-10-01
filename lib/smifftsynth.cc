@@ -45,8 +45,8 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   const int range = 4;
 
   // rotation for initial phase; scaling for magnitude
-  const double phase_rcmag = 0.5 * cos (-phase);
-  const double phase_rsmag = 0.5 * sin (-phase);
+  const double phase_rcmag = 0.5 * mag * cos (-phase);
+  const double phase_rsmag = 0.5 * mag * sin (-phase);
 
   const double freq = mf_freq / mix_freq * block_size;
   int ibin = freq;
@@ -60,9 +60,9 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   index += win_trans_center;
   for (int i = 0; i <= 2 * range; i++)
     {
-      const double mag = win_trans[index];
-      *sp++ = phase_rcmag * mag;
-      *sp++ = phase_rsmag * mag;
+      const double wmag = win_trans[index];
+      *sp++ = phase_rcmag * wmag;
+      *sp++ = phase_rsmag * wmag;
       index += zero_padding;
     }
 }

@@ -16,7 +16,9 @@
  */
 
 #include "smifftsynth.hh"
+#include "smmath.hh"
 
+#include <birnet/birnetutils.hh>
 #include <bse/bsemathsignal.h>
 
 #include <vector>
@@ -25,6 +27,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using Birnet::AlignedArray;
 
 int
 main()
@@ -48,8 +51,18 @@ main()
   synth.render_partial (&spectrum[0], freq, mag, phase);
   synth.get_samples (&spectrum[0], &samples[0], &window[0]);
 
+  VectorSinParams vsparams;
+  vsparams.mix_freq = mix_freq;
+  vsparams.freq = freq;
+  vsparams.mag = mag;
+  vsparams.phase = phase;
+  vsparams.mode = VectorSinParams::REPLACE;
+
+  AlignedArray<float, 16> aligned_decoded_sines (block_size);
+  fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
+
   for (size_t i = 0; i < block_size; i++)
     {
-      printf ("%zd %.17g\n", i, samples[i]);
+      printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
 }
