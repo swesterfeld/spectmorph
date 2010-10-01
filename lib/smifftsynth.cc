@@ -77,5 +77,8 @@ IFFTSynth::get_samples (const float *buffer, float *samples, const float *window
   memcpy (samples, &fft_out[block_size / 2], sizeof (float) * block_size / 2);
   memcpy (&samples[block_size / 2], fft_out, sizeof (float) * block_size / 2);
 
+  for (size_t i = 0; i < block_size; i++)
+    samples[i] *= window[i] / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+
   FFT::free_array_float (fft_out);
 }
