@@ -28,6 +28,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::max;
 using Birnet::AlignedArray;
 
 double
@@ -46,6 +47,8 @@ perf_test()
   const size_t block_size = 1024;
 
   vector<float> spectrum (block_size);
+  vector<float> samples (block_size);
+  vector<float> window (block_size);
 
   IFFTSynth synth (block_size, mix_freq);
 
@@ -54,14 +57,25 @@ perf_test()
   const double phase = 0.7;
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-  const size_t RUNS = 1000 * 1000;
+  size_t RUNS = 1000 * 1000;
+  double start, end;
 
-  double start = gettime();
+  start = gettime();
   for (int r = 0; r < RUNS; r++)
     synth.render_partial (&spectrum[0], freq, mag, phase);
-  double end = gettime();
+  end = gettime();
 
   printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
+
+  synth.get_samples (&spectrum[0], &samples[0], &window[0]);  // first run may be slower
+
+  RUNS = 100000;
+  start = gettime();
+  for (int r = 0; r < RUNS; r++)
+    synth.get_samples (&spectrum[0], &samples[0], &window[0]);
+  end = gettime();
+
+  printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 }
 
 int
@@ -101,8 +115,29 @@ main (int argc, char **argv)
   AlignedArray<float, 16> aligned_decoded_sines (block_size);
   fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
 
+  double max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
-      printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
+      max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
+      //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
+  printf ("# max_diff = %.17g\n", max_diff);
+
+  vsparams.freq = synth.quantized_freq (freq);
+  fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
+
+  std::fill (spectrum.begin(), spectrum.end(), 0);
+
+  synth.render_partial (&spectrum[0], freq, mag, phase);
+  synth.get_samples (&spectrum[0], &samples[0], &window[0]);
+
+  printf ("# qfreq = %.17g\n", vsparams.freq);
+  max_diff = 0;
+  for (size_t i = 0; i < block_size; i++)
+    {
+      max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
+      printf ("%zd %.17g %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i], window[i] / window_blackman_harris_92 (2.0 * i / block_size - 1.0));
+    }
+  printf ("# max_diff = %.17g\n", max_diff);
+
 }
