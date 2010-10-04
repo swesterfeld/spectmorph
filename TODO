@@ -31,17 +31,14 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- implement efficient (IFFT) live decoder
-- get rid of analysis FFT in noise synthesis
-- faster db conversion for noise
 - use O(n) or O(n log n) chaining
 - don't do anything for inaudible partials
 - store phases for phase continous resynthesis rather than recomputing them (atan2)
 - use faster random number generation
-- use thin resynthesis (factor 2 overlap)
 - noise masking (no noise resynthesis if its inaudible anyway)
 - do not recompute the window each time we retrigger
 - make FFTW integration thread safe
+- get rid of prewindowing code during noise synthesis
 
 tests:
 - add test cases
