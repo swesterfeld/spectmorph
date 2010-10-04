@@ -17,6 +17,7 @@
 
 #include "smifftsynth.hh"
 #include "smmath.hh"
+#include "smmain.hh"
 
 #include <birnet/birnetutils.hh>
 #include <bse/bsemathsignal.h>
@@ -81,6 +82,8 @@ perf_test()
 int
 main (int argc, char **argv)
 {
+  sm_init (&argc, &argv);
+
   if (argc == 2 && strcmp (argv[1], "perf") == 0)
     {
       perf_test();
