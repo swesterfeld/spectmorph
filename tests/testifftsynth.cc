@@ -49,7 +49,6 @@ perf_test()
   const double mix_freq = 48000;
   const size_t block_size = 1024;
 
-  vector<float> spectrum (block_size);
   vector<float> samples (block_size);
   vector<float> window (block_size);
 
@@ -63,19 +62,20 @@ perf_test()
   int RUNS = 1000 * 1000;
   double start, end;
 
+  synth.clear_partials();
   start = gettime();
   for (int r = 0; r < RUNS; r++)
-    synth.render_partial (&spectrum[0], freq, mag, phase);
+    synth.render_partial (freq, mag, phase);
   end = gettime();
 
   printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 
-  synth.get_samples (&spectrum[0], &samples[0], &window[0]);  // first run may be slower
+  synth.get_samples (&samples[0], &window[0]);  // first run may be slower
 
   RUNS = 100000;
   start = gettime();
   for (int r = 0; r < RUNS; r++)
-    synth.get_samples (&spectrum[0], &samples[0], &window[0]);
+    synth.get_samples (&samples[0], &window[0]);
   end = gettime();
 
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
@@ -113,8 +113,9 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
 
   IFFTSynth synth (block_size, mix_freq);
 
-  synth.render_partial (&spectrum[0], freq, mag, phase);
-  synth.get_samples (&spectrum[0], &samples[0], &window[0]);
+  synth.clear_partials();
+  synth.render_partial (freq, mag, phase);
+  synth.get_samples (&samples[0], &window[0]);
 
   VectorSinParams vsparams;
   vsparams.mix_freq = mix_freq;
@@ -139,10 +140,9 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
   vsparams.freq = synth.quantized_freq (freq);
   fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
 
-  std::fill (spectrum.begin(), spectrum.end(), 0);
-
-  synth.render_partial (&spectrum[0], freq, mag, phase);
-  synth.get_samples (&spectrum[0], &samples[0], &window[0]);
+  synth.clear_partials();
+  synth.render_partial (freq, mag, phase);
+  synth.get_samples (&samples[0], &window[0]);
 
   //printf ("# qfreq = %.17g\n", vsparams.freq);
   max_diff = 0;

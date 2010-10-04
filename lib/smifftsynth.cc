@@ -62,10 +62,24 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
       // we only need to do this once per block size (FIXME: not thread safe yet)
       table_for_block_size[block_size] = table;
     }
+  fft_in = FFT::new_array_float (block_size);
+  fft_out = FFT::new_array_float (block_size);
+}
+
+IFFTSynth::~IFFTSynth()
+{
+  FFT::free_array_float (fft_in);
+  FFT::free_array_float (fft_out);
 }
 
 void
-IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double phase)
+IFFTSynth::clear_partials()
+{
+  zero_float_block (block_size, fft_in);
+}
+
+void
+IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
   const int range = 4;
 
@@ -74,7 +88,7 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   const double frac = freq - ibin;
   const double qfreq = ibin + int (frac * zero_padding) * (1. / zero_padding);
   int index = -range * zero_padding - frac * zero_padding;
-  float *sp = buffer + 2 * (ibin - range);
+  float *sp = fft_in + 2 * (ibin - range);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   const double mf_qfreq = qfreq / block_size * mix_freq;
@@ -104,28 +118,28 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
           const double wmag = table->win_trans[index];
           if ((ibin + i) < 0)
             {
-              buffer[-(ibin + i) * 2] += phase_rcmag * wmag;
-              buffer[-(ibin + i) * 2 + 1] -= phase_rsmag * wmag;
+              fft_in[-(ibin + i) * 2] += phase_rcmag * wmag;
+              fft_in[-(ibin + i) * 2 + 1] -= phase_rsmag * wmag;
             }
           else if ((ibin + i) == 0)
             {
-              buffer[0] += 2 * phase_rcmag * wmag;
+              fft_in[0] += 2 * phase_rcmag * wmag;
             }
           else if (2 * (ibin + i) == block_size)
             {
-              buffer[1] += 2 * phase_rcmag * wmag;
+              fft_in[1] += 2 * phase_rcmag * wmag;
             }
           else if (2 * (ibin + i) > block_size)
             {
               int p = block_size - (2 * (ibin + i) - block_size);
 
-              buffer[p] += phase_rcmag * wmag;
-              buffer[p + 1] -= phase_rsmag * wmag;
+              fft_in[p] += phase_rcmag * wmag;
+              fft_in[p + 1] -= phase_rsmag * wmag;
             }
           else // no corner case
             {
-              buffer[(ibin + i) * 2] += phase_rcmag * wmag;
-              buffer[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
+              fft_in[(ibin + i) * 2] += phase_rcmag * wmag;
+              fft_in[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
             }
           index += zero_padding;
         }
@@ -133,19 +147,15 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
 }
 
 void
-IFFTSynth::get_samples (const float *buffer, float *samples, const float *window)
+IFFTSynth::get_samples (float *samples, const float *window)
 {
-  float *fft_out = FFT::new_array_float (block_size);    // FIXME: keep this
-
-  FFT::fftsr_float (block_size, const_cast<float *> (buffer), fft_out);
+  FFT::fftsr_float (block_size, fft_in, fft_out);
 
   memcpy (samples, &fft_out[block_size / 2], sizeof (float) * block_size / 2);
   memcpy (&samples[block_size / 2], fft_out, sizeof (float) * block_size / 2);
 
   for (size_t i = 0; i < block_size; i++)
     samples[i] *= window[i] / table->win_bh92[i];
-
-  FFT::free_array_float (fft_out);
 }
 
 double

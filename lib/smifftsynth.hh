@@ -34,11 +34,16 @@ class IFFTSynth
   size_t             block_size;
   double             mix_freq;
 
+  float             *fft_in;
+  float             *fft_out;
+
 public:
   IFFTSynth (size_t block_size, double mix_freq);
+  ~IFFTSynth();
 
-  void render_partial (float *buffer, double freq, double mag, double phase);
-  void get_samples (const float *buffer, float *samples, const float *window);
+  void clear_partials();
+  void render_partial (double freq, double mag, double phase);
+  void get_samples (float *samples, const float *window);
 
   double quantized_freq (double freq);
 };

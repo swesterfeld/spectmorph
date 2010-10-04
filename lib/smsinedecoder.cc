@@ -43,6 +43,16 @@ SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step,
     frame_step (frame_step),
     mode (mode)
 {
+  ifft_synth = NULL;
+}
+
+SineDecoder::~SineDecoder()
+{
+  if (ifft_synth)
+    {
+      delete ifft_synth;
+      ifft_synth = NULL;
+    }
 }
 
 /**
@@ -90,10 +100,11 @@ SineDecoder::process (const Frame& frame,
   else if (mode == MODE_PHASE_SYNC_OVERLAP_IFFT)
     {
       const size_t block_size = frame_size;
-      float *fft_in = FFT::new_array_float (block_size);
 
-      zero_float_block (block_size, fft_in);
-      IFFTSynth ifft_synth (block_size, mix_freq);
+      if (!ifft_synth)
+        ifft_synth = new IFFTSynth (block_size, mix_freq);
+
+      ifft_synth->clear_partials();
       for (size_t i = 0; i < frame.freqs.size(); i++)
         {
           const double SA = 1;
@@ -103,11 +114,10 @@ SineDecoder::process (const Frame& frame,
 
           const double mag = sqrt (smag * smag + cmag * cmag) * SA;
           if (mag > mag_epsilon)
-            ifft_synth.render_partial (fft_in, frame.freqs[i], mag, atan2 (cmag, smag));
+            ifft_synth->render_partial (frame.freqs[i], mag, atan2 (cmag, smag));
         }
       vector<float> fwindow (window.begin(), window.end());
-      ifft_synth.get_samples (fft_in, &decoded_sines[0], &fwindow[0]);
-      FFT::free_array_float (fft_in);
+      ifft_synth->get_samples (&decoded_sines[0], &fwindow[0]);
       return;
     }
 

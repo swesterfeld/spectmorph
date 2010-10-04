@@ -20,6 +20,7 @@
 #define SPECTMORPH_SINEDECODER_HH
 
 #include "smframe.hh"
+#include "smifftsynth.hh"
 #include <vector>
 
 namespace SpectMorph {
@@ -60,8 +61,12 @@ private:
   size_t frame_step;
   std::vector<double> synth_fixed_phase, next_synth_fixed_phase;
   Mode mode;
+  SpectMorph::IFFTSynth *ifft_synth;
+
 public:
   SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
+  ~SineDecoder();
+
   void process (const Frame& frame,
                 const Frame& next_frame,
                 const std::vector<double>& window,
