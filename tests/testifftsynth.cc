@@ -97,6 +97,15 @@ perf_test()
     sd.process (f, next_f, dwindow, samples);
   end = gettime();
   printf ("SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
+
+  SineDecoder sdo (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
+  RUNS = 10000;
+
+  start = gettime();
+  for (int r = 0; r < RUNS; r++)
+    sdo.process (f, next_f, dwindow, samples);
+  end = gettime();
+  printf ("Old SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
 
 void
@@ -154,6 +163,41 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
   printf ("%f %.17g\n", freq, max_diff);
 }
 
+void
+test_accs()
+{
+  const double mix_freq = 48000;
+  const size_t block_size = 1024;
+
+  vector<double> window (block_size);
+  vector<float> samples (block_size);
+  vector<float> osamples (block_size);
+
+  for (size_t i = 0; i < window.size(); i++)
+    window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+
+  SineDecoder sd (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
+  Frame f, next_f;
+  vector<double> dwindow (window.begin(), window.end());
+
+  f.freqs.push_back (IFFTSynth (block_size, mix_freq).quantized_freq (440));
+  f.phases.push_back (0.1);
+  f.phases.push_back (0.9);
+
+  sd.process (f, next_f, dwindow, samples);
+
+  SineDecoder sdo (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
+  sdo.process (f, next_f, dwindow, osamples);
+
+  double max_diff = 0;
+  for (size_t i = 0; i < block_size; i++)
+    {
+      printf ("%d %.17g %.17g\n", i, samples[i], osamples[i]);
+      max_diff = max (max_diff, fabs (samples[i] - osamples[i]));
+    }
+  printf ("# max_diff = %.17g\n", max_diff);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -162,6 +206,11 @@ main (int argc, char **argv)
   if (argc == 2 && strcmp (argv[1], "perf") == 0)
     {
       perf_test();
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "accs") == 0)
+    {
+      test_accs();
       return 0;
     }
   const double mag = 0.991;
