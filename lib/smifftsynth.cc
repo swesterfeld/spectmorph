@@ -96,7 +96,7 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
           index += zero_padding;
         }
     }
-  else if (ibin <= range)
+  else
     {
       index += table->win_trans_center;
       for (int i = -range; i <= range; i++)
@@ -111,7 +111,18 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
             {
               buffer[0] += 2 * phase_rcmag * wmag;
             }
-          else
+          else if (2 * (ibin + i) == block_size)
+            {
+              buffer[1] += 2 * phase_rcmag * wmag;
+            }
+          else if (2 * (ibin + i) > block_size)
+            {
+              int p = block_size - (2 * (ibin + i) - block_size);
+
+              buffer[p] += phase_rcmag * wmag;
+              buffer[p + 1] -= phase_rsmag * wmag;
+            }
+          else // no corner case
             {
               buffer[(ibin + i) * 2] += phase_rcmag * wmag;
               buffer[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
