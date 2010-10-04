@@ -16,6 +16,7 @@
  */
 
 #include "smifftsynth.hh"
+#include "smsinedecoder.hh"
 #include "smmath.hh"
 #include "smmain.hh"
 
@@ -30,6 +31,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::max;
+using std::min;
 using Birnet::AlignedArray;
 
 double
@@ -77,6 +79,24 @@ perf_test()
   end = gettime();
 
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
+
+  SineDecoder sd (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
+  Frame f, next_f;
+  vector<double> dwindow (window.begin(), window.end());
+  RUNS = 10000;
+
+  int FREQS = 1000;
+  for (int i = 0; i < FREQS; i++)
+    {
+      f.freqs.push_back (440 + i);
+      f.phases.push_back (0.1);
+      f.phases.push_back (0.9);
+    }
+  start = gettime();
+  for (int r = 0; r < RUNS; r++)
+    sd.process (f, next_f, dwindow, samples);
+  end = gettime();
+  printf ("SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
 
 void
@@ -147,8 +167,6 @@ main (int argc, char **argv)
   const double mag = 0.991;
   const double phase = 0.5;
   accuracy_test (187, mag, phase, 48000);
-#if 0
-  for (double freq = 20; freq < 24000; freq *= 1.01)
+  for (double freq = 20; freq < 24000; freq = min (freq * 1.01, freq + 0.5))
     accuracy_test (freq, mag, phase, 48000);
-#endif
 }
