@@ -79,17 +79,9 @@ perf_test()
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 }
 
-int
-main (int argc, char **argv)
+void
+accuracy_test (double freq, double mag, double phase, double mix_freq)
 {
-  sm_init (&argc, &argv);
-
-  if (argc == 2 && strcmp (argv[1], "perf") == 0)
-    {
-      perf_test();
-      return 0;
-    }
-  const double mix_freq = 48000;
   const size_t block_size = 1024;
 
   vector<float> spectrum (block_size);
@@ -100,10 +92,6 @@ main (int argc, char **argv)
     window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
   IFFTSynth synth (block_size, mix_freq);
-
-  const double freq = 4000;
-  const double mag = 0.456;
-  const double phase = 0.5;
 
   synth.render_partial (&spectrum[0], freq, mag, phase);
   synth.get_samples (&spectrum[0], &samples[0], &window[0]);
@@ -119,12 +107,14 @@ main (int argc, char **argv)
   fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
 
   double max_diff = 0;
+#if 0
   for (size_t i = 0; i < block_size; i++)
     {
       max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
       //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
-  printf ("# max_diff = %.17g\n", max_diff);
+  printf ("# max_diff(nq) = %.17g\n", max_diff);
+#endif
 
   vsparams.freq = synth.quantized_freq (freq);
   fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
@@ -134,13 +124,31 @@ main (int argc, char **argv)
   synth.render_partial (&spectrum[0], freq, mag, phase);
   synth.get_samples (&spectrum[0], &samples[0], &window[0]);
 
-  printf ("# qfreq = %.17g\n", vsparams.freq);
+  //printf ("# qfreq = %.17g\n", vsparams.freq);
   max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
       max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
-      printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
+      //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
-  printf ("# max_diff = %.17g\n", max_diff);
+  printf ("%f %.17g\n", freq, max_diff);
+}
 
+int
+main (int argc, char **argv)
+{
+  sm_init (&argc, &argv);
+
+  if (argc == 2 && strcmp (argv[1], "perf") == 0)
+    {
+      perf_test();
+      return 0;
+    }
+  const double mag = 0.991;
+  const double phase = 0.5;
+  accuracy_test (187, mag, phase, 48000);
+#if 0
+  for (double freq = 20; freq < 24000; freq *= 1.01)
+    accuracy_test (freq, mag, phase, 48000);
+#endif
 }
