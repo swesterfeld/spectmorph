@@ -6,6 +6,8 @@ testrandom
 testfft
 testfftperf
 testisincos
+testifftsynth
 testnoise
+testrandperf
 .libs
 .deps
