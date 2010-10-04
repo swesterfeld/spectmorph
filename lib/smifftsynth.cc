@@ -85,7 +85,7 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
   const double phase_rcmag = 0.5 * mag * cos (-phase - phase_adjust);
   const double phase_rsmag = 0.5 * mag * sin (-phase - phase_adjust);
 
-  if (2 * (ibin - range) >= 0 && 2 * (ibin + range) < block_size)
+  if (ibin > range && 2 * (ibin + range) < block_size)
     {
       index += table->win_trans_center;
       for (int i = 0; i <= 2 * range; i++)
@@ -93,6 +93,29 @@ IFFTSynth::render_partial (float *buffer, double mf_freq, double mag, double pha
           const double wmag = table->win_trans[index];
           *sp++ += phase_rcmag * wmag;
           *sp++ += phase_rsmag * wmag;
+          index += zero_padding;
+        }
+    }
+  else if (ibin <= range)
+    {
+      index += table->win_trans_center;
+      for (int i = -range; i <= range; i++)
+        {
+          const double wmag = table->win_trans[index];
+          if ((ibin + i) < 0)
+            {
+              buffer[-(ibin + i) * 2] += phase_rcmag * wmag;
+              buffer[-(ibin + i) * 2 + 1] -= phase_rsmag * wmag;
+            }
+          else if ((ibin + i) == 0)
+            {
+              buffer[0] += 2 * phase_rcmag * wmag;
+            }
+          else
+            {
+              buffer[(ibin + i) * 2] += phase_rcmag * wmag;
+              buffer[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
+            }
           index += zero_padding;
         }
     }
