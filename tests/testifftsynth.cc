@@ -58,7 +58,7 @@ perf_test()
   const double phase = 0.7;
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-  size_t RUNS = 1000 * 1000;
+  int RUNS = 1000 * 1000;
   double start, end;
 
   start = gettime();
@@ -97,7 +97,7 @@ main (int argc, char **argv)
   vector<float> window (block_size);
 
   for (size_t i = 0; i < window.size(); i++)
-    window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+    window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
   IFFTSynth synth (block_size, mix_freq);
 
@@ -139,7 +139,7 @@ main (int argc, char **argv)
   for (size_t i = 0; i < block_size; i++)
     {
       max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
-      printf ("%zd %.17g %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i], window[i] / window_blackman_harris_92 (2.0 * i / block_size - 1.0));
+      printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
   printf ("# max_diff = %.17g\n", max_diff);
 
