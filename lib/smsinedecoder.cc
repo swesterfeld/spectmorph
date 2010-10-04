@@ -107,6 +107,7 @@ SineDecoder::process (const Frame& frame,
         }
       vector<float> fwindow (window.begin(), window.end());
       ifft_synth.get_samples (fft_in, &decoded_sines[0], &fwindow[0]);
+      FFT::free_array_float (fft_in);
       return;
     }
 
