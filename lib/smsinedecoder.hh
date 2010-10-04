@@ -43,6 +43,11 @@ public:
      */
     MODE_PHASE_SYNC_OVERLAP,
     /**
+     * Like MODE_PHASE_SYNC_OVERLAP, however IFFTSynth is used to render the partials, which
+     * makes this mode faster than MODE_PHASE_SYNC_OVERLAP.
+     */
+    MODE_PHASE_SYNC_OVERLAP_IFFT,
+    /**
      * This mode uses sine waves with phases derived from their frequency for reconstruction.
      * in general this does not preserve the original phase information, but should still sound
      * the same - also the frames can be reordered (for instance loops are possible).

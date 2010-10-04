@@ -95,7 +95,7 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
 
       if (sine_decoder)
         delete sine_decoder;
-      SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
+      SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT;
       sine_decoder = new SineDecoder (mix_freq, block_size, block_size / 2, mode);
 
       samples.resize (block_size);

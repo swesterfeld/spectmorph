@@ -17,6 +17,8 @@
 
 #include "smsinedecoder.hh"
 #include "smmath.hh"
+#include "smfft.hh"
+#include "smifftsynth.hh"
 #include <birnet/birnetutils.hh>
 #include <assert.h>
 #include <stdio.h>
@@ -83,6 +85,28 @@ SineDecoder::process (const Frame& frame,
         }
       for (size_t t = 0; t < frame_size; t++)
         decoded_sines[t] = aligned_decoded_sines[t] * window[t];
+      return;
+    }
+  else if (mode == MODE_PHASE_SYNC_OVERLAP_IFFT)
+    {
+      const size_t block_size = frame_size;
+      float *fft_in = FFT::new_array_float (block_size);
+
+      zero_float_block (block_size, fft_in);
+      IFFTSynth ifft_synth (block_size, mix_freq);
+      for (size_t i = 0; i < frame.freqs.size(); i++)
+        {
+          const double SA = 1;
+          const double smag = frame.phases[i * 2];
+          const double cmag = frame.phases[i * 2 + 1];
+          const double mag_epsilon = 1e-8;
+
+          const double mag = sqrt (smag * smag + cmag * cmag) * SA;
+          if (mag > mag_epsilon)
+            ifft_synth.render_partial (fft_in, frame.freqs[i], mag, atan2 (cmag, smag));
+        }
+      vector<float> fwindow (window.begin(), window.end());
+      ifft_synth.get_samples (fft_in, &decoded_sines[0], &fwindow[0]);
       return;
     }
 
