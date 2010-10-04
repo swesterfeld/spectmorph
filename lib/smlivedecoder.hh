@@ -32,7 +32,7 @@ class LiveDecoder
   WavSet             *smset;
   Audio              *audio;
 
-  SineDecoder        *sine_decoder;
+  IFFTSynth          *ifft_synth;
   NoiseDecoder       *noise_decoder;
 
   bool                sines_enabled;
@@ -57,6 +57,7 @@ class LiveDecoder
 
 public:
   LiveDecoder (WavSet *smset);
+  ~LiveDecoder();
 
   void enable_noise (bool ne);
   void enable_sines (bool se);

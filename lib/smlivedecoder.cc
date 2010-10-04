@@ -39,12 +39,26 @@ fmatch (double f1, double f2)
 LiveDecoder::LiveDecoder (WavSet *smset) :
   smset (smset),
   audio (NULL),
-  sine_decoder (NULL),
+  ifft_synth (NULL),
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
   last_frame()
 {
+}
+
+LiveDecoder::~LiveDecoder()
+{
+  if (ifft_synth)
+    {
+      delete ifft_synth;
+      ifft_synth = NULL;
+    }
+  if (noise_decoder)
+    {
+      delete noise_decoder;
+      noise_decoder = NULL;
+    }
 }
 
 void
@@ -93,10 +107,9 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       for (guint i = 0; i < window.size(); i++)
         window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
 
-      if (sine_decoder)
-        delete sine_decoder;
-      SineDecoder::Mode mode = SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT;
-      sine_decoder = new SineDecoder (mix_freq, block_size, block_size / 2, mode);
+      if (ifft_synth)
+        delete ifft_synth;
+      ifft_synth = new IFFTSynth (block_size, mix_freq);
 
       samples.resize (block_size);
       zero_float_block (block_size, &samples[0]);
@@ -139,6 +152,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
             {
               Frame frame (audio->contents[frame_idx]);
               Frame next_frame; // not used
+
+              ifft_synth->clear_partials();
 
               for (size_t partial = 0; partial < frame.freqs.size(); partial++)
                 {
@@ -188,6 +203,12 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                     }
                   frame.phases[partial * 2] = sin (phase) * mag;
                   frame.phases[partial * 2 + 1] = cos (phase) * mag;
+                  if (sines_enabled)
+                    {
+                      const double mag_epsilon = 1e-8;
+                      if (mag > mag_epsilon)
+                        ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
+                    }
                 }
 
               last_frame = frame;
@@ -196,7 +217,9 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               if (sines_enabled)
                 {
-                  sine_decoder->process (frame, next_frame, window, decoded_data);
+                  vector<float> fwindow (window.begin(), window.end());
+
+                  ifft_synth->get_samples (&decoded_data[0], &fwindow[0]);
                   for (size_t i = 0; i < block_size; i++)
                     samples[i] += decoded_data[i];
                 }
