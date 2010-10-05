@@ -83,11 +83,10 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
   const int range = 4;
 
-  const double freq = mf_freq / mix_freq * block_size;
-  int ibin = freq;
-  const double frac = freq - ibin;
-  const double qfreq = ibin + int (frac * zero_padding) * (1. / zero_padding);
-  int index = -range * zero_padding - frac * zero_padding;
+  const int freq256 = mf_freq / mix_freq * block_size * 256;
+  const int ibin = freq256 / 256;
+  const double qfreq = freq256 / 256.0;
+  int index = -range * zero_padding - (freq256 & 0xff);
   float *sp = fft_in + 2 * (ibin - range);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
@@ -98,7 +97,6 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   // rotation for initial phase; scaling for magnitude
   const double phase_rcmag = 0.5 * mag * cos (-phase - phase_adjust);
   const double phase_rsmag = 0.5 * mag * sin (-phase - phase_adjust);
-
   if (ibin > range && 2 * (ibin + range) < block_size)
     {
       index += table->win_trans_center;
