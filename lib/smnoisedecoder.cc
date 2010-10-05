@@ -74,7 +74,6 @@ next_power2 (size_t i)
  */
 void
 NoiseDecoder::process (const Frame& frame,
-		       const vector<double>& window,
                        vector<float>& decoded_residue)
 {
   const size_t block_size = next_power2 (decoded_residue.size());

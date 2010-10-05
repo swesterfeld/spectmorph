@@ -43,7 +43,6 @@ public:
 
   void set_seed (int seed);
   void process (const Frame& frame,
-                const std::vector<double>& window,
                 std::vector<float>& decoded_residue);
 
   size_t preferred_block_size();

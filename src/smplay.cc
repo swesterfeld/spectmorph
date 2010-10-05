@@ -343,7 +343,7 @@ main (int argc, char **argv)
 
       if (options.noise_enabled)
         {
-          noise_decoder.process (frame, window, decoded_residue);
+          noise_decoder.process (frame, decoded_residue);
           for (size_t i = 0; i < noise_block_size; i++)
             sample[pos + i] += decoded_residue[i];
         }

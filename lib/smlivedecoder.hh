@@ -52,7 +52,6 @@ class LiveDecoder
   size_t              frame_idx;
 
   Frame               last_frame;
-  std::vector<double> window;
   std::vector<float>  samples;
   std::vector<float>  decoded_data;
 

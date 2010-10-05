@@ -110,10 +110,6 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
 
       block_size = noise_decoder->preferred_block_size();
 
-      window.resize (block_size);
-      for (guint i = 0; i < window.size(); i++)
-        window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
-
       if (ifft_synth)
         delete ifft_synth;
       ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
@@ -235,7 +231,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 }
               if (noise_enabled)
                 {
-                  noise_decoder->process (frame, window, decoded_data);
+                  noise_decoder->process (frame, decoded_data);
                   for (size_t i = 0; i < block_size; i++)
                     samples[i] += decoded_data[i];
                 }
