@@ -5,6 +5,9 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define SIN_TABLE_SIZE 4096
+#define SIN_TABLE_MASK 4095
+
 using namespace SpectMorph;
 
 using std::vector;
@@ -19,6 +22,7 @@ struct SpectMorph::IFFTSynthTable
 };
 
 static map<size_t, IFFTSynthTable *> table_for_block_size;
+static vector<float> sin_table;
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
   block_size (block_size),
@@ -62,6 +66,14 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
       // we only need to do this once per block size (FIXME: not thread safe yet)
       table_for_block_size[block_size] = table;
     }
+  if (sin_table.empty())
+    {
+      // sin() table
+      sin_table.resize (SIN_TABLE_SIZE);
+      for (size_t i = 0; i < SIN_TABLE_SIZE; i++)
+        sin_table[i] = sin (i * 2 * M_PI / SIN_TABLE_SIZE);
+    }
+
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
   freq256_factor = 1 / mix_freq * block_size * zero_padding;
@@ -95,9 +107,21 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   const double delta_phase = mf_qfreq / mix_freq * 2 * M_PI;
   const double phase_adjust = delta_phase * (block_size / 2) - M_PI / 2;
 
+  mag *= 0.5;
+
   // rotation for initial phase; scaling for magnitude
-  const double phase_rcmag = 0.5 * mag * cos (-phase - phase_adjust);
-  const double phase_rsmag = 0.5 * mag * sin (-phase - phase_adjust);
+  double phase_rcmag, phase_rsmag;
+
+  /* the following block computes sincos (-phase-phase_adjust) */
+  double sarg = -(phase + phase_adjust) / (2 * M_PI);
+  sarg -= floor (sarg);
+
+  int iarg = sarg * SIN_TABLE_SIZE + 0.5;
+  phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+  iarg += SIN_TABLE_SIZE / 4;
+  phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+
+  /* compute FFT spectrum modifications */
   if (ibin > range && 2 * (ibin + range) < block_size)
     {
       index += table->win_trans_center;
