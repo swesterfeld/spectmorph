@@ -59,7 +59,7 @@ perf_test()
   const double phase = 0.7;
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-  int RUNS = 1000 * 1000;
+  int RUNS = 1000 * 1000 * 10;
   double start, end;
 
   synth.clear_partials();
