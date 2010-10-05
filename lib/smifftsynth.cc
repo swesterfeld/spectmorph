@@ -103,9 +103,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   float *sp = fft_in + 2 * (ibin - range);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
-  const double mf_qfreq = qfreq / block_size * mix_freq;
-  const double delta_phase = mf_qfreq / mix_freq * 2 * M_PI;
-  const double phase_adjust = delta_phase * (block_size / 2) - M_PI / 2;
+  const double phase_adjust = qfreq * M_PI - M_PI / 2;
 
   mag *= 0.5;
 
