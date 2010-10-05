@@ -102,7 +102,7 @@ SineDecoder::process (const Frame& frame,
       const size_t block_size = frame_size;
 
       if (!ifft_synth)
-        ifft_synth = new IFFTSynth (block_size, mix_freq);
+        ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
 
       ifft_synth->clear_partials();
       for (size_t i = 0; i < frame.freqs.size(); i++)
@@ -116,8 +116,7 @@ SineDecoder::process (const Frame& frame,
           if (mag > mag_epsilon)
             ifft_synth->render_partial (frame.freqs[i], mag, atan2 (cmag, smag));
         }
-      vector<float> fwindow (window.begin(), window.end());
-      ifft_synth->get_samples (&decoded_sines[0], &fwindow[0]);
+      ifft_synth->get_samples (&decoded_sines[0]);
       return;
     }
 

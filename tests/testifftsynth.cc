@@ -52,7 +52,7 @@ perf_test()
   vector<float> samples (block_size);
   vector<float> window (block_size);
 
-  IFFTSynth synth (block_size, mix_freq);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
 
   const double freq  = 440;
   const double mag   = 0.1;
@@ -70,12 +70,14 @@ perf_test()
 
   printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 
-  synth.get_samples (&samples[0], &window[0]);  // first run may be slower
+  AlignedArray<float, 16> sse_samples (block_size);
+
+  synth.get_samples (&sse_samples[0]);  // first run may be slower
 
   RUNS = 100000;
   start = gettime();
   for (int r = 0; r < RUNS; r++)
-    synth.get_samples (&samples[0], &window[0]);
+    synth.get_samples (&sse_samples[0]);
   end = gettime();
 
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
@@ -120,11 +122,11 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
   for (size_t i = 0; i < window.size(); i++)
     window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
-  IFFTSynth synth (block_size, mix_freq);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92);
 
   synth.clear_partials();
   synth.render_partial (freq, mag, phase);
-  synth.get_samples (&samples[0], &window[0]);
+  synth.get_samples (&samples[0]);
 
   VectorSinParams vsparams;
   vsparams.mix_freq = mix_freq;
@@ -151,7 +153,7 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
 
   synth.clear_partials();
   synth.render_partial (freq, mag, phase);
-  synth.get_samples (&samples[0], &window[0]);
+  synth.get_samples (&samples[0]);
 
   //printf ("# qfreq = %.17g\n", vsparams.freq);
   max_diff = 0;
@@ -180,7 +182,7 @@ test_accs()
   Frame f, next_f;
   vector<double> dwindow (window.begin(), window.end());
 
-  f.freqs.push_back (IFFTSynth (block_size, mix_freq).quantized_freq (440));
+  f.freqs.push_back (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440));
   f.phases.push_back (0.1);
   f.phases.push_back (0.9);
 

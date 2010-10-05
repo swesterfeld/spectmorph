@@ -24,6 +24,7 @@
 
 using SpectMorph::LiveDecoder;
 using std::vector;
+using Birnet::AlignedArray;
 
 static float
 freq_to_note (float freq)
@@ -43,7 +44,8 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
-  last_frame()
+  last_frame(),
+  decoded_sse_samples (NULL)
 {
 }
 
@@ -58,6 +60,11 @@ LiveDecoder::~LiveDecoder()
     {
       delete noise_decoder;
       noise_decoder = NULL;
+    }
+  if (decoded_sse_samples)
+    {
+      delete decoded_sse_samples;
+      decoded_sse_samples = NULL;
     }
 }
 
@@ -109,7 +116,11 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
 
       if (ifft_synth)
         delete ifft_synth;
-      ifft_synth = new IFFTSynth (block_size, mix_freq);
+      ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+
+      if (decoded_sse_samples)
+        delete decoded_sse_samples;
+      decoded_sse_samples = new AlignedArray<float, 16> (block_size);
 
       samples.resize (block_size);
       zero_float_block (block_size, &samples[0]);
@@ -217,11 +228,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               if (sines_enabled)
                 {
-                  vector<float> fwindow (window.begin(), window.end());
-
-                  ifft_synth->get_samples (&decoded_data[0], &fwindow[0]);
+                  float *decoded_samples = &(*decoded_sse_samples)[0];
+                  ifft_synth->get_samples (decoded_samples);
                   for (size_t i = 0; i < block_size; i++)
-                    samples[i] += decoded_data[i];
+                    samples[i] += decoded_samples[i];
                 }
               if (noise_enabled)
                 {

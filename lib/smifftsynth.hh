@@ -37,14 +37,17 @@ class IFFTSynth
 
   float             *fft_in;
   float             *fft_out;
+  float             *win_scale;
 
 public:
-  IFFTSynth (size_t block_size, double mix_freq);
+  enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANNING };
+
+  IFFTSynth (size_t block_size, double mix_freq, WindowType win_type);
   ~IFFTSynth();
 
   void clear_partials();
   void render_partial (double freq, double mag, double phase);
-  void get_samples (float *samples, const float *window);
+  void get_samples (float *samples);
 
   double quantized_freq (double freq);
 };

@@ -1,7 +1,26 @@
+/*
+ * Copyright (C) 2010 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "smifftsynth.hh"
 #include "smmath.hh"
 #include "smfft.hh"
 #include <bse/gslfft.h>
+#include <bse/bsemathsignal.h>
+#include <bse/bseblockutils.hh>
 #include <assert.h>
 #include <stdio.h>
 
@@ -18,13 +37,13 @@ struct SpectMorph::IFFTSynthTable
   std::vector<float> win_trans;
   int                win_trans_center;
 
-  std::vector<float> win_bh92;
+  float             *win_scale;
 };
 
 static map<size_t, IFFTSynthTable *> table_for_block_size;
 static vector<float> sin_table;
 
-IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
+IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   block_size (block_size),
   mix_freq (mix_freq)
 {
@@ -58,10 +77,9 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
           table->win_trans[i] = wspectrum[abs (pos * 2)];
         }
 
-      // store a blackman harris window
-      table->win_bh92.resize (block_size);
+      table->win_scale = FFT::new_array_float (block_size); // SSE
       for (size_t i = 0; i < block_size; i++)
-        table->win_bh92[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+        table->win_scale[i] = bse_window_cos (2.0 * i / block_size - 1.0) / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
       // we only need to do this once per block size (FIXME: not thread safe yet)
       table_for_block_size[block_size] = table;
@@ -73,6 +91,11 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
       for (size_t i = 0; i < SIN_TABLE_SIZE; i++)
         sin_table[i] = sin (i * 2 * M_PI / SIN_TABLE_SIZE);
     }
+
+  if (win_type == WIN_BLACKMAN_HARRIS_92)
+    win_scale = NULL;
+  else
+    win_scale = table->win_scale;
 
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
@@ -167,15 +190,15 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 }
 
 void
-IFFTSynth::get_samples (float *samples, const float *window)
+IFFTSynth::get_samples (float *samples)
 {
   FFT::fftsr_float (block_size, fft_in, fft_out);
 
   memcpy (samples, &fft_out[block_size / 2], sizeof (float) * block_size / 2);
   memcpy (&samples[block_size / 2], fft_out, sizeof (float) * block_size / 2);
 
-  for (size_t i = 0; i < block_size; i++)
-    samples[i] *= window[i] / table->win_bh92[i];
+  if (win_scale)
+    Bse::Block::mul (block_size, samples, win_scale);
 }
 
 double

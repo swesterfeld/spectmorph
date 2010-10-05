@@ -23,6 +23,7 @@
 #include "smwavset.hh"
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"
+#include <birnet/birnet.hh>
 #include <vector>
 
 namespace SpectMorph {
@@ -55,6 +56,7 @@ class LiveDecoder
   std::vector<float>  samples;
   std::vector<float>  decoded_data;
 
+  Birnet::AlignedArray<float,16> *decoded_sse_samples;
 public:
   LiveDecoder (WavSet *smset);
   ~LiveDecoder();
