@@ -64,6 +64,7 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq) :
     }
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
+  freq256_factor = 1 / mix_freq * block_size * zero_padding;
 }
 
 IFFTSynth::~IFFTSynth()
@@ -83,7 +84,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
   const int range = 4;
 
-  const int freq256 = mf_freq / mix_freq * block_size * 256;
+  const int freq256 = mf_freq * freq256_factor;
   const int ibin = freq256 / 256;
   const double qfreq = freq256 / 256.0;
   int index = -range * zero_padding - (freq256 & 0xff);

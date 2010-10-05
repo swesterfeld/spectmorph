@@ -33,6 +33,7 @@ class IFFTSynth
   int                zero_padding;
   size_t             block_size;
   double             mix_freq;
+  double             freq256_factor;
 
   float             *fft_in;
   float             *fft_out;
