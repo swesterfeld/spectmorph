@@ -159,6 +159,19 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else if (ifile.event_name() == "freqs")
             {
               audio_block->freqs = fb;
+
+              // ensure that freqs are sorted (we need that for LiveDecoder)
+              double old_freq = -1;
+
+              for (size_t f = 0; f < fb.size(); f++)
+                {
+                  if (fb[f] <= old_freq)
+                    {
+                      printf ("frequency data is not sorted, can't play file\n");
+                      return BSE_ERROR_PARSE_ERROR;
+                    }
+                  old_freq = fb[f];
+                }
             }
           else if (ifile.event_name() == "phases")
             {
@@ -237,6 +250,15 @@ SpectMorph::Audio::save (GenericOut *file)
 
   for (size_t i = 0; i < contents.size(); i++)
     {
+      // ensure that freqs are sorted (we need that for LiveDecoder)
+      double old_freq = -1;
+
+      for (size_t f = 0; f < contents[i].freqs.size(); f++)
+        {
+          assert (contents[i].freqs[f] > old_freq);
+          old_freq = contents[i].freqs[f];
+        }
+
       of.begin_section ("frame");
       of.write_float_block ("noise", contents[i].noise);
       of.write_float_block ("freqs", contents[i].freqs);

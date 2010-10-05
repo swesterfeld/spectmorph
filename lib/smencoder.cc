@@ -1085,6 +1085,49 @@ Encoder::compute_attack_params (const vector<float>& window)
   optimal_attack = attack;
 }
 
+struct PartialData
+{
+  float freq;
+  float phases[2];
+};
+
+static bool
+pd_cmp (const PartialData& p1, const PartialData& p2)
+{
+  return p1.freq < p2.freq;
+}
+
+void
+Encoder::sort_freqs()
+{
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
+    {
+      // sort partials by frequency
+      vector<PartialData> pvec;
+
+      for (size_t p = 0; p < audio_blocks[frame].freqs.size(); p++)
+        {
+          PartialData pd;
+          pd.freq = audio_blocks[frame].freqs[p];
+          pd.phases[0] = audio_blocks[frame].phases[2 * p];
+          pd.phases[1] = audio_blocks[frame].phases[2 * p + 1];
+          pvec.push_back (pd);
+        }
+      sort (pvec.begin(), pvec.end(), pd_cmp);
+
+      // replace partial data with sorted partial data
+      audio_blocks[frame].freqs.clear();
+      audio_blocks[frame].phases.clear();
+
+      for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
+        {
+          audio_blocks[frame].freqs.push_back (pi->freq);
+          audio_blocks[frame].phases.push_back (pi->phases[0]);
+          audio_blocks[frame].phases.push_back (pi->phases[1]);
+        }
+    }
+}
+
 /**
  * This function calls all steps necessary for encoding in the right order.
  *
@@ -1113,6 +1156,8 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
 
   if (attack)
     compute_attack_params (window);
+
+  sort_freqs();
 }
 
 /**

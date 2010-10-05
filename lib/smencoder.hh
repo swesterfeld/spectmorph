@@ -114,6 +114,7 @@ public:
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise (const std::vector<float>& window);
   void compute_attack_params (const std::vector<float>& window);
+  void sort_freqs();
 
   // all-in-one encoding function:
   void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
