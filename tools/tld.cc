@@ -35,6 +35,7 @@ using SpectMorph::sm_init;
 
 using std::vector;
 using std::string;
+using std::min;
 
 double
 gettime ()
@@ -76,17 +77,27 @@ main (int argc, char **argv)
           decoder.enable_noise (en);
           decoder.enable_sines (es);
           const int n = 20000;
-          const int runs = 350;
+          const int runs = 25;
 
           vector<float> audio_out (n);
-          double start_t = gettime();
-          for (int l = 0; l < runs; l++)
+
+          // avoid measuring setup time
+          decoder.process (n, 0, 0, &audio_out[0]);
+          decoder.retrigger (0, freq, 48000);
+
+          double best_time = 1e7;
+          for (int rep = 0; rep < 25; rep++)
             {
-              decoder.retrigger (0, freq, 48000);
-              decoder.process (n, 0, 0, &audio_out[0]);
+              double start_t = gettime();
+              for (int l = 0; l < runs; l++)
+                {
+                  decoder.retrigger (0, freq, 48000);
+                  decoder.process (n, 0, 0, &audio_out[0]);
+                }
+              double end_t = gettime();
+              best_time = min (best_time, (end_t - start_t));
             }
-          double end_t = gettime();
-          clocks_per_sample[i] = (end_t - start_t) * clocks_per_sec / n / runs;
+          clocks_per_sample[i] = best_time * clocks_per_sec / n / runs;
         }
       printf ("all..:  %f\n", clocks_per_sample[3]);
       printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[0]);
