@@ -19,6 +19,7 @@
 #include "smmath.hh"
 
 #include <bse/bsemathsignal.h>
+#include <bse/bseblockutils.hh>
 
 #include <stdio.h>
 
@@ -44,7 +45,8 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
-  decoded_sse_samples (NULL)
+  decoded_sse_samples (NULL),
+  sse_samples (NULL)
 {
 }
 
@@ -64,6 +66,11 @@ LiveDecoder::~LiveDecoder()
     {
       delete decoded_sse_samples;
       decoded_sse_samples = NULL;
+    }
+  if (sse_samples)
+    {
+      delete sse_samples;
+      sse_samples = NULL;
     }
 }
 
@@ -118,8 +125,9 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
         delete decoded_sse_samples;
       decoded_sse_samples = new AlignedArray<float, 16> (block_size);
 
-      samples.resize (block_size);
-      zero_float_block (block_size, &samples[0]);
+      if (sse_samples)
+        delete sse_samples;
+      sse_samples = new AlignedArray<float, 16> (block_size);
 
       have_samples = 0;
       pos = 0;
@@ -150,8 +158,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
         {
           double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
 
-          std::copy (samples.begin() + block_size / 2, samples.end(), samples.begin());
-          zero_float_block (block_size / 2, &samples[block_size / 2]);
+          std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
+          zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
 
           frame_idx = env_pos / frame_step;
           if (loop_point != -1 && frame_idx > loop_point) /* if in loop mode: loop current frame */
@@ -246,21 +254,21 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               last_pstate = &new_pstate;
 
-              decoded_data.resize (block_size);
-
               if (sines_enabled)
                 {
                   float *decoded_samples = &(*decoded_sse_samples)[0];
+                  float *samples = &(*sse_samples)[0];
+
                   ifft_synth->get_samples (decoded_samples);
-                  for (size_t i = 0; i < block_size; i++)
-                    samples[i] += decoded_samples[i];
+                  Bse::Block::add (block_size, samples, decoded_samples);
                 }
               if (noise_enabled)
                 {
                   float *decoded_samples = &(*decoded_sse_samples)[0];
+                  float *samples = &(*sse_samples)[0];
+
                   noise_decoder->process (audio->contents[frame_idx], decoded_samples);
-                  for (size_t i = 0; i < block_size; i++)
-                    samples[i] += decoded_data[i];
+                  Bse::Block::add (block_size, samples, decoded_samples);
                 }
             }
           pos = 0;
@@ -270,7 +278,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
       g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
-          audio_out[i] = samples[pos];
+          audio_out[i] = (*sse_samples)[pos];
 
           // decode envelope
           const double time_ms = env_pos * 1000.0 / current_mix_freq;

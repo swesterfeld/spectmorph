@@ -57,10 +57,8 @@ class LiveDecoder
   size_t              env_pos;
   size_t              frame_idx;
 
-  std::vector<float>  samples;
-  std::vector<float>  decoded_data;
-
   Birnet::AlignedArray<float,16> *decoded_sse_samples;
+  Birnet::AlignedArray<float,16> *sse_samples;
 public:
   LiveDecoder (WavSet *smset);
   ~LiveDecoder();
