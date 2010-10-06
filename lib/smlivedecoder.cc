@@ -256,19 +256,15 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               if (sines_enabled)
                 {
-                  float *decoded_samples = &(*decoded_sse_samples)[0];
                   float *samples = &(*sse_samples)[0];
 
-                  ifft_synth->get_samples (decoded_samples);
-                  Bse::Block::add (block_size, samples, decoded_samples);
+                  ifft_synth->get_samples (samples, IFFTSynth::ADD);
                 }
               if (noise_enabled)
                 {
-                  float *decoded_samples = &(*decoded_sse_samples)[0];
                   float *samples = &(*sse_samples)[0];
 
-                  noise_decoder->process (audio->contents[frame_idx], decoded_samples);
-                  Bse::Block::add (block_size, samples, decoded_samples);
+                  noise_decoder->process (audio->contents[frame_idx], samples, NoiseDecoder::ADD);
                 }
             }
           pos = 0;

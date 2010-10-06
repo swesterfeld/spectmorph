@@ -36,7 +36,6 @@ smlive:
 - make FFTW integration thread safe
 - get rid of prewindowing code during noise synthesis
 - use blockutils to scale the noise bands
-- allow sine/noise decoder to block-add resulting samples (instead of replacing them)
 - get rid of sample adding one-by-one
 - use memcpy if envelope is 1
 

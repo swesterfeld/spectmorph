@@ -44,9 +44,12 @@ public:
                 size_t block_size);
   ~NoiseDecoder();
 
+  enum OutputMode { REPLACE, ADD };
+
   void set_seed (int seed);
   void process (const AudioBlock& audio_block,
-                float *samples);
+                float *samples,
+                OutputMode output_mode = REPLACE);
 
   static size_t preferred_block_size (double mix_freq);
 };

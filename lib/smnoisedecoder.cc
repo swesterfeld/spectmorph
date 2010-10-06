@@ -18,6 +18,7 @@
 #include "smnoisedecoder.hh"
 #include "smmath.hh"
 #include "smfft.hh"
+#include <bse/bseblockutils.hh>
 #include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
 #include <stdio.h>
@@ -76,7 +77,8 @@ NoiseDecoder::set_seed (int seed)
  */
 void
 NoiseDecoder::process (const AudioBlock& audio_block,
-                       float            *samples)
+                       float            *samples,
+                       OutputMode        output_mode)
 {
   if (!noise_band_partition)
     noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);
@@ -95,7 +97,12 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-  memcpy (samples, in, block_size * sizeof (float));
+  if (output_mode == REPLACE)
+    memcpy (samples, in, block_size * sizeof (float));
+  else if (output_mode == ADD)
+    Bse::Block::add (block_size, samples, in);
+  else
+    assert (false);
 
 #if 0 // DEBUG
   r_energy /= decoded_residue.size();

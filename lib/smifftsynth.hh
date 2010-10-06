@@ -41,13 +41,14 @@ class IFFTSynth
 
 public:
   enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANNING };
+  enum OutputMode { REPLACE, ADD };
 
   IFFTSynth (size_t block_size, double mix_freq, WindowType win_type);
   ~IFFTSynth();
 
   void clear_partials();
   void render_partial (double freq, double mag, double phase);
-  void get_samples (float *samples);
+  void get_samples (float *samples, OutputMode output_mode = REPLACE);
 
   double quantized_freq (double freq);
 };
