@@ -66,10 +66,10 @@ main (int argc, char **argv)
   double clocks_per_sec = 2500.0 * 1000 * 1000;
 
   LiveDecoder decoder (&smset);
-  if (argc == 4 && string (argv[3]) == "avg")
+  if (argc == 4 && (string (argv[3]) == "avg" || string (argv[3]) == "avg-all"))
     {
-      float clocks_per_sample[4];
-      for (int i = 0; i < 4; i++)
+      float clocks_per_sample[4] = { 0, };
+      for (int i = string (argv[3]) == "avg-all" ? 3 : 0; i < 4; i++)
         {
           bool en = (i & 1);
           bool es = (i & 2);
