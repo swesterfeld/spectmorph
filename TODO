@@ -31,9 +31,7 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- use O(n) or O(n log n) chaining
 - don't do anything for inaudible partials
-- store phases for phase continous resynthesis rather than recomputing them (atan2)
 - use faster random number generation
 - noise masking (no noise resynthesis if its inaudible anyway)
 - do not recompute the window each time we retrigger
