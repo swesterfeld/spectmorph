@@ -91,7 +91,7 @@ NoiseBandPartition::n_spectrum_bins()
 }
 
 void
-NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<double>& envelope, float *spectrum, double scale)
+NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<float>& envelope, float *spectrum, double scale)
 {
   assert (envelope.size() == n_bands());
 

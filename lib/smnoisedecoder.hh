@@ -42,7 +42,7 @@ public:
   ~NoiseDecoder();
 
   void set_seed (int seed);
-  void process (const Frame& frame,
+  void process (const AudioBlock& audio_block,
                 std::vector<float>& decoded_residue);
 
   size_t preferred_block_size();

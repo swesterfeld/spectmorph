@@ -256,7 +256,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 }
               if (noise_enabled)
                 {
-                  noise_decoder->process (frame, decoded_data);
+                  noise_decoder->process (audio->contents[frame_idx], decoded_data);
                   for (size_t i = 0; i < block_size; i++)
                     samples[i] += decoded_data[i];
                 }

@@ -339,11 +339,10 @@ main (int argc, char **argv)
   for (pos = 0; pos < sample.size() - noise_block_size; pos += noise_block_size / 2)
     {
       int idx = pos / (noise_block_size / 2);
-      Frame frame (audio.contents[idx]);
 
       if (options.noise_enabled)
         {
-          noise_decoder.process (frame, decoded_residue);
+          noise_decoder.process (audio.contents[idx], decoded_residue);
           for (size_t i = 0; i < noise_block_size; i++)
             sample[pos + i] += decoded_residue[i];
         }

@@ -69,20 +69,19 @@ next_power2 (size_t i)
  * This function decodes the noise contained in the frame and
  * fills the decoded_residue vector of the frame.
  *
- * \param frame   frame to be decoded; also: location of the output sample data
- * \param window  window function to be used; should be the same or similar to the one used in encoding
+ * \param audio_block   AudioBlock to be decoded
  */
 void
-NoiseDecoder::process (const Frame& frame,
+NoiseDecoder::process (const AudioBlock& audio_block,
                        vector<float>& decoded_residue)
 {
   const size_t block_size = next_power2 (decoded_residue.size());
   assert (decoded_residue.size() == block_size);
 
   if (!noise_band_partition)
-    noise_band_partition = new NoiseBandPartition (frame.noise_envelope.size(), block_size + 2, mix_freq);
+    noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);
 
-  assert (noise_band_partition->n_bands() == frame.noise_envelope.size());
+  assert (noise_band_partition->n_bands() == audio_block.noise.size());
   assert (noise_band_partition->n_spectrum_bins() == block_size + 2);
 
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
@@ -90,7 +89,7 @@ NoiseDecoder::process (const Frame& frame,
   const double Eww = 0.375;
   const double norm = block_size * block_size * 0.5 * 0.5 / Eww;
 
-  noise_band_partition->noise_envelope_to_spectrum (random_gen, frame.noise_envelope, interpolated_spectrum, sqrt (norm) / 2);
+  noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   float *in = FFT::new_array_float (block_size);
