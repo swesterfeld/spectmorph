@@ -281,7 +281,9 @@ main (int argc, char **argv)
   vector<float> sample;
 
   SineDecoder::Mode mode = options.decoder_mode;
-  NoiseDecoder noise_decoder (audio.mix_freq, format.rate);
+
+  size_t noise_block_size = NoiseDecoder::preferred_block_size (format.rate);
+  NoiseDecoder noise_decoder (audio.mix_freq, format.rate, noise_block_size);
   SineDecoder  sine_decoder (format.rate, frame_size, frame_step, mode);
 
   if (options.deterministic_random)
@@ -333,7 +335,6 @@ main (int argc, char **argv)
     }
 
   // decode noise part of the data
-  size_t noise_block_size = noise_decoder.preferred_block_size();
   vector<float> decoded_residue (noise_block_size);
 
   for (pos = 0; pos < sample.size() - noise_block_size; pos += noise_block_size / 2)
@@ -342,7 +343,7 @@ main (int argc, char **argv)
 
       if (options.noise_enabled)
         {
-          noise_decoder.process (audio.contents[idx], decoded_residue);
+          noise_decoder.process (audio.contents[idx], &decoded_residue[0]);
           for (size_t i = 0; i < noise_block_size; i++)
             sample[pos + i] += decoded_residue[i];
         }

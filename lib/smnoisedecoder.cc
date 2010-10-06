@@ -28,17 +28,29 @@ using std::vector;
 using SpectMorph::NoiseDecoder;
 using SpectMorph::Frame;
 
+static size_t
+next_power2 (size_t i)
+{
+  size_t p = 1;
+  while (p < i)
+    p *= 2;
+  return p;
+}
+
 /**
  * Creates a noise decoder object.
  *
  * \param orig_mix_freq   original mix freq (sample rate) of the audio file that was encoded
  * \param mix_freq        mix freq (sample rate) of the output sample data
  */
-NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq) :
+NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq, size_t block_size) :
   orig_mix_freq (orig_mix_freq),
-  mix_freq (mix_freq)
+  mix_freq (mix_freq),
+  block_size (block_size)
 {
   noise_band_partition = 0;
+
+  assert (block_size == next_power2 (block_size));
 }
 
 NoiseDecoder::~NoiseDecoder()
@@ -56,15 +68,6 @@ NoiseDecoder::set_seed (int seed)
   random_gen.set_seed (seed);
 }
 
-static size_t
-next_power2 (size_t i)
-{
-  size_t p = 1;
-  while (p < i)
-    p *= 2;
-  return p;
-}
-
 /**
  * This function decodes the noise contained in the frame and
  * fills the decoded_residue vector of the frame.
@@ -73,11 +76,8 @@ next_power2 (size_t i)
  */
 void
 NoiseDecoder::process (const AudioBlock& audio_block,
-                       vector<float>& decoded_residue)
+                       float            *samples)
 {
-  const size_t block_size = next_power2 (decoded_residue.size());
-  assert (decoded_residue.size() == block_size);
-
   if (!noise_band_partition)
     noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);
 
@@ -95,7 +95,7 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-  memcpy (&decoded_residue[0], in, decoded_residue.size() * sizeof (float));
+  memcpy (samples, in, block_size * sizeof (float));
 
 #if 0 // DEBUG
   r_energy /= decoded_residue.size();
@@ -121,7 +121,7 @@ NoiseDecoder::process (const AudioBlock& audio_block,
 }
 
 size_t
-NoiseDecoder::preferred_block_size()
+NoiseDecoder::preferred_block_size (double mix_freq)
 {
   size_t bs = 1;
 

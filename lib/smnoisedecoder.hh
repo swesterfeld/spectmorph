@@ -33,19 +33,22 @@ class NoiseDecoder
 {
   double orig_mix_freq;
   double mix_freq;
+  size_t block_size;
+
   Random random_gen;
   NoiseBandPartition *noise_band_partition;
 
 public:
   NoiseDecoder (double orig_mix_freq,
-                double mix_freq);
+                double mix_freq,
+                size_t block_size);
   ~NoiseDecoder();
 
   void set_seed (int seed);
   void process (const AudioBlock& audio_block,
-                std::vector<float>& decoded_residue);
+                float *samples);
 
-  size_t preferred_block_size();
+  static size_t preferred_block_size (double mix_freq);
 };
 
 }
