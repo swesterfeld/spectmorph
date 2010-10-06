@@ -10,7 +10,6 @@ smenc:
   => implement downsampling for really low notes
   => use symmetry to speed up optimize_partials
   => make a squared window table (optimize_partials)
-- move partial tracking from decoder to encoder
 - move smmath.hh code to libbse
 - implement sinc interpolation for spectrum phase
 - make load() function of SpectMorph::Audio and SpectMorph::WavSet reset state
