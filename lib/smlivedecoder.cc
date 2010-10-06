@@ -44,7 +44,6 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
-  last_frame(),
   decoded_sse_samples (NULL)
 {
 }
@@ -126,7 +125,9 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       frame_idx = 0;
       env_pos = 0;
 
-      last_frame = Frame();
+      pstate[0].clear();
+      pstate[1].clear();
+      last_pstate = &pstate[0];
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
@@ -161,6 +162,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               ifft_synth->clear_partials();
 
+              // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
+              bool lps_zero = (last_pstate == &pstate[0]);
+              vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
+              const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
+
+              new_pstate.clear();  // clear old partial state
+
               size_t old_partial = 0;
               for (size_t partial = 0; partial < frame.freqs.size(); partial++)
                 {
@@ -169,33 +177,32 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                   double smag = frame.phases[partial * 2];
                   double cmag = frame.phases[partial * 2 + 1];
                   double mag = sqrt (smag * smag + cmag * cmag);
-                  double phase = atan2 (smag, cmag);
+                  double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
                   double best_fdiff = 1e12;
 
                   /*
                    * ensure that frame.freqs[old_partial] is the biggest frequency smaller than frame.freqs[partial]
                    * by incrementing old_partial as long as there is a better candidate
                    */
-                  while ((old_partial + 1) < last_frame.freqs.size() && last_frame.freqs[old_partial + 1] < frame.freqs[partial])
+                  while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < frame.freqs[partial])
                     old_partial++;
 
                   // check: - biggest frequency smaller than frame.freqs[partial]   (i == 0)
                   //        - smallest frequency bigger than frame.freqs[partial]   (i == 1)
                   for (size_t i = 0; i < 2; i++)
                     {
-                      if ((old_partial + i) < last_frame.freqs.size())
+                      if ((old_partial + i) < old_pstate.size())
                         {
-                          if (fmatch (last_frame.freqs[old_partial + i], frame.freqs[partial]))
+                          const double lfreq = old_pstate[old_partial + i].freq;
+                          if (fmatch (lfreq, frame.freqs[partial]))
                             {
-                              double lsmag = last_frame.phases[(old_partial + i) * 2];
-                              double lcmag = last_frame.phases[(old_partial + i) * 2 + 1];
-                              double lphase = atan2 (lsmag, lcmag);
-                              double phase_delta = 2 * M_PI * last_frame.freqs[old_partial + i] / current_mix_freq;
+                              double lphase = old_pstate[old_partial + i].phase;
+                              double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
                               // FIXME: I have no idea why we have to /subtract/ the phase
                               // here, and not /add/, but this way it works
 
                               // find best phase
-                              double fdiff = fabs (last_frame.freqs[old_partial + i] - frame.freqs[partial]);
+                              double fdiff = fabs (lfreq - frame.freqs[partial]);
                               if (fdiff < best_fdiff)
                                 {
                                   phase = lphase - block_size / 2 * phase_delta;
@@ -222,17 +229,22 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                           mag *= bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
                         }
                     }
-                  frame.phases[partial * 2] = sin (phase) * mag;
-                  frame.phases[partial * 2 + 1] = cos (phase) * mag;
                   if (sines_enabled)
                     {
                       const double mag_epsilon = 1e-8;
                       if (mag > mag_epsilon)
-                        ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
+                        {
+                          ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
+
+                          PartialState ps;
+                          ps.freq = frame.freqs[partial];
+                          ps.phase = phase;
+                          new_pstate.push_back (ps);
+                        }
                     }
                 }
 
-              last_frame = frame;
+              last_pstate = &new_pstate;
 
               decoded_data.resize (block_size);
 

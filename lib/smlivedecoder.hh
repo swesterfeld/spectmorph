@@ -30,6 +30,13 @@ namespace SpectMorph {
 
 class LiveDecoder
 {
+  struct PartialState
+  {
+    float freq;
+    float phase;
+  };
+  std::vector<PartialState> pstate[2], *last_pstate;
+
   WavSet             *smset;
   Audio              *audio;
 
@@ -51,7 +58,6 @@ class LiveDecoder
   size_t              env_pos;
   size_t              frame_idx;
 
-  Frame               last_frame;
   std::vector<float>  samples;
   std::vector<float>  decoded_data;
 
