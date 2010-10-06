@@ -19,7 +19,6 @@
 #ifndef SPECTMORPH_LIVEDECODER_HH
 #define SPECTMORPH_LIVEDECODER_HH
 
-#include "smframe.hh"
 #include "smwavset.hh"
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"

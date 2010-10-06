@@ -158,7 +158,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
           if ((frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
             {
-              Frame frame (audio->contents[frame_idx]);
+              const AudioBlock& audio_block = audio->contents[frame_idx];
 
               ifft_synth->clear_partials();
 
@@ -170,13 +170,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               new_pstate.clear();  // clear old partial state
 
               size_t old_partial = 0;
-              for (size_t partial = 0; partial < frame.freqs.size(); partial++)
+              for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
                 {
-                  frame.freqs[partial] *= want_freq / audio->fundamental_freq;
+                  const double freq = audio_block.freqs[partial] * want_freq / audio->fundamental_freq;
 
                   // anti alias filter:
                   double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                  double norm_freq   = frame.freqs[partial] / current_mix_freq;
+                  double norm_freq   = freq / current_mix_freq;
                   double aa_filter_mag = 1.0;
                   if (norm_freq > filter_fact)
                     {
@@ -192,16 +192,16 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                           aa_filter_mag = bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
                         }
                     }
-                  double smag = frame.phases[partial * 2];
-                  double cmag = frame.phases[partial * 2 + 1];
+                  double smag = audio_block.phases[partial * 2];
+                  double cmag = audio_block.phases[partial * 2 + 1];
                   double mag = sqrt (smag * smag + cmag * cmag) * aa_filter_mag;
                   double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
                   /*
-                   * ensure that frame.freqs[old_partial] is the biggest frequency smaller than frame.freqs[partial]
+                   * ensure that old_pstate[old_partial].freq is the biggest frequency smaller than freq
                    * by incrementing old_partial as long as there is a better candidate
                    */
-                  while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < frame.freqs[partial])
+                  while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < freq)
                     old_partial++;
 
                   double best_fdiff = 1e12;
@@ -213,10 +213,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       if ((old_partial + i) < old_pstate.size())
                         {
                           const double lfreq = old_pstate[old_partial + i].freq;
-                          if (fmatch (lfreq, frame.freqs[partial]))
+                          if (fmatch (lfreq, freq))
                             {
                               // find best phase
-                              double fdiff = fabs (lfreq - frame.freqs[partial]);
+                              double fdiff = fabs (lfreq - freq);
                               if (fdiff < best_fdiff)
                                 {
                                   const double lphase = old_pstate[old_partial + i].phase;
@@ -234,10 +234,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
                   if (sines_enabled)
                     {
-                      ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
+                      ifft_synth->render_partial (freq, mag, -phase);
 
                       PartialState ps;
-                      ps.freq = frame.freqs[partial];
+                      ps.freq = freq;
                       ps.phase = phase;
                       new_pstate.push_back (ps);
                     }
