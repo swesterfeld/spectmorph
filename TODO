@@ -30,12 +30,15 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- don't do anything for inaudible partials
 - use faster random number generation
 - noise masking (no noise resynthesis if its inaudible anyway)
 - do not recompute the window each time we retrigger
 - make FFTW integration thread safe
 - get rid of prewindowing code during noise synthesis
+- use blockutils to scale the noise bands
+- allow sine/noise decoder to block-add resulting samples (instead of replacing them)
+- get rid of sample adding one-by-one
+- use memcpy if envelope is 1
 
 tests:
 - add test cases
