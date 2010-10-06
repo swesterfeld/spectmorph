@@ -158,39 +158,53 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           if ((frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
             {
               Frame frame (audio->contents[frame_idx]);
-              Frame next_frame; // not used
 
               ifft_synth->clear_partials();
 
+              size_t old_partial = 0;
               for (size_t partial = 0; partial < frame.freqs.size(); partial++)
                 {
                   frame.freqs[partial] *= want_freq / audio->fundamental_freq;
+
                   double smag = frame.phases[partial * 2];
                   double cmag = frame.phases[partial * 2 + 1];
                   double mag = sqrt (smag * smag + cmag * cmag);
                   double phase = atan2 (smag, cmag);
                   double best_fdiff = 1e12;
 
-                  for (size_t old_partial = 0; old_partial < last_frame.freqs.size(); old_partial++)
-                    {
-                      if (fmatch (last_frame.freqs[old_partial], frame.freqs[partial]))
-                        {
-                          double lsmag = last_frame.phases[old_partial * 2];
-                          double lcmag = last_frame.phases[old_partial * 2 + 1];
-                          double lphase = atan2 (lsmag, lcmag);
-                          double phase_delta = 2 * M_PI * last_frame.freqs[old_partial] / current_mix_freq;
-                          // FIXME: I have no idea why we have to /subtract/ the phase
-                          // here, and not /add/, but this way it works
+                  /*
+                   * ensure that frame.freqs[old_partial] is the biggest frequency smaller than frame.freqs[partial]
+                   * by incrementing old_partial as long as there is a better candidate
+                   */
+                  while ((old_partial + 1) < last_frame.freqs.size() && last_frame.freqs[old_partial + 1] < frame.freqs[partial])
+                    old_partial++;
 
-                          // find best phase
-                          double fdiff = fabs (last_frame.freqs[old_partial] - frame.freqs[partial]);
-                          if (fdiff < best_fdiff)
+                  // check: - biggest frequency smaller than frame.freqs[partial]   (i == 0)
+                  //        - smallest frequency bigger than frame.freqs[partial]   (i == 1)
+                  for (size_t i = 0; i < 2; i++)
+                    {
+                      if ((old_partial + i) < last_frame.freqs.size())
+                        {
+                          if (fmatch (last_frame.freqs[old_partial + i], frame.freqs[partial]))
                             {
-                              phase = lphase - block_size / 2 * phase_delta;
-                              best_fdiff = fdiff;
+                              double lsmag = last_frame.phases[(old_partial + i) * 2];
+                              double lcmag = last_frame.phases[(old_partial + i) * 2 + 1];
+                              double lphase = atan2 (lsmag, lcmag);
+                              double phase_delta = 2 * M_PI * last_frame.freqs[old_partial + i] / current_mix_freq;
+                              // FIXME: I have no idea why we have to /subtract/ the phase
+                              // here, and not /add/, but this way it works
+
+                              // find best phase
+                              double fdiff = fabs (last_frame.freqs[old_partial + i] - frame.freqs[partial]);
+                              if (fdiff < best_fdiff)
+                                {
+                                  phase = lphase - block_size / 2 * phase_delta;
+                                  best_fdiff = fdiff;
+                                }
                             }
                         }
                     }
+
                   // anti alias filter:
                   double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
                   double norm_freq   = frame.freqs[partial] / current_mix_freq;
