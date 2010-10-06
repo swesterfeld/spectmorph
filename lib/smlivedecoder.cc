@@ -174,11 +174,28 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 {
                   frame.freqs[partial] *= want_freq / audio->fundamental_freq;
 
+                  // anti alias filter:
+                  double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+                  double norm_freq   = frame.freqs[partial] / current_mix_freq;
+                  double aa_filter_mag = 1.0;
+                  if (norm_freq > filter_fact)
+                    {
+                      if (norm_freq > 0.5)
+                        {
+                          // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
+                          break;
+                        }
+                      else
+                        {
+                          // between filter_fact and 0.5 (db linear filter)
+                          const double db_at_nyquist = -60;
+                          aa_filter_mag = bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
+                        }
+                    }
                   double smag = frame.phases[partial * 2];
                   double cmag = frame.phases[partial * 2 + 1];
-                  double mag = sqrt (smag * smag + cmag * cmag);
+                  double mag = sqrt (smag * smag + cmag * cmag) * aa_filter_mag;
                   double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
-                  double best_fdiff = 1e12;
 
                   /*
                    * ensure that frame.freqs[old_partial] is the biggest frequency smaller than frame.freqs[partial]
@@ -186,6 +203,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                    */
                   while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < frame.freqs[partial])
                     old_partial++;
+
+                  double best_fdiff = 1e12;
 
                   // check: - biggest frequency smaller than frame.freqs[partial]   (i == 0)
                   //        - smallest frequency bigger than frame.freqs[partial]   (i == 1)
@@ -196,15 +215,16 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                           const double lfreq = old_pstate[old_partial + i].freq;
                           if (fmatch (lfreq, frame.freqs[partial]))
                             {
-                              double lphase = old_pstate[old_partial + i].phase;
-                              double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
-                              // FIXME: I have no idea why we have to /subtract/ the phase
-                              // here, and not /add/, but this way it works
-
                               // find best phase
                               double fdiff = fabs (lfreq - frame.freqs[partial]);
                               if (fdiff < best_fdiff)
                                 {
+                                  const double lphase = old_pstate[old_partial + i].phase;
+                                  const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
+
+                                  // FIXME: I have no idea why we have to /subtract/ the phase
+                                  // here, and not /add/, but this way it works
+
                                   phase = lphase - block_size / 2 * phase_delta;
                                   best_fdiff = fdiff;
                                 }
@@ -212,35 +232,14 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                         }
                     }
 
-                  // anti alias filter:
-                  double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                  double norm_freq   = frame.freqs[partial] / current_mix_freq;
-                  if (norm_freq > filter_fact)
-                    {
-                      if (norm_freq > 0.5)
-                        {
-                          // above nyquist freq
-                          mag = 0;
-                        }
-                      else
-                        {
-                          // between filter_fact and 0.5 (db linear filter)
-                          const double db_at_nyquist = -60;
-                          mag *= bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
-                        }
-                    }
                   if (sines_enabled)
                     {
-                      const double mag_epsilon = 1e-8;
-                      if (mag > mag_epsilon)
-                        {
-                          ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
+                      ifft_synth->render_partial (frame.freqs[partial], mag, -phase);
 
-                          PartialState ps;
-                          ps.freq = frame.freqs[partial];
-                          ps.phase = phase;
-                          new_pstate.push_back (ps);
-                        }
+                      PartialState ps;
+                      ps.freq = frame.freqs[partial];
+                      ps.phase = phase;
+                      new_pstate.push_back (ps);
                     }
                 }
 
