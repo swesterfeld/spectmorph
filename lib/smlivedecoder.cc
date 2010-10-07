@@ -45,7 +45,6 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
-  decoded_sse_samples (NULL),
   sse_samples (NULL)
 {
 }
@@ -61,11 +60,6 @@ LiveDecoder::~LiveDecoder()
     {
       delete noise_decoder;
       noise_decoder = NULL;
-    }
-  if (decoded_sse_samples)
-    {
-      delete decoded_sse_samples;
-      decoded_sse_samples = NULL;
     }
   if (sse_samples)
     {
@@ -120,10 +114,6 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       if (ifft_synth)
         delete ifft_synth;
       ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
-
-      if (decoded_sse_samples)
-        delete decoded_sse_samples;
-      decoded_sse_samples = new AlignedArray<float, 16> (block_size);
 
       if (sse_samples)
         delete sse_samples;
