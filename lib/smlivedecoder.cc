@@ -26,6 +26,7 @@
 using SpectMorph::LiveDecoder;
 using std::vector;
 using Birnet::AlignedArray;
+using std::min;
 
 #define ANTIALIAS_FILTER_TABLE_SIZE 256
 
@@ -287,29 +288,40 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
       g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
-          audio_out[i] = (*sse_samples)[pos];
-
           // decode envelope
           const double time_ms = env_pos * 1000.0 / current_mix_freq;
           if (time_ms < audio->attack_start_ms)
             {
-              audio_out[i] = 0;
+              audio_out[i++] = 0;
+              pos++;
+              env_pos++;
+              have_samples--;
             }
           else if (time_ms < audio->attack_end_ms)
             {
-              audio_out[i] *= (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
-            } // else envelope is 1
+              audio_out[i++] = (*sse_samples)[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+              pos++;
+              env_pos++;
+              have_samples--;
+            }
+          else // envelope is 1 -> copy data efficiently
+            {
+              size_t can_copy = min (have_samples, n_values - i);
 
-          // do not skip sample
-          i++;
+              memcpy (audio_out + i, &(*sse_samples)[pos], sizeof (float) * can_copy);
+              i += can_copy;
+              pos += can_copy;
+              env_pos += can_copy;
+              have_samples -= can_copy;
+            }
         }
       else
         {
           // skip sample
+          pos++;
+          env_pos++;
+          have_samples--;
         }
-      pos++;
-      env_pos++;
-      have_samples--;
     }
 }
 
