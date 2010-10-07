@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <sys/resource.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -38,12 +39,19 @@ using std::string;
 using std::min;
 
 double
-gettime ()
+gettime()
 {
   timeval tv;
   gettimeofday (&tv, 0);
 
   return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+int
+adjust_priority()
+{
+  setpriority (PRIO_PROCESS, getpid(), -20);
+  return getpriority (PRIO_PROCESS, getpid());
 }
 
 int
@@ -64,6 +72,7 @@ main (int argc, char **argv)
   const float freq = atof (argv[2]);
   assert (freq >= 20 && freq < 22000);
 
+  int priority = adjust_priority();
   double clocks_per_sec = 2500.0 * 1000 * 1000;
 
   LiveDecoder decoder (&smset);
@@ -151,4 +160,5 @@ main (int argc, char **argv)
           printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
         }
     }
+  printf ("# nice priority %d\n", priority);
 }
