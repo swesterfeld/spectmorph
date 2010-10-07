@@ -37,7 +37,6 @@ smlive:
 - use blockutils to scale the noise bands
 - get rid of sample adding one-by-one
 - use memcpy if envelope is 1
-- make anti alias filter more efficient
 
 tests:
 - add test cases

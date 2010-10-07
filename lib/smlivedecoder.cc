@@ -27,6 +27,10 @@ using SpectMorph::LiveDecoder;
 using std::vector;
 using Birnet::AlignedArray;
 
+#define ANTIALIAS_FILTER_TABLE_SIZE 256
+
+static vector<float> antialias_filter_table;
+
 static float
 freq_to_note (float freq)
 {
@@ -47,6 +51,15 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_enabled (true),
   sse_samples (NULL)
 {
+  if (antialias_filter_table.empty())
+    {
+      antialias_filter_table.resize (ANTIALIAS_FILTER_TABLE_SIZE);
+
+      const double db_at_nyquist = -60;
+
+      for (size_t i = 0; i < antialias_filter_table.size(); i++)
+        antialias_filter_table[i] = bse_db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
+    }
 }
 
 LiveDecoder::~LiveDecoder()
@@ -187,8 +200,18 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       else
                         {
                           // between filter_fact and 0.5 (db linear filter)
-                          const double db_at_nyquist = -60;
-                          aa_filter_mag = bse_db_to_factor ((norm_freq - filter_fact) / (0.5 - filter_fact) * db_at_nyquist);
+                          int index = 0.5 + ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact);
+                          if (index >= 0)
+                            {
+                              if (index < ANTIALIAS_FILTER_TABLE_SIZE)
+                                aa_filter_mag = antialias_filter_table[index];
+                              else
+                                aa_filter_mag = 0;
+                            }
+                          else
+                            {
+                              // filter magnitude is supposed to be 1.0
+                            }
                         }
                     }
                   double smag = audio_block.phases[partial * 2];
