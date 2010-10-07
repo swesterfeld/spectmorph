@@ -32,12 +32,12 @@ python:
 smlive:
 - use faster random number generation
 - noise masking (no noise resynthesis if its inaudible anyway)
-- do not recompute the window each time we retrigger
 - make FFTW integration thread safe
 - get rid of prewindowing code during noise synthesis
 - use blockutils to scale the noise bands
 - get rid of sample adding one-by-one
 - use memcpy if envelope is 1
+- make anti alias filter more efficient
 
 tests:
 - add test cases
