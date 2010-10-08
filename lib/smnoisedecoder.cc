@@ -24,10 +24,14 @@
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
+#include <map>
 
 using std::vector;
 using SpectMorph::NoiseDecoder;
 using SpectMorph::Frame;
+using std::map;
+
+static map<size_t, float *> cos_window_for_block_size;
 
 static size_t
 next_power2 (size_t i)
@@ -50,6 +54,16 @@ NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq, size_t block_
   block_size (block_size)
 {
   noise_band_partition = 0;
+
+  float*& win = cos_window_for_block_size[block_size];
+  if (!win)
+    {
+      win = FFT::new_array_float (block_size);
+      for (size_t i = 0; i < block_size; i++)
+        win[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+    }
+
+  cos_window = win;
 
   assert (block_size == next_power2 (block_size));
 }
@@ -89,13 +103,15 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
 
   const double Eww = 0.375;
-  const double norm = block_size * block_size * 0.5 * 0.5 / Eww;
+  const double norm = block_size * block_size / Eww;
 
   noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   float *in = FFT::new_array_float (block_size);
   FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
+
+  Bse::Block::mul (block_size, in, cos_window);
 
   if (output_mode == REPLACE)
     memcpy (samples, in, block_size * sizeof (float));

@@ -35,7 +35,7 @@ NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, 
   band_count (n_bands),
   band_from_d (n_spectrum_bins)
 {
-  int d = 0;
+  size_t d = 0;
   /* assign each d to a band */
   std::fill (band_from_d.begin(), band_from_d.end(), -1);
   for (size_t band = 0; band < n_bands; band++)
@@ -67,7 +67,7 @@ NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, 
         }
     }
   /* count bins per band */
-  for (int d = 0; d < n_spectrum_bins; d += 2)
+  for (size_t d = 0; d < n_spectrum_bins; d += 2)
     {
       int b = band_from_d[d];
       if (b != -1)
@@ -119,15 +119,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
 
       double sinr, cosr;
       int_sincos (random_data_byte[d / 2], &sinr, &cosr);
-      sinr *= value;
-      cosr *= value;
-      spectrum[d] += sinr;
-      spectrum[d+1] += cosr;
-      sinr *= -0.5;
-      cosr *= -0.5;
-      spectrum[d-2] += sinr;
-      spectrum[d-1] += cosr;
-      spectrum[d+2] += sinr;
-      spectrum[d+3] += cosr;
+      spectrum[d] = sinr * value;
+      spectrum[d+1] = cosr * value;
     }
 }

@@ -33,7 +33,6 @@ smlive:
 - use faster random number generation
 - noise masking (no noise resynthesis if its inaudible anyway)
 - make FFTW integration thread safe
-- get rid of prewindowing code during noise synthesis
 - use blockutils to scale the noise bands
 
 tests:

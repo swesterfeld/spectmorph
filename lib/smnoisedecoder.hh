@@ -35,6 +35,8 @@ class NoiseDecoder
   double mix_freq;
   size_t block_size;
 
+  float *cos_window;
+
   Random random_gen;
   NoiseBandPartition *noise_band_partition;
 
