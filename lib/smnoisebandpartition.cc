@@ -18,6 +18,7 @@
 #include <math.h>
 #include <assert.h>
 #include <stdio.h>
+#include <bse/bseblockutils.hh>
 
 #include "smnoisebandpartition.hh"
 #include "smmath.hh"
@@ -33,10 +34,12 @@ mel_to_hz (double mel)
 
 NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, double mix_freq) :
   band_count (n_bands),
-  band_from_d (n_spectrum_bins)
+  band_start (n_bands),
+  spectrum_size (n_spectrum_bins)
 {
   size_t d = 0;
   /* assign each d to a band */
+  vector<int> band_from_d (n_spectrum_bins);
   std::fill (band_from_d.begin(), band_from_d.end(), -1);
   for (size_t band = 0; band < n_bands; band++)
     {
@@ -73,6 +76,8 @@ NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, 
       if (b != -1)
         {
           assert (b >= 0 && b < n_bands);
+          if (band_count[b] == 0)
+            band_start[b] = d;
           band_count[b]++;
         }
     }
@@ -87,22 +92,13 @@ NoiseBandPartition::n_bands()
 size_t
 NoiseBandPartition::n_spectrum_bins()
 {
-  return band_from_d.size();
+  return spectrum_size;
 }
 
 void
 NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<float>& envelope, float *spectrum, double scale)
 {
   assert (envelope.size() == n_bands());
-
-  double band_value[1 + n_bands()];
-
-  /* precompute spectrum values for all bands and -1 (which means no band has been assigned) */
-  band_value[0] = 0;
-  for (size_t b = 0; b < n_bands(); b++)
-    band_value[1 + b] = sqrt (envelope[b] / band_count[b]) * scale;
-
-  size_t spectrum_size = n_spectrum_bins();
 
   guint32 random_data[(spectrum_size + 7) / 8];
 
@@ -111,15 +107,19 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
   zero_float_block (spectrum_size, spectrum);
 
   const guint8 *random_data_byte = reinterpret_cast<guint8 *> (&random_data[0]);
-  for (size_t d = 2; d < spectrum_size - 2; d += 2)
+
+  for (size_t b = 0; b < n_bands(); b++)
     {
-      int b = band_from_d[d] + 1;
+      const double value = sqrt (envelope[b] / band_count[b]) * scale;
 
-      const double value = band_value[b];
-
-      double sinr, cosr;
-      int_sincos (random_data_byte[d / 2], &sinr, &cosr);
-      spectrum[d] = sinr * value;
-      spectrum[d+1] = cosr * value;
+      size_t start = band_start[b];
+      size_t end = start + band_count[b] * 2;
+      for (size_t d = start; d < end; d += 2)
+        {
+          double sinr, cosr;
+          int_sincos (random_data_byte[d / 2], &sinr, &cosr);
+          spectrum[d] = sinr * value;
+          spectrum[d+1] = cosr * value;
+        }
     }
 }
