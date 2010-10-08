@@ -109,12 +109,6 @@ IFFTSynth::~IFFTSynth()
 }
 
 void
-IFFTSynth::clear_partials()
-{
-  zero_float_block (block_size, fft_in);
-}
-
-void
 IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
   const int range = 4;

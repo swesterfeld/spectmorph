@@ -22,6 +22,8 @@
 #include <sys/types.h>
 #include <vector>
 
+#include "smmath.hh"
+
 namespace SpectMorph {
 
 class IFFTSynthTable;
@@ -46,7 +48,12 @@ public:
   IFFTSynth (size_t block_size, double mix_freq, WindowType win_type);
   ~IFFTSynth();
 
-  void clear_partials();
+  void
+  clear_partials()
+  {
+    zero_float_block (block_size, fft_in);
+  }
+
   void render_partial (double freq, double mag, double phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
 
