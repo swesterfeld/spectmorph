@@ -101,7 +101,7 @@ perf_test()
   printf ("SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 
   SineDecoder sdo (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
-  RUNS = 10000;
+  RUNS = 2000;
 
   start = gettime();
   for (int r = 0; r < RUNS; r++)
