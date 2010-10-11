@@ -35,7 +35,6 @@ using std::map;
 struct SpectMorph::IFFTSynthTable
 {
   std::vector<float> win_trans;
-  int                win_trans_center;
 
   float             *win_scale;
 };
@@ -52,6 +51,8 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   table = table_for_block_size[block_size];
   if (!table)
     {
+      const int range = 4;
+
       table = new IFFTSynthTable();
 
       vector<double> win (block_size * zero_padding);
@@ -67,14 +68,14 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
 
       gsl_power2_fftar (block_size * zero_padding, &win[0], &wspectrum[0]);
 
-      // compute complete (symmetric) expanded window transform
-      table->win_trans.resize (zero_padding * 12);  /* > zero_padding * range * 2 */
-      table->win_trans_center = zero_padding * 6;
-      for (size_t i = 0; i < table->win_trans.size(); i++)
+      // compute complete (symmetric) expanded window transform for all frequency fractions
+      for (int freq_frac = 0; freq_frac < zero_padding; freq_frac++)
         {
-          int pos = i - table->win_trans_center;
-          assert (abs (pos * 2) < wspectrum.size());
-          table->win_trans[i] = wspectrum[abs (pos * 2)];
+          for (int i = -range; i <= range; i++)
+            {
+              int pos = i * 256 - freq_frac;
+              table->win_trans.push_back (wspectrum[abs (pos * 2)]);
+            }
         }
 
       table->win_scale = FFT::new_array_float (block_size); // SSE
@@ -115,8 +116,8 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 
   const int freq256 = mf_freq * freq256_factor;
   const int ibin = freq256 / 256;
-  int index = -range * 256 - (freq256 & 0xff);
   float *sp = fft_in + 2 * (ibin - range);
+  const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   const double phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
@@ -138,21 +139,20 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   /* compute FFT spectrum modifications */
   if (ibin > range && 2 * (ibin + range) < block_size)
     {
-      index += table->win_trans_center;
+      //index += table->win_trans_center;
       for (int i = 0; i <= 2 * range; i++)
         {
-          const double wmag = table->win_trans[index];
+          const float wmag = wmag_p[i];
           *sp++ += phase_rcmag * wmag;
           *sp++ += phase_rsmag * wmag;
-          index += zero_padding;
         }
     }
   else
     {
-      index += table->win_trans_center;
+      wmag_p += range; // allow negative addressing
       for (int i = -range; i <= range; i++)
         {
-          const double wmag = table->win_trans[index];
+          const float wmag = wmag_p[i];
           if ((ibin + i) < 0)
             {
               fft_in[-(ibin + i) * 2] += phase_rcmag * wmag;
@@ -178,7 +178,6 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
               fft_in[(ibin + i) * 2] += phase_rcmag * wmag;
               fft_in[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
             }
-          index += zero_padding;
         }
     }
 }
