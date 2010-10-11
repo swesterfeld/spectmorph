@@ -178,14 +178,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
               bool lps_zero = (last_pstate == &pstate[0]);
               vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
-              vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
-
-              /* by adding two parials that are definitely greater than any possible partial at the end of the pstate array,
-               * its possible to save some checks that normally need to be there to avoid past-end array reads */
-              PartialState stop_ps;
-              stop_ps.freq = current_mix_freq;
-              old_pstate.push_back (stop_ps);
-              old_pstate.push_back (stop_ps);
+              const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
 
               new_pstate.clear();  // clear old partial state
 
@@ -231,7 +224,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                    * ensure that old_pstate[old_partial].freq is the biggest frequency smaller than freq
                    * by incrementing old_partial as long as there is a better candidate
                    */
-                  while (old_pstate[old_partial + 1].freq < freq)
+                  while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < freq)
                     old_partial++;
 
                   double best_fdiff = 1e12;
@@ -240,21 +233,24 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                   //        - smallest frequency bigger than frame.freqs[partial]   (i == 1)
                   for (size_t i = 0; i < 2; i++)
                     {
-                      const double lfreq = old_pstate[old_partial + i].freq;
-                      if (fmatch (lfreq, freq))
+                      if ((old_partial + i) < old_pstate.size())
                         {
-                          // find best phase
-                          double fdiff = fabs (lfreq - freq);
-                          if (fdiff < best_fdiff)
+                          const double lfreq = old_pstate[old_partial + i].freq;
+                          if (fmatch (lfreq, freq))
                             {
-                              const double lphase = old_pstate[old_partial + i].phase;
-                              const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
+                              // find best phase
+                              double fdiff = fabs (lfreq - freq);
+                              if (fdiff < best_fdiff)
+                                {
+                                  const double lphase = old_pstate[old_partial + i].phase;
+                                  const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
 
-                              // FIXME: I have no idea why we have to /subtract/ the phase
-                              // here, and not /add/, but this way it works
+                                  // FIXME: I have no idea why we have to /subtract/ the phase
+                                  // here, and not /add/, but this way it works
 
-                              phase = lphase - block_size / 2 * phase_delta;
-                              best_fdiff = fdiff;
+                                  phase = lphase - block_size / 2 * phase_delta;
+                                  best_fdiff = fdiff;
+                                }
                             }
                         }
                     }
