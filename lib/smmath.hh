@@ -345,14 +345,13 @@ zero_float_block (size_t n_values, float *values)
 }
 
 inline void
-int_sincos (guint32 i, double *si, double *ci)
+int_sincos (guint8 i, double *si, double *ci)
 {
   extern float *int_sincos_table;
 
-  i &= 0xff;
-
   *si = int_sincos_table[i];
-  *ci = int_sincos_table[(i + 64) & 0xff];
+  i += 64;
+  *ci = int_sincos_table[i];
 }
 
 inline void
