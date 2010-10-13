@@ -196,6 +196,8 @@ rm -fr conftest*
 ])dnl
 
 
+# Less cluttered build output
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Check requirement sets
 AC_GLIB_REQUIREMENTS
