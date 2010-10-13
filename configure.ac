@@ -162,6 +162,8 @@ AC_DEFUN([AC_FFTW_CHECK],
        SPECTMORPH_HAVE_FFTW=0
     ])
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
+    fftw_save_CFLAGS="$CFLAGS"
+    CFLAGS="$CFLAGS $FFTW_CFLAGS"
     AC_MSG_CHECKING([whether FFTW is recent enough])
       AC_COMPILE_IFELSE([
         #include "fftw3.h"
@@ -173,6 +175,7 @@ AC_DEFUN([AC_FFTW_CHECK],
         SPECTMORPH_HAVE_FFTW=0
       ])
     fi
+    CFLAGS="$fftw_save_CFLAGS"
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
 ])
 
