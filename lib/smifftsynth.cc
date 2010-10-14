@@ -122,13 +122,13 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   // adjust phase to get the same output like vector sin (smmath.hh)
   const double phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
 
-  mag *= 0.5;
+  mag *= 0.5 / block_size;
 
   // rotation for initial phase; scaling for magnitude
   double phase_rcmag, phase_rsmag;
 
   /* the following block computes sincos (-phase-phase_adjust) */
-  double sarg = -(phase + phase_adjust) / (2 * M_PI);
+  double sarg = (phase + phase_adjust) / (2 * M_PI);
   sarg -= floor (sarg);
 
   int iarg = sarg * SIN_TABLE_SIZE + 0.5;

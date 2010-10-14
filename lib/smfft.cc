@@ -106,12 +106,6 @@ static map<int, fftwf_plan> fftar_float_plan;
 void
 FFT::fftar_float (size_t N, float *in, float *out)
 {
-  if (enable_gsl_fft)
-    {
-      gsl_fftar_float (N, in, out);
-      return;
-    }
-
   fftwf_plan& plan = fftar_float_plan[N];
 
   if (!plan)
@@ -129,14 +123,6 @@ FFT::fftar_float (size_t N, float *in, float *out)
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
 
-  /*
-   * Numerical recipies uses a slightly different definition of the FFT than FFTW does.
-   * The real value of this FFT is correct, but the imaginary part needs to be
-   * fixed to get the same results gsl_fft produces.
-   */
-  for (size_t i = 3; i < N; i += 2)
-    out[i] = -out[i];
-
   out[1] = out[N];
 }
 
@@ -145,12 +131,6 @@ static map<int, fftwf_plan> fftsr_float_plan;
 void
 FFT::fftsr_float (size_t N, float *in, float *out)
 {
-  if (enable_gsl_fft)
-    {
-      gsl_fftsr_float (N, in, out);
-      return;
-    }
-
   fftwf_plan& plan = fftsr_float_plan[N];
 
   if (!plan)
@@ -169,21 +149,10 @@ FFT::fftsr_float (size_t N, float *in, float *out)
   in[N] = in[1];
   in[N+1] = 0;
   in[1] = 0;
-  /*
-   * Numerical recipies uses a slightly different definition of the FFT than FFTW does.
-   * The real value of this FFT is correct, but the imaginary part needs to be
-   * fixed to get the same results gsl_fft produces.
-   */
-  for (size_t i = 3; i < N; i += 2)
-    in[i] = -in[i];
 
   fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
-  Bse::Block::scale (N, out, out, 1.0 / N);
 
   in[1] = in[N]; // we need to preserve the input array
-
-  for (size_t i = 3; i < N; i += 2)
-    in[i] = -in[i];
 }
 
 static map<int, fftwf_plan> fftac_float_plan;
@@ -191,27 +160,18 @@ static map<int, fftwf_plan> fftac_float_plan;
 void
 FFT::fftac_float (size_t N, float *in, float *out)
 {
-  if (enable_gsl_fft)
-    {
-      gsl_fftac_float (N, in, out);
-      return;
-    }
-
   fftwf_plan& plan = fftac_float_plan[N];
   if (!plan)
     {
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
-      /*
-       * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
-       * we need to use a backward FFTW for forward gsl FFT.
-       */
+
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
           save_wisdom();
         }
     }
@@ -224,32 +184,22 @@ static map<int, fftwf_plan> fftsc_float_plan;
 void
 FFT::fftsc_float (size_t N, float *in, float *out)
 {
-  if (enable_gsl_fft)
-    {
-      gsl_fftsc_float (N, in, out);
-      return;
-    }
-
   fftwf_plan& plan = fftsc_float_plan[N];
   if (!plan)
     {
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
-      /*
-       * Numerical recipies uses a slightly different definition of the FFT than FFTW does. Therefore
-       * we need to use a forward FFTW for backward gsl FFT.
-       */
+
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
           save_wisdom();
         }
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
-  Bse::Block::scale (N * 2, out, out, 1.0 / N);
 }
 
 static string
@@ -308,6 +258,8 @@ FFT::load_wisdom()
 }
 
 #else
+
+#error "building without FFTW is not supported currently"
 
 float *
 FFT::new_array_float (size_t N)

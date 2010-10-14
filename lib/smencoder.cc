@@ -289,7 +289,7 @@ Encoder::search_local_maxima()
                       tracksel.mag = peak_mag / frame_size * zeropad;
                       tracksel.mag2 = mag2;
                       tracksel.cmag = interp_c.real() / frame_size * zeropad;
-                      tracksel.smag = interp_c.imag() / frame_size * zeropad;
+                      tracksel.smag = -interp_c.imag() / frame_size * zeropad;
                       tracksel.next = 0;
                       tracksel.prev = 0;
 
