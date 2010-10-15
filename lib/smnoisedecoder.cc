@@ -212,23 +212,27 @@ NoiseDecoder::apply_window (float *spectrum)
 
 #ifdef __SSE__ /* fast SSEified convolution */
   const size_t K_ARRAY_SIZE = 4 * 2 * 4;
-  AlignedArray<float,16> k_array (K_ARRAY_SIZE);
-  const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
-  size_t fi = 0, si = 0;
-  for (size_t i = 0; i < K_ARRAY_SIZE; i++)
+  static float *k_array = NULL;
+  if (!k_array)
     {
-      bool second = (i / 4) & 1;
-      if (second)
+      k_array = FFT::new_array_float (K_ARRAY_SIZE);
+      const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
+      size_t fi = 0, si = 0;
+      for (size_t i = 0; i < K_ARRAY_SIZE; i++)
         {
-          k_array[i] = ks[1 + fi / 2];
-          fi++;
+          bool second = (i / 4) & 1;
+          if (second)
+            {
+              k_array[i] = ks[1 + fi / 2];
+              fi++;
+            }
+          else // second
+            {
+              k_array[i] = ks[si / 2];
+              si++;
+            }
         }
-      else // second
-        {
-          k_array[i] = ks[si / 2];
-          si++;
-        }
-    }
+      }
 #if 0
   for (size_t i = 0; i < K_ARRAY_SIZE; i++)
     {
@@ -239,7 +243,7 @@ NoiseDecoder::apply_window (float *spectrum)
   printf ("================\n");
 #endif
   const __m128 *in = reinterpret_cast<__m128 *> (expand_in);
-  const __m128 *k = reinterpret_cast<__m128 *> (&k_array[0]);
+  const __m128 *k = reinterpret_cast<__m128 *> (k_array);
   const __m128 k0 = k[0];
   const __m128 k1 = k[1];
   const __m128 k2 = k[2];
