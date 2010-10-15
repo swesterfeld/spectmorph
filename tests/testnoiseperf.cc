@@ -52,6 +52,10 @@ main (int argc, char **argv)
   IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   Random    random;
 
+  random.set_seed (42);
+  for (int i = 0; i < 32; i++)
+    audio_block.noise.push_back (random.random_double_range (0.1, 1.0));
+
   const int RUNS = 100000;
 
   vector<float> samples (block_size);
