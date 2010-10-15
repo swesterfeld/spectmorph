@@ -238,34 +238,34 @@ NoiseDecoder::apply_window (float *spectrum)
     }
   printf ("================\n");
 #endif
-  F4Vector *in = reinterpret_cast<F4Vector *> (expand_in);
-  F4Vector *k = reinterpret_cast<F4Vector *> (&k_array[0]);
-  const __m128 k0 = k[0].v;
-  const __m128 k1 = k[1].v;
-  const __m128 k2 = k[2].v;
-  const __m128 k3 = k[3].v;
-  const __m128 k4 = k[4].v;
-  const __m128 k5 = k[5].v;
-  const __m128 k6 = k[6].v;
-  const __m128 k7 = k[7].v;
+  const __m128 *in = reinterpret_cast<__m128 *> (expand_in);
+  const __m128 *k = reinterpret_cast<__m128 *> (&k_array[0]);
+  const __m128 k0 = k[0];
+  const __m128 k1 = k[1];
+  const __m128 k2 = k[2];
+  const __m128 k3 = k[3];
+  const __m128 k4 = k[4];
+  const __m128 k5 = k[5];
+  const __m128 k6 = k[6];
+  const __m128 k7 = k[7];
 
   for (size_t i = 0; i < block_size + 4; i += 4)
     {
-      const __m128 i0 = in[0].v;
-      const __m128 i1 = in[1].v;
+      const __m128 i0 = in[0];
+      const __m128 i1 = in[1];
       // in[0]
       __m128 f = _mm_add_ps (_mm_mul_ps (i0, k0), _mm_mul_ps (i1, k2));
-      const __m128 i2 = in[2].v;
+      const __m128 i2 = in[2];
       __m128 s = _mm_add_ps (_mm_mul_ps (i1, k1), _mm_mul_ps (i2, k3));
 
       // in[2]
       f = _mm_add_ps (f, _mm_mul_ps (i2, k4));
-      const __m128 i3 = in[3].v;
+      const __m128 i3 = in[3];
       s = _mm_add_ps (s, _mm_mul_ps (i3, k5));
 
       // in[4]
       f = _mm_add_ps (f, _mm_mul_ps (i3, k6));
-      const __m128 i4 = in[4].v;
+      const __m128 i4 = in[4];
       s = _mm_add_ps (s, _mm_mul_ps (i4, k7));
 
       const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2));
