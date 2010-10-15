@@ -40,13 +40,15 @@ class NoiseDecoder
   Random random_gen;
   NoiseBandPartition *noise_band_partition;
 
+  void apply_window (float *spectrum);
+
 public:
   NoiseDecoder (double orig_mix_freq,
                 double mix_freq,
                 size_t block_size);
   ~NoiseDecoder();
 
-  enum OutputMode { REPLACE, ADD };
+  enum OutputMode { REPLACE, ADD, FFT_SPECTRUM, DEBUG_UNWINDOWED };
 
   void set_seed (int seed);
   void process (const AudioBlock& audio_block,

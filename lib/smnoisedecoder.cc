@@ -108,38 +108,53 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
-  float *in = FFT::new_array_float (block_size);
-  FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
-
-  Bse::Block::mul (block_size, in, cos_window);
-
-  if (output_mode == REPLACE)
-    memcpy (samples, in, block_size * sizeof (float));
-  else if (output_mode == ADD)
-    Bse::Block::add (block_size, samples, in);
-  else
-    assert (false);
-
-#if 0 // DEBUG
-  r_energy /= decoded_residue.size();
-  double s_energy = 0;
-  for (size_t i = 0; i < dinterpolated_spectrum.size(); i++)
+  if (output_mode == FFT_SPECTRUM)
     {
-      double d = dinterpolated_spectrum[i];
-      s_energy += d * d;
+      apply_window (interpolated_spectrum);
+      Bse::Block::add (block_size, samples, interpolated_spectrum);
     }
+  else if (output_mode == DEBUG_UNWINDOWED)
+    {
+      float *in = FFT::new_array_float (block_size);
+      FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
+      memcpy (samples, in, block_size * sizeof (float));
+      FFT::free_array_float (in);
+    }
+  else
+    {
+      float *in = FFT::new_array_float (block_size);
+      FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-  double xs_energy = 0;
-  for (vector<double>::const_iterator fni = frame.noise_envelope.begin(); fni != frame.noise_envelope.end(); fni++)
-    xs_energy += *fni;
+      Bse::Block::mul (block_size, in, cos_window);
 
-  double i_energy = 0;
-  for (size_t i = 0; i < block_size; i++)
-    i_energy += interpolated_spectrum[i] * interpolated_spectrum[i] / norm;
-  printf ("RE %f SE %f XE %f IE %f\n", r_energy, s_energy, xs_energy, i_energy);
-#endif
+      if (output_mode == REPLACE)
+        memcpy (samples, in, block_size * sizeof (float));
+      else if (output_mode == ADD)
+        Bse::Block::add (block_size, samples, in);
+      else
+        assert (false);
 
-  FFT::free_array_float (in);
+    #if 0 // DEBUG
+      r_energy /= decoded_residue.size();
+      double s_energy = 0;
+      for (size_t i = 0; i < dinterpolated_spectrum.size(); i++)
+        {
+          double d = dinterpolated_spectrum[i];
+          s_energy += d * d;
+        }
+
+      double xs_energy = 0;
+      for (vector<double>::const_iterator fni = frame.noise_envelope.begin(); fni != frame.noise_envelope.end(); fni++)
+        xs_energy += *fni;
+
+      double i_energy = 0;
+      for (size_t i = 0; i < block_size; i++)
+        i_energy += interpolated_spectrum[i] * interpolated_spectrum[i] / norm;
+      printf ("RE %f SE %f XE %f IE %f\n", r_energy, s_energy, xs_energy, i_energy);
+    #endif
+
+      FFT::free_array_float (in);
+    }
   FFT::free_array_float (interpolated_spectrum);
 }
 
@@ -152,4 +167,58 @@ NoiseDecoder::preferred_block_size (double mix_freq)
     bs *= 2;
 
   return bs;
+}
+
+void
+NoiseDecoder::apply_window (float *spectrum)
+{
+  float expand_in [block_size + 16];
+  for (size_t i = 0; i < expand_in.size(); i++)
+    {
+      if (i >= 10 && i < block_size + 8)
+        expand_in[i] = spectrum[i - 8];
+    }
+  // 0
+  expand_in[8] = spectrum[0];
+  // -1
+  expand_in[6] = spectrum[2];
+  expand_in[7] = -spectrum[3];
+  // -2
+  expand_in[4] = spectrum[4];
+  expand_in[5] = -spectrum[5];
+  // -3
+  expand_in[2] = spectrum[6];
+  expand_in[3] = -spectrum[7];
+  // BS
+  expand_in[8 + block_size] = spectrum[1];
+  // BS+1
+  expand_in[10 + block_size] = spectrum[block_size - 2];
+  expand_in[11 + block_size] = -spectrum[block_size - 1];
+  // BS+2
+  expand_in[12 + block_size] = spectrum[block_size - 4];
+  expand_in[13 + block_size] = -spectrum[block_size - 3];
+  // BS+3
+  expand_in[14 + block_size] = spectrum[block_size - 6];
+  expand_in[15 + block_size] = -spectrum[block_size - 5];
+
+  const float K0 = 0.35874998569488525;
+  const float K1 = 0.24414500594139099;
+  const float K2 = 0.070639997720718384;
+  const float K3 = 0.0058400016278028488;
+
+  for (size_t i = 8; i < block_size + 2 + 8; i += 2)
+    {
+      float out_re = K0 * expand_in[i];
+      float out_im = K0 * expand_in[i + 1];
+
+      out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
+      out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
+      out_re += K2 * (expand_in[i - 4] + expand_in[i + 4]);
+      out_im += K2 * (expand_in[i - 3] + expand_in[i + 5]);
+      out_re += K3 * (expand_in[i - 6] + expand_in[i + 6]);
+      out_im += K3 * (expand_in[i - 5] + expand_in[i + 7]);
+      spectrum[i-8] = out_re;
+      spectrum[i-7] = out_im;
+    }
+  spectrum[1] = spectrum[block_size];
 }

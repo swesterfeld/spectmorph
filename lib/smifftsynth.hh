@@ -54,6 +54,12 @@ public:
     zero_float_block (block_size, fft_in);
   }
 
+  float*
+  fft_buffer()
+  {
+    return fft_in;
+  }
+
   void render_partial (double freq, double mag, double phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
 

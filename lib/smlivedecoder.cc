@@ -268,17 +268,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               last_pstate = &new_pstate;
 
-              if (sines_enabled)
-                {
-                  float *samples = &(*sse_samples)[0];
-
-                  ifft_synth->get_samples (samples, IFFTSynth::ADD);
-                }
               if (noise_enabled)
+                noise_decoder->process (audio->contents[frame_idx], ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+
+              if (noise_enabled || sines_enabled)
                 {
                   float *samples = &(*sse_samples)[0];
-
-                  noise_decoder->process (audio->contents[frame_idx], samples, NoiseDecoder::ADD);
+                  ifft_synth->get_samples (samples, IFFTSynth::ADD);
                 }
             }
           pos = 0;
