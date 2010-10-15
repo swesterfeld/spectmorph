@@ -48,7 +48,7 @@ public:
                 size_t block_size);
   ~NoiseDecoder();
 
-  enum OutputMode { REPLACE, ADD, FFT_SPECTRUM, DEBUG_UNWINDOWED };
+  enum OutputMode { REPLACE, ADD, FFT_SPECTRUM, DEBUG_UNWINDOWED, DEBUG_NO_OUTPUT };
 
   void set_seed (int seed);
   void process (const AudioBlock& audio_block,

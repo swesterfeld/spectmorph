@@ -120,6 +120,9 @@ NoiseDecoder::process (const AudioBlock& audio_block,
       memcpy (samples, in, block_size * sizeof (float));
       FFT::free_array_float (in);
     }
+  else if (output_mode == DEBUG_NO_OUTPUT)
+    {
+    }
   else
     {
       float *in = FFT::new_array_float (block_size);

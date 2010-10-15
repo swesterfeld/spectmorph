@@ -13,7 +13,7 @@ CLEANFILES += sin440-4567.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes
 
-noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testifftsynth testaafilter
+noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testifftsynth testaafilter testnoiseperf
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
@@ -38,6 +38,9 @@ testnoisemodes_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testrandperf_SOURCES = testrandperf.cc
 testrandperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testnoiseperf_SOURCES = testnoiseperf.cc
+testnoiseperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testisincos_SOURCES = testisincos.cc
 testisincos_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
