@@ -11,7 +11,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 EXTRA_DIST += saw440.wav sin440.wav sin440.py
 CLEANFILES += sin440-4567.wav
 
-TESTS = testfastsin testblob testfft testisincos
+TESTS = testfastsin testblob testfft testisincos testnoisemodes
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testifftsynth testaafilter
 
@@ -32,6 +32,9 @@ testrandom_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testnoise_SOURCES = testnoise.cc
 testnoise_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testnoisemodes_SOURCES = testnoisemodes.cc
+testnoisemodes_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testrandperf_SOURCES = testrandperf.cc
 testrandperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
