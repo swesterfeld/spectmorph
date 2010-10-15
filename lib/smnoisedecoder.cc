@@ -249,8 +249,6 @@ NoiseDecoder::apply_window (float *spectrum)
   const __m128 k6 = k[6].v;
   const __m128 k7 = k[7].v;
 
-  float *a_array = FFT::new_array_float (block_size * 4);
-  float *A = a_array;
   for (size_t i = 0; i < block_size + 4; i += 4)
     {
       const __m128 i0 = in[0].v;
@@ -270,22 +268,10 @@ NoiseDecoder::apply_window (float *spectrum)
       const __m128 i4 = in[4].v;
       s = _mm_add_ps (s, _mm_mul_ps (i4, k7));
 
-      *(__m128 *)A = f;
-      *(__m128 *)(A + 4) = s;
-      A += 8;
-
+      const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2));
+      *(__m128 *)(spectrum + i) = _mm_shuffle_ps (_mm_add_ps (f, hi), _mm_add_ps (s, hi), _MM_SHUFFLE (3,2,1,0));
       in++;
     }
-  A = a_array;
-  for (size_t i = 0; i < block_size + 4; i += 4)
-    {
-      spectrum[i] = A[0] + A[2];
-      spectrum[i+1] = A[1] + A[3];
-      spectrum[i+2] = A[4] + A[6];
-      spectrum[i+3] = A[5] + A[7];
-      A += 8;
-    }
-  FFT::free_array_float (a_array);
 #else
   for (size_t i = 8; i < block_size + 2 + 8; i += 2)
     {
