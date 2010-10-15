@@ -30,6 +30,7 @@ using std::vector;
 using SpectMorph::NoiseDecoder;
 using SpectMorph::Frame;
 using std::map;
+using Birnet::AlignedArray;
 
 static map<size_t, float *> cos_window_for_block_size;
 
@@ -175,7 +176,7 @@ NoiseDecoder::preferred_block_size (double mix_freq)
 void
 NoiseDecoder::apply_window (float *spectrum)
 {
-  float expand_in [block_size + 16];
+  float *expand_in = FFT::new_array_float (block_size + 16); // SSE
 
   memcpy (expand_in + 8, spectrum, block_size * sizeof (float));
 
@@ -209,6 +210,54 @@ NoiseDecoder::apply_window (float *spectrum)
   const float K2 = 0.070639997720718384;
   const float K3 = 0.0058400016278028488;
 
+#ifdef __SSE__ /* fast SSEified convolution */
+  const size_t K_ARRAY_SIZE = 4 * 2 * 4;
+  AlignedArray<float,16> k_array (K_ARRAY_SIZE);
+  const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
+  size_t fi = 0, si = 0;
+  for (size_t i = 0; i < K_ARRAY_SIZE; i++)
+    {
+      bool second = (i / 4) & 1;
+      if (second)
+        {
+          k_array[i] = ks[1 + fi / 2];
+          fi++;
+        }
+      else // second
+        {
+          k_array[i] = ks[si / 2];
+          si++;
+        }
+    }
+#if 0
+  for (size_t i = 0; i < K_ARRAY_SIZE; i++)
+    {
+      printf ("%.8f ", k_array[i]);
+      if ((i & 7) == 7)
+        printf ("\n");
+    }
+  printf ("================\n");
+#endif
+  F4Vector *in = reinterpret_cast<F4Vector *> (expand_in);
+  F4Vector *k = reinterpret_cast<F4Vector *> (&k_array[0]);
+  for (size_t i = 0; i < block_size + 4; i += 4)
+    {
+      F4Vector first, second;
+      first.v = _mm_mul_ps (in[0].v, k[0].v);
+      second.v = _mm_mul_ps (in[1].v, k[1].v);
+      first.v = _mm_add_ps (first.v, _mm_mul_ps (in[1].v, k[2].v));
+      second.v = _mm_add_ps (second.v, _mm_mul_ps (in[2].v, k[3].v));
+      first.v = _mm_add_ps (first.v, _mm_mul_ps (in[2].v, k[4].v));
+      second.v = _mm_add_ps (second.v, _mm_mul_ps (in[3].v, k[5].v));
+      first.v = _mm_add_ps (first.v, _mm_mul_ps (in[3].v, k[6].v));
+      second.v = _mm_add_ps (second.v, _mm_mul_ps (in[4].v, k[7].v));
+      spectrum[i] = first.f[0] + first.f[2];
+      spectrum[i+1] = first.f[1] + first.f[3];
+      spectrum[i+2] = second.f[0] + second.f[2];
+      spectrum[i+3] = second.f[1] + second.f[3];
+      in++;
+    }
+#else
   for (size_t i = 8; i < block_size + 2 + 8; i += 2)
     {
       float out_re = K0 * expand_in[i];
@@ -223,5 +272,8 @@ NoiseDecoder::apply_window (float *spectrum)
       spectrum[i-8] = out_re;
       spectrum[i-7] = out_im;
     }
+#endif
+
   spectrum[1] = spectrum[block_size];
+  FFT::free_array_float (expand_in);
 }
