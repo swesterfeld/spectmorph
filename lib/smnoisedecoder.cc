@@ -173,7 +173,7 @@ void
 NoiseDecoder::apply_window (float *spectrum)
 {
   float expand_in [block_size + 16];
-  for (size_t i = 0; i < expand_in.size(); i++)
+  for (size_t i = 0; i < block_size + 16; i++)
     {
       if (i >= 10 && i < block_size + 8)
         expand_in[i] = spectrum[i - 8];
