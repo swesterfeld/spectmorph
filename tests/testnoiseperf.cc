@@ -28,6 +28,7 @@
 
 using namespace SpectMorph;
 using std::max;
+using std::min;
 using std::vector;
 
 static double
@@ -56,22 +57,29 @@ main (int argc, char **argv)
   for (int i = 0; i < 32; i++)
     audio_block.noise.push_back (random.random_double_range (0.1, 1.0));
 
-  const int RUNS = 100000;
+  const int RUNS = 20000, REPS = 13;
 
   vector<float> samples (block_size);
+  double min_time[3] = { 1e20, 1e20, 1e20 };
   for (int mode = 0; mode < 3; mode++)
     {
-      int ifft = (mode == 0) ? 1 : 0;
-      int spect = (mode < 2) ? 1 : 0;
-      double start = gettime();
-      for (int r = 0; r < RUNS; r++)
-      {
-        ifft_synth.clear_partials();
-        noise_dec.process (audio_block, ifft_synth.fft_buffer(), spect ? NoiseDecoder::FFT_SPECTRUM : NoiseDecoder::DEBUG_NO_OUTPUT);
-        if (ifft)
-          ifft_synth.get_samples (&samples[0]);
-      }
-      double end = gettime();
-      printf ("noise decoder (IFFT=%d; SPECT=%d): %f cycles/sample\n", ifft, spect, (end - start) * 2500.0 * 1000 * 1000 / RUNS / block_size);
+      for (int reps = 0; reps < REPS; reps++)
+        {
+          int ifft = (mode == 0) ? 1 : 0;
+          int spect = (mode < 2) ? 1 : 0;
+          double start = gettime();
+          for (int r = 0; r < RUNS; r++)
+            {
+              ifft_synth.clear_partials();
+              noise_dec.process (audio_block, ifft_synth.fft_buffer(), spect ? NoiseDecoder::FFT_SPECTRUM : NoiseDecoder::DEBUG_NO_OUTPUT);
+              if (ifft)
+                ifft_synth.get_samples (&samples[0]);
+            }
+          double end = gettime();
+          min_time[mode] = min (min_time[mode], end - start);
+        }
     }
+  printf ("noise decoder (spectrum gen): %f cycles/sample\n", min_time[2] * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  printf ("noise decoder (convolve):     %f cycles/sample\n", (min_time[1] - min_time[2]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  printf ("noise decoder (ifft):         %f cycles/sample\n", (min_time[0] - min_time[1]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
 }
