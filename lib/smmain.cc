@@ -19,12 +19,14 @@
 #include "smfft.hh"
 #include "smmath.hh"
 #include <bse/bsemain.h>
+#include <stdio.h>
 
 namespace SpectMorph
 {
 
 float *int_sincos_table;
-bool   use_sse = true;
+
+static bool use_sse = true;
 
 void
 sm_enable_sse (bool sse)

@@ -60,13 +60,15 @@ main (int argc, char **argv)
   const int RUNS = 20000, REPS = 13;
 
   vector<float> samples (block_size);
-  double min_time[3] = { 1e20, 1e20, 1e20 };
-  for (int mode = 0; mode < 3; mode++)
+  double min_time[4] = { 1e20, 1e20, 1e20, 1e20 };
+  for (int mode = 0; mode < 4; mode++)
     {
+      int ifft = (mode == 0) ? 1 : 0;
+      int spect = (mode < 3) ? 1 : 0;
+      int sse = (mode == 2) ? 0 : 1;
+      sm_enable_sse (sse);
       for (int reps = 0; reps < REPS; reps++)
         {
-          int ifft = (mode == 0) ? 1 : 0;
-          int spect = (mode < 2) ? 1 : 0;
           double start = gettime();
           for (int r = 0; r < RUNS; r++)
             {
@@ -79,7 +81,8 @@ main (int argc, char **argv)
           min_time[mode] = min (min_time[mode], end - start);
         }
     }
-  printf ("noise decoder (spectrum gen): %f cycles/sample\n", min_time[2] * 2500.0 * 1000 * 1000 / RUNS / block_size);
-  printf ("noise decoder (convolve):     %f cycles/sample\n", (min_time[1] - min_time[2]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  printf ("noise decoder (spectrum gen): %f cycles/sample\n", min_time[3] * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  printf ("noise decoder (convolve):     %f cycles/sample\n", (min_time[2] - min_time[3]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  printf ("noise decoder (convolve/SSE): %f cycles/sample\n", (min_time[1] - min_time[3]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
   printf ("noise decoder (ifft):         %f cycles/sample\n", (min_time[0] - min_time[1]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
 }
