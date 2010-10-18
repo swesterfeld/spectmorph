@@ -267,26 +267,57 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
         const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2)); \
         OUT = _mm_add_ps (OUT, _mm_shuffle_ps (_mm_add_ps (f, hi), _mm_add_ps (s, hi), _MM_SHUFFLE (3,2,1,0))); \
       }
-      for (size_t i = 0; i < block_size; i += 4)
+      size_t i = 0;
+      __m128 i0 = in[0];
+      __m128 i1 = in[1];
+      __m128 i2 = in[2];
+      __m128 i3 = in[3];
+      __m128 i4;
+      while (i < block_size - 20)
+        {
+          i4 = in[4];
+          CONV(i0,i1,i2,i3,i4,*(__m128 *)(fft_buffer + i));
+
+          i0 = in[5];
+          CONV(i1,i2,i3,i4,i0,*(__m128 *)(fft_buffer + i + 4));
+
+          i1 = in[6];
+          CONV(i2,i3,i4,i0,i1,*(__m128 *)(fft_buffer + i + 8));
+
+          i2 = in[7];
+          CONV(i3,i4,i0,i1,i2,*(__m128 *)(fft_buffer + i + 12));
+
+          i3 = in[8];
+          CONV(i4,i0,i1,i2,i3,*(__m128 *)(fft_buffer + i + 16));
+
+          in += 5;
+          i += 20;
+        }
+      while (i < block_size)
         {
           const __m128 i0 = in[0];
           const __m128 i1 = in[1];
           const __m128 i2 = in[2];
           const __m128 i3 = in[3];
           const __m128 i4 = in[4];
-          CONV(i0,i1,i2,i3,i4,*(__m128 *)(fft_buffer + i));
-          in++;
-        }
-      const __m128 i0 = in[0];
-      const __m128 i1 = in[1];
-      const __m128 i2 = in[2];
-      const __m128 i3 = in[3];
-      const __m128 i4 = in[4];
 
-      // last value (heighest frequency -> store in bin 1)
-      F4Vector fft_buffer_last = { { 0.0, 0.0, 0.0, 0.0 } };
-      CONV(i0,i1,i2,i3,i4,fft_buffer_last.v);
-      fft_buffer[1] += fft_buffer_last.f[0];
+          CONV(i0,i1,i2,i3,i4,*(__m128 *)(fft_buffer + i));
+
+          in++;
+          i += 4;
+        }
+        {
+          const __m128 i0 = in[0];
+          const __m128 i1 = in[1];
+          const __m128 i2 = in[2];
+          const __m128 i3 = in[3];
+          const __m128 i4 = in[4];
+
+          // last value (heighest frequency -> store in bin 1)
+          F4Vector fft_buffer_last = { { 0.0, 0.0, 0.0, 0.0 } };
+          CONV(i0,i1,i2,i3,i4,fft_buffer_last.v);
+          fft_buffer[1] += fft_buffer_last.f[0];
+        }
     }
   else
 #endif
