@@ -17,7 +17,7 @@
 
 #include <vector>
 #include <stdio.h>
-#include "smframe.hh"
+#include "smaudio.hh"
 #include "smmain.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
@@ -134,11 +134,6 @@ reconstruct (AudioBlock&     audio_block,
     }
 }
 
-vector<double>
-spectrum (AudioBlock& block)
-{
-}
-
 float
 mag (float re, float im)
 {
@@ -248,12 +243,12 @@ main (int argc, char **argv)
 
       for (size_t i = 0; i < audio.contents.size(); i++)
         {
-          Frame frame (audio.contents[i]);
-          for (size_t n = 0; n < frame.freqs.size(); n++)
+          const AudioBlock& block = audio.contents[i];
+          for (size_t n = 0; n < block.freqs.size(); n++)
             {
-              if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
+              if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
                 {
-                  printf ("%zd %f %f\n", i, frame.freqs[n], frame.magnitude(n));
+                  printf ("%zd %f %f\n", i, block.freqs[n], mag (block.phases[n * 2], block.phases[n * 2 + 1]));
                 }
             }
         }
@@ -438,18 +433,18 @@ main (int argc, char **argv)
           double position_percent = f * 100.0 / audio.contents.size();
           if (position_percent >= 40 && position_percent <= 60)
             {
-              Frame frame (audio.contents[f]);
+              const AudioBlock& block = audio.contents[f];
               double best_freq = -1;
               double best_mag = 0;
-              for (size_t n = 0; n < frame.freqs.size(); n++)
+              for (size_t n = 0; n < block.freqs.size(); n++)
                 {
-                  if (frame.freqs[n] > freq_min && frame.freqs[n] < freq_max)
+                  if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
                     {
-                      double mag = frame.magnitude (n);
-                      if (mag > best_mag)
+                      double m = mag (block.phases[n * 2], block.phases[n * 2 + 1]);
+                      if (m > best_mag)
                         {
-                          best_mag = mag;
-                          best_freq = frame.freqs[n];
+                          best_mag = m;
+                          best_freq = block.freqs[n];
                         }
                     }
                 }

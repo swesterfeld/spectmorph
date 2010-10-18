@@ -19,8 +19,8 @@
 #ifndef SPECTMORPH_SINEDECODER_HH
 #define SPECTMORPH_SINEDECODER_HH
 
-#include "smframe.hh"
 #include "smifftsynth.hh"
+#include "smaudio.hh"
 #include <vector>
 
 namespace SpectMorph {
@@ -67,8 +67,8 @@ public:
   SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
   ~SineDecoder();
 
-  void process (const Frame& frame,
-                const Frame& next_frame,
+  void process (const AudioBlock& block,
+                const AudioBlock& next_block,
                 const std::vector<double>& window,
                 std::vector<float>& decoded_sines);
 };

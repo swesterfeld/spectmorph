@@ -84,20 +84,20 @@ perf_test()
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 
   SineDecoder sd (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
-  Frame f, next_f;
+  AudioBlock b, next_b;
   vector<double> dwindow (window.begin(), window.end());
   RUNS = 10000;
 
   int FREQS = 1000;
   for (int i = 0; i < FREQS; i++)
     {
-      f.freqs.push_back (440 + i);
-      f.phases.push_back (0.1);
-      f.phases.push_back (0.9);
+      b.freqs.push_back (440 + i);
+      b.phases.push_back (0.1);
+      b.phases.push_back (0.9);
     }
   start = gettime();
   for (int r = 0; r < RUNS; r++)
-    sd.process (f, next_f, dwindow, samples);
+    sd.process (b, next_b, dwindow, samples);
   end = gettime();
   printf ("SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 
@@ -106,7 +106,7 @@ perf_test()
 
   start = gettime();
   for (int r = 0; r < RUNS; r++)
-    sdo.process (f, next_f, dwindow, samples);
+    sdo.process (b, next_b, dwindow, samples);
   end = gettime();
   printf ("Old SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
@@ -180,17 +180,17 @@ test_accs()
     window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
   SineDecoder sd (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
-  Frame f, next_f;
+  AudioBlock b, next_b;
   vector<double> dwindow (window.begin(), window.end());
 
-  f.freqs.push_back (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440));
-  f.phases.push_back (0.1);
-  f.phases.push_back (0.9);
+  b.freqs.push_back (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440));
+  b.phases.push_back (0.1);
+  b.phases.push_back (0.9);
 
-  sd.process (f, next_f, dwindow, samples);
+  sd.process (b, next_b, dwindow, samples);
 
   SineDecoder sdo (mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
-  sdo.process (f, next_f, dwindow, osamples);
+  sdo.process (b, next_b, dwindow, osamples);
 
   double max_diff = 0;
   for (size_t i = 0; i < block_size; i++)

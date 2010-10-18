@@ -20,7 +20,6 @@ smenc:
 - adjust noise bands according to frequency specs
 
 refactoring:
-- try to refactor SpectMorph::Frame into something less duplicating
 - possibly rename SpectMorph::Audio to SpectMorph::Model
 - simplify Encoder API
 

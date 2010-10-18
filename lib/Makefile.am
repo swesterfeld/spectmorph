@@ -3,7 +3,7 @@ include $(top_srcdir)/Makefile.decl
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(SSE_FLAGS) $(FFTW_CFLAGS)
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
-         smframe.hh smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
+         smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
          smstdioin.hh smstdiosubin.hh smmmapin.hh smgenericin.hh \
          smgenericout.hh smstdioout.hh smmemout.hh smlivedecoder.hh \
          smrandom.hh smfft.hh smmain.hh smdebug.hh smnoisebandpartition.hh \
@@ -11,7 +11,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
-                           smframe.cc smwavset.cc smoutfile.cc sminfile.cc \
+                           smwavset.cc smoutfile.cc sminfile.cc \
                            smstdioin.cc smstdiosubin.cc smmmapin.cc smgenericin.cc \
                            smgenericout.cc smstdioout.cc smmemout.cc smlivedecoder.cc \
                            smrandom.cc smfft.cc smmain.cc smdebug.cc smnoisebandpartition.cc \

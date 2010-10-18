@@ -19,9 +19,9 @@
 #ifndef SPECTMORPH_NOISE_DECODER_HH
 #define SPECTMORPH_NOISE_DECODER_HH
 
-#include "smframe.hh"
 #include "smrandom.hh"
 #include "smnoisebandpartition.hh"
+#include "smaudio.hh"
 
 namespace SpectMorph
 {

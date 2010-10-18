@@ -19,13 +19,14 @@
 #include "smmath.hh"
 #include "smfft.hh"
 #include "smifftsynth.hh"
+#include "smaudio.hh"
 #include <birnet/birnetutils.hh>
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
 
 using SpectMorph::SineDecoder;
-using SpectMorph::Frame;
+using SpectMorph::AudioBlock;
 using Birnet::AlignedArray;
 using std::vector;
 
@@ -65,8 +66,8 @@ SineDecoder::~SineDecoder()
  * @param window       the reconstruction window used for MODE_PHASE_SYNC_OVERLAP
  */
 void
-SineDecoder::process (const Frame& frame,
-                      const Frame& next_frame,
+SineDecoder::process (const AudioBlock& block,
+                      const AudioBlock& next_block,
 		      const vector<double>& window,
                       vector<float>& decoded_sines)
 {
@@ -74,11 +75,11 @@ SineDecoder::process (const Frame& frame,
   if (mode == MODE_PHASE_SYNC_OVERLAP)
     {
       AlignedArray<float, 16> aligned_decoded_sines (frame_size);
-      for (size_t i = 0; i < frame.freqs.size(); i++)
+      for (size_t i = 0; i < block.freqs.size(); i++)
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
-          const double smag = frame.phases[i * 2];
-          const double cmag = frame.phases[i * 2 + 1];
+          const double smag = block.phases[i * 2];
+          const double cmag = block.phases[i * 2 + 1];
           const double mag_epsilon = 1e-8;
 
           VectorSinParams params;
@@ -86,7 +87,7 @@ SineDecoder::process (const Frame& frame,
           if (params.mag > mag_epsilon)
             {
               params.mix_freq = mix_freq;
-              params.freq = frame.freqs[i];
+              params.freq = block.freqs[i];
               params.phase = atan2 (cmag, smag);
               params.mode = VectorSinParams::ADD;
 
@@ -105,16 +106,16 @@ SineDecoder::process (const Frame& frame,
         ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
 
       ifft_synth->clear_partials();
-      for (size_t i = 0; i < frame.freqs.size(); i++)
+      for (size_t i = 0; i < block.freqs.size(); i++)
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
-          const double smag = frame.phases[i * 2];
-          const double cmag = frame.phases[i * 2 + 1];
+          const double smag = block.phases[i * 2];
+          const double cmag = block.phases[i * 2 + 1];
           const double mag_epsilon = 1e-8;
 
           const double mag = sqrt (smag * smag + cmag * cmag) * SA;
           if (mag > mag_epsilon)
-            ifft_synth->render_partial (frame.freqs[i], mag, atan2 (cmag, smag));
+            ifft_synth->render_partial (block.freqs[i], mag, atan2 (cmag, smag));
         }
       ifft_synth->get_samples (&decoded_sines[0]);
       return;
@@ -123,9 +124,9 @@ SineDecoder::process (const Frame& frame,
   zero_float_block (decoded_sines.size(), &decoded_sines[0]);
 
   /* phase distorted reconstruction */
-  vector<double> freqs = frame.freqs;
-  vector<double> nfreqs = next_frame.freqs;
-  vector<double>::const_iterator phase_it = frame.phases.begin(), nphase_it = next_frame.phases.begin();
+  vector<float> freqs = block.freqs;
+  vector<float> nfreqs = next_block.freqs;
+  vector<float>::const_iterator phase_it = block.phases.begin(), nphase_it = next_block.phases.begin();
 
   int todo = freqs.size() + nfreqs.size();
 

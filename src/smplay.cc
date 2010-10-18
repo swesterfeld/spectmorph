@@ -24,7 +24,6 @@
 #include <bse/bseblockutils.hh>
 #include <sfi/sfiparams.h>
 #include "smaudio.hh"
-#include "smframe.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <ao/ao.h>
@@ -301,13 +300,13 @@ main (int argc, char **argv)
 
   if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)
     {
-      Frame zero_frame;
-      Frame one_frame (audio.contents[0]);
+      AudioBlock zero_block;
+      const AudioBlock& one_block = audio.contents[0];
       sample.resize (pos + frame_size);
 
       if (options.sines_enabled)
         {
-          sine_decoder.process (zero_frame, one_frame, window, decoded_sines);
+          sine_decoder.process (zero_block, one_block, window, decoded_sines);
           for (size_t i = 0; i < frame_size; i++)
             sample[pos + i] += decoded_sines[i];
         }
@@ -320,14 +319,14 @@ main (int argc, char **argv)
       size_t n4 = n / 1;
       size_t n4_1 = (n + 1) / 1;
 
-      Frame frame (audio.contents[n4 > loop_point ? loop_point : n4]);
-      Frame next_frame (audio.contents[n4_1 > loop_point ? loop_point : n4_1]);
+      const AudioBlock& block = audio.contents[n4 > loop_point ? loop_point : n4];
+      const AudioBlock& next_block = audio.contents[n4_1 > loop_point ? loop_point : n4_1];
 
       sample.resize (pos + frame_size);
 
       if (options.sines_enabled)
         {
-          sine_decoder.process (frame, next_frame, window, decoded_sines);
+          sine_decoder.process (block, next_block, window, decoded_sines);
           for (size_t i = 0; i < frame_size; i++)
             sample[pos + i] += decoded_sines[i];
         }

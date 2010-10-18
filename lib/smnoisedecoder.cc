@@ -29,7 +29,6 @@
 
 using std::vector;
 using SpectMorph::NoiseDecoder;
-using SpectMorph::Frame;
 using std::map;
 using Birnet::AlignedArray;
 using SpectMorph::sm_sse;
