@@ -205,6 +205,9 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   // -3
   expand_in[2] = spectrum[6];
   expand_in[3] = -spectrum[7];
+  // -4 (expand_in[0] and expand_in[1] will be multiplied with 0 and added to the fft_buffer, and therefore should not be NaN)
+  expand_in[0] = 0.0;
+  expand_in[1] = 0.0;
 
   const float K0 = 0.35874998569488525;
   const float K1 = 0.24414500594139099;
