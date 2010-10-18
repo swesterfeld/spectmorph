@@ -110,14 +110,14 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
 
   for (size_t b = 0; b < n_bands(); b++)
     {
-      const double value = sqrt (envelope[b] / band_count[b]) * scale;
+      const float value = sqrt (envelope[b] / band_count[b]) * scale;
 
       size_t start = band_start[b];
       size_t end = start + band_count[b] * 2;
       for (size_t d = start; d < end; d += 2)
         {
-          double sinr, cosr;
-          int_sincos (random_data_byte[d / 2], &sinr, &cosr);
+          float sinr, cosr;
+          int_sincosf (random_data_byte[d / 2], &sinr, &cosr);
           spectrum[d] = sinr * value;
           spectrum[d+1] = cosr * value;
         }

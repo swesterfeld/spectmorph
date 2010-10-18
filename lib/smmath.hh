@@ -355,6 +355,16 @@ int_sincos (guint8 i, double *si, double *ci)
 }
 
 inline void
+int_sincosf (guint8 i, float *si, float *ci)
+{
+  extern float *int_sincos_table;
+
+  *si = int_sincos_table[i];
+  i += 64;
+  *ci = int_sincos_table[i];
+}
+
+inline void
 int_sincos_init()
 {
   extern float *int_sincos_table;
