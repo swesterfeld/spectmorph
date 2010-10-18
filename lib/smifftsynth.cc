@@ -125,16 +125,15 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   mag *= 0.5 / block_size;
 
   // rotation for initial phase; scaling for magnitude
-  double phase_rcmag, phase_rsmag;
 
   /* the following block computes sincos (-phase-phase_adjust) */
   double sarg = (phase + phase_adjust) / (2 * M_PI);
   sarg -= floor (sarg);
 
   int iarg = sarg * SIN_TABLE_SIZE + 0.5;
-  phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+  const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
   iarg += SIN_TABLE_SIZE / 4;
-  phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+  const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
 
   /* compute FFT spectrum modifications */
   if (ibin > range && 2 * (ibin + range) < block_size)
