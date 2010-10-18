@@ -103,7 +103,8 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   assert (noise_band_partition->n_bands() == audio_block.noise.size());
   assert (noise_band_partition->n_spectrum_bins() == block_size + 2);
 
-  float *interpolated_spectrum = FFT::new_array_float (block_size + 2);
+  // 8 values before and after spectrum required by apply_window/SSE
+  float *interpolated_spectrum = FFT::new_array_float (block_size + 18) + 8;
 
   const double Eww = 0.375; // expected value of the energy of the window
   const double norm = 1 / Eww;
@@ -160,7 +161,7 @@ NoiseDecoder::process (const AudioBlock& audio_block,
 
       FFT::free_array_float (in);
     }
-  FFT::free_array_float (interpolated_spectrum);
+  FFT::free_array_float (interpolated_spectrum - 8);
 }
 
 size_t
@@ -177,9 +178,20 @@ NoiseDecoder::preferred_block_size (double mix_freq)
 void
 NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
 {
-  float *expand_in = FFT::new_array_float (block_size + 16); // SSE
+  float *expand_in = spectrum - 8;
 
-  memcpy (expand_in + 8, spectrum, block_size * sizeof (float));
+  // BS
+  expand_in[8 + block_size] = spectrum[1];
+  expand_in[9 + block_size] = 0;
+  // BS+1
+  expand_in[10 + block_size] = spectrum[block_size - 2];
+  expand_in[11 + block_size] = -spectrum[block_size - 1];
+  // BS+2
+  expand_in[12 + block_size] = spectrum[block_size - 4];
+  expand_in[13 + block_size] = -spectrum[block_size - 3];
+  // BS+3
+  expand_in[14 + block_size] = spectrum[block_size - 6];
+  expand_in[15 + block_size] = -spectrum[block_size - 5];
 
   // 0
   expand_in[8] = spectrum[0];
@@ -193,18 +205,6 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   // -3
   expand_in[2] = spectrum[6];
   expand_in[3] = -spectrum[7];
-  // BS
-  expand_in[8 + block_size] = spectrum[1];
-  expand_in[9 + block_size] = 0;
-  // BS+1
-  expand_in[10 + block_size] = spectrum[block_size - 2];
-  expand_in[11 + block_size] = -spectrum[block_size - 1];
-  // BS+2
-  expand_in[12 + block_size] = spectrum[block_size - 4];
-  expand_in[13 + block_size] = -spectrum[block_size - 3];
-  // BS+3
-  expand_in[14 + block_size] = spectrum[block_size - 6];
-  expand_in[15 + block_size] = -spectrum[block_size - 5];
 
   const float K0 = 0.35874998569488525;
   const float K1 = 0.24414500594139099;
@@ -322,6 +322,8 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   else
 #endif
     {
+      __m128 out[(block_size + 2) / 4 + 1];   // SSE alignment (should be done by compiler)
+      float *spectrum = reinterpret_cast <float *> (&out[0]);
       for (size_t i = 8; i < block_size + 2 + 8; i += 2)
         {
           float out_re = K0 * expand_in[i];
@@ -339,6 +341,4 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
       spectrum[1] = spectrum[block_size];
       Bse::Block::add (block_size, fft_buffer, spectrum);
     }
-
-  FFT::free_array_float (expand_in);
 }
