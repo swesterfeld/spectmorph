@@ -74,26 +74,30 @@ main (int argc, char **argv)
   FFT::fftar_float (block_size, xwin_samples, dbg_spectrum);
 
   // NOISE IFFT MODE
-  ifft_synth.clear_partials();
-  noise_dec.set_seed (42);
-  noise_dec.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
-  ifft_synth.get_samples (fft_samples);
+  for (int sse = 0; sse < 2; sse++)
+    {
+      sm_enable_sse (sse);
+      ifft_synth.clear_partials();
+      noise_dec.set_seed (42);
+      noise_dec.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+      ifft_synth.get_samples (fft_samples);
 
 #if 0
-  for (int i = 0; i < block_size; i++)
-    printf ("T %d %.17g %.17g\n", i, cos_win_samples[i], fft_samples[i]);
+      for (int i = 0; i < block_size; i++)
+        printf ("T %d %.17g %.17g\n", i, cos_win_samples[i], fft_samples[i]);
 
-  for (int i = 0; i < block_size; i++)
-    printf ("F %d %.17g %.17g\n", i, ifft_synth.fft_buffer()[i], dbg_spectrum[i] / block_size);
+      for (int i = 0; i < block_size; i++)
+        printf ("F %d %.17g %.17g\n", i, ifft_synth.fft_buffer()[i], dbg_spectrum[i] / block_size);
 #endif
-  double t_diff_max = 0;
-  for (int i = 0; i < block_size; i++)
-    t_diff_max = max (t_diff_max, fabs (cos_win_samples[i] - fft_samples[i]));
-  double s_diff_max = 0;
-  for (int i = 0; i < block_size; i++)
-    s_diff_max = max (s_diff_max, fabs (ifft_synth.fft_buffer()[i] - dbg_spectrum[i] / block_size));
-  printf ("noise test: t_diff_max=%.17g\n", t_diff_max);
-  printf ("noise test: s_diff_max=%.17g\n", s_diff_max);
-  assert (t_diff_max < 2e-5);
-  assert (s_diff_max < 1e-7);
+      double t_diff_max = 0;
+      for (int i = 0; i < block_size; i++)
+        t_diff_max = max (t_diff_max, fabs (cos_win_samples[i] - fft_samples[i]));
+      double s_diff_max = 0;
+      for (int i = 0; i < block_size; i++)
+        s_diff_max = max (s_diff_max, fabs (ifft_synth.fft_buffer()[i] - dbg_spectrum[i] / block_size));
+      printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);
+      printf ("noise test: sse=%d s_diff_max=%.17g\n", sse, s_diff_max);
+      assert (t_diff_max < 2e-5);
+      assert (s_diff_max < 1e-7);
+    }
 }

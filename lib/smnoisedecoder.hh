@@ -40,7 +40,7 @@ class NoiseDecoder
   Random random_gen;
   NoiseBandPartition *noise_band_partition;
 
-  void apply_window (float *spectrum);
+  void apply_window (float *spectrum, float *fft_buffer);
 
 public:
   NoiseDecoder (double orig_mix_freq,

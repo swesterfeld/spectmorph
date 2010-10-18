@@ -24,6 +24,19 @@ namespace SpectMorph
 {
 
 float *int_sincos_table;
+bool   use_sse = true;
+
+void
+sm_enable_sse (bool sse)
+{
+  use_sse = sse;
+}
+
+bool
+sm_sse()
+{
+  return use_sse;
+}
 
 void
 sm_init_plugin()

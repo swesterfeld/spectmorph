@@ -17,6 +17,7 @@
 
 #include "smnoisedecoder.hh"
 #include "smmath.hh"
+#include "smmain.hh"
 #include "smfft.hh"
 #include <bse/bseblockutils.hh>
 #include <bse/gslfft.h>
@@ -31,6 +32,7 @@ using SpectMorph::NoiseDecoder;
 using SpectMorph::Frame;
 using std::map;
 using Birnet::AlignedArray;
+using SpectMorph::sm_sse;
 
 static map<size_t, float *> cos_window_for_block_size;
 
@@ -111,8 +113,7 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   if (output_mode == FFT_SPECTRUM)
     {
-      apply_window (interpolated_spectrum);
-      Bse::Block::add (block_size, samples, interpolated_spectrum);
+      apply_window (interpolated_spectrum, samples);
     }
   else if (output_mode == DEBUG_UNWINDOWED)
     {
@@ -174,7 +175,7 @@ NoiseDecoder::preferred_block_size (double mix_freq)
 }
 
 void
-NoiseDecoder::apply_window (float *spectrum)
+NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
 {
   float *expand_in = FFT::new_array_float (block_size + 16); // SSE
 
@@ -211,28 +212,30 @@ NoiseDecoder::apply_window (float *spectrum)
   const float K3 = 0.0058400016278028488;
 
 #ifdef __SSE__ /* fast SSEified convolution */
-  const size_t K_ARRAY_SIZE = 4 * 2 * 4;
-  static float *k_array = NULL;
-  if (!k_array)
+  if (sm_sse())
     {
-      k_array = FFT::new_array_float (K_ARRAY_SIZE);
-      const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
-      size_t fi = 0, si = 0;
-      for (size_t i = 0; i < K_ARRAY_SIZE; i++)
+      const size_t K_ARRAY_SIZE = 4 * 2 * 4;
+      static float *k_array = NULL;
+      if (!k_array)
         {
-          bool second = (i / 4) & 1;
-          if (second)
+          k_array = FFT::new_array_float (K_ARRAY_SIZE);
+          const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
+          size_t fi = 0, si = 0;
+          for (size_t i = 0; i < K_ARRAY_SIZE; i++)
             {
-              k_array[i] = ks[1 + fi / 2];
-              fi++;
+              bool second = (i / 4) & 1;
+              if (second)
+                {
+                  k_array[i] = ks[1 + fi / 2];
+                  fi++;
+                }
+              else // second
+                {
+                  k_array[i] = ks[si / 2];
+                  si++;
+                }
             }
-          else // second
-            {
-              k_array[i] = ks[si / 2];
-              si++;
-            }
-        }
-      }
+          }
 #if 0
   for (size_t i = 0; i < K_ARRAY_SIZE; i++)
     {
@@ -242,57 +245,69 @@ NoiseDecoder::apply_window (float *spectrum)
     }
   printf ("================\n");
 #endif
-  const __m128 *in = reinterpret_cast<__m128 *> (expand_in);
-  const __m128 *k = reinterpret_cast<__m128 *> (k_array);
-  const __m128 k0 = k[0];
-  const __m128 k1 = k[1];
-  const __m128 k2 = k[2];
-  const __m128 k3 = k[3];
-  const __m128 k4 = k[4];
-  const __m128 k5 = k[5];
-  const __m128 k6 = k[6];
-  const __m128 k7 = k[7];
+      const __m128 *in = reinterpret_cast<__m128 *> (expand_in);
+      const __m128 *k = reinterpret_cast<__m128 *> (k_array);
+      const __m128 k0 = k[0];
+      const __m128 k1 = k[1];
+      const __m128 k2 = k[2];
+      const __m128 k3 = k[3];
+      const __m128 k4 = k[4];
+      const __m128 k5 = k[5];
+      const __m128 k6 = k[6];
+      const __m128 k7 = k[7];
 
-  for (size_t i = 0; i < block_size + 4; i += 4)
-    {
+#define CONV(I0,I1,I2,I3,I4,OUT) \
+      { \
+        __m128 f = _mm_add_ps (_mm_mul_ps (I0, k0), _mm_mul_ps (I1, k2)); \
+       __m128 s = _mm_add_ps (_mm_mul_ps (I1, k1), _mm_mul_ps (I2, k3)); \
+        f = _mm_add_ps (f, _mm_mul_ps (I2, k4)); \
+        s = _mm_add_ps (s, _mm_mul_ps (I3, k5)); \
+        f = _mm_add_ps (f, _mm_mul_ps (I3, k6)); \
+        s = _mm_add_ps (s, _mm_mul_ps (I4, k7)); \
+        const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2)); \
+        OUT = _mm_add_ps (OUT, _mm_shuffle_ps (_mm_add_ps (f, hi), _mm_add_ps (s, hi), _MM_SHUFFLE (3,2,1,0))); \
+      }
+      for (size_t i = 0; i < block_size; i += 4)
+        {
+          const __m128 i0 = in[0];
+          const __m128 i1 = in[1];
+          const __m128 i2 = in[2];
+          const __m128 i3 = in[3];
+          const __m128 i4 = in[4];
+          CONV(i0,i1,i2,i3,i4,*(__m128 *)(fft_buffer + i));
+          in++;
+        }
       const __m128 i0 = in[0];
       const __m128 i1 = in[1];
-      // in[0]
-      __m128 f = _mm_add_ps (_mm_mul_ps (i0, k0), _mm_mul_ps (i1, k2));
       const __m128 i2 = in[2];
-      __m128 s = _mm_add_ps (_mm_mul_ps (i1, k1), _mm_mul_ps (i2, k3));
-
-      // in[2]
-      f = _mm_add_ps (f, _mm_mul_ps (i2, k4));
       const __m128 i3 = in[3];
-      s = _mm_add_ps (s, _mm_mul_ps (i3, k5));
-
-      // in[4]
-      f = _mm_add_ps (f, _mm_mul_ps (i3, k6));
       const __m128 i4 = in[4];
-      s = _mm_add_ps (s, _mm_mul_ps (i4, k7));
 
-      const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2));
-      *(__m128 *)(spectrum + i) = _mm_shuffle_ps (_mm_add_ps (f, hi), _mm_add_ps (s, hi), _MM_SHUFFLE (3,2,1,0));
-      in++;
+      // last value (heighest frequency -> store in bin 1)
+      F4Vector fft_buffer_last = { { 0.0, 0.0, 0.0, 0.0 } };
+      CONV(i0,i1,i2,i3,i4,fft_buffer_last.v);
+      fft_buffer[1] += fft_buffer_last.f[0];
     }
-#else
-  for (size_t i = 8; i < block_size + 2 + 8; i += 2)
-    {
-      float out_re = K0 * expand_in[i];
-      float out_im = K0 * expand_in[i + 1];
-
-      out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
-      out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
-      out_re += K2 * (expand_in[i - 4] + expand_in[i + 4]);
-      out_im += K2 * (expand_in[i - 3] + expand_in[i + 5]);
-      out_re += K3 * (expand_in[i - 6] + expand_in[i + 6]);
-      out_im += K3 * (expand_in[i - 5] + expand_in[i + 7]);
-      spectrum[i-8] = out_re;
-      spectrum[i-7] = out_im;
-    }
+  else
 #endif
+    {
+      for (size_t i = 8; i < block_size + 2 + 8; i += 2)
+        {
+          float out_re = K0 * expand_in[i];
+          float out_im = K0 * expand_in[i + 1];
 
-  spectrum[1] = spectrum[block_size];
+          out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
+          out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
+          out_re += K2 * (expand_in[i - 4] + expand_in[i + 4]);
+          out_im += K2 * (expand_in[i - 3] + expand_in[i + 5]);
+          out_re += K3 * (expand_in[i - 6] + expand_in[i + 6]);
+          out_im += K3 * (expand_in[i - 5] + expand_in[i + 7]);
+          spectrum[i-8] = out_re;
+          spectrum[i-7] = out_im;
+        }
+      spectrum[1] = spectrum[block_size];
+      Bse::Block::add (block_size, fft_buffer, spectrum);
+    }
+
   FFT::free_array_float (expand_in);
 }

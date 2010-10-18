@@ -24,6 +24,8 @@ namespace SpectMorph
 
 void sm_init_plugin();
 void sm_init (int *argc_p, char ***argv_p);
+bool sm_sse();
+void sm_enable_sse (bool sse);
 
 }
 
