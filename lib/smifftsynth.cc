@@ -101,6 +101,7 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
   freq256_factor = 1 / mix_freq * block_size * zero_padding;
+  mag_norm = 0.5 / block_size;
 }
 
 IFFTSynth::~IFFTSynth()
@@ -122,7 +123,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   // adjust phase to get the same output like vector sin (smmath.hh)
   const double phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
 
-  mag *= 0.5 / block_size;
+  const float nmag = mag * mag_norm;
 
   // rotation for initial phase; scaling for magnitude
 
@@ -131,9 +132,9 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   sarg -= floor (sarg);
 
   int iarg = sarg * SIN_TABLE_SIZE + 0.5;
-  const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+  const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
   iarg += SIN_TABLE_SIZE / 4;
-  const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * mag;
+  const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
 
   /* compute FFT spectrum modifications */
   if (ibin > range && 2 * (ibin + range) < block_size)
