@@ -33,6 +33,7 @@ smlive:
 - noise masking (no noise resynthesis if its inaudible anyway)
 - make FFTW integration thread safe
 - use fast ftoi() for processors that require it (x86)
+- maybe use integer phase representation (-> less floor()/float->int/int->float cycles)
 
 tests:
 - add test cases
@@ -50,9 +51,6 @@ samples:
 - write automatic cutter for IMIS samples
 - preserve microintonanation by using ping pong loops
 - write sf2 to smset converter
-
-debian:
-- package boost-numeric-bindings
 
 documentation:
 - update API documentation with new classes (LiveDecoder, GenericIn*)
