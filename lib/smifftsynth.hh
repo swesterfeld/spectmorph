@@ -36,6 +36,7 @@ class IFFTSynth
   size_t             block_size;
   double             mix_freq;
   double             freq256_factor;
+  double             mag_norm;
 
   float             *fft_in;
   float             *fft_out;

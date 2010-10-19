@@ -128,7 +128,8 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   // rotation for initial phase; scaling for magnitude
 
   /* the following block computes sincos (-phase-phase_adjust) */
-  double sarg = (phase + phase_adjust) / (2 * M_PI);
+  const double inv_2pi = 1.0 / (2 * M_PI);
+  double sarg = (phase + phase_adjust) * inv_2pi;
   sarg -= floor (sarg);
 
   int iarg = sarg * SIN_TABLE_SIZE + 0.5;
