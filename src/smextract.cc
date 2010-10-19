@@ -119,16 +119,14 @@ reconstruct (AudioBlock&     audio_block,
 {
   for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
     {
-      double smag = audio_block.phases[2 * partial];
-      double cmag = audio_block.phases[2 * partial + 1];
-      double f    = audio_block.freqs[partial];
-      double phase = 0;
+      double f     = audio_block.freqs[partial];
+      double mag   = audio_block.mags[partial];
+      double phase = audio_block.phases[partial];
 
       // do a phase optimal reconstruction of that partial
       for (size_t n = 0; n < signal.size(); n++)
         {
-          signal[n] += sin (phase) * smag;
-          signal[n] += cos (phase) * cmag;
+          signal[n] += sin (phase) * mag;
           phase += f / mix_freq * 2.0 * M_PI;
         }
     }
@@ -248,7 +246,7 @@ main (int argc, char **argv)
             {
               if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
                 {
-                  printf ("%zd %f %f\n", i, block.freqs[n], mag (block.phases[n * 2], block.phases[n * 2 + 1]));
+                  printf ("%zd %f %f\n", i, block.freqs[n], block.mags[n]);
                 }
             }
         }
@@ -353,7 +351,7 @@ main (int argc, char **argv)
           size_t maxp = 0;
           for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
             {
-              double m = mag (audio.contents[i].phases[partial * 2], audio.contents[i].phases[partial * 2 + 1]);
+              const double m = audio.contents[i].mags[partial];
               if (m > maxm)
                 {
                   maxm = m;
@@ -363,8 +361,7 @@ main (int argc, char **argv)
           if (maxm > 0)
             {
               printf ("%f Hz: %f\n", audio.contents[i].freqs[maxp], bse_db_from_factor (maxm, -200));
-              audio.contents[i].phases[maxp * 2] = 0;
-              audio.contents[i].phases[maxp * 2 + 1] = 0;
+              audio.contents[i].mags[maxp] = 0;
             }
           else
             {
@@ -377,7 +374,7 @@ main (int argc, char **argv)
       check_usage (argc, 4, "noiseparams <frame_no>");
 
       int f = atoi (argv[3]);
-      for (int i = 0; i < audio.contents[f].noise.size(); i++)
+      for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
         {
           printf ("%f\n", audio.contents[f].noise[i]);
         }
@@ -393,17 +390,19 @@ main (int argc, char **argv)
     {
       check_usage (argc, 3, "size");
 
-      size_t phase_bytes = 0, freq_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
+      size_t phase_bytes = 0, freq_bytes = 0, mag_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
       for (size_t f = 0; f < audio.contents.size(); f++)
         {
           phase_bytes += audio.contents[f].phases.size() * sizeof (float);
           freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
+          mag_bytes += audio.contents[f].mags.size() * sizeof (float);
           debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
           original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
           noise_bytes += audio.contents[f].noise.size() * sizeof (float);
         }
-      printf ("phases       : %d bytes\n", phase_bytes);
       printf ("frequencies  : %d bytes\n", freq_bytes);
+      printf ("mags         : %d bytes\n", mag_bytes);
+      printf ("phases       : %d bytes\n", phase_bytes);
       printf ("dbgsamples   : %d bytes\n", debug_samples_bytes);
       printf ("orig_fft     : %d bytes\n", original_fft_bytes);
       printf ("noise        : %d bytes\n", noise_bytes);
@@ -440,7 +439,7 @@ main (int argc, char **argv)
                 {
                   if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
                     {
-                      double m = mag (block.phases[n * 2], block.phases[n * 2 + 1]);
+                      double m = block.mags[n];
                       if (m > best_mag)
                         {
                           best_mag = m;

@@ -67,8 +67,7 @@ struct Tracksel {
   double   freq;
   double   mag;
   double   mag2;      /* magnitude in dB */
-  double   smag;      /* sine amplitude */
-  double   cmag;      /* cosine amplitude */
+  double   phase;     /* phase */
   bool     is_harmonic;
   Tracksel *prev, *next;
 };

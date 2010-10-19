@@ -46,6 +46,16 @@ magnitude (vector<float>::iterator i)
   return sqrt (*i * *i + *(i+1) * *(i+1));
 }
 
+// wraps phase in range [0:2*pi]
+static double
+normalize_phase (double phase)
+{
+  const double inv_2pi = 1.0 / (2.0 * M_PI);
+  phase *= inv_2pi;
+  phase -= floor (phase);
+  return phase * (2.0 * M_PI);
+}
+
 #define debug(...) SpectMorph::Debug::debug ("encoder", __VA_ARGS__)
 
 /**
@@ -278,24 +288,18 @@ Encoder::search_local_maxima()
                       tracksel.freq = tfreq;
                       tracksel.mag = peak_mag / frame_size * zeropad;
                       tracksel.mag2 = mag2;
-                      tracksel.cmag = interp_c.real() / frame_size * zeropad;
-                      tracksel.smag = -interp_c.imag() / frame_size * zeropad;
                       tracksel.next = 0;
                       tracksel.prev = 0;
 
+                      const double cmag = interp_c.real() / frame_size * zeropad;
+                      const double smag = -interp_c.imag() / frame_size * zeropad;
+                      double phase = atan2 (cmag, smag);
                       // correct for the odd-centered analysis
                         {
-                          double smag = tracksel.smag;
-                          double cmag = tracksel.cmag;
-                          double magnitude = sqrt (smag * smag + cmag * cmag);
-                          double phase = atan2 (smag, cmag);
-                          phase += (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
-                          smag = sin (phase) * magnitude;
-                          cmag = cos (phase) * magnitude;
-                          tracksel.smag = smag;
-                          tracksel.cmag = cmag;
+                          phase -= (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
+                          phase = normalize_phase (phase);
                         }
-
+                      tracksel.phase = phase;
 
                       double dummy_freq;
                       tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
@@ -450,8 +454,8 @@ Encoder::validate_partials()
 #endif
 
 		      audio_blocks[t->frame].freqs.push_back (t->freq);
-		      audio_blocks[t->frame].phases.push_back (t->smag);
-		      audio_blocks[t->frame].phases.push_back (t->cmag);
+		      audio_blocks[t->frame].mags.push_back (t->mag);
+		      audio_blocks[t->frame].phases.push_back (t->phase);
 		    }
 		}
 	    }
@@ -479,14 +483,14 @@ Encoder::spectral_subtract (const vector<float>& window)
       for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
 	{
           const double freq = audio_blocks[frame].freqs[i];
-	  const double smag = audio_blocks[frame].phases[i * 2];
-	  const double cmag = audio_blocks[frame].phases[i * 2 + 1];
+	  const double mag = audio_blocks[frame].mags[i];
+	  const double phase = audio_blocks[frame].phases[i];
 
           VectorSinParams params;
           params.mix_freq = enc_params.mix_freq;
           params.freq = freq;
-          params.phase = atan2 (cmag, smag);
-          params.mag = sqrt (smag * smag + cmag * cmag);
+          params.phase = phase;
+          params.mag = mag;
           params.mode = VectorSinParams::ADD;
 
           fast_vector_sinf (params, &signal[0], &signal[frame_size]);
@@ -551,6 +555,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
   AlignedArray<float, 16> cos_vec (frame_size);
   AlignedArray<float, 16> sines (frame_size);
   vector<float> good_freqs;
+  vector<float> good_mags;
   vector<float> good_phases;
 
   double max_mag;
@@ -561,9 +566,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
       // search biggest partial
       for (size_t i = 0; i < audio_block.freqs.size(); i++)
         {
-          const double smag = audio_block.phases[2 * i];
-          const double cmag = audio_block.phases[2 * i + 1];
-          const double mag = sqrt (smag * smag + cmag * cmag);
+          const double mag = audio_block.mags[i];
 
           if (mag > max_mag)
             {
@@ -575,17 +578,14 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
       if (max_mag > 0)
         {
           // remove partial, so we only do each partial once
-          double smag = audio_block.phases[2 * partial];
-          double cmag = audio_block.phases[2 * partial + 1];
           double f = audio_block.freqs[partial];
 
-          audio_block.phases[2 * partial] = 0;
-          audio_block.phases[2 * partial + 1] = 0;
+          audio_block.mags[partial] = 0;
 
           double phase;
           // determine "perfect" phase and magnitude instead of using interpolated fft phase
-          smag = 0;
-          cmag = 0;
+          double smag = 0;
+          double cmag = 0;
           double snorm = 0, cnorm = 0;
 
           VectorSinParams params;
@@ -594,8 +594,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
           params.freq = f;
           params.mag = 1;
           params.phase = -((frame_size - 1) / 2.0) * f / mix_freq * 2.0 * M_PI;
-          while (params.phase < -M_PI)
-            params.phase += 2 * M_PI;
+          params.phase = normalize_phase (params.phase);
           params.mode = VectorSinParams::REPLACE;
 
           fast_vector_sincosf (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
@@ -615,26 +614,26 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
           cmag /= cnorm;
 
           double magnitude = sqrt (smag * smag + cmag * cmag);
-          phase = atan2 (smag, cmag);
-          phase += (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
-          smag = sin (phase) * magnitude;
-          cmag = cos (phase) * magnitude;
+          phase = atan2 (cmag, smag);
+          phase -= (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
+          phase = normalize_phase (phase);
 
           // restore partial => sines; keep params.freq & params.mix_freq
-          params.phase = atan2 (cmag, smag);
-          params.mag = sqrt (smag * smag + cmag * cmag);
+          params.phase = phase;
+          params.mag = magnitude;
           params.mode = VectorSinParams::ADD;
           fast_vector_sinf (params, &sines[0], &sines[frame_size]);
 
           // store refined freq, mag and phase
           good_freqs.push_back (f);
-          good_phases.push_back (smag);
-          good_phases.push_back (cmag);
+          good_mags.push_back (magnitude);
+          good_phases.push_back (phase);
         }
     }
   while (max_mag > 0);
 
   audio_block.freqs = good_freqs;
+  audio_block.mags = good_mags;
   audio_block.phases = good_phases;
 }
 
@@ -648,8 +647,8 @@ remove_small_partials (AudioBlock& audio_block)
    * if the nearest peak is much larger
    */
   vector<double> dbmags;
-  for (vector<float>::iterator pi = audio_block.phases.begin(); pi != audio_block.phases.end(); pi += 2)
-    dbmags.push_back (bse_db_from_factor (magnitude (pi), -200));
+  for (vector<float>::iterator mi = audio_block.mags.begin(); mi != audio_block.mags.end(); mi++)
+    dbmags.push_back (bse_db_from_factor (*mi, -200));
 
   vector<bool> remove (dbmags.size());
 
@@ -669,6 +668,7 @@ remove_small_partials (AudioBlock& audio_block)
     }
 
   vector<float> good_freqs;
+  vector<float> good_mags;
   vector<float> good_phases;
 
   for (size_t i = 0; i < dbmags.size(); i++)
@@ -676,11 +676,12 @@ remove_small_partials (AudioBlock& audio_block)
       if (!remove[i])
         {
           good_freqs.push_back (audio_block.freqs[i]);
-          good_phases.push_back (audio_block.phases[i * 2]);
-          good_phases.push_back (audio_block.phases[i * 2 + 1]);
+          good_mags.push_back (audio_block.mags[i]);
+          good_phases.push_back (audio_block.phases[i]);
         }
     }
   audio_block.freqs = good_freqs;
+  audio_block.mags = good_mags;
   audio_block.phases = good_phases;
 }
 
@@ -836,7 +837,7 @@ Encoder::approx_noise (const vector<float>& window)
   const size_t fft_size = block_size * zeropad;
 
   double expected_value_w2 = 0;
-  for (int x = 0; x < frame_size; x++)
+  for (size_t x = 0; x < frame_size; x++)
     expected_value_w2 += window[x] * window[x];
   expected_value_w2 /= frame_size;
 
@@ -953,16 +954,14 @@ Encoder::compute_attack_params (const vector<float>& window)
       for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
         {
           const double SA = 0.5;
-          double smag = audio_block.phases[2 * partial] * SA;
-          double cmag = audio_block.phases[2 * partial + 1] * SA;
-          double f    = audio_block.freqs[partial];
-          double phase = 0;
+          double mag   = audio_block.mags[partial] * SA;
+          double f     = audio_block.freqs[partial];
+          double phase = audio_block.phases[partial];
 
           // do a phase optimal reconstruction of that partial
           for (size_t n = 0; n < frame_signal.size(); n++)
             {
-              frame_signal[n] += sin (phase) * smag;
-              frame_signal[n] += cos (phase) * cmag;
+              frame_signal[n] += sin (phase) * mag;
               phase += f / mix_freq * 2.0 * M_PI;
             }
         }
@@ -1022,8 +1021,8 @@ Encoder::compute_attack_params (const vector<float>& window)
     }
   for (size_t f = 0; f < frames; f++)
     {
-      for (size_t i = 0; i < audio_blocks[f].phases.size(); i++)
-        audio_blocks[f].phases[i] *= scale[f];
+      for (size_t i = 0; i < audio_blocks[f].mags.size(); i++)
+        audio_blocks[f].mags[i] *= scale[f];
     }
   optimal_attack = attack;
 }
@@ -1031,7 +1030,8 @@ Encoder::compute_attack_params (const vector<float>& window)
 struct PartialData
 {
   float freq;
-  float phases[2];
+  float mag;
+  float phase;
 };
 
 static bool
@@ -1052,21 +1052,22 @@ Encoder::sort_freqs()
         {
           PartialData pd;
           pd.freq = audio_blocks[frame].freqs[p];
-          pd.phases[0] = audio_blocks[frame].phases[2 * p];
-          pd.phases[1] = audio_blocks[frame].phases[2 * p + 1];
+          pd.mag = audio_blocks[frame].mags[p];
+          pd.phase = audio_blocks[frame].phases[p];
           pvec.push_back (pd);
         }
       sort (pvec.begin(), pvec.end(), pd_cmp);
 
       // replace partial data with sorted partial data
       audio_blocks[frame].freqs.clear();
+      audio_blocks[frame].mags.clear();
       audio_blocks[frame].phases.clear();
 
       for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
         {
           audio_blocks[frame].freqs.push_back (pi->freq);
-          audio_blocks[frame].phases.push_back (pi->phases[0]);
-          audio_blocks[frame].phases.push_back (pi->phases[1]);
+          audio_blocks[frame].mags.push_back (pi->mag);
+          audio_blocks[frame].phases.push_back (pi->phase);
         }
     }
 }

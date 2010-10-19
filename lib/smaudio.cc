@@ -173,6 +173,10 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                   old_freq = fb[f];
                 }
             }
+          else if (ifile.event_name() == "mags")
+            {
+              audio_block->mags = fb;
+            }
           else if (ifile.event_name() == "phases")
             {
               audio_block->phases = fb;
@@ -262,6 +266,7 @@ SpectMorph::Audio::save (GenericOut *file)
       of.begin_section ("frame");
       of.write_float_block ("noise", contents[i].noise);
       of.write_float_block ("freqs", contents[i].freqs);
+      of.write_float_block ("mags", contents[i].mags);
       of.write_float_block ("phases", contents[i].phases);
       of.write_float_block ("original_fft", contents[i].original_fft);
       of.write_float_block ("debug_samples", contents[i].debug_samples);

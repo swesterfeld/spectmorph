@@ -93,8 +93,8 @@ perf_test()
   for (int i = 0; i < FREQS; i++)
     {
       b.freqs.push_back (440 + i);
-      b.phases.push_back (0.1);
-      b.phases.push_back (0.9);
+      b.mags.push_back (0.9);
+      b.phases.push_back (0.5);
     }
   start = gettime();
   for (int r = 0; r < RUNS; r++)
@@ -187,8 +187,8 @@ test_accs()
   vector<double> dwindow (window.begin(), window.end());
 
   b.freqs.push_back (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440));
-  b.phases.push_back (0.1);
-  b.phases.push_back (0.9);
+  b.mags.push_back (0.9);
+  b.phases.push_back (0.5);
 
   sd.process (b, next_b, dwindow, samples);
 

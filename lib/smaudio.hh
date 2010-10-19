@@ -24,7 +24,7 @@
 #include "smgenericin.hh"
 #include "smgenericout.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION 5
+#define SPECTMORPH_BINARY_FILE_VERSION 6
 
 namespace SpectMorph
 {
@@ -42,7 +42,8 @@ class AudioBlock
 public:
   std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
   std::vector<float> freqs;          //!< frequencies of the sine components of this frame
-  std::vector<float> phases;         //!< phases and magnitude of the sine components, represented as sin and cos magnitude
+  std::vector<float> mags;           //!< magnitudes of the sine components
+  std::vector<float> phases;         //!< phases of the sine components
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };

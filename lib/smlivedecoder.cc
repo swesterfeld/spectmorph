@@ -215,9 +215,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                             }
                         }
                     }
-                  double smag = audio_block.phases[partial * 2];
-                  double cmag = audio_block.phases[partial * 2 + 1];
-                  double mag = sqrt (smag * smag + cmag * cmag) * aa_filter_mag;
+                  double mag = audio_block.mags[partial] * aa_filter_mag;
                   double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
                   /*

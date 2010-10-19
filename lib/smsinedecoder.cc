@@ -78,17 +78,15 @@ SineDecoder::process (const AudioBlock& block,
       for (size_t i = 0; i < block.freqs.size(); i++)
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
-          const double smag = block.phases[i * 2];
-          const double cmag = block.phases[i * 2 + 1];
           const double mag_epsilon = 1e-8;
 
           VectorSinParams params;
-          params.mag = sqrt (smag * smag + cmag * cmag) * SA;
+          params.mag = block.mags[i] * SA;
           if (params.mag > mag_epsilon)
             {
               params.mix_freq = mix_freq;
               params.freq = block.freqs[i];
-              params.phase = atan2 (cmag, smag);
+              params.phase = block.phases[i];
               params.mode = VectorSinParams::ADD;
 
               fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
@@ -109,13 +107,11 @@ SineDecoder::process (const AudioBlock& block,
       for (size_t i = 0; i < block.freqs.size(); i++)
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
-          const double smag = block.phases[i * 2];
-          const double cmag = block.phases[i * 2 + 1];
           const double mag_epsilon = 1e-8;
 
-          const double mag = sqrt (smag * smag + cmag * cmag) * SA;
+          const double mag = block.mags[i] * SA;
           if (mag > mag_epsilon)
-            ifft_synth->render_partial (block.freqs[i], mag, atan2 (cmag, smag));
+            ifft_synth->render_partial (block.freqs[i], mag, block.phases[i]);
         }
       ifft_synth->get_samples (&decoded_sines[0]);
       return;
@@ -126,7 +122,6 @@ SineDecoder::process (const AudioBlock& block,
   /* phase distorted reconstruction */
   vector<float> freqs = block.freqs;
   vector<float> nfreqs = next_block.freqs;
-  vector<float>::const_iterator phase_it = block.phases.begin(), nphase_it = next_block.phases.begin();
 
   int todo = freqs.size() + nfreqs.size();
 
@@ -159,12 +154,8 @@ SineDecoder::process (const AudioBlock& block,
 	  freqs[best_i] = -1;
 	  double nfreq = nfreqs[best_j];
 	  nfreqs[best_j] = -1;
-	  double s_mag = *(phase_it + best_i * 2);
-	  double c_mag = *(phase_it + best_i * 2 + 1);
-	  double ns_mag = *(nphase_it + best_j * 2);
-	  double nc_mag = *(nphase_it + best_j * 2 + 1);
-	  double mag = sqrt (s_mag * s_mag + c_mag * c_mag);
-	  double nmag = sqrt (ns_mag * ns_mag + nc_mag * nc_mag);
+	  double mag = block.mags[best_i];
+	  double nmag = block.mags[best_j];
 
 	  // fprintf (stderr, "%f | %f ==> %f | %f\n", freq, mag, nfreq, nmag);
 	  assert (fabs (nfreq - freq) / freq < 0.1);
@@ -208,9 +199,7 @@ SineDecoder::process (const AudioBlock& block,
 		{
 		  double freq = freqs[from];
 		  freqs[from] = -1;
-		  double s_mag = *(phase_it + from * 2);
-		  double c_mag = *(phase_it + from * 2 + 1);
-		  double mag = sqrt (s_mag * s_mag + c_mag * c_mag);
+		  double mag = block.mags[from];
 
 		  // fprintf (stderr, "%f | %f   >>> \n", freq, mag);
 
@@ -247,9 +236,7 @@ SineDecoder::process (const AudioBlock& block,
 		{
 		  double freq = nfreqs[to];
 		  nfreqs[to] = -1;
-		  double s_mag = *(nphase_it + to * 2);
-		  double c_mag = *(nphase_it + to * 2 + 1);
-		  double mag = sqrt (s_mag * s_mag + c_mag * c_mag);
+		  double mag = next_block.mags[to];
 
 		  // fprintf (stderr, "%f | %f   <<< \n", freq, mag);
 
