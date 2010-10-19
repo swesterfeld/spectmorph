@@ -121,7 +121,8 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
 
   // adjust phase to get the same output like vector sin (smmath.hh)
-  const double phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
+  // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
+  const double phase_adjust = (freq256 - 128) * (M_PI / 256.0);
 
   const float nmag = mag * mag_norm;
 
