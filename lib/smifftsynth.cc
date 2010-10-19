@@ -116,7 +116,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   const int range = 4;
 
   const int freq256 = mf_freq * freq256_factor;
-  const int ibin = freq256 / 256;
+  const int ibin = freq256 >> 8;
   float *sp = fft_in + 2 * (ibin - range);
   const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
 
