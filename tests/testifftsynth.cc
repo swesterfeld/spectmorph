@@ -26,6 +26,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <assert.h>
 #include <sys/time.h>
 
 using namespace SpectMorph;
@@ -111,8 +112,8 @@ perf_test()
   printf ("Old SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
 
-void
-accuracy_test (double freq, double mag, double phase, double mix_freq)
+double
+accuracy_test (double freq, double mag, double phase, double mix_freq, bool verbose)
 {
   const size_t block_size = 1024;
 
@@ -163,7 +164,9 @@ accuracy_test (double freq, double mag, double phase, double mix_freq)
       max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
       //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
-  printf ("%f %.17g\n", freq, max_diff);
+  if (verbose)
+    printf ("%f %.17g\n", freq, max_diff);
+  return max_diff;
 }
 
 void
@@ -195,7 +198,7 @@ test_accs()
   double max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
-      printf ("%d %.17g %.17g\n", i, samples[i], osamples[i]);
+      printf ("%zd %.17g %.17g\n", i, samples[i], osamples[i]);
       max_diff = max (max_diff, fabs (samples[i] - osamples[i]));
     }
   printf ("# max_diff = %.17g\n", max_diff);
@@ -268,9 +271,13 @@ main (int argc, char **argv)
       test_spect();
       return 0;
     }
+  const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
   const double mag = 0.991;
   const double phase = 0.5;
-  accuracy_test (187, mag, phase, 48000);
-  for (double freq = 20; freq < 24000; freq = min (freq * 1.01, freq + 0.5))
-    accuracy_test (freq, mag, phase, 48000);
+  double max_diff = 0;
+
+  for (double freq = 20; freq < 24000; freq = min (freq * 1.01, freq + 2.5))
+    max_diff = max (max_diff, accuracy_test (freq, mag, phase, 48000, verbose));
+  printf ("# IFFTSynth: max_diff = %.17g\n", max_diff);
+  assert (max_diff < 9e-5);
 }
