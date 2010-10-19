@@ -20,19 +20,12 @@
 #include "smfft.hh"
 #include "smdebug.hh"
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/vector_proxy.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/triangular.hpp>
-#include <boost/numeric/ublas/lu.hpp>
-#include <boost/numeric/ublas/io.hpp>
-#include <boost/numeric/bindings/lapack/lapack.hpp>
-
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
 #include <bse/gslfft.h>
 #include <math.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <complex>
 #include <map>
@@ -46,9 +39,6 @@ using std::vector;
 using std::string;
 using std::map;
 using std::max;
-
-namespace ublas = boost::numeric::ublas;
-using ublas::matrix;
 
 static double
 magnitude (vector<float>::iterator i)
@@ -539,46 +529,6 @@ Encoder::spectral_subtract (const vector<float>& window)
   FFT::free_array_float (fft_out);
 }
 
-// find best fit of amplitudes / phases to the observed signal
-static void
-refine_sine_params (AudioBlock& audio_block, double mix_freq, const vector<float>& window)
-{
-  const size_t freq_count = audio_block.freqs.size();
-  const size_t signal_size = audio_block.debug_samples.size();
-
-  if (freq_count == 0)
-    return;
-
-  // input: M x N matrix containing base of a vector subspace, consisting of N M-dimesional vectors
-  matrix<double, ublas::column_major> A (signal_size, freq_count * 2);
-  for (int i = 0; i < freq_count; i++)
-    {
-      double phase = 0;
-      const double delta_phase = audio_block.freqs[i] * 2 * M_PI / mix_freq;
-
-      for (size_t x = 0; x < signal_size; x++)
-        {
-          double s, c;
-          sincos (phase, &s, &c);
-          A(x, i * 2) = s * window[x];
-          A(x, i * 2 + 1) = c * window[x];
-          phase += delta_phase;
-        }
-    }
-
-  // input: M dimensional target vector
-  ublas::vector<double> b (signal_size);
-  for (size_t x = 0; x < signal_size; x++)
-    b[x] = audio_block.debug_samples[x] * window[x];
-
-  // generalized least squares algorithm minimizing residual r = Ax - b
-  boost::numeric::bindings::lapack::gels ('N', A, b, boost::numeric::bindings::lapack::optimal_workspace());
-
-  // => output: vector containing optimal choice for phases and magnitudes
-  for (int i = 0; i < freq_count * 2; i++)
-    audio_block.phases[i] = b[i];
-}
-
 template<class AIter, class BIter>
 static double
 float_vector_delta (AIter ai, AIter aend, BIter bi)
@@ -748,13 +698,6 @@ Encoder::optimize_partials (const vector<float>& window, int optimization_level)
       if (optimization_level >= 1) // redo FFT estmates, only better
         refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, window);
 
-      if (optimization_level >= 2)
-        {
-          // do "perfect" magnitude and phase estimation using linear least squares
-          refine_sine_params (audio_blocks[frame], mix_freq, window);
-          printf ("refine: %2.3f %%\r", frame * 100.0 / audio_blocks.size());
-          fflush (stdout);
-        }
       remove_small_partials (audio_blocks[frame]);
     }
 }

@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-08\-27T21:58:38
+.\" generation: 2010\-10\-19T08:20:40
 .TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smenc Manual Page"
 
 .SH
@@ -78,11 +78,8 @@ phase of each sine wave for this frame. The optimization level chooses the
 algorithm used for finding the magnitude and phase; the higher the level,
 the more accurate the result will be. However, it defaults to \-O0, since
 this is the fastest algorithm: estimating the magnitude/phase from the
-FFT result. A good choice is also \-O1, which is somewhat slower, but also
-somewhat better. Finally, \-O2 is the highest possible optimization level,
-and should give "optimal" results in a well defined mathematical optimization
-problem. It is however so slow that it is often not possible to use this
-setting.
+FFT result. A good choice is \-O1, which is somewhat slower, but also
+somewhat better.
 
 .TP
 \fB\-s\fP 

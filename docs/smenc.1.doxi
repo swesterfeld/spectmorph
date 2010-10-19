@@ -50,11 +50,8 @@ smenc - Program to encode a wav file into a SpectMorph model
        algorithm used for finding the magnitude and phase; the higher the level,
        the more accurate the result will be. However, it defaults to -O0, since
        this is the fastest algorithm: estimating the magnitude/phase from the
-       FFT result. A good choice is also -O1, which is somewhat slower, but also
-       somewhat better. Finally, -O2 is the highest possible optimization level,
-       and should give "optimal" results in a well defined mathematical optimization
-       problem. It is however so slow that it is often not possible to use this
-       setting.
+       FFT result. A good choice is -O1, which is somewhat slower, but also
+       somewhat better.
 @item @manb{-s} @*
        Right now, smenc defaults to including lots of information in the output
        .sm file, that is helpful for debugging smenc, but not essential for

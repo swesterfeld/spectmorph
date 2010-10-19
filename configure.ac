@@ -85,21 +85,6 @@ Debian users: aptitude install libao-dev
     AC_SUBST(AO_LIBS)
 ])
 dnl
-dnl liblapack
-dnl
-AC_DEFUN([AC_LAPACK_REQUIREMENTS],
-[
-    AC_CHECK_LIB(lapack,sgesv_,[
-      LAPACK_LIBS="-llapack"
-      AC_SUBST(LAPACK_LIBS)
-    ],[
-      AC_MSG_ERROR([You need to install liblapack to build this package.
-
-Debian users: aptitude install liblapack-dev
-])
-    ])
-])
-dnl
 dnl pkg-config
 dnl
 AC_DEFUN([AC_PKG_CONFIG_REQUIREMENTS],
@@ -111,36 +96,6 @@ AC_DEFUN([AC_PKG_CONFIG_REQUIREMENTS],
 Debian users: aptitude install pkg-config
 ])
     fi
-])
-dnl
-dnl boost-numeric-bindings
-dnl
-AC_DEFUN([AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS],
-[
-    AC_ARG_WITH(boost-numeric-bindings, [AC_HELP_STRING([--with-boost-numeric-bindings=PREFIX],[where boost-numeric-bindings is installed @<:@$PREFIX@:>@])],
-                                        BOOST_NUMERIC_BINDINGS_PREFIX="$withval", BOOST_NUMERIC_BINDINGS_PREFIX="$prefix")
-    if test "$BOOST_NUMERIC_BINDINGS_PREFIX" = "NONE"
-    then
-        BOOST_NUMERIC_BINDINGS_PREFIX=$ac_default_prefix
-    fi
-
-    BOOST_NUMERIC_BINDINGS_CPPFLAGS="-I$BOOST_NUMERIC_BINDINGS_PREFIX/include/boost-numeric-bindings"
-    bnb_save_CPPFLAGS="$CPPFLAGS"
-    CPPFLAGS="$CPPFLAGS $BOOST_NUMERIC_BINDINGS_CPPFLAGS"
-    BOOST_FIND_HEADER([boost/numeric/bindings/lapack/lapack.hpp],[
-      AC_MSG_ERROR([You need to install boost-numeric-bindings to build this package.
-
-    To download it, see: http://mathema.tician.de/software/boost-numeric-bindings
-
-If you install boost-numeric-bindings in a prefix other than the prefix you install this
-package in, you may need to use:
-
-    configure --with-boost-numeric-bindings=/path/to/bnb-prefix/
-])
-    ])
-    CPPFLAGS="$bnb_save_CPPFLAGS"
-    AC_SUBST([BOOST_NUMERIC_BINDINGS_PREFIX])
-    AC_SUBST([BOOST_NUMERIC_BINDINGS_CPPFLAGS])
 ])
 dnl
 dnl JACK
@@ -205,11 +160,8 @@ AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_GTKMM_REQUIREMENTS
-AC_LAPACK_REQUIREMENTS
 AC_JACK_REQUIREMENTS
 AC_FFTW_CHECK
-BOOST_REQUIRE([1.34])
-AC_BOOST_NUMERIC_BINDINGS_REQUIREMENTS
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
   CFLAGS="$CFLAGS -Wall"
   CXXFLAGS="$CXXFLAGS -Wall"

@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-08\-27T21:58:38
+.\" generation: 2010\-10\-19T08:20:40
 .TH "smplay" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smplay Manual Page"
 
 .SH
@@ -62,6 +62,13 @@ decoded.
 \fB\-\-no\-sines\fP 
 .br
 Disable sine decoder, so that only the noise part of the signal is decoded.
+
+.TP
+\fB\-\-det\-random\fP 
+.br
+Use deterministic random generator; this will produce identical noise
+components if the same file is decoded twice, making the audio output
+exactly the same.
 
 .TP
 \fB\-\-export\fP \fI<wav filename>\fP 
