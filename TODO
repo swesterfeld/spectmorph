@@ -37,6 +37,11 @@ smlive:
 - make FFTW integration thread safe
 - use fast ftoi() for processors that require it (x86)
 - maybe use integer phase representation (-> less floor()/float->int/int->float cycles)
+- SSEified noise generation:
+  * use a table of (sin[0] cos[0], .. sin[255] cos[255])
+  * load sincos[random] sincos[random+1] and shuffle values together
+  * write out result
+  * combine loop with apply window
 
 tests:
 - add test cases
