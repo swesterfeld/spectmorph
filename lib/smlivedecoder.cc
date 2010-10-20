@@ -50,6 +50,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_decoder (NULL),
   sines_enabled (true),
   noise_enabled (true),
+  debug_fft_perf_enabled (false),
   sse_samples (NULL)
 {
   if (antialias_filter_table.empty())
@@ -269,7 +270,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               if (noise_enabled)
                 noise_decoder->process (audio->contents[frame_idx], ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
 
-              if (noise_enabled || sines_enabled)
+              if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
                   float *samples = &(*sse_samples)[0];
                   ifft_synth->get_samples (samples, IFFTSynth::ADD);
@@ -329,4 +330,10 @@ void
 LiveDecoder::enable_sines (bool es)
 {
   sines_enabled = es;
+}
+
+void
+LiveDecoder::enable_debug_fft_perf (bool dfp)
+{
+  debug_fft_perf_enabled = dfp;
 }

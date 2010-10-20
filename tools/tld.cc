@@ -78,39 +78,44 @@ main (int argc, char **argv)
   LiveDecoder decoder (&smset);
   if (argc == 4 && (string (argv[3]) == "avg" || string (argv[3]) == "avg-all"))
     {
-      float clocks_per_sample[4] = { 0, };
-      for (int i = string (argv[3]) == "avg-all" ? 3 : 0; i < 4; i++)
+      float clocks_per_sample[5] = { 0, };
+      for (int i = 0; i < 5; i++)
         {
-          bool en = (i & 1);
-          bool es = (i & 2);
-          decoder.enable_noise (en);
-          decoder.enable_sines (es);
-          const int n = 20000;
-          const int runs = 25;
-
-          vector<float> audio_out (n);
-
-          // avoid measuring setup time
-          decoder.process (n, 0, 0, &audio_out[0]);
-          decoder.retrigger (0, freq, 48000);
-
-          double best_time = 1e7;
-          for (int rep = 0; rep < 25; rep++)
+          if (string (argv[3]) != "avg-all" || i == 3)
             {
-              double start_t = gettime();
-              for (int l = 0; l < runs; l++)
+              bool en = (i & 1);
+              bool es = (i & 2);
+              decoder.enable_noise (en);
+              decoder.enable_sines (es);
+              decoder.enable_debug_fft_perf (i == 4);
+              const int n = 20000;
+              const int runs = 25;
+
+              vector<float> audio_out (n);
+
+              // avoid measuring setup time
+              decoder.process (n, 0, 0, &audio_out[0]);
+              decoder.retrigger (0, freq, 48000);
+
+              double best_time = 1e7;
+              for (int rep = 0; rep < 25; rep++)
                 {
-                  decoder.retrigger (0, freq, 48000);
-                  decoder.process (n, 0, 0, &audio_out[0]);
+                  double start_t = gettime();
+                  for (int l = 0; l < runs; l++)
+                    {
+                      decoder.retrigger (0, freq, 48000);
+                      decoder.process (n, 0, 0, &audio_out[0]);
+                    }
+                  double end_t = gettime();
+                  best_time = min (best_time, (end_t - start_t));
                 }
-              double end_t = gettime();
-              best_time = min (best_time, (end_t - start_t));
+              clocks_per_sample[i] = best_time * clocks_per_sec / n / runs;
             }
-          clocks_per_sample[i] = best_time * clocks_per_sec / n / runs;
         }
       printf ("all..:  %f\n", clocks_per_sample[3]);
-      printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[0]);
-      printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[0]);
+      printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[4]);
+      printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[4]);
+      printf ("fft:    %f\n", clocks_per_sample[4] - clocks_per_sample[0]);
       printf ("other:  %f\n", clocks_per_sample[0]);
       printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
     }
