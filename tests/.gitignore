@@ -9,5 +9,8 @@ testisincos
 testifftsynth
 testnoise
 testrandperf
+testaafilter
+testnoisemodes
+testnoiseperf
 .libs
 .deps
