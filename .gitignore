@@ -12,5 +12,6 @@ config.h
 config.h.in
 stamp-h1
 ChangeLog
+spectmorph.pc
 html
 latex
