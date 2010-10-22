@@ -193,7 +193,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                   // anti alias filter:
                   double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
                   double norm_freq   = freq / current_mix_freq;
-                  double aa_filter_mag = 1.0;
+                  double mag         = audio_block.mags[partial];
+                  double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
                   if (norm_freq > filter_fact)
                     {
                       if (norm_freq > 0.5)
@@ -204,13 +205,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       else
                         {
                           // between filter_fact and 0.5 (db linear filter)
-                          int index = 0.5 + ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact);
+                          int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
                           if (index >= 0)
                             {
                               if (index < ANTIALIAS_FILTER_TABLE_SIZE)
-                                aa_filter_mag = antialias_filter_table[index];
+                                mag *= antialias_filter_table[index];
                               else
-                                aa_filter_mag = 0;
+                                mag = 0;
                             }
                           else
                             {
@@ -218,8 +219,6 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                             }
                         }
                     }
-                  double mag = audio_block.mags[partial] * aa_filter_mag;
-                  double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
                   /*
                    * increment old_partial as long as there is a better candidate (closer to freq)
