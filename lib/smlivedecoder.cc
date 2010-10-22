@@ -183,75 +183,76 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               new_pstate.clear();  // clear old partial state
 
-              const double phase_factor = block_size * M_PI / current_mix_freq;
-
-              size_t old_partial = 0;
-              for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
+              if (sines_enabled)
                 {
-                  const double freq = audio_block.freqs[partial] * want_freq / audio->fundamental_freq;
+                  const double phase_factor = block_size * M_PI / current_mix_freq;
+                  const double freq_factor = want_freq / audio->fundamental_freq;
 
-                  // anti alias filter:
-                  double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                  double norm_freq   = freq / current_mix_freq;
-                  double mag         = audio_block.mags[partial];
-                  double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
-                  if (norm_freq > filter_fact)
+                  size_t old_partial = 0;
+                  for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
                     {
-                      if (norm_freq > 0.5)
-                        {
-                          // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
-                          break;
-                        }
-                      else
-                        {
-                          // between filter_fact and 0.5 (db linear filter)
-                          int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
-                          if (index >= 0)
-                            {
-                              if (index < ANTIALIAS_FILTER_TABLE_SIZE)
-                                mag *= antialias_filter_table[index];
-                              else
-                                mag = 0;
-                            }
-                          else
-                            {
-                              // filter magnitude is supposed to be 1.0
-                            }
-                        }
-                    }
+                      const double freq = audio_block.freqs[partial] * freq_factor;
 
-                  /*
-                   * increment old_partial as long as there is a better candidate (closer to freq)
-                   */
-                  if (!old_pstate.empty())
-                    {
-                      double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
-
-                      while ((old_partial + 1) < old_pstate.size())
+                      // anti alias filter:
+                      double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+                      double norm_freq   = freq / current_mix_freq;
+                      double mag         = audio_block.mags[partial];
+                      double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
+                      if (norm_freq > filter_fact)
                         {
-                          double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
-                          if (fdiff < best_fdiff)
+                          if (norm_freq > 0.5)
                             {
-                              old_partial++;
-                              best_fdiff = fdiff;
-                            }
-                          else
-                            {
+                              // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
                               break;
                             }
+                          else
+                            {
+                              // between filter_fact and 0.5 (db linear filter)
+                              int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
+                              if (index >= 0)
+                                {
+                                  if (index < ANTIALIAS_FILTER_TABLE_SIZE)
+                                    mag *= antialias_filter_table[index];
+                                  else
+                                    mag = 0;
+                                }
+                              else
+                                {
+                                  // filter magnitude is supposed to be 1.0
+                                }
+                            }
                         }
-                      const double lfreq = old_pstate[old_partial].freq;
-                      if (fmatch (lfreq, freq))
+
+                      /*
+                       * increment old_partial as long as there is a better candidate (closer to freq)
+                       */
+                      if (!old_pstate.empty())
                         {
-                          // matching freq -> compute new phase
-                          const double lphase = old_pstate[old_partial].phase;
+                          double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
 
-                          phase = lphase + lfreq * phase_factor;
+                          while ((old_partial + 1) < old_pstate.size())
+                            {
+                              double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
+                              if (fdiff < best_fdiff)
+                                {
+                                  old_partial++;
+                                  best_fdiff = fdiff;
+                                }
+                              else
+                                {
+                                  break;
+                                }
+                            }
+                          const double lfreq = old_pstate[old_partial].freq;
+                          if (fmatch (lfreq, freq))
+                            {
+                              // matching freq -> compute new phase
+                              const double lphase = old_pstate[old_partial].phase;
+
+                              phase = lphase + lfreq * phase_factor;
+                            }
                         }
-                    }
 
-                  if (sines_enabled)
-                    {
                       ifft_synth->render_partial (freq, mag, phase);
 
                       PartialState ps;
@@ -260,7 +261,6 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       new_pstate.push_back (ps);
                     }
                 }
-
               last_pstate = &new_pstate;
 
               if (noise_enabled)
