@@ -183,6 +183,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
               new_pstate.clear();  // clear old partial state
 
+              const double phase_factor = block_size * M_PI / current_mix_freq;
+
               size_t old_partial = 0;
               for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
                 {
@@ -244,18 +246,14 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                         {
                           // matching freq -> compute new phase
                           const double lphase = old_pstate[old_partial].phase;
-                          const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
 
-                          // FIXME: I have no idea why we have to /subtract/ the phase
-                          // here, and not /add/, but this way it works
-
-                          phase = lphase - block_size / 2 * phase_delta;
+                          phase = lphase + lfreq * phase_factor;
                         }
                     }
 
                   if (sines_enabled)
                     {
-                      ifft_synth->render_partial (freq, mag, -phase);
+                      ifft_synth->render_partial (freq, mag, phase);
 
                       PartialState ps;
                       ps.freq = freq;
