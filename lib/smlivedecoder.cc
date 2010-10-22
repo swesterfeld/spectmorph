@@ -220,37 +220,36 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                   double phase = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
                   /*
-                   * ensure that old_pstate[old_partial].freq is the biggest frequency smaller than freq
-                   * by incrementing old_partial as long as there is a better candidate
+                   * increment old_partial as long as there is a better candidate (closer to freq)
                    */
-                  while ((old_partial + 1) < old_pstate.size() && old_pstate[old_partial + 1].freq < freq)
-                    old_partial++;
-
-                  double best_fdiff = 1e12;
-
-                  // check: - biggest frequency smaller than frame.freqs[partial]   (i == 0)
-                  //        - smallest frequency bigger than frame.freqs[partial]   (i == 1)
-                  for (size_t i = 0; i < 2; i++)
+                  if (!old_pstate.empty())
                     {
-                      if ((old_partial + i) < old_pstate.size())
+                      double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
+
+                      while ((old_partial + 1) < old_pstate.size())
                         {
-                          const double lfreq = old_pstate[old_partial + i].freq;
-                          if (fmatch (lfreq, freq))
+                          double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
+                          if (fdiff < best_fdiff)
                             {
-                              // find best phase
-                              double fdiff = fabs (lfreq - freq);
-                              if (fdiff < best_fdiff)
-                                {
-                                  const double lphase = old_pstate[old_partial + i].phase;
-                                  const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
-
-                                  // FIXME: I have no idea why we have to /subtract/ the phase
-                                  // here, and not /add/, but this way it works
-
-                                  phase = lphase - block_size / 2 * phase_delta;
-                                  best_fdiff = fdiff;
-                                }
+                              old_partial++;
+                              best_fdiff = fdiff;
                             }
+                          else
+                            {
+                              break;
+                            }
+                        }
+                      const double lfreq = old_pstate[old_partial].freq;
+                      if (fmatch (lfreq, freq))
+                        {
+                          // matching freq -> compute new phase
+                          const double lphase = old_pstate[old_partial].phase;
+                          const double phase_delta = 2 * M_PI * lfreq / current_mix_freq;
+
+                          // FIXME: I have no idea why we have to /subtract/ the phase
+                          // here, and not /add/, but this way it works
+
+                          phase = lphase - block_size / 2 * phase_delta;
                         }
                     }
 
