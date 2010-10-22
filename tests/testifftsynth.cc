@@ -56,21 +56,33 @@ perf_test()
 
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
 
+  vector<double> freq_mag_phase;
+
   const double freq  = 440;
   const double mag   = 0.1;
   const double phase = 0.7;
+
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-  int RUNS = 1000 * 1000 * 10;
-  double start, end;
+  freq_mag_phase.push_back (freq);
+  freq_mag_phase.push_back (mag);
+  freq_mag_phase.push_back (phase);
+
+  int RUNS = 1000 * 1000;
+  double start, end, t;
 
   synth.clear_partials();
-  start = gettime();
-  for (int r = 0; r < RUNS; r++)
-    synth.render_partial (freq, mag, phase);
-  end = gettime();
+  t = 1e30;
+  for (int reps = 0; reps < 24; reps++)
+    {
+      start = gettime();
+      for (int r = 0; r < RUNS; r++)
+        synth.render_partial (freq_mag_phase[0], freq_mag_phase[1], freq_mag_phase[2]);
+      end = gettime();
+      t = min (t, end - start);
+    }
 
-  printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
+  printf ("render_partial: clocks per sample: %f\n", clocks_per_sec * t / RUNS / block_size);
 
   AlignedArray<float, 16> sse_samples (block_size);
 
