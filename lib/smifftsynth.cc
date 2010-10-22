@@ -24,23 +24,17 @@
 #include <assert.h>
 #include <stdio.h>
 
-#define SIN_TABLE_SIZE 4096
-#define SIN_TABLE_MASK 4095
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::map;
 
-struct SpectMorph::IFFTSynthTable
-{
-  std::vector<float> win_trans;
-
-  float             *win_scale;
-};
-
 static map<size_t, IFFTSynthTable *> table_for_block_size;
-static vector<float> sin_table;
+
+namespace SpectMorph {
+  vector<float> IFFTSynth::sin_table;
+}
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   block_size (block_size),
@@ -108,80 +102,6 @@ IFFTSynth::~IFFTSynth()
 {
   FFT::free_array_float (fft_in);
   FFT::free_array_float (fft_out);
-}
-
-void
-IFFTSynth::render_partial (double mf_freq, double mag, double phase)
-{
-  const int range = 4;
-
-  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
-  const int ibin = freq256 >> 8;
-  float *sp = fft_in + 2 * (ibin - range);
-  const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
-
-  // adjust phase to get the same output like vector sin (smmath.hh)
-  // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
-  const double phase_adjust = (freq256 - 128) * (M_PI / 256.0);
-
-  const float nmag = mag * mag_norm;
-
-  // rotation for initial phase; scaling for magnitude
-
-  /* the following block computes sincos (-phase-phase_adjust) */
-  const double inv_2pi = 1.0 / (2 * M_PI);
-  double sarg = (phase + phase_adjust) * inv_2pi;
-  sarg -= floor (sarg);
-
-  int iarg = sm_round_positive (sarg * SIN_TABLE_SIZE);
-  const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
-  iarg += SIN_TABLE_SIZE / 4;
-  const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
-
-  /* compute FFT spectrum modifications */
-  if (ibin > range && 2 * (ibin + range) < block_size)
-    {
-      //index += table->win_trans_center;
-      for (int i = 0; i <= 2 * range; i++)
-        {
-          const float wmag = wmag_p[i];
-          *sp++ += phase_rcmag * wmag;
-          *sp++ += phase_rsmag * wmag;
-        }
-    }
-  else
-    {
-      wmag_p += range; // allow negative addressing
-      for (int i = -range; i <= range; i++)
-        {
-          const float wmag = wmag_p[i];
-          if ((ibin + i) < 0)
-            {
-              fft_in[-(ibin + i) * 2] += phase_rcmag * wmag;
-              fft_in[-(ibin + i) * 2 + 1] -= phase_rsmag * wmag;
-            }
-          else if ((ibin + i) == 0)
-            {
-              fft_in[0] += 2 * phase_rcmag * wmag;
-            }
-          else if (2 * (ibin + i) == block_size)
-            {
-              fft_in[1] += 2 * phase_rcmag * wmag;
-            }
-          else if (2 * (ibin + i) > block_size)
-            {
-              int p = block_size - (2 * (ibin + i) - block_size);
-
-              fft_in[p] += phase_rcmag * wmag;
-              fft_in[p + 1] -= phase_rsmag * wmag;
-            }
-          else // no corner case
-            {
-              fft_in[(ibin + i) * 2] += phase_rcmag * wmag;
-              fft_in[(ibin + i) * 2 + 1] += phase_rsmag * wmag;
-            }
-        }
-    }
 }
 
 void
