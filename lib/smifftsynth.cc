@@ -115,7 +115,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
   const int range = 4;
 
-  const int freq256 = mf_freq * freq256_factor;
+  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
   const int ibin = freq256 >> 8;
   float *sp = fft_in + 2 * (ibin - range);
   const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
@@ -133,7 +133,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   double sarg = (phase + phase_adjust) * inv_2pi;
   sarg -= floor (sarg);
 
-  int iarg = sarg * SIN_TABLE_SIZE + 0.5;
+  int iarg = sm_round_positive (sarg * SIN_TABLE_SIZE);
   const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
   iarg += SIN_TABLE_SIZE / 4;
   const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
@@ -212,10 +212,8 @@ IFFTSynth::get_samples (float      *samples,
 double
 IFFTSynth::quantized_freq (double mf_freq)
 {
-  const double freq = mf_freq / mix_freq * block_size;
-  int ibin = freq;
-  const double frac = freq - ibin;
-  const double qfreq = ibin + int (frac * zero_padding) * (1. / zero_padding);
+  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
+  const double qfreq = freq256 * (1 / 256.0);
   const double mf_qfreq = qfreq / block_size * mix_freq;
 
   return mf_qfreq;

@@ -112,8 +112,9 @@ perf_test()
   printf ("Old SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
 
-double
-accuracy_test (double freq, double mag, double phase, double mix_freq, bool verbose)
+void
+accuracy_test (double freq, double mag, double phase, double mix_freq, bool verbose,
+               double *output_diff, double *frequency_diff)
 {
   const size_t block_size = 1024;
 
@@ -166,7 +167,10 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
     }
   if (verbose)
     printf ("%f %.17g\n", freq, max_diff);
-  return max_diff;
+  if (output_diff)
+    *output_diff = max_diff;                       // output value diff
+  if (frequency_diff)
+    *frequency_diff = fabs (freq - vsparams.freq); // frequency diff due to quantization
 }
 
 void
@@ -274,10 +278,20 @@ main (int argc, char **argv)
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
   const double mag = 0.991;
   const double phase = 0.5;
-  double max_diff = 0;
+  double max_output_diff = 0;
+  double max_freq_diff = 0;
 
   for (double freq = 20; freq < 24000; freq = min (freq * 1.01, freq + 2.5))
-    max_diff = max (max_diff, accuracy_test (freq, mag, phase, 48000, verbose));
-  printf ("# IFFTSynth: max_diff = %.17g\n", max_diff);
-  assert (max_diff < 9e-5);
+    {
+      double output_diff = 1e32, freq_diff = 1e32;
+
+      accuracy_test (freq, mag, phase, 48000, verbose, &output_diff, &freq_diff);
+
+      max_output_diff = max (output_diff, max_output_diff);
+      max_freq_diff = max (freq_diff, max_freq_diff);
+    }
+  printf ("# IFFTSynth: max_output_diff = %.17g\n", max_output_diff);
+  printf ("# IFFTSynth: max_freq_diff = %.17g\n", max_freq_diff);
+  assert (max_output_diff < 9e-5);
+  assert (max_freq_diff < 0.1);
 }

@@ -19,7 +19,9 @@
 #include "smfft.hh"
 #include "smmath.hh"
 #include <bse/bsemain.h>
+#include <bse/bseieee754.h>
 #include <stdio.h>
+#include <assert.h>
 
 namespace SpectMorph
 {
@@ -45,6 +47,13 @@ sm_init_plugin()
 {
   FFT::load_wisdom();
   int_sincos_init();
+
+  assert (bse_fpu_okround());
+  assert (sm_round_positive (42.51) == 43);
+  assert (sm_round_positive (3.14) == 3);
+  assert (sm_round_positive (2.1) == 2);
+  assert (sm_round_positive (0.7) == 1);
+  assert (sm_round_positive (0.2) == 0);
 }
 
 void
