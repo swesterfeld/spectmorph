@@ -249,8 +249,8 @@ test_spect()
   //for (size_t i = 0; i < power2; i++)
   //  printf ("%d %f\n", i, wsig[i]);
 
-  vector<float> spect (power2);
-  FFT::fftar_float (power2, &wsig[0], &spect[0]);
+  float *spect = FFT::new_array_float (power2);
+  FFT::fftar_float (power2, &wsig[0], spect);
 
   double max_mag = 0;
   for (size_t d = 0; d < power2; d += 2)
@@ -265,6 +265,7 @@ test_spect()
       double im = spect[d+1] / max_mag;
       printf ("%f %.17g\n", (d * mix_freq / 2.0) / power2, sqrt (re * re + im * im));
     }
+  FFT::free_array_float (spect);
 }
 
 int
