@@ -22,6 +22,7 @@
 #include "smmain.hh"
 
 #include <bse/bsemathsignal.h>
+#include <bse/bseengine.h>
 
 #include <stdio.h>
 
@@ -140,6 +141,16 @@ public:
       }
     else
       delete wav_set;
+  }
+  void
+  prepare1()
+  {
+    WavSet *wav_set = audio_repo.get_wav_set (filename.c_str());
+    if (wav_set)
+      {
+        LiveDecoder decoder (wav_set);
+        decoder.precompute_tables (bse_engine_sample_freq());
+      }
   }
   bool
   property_changed (OscPropertyID prop_id)

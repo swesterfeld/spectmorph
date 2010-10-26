@@ -70,6 +70,7 @@ public:
   void enable_sines (bool se);
   void enable_debug_fft_perf (bool dfp);
 
+  void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, float mix_freq);
   void process (size_t       n_values,
                 const float *freq_in,

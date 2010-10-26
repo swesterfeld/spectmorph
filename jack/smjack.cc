@@ -226,6 +226,9 @@ JackSynth::init (jack_client_t *client, WavSet *smset, int channels)
 
   jack_mix_freq = jack_get_sample_rate (client);
 
+  // this might take a while, and cannot be used in RT callback
+  voices[0].decoders[0]->precompute_tables (jack_mix_freq);
+
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
   const char *pattern;

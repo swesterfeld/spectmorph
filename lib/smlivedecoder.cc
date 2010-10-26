@@ -361,3 +361,16 @@ LiveDecoder::enable_debug_fft_perf (bool dfp)
 {
   debug_fft_perf_enabled = dfp;
 }
+
+void
+LiveDecoder::precompute_tables (float mix_freq)
+{
+  /* computing one sample (from the source) will ensure that tables (like
+   * anti-alias filter table and IFFTSynth window table and FFTW plan) will be
+   * available once RT synthesis is needed
+   */
+  float out;
+
+  retrigger (0, 440, mix_freq);
+  process (1, NULL, NULL, &out);
+}
