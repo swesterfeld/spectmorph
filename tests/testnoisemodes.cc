@@ -27,6 +27,7 @@
 
 using namespace SpectMorph;
 using std::max;
+using std::vector;
 
 int
 main (int argc, char **argv)
@@ -80,6 +81,9 @@ main (int argc, char **argv)
       ifft_synth.clear_partials();
       noise_dec.set_seed (42);
       noise_dec.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+
+      vector<float> spectrum (ifft_synth.fft_buffer(), ifft_synth.fft_buffer() + block_size);
+
       ifft_synth.get_samples (fft_samples);
 
 #if 0
@@ -94,7 +98,7 @@ main (int argc, char **argv)
         t_diff_max = max (t_diff_max, fabs (cos_win_samples[i] - fft_samples[i]));
       double s_diff_max = 0;
       for (int i = 0; i < block_size; i++)
-        s_diff_max = max (s_diff_max, fabs (ifft_synth.fft_buffer()[i] - dbg_spectrum[i] / block_size));
+        s_diff_max = max (s_diff_max, fabs (spectrum[i] - dbg_spectrum[i] / block_size));
       printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);
       printf ("noise test: sse=%d s_diff_max=%.17g\n", sse, s_diff_max);
       assert (t_diff_max < 3e-5);

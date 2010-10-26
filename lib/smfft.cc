@@ -155,6 +155,33 @@ FFT::fftsr_float (size_t N, float *in, float *out)
   in[1] = in[N]; // we need to preserve the input array
 }
 
+static map<int, fftwf_plan> fftsr_destructive_float_plan;
+
+void
+FFT::fftsr_destructive_float (size_t N, float *in, float *out)
+{
+  fftwf_plan& plan = fftsr_destructive_float_plan[N];
+
+  if (!plan)
+    {
+      float *plan_in = new_array_float (N);
+      float *plan_out = new_array_float (N);
+      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
+                                    FFTW_PATIENT | FFTW_WISDOM_ONLY);
+      if (!plan) /* missing from wisdom -> create plan and save it */
+        {
+          plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
+                                        FFTW_PATIENT);
+          save_wisdom();
+        }
+    }
+  in[N] = in[1];
+  in[N+1] = 0;
+  in[1] = 0;
+
+  fftwf_execute_dft_c2r (plan, (fftwf_complex *)in, out);
+}
+
 static map<int, fftwf_plan> fftac_float_plan;
 
 void

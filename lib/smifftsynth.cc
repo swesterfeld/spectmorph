@@ -108,7 +108,7 @@ void
 IFFTSynth::get_samples (float      *samples,
                         OutputMode  output_mode)
 {
-  FFT::fftsr_float (block_size, fft_in, fft_out);
+  FFT::fftsr_destructive_float (block_size, fft_in, fft_out);
 
   if (win_scale)
     Bse::Block::mul (block_size, fft_out, win_scale);

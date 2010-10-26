@@ -32,6 +32,7 @@ void   free_array_float (float *f);
 
 void   fftar_float (size_t N, float *in, float *out);
 void   fftsr_float (size_t N, float *in, float *out);
+void   fftsr_destructive_float (size_t N, float *in, float *out);
 void   fftac_float (size_t N, float *in, float *out);
 void   fftsc_float (size_t N, float *in, float *out);
 
