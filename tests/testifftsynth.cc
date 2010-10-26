@@ -244,7 +244,7 @@ public:
 
     my_audio_block = AudioBlock();    // reset contents
     my_audio_block.noise.resize (32); // all 0, no noise
-    my_audio_block.freqs.push_back (440);
+    my_audio_block.freqs.push_back (freq);
     my_audio_block.mags.push_back (1);
     my_audio_block.phases.push_back (0.9);
   }
@@ -307,15 +307,13 @@ void
 test_phase()
 {
   SineSource source;
-  double mix_freq = 48000;
-  double freq = 440;
-  const size_t block_size = 1024;
+  const double mix_freq = 48000;
+  const double freq = 440;
 
-  vector<float> samples (block_size);
+  vector<float> samples (1024);
 
   LiveDecoder live_decoder (&source);
-  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
-  freq = synth.quantized_freq (freq);
+  live_decoder.enable_noise (false);
   live_decoder.retrigger (0, freq, mix_freq);
   for (size_t block = 0; block < 10000000; block++)
     {
