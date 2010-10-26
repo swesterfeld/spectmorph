@@ -111,7 +111,7 @@ SineDecoder::process (const AudioBlock& block,
 
           const double mag = block.mags[i] * SA;
           if (mag > mag_epsilon)
-            ifft_synth->render_partial (block.freqs[i], mag, block.phases[i]);
+            ifft_synth->render_partial (block.freqs[i], mag, fmod (block.phases[i], 2 * M_PI));
         }
       ifft_synth->get_samples (&decoded_sines[0]);
       return;

@@ -277,7 +277,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                               // matching freq -> compute new phase
                               const double lphase = old_pstate[old_partial].phase;
 
-                              phase = lphase + lfreq * phase_factor;
+                              phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
                             }
                         }
 

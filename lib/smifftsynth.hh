@@ -102,7 +102,6 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   /* the following block computes sincos (-phase-phase_adjust) */
   const double inv_2pi = 1.0 / (2 * M_PI);
   double sarg = (phase + phase_adjust) * inv_2pi;
-  sarg -= floor (sarg);
 
   int iarg = sm_round_positive (sarg * SIN_TABLE_SIZE);
   const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
