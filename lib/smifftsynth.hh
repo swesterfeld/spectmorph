@@ -91,19 +91,18 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   float *sp = fft_in + 2 * (ibin - range);
   const float *wmag_p = &table->win_trans[(freq256 & 0xff) * (range * 2 + 1)];
 
-  // adjust phase to get the same output like vector sin (smmath.hh)
-  // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
-  const double phase_adjust = (freq256 - 128) * (M_PI / 256.0);
-
   const float nmag = mag * mag_norm;
 
   // rotation for initial phase; scaling for magnitude
 
-  /* the following block computes sincos (-phase-phase_adjust) */
-  const double inv_2pi = 1.0 / (2 * M_PI);
-  double sarg = (phase + phase_adjust) * inv_2pi;
+  /* the following block computes sincos (phase + phase_adjust) */
+  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)));
 
-  int iarg = sm_round_positive (sarg * SIN_TABLE_SIZE);
+  // adjust phase to get the same output like vector sin (smmath.hh)
+  // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
+  int iphase_adjust = freq256 * SIN_TABLE_SIZE / 512 + (SIN_TABLE_SIZE - SIN_TABLE_SIZE / 4);
+  iarg += iphase_adjust;
+
   const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
   iarg += SIN_TABLE_SIZE / 4;
   const float phase_rcmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
