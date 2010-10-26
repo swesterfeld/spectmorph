@@ -221,15 +221,13 @@ test_accs()
   printf ("# max_diff = %.17g\n", max_diff);
 }
 
-class MySource : public LiveDecoderSource
+class SineSource : public LiveDecoderSource
 {
   Audio      my_audio;
   AudioBlock my_audio_block;
 public:
-  MySource()
+  SineSource()
   {
-    my_audio.fundamental_freq = 440;
-    my_audio.mix_freq = 48000;
     my_audio.frame_size_ms = 40;
     my_audio.frame_step_ms = 10;
     my_audio.attack_start_ms = 10;
@@ -238,15 +236,17 @@ public:
     my_audio.loop_point = -1;
     my_audio.zero_values_at_start = 0;
     my_audio.sample_count = 1024*1024*1024;
+  }
+  void retrigger (int channel, float freq, float mix_freq)
+  {
+    my_audio.mix_freq = mix_freq;
+    my_audio.fundamental_freq = freq;
 
+    my_audio_block = AudioBlock();    // reset contents
     my_audio_block.noise.resize (32); // all 0, no noise
     my_audio_block.freqs.push_back (440);
     my_audio_block.mags.push_back (1);
     my_audio_block.phases.push_back (0.9);
-  }
-  void retrigger (int channel, float freq, float mix_freq)
-  {
-    // nothing
   }
   Audio *audio()
   {
@@ -261,7 +261,7 @@ public:
 void
 test_spect()
 {
-  MySource source;
+  SineSource source;
   double mix_freq = 48000;
   double freq = 440;
   const size_t block_size = 1024;
@@ -303,6 +303,34 @@ test_spect()
   FFT::free_array_float (spect);
 }
 
+void
+test_phase()
+{
+  SineSource source;
+  double mix_freq = 48000;
+  double freq = 440;
+  const size_t block_size = 1024;
+
+  vector<float> samples (block_size);
+
+  LiveDecoder live_decoder (&source);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  freq = synth.quantized_freq (freq);
+  live_decoder.retrigger (0, freq, mix_freq);
+  for (size_t block = 0; block < 10000000; block++)
+    {
+      live_decoder.process (samples.size(), 0, 0, &samples[0]);
+
+      float maxv = 0;
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          maxv = max (samples[i], maxv);
+        }
+      if ((block % 997) == 0)
+        printf ("%zd %.17g\n", block, maxv);
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -321,6 +349,11 @@ main (int argc, char **argv)
   if (argc == 2 && strcmp (argv[1], "spect") == 0)
     {
       test_spect();
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "phase") == 0)
+    {
+      test_phase();
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
