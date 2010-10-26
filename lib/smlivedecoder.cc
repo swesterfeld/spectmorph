@@ -32,6 +32,20 @@ using std::min;
 
 static vector<float> antialias_filter_table;
 
+static void
+init_aa_filter()
+{
+  if (antialias_filter_table.empty())
+    {
+      antialias_filter_table.resize (ANTIALIAS_FILTER_TABLE_SIZE);
+
+      const double db_at_nyquist = -60;
+
+      for (size_t i = 0; i < antialias_filter_table.size(); i++)
+        antialias_filter_table[i] = bse_db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
+    }
+}
+
 static float
 freq_to_note (float freq)
 {
@@ -48,20 +62,27 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   audio (NULL),
   ifft_synth (NULL),
   noise_decoder (NULL),
+  source (NULL),
   sines_enabled (true),
   noise_enabled (true),
   debug_fft_perf_enabled (false),
   sse_samples (NULL)
 {
-  if (antialias_filter_table.empty())
-    {
-      antialias_filter_table.resize (ANTIALIAS_FILTER_TABLE_SIZE);
+  init_aa_filter();
+}
 
-      const double db_at_nyquist = -60;
-
-      for (size_t i = 0; i < antialias_filter_table.size(); i++)
-        antialias_filter_table[i] = bse_db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
-    }
+LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
+  smset (NULL),
+  audio (NULL),
+  ifft_synth (NULL),
+  noise_decoder (NULL),
+  source (source),
+  sines_enabled (true),
+  noise_enabled (true),
+  debug_fft_perf_enabled (false),
+  sse_samples (NULL)
+{
+  init_aa_filter();
 }
 
 LiveDecoder::~LiveDecoder()
@@ -86,30 +107,37 @@ LiveDecoder::~LiveDecoder()
 void
 LiveDecoder::retrigger (int channel, float freq, float mix_freq)
 {
-  double best_diff = 1e10;
   Audio *best_audio = 0;
+  double best_diff = 1e10;
 
-  if (smset)
+  if (source)
     {
-      float note = freq_to_note (freq);
-
-      // find best audio candidate
-      for (vector<WavSetWave>::iterator wi = smset->waves.begin(); wi != smset->waves.end(); wi++)
+      source->retrigger (channel, freq, mix_freq);
+      best_audio = source->audio();
+    }
+  else
+    {
+      if (smset)
         {
-          Audio *audio = wi->audio;
-          if (audio && wi->channel == channel)
-            {
-              float audio_note = freq_to_note (audio->fundamental_freq);
+          float note = freq_to_note (freq);
 
-              if (fabs (audio_note - note) < best_diff)
+          // find best audio candidate
+          for (vector<WavSetWave>::iterator wi = smset->waves.begin(); wi != smset->waves.end(); wi++)
+            {
+              Audio *audio = wi->audio;
+              if (audio && wi->channel == channel)
                 {
-                  best_diff = fabs (audio_note - note);
-                  best_audio = audio;
+                  float audio_note = freq_to_note (audio->fundamental_freq);
+
+                  if (fabs (audio_note - note) < best_diff)
+                    {
+                      best_diff = fabs (audio_note - note);
+                      best_audio = audio;
+                    }
                 }
             }
         }
     }
-
   audio = best_audio;
 
   if (best_audio)
@@ -124,7 +152,6 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
       if (noise_decoder)
         delete noise_decoder;
       noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq, block_size);
-
 
       if (ifft_synth)
         delete ifft_synth;
@@ -170,9 +197,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           if (loop_point != -1 && frame_idx > loop_point) /* if in loop mode: loop current frame */
             frame_idx = loop_point;
 
-          if ((frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
+          if (source || (frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
             {
-              const AudioBlock& audio_block = audio->contents[frame_idx];
+              const AudioBlock& audio_block = source ? *source->audio_block (frame_idx)
+                                                     : audio->contents[frame_idx];
 
               ifft_synth->clear_partials();
 
@@ -264,7 +292,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               last_pstate = &new_pstate;
 
               if (noise_enabled)
-                noise_decoder->process (audio->contents[frame_idx], ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+                noise_decoder->process (audio_block, ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {

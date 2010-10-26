@@ -19,11 +19,16 @@
 #ifndef SPECTMORPH_LIVEDECODER_SOURCE_HH
 #define SPECTMORPH_LIVEDECODER_SOURCE_HH
 
+#include "smaudio.hh"
+
 namespace SpectMorph {
 
 class LiveDecoderSource
 {
 public:
+  virtual void retrigger (int channel, float freq, float mix_freq) = 0;
+  virtual Audio *audio() = 0;
+  virtual AudioBlock *audio_block (size_t index) = 0;
   virtual ~LiveDecoderSource();
 };
 

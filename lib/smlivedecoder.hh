@@ -22,6 +22,7 @@
 #include "smwavset.hh"
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"
+#include "smlivedecodersource.hh"
 #include <birnet/birnet.hh>
 #include <vector>
 
@@ -41,6 +42,7 @@ class LiveDecoder
 
   IFFTSynth          *ifft_synth;
   NoiseDecoder       *noise_decoder;
+  LiveDecoderSource  *source;
 
   bool                sines_enabled;
   bool                noise_enabled;
@@ -61,6 +63,7 @@ class LiveDecoder
   Birnet::AlignedArray<float,16> *sse_samples;
 public:
   LiveDecoder (WavSet *smset);
+  LiveDecoder (LiveDecoderSource *source);
   ~LiveDecoder();
 
   void enable_noise (bool ne);
