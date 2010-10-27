@@ -215,6 +215,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 {
                   const double phase_factor = block_size * M_PI / current_mix_freq;
                   const double freq_factor = want_freq / audio->fundamental_freq;
+                  const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+                  const double filter_min_freq = filter_fact * current_mix_freq;
 
                   size_t old_partial = 0;
                   for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
@@ -222,12 +224,11 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       const double freq = audio_block.freqs[partial] * freq_factor;
 
                       // anti alias filter:
-                      double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                      double norm_freq   = freq / current_mix_freq;
                       double mag         = audio_block.mags[partial];
                       double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
-                      if (norm_freq > filter_fact)
+                      if (freq > filter_min_freq)
                         {
+                          double norm_freq = freq / current_mix_freq;
                           if (norm_freq > 0.5)
                             {
                               // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
