@@ -32,10 +32,12 @@ using SpectMorph::WavSetWave;
 using SpectMorph::Audio;
 using SpectMorph::LiveDecoder;
 using SpectMorph::sm_init;
+using SpectMorph::zero_float_block;
 
 using std::vector;
 using std::string;
 using std::max;
+using std::min;
 
 class Voice
 {
@@ -137,7 +139,12 @@ JackSynth::process (jack_nframes_t nframes)
 {
   vector<jack_default_audio_sample_t *> outputs (channels);  /* FIXME: could be malloc-free */
   for (int c = 0; c < channels; c++)
-    outputs[c] = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[c], nframes);
+    {
+      outputs[c] = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[c], nframes);
+
+      // zero output buffer, so voices can be added
+      zero_float_block (nframes, outputs[c]);
+    }
 
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
@@ -145,7 +152,8 @@ JackSynth::process (jack_nframes_t nframes)
   jack_nframes_t event_index = 0;
 
   jack_midi_event_get (&in_event, port_buf, 0);
-  for (jack_nframes_t i = 0; i < nframes; i++)
+  jack_nframes_t i = 0; 
+  while (i < nframes)
     {
       while ((in_event.time == i) && (event_index < event_count))
         {
@@ -192,41 +200,57 @@ JackSynth::process (jack_nframes_t nframes)
           reschedule();
           need_reschedule = false;
         }
-      for (int c = 0; c < channels; c++)
-        outputs[c][i] = 0.0;
+
+      // compute boundary for processing
+      size_t end;
+      if (event_index < event_count)
+        end = min (nframes, in_event.time);
+      else
+        end = nframes;
+
+
       // compute voices with state == STATE_ON
       for (vector<Voice*>::iterator avi = active_voices.begin(); avi != active_voices.end(); avi++)
         {
           Voice *v = *avi;
           for (int c = 0; c < channels; c++)
             {
-              float f;
-              v->decoders[c]->process (1, NULL, NULL, &f);
-              outputs[c][i] += f;
+              float samples[end - i];
+              v->decoders[c]->process (end - i, NULL, NULL, samples);
+              for (size_t j = i; j < end; j++)
+                outputs[c][j] += samples[j-i];
             }
         }
       // compute voices with state == STATE_RELEASE
       for (vector<Voice*>::iterator rvi = release_voices.begin(); rvi != release_voices.end(); rvi++)
         {
           Voice *v = *rvi;
-          v->env -= (1000.0 / jack_mix_freq) / release_ms;
-          if (v->env < 0)
+
+          float samples[channels][end - i];
+          for (int c = 0; c < channels; c++)
+            v->decoders[c]->process (end - i, NULL, NULL, samples[c]);
+
+          double v_decrement = (1000.0 / jack_mix_freq) / release_ms;
+          for (size_t j = i; j < end; j++)
             {
-              v->state = Voice::STATE_IDLE;
-              need_reschedule = true;
-            }
-          else
-            {
-              for (int c = 0; c < channels; c++)
+              v->env -= v_decrement;
+              if (v->env < 0)
                 {
-                  float f;
-                  v->decoders[c]->process (1, NULL, NULL, &f);
-                  outputs[c][i] += f * v->env;
+                  v->state = Voice::STATE_IDLE;
+                  need_reschedule = true;
+                  break;
+                }
+              else
+                {
+                  for (int c = 0; c < channels; c++)
+                    outputs[c][j] += samples[c][j - i] * v->env;
                 }
             }
         }
       for (int c = 0; c < channels; c++)
-        outputs[c][i] *= 0.333;    /* empiric */
+        for (size_t j = i; j < end; j++)
+          outputs[c][j] *= 0.333;    /* empiric */
+      i = end;
     }
   return 0;
 }
