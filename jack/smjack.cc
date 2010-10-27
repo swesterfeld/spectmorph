@@ -50,12 +50,14 @@ public:
   vector<LiveDecoder *> decoders;
 
   State        state;
+  bool         pedal;
   int          midi_note;
   double       env;
   double       velocity;
 
   Voice() :
-    state (STATE_IDLE)
+    state (STATE_IDLE),
+    pedal (false)
   {
   }
   ~Voice()
@@ -75,6 +77,7 @@ protected:
   WavSet               *smset;
   int                   channels;
   bool                  need_reschedule;
+  bool                  pedal_down;
 
   double                release_ms;
   vector<Voice>         voices;
@@ -185,12 +188,42 @@ JackSynth::process (jack_nframes_t nframes)
                 {
                   if (vi->state == Voice::STATE_ON && vi->midi_note == midi_note)
                     {
-                      vi->state = Voice::STATE_RELEASE;
-                      vi->env = 1.0;
-                      need_reschedule = true;
+                      if (pedal_down)
+                        {
+                          vi->pedal = true;
+                        }
+                      else
+                        {
+                          vi->state = Voice::STATE_RELEASE;
+                          vi->env = 1.0;
+                          need_reschedule = true;
+                        }
                     }
                 }
             }
+          else if ((in_event.buffer[0] & 0xf0) == 0xb0)
+            {
+              //printf ("got midi controller event status=%x controller=%x value=%x\n",
+              //        in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
+              if (in_event.buffer[1] == 0x40)
+                {
+                  pedal_down = in_event.buffer[2] > 0x40;
+                  if (!pedal_down)
+                    {
+                      /* release voices which are sustained due to the pedal */
+                      for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+                        {
+                          if (vi->pedal && vi->state == Voice::STATE_ON)
+                            {
+                              vi->state = Voice::STATE_RELEASE;
+                              vi->env = 1.0;
+                              need_reschedule = true;
+                            }
+                        }
+                    }
+                }
+            }
+
 
           // get next event
           event_index++;
@@ -239,6 +272,7 @@ JackSynth::process (jack_nframes_t nframes)
               if (v->env < 0)
                 {
                   v->state = Voice::STATE_IDLE;
+                  v->pedal = false;
                   need_reschedule = true;
                   break;
                 }
@@ -267,6 +301,7 @@ jack_process (jack_nframes_t nframes, void *arg)
 JackSynth::JackSynth()
 {
   need_reschedule = false;
+  pedal_down = false;
 }
 
 void
