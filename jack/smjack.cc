@@ -71,13 +71,18 @@ protected:
   vector<jack_port_t *> output_ports;
   WavSet               *smset;
   int                   channels;
+  bool                  need_reschedule;
 
-  double        release_ms;
-  vector<Voice> voices;
+  double                release_ms;
+  vector<Voice>         voices;
+  vector<Voice*>        active_voices;
+  vector<Voice*>        release_voices;
 
 public:
+  JackSynth();
   void init (jack_client_t *client, WavSet *wset, int channels);
   int  process (jack_nframes_t nframes);
+  void reschedule();
 };
 
 static bool
@@ -112,6 +117,21 @@ freq_from_note (float note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
+void
+JackSynth::reschedule()
+{
+  active_voices.clear();
+  release_voices.clear();
+
+  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+    {
+      if (vi->state == Voice::STATE_ON)
+        active_voices.push_back (&*vi);
+      else if (vi->state == Voice::STATE_RELEASE)
+        release_voices.push_back (&*vi);
+    }
+}
+
 int
 JackSynth::process (jack_nframes_t nframes)
 {
@@ -144,6 +164,7 @@ JackSynth::process (jack_nframes_t nframes)
                     vi->decoders[c]->retrigger (c, freq_from_note (midi_note), jack_mix_freq);
                   vi->state = Voice::STATE_ON;
                   vi->midi_note = midi_note;
+                  need_reschedule = true;
                 }
             }
           else if (is_note_off (in_event))
@@ -156,6 +177,7 @@ JackSynth::process (jack_nframes_t nframes)
                     {
                       vi->state = Voice::STATE_RELEASE;
                       vi->env = 1.0;
+                      need_reschedule = true;
                     }
                 }
             }
@@ -165,36 +187,43 @@ JackSynth::process (jack_nframes_t nframes)
           if (event_index < event_count)
             jack_midi_event_get (&in_event, port_buf, event_index);
         }
+      if (need_reschedule)
+        {
+          reschedule();
+          need_reschedule = false;
+        }
       for (int c = 0; c < channels; c++)
         outputs[c][i] = 0.0;
-      for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+      // compute voices with state == STATE_ON
+      for (vector<Voice*>::iterator avi = active_voices.begin(); avi != active_voices.end(); avi++)
         {
-          if (vi->state == Voice::STATE_ON)
+          Voice *v = *avi;
+          for (int c = 0; c < channels; c++)
+            {
+              float f;
+              v->decoders[c]->process (1, NULL, NULL, &f);
+              outputs[c][i] += f;
+            }
+        }
+      // compute voices with state == STATE_RELEASE
+      for (vector<Voice*>::iterator rvi = release_voices.begin(); rvi != release_voices.end(); rvi++)
+        {
+          Voice *v = *rvi;
+          v->env -= (1000.0 / jack_mix_freq) / release_ms;
+          if (v->env < 0)
+            {
+              v->state = Voice::STATE_IDLE;
+              need_reschedule = true;
+            }
+          else
             {
               for (int c = 0; c < channels; c++)
                 {
                   float f;
-                  vi->decoders[c]->process (1, NULL, NULL, &f);
-                  outputs[c][i] += f;
+                  v->decoders[c]->process (1, NULL, NULL, &f);
+                  outputs[c][i] += f * v->env;
                 }
             }
-          else if (vi->state == Voice::STATE_RELEASE)
-            {
-              vi->env -= (1000.0 / jack_mix_freq) / release_ms;
-              if (vi->env < 0)
-                {
-                  vi->state = Voice::STATE_IDLE;
-                }
-              else
-                {
-                  for (int c = 0; c < channels; c++)
-                    {
-                      float f;
-                      vi->decoders[c]->process (1, NULL, NULL, &f);
-                      outputs[c][i] += f * vi->env;
-                    }
-                }
-             }
         }
       for (int c = 0; c < channels; c++)
         outputs[c][i] *= 0.333;    /* empiric */
@@ -207,6 +236,11 @@ jack_process (jack_nframes_t nframes, void *arg)
 {
   JackSynth *instance = reinterpret_cast<JackSynth *> (arg);
   return instance->process (nframes);
+}
+
+JackSynth::JackSynth()
+{
+  need_reschedule = false;
 }
 
 void
