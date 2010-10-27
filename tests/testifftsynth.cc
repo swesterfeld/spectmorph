@@ -69,12 +69,12 @@ perf_test()
   freq_mag_phase.push_back (mag);
   freq_mag_phase.push_back (phase);
 
-  int RUNS = 1000 * 1000;
+  int RUNS = 1000 * 1000 * 5;
   double start, end, t;
 
   synth.clear_partials();
   t = 1e30;
-  for (int reps = 0; reps < 24; reps++)
+  for (int reps = 0; reps < 12; reps++)
     {
       start = gettime();
       for (int r = 0; r < RUNS; r++)
