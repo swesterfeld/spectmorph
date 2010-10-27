@@ -52,6 +52,7 @@ public:
   State        state;
   int          midi_note;
   double       env;
+  double       velocity;
 
   Voice() :
     state (STATE_IDLE)
@@ -172,6 +173,7 @@ JackSynth::process (jack_nframes_t nframes)
                     vi->decoders[c]->retrigger (c, freq_from_note (midi_note), jack_mix_freq);
                   vi->state = Voice::STATE_ON;
                   vi->midi_note = midi_note;
+                  vi->velocity = velocity;
                   need_reschedule = true;
                 }
             }
@@ -218,7 +220,7 @@ JackSynth::process (jack_nframes_t nframes)
               float samples[end - i];
               v->decoders[c]->process (end - i, NULL, NULL, samples);
               for (size_t j = i; j < end; j++)
-                outputs[c][j] += samples[j-i];
+                outputs[c][j] += samples[j-i] * v->velocity;
             }
         }
       // compute voices with state == STATE_RELEASE
@@ -243,7 +245,7 @@ JackSynth::process (jack_nframes_t nframes)
               else
                 {
                   for (int c = 0; c < channels; c++)
-                    outputs[c][j] += samples[c][j - i] * v->env;
+                    outputs[c][j] += samples[c][j - i] * v->env * v->velocity;
                 }
             }
         }
@@ -272,7 +274,7 @@ JackSynth::init (jack_client_t *client, WavSet *smset, int channels)
 {
   this->smset = smset;
   this->channels = channels;
-  release_ms = 50;
+  release_ms = 150;
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
     {
