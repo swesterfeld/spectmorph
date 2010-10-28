@@ -164,8 +164,10 @@ JackSynth::process (jack_nframes_t nframes)
         {
           if (is_note_on (in_event))
             {
+              const double master_volume = 0.333;    /* empiric */
+
               int    midi_note = in_event.buffer[1];
-              double velocity = in_event.buffer[2] / 127.0;
+              double velocity = in_event.buffer[2] / 127.0 * master_volume;
 
               // find unused voice
               vector<Voice>::iterator vi = voices.begin();
@@ -286,9 +288,6 @@ JackSynth::process (jack_nframes_t nframes)
                 outputs[c][j] += samples[j - i] * envelope[j - i] * v->velocity;
             }
         }
-      for (int c = 0; c < channels; c++)
-        for (size_t j = i; j < end; j++)
-          outputs[c][j] *= 0.333;    /* empiric */
       i = end;
     }
   return 0;
