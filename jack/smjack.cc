@@ -33,6 +33,7 @@ using SpectMorph::Audio;
 using SpectMorph::LiveDecoder;
 using SpectMorph::sm_init;
 using SpectMorph::zero_float_block;
+using SpectMorph::sm_round_positive;
 
 using std::vector;
 using std::string;
@@ -261,26 +262,28 @@ JackSynth::process (jack_nframes_t nframes)
         {
           Voice *v = *rvi;
 
-          float samples[channels][end - i];
-          for (int c = 0; c < channels; c++)
-            v->decoders[c]->process (end - i, NULL, NULL, samples[c]);
-
           double v_decrement = (1000.0 / jack_mix_freq) / release_ms;
-          for (size_t j = i; j < end; j++)
+          size_t envelope_len = max (sm_round_positive (v->env / v_decrement), 0);
+          size_t envelope_end = min (i + envelope_len, end);
+          if (envelope_end < end)
+            {
+              v->state = Voice::STATE_IDLE;
+              v->pedal = false;
+              need_reschedule = true;
+            }
+          float envelope[envelope_end - i];
+          for (size_t j = i; j < envelope_end; j++)
             {
               v->env -= v_decrement;
-              if (v->env < 0)
-                {
-                  v->state = Voice::STATE_IDLE;
-                  v->pedal = false;
-                  need_reschedule = true;
-                  break;
-                }
-              else
-                {
-                  for (int c = 0; c < channels; c++)
-                    outputs[c][j] += samples[c][j - i] * v->env * v->velocity;
-                }
+              envelope[j-i] = v->env;
+            }
+          for (int c = 0; c < channels; c++)
+            {
+              float samples[envelope_end - i];
+              v->decoders[c]->process (envelope_end - i, NULL, NULL, samples);
+
+              for (size_t j = i; j < envelope_end; j++)
+                outputs[c][j] += samples[j - i] * envelope[j - i] * v->velocity;
             }
         }
       for (int c = 0; c < channels; c++)
@@ -374,7 +377,7 @@ main (int argc, char **argv)
       exit (1);
     }
   int n_channels = 1;
-  for (int i = 0; i < wset.waves.size(); i++)
+  for (size_t i = 0; i < wset.waves.size(); i++)
     n_channels = max (n_channels, wset.waves[i].channel + 1);
   printf ("%zd audio entries with %d channels found.\n", wset.waves.size(), n_channels);
 
