@@ -221,12 +221,13 @@ test_accs()
   printf ("# max_diff = %.17g\n", max_diff);
 }
 
-class SineSource : public LiveDecoderSource
+class ConstBlockSource : public LiveDecoderSource
 {
   Audio      my_audio;
   AudioBlock my_audio_block;
 public:
-  SineSource()
+  ConstBlockSource (const AudioBlock& block)
+    : my_audio_block (block)
   {
     my_audio.frame_size_ms = 40;
     my_audio.frame_step_ms = 10;
@@ -236,17 +237,16 @@ public:
     my_audio.loop_point = -1;
     my_audio.zero_values_at_start = 0;
     my_audio.sample_count = 1024*1024*1024;
+
+    if (my_audio_block.noise.empty())
+      {
+        my_audio_block.noise.resize (32); // all 0, no noise
+      }
   }
   void retrigger (int channel, float freq, float mix_freq)
   {
     my_audio.mix_freq = mix_freq;
     my_audio.fundamental_freq = freq;
-
-    my_audio_block = AudioBlock();    // reset contents
-    my_audio_block.noise.resize (32); // all 0, no noise
-    my_audio_block.freqs.push_back (freq);
-    my_audio_block.mags.push_back (1);
-    my_audio_block.phases.push_back (0.9);
   }
   Audio *audio()
   {
@@ -261,17 +261,24 @@ public:
 void
 test_spect()
 {
-  SineSource source;
   double mix_freq = 48000;
   double freq = 440;
   const size_t block_size = 1024;
 
-  vector<float> samples (block_size * 100);
+  AudioBlock audio_block;
+
+  audio_block.freqs.push_back (freq);
+  audio_block.mags.push_back (1);
+  audio_block.phases.push_back (0.9);
+
+  ConstBlockSource source (audio_block);
 
   LiveDecoder live_decoder (&source);
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   freq = synth.quantized_freq (freq);
   live_decoder.retrigger (0, freq, mix_freq);
+
+  vector<float> samples (block_size * 100);
   live_decoder.process (samples.size(), 0, 0, &samples[0]);
 
   size_t power2 = 1;
@@ -306,9 +313,16 @@ test_spect()
 void
 test_phase()
 {
-  SineSource source;
   const double mix_freq = 48000;
   const double freq = 440;
+
+  AudioBlock audio_block;
+
+  audio_block.freqs.push_back (freq);
+  audio_block.mags.push_back (1);
+  audio_block.phases.push_back (0.9);
+
+  ConstBlockSource source (audio_block);
 
   vector<float> samples (1024);
 
@@ -329,6 +343,55 @@ test_phase()
     }
 }
 
+void
+test_saw_perf()
+{
+  double mix_freq = 48000;
+  double freq = 110;
+  size_t PARTIALS = 100;
+  const size_t block_size = 1024;
+
+  AudioBlock audio_block;
+
+  for (size_t partial = 1; partial <= PARTIALS; partial++)
+    {
+      audio_block.freqs.push_back (freq * partial);
+      audio_block.mags.push_back (1.0 / partial);
+      audio_block.phases.push_back (0.9);
+    }
+
+  vector<float> samples (block_size * 100);
+  const int RUNS = 50;
+  double t[2];
+  for (int i = 0; i < 2; i++)
+    {
+      ConstBlockSource source (audio_block);
+
+      LiveDecoder live_decoder (&source);
+      live_decoder.enable_noise (false);
+      live_decoder.enable_sines (i == 1);
+      live_decoder.enable_debug_fft_perf (i == 0);
+      live_decoder.precompute_tables (mix_freq);
+      live_decoder.retrigger (0, freq, mix_freq);
+
+      double start, end;
+
+      t[i] = 1e30;
+      for (int reps = 0; reps < 12; reps++)
+        {
+          start = gettime();
+          for (int r = 0; r < RUNS; r++)
+            live_decoder.process (samples.size(), 0, 0, &samples[0]);
+          end = gettime();
+          t[i] = min (t[i], end - start);
+        }
+    }
+
+  const double clocks_per_sec = 2500.0 * 1000 * 1000;
+  double time = t[1] - t[0]; // time without fft time
+  printf ("LiveDecoder: clocks per sample per partial: %f\n", clocks_per_sec * time / RUNS / PARTIALS / samples.size());
+}
+
 int
 main (int argc, char **argv)
 {
@@ -337,6 +400,11 @@ main (int argc, char **argv)
   if (argc == 2 && strcmp (argv[1], "perf") == 0)
     {
       perf_test();
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "saw_perf") == 0)
+    {
+      test_saw_perf();
       return 0;
     }
   if (argc == 2 && strcmp (argv[1], "accs") == 0)
