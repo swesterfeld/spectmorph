@@ -243,7 +243,7 @@ public:
         my_audio_block.noise.resize (32); // all 0, no noise
       }
   }
-  void retrigger (int channel, float freq, float mix_freq)
+  void retrigger (int channel, float freq, int midi_velocity, float mix_freq)
   {
     my_audio.mix_freq = mix_freq;
     my_audio.fundamental_freq = freq;
@@ -276,7 +276,7 @@ test_spect()
   LiveDecoder live_decoder (&source);
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   freq = synth.quantized_freq (freq);
-  live_decoder.retrigger (0, freq, mix_freq);
+  live_decoder.retrigger (0, freq, 127, mix_freq);
 
   vector<float> samples (block_size * 100);
   live_decoder.process (samples.size(), 0, 0, &samples[0]);
@@ -328,7 +328,7 @@ test_phase()
 
   LiveDecoder live_decoder (&source);
   live_decoder.enable_noise (false);
-  live_decoder.retrigger (0, freq, mix_freq);
+  live_decoder.retrigger (0, freq, 127, mix_freq);
   for (size_t block = 0; block < 10000000; block++)
     {
       live_decoder.process (samples.size(), 0, 0, &samples[0]);
@@ -372,7 +372,7 @@ test_saw_perf()
       live_decoder.enable_sines (i == 1);
       live_decoder.enable_debug_fft_perf (i == 0);
       live_decoder.precompute_tables (mix_freq);
-      live_decoder.retrigger (0, freq, mix_freq);
+      live_decoder.retrigger (0, freq, 127, mix_freq);
 
       double start, end;
 

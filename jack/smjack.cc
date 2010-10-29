@@ -166,8 +166,10 @@ JackSynth::process (jack_nframes_t nframes)
             {
               const double master_volume = 0.333;    /* empiric */
 
-              int    midi_note = in_event.buffer[1];
-              double velocity = in_event.buffer[2] / 127.0 * master_volume;
+              const int midi_note = in_event.buffer[1];
+              const int midi_velocity = in_event.buffer[2];
+
+              double velocity = midi_velocity / 127.0 * master_volume;
 
               // find unused voice
               vector<Voice>::iterator vi = voices.begin();
@@ -176,7 +178,7 @@ JackSynth::process (jack_nframes_t nframes)
               if (vi != voices.end())
                 {
                   for (int c = 0; c < channels; c++)
-                    vi->decoders[c]->retrigger (c, freq_from_note (midi_note), jack_mix_freq);
+                    vi->decoders[c]->retrigger (c, freq_from_note (midi_note), midi_velocity, jack_mix_freq);
                   vi->state = Voice::STATE_ON;
                   vi->midi_note = midi_note;
                   vi->velocity = velocity;

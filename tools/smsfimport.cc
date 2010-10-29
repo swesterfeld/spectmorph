@@ -990,7 +990,12 @@ dump (const string& preset_name = "")
             {
               const size_t zone_index = zi - pi->zones.begin();
               printf ("  Zone #%zd\n", zone_index);
-
+              for (vector<Generator>::const_iterator gi = zi->generators.begin();
+                                                     gi != zi->generators.end(); gi++)
+                {
+                  const size_t generator_index = gi - zi->generators.begin();
+                  printf ("    Generator #%zd: %s\n", generator_index, gen2name (gi->generator));
+                }
             }
         }
     }

@@ -66,6 +66,7 @@ class Osc : public OscBase {
     float          current_freq;
     bool           need_retrigger;
     int            channel;
+    float          frequency;
   public:
     Module() :
       wav_set (NULL),
@@ -89,21 +90,28 @@ class Osc : public OscBase {
     void process (unsigned int n_values)
     {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
-      const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
       gfloat *audio_out = ostream (OCHANNEL_AUDIO_OUT).values;
-      float new_freq = BSE_SIGNAL_TO_FREQ (freq_in[0]);
       if (need_retrigger)
         {
-          retrigger (new_freq);
+          // get frequency
+          const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
+          float new_freq = istream (ICHANNEL_FREQ_IN).connected ? BSE_SIGNAL_TO_FREQ (freq_in[0]) : frequency;
+
+          // get velocity
+          const gfloat *velocity_in = istream (ICHANNEL_VELOCITY_IN).values;
+          float new_velocity = istream (ICHANNEL_VELOCITY_IN).connected ? velocity_in[0] : 1.0;
+          int   midi_velocity = CLAMP (sm_round_positive (new_velocity * 127), 0, 127);
+
+          retrigger (new_freq, midi_velocity);
           need_retrigger = false;
         }
       live_decoder->process (n_values, NULL, NULL, audio_out);
     }
     void
-    retrigger (float freq)
+    retrigger (float freq, int midi_velocity)
     {
       if (live_decoder)
-        live_decoder->retrigger (channel, freq, mix_freq());
+        live_decoder->retrigger (channel, freq, midi_velocity, mix_freq());
 
       current_freq = freq;
     }
@@ -112,6 +120,7 @@ class Osc : public OscBase {
     {
       wav_set = audio_repo.get_wav_set (properties->filename.c_str());
       channel = properties->channel - 1;
+      frequency = properties->frequency;
 
       if (live_decoder)
         delete live_decoder;

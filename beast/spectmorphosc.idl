@@ -28,6 +28,7 @@ class Osc : Effect {
   Info    category    = _("/Audio Sources/SpectMorph Oscillator");
   Info    blurb       = _("Oscillator based on SpectMorph instruments.");
   IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
+  IStream velocity_in = (_("Velocity In"), _("Velocity of the note press"));
   OStream audio_out   = (_("Audio Out"), _("Audio Output"));
 
   group _("Source") {

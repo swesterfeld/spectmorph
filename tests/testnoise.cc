@@ -91,7 +91,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   assert (!error);
 
   float freq = 440;
-  decoder.retrigger (0, freq, enc_params.mix_freq);
+  decoder.retrigger (0, freq, 127, enc_params.mix_freq);
   decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 }
 

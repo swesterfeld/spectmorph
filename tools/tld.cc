@@ -95,7 +95,7 @@ main (int argc, char **argv)
 
               // avoid measuring setup time
               decoder.process (n, 0, 0, &audio_out[0]);
-              decoder.retrigger (0, freq, 48000);
+              decoder.retrigger (0, freq, 127, 48000);
 
               double best_time = 1e7;
               for (int rep = 0; rep < 25; rep++)
@@ -103,7 +103,7 @@ main (int argc, char **argv)
                   double start_t = gettime();
                   for (int l = 0; l < runs; l++)
                     {
-                      decoder.retrigger (0, freq, 48000);
+                      decoder.retrigger (0, freq, 127, 48000);
                       decoder.process (n, 0, 0, &audio_out[0]);
                     }
                   double end_t = gettime();
@@ -124,7 +124,7 @@ main (int argc, char **argv)
       const int SR = 48000;
 
       vector<float> audio_out (SR * 20);
-      decoder.retrigger (0, freq, SR);
+      decoder.retrigger (0, freq, 127, SR);
       decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
       GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
@@ -158,7 +158,7 @@ main (int argc, char **argv)
           const int runs = 40;
           for (int l = 0; l < runs; l++)
             {
-              decoder.retrigger (0, freq, 48000);
+              decoder.retrigger (0, freq, 127, 48000);
               decoder.process (n, 0, 0, &audio_out[0]);
             }
           double end_t = gettime();

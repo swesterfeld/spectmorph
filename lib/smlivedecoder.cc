@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2009-2010 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
@@ -105,14 +105,14 @@ LiveDecoder::~LiveDecoder()
 }
 
 void
-LiveDecoder::retrigger (int channel, float freq, float mix_freq)
+LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
   Audio *best_audio = 0;
   double best_diff = 1e10;
 
   if (source)
     {
-      source->retrigger (channel, freq, mix_freq);
+      source->retrigger (channel, freq, midi_velocity, mix_freq);
       best_audio = source->audio();
     }
   else
@@ -125,7 +125,9 @@ LiveDecoder::retrigger (int channel, float freq, float mix_freq)
           for (vector<WavSetWave>::iterator wi = smset->waves.begin(); wi != smset->waves.end(); wi++)
             {
               Audio *audio = wi->audio;
-              if (audio && wi->channel == channel)
+              if (audio && wi->channel == channel &&
+                           wi->velocity_range_min <= midi_velocity &&
+                           wi->velocity_range_max >= midi_velocity)
                 {
                   float audio_note = freq_to_note (audio->fundamental_freq);
 
@@ -372,6 +374,6 @@ LiveDecoder::precompute_tables (float mix_freq)
    */
   float out;
 
-  retrigger (0, 440, mix_freq);
+  retrigger (0, 440, 127, mix_freq);
   process (1, NULL, NULL, &out);
 }
