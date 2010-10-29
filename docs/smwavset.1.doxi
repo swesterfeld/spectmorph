@@ -68,6 +68,8 @@ smwavset - Program to manage spectmorph multiwave files
         @item midi-note    @* Midi note of the audio entry (0-127)
         @item channel      @* Channel for the audio entry (0 is the first channel)
         @item filename     @* Filename of the audio entry
+        @item min-velocity @* Minimum velocity of the audio entry (0-127)
+        @item max-velocity @* Maximum velocity of the audio entry (0-127)
         @done
 
 @subheading encode [ <options> ] <wset_filename> <smset_filename>
