@@ -41,6 +41,7 @@ smlive:
   * load sincos[random] sincos[random+1] and shuffle values together
   * write out result
   * combine loop with apply window
+- SSEify render_partial
 
 tests:
 - add test cases
