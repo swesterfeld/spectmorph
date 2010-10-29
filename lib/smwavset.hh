@@ -32,6 +32,8 @@ class WavSetWave
 public:
   int         midi_note;
   int         channel;
+  int         velocity_range_min;
+  int         velocity_range_max;
   std::string path;
   Audio      *audio;
 

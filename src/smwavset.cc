@@ -65,6 +65,8 @@ struct Options
   string          data_dir;
   string          args;
   int             channel;
+  int             min_velocity;
+  int             max_velocity;
   vector<string>  format;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK } command;
 
@@ -81,6 +83,8 @@ Options::Options ()
   args = "";
   command = NONE;
   channel = 0;
+  min_velocity = 0;
+  max_velocity = 127;
   format = string_tokenize ("midi-note,filename");
 }
 
@@ -130,6 +134,14 @@ Options::parse (int   *argc_p,
                check_arg (argc, argv, &i, "--channel", &opt_arg))
 	{
 	  channel = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--min-velocity", &opt_arg))
+	{
+	  min_velocity = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--max-velocity", &opt_arg))
+	{
+	  max_velocity = atoi (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--format", &opt_arg))
         {
@@ -214,6 +226,7 @@ Options::print_usage ()
   printf (" --args \"<args>\"             arguments for decoder or encoder\n");
   printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
   printf (" -c, --channel <ch>          set channel for added .sm file\n");
+  printf (" --format <f1>,...,<fN>      set fields to display in list\n");
   printf ("\n");
 }
 
@@ -373,6 +386,8 @@ main (int argc, char **argv)
       new_wave.midi_note = atoi (argv[2]);
       new_wave.path = argv[3];
       new_wave.channel = options.channel;
+      new_wave.velocity_range_min = options.min_velocity;
+      new_wave.velocity_range_max = options.max_velocity;
 
       wset.waves.push_back (new_wave);
       wset.save (argv[1]);
@@ -394,6 +409,10 @@ main (int argc, char **argv)
                 printf ("%s", wi->path.c_str());
               else if (*fi == "channel")
                 printf ("%d", wi->channel);
+              else if (*fi == "min-velocity")
+                printf ("%d", wi->velocity_range_min);
+              else if (*fi == "max-velocity")
+                printf ("%d", wi->velocity_range_max);
               else
                 {
                   sfi_error ("list command: invalid field for format: %s", fi->c_str());

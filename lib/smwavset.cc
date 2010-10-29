@@ -44,6 +44,8 @@ WavSet::save (const string& filename, bool embed_models)
       of.begin_section ("wave");
       of.write_int ("midi_note", waves[i].midi_note);
       of.write_int ("channel", waves[i].channel);
+      of.write_int ("velocity_range_min", waves[i].velocity_range_min);
+      of.write_int ("velocity_range_max", waves[i].velocity_range_max);
       of.write_string ("path", waves[i].path);
       if (waves[i].audio)
         {
@@ -134,6 +136,16 @@ WavSet::load (const string& filename)
                   assert (wave);
                   wave->channel = ifile.event_int();
                 }
+              else if (ifile.event_name() == "velocity_range_min")
+                {
+                  assert (wave);
+                  wave->velocity_range_min = ifile.event_int();
+                }
+              else if (ifile.event_name() == "velocity_range_max")
+                {
+                  assert (wave);
+                  wave->velocity_range_max = ifile.event_int();
+                }
               else
                 printf ("unhandled int %s %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -191,6 +203,8 @@ WavSetWave::WavSetWave()
   audio = NULL;
   channel = 0;
   midi_note = -1;
+  velocity_range_min = 0;
+  velocity_range_max = 127;
 }
 
 WavSetWave::~WavSetWave()
