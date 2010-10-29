@@ -513,8 +513,6 @@ Options::Options()
   program_name = "smsfimport";
 }
 
-#include "stwutils.hh"
-
 void
 Options::parse (int   *argc_p,
                 char **argv_p[])
@@ -527,7 +525,6 @@ Options::parse (int   *argc_p,
 
   for (i = 1; i < argc; i++)
     {
-      const char *opt_arg;
       if (strcmp (argv[i], "--help") == 0 ||
           strcmp (argv[i], "-h") == 0)
 	{
@@ -854,7 +851,7 @@ check_import (const Preset& p)
                 key_count[i] += 1;
             }
         }
-      for (int i = 0; i < key_count.size(); i++)
+      for (size_t i = 0; i < key_count.size(); i++)
         if (key_count[i] > 1)
           return "noimport (key range overlap)";
 
@@ -978,6 +975,7 @@ import_preset (const string& import_name)
           xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
         }
     }
+  return 0;
 }
 
 void
@@ -1022,7 +1020,11 @@ main (int argc, char **argv)
           printf ("can't load sf2: %s\n", argv[1]);
           return 1;
         }
-      import_preset (argv[2]);
+      if (import_preset (argv[2]) != 0)
+        {
+          printf ("can't import preset: %s\n", argv[2]);
+          return 1;
+        }
     }
   else if (options.command == Options::DUMP)
     {
