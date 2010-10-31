@@ -22,6 +22,7 @@
 #include <errno.h>
 
 #include <vector>
+#include <map>
 #include <algorithm>
 
 #include "config.h"
@@ -44,6 +45,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::map;
 using std::sort;
 
 enum {
@@ -878,6 +880,8 @@ list_sf2()
 int
 import_preset (const string& import_name)
 {
+  map<string,bool> is_encoded;
+
   for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
     {
       if (pi->name == import_name)
@@ -932,8 +936,6 @@ import_preset (const string& import_name)
                       const size_t zone_index = zi - instrument.zones.begin();
 
                       printf ("zone %zd:\n", zone_index);
-                      string filename = Birnet::string_printf ("zone%zd-%d-%d.wav", zone_index, vr_min, vr_max);
-                      string smname = Birnet::string_printf ("zone%zd-%d-%d.sm", zone_index, vr_min, vr_max);
 
                       int root_key = -1;
                       const Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
@@ -954,30 +956,37 @@ import_preset (const string& import_name)
 
                           printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
 
-                          GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
-                          gsl_data_handle_open (dhandle);
+                          string filename = Birnet::string_printf ("sample%zd-%d.wav", id, midi_note);
+                          string smname = Birnet::string_printf ("sample%zd-%d.sm", id, midi_note);
 
-                          int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                          if (fd < 0)
+                          if (!is_encoded[smname])
                             {
-                              BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
-                              sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                            }
+                              GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
+                              gsl_data_handle_open (dhandle);
 
-                          int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-                          if (xerrno)
-                            {
-                              BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
-                              sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                            }
-                          close (fd);
+                              int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                              if (fd < 0)
+                                {
+                                  BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+                                  sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                                }
 
-                          xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
-                          if (sample_modes & 1)
-                            {
-                              xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                              int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
+                              if (xerrno)
+                                {
+                                  BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+                                  sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                                }
+                              close (fd);
+
+                              xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
+                              if (sample_modes & 1)
+                                {
+                                  xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                                }
+                              xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
+                              is_encoded[smname] = true;
                             }
-                          xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
                           xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max));
                         }
                     }
