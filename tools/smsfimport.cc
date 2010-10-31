@@ -881,11 +881,6 @@ import_preset (const string& import_name)
       if (pi->name == import_name)
         {
           printf ("importing preset %s\n", import_name.c_str());
-          if (pi->zones.size() != 1)
-            {
-              printf ("preset has %zd zones (should be 1) - can't import\n", pi->zones.size());
-              return 1;
-            }
 
           string preset_xname;
           for (string::const_iterator ni = import_name.begin(); ni != import_name.end(); ni++)
@@ -904,72 +899,86 @@ import_preset (const string& import_name)
           string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
           xsystem (cmd);
 
-          Zone& zone = pi->zones[0];
-          int inst_index = -1;
-          for (vector<Generator>::iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
+          for (vector<Zone>::iterator preset_zi = pi->zones.begin(); preset_zi != pi->zones.end(); preset_zi++)
             {
-              if (gi->generator == GEN_INSTRUMENT)
+              Zone& zone = *preset_zi;
+              int inst_index = -1;
+              for (vector<Generator>::iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
                 {
-                  assert (inst_index == -1);
-                  inst_index = gi->amount;
+                  if (gi->generator == GEN_INSTRUMENT)
+                    {
+                      assert (inst_index == -1);
+                      inst_index = gi->amount;
+                    }
                 }
-            }
-          assert (inst_index >= 0);
-          Instrument instrument = instruments[inst_index];
-          printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
-
-          for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
-            {
-              const size_t zone_index = zi - instrument.zones.begin();
-
-              printf ("zone %zd:\n", zone_index);
-              string filename = Birnet::string_printf ("zone%zd.wav", zone_index);
-              string smname = Birnet::string_printf ("zone%zd.sm", zone_index);
-
-              int root_key = -1;
-              const Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
-              if (gi)
-                root_key = gi->amount;
-
-              int sample_modes = 0;
-              gi = find_gen (GEN_SAMPLE_MODES, zi->generators);
-              if (gi)
-                sample_modes = gi->amount;
-
-              gi = find_gen (GEN_SAMPLE, zi->generators);
-              if (gi)
+              int vr_min = 0, vr_max = 127;
+              const Generator *gp = find_gen (GEN_VELOCITY_RANGE, zone.generators);
+              if (gp)
                 {
-                  size_t id = gi->amount;
-                  assert (id >= 0 && id < samples.size());
-                  int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
+                  vr_min = gp->range_min;
+                  vr_max = gp->range_max;
+                }
+              printf ("  * velocity range: %d..%d\n", vr_min, vr_max);
+              // FIXME: this is a little sloppy - we should accept inst_index < 0 only for global zone
+              if (inst_index >= 0)
+                {
+                  Instrument instrument = instruments[inst_index];
+                  printf ("instrument name: %s (%zd zones)\n", instrument.name.c_str(), instrument.zones.size());
 
-                  printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
-
-                  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
-                  gsl_data_handle_open (dhandle);
-
-                  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                  if (fd < 0)
+                  for (vector<Zone>::iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
                     {
-                      BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
-                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                    }
+                      const size_t zone_index = zi - instrument.zones.begin();
 
-                  int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-                  if (xerrno)
-                    {
-                      BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
-                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                    }
-                  close (fd);
+                      printf ("zone %zd:\n", zone_index);
+                      string filename = Birnet::string_printf ("zone%zd-%d-%d.wav", zone_index, vr_min, vr_max);
+                      string smname = Birnet::string_printf ("zone%zd-%d-%d.sm", zone_index, vr_min, vr_max);
 
-                  xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
-                  if (sample_modes & 1)
-                    {
-                      xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                      int root_key = -1;
+                      const Generator *gi = find_gen (GEN_ROOT_KEY, zi->generators);
+                      if (gi)
+                        root_key = gi->amount;
+
+                      int sample_modes = 0;
+                      gi = find_gen (GEN_SAMPLE_MODES, zi->generators);
+                      if (gi)
+                        sample_modes = gi->amount;
+
+                      gi = find_gen (GEN_SAMPLE, zi->generators);
+                      if (gi)
+                        {
+                          size_t id = gi->amount;
+                          assert (id >= 0 && id < samples.size());
+                          int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
+
+                          printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
+
+                          GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
+                          gsl_data_handle_open (dhandle);
+
+                          int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                          if (fd < 0)
+                            {
+                              BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+                              sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                            }
+
+                          int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
+                          if (xerrno)
+                            {
+                              BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+                              sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                            }
+                          close (fd);
+
+                          xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
+                          if (sample_modes & 1)
+                            {
+                              xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
+                            }
+                          xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
+                          xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max));
+                        }
                     }
-                  xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
-                  xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s", preset_xname.c_str(), midi_note, smname.c_str()));
                 }
             }
           xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
