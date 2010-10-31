@@ -459,6 +459,8 @@ gen2name (int i)
     { 8,  "initial-filter-fc" },
     { 35, "vol-env-hold" },
     { 36, "vol-env-decay" },
+    { 37, "vol-env-sustain" },
+    { 38, "vol-env-release" },
     { 41, "instrument" },
     { 43, "key-range" },
     { 44, "velocity-range" },
@@ -1003,7 +1005,7 @@ dump (const string& preset_name = "")
                                                      gi != zi->generators.end(); gi++)
                 {
                   const size_t generator_index = gi - zi->generators.begin();
-                  printf ("    Generator #%zd: %s\n", generator_index, gen2name (gi->generator));
+                  printf ("    Generator #%zd: %d (%s)\n", generator_index, gi->generator, gen2name (gi->generator));
                 }
             }
         }
