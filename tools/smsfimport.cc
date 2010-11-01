@@ -806,7 +806,7 @@ check_import (const Preset& p)
 {
   if (p.zones.size() == 1)
     {
-      printf ("PRESET: %s\n", p.name.c_str());
+      //printf ("PRESET: %s\n", p.name.c_str());
       const Zone& zone = p.zones[0];
       int inst_index = -1;
       for (vector<Generator>::const_iterator gi = zone.generators.begin(); gi != zone.generators.end(); gi++)
@@ -818,7 +818,7 @@ check_import (const Preset& p)
             }
         }
       assert (inst_index >= 0);
-      printf ("inst_index=%d\n", inst_index);
+      //printf ("inst_index=%d\n", inst_index);
 
       vector<int> key_count (128);
 
@@ -827,7 +827,7 @@ check_import (const Preset& p)
         {
           const size_t zone_index = zi - instrument.zones.begin();
 
-          printf ("zone %zd:\n", zone_index);
+          //printf ("zone %zd:\n", zone_index);
           //int root_key = -1;
           const Generator *gi; // = find_gen (GEN_ROOT_KEY, zi->generators);
           //if (gi)
@@ -838,7 +838,7 @@ check_import (const Preset& p)
             {
               size_t id = gi->amount;
               assert (id >= 0 && id < samples.size());
-              printf (" * sample = %s\n", samples[id].name.c_str());
+              //printf (" * sample = %s\n", samples[id].name.c_str());
 
               /* default: map to all keys */
               int kr_min = 0;
@@ -850,7 +850,7 @@ check_import (const Preset& p)
                   kr_min = gi->range_min;
                   kr_max = gi->range_max;
                 }
-              printf (" * key range = %d..%d\n", kr_min, kr_max);
+              //printf (" * key range = %d..%d\n", kr_min, kr_max);
               for (int i = kr_min; i < kr_max; i++)
                 key_count[i] += 1;
             }
