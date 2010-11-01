@@ -1024,6 +1024,7 @@ void
 dump (const string& preset_name = "")
 {
   set<int> dump_instr;
+  set<int> dump_sample;
 
   for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
     {
@@ -1061,8 +1062,22 @@ dump (const string& preset_name = "")
                   const size_t generator_index = gi - zi->generators.begin();
                   printf ("    Generator #%zd: %d (%s)\n", generator_index, gi->generator, gen2name (gi->generator));
                   printf ("                    amount %d\n", gi->amount);
+
+                  if (gi->generator == GEN_SAMPLE)
+                    dump_sample.insert (gi->amount);
                 }
             }
+        }
+    }
+  for (vector<Sample>::iterator si = samples.begin(); si != samples.end(); si++)
+    {
+      size_t snr = si - samples.begin();
+      if (dump_sample.count (snr))
+        {
+          printf ("Sample %s:\n", si->name.c_str());
+          printf ("  Length: %d\n", si->end - si->start);
+          printf ("  Loop  : %d..%d\n", si->startloop - si->start, si->endloop - si->start);
+          printf ("  SRate : %d\n", si->srate);
         }
     }
 }
