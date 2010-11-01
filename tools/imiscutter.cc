@@ -45,33 +45,6 @@ struct Options
 } options;
 /// @endcond
 
-static int
-count_regions (const vector<double>& peaks, double silence_threshold)
-{
-  int   regions = 0;
-  bool  in_region = false;
-
-  for (vector<double>::const_iterator pi = peaks.begin(); pi != peaks.end(); pi++)
-    {
-      if (*pi > silence_threshold)
-        {
-          if (!in_region)
-            {
-              in_region = true;
-              regions++;
-            }
-        }
-      else
-        {
-          if (in_region)
-            {
-              in_region = false;
-            }
-        }
-    }
-  return regions;
-}
-
 static void
 dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
 {
@@ -138,14 +111,14 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
 
       for (size_t i = 0; i < nl; i++)
         {
-          int pos = offset + i * n_channels;
+          size_t pos = offset + i * n_channels;
           if (pos < input_data.size())
             block.push_back (input_data[pos]);
           else
             block.push_back (0);
         }
 
-      int fft_size = 1;
+      size_t fft_size = 1;
       while (fft_size < block.size() * 4)
         fft_size *= 2;
 
@@ -270,11 +243,11 @@ main (int argc, char **argv)
           vector<double> channel_peaks;
           compute_peaks (channel, note_len, input_data, channel_peaks, block_size, n_channels);
           peaks.resize (channel_peaks.size(), -500);
-          for (int peak = 0; peak < channel_peaks.size(); peak++)
+          for (size_t peak = 0; peak < channel_peaks.size(); peak++)
             peaks[peak] = max (peaks[peak], channel_peaks[peak]);
         }
 
-      int pi = last_region_end;
+      size_t pi = last_region_end;
       while (pi < peaks.size() && peaks[pi] < signal_threshold)
         pi++;
 
@@ -284,7 +257,7 @@ main (int argc, char **argv)
         start_pi--;
 
       // search forwards for region end
-      int end_pi = pi;
+      size_t end_pi = pi;
       while (end_pi < peaks.size() && peaks[end_pi] > silence_threshold)
         end_pi++;
 
