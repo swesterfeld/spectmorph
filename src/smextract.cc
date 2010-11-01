@@ -39,79 +39,6 @@ vector_delta (const vector<double>& a, const vector<double>& b)
   return d;
 }
 
-/// @cond
-// not yet part of the public API
-struct TransientModel
-{
-  double start_volume;
-  double end_volume;
-  int start;
-  int end;
-};
-/// @endcond
-
-void
-transient_scale (const TransientModel& m, const vector<double>& in, vector<double>& out)
-{
-  out.resize (in.size());
-
-  for (size_t n = 0; n < in.size(); n++)
-    {
-      if (n <= m.start)
-        {
-          out[n] = in[n] * m.start_volume;
-        }
-      else if (n < m.end)
-        {
-          double d = double (n - m.start) / double (m.end - m.start);
-          out[n] = in[n] * ((1 - d) * m.start_volume + d * m.end_volume);
-        }
-      else // (n >= end)
-        {
-          out[n] = in[n] * m.end_volume;
-        }
-    }
-}
-
-void
-optimize_transient_model (TransientModel& m, vector<double>& signal, const vector<double>& desired_signal)
-{
-  int nomod = 0;
-
-  vector<double> trsignal;
-  while (nomod < 3000)
-    {
-      transient_scale (m, signal, trsignal);
-      double m_delta = vector_delta (trsignal, desired_signal);
-
-      TransientModel new_m = m;
-      new_m.start += g_random_int_range (-5, 5);
-      new_m.end += g_random_int_range (-5, 5);
-      new_m.start_volume += g_random_double_range (-0.001, 0.001);
-      new_m.end_volume += g_random_double_range (-0.001, 0.001);
-
-      if (new_m.end > signal.size())
-        new_m.end = signal.size();
-      if (new_m.start + 10 > new_m.end)
-        new_m.start = new_m.end - 10;
-      if (new_m.start < 0)
-        new_m.start = 0;
-      transient_scale (new_m, signal, trsignal);
-
-      double new_m_delta = vector_delta (trsignal, desired_signal);
-
-      if (new_m_delta < m_delta)
-        {
-          m = new_m;
-          nomod = 0;
-        }
-      else
-        {
-          nomod++;
-        }
-    }
-}
-
 static void
 reconstruct (AudioBlock&     audio_block,
              vector<double>& signal,
@@ -154,7 +81,7 @@ attack_error (const SpectMorph::Audio& audio, const vector< vector<double> >& un
     {
       const vector<double>& frame_signal = unscaled_signal[f];
       size_t zero_values = 0;
-      double scale;
+      double scale = 1.0; /* init to get rid of gcc compiler warning */
 
       for (size_t n = 0; n < frame_signal.size(); n++)
         {
@@ -229,7 +156,7 @@ main (int argc, char **argv)
   const string& mode = argv[2];
 
   Audio audio = load_or_die (argv[1], mode);
-  int frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
+  size_t frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
   bool need_save = false;
 
   if (mode == "freq")
@@ -262,7 +189,7 @@ main (int argc, char **argv)
       reconstruct (audio.contents[i], sines, audio.mix_freq);
 
       /* compute block size from frame size (smallest 2^k value >= frame_size) */
-      uint64 block_size = 1;
+      size_t block_size = 1;
       while (block_size < frame_size)
         block_size *= 2;
 
@@ -322,23 +249,6 @@ main (int argc, char **argv)
           double v = audio.contents[i].debug_samples[n];
           printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
         }
-#if 0     
-      // optimize transient parameter set
-      vector<double> trsines;
-      TransientModel m;
-      m.start_volume = 1;
-      m.end_volume = 1;
-      m.start = 0;
-      m.end = sines.size();
-      vector<double> debug_samples (audio.contents[i].debug_samples.begin(), audio.contents[i].debug_samples.end());
-      optimize_transient_model (m, sines, debug_samples);
-      transient_scale (m, sines, trsines);
-      for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
-        {
-          double v = audio.contents[i].debug_samples[n];
-          printf ("%zd %f %f %f\n", n, v, trsines[n], v - trsines[n]);
-        }
-#endif
     }
   else if (mode == "frameparams")
     {
@@ -484,7 +394,7 @@ main (int argc, char **argv)
       audio.loop_point = audio.contents.size() * percent / 100;
       if (audio.loop_point < 0)
         audio.loop_point = 0;
-      if (audio.loop_point >= (audio.contents.size() - 1))
+      if (size_t (audio.loop_point) >= (audio.contents.size() - 1))
         audio.loop_point = audio.contents.size() - 1;
 
       need_save = true;
@@ -499,7 +409,7 @@ main (int argc, char **argv)
       // we need the largest frame that doesn't include any data beyond the original file end
       for (size_t i = 0; i < audio.contents.size(); i++)
         {
-          if (i * frame_step + frame_size < audio.sample_count)
+          if (i * frame_step + frame_size < size_t (audio.sample_count))
             loop_point = i;
         }
       audio.loop_point = loop_point;
