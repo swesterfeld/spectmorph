@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 #include <algorithm>
 
 #include "config.h"
@@ -47,8 +48,10 @@ using std::string;
 using std::vector;
 using std::map;
 using std::sort;
+using std::set;
 
 enum {
+  GEN_PAN            = 17,
   GEN_INSTRUMENT     = 41,
   GEN_KEY_RANGE      = 43,
   GEN_VELOCITY_RANGE = 44,
@@ -207,6 +210,10 @@ Generator::read (GenericIn *in)
     {
       range_min = in->get_byte();
       range_max = in->get_byte();
+    }
+  else if (generator == GEN_PAN)
+    {
+      amount    = read_si16 (in);
     }
   else
     {
@@ -458,17 +465,18 @@ gen2name (int i)
     int         gen;
     const char *name;
   } g2n[] = {
-    { 8,  "initial-filter-fc" },
-    { 35, "vol-env-hold" },
-    { 36, "vol-env-decay" },
-    { 37, "vol-env-sustain" },
-    { 38, "vol-env-release" },
-    { 41, "instrument" },
-    { 43, "key-range" },
-    { 44, "velocity-range" },
-    { GEN_SAMPLE,       "sample-id" },
-    { GEN_SAMPLE_MODES, "sample-modes" },
-    { GEN_ROOT_KEY,     "root-key" },
+    { 8,                  "initial-filter-fc" },
+    { GEN_PAN,            "pan" },
+    { 35,                 "vol-env-hold" },
+    { 36,                 "vol-env-decay" },
+    { 37,                 "vol-env-sustain" },
+    { 38,                 "vol-env-release" },
+    { GEN_INSTRUMENT,     "instrument" },
+    { GEN_KEY_RANGE,      "key-range" },
+    { GEN_VELOCITY_RANGE, "velocity-range" },
+    { GEN_SAMPLE,         "sample-id" },
+    { GEN_SAMPLE_MODES,   "sample-modes" },
+    { GEN_ROOT_KEY,       "root-key" },
     { 0, NULL }
   };
   for (int k = 0; g2n[k].name; k++)
@@ -947,6 +955,20 @@ import_preset (const string& import_name)
                       if (gi)
                         sample_modes = gi->amount;
 
+                      int channel = 0;
+                      gi = find_gen (GEN_PAN, zi->generators);
+                      if (gi)
+                        {
+                          assert (gi->amount == -500 || gi->amount == 500);
+
+                          if (gi->amount == -500)
+                            channel = 0;
+                          else if (gi->amount == 500)
+                            channel = 1;
+                          else
+                            assert (false);
+                        }
+
                       gi = find_gen (GEN_SAMPLE, zi->generators);
                       if (gi)
                         {
@@ -987,7 +1009,7 @@ import_preset (const string& import_name)
                               xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
                               is_encoded[smname] = true;
                             }
-                          xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max));
+                          xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
                         }
                     }
                 }
@@ -1001,6 +1023,8 @@ import_preset (const string& import_name)
 void
 dump (const string& preset_name = "")
 {
+  set<int> dump_instr;
+
   for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
     {
       if (pi->name == preset_name || preset_name.empty())
@@ -1015,6 +1039,28 @@ dump (const string& preset_name = "")
                 {
                   const size_t generator_index = gi - zi->generators.begin();
                   printf ("    Generator #%zd: %d (%s)\n", generator_index, gi->generator, gen2name (gi->generator));
+                  if (gi->generator == GEN_INSTRUMENT)
+                    dump_instr.insert (gi->amount);
+                }
+            }
+        }
+    }
+  for (vector<Instrument>::iterator ii = instruments.begin(); ii != instruments.end(); ii++)
+    {
+      size_t inr = ii - instruments.begin();
+      if (dump_instr.count (inr))
+        {
+          printf ("INSTRUMENT %s\n", ii->name.c_str());
+          for (vector<Zone>::iterator zi = ii->zones.begin(); zi != ii->zones.end(); zi++)
+            {
+              const size_t zone_index = zi - ii->zones.begin();
+              printf ("  Zone #%zd\n", zone_index);
+              for (vector<Generator>::const_iterator gi = zi->generators.begin();
+                                                     gi != zi->generators.end(); gi++)
+                {
+                  const size_t generator_index = gi - zi->generators.begin();
+                  printf ("    Generator #%zd: %d (%s)\n", generator_index, gi->generator, gen2name (gi->generator));
+                  printf ("                    amount %d\n", gi->amount);
                 }
             }
         }
