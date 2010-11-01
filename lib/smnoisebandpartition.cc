@@ -75,7 +75,7 @@ NoiseBandPartition::NoiseBandPartition (size_t n_bands, size_t n_spectrum_bins, 
       int b = band_from_d[d];
       if (b != -1)
         {
-          assert (b >= 0 && b < n_bands);
+          assert (b >= 0 && b < int (n_bands));
           if (band_count[b] == 0)
             band_start[b] = d;
           band_count[b]++;

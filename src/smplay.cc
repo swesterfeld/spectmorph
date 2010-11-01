@@ -203,7 +203,7 @@ main (int argc, char **argv)
   string file_type = file->file_type();
   delete file;
 
-  SpectMorph::Audio *audio_ptr;
+  SpectMorph::Audio *audio_ptr = NULL;
   SpectMorph::WavSet wset;
 
   if (file_type == "SpectMorph::WavSet")    // load wavset

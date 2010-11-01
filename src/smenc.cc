@@ -223,7 +223,6 @@ wintrans (const vector<float>& window)
 {
   vector<double> in (window.begin(), window.end());
   vector<double> out;
-  const int zpad = 4;
 
   in.resize (in.size() * 4);
   out.resize (in.size());

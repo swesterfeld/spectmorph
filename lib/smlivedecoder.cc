@@ -196,7 +196,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
 
           frame_idx = env_pos / frame_step;
-          if (loop_point != -1 && frame_idx > loop_point) /* if in loop mode: loop current frame */
+          if (loop_point != -1 && frame_idx > size_t (loop_point)) /* if in loop mode: loop current frame */
             frame_idx = loop_point;
 
           if (source || (frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass

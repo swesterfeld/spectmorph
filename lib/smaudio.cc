@@ -54,7 +54,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
   InFile ifile (file);
 
   string section;
-  size_t contents_pos;
+  size_t contents_pos = 0; /* init to get rid of gcc warning */
 
   if (!ifile.open_ok())
     return BSE_ERROR_FILE_NOT_FOUND;

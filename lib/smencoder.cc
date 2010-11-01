@@ -126,9 +126,9 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
   BseErrorType error = read_dhandle (multi_channel_dhandle, multi_channel_signal);
   assert (error == BSE_ERROR_NONE); // FIXME
 
-  const int n_channels = gsl_data_handle_n_channels (multi_channel_dhandle);
+  const size_t n_channels = gsl_data_handle_n_channels (multi_channel_dhandle);
   const int mix_freq = gsl_data_handle_mix_freq (multi_channel_dhandle);
-  for (int i = channel; i < multi_channel_signal.size(); i += n_channels)
+  for (size_t i = channel; i < multi_channel_signal.size(); i += n_channels)
     single_channel_signal.push_back (multi_channel_signal[i]);
 
   GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048,
@@ -164,7 +164,7 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
       while (todo)
         {
           uint64 r = 0;
-          if (pos + offset < gsl_data_handle_n_values (dhandle))
+          if (pos + offset < n_values)
             r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
           if (r > 0)
             {
@@ -722,7 +722,7 @@ approximate_noise_spectrum (int frame,
     }
 
   size_t bands = envelope.size();
-  int d = 0;
+  size_t d = 0;
   for (size_t band = 0; band < envelope.size(); band++)
     {
       double mel_low = 30 + 4000.0 / bands * band;
@@ -765,7 +765,7 @@ xnoise_envelope_to_spectrum (double mix_freq,
   vector<int>  band_count (envelope.size());
 
   size_t bands = envelope.size();
-  int d = 0;
+  size_t d = 0;
   /* assign each d to a band */
   std::fill (band_from_d.begin(), band_from_d.end(), -1);
   for (size_t band = 0; band < envelope.size(); band++)
@@ -799,15 +799,15 @@ xnoise_envelope_to_spectrum (double mix_freq,
   /* count bins per band */
   for (size_t band = 0; band < bands; band++)
     {
-      for (int d = 0; d < spectrum.size(); d += 2)
+      for (size_t d = 0; d < spectrum.size(); d += 2)
         {
-          int b = band_from_d[d];
+          size_t b = band_from_d[d];
           if (b == band)
             band_count[b]++;
         }
     }
 
-  for (int d = 0; d < spectrum.size(); d += 2)
+  for (size_t d = 0; d < spectrum.size(); d += 2)
     {
       int b = band_from_d[d];
       if (b == -1)    /* d is not in a band */
@@ -898,7 +898,7 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const ve
     {
       const vector<double>& frame_signal = unscaled_signal[f];
       size_t zero_values = 0;
-      double scale;
+      double scale = 1.0; /* init to get rid of gcc warning */
 
       for (size_t n = 0; n < frame_signal.size(); n++)
         {

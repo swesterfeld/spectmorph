@@ -29,7 +29,7 @@ using std::vector;
 using SpectMorph::sm_init;
 
 bool db_mode = false;
-const int BORDER_PIXELS = 10;
+const size_t BORDER_PIXELS = 10;
 
 float
 value_scale (float rvalue, float ivalue = 0)
@@ -99,7 +99,7 @@ main (int argc, char **argv)
     {
       for (size_t y = 0; y < block_size / 2; y++)
         {
-          for (int i = 0; i < 3 * BORDER_PIXELS; i++)
+          for (size_t i = 0; i < 3 * BORDER_PIXELS; i++)
             {
               // draw a black border left of the analysis
               p[-30 + row_stride * y + i] = 0;

@@ -489,7 +489,7 @@ main (int argc, char **argv)
         {
           if (midi_note_used[i])
             {
-              double ref_delta;
+              double ref_delta = -1; /* init to get rid of gcc warning */
 
               printf ("%3d: ", i);
               vector<WavSetWave>::iterator w0 = find_wave (wsets[0], i);

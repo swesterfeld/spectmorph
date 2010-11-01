@@ -134,7 +134,7 @@ SineDecoder::process (const AudioBlock& block,
   while (todo)
     {
       double best_delta = 1e10;
-      int best_i, best_j;
+      int best_i = 0, best_j = 0; /* init to get rid of gcc warning */
       for (size_t i = 0; i < freqs.size(); i++)
 	{
 	  for (size_t j = 0; j < nfreqs.size(); j++)
