@@ -62,21 +62,6 @@ is_note_on (const jack_midi_event_t& event)
   return false;
 }
 
-static bool
-is_note_off (const jack_midi_event_t& event)
-{
-  if ((event.buffer[0] & 0xf0) == 0x90)
-    {
-      if (event.buffer[2] == 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  else if ((event.buffer[0] & 0xf0) == 0x80)
-    {
-      return true;
-    }
-  return false;
-}
-
 int
 jack_process (jack_nframes_t nframes, void *)
 {
@@ -86,7 +71,7 @@ jack_process (jack_nframes_t nframes, void *)
 
   jack_midi_clear_buffer (out_port_buf);
 
-  for (int i = 0; i < event_count; i++)
+  for (size_t i = 0; i < event_count; i++)
     {
       jack_midi_event_t in_event;
       jack_midi_event_get (&in_event, port_buf, i);
