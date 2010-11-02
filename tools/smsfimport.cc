@@ -904,6 +904,8 @@ import_preset (const string& import_name)
                 c = tolower (c);
               else if (islower (c))
                 ;
+              else if (isdigit (c))
+                ;
               else
                 c = '_';
               preset_xname += c;
