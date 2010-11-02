@@ -97,6 +97,8 @@ struct Options
   bool          track_sines;
   float         fundamental_freq;
   int           optimization_level;
+  int           loop_start;
+  int           loop_end;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -114,6 +116,8 @@ Options::Options ()
   strip_models = false;
   track_sines = true;   // perform peak tracking to find sine components
   attack = true;        // perform attack time optimization
+  loop_start = -1;
+  loop_end = -1;
 }
 
 void
@@ -187,6 +191,14 @@ Options::parse (int   *argc_p,
         {
           track_sines = false;
         }
+      else if (check_arg (argc, argv, &i, "--loop-start", &opt_arg))
+        {
+          loop_start = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--loop-end", &opt_arg))
+        {
+          loop_end = atoi (opt_arg);
+        }
      }
 
   /* resort argc/argv */
@@ -215,6 +227,8 @@ Options::print_usage ()
   printf (" -s                          produced stripped models\n");
   printf (" --no-attack                 skip attack time optimization\n");
   printf (" --no-sines                  skip partial tracking\n");
+  printf (" --loop-start                set timeloop start\n");
+  printf (" --loop-end                  set timeloop end\n");
   printf ("\n");
 }
 
@@ -379,6 +393,15 @@ main (int argc, char **argv)
               audio_blocks[i].debug_samples.clear();
               audio_blocks[i].original_fft.clear();
             }
+        }
+      if (options.loop_start == -1 && options.loop_end == -1)
+        {
+          // no loop
+        }
+      else
+        {
+          assert (options.loop_start >= 0 && options.loop_end >= options.loop_start);
+          encoder.set_time_loop (options.loop_start, options.loop_end);
         }
       encoder.save (sm_file, options.fundamental_freq);
     }
