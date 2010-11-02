@@ -105,8 +105,12 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
             {
               if (ifile.event_name() == "zeropad")
                 zeropad = ifile.event_int();
-              else if (ifile.event_name() == "loop_point")
-                loop_point = ifile.event_int();
+              else if (ifile.event_name() == "loop_start")
+                loop_start = ifile.event_int();
+              else if (ifile.event_name() == "loop_end")
+                loop_end = ifile.event_int();
+              else if (ifile.event_name() == "loop_type")
+                loop_type = static_cast<LoopType> (ifile.event_int());
               else if (ifile.event_name() == "zero_values_at_start")
                 zero_values_at_start = ifile.event_int();
               else if (ifile.event_name() == "sample_count")
@@ -207,7 +211,9 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 
 SpectMorph::Audio::Audio() :
   zeropad (0),
-  loop_point (-1) /* no loop */
+  loop_type (LOOP_NONE), /* no loop */
+  loop_start (-1),
+  loop_end (-1)
 {
 }
 
@@ -246,7 +252,9 @@ SpectMorph::Audio::save (GenericOut *file)
   of.write_float ("attack_end_ms", attack_end_ms);
   of.write_float ("fundamental_freq", fundamental_freq);
   of.write_int ("zeropad", zeropad);
-  of.write_int ("loop_point", loop_point);
+  of.write_int ("loop_type", loop_type);
+  of.write_int ("loop_start", loop_start);
+  of.write_int ("loop_end", loop_end);
   of.write_int ("zero_values_at_start", zero_values_at_start);
   of.write_int ("frame_count", contents.size());
   of.write_int ("sample_count", sample_count);

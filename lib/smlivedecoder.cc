@@ -147,7 +147,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       frame_size = audio->frame_size_ms * mix_freq / 1000;
       frame_step = audio->frame_step_ms * mix_freq / 1000;
       zero_values_at_start_scaled = audio->zero_values_at_start * mix_freq / audio->mix_freq;
-      loop_point = audio->loop_point;
+      loop_point = (audio->loop_type == Audio::LOOP_NONE) ? -1 : audio->loop_start;
 
       block_size = NoiseDecoder::preferred_block_size (mix_freq);
 

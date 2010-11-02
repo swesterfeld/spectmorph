@@ -378,7 +378,11 @@ main (int argc, char **argv)
       check_usage (argc, 3, "loopparams");
 
       printf ("frames: %d\n", audio.contents.size());
-      printf ("loop point: %d\n", audio.loop_point);
+      const char *lt2name[] = { "LOOP_NONE", "LOOP_FRAME_FORWARD", "LOOP_FRAME_PING_PONG",
+                          "LOOP_TIME_FORWARD", "LOOP_TIME_PING_PONG" };
+      printf ("loop type: %s\n", lt2name[audio.loop_type]);
+      printf ("loop start: %d\n", audio.loop_start);
+      printf ("loop end: %d\n", audio.loop_end);
     }
   else if (mode == "auto-loop")
     {
@@ -391,12 +395,14 @@ main (int argc, char **argv)
           exit (1);
         }
 
-      audio.loop_point = audio.contents.size() * percent / 100;
-      if (audio.loop_point < 0)
-        audio.loop_point = 0;
-      if (size_t (audio.loop_point) >= (audio.contents.size() - 1))
-        audio.loop_point = audio.contents.size() - 1;
-
+      int loop_point = audio.contents.size() * percent / 100;
+      if (loop_point < 0)
+        loop_point = 0;
+      if (size_t (loop_point) >= (audio.contents.size() - 1))
+        loop_point = audio.contents.size() - 1;
+      audio.loop_type = Audio::LOOP_FRAME_FORWARD;
+      audio.loop_start = loop_point;
+      audio.loop_end = loop_point;
       need_save = true;
     }
   else if (mode == "tail-loop")
@@ -412,7 +418,9 @@ main (int argc, char **argv)
           if (i * frame_step + frame_size < size_t (audio.sample_count))
             loop_point = i;
         }
-      audio.loop_point = loop_point;
+      audio.loop_type = Audio::LOOP_FRAME_FORWARD;
+      audio.loop_start = loop_point;
+      audio.loop_end = loop_point;
       need_save = true;
     }
   else if (mode == "zero-values-at-start")

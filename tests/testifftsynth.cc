@@ -234,7 +234,7 @@ public:
     my_audio.attack_start_ms = 10;
     my_audio.attack_end_ms = 20;
     my_audio.zeropad = 4;
-    my_audio.loop_point = -1;
+    my_audio.loop_type = Audio::LOOP_NONE;
     my_audio.zero_values_at_start = 0;
     my_audio.sample_count = 1024*1024*1024;
 

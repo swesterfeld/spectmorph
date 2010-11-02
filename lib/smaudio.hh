@@ -24,7 +24,7 @@
 #include "smgenericin.hh"
 #include "smgenericout.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION 7
+#define SPECTMORPH_BINARY_FILE_VERSION 8
 
 namespace SpectMorph
 {
@@ -66,17 +66,27 @@ class Audio
 public:
   Audio();
 
-  float fundamental_freq;            //!< fundamental frequency (note which was encoded), or 0 if not available
-  float mix_freq;                    //!< mix freq (sampling rate) of the original audio data
-  float frame_size_ms;               //!< length of each audio frame in milliseconds
-  float frame_step_ms;               //!< stepping of the audio frames in milliseconds
-  float attack_start_ms;             //!< start of attack in milliseconds
-  float attack_end_ms;               //!< end of attack in milliseconds
-  int   zeropad;                     //!< FFT zeropadding used during analysis
-  int   loop_point;                  //!< loop point to be used during sustain phase of playback
-  int   zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
-  int   sample_count;                //!< number of samples encoded (including zero_values_at_start)
-  std::vector<AudioBlock> contents;  //!< the actual frame data
+  enum LoopType {
+    LOOP_NONE = 0,
+    LOOP_FRAME_FORWARD,
+    LOOP_FRAME_PING_PONG,
+    LOOP_TIME_FORWARD,
+    LOOP_TIME_PING_PONG,
+  };
+
+  float    fundamental_freq;            //!< fundamental frequency (note which was encoded), or 0 if not available
+  float    mix_freq;                    //!< mix freq (sampling rate) of the original audio data
+  float    frame_size_ms;               //!< length of each audio frame in milliseconds
+  float    frame_step_ms;               //!< stepping of the audio frames in milliseconds
+  float    attack_start_ms;             //!< start of attack in milliseconds
+  float    attack_end_ms;               //!< end of attack in milliseconds
+  int      zeropad;                     //!< FFT zeropadding used during analysis
+  LoopType loop_type;                   //!< type of loop to be used during sustain phase of playback
+  int      loop_start;                  //!< loop point to be used during sustain phase of playback
+  int      loop_end;                    //!< loop point to be used during sustain phase of playback
+  int      zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
+  int      sample_count;                //!< number of samples encoded (including zero_values_at_start)
+  std::vector<AudioBlock> contents;     //!< the actual frame data
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   BseErrorType load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
