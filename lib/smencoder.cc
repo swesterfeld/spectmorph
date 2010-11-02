@@ -64,6 +64,8 @@ normalize_phase (double phase)
 Encoder::Encoder (const EncoderParams& enc_params)
 {
   this->enc_params = enc_params;
+  loop_start = -1;
+  loop_end = -1;
   optimal_attack.attack_start_ms = 0;
   optimal_attack.attack_end_ms = 0;
 }
@@ -1104,6 +1106,13 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
   sort_freqs();
 }
 
+void
+Encoder::set_time_loop (int loop_start, int loop_end)
+{
+  this->loop_start = loop_start;
+  this->loop_end = loop_end;
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -1121,6 +1130,12 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
   audio.sample_count = sample_count;
+  if (loop_start >= 0 && loop_end >= 0)
+    {
+      audio.loop_type = Audio::LOOP_TIME_FORWARD;
+      audio.loop_start = loop_start + zero_values_at_start;
+      audio.loop_end = loop_end + zero_values_at_start;
+    }
   audio.save (filename);
 }
 

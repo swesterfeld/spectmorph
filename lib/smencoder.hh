@@ -83,7 +83,9 @@ struct Tracksel {
  */
 class Encoder
 {
-  EncoderParams enc_params;
+  EncoderParams                        enc_params;
+  int                                  loop_start;
+  int                                  loop_end;
 
   bool check_harmonic (double freq, double& new_freq, double mix_freq);
 
@@ -119,6 +121,7 @@ public:
   void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
                bool attack, bool track_sines);
 
+  void set_time_loop (int loop_start, int loop_end);
   void save (const std::string& filename, double fundamental_freq);
 };
 
