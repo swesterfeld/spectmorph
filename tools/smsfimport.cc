@@ -983,7 +983,38 @@ import_preset (const string& import_name)
 
                           if (!is_encoded[smname])
                             {
-                              GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440, samples[id].end - samples[id].start, &sample_data[samples[id].start], NULL);
+                              vector<float> padded_sample;
+                              size_t padded_len;
+                              size_t loop_shift = 0.1 * samples[id].srate;   // 100 ms loop shift
+                              string loop_args;
+                              if (sample_modes & 1)
+                                {
+                                  loop_args += Birnet::string_printf (" --loop-start %d",
+                                                                      samples[id].startloop - samples[id].start +
+                                                                      loop_shift);
+                                  loop_args += Birnet::string_printf (" --loop-end %d",
+                                                                      samples[id].endloop - samples[id].start +
+                                                                      loop_shift);
+
+                                  // 200 ms padding at the end of the loop, to ensure that silence after sample
+                                  // is not encoded by encoder
+                                  padded_len = samples[id].end - samples[id].start + 0.2 * samples[id].srate;
+                                  for (size_t i = 0; i < padded_len; i++)
+                                    {
+                                      size_t pos = i + samples[id].start;
+                                      while (pos > (size_t) samples[id].endloop)
+                                        pos -= samples[id].endloop - samples[id].startloop;
+                                      padded_sample.push_back (sample_data[pos]);
+                                    }
+                                }
+                              else
+                                {
+                                  // no padding
+                                  padded_len = samples[id].end - samples[id].start;
+                                  padded_sample.assign (&sample_data[samples[id].start], &sample_data[samples[id].end]);
+                                }
+                              GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440,
+                                                                                padded_len, &padded_sample[0], NULL);
                               gsl_data_handle_open (dhandle);
 
                               int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
@@ -1001,11 +1032,8 @@ import_preset (const string& import_name)
                                 }
                               close (fd);
 
-                              xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s", midi_note, filename.c_str(), smname.c_str()));
-                              if (sample_modes & 1)
-                                {
-                                  xsystem (Birnet::string_printf ("smextract %s tail-loop", smname.c_str()));
-                                }
+                              xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s",
+                                                              midi_note, filename.c_str(), smname.c_str()) + loop_args);
                               xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
                               is_encoded[smname] = true;
                             }
