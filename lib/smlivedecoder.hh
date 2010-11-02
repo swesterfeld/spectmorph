@@ -50,6 +50,8 @@ class LiveDecoder
 
   size_t              frame_size, frame_step;
   size_t              zero_values_at_start_scaled;
+  size_t              loop_start_scaled;
+  size_t              loop_end_scaled;
   int                 loop_point;
   float               current_freq;
   float               current_mix_freq;

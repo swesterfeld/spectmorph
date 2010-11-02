@@ -147,6 +147,8 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       frame_size = audio->frame_size_ms * mix_freq / 1000;
       frame_step = audio->frame_step_ms * mix_freq / 1000;
       zero_values_at_start_scaled = audio->zero_values_at_start * mix_freq / audio->mix_freq;
+      loop_start_scaled = audio->loop_start * mix_freq / audio->mix_freq;
+      loop_end_scaled = audio->loop_end * mix_freq / audio->mix_freq;
       loop_point = (audio->loop_type == Audio::LOOP_NONE) ? -1 : audio->loop_start;
 
       block_size = NoiseDecoder::preferred_block_size (mix_freq);
@@ -195,9 +197,23 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
           zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
 
-          frame_idx = env_pos / frame_step;
-          if (loop_point != -1 && frame_idx > size_t (loop_point)) /* if in loop mode: loop current frame */
-            frame_idx = loop_point;
+          if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+            {
+              int xenv_pos = env_pos;
+
+              if (env_pos > loop_start_scaled)
+                {
+                  xenv_pos = (env_pos - loop_start_scaled) % (loop_end_scaled - loop_start_scaled);
+                  xenv_pos += loop_start_scaled;
+                }
+              frame_idx = xenv_pos / frame_step;
+            }
+          else
+            {
+              frame_idx = env_pos / frame_step;
+              if (loop_point != -1 && frame_idx > size_t (loop_point)) /* if in loop mode: loop current frame */
+                frame_idx = loop_point;
+            }
 
           if (source || (frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
             {
