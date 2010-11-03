@@ -1004,7 +1004,7 @@ import_preset (const string& import_name)
                                   for (size_t i = 0; i < padded_len; i++)
                                     {
                                       size_t pos = i + samples[id].start;
-                                      while (pos > (size_t) samples[id].endloop)
+                                      while (pos >= (size_t) samples[id].endloop)
                                         pos -= samples[id].endloop - samples[id].startloop;
                                       padded_sample.push_back (sample_data[pos]);
                                     }
