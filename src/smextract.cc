@@ -310,12 +310,15 @@ main (int argc, char **argv)
           original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
           noise_bytes += audio.contents[f].noise.size() * sizeof (float);
         }
+      size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
+
       printf ("frequencies  : %d bytes\n", freq_bytes);
       printf ("mags         : %d bytes\n", mag_bytes);
       printf ("phases       : %d bytes\n", phase_bytes);
       printf ("dbgsamples   : %d bytes\n", debug_samples_bytes);
       printf ("orig_fft     : %d bytes\n", original_fft_bytes);
       printf ("noise        : %d bytes\n", noise_bytes);
+      printf ("orig_samples : %d bytes\n", original_samples_bytes);
     }
   else if (mode == "fundamental-freq")
     {
@@ -428,6 +431,13 @@ main (int argc, char **argv)
       check_usage (argc, 3, "zero-values-at-start");
 
       printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
+    }
+  else if (mode == "original-samples")
+    {
+      check_usage (argc, 3, "original-samples");
+
+      for (size_t i = 0; i < audio.original_samples.size(); i++)
+        printf ("%.17g\n", audio.original_samples[i]);
     }
   if (need_save)
     {

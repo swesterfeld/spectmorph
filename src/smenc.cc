@@ -393,6 +393,7 @@ main (int argc, char **argv)
               audio_blocks[i].debug_samples.clear();
               audio_blocks[i].original_fft.clear();
             }
+          encoder.original_samples.clear();
         }
       if (options.loop_start == -1 && options.loop_end == -1)
         {
