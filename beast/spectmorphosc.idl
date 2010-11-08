@@ -37,6 +37,7 @@ class Osc : Effect {
                                  1, 1, 256, 2, STANDARD);
     Bool   sines          = Bool (_("Sine Synthesis"), _("Enable resynthesis of Sine part of the Model"), TRUE, STANDARD);
     Bool   noise          = Bool (_("Noise Synthesis"), _("Enable resynthesis of Noise part of the Model"), TRUE, STANDARD);
+    Bool   use_samples    = Bool (_("Use original Samples"), _("Use embedded original Samples instead of SpectMorph Model"), FALSE, STANDARD);
   };
 
   group _("Frequency") {
