@@ -155,48 +155,60 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
         {
           const vector<float>& fb = ifile.event_float_block();
 
-          assert (audio_block != NULL);
-          if (ifile.event_name() == "noise")
+          if (section == "header")
             {
-              audio_block->noise = fb;
-            }
-          else if (ifile.event_name() == "freqs")
-            {
-              audio_block->freqs = fb;
-
-              // ensure that freqs are sorted (we need that for LiveDecoder)
-              double old_freq = -1;
-
-              for (size_t f = 0; f < fb.size(); f++)
+              if (ifile.event_name() == "original_samples")
                 {
-                  if (fb[f] <= old_freq)
-                    {
-                      printf ("frequency data is not sorted, can't play file\n");
-                      return BSE_ERROR_PARSE_ERROR;
-                    }
-                  old_freq = fb[f];
+                  original_samples = fb;
                 }
-            }
-          else if (ifile.event_name() == "mags")
-            {
-              audio_block->mags = fb;
-            }
-          else if (ifile.event_name() == "phases")
-            {
-              audio_block->phases = fb;
-            }
-          else if (ifile.event_name() == "original_fft")
-            {
-              audio_block->original_fft = fb;
-            }
-          else if (ifile.event_name() == "debug_samples")
-            {
-              audio_block->debug_samples = fb;
+              else
+                printf ("unhandled float block %s  %s\n", section.c_str(), ifile.event_name().c_str());
             }
           else
             {
-              printf ("unhandled fblock %s %s\n", section.c_str(), ifile.event_name().c_str());
-              assert (false);
+              assert (audio_block != NULL);
+              if (ifile.event_name() == "noise")
+                {
+                  audio_block->noise = fb;
+                }
+              else if (ifile.event_name() == "freqs")
+                {
+                  audio_block->freqs = fb;
+
+                  // ensure that freqs are sorted (we need that for LiveDecoder)
+                  double old_freq = -1;
+
+                  for (size_t f = 0; f < fb.size(); f++)
+                    {
+                      if (fb[f] <= old_freq)
+                        {
+                          printf ("frequency data is not sorted, can't play file\n");
+                          return BSE_ERROR_PARSE_ERROR;
+                        }
+                      old_freq = fb[f];
+                    }
+                }
+              else if (ifile.event_name() == "mags")
+                {
+                  audio_block->mags = fb;
+                }
+              else if (ifile.event_name() == "phases")
+                {
+                  audio_block->phases = fb;
+                }
+              else if (ifile.event_name() == "original_fft")
+                {
+                  audio_block->original_fft = fb;
+                }
+              else if (ifile.event_name() == "debug_samples")
+                {
+                  audio_block->debug_samples = fb;
+                }
+              else
+                {
+                  printf ("unhandled fblock %s %s\n", section.c_str(), ifile.event_name().c_str());
+                  assert (false);
+                }
             }
         }
       else if (ifile.event() == InFile::READ_ERROR)
@@ -258,6 +270,7 @@ SpectMorph::Audio::save (GenericOut *file)
   of.write_int ("zero_values_at_start", zero_values_at_start);
   of.write_int ("frame_count", contents.size());
   of.write_int ("sample_count", sample_count);
+  of.write_float_block ("original_samples", original_samples);
   of.end_section();
 
   for (size_t i = 0; i < contents.size(); i++)

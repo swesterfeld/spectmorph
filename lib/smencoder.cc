@@ -133,6 +133,8 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
   for (size_t i = channel; i < multi_channel_signal.size(); i += n_channels)
     single_channel_signal.push_back (multi_channel_signal[i]);
 
+  original_samples = single_channel_signal;
+
   GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048,
                                                     single_channel_signal.size(),
                                                     &single_channel_signal[0], NULL);
@@ -1130,6 +1132,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.zeropad = enc_params.zeropad;
   audio.contents = audio_blocks;
   audio.sample_count = sample_count;
+  audio.original_samples = original_samples;
   if (loop_start >= 0 && loop_end >= 0)
     {
       audio.loop_type = Audio::LOOP_TIME_FORWARD;

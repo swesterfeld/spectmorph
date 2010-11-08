@@ -103,6 +103,7 @@ public:
   Attack                               optimal_attack;
   size_t                               zero_values_at_start;
   size_t                               sample_count;
+  std::vector<float>                   original_samples;
 
   Encoder (const EncoderParams& enc_params);
 

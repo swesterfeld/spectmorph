@@ -24,7 +24,7 @@
 #include "smgenericin.hh"
 #include "smgenericout.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION 8
+#define SPECTMORPH_BINARY_FILE_VERSION 9
 
 namespace SpectMorph
 {
@@ -86,6 +86,7 @@ public:
   int      loop_end;                    //!< loop point to be used during sustain phase of playback
   int      zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
   int      sample_count;                //!< number of samples encoded (including zero_values_at_start)
+  std::vector<float> original_samples;  //!< original time domain signal as samples (debugging only)
   std::vector<AudioBlock> contents;     //!< the actual frame data
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
