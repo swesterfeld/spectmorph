@@ -1036,7 +1036,7 @@ import_preset (const string& import_name)
 
                               xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s",
                                                               midi_note, filename.c_str(), smname.c_str()) + loop_args);
-                              xsystem (Birnet::string_printf ("smstrip %s", smname.c_str()));
+                              xsystem (Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
                               is_encoded[smname] = true;
                             }
                           xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
