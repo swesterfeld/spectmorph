@@ -47,6 +47,7 @@ class LiveDecoder
   bool                sines_enabled;
   bool                noise_enabled;
   bool                debug_fft_perf_enabled;
+  bool                original_samples_enabled;
 
   size_t              frame_size, frame_step;
   size_t              zero_values_at_start_scaled;
@@ -61,6 +62,7 @@ class LiveDecoder
   size_t              pos;
   size_t              env_pos;
   size_t              frame_idx;
+  float               original_sample_pos;
 
   Birnet::AlignedArray<float,16> *sse_samples;
 public:
@@ -71,6 +73,7 @@ public:
   void enable_noise (bool ne);
   void enable_sines (bool se);
   void enable_debug_fft_perf (bool dfp);
+  void enable_original_samples (bool eos);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);

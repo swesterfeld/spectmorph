@@ -80,6 +80,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   sines_enabled (true),
   noise_enabled (true),
   debug_fft_perf_enabled (false),
+  original_samples_enabled (false),
   sse_samples (NULL)
 {
   init_aa_filter();
@@ -169,6 +170,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       pos = 0;
       frame_idx = 0;
       env_pos = 0;
+      original_sample_pos = 0;
 
       pstate[0].clear();
       pstate[1].clear();
@@ -184,6 +186,36 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
   if (!audio)   // nothing loaded
     {
       std::fill (audio_out, audio_out + n_values, 0);
+      return;
+    }
+
+  if (original_samples_enabled)
+    {
+      for (unsigned int i = 0; i < n_values; i++)
+        {
+          double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
+          double phase_inc = (want_freq / audio->fundamental_freq) *
+                             (audio->mix_freq / current_mix_freq);
+
+          int ipos = original_sample_pos;
+          float frac = original_sample_pos - ipos;
+
+          if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+            {
+              while (ipos >= (audio->loop_end - audio->zero_values_at_start))
+                ipos -= (audio->loop_end - audio->loop_start);
+            }
+          if ((ipos + 1) < audio->original_samples.size())
+            {
+              // linear interpolation to determine sample value
+              audio_out[i] = audio->original_samples[ipos] * (1.0 - frac)
+                           + audio->original_samples[ipos + 1] * frac;
+            }
+          else
+            audio_out[i] = 0;
+
+          original_sample_pos += phase_inc;
+        }
       return;
     }
 
@@ -379,6 +411,12 @@ void
 LiveDecoder::enable_debug_fft_perf (bool dfp)
 {
   debug_fft_perf_enabled = dfp;
+}
+
+void
+LiveDecoder::enable_original_samples (bool eos)
+{
+  original_samples_enabled = eos;
 }
 
 void
