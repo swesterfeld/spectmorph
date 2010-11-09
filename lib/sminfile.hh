@@ -42,7 +42,8 @@ public:
     STRING,
     FLOAT,
     FLOAT_BLOCK,
-    BLOB
+    BLOB,
+    BLOB_REF
   };
 
 protected:
@@ -55,6 +56,7 @@ protected:
   std::vector<float> current_event_float_block;
   size_t             current_event_blob_pos;
   size_t             current_event_blob_size;
+  std::string        current_event_blob_sum;
   std::string        m_file_type;
   int                m_file_version;
 
@@ -82,6 +84,8 @@ public:
   int          event_int();
   std::string  event_data();
   const std::vector<float>& event_float_block();
+  std::string  event_blob_sum();
+
   void         next_event();
   void         add_skip_event (const std::string& event);
   std::string  file_type();

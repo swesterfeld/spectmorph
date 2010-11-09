@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <set>
 #include "smgenericout.hh"
 
 namespace SpectMorph
@@ -28,8 +29,9 @@ namespace SpectMorph
 
 class OutFile
 {
-  GenericOut *file;
-  bool        delete_file;
+  GenericOut           *file;
+  bool                  delete_file;
+  std::set<std::string> stored_blobs;
 
 protected:
   void write_raw_string (const std::string& s);

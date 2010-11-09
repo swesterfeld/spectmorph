@@ -24,7 +24,7 @@
 #include "smgenericin.hh"
 #include "smgenericout.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION 9
+#define SPECTMORPH_BINARY_FILE_VERSION 10
 
 namespace SpectMorph
 {

@@ -20,10 +20,15 @@
 #include "sminfile.hh"
 #include "smmemout.hh"
 
+#include <map>
+#include <set>
+
 #include <assert.h>
 
 using std::vector;
 using std::string;
+using std::map;
+using std::set;
 
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
@@ -81,6 +86,8 @@ WavSet::save (const string& filename, bool embed_models)
 BseErrorType
 WavSet::load (const string& filename)
 {
+  map<string, Audio *> blob_map;
+
   WavSetWave *wave = NULL;
 
   InFile  ifile (filename);
@@ -178,6 +185,27 @@ WavSet::load (const string& filename)
 
                   wave->audio = new Audio();
                   wave->audio->load (ifile.open_blob());
+
+                  blob_map[ifile.event_blob_sum()] = wave->audio;
+                }
+              else
+                printf ("unhandled string %s %s\n", section.c_str(), ifile.event_name().c_str());
+            }
+          else
+            assert (false);
+        }
+      else if (ifile.event() == InFile::BLOB_REF)
+        {
+          if (section == "wave")
+            {
+              if (ifile.event_name() == "audio")
+                {
+                  assert (wave);
+                  assert (!wave->audio);
+
+                  wave->audio = blob_map[ifile.event_blob_sum()];
+
+                  assert (wave->audio);
                 }
               else
                 printf ("unhandled string %s %s\n", section.c_str(), ifile.event_name().c_str());
@@ -214,12 +242,21 @@ WavSetWave::~WavSetWave()
 
 WavSet::~WavSet()
 {
+  set<Audio *> to_delete;
+
   for (vector<WavSetWave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
     {
       if (wi->audio)
         {
-          delete wi->audio;
+          to_delete.insert (wi->audio);
           wi->audio = NULL;
         }
     }
+
+  /* This is a little piece of extra logic that prevents deleting one Audio entry twice;
+     the same entry can be reused in one WavSet multiple times (for instance for different
+     velocity levels) - and while BLOB_REFs care for reusing the same object in this case,
+     we need to ensure here we don't delete the same object twice */
+  for (set<Audio *>::const_iterator di = to_delete.begin(); di != to_delete.end(); di++)
+    delete *di;
 }

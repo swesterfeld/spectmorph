@@ -166,12 +166,25 @@ InFile::next_event()
           int blob_size;
           if (read_raw_int (blob_size))
             {
-              int blob_pos = file->get_pos();
-              if (file->skip (blob_size)) // skip actual blob data
+              string blob_sum;
+              if (read_raw_string (blob_sum))
                 {
-                  current_event = BLOB;
-                  current_event_blob_size = blob_size;
-                  current_event_blob_pos  = blob_pos;
+                  if (blob_size == -1)
+                    {
+                      current_event = BLOB_REF;
+                      current_event_blob_sum = blob_sum;
+                    }
+                  else
+                    {
+                      int blob_pos = file->get_pos();
+                      if (file->skip (blob_size)) // skip actual blob data
+                        {
+                          current_event = BLOB;
+                          current_event_blob_size = blob_size;
+                          current_event_blob_pos  = blob_pos;
+                          current_event_blob_sum  = blob_sum;
+                        }
+                    }
                 }
             }
         }
@@ -273,6 +286,12 @@ const vector<float>&
 InFile::event_float_block()
 {
   return current_event_float_block;
+}
+
+string
+InFile::event_blob_sum()
+{
+  return current_event_blob_sum;
 }
 
 void

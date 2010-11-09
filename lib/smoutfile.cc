@@ -18,6 +18,7 @@
 #include "smoutfile.hh"
 #include "smstdioout.hh"
 
+#include <glib.h>
 #include <assert.h>
 
 using std::string;
@@ -161,6 +162,16 @@ OutFile::write_float_block (const string& s,
   file->write (&buffer[0], buffer.size());
 }
 
+static string
+blob_sum (const void *data, size_t size)
+{
+  char *sha256_sum = g_compute_checksum_for_data (G_CHECKSUM_SHA256, (const guchar *) data, size);
+  string result = sha256_sum;
+  g_free (sha256_sum);
+
+  return result;
+}
+
 void
 OutFile::write_blob (const string& s,
                      const void   *data,
@@ -169,7 +180,22 @@ OutFile::write_blob (const string& s,
   file->put_byte ('O');    // BLOB => Object
 
   write_raw_string (s);
-  write_raw_int (size);
 
-  file->write (data, size);
+  string sha256_sum = blob_sum (data, size);
+  if (stored_blobs.find (sha256_sum) != stored_blobs.end())
+    {
+      // a blob with the same data was stored before -> just store hash sum
+      write_raw_int (-1);
+      write_raw_string (sha256_sum);
+    }
+  else
+    {
+      // first time we store this blob
+      write_raw_int (size);
+      write_raw_string (sha256_sum);
+
+      file->write (data, size);
+
+      stored_blobs.insert (sha256_sum);
+    }
 }
