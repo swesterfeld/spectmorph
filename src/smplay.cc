@@ -48,7 +48,6 @@ struct Options
 {
   String	      program_name; /* FIXME: what to do with that */
   SineDecoder::Mode   decoder_mode;
-  bool                loop;
   bool                noise_enabled;
   bool                sines_enabled;
   bool                deterministic_random;
@@ -67,7 +66,6 @@ struct Options
 Options::Options () :
   program_name ("smplay"),
   decoder_mode (SineDecoder::MODE_PHASE_SYNC_OVERLAP),
-  loop (false),
   noise_enabled (true),
   sines_enabled (true),
   deterministic_random (false),
@@ -114,10 +112,6 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--export", &opt_arg) || check_arg (argc, argv, &i, "-x", &opt_arg))
         {
           export_wav = opt_arg;
-        }
-      else if (check_arg (argc, argv, &i, "--loop") || check_arg (argc, argv, &i, "-l"))
-        {
-          loop = true;
         }
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
@@ -288,9 +282,6 @@ main (int argc, char **argv)
 
   size_t pos = 0;
   size_t end_point = audio.contents.size();
-
-  if (options.loop)
-    end_point *= 10;
 
   vector<float> decoded_sines (frame_size);
 
