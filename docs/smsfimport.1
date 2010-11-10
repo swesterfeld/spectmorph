@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-11\-02T17:50:49
+.\" generation: 2010\-11\-10T22:11:13
 .TH "smsfimport" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smsfimport Manual Page"
 
 .SH
@@ -13,20 +13,69 @@ SYNOPSIS
 
 
 .PP
-\fBsmsfimport\fP \fISM\-File...\fP
+\fBsmsfimport\fP <command> \fI<SoundFontFile>\fP [\fIOPTIONS\fP] [ \fI<command specific args>...\fP ]
 .SH
 DESCRIPTION
 
 
 .PP
 \fBsmsfimport\fP can be used to convert SoundFont presets (.sf2 format) to
-SpectMorph instruments (.smset format).
+SpectMorph instruments (.smset format). Since it does not implement all of
+the functionality provided by SoundFonts, the resulting files can sound
+different than the original SoundFont, and in some cases the import will
+fail completely.
 .SH
 OPTIONS
 
 
 .PP
-There are no options.
+\fBsmsfimport\fP follows the usual GNU command line syntax, with long options
+starting with two dashes ('\-').
+.br
+
+.br
+
+
+
+.TP
+\fB\-h\fP, \fB\-\-help\fP 
+.br
+Shows a brief help message.
+
+.TP
+\fB\-v\fP, \fB\-\-version\fP 
+.br
+Prints out \fBsmsfimport\fP version.
+
+.PP
+
+
+.SH
+COMMANDS
+
+.SS
+list \fI<SoundFontFile>\fP
+
+
+.PP
+
+Shows all presets contained in the SoundFontFile.
+.SS
+dump \fI<SoundFontFile>\fP [ <PresetName> ]
+
+
+.PP
+
+Displays a detailed view of the parameters specified for a preset (or
+for all presets).
+.SS
+import \fI<SoundFontFile>\fP <PresetName>
+
+
+.PP
+
+Imports a preset, creating a *.smset file. For preset "Grand Piano", the
+resulting output would be "grand_piano.smset".
 .SH
 SEE ALSO
 

@@ -11,14 +11,41 @@
 smsfimport - program to create SpectMorph models from SoundFont presets
 
 @heading SYNOPSIS
-	@manb{smsfimport} @mani{SM-File...}
+	@manb{smsfimport} <command> @mani{<SoundFontFile>} [@mani{OPTIONS}] [ @mani{<command specific args>...} ]
 
 @heading DESCRIPTION
 	@manb{smsfimport} can be used to convert SoundFont presets (.sf2 format) to
-        SpectMorph instruments (.smset format).
+        SpectMorph instruments (.smset format). Since it does not implement all of
+        the functionality provided by SoundFonts, the resulting files can sound
+        different than the original SoundFont, and in some cases the import will
+        fail completely.
 
 @heading OPTIONS
-        There are no options.
+       	@manb{smsfimport} follows the usual GNU command line syntax, with long options
+        starting with two dashes ('-').
+
+@itemize{none}
+@item @manb{-h}, @manb{--help} @*
+       Shows a brief help message.
+@item @manb{-v}, @manb{--version} @*
+       Prints out @manb{smsfimport} version.
+@done
+
+@heading COMMANDS
+
+@subheading list @mani{<SoundFontFile>}
+
+        Shows all presets contained in the SoundFontFile.
+
+@subheading dump @mani{<SoundFontFile>} [ <PresetName> ]
+
+        Displays a detailed view of the parameters specified for a preset (or
+        for all presets).
+
+@subheading import @mani{<SoundFontFile>} <PresetName>
+
+        Imports a preset, creating a *.smset file. For preset "Grand Piano", the
+        resulting output would be "grand_piano.smset".
 
 @heading SEE ALSO
 @uri{smenc.1.html,smenc(1)},

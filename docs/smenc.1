@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-10\-19T08:20:40
+.\" generation: 2010\-11\-10T22:11:12
 .TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smenc Manual Page"
 
 .SH
@@ -31,6 +31,15 @@ note is being encoded.
 There is also a quality / time tradeoff, which means you can use the
 \-O0, \-O1 or \-O2 option to specify how accurate the analysis should be,
 with higher numbers meaning better quality, but longer analysis time.
+.br
+
+.br
+For multi\-channel inputs, each channel is encoded seperately. If
+you do not specify the output filename, the encoder will for instance
+create piano\-ch0.sm and piano\-ch1.sm from the stereo file piano.wav.
+If you do specify an output filename, you need to include a %c into
+the name, like piano\-ch%c.sm, which will be substituted with the
+channel number.
 .SH
 OPTIONS
 

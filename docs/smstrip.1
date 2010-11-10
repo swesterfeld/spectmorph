@@ -1,5 +1,5 @@
 .\" generator: doxer.py 0.6
-.\" generation: 2010\-10\-19T08:20:41
+.\" generation: 2010\-11\-10T22:11:13
 .TH "smstrip" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.1" "smstrip Manual Page"
 
 .SH
@@ -28,8 +28,33 @@ OPTIONS
 
 
 .PP
-There are no options. A number of SpectMorph model files can be specified as
-command line arguments.
+\fBsmstrip\fP follows the usual GNU command line syntax, with long options
+starting with two dashes ('\-').
+.br
+
+.br
+
+
+
+.TP
+\fB\-h\fP, \fB\-\-help\fP 
+.br
+Shows a brief help message.
+
+.TP
+\fB\-v\fP, \fB\-\-version\fP 
+.br
+Prints out \fBsmsfimport\fP version.
+
+.TP
+\fB\-\-keep\-samples\fP 
+.br
+Strips debugging information, but keeps the original sample data (useful for quality
+comparisions). This of course reduces the file size less than full stripping.
+
+.PP
+
+
 .SH
 SEE ALSO
 

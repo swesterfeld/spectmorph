@@ -27,7 +27,7 @@ smplay - Program to play a SpectMorph model
 @item @manb{-h}, @manb{--help} @*
 	Shows a brief help message.
 @item @manb{-v}, @manb{--version} @*
-	Prints out @manb{beast} and component versions and file paths.
+	Prints out @manb{smplay} version.
 @item @manb{--rate} @mani{<sampling rate>} @*
         Set replay rate manually; also useful for specifying the desired rate of
         the wav file, if --export is used.

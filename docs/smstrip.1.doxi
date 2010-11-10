@@ -20,8 +20,19 @@ smstrip - program to remove extra data from SpectMorph model files
         that stripped models can be created directly by the encoder using @manb{smenc -s}.
 
 @heading OPTIONS
-        There are no options. A number of SpectMorph model files can be specified as
-        command line arguments.
+       	@manb{smstrip} follows the usual GNU command line syntax, with long options
+        starting with two dashes ('-').
+
+@itemize{none}
+@item @manb{-h}, @manb{--help} @*
+       Shows a brief help message.
+@item @manb{-v}, @manb{--version} @*
+       Prints out @manb{smsfimport} version.
+@item @manb{--keep-samples} @*
+       Strips debugging information, but keeps the original sample data (useful for quality
+       comparisions). This of course reduces the file size less than full stripping.
+@done
+
 
 @heading SEE ALSO
 @uri{smenc.1.html,smenc(1)},

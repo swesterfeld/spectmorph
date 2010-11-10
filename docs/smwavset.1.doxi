@@ -28,7 +28,7 @@ smwavset - Program to manage spectmorph multiwave files
 @item @manb{-h}, @manb{--help} @*
        Shows a brief help message.
 @item @manb{-v}, @manb{--version} @*
-       Prints out @manb{smenc} version.
+       Prints out @manb{smwavset} version.
 @item @manb{--args} @mani{<arguments>} @*
        Specify additional arguments to be passed to smenc/smplay. This could
        be --args "-O1" for encoding, or --args "--no-sines" for decoding.
