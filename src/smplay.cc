@@ -275,8 +275,6 @@ main (int argc, char **argv)
         window[i] = 0;
     }
 
-  uint loop_point = audio.contents.size() - 5;
-
   vector<float> sample;
 
   SineDecoder::Mode mode = options.decoder_mode;
@@ -316,16 +314,13 @@ main (int argc, char **argv)
   // decode sine part of the data
   for (size_t n = 0; n < end_point; n++)
     {
-      size_t n4 = n / 1;
-      size_t n4_1 = (n + 1) / 1;
-
-      const AudioBlock& block = audio.contents[n4 > loop_point ? loop_point : n4];
-      const AudioBlock& next_block = audio.contents[n4_1 > loop_point ? loop_point : n4_1];
-
       sample.resize (pos + frame_size);
 
-      if (options.sines_enabled)
+      if (options.sines_enabled && n + 1 < end_point)
         {
+          const AudioBlock& block = audio.contents[n];
+          const AudioBlock& next_block = audio.contents[n + 1];
+
           sine_decoder.process (block, next_block, window, decoded_sines);
           for (size_t i = 0; i < frame_size; i++)
             sample[pos + i] += decoded_sines[i];
