@@ -833,10 +833,10 @@ check_import (const Preset& p)
       const Instrument& instrument = instruments[inst_index];
       for (vector<Zone>::const_iterator zi = instrument.zones.begin(); zi != instrument.zones.end(); zi++)
         {
-          const size_t zone_index = zi - instrument.zones.begin();
+          // const size_t zone_index = zi - instrument.zones.begin();
+          // printf ("zone %zd:\n", zone_index);
+          // int root_key = -1;
 
-          //printf ("zone %zd:\n", zone_index);
-          //int root_key = -1;
           const Generator *gi; // = find_gen (GEN_ROOT_KEY, zi->generators);
           //if (gi)
           //root_key = gi->amount;
@@ -878,8 +878,10 @@ list_sf2()
 {
   vector<string> preset_out;
   for (vector<Preset>::iterator pi = presets.begin(); pi < presets.end() - 1; pi++)
-    preset_out.push_back (Birnet::string_printf ("%03d:%03d %s %s", pi->bank, pi->preset, pi->name.c_str(),
-                                                 check_import (*pi).c_str()));
+    preset_out.push_back (Birnet::string_printf ("%03d:%03d %s", pi->bank, pi->preset, pi->name.c_str()));
+
+  // FIXME: check_import (*pi).c_str()
+
   sort (preset_out.begin(), preset_out.end());
   for (vector<string>::iterator poi = preset_out.begin(); poi != preset_out.end(); poi++)
     printf ("%s\n", poi->c_str());
