@@ -1,3 +1,28 @@
+Overview of Changes in spectmorph-0.1.1:
+* added tool for SoundFont (SF2) import: smsfimport
+* file format changes
+  - allow time index based loops (required for looped SoundFont presets)
+  - allow stereo (multichannel) files in WavSets
+  - store phase and magnitude seperately (instead of a sin+cos magnitude)
+  - support multiple velocity layers
+  - allow storing the original sample data for quality comparisions
+  - optimize storage size for smset files if the same Audio file is reused more
+    than once
+* switch to 32 values for 32 perceptually spaced noise bands, instead of the old
+  noise representation
+* handle stereo (multichannel) files in smenc, smjack and beast plugin
+* performance optimizations
+  - LiveDecoder is now really fast, and can handle highly polyphonic synthesis in RT
+  - sine synthesis is based on IFFT now
+  - noise synthesis is a lot faster, too
+  - where possible, use SSE operations in performance critical code
+  - use FFTW for FFT, which is faster than gslfft
+  - added fast float->int conversion on x86
+  - smjack is a lot faster, now
+* removed smenc -O2 setting, which was too slow for practical use
+* introduced anti-alias filter in LiveDecoder
+* cleanups, refactoring, bugfixes
+
 Overview of Changes in spectmorph-0.1.0:
 
 * file format changes
