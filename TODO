@@ -1,6 +1,3 @@
-release:
-- fix post-end access for noise for smplay
-
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow

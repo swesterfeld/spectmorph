@@ -331,11 +331,31 @@ main (int argc, char **argv)
   // decode noise part of the data
   vector<float> decoded_residue (noise_block_size);
 
+  int idx = 0;
   for (pos = 0; pos < sample.size() - noise_block_size; pos += noise_block_size / 2)
     {
-      int idx = pos / (noise_block_size / 2);
+      /* since the noise block size is not the frame size, we need to find the
+       * frame with the center that is closest to the center of the noise block
+       * we're about to synthesize
+       *
+       * in theory, interpolating the noise of the two adjecant frames would
+       * give us a better result, but we don't do this for two reasons
+       *  - we assume that the noise block size is small (compared to frame size)
+       *  - the real audio the user will use is from LiveDecoder anyway
+       */
+      int noise_center = pos + noise_block_size / 2;
+      int frame_center = idx * frame_step + frame_size / 2;
+      int next_frame_center = (idx + 1) * frame_step + frame_size / 2;
 
-      if (options.noise_enabled)
+      while (abs (next_frame_center - noise_center) < abs (frame_center - noise_center))
+        {
+          idx++;
+
+          frame_center = idx * frame_step + frame_size / 2;
+          next_frame_center = (idx + 1) * frame_step + frame_size / 2;
+        }
+
+      if (options.noise_enabled && idx < end_point)
         {
           noise_decoder.process (audio.contents[idx], &decoded_residue[0]);
           for (size_t i = 0; i < noise_block_size; i++)
