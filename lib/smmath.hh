@@ -401,7 +401,7 @@ sm_round_positive (float f)
 }
 #else
 inline int
-sm_round_positive (float d)
+sm_round_positive (double d)
 {
   return int (d + 0.5);
 }
