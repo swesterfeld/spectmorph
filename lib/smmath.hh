@@ -21,6 +21,7 @@
 #include <math.h>
 #include <glib.h>
 #include <string.h>
+#include <stdlib.h>
 #include <bse/bseieee754.h>
 #ifdef __SSE__
 #include <xmmintrin.h>
