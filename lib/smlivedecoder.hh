@@ -23,6 +23,7 @@
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"
 #include "smlivedecodersource.hh"
+#include "smpolyphaseinter.hh"
 #include <birnet/birnet.hh>
 #include <vector>
 
@@ -43,6 +44,7 @@ class LiveDecoder
   IFFTSynth          *ifft_synth;
   NoiseDecoder       *noise_decoder;
   LiveDecoderSource  *source;
+  PolyPhaseInter     *pp_inter;
 
   bool                sines_enabled;
   bool                noise_enabled;

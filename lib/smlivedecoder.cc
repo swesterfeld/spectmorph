@@ -166,6 +166,8 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
         delete sse_samples;
       sse_samples = new AlignedArray<float, 16> (block_size);
 
+      pp_inter = PolyPhaseInter::the(); // do not delete
+
       have_samples = 0;
       pos = 0;
       frame_idx = 0;
@@ -205,14 +207,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               while (ipos >= (audio->loop_end - audio->zero_values_at_start))
                 ipos -= (audio->loop_end - audio->loop_start);
             }
-          if ((ipos + 1) < audio->original_samples.size())
-            {
-              // linear interpolation to determine sample value
-              audio_out[i] = audio->original_samples[ipos] * (1.0 - frac)
-                           + audio->original_samples[ipos + 1] * frac;
-            }
-          else
-            audio_out[i] = 0;
+          audio_out[i] = pp_inter->get_sample (audio->original_samples, ipos + frac);
 
           original_sample_pos += phase_inc;
         }
