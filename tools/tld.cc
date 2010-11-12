@@ -119,6 +119,36 @@ main (int argc, char **argv)
       printf ("other:  %f\n", clocks_per_sample[0]);
       printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
     }
+  else if (argc == 4 && (string (argv[3]) == "avg-samples"))
+    {
+      float clocks_per_sample;
+      decoder.enable_original_samples (true);
+
+      const int n = 20000;
+      const int runs = 25;
+
+      float audio_out[n];
+
+      // avoid measuring setup time
+      decoder.process (n, 0, 0, audio_out);
+      decoder.retrigger (0, freq, 127, 48000);
+
+      double best_time = 1e7;
+      for (int rep = 0; rep < 25; rep++)
+        {
+          double start_t = gettime();
+          for (int l = 0; l < runs; l++)
+            {
+              decoder.retrigger (0, freq, 127, 48000);
+              decoder.process (n, 0, 0, audio_out);
+            }
+          double end_t = gettime();
+          best_time = min (best_time, (end_t - start_t));
+        }
+      clocks_per_sample = best_time * clocks_per_sec / n / runs;
+      printf ("samples:  %f\n", clocks_per_sample);
+      printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
+    }
   else if (argc == 4 && string (argv[3]) == "export")
     {
       const int SR = 48000;
