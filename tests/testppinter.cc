@@ -30,6 +30,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::string;
 using std::max;
 using std::min;
 
@@ -66,11 +67,53 @@ sin_test (double freq, double db_bound)
   assert (error < bse_db_to_factor (db_bound));
 }
 
+void
+sweep_test()
+{
+  PolyPhaseInter *ppi = PolyPhaseInter::the();
+  const double SR = 48000;
+
+  double freq = 5;
+  double phase = 0;
+
+  vector<float> sin_signal, cos_signal, freq_signal;
+
+  while (freq < 24000)
+    {
+      sin_signal.push_back (sin (phase));
+      cos_signal.push_back (cos (phase));
+      freq_signal.push_back (freq);
+
+      phase += 2 * M_PI * freq / SR;
+      if (phase > 2 * M_PI)
+        phase -= 2 * M_PI;
+      freq += 0.1;
+    }
+
+  const double SPEED = 4.71;
+  double pos = 100;
+  while (pos < (sin_signal.size() - 100))
+    {
+      double si = ppi->get_sample (sin_signal, pos);
+      double ci = ppi->get_sample (cos_signal, pos);
+      double fi = ppi->get_sample (freq_signal, pos);
+      printf ("%.17g %.17g\n", fi, sqrt (si * si + ci * ci));
+      pos += SPEED;
+    }
+}
+
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  sin_test (440, -85);
-  sin_test (2000, -75);
+  if (argc == 2 && string (argv[1]) == "sweep")
+    {
+      sweep_test();
+    }
+  else
+    {
+      sin_test (440, -85);
+      sin_test (2000, -75);
+    }
 }
