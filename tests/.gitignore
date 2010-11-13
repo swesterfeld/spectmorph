@@ -12,5 +12,6 @@ testrandperf
 testaafilter
 testnoisemodes
 testnoiseperf
+testppinter
 .libs
 .deps
