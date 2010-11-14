@@ -125,7 +125,6 @@ impulse_test()
 
   const double SR = 48000;
   const double LP_FREQ = 20000;
-  const int    OVERSAMPLE = 64;
   const double STEP = 0.001;
   for (double p = -20; p < 20; p += STEP)
     {
