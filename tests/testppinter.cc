@@ -22,6 +22,7 @@
 #include "smfft.hh"
 
 #include <bse/bsemathsignal.h>
+#include <sys/time.h>
 
 #include <vector>
 #include <assert.h>
@@ -33,6 +34,15 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
+
+double
+gettime()
+{
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
 
 void
 sin_test (double freq, double db_bound)
@@ -146,6 +156,32 @@ impulse_test()
     }
 }
 
+void
+speed_test()
+{
+  PolyPhaseInter *ppi = PolyPhaseInter::the();
+  const double SR = 48000;
+
+  vector<float> signal (SR * 5);
+  for (size_t i = 0; i < signal.size(); i++)
+    {
+      signal[i] = g_random_double_range (-1, 1);
+    }
+
+  vector<float> result (SR);
+
+  double start = gettime();
+  const size_t RUNS = 300;
+  for (size_t k = 0; k < RUNS; k++)
+    for (size_t i = 0; i < result.size(); i++)
+      result[i] = ppi->get_sample (signal, i * 1.3);
+  double end = gettime();
+  double clocks_per_sec = 2500.0 * 1000 * 1000;
+  double clocks_per_sample = (end - start) * clocks_per_sec / (RUNS * result.size());
+  printf ("interp: %f clocks/sample\n", clocks_per_sample);
+  printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -158,6 +194,10 @@ main (int argc, char **argv)
   else if (argc == 2 && string (argv[1]) == "impulse")
     {
       impulse_test();
+    }
+  else if (argc == 2 && string (argv[1]) == "speed")
+    {
+      speed_test();
     }
   else
     {
