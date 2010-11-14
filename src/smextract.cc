@@ -142,6 +142,15 @@ load_or_die (const string& filename, const string& mode)
   return audio;
 }
 
+static bool
+find_nan (vector<float>& data)
+{
+  for (size_t x = 0; x < data.size(); x++)
+    if (isnan (data[x]))
+      return true;
+  return false;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -312,13 +321,13 @@ main (int argc, char **argv)
         }
       size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
 
-      printf ("frequencies  : %d bytes\n", freq_bytes);
-      printf ("mags         : %d bytes\n", mag_bytes);
-      printf ("phases       : %d bytes\n", phase_bytes);
-      printf ("dbgsamples   : %d bytes\n", debug_samples_bytes);
-      printf ("orig_fft     : %d bytes\n", original_fft_bytes);
-      printf ("noise        : %d bytes\n", noise_bytes);
-      printf ("orig_samples : %d bytes\n", original_samples_bytes);
+      printf ("frequencies  : %zd bytes\n", freq_bytes);
+      printf ("mags         : %zd bytes\n", mag_bytes);
+      printf ("phases       : %zd bytes\n", phase_bytes);
+      printf ("dbgsamples   : %zd bytes\n", debug_samples_bytes);
+      printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
+      printf ("noise        : %zd bytes\n", noise_bytes);
+      printf ("orig_samples : %zd bytes\n", original_samples_bytes);
     }
   else if (mode == "fundamental-freq")
     {
@@ -380,7 +389,7 @@ main (int argc, char **argv)
     {
       check_usage (argc, 3, "loopparams");
 
-      printf ("frames: %d\n", audio.contents.size());
+      printf ("frames: %zd\n", audio.contents.size());
       const char *lt2name[] = { "LOOP_NONE", "LOOP_FRAME_FORWARD", "LOOP_FRAME_PING_PONG",
                           "LOOP_TIME_FORWARD", "LOOP_TIME_PING_PONG" };
       printf ("loop type: %s\n", lt2name[audio.loop_type]);
@@ -438,6 +447,34 @@ main (int argc, char **argv)
 
       for (size_t i = 0; i < audio.original_samples.size(); i++)
         printf ("%.17g\n", audio.original_samples[i]);
+    }
+  else if (mode == "nan-test")
+    {
+      check_usage (argc, 3, "nan-test");
+
+      int nan_phases = 0, nan_freqs = 0, nan_mags = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
+
+      for (size_t f = 0; f < audio.contents.size(); f++)
+        {
+          if (find_nan (audio.contents[f].phases))
+            nan_phases++;
+          if (find_nan (audio.contents[f].freqs))
+            nan_freqs++;
+          if (find_nan (audio.contents[f].mags))
+            nan_mags++;
+          if (find_nan (audio.contents[f].debug_samples))
+            nan_ds++;
+          if (find_nan (audio.contents[f].original_fft))
+            nan_fft++;
+          if (find_nan (audio.contents[f].noise))
+            nan_noise++;
+        }
+      printf ("nan-phases:        %d\n", nan_phases);
+      printf ("nan-freqs:         %d\n", nan_freqs);
+      printf ("nan-mags:          %d\n", nan_mags);
+      printf ("nan-debug-samples: %d\n", nan_ds);
+      printf ("nan-original-fft:  %d\n", nan_fft);
+      printf ("nan-noise:         %d\n", nan_noise);
     }
   if (need_save)
     {
