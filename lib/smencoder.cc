@@ -502,7 +502,7 @@ Encoder::spectral_subtract (const vector<float>& window)
       vector<double> out (block_size * zeropad + 2);
       // apply window
       std::fill (fft_in, fft_in + block_size * zeropad, 0);
-      for (size_t k = 0; k < enc_params.block_size; k++)
+      for (size_t k = 0; k < frame_size; k++)
         fft_in[k] = window[k] * signal[k];
       // FFT
       FFT::fftar_float (block_size * zeropad, fft_in, fft_out);
