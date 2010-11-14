@@ -157,6 +157,88 @@ impulse_test()
 }
 
 void
+print_spectrum (const string& label, const vector<float>& signal, double SR)
+{
+  size_t input_size = SR;
+
+  size_t fft_size = 1;
+  while (fft_size < input_size * 4)
+    fft_size *= 2;
+
+  float *fft_in = FFT::new_array_float (fft_size);
+  float *fft_out = FFT::new_array_float (fft_size);
+
+  zero_float_block (fft_size, fft_in);
+
+  double normalize = 0;
+  for (size_t i = 0; i < input_size; i++)
+    {
+      double w = bse_window_blackman (2.0 * i / input_size - 1.0);
+      fft_in[i] = w * signal[i];
+      normalize += w;
+    }
+  FFT::fftar_float (fft_size, fft_in, fft_out);
+
+  normalize *= 0.5;
+
+  for (size_t i = 0; i < fft_size / 2; i++)
+    {
+      double re = fft_out[i * 2];
+      double im = fft_out[i * 2 + 1];
+      if (i == 0) // special packing
+        im = 0;
+      printf ("%f %.17g #%s\n", i / double (fft_size) * SR, sqrt (re * re + im * im) / normalize, label.c_str());
+    }
+}
+
+void
+resample_test (const double SR, const double FREQ, const double SPEED)
+{
+  PolyPhaseInter *ppi = PolyPhaseInter::the();
+
+  vector<float> input_signal (5 * SR);   // 5 seconds
+  vector<float> expect_signal (5 * SR);  // 5 seconds
+
+  // generate input signal
+  for (size_t i = 0; i < input_signal.size(); i++)
+    {
+      int partial = 1;
+      while (partial * FREQ < (SR / 2))
+        {
+          input_signal[i] += sin (partial * i / 48000.0 * FREQ * 2 * M_PI) / partial;
+          partial++;
+        }
+    }
+
+  // generate perfect output signal
+  for (size_t i = 0; i < expect_signal.size(); i++)
+    {
+      int partial = 1;
+      while (partial * FREQ < (SR / 2))
+        {
+          if (partial * SPEED * FREQ < (SR / 2))    // filter at nyquist
+            expect_signal[i] += sin (partial * i / 48000.0 * FREQ * SPEED * 2 * M_PI) / partial;
+          partial++;
+        }
+    }
+
+  // generate resampled result
+  vector<float> resampled_signal (5 * SR);
+  for (size_t i = 0; i < resampled_signal.size(); i++)
+    {
+      double d = i * SPEED;
+      //resampled_signal[i] = get_li (input_signal, d);
+      resampled_signal[i] = ppi->get_sample (input_signal, d);
+    }
+
+  print_spectrum ("I", input_signal, SR);
+  print_spectrum ("E", expect_signal, SR);
+  print_spectrum ("R", resampled_signal, SR);
+  //print_signal (expect_signal, SR);
+  //print_signal (resampled_signal, SR);
+}
+
+void
 speed_test()
 {
   PolyPhaseInter *ppi = PolyPhaseInter::the();
@@ -198,6 +280,10 @@ main (int argc, char **argv)
   else if (argc == 2 && string (argv[1]) == "speed")
     {
       speed_test();
+    }
+  else if (argc == 2 && string (argv[1]) == "resample")
+    {
+      resample_test (48000, 440, 1.3);
     }
   else
     {
