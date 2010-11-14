@@ -125,8 +125,8 @@ void
 impulse_test()
 {
   PolyPhaseInter *ppi = PolyPhaseInter::the();
-  vector<float> one_signal (40);
-  one_signal[20] = 1.0;
+  vector<float> one_signal; // impulse signal
+  one_signal.push_back (1);
 
   const int FFT_SIZE = 256 * 1024;
   float *fft_in = FFT::new_array_float (FFT_SIZE);
@@ -142,7 +142,7 @@ impulse_test()
       double w = bse_window_blackman (double (p) / 12) / (SR / 2) * LP_FREQ;
       double x = c * w;
 
-      x = ppi->get_sample (one_signal, 20 + p);
+      x = ppi->get_sample (one_signal, p);
 
       fft_in[k++] = x * STEP;
     }

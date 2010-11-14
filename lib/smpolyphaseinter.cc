@@ -54,7 +54,13 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
   double frac = pos - ipos;
   return sig (signal, ipos) * (1 - frac) + sig (signal, ipos + 1) * frac;
 */
-  int ipos = pos;
+  // we need the biggest integer smaller than pos, so we need to handle
+  // negative positions seperately
+  int ipos;
+  if (pos < 0)
+    ipos = pos - 1.0;
+  else
+    ipos = pos;
   int frac64 = (pos - ipos) * OVERSAMPLE;
   double x_frac = (pos - ipos) * OVERSAMPLE - frac64;
   double result = 0;
