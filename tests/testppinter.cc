@@ -102,6 +102,51 @@ sweep_test()
     }
 }
 
+double
+sinc (double x)
+{
+  if (fabs (x) < 1e-6)
+    return 1;
+  else
+    return sin (M_PI * x) / (M_PI * x);
+}
+
+void
+impulse_test()
+{
+  PolyPhaseInter *ppi = PolyPhaseInter::the();
+  vector<float> one_signal (40);
+  one_signal[20] = 1.0;
+
+  const int FFT_SIZE = 256 * 1024;
+  float *fft_in = FFT::new_array_float (FFT_SIZE);
+  float *fft_out = FFT::new_array_float (FFT_SIZE);
+  int k = 0;
+
+  const double SR = 48000;
+  const double LP_FREQ = 20000;
+  const int    OVERSAMPLE = 64;
+  const double STEP = 0.001;
+  for (double p = -20; p < 20; p += STEP)
+    {
+      double c = sinc (double (p) / (SR / 2) * LP_FREQ);
+      double w = bse_window_blackman (double (p) / 12) / (SR / 2) * LP_FREQ;
+      double x = c * w;
+
+      x = ppi->get_sample (one_signal, 20 + p);
+
+      fft_in[k++] = x * STEP;
+    }
+  FFT::fftar_float (FFT_SIZE, fft_in, fft_out);
+  fft_out[1] = 0;
+  for (int i = 0; i < FFT_SIZE; i += 2)
+    {
+      double re = fft_out[i];
+      double im = fft_out[i + 1];
+      printf ("%d %.17g\n", i, sqrt (re * re + im * im));
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -110,6 +155,10 @@ main (int argc, char **argv)
   if (argc == 2 && string (argv[1]) == "sweep")
     {
       sweep_test();
+    }
+  else if (argc == 2 && string (argv[1]) == "impulse")
+    {
+      impulse_test();
     }
   else
     {
