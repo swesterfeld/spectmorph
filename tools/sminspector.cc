@@ -215,7 +215,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
         {
           for (vector<float>::const_iterator mi = fi->mags.begin(); mi != fi->mags.end(); mi++)
             {
-              max_value = max (value_scale (max_value), *mi);
+              max_value = max (max_value, value_scale (*mi));
             }
         }
       guchar *p = image->get_pixels();
