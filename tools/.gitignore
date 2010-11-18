@@ -4,6 +4,7 @@ ascii2wav
 wav2ascii
 imiscutter
 smsfimport
+sminspector
 tld
 *.o
 .deps
