@@ -245,9 +245,16 @@ class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        time_freq_view;
+  Gtk::Adjustment     hzoom_adjustment;
+  Gtk::HScale         hzoom_scale;
+  Gtk::Label          hzoom_label;
+  Gtk::HBox           hzoom_hbox;
+  Gtk::VBox           vbox;
 
 public:
   MainWindow (const string& filename);
+
+  void hzoom_changed();
 };
 
 #if 0
@@ -262,13 +269,30 @@ return true;
 #endif
 
 MainWindow::MainWindow (const string& filename) :
-  time_freq_view (filename)
+  time_freq_view (filename),
+  hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
+  hzoom_scale (hzoom_adjustment)
 {
   set_border_width (10);
-  add (scrolled_win);
+  vbox.pack_start (scrolled_win);
+  vbox.pack_start (hzoom_hbox, Gtk::PACK_SHRINK);
+  hzoom_hbox.pack_start (hzoom_scale);
+  hzoom_hbox.pack_start (hzoom_label, Gtk::PACK_SHRINK);
+  hzoom_scale.set_draw_value (false);
+  hzoom_label.set_text ("100.00%");
+  hzoom_hbox.set_border_width (10);
+  hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::hzoom_changed));
+  add (vbox);
   scrolled_win.add (time_freq_view);
-  scrolled_win.show();
-  time_freq_view.show();
+  show_all_children();
+}
+
+void
+MainWindow::hzoom_changed()
+{
+  char buffer[1024];
+  sprintf (buffer, "%3.2f%%", 100.0 * pow (10, hzoom_adjustment.get_value()));
+  hzoom_label.set_text (buffer);
 }
 
 int
