@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.1.1])
+AC_INIT([spectmorph], [0.1.2])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -180,6 +180,12 @@ MC_PROG_CC_SUPPORTS_OPTION([-fno-omit-frame-pointer], [
   CFLAGS="$CFLAGS -fno-omit-frame-pointer"
   CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
 ])
+])
+
+AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler flags to do C++ STL debug checks]),
+[
+  CFLAGS="$CFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+  CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
 ])
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
