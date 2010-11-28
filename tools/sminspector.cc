@@ -49,19 +49,54 @@ class TimeFreqView : public Gtk::DrawingArea
 protected:
   vector<FFTResult> results;
   Glib::RefPtr<Gdk::Pixbuf> image;
+  Glib::RefPtr<Gdk::Pixbuf> zimage;
+  double hzoom, vzoom;
 
 public:
   TimeFreqView (const string& filename);
 
   void load (const string& filename);
   bool on_expose_event (GdkEventExpose* ev);
+
+  void set_hzoom (double new_hzoom);
+  void set_vzoom (double new_vzoom);
 };
 
 TimeFreqView::TimeFreqView (const string& filename)
 {
   set_size_request (400, 400);
+  hzoom = 1;
+  vzoom = 1;
 
   load (filename);
+}
+
+void
+TimeFreqView::set_hzoom (double new_hzoom)
+{
+  hzoom = new_hzoom;
+  zimage.clear();
+
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
+    }
+}
+
+void
+TimeFreqView::set_vzoom (double new_vzoom)
+{
+  vzoom = new_vzoom;
+  zimage.clear();
+
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
+    }
 }
 
 struct Options
@@ -233,11 +268,14 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
             }
           p += 3;
         }
-      set_size_request (image->get_width(), image->get_height());
     }
-  image->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, 0, 0, image->get_width(), image->get_height(),
-                             // draw the whole image (from 0,0 to the full width,height) at 100,80 in the window
-                             Gdk::RGB_DITHER_NONE, 0, 0);
+  if (!zimage)
+    {
+      zimage = image->scale_simple (image->get_width() * hzoom, image->get_height() * vzoom, Gdk::INTERP_BILINEAR);
+      set_size_request (zimage->get_width(), zimage->get_height());
+    }
+  zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, 0, 0, zimage->get_width(), zimage->get_height(),
+                              Gdk::RGB_DITHER_NONE, 0, 0);
   return true;
 }
 
@@ -249,31 +287,28 @@ class MainWindow : public Gtk::Window
   Gtk::HScale         hzoom_scale;
   Gtk::Label          hzoom_label;
   Gtk::HBox           hzoom_hbox;
+  Gtk::Adjustment     vzoom_adjustment;
+  Gtk::HScale         vzoom_scale;
+  Gtk::Label          vzoom_label;
+  Gtk::HBox           vzoom_hbox;
   Gtk::VBox           vbox;
 
 public:
   MainWindow (const string& filename);
 
   void hzoom_changed();
+  void vzoom_changed();
 };
-
-#if 0
-{
-image->render_to_drawable(get_window(), get_style()->get_black_gc(),
-0, 0, 100, 80, image->get_width(), image->get_height(), // draw the whole image (from 0,0 to the full width,height) at 100,80 in the window
-Gdk::RGB_DITHER_NONE, 0, 0);
-return true;
-}
-};
-
-#endif
 
 MainWindow::MainWindow (const string& filename) :
   time_freq_view (filename),
   hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
-  hzoom_scale (hzoom_adjustment)
+  hzoom_scale (hzoom_adjustment),
+  vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
+  vzoom_scale (vzoom_adjustment)
 {
   set_border_width (10);
+  set_default_size (800, 600);
   vbox.pack_start (scrolled_win);
   vbox.pack_start (hzoom_hbox, Gtk::PACK_SHRINK);
   hzoom_hbox.pack_start (hzoom_scale);
@@ -282,6 +317,13 @@ MainWindow::MainWindow (const string& filename) :
   hzoom_label.set_text ("100.00%");
   hzoom_hbox.set_border_width (10);
   hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::hzoom_changed));
+  vbox.pack_start (vzoom_hbox, Gtk::PACK_SHRINK);
+  vzoom_hbox.pack_start (vzoom_scale);
+  vzoom_hbox.pack_start (vzoom_label, Gtk::PACK_SHRINK);
+  vzoom_scale.set_draw_value (false);
+  vzoom_label.set_text ("100.00%");
+  vzoom_hbox.set_border_width (10);
+  vzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::vzoom_changed));
   add (vbox);
   scrolled_win.add (time_freq_view);
   show_all_children();
@@ -290,9 +332,21 @@ MainWindow::MainWindow (const string& filename) :
 void
 MainWindow::hzoom_changed()
 {
+  double hzoom = pow (10, hzoom_adjustment.get_value());
   char buffer[1024];
-  sprintf (buffer, "%3.2f%%", 100.0 * pow (10, hzoom_adjustment.get_value()));
+  sprintf (buffer, "%3.2f%%", 100.0 * hzoom);
   hzoom_label.set_text (buffer);
+  time_freq_view.set_hzoom (hzoom);
+}
+
+void
+MainWindow::vzoom_changed()
+{
+  double vzoom = pow (10, vzoom_adjustment.get_value());
+  char buffer[1024];
+  sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
+  vzoom_label.set_text (buffer);
+  time_freq_view.set_vzoom (vzoom);
 }
 
 int
