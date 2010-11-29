@@ -238,6 +238,19 @@ value_scale (float value)
     return value;
 }
 
+int
+get_pixel (Glib::RefPtr<Gdk::Pixbuf> image, int x, int y)
+{
+  guchar *p          = image->get_pixels();
+  size_t  row_stride = image->get_rowstride();
+
+  if (x >= image->get_width())
+    return 0;
+  if (y >= image->get_height())
+    return 0;
+  return p[row_stride * y + x * 3];
+}
+
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
@@ -269,12 +282,34 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
           p += 3;
         }
     }
+  /*
   if (!zimage)
     {
       zimage = image->scale_simple (image->get_width() * hzoom, image->get_height() * vzoom, Gdk::INTERP_BILINEAR);
       set_size_request (zimage->get_width(), zimage->get_height());
     }
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, 0, 0, zimage->get_width(), zimage->get_height(),
+                              Gdk::RGB_DITHER_NONE, 0, 0);
+  */
+  set_size_request (image->get_width() * hzoom, image->get_height() * vzoom);
+  zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, ev->area.width, ev->area.height);
+  double hzoom_inv = (1.0 / hzoom);
+  double vzoom_inv = (1.0 / vzoom);
+  guchar *p = zimage->get_pixels();
+  size_t  row_stride = zimage->get_rowstride();
+  for (int x = 0; x < ev->area.width; x++)
+    {
+      for (int y = 0; y < ev->area.height; y++)
+        {
+          guchar *pp = (p + row_stride * y + x * 3);
+          int color = get_pixel (image, (x + ev->area.x) * hzoom_inv, (y + ev->area.y) * vzoom_inv);
+          pp[0] = color;
+          pp[1] = color;
+          pp[2] = color;
+        }
+    }
+  zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
+                              zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
   return true;
 }
