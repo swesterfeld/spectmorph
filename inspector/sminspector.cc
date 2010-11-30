@@ -306,14 +306,6 @@ value_scale (float value)
 int
 get_pixel (PixelArray& image, int x, int y)
 {
-  guchar *p          = image.get_pixels();
-  size_t  row_stride = image.get_rowstride();
-
-  if (x >= image.get_width())
-    return 0;
-  if (y >= image.get_height())
-    return 0;
-  return p[row_stride * y + x];
 }
 
 #define FRAC_SHIFT       12
@@ -326,18 +318,30 @@ zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
   int hzoom_inv_frac = FRAC_FACTOR / hzoom;
   int vzoom_inv_frac = FRAC_FACTOR / vzoom;
+
   guchar *p = zimage->get_pixels();
   size_t  row_stride = zimage->get_rowstride();
-  for (int x = 0; x < destw; x++)
+
+  guchar *pixel_array_p          = image.get_pixels();
+  size_t  pixel_array_row_stride = image.get_rowstride();
+
+  for (int y = 0; y < desth; y++)
     {
-      for (int y = 0; y < desth; y++)
+      guchar *pp = (p + row_stride * y);
+      int outy = ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+
+      for (int x = 0; x < destw; x++)
         {
-          guchar *pp = (p + row_stride * y + x * 3);
-          int color = get_pixel (image, ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT,
-                                        ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT);
+          int outx = ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+          int color;
+          if (outx < image.get_width() && outy < image.get_height())
+            color = pixel_array_p[pixel_array_row_stride * outy + outx];
+          else
+            color = 0;
           pp[0] = color;
           pp[1] = color;
           pp[2] = color;
+          pp += 3;
         }
     }
   return zimage;
