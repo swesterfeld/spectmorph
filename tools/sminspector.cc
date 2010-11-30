@@ -20,6 +20,7 @@
 #include <bse/bseloader.h>
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
+#include <sys/time.h>
 
 #include <vector>
 #include <string>
@@ -391,6 +392,15 @@ MainWindow::vzoom_changed()
   time_freq_view.set_vzoom (vzoom);
 }
 
+static double
+gettime()
+{
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -405,11 +415,25 @@ main (int argc, char **argv)
     {
       if (string (argv[2]) == "perf")
         {
+          const double clocks_per_sec = 2500.0 * 1000 * 1000;
+          const unsigned int runs = 100;
+
           Glib::RefPtr<Gdk::Pixbuf> image, zimage;
           double hzoom = 1.3, vzoom = 1.5;
           image = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, 1024, 1024);
+
+          // warmup run:
           zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
-          printf ("perftest\n");
+
+          // timed runs:
+          double start = gettime();
+          for (unsigned int i = 0; i < runs; i++)
+            zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
+          double end = gettime();
+
+          printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
+          printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
+
           return 0;
         }
       else
