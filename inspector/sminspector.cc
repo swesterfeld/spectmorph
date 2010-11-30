@@ -316,12 +316,16 @@ get_pixel (PixelArray& image, int x, int y)
   return p[row_stride * y + x];
 }
 
+#define FRAC_SHIFT       12
+#define FRAC_FACTOR      (1 << FRAC_SHIFT)
+#define FRAC_HALF_FACTOR (1 << (FRAC_SHIFT - 1))
+
 Glib::RefPtr<Gdk::Pixbuf>
 zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom)
 {
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
-  double hzoom_inv = (1.0 / hzoom);
-  double vzoom_inv = (1.0 / vzoom);
+  int hzoom_inv_frac = FRAC_FACTOR / hzoom;
+  int vzoom_inv_frac = FRAC_FACTOR / vzoom;
   guchar *p = zimage->get_pixels();
   size_t  row_stride = zimage->get_rowstride();
   for (int x = 0; x < destw; x++)
@@ -329,8 +333,8 @@ zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double
       for (int y = 0; y < desth; y++)
         {
           guchar *pp = (p + row_stride * y + x * 3);
-          int color = get_pixel (image, sm_round_positive ((x + destx) * hzoom_inv),
-                                        sm_round_positive ((y + desty) * vzoom_inv));
+          int color = get_pixel (image, ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT,
+                                        ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT);
           pp[0] = color;
           pp[1] = color;
           pp[2] = color;
