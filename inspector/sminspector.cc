@@ -27,6 +27,7 @@
 
 #include "smmain.hh"
 #include "smfft.hh"
+#include "smmath.hh"
 
 using std::vector;
 using std::string;
@@ -328,7 +329,8 @@ zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double
       for (int y = 0; y < desth; y++)
         {
           guchar *pp = (p + row_stride * y + x * 3);
-          int color = get_pixel (image, (x + destx) * hzoom_inv, (y + desty) * vzoom_inv);
+          int color = get_pixel (image, sm_round_positive ((x + destx) * hzoom_inv),
+                                        sm_round_positive ((y + desty) * vzoom_inv));
           pp[0] = color;
           pp[1] = color;
           pp[2] = color;
