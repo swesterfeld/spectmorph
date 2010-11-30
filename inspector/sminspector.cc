@@ -45,11 +45,74 @@ struct FFTResult
   vector<float> mags;
 };
 
+struct PixelArray
+{
+  size_t width;
+  size_t height;
+  vector<unsigned char> pixels;
+
+public:
+  PixelArray();
+
+  bool empty();
+  void resize (size_t width, size_t height);
+  unsigned char *get_pixels();
+  size_t get_rowstride();
+  size_t get_height();
+  size_t get_width();
+};
+
+PixelArray::PixelArray()
+{
+  width = 0;
+  height = 0;
+}
+
+void
+PixelArray::resize (size_t width, size_t height)
+{
+  this->width = width;
+  this->height = height;
+
+  pixels.clear();
+  pixels.resize (width * height);
+}
+
+bool
+PixelArray::empty()
+{
+  return (width == 0) && (height == 0);
+}
+
+unsigned char *
+PixelArray::get_pixels()
+{
+  return &pixels[0];
+}
+
+size_t
+PixelArray::get_rowstride()
+{
+  return width;
+}
+
+size_t
+PixelArray::get_width()
+{
+  return width;
+}
+
+size_t
+PixelArray::get_height()
+{
+  return height;
+}
+
 class TimeFreqView : public Gtk::DrawingArea
 {
 protected:
   vector<FFTResult> results;
-  Glib::RefPtr<Gdk::Pixbuf> image;
+  PixelArray  image;
   Glib::RefPtr<Gdk::Pixbuf> zimage;
   double hzoom, vzoom;
 
@@ -240,20 +303,20 @@ value_scale (float value)
 }
 
 int
-get_pixel (Glib::RefPtr<Gdk::Pixbuf> image, int x, int y)
+get_pixel (PixelArray& image, int x, int y)
 {
-  guchar *p          = image->get_pixels();
-  size_t  row_stride = image->get_rowstride();
+  guchar *p          = image.get_pixels();
+  size_t  row_stride = image.get_rowstride();
 
-  if (x >= image->get_width())
+  if (x >= image.get_width())
     return 0;
-  if (y >= image->get_height())
+  if (y >= image.get_height())
     return 0;
-  return p[row_stride * y + x * 3];
+  return p[row_stride * y + x];
 }
 
 Glib::RefPtr<Gdk::Pixbuf>
-zoom_rect (Glib::RefPtr<Gdk::Pixbuf> image, int destx, int desty, int destw, int desth, double hzoom, double vzoom)
+zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom)
 {
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
   double hzoom_inv = (1.0 / hzoom);
@@ -277,9 +340,9 @@ zoom_rect (Glib::RefPtr<Gdk::Pixbuf> image, int destx, int desty, int destw, int
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
-  if (!image)
+  if (image.empty())
     {
-      image = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, results.size(), results[0].mags.size());
+      image.resize (results.size(), results[0].mags.size());
 
       float max_value = 0;
       for (vector<FFTResult>::const_iterator fi = results.begin(); fi != results.end(); fi++)
@@ -289,8 +352,8 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
               max_value = max (max_value, value_scale (*mi));
             }
         }
-      guchar *p = image->get_pixels();
-      size_t  row_stride = image->get_rowstride();
+      guchar *p = image.get_pixels();
+      size_t  row_stride = image.get_rowstride();
       for (size_t frame = 0; frame < results.size(); frame++)
         {
           for (size_t m = 0; m < results[frame].mags.size(); m++)
@@ -298,11 +361,9 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
               double value = value_scale (results[frame].mags[m]);
               value /= max_value;
               int y = results[frame].mags.size() - 1 - m;
-              p[row_stride * y + 0] = value * 255;
-              p[row_stride * y + 1] = value * 255;
-              p[row_stride * y + 2] = value * 255;
+              p[row_stride * y] = value * 255;
             }
-          p += 3;
+          p++;
         }
     }
   /*
@@ -314,7 +375,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, 0, 0, zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
   */
-  set_size_request (image->get_width() * hzoom, image->get_height() * vzoom);
+  set_size_request (image.get_width() * hzoom, image.get_height() * vzoom);
   zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
@@ -418,9 +479,10 @@ main (int argc, char **argv)
           const double clocks_per_sec = 2500.0 * 1000 * 1000;
           const unsigned int runs = 10;
 
-          Glib::RefPtr<Gdk::Pixbuf> image, zimage;
+          PixelArray image;
+          Glib::RefPtr<Gdk::Pixbuf> zimage;
           double hzoom = 1.3, vzoom = 1.5;
-          image = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, 1024, 1024);
+          image.resize (1024, 1024);
 
           // warmup run:
           zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
