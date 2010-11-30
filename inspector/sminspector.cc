@@ -416,7 +416,7 @@ main (int argc, char **argv)
       if (string (argv[2]) == "perf")
         {
           const double clocks_per_sec = 2500.0 * 1000 * 1000;
-          const unsigned int runs = 100;
+          const unsigned int runs = 10;
 
           Glib::RefPtr<Gdk::Pixbuf> image, zimage;
           double hzoom = 1.3, vzoom = 1.5;
