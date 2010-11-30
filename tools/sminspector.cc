@@ -251,6 +251,28 @@ get_pixel (Glib::RefPtr<Gdk::Pixbuf> image, int x, int y)
   return p[row_stride * y + x * 3];
 }
 
+Glib::RefPtr<Gdk::Pixbuf>
+zoom_rect (Glib::RefPtr<Gdk::Pixbuf> image, int destx, int desty, int destw, int desth, double hzoom, double vzoom)
+{
+  Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
+  double hzoom_inv = (1.0 / hzoom);
+  double vzoom_inv = (1.0 / vzoom);
+  guchar *p = zimage->get_pixels();
+  size_t  row_stride = zimage->get_rowstride();
+  for (int x = 0; x < destw; x++)
+    {
+      for (int y = 0; y < desth; y++)
+        {
+          guchar *pp = (p + row_stride * y + x * 3);
+          int color = get_pixel (image, (x + destx) * hzoom_inv, (y + desty) * vzoom_inv);
+          pp[0] = color;
+          pp[1] = color;
+          pp[2] = color;
+        }
+    }
+  return zimage;
+}
+
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
@@ -292,22 +314,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
                               Gdk::RGB_DITHER_NONE, 0, 0);
   */
   set_size_request (image->get_width() * hzoom, image->get_height() * vzoom);
-  zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, ev->area.width, ev->area.height);
-  double hzoom_inv = (1.0 / hzoom);
-  double vzoom_inv = (1.0 / vzoom);
-  guchar *p = zimage->get_pixels();
-  size_t  row_stride = zimage->get_rowstride();
-  for (int x = 0; x < ev->area.width; x++)
-    {
-      for (int y = 0; y < ev->area.height; y++)
-        {
-          guchar *pp = (p + row_stride * y + x * 3);
-          int color = get_pixel (image, (x + ev->area.x) * hzoom_inv, (y + ev->area.y) * vzoom_inv);
-          pp[0] = color;
-          pp[1] = color;
-          pp[2] = color;
-        }
-    }
+  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
@@ -393,7 +400,23 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  assert (argc == 2);
+  assert (argc == 2 || argc == 3);
+  if (argc == 3)
+    {
+      if (string (argv[2]) == "perf")
+        {
+          Glib::RefPtr<Gdk::Pixbuf> image, zimage;
+          double hzoom = 1.3, vzoom = 1.5;
+          image = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, 1024, 1024);
+          zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
+          printf ("perftest\n");
+          return 0;
+        }
+      else
+        {
+          assert (false);
+        }
+    }
 
   MainWindow window (argv[1]);
 
