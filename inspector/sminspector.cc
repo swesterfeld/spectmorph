@@ -28,6 +28,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smmath.hh"
+#include "smmicroconf.hh"
 
 using std::vector;
 using std::string;
@@ -118,7 +119,7 @@ protected:
   double hzoom, vzoom;
 
 public:
-  TimeFreqView (const string& filename);
+  TimeFreqView (); //const string& filename);
 
   void load (const string& filename);
   bool on_expose_event (GdkEventExpose* ev);
@@ -127,13 +128,13 @@ public:
   void set_vzoom (double new_vzoom);
 };
 
-TimeFreqView::TimeFreqView (const string& filename)
+TimeFreqView::TimeFreqView () //const string& filename)
 {
   set_size_request (400, 400);
   hzoom = 1;
   vzoom = 1;
 
-  load (filename);
+  //load (filename);
 }
 
 void
@@ -352,7 +353,11 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
   if (image.empty())
     {
-      image.resize (results.size(), results[0].mags.size());
+      size_t height = 0;
+      if (!results.empty())
+        height = results[0].mags.size();
+
+      image.resize (results.size(), height);
 
       float max_value = 0;
       for (vector<FFTResult>::const_iterator fi = results.begin(); fi != results.end(); fi++)
@@ -393,6 +398,37 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
   return true;
 }
 
+class Index : public Gtk::Window
+{
+  Gtk::ComboBoxText smset_combobox;
+  Gtk::VBox         index_vbox;
+public:
+  Index (const string& filename);
+};
+
+Index::Index (const string& filename)
+{
+  printf ("loading index: %s\n", filename.c_str());
+  MicroConf cfg (filename);
+
+  while (cfg.next())
+    {
+      string file;
+
+      if (cfg.command ("smset", file))
+        {
+          smset_combobox.append_text (file);
+        }
+    }
+
+  set_border_width (10);
+  set_default_size (200, 600);
+  index_vbox.pack_start (smset_combobox, Gtk::PACK_SHRINK);
+  add (index_vbox);
+  show();
+  show_all_children();
+}
+
 class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -406,6 +442,7 @@ class MainWindow : public Gtk::Window
   Gtk::Label          vzoom_label;
   Gtk::HBox           vzoom_hbox;
   Gtk::VBox           vbox;
+  Index               index;
 
 public:
   MainWindow (const string& filename);
@@ -415,7 +452,8 @@ public:
 };
 
 MainWindow::MainWindow (const string& filename) :
-  time_freq_view (filename),
+  index (filename),
+  //time_freq_view (filename),
   hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
   hzoom_scale (hzoom_adjustment),
   vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),

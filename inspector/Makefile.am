@@ -6,6 +6,6 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 noinst_PROGRAMS = sminspector
 
-sminspector_SOURCES = sminspector.cc
+sminspector_SOURCES = sminspector.cc smmicroconf.cc
 sminspector_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
 sminspector_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
