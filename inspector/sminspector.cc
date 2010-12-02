@@ -304,11 +304,6 @@ value_scale (float value)
     return value;
 }
 
-int
-get_pixel (PixelArray& image, int x, int y)
-{
-}
-
 #define FRAC_SHIFT       12
 #define FRAC_FACTOR      (1 << FRAC_SHIFT)
 #define FRAC_HALF_FACTOR (1 << (FRAC_SHIFT - 1))
@@ -329,11 +324,11 @@ zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double
   for (int y = 0; y < desth; y++)
     {
       guchar *pp = (p + row_stride * y);
-      int outy = ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+      size_t outy = ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
 
       for (int x = 0; x < destw; x++)
         {
-          int outx = ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+          size_t outx = ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
           int color;
           if (outx < image.get_width() && outy < image.get_height())
             color = pixel_array_p[pixel_array_row_stride * outy + outx];
@@ -400,6 +395,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
 
 class Index : public Gtk::Window
 {
+  string            smset_dir;
   Gtk::ComboBoxText smset_combobox;
   Gtk::VBox         index_vbox;
 public:
@@ -413,11 +409,19 @@ Index::Index (const string& filename)
 
   while (cfg.next())
     {
-      string file;
+      string str;
 
-      if (cfg.command ("smset", file))
+      if (cfg.command ("smset", str))
         {
-          smset_combobox.append_text (file);
+          smset_combobox.append_text (str);
+        }
+      else if (cfg.command ("smset_dir", str))
+        {
+          smset_dir = str;
+        }
+      else
+        {
+          cfg.die_if_unknown();
         }
     }
 
@@ -452,12 +456,12 @@ public:
 };
 
 MainWindow::MainWindow (const string& filename) :
-  index (filename),
   //time_freq_view (filename),
   hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
   hzoom_scale (hzoom_adjustment),
   vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
-  vzoom_scale (vzoom_adjustment)
+  vzoom_scale (vzoom_adjustment),
+  index (filename)
 {
   set_border_width (10);
   set_default_size (800, 600);
