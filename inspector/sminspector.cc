@@ -404,13 +404,20 @@ class Index : public Gtk::Window
   {
     ModelColumns()
     {
-      add (m_col_name);
+      add (col_note);
+      add (col_channel);
+      add (col_range);
+      add (col_path);
     }
-    Gtk::TreeModelColumn<Glib::ustring> m_col_name;
+    Gtk::TreeModelColumn<Glib::ustring> col_note;
+    Gtk::TreeModelColumn<Glib::ustring> col_channel;
+    Gtk::TreeModelColumn<Glib::ustring> col_range;
+    Gtk::TreeModelColumn<Glib::ustring> col_path;
   };
 
   ModelColumns audio_chooser_cols;
   Glib::RefPtr<Gtk::ListStore> ref_tree_model;
+  Gtk::ScrolledWindow tree_view_scrolled_window;
   Gtk::TreeView tree_view;
 
 public:
@@ -442,16 +449,20 @@ Index::Index (const string& filename)
         }
     }
 
+  set_title ("Instrument Index");
   set_border_width (10);
-  set_default_size (200, 600);
+  set_default_size (300, 600);
   index_vbox.pack_start (smset_combobox, Gtk::PACK_SHRINK);
   ref_tree_model = Gtk::ListStore::create (audio_chooser_cols);
   tree_view.set_model (ref_tree_model);
-  index_vbox.pack_start (tree_view);
+  tree_view_scrolled_window.add (tree_view);
+  index_vbox.pack_start (tree_view_scrolled_window);
 
   Gtk::TreeModel::Row row = *(ref_tree_model->append());
-  row[audio_chooser_cols.m_col_name] = "hello";
-  tree_view.append_column ("Name", audio_chooser_cols.m_col_name);
+  tree_view.append_column ("Note", audio_chooser_cols.col_note);
+  tree_view.append_column ("Ch", audio_chooser_cols.col_channel);
+  tree_view.append_column ("Range", audio_chooser_cols.col_range);
+  tree_view.append_column ("Path", audio_chooser_cols.col_path);
 
   add (index_vbox);
   show();
@@ -471,7 +482,18 @@ Index::on_combo_changed()
       fprintf (stderr, "sminspector: can't open input file: %s: %s\n", file.c_str(), bse_error_blurb (error));
       exit (1);
     }
-  printf ("done.\n");
+
+  ref_tree_model->clear();
+  for (size_t i = 0; i < wset.waves.size(); i++)
+    {
+      const WavSetWave& wave = wset.waves[i];
+
+      Gtk::TreeModel::Row row = *(ref_tree_model->append());
+      row[audio_chooser_cols.col_note] = Birnet::string_printf ("%d", wave.midi_note);
+      row[audio_chooser_cols.col_channel] = Birnet::string_printf ("%d", wave.channel);
+      row[audio_chooser_cols.col_range] = Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max);
+      row[audio_chooser_cols.col_path] = wave.path;
+    }
 }
 
 class MainWindow : public Gtk::Window
