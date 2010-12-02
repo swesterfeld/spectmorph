@@ -29,6 +29,7 @@
 #include "smfft.hh"
 #include "smmath.hh"
 #include "smmicroconf.hh"
+#include "smwavset.hh"
 
 using std::vector;
 using std::string;
@@ -398,8 +399,24 @@ class Index : public Gtk::Window
   string            smset_dir;
   Gtk::ComboBoxText smset_combobox;
   Gtk::VBox         index_vbox;
+
+  struct ModelColumns : public Gtk::TreeModel::ColumnRecord
+  {
+    ModelColumns()
+    {
+      add (m_col_name);
+    }
+    Gtk::TreeModelColumn<Glib::ustring> m_col_name;
+  };
+
+  ModelColumns audio_chooser_cols;
+  Glib::RefPtr<Gtk::ListStore> ref_tree_model;
+  Gtk::TreeView tree_view;
+
 public:
   Index (const string& filename);
+
+  void on_combo_changed();
 };
 
 Index::Index (const string& filename)
@@ -428,9 +445,33 @@ Index::Index (const string& filename)
   set_border_width (10);
   set_default_size (200, 600);
   index_vbox.pack_start (smset_combobox, Gtk::PACK_SHRINK);
+  ref_tree_model = Gtk::ListStore::create (audio_chooser_cols);
+  tree_view.set_model (ref_tree_model);
+  index_vbox.pack_start (tree_view);
+
+  Gtk::TreeModel::Row row = *(ref_tree_model->append());
+  row[audio_chooser_cols.m_col_name] = "hello";
+  tree_view.append_column ("Name", audio_chooser_cols.m_col_name);
+
   add (index_vbox);
   show();
   show_all_children();
+  smset_combobox.signal_changed().connect (sigc::mem_fun(*this, &Index::on_combo_changed));
+}
+
+void
+Index::on_combo_changed()
+{
+  std::string file = smset_dir + "/" + smset_combobox.get_active_text().c_str();
+  printf ("loading %s...\n", file.c_str());
+  WavSet wset;
+  BseErrorType error = wset.load (file);
+  if (error)
+    {
+      fprintf (stderr, "sminspector: can't open input file: %s: %s\n", file.c_str(), bse_error_blurb (error));
+      exit (1);
+    }
+  printf ("done.\n");
 }
 
 class MainWindow : public Gtk::Window
