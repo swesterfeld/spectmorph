@@ -86,6 +86,8 @@ WavSet::save (const string& filename, bool embed_models)
 BseErrorType
 WavSet::load (const string& filename)
 {
+  clear();        // delete old contents (if any)
+
   map<string, Audio *> blob_map;
 
   WavSetWave *wave = NULL;
@@ -240,7 +242,8 @@ WavSetWave::~WavSetWave()
   // delete audio; // <- don't do it here, because of the constructor/destructor calls in the vector
 }
 
-WavSet::~WavSet()
+void
+WavSet::clear()
 {
   set<Audio *> to_delete;
 
@@ -259,4 +262,12 @@ WavSet::~WavSet()
      we need to ensure here we don't delete the same object twice */
   for (set<Audio *>::const_iterator di = to_delete.begin(); di != to_delete.end(); di++)
     delete *di;
+
+  // now that everything has been delete-d, we can reset the waves vector
+  waves.clear();
+}
+
+WavSet::~WavSet()
+{
+  clear();
 }

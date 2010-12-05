@@ -48,6 +48,8 @@ public:
 
   std::vector<WavSetWave>  waves;
 
+  void clear();
+
   BseErrorType load (const std::string& filename);
   BseErrorType save (const std::string& filename, bool embed_models = false);
 };
