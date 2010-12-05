@@ -59,6 +59,7 @@ public:
 
   bool empty();
   void resize (size_t width, size_t height);
+  void clear();
   unsigned char *get_pixels();
   size_t get_rowstride();
   size_t get_height();
@@ -79,6 +80,12 @@ PixelArray::resize (size_t width, size_t height)
 
   pixels.clear();
   pixels.resize (width * height);
+}
+
+void
+PixelArray::clear()
+{
+  resize (0, 0);
 }
 
 bool
@@ -123,6 +130,7 @@ public:
   TimeFreqView (); //const string& filename);
 
   void load (const string& filename);
+  void load (GslDataHandle *dhandle, const string& filename);
   bool on_expose_event (GdkEventExpose* ev);
 
   void set_hzoom (double new_hzoom);
@@ -195,8 +203,15 @@ TimeFreqView::load (const string& filename)
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
+  load (dhandle, filename);
+}
 
-  error = gsl_data_handle_open (dhandle);
+void
+TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
+{
+  results.clear();
+
+  BseErrorType error = gsl_data_handle_open (dhandle);
   if (error)
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
@@ -287,6 +302,14 @@ TimeFreqView::load (const string& filename)
           result.mags.push_back (sqrt (re * re + im * im));
         }
       results.push_back (result);
+    }
+  image.clear();
+
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
     }
 }
 
@@ -425,14 +448,21 @@ class Index : public Gtk::Window
   Gtk::ScrolledWindow                tree_view_scrolled_window;
   Gtk::TreeView                      tree_view;
 
+  GslDataHandle                     *dhandle;
+
 public:
+  sigc::signal<void> signal_dhandle_changed;
+
   Index (const string& filename);
 
   void on_combo_changed();
   void on_selection_changed();
+
+  GslDataHandle *get_dhandle();
 };
 
-Index::Index (const string& filename)
+Index::Index (const string& filename) :
+  dhandle (NULL)
 {
   printf ("loading index: %s\n", filename.c_str());
   MicroConf cfg (filename);
@@ -487,8 +517,13 @@ Index::on_selection_changed()
     {
       Gtk::TreeModel::Row row = *iter;
       size_t i = row[audio_chooser_cols.col_wave_nr];
-      assert (i < wset.waves.size() && wset.waves[i].audio);
-      printf ("wave %zd => sample size %zd\n", i, wset.waves[i].audio->original_samples.size());
+      assert (i < wset.waves.size());
+
+      Audio *audio = wset.waves[i].audio;
+      assert (wset.waves[i].audio);
+
+      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
+      signal_dhandle_changed();
     }
 }
 
@@ -518,6 +553,12 @@ Index::on_combo_changed()
     }
 }
 
+GslDataHandle *
+Index::get_dhandle()
+{
+  return dhandle;
+}
+
 class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -536,8 +577,9 @@ class MainWindow : public Gtk::Window
 public:
   MainWindow (const string& filename);
 
-  void hzoom_changed();
-  void vzoom_changed();
+  void on_hzoom_changed();
+  void on_vzoom_changed();
+  void on_dhandle_changed();
 };
 
 MainWindow::MainWindow (const string& filename) :
@@ -557,21 +599,23 @@ MainWindow::MainWindow (const string& filename) :
   hzoom_scale.set_draw_value (false);
   hzoom_label.set_text ("100.00%");
   hzoom_hbox.set_border_width (10);
-  hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::hzoom_changed));
+  hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_hzoom_changed));
   vbox.pack_start (vzoom_hbox, Gtk::PACK_SHRINK);
   vzoom_hbox.pack_start (vzoom_scale);
   vzoom_hbox.pack_start (vzoom_label, Gtk::PACK_SHRINK);
   vzoom_scale.set_draw_value (false);
   vzoom_label.set_text ("100.00%");
   vzoom_hbox.set_border_width (10);
-  vzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::vzoom_changed));
+  vzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_vzoom_changed));
   add (vbox);
   scrolled_win.add (time_freq_view);
   show_all_children();
+
+  index.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
 }
 
 void
-MainWindow::hzoom_changed()
+MainWindow::on_hzoom_changed()
 {
   double hzoom = pow (10, hzoom_adjustment.get_value());
   char buffer[1024];
@@ -581,13 +625,19 @@ MainWindow::hzoom_changed()
 }
 
 void
-MainWindow::vzoom_changed()
+MainWindow::on_vzoom_changed()
 {
   double vzoom = pow (10, vzoom_adjustment.get_value());
   char buffer[1024];
   sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
   vzoom_label.set_text (buffer);
   time_freq_view.set_vzoom (vzoom);
+}
+
+void
+MainWindow::on_dhandle_changed()
+{
+  time_freq_view.load (index.get_dhandle(), "fn");
 }
 
 static double
