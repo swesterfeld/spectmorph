@@ -126,6 +126,7 @@ protected:
   PixelArray  image;
   Glib::RefPtr<Gdk::Pixbuf> zimage;
   double hzoom, vzoom;
+  int position;
 
 public:
   TimeFreqView (); //const string& filename);
@@ -136,6 +137,9 @@ public:
 
   void set_hzoom (double new_hzoom);
   void set_vzoom (double new_vzoom);
+  void set_position (int new_position);
+
+  int  get_frames();
 };
 
 TimeFreqView::TimeFreqView () //const string& filename)
@@ -143,6 +147,7 @@ TimeFreqView::TimeFreqView () //const string& filename)
   set_size_request (400, 400);
   hzoom = 1;
   vzoom = 1;
+  position = -1;
 
   //load (filename);
 }
@@ -165,6 +170,20 @@ void
 TimeFreqView::set_vzoom (double new_vzoom)
 {
   vzoom = new_vzoom;
+  zimage.clear();
+
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
+    }
+}
+
+void
+TimeFreqView::set_position (int new_position)
+{
+  position = new_position;
   zimage.clear();
 
   Glib::RefPtr<Gdk::Window> win = get_window();
@@ -314,6 +333,12 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
     }
 }
 
+int
+TimeFreqView::get_frames()
+{
+  return results.size();
+}
+
 float
 value_scale (float value)
 {
@@ -334,7 +359,7 @@ value_scale (float value)
 #define FRAC_HALF_FACTOR (1 << (FRAC_SHIFT - 1))
 
 Glib::RefPtr<Gdk::Pixbuf>
-zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom)
+zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom, int position)
 {
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
   int hzoom_inv_frac = FRAC_FACTOR / hzoom;
@@ -362,6 +387,8 @@ zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double
           pp[0] = color;
           pp[1] = color;
           pp[2] = color;
+          if (outx == position)
+            pp[0] = 255;
           pp += 3;
         }
     }
@@ -411,7 +438,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
                               Gdk::RGB_DITHER_NONE, 0, 0);
   */
   set_size_request (image.get_width() * hzoom, image.get_height() * vzoom);
-  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom);
+  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom, position);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
@@ -425,7 +452,7 @@ class Index : public Gtk::Window
   string            smset_dir;
   Gtk::ComboBoxText smset_combobox;
   Gtk::VBox         index_vbox;
-
+  Gtk::ToggleButton show_position_button;
   vector<float>     decoded_samples;
 
   struct ModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -457,13 +484,16 @@ class Index : public Gtk::Window
 
 public:
   sigc::signal<void> signal_dhandle_changed;
+  sigc::signal<void> signal_show_position_changed;
 
   Index (const string& filename);
 
   void on_combo_changed();
   void on_selection_changed();
+  void on_show_position_changed();
 
   GslDataHandle *get_dhandle();
+  bool           get_show_position();
 };
 
 Index::Index (const string& filename) :
@@ -493,6 +523,7 @@ Index::Index (const string& filename) :
   set_title ("Instrument Index");
   set_border_width (10);
   set_default_size (300, 600);
+  index_vbox.set_spacing (10);
   index_vbox.pack_start (smset_combobox, Gtk::PACK_SHRINK);
   ref_tree_model = Gtk::ListStore::create (audio_chooser_cols);
   tree_view.set_model (ref_tree_model);
@@ -511,6 +542,11 @@ Index::Index (const string& filename) :
   index_vbox.pack_start (source_button, Gtk::PACK_SHRINK);
   source_button.signal_toggled().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
   add (index_vbox);
+
+  show_position_button.set_label ("Show Position");
+  index_vbox.pack_start (show_position_button, Gtk::PACK_SHRINK);
+  show_position_button.signal_toggled().connect (sigc::mem_fun (*this, &Index::on_show_position_changed));
+
   show();
   show_all_children();
   smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Index::on_combo_changed));
@@ -573,10 +609,22 @@ Index::on_combo_changed()
     }
 }
 
+void
+Index::on_show_position_changed()
+{
+  signal_show_position_changed();
+}
+
 GslDataHandle *
 Index::get_dhandle()
 {
   return dhandle;
+}
+
+bool
+Index::get_show_position()
+{
+  return show_position_button.get_active();
 }
 
 class MainWindow : public Gtk::Window
@@ -591,6 +639,10 @@ class MainWindow : public Gtk::Window
   Gtk::HScale         vzoom_scale;
   Gtk::Label          vzoom_label;
   Gtk::HBox           vzoom_hbox;
+  Gtk::Adjustment     position_adjustment;
+  Gtk::HScale         position_scale;
+  Gtk::Label          position_label;
+  Gtk::HBox           position_hbox;
   Gtk::VBox           vbox;
   Index               index;
 
@@ -600,6 +652,7 @@ public:
   void on_hzoom_changed();
   void on_vzoom_changed();
   void on_dhandle_changed();
+  void on_position_changed();
 };
 
 MainWindow::MainWindow (const string& filename) :
@@ -608,11 +661,14 @@ MainWindow::MainWindow (const string& filename) :
   hzoom_scale (hzoom_adjustment),
   vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
   vzoom_scale (vzoom_adjustment),
+  position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
+  position_scale (position_adjustment),
   index (filename)
 {
   set_border_width (10);
   set_default_size (800, 600);
   vbox.pack_start (scrolled_win);
+
   vbox.pack_start (hzoom_hbox, Gtk::PACK_SHRINK);
   hzoom_hbox.pack_start (hzoom_scale);
   hzoom_hbox.pack_start (hzoom_label, Gtk::PACK_SHRINK);
@@ -620,6 +676,7 @@ MainWindow::MainWindow (const string& filename) :
   hzoom_label.set_text ("100.00%");
   hzoom_hbox.set_border_width (10);
   hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_hzoom_changed));
+
   vbox.pack_start (vzoom_hbox, Gtk::PACK_SHRINK);
   vzoom_hbox.pack_start (vzoom_scale);
   vzoom_hbox.pack_start (vzoom_label, Gtk::PACK_SHRINK);
@@ -627,11 +684,21 @@ MainWindow::MainWindow (const string& filename) :
   vzoom_label.set_text ("100.00%");
   vzoom_hbox.set_border_width (10);
   vzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_vzoom_changed));
+
+  vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
+  position_hbox.pack_start (position_scale);
+  position_hbox.pack_start (position_label, Gtk::PACK_SHRINK);
+  position_scale.set_draw_value (false);
+  position_label.set_text ("frame 0");
+  position_hbox.set_border_width (10);
+  position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
+
   add (vbox);
   scrolled_win.add (time_freq_view);
   show_all_children();
 
   index.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
+  index.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
 }
 
 void
@@ -652,6 +719,20 @@ MainWindow::on_vzoom_changed()
   sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
   vzoom_label.set_text (buffer);
   time_freq_view.set_vzoom (vzoom);
+}
+
+void
+MainWindow::on_position_changed()
+{
+  int frames = time_freq_view.get_frames();
+  int position = CLAMP (sm_round_positive (position_adjustment.get_value() * frames), 0, frames - 1);
+  char buffer[1024];
+  sprintf (buffer, "frame %d", position);
+  position_label.set_text (buffer);
+  if (index.get_show_position())
+    time_freq_view.set_position (position);
+  else
+    time_freq_view.set_position (-1);
 }
 
 void
@@ -692,12 +773,12 @@ main (int argc, char **argv)
           image.resize (1024, 1024);
 
           // warmup run:
-          zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
+          zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1);
 
           // timed runs:
           double start = gettime();
           for (unsigned int i = 0; i < runs; i++)
-            zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom);
+            zimage = zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1);
           double end = gettime();
 
           printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
