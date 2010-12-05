@@ -30,6 +30,7 @@
 #include "smmath.hh"
 #include "smmicroconf.hh"
 #include "smwavset.hh"
+#include "smlivedecoder.hh"
 
 using std::vector;
 using std::string;
@@ -425,6 +426,8 @@ class Index : public Gtk::Window
   Gtk::ComboBoxText smset_combobox;
   Gtk::VBox         index_vbox;
 
+  vector<float>     decoded_samples;
+
   struct ModelColumns : public Gtk::TreeModel::ColumnRecord
   {
     ModelColumns()
@@ -435,8 +438,8 @@ class Index : public Gtk::Window
       add (col_path);
       add (col_wave_nr);
     }
-    Gtk::TreeModelColumn<Glib::ustring> col_note;
-    Gtk::TreeModelColumn<Glib::ustring> col_channel;
+    Gtk::TreeModelColumn<int>           col_note;
+    Gtk::TreeModelColumn<int>           col_channel;
     Gtk::TreeModelColumn<Glib::ustring> col_range;
     Gtk::TreeModelColumn<Glib::ustring> col_path;
     Gtk::TreeModelColumn<int>           col_wave_nr;
@@ -447,6 +450,8 @@ class Index : public Gtk::Window
   Glib::RefPtr<Gtk::TreeSelection>   ref_tree_selection;
   Gtk::ScrolledWindow                tree_view_scrolled_window;
   Gtk::TreeView                      tree_view;
+
+  Gtk::ToggleButton                  source_button;
 
   GslDataHandle                     *dhandle;
 
@@ -503,6 +508,9 @@ Index::Index (const string& filename) :
   ref_tree_selection = tree_view.get_selection();
   ref_tree_selection->signal_changed().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
 
+  source_button.set_label ("Source/Analysis");
+  index_vbox.pack_start (source_button, Gtk::PACK_SHRINK);
+  source_button.signal_toggled().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
   add (index_vbox);
   show();
   show_all_children();
@@ -519,10 +527,23 @@ Index::on_selection_changed()
       size_t i = row[audio_chooser_cols.col_wave_nr];
       assert (i < wset.waves.size());
 
+      int channel = row[audio_chooser_cols.col_channel];
+
       Audio *audio = wset.waves[i].audio;
       assert (wset.waves[i].audio);
 
-      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
+      if (source_button.get_active())
+        {
+          LiveDecoder decoder (&wset);
+          decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
+          decoded_samples.resize (audio->sample_count);
+          decoder.process (decoded_samples.size(), 0, 0, &decoded_samples[0]);
+          dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, decoded_samples.size(), &decoded_samples[0], NULL);
+        }
+      else
+        {
+          dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
+        }
       signal_dhandle_changed();
     }
 }
@@ -545,8 +566,8 @@ Index::on_combo_changed()
       const WavSetWave& wave = wset.waves[i];
 
       Gtk::TreeModel::Row row = *(ref_tree_model->append());
-      row[audio_chooser_cols.col_note] = Birnet::string_printf ("%d", wave.midi_note);
-      row[audio_chooser_cols.col_channel] = Birnet::string_printf ("%d", wave.channel);
+      row[audio_chooser_cols.col_note] = wave.midi_note;
+      row[audio_chooser_cols.col_channel] = wave.channel;
       row[audio_chooser_cols.col_range] = Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max);
       row[audio_chooser_cols.col_path] = wave.path;
       row[audio_chooser_cols.col_wave_nr] = i;
