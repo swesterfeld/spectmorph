@@ -31,6 +31,7 @@
 #include "smmicroconf.hh"
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
+#include "smspectrumwindow.hh"
 
 using std::vector;
 using std::string;
@@ -645,6 +646,7 @@ class MainWindow : public Gtk::Window
   Gtk::HBox           position_hbox;
   Gtk::VBox           vbox;
   Index               index;
+  SpectrumWindow      spectrum_window;
 
 public:
   MainWindow (const string& filename);
