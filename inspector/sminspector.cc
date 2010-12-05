@@ -396,6 +396,8 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
 
 class Index : public Gtk::Window
 {
+  WavSet            wset;
+
   string            smset_dir;
   Gtk::ComboBoxText smset_combobox;
   Gtk::VBox         index_vbox;
@@ -408,22 +410,26 @@ class Index : public Gtk::Window
       add (col_channel);
       add (col_range);
       add (col_path);
+      add (col_wave_nr);
     }
     Gtk::TreeModelColumn<Glib::ustring> col_note;
     Gtk::TreeModelColumn<Glib::ustring> col_channel;
     Gtk::TreeModelColumn<Glib::ustring> col_range;
     Gtk::TreeModelColumn<Glib::ustring> col_path;
+    Gtk::TreeModelColumn<int>           col_wave_nr;
   };
 
   ModelColumns audio_chooser_cols;
-  Glib::RefPtr<Gtk::ListStore> ref_tree_model;
-  Gtk::ScrolledWindow tree_view_scrolled_window;
-  Gtk::TreeView tree_view;
+  Glib::RefPtr<Gtk::ListStore>       ref_tree_model;
+  Glib::RefPtr<Gtk::TreeSelection>   ref_tree_selection;
+  Gtk::ScrolledWindow                tree_view_scrolled_window;
+  Gtk::TreeView                      tree_view;
 
 public:
   Index (const string& filename);
 
   void on_combo_changed();
+  void on_selection_changed();
 };
 
 Index::Index (const string& filename)
@@ -464,10 +470,26 @@ Index::Index (const string& filename)
   tree_view.append_column ("Range", audio_chooser_cols.col_range);
   tree_view.append_column ("Path", audio_chooser_cols.col_path);
 
+  ref_tree_selection = tree_view.get_selection();
+  ref_tree_selection->signal_changed().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
+
   add (index_vbox);
   show();
   show_all_children();
-  smset_combobox.signal_changed().connect (sigc::mem_fun(*this, &Index::on_combo_changed));
+  smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Index::on_combo_changed));
+}
+
+void
+Index::on_selection_changed()
+{
+  Gtk::TreeModel::iterator iter = ref_tree_selection->get_selected();
+  if (iter)
+    {
+      Gtk::TreeModel::Row row = *iter;
+      size_t i = row[audio_chooser_cols.col_wave_nr];
+      assert (i < wset.waves.size() && wset.waves[i].audio);
+      printf ("wave %zd => sample size %zd\n", i, wset.waves[i].audio->original_samples.size());
+    }
 }
 
 void
@@ -475,7 +497,6 @@ Index::on_combo_changed()
 {
   std::string file = smset_dir + "/" + smset_combobox.get_active_text().c_str();
   printf ("loading %s...\n", file.c_str());
-  WavSet wset;
   BseErrorType error = wset.load (file);
   if (error)
     {
@@ -493,6 +514,7 @@ Index::on_combo_changed()
       row[audio_chooser_cols.col_channel] = Birnet::string_printf ("%d", wave.channel);
       row[audio_chooser_cols.col_range] = Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max);
       row[audio_chooser_cols.col_path] = wave.path;
+      row[audio_chooser_cols.col_wave_nr] = i;
     }
 }
 
