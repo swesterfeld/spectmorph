@@ -499,7 +499,6 @@ Index::Index (const string& filename) :
   tree_view_scrolled_window.add (tree_view);
   index_vbox.pack_start (tree_view_scrolled_window);
 
-  Gtk::TreeModel::Row row = *(ref_tree_model->append());
   tree_view.append_column ("Note", audio_chooser_cols.col_note);
   tree_view.append_column ("Ch", audio_chooser_cols.col_channel);
   tree_view.append_column ("Range", audio_chooser_cols.col_range);
