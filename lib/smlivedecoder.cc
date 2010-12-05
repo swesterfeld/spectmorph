@@ -66,6 +66,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   sines_enabled (true),
   noise_enabled (true),
   debug_fft_perf_enabled (false),
+  original_samples_enabled (false),
   sse_samples (NULL)
 {
   init_aa_filter();
