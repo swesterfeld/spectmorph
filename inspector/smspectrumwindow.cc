@@ -31,3 +31,9 @@ SpectrumWindow::SpectrumWindow()
   show();
   show_all_children();
 }
+
+void
+SpectrumWindow::set_spectrum_model (TimeFreqView& time_freq_view)
+{
+  spectrum_view.set_spectrum_model (time_freq_view);
+}

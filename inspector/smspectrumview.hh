@@ -19,15 +19,22 @@
 #define SPECTMORPH_SPECTRUMVIEW_HH
 
 #include <gtkmm.h>
+#include "smtimefreqview.hh"
 
 namespace SpectMorph {
 
 class SpectrumView : public Gtk::DrawingArea
 {
+  TimeFreqView *time_freq_view_ptr;
+  FFTResult     spectrum;
+
 public:
   SpectrumView();
 
   bool on_expose_event (GdkEventExpose* ev);
+
+  void set_spectrum_model (TimeFreqView& tfview);
+  void on_spectrum_changed();
 };
 
 }

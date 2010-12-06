@@ -15,29 +15,60 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "smpixelarray.hh"
 
-#ifndef SPECTMORPH_SPECTRUMWINDOW_HH
-#define SPECTMORPH_SPECTRUMWINDOW_HH
+using namespace SpectMorph;
 
-#include <gtkmm.h>
-
-#include "smspectrumview.hh"
-#include "smtimefreqview.hh"
-
-namespace SpectMorph {
-
-class SpectrumWindow : public Gtk::Window
+PixelArray::PixelArray()
 {
-  Gtk::ScrolledWindow scrolled_win;
-  SpectrumView        spectrum_view;
-  Gtk::VBox           vbox;
-
-public:
-  SpectrumWindow();
-
-  void set_spectrum_model (TimeFreqView& time_freq_view);
-};
-
+  width = 0;
+  height = 0;
 }
 
-#endif
+void
+PixelArray::resize (size_t width, size_t height)
+{
+  this->width = width;
+  this->height = height;
+
+  pixels.clear();
+  pixels.resize (width * height);
+}
+
+void
+PixelArray::clear()
+{
+  resize (0, 0);
+}
+
+bool
+PixelArray::empty()
+{
+  return (width == 0) && (height == 0);
+}
+
+unsigned char *
+PixelArray::get_pixels()
+{
+  return &pixels[0];
+}
+
+size_t
+PixelArray::get_rowstride()
+{
+  return width;
+}
+
+size_t
+PixelArray::get_width()
+{
+  return width;
+}
+
+size_t
+PixelArray::get_height()
+{
+  return height;
+}
+
+
