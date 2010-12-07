@@ -44,6 +44,8 @@ protected:
   double hzoom, vzoom;
   int position;
 
+  void force_redraw();
+
 public:
   TimeFreqView (); //const std::string& filename);
 

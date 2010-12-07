@@ -42,17 +42,23 @@ TimeFreqView::TimeFreqView()
 }
 
 void
-TimeFreqView::set_hzoom (double new_hzoom)
+TimeFreqView::force_redraw()
 {
-  hzoom = new_hzoom;
-  zimage.clear();
-
   Glib::RefPtr<Gdk::Window> win = get_window();
   if (win)
     {
       Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
       win->invalidate_rect (r, false);
     }
+}
+
+void
+TimeFreqView::set_hzoom (double new_hzoom)
+{
+  hzoom = new_hzoom;
+  zimage.clear();
+
+  force_redraw();
 }
 
 void
@@ -61,12 +67,7 @@ TimeFreqView::set_vzoom (double new_vzoom)
   vzoom = new_vzoom;
   zimage.clear();
 
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
+  force_redraw();
 }
 
 void
@@ -75,12 +76,7 @@ TimeFreqView::set_position (int new_position)
   position = new_position;
   zimage.clear();
 
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
+  force_redraw();
   signal_spectrum_changed();
 }
 
@@ -210,12 +206,7 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
     }
   image.clear();
 
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
+  force_redraw();
   signal_spectrum_changed();
 }
 
@@ -314,15 +305,6 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
           p++;
         }
     }
-  /*
-  if (!zimage)
-    {
-      zimage = image->scale_simple (image->get_width() * hzoom, image->get_height() * vzoom, Gdk::INTERP_BILINEAR);
-      set_size_request (zimage->get_width(), zimage->get_height());
-    }
-  zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, 0, 0, zimage->get_width(), zimage->get_height(),
-                              Gdk::RGB_DITHER_NONE, 0, 0);
-  */
   set_size_request (image.get_width() * hzoom, image.get_height() * vzoom);
   zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom, position);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
@@ -339,5 +321,3 @@ TimeFreqView::get_spectrum()
 
   return FFTResult();
 }
-
-
