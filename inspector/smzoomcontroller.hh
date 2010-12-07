@@ -15,30 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef SPECTMORPH_SPECTRUMWINDOW_HH
-#define SPECTMORPH_SPECTRUMWINDOW_HH
+#ifndef SPECTMORPH_ZOOMCONTROLLER_HH
+#define SPECTMORPH_ZOOMCONTROLLER_HH
 
 #include <gtkmm.h>
 
-#include "smspectrumview.hh"
-#include "smtimefreqview.hh"
-#include "smzoomcontroller.hh"
-
 namespace SpectMorph {
 
-class SpectrumWindow : public Gtk::Window
+class ZoomController : public Gtk::VBox
 {
-  Gtk::ScrolledWindow scrolled_win;
-  SpectrumView        spectrum_view;
-  Gtk::VBox           vbox;
-  ZoomController      zoom_controller;
-
+  Gtk::Adjustment     hzoom_adjustment;
+  Gtk::HScale         hzoom_scale;
+  Gtk::Label          hzoom_label;
+  Gtk::HBox           hzoom_hbox;
+  Gtk::Adjustment     vzoom_adjustment;
+  Gtk::HScale         vzoom_scale;
+  Gtk::Label          vzoom_label;
+  Gtk::HBox           vzoom_hbox;
 public:
-  SpectrumWindow();
+  ZoomController();
 
-  void set_spectrum_model (TimeFreqView& time_freq_view);
-  void on_zoom_changed();
+  void on_hzoom_changed();
+  void on_vzoom_changed();
+
+  double get_hzoom();
+  double get_vzoom();
+
+  sigc::signal<void> signal_zoom_changed;
 };
 
 }

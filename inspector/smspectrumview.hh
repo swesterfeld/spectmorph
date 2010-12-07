@@ -27,6 +27,10 @@ class SpectrumView : public Gtk::DrawingArea
 {
   TimeFreqView *time_freq_view_ptr;
   FFTResult     spectrum;
+  double        hzoom;
+  double        vzoom;
+
+  void force_redraw();
 
 public:
   SpectrumView();
@@ -35,6 +39,8 @@ public:
 
   void set_spectrum_model (TimeFreqView& tfview);
   void on_spectrum_changed();
+
+  void set_zoom (double hzoom, double vzoom);
 };
 
 }

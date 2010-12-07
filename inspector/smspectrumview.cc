@@ -25,6 +25,8 @@ using std::max;
 SpectrumView::SpectrumView()
 {
   time_freq_view_ptr = NULL;
+  hzoom = 1;
+  vzoom = 1;
 }
 
 static float
@@ -45,7 +47,9 @@ value_scale (float value)
 bool
 SpectrumView::on_expose_event (GdkEventExpose* ev)
 {
-  set_size_request (1000, 400);
+  const int width =  800 * hzoom;
+  const int height = 600 * vzoom;
+  set_size_request (width, height);
 
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
@@ -56,14 +60,6 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
         max_value = max (max_value, value_scale (*mi));
       }
 
-    Gtk::Allocation allocation = get_allocation();
-    const int width = allocation.get_width();
-    const int height = allocation.get_height();
-
-    // coordinates for the center of the window
-    int xc, yc;
-    xc = width / 2;
-    yc = height / 2;
 
     Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
 
@@ -85,11 +81,6 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
       {
         cr->line_to (double (i) / spectrum.mags.size() * width, height - value_scale (spectrum.mags[i]) / max_value * height);
       }
-    //cr->move_to (0, 0);
-    //cr->line_to (xc, yc);
-    //cr->line_to (0, height);
-    //cr->move_to (xc, yc);
-    //cr->line_to (width, yc);
     cr->stroke();
   }
 
@@ -107,6 +98,22 @@ void
 SpectrumView::on_spectrum_changed()
 {
   spectrum = time_freq_view_ptr->get_spectrum();
+
+  force_redraw();
+}
+
+void
+SpectrumView::set_zoom (double new_hzoom, double new_vzoom)
+{
+  hzoom = new_hzoom;
+  vzoom = new_vzoom;
+
+  force_redraw();
+}
+  
+void
+SpectrumView::force_redraw()
+{
   Glib::RefPtr<Gdk::Window> win = get_window();
   if (win)
     {

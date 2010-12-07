@@ -24,16 +24,25 @@ SpectrumWindow::SpectrumWindow()
   set_border_width (10);
   set_default_size (800, 600);
   vbox.pack_start (scrolled_win);
+  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
 
   scrolled_win.add (spectrum_view);
   add (vbox);
 
   show();
   show_all_children();
+
+  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
 }
 
 void
 SpectrumWindow::set_spectrum_model (TimeFreqView& time_freq_view)
 {
   spectrum_view.set_spectrum_model (time_freq_view);
+}
+
+void
+SpectrumWindow::on_zoom_changed()
+{
+  spectrum_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
