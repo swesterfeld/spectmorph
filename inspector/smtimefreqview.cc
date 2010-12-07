@@ -216,6 +216,7 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
       Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
       win->invalidate_rect (r, false);
     }
+  signal_spectrum_changed();
 }
 
 int
