@@ -1,0 +1,8 @@
+#!/bin/bash
+
+smwavset init /tmp/foo.smset
+smwavset add /tmp/foo.smset 60 "$1"
+smwavset link /tmp/foo.smset
+echo "smset_dir /tmp" > /tmp/foo.smindex
+echo "smset foo.smset" >> /tmp/foo.smindex
+sminspector /tmp/foo.smindex
