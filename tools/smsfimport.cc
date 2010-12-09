@@ -513,16 +513,20 @@ struct Options
 {
   string              program_name;
   enum { NONE, LIST, DUMP, IMPORT } command;
+  int                 midi_note;
 
   Options();
   void parse (int *argc_p, char **argv_p[]);
   static void print_usage();
 } options;
 
+#include "stwutils.hh"
+
 Options::Options()
 {
   command = NONE;
   program_name = "smsfimport";
+  midi_note = -1; // all
 }
 
 void
@@ -537,6 +541,7 @@ Options::parse (int   *argc_p,
 
   for (i = 1; i < argc; i++)
     {
+      const char *opt_arg;
       if (strcmp (argv[i], "--help") == 0 ||
           strcmp (argv[i], "-h") == 0)
 	{
@@ -548,6 +553,10 @@ Options::parse (int   *argc_p,
 	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
+      else if (check_arg (argc, argv, &i, "-m", &opt_arg))
+        {
+          midi_note = atoi (opt_arg);
+        }
     }
 
   bool resort_required = true;
@@ -980,68 +989,71 @@ import_preset (const string& import_name)
                           assert (id >= 0 && id < samples.size());
                           int midi_note = (root_key >= 0) ? root_key : samples[id].origpitch;
 
-                          printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
-
-                          string filename = Birnet::string_printf ("sample%zd-%d.wav", id, midi_note);
-                          string smname = Birnet::string_printf ("sample%zd-%d.sm", id, midi_note);
-
-                          if (!is_encoded[smname])
+                          if (options.midi_note == -1 || (midi_note == options.midi_note))
                             {
-                              vector<float> padded_sample;
-                              size_t padded_len;
-                              size_t loop_shift = 0.1 * samples[id].srate;   // 100 ms loop shift
-                              string loop_args;
-                              if (sample_modes & 1)
-                                {
-                                  loop_args += Birnet::string_printf (" --loop-start %zd",
-                                                                      samples[id].startloop - samples[id].start +
-                                                                      loop_shift);
-                                  loop_args += Birnet::string_printf (" --loop-end %zd",
-                                                                      samples[id].endloop - samples[id].start +
-                                                                      loop_shift);
+                              printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
 
-                                  // 200 ms padding at the end of the loop, to ensure that silence after sample
-                                  // is not encoded by encoder
-                                  padded_len = samples[id].end - samples[id].start + 0.2 * samples[id].srate;
-                                  for (size_t i = 0; i < padded_len; i++)
+                              string filename = Birnet::string_printf ("sample%zd-%d.wav", id, midi_note);
+                              string smname = Birnet::string_printf ("sample%zd-%d.sm", id, midi_note);
+
+                              if (!is_encoded[smname])
+                                {
+                                  vector<float> padded_sample;
+                                  size_t padded_len;
+                                  size_t loop_shift = 0.1 * samples[id].srate;   // 100 ms loop shift
+                                  string loop_args;
+                                  if (sample_modes & 1)
                                     {
-                                      size_t pos = i + samples[id].start;
-                                      while (pos >= (size_t) samples[id].endloop)
-                                        pos -= samples[id].endloop - samples[id].startloop;
-                                      padded_sample.push_back (sample_data[pos]);
+                                      loop_args += Birnet::string_printf (" --loop-start %zd",
+                                                                          samples[id].startloop - samples[id].start +
+                                                                          loop_shift);
+                                      loop_args += Birnet::string_printf (" --loop-end %zd",
+                                                                          samples[id].endloop - samples[id].start +
+                                                                          loop_shift);
+
+                                      // 200 ms padding at the end of the loop, to ensure that silence after sample
+                                      // is not encoded by encoder
+                                      padded_len = samples[id].end - samples[id].start + 0.2 * samples[id].srate;
+                                      for (size_t i = 0; i < padded_len; i++)
+                                        {
+                                          size_t pos = i + samples[id].start;
+                                          while (pos >= (size_t) samples[id].endloop)
+                                            pos -= samples[id].endloop - samples[id].startloop;
+                                          padded_sample.push_back (sample_data[pos]);
+                                        }
                                     }
-                                }
-                              else
-                                {
-                                  // no padding
-                                  padded_len = samples[id].end - samples[id].start;
-                                  padded_sample.assign (&sample_data[samples[id].start], &sample_data[samples[id].end]);
-                                }
-                              GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440,
-                                                                                padded_len, &padded_sample[0], NULL);
-                              gsl_data_handle_open (dhandle);
+                                  else
+                                    {
+                                      // no padding
+                                      padded_len = samples[id].end - samples[id].start;
+                                      padded_sample.assign (&sample_data[samples[id].start], &sample_data[samples[id].end]);
+                                    }
+                                  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440,
+                                                                                    padded_len, &padded_sample[0], NULL);
+                                  gsl_data_handle_open (dhandle);
 
-                              int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                              if (fd < 0)
-                                {
-                                  BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
-                                  sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                                }
+                                  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+                                  if (fd < 0)
+                                    {
+                                      BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+                                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                                    }
 
-                              int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-                              if (xerrno)
-                                {
-                                  BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
-                                  sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                                }
-                              close (fd);
+                                  int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
+                                  if (xerrno)
+                                    {
+                                      BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+                                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                                    }
+                                  close (fd);
 
-                              xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s",
-                                                              midi_note, filename.c_str(), smname.c_str()) + loop_args);
-                              xsystem (Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
-                              is_encoded[smname] = true;
+                                  xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s",
+                                                                  midi_note, filename.c_str(), smname.c_str()) + loop_args);
+                                  xsystem (Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
+                                  is_encoded[smname] = true;
+                                }
+                              xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
                             }
-                          xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
                         }
                     }
                 }
