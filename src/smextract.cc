@@ -26,6 +26,7 @@
 using namespace SpectMorph;
 using std::vector;
 using std::min;
+using std::max;
 using std::string;
 
 double
@@ -475,6 +476,25 @@ main (int argc, char **argv)
       printf ("nan-debug-samples: %d\n", nan_ds);
       printf ("nan-original-fft:  %d\n", nan_fft);
       printf ("nan-noise:         %d\n", nan_noise);
+    }
+  else if (mode == "total-noise")
+    {
+      double total_noise = 0;
+      double peak_noise  = 0;
+
+      check_usage (argc, 3, "total-noise");
+      for (size_t f = 0; f < audio.contents.size(); f++)
+        {
+          for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
+            {
+              double noise = audio.contents[f].noise[i];
+
+              total_noise += noise;
+              peak_noise   = max (peak_noise, noise);
+            }
+        }
+      printf ("total-noise: %.17g\n", total_noise);
+      printf ("peak-noise:  %.17g\n", peak_noise);
     }
   if (need_save)
     {
