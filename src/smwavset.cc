@@ -68,7 +68,7 @@ struct Options
   int             min_velocity;
   int             max_velocity;
   vector<string>  format;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK } command;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -195,6 +195,10 @@ Options::parse (int   *argc_p,
           else if (strcmp (argv[1], "link") == 0)
             {
               command = LINK;
+            }
+          else if (strcmp (argv[1], "extract") == 0)
+            {
+              command = EXTRACT;
             }
 
           if (command != NONE)
@@ -524,6 +528,20 @@ main (int argc, char **argv)
       WavSet wset;
       load_or_die (wset, argv[1]);
       wset.save (argv[1], true);
+    }
+  else if (options.command == Options::EXTRACT)
+    {
+      assert (argc == 3);
+      WavSet wset;
+      load_or_die (wset, argv[1]);
+      for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        if (wi->path == argv[2])
+          {
+            wi->audio->save (argv[2]);
+            return 0;
+          }
+      fprintf (stderr, "error: path %s not found\n", argv[2]);
+      exit (1);
     }
   else
     {
