@@ -53,17 +53,9 @@ TimeFreqView::force_redraw()
 }
 
 void
-TimeFreqView::set_hzoom (double new_hzoom)
+TimeFreqView::set_zoom (double new_hzoom, double new_vzoom)
 {
   hzoom = new_hzoom;
-  zimage.clear();
-
-  force_redraw();
-}
-
-void
-TimeFreqView::set_vzoom (double new_vzoom)
-{
   vzoom = new_vzoom;
   zimage.clear();
 

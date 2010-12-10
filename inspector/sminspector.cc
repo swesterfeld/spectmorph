@@ -232,14 +232,7 @@ class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        time_freq_view;
-  Gtk::Adjustment     hzoom_adjustment;
-  Gtk::HScale         hzoom_scale;
-  Gtk::Label          hzoom_label;
-  Gtk::HBox           hzoom_hbox;
-  Gtk::Adjustment     vzoom_adjustment;
-  Gtk::HScale         vzoom_scale;
-  Gtk::Label          vzoom_label;
-  Gtk::HBox           vzoom_hbox;
+  ZoomController      zoom_controller;
   Gtk::Adjustment     position_adjustment;
   Gtk::HScale         position_scale;
   Gtk::Label          position_label;
@@ -251,18 +244,13 @@ class MainWindow : public Gtk::Window
 public:
   MainWindow (const string& filename);
 
-  void on_hzoom_changed();
-  void on_vzoom_changed();
+  void on_zoom_changed();
   void on_dhandle_changed();
   void on_position_changed();
 };
 
 MainWindow::MainWindow (const string& filename) :
   //time_freq_view (filename),
-  hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
-  hzoom_scale (hzoom_adjustment),
-  vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
-  vzoom_scale (vzoom_adjustment),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
   index (filename)
@@ -271,21 +259,8 @@ MainWindow::MainWindow (const string& filename) :
   set_default_size (800, 600);
   vbox.pack_start (scrolled_win);
 
-  vbox.pack_start (hzoom_hbox, Gtk::PACK_SHRINK);
-  hzoom_hbox.pack_start (hzoom_scale);
-  hzoom_hbox.pack_start (hzoom_label, Gtk::PACK_SHRINK);
-  hzoom_scale.set_draw_value (false);
-  hzoom_label.set_text ("100.00%");
-  hzoom_hbox.set_border_width (10);
-  hzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_hzoom_changed));
-
-  vbox.pack_start (vzoom_hbox, Gtk::PACK_SHRINK);
-  vzoom_hbox.pack_start (vzoom_scale);
-  vzoom_hbox.pack_start (vzoom_label, Gtk::PACK_SHRINK);
-  vzoom_scale.set_draw_value (false);
-  vzoom_label.set_text ("100.00%");
-  vzoom_hbox.set_border_width (10);
-  vzoom_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_vzoom_changed));
+  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWindow::on_zoom_changed));
 
   vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
   position_hbox.pack_start (position_scale);
@@ -306,23 +281,9 @@ MainWindow::MainWindow (const string& filename) :
 }
 
 void
-MainWindow::on_hzoom_changed()
+MainWindow::on_zoom_changed()
 {
-  double hzoom = pow (10, hzoom_adjustment.get_value());
-  char buffer[1024];
-  sprintf (buffer, "%3.2f%%", 100.0 * hzoom);
-  hzoom_label.set_text (buffer);
-  time_freq_view.set_hzoom (hzoom);
-}
-
-void
-MainWindow::on_vzoom_changed()
-{
-  double vzoom = pow (10, vzoom_adjustment.get_value());
-  char buffer[1024];
-  sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
-  vzoom_label.set_text (buffer);
-  time_freq_view.set_vzoom (vzoom);
+  time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
 
 void

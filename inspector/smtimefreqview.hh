@@ -55,8 +55,7 @@ public:
   void load (GslDataHandle *dhandle, const std::string& filename);
   bool on_expose_event (GdkEventExpose* ev);
 
-  void set_hzoom (double new_hzoom);
-  void set_vzoom (double new_vzoom);
+  void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
 
   int  get_frames();
