@@ -246,7 +246,30 @@ Encoder::search_local_maxima()
 	  double phase = atan2 (*(audio_blocks[n]->noise.begin() + d),
 	                        *(audio_blocks[n]->noise.begin() + d + 1)) / 2 / M_PI;  /* range [-0.5 .. 0.5] */
 #endif
+          enum { PEAK_NONE, PEAK_SINGLE, PEAK_DOUBLE } peak_type = PEAK_NONE;
+
           if (mag_values[d/2] > mag_values[d/2-1] && mag_values[d/2] > mag_values[d/2+1])   /* search for peaks in fft magnitudes */
+            {
+              /* single peak is the common case, where the magnitude of the middle value is
+               * larger than the magnitude of the left and right neighbour
+               */
+              peak_type = PEAK_SINGLE;
+            }
+          else
+            {
+              double epsilon_fact = 1.0 + 1e-8;
+              if (mag_values[d/2] < mag_values[d/2+1] * epsilon_fact && mag_values[d/2] * epsilon_fact > mag_values[d/2 + 1]
+              &&  mag_values[d/2] > mag_values[d/2-1] && mag_values[d/2] > mag_values[d/2+2])
+                {
+                  /* double peak is a special case, where two values in the spectrum have (almost) equal magnitude
+                   * in this case, this magnitude must be larger than the value left and right of the _two_
+                   * maximal values in the spectrum
+                   */
+                  peak_type = PEAK_DOUBLE;
+                }
+            }
+
+          if (peak_type != PEAK_NONE)
             {
               /* need [] operater in fblock */
               double mag2 = bse_db_from_factor (mag_values[d / 2] / max_mag, -100);
@@ -312,6 +335,9 @@ Encoder::search_local_maxima()
                       // mag2 > -60 tracks lots of junk, too
                       if ((mag2 > -90 || tracksel.is_harmonic) && tracksel.freq > 10)
                         frame_tracksels[n].push_back (tracksel);
+
+                      if (peak_type == PEAK_DOUBLE)
+                        d += 2;
                     }
                 }
 #if 0
