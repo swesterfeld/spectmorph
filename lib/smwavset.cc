@@ -66,11 +66,25 @@ WavSet::save (const string& filename, bool embed_models)
           if (in)
             {
               vector<unsigned char> data;
-              int ch;
-              while ((ch = fgetc (in)) >= 0)
-                data.push_back (ch);
-              of.write_blob ("audio", &data[0], data.size());
+              vector<unsigned char> buffer (1024);
+              size_t len;
 
+              do
+                {
+                  len = fread (&buffer[0], 1, buffer.size(), in);
+                  if (len > 0)
+                    data.insert (data.end(), buffer.begin(), buffer.begin() + len);
+                }
+              while (len > 0);
+
+              if (ferror (in))
+                {
+                  fprintf (stderr, "wavset save: error reading file: %s\n", waves[i].path.c_str());
+                }
+              else
+                {
+                  of.write_blob ("audio", &data[0], data.size());
+                }
               fclose (in);
             }
           else
