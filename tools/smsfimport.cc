@@ -514,6 +514,7 @@ struct Options
   string              program_name;
   enum { NONE, LIST, DUMP, IMPORT } command;
   int                 midi_note;
+  bool                fast_import;
 
   Options();
   void parse (int *argc_p, char **argv_p[]);
@@ -527,6 +528,7 @@ Options::Options()
   command = NONE;
   program_name = "smsfimport";
   midi_note = -1; // all
+  fast_import = false;
 }
 
 void
@@ -556,6 +558,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           midi_note = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--fast"))
+        {
+          fast_import = true;
         }
     }
 
@@ -1047,8 +1053,10 @@ import_preset (const string& import_name)
                                     }
                                   close (fd);
 
-                                  xsystem (Birnet::string_printf ("smenc -m %d -O1 %s %s",
-                                                                  midi_note, filename.c_str(), smname.c_str()) + loop_args);
+                                  string import_args = options.fast_import ? "--no-attack -O0" : "-O1";
+
+                                  xsystem (Birnet::string_printf ("smenc -m %d %s %s %s",
+                                                                  midi_note, import_args.c_str(), filename.c_str(), smname.c_str()) + loop_args);
                                   xsystem (Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
                                   is_encoded[smname] = true;
                                 }
