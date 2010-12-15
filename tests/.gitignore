@@ -13,5 +13,6 @@ testaafilter
 testnoisemodes
 testnoiseperf
 testppinter
+testjobqueue
 .libs
 .deps
