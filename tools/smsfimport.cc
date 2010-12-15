@@ -29,6 +29,7 @@
 #include "config.h"
 #include "smgenericin.hh"
 #include "smmain.hh"
+#include "smjobqueue.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.h>
 #include <bse/gsldatautils.h>
@@ -515,6 +516,8 @@ struct Options
   enum { NONE, LIST, DUMP, IMPORT } command;
   int                 midi_note;
   bool                fast_import;
+  bool                debug;
+  int                 max_jobs;
 
   Options();
   void parse (int *argc_p, char **argv_p[]);
@@ -529,6 +532,8 @@ Options::Options()
   program_name = "smsfimport";
   midi_note = -1; // all
   fast_import = false;
+  debug = false;
+  max_jobs = 1;
 }
 
 void
@@ -559,9 +564,17 @@ Options::parse (int   *argc_p,
         {
           midi_note = atoi (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "-j", &opt_arg))
+        {
+          max_jobs = atoi (opt_arg);
+        }
       else if (check_arg (argc, argv, &i, "--fast"))
         {
           fast_import = true;
+        }
+      else if (check_arg (argc, argv, &i, "--debug"))
+        {
+          debug = true;
         }
     }
 
@@ -902,6 +915,22 @@ list_sf2()
     printf ("%s\n", poi->c_str());
 }
 
+void
+run_all (vector<string>& commands, const string& name, size_t max_jobs)
+{
+  printf ("Running %s commands...\n", name.c_str());
+  JobQueue job_queue (max_jobs);
+  for (vector<string>::iterator ci = commands.begin(); ci != commands.end(); ci++)
+    {
+      printf (" - %s\n", ci->c_str());
+      job_queue.run (*ci);
+    }
+  if (!job_queue.wait_for_all())
+    {
+      fprintf (stderr, "error executing %s commands\n", name.c_str());
+    }
+}
+
 int
 import_preset (const string& import_name)
 {
@@ -932,6 +961,7 @@ import_preset (const string& import_name)
           string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
           xsystem (cmd);
 
+          vector<string> enc_commands, strip_commands, add_commands;
           for (vector<Zone>::iterator preset_zi = pi->zones.begin(); preset_zi != pi->zones.end(); preset_zi++)
             {
               Zone& zone = *preset_zi;
@@ -1055,17 +1085,27 @@ import_preset (const string& import_name)
 
                                   string import_args = options.fast_import ? "--no-attack -O0" : "-O1";
 
-                                  xsystem (Birnet::string_printf ("smenc -m %d %s %s %s",
-                                                                  midi_note, import_args.c_str(), filename.c_str(), smname.c_str()) + loop_args);
-                                  xsystem (Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
+                                  enc_commands.push_back (
+                                    Birnet::string_printf ("smenc -m %d %s %s %s %s",
+                                                           midi_note, import_args.c_str(),
+                                                           filename.c_str(), smname.c_str(), loop_args.c_str()));
+                                  if (!options.debug)
+                                    strip_commands.push_back (
+                                      Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
+
                                   is_encoded[smname] = true;
                                 }
-                              xsystem (Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d", preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
+                              add_commands.push_back (
+                                Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d",
+                                                  preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
                             }
                         }
                     }
                 }
             }
+          run_all (enc_commands, "Encoder", options.max_jobs);
+          run_all (strip_commands, "Strip", options.max_jobs);
+          run_all (add_commands, "Wavset Add", 1);
           xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
         }
     }

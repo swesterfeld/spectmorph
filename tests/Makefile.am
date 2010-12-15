@@ -13,7 +13,8 @@ CLEANFILES += sin440-4567.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter
 
-noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf
+noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
+        testjobqueue
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
@@ -53,6 +54,9 @@ testaafilter_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testppinter_SOURCES = testppinter.cc
 testppinter_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testjobqueue_SOURCES = testjobqueue.cc
+testjobqueue_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 check: saw440-test sin440-test sin440-4567-test
 
