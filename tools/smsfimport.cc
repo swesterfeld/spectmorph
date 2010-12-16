@@ -30,6 +30,7 @@
 #include "smgenericin.hh"
 #include "smmain.hh"
 #include "smjobqueue.hh"
+#include "smwavset.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.h>
 #include <bse/gsldatautils.h>
@@ -958,10 +959,9 @@ import_preset (const string& import_name)
             }
           printf ("%s\n", preset_xname.c_str());
 
-          string cmd = Birnet::string_printf ("smwavset init %s.smset", preset_xname.c_str());
-          xsystem (cmd);
+          WavSet wav_set;
 
-          vector<string> enc_commands, strip_commands, add_commands;
+          vector<string> enc_commands, strip_commands;
           for (vector<Zone>::iterator preset_zi = pi->zones.begin(); preset_zi != pi->zones.end(); preset_zi++)
             {
               Zone& zone = *preset_zi;
@@ -1095,9 +1095,14 @@ import_preset (const string& import_name)
 
                                   is_encoded[smname] = true;
                                 }
-                              add_commands.push_back (
-                                Birnet::string_printf ("smwavset add %s.smset %d %s --min-velocity=%d --max-velocity=%d --channel=%d",
-                                                  preset_xname.c_str(), midi_note, smname.c_str(), vr_min, vr_max, channel));
+                              WavSetWave new_wave;
+                              new_wave.midi_note = midi_note;
+                              new_wave.path = smname;
+                              new_wave.channel = channel;
+                              new_wave.velocity_range_min = vr_min;
+                              new_wave.velocity_range_max = vr_max;
+
+                              wav_set.waves.push_back (new_wave);
                             }
                         }
                     }
@@ -1105,7 +1110,8 @@ import_preset (const string& import_name)
             }
           run_all (enc_commands, "Encoder", options.max_jobs);
           run_all (strip_commands, "Strip", options.max_jobs);
-          run_all (add_commands, "Wavset Add", 1);
+
+          wav_set.save (preset_xname);
           xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
         }
     }
