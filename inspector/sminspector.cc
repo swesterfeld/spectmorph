@@ -17,108 +17,19 @@
 
 #include <gtkmm.h>
 #include <assert.h>
-#include <bse/bseloader.h>
-#include <bse/bsemathsignal.h>
-#include <bse/bseblockutils.hh>
 #include <sys/time.h>
 
 #include <vector>
 #include <string>
 
 #include "smmain.hh"
-#include "smfft.hh"
-#include "smmath.hh"
-#include "smmicroconf.hh"
-#include "smwavset.hh"
-#include "smlivedecoder.hh"
-#include "smspectrumwindow.hh"
-#include "smtimefreqview.hh"
-#include "smpixelarray.hh"
-#include "smnavigator.hh"
+#include "smmainwindow.hh"
 
 using std::vector;
 using std::string;
 using std::max;
 
 using namespace SpectMorph;
-
-class MainWindow : public Gtk::Window
-{
-  Gtk::ScrolledWindow scrolled_win;
-  TimeFreqView        time_freq_view;
-  ZoomController      zoom_controller;
-  Gtk::Adjustment     position_adjustment;
-  Gtk::HScale         position_scale;
-  Gtk::Label          position_label;
-  Gtk::HBox           position_hbox;
-  Gtk::VBox           vbox;
-  Navigator           navigator;
-  SpectrumWindow      spectrum_window;
-
-public:
-  MainWindow (const string& filename);
-
-  void on_zoom_changed();
-  void on_dhandle_changed();
-  void on_position_changed();
-};
-
-MainWindow::MainWindow (const string& filename) :
-  //time_freq_view (filename),
-  position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
-  position_scale (position_adjustment),
-  navigator (filename)
-{
-  set_border_width (10);
-  set_default_size (800, 600);
-  vbox.pack_start (scrolled_win);
-
-  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
-  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWindow::on_zoom_changed));
-
-  vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
-  position_hbox.pack_start (position_scale);
-  position_hbox.pack_start (position_label, Gtk::PACK_SHRINK);
-  position_scale.set_draw_value (false);
-  position_label.set_text ("frame 0");
-  position_hbox.set_border_width (10);
-  position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
-
-  add (vbox);
-  scrolled_win.add (time_freq_view);
-  show_all_children();
-
-  navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
-  navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
-
-  spectrum_window.set_spectrum_model (time_freq_view);
-}
-
-void
-MainWindow::on_zoom_changed()
-{
-  time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
-}
-
-void
-MainWindow::on_position_changed()
-{
-  int frames = time_freq_view.get_frames();
-  int position = CLAMP (sm_round_positive (position_adjustment.get_value() * frames), 0, frames - 1);
-  char buffer[1024];
-  sprintf (buffer, "frame %d", position);
-  position_label.set_text (buffer);
-  if (navigator.get_show_position())
-    time_freq_view.set_position (position);
-  else
-    time_freq_view.set_position (-1);
-}
-
-void
-MainWindow::on_dhandle_changed()
-{
-  time_freq_view.load (navigator.get_dhandle(), "fn");
-}
 
 static double
 gettime()
