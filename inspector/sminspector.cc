@@ -41,11 +41,6 @@ using std::max;
 
 using namespace SpectMorph;
 
-struct Options
-{
-  string program_name;
-} options;
-
 class Index : public Gtk::Window
 {
   WavSet            wset;
@@ -318,8 +313,6 @@ gettime()
 int
 main (int argc, char **argv)
 {
-  options.program_name = "sminspector";
-
   sm_init (&argc, &argv);
 
   Gtk::Main kit (argc, argv);
