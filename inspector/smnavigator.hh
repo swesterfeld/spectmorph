@@ -32,6 +32,7 @@ class Navigator : public Gtk::Window
   Gtk::ComboBoxText     smset_combobox;
   Gtk::VBox             index_vbox;
   Gtk::ToggleButton     show_position_button;
+  Gtk::ToggleButton     show_analysis_button;
   std::vector<float>    decoded_samples;
 
   struct ModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -60,19 +61,24 @@ class Navigator : public Gtk::Window
   Gtk::ToggleButton                  source_button;
 
   GslDataHandle                     *dhandle;
+  Audio                             *audio;
 
 public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
+  sigc::signal<void> signal_show_analysis_changed;
 
   Navigator (const std::string& filename);
 
   void on_combo_changed();
   void on_selection_changed();
   void on_show_position_changed();
+  void on_show_analysis_changed();
 
   GslDataHandle *get_dhandle();
+  Audio         *get_audio();
   bool           get_show_position();
+  bool           get_show_analysis();
 };
 
 }

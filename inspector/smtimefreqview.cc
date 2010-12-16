@@ -39,6 +39,8 @@ TimeFreqView::TimeFreqView()
   hzoom = 1;
   vzoom = 1;
   position = -1;
+  audio = NULL;
+  show_analysis = false;
 }
 
 void
@@ -96,11 +98,11 @@ TimeFreqView::load (const string& filename)
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
-  load (dhandle, filename);
+  load (dhandle, filename, NULL);
 }
 
 void
-TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
+TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio)
 {
   results.clear();
 
@@ -196,6 +198,8 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename)
         }
       results.push_back (result);
     }
+  this->audio = audio;
+
   image.clear();
 
   force_redraw();
@@ -256,7 +260,7 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
           pp[0] = color;
           pp[1] = color;
           pp[2] = color;
-          if (outx == position)
+          if (int (outx) == position)
             pp[0] = 255;
           pp += 3;
         }
@@ -302,6 +306,42 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
+
+  Glib::RefPtr<Gdk::Window> window = get_window();
+  if (window && audio && show_analysis)
+    {
+      Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
+      cr->set_line_width (1.0);
+
+      // clip to the area indicated by the expose event so that we only redraw
+      // the portion of the window that needs to be redrawn
+      cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
+      cr->clip();
+
+      // red:
+      cr->set_source_rgb (1.0, 0.0, 0.0);
+
+      int width = image.get_width() * hzoom, height = image.get_height() * vzoom;
+
+      const double size = 3;
+      for (size_t i = 0; i < audio->contents.size(); i++)
+        {
+          double posx = width * double (i) / audio->contents.size();
+          if (posx > ev->area.x - 10 && posx < ev->area.width + ev->area.x + 10)
+            {
+              const AudioBlock& ab = audio->contents[i];
+              for (size_t f = 0; f < ab.freqs.size(); f++)
+                {
+                  double posy = height - height * ab.freqs[f] / (audio->mix_freq / 2);
+                  cr->move_to (posx - size, posy - size);
+                  cr->line_to (posx + size, posy + size);
+                  cr->move_to (posx - size, posy + size);
+                  cr->line_to (posx + size, posy - size);
+                }
+            }
+        }
+      cr->stroke();
+    }
   return true;
 }
 
@@ -312,4 +352,12 @@ TimeFreqView::get_spectrum()
     return results[position];
 
   return FFTResult();
+}
+
+void
+TimeFreqView::set_show_analysis (bool new_show_analysis)
+{
+  show_analysis = new_show_analysis;
+
+  force_redraw();
 }

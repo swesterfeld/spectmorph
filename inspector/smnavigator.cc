@@ -27,7 +27,8 @@ using namespace SpectMorph;
 using std::string;
 
 Navigator::Navigator (const string& filename) :
-  dhandle (NULL)
+  dhandle (NULL),
+  audio (NULL)
 {
   printf ("loading index: %s\n", filename.c_str());
   MicroConf cfg (filename);
@@ -77,6 +78,10 @@ Navigator::Navigator (const string& filename) :
   index_vbox.pack_start (show_position_button, Gtk::PACK_SHRINK);
   show_position_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_position_changed));
 
+  show_analysis_button.set_label ("Show Analysis");
+  index_vbox.pack_start (show_analysis_button, Gtk::PACK_SHRINK);
+  show_analysis_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_analysis_changed));
+
   show();
   show_all_children();
   smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_combo_changed));
@@ -94,7 +99,7 @@ Navigator::on_selection_changed()
 
       int channel = row[audio_chooser_cols.col_channel];
 
-      Audio *audio = wset.waves[i].audio;
+      audio = wset.waves[i].audio;
       assert (wset.waves[i].audio);
 
       if (source_button.get_active())
@@ -125,6 +130,9 @@ Navigator::on_combo_changed()
       exit (1);
     }
 
+  audio = NULL;
+  dhandle = NULL;
+
   ref_tree_model->clear();
   for (size_t i = 0; i < wset.waves.size(); i++)
     {
@@ -145,6 +153,12 @@ Navigator::on_show_position_changed()
   signal_show_position_changed();
 }
 
+void
+Navigator::on_show_analysis_changed()
+{
+  signal_show_analysis_changed();
+}
+
 GslDataHandle *
 Navigator::get_dhandle()
 {
@@ -155,4 +169,16 @@ bool
 Navigator::get_show_position()
 {
   return show_position_button.get_active();
+}
+
+bool
+Navigator::get_show_analysis()
+{
+  return show_analysis_button.get_active();
+}
+
+Audio *
+Navigator::get_audio()
+{
+  return audio;
 }

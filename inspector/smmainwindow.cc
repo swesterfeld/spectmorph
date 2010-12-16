@@ -25,6 +25,7 @@ using namespace SpectMorph;
 
 MainWindow::MainWindow (const string& filename) :
   //time_freq_view (filename),
+  zoom_controller (5000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
   navigator (filename)
@@ -50,6 +51,7 @@ MainWindow::MainWindow (const string& filename) :
 
   navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
   navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
+  navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &MainWindow::on_analysis_changed));
 
   spectrum_window.set_spectrum_model (time_freq_view);
 }
@@ -75,7 +77,13 @@ MainWindow::on_position_changed()
 }
 
 void
+MainWindow::on_analysis_changed()
+{
+  time_freq_view.set_show_analysis (navigator.get_show_analysis());
+}
+
+void
 MainWindow::on_dhandle_changed()
 {
-  time_freq_view.load (navigator.get_dhandle(), "fn");
+  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio());
 }

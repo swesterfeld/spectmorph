@@ -21,6 +21,7 @@
 #include <gtkmm.h>
 #include <bse/bseloader.h>
 #include "smpixelarray.hh"
+#include "smaudio.hh"
 
 namespace SpectMorph {
 
@@ -40,9 +41,11 @@ class TimeFreqView : public Gtk::DrawingArea
 protected:
   std::vector<FFTResult> results;
   PixelArray  image;
+  Audio      *audio;
   Glib::RefPtr<Gdk::Pixbuf> zimage;
   double hzoom, vzoom;
   int position;
+  bool show_analysis;
 
   void force_redraw();
 
@@ -52,11 +55,12 @@ public:
   sigc::signal<void> signal_spectrum_changed;
 
   void load (const std::string& filename);
-  void load (GslDataHandle *dhandle, const std::string& filename);
+  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio);
   bool on_expose_event (GdkEventExpose* ev);
 
   void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
+  void set_show_analysis (bool new_show_analysis);
 
   int  get_frames();
   FFTResult get_spectrum();

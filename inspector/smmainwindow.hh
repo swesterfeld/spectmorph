@@ -46,6 +46,7 @@ public:
   void on_zoom_changed();
   void on_dhandle_changed();
   void on_position_changed();
+  void on_analysis_changed();
 };
 
 }

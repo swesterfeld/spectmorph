@@ -19,8 +19,8 @@
 
 using namespace SpectMorph;
 
-ZoomController::ZoomController() :
-  hzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
+ZoomController::ZoomController (double hzoom_max) :
+  hzoom_adjustment (0.0, -1.0, log10 (hzoom_max) - 2, 0.01, 1.0, 0.0),
   hzoom_scale (hzoom_adjustment),
   vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
   vzoom_scale (vzoom_adjustment)
