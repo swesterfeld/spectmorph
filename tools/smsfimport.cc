@@ -1111,7 +1111,7 @@ import_preset (const string& import_name)
           run_all (enc_commands, "Encoder", options.max_jobs);
           run_all (strip_commands, "Strip", options.max_jobs);
 
-          wav_set.save (preset_xname);
+          wav_set.save (preset_xname + ".smset");
           xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
         }
     }
