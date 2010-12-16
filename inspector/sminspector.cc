@@ -41,7 +41,7 @@ using std::max;
 
 using namespace SpectMorph;
 
-class Index : public Gtk::Window
+class Navigator : public Gtk::Window
 {
   WavSet            wset;
 
@@ -82,7 +82,7 @@ public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
 
-  Index (const string& filename);
+  Navigator (const string& filename);
 
   void on_combo_changed();
   void on_selection_changed();
@@ -92,7 +92,7 @@ public:
   bool           get_show_position();
 };
 
-Index::Index (const string& filename) :
+Navigator::Navigator (const string& filename) :
   dhandle (NULL)
 {
   printf ("loading index: %s\n", filename.c_str());
@@ -116,7 +116,7 @@ Index::Index (const string& filename) :
         }
     }
 
-  set_title ("Instrument Index");
+  set_title ("Instrument Navigator");
   set_border_width (10);
   set_default_size (300, 600);
   index_vbox.set_spacing (10);
@@ -132,24 +132,24 @@ Index::Index (const string& filename) :
   tree_view.append_column ("Path", audio_chooser_cols.col_path);
 
   ref_tree_selection = tree_view.get_selection();
-  ref_tree_selection->signal_changed().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
+  ref_tree_selection->signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_selection_changed));
 
   source_button.set_label ("Source/Analysis");
   index_vbox.pack_start (source_button, Gtk::PACK_SHRINK);
-  source_button.signal_toggled().connect (sigc::mem_fun (*this, &Index::on_selection_changed));
+  source_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_selection_changed));
   add (index_vbox);
 
   show_position_button.set_label ("Show Position");
   index_vbox.pack_start (show_position_button, Gtk::PACK_SHRINK);
-  show_position_button.signal_toggled().connect (sigc::mem_fun (*this, &Index::on_show_position_changed));
+  show_position_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_position_changed));
 
   show();
   show_all_children();
-  smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Index::on_combo_changed));
+  smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_combo_changed));
 }
 
 void
-Index::on_selection_changed()
+Navigator::on_selection_changed()
 {
   Gtk::TreeModel::iterator iter = ref_tree_selection->get_selected();
   if (iter)
@@ -180,7 +180,7 @@ Index::on_selection_changed()
 }
 
 void
-Index::on_combo_changed()
+Navigator::on_combo_changed()
 {
   std::string file = smset_dir + "/" + smset_combobox.get_active_text().c_str();
   printf ("loading %s...\n", file.c_str());
@@ -206,19 +206,19 @@ Index::on_combo_changed()
 }
 
 void
-Index::on_show_position_changed()
+Navigator::on_show_position_changed()
 {
   signal_show_position_changed();
 }
 
 GslDataHandle *
-Index::get_dhandle()
+Navigator::get_dhandle()
 {
   return dhandle;
 }
 
 bool
-Index::get_show_position()
+Navigator::get_show_position()
 {
   return show_position_button.get_active();
 }
@@ -233,7 +233,7 @@ class MainWindow : public Gtk::Window
   Gtk::Label          position_label;
   Gtk::HBox           position_hbox;
   Gtk::VBox           vbox;
-  Index               index;
+  Navigator           navigator;
   SpectrumWindow      spectrum_window;
 
 public:
@@ -248,7 +248,7 @@ MainWindow::MainWindow (const string& filename) :
   //time_freq_view (filename),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
-  index (filename)
+  navigator (filename)
 {
   set_border_width (10);
   set_default_size (800, 600);
@@ -269,8 +269,8 @@ MainWindow::MainWindow (const string& filename) :
   scrolled_win.add (time_freq_view);
   show_all_children();
 
-  index.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
-  index.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
+  navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
+  navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
 
   spectrum_window.set_spectrum_model (time_freq_view);
 }
@@ -289,7 +289,7 @@ MainWindow::on_position_changed()
   char buffer[1024];
   sprintf (buffer, "frame %d", position);
   position_label.set_text (buffer);
-  if (index.get_show_position())
+  if (navigator.get_show_position())
     time_freq_view.set_position (position);
   else
     time_freq_view.set_position (-1);
@@ -298,7 +298,7 @@ MainWindow::on_position_changed()
 void
 MainWindow::on_dhandle_changed()
 {
-  time_freq_view.load (index.get_dhandle(), "fn");
+  time_freq_view.load (navigator.get_dhandle(), "fn");
 }
 
 static double
