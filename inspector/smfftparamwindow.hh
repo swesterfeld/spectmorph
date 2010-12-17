@@ -15,40 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MAIN_WINDOW_HH
-#define SPECTMORPH_MAIN_WINDOW_HH
+
+#ifndef SPECTMORPH_FFTPARAMWINDOW_HH
+#define SPECTMORPH_FFTPARAMWINDOW_HH
 
 #include <gtkmm.h>
 
+#include "smspectrumview.hh"
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
-#include "smnavigator.hh"
-#include "smspectrumwindow.hh"
-#include "smfftparamwindow.hh"
 
 namespace SpectMorph {
 
-class MainWindow : public Gtk::Window
+class FFTParamWindow : public Gtk::Window
 {
-  Gtk::ScrolledWindow scrolled_win;
-  TimeFreqView        time_freq_view;
-  ZoomController      zoom_controller;
-  Gtk::Adjustment     position_adjustment;
-  Gtk::HScale         position_scale;
-  Gtk::Label          position_label;
-  Gtk::HBox           position_hbox;
-  Gtk::VBox           vbox;
-  Navigator           navigator;
-  SpectrumWindow      spectrum_window;
-  FFTParamWindow      fft_param_window;
+  Gtk::Table          table;
+  Gtk::HScale         frame_size_scale;
+  Gtk::Label          frame_size_label;
+  Gtk::Label          frame_size_value_label;
 
+  Gtk::HScale         frame_step_scale;
+  Gtk::Label          frame_step_label;
+  Gtk::Label          frame_step_value_label;
+
+  void on_value_changed();
 public:
-  MainWindow (const std::string& filename);
+  FFTParamWindow();
 
-  void on_zoom_changed();
-  void on_dhandle_changed();
-  void on_position_changed();
-  void on_analysis_changed();
+  double get_frame_step();
+  double get_frame_size();
+
+  sigc::signal<void> signal_params_changed;
 };
 
 }

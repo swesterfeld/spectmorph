@@ -98,11 +98,11 @@ TimeFreqView::load (const string& filename)
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
-  load (dhandle, filename, NULL);
+  load (dhandle, filename, NULL, 40, 10);
 }
 
 void
-TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio)
+TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, double frame_size_ms, double frame_step_ms)
 {
   results.clear();
 
@@ -121,8 +121,8 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
           exit (1);
         }
       AnalysisParams analysis_params;
-      analysis_params.frame_size_ms = 40;
-      analysis_params.frame_step_ms = 10;
+      analysis_params.frame_size_ms = frame_size_ms;
+      analysis_params.frame_step_ms = frame_step_ms;
 
       size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;
       size_t block_size = 1;

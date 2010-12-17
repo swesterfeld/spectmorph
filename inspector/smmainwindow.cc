@@ -52,6 +52,7 @@ MainWindow::MainWindow (const string& filename) :
   navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
   navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
   navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &MainWindow::on_analysis_changed));
+  fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
 
   spectrum_window.set_spectrum_model (time_freq_view);
 }
@@ -85,5 +86,7 @@ MainWindow::on_analysis_changed()
 void
 MainWindow::on_dhandle_changed()
 {
-  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio());
+  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), 
+                       fft_param_window.get_frame_size(), 
+                       fft_param_window.get_frame_step());
 }
