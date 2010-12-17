@@ -133,6 +133,8 @@ Navigator::on_combo_changed()
   audio = NULL;
   dhandle = NULL;
 
+  signal_dhandle_changed();
+
   ref_tree_model->clear();
   for (size_t i = 0; i < wset.waves.size(); i++)
     {

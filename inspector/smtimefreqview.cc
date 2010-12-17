@@ -106,97 +106,100 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
 {
   results.clear();
 
-  BseErrorType error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-
-  if (gsl_data_handle_n_channels (dhandle) != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
-      exit (1);
-    }
-  AnalysisParams analysis_params;
-  analysis_params.frame_size_ms = 40;
-  analysis_params.frame_step_ms = 10;
-
-  size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;
-  size_t block_size = 1;
-  while (block_size < frame_size)
-    block_size *= 2;
-
-  vector<float> block (block_size);
-  vector<float> window (block_size);
-
-  size_t zeropad = 4;
-  size_t fft_size = block_size * zeropad;
-
-  float *fft_in = FFT::new_array_float (fft_size);
-  float *fft_out = FFT::new_array_float (fft_size);
-
-  for (guint i = 0; i < window.size(); i++)
-    {
-      if (i < frame_size)
-        window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
-      else
-        window[i] = 0;
-    }
-
-
-  double len_ms = gsl_data_handle_length (dhandle) * 1000.0 / gsl_data_handle_mix_freq (dhandle); 
-  for (double pos_ms = analysis_params.frame_step_ms * 0.5 - analysis_params.frame_size_ms; pos_ms < len_ms; pos_ms += analysis_params.frame_step_ms)
-    {
-      int64 pos = pos_ms / 1000.0 * gsl_data_handle_mix_freq (dhandle);
-      int64 todo = block.size(), offset = 0;
-      const int64 n_values = gsl_data_handle_length (dhandle);
-
-      while (todo)
+      BseErrorType error = gsl_data_handle_open (dhandle);
+      if (error)
         {
-          int64 r = 0;
-          if ((pos + offset) < 0)
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+          exit (1);
+        }
+
+      if (gsl_data_handle_n_channels (dhandle) != 1)
+        {
+          fprintf (stderr, "Currently, only mono files are supported.\n");
+          exit (1);
+        }
+      AnalysisParams analysis_params;
+      analysis_params.frame_size_ms = 40;
+      analysis_params.frame_step_ms = 10;
+
+      size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;
+      size_t block_size = 1;
+      while (block_size < frame_size)
+        block_size *= 2;
+
+      vector<float> block (block_size);
+      vector<float> window (block_size);
+
+      size_t zeropad = 4;
+      size_t fft_size = block_size * zeropad;
+
+      float *fft_in = FFT::new_array_float (fft_size);
+      float *fft_out = FFT::new_array_float (fft_size);
+
+      for (guint i = 0; i < window.size(); i++)
+        {
+          if (i < frame_size)
+            window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+          else
+            window[i] = 0;
+        }
+
+
+      double len_ms = gsl_data_handle_length (dhandle) * 1000.0 / gsl_data_handle_mix_freq (dhandle); 
+      for (double pos_ms = analysis_params.frame_step_ms * 0.5 - analysis_params.frame_size_ms; pos_ms < len_ms; pos_ms += analysis_params.frame_step_ms)
+        {
+          int64 pos = pos_ms / 1000.0 * gsl_data_handle_mix_freq (dhandle);
+          int64 todo = block.size(), offset = 0;
+          const int64 n_values = gsl_data_handle_length (dhandle);
+
+          while (todo)
             {
-              r = 1;
-              block[offset] = 0;
-            }
-          else if (pos + offset < n_values)
-            {
-              r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
-            }
-          if (r > 0)
-            {
-              offset += r;
-              todo -= r;
-            }
-          else  // last block
-            {
-              while (todo)
+              int64 r = 0;
+              if ((pos + offset) < 0)
                 {
-                  block[offset++] = 0;
-                  todo--;
+                  r = 1;
+                  block[offset] = 0;
+                }
+              else if (pos + offset < n_values)
+                {
+                  r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
+                }
+              if (r > 0)
+                {
+                  offset += r;
+                  todo -= r;
+                }
+              else  // last block
+                {
+                  while (todo)
+                    {
+                      block[offset++] = 0;
+                      todo--;
+                    }
                 }
             }
-        }
-      Bse::Block::mul (block_size, &block[0], &window[0]);
-      for (size_t i = 0; i < fft_size; i++)
-        {
-          if (i < block_size)
-            fft_in[i] = block[i];
-          else
-            fft_in[i] = 0;
-        }
-      FFT::fftar_float (fft_size, fft_in, fft_out);
-      FFTResult result;
-      fft_out[1] = 0; // special packing
-      for (size_t i = 0; i < fft_size; i += 2)      
-        {
-          double re = fft_out[i];
-          double im = fft_out[i + 1];
+          Bse::Block::mul (block_size, &block[0], &window[0]);
+          for (size_t i = 0; i < fft_size; i++)
+            {
+              if (i < block_size)
+                fft_in[i] = block[i];
+              else
+                fft_in[i] = 0;
+            }
+          FFT::fftar_float (fft_size, fft_in, fft_out);
+          FFTResult result;
+          fft_out[1] = 0; // special packing
+          for (size_t i = 0; i < fft_size; i += 2)      
+            {
+              double re = fft_out[i];
+              double im = fft_out[i + 1];
 
-          result.mags.push_back (sqrt (re * re + im * im));
+              result.mags.push_back (sqrt (re * re + im * im));
+            }
+          results.push_back (result);
         }
-      results.push_back (result);
     }
   this->audio = audio;
 
