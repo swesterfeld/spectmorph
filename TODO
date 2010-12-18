@@ -62,3 +62,9 @@ documentation:
 
 BEAST:
 - midi export
+
+morphing:
+- model: explain observation of the peaks using a gaussian-mixture-model which
+  predicts them; that way, peaks of the same gaussian distribution are "one
+  consistent partial" - for morphing, the remaining problem reduces to finding
+  out which gaussian distribution should be morphed with which gaussian distribution
