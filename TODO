@@ -63,6 +63,13 @@ documentation:
 BEAST:
 - midi export
 
+sminspector:
+- slider for overlap instead of frame stepping
+- threaded analysis
+- constant zoom
+- reconstruct sines only button
+- install it
+
 morphing:
 - model: explain observation of the peaks using a gaussian-mixture-model which
   predicts them; that way, peaks of the same gaussian distribution are "one
