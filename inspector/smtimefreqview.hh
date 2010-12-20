@@ -22,6 +22,7 @@
 #include <bse/bseloader.h>
 #include "smpixelarray.hh"
 #include "smaudio.hh"
+#include "smfftthread.hh"
 
 namespace SpectMorph {
 
@@ -48,6 +49,8 @@ protected:
   bool show_analysis;
 
   void force_redraw();
+
+  FFTThread  fft_thread;
 
 public:
   TimeFreqView (); //const std::string& filename);
