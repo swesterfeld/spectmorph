@@ -32,7 +32,6 @@ FFTParamWindow::FFTParamWindow() :
   table.attach (frame_size_label, 0, 1, 0, 1, Gtk::SHRINK);
   table.attach (frame_size_scale, 1, 2, 0, 1);
   table.attach (frame_size_value_label, 2, 3, 0, 1, Gtk::SHRINK);
-  frame_size_value_label.set_text ("40 ms");
   frame_size_label.set_text ("Frame Size");
   frame_size_scale.set_draw_value (false);
   frame_size_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
@@ -41,7 +40,6 @@ FFTParamWindow::FFTParamWindow() :
   table.attach (frame_step_scale, 1, 2, 1, 2);
   table.attach (frame_step_value_label, 2, 3, 1, 2, Gtk::SHRINK);
   frame_step_label.set_text ("Frame Step");
-  frame_step_value_label.set_text ("10 ms");
   frame_step_scale.set_draw_value (false);
   frame_step_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
