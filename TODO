@@ -64,7 +64,6 @@ BEAST:
 - midi export
 
 sminspector:
-- slider for overlap instead of frame stepping
 - threaded analysis
 - constant zoom
 - reconstruct sines only button

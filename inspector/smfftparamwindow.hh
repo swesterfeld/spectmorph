@@ -34,14 +34,15 @@ class FFTParamWindow : public Gtk::Window
   Gtk::Label          frame_size_label;
   Gtk::Label          frame_size_value_label;
 
-  Gtk::HScale         frame_step_scale;
-  Gtk::Label          frame_step_label;
-  Gtk::Label          frame_step_value_label;
+  Gtk::HScale         frame_overlap_scale;
+  Gtk::Label          frame_overlap_label;
+  Gtk::Label          frame_overlap_value_label;
 
   void on_value_changed();
 public:
   FFTParamWindow();
 
+  double get_frame_overlap();
   double get_frame_step();
   double get_frame_size();
 

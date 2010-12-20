@@ -23,7 +23,7 @@ using namespace SpectMorph;
 FFTParamWindow::FFTParamWindow() :
   table (2, 3),
   frame_size_scale (-1, 1, 0.01),
-  frame_step_scale (-1, 1, 0.01)
+  frame_overlap_scale (-1, 2, 0.01)
 {
   set_border_width (10);
   set_default_size (500, 200);
@@ -36,15 +36,15 @@ FFTParamWindow::FFTParamWindow() :
   frame_size_scale.set_draw_value (false);
   frame_size_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  table.attach (frame_step_label, 0, 1, 1, 2, Gtk::SHRINK);
-  table.attach (frame_step_scale, 1, 2, 1, 2);
-  table.attach (frame_step_value_label, 2, 3, 1, 2, Gtk::SHRINK);
-  frame_step_label.set_text ("Frame Step");
-  frame_step_scale.set_draw_value (false);
-  frame_step_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+  table.attach (frame_overlap_label, 0, 1, 1, 2, Gtk::SHRINK);
+  table.attach (frame_overlap_scale, 1, 2, 1, 2);
+  table.attach (frame_overlap_value_label, 2, 3, 1, 2, Gtk::SHRINK);
+  frame_overlap_label.set_text ("Frame Overlap");
+  frame_overlap_scale.set_draw_value (false);
+  frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
   frame_size_scale.set_value (0);
-  frame_step_scale.set_value (0);
+  frame_overlap_scale.set_value (0);
   add (table);
 
   show();
@@ -60,14 +60,20 @@ FFTParamWindow::get_frame_size()
 double
 FFTParamWindow::get_frame_step()
 {
-  return 10 * pow (10, frame_step_scale.get_value());
+  return get_frame_size() / get_frame_overlap();
+}
+
+double
+FFTParamWindow::get_frame_overlap()
+{
+  return pow (4, frame_overlap_scale.get_value() + 1);
 }
 
 void
 FFTParamWindow::on_value_changed()
 {
   frame_size_value_label.set_text (Birnet::string_printf ("%.1f ms", get_frame_size()));
-  frame_step_value_label.set_text (Birnet::string_printf ("%.1f ms", get_frame_step()));
+  frame_overlap_value_label.set_text (Birnet::string_printf ("%.1f", get_frame_overlap()));
 
   signal_params_changed();
 }
