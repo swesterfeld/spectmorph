@@ -304,8 +304,10 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
           p++;
         }
     }
-  set_size_request (image.get_width() * hzoom, image.get_height() * vzoom);
-  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, hzoom, vzoom, position);
+  double scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
+  double scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
+  set_size_request (image.get_width() * scaled_hzoom, image.get_height() * scaled_vzoom);
+  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
@@ -324,7 +326,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
       // red:
       cr->set_source_rgb (1.0, 0.0, 0.0);
 
-      int width = image.get_width() * hzoom, height = image.get_height() * vzoom;
+      int width = image.get_width() * scaled_hzoom, height = image.get_height() * scaled_vzoom;
 
       const double size = 3;
       for (size_t i = 0; i < audio->contents.size(); i++)

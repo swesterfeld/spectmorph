@@ -25,7 +25,7 @@ using namespace SpectMorph;
 
 MainWindow::MainWindow (const string& filename) :
   //time_freq_view (filename),
-  zoom_controller (5000),
+  zoom_controller (5000, 5000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
   navigator (filename)

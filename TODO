@@ -65,7 +65,6 @@ BEAST:
 
 sminspector:
 - threaded analysis
-- constant zoom
 - reconstruct sines only button
 - install it
 

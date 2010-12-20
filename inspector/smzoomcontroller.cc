@@ -19,10 +19,10 @@
 
 using namespace SpectMorph;
 
-ZoomController::ZoomController (double hzoom_max) :
+ZoomController::ZoomController (double hzoom_max, double vzoom_max) :
   hzoom_adjustment (0.0, -1.0, log10 (hzoom_max) - 2, 0.01, 1.0, 0.0),
   hzoom_scale (hzoom_adjustment),
-  vzoom_adjustment (0.0, -1.0, 1.0, 0.01, 1.0, 0.0),
+  vzoom_adjustment (0.0, -1.0, log10 (vzoom_max) - 2, 0.01, 1.0, 0.0),
   vzoom_scale (vzoom_adjustment)
 {
   pack_start (hzoom_hbox, Gtk::PACK_SHRINK);

@@ -33,7 +33,7 @@ class ZoomController : public Gtk::VBox
   Gtk::Label          vzoom_label;
   Gtk::HBox           vzoom_hbox;
 public:
-  ZoomController (double hzoom_max = 1000.0);
+  ZoomController (double hzoom_max = 1000.0, double vzoom_max = 1000.0);
 
   void on_hzoom_changed();
   void on_vzoom_changed();
