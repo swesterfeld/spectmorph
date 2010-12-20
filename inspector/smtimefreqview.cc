@@ -101,6 +101,21 @@ TimeFreqView::load (const string& filename)
   load (dhandle, filename, NULL, 40, 10);
 }
 
+static float
+value_scale (float value)
+{
+  if (true)
+    {
+      double db = bse_db_from_factor (value, -200);
+      if (db > -90)
+        return db + 90;
+      else
+        return 0;
+    }
+  else
+    return value;
+}
+
 void
 TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, double frame_size_ms, double frame_step_ms)
 {
@@ -205,6 +220,34 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
 
   image.clear();
 
+  size_t height = 0;
+  if (!results.empty())
+    height = results[0].mags.size();
+
+  image.resize (results.size(), height);
+
+  float max_value = 0;
+  for (vector<FFTResult>::const_iterator fi = results.begin(); fi != results.end(); fi++)
+    {
+      for (vector<float>::const_iterator mi = fi->mags.begin(); mi != fi->mags.end(); mi++)
+        {
+          max_value = max (max_value, value_scale (*mi));
+        }
+    }
+  guchar *p = image.get_pixels();
+  size_t  row_stride = image.get_rowstride();
+  for (size_t frame = 0; frame < results.size(); frame++)
+    {
+      for (size_t m = 0; m < results[frame].mags.size(); m++)
+        {
+          double value = value_scale (results[frame].mags[m]);
+          value /= max_value;
+          int y = results[frame].mags.size() - 1 - m;
+          p[row_stride * y] = value * 255;
+        }
+      p++;
+    }
+
   force_redraw();
   signal_spectrum_changed();
 }
@@ -213,21 +256,6 @@ int
 TimeFreqView::get_frames()
 {
   return results.size();
-}
-
-static float
-value_scale (float value)
-{
-  if (true)
-    {
-      double db = bse_db_from_factor (value, -200);
-      if (db > -90)
-        return db + 90;
-      else
-        return 0;
-    }
-  else
-    return value;
 }
 
 #define FRAC_SHIFT       12
@@ -274,36 +302,6 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
-  if (image.empty())
-    {
-      size_t height = 0;
-      if (!results.empty())
-        height = results[0].mags.size();
-
-      image.resize (results.size(), height);
-
-      float max_value = 0;
-      for (vector<FFTResult>::const_iterator fi = results.begin(); fi != results.end(); fi++)
-        {
-          for (vector<float>::const_iterator mi = fi->mags.begin(); mi != fi->mags.end(); mi++)
-            {
-              max_value = max (max_value, value_scale (*mi));
-            }
-        }
-      guchar *p = image.get_pixels();
-      size_t  row_stride = image.get_rowstride();
-      for (size_t frame = 0; frame < results.size(); frame++)
-        {
-          for (size_t m = 0; m < results[frame].mags.size(); m++)
-            {
-              double value = value_scale (results[frame].mags[m]);
-              value /= max_value;
-              int y = results[frame].mags.size() - 1 - m;
-              p[row_stride * y] = value * 255;
-            }
-          p++;
-        }
-    }
   double scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
   double scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
   set_size_request (image.get_width() * scaled_hzoom, image.get_height() * scaled_vzoom);
