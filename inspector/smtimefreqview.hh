@@ -39,7 +39,7 @@ protected:
 
   void force_redraw();
 
-  bool on_timeout();
+  void on_timeout();
 
   FFTThread  fft_thread;
 

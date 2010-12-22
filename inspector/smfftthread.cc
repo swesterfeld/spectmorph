@@ -22,6 +22,8 @@
 #include <bse/bseblockutils.hh>
 #include <bse/bseglobals.h>
 #include <bse/bsemathsignal.h>
+
+#include <sys/poll.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -33,8 +35,19 @@ using std::max;
 void
 FFTThread::run()
 {
+  struct pollfd poll_fds[1];
+  poll_fds[0].fd = fft_thread_wakeup_pfds[0];
+  poll_fds[0].events = POLLIN;
+  poll_fds[0].revents = 0;
+
   while (1)
     {
+      if (poll (poll_fds, 1, -1) > 0)
+        {
+          char c;
+          read (fft_thread_wakeup_pfds[0], &c, 1);
+        }
+
       command_mutex.lock();
       /* we currently hard code that newer commands are always executed
        * instead of older commands, so that only the newest command (and
@@ -60,9 +73,12 @@ FFTThread::run()
           command_results.clear();
 
           command_results.push_back (c);
+
+          // wakeup main thread
+          while (write (main_thread_wakeup_pfds[1], "W", 1) != 1)
+            ;
         }
       command_mutex.unlock();
-      usleep (100);
     }
 }
 
@@ -80,7 +96,12 @@ FFTThread::FFTThread()
 {
   assert (the_instance == NULL);
   the_instance = this;
+  pipe (fft_thread_wakeup_pfds);
+  pipe (main_thread_wakeup_pfds);
   pthread_create (&thread, NULL, thread_start, this);
+
+  Glib::signal_io().connect (sigc::mem_fun (this, &FFTThread::on_result_available),
+                             main_thread_wakeup_pfds[0], Glib::IO_IN);
 }
 
 FFTThread::~FFTThread()
@@ -260,12 +281,28 @@ FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, AnalysisPar
 {
   Birnet::AutoLocker lock (command_mutex);
   commands.push_back (new AnalysisCommand (dhandle, params));
+
+  // wakeup FFT thread
+  while (write (fft_thread_wakeup_pfds[1], "W", 1) != 1)
+    ;
 }
 
 bool
 FFTThread::get_result (PixelArray& image)
 {
   Birnet::AutoLocker lock (command_mutex);
+
+  // clear wakeup pipe
+  struct pollfd poll_fds[1];
+  poll_fds[0].fd = main_thread_wakeup_pfds[0];
+  poll_fds[0].events = POLLIN;
+  poll_fds[0].revents = 0;
+
+  if (poll (poll_fds, 1, 0) > 0)
+    {
+      char c;
+      read (main_thread_wakeup_pfds[0], &c, 1);
+    }
 
   if (!command_results.empty())
     {
@@ -277,4 +314,12 @@ FFTThread::get_result (PixelArray& image)
       return true;
     }
   return false;
+}
+
+bool
+FFTThread::on_result_available (Glib::IOCondition io_condition)
+{
+  signal_result_available();
+
+  return true;
 }

@@ -41,7 +41,12 @@ protected:
   std::vector<Command *>  commands;
   std::vector<Command *>  command_results;
 
+  int                     fft_thread_wakeup_pfds[2];
+  int                     main_thread_wakeup_pfds[2];
+
   pthread_t thread;
+
+  bool on_result_available (Glib::IOCondition io_condition);
 
 public:
   FFTThread();
@@ -52,6 +57,8 @@ public:
   bool get_result (PixelArray& image);
 
   static FFTThread *the();
+
+  sigc::signal<void> signal_result_available;
 };
 
 }
