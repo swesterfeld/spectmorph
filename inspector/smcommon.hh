@@ -15,43 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef SPECTMORPH_FFTTHREAD_HH
-#define SPECTMORPH_FFTTHREAD_HH
-
-#include <birnet/birnet.hh>
-#include <birnet/birnetthread.hh>
-#include <bse/bseloader.h>
-
-#include "smcommon.hh"
-#include "smpixelarray.hh"
+#ifndef SPECTMORPH_COMMON_HH
+#define SPECTMORPH_COMMON_HH
 
 namespace SpectMorph
 {
 
-class FFTThread
+struct AnalysisParams
 {
-public:
-  struct Command {
-    virtual void execute() = 0;
-  };
+  double frame_size_ms;
+  double frame_step_ms;
+};
 
-protected:
-  Birnet::Mutex           command_mutex;
-  std::vector<Command *>  commands;
-  std::vector<Command *>  command_results;
-
-  pthread_t thread;
-
-public:
-  FFTThread();
-  ~FFTThread();
-
-  void run();
-  void compute_image (PixelArray& image, GslDataHandle *dhandle, AnalysisParams& params);
-  bool get_result (PixelArray& image);
-
-  static FFTThread *the();
+struct FFTResult
+{
+  std::vector<float> mags;
 };
 
 }

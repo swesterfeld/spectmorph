@@ -26,17 +26,6 @@
 
 namespace SpectMorph {
 
-struct FFTResult
-{
-  std::vector<float> mags;
-};
-
-struct AnalysisParams
-{
-  double frame_size_ms;
-  double frame_step_ms;
-};
-
 class TimeFreqView : public Gtk::DrawingArea
 {
 protected:
@@ -49,6 +38,8 @@ protected:
   bool show_analysis;
 
   void force_redraw();
+
+  bool on_timeout();
 
   FFTThread  fft_thread;
 
