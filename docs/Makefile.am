@@ -2,8 +2,8 @@ include $(top_srcdir)/Makefile.decl
 
 EXTRA_DIST += spectmorph.odt spectmorph.pdf
 
-dist_man_MANS = smenc.1 smplay.1 smvisualize.1 smstrip.1 smwavset.1 smsfimport.1
-EXTRA_DIST += smenc.1.doxi smplay.1.doxi smvisualize.1.doxi smstrip.1.doxi smwavset.1.doxi smsfimport.1.doxi
+dist_man_MANS = smenc.1 smplay.1 smvisualize.1 smstrip.1 smwavset.1 smsfimport.1 sminspector.1
+EXTRA_DIST += smenc.1.doxi smplay.1.doxi smvisualize.1.doxi smstrip.1.doxi smwavset.1.doxi smsfimport.1.doxi sminspector.1.doxi
 EXTRA_DIST += smdefs.doxi
 
 DOCS_DIR = ~/public_html/spectmorph/docs-$(VERSION)
