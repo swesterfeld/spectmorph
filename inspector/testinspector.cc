@@ -24,6 +24,8 @@
 
 #include "smmain.hh"
 #include "smmainwindow.hh"
+#include "smwavloader.hh"
+#include "smcwt.hh"
 
 using std::vector;
 using std::string;
@@ -68,6 +70,19 @@ main (int argc, char **argv)
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
       printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
+    }
+  else if (argc == 3 && string (argv[1]) == "cwt")
+    {
+      CWT cwt;
+      WavLoader *loader = WavLoader::load (argv[2]);
+      if (!loader)
+        return 1;
+
+      vector<float> signal = loader->samples();
+      vector< vector<float> > results;
+
+      results = cwt.analyze (signal);
+      cwt.make_png (results);
     }
   else
     {

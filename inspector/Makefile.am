@@ -6,12 +6,12 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 SMHDRS = smspectrumview.hh smmicroconf.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smzoomcontroller.hh smnavigator.hh smmainwindow.hh smfftparamwindow.hh smfftthread.hh \
-         smcommon.hh
+         smcommon.hh smcwt.hh
 
 SMSRCS = smmicroconf.cc smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smzoomcontroller.cc smnavigator.cc smmainwindow.cc \
-         smfftparamwindow.cc smfftthread.cc
+         smfftparamwindow.cc smfftthread.cc smcwt.cc
 
 noinst_PROGRAMS = testinspector
 
