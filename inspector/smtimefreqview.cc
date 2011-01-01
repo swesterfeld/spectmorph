@@ -108,21 +108,20 @@ TimeFreqView::load (const string& filename)
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
-  load (dhandle, filename, NULL, 40, 10);
+  AnalysisParams params;
+  params.transform_type = SM_TRANSFORM_FFT;
+  params.frame_size_ms = 40;
+  params.frame_step_ms = 10;
+  load (dhandle, filename, NULL, params);
 }
 
 void
-TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, double frame_size_ms, double frame_step_ms)
+TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
 {
   results.clear();
 
   if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
     {
-      AnalysisParams analysis_params;
-
-      analysis_params.frame_size_ms = frame_size_ms;
-      analysis_params.frame_step_ms = frame_step_ms;
-
       FFTThread::the()->compute_image (image, dhandle, analysis_params);
     }
   this->audio = audio;

@@ -18,6 +18,7 @@
 #include "smfftthread.hh"
 #include "smtimefreqview.hh"
 #include "smfft.hh"
+#include "smcwt.hh"
 
 #include <bse/bseblockutils.hh>
 #include <bse/bseglobals.h>
@@ -119,16 +120,7 @@ FFTThread::the()
 static float
 value_scale (float value)
 {
-  if (true)
-    {
-      double db = bse_db_from_factor (value, -200);
-      if (db > -90)
-        return db + 90;
-      else
-        return 0;
-    }
-  else
-    return value;
+  return bse_db_from_factor (value, -200);
 }
 
 struct AnalysisCommand : public FFTThread::Command
@@ -138,12 +130,13 @@ struct AnalysisCommand : public FFTThread::Command
   PixelArray        image;
   AnalysisParams    analysis_params;
 
-  AnalysisCommand (GslDataHandle *dhandle, AnalysisParams& analysis_params);
+  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params);
   ~AnalysisCommand();
   void execute();
+  void execute_cwt();
 };
 
-AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, AnalysisParams& analysis_params) :
+AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params) :
   dhandle (dhandle),
   analysis_params (analysis_params)
 {
@@ -153,6 +146,60 @@ AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, AnalysisParams& analys
 AnalysisCommand::~AnalysisCommand()
 {
   gsl_data_handle_unref (dhandle);
+}
+
+void
+AnalysisCommand::execute_cwt()
+{
+  CWT cwt;
+
+  vector<float> signal;
+  vector<float> block (1024);
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      for (uint64 t = 0; t < r; t++)
+        signal.push_back (block[t]);
+      pos += r;
+    }
+
+  double mix_freq = gsl_data_handle_mix_freq (dhandle);
+
+  vector< vector<float> > results;
+  results = cwt.analyze (signal);
+
+  size_t width = 0;
+  size_t height = results.size();
+  if (!results.empty())
+    width = results[0].size();
+
+  image.resize (width, height);
+
+  float max_value = 0;
+  for (vector< vector<float> >::const_iterator fi = results.begin(); fi != results.end(); fi++)
+    {
+      for (vector<float>::const_iterator mi = fi->begin(); mi != fi->end(); mi++)
+        {
+          max_value = max (max_value, value_scale (*mi));
+        }
+    }
+  guchar *p = image.get_pixels();
+  size_t  row_stride = image.get_rowstride();
+  for (size_t y = 0; y < height; y++)
+    {
+      for (size_t x = 0; x < results[y].size(); x++)
+        {
+          const size_t src_y = (height - 1 - y);
+          double value = MAX (value_scale (results[src_y][x]) - max_value + 96, 0) / 96;
+          p[x] = value * 255;
+        }
+      p += row_stride;
+    }
 }
 
 void
@@ -171,6 +218,11 @@ AnalysisCommand::execute()
       exit (1);
     }
 
+  if (analysis_params.transform_type == SM_TRANSFORM_CWT)
+    {
+      execute_cwt();
+      return;
+    }
   size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;
   size_t block_size = 1;
   while (block_size < frame_size)
@@ -267,8 +319,7 @@ AnalysisCommand::execute()
     {
       for (size_t m = 0; m < results[frame].mags.size(); m++)
         {
-          double value = value_scale (results[frame].mags[m]);
-          value /= max_value;
+          double value = MAX (value_scale (results[frame].mags[m]) - max_value + 96, 0) / 96;
           int y = results[frame].mags.size() - 1 - m;
           p[row_stride * y] = value * 255;
         }
@@ -277,7 +328,7 @@ AnalysisCommand::execute()
 }
 
 void
-FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, AnalysisParams& params)
+FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params)
 {
   Birnet::AutoLocker lock (command_mutex);
   commands.push_back (new AnalysisCommand (dhandle, params));

@@ -30,6 +30,10 @@ namespace SpectMorph {
 class FFTParamWindow : public Gtk::Window
 {
   Gtk::Table          table;
+
+  Gtk::ComboBoxText   transform_combobox;
+  Gtk::Label          transform_label;
+
   Gtk::HScale         frame_size_scale;
   Gtk::Label          frame_size_label;
   Gtk::Label          frame_size_value_label;
@@ -45,6 +49,8 @@ public:
   double get_frame_overlap();
   double get_frame_step();
   double get_frame_size();
+
+  AnalysisParams get_analysis_params();
 
   sigc::signal<void> signal_params_changed;
 };

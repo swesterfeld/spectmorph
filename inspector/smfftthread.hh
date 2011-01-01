@@ -53,7 +53,7 @@ public:
   ~FFTThread();
 
   void run();
-  void compute_image (PixelArray& image, GslDataHandle *dhandle, AnalysisParams& params);
+  void compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params);
   bool get_result (PixelArray& image);
 
   static FFTThread *the();

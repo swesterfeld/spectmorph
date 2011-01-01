@@ -16,6 +16,7 @@
  */
 
 #include "smfftparamwindow.hh"
+#include <assert.h>
 #include <birnet/birnet.hh>
 
 using namespace SpectMorph;
@@ -29,17 +30,25 @@ FFTParamWindow::FFTParamWindow() :
   set_default_size (500, 200);
   set_title ("FFT Parameters");
 
-  table.attach (frame_size_label, 0, 1, 0, 1, Gtk::SHRINK);
-  table.attach (frame_size_scale, 1, 2, 0, 1);
-  table.attach (frame_size_value_label, 2, 3, 0, 1, Gtk::SHRINK);
-  frame_size_label.set_text ("Frame Size");
+  table.attach (transform_label, 0, 1, 0, 1, Gtk::SHRINK);
+  table.attach (transform_combobox, 1, 3, 0, 1, Gtk::EXPAND|Gtk::FILL, Gtk::EXPAND);
+  transform_label.set_text ("Transform Type");
+  transform_combobox.append_text ("Fourier Transform");
+  transform_combobox.append_text ("Wavelet Transform");
+  transform_combobox.set_active_text ("Fourier Transform");
+  transform_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+
+  table.attach (frame_size_label, 0, 1, 1, 2, Gtk::SHRINK);
+  table.attach (frame_size_scale, 1, 2, 1, 2);
+  table.attach (frame_size_value_label, 2, 3, 1, 2, Gtk::SHRINK);
+  frame_size_label.set_text ("FFT Frame Size");
   frame_size_scale.set_draw_value (false);
   frame_size_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  table.attach (frame_overlap_label, 0, 1, 1, 2, Gtk::SHRINK);
-  table.attach (frame_overlap_scale, 1, 2, 1, 2);
-  table.attach (frame_overlap_value_label, 2, 3, 1, 2, Gtk::SHRINK);
-  frame_overlap_label.set_text ("Frame Overlap");
+  table.attach (frame_overlap_label, 0, 1, 2, 3, Gtk::SHRINK);
+  table.attach (frame_overlap_scale, 1, 2, 2, 3);
+  table.attach (frame_overlap_value_label, 2, 3, 2, 3, Gtk::SHRINK);
+  frame_overlap_label.set_text ("FFT Frame Overlap");
   frame_overlap_scale.set_draw_value (false);
   frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
@@ -49,6 +58,24 @@ FFTParamWindow::FFTParamWindow() :
 
   show();
   show_all_children();
+}
+
+AnalysisParams
+FFTParamWindow::get_analysis_params()
+{
+  AnalysisParams params;
+
+  if (transform_combobox.get_active_text() == "Fourier Transform")
+    params.transform_type = SM_TRANSFORM_FFT;
+  else if (transform_combobox.get_active_text() == "Wavelet Transform")
+    params.transform_type = SM_TRANSFORM_CWT;
+  else
+    assert (false);
+
+  params.frame_size_ms = get_frame_size();
+  params.frame_step_ms = get_frame_step();
+
+  return params;
 }
 
 double

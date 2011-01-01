@@ -86,7 +86,5 @@ MainWindow::on_analysis_changed()
 void
 MainWindow::on_dhandle_changed()
 {
-  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), 
-                       fft_param_window.get_frame_size(), 
-                       fft_param_window.get_frame_step());
+  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), fft_param_window.get_analysis_params());
 }

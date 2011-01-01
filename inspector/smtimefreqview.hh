@@ -49,7 +49,7 @@ public:
   sigc::signal<void> signal_spectrum_changed;
 
   void load (const std::string& filename);
-  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, double frame_size, double frame_step);
+  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
   bool on_expose_event (GdkEventExpose* ev);
 
   void set_zoom (double new_hzoom, double new_vzoom);

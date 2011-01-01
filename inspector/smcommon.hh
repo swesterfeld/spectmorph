@@ -21,10 +21,19 @@
 namespace SpectMorph
 {
 
+enum TransformType
+{
+  SM_TRANSFORM_NONE = 0,
+  SM_TRANSFORM_FFT = 1,
+  SM_TRANSFORM_CWT = 2
+};
+
 struct AnalysisParams
 {
-  double frame_size_ms;
-  double frame_step_ms;
+  TransformType transform_type;
+
+  double        frame_size_ms; /* FFT */
+  double        frame_step_ms; /* FFT */
 };
 
 struct FFTResult

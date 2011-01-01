@@ -176,7 +176,7 @@ CWT::analyze (const vector<float>& signal)
       FFT::fftsc_float (fft_size, out_fft, out);
       for (size_t i = 0; i < signal.size(); i++)
         {
-          if ((i & 127) == 0)
+          if ((i & 15) == 0)
             line.push_back (complex_abs (out[i * 2], out [i * 2 + 1]));
           //printf ("%zd %.17g\n", i, complex_abs (out[i * 2], out[i * 2 + 1]));
           //printf ("%zd %.17g %.17g\n", i, out[i * 2], out[i * 2 + 1]);
