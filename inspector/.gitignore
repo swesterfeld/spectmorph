@@ -2,3 +2,4 @@
 .libs
 *.o
 sminspector
+testinspector
