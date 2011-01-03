@@ -42,6 +42,18 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
+void
+show_progress (double p)
+{
+  static double old_progress = 0;
+  if (p > old_progress + 0.01)
+    {
+      printf ("\rCWT: %.2f%%", p * 100);
+      fflush (stdout);
+      old_progress = p;
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -81,12 +93,15 @@ main (int argc, char **argv)
       vector<float> signal = loader->samples();
       vector< vector<float> > results;
 
+      cwt.signal_progress.connect (sigc::ptr_fun (show_progress));
       results = cwt.analyze (signal);
+      printf ("\n");
       cwt.make_png (results);
     }
   else
     {
       printf ("usage: testinspector zoom\n");
+      printf ("or     testinspector cwt <somefile.wav>\n");
       return 1;
     }
 
