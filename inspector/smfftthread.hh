@@ -54,6 +54,7 @@ public:
   ~FFTThread();
 
   void set_command_progress (double progress);
+  bool command_is_obsolete();
 
   void run();
   void compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params);

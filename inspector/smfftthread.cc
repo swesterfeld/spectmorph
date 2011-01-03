@@ -73,7 +73,10 @@ FFTThread::run()
             delete (*ri);
           command_results.clear();
 
-          command_results.push_back (c);
+          if (commands.empty())       // check if user aborted this command
+            command_results.push_back (c);
+          else
+            delete c;
 
           // wakeup main thread
           while (write (main_thread_wakeup_pfds[1], "W", 1) != 1)
@@ -194,7 +197,7 @@ AnalysisCommand::execute_cwt()
   cwt.signal_progress.connect (sigc::mem_fun (*this, &AnalysisCommand::set_progress));
 
   vector< vector<float> > results;
-  results = cwt.analyze (signal);
+  results = cwt.analyze (signal, fft_thread);
 
   size_t width = 0;
   size_t height = results.size();
@@ -323,7 +326,14 @@ AnalysisCommand::execute()
       results.push_back (result);
 
       set_progress (CLAMP (pos_ms / len_ms, 0.0, 1.0));
+
+      if (fft_thread->command_is_obsolete())      // abort analysis if user requested a new one
+        break;
     }
+
+  FFT::free_array_float (fft_in);
+  FFT::free_array_float (fft_out);
+
   size_t height = 0;
   if (!results.empty())
     height = results[0].mags.size();
@@ -404,4 +414,11 @@ FFTThread::get_progress()
 {
   Birnet::AutoLocker lock (command_mutex);
   return command_progress;
+}
+
+bool
+FFTThread::command_is_obsolete()
+{
+  Birnet::AutoLocker lock (command_mutex);
+  return !commands.empty();
 }

@@ -32,6 +32,7 @@
 #include "smmain.hh"
 #include "smmath.hh"
 #include "smcwt.hh"
+#include "smfftthread.hh"
 #include <math.h>
 
 using std::vector;
@@ -102,7 +103,7 @@ complex_abs (double re, double im)
 }
 
 vector< vector<float> >
-CWT::analyze (const vector<float>& signal)
+CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
 {
   int width = 0;
   double mre = 0, mim = 0;
@@ -183,6 +184,9 @@ CWT::analyze (const vector<float>& signal)
         }
       results.push_back (line);
       signal_progress (freq / 22050.0);
+
+      if (fft_thread && fft_thread->command_is_obsolete()) // abort if user changed params
+        break;
     }
   FFT::free_array_float (morlet);
   FFT::free_array_float (morlet_fft);
