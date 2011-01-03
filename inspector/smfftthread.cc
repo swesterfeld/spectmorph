@@ -318,7 +318,7 @@ AnalysisCommand::execute()
           double re = fft_out[i];
           double im = fft_out[i + 1];
 
-          result.mags.push_back (sqrt (re * re + im * im));
+          result.mags.push_back (value_scale (sqrt (re * re + im * im)));
         }
       results.push_back (result);
 
@@ -329,13 +329,12 @@ AnalysisCommand::execute()
     height = results[0].mags.size();
 
   image.resize (results.size(), height);
-
   float max_value = 0;
   for (vector<FFTResult>::const_iterator fi = results.begin(); fi != results.end(); fi++)
     {
       for (vector<float>::const_iterator mi = fi->mags.begin(); mi != fi->mags.end(); mi++)
         {
-          max_value = max (max_value, value_scale (*mi));
+          max_value = max (max_value, *mi);
         }
     }
   guchar *p = image.get_pixels();
@@ -344,7 +343,7 @@ AnalysisCommand::execute()
     {
       for (size_t m = 0; m < results[frame].mags.size(); m++)
         {
-          double value = MAX (value_scale (results[frame].mags[m]) - max_value + 96, 0) / 96;
+          double value = MAX (results[frame].mags[m] - max_value + 96, 0) / 96;
           int y = results[frame].mags.size() - 1 - m;
           p[row_stride * y] = value * 255;
         }
