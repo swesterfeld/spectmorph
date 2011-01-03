@@ -49,6 +49,7 @@ public:
   void on_dhandle_changed();
   void on_position_changed();
   void on_analysis_changed();
+  void on_progress_changed();
 };
 
 }

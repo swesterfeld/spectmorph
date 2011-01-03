@@ -22,7 +22,7 @@
 using namespace SpectMorph;
 
 FFTParamWindow::FFTParamWindow() :
-  table (2, 3),
+  table (4, 3),
   frame_size_scale (-1, 1, 0.01),
   frame_overlap_scale (-1, 2, 0.01)
 {
@@ -51,6 +51,8 @@ FFTParamWindow::FFTParamWindow() :
   frame_overlap_label.set_text ("FFT Frame Overlap");
   frame_overlap_scale.set_draw_value (false);
   frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+
+  table.attach (progress_bar, 0, 3, 3, 4);
 
   frame_size_scale.set_value (0);
   frame_overlap_scale.set_value (0);
@@ -103,4 +105,10 @@ FFTParamWindow::on_value_changed()
   frame_overlap_value_label.set_text (Birnet::string_printf ("%.1f", get_frame_overlap()));
 
   signal_params_changed();
+}
+
+void
+FFTParamWindow::set_progress (double progress)
+{
+  progress_bar.set_fraction (progress);
 }

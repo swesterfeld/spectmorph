@@ -20,6 +20,8 @@
 
 #include <vector>
 
+#include <gtkmm.h>        // signal
+
 namespace SpectMorph {
 
 class CWT
@@ -27,6 +29,8 @@ class CWT
 public:
   std::vector< std::vector<float> > analyze (const std::vector<float>& signal);
   void make_png (std::vector< std::vector<float> >& results);
+
+  sigc::signal<void, double> signal_progress;
 };
 
 }

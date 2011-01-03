@@ -47,6 +47,7 @@ public:
   TimeFreqView (); //const std::string& filename);
 
   sigc::signal<void> signal_spectrum_changed;
+  sigc::signal<void> signal_progress_changed;
 
   void load (const std::string& filename);
   void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
@@ -58,6 +59,7 @@ public:
 
   int  get_frames();
   FFTResult get_spectrum();
+  double get_progress();
   static Glib::RefPtr<Gdk::Pixbuf> zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
                                               double hzoom, double vzoom, int position);
 };

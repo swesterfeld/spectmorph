@@ -83,6 +83,17 @@ FFTThread::run()
     }
 }
 
+void
+FFTThread::set_command_progress (double progress)
+{
+  Birnet::AutoLocker lock (command_mutex);
+  command_progress = progress;
+
+  // wakeup main thread
+  while (write (main_thread_wakeup_pfds[1], "W", 1) != 1)
+    ;
+}
+
 void*
 thread_start (void *arg)
 {
@@ -125,18 +136,22 @@ value_scale (float value)
 
 struct AnalysisCommand : public FFTThread::Command
 {
+  FFTThread        *fft_thread;
   GslDataHandle    *dhandle;
   vector<FFTResult> results;
   PixelArray        image;
   AnalysisParams    analysis_params;
 
-  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params);
+  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread);
   ~AnalysisCommand();
   void execute();
   void execute_cwt();
+
+  void set_progress (double progress);
 };
 
-AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params) :
+AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread) :
+  fft_thread (fft_thread),
   dhandle (dhandle),
   analysis_params (analysis_params)
 {
@@ -146,6 +161,12 @@ AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& 
 AnalysisCommand::~AnalysisCommand()
 {
   gsl_data_handle_unref (dhandle);
+}
+
+void
+AnalysisCommand::set_progress (double progress)
+{
+  fft_thread->set_command_progress (progress);
 }
 
 void
@@ -169,6 +190,8 @@ AnalysisCommand::execute_cwt()
     }
 
   double mix_freq = gsl_data_handle_mix_freq (dhandle);
+
+  cwt.signal_progress.connect (sigc::mem_fun (*this, &AnalysisCommand::set_progress));
 
   vector< vector<float> > results;
   results = cwt.analyze (signal);
@@ -298,6 +321,8 @@ AnalysisCommand::execute()
           result.mags.push_back (sqrt (re * re + im * im));
         }
       results.push_back (result);
+
+      set_progress (CLAMP (pos_ms / len_ms, 0.0, 1.0));
     }
   size_t height = 0;
   if (!results.empty())
@@ -331,7 +356,7 @@ void
 FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params)
 {
   Birnet::AutoLocker lock (command_mutex);
-  commands.push_back (new AnalysisCommand (dhandle, params));
+  commands.push_back (new AnalysisCommand (dhandle, params, this));
 
   // wakeup FFT thread
   while (write (fft_thread_wakeup_pfds[1], "W", 1) != 1)
@@ -373,4 +398,11 @@ FFTThread::on_result_available (Glib::IOCondition io_condition)
   signal_result_available();
 
   return true;
+}
+
+double
+FFTThread::get_progress()
+{
+  Birnet::AutoLocker lock (command_mutex);
+  return command_progress;
 }

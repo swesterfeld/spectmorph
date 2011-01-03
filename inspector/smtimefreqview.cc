@@ -62,6 +62,8 @@ TimeFreqView::on_timeout()
 {
   if (FFTThread::the()->get_result (image))
     force_redraw();
+
+  signal_progress_changed();
 }
 
 void
@@ -242,4 +244,10 @@ TimeFreqView::set_show_analysis (bool new_show_analysis)
   show_analysis = new_show_analysis;
 
   force_redraw();
+}
+
+double
+TimeFreqView::get_progress()
+{
+  return fft_thread.get_progress();
 }

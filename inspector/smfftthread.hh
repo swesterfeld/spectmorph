@@ -40,6 +40,7 @@ protected:
   Birnet::Mutex           command_mutex;
   std::vector<Command *>  commands;
   std::vector<Command *>  command_results;
+  double                  command_progress;
 
   int                     fft_thread_wakeup_pfds[2];
   int                     main_thread_wakeup_pfds[2];
@@ -52,9 +53,12 @@ public:
   FFTThread();
   ~FFTThread();
 
+  void set_command_progress (double progress);
+
   void run();
   void compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params);
   bool get_result (PixelArray& image);
+  double get_progress();
 
   static FFTThread *the();
 

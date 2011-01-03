@@ -182,6 +182,7 @@ CWT::analyze (const vector<float>& signal)
           //printf ("%zd %.17g %.17g\n", i, out[i * 2], out[i * 2 + 1]);
         }
       results.push_back (line);
+      signal_progress (freq / 22050.0);
     }
   FFT::free_array_float (morlet);
   FFT::free_array_float (morlet_fft);

@@ -42,6 +42,8 @@ class FFTParamWindow : public Gtk::Window
   Gtk::Label          frame_overlap_label;
   Gtk::Label          frame_overlap_value_label;
 
+  Gtk::ProgressBar    progress_bar;
+
   void on_value_changed();
 public:
   FFTParamWindow();
@@ -50,6 +52,7 @@ public:
   double get_frame_step();
   double get_frame_size();
 
+  void   set_progress (double progress);
   AnalysisParams get_analysis_params();
 
   sigc::signal<void> signal_params_changed;
