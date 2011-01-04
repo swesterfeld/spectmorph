@@ -61,9 +61,10 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
+  const double clocks_per_sec = 2500.0 * 1000 * 1000;
+
   if (argc == 2 && string (argv[1]) == "zoom")
     {
-      const double clocks_per_sec = 2500.0 * 1000 * 1000;
       const unsigned int runs = 10;
 
       PixelArray image;
@@ -93,10 +94,14 @@ main (int argc, char **argv)
       vector<float> signal = loader->samples();
       vector< vector<float> > results;
 
+      double start = gettime();
       cwt.signal_progress.connect (sigc::ptr_fun (show_progress));
       results = cwt.analyze (signal);
       printf ("\n");
       cwt.make_png (results);
+      double end = gettime();
+
+      printf ("per sample cost: %f ops\n", (end - start) * clocks_per_sec / (signal.size() * results.size()));
     }
   else
     {
