@@ -210,9 +210,17 @@ get (vector<float>& signal, size_t i, int offset)
 }
 
 vector< vector<float> >
-CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
+CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
 {
   vector< vector<float> > results;
+
+  // pad data with zeros to make moving average filter work properly
+  const int WIDTH = 100;
+  const size_t ORDER = 7;
+  const int PADDING = ORDER * WIDTH;
+  vector<float> signal (asignal.size() + PADDING * 2);
+  std::copy (asignal.begin(), asignal.end(), signal.begin() + PADDING);
+
   for (float freq = 50; freq < 22050; freq += 25)
     {
       vector<float> mod_signal_c;
@@ -227,9 +235,8 @@ CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
         }
 
       /* filter a few times with moving average filter -> approximates exp() window function */
-      int WIDTH = 100;
       vector<float> new_mod_signal_c (signal.size() * 2);
-      for (size_t n = 0; n < 7; n++)
+      for (size_t n = 0; n < ORDER; n++)
         {
           double avg_re = 0, avg_im = 0;
           for (size_t i = 0; i < signal.size(); i++)
@@ -256,7 +263,7 @@ CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
           out_signal_c[i * 2 + 1] = out.imag();   // imag
         }
       vector<float> line;
-      for (size_t i = 0; i < signal.size(); i++)
+      for (size_t i = PADDING; i < signal.size() - PADDING; i++)
         {
           if ((i & 15) == 0)
             line.push_back (complex_abs (out_signal_c[i * 2], out_signal_c [i * 2 + 1]));
