@@ -103,7 +103,7 @@ complex_abs (double re, double im)
 }
 
 vector< vector<float> >
-CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
+CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
 {
   int width = 0;
   double mre = 0, mim = 0;
@@ -116,7 +116,7 @@ CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
       //printf ("%d %.17g\n", width, v1);
     }
   while (v1 > 0.9);
-  printf ("width = %d\n", width);
+  //printf ("width = %d\n", width);
   //return 0;
 
   size_t EXTRA_SPACE = width;
@@ -195,5 +195,74 @@ CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
   FFT::free_array_float (in);
   FFT::free_array_float (in_fft);
 
+  return results;
+}
+
+double
+get (vector<float>& signal, size_t i, int offset)
+{
+  int pos = i;
+  pos += offset;
+  if (pos >= 0 && pos < int (signal.size()))
+    return signal[pos];
+  else
+    return 0;
+}
+
+vector< vector<float> >
+CWT::analyze (const vector<float>& signal, FFTThread *fft_thread)
+{
+  vector< vector<float> > results;
+  for (float freq = 50; freq < 22050; freq += 25)
+    {
+      vector<float> mod_signal_c;
+      double phase = 0;
+      for (size_t i = 0; i < signal.size(); i++)
+        {
+          double s, c;
+          sincos (phase, &s, &c);
+          phase += freq / 44100 * 2 * M_PI;
+          mod_signal_c.push_back (c * signal[i]);   // real
+          mod_signal_c.push_back (s * signal[i]);   // imag
+        }
+
+      /* filter a few times with moving average filter -> approximates exp() window function */
+      int WIDTH = 100;
+      vector<float> new_mod_signal_c (signal.size() * 2);
+      for (size_t n = 0; n < 7; n++)
+        {
+          double avg_re = 0, avg_im = 0;
+          for (size_t i = 0; i < signal.size(); i++)
+            {
+              avg_re += get (mod_signal_c, i * 2, +WIDTH * 2) - get (mod_signal_c, i * 2, -WIDTH * 2);
+              avg_im += get (mod_signal_c, i * 2 + 1, +WIDTH * 2) - get (mod_signal_c, i * 2 + 1, -WIDTH * 2);
+              new_mod_signal_c[i * 2] = avg_re;
+              new_mod_signal_c[i * 2 + 1] = avg_im;
+            }
+          mod_signal_c = new_mod_signal_c;
+        }
+      phase = 0;
+      vector<float> out_signal_c (signal.size() * 2);
+      for (size_t i = 0; i < signal.size(); i++)
+        {
+          double s, c;
+          sincos (phase, &s, &c);
+          phase -= freq / 44100 * 2 * M_PI;         // minus sign to undo modulation
+          complex<double> de_mod_factor (c, s);
+          complex<double> mod_value (mod_signal_c[i * 2], mod_signal_c[i * 2 + 1]);
+          complex<double> out = de_mod_factor * mod_value;
+
+          out_signal_c[i * 2]     = out.real();   // real
+          out_signal_c[i * 2 + 1] = out.imag();   // imag
+        }
+      vector<float> line;
+      for (size_t i = 0; i < signal.size(); i++)
+        {
+          if ((i & 15) == 0)
+            line.push_back (complex_abs (out_signal_c[i * 2], out_signal_c [i * 2 + 1]));
+        }
+      results.push_back (line);
+      signal_progress (freq / 22050.0);
+    }
   return results;
 }
