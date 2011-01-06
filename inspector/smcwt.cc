@@ -224,14 +224,20 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
   for (float freq = 50; freq < 22050; freq += 25)
     {
       vector<float> mod_signal_c;
-      double phase = 0;
+
+      VectorSinParams vsp;
+      vsp.mix_freq = 44100;
+      vsp.freq = freq;
+      vsp.phase = 0;
+      vsp.mag = 1;
+      vsp.mode = VectorSinParams::REPLACE;
+      vector<float> sin_values (signal.size()), cos_values (signal.size());
+      fast_vector_sincos (vsp, sin_values.begin(), sin_values.end(), cos_values.begin());
+
       for (size_t i = 0; i < signal.size(); i++)
         {
-          double s, c;
-          sincos (phase, &s, &c);
-          phase += freq / 44100 * 2 * M_PI;
-          mod_signal_c.push_back (c * signal[i]);   // real
-          mod_signal_c.push_back (s * signal[i]);   // imag
+          mod_signal_c.push_back (cos_values[i] * signal[i]);   // real
+          mod_signal_c.push_back (sin_values[i] * signal[i]);   // imag
         }
 
       /* filter a few times with moving average filter -> approximates exp() window function */
@@ -248,14 +254,10 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
             }
           mod_signal_c = new_mod_signal_c;
         }
-      phase = 0;
       vector<float> out_signal_c (signal.size() * 2);
       for (size_t i = 0; i < signal.size(); i++)
         {
-          double s, c;
-          sincos (phase, &s, &c);
-          phase -= freq / 44100 * 2 * M_PI;         // minus sign to undo modulation
-          complex<double> de_mod_factor (c, s);
+          complex<double> de_mod_factor (cos_values[i], -sin_values[i]);
           complex<double> mod_value (mod_signal_c[i * 2], mod_signal_c[i * 2 + 1]);
           complex<double> out = de_mod_factor * mod_value;
 
