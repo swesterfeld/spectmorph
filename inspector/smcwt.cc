@@ -53,7 +53,7 @@ CWT::make_png (vector< vector<float> >& results)
   const int width = results[0].size(), height = results.size();
   GdkPixbuf *pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, /* has_alpha */ false, 8, width, height);
 
-  double max_value = 0.0;
+  double max_value = -200.0;
   // compute magnitudes from FFT data and figure out max peak
   for (size_t n = 0; n < results.size(); n++)
     {
@@ -236,12 +236,13 @@ CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThr
       for (size_t n = 0; n < ORDER; n++)
         {
           float avg_re = 0, avg_im = 0;
+          const float norm = 1.0 / (WIDTH * 2);
           for (size_t i = WIDTH; i < signal.size() - WIDTH; i++)
             {
               avg_re += mod_signal_c[i * 2 + WIDTH * 2] - mod_signal_c[i * 2 - WIDTH * 2];
               avg_im += mod_signal_c[i * 2 + 1 + WIDTH * 2] - mod_signal_c[i * 2 + 1 - WIDTH * 2];
-              new_mod_signal_c[i * 2] = avg_re;
-              new_mod_signal_c[i * 2 + 1] = avg_im;
+              new_mod_signal_c[i * 2] = avg_re * norm;
+              new_mod_signal_c[i * 2 + 1] = avg_im * norm;
             }
           mod_signal_c.swap (new_mod_signal_c);
         }

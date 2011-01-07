@@ -206,7 +206,7 @@ AnalysisCommand::execute_cwt()
 
   image.resize (width, height);
 
-  float max_value = 0;
+  float max_value = -200;
   for (vector< vector<float> >::const_iterator fi = results.begin(); fi != results.end(); fi++)
     {
       for (vector<float>::const_iterator mi = fi->begin(); mi != fi->end(); mi++)
