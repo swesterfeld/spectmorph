@@ -208,6 +208,9 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
   const size_t ORDER = 7;
   const int PADDING = (ORDER + 1) * WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
+  vector<float> sin_values (signal.size()), cos_values (signal.size());
+  vector<float> mod_signal_c (signal.size() * 2);
+  vector<float> new_mod_signal_c (signal.size() * 2);
   std::copy (asignal.begin(), asignal.end(), signal.begin() + PADDING);
 
   for (float freq = 50; freq < 22050; freq += 25)
@@ -218,11 +221,9 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       vsp.phase = 0;
       vsp.mag = 1;
       vsp.mode = VectorSinParams::REPLACE;
-      vector<float> sin_values (signal.size()), cos_values (signal.size());
       fast_vector_sincos (vsp, sin_values.begin(), sin_values.end(), cos_values.begin());
 
       // modulation: multiply with complex exp(-j*w*t)
-      vector<float> mod_signal_c  (signal.size() * 2);
       for (size_t i = 0; i < signal.size(); i++)
         {
           mod_signal_c[i * 2]     = cos_values[i] * signal[i];   // real
@@ -230,7 +231,6 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
         }
 
       /* filter a few times with moving average filter -> approximates exp() window function */
-      vector<float> new_mod_signal_c (signal.size() * 2);
       for (size_t n = 0; n < ORDER; n++)
         {
           float avg_re = 0, avg_im = 0;
