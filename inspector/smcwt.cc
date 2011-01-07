@@ -37,6 +37,7 @@
 
 using std::vector;
 using std::complex;
+using Birnet::AlignedArray;
 using namespace SpectMorph;
 
 float
@@ -208,7 +209,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
   const size_t ORDER = 7;
   const int PADDING = (ORDER + 1) * WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
-  vector<float> sin_values (signal.size()), cos_values (signal.size());
+  AlignedArray<float,16> sin_values (signal.size()), cos_values (signal.size());
   vector<float> mod_signal_c (signal.size() * 2);
   vector<float> new_mod_signal_c (signal.size() * 2);
   std::copy (asignal.begin(), asignal.end(), signal.begin() + PADDING);
@@ -221,7 +222,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       vsp.phase = 0;
       vsp.mag = 1;
       vsp.mode = VectorSinParams::REPLACE;
-      fast_vector_sincos (vsp, sin_values.begin(), sin_values.end(), cos_values.begin());
+      fast_vector_sincosf (vsp, &sin_values[0], &sin_values[sin_values.size()], &cos_values[0]);
 
       // modulation: multiply with complex exp(-j*w*t)
       for (size_t i = 0; i < signal.size(); i++)
@@ -247,11 +248,15 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       vector<float> line;
       for (size_t i = PADDING; i < signal.size() - PADDING; i += 16)
         {
-          complex<double> de_mod_factor (cos_values[i], -sin_values[i]);
-          complex<double> mod_value (mod_signal_c[i * 2], mod_signal_c[i * 2 + 1]);
-          complex<double> out = de_mod_factor * mod_value;
-
-          line.push_back (abs (out));
+          const float d_r = cos_values[i];
+          const float d_i = -sin_values[i];
+          const float m_r = mod_signal_c[i * 2];
+          const float m_i = mod_signal_c[i * 2 + 1];
+          // complex mul:  d * m
+          const float re = d_r * m_r - d_i * m_i;
+          const float im = d_i * m_r + d_r * m_i;
+          // abs (d * m)
+          line.push_back (sqrtf (re * re + im * im));
         }
       results.push_back (line);
       signal_progress (freq / 22050.0);
