@@ -223,6 +223,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       vector<float> sin_values (signal.size()), cos_values (signal.size());
       fast_vector_sincos (vsp, sin_values.begin(), sin_values.end(), cos_values.begin());
 
+      // modulation: multiply with complex exp(-j*w*t)
       for (size_t i = 0; i < signal.size(); i++)
         {
           mod_signal_c.push_back (cos_values[i] * signal[i]);   // real
@@ -243,21 +244,15 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
             }
           mod_signal_c = new_mod_signal_c;
         }
-      vector<float> out_signal_c (signal.size() * 2);
-      for (size_t i = 0; i < signal.size(); i++)
+      // demodulation: multiply with complex exp(j*w*t)
+      vector<float> line;
+      for (size_t i = PADDING; i < signal.size() - PADDING; i += 16)
         {
           complex<double> de_mod_factor (cos_values[i], -sin_values[i]);
           complex<double> mod_value (mod_signal_c[i * 2], mod_signal_c[i * 2 + 1]);
           complex<double> out = de_mod_factor * mod_value;
 
-          out_signal_c[i * 2]     = out.real();   // real
-          out_signal_c[i * 2 + 1] = out.imag();   // imag
-        }
-      vector<float> line;
-      for (size_t i = PADDING; i < signal.size() - PADDING; i++)
-        {
-          if ((i & 15) == 0)
-            line.push_back (complex_abs (out_signal_c[i * 2], out_signal_c [i * 2 + 1]));
+          line.push_back (abs (out));
         }
       results.push_back (line);
       signal_progress (freq / 22050.0);
