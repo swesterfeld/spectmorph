@@ -97,9 +97,9 @@ main (int argc, char **argv)
       double start = gettime();
       cwt.signal_progress.connect (sigc::ptr_fun (show_progress));
       results = cwt.analyze (signal);
+      double end = gettime();
       printf ("\n");
       cwt.make_png (results);
-      double end = gettime();
 
       printf ("per sample cost: %f ops\n", (end - start) * clocks_per_sec / (signal.size() * results.size()));
     }
