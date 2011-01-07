@@ -212,8 +212,6 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
 
   for (float freq = 50; freq < 22050; freq += 25)
     {
-      vector<float> mod_signal_c;
-
       VectorSinParams vsp;
       vsp.mix_freq = 44100;
       vsp.freq = freq;
@@ -224,10 +222,11 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       fast_vector_sincos (vsp, sin_values.begin(), sin_values.end(), cos_values.begin());
 
       // modulation: multiply with complex exp(-j*w*t)
+      vector<float> mod_signal_c  (signal.size() * 2);
       for (size_t i = 0; i < signal.size(); i++)
         {
-          mod_signal_c.push_back (cos_values[i] * signal[i]);   // real
-          mod_signal_c.push_back (sin_values[i] * signal[i]);   // imag
+          mod_signal_c[i * 2]     = cos_values[i] * signal[i];   // real
+          mod_signal_c[i * 2 + 1] = sin_values[i] * signal[i];   // imag
         }
 
       /* filter a few times with moving average filter -> approximates exp() window function */
