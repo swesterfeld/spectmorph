@@ -234,7 +234,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       vector<float> new_mod_signal_c (signal.size() * 2);
       for (size_t n = 0; n < ORDER; n++)
         {
-          double avg_re = 0, avg_im = 0;
+          float avg_re = 0, avg_im = 0;
           for (size_t i = WIDTH; i < signal.size() - WIDTH; i++)
             {
               avg_re += mod_signal_c[i * 2 + WIDTH * 2] - mod_signal_c[i * 2 - WIDTH * 2];
