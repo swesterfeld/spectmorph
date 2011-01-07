@@ -242,7 +242,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
               new_mod_signal_c[i * 2] = avg_re;
               new_mod_signal_c[i * 2 + 1] = avg_im;
             }
-          mod_signal_c = new_mod_signal_c;
+          mod_signal_c.swap (new_mod_signal_c);
         }
       // demodulation: multiply with complex exp(j*w*t)
       vector<float> line;
