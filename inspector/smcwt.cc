@@ -198,17 +198,6 @@ CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
   return results;
 }
 
-double
-get (vector<float>& signal, size_t i, int offset)
-{
-  int pos = i;
-  pos += offset;
-  if (pos >= 0 && pos < int (signal.size()))
-    return signal[pos];
-  else
-    return 0;
-}
-
 vector< vector<float> >
 CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
 {
@@ -217,7 +206,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
   // pad data with zeros to make moving average filter work properly
   const int WIDTH = 100;
   const size_t ORDER = 7;
-  const int PADDING = ORDER * WIDTH;
+  const int PADDING = (ORDER + 1) * WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
   std::copy (asignal.begin(), asignal.end(), signal.begin() + PADDING);
 
@@ -245,10 +234,10 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
       for (size_t n = 0; n < ORDER; n++)
         {
           double avg_re = 0, avg_im = 0;
-          for (size_t i = 0; i < signal.size(); i++)
+          for (size_t i = WIDTH; i < signal.size() - WIDTH; i++)
             {
-              avg_re += get (mod_signal_c, i * 2, +WIDTH * 2) - get (mod_signal_c, i * 2, -WIDTH * 2);
-              avg_im += get (mod_signal_c, i * 2 + 1, +WIDTH * 2) - get (mod_signal_c, i * 2 + 1, -WIDTH * 2);
+              avg_re += mod_signal_c[i * 2 + WIDTH * 2] - mod_signal_c[i * 2 - WIDTH * 2];
+              avg_im += mod_signal_c[i * 2 + 1 + WIDTH * 2] - mod_signal_c[i * 2 + 1 - WIDTH * 2];
               new_mod_signal_c[i * 2] = avg_re;
               new_mod_signal_c[i * 2 + 1] = avg_im;
             }
