@@ -94,9 +94,13 @@ main (int argc, char **argv)
       vector<float> signal = loader->samples();
       vector< vector<float> > results;
 
+      AnalysisParams params;
+      params.cwt_freq_resolution = 25;
+      params.cwt_time_resolution = 5;
+
       double start = gettime();
       cwt.signal_progress.connect (sigc::ptr_fun (show_progress));
-      results = cwt.analyze (signal);
+      results = cwt.analyze (signal, params);
       double end = gettime();
       printf ("\n");
       cwt.make_png (results);

@@ -34,6 +34,12 @@ class FFTParamWindow : public Gtk::Window
   Gtk::ComboBoxText   transform_combobox;
   Gtk::Label          transform_label;
 
+  Gtk::Frame          fft_frame;
+  Gtk::Table          fft_frame_table;
+
+  Gtk::Frame          cwt_frame;
+  Gtk::Table          cwt_frame_table;
+
   Gtk::HScale         frame_size_scale;
   Gtk::Label          frame_size_label;
   Gtk::Label          frame_size_value_label;
@@ -42,15 +48,26 @@ class FFTParamWindow : public Gtk::Window
   Gtk::Label          frame_overlap_label;
   Gtk::Label          frame_overlap_value_label;
 
+  Gtk::HScale         cwt_freq_res_scale;
+  Gtk::Label          cwt_freq_res_label;
+  Gtk::Label          cwt_freq_res_value_label;
+
+  Gtk::HScale         cwt_time_res_scale;
+  Gtk::Label          cwt_time_res_label;
+  Gtk::Label          cwt_time_res_value_label;
+
   Gtk::ProgressBar    progress_bar;
 
   void on_value_changed();
-public:
-  FFTParamWindow();
 
   double get_frame_overlap();
-  double get_frame_step();
   double get_frame_size();
+  double get_frame_step();
+
+  double get_cwt_time_resolution();
+
+public:
+  FFTParamWindow();
 
   void   set_progress (double progress);
   AnalysisParams get_analysis_params();

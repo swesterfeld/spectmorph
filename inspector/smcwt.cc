@@ -36,6 +36,7 @@
 #include <math.h>
 
 using std::vector;
+using std::max;
 using std::complex;
 using Birnet::AlignedArray;
 using namespace SpectMorph;
@@ -200,12 +201,12 @@ CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
 }
 
 vector< vector<float> >
-CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
+CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThread *fft_thread)
 {
   vector< vector<float> > results;
 
   // pad data with zeros to make moving average filter work properly
-  const int WIDTH = 100;
+  const int WIDTH = MAX (2, params.cwt_time_resolution / 1000 / 2 * 44100);
   const size_t ORDER = 7;
   const int PADDING = (ORDER + 1) * WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
@@ -214,7 +215,7 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
   vector<float> new_mod_signal_c (signal.size() * 2);
   std::copy (asignal.begin(), asignal.end(), signal.begin() + PADDING);
 
-  for (float freq = 50; freq < 22050; freq += 25)
+  for (float freq = params.cwt_freq_resolution; freq < 22050; freq += params.cwt_freq_resolution)
     {
       VectorSinParams vsp;
       vsp.mix_freq = 44100;

@@ -197,7 +197,7 @@ AnalysisCommand::execute_cwt()
   cwt.signal_progress.connect (sigc::mem_fun (*this, &AnalysisCommand::set_progress));
 
   vector< vector<float> > results;
-  results = cwt.analyze (signal, fft_thread);
+  results = cwt.analyze (signal, analysis_params, fft_thread);
 
   size_t width = 0;
   size_t height = results.size();

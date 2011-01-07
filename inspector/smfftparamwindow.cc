@@ -22,13 +22,15 @@
 using namespace SpectMorph;
 
 FFTParamWindow::FFTParamWindow() :
-  table (4, 3),
+  table (5, 3),
   frame_size_scale (-1, 1, 0.01),
-  frame_overlap_scale (-1, 2, 0.01)
+  frame_overlap_scale (-1, 2, 0.01),
+  cwt_freq_res_scale (1, 100, 0.01),
+  cwt_time_res_scale (-1, 1, 0.01)
 {
   set_border_width (10);
   set_default_size (500, 200);
-  set_title ("FFT Parameters");
+  set_title ("Transform Parameters");
 
   table.attach (transform_label, 0, 1, 0, 1, Gtk::SHRINK);
   table.attach (transform_combobox, 1, 3, 0, 1, Gtk::EXPAND|Gtk::FILL, Gtk::EXPAND);
@@ -38,24 +40,50 @@ FFTParamWindow::FFTParamWindow() :
   transform_combobox.set_active_text ("Fourier Transform");
   transform_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  table.attach (frame_size_label, 0, 1, 1, 2, Gtk::SHRINK);
-  table.attach (frame_size_scale, 1, 2, 1, 2);
-  table.attach (frame_size_value_label, 2, 3, 1, 2, Gtk::SHRINK);
+  fft_frame_table.attach (frame_size_label, 0, 1, 0, 1, Gtk::SHRINK);
+  fft_frame_table.attach (frame_size_scale, 1, 2, 0, 1);
+  fft_frame_table.attach (frame_size_value_label, 2, 3, 0, 1, Gtk::SHRINK);
   frame_size_label.set_text ("FFT Frame Size");
   frame_size_scale.set_draw_value (false);
   frame_size_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  table.attach (frame_overlap_label, 0, 1, 2, 3, Gtk::SHRINK);
-  table.attach (frame_overlap_scale, 1, 2, 2, 3);
-  table.attach (frame_overlap_value_label, 2, 3, 2, 3, Gtk::SHRINK);
+  fft_frame_table.attach (frame_overlap_label, 0, 1, 1, 2, Gtk::SHRINK);
+  fft_frame_table.attach (frame_overlap_scale, 1, 2, 1, 2);
+  fft_frame_table.attach (frame_overlap_value_label, 2, 3, 1, 2, Gtk::SHRINK);
   frame_overlap_label.set_text ("FFT Frame Overlap");
   frame_overlap_scale.set_draw_value (false);
   frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+
+  fft_frame.set_label ("Fourier Transfrom Parameters");
+  fft_frame_table.set_border_width (10);
+  fft_frame.add (fft_frame_table);
+  table.attach (fft_frame, 0, 3, 1, 2);
+
+  cwt_frame.set_label ("Wavelet Transfrom Parameters");
+  cwt_frame.add (cwt_frame_table);
+  cwt_frame_table.set_border_width (10);
+  table.attach (cwt_frame, 0, 3, 2, 3);
+
+  cwt_frame_table.attach (cwt_freq_res_label, 0, 1, 0, 1, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_freq_res_scale, 1, 2, 0, 1);
+  cwt_frame_table.attach (cwt_freq_res_value_label, 2, 3, 0, 1, Gtk::SHRINK);
+  cwt_freq_res_label.set_text ("Frequency Resolution");
+  cwt_freq_res_scale.set_draw_value (false);
+  cwt_freq_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+
+  cwt_frame_table.attach (cwt_time_res_label, 0, 1, 1, 2, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_time_res_scale, 1, 2, 1, 2);
+  cwt_frame_table.attach (cwt_time_res_value_label, 2, 3, 1, 2, Gtk::SHRINK);
+  cwt_time_res_label.set_text ("Time Resolution");
+  cwt_time_res_scale.set_draw_value (false);
+  cwt_time_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
   table.attach (progress_bar, 0, 3, 3, 4);
 
   frame_size_scale.set_value (0);
   frame_overlap_scale.set_value (0);
+  cwt_freq_res_scale.set_value (25);
+  cwt_time_res_scale.set_value (0);
   add (table);
 
   show();
@@ -76,6 +104,8 @@ FFTParamWindow::get_analysis_params()
 
   params.frame_size_ms = get_frame_size();
   params.frame_step_ms = get_frame_step();
+  params.cwt_freq_resolution = cwt_freq_res_scale.get_value();
+  params.cwt_time_resolution = get_cwt_time_resolution();
 
   return params;
 }
@@ -84,6 +114,12 @@ double
 FFTParamWindow::get_frame_size()
 {
   return 40 * pow (10, frame_size_scale.get_value());
+}
+
+double
+FFTParamWindow::get_cwt_time_resolution()
+{
+  return 40 * pow (10, cwt_time_res_scale.get_value());
 }
 
 double
@@ -103,6 +139,8 @@ FFTParamWindow::on_value_changed()
 {
   frame_size_value_label.set_text (Birnet::string_printf ("%.1f ms", get_frame_size()));
   frame_overlap_value_label.set_text (Birnet::string_printf ("%.1f", get_frame_overlap()));
+  cwt_freq_res_value_label.set_text (Birnet::string_printf ("%.1f Hz", cwt_freq_res_scale.get_value()));
+  cwt_time_res_value_label.set_text (Birnet::string_printf ("%.1f ms", get_cwt_time_resolution()));
 
   signal_params_changed();
 }

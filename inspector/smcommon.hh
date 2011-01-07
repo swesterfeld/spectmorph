@@ -34,6 +34,9 @@ struct AnalysisParams
 
   double        frame_size_ms; /* FFT */
   double        frame_step_ms; /* FFT */
+
+  double        cwt_freq_resolution;  /* CWT */
+  double        cwt_time_resolution;  /* CWT */
 };
 
 struct FFTResult

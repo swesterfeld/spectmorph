@@ -21,6 +21,7 @@
 #include <vector>
 
 #include <gtkmm.h>        // signal
+#include "smcommon.hh"
 
 namespace SpectMorph {
 
@@ -29,7 +30,7 @@ class FFTThread;
 class CWT
 {
 public:
-  std::vector< std::vector<float> > analyze (const std::vector<float>& signal, FFTThread *fft_thread = 0);
+  std::vector< std::vector<float> > analyze (const std::vector<float>& signal, const AnalysisParams& params, FFTThread *fft_thread = 0);
   std::vector< std::vector<float> > analyze_slow (const std::vector<float>& signal, FFTThread *fft_thread = 0);
   void make_png (std::vector< std::vector<float> >& results);
 
