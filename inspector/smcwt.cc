@@ -260,6 +260,9 @@ CWT::analyze (const vector<float>& asignal, FFTThread *fft_thread)
         }
       results.push_back (line);
       signal_progress (freq / 22050.0);
+
+      if (fft_thread && fft_thread->command_is_obsolete()) // abort if user changed params
+        break;
     }
   return results;
 }
