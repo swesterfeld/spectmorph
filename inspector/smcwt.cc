@@ -206,7 +206,8 @@ CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThr
   vector< vector<float> > results;
 
   // pad data with zeros to make moving average filter work properly
-  const int WIDTH = MAX (2, params.cwt_time_resolution / 1000 / 2 * 44100);
+  const double time2width = 0.1; // empiric factor to get roughly the same time/freq tradeoff like the FFT
+  const int WIDTH = MAX (2, params.cwt_time_resolution / 1000 * 44100 * time2width);
   const size_t ORDER = 7;
   const int PADDING = (ORDER + 1) * WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
