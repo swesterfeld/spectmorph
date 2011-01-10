@@ -66,6 +66,10 @@ BEAST:
 sminspector:
 - threaded analysis
 - reconstruct sines only button
+- CWT with frequency adjusted window size
+- boost feature
+- play support
+- CWT parameter settings
 
 morphing:
 - model: explain observation of the peaks using a gaussian-mixture-model which
