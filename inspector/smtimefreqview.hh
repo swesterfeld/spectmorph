@@ -36,6 +36,8 @@ protected:
   double hzoom, vzoom;
   int position;
   bool show_analysis;
+  double display_min_db;
+  double display_boost;
 
   void force_redraw();
 
@@ -56,12 +58,14 @@ public:
   void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
   void set_show_analysis (bool new_show_analysis);
+  void set_display_params (double min_db, double boost);
 
   int  get_frames();
   FFTResult get_spectrum();
   double get_progress();
   static Glib::RefPtr<Gdk::Pixbuf> zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
-                                              double hzoom, double vzoom, int position);
+                                              double hzoom, double vzoom, int position,
+                                              double display_min_db, double display_boost);
 };
 
 }

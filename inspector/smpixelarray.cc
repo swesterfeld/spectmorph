@@ -47,7 +47,7 @@ PixelArray::empty()
   return (width == 0) && (height == 0);
 }
 
-unsigned char *
+int *
 PixelArray::get_pixels()
 {
   return &pixels[0];

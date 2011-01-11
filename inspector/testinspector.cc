@@ -65,7 +65,7 @@ main (int argc, char **argv)
 
   if (argc == 2 && string (argv[1]) == "zoom")
     {
-      const unsigned int runs = 10;
+      const unsigned int runs = 1000;
 
       PixelArray image;
       Glib::RefPtr<Gdk::Pixbuf> zimage;
@@ -73,12 +73,12 @@ main (int argc, char **argv)
       image.resize (1024, 1024);
 
       // warmup run:
-      zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1);
+      zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1, -96, 0);
 
       // timed runs:
       double start = gettime();
       for (unsigned int i = 0; i < runs; i++)
-        zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1);
+        zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1, -96, 0);
       double end = gettime();
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);

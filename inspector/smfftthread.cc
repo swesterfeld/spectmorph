@@ -207,22 +207,22 @@ AnalysisCommand::execute_cwt()
   image.resize (width, height);
 
   float max_value = -200;
-  for (vector< vector<float> >::const_iterator fi = results.begin(); fi != results.end(); fi++)
+  for (vector< vector<float> >::iterator fi = results.begin(); fi != results.end(); fi++)
     {
-      for (vector<float>::const_iterator mi = fi->begin(); mi != fi->end(); mi++)
+      for (vector<float>::iterator mi = fi->begin(); mi != fi->end(); mi++)
         {
-          max_value = max (max_value, value_scale (*mi));
+          *mi = value_scale (*mi);
+          max_value = max (max_value, *mi);
         }
     }
-  guchar *p = image.get_pixels();
+  int    *p = image.get_pixels();
   size_t  row_stride = image.get_rowstride();
   for (size_t y = 0; y < height; y++)
     {
       for (size_t x = 0; x < results[y].size(); x++)
         {
           const size_t src_y = (height - 1 - y);
-          double value = MAX (value_scale (results[src_y][x]) - max_value + 96, 0) / 96;
-          p[x] = value * 255;
+          p[x] = (results[src_y][x] - max_value) * 256;  // 8 bits fixed point
         }
       p += row_stride;
     }
@@ -347,15 +347,14 @@ AnalysisCommand::execute()
           max_value = max (max_value, *mi);
         }
     }
-  guchar *p = image.get_pixels();
+  int    *p = image.get_pixels();
   size_t  row_stride = image.get_rowstride();
   for (size_t frame = 0; frame < results.size(); frame++)
     {
       for (size_t m = 0; m < results[frame].mags.size(); m++)
         {
-          double value = MAX (results[frame].mags[m] - max_value + 96, 0) / 96;
           int y = results[frame].mags.size() - 1 - m;
-          p[row_stride * y] = value * 255;
+          p[row_stride * y] = (results[frame].mags[m] - max_value) * 256;  // 8 bits fixed point
         }
       p++;
     }

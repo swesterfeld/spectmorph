@@ -33,10 +33,20 @@ class MainWindow : public Gtk::Window
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        time_freq_view;
   ZoomController      zoom_controller;
+
   Gtk::Adjustment     position_adjustment;
   Gtk::HScale         position_scale;
   Gtk::Label          position_label;
   Gtk::HBox           position_hbox;
+
+  Gtk::HScale         min_db_scale;
+  Gtk::Label          min_db_label;
+  Gtk::HBox           min_db_hbox;
+
+  Gtk::HScale         boost_scale;
+  Gtk::Label          boost_label;
+  Gtk::HBox           boost_hbox;
+
   Gtk::VBox           vbox;
   Navigator           navigator;
   SpectrumWindow      spectrum_window;
@@ -50,6 +60,7 @@ public:
   void on_position_changed();
   void on_analysis_changed();
   void on_progress_changed();
+  void on_display_params_changed();
 };
 
 }

@@ -28,6 +28,8 @@ MainWindow::MainWindow (const string& filename) :
   zoom_controller (5000, 5000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
+  min_db_scale (-192, -3, 0.01),
+  boost_scale (0, 100, 0.01),
   navigator (filename)
 {
   set_border_width (10);
@@ -44,6 +46,22 @@ MainWindow::MainWindow (const string& filename) :
   position_label.set_text ("frame 0");
   position_hbox.set_border_width (10);
   position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
+
+  vbox.pack_start (min_db_hbox, Gtk::PACK_SHRINK);
+  min_db_hbox.pack_start (min_db_scale);
+  min_db_hbox.pack_start (min_db_label, Gtk::PACK_SHRINK);
+  min_db_scale.set_draw_value (false);
+  min_db_hbox.set_border_width (10);
+  min_db_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_display_params_changed));
+  min_db_scale.set_value (-96);
+
+  vbox.pack_start (boost_hbox, Gtk::PACK_SHRINK);
+  boost_hbox.pack_start (boost_scale);
+  boost_hbox.pack_start (boost_label, Gtk::PACK_SHRINK);
+  boost_scale.set_draw_value (false);
+  boost_hbox.set_border_width (10);
+  boost_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_display_params_changed));
+  boost_scale.set_value (0);
 
   add (vbox);
   scrolled_win.add (time_freq_view);
@@ -94,4 +112,12 @@ void
 MainWindow::on_progress_changed()
 {
   fft_param_window.set_progress (time_freq_view.get_progress());
+}
+
+void
+MainWindow::on_display_params_changed()
+{
+  min_db_label.set_text (Birnet::string_printf ("min_db %.2f", min_db_scale.get_value()));
+  boost_label.set_text (Birnet::string_printf ("boost %.2f", boost_scale.get_value()));
+  time_freq_view.set_display_params (min_db_scale.get_value(), boost_scale.get_value());
 }

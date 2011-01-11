@@ -144,7 +144,8 @@ TimeFreqView::get_frames()
 #define FRAC_HALF_FACTOR (1 << (FRAC_SHIFT - 1))
 
 Glib::RefPtr<Gdk::Pixbuf>
-TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom, int position)
+TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom,
+                         int position, double display_min_db, double display_boost)
 {
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
   int hzoom_inv_frac = FRAC_FACTOR / hzoom;
@@ -153,8 +154,13 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
   guchar *p = zimage->get_pixels();
   size_t  row_stride = zimage->get_rowstride();
 
-  guchar *pixel_array_p          = image.get_pixels();
+  int    *pixel_array_p          = image.get_pixels();
   size_t  pixel_array_row_stride = image.get_rowstride();
+
+  double abs_min_db = fabs (display_min_db);
+
+  const int pixel_add   = 256 * (abs_min_db + display_boost);   // 8 bits fixed point
+  const int pixel_scale = 64 * 255 / abs_min_db;                // 6 bits fixed point
 
   for (int y = 0; y < desth; y++)
     {
@@ -166,7 +172,14 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
           size_t outx = ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
           int color;
           if (outx < image.get_width() && outy < image.get_height())
-            color = pixel_array_p[pixel_array_row_stride * outy + outx];
+            {
+              color = (pixel_array_p[pixel_array_row_stride * outy + outx] + pixel_add) * pixel_scale;
+              if (color < 0)
+                color = 0;
+              color >>= 14;                                     // 8 + 6 bits fixed point
+              if (color > 255)
+                color = 255;
+            }
           else
             color = 0;
           pp[0] = color;
@@ -186,7 +199,8 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
   double scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
   double scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
   set_size_request (image.get_width() * scaled_hzoom, image.get_height() * scaled_vzoom);
-  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position);
+  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position,
+                      display_min_db, display_boost);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
                               zimage->get_width(), zimage->get_height(),
                               Gdk::RGB_DITHER_NONE, 0, 0);
@@ -250,4 +264,12 @@ double
 TimeFreqView::get_progress()
 {
   return fft_thread.get_progress();
+}
+
+void
+TimeFreqView::set_display_params (double min_db, double boost)
+{
+  display_min_db = min_db;
+  display_boost = boost;
+  force_redraw();
 }
