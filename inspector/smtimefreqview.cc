@@ -42,8 +42,7 @@ TimeFreqView::TimeFreqView()
   audio = NULL;
   show_analysis = false;
 
-//  Glib::signal_timeout().connect (sigc::mem_fun (*this, &TimeFreqView::on_timeout), 400);
-  FFTThread::the()->signal_result_available.connect (sigc::mem_fun (*this, &TimeFreqView::on_timeout));
+  FFTThread::the()->signal_result_available.connect (sigc::mem_fun (*this, &TimeFreqView::on_result_available));
 }
 
 void
@@ -58,7 +57,7 @@ TimeFreqView::force_redraw()
 }
 
 void
-TimeFreqView::on_timeout()
+TimeFreqView::on_result_available()
 {
   if (FFTThread::the()->get_result (image))
     force_redraw();
