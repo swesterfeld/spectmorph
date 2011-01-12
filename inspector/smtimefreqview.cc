@@ -71,7 +71,6 @@ TimeFreqView::set_zoom (double new_hzoom, double new_vzoom)
 {
   hzoom = new_hzoom;
   vzoom = new_vzoom;
-  zimage.clear();
 
   force_redraw();
 }
@@ -80,7 +79,6 @@ void
 TimeFreqView::set_position (int new_position)
 {
   position = new_position;
-  zimage.clear();
 
   force_redraw();
   signal_spectrum_changed();
@@ -199,6 +197,8 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
   double scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
   double scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
   set_size_request (image.get_width() * scaled_hzoom, image.get_height() * scaled_vzoom);
+
+  Glib::RefPtr<Gdk::Pixbuf> zimage;
   zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position,
                       display_min_db, display_boost);
   zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,

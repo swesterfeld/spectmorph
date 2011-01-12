@@ -32,7 +32,6 @@ protected:
   std::vector<FFTResult> results;
   PixelArray  image;
   Audio      *audio;
-  Glib::RefPtr<Gdk::Pixbuf> zimage;
   double hzoom, vzoom;
   int position;
   bool show_analysis;
