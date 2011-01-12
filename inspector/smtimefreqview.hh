@@ -34,11 +34,14 @@ protected:
   Audio      *audio;
   double hzoom, vzoom;
   int position;
+  int old_height;
+  int old_width;
   bool show_analysis;
   double display_min_db;
   double display_boost;
 
   void force_redraw();
+  void scale_zoom (double *scaled_hzoom, double *scaled_vzoom);
 
   void on_result_available();
 
@@ -49,6 +52,7 @@ public:
 
   sigc::signal<void> signal_spectrum_changed;
   sigc::signal<void> signal_progress_changed;
+  sigc::signal<void, int, int, int, int> signal_resized;
 
   void load (const std::string& filename);
   void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);

@@ -72,6 +72,7 @@ MainWindow::MainWindow (const string& filename) :
   navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &MainWindow::on_analysis_changed));
   fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
   time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &MainWindow::on_progress_changed));
+  time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
   spectrum_window.set_spectrum_model (time_freq_view);
 }
@@ -120,4 +121,20 @@ MainWindow::on_display_params_changed()
   min_db_label.set_text (Birnet::string_printf ("min_db %.2f", min_db_scale.get_value()));
   boost_label.set_text (Birnet::string_printf ("boost %.2f", boost_scale.get_value()));
   time_freq_view.set_display_params (min_db_scale.get_value(), boost_scale.get_value());
+}
+
+void
+MainWindow::on_resized (int old_width, int old_height, int new_width, int new_height)
+{
+  if (old_width > 0 && old_height > 0 && new_width > 0 && new_height > 0)
+    {
+      Gtk::Viewport *view_port = dynamic_cast<Gtk::Viewport*> (scrolled_win.get_child());
+      const int h_2 = view_port->get_height() / 2;
+      const int w_2 = view_port->get_width() / 2;
+      Gtk::Adjustment *vadj = scrolled_win.get_vadjustment();
+      Gtk::Adjustment *hadj = scrolled_win.get_hadjustment();
+
+      vadj->set_value ((vadj->get_value() + h_2) / old_height * new_height - h_2);
+      hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
+    }
 }

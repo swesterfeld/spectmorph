@@ -61,6 +61,7 @@ public:
   void on_analysis_changed();
   void on_progress_changed();
   void on_display_params_changed();
+  void on_resized (int old_width, int old_height, int new_width, int new_height);
 };
 
 }

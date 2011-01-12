@@ -42,12 +42,37 @@ TimeFreqView::TimeFreqView()
   audio = NULL;
   show_analysis = false;
 
+  old_height = -1;
+  old_width = -1;
+
   FFTThread::the()->signal_result_available.connect (sigc::mem_fun (*this, &TimeFreqView::on_result_available));
+}
+
+void
+TimeFreqView::scale_zoom (double *scaled_hzoom, double *scaled_vzoom)
+{
+  *scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
+  *scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
 }
 
 void
 TimeFreqView::force_redraw()
 {
+  // resize widget according to zoom if necessary
+  double scaled_hzoom, scaled_vzoom;
+  scale_zoom (&scaled_hzoom, &scaled_vzoom);
+
+  int new_width = image.get_width() * scaled_hzoom;
+  int new_height = image.get_height() * scaled_vzoom;
+  if (new_width != old_width || new_height != old_height)
+    {
+      set_size_request (new_width, new_height);
+      signal_resized (old_width, old_height, new_width, new_height);
+
+      old_height = new_height;
+      old_width = new_width;
+    }
+
   Glib::RefPtr<Gdk::Window> win = get_window();
   if (win)
     {
@@ -120,14 +145,11 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
   results.clear();
 
   if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
-    {
-      FFTThread::the()->compute_image (image, dhandle, analysis_params);
-    }
+    FFTThread::the()->compute_image (image, dhandle, analysis_params);
+
   this->audio = audio;
 
-
-  force_redraw();
-  signal_spectrum_changed();
+  signal_spectrum_changed(); // FIXME: not here
 }
 
 int
@@ -193,10 +215,10 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
-  double scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
-  double scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
-  set_size_request (image.get_width() * scaled_hzoom, image.get_height() * scaled_vzoom);
+  double scaled_hzoom, scaled_vzoom;
+  scale_zoom (&scaled_hzoom, &scaled_vzoom);
 
+  // draw contents
   Glib::RefPtr<Gdk::Pixbuf> zimage;
   zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position,
                       display_min_db, display_boost);
