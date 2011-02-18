@@ -54,12 +54,12 @@ FFTParamWindow::FFTParamWindow() :
   frame_overlap_scale.set_draw_value (false);
   frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  fft_frame.set_label ("Fourier Transfrom Parameters");
+  fft_frame.set_label ("Fourier Transform Parameters");
   fft_frame_table.set_border_width (10);
   fft_frame.add (fft_frame_table);
   table.attach (fft_frame, 0, 3, 1, 2);
 
-  cwt_frame.set_label ("Wavelet Transfrom Parameters");
+  cwt_frame.set_label ("Wavelet Transform Parameters");
   cwt_frame.add (cwt_frame_table);
   cwt_frame_table.set_border_width (10);
   table.attach (cwt_frame, 0, 3, 2, 3);
