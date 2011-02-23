@@ -70,6 +70,7 @@ sminspector:
 - boost feature
 - play support
 - CWT parameter settings
+- figure out why mix_freq is 0 for inspect1 foo.wav
 
 morphing:
 - model: explain observation of the peaks using a gaussian-mixture-model which
