@@ -28,6 +28,13 @@ enum TransformType
   SM_TRANSFORM_CWT = 2
 };
 
+enum CWTMode
+{
+  SM_CWT_MODE_NONE  = 0,
+  SM_CWT_MODE_VTIME = 1,
+  SM_CWT_MODE_CTIME = 2
+};
+
 struct AnalysisParams
 {
   TransformType transform_type;
@@ -35,6 +42,7 @@ struct AnalysisParams
   double        frame_size_ms; /* FFT */
   double        frame_step_ms; /* FFT */
 
+  CWTMode       cwt_mode;
   double        cwt_freq_resolution;  /* CWT */
   double        cwt_time_resolution;  /* CWT */
 };

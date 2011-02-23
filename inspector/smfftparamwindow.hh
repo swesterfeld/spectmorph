@@ -48,6 +48,9 @@ class FFTParamWindow : public Gtk::Window
   Gtk::Label          frame_overlap_label;
   Gtk::Label          frame_overlap_value_label;
 
+  Gtk::ComboBoxText   cwt_mode_combobox;
+  Gtk::Label          cwt_mode_label;
+
   Gtk::HScale         cwt_freq_res_scale;
   Gtk::Label          cwt_freq_res_label;
   Gtk::Label          cwt_freq_res_value_label;

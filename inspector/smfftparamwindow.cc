@@ -21,6 +21,9 @@
 
 using namespace SpectMorph;
 
+#define TEXT_VTIME "Frequency dependant time scale"
+#define TEXT_CTIME "Constant time scale"
+
 FFTParamWindow::FFTParamWindow() :
   table (5, 3),
   frame_size_scale (-1, 1, 0.01),
@@ -64,16 +67,24 @@ FFTParamWindow::FFTParamWindow() :
   cwt_frame_table.set_border_width (10);
   table.attach (cwt_frame, 0, 3, 2, 3);
 
-  cwt_frame_table.attach (cwt_freq_res_label, 0, 1, 0, 1, Gtk::SHRINK);
-  cwt_frame_table.attach (cwt_freq_res_scale, 1, 2, 0, 1);
-  cwt_frame_table.attach (cwt_freq_res_value_label, 2, 3, 0, 1, Gtk::SHRINK);
+  cwt_mode_label.set_label ("Transform Mode");
+  cwt_mode_combobox.append_text (TEXT_VTIME);
+  cwt_mode_combobox.append_text (TEXT_CTIME);
+  cwt_mode_combobox.set_active_text (TEXT_VTIME);
+  cwt_frame_table.attach (cwt_mode_label, 0, 1, 0, 1, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_mode_combobox, 1, 3, 0, 1);
+  cwt_mode_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
+
+  cwt_frame_table.attach (cwt_freq_res_label, 0, 1, 1, 2, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_freq_res_scale, 1, 2, 1, 2);
+  cwt_frame_table.attach (cwt_freq_res_value_label, 2, 3, 1, 2, Gtk::SHRINK);
   cwt_freq_res_label.set_text ("Frequency Resolution");
   cwt_freq_res_scale.set_draw_value (false);
   cwt_freq_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
-  cwt_frame_table.attach (cwt_time_res_label, 0, 1, 1, 2, Gtk::SHRINK);
-  cwt_frame_table.attach (cwt_time_res_scale, 1, 2, 1, 2);
-  cwt_frame_table.attach (cwt_time_res_value_label, 2, 3, 1, 2, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_time_res_label, 0, 1, 2, 3, Gtk::SHRINK);
+  cwt_frame_table.attach (cwt_time_res_scale, 1, 2, 2, 3);
+  cwt_frame_table.attach (cwt_time_res_value_label, 2, 3, 2, 3, Gtk::SHRINK);
   cwt_time_res_label.set_text ("Time Resolution");
   cwt_time_res_scale.set_draw_value (false);
   cwt_time_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
@@ -99,6 +110,13 @@ FFTParamWindow::get_analysis_params()
     params.transform_type = SM_TRANSFORM_FFT;
   else if (transform_combobox.get_active_text() == "Wavelet Transform")
     params.transform_type = SM_TRANSFORM_CWT;
+  else
+    assert (false);
+
+  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
+    params.cwt_mode = SM_CWT_MODE_VTIME;
+  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
+    params.cwt_mode = SM_CWT_MODE_CTIME;
   else
     assert (false);
 
