@@ -200,16 +200,25 @@ CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
   return results;
 }
 
+static int
+freq_to_width (double freq, const AnalysisParams& params)
+{
+  const double time2width = 0.1; // empiric factor to get roughly the same time/freq tradeoff like the FFT
+  double width = params.cwt_time_resolution / 1000 * 44100 * time2width;
+  if (params.cwt_mode == SM_CWT_MODE_VTIME)
+    width *= 440 / freq;
+  return MAX (2, sm_round_positive (width));
+}
+
 vector< vector<float> >
 CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThread *fft_thread)
 {
   vector< vector<float> > results;
 
   // pad data with zeros to make moving average filter work properly
-  const double time2width = 0.1; // empiric factor to get roughly the same time/freq tradeoff like the FFT
-  const int WIDTH = MAX (2, params.cwt_time_resolution / 1000 * 44100 * time2width);
+  const int MAX_WIDTH = freq_to_width (params.cwt_freq_resolution, params);
   const size_t ORDER = 7;
-  const int PADDING = (ORDER + 1) * WIDTH;
+  const int PADDING = (ORDER + 1) * MAX_WIDTH;
   vector<float> signal (asignal.size() + PADDING * 2);
   AlignedArray<float,16> sin_values (signal.size()), cos_values (signal.size());
   vector<float> mod_signal_c (signal.size() * 2);
@@ -218,6 +227,8 @@ CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThr
 
   for (float freq = params.cwt_freq_resolution; freq < 22050; freq += params.cwt_freq_resolution)
     {
+      const int WIDTH = freq_to_width (freq, params);
+
       VectorSinParams vsp;
       vsp.mix_freq = 44100;
       vsp.freq = freq;
