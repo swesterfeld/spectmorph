@@ -207,18 +207,7 @@ public:
                 }
               else
                 {
-                  gui_pipe = popen ("spectmorphoscgui", "r");
-                  gui_poll_fd.fd = fileno (gui_pipe);
-                  gui_poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
-                  gui_source = g_source_simple (G_PRIORITY_LOW,
-                                            (GSourcePending)  gui_source_pending,
-                                            (GSourceDispatch) gui_source_dispatch,
-                                            this,
-                                            NULL,
-                                            &gui_poll_fd,
-                                            NULL);
-                  g_source_attach (gui_source, NULL);
-                  g_source_unref (gui_source);
+                  start_gui();
                 }
             }
           edit_settings = false;
@@ -231,6 +220,22 @@ public:
   Osc()
   {
     gui_pipe = NULL;
+  }
+  void
+  start_gui()
+  {
+    gui_pipe = popen ("spectmorphoscgui", "r");
+    gui_poll_fd.fd = fileno (gui_pipe);
+    gui_poll_fd.events = G_IO_IN;
+    gui_source = g_source_simple (G_PRIORITY_LOW,
+                              (GSourcePending)  gui_source_pending,
+                              (GSourceDispatch) gui_source_dispatch,
+                              this,
+                              NULL,
+                              &gui_poll_fd,
+                              NULL);
+    g_source_attach (gui_source, NULL);
+    g_source_unref (gui_source);
   }
   void
   stop_gui()
