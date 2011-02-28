@@ -4,6 +4,8 @@ plugindir=/usr/local/beast/lib/bse/v$(BSE_VERSION)/plugins
 
 AM_CXXFLAGS=$(BSE_CFLAGS) -O3 -D_BIRNET_SOURCE_EXTENSIONS -I$(top_srcdir)/lib
 
+SUBDIRS = gui
+
 plugin_cxxflags = $(BSE_CFLAGS)
 plugin_libs = $(BSE_LIBS) $(top_builddir)/lib/libspectmorph.la
 plugin_ldflags = $(BSE_LDFLAGS) -avoid-version

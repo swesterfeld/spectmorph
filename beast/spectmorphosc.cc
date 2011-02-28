@@ -131,6 +131,11 @@ class Osc : public OscBase {
       live_decoder->enable_original_samples (properties->use_samples);
     }
   };
+
+  FILE    *gui_pipe;
+  GPollFD  gui_poll_fd;
+  GSource *gui_source;
+  int      gui_pid;
 public:
   void
   load_file (const string& filename)
@@ -162,6 +167,29 @@ public:
         decoder.precompute_tables (bse_engine_sample_freq());
       }
   }
+  static gboolean
+  gui_source_pending (Osc *osc, gint *timeout)
+  {
+    *timeout = -1;
+    return osc->gui_poll_fd.revents & G_IO_IN;
+  }
+  static void
+  gui_source_dispatch (Osc *osc)
+  {
+    string s;
+    int ch;
+    while ((ch = fgetc (osc->gui_pipe)) > 0)
+      {
+        if (ch == '\n')
+          break;
+        s += (char) ch;
+      }
+    printf ("BLOB: %s\n", s.c_str());
+    if (s.substr (0, 3) == "pid")
+      osc->gui_pid = atoi (s.substr (4).c_str());
+    if (s == "quit")
+      osc->stop_gui();
+  }
   bool
   property_changed (OscPropertyID prop_id)
   {
@@ -170,10 +198,55 @@ public:
         case PROP_FILENAME:
           load_file (filename.c_str());
           break;
+        case PROP_EDIT_SETTINGS:
+          if (edit_settings)
+            {
+              if (gui_pipe)
+                {
+                  stop_gui();
+                }
+              else
+                {
+                  gui_pipe = popen ("spectmorphoscgui", "r");
+                  gui_poll_fd.fd = fileno (gui_pipe);
+                  gui_poll_fd.events = G_IO_IN | G_IO_HUP | G_IO_ERR;
+                  gui_source = g_source_simple (G_PRIORITY_LOW,
+                                            (GSourcePending)  gui_source_pending,
+                                            (GSourceDispatch) gui_source_dispatch,
+                                            this,
+                                            NULL,
+                                            &gui_poll_fd,
+                                            NULL);
+                  g_source_attach (gui_source, NULL);
+                  g_source_unref (gui_source);
+                }
+            }
+          edit_settings = false;
+          break;
         default:
           break;
       }
     return false;
+  }
+  Osc()
+  {
+    gui_pipe = NULL;
+  }
+  void
+  stop_gui()
+  {
+    if (gui_pipe)
+      {
+        kill (gui_pid, SIGTERM);
+        pclose (gui_pipe);
+        g_source_destroy (gui_source);
+        gui_pipe   = NULL;
+        gui_source = NULL;
+      }
+  }
+  ~Osc()
+  {
+    stop_gui();
   }
   /* implement creation and config methods for synthesis Module */
   BSE_EFFECT_INTEGRATE_MODULE (Osc, Module, Properties);

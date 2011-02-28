@@ -189,7 +189,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 ])
 
 AC_CONFIG_FILES([Makefile lib/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
-beast/Makefile jack/Makefile inspector/Makefile spectmorph.pc
+beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_OUTPUT
