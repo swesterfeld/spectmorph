@@ -23,29 +23,45 @@
 #include <string>
 
 #include "smmain.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
 class MainWindow : public Gtk::Window
 {
-  Gtk::Button m_button;
-  int clicks;
+  Gtk::Button load_index_button;
+  MorphPlan   morph_plan;
 
 public:
   void
   on_button_clicked()
   {
-    printf ("clicks: %d\n", ++clicks);
-    fflush (stdout);
+    Gtk::FileChooserDialog dialog ("Select SpectMorph index file", Gtk::FILE_CHOOSER_ACTION_OPEN);
+    dialog.set_transient_for (*this);
+
+    // buttons
+    dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+    // allow only .smindex files
+    Gtk::FileFilter filter_smindex;
+    filter_smindex.set_name ("SpectMorph index files");
+    filter_smindex.add_pattern ("*.smindex");
+    dialog.add_filter (filter_smindex);
+
+    int result = dialog.run();
+    if (result == Gtk::RESPONSE_OK)
+      {
+        morph_plan.load_index (dialog.get_filename());
+      }
   }
 
   MainWindow() :
-    m_button ("Hello World"),
-    clicks (0)
+    load_index_button ("Load SpectMorph index file")
   {
     set_border_width (10);
-    m_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_button_clicked));
-    add (m_button);
+    load_index_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_button_clicked));
+    add (load_index_button);
 
     show_all_children();
   }

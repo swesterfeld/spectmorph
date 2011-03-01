@@ -4,9 +4,9 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-SMHDRS = spectmorphoscgui.hh
+SMHDRS = spectmorphoscgui.hh smmorphplan.hh smmorphoperator.hh smindex.hh
 
-SMSRCS = spectmorphoscgui.cc
+SMSRCS = spectmorphoscgui.cc smmorphplan.cc smmorphoperator.cc smindex.cc
 
 bin_PROGRAMS = spectmorphoscgui
 
