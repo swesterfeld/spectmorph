@@ -4,11 +4,11 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-SMHDRS = smspectrumview.hh smmicroconf.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
+SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smzoomcontroller.hh smnavigator.hh smmainwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh
 
-SMSRCS = smmicroconf.cc smspectrumview.cc \
+SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smzoomcontroller.cc smnavigator.cc smmainwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc
