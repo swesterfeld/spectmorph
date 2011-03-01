@@ -19,6 +19,8 @@
 #define SPECTMORPH_MORPH_PLAN_HH
 
 #include "smindex.hh"
+#include "smmorphoperator.hh"
+#include <sigc++/sigc++.h>
 
 namespace SpectMorph
 {
@@ -26,8 +28,15 @@ namespace SpectMorph
 class MorphPlan
 {
   Index index;
+  std::vector<MorphOperator *> operators;
+
 public:
   bool load_index (const std::string& filename);
+
+  void add_operator (MorphOperator *op);
+  const std::vector<MorphOperator *>& get_operators();
+
+  sigc::signal<void> signal_plan_changed;
 };
 
 }

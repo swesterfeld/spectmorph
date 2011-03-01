@@ -15,29 +15,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smmorphplan.hh"
+#ifndef SPECTMORPH_MORPH_SOURCE_HH
+#define SPECTMORPH_MORPH_SOURCE_HH
 
-using namespace SpectMorph;
+#include "smmorphoperator.hh"
 
-using std::string;
-using std::vector;
-
-bool
-MorphPlan::load_index (const string& filename)
+namespace SpectMorph
 {
-  return index.load_file (filename);
+
+class MorphSource : public MorphOperator
+{
+public:
+};
+
 }
 
-void
-MorphPlan::add_operator (MorphOperator *op)
-{
-  operators.push_back (op);
-
-  signal_plan_changed();
-}
-
-const vector<MorphOperator*>&
-MorphPlan::get_operators()
-{
-  return operators;
-}
+#endif

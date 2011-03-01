@@ -15,29 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_MORPH_PLAN_VIEW_HH
+#define SPECTMORPH_MORPH_PLAN_VIEW_HH
+
+#include <gtkmm.h>
+
 #include "smmorphplan.hh"
 
-using namespace SpectMorph;
-
-using std::string;
-using std::vector;
-
-bool
-MorphPlan::load_index (const string& filename)
+namespace SpectMorph
 {
-  return index.load_file (filename);
+
+class MorphPlanView : public Gtk::VBox
+{
+  MorphPlan *morph_plan;
+
+public:
+  MorphPlanView (MorphPlan *morph_plan);
+
+  void on_plan_changed();
+};
+
 }
 
-void
-MorphPlan::add_operator (MorphOperator *op)
-{
-  operators.push_back (op);
-
-  signal_plan_changed();
-}
-
-const vector<MorphOperator*>&
-MorphPlan::get_operators()
-{
-  return operators;
-}
+#endif

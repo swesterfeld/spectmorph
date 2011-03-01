@@ -15,29 +15,4 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smmorphplan.hh"
-
-using namespace SpectMorph;
-
-using std::string;
-using std::vector;
-
-bool
-MorphPlan::load_index (const string& filename)
-{
-  return index.load_file (filename);
-}
-
-void
-MorphPlan::add_operator (MorphOperator *op)
-{
-  operators.push_back (op);
-
-  signal_plan_changed();
-}
-
-const vector<MorphOperator*>&
-MorphPlan::get_operators()
-{
-  return operators;
-}
+#include "smmorphsource.hh"

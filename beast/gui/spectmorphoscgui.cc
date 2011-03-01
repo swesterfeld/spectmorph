@@ -24,13 +24,18 @@
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
+#include "smmorphsource.hh"
+#include "smmorphplanview.hh"
 
 using namespace SpectMorph;
 
 class MainWindow : public Gtk::Window
 {
-  Gtk::Button load_index_button;
-  MorphPlan   morph_plan;
+  Gtk::Button   load_index_button;
+  Gtk::Button   add_operator_button;
+  Gtk::VBox     button_vbox;
+  MorphPlan     morph_plan;
+  MorphPlanView morph_plan_view;
 
 public:
   void
@@ -55,13 +60,23 @@ public:
         morph_plan.load_index (dialog.get_filename());
       }
   }
-
+  void
+  on_add_operator_button_clicked()
+  {
+    morph_plan.add_operator (new MorphSource());
+  }
   MainWindow() :
-    load_index_button ("Load SpectMorph index file")
+    load_index_button ("Load SpectMorph index file"),
+    add_operator_button ("Add Operator"),
+    morph_plan_view (&morph_plan)
   {
     set_border_width (10);
     load_index_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_button_clicked));
-    add (load_index_button);
+    add_operator_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_add_operator_button_clicked));
+    button_vbox.add (load_index_button);
+    button_vbox.add (add_operator_button);
+    button_vbox.add (morph_plan_view);
+    add (button_vbox);
 
     show_all_children();
   }
