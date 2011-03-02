@@ -16,6 +16,10 @@
  */
 
 #include "smmorphplan.hh"
+#include "smmemout.hh"
+#include "smoutfile.hh"
+#include "smaudio.hh"
+#include "smaudio.hh"
 
 using namespace SpectMorph;
 
@@ -34,6 +38,21 @@ MorphPlan::add_operator (MorphOperator *op)
   operators.push_back (op);
 
   signal_plan_changed();
+
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  OutFile of (&mo, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
+  for (vector<MorphOperator *>::iterator oi = operators.begin(); oi != operators.end(); oi++)
+    {
+      of.begin_section ("operator");
+      of.end_section();
+    }
+  for (size_t i = 0; i < data.size(); i++)
+    {
+      printf ("%02x", data[i]);
+    }
+  printf ("\n");
+  fflush (stdout);
 }
 
 const vector<MorphOperator*>&

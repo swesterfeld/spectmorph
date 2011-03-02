@@ -184,6 +184,8 @@ public:
           break;
         s += (char) ch;
       }
+    osc->set ("plan", s.c_str(), NULL);
+    osc->notify ("plan");
     printf ("BLOB: %s\n", s.c_str());
     if (s.substr (0, 3) == "pid")
       osc->gui_pid = atoi (s.substr (4).c_str());
