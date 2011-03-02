@@ -48,6 +48,7 @@ public:
 
 protected:
   GenericIn         *file;
+  bool               file_delete;
   Event              current_event;
   std::string        current_event_str;
   int                current_event_int;
@@ -73,6 +74,8 @@ protected:
 public:
   InFile (const std::string& filename);
   InFile (GenericIn *file);
+  ~InFile();
+
   bool
   open_ok()
   {

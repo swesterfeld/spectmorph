@@ -30,10 +30,13 @@ class MMapIn : public GenericIn
   unsigned char *mapfile;
   unsigned char *mapend;
   unsigned char *pos;
+  int            fd;
 
-  MMapIn (unsigned char *mapfile, unsigned char *mapend);
+  MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd);
+  ~MMapIn();
 public:
   static GenericIn* open (const std::string& filename);
+  static GenericIn* open_mem (unsigned char *mem_start, unsigned char *mem_end);
 
   int get_byte();     // like fgetc
   int read (void *ptr, size_t size);

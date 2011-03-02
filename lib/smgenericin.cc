@@ -33,4 +33,6 @@ GenericIn::open (const std::string& filename)
   return file;
 }
 
-
+GenericIn::~GenericIn()
+{
+}

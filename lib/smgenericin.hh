@@ -28,6 +28,7 @@ class GenericIn
 public:
   static GenericIn* open (const std::string& filename);
 
+  virtual ~GenericIn();
   virtual int get_byte() = 0;     // like fgetc
   virtual int read (void *ptr, size_t size) = 0;
   virtual bool skip (size_t size) = 0;

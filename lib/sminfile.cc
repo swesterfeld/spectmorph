@@ -24,7 +24,8 @@ using std::vector;
 using SpectMorph::InFile;
 using SpectMorph::GenericIn;
 
-InFile::InFile (const string& filename)
+InFile::InFile (const string& filename) :
+  file_delete (true)
 {
   file = GenericIn::open (filename);
   current_event = NONE;
@@ -32,11 +33,21 @@ InFile::InFile (const string& filename)
   read_file_type_and_version();
 }
 
-InFile::InFile (GenericIn *file)
-  : file (file)
+InFile::InFile (GenericIn *file) :
+  file (file),
+  file_delete (false)
 {
   current_event = NONE;
   read_file_type_and_version();
+}
+
+InFile::~InFile()
+{
+  if (file && file_delete)
+    {
+      delete file;
+      file = NULL;
+    }
 }
 
 void

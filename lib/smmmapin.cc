@@ -45,18 +45,28 @@ MMapIn::open (const std::string& filename)
           unsigned char *mapfile = static_cast<unsigned char *> (mmap (NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
           if (mapfile != MAP_FAILED)
             {
-              return new MMapIn (mapfile, mapfile + st.st_size);
+              return new MMapIn (mapfile, mapfile + st.st_size, fd);
             }
         }
     }
   return NULL;
 }
 
-MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend) :
+MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
   mapfile (mapfile),
-  mapend (mapend)
+  mapend (mapend),
+  fd (fd)
 {
   pos = static_cast<unsigned char *> (mapfile);
+}
+
+MMapIn::~MMapIn()
+{
+  if (fd >= 0)
+    {
+      munmap (mapfile, mapend - mapfile);
+      close (fd);
+    }
 }
 
 int
@@ -111,5 +121,5 @@ MMapIn::get_pos()
 GenericIn *
 MMapIn::open_subfile (size_t pos, size_t len)
 {
-  return new MMapIn (mapfile + pos, mapfile + pos + len);
+  return new MMapIn (mapfile + pos, mapfile + pos + len, -1 /* no fd */);
 }
