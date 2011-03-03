@@ -52,6 +52,12 @@ MMapIn::open (const std::string& filename)
   return NULL;
 }
 
+GenericIn*
+MMapIn::open_mem (unsigned char *begin, unsigned char *end)
+{
+  return new MMapIn (begin, end, -1);
+}
+
 MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
   mapfile (mapfile),
   mapend (mapend),
