@@ -15,25 +15,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_INDEX_HH
-#define SPECTMORPH_INDEX_HH
+#ifndef SPECTMORPH_MORPH_OPERATOR_VIEW_HH
+#define SPECTMORPH_MORPH_OPERATOR_VIEW_HH
 
-#include <string>
-#include <vector>
+#include <gtkmm.h>
 
 namespace SpectMorph
 {
 
-class Index
+class MorphOperatorView : public Gtk::Frame
 {
-  std::vector<std::string> m_smsets;
-  std::string              m_smset_dir;
-
 public:
-  bool load_file (const std::string& filename);
-
-  std::vector<std::string> smsets();
-  std::string              smset_dir();
+  MorphOperatorView();
 };
 
 }

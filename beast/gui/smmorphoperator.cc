@@ -16,3 +16,16 @@
  */
 
 #include "smmorphoperator.hh"
+
+using namespace SpectMorph;
+
+MorphOperator::MorphOperator (MorphPlan *morph_plan) :
+  m_morph_plan (morph_plan)
+{
+}
+
+MorphPlan*
+MorphOperator::morph_plan()
+{
+  return m_morph_plan;
+}

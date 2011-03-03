@@ -15,25 +15,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_INDEX_HH
-#define SPECTMORPH_INDEX_HH
+#ifndef SPECTMORPH_MORPH_SOURCE_VIEW_HH
+#define SPECTMORPH_MORPH_SOURCE_VIEW_HH
 
-#include <string>
-#include <vector>
+#include "smmorphoperatorview.hh"
+#include "smmorphsource.hh"
 
 namespace SpectMorph
 {
 
-class Index
+class MorphSourceView : public MorphOperatorView
 {
-  std::vector<std::string> m_smsets;
-  std::string              m_smset_dir;
+  Gtk::HBox         instrument_hbox;
+  Gtk::Label        instrument_label;
+  Gtk::ComboBoxText instrument_combobox;
+  MorphSource      *morph_source;
 
 public:
-  bool load_file (const std::string& filename);
+  MorphSourceView (MorphSource *morph_source);
 
-  std::vector<std::string> smsets();
-  std::string              smset_dir();
+  void on_index_changed();
+  void on_instrument_changed();
 };
 
 }

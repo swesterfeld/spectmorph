@@ -65,7 +65,7 @@ public:
   void
   on_add_operator_button_clicked()
   {
-    morph_plan.add_operator (new MorphSource());
+    morph_plan.add_operator (new MorphSource (&morph_plan));
   }
   MainWindow() :
     load_index_button ("Load SpectMorph index file"),

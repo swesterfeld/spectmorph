@@ -37,11 +37,11 @@ Index::load_file (const string& filename)
 
       if (cfg.command ("smset", str))
         {
-          smsets.push_back (str);
+          m_smsets.push_back (str);
         }
       else if (cfg.command ("smset_dir", str))
         {
-          smset_dir = str;
+          m_smset_dir = str;
         }
       else
         {
@@ -49,4 +49,16 @@ Index::load_file (const string& filename)
         }
     }
   return true;
+}
+
+vector<string>
+Index::smsets()
+{
+  return m_smsets;
+}
+
+string
+Index::smset_dir()
+{
+  return m_smset_dir;
 }

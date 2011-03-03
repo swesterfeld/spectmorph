@@ -21,9 +21,17 @@
 namespace SpectMorph
 {
 
+class MorphOperatorView;
+class MorphPlan;
+
 class MorphOperator
 {
+  MorphPlan *m_morph_plan;
 public:
+  MorphOperator (MorphPlan *morph_plan);
+
+  virtual MorphOperatorView *create_view() = 0;
+  MorphPlan *morph_plan();
 };
 
 }

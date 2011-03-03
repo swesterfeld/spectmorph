@@ -43,13 +43,15 @@ MorphPlan::~MorphPlan()
 bool
 MorphPlan::load_index (const string& filename)
 {
-  return index.load_file (filename);
+  bool result = m_index.load_file (filename);
+  signal_index_changed();
+  return result;
 }
 
 void
 MorphPlan::add_operator (MorphOperator *op)
 {
-  operators.push_back (op);
+  m_operators.push_back (op);
 
   if (!in_restore)
     {
@@ -60,7 +62,7 @@ MorphPlan::add_operator (MorphOperator *op)
       // we need an OutFile destructor run before we can use the data
         {
           OutFile of (&mo, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
-          for (vector<MorphOperator *>::iterator oi = operators.begin(); oi != operators.end(); oi++)
+          for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
             {
               of.begin_section ("operator");
               of.end_section();
@@ -125,7 +127,7 @@ MorphPlan::set_plan_str (const string& str)
           assert (section == "");
           section = ifile.event_name();
 
-          add_operator (new MorphSource());
+          add_operator (new MorphSource (this));
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
@@ -146,7 +148,13 @@ MorphPlan::set_plan_str (const string& str)
 }
 
 const vector<MorphOperator*>&
-MorphPlan::get_operators()
+MorphPlan::operators()
 {
-  return operators;
+  return m_operators;
+}
+
+Index *
+MorphPlan::index()
+{
+  return &m_index;
 }

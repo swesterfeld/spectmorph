@@ -27,19 +27,23 @@ namespace SpectMorph
 
 class MorphPlan
 {
-  Index index;
-  std::vector<MorphOperator *> operators;
+  Index                        m_index;
+  std::vector<MorphOperator *> m_operators;
   bool in_restore;
 
 public:
   MorphPlan();
   ~MorphPlan();
-  bool load_index (const std::string& filename);
+
+  bool   load_index (const std::string& filename);
+  Index *index();
 
   void add_operator (MorphOperator *op);
-  const std::vector<MorphOperator *>& get_operators();
+  const std::vector<MorphOperator *>& operators();
 
   sigc::signal<void> signal_plan_changed;
+  sigc::signal<void> signal_index_changed;
+
   void set_plan_str (const std::string& plan_str);
 };
 

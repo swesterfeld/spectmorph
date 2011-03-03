@@ -20,12 +20,20 @@
 
 #include "smmorphoperator.hh"
 
+#include <string>
+
 namespace SpectMorph
 {
 
 class MorphSource : public MorphOperator
 {
+  std::string m_smset;
 public:
+  MorphSource (MorphPlan *morph_plan);
+  MorphOperatorView *create_view();
+
+  void        set_smset (const std::string& smset);
+  std::string smset();
 };
 
 }

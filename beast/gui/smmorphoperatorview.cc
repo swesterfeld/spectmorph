@@ -15,27 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_INDEX_HH
-#define SPECTMORPH_INDEX_HH
+#include "smmorphoperatorview.hh"
 
-#include <string>
-#include <vector>
+using namespace SpectMorph;
 
-namespace SpectMorph
+MorphOperatorView::MorphOperatorView()
 {
-
-class Index
-{
-  std::vector<std::string> m_smsets;
-  std::string              m_smset_dir;
-
-public:
-  bool load_file (const std::string& filename);
-
-  std::vector<std::string> smsets();
-  std::string              smset_dir();
-};
-
 }
-
-#endif

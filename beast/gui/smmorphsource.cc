@@ -16,3 +16,31 @@
  */
 
 #include "smmorphsource.hh"
+#include "smmorphsourceview.hh"
+
+using namespace SpectMorph;
+
+using std::string;
+
+MorphSource::MorphSource (MorphPlan *morph_plan) :
+  MorphOperator (morph_plan)
+{
+}
+
+MorphOperatorView *
+MorphSource::create_view()
+{
+  return new MorphSourceView (this);
+}
+
+void
+MorphSource::set_smset (const string& smset)
+{
+  m_smset = smset;
+}
+
+string
+MorphSource::smset()
+{
+  return m_smset;
+}

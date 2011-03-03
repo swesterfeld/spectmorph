@@ -16,6 +16,7 @@
  */
 
 #include "smmorphplanview.hh"
+#include "smmorphsourceview.hh"
 #include <birnet/birnet.hh>
 
 using namespace SpectMorph;
@@ -37,16 +38,29 @@ MorphPlanView::on_plan_changed()
   vector<Widget *> old_children = get_children();
   for (vector<Widget *>::iterator ci = old_children.begin(); ci != old_children.end(); ci++)
     {
-      remove (**ci);
+      Widget *view = *ci;
+      remove (*view);
+      delete view;
     }
 
-  const vector<MorphOperator *>& operators = morph_plan->get_operators();
+  const vector<MorphOperator *>& operators = morph_plan->operators();
 
-  int onr = 1;
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
-      Gtk::Button *b = new Gtk::Button (Birnet::string_printf ("Operator #%d", onr++));
-      add (*b);
-      b->show();
+      MorphOperatorView *op_view = (*oi)->create_view();
+      add (*op_view);
+      op_view->show();
+#if 0
+      Gtk::Frame *frame = new Gtk::Frame (Birnet::string_printf ("Operator #%d", onr++));
+      Gtk::VBox  *vbox  = new Gtk::VBox;
+      vbox->set_border_width (10);
+      Gtk::Label *label = new Gtk::Label ("blub");
+      vbox->add (*label);
+      frame->add (*vbox);
+      add (*frame);
+      vbox->show();
+      label->show();
+      frame->show();
+#endif
     }
 }
