@@ -29,6 +29,8 @@
 
 using namespace SpectMorph;
 
+using std::string;
+
 class MainWindow : public Gtk::Window
 {
   Gtk::Button   load_index_button;
@@ -80,6 +82,11 @@ public:
 
     show_all_children();
   }
+  void
+  set_plan_str (const string& plan_str)
+  {
+    morph_plan.set_plan_str (plan_str);
+  }
 };
 
 int
@@ -95,11 +102,19 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  // read initial plan
+  string plan_str;
+  int ch;
+  while ((ch = fgetc (stdin)) != '\n')
+    plan_str += (char) ch;
+
   // give parent our pid (for killing the gui)
   printf ("pid %d\n", getpid());
   fflush (stdout);
 
   MainWindow window;
+
+  window.set_plan_str (plan_str);
 
   Gtk::Main::run (window);
 

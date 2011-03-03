@@ -29,14 +29,18 @@ class MorphPlan
 {
   Index index;
   std::vector<MorphOperator *> operators;
+  bool in_restore;
 
 public:
+  MorphPlan();
+  ~MorphPlan();
   bool load_index (const std::string& filename);
 
   void add_operator (MorphOperator *op);
   const std::vector<MorphOperator *>& get_operators();
 
   sigc::signal<void> signal_plan_changed;
+  void set_plan_str (const std::string& plan_str);
 };
 
 }

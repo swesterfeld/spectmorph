@@ -132,7 +132,8 @@ class Osc : public OscBase {
     }
   };
 
-  FILE    *gui_pipe;
+  FILE    *gui_pipe_stdin;
+  FILE    *gui_pipe_stdout;
   GPollFD  gui_poll_fd;
   GSource *gui_source;
   int      gui_pid;
@@ -178,19 +179,26 @@ public:
   {
     string s;
     int ch;
-    while ((ch = fgetc (osc->gui_pipe)) > 0)
+    while ((ch = fgetc (osc->gui_pipe_stdout)) > 0)
       {
         if (ch == '\n')
           break;
         s += (char) ch;
       }
-    osc->set ("plan", s.c_str(), NULL);
-    osc->notify ("plan");
-    printf ("BLOB: %s\n", s.c_str());
     if (s.substr (0, 3) == "pid")
-      osc->gui_pid = atoi (s.substr (4).c_str());
-    if (s == "quit")
-      osc->stop_gui();
+      {
+        osc->gui_pid = atoi (s.substr (4).c_str());
+      }
+    else if (s == "quit")
+      {
+        osc->stop_gui();
+      }
+    else
+      {
+        osc->set ("plan", s.c_str(), NULL);
+        osc->notify ("plan");
+        printf ("PLAN: %s\n", s.c_str());
+      }
   }
   bool
   property_changed (OscPropertyID prop_id)
@@ -203,7 +211,7 @@ public:
         case PROP_EDIT_SETTINGS:
           if (edit_settings)
             {
-              if (gui_pipe)
+              if (gui_pipe_stdin)
                 {
                   stop_gui();
                 }
@@ -221,13 +229,33 @@ public:
   }
   Osc()
   {
-    gui_pipe = NULL;
+    gui_pipe_stdin = NULL;
+    gui_pipe_stdout = NULL;
   }
   void
   start_gui()
   {
-    gui_pipe = popen ("spectmorphoscgui", "r");
-    gui_poll_fd.fd = fileno (gui_pipe);
+    int child_stdin = -1, child_stdout = -1;
+    char **argv;
+    argv = (char **) g_malloc (2 * sizeof (char *));
+    argv[0] = "spectmorphoscgui";
+    argv[1] = NULL;
+    GError *error = NULL;
+    GPid child_pid;
+    g_spawn_async_with_pipes (NULL, /* working directory = current dir */
+                              argv, /* arguments */
+                              NULL, /* inherit environment */
+                              G_SPAWN_SEARCH_PATH,
+                              NULL, NULL, /* no child setup */
+                              &child_pid,
+                              &child_stdin,
+                              &child_stdout,
+                              NULL, /* inherid stderr */
+                              &error);
+    g_free (argv);
+    gui_pipe_stdin = fdopen (child_stdin, "w");
+    gui_pipe_stdout = fdopen (child_stdout, "r");
+    gui_poll_fd.fd = fileno (gui_pipe_stdout);
     gui_poll_fd.events = G_IO_IN;
     gui_source = g_source_simple (G_PRIORITY_LOW,
                               (GSourcePending)  gui_source_pending,
@@ -238,17 +266,23 @@ public:
                               NULL);
     g_source_attach (gui_source, NULL);
     g_source_unref (gui_source);
+
+    // set initial plan
+    fprintf (gui_pipe_stdin, "%s\n", plan.c_str());
+    fflush (gui_pipe_stdin);
   }
   void
   stop_gui()
   {
-    if (gui_pipe)
+    if (gui_pipe_stdout)
       {
         kill (gui_pid, SIGTERM);
-        pclose (gui_pipe);
+        fclose (gui_pipe_stdin);
+        fclose (gui_pipe_stdout);
         g_source_destroy (gui_source);
-        gui_pipe   = NULL;
-        gui_source = NULL;
+        gui_pipe_stdin  = NULL;
+        gui_pipe_stdout = NULL;
+        gui_source      = NULL;
       }
   }
   ~Osc()
