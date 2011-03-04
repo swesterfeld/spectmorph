@@ -17,6 +17,7 @@
 
 #include "smmorphsource.hh"
 #include "smmorphsourceview.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
@@ -37,10 +38,52 @@ void
 MorphSource::set_smset (const string& smset)
 {
   m_smset = smset;
+  m_morph_plan->signal_plan_changed();
 }
 
 string
 MorphSource::smset()
 {
   return m_smset;
+}
+
+const char *
+MorphSource::type()
+{
+  return "SpectMorph::MorphSource";
+}
+
+bool
+MorphSource::save (OutFile& out_file)
+{
+  out_file.write_string ("instrument", m_smset);
+
+  return true;
+}
+
+bool
+MorphSource::load (InFile& ifile)
+{
+  while (ifile.event() != InFile::END_OF_FILE)
+    {
+      if (ifile.event() == InFile::STRING)
+        {
+          if (ifile.event_name() == "instrument")
+            {
+              m_smset = ifile.event_data();
+            }
+          else
+            {
+              g_printerr ("bad string\n");
+              return false;
+            }
+        }
+      else
+        {
+          g_printerr ("bad event\n");
+          return false;
+        }
+      ifile.next_event();
+    }
+  return true;
 }

@@ -18,6 +18,9 @@
 #ifndef SPECTMORPH_MORPH_OPERATOR_HH
 #define SPECTMORPH_MORPH_OPERATOR_HH
 
+#include "smoutfile.hh"
+#include "sminfile.hh"
+
 namespace SpectMorph
 {
 
@@ -26,11 +29,17 @@ class MorphPlan;
 
 class MorphOperator
 {
+protected:
   MorphPlan *m_morph_plan;
+
 public:
   MorphOperator (MorphPlan *morph_plan);
 
   virtual MorphOperatorView *create_view() = 0;
+  virtual const char *type() = 0;
+  virtual bool save (OutFile& out_file) = 0;
+  virtual bool load (InFile& in_file) = 0;
+
   MorphPlan *morph_plan();
 };
 

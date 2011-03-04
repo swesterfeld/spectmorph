@@ -33,6 +33,10 @@ using std::vector;
 MorphPlan::MorphPlan()
 {
   in_restore = false;
+
+  m_structure_version = 0;
+
+  signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlan::on_plan_changed));
 }
 
 MorphPlan::~MorphPlan()
@@ -43,7 +47,12 @@ MorphPlan::~MorphPlan()
 bool
 MorphPlan::load_index (const string& filename)
 {
-  bool result = m_index.load_file (filename);
+  bool result = false;
+  if (filename != "")
+    {
+      result = m_index.load_file (filename);
+    }
+  index_filename = filename;
   signal_index_changed();
   return result;
 }
@@ -52,19 +61,41 @@ void
 MorphPlan::add_operator (MorphOperator *op)
 {
   m_operators.push_back (op);
+  m_structure_version++;
 
   if (!in_restore)
     {
       signal_plan_changed();
+    }
+}
 
+void
+MorphPlan::on_plan_changed()
+{
+  if (!in_restore)
+    {
       vector<unsigned char> data;
       MemOut mo (&data);
       // we need an OutFile destructor run before we can use the data
         {
           OutFile of (&mo, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
+          of.write_string ("index", index_filename);
           for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
             {
+              MorphOperator *op = *oi;
+
               of.begin_section ("operator");
+              of.write_string ("type", op->type());
+
+              vector<unsigned char> op_data;
+              MemOut                op_mo (&op_data);
+              // need an OutFile destructor run before op_data is ready
+              {
+                OutFile op_of (&op_mo, op->type(), SPECTMORPH_BINARY_FILE_VERSION);
+                op->save (op_of);
+              }
+
+              of.write_blob ("data", &op_data[0], data.size());
               of.end_section();
             }
         }
@@ -119,7 +150,10 @@ MorphPlan::set_plan_str (const string& str)
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
   InFile ifile (in);
 
+  index_filename = "";
+
   string section;
+  MorphOperator *load_op = NULL;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
@@ -127,12 +161,53 @@ MorphPlan::set_plan_str (const string& str)
           assert (section == "");
           section = ifile.event_name();
 
-          add_operator (new MorphSource (this));
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
           assert (section != "");
           section = "";
+        }
+      else if (ifile.event() == InFile::STRING)
+        {
+          if (section == "")
+            {
+              if (ifile.event_name() == "index")
+                {
+                  index_filename = ifile.event_data();
+                }
+            }
+          else if (section == "operator")
+            {
+              if (ifile.event_name() == "type")
+                {
+                  string operator_type = ifile.event_data();
+
+                  if (operator_type == "SpectMorph::MorphSource")
+                    {
+                      load_op = new MorphSource (this);
+                    }
+                  else
+                    {
+                      g_printerr ("unknown operator type %s", operator_type.c_str());
+                    }
+                }
+            }
+        }
+      else if (ifile.event() == InFile::BLOB)
+        {
+          if (section == "operator")
+            {
+              if (ifile.event_name() == "data")
+                {
+                  assert (load_op != NULL);
+
+                  GenericIn *blob_in = ifile.open_blob();
+                  InFile blob_infile (blob_in);
+                  load_op->load (blob_infile);
+
+                  add_operator (load_op);
+                }
+            }
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
@@ -143,6 +218,7 @@ MorphPlan::set_plan_str (const string& str)
     }
   delete in;
 
+  load_index (index_filename);
   in_restore = false;
   signal_plan_changed();
 }
@@ -157,4 +233,10 @@ Index *
 MorphPlan::index()
 {
   return &m_index;
+}
+
+int
+MorphPlan::structure_version()
+{
+  return m_structure_version;
 }

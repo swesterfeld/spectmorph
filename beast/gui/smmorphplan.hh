@@ -29,7 +29,10 @@ class MorphPlan
 {
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
-  bool in_restore;
+  int                          m_structure_version;
+
+  std::string                  index_filename;
+  bool                         in_restore;
 
 public:
   MorphPlan();
@@ -45,6 +48,9 @@ public:
   sigc::signal<void> signal_index_changed;
 
   void set_plan_str (const std::string& plan_str);
+  void on_plan_changed();
+
+  int  structure_version();
 };
 
 }

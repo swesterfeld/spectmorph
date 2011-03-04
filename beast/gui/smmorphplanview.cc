@@ -28,12 +28,20 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan) :
   morph_plan (morph_plan)
 {
   morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanView::on_plan_changed));
+
+  old_structure_version = morph_plan->structure_version() - 1;
 }
 
 void
 MorphPlanView::on_plan_changed()
 {
   g_printerr ("plan changed\n");
+
+  if (morph_plan->structure_version() == old_structure_version)
+    return; // nothing to do, view widgets should be fine
+  old_structure_version = morph_plan->structure_version();
+
+  g_printerr ("structure changed\n");
 
   vector<Widget *> old_children = get_children();
   for (vector<Widget *>::iterator ci = old_children.begin(); ci != old_children.end(); ci++)
@@ -44,7 +52,6 @@ MorphPlanView::on_plan_changed()
     }
 
   const vector<MorphOperator *>& operators = morph_plan->operators();
-
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
       MorphOperatorView *op_view = (*oi)->create_view();

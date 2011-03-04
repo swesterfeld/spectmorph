@@ -30,7 +30,12 @@ class MorphSource : public MorphOperator
   std::string m_smset;
 public:
   MorphSource (MorphPlan *morph_plan);
+
+  // inherited from MorphOperator
   MorphOperatorView *create_view();
+  const char        *type();
+  bool               save (OutFile& out_file);
+  bool               load (InFile&  in_file);
 
   void        set_smset (const std::string& smset);
   std::string smset();
