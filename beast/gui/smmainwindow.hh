@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef SPECTMORPH_MAIN_WINDOW_HH
+#define SPECTMORPH_MAIN_WINDOW_HH
+
 #include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
@@ -26,42 +29,26 @@
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
 #include "smmorphplanview.hh"
-#include "smmainwindow.hh"
 
-using namespace SpectMorph;
-
-using std::string;
-
-int
-main (int argc, char **argv)
+namespace SpectMorph
 {
-  sm_init (&argc, &argv);
 
-  Gtk::Main kit (argc, argv);
+class MainWindow : public Gtk::Window
+{
+  Gtk::Button   load_index_button;
+  Gtk::Button   add_operator_button;
+  Gtk::VBox     button_vbox;
+  MorphPlan     morph_plan;
+  MorphPlanView morph_plan_view;
 
-  if (argc != 1)
-    {
-      printf ("usage: %s\n", argv[0]);
-      exit (1);
-    }
+public:
+  MainWindow();
 
-  // read initial plan
-  string plan_str;
-  int ch;
-  while ((ch = fgetc (stdin)) != '\n')
-    plan_str += (char) ch;
+  void set_plan_str (const std::string& plan_str);
+  void on_add_operator_button_clicked();
+  void on_button_clicked();
+};
 
-  // give parent our pid (for killing the gui)
-  printf ("pid %d\n", getpid());
-  fflush (stdout);
-
-  MainWindow window;
-
-  window.set_plan_str (plan_str);
-
-  Gtk::Main::run (window);
-
-  // let parent know that the user closed the gui window
-  printf ("quit\n");
-  fflush (stdout);
 }
+
+#endif
