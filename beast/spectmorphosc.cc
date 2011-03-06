@@ -90,7 +90,7 @@ class Osc : public OscBase {
     void process (unsigned int n_values)
     {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
-      gfloat *audio_out = ostream (OCHANNEL_AUDIO_OUT).values;
+      gfloat *audio_out1 = ostream (OCHANNEL_AUDIO_OUT1).values;
       if (need_retrigger)
         {
           // get frequency
@@ -105,7 +105,7 @@ class Osc : public OscBase {
           retrigger (new_freq, midi_velocity);
           need_retrigger = false;
         }
-      live_decoder->process (n_values, NULL, NULL, audio_out);
+      live_decoder->process (n_values, NULL, NULL, audio_out1);
     }
     void
     retrigger (float freq, int midi_velocity)

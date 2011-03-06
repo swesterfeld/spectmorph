@@ -29,7 +29,11 @@ class Osc : Effect {
   Info    blurb       = _("Oscillator based on SpectMorph instruments.");
   IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
   IStream velocity_in = (_("Velocity In"), _("Velocity of the note press"));
-  OStream audio_out   = (_("Audio Out"), _("Audio Output"));
+
+  OStream audio_out1  = (_("Audio Out1"), _("Audio output 1"));
+  OStream audio_out2  = (_("Audio Out2"), _("Audio output 2"));
+  OStream audio_out3  = (_("Audio Out3"), _("Audio output 3"));
+  OStream audio_out4  = (_("Audio Out4"), _("Audio output 4"));
 
   group _("Source") {
     String filename       = String (_("Filename"), _("Name of the SpectMorph file"), "", STANDARD);
