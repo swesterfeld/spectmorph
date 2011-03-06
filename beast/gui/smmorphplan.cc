@@ -24,12 +24,14 @@
 #include "smmorphsource.hh"
 #include "smmorphoutput.hh"
 
+#include <map>
 #include <assert.h>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::map;
 
 MorphPlan::MorphPlan()
 {
@@ -173,6 +175,7 @@ MorphPlan::set_plan_str (const string& str)
 
   index_filename = "";
 
+  map<string, vector<unsigned char> > blob_data_map;
   string section;
   MorphOperator *load_op = NULL;
   while (ifile.event() != InFile::END_OF_FILE)
@@ -228,7 +231,29 @@ MorphPlan::set_plan_str (const string& str)
                   assert (load_op != NULL);
 
                   GenericIn *blob_in = ifile.open_blob();
-                  InFile blob_infile (blob_in);
+                  vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
+                  int ch;
+                  while ((ch = blob_in->get_byte()) >= 0)
+                    blob_data.push_back (ch);
+
+                  GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
+                  InFile blob_infile (in);
+                  load_op->load (blob_infile);
+
+                  add_operator (load_op);
+                }
+            }
+        }
+      else if (ifile.event() == InFile::BLOB_REF)
+        {
+          if (section == "operator")
+            {
+              if (ifile.event_name() == "data")
+                {
+                  vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
+
+                  GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
+                  InFile blob_infile (in);
                   load_op->load (blob_infile);
 
                   add_operator (load_op);
