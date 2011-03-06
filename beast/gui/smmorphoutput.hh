@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Stefan Westerfeld
+ * Copyright (C) 2011 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -15,41 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MAIN_WINDOW_HH
-#define SPECTMORPH_MAIN_WINDOW_HH
+#ifndef SPECTMORPH_MORPH_OUTPUT_HH
+#define SPECTMORPH_MORPH_OUTPUT_HH
 
-#include <gtkmm.h>
-#include <assert.h>
-#include <sys/time.h>
+#include "smmorphoperator.hh"
 
-#include <vector>
 #include <string>
-
-#include "smmain.hh"
-#include "smmorphplan.hh"
-#include "smmorphsource.hh"
-#include "smmorphplanview.hh"
 
 namespace SpectMorph
 {
 
-class MainWindow : public Gtk::Window
+class MorphOutput : public MorphOperator
 {
-  Gtk::VBox     window_vbox;
-  Gtk::VBox     plan_vbox;
-  MorphPlan     morph_plan;
-  MorphPlanView morph_plan_view;
-
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
-
 public:
-  MainWindow();
+  MorphOutput (MorphPlan *morph_plan);
 
-  void set_plan_str (const std::string& plan_str);
-  void on_add_source_clicked();
-  void on_add_output_clicked();
-  void on_load_index_clicked();
+  // inherited from MorphOperator
+  MorphOperatorView *create_view();
+  const char        *type();
+  bool               save (OutFile& out_file);
+  bool               load (InFile&  in_file);
 };
 
 }

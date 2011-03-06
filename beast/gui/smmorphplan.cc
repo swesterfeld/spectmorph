@@ -22,6 +22,7 @@
 #include "smaudio.hh"
 #include "sminfile.hh"
 #include "smmorphsource.hh"
+#include "smmorphoutput.hh"
 
 #include <assert.h>
 
@@ -95,7 +96,7 @@ MorphPlan::on_plan_changed()
                 op->save (op_of);
               }
 
-              of.write_blob ("data", &op_data[0], data.size());
+              of.write_blob ("data", &op_data[0], op_data.size());
               of.end_section();
             }
         }
@@ -186,9 +187,14 @@ MorphPlan::set_plan_str (const string& str)
                     {
                       load_op = new MorphSource (this);
                     }
+                  else if (operator_type == "SpectMorph::MorphOutput")
+                    {
+                      load_op = new MorphOutput (this);
+                    }
                   else
                     {
                       g_printerr ("unknown operator type %s", operator_type.c_str());
+                      load_op = NULL;
                     }
                 }
             }

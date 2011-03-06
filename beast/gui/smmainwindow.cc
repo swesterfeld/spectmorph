@@ -21,10 +21,12 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
+#include "smmorphoutput.hh"
 #include "smmorphplanview.hh"
 #include "smmainwindow.hh"
 
@@ -33,7 +35,7 @@ using namespace SpectMorph;
 using std::string;
 
 void
-MainWindow::on_button_clicked()
+MainWindow::on_load_index_clicked()
 {
   Gtk::FileChooserDialog dialog ("Select SpectMorph index file", Gtk::FILE_CHOOSER_ACTION_OPEN);
   dialog.set_transient_for (*this);
@@ -56,23 +58,63 @@ MainWindow::on_button_clicked()
 }
 
 void
-MainWindow::on_add_operator_button_clicked()
+MainWindow::on_add_source_clicked()
 {
   morph_plan.add_operator (new MorphSource (&morph_plan));
 }
 
+void
+MainWindow::on_add_output_clicked()
+{
+  morph_plan.add_operator (new MorphOutput (&morph_plan));
+}
+
 MainWindow::MainWindow() :
-  load_index_button ("Load SpectMorph index file"),
-  add_operator_button ("Add Operator"),
   morph_plan_view (&morph_plan)
 {
-  set_border_width (10);
-  load_index_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_button_clicked));
-  add_operator_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_add_operator_button_clicked));
-  button_vbox.add (load_index_button);
-  button_vbox.add (add_operator_button);
-  button_vbox.add (morph_plan_view);
-  add (button_vbox);
+  plan_vbox.set_border_width (10);
+
+  ref_action_group = Gtk::ActionGroup::create();
+  ref_action_group->add (Gtk::Action::create ("EditMenu", "Edit"));
+  ref_action_group->add (Gtk::Action::create ("EditAddOperator", "Add Operator"));
+  ref_action_group->add (Gtk::Action::create ("EditAddSource", "Source"),
+                         sigc::mem_fun (*this, &MainWindow::on_add_source_clicked));
+  ref_action_group->add (Gtk::Action::create ("EditAddOutput", "Output"),
+                         sigc::mem_fun (*this, &MainWindow::on_add_output_clicked));
+  ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
+                         sigc::mem_fun (*this, &MainWindow::on_load_index_clicked));
+
+  ref_ui_manager = Gtk::UIManager::create();
+  ref_ui_manager-> insert_action_group (ref_action_group);
+  add_accel_group (ref_ui_manager->get_accel_group());
+
+  Glib::ustring ui_info =
+    "<ui>"
+    "  <menubar name='MenuBar'>"
+    "    <menu action='EditMenu'>"
+    "      <menu action='EditAddOperator'>"
+    "        <menuitem action='EditAddSource' />"
+    "        <menuitem action='EditAddOutput' />"
+    "      </menu>"
+    "      <menuitem action='EditLoadIndex' />"
+    "    </menu>"
+    "  </menubar>"
+    "</ui>";
+  try
+    {
+      ref_ui_manager->add_ui_from_string (ui_info);
+    }
+  catch (const Glib::Error& ex)
+    {
+      std::cerr << "building menus failed: " << ex.what();
+    }
+  Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
+  if (menu_bar)
+    window_vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
+  window_vbox.add (plan_vbox);
+
+  plan_vbox.add (morph_plan_view);
+  add (window_vbox);
 
   show_all_children();
 }
