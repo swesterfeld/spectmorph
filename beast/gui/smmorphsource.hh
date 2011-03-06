@@ -36,6 +36,7 @@ public:
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
+  OutputType         output_type();
 
   void        set_smset (const std::string& smset);
   std::string smset();

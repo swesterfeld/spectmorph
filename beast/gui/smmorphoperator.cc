@@ -19,6 +19,8 @@
 
 using namespace SpectMorph;
 
+using std::string;
+
 MorphOperator::MorphOperator (MorphPlan *morph_plan) :
   m_morph_plan (morph_plan)
 {
@@ -28,4 +30,22 @@ MorphPlan*
 MorphOperator::morph_plan()
 {
   return m_morph_plan;
+}
+
+string
+MorphOperator::name()
+{
+  return m_name;
+}
+
+void
+MorphOperator::set_name (const string& name)
+{
+  m_name = name;
+}
+
+void
+MorphOperator::post_load()
+{
+  // override this for post load notification
 }

@@ -30,17 +30,27 @@ class MorphPlan;
 class MorphOperator
 {
 protected:
-  MorphPlan *m_morph_plan;
+  MorphPlan  *m_morph_plan;
+  std::string m_name;
 
 public:
+  enum OutputType {
+    OUTPUT_NONE,
+    OUTPUT_AUDIO
+  };
   MorphOperator (MorphPlan *morph_plan);
 
   virtual MorphOperatorView *create_view() = 0;
   virtual const char *type() = 0;
   virtual bool save (OutFile& out_file) = 0;
   virtual bool load (InFile& in_file) = 0;
+  virtual void post_load();
+  virtual OutputType output_type() = 0;
 
   MorphPlan *morph_plan();
+
+  std::string name();
+  void set_name (const std::string &name);
 };
 
 }

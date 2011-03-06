@@ -26,10 +26,22 @@ namespace SpectMorph
 
 class MorphOutputView : public MorphOperatorView
 {
-  MorphOutput      *morph_output;
+  struct ChannelView {
+    Gtk::Label        label;
+    Gtk::ComboBoxText combobox;
+  };
+
+  Gtk::Table                  channel_table;
+  std::vector<ChannelView *>  channels;
+  bool                        block_channel_changed;
+  MorphOutput                *morph_output;
 
 public:
   MorphOutputView (MorphOutput *morph_morph_output);
+  ~MorphOutputView();
+
+  void on_operators_changed();
+  void on_channel_changed();
 };
 
 }

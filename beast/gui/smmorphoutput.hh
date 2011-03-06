@@ -27,6 +27,9 @@ namespace SpectMorph
 
 class MorphOutput : public MorphOperator
 {
+  std::vector<std::string>     load_channel_op_names;
+  std::vector<MorphOperator *> channel_ops;
+
 public:
   MorphOutput (MorphPlan *morph_plan);
 
@@ -35,6 +38,11 @@ public:
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
+  void               post_load();
+  OutputType         output_type();
+
+  void           set_channel_op (int ch, MorphOperator *op);
+  MorphOperator *channel_op (int ch);
 };
 
 }

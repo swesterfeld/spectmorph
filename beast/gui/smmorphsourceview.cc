@@ -27,7 +27,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source) :
   instrument_label ("Instrument"),
   morph_source (morph_source)
 {
-  set_label ("Source");
+  set_label (morph_source->name());
 
   on_index_changed();
   morph_source->morph_plan()->signal_index_changed.connect (sigc::mem_fun (*this, &MorphSourceView::on_index_changed));

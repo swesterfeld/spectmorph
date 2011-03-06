@@ -61,9 +61,29 @@ MorphPlan::load_index (const string& filename)
 void
 MorphPlan::add_operator (MorphOperator *op)
 {
+  // generate uniq name
+  string name;
+  bool   uniq;
+  int    i = 0;
+
+  do
+    {
+      i++;
+      uniq = true;
+      name = Birnet::string_printf ("%s #%d",
+                string (op->type()).substr (string ("SpectMorph::Morph").size()).c_str(), i);
+
+      for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+        {
+          if ((*oi)->name() == name)
+            uniq = false;
+        }
+    }
+  while (!uniq);
+  op->set_name (name);
+
   m_operators.push_back (op);
   m_structure_version++;
-
   if (!in_restore)
     {
       signal_plan_changed();
@@ -225,6 +245,13 @@ MorphPlan::set_plan_str (const string& str)
   delete in;
 
   load_index (index_filename);
+
+  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      op->post_load();
+    }
+
   in_restore = false;
   signal_plan_changed();
 }

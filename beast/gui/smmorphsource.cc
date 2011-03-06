@@ -87,3 +87,9 @@ MorphSource::load (InFile& ifile)
     }
   return true;
 }
+
+MorphOperator::OutputType
+MorphSource::output_type()
+{
+  return OUTPUT_AUDIO;
+}

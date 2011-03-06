@@ -17,6 +17,7 @@
 
 #include "smmorphoutputview.hh"
 #include "smmorphplan.hh"
+#include <birnet/birnet.hh>
 
 using namespace SpectMorph;
 
@@ -24,9 +25,82 @@ using std::string;
 using std::vector;
 
 MorphOutputView::MorphOutputView (MorphOutput *morph_output) :
+  block_channel_changed (false),
   morph_output (morph_output)
 {
-  set_label ("Output");
+  set_label (morph_output->name());
+
+  for (int ch = 0; ch < 4; ch++)
+    {
+      ChannelView *chv = new ChannelView;
+      chv->label.set_text (Birnet::string_printf ("Channel #%d", ch + 1));
+      channel_table.attach (chv->label, 0, 1, ch, ch + 1, Gtk::SHRINK);
+      channel_table.attach (chv->combobox, 1, 2, ch, ch + 1);
+      channels.push_back (chv);
+
+      chv->combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphOutputView::on_channel_changed));
+    }
+  channel_table.set_spacings (10);
+  channel_table.set_border_width (5);
+  add (channel_table);
+
+  on_operators_changed();
 
   show_all_children();
+}
+
+MorphOutputView::~MorphOutputView()
+{
+  for (vector<ChannelView *>::iterator i = channels.begin(); i != channels.end(); i++)
+    {
+      delete *i;
+    }
+}
+
+void
+MorphOutputView::on_operators_changed()
+{
+  const vector<MorphOperator *>& ops = morph_output->morph_plan()->operators();
+
+  block_channel_changed = true;
+  for (size_t i = 0; i < channels.size(); i++)
+    {
+      Gtk::ComboBoxText& combo = channels[i]->combobox;
+      combo.clear();
+
+      MorphOperator *active_morph_op = morph_output->channel_op (i);
+      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+        {
+          MorphOperator *morph_op = *oi;
+          if (morph_op->output_type() == MorphOperator::OUTPUT_AUDIO)
+            {
+              combo.append_text (morph_op->name());
+              if (morph_op == active_morph_op)
+                combo.set_active_text (morph_op->name());
+            }
+        }
+    }
+  block_channel_changed = false;
+}
+
+void
+MorphOutputView::on_channel_changed()
+{
+  if (block_channel_changed)
+    return;
+
+  for (size_t i = 0; i < channels.size(); i++)
+    {
+      const vector<MorphOperator *>& ops = morph_output->morph_plan()->operators();
+
+      MorphOperator *active_morph_op = NULL;
+
+      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+        {
+          MorphOperator *morph_op = *oi;
+          if (morph_op->name() == channels[i]->combobox.get_active_text())
+            active_morph_op = morph_op;
+        }
+      morph_output->set_channel_op (i, active_morph_op);
+    }
 }
