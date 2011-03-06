@@ -57,17 +57,5 @@ MorphPlanView::on_plan_changed()
       MorphOperatorView *op_view = (*oi)->create_view();
       add (*op_view);
       op_view->show();
-#if 0
-      Gtk::Frame *frame = new Gtk::Frame (Birnet::string_printf ("Operator #%d", onr++));
-      Gtk::VBox  *vbox  = new Gtk::VBox;
-      vbox->set_border_width (10);
-      Gtk::Label *label = new Gtk::Label ("blub");
-      vbox->add (*label);
-      frame->add (*vbox);
-      add (*frame);
-      vbox->show();
-      label->show();
-      frame->show();
-#endif
     }
 }
