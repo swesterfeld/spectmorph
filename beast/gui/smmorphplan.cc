@@ -23,6 +23,7 @@
 #include "sminfile.hh"
 #include "smmorphsource.hh"
 #include "smmorphoutput.hh"
+#include "smhexstring.hh"
 
 #include <map>
 #include <assert.h>
@@ -130,25 +131,9 @@ MorphPlan::on_plan_changed()
               of.end_section();
             }
         }
-      for (size_t i = 0; i < data.size(); i++)
-        {
-          printf ("%02x", data[i]);
-        }
-      printf ("\n");
+      printf ("%s\n", HexString::encode (data).c_str());
       fflush (stdout);
     }
-}
-
-static unsigned char
-from_hex_nibble (char c)
-{
-  int uc = (unsigned char)c;
-
-  if (uc >= '0' && uc <= '9') return uc - (unsigned char)'0';
-  if (uc >= 'a' && uc <= 'f') return uc + 10 - (unsigned char)'a';
-  if (uc >= 'A' && uc <= 'F') return uc + 10 - (unsigned char)'A';
-
-  return 16;	// error
 }
 
 void
@@ -157,26 +142,8 @@ MorphPlan::set_plan_str (const string& str)
   in_restore = true;
 
   vector<unsigned char> data;
-  string::const_iterator si = str.begin();
-  while (si != str.end())
-    {
-      unsigned char h = from_hex_nibble (*si++);	// high nibble
-      if (si == str.end())
-        {
-          g_printerr ("GUI: bad plan_str, end before expected end\n");
-          in_restore = false;
-          return;
-        }
-
-      unsigned char l = from_hex_nibble (*si++);	// low nibble
-      if (h >= 16 || l >= 16)
-        {
-          g_printerr ("GUI: bad plan_str, no hex digit\n");
-          in_restore = false;
-          return;
-        }
-      data.push_back((h << 4) + l);
-    }
+  if (!HexString::decode (str, data))
+    return;
 
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
   InFile ifile (in);
