@@ -43,6 +43,8 @@ public:
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
+
+  void on_operator_removed (MorphOperator *op);
 };
 
 }

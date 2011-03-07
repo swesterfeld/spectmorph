@@ -45,8 +45,9 @@ public:
   const std::vector<MorphOperator *>& operators();
   void remove (MorphOperator *op);
 
-  sigc::signal<void> signal_plan_changed;
-  sigc::signal<void> signal_index_changed;
+  sigc::signal<void>                  signal_plan_changed;
+  sigc::signal<void>                  signal_index_changed;
+  sigc::signal<void, MorphOperator *> signal_operator_removed;
 
   void set_plan_str (const std::string& plan_str);
   void on_plan_changed();

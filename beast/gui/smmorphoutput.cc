@@ -32,6 +32,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT)
 {
+  morph_plan->signal_operator_removed.connect (sigc::mem_fun (*this, &MorphOutput::on_operator_removed));
 }
 
 MorphOperatorView *
@@ -133,4 +134,14 @@ MorphOutput::channel_op (int ch)
   assert (ch >= 0 && ch < CHANNEL_OP_COUNT);
 
   return channel_ops[ch];
+}
+
+void
+MorphOutput::on_operator_removed (MorphOperator *op)
+{
+  for (size_t ch = 0; ch < channel_ops.size(); ch++)
+    {
+      if (channel_ops[ch] == op)
+        channel_ops[ch] = NULL;
+    }
 }

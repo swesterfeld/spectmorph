@@ -292,7 +292,6 @@ MorphPlan::remove (MorphOperator *op)
     }
   m_structure_version++;
 
-  // FIXME: notify all operators so they can drop pointers to the removed element
-
+  signal_operator_removed (op);
   signal_plan_changed();
 }
