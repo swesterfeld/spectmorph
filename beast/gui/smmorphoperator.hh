@@ -34,6 +34,8 @@ protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;
 
+  void write_operator (OutFile& file, const std::string& name, MorphOperator *op);
+
 public:
   enum OutputType {
     OUTPUT_NONE,

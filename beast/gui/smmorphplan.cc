@@ -23,6 +23,7 @@
 #include "sminfile.hh"
 #include "smmorphsource.hh"
 #include "smmorphoutput.hh"
+#include "smmorphlinear.hh"
 #include "smhexstring.hh"
 
 #include <map>
@@ -189,6 +190,10 @@ MorphPlan::set_plan_str (const string& str)
                   else if (operator_type == "SpectMorph::MorphOutput")
                     {
                       load_op = new MorphOutput (this);
+                    }
+                  else if (operator_type == "SpectMorph::MorphLinear")
+                    {
+                      load_op = new MorphLinear (this);
                     }
                   else
                     {

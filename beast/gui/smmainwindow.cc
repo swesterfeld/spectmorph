@@ -27,6 +27,7 @@
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
 #include "smmorphoutput.hh"
+#include "smmorphlinear.hh"
 #include "smmorphplanview.hh"
 #include "smmainwindow.hh"
 
@@ -69,6 +70,12 @@ MainWindow::on_add_output_clicked()
   morph_plan.add_operator (new MorphOutput (&morph_plan));
 }
 
+void
+MainWindow::on_add_linear_morph_clicked()
+{
+  morph_plan.add_operator (new MorphLinear (&morph_plan));
+}
+
 MainWindow::MainWindow() :
   morph_plan_view (&morph_plan, this)
 {
@@ -81,6 +88,8 @@ MainWindow::MainWindow() :
                          sigc::mem_fun (*this, &MainWindow::on_add_source_clicked));
   ref_action_group->add (Gtk::Action::create ("EditAddOutput", "Output"),
                          sigc::mem_fun (*this, &MainWindow::on_add_output_clicked));
+  ref_action_group->add (Gtk::Action::create ("EditAddLinearMorph", "Linear Morph"),
+                         sigc::mem_fun (*this, &MainWindow::on_add_linear_morph_clicked));
   ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
                          sigc::mem_fun (*this, &MainWindow::on_load_index_clicked));
 
@@ -105,6 +114,7 @@ MainWindow::MainWindow() :
     "      <menu action='EditAddOperator'>"
     "        <menuitem action='EditAddSource' />"
     "        <menuitem action='EditAddOutput' />"
+    "        <menuitem action='EditAddLinearMorph' />"
     "      </menu>"
     "      <menuitem action='EditLoadIndex' />"
     "    </menu>"

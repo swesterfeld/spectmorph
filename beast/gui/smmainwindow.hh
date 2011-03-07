@@ -51,6 +51,7 @@ public:
   void set_plan_str (const std::string& plan_str);
   void on_add_source_clicked();
   void on_add_output_clicked();
+  void on_add_linear_morph_clicked();
   void on_load_index_clicked();
 
   void on_context_rename();

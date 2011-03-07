@@ -49,3 +49,14 @@ MorphOperator::post_load()
 {
   // override this for post load notification
 }
+
+void
+MorphOperator::write_operator (OutFile& file, const std::string& name, MorphOperator *op)
+{
+  string op_name;
+
+  if (op) // (op == NULL) => (op_name == "")
+    op_name = op->name();
+
+  file.write_string (name, op_name);
+}
