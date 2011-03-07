@@ -16,9 +16,26 @@
  */
 
 #include "smmorphoperatorview.hh"
+#include "smmorphoperator.hh"
 
 using namespace SpectMorph;
 
-MorphOperatorView::MorphOperatorView()
+MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
+  main_window (main_window),
+  op (op)
 {
+  frame.set_label (op->name());
+  add (frame);
+}
+
+bool
+MorphOperatorView::on_button_press_event (GdkEventButton *event)
+{
+  if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+    {
+      main_window->show_popup (event, op);
+      return true; // it has been handled
+    }
+  else
+    return false;
 }

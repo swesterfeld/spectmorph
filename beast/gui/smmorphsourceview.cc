@@ -23,12 +23,11 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphSourceView::MorphSourceView (MorphSource *morph_source) :
+MorphSourceView::MorphSourceView (MorphSource *morph_source, MainWindow *main_window) :
+  MorphOperatorView (morph_source, main_window),
   instrument_label ("Instrument"),
   morph_source (morph_source)
 {
-  set_label (morph_source->name());
-
   on_index_changed();
   morph_source->morph_plan()->signal_index_changed.connect (sigc::mem_fun (*this, &MorphSourceView::on_index_changed));
 
@@ -36,7 +35,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source) :
   instrument_hbox.pack_start (instrument_label, Gtk::PACK_SHRINK);
   instrument_hbox.pack_start (instrument_combobox);
   instrument_hbox.set_border_width (5);
-  add (instrument_hbox);
+  frame.add (instrument_hbox);
 
   instrument_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphSourceView::on_instrument_changed));
 

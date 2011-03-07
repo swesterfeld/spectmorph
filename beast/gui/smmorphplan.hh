@@ -41,8 +41,9 @@ public:
   bool   load_index (const std::string& filename);
   Index *index();
 
-  void add_operator (MorphOperator *op);
+  void add_operator (MorphOperator *op, const std::string& name = "");
   const std::vector<MorphOperator *>& operators();
+  void remove (MorphOperator *op);
 
   sigc::signal<void> signal_plan_changed;
   sigc::signal<void> signal_index_changed;

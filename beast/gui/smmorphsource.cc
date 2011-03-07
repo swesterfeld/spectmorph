@@ -29,9 +29,9 @@ MorphSource::MorphSource (MorphPlan *morph_plan) :
 }
 
 MorphOperatorView *
-MorphSource::create_view()
+MorphSource::create_view (MainWindow *main_window)
 {
-  return new MorphSourceView (this);
+  return new MorphSourceView (this, main_window);
 }
 
 void

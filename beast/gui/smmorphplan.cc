@@ -61,28 +61,35 @@ MorphPlan::load_index (const string& filename)
 }
 
 void
-MorphPlan::add_operator (MorphOperator *op)
+MorphPlan::add_operator (MorphOperator *op, const string& load_name)
 {
-  // generate uniq name
-  string name;
-  bool   uniq;
-  int    i = 0;
-
-  do
+  if (load_name == "")
     {
-      i++;
-      uniq = true;
-      name = Birnet::string_printf ("%s #%d",
-                string (op->type()).substr (string ("SpectMorph::Morph").size()).c_str(), i);
+      // generate uniq name
+      string name;
+      bool   uniq;
+      int    i = 0;
 
-      for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+      do
         {
-          if ((*oi)->name() == name)
-            uniq = false;
+          i++;
+          uniq = true;
+          name = Birnet::string_printf ("%s #%d",
+                    string (op->type()).substr (string ("SpectMorph::Morph").size()).c_str(), i);
+
+          for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+            {
+              if ((*oi)->name() == name)
+                uniq = false;
+            }
         }
+      while (!uniq);
+      op->set_name (name);
     }
-  while (!uniq);
-  op->set_name (name);
+  else
+    {
+      op->set_name (load_name);
+    }
 
   m_operators.push_back (op);
   m_structure_version++;
@@ -109,6 +116,7 @@ MorphPlan::on_plan_changed()
 
               of.begin_section ("operator");
               of.write_string ("type", op->type());
+              of.write_string ("name", op->name());
 
               vector<unsigned char> op_data;
               MemOut                op_mo (&op_data);
@@ -178,6 +186,7 @@ MorphPlan::set_plan_str (const string& str)
   map<string, vector<unsigned char> > blob_data_map;
   string section;
   MorphOperator *load_op = NULL;
+  string         load_name;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
@@ -220,6 +229,10 @@ MorphPlan::set_plan_str (const string& str)
                       load_op = NULL;
                     }
                 }
+              else if (ifile.event_name() == "name")
+                {
+                  load_name = ifile.event_data();
+                }
             }
         }
       else if (ifile.event() == InFile::BLOB)
@@ -240,7 +253,7 @@ MorphPlan::set_plan_str (const string& str)
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
 
-                  add_operator (load_op);
+                  add_operator (load_op, load_name);
                 }
             }
         }
@@ -297,4 +310,22 @@ int
 MorphPlan::structure_version()
 {
   return m_structure_version;
+}
+
+void
+MorphPlan::remove (MorphOperator *op)
+{
+  vector<MorphOperator *>::iterator oi = m_operators.begin();
+  while (oi != m_operators.end())
+    {
+      if (*oi == op)
+        oi = m_operators.erase (oi);
+      else
+        oi++;
+    }
+  m_structure_version++;
+
+  // FIXME: notify all operators so they can drop pointers to the removed element
+
+  signal_plan_changed();
 }

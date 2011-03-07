@@ -24,12 +24,11 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphOutputView::MorphOutputView (MorphOutput *morph_output) :
+MorphOutputView::MorphOutputView (MorphOutput *morph_output, MainWindow *main_window) :
+  MorphOperatorView (morph_output, main_window),
   block_channel_changed (false),
   morph_output (morph_output)
 {
-  set_label (morph_output->name());
-
   for (int ch = 0; ch < 4; ch++)
     {
       ChannelView *chv = new ChannelView;
@@ -42,7 +41,7 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output) :
     }
   channel_table.set_spacings (10);
   channel_table.set_border_width (5);
-  add (channel_table);
+  frame.add (channel_table);
 
   on_operators_changed();
 

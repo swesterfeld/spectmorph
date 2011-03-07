@@ -29,9 +29,10 @@ class MorphPlanView : public Gtk::VBox
 {
   MorphPlan                    *morph_plan;
   int                           old_structure_version;
+  MainWindow                   *main_window;
 
 public:
-  MorphPlanView (MorphPlan *morph_plan);
+  MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window);
 
   void on_plan_changed();
 };

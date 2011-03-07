@@ -37,7 +37,7 @@ class MorphOutputView : public MorphOperatorView
   MorphOutput                *morph_output;
 
 public:
-  MorphOutputView (MorphOutput *morph_morph_output);
+  MorphOutputView (MorphOutput *morph_morph_output, MainWindow *main_window);
   ~MorphOutputView();
 
   void on_operators_changed();

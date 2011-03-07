@@ -43,6 +43,8 @@ class MainWindow : public Gtk::Window
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 
+  Gtk::Menu                      *popup_menu;
+  MorphOperator                  *popup_op;
 public:
   MainWindow();
 
@@ -50,6 +52,11 @@ public:
   void on_add_source_clicked();
   void on_add_output_clicked();
   void on_load_index_clicked();
+
+  void on_context_rename();
+  void on_context_remove();
+
+  void show_popup (GdkEventButton *event, MorphOperator *op);
 };
 
 }

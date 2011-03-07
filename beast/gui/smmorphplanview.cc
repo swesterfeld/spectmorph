@@ -24,8 +24,9 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphPlanView::MorphPlanView (MorphPlan *morph_plan) :
-  morph_plan (morph_plan)
+MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window) :
+  morph_plan (morph_plan),
+  main_window (main_window)
 {
   morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanView::on_plan_changed));
 
@@ -54,7 +55,7 @@ MorphPlanView::on_plan_changed()
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
-      MorphOperatorView *op_view = (*oi)->create_view();
+      MorphOperatorView *op_view = (*oi)->create_view (main_window);
       add (*op_view);
       op_view->show();
     }

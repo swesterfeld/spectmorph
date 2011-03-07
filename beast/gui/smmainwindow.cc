@@ -70,7 +70,7 @@ MainWindow::on_add_output_clicked()
 }
 
 MainWindow::MainWindow() :
-  morph_plan_view (&morph_plan)
+  morph_plan_view (&morph_plan, this)
 {
   plan_vbox.set_border_width (10);
 
@@ -83,6 +83,16 @@ MainWindow::MainWindow() :
                          sigc::mem_fun (*this, &MainWindow::on_add_output_clicked));
   ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
                          sigc::mem_fun (*this, &MainWindow::on_load_index_clicked));
+
+  ref_action_group->add (Gtk::Action::create ("ContextMenu", "Context Menu"));
+
+  ref_action_group->add (Gtk::Action::create ("ContextRename", "Rename"),
+          sigc::mem_fun(*this, &MainWindow::on_context_rename));
+
+  ref_action_group->add(Gtk::Action::create("ContextRemove", "Remove"),
+          //Gtk::AccelKey("<control>P"),
+          sigc::mem_fun(*this, &MainWindow::on_context_remove));
+
 
   ref_ui_manager = Gtk::UIManager::create();
   ref_ui_manager-> insert_action_group (ref_action_group);
@@ -99,6 +109,10 @@ MainWindow::MainWindow() :
     "      <menuitem action='EditLoadIndex' />"
     "    </menu>"
     "  </menubar>"
+    "  <popup name='PopupMenu'>"
+    "    <menuitem action='ContextRename'/>"
+    "    <menuitem action='ContextRemove'/>"
+    "  </popup>"
     "</ui>";
   try
     {
@@ -108,6 +122,11 @@ MainWindow::MainWindow() :
     {
       std::cerr << "building menus failed: " << ex.what();
     }
+
+  popup_menu = dynamic_cast<Gtk::Menu*>(ref_ui_manager->get_widget ("/PopupMenu"));
+  if(!popup_menu)
+    g_warning ("popup menu not found");
+
   Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
   if (menu_bar)
     window_vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
@@ -123,4 +142,23 @@ void
 MainWindow::set_plan_str (const string& plan_str)
 {
   morph_plan.set_plan_str (plan_str);
+}
+
+void
+MainWindow::on_context_rename()
+{
+  // implement me
+}
+
+void
+MainWindow::on_context_remove()
+{
+  morph_plan.remove (popup_op);
+}
+
+void
+MainWindow::show_popup (GdkEventButton *event, MorphOperator *op)
+{
+  popup_op = op;
+  popup_menu->popup (event->button, event->time);
 }

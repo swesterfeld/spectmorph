@@ -19,14 +19,23 @@
 #define SPECTMORPH_MORPH_OPERATOR_VIEW_HH
 
 #include <gtkmm.h>
+#include "smmainwindow.hh"
 
 namespace SpectMorph
 {
 
-class MorphOperatorView : public Gtk::Frame
+class MorphOperator;
+class MorphOperatorView : public Gtk::EventBox
 {
+protected:
+  Gtk::Frame     frame;
+  MainWindow    *main_window;
+  MorphOperator *op;
+
 public:
-  MorphOperatorView();
+  MorphOperatorView (MorphOperator *op, MainWindow *main_window);
+
+  bool on_button_press_event (GdkEventButton *event);
 };
 
 }

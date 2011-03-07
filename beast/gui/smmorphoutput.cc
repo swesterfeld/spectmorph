@@ -35,9 +35,9 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 }
 
 MorphOperatorView *
-MorphOutput::create_view()
+MorphOutput::create_view (MainWindow *main_window)
 {
-  return new MorphOutputView (this);
+  return new MorphOutputView (this, main_window);
 }
 
 const char *
