@@ -5,6 +5,7 @@ wav2ascii
 imiscutter
 smsfimport
 sminspector
+smfiledump
 tld
 *.o
 .deps
