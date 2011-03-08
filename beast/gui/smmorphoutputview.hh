@@ -20,6 +20,7 @@
 
 #include "smmorphoperatorview.hh"
 #include "smmorphoutput.hh"
+#include "smcomboboxoperator.hh"
 
 namespace SpectMorph
 {
@@ -27,21 +28,23 @@ namespace SpectMorph
 class MorphOutputView : public MorphOperatorView
 {
   struct ChannelView {
+    ChannelView (MorphPlan *plan, OperatorFilter *of) :
+      combobox (plan, of)
+    {
+    }
     Gtk::Label        label;
-    Gtk::ComboBoxText combobox;
+    ComboBoxOperator  combobox;
   };
 
   Gtk::Table                  channel_table;
   std::vector<ChannelView *>  channels;
-  bool                        block_channel_changed;
   MorphOutput                *morph_output;
 
 public:
   MorphOutputView (MorphOutput *morph_morph_output, MainWindow *main_window);
   ~MorphOutputView();
 
-  void on_operators_changed();
-  void on_channel_changed();
+  void on_operator_changed();
 };
 
 }
