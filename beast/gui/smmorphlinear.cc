@@ -33,6 +33,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
 
   m_left_op = NULL;
   m_right_op = NULL;
+  m_morphing = 0;
 }
 
 MorphOperatorView *
@@ -142,6 +143,20 @@ void
 MorphLinear::set_right_op (MorphOperator *op)
 {
   m_right_op = op;
+
+  m_morph_plan->signal_plan_changed();
+}
+
+double
+MorphLinear::morphing()
+{
+  return m_morphing;
+}
+
+void
+MorphLinear::set_morphing (double new_morphing)
+{
+  m_morphing = new_morphing;
 
   m_morph_plan->signal_plan_changed();
 }

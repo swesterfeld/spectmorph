@@ -52,6 +52,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_wi
   right_combobox (morph_linear->morph_plan(), operator_filter)
 {
   hscale_label.set_text ("Morphing");
+  hscale.set_value (morph_linear->morphing());
 
   left_combobox.set_active (morph_linear->left_op());
   left_label.set_text ("Left Source");
@@ -75,6 +76,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_wi
 
   left_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
   right_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
+  hscale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_morphing_changed));
 
   show_all_children();
 }
@@ -88,4 +90,10 @@ MorphLinearView::on_operator_changed()
 {
   morph_linear->set_left_op (left_combobox.active());
   morph_linear->set_right_op (right_combobox.active());
+}
+
+void
+MorphLinearView::on_morphing_changed()
+{
+  morph_linear->set_morphing (hscale.get_value());
 }

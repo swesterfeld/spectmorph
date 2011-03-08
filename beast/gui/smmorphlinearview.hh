@@ -43,6 +43,7 @@ protected:
   ComboBoxOperator                 right_combobox;
 
   void on_operator_changed();
+  void on_morphing_changed();
 
 public:
   MorphLinearView (MorphLinear *op, MainWindow *main_window);

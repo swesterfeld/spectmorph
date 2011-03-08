@@ -32,6 +32,7 @@ protected:
 
   MorphOperator *m_left_op;
   MorphOperator *m_right_op;
+  double         m_morphing;
 
 public:
   MorphLinear (MorphPlan *morph_plan);
@@ -49,6 +50,9 @@ public:
 
   MorphOperator *right_op();
   void set_right_op (MorphOperator *op);
+
+  double morphing();
+  void set_morphing (double new_morphing);
 
   void on_operator_removed (MorphOperator *op);
 };
