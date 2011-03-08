@@ -53,6 +53,8 @@ MorphLinear::save (OutFile& out_file)
 {
   write_operator (out_file, "left", m_left_op);
   write_operator (out_file, "right", m_right_op);
+  out_file.write_float ("morphing", m_morphing);
+
   return true;
 }
 
@@ -77,6 +79,18 @@ MorphLinear::load (InFile& ifile)
           else
             {
               g_printerr ("bad string\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::FLOAT)
+        {
+          if (ifile.event_name() == "morphing")
+            {
+              m_morphing = ifile.event_float();
+            }
+          else
+            {
+              g_printerr ("bad float\n");
               return false;
             }
         }
