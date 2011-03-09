@@ -123,7 +123,6 @@ main (int argc, char **argv)
       return 1;
     }
 
-  int indent = 0;
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
   display_file (in);
   delete in;
