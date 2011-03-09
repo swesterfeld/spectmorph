@@ -36,6 +36,7 @@ RenameOperatorDialog::RenameOperatorDialog (MorphOperator *op) :
   new_label.set_label ("New name");
   new_name_entry.set_text (op->name());
   new_name_entry.property_text().signal_changed().connect (sigc::mem_fun (*this, &RenameOperatorDialog::on_name_changed));
+  new_name_entry.signal_activate().connect (sigc::mem_fun (*this, &RenameOperatorDialog::on_activate));
 
   table.attach (old_label, 0, 1, 0, 1, Gtk::SHRINK);
   table.attach (old_name_label, 1, 2, 0, 1);
@@ -63,4 +64,11 @@ void
 RenameOperatorDialog::on_name_changed()
 {
   ok_button->set_sensitive (op->can_rename (new_name_entry.get_text()));
+}
+
+void
+RenameOperatorDialog::on_activate()
+{
+  if (op->can_rename (new_name_entry.get_text()))
+    response (Gtk::RESPONSE_OK);
 }

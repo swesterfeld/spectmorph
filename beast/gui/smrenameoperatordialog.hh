@@ -38,6 +38,7 @@ protected:
   MorphOperator *op;
 
   void on_name_changed();
+  void on_activate();
 
 public:
   RenameOperatorDialog (MorphOperator *op);
