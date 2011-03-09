@@ -15,35 +15,36 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smmorphoperatorview.hh"
+#ifndef SPECTMORPH_RENAME_OPERATOR_DIALOG_HH
+#define SPECTMORPH_RENAME_OPERATOR_DIALOG_HH
+
+#include <gtkmm.h>
 #include "smmorphoperator.hh"
 
-using namespace SpectMorph;
-
-MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
-  main_window (main_window),
-  op (op)
+namespace SpectMorph
 {
-  on_operators_changed();
 
-  op->morph_plan()->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphOperatorView::on_operators_changed));
-  add (frame);
+class RenameOperatorDialog : public Gtk::Dialog
+{
+protected:
+  Gtk::Label old_label;
+  Gtk::Label old_name_label;
+  Gtk::Label new_label;
+  Gtk::Entry new_name_entry;
+  Gtk::Table table;
+
+  Gtk::Button *ok_button;
+
+  MorphOperator *op;
+
+  void on_name_changed();
+
+public:
+  RenameOperatorDialog (MorphOperator *op);
+
+  std::string new_name();
+};
+
 }
 
-bool
-MorphOperatorView::on_button_press_event (GdkEventButton *event)
-{
-  if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
-    {
-      main_window->show_popup (event, op);
-      return true; // it has been handled
-    }
-  else
-    return false;
-}
-
-void
-MorphOperatorView::on_operators_changed()
-{
-  frame.set_label (op->name());
-}
+#endif

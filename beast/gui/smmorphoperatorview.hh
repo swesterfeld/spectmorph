@@ -32,6 +32,7 @@ protected:
   MainWindow    *main_window;
   MorphOperator *op;
 
+  void on_operators_changed();
 public:
   MorphOperatorView (MorphOperator *op, MainWindow *main_window);
 

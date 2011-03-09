@@ -16,10 +16,13 @@
  */
 
 #include "smmorphoperator.hh"
+#include "smmorphplan.hh"
+#include <glib.h>
 
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 MorphOperator::MorphOperator (MorphPlan *morph_plan) :
   m_morph_plan (morph_plan)
@@ -41,7 +44,11 @@ MorphOperator::name()
 void
 MorphOperator::set_name (const string& name)
 {
+  g_return_if_fail (can_rename (name));
+
   m_name = name;
+
+  m_morph_plan->signal_plan_changed();
 }
 
 void
@@ -59,4 +66,21 @@ MorphOperator::write_operator (OutFile& file, const std::string& name, MorphOper
     op_name = op->name();
 
   file.write_string (name, op_name);
+}
+
+bool
+MorphOperator::can_rename (const string& name)
+{
+  const vector<MorphOperator *>& ops = m_morph_plan->operators();
+
+  if (name == "")
+    return false;
+
+  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      if (op != this && op->name() == name)
+        return false;
+    }
+  return true;
 }

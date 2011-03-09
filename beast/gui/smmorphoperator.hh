@@ -54,6 +54,8 @@ public:
 
   std::string name();
   void set_name (const std::string &name);
+
+  bool can_rename (const std::string& name);
 };
 
 }

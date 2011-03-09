@@ -33,6 +33,7 @@ ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *opera
   on_operators_changed();
 
   signal_changed().connect (sigc::mem_fun (*this, &ComboBoxOperator::on_combobox_changed));
+  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &ComboBoxOperator::on_operators_changed));
 }
 
 ComboBoxOperator::~ComboBoxOperator()

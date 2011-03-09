@@ -30,6 +30,7 @@
 #include "smmorphlinear.hh"
 #include "smmorphplanview.hh"
 #include "smmainwindow.hh"
+#include "smrenameoperatordialog.hh"
 
 using namespace SpectMorph;
 
@@ -157,7 +158,13 @@ MainWindow::set_plan_str (const string& plan_str)
 void
 MainWindow::on_context_rename()
 {
-  // implement me
+  RenameOperatorDialog dialog (popup_op);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      popup_op->set_name (dialog.new_name());
+    }
 }
 
 void
