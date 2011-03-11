@@ -28,15 +28,22 @@ class MorphOperator;
 class MorphOperatorView : public Gtk::EventBox
 {
 protected:
+  Gtk::VBox      vbox;
   Gtk::Frame     frame;
   MainWindow    *main_window;
-  MorphOperator *op;
+  MorphOperator *m_op;
+
+  Gdk::Cursor    move_cursor;
 
   void on_operators_changed();
 public:
   MorphOperatorView (MorphOperator *op, MainWindow *main_window);
 
+  MorphOperator *op();
+
   bool on_button_press_event (GdkEventButton *event);
+  bool on_motion_notify_event (GdkEventMotion *event);
+  bool on_button_release_event (GdkEventButton *event);
 };
 
 }

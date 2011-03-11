@@ -29,6 +29,7 @@
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
 #include "smmorphplanview.hh"
+#include "smmorphoperator.hh"
 
 namespace SpectMorph
 {
@@ -56,6 +57,8 @@ public:
 
   void on_context_rename();
   void on_context_remove();
+
+  MorphOperator *where (MorphOperator *op, double x, double y);
 
   void show_popup (GdkEventButton *event, MorphOperator *op);
 };

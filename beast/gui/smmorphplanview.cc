@@ -52,11 +52,19 @@ MorphPlanView::on_plan_changed()
       delete view;
     }
 
+  m_op_views.clear();
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
       MorphOperatorView *op_view = (*oi)->create_view (main_window);
-      add (*op_view);
+      pack_start (*op_view, Gtk::PACK_SHRINK);
       op_view->show();
+      m_op_views.push_back (op_view);
     }
+}
+
+const vector<MorphOperatorView *>&
+MorphPlanView::op_views()
+{
+  return m_op_views;
 }

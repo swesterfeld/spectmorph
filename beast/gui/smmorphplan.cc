@@ -300,3 +300,26 @@ MorphPlan::remove (MorphOperator *op)
   signal_operator_removed (op);
   signal_plan_changed();
 }
+
+void
+MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
+{
+  vector<MorphOperator *> new_operators;
+
+  // change op position so that op is before op_next
+  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+    {
+      if (*oi == op_next)
+        new_operators.push_back (op);
+      if (*oi != op)
+        new_operators.push_back (*oi);
+    }
+  // handle move to the end of the operator list
+  if (!op_next)
+    new_operators.push_back (op);
+
+  m_structure_version++;
+  m_operators = new_operators;
+
+  signal_plan_changed();
+}

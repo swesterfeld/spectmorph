@@ -31,8 +31,12 @@ class MorphPlanView : public Gtk::VBox
   int                           old_structure_version;
   MainWindow                   *main_window;
 
+  std::vector<MorphOperatorView *> m_op_views;
+
 public:
   MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window);
+
+  const std::vector<MorphOperatorView *>& op_views();
 
   void on_plan_changed();
 };

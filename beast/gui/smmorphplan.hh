@@ -44,6 +44,7 @@ public:
   void add_operator (MorphOperator *op, const std::string& name = "");
   const std::vector<MorphOperator *>& operators();
   void remove (MorphOperator *op);
+  void move (MorphOperator *op, MorphOperator *op_next);
 
   sigc::signal<void>                  signal_plan_changed;
   sigc::signal<void>                  signal_index_changed;

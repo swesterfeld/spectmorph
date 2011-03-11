@@ -31,10 +31,12 @@
 #include "smmorphplanview.hh"
 #include "smmainwindow.hh"
 #include "smrenameoperatordialog.hh"
+#include "smmorphoperatorview.hh"
 
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 void
 MainWindow::on_load_index_clicked()
@@ -80,6 +82,7 @@ MainWindow::on_add_linear_morph_clicked()
 MainWindow::MainWindow() :
   morph_plan_view (&morph_plan, this)
 {
+  set_default_size (250, 100);
   plan_vbox.set_border_width (10);
 
   ref_action_group = Gtk::ActionGroup::create();
@@ -99,9 +102,9 @@ MainWindow::MainWindow() :
   ref_action_group->add (Gtk::Action::create ("ContextRename", "Rename"),
           sigc::mem_fun(*this, &MainWindow::on_context_rename));
 
-  ref_action_group->add(Gtk::Action::create("ContextRemove", "Remove"),
+  ref_action_group->add(Gtk::Action::create ("ContextRemove", "Remove"),
           //Gtk::AccelKey("<control>P"),
-          sigc::mem_fun(*this, &MainWindow::on_context_remove));
+          sigc::mem_fun (*this, &MainWindow::on_context_remove));
 
 
   ref_ui_manager = Gtk::UIManager::create();
@@ -178,4 +181,34 @@ MainWindow::show_popup (GdkEventButton *event, MorphOperator *op)
 {
   popup_op = op;
   popup_menu->popup (event->button, event->time);
+}
+
+MorphOperator *
+MainWindow::where (MorphOperator *op, double x, double y)
+{
+  vector<int> start_position;
+  int end_y = 0;
+
+  MorphOperator *result = NULL;
+
+  const vector<MorphOperatorView *> op_views = morph_plan_view.op_views();
+  if (!op_views.empty())
+    result = op_views[0]->op();
+
+  for (vector<MorphOperatorView *>::const_iterator vi = op_views.begin(); vi != op_views.end(); vi++)
+    {
+      MorphOperatorView *view = *vi;
+
+      int view_x, view_y;
+      view->get_window()->get_origin (view_x, view_y);
+
+      end_y = view_y + view->get_height();
+      if (view_y < y)
+        result = view->op();
+    }
+
+  if (y > end_y)
+    return 0;
+  else
+    return result;
 }

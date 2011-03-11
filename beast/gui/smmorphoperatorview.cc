@@ -22,28 +22,64 @@ using namespace SpectMorph;
 
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
   main_window (main_window),
-  op (op)
+  m_op (op)
 {
   on_operators_changed();
+  move_cursor = Gdk::Cursor (gdk_cursor_new (GDK_FLEUR));
 
-  op->morph_plan()->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphOperatorView::on_operators_changed));
+  m_op->morph_plan()->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphOperatorView::on_operators_changed));
   add (frame);
 }
 
 bool
 MorphOperatorView::on_button_press_event (GdkEventButton *event)
 {
-  if ((event->type == GDK_BUTTON_PRESS) && (event->button == 3))
+  if (event->type == GDK_BUTTON_PRESS && event->button == 1)
     {
-      main_window->show_popup (event, op);
+      Glib::RefPtr<Gdk::Window> window = get_window();
+      window->set_cursor (move_cursor);
+
+      printf ("move start\n");
+      return true;
+    }
+  else if (event->type == GDK_BUTTON_PRESS && event->button == 3)
+    {
+      main_window->show_popup (event, m_op);
       return true; // it has been handled
     }
   else
     return false;
 }
 
+bool
+MorphOperatorView::on_motion_notify_event (GdkEventMotion *event)
+{
+  return false;
+}
+
+bool
+MorphOperatorView::on_button_release_event (GdkEventButton *event)
+{
+  if (event->type == GDK_BUTTON_RELEASE && event->button == 1)
+    {
+      Glib::RefPtr<Gdk::Window> window = get_window();
+      window->set_cursor ();
+      MorphOperator *op_next = main_window->where (m_op, event->x_root, event->y_root);
+      printf ("move: %s before %s\n", m_op->name().c_str(), op_next ? op_next->name().c_str() : "null");
+      m_op->morph_plan()->move (m_op, op_next);
+      return true;
+    }
+  return false;
+}
+
 void
 MorphOperatorView::on_operators_changed()
 {
-  frame.set_label (op->name());
+  frame.set_label (m_op->name());
+}
+
+MorphOperator *
+MorphOperatorView::op()
+{
+  return m_op;
 }
