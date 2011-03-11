@@ -107,30 +107,7 @@ MorphPlan::on_plan_changed()
     {
       vector<unsigned char> data;
       MemOut mo (&data);
-      // we need an OutFile destructor run before we can use the data
-        {
-          OutFile of (&mo, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
-          of.write_string ("index", index_filename);
-          for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
-            {
-              MorphOperator *op = *oi;
-
-              of.begin_section ("operator");
-              of.write_string ("type", op->type());
-              of.write_string ("name", op->name());
-
-              vector<unsigned char> op_data;
-              MemOut                op_mo (&op_data);
-              // need an OutFile destructor run before op_data is ready
-              {
-                OutFile op_of (&op_mo, op->type(), SPECTMORPH_BINARY_FILE_VERSION);
-                op->save (op_of);
-              }
-
-              of.write_blob ("data", &op_data[0], op_data.size());
-              of.end_section();
-            }
-        }
+      save (&mo);
       printf ("%s\n", HexString::encode (data).c_str());
       fflush (stdout);
     }
@@ -321,4 +298,31 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   m_operators = new_operators;
 
   signal_plan_changed();
+}
+
+BseErrorType
+MorphPlan::save (GenericOut *file)
+{
+  OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
+  of.write_string ("index", index_filename);
+  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+
+      of.begin_section ("operator");
+      of.write_string ("type", op->type());
+      of.write_string ("name", op->name());
+
+      vector<unsigned char> op_data;
+      MemOut                op_mo (&op_data);
+      // need an OutFile destructor run before op_data is ready
+      {
+        OutFile op_of (&op_mo, op->type(), SPECTMORPH_BINARY_FILE_VERSION);
+        op->save (op_of);
+      }
+
+      of.write_blob ("data", &op_data[0], op_data.size());
+      of.end_section();
+    }
+  return BSE_ERROR_NONE;
 }

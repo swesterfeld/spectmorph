@@ -54,6 +54,8 @@ public:
   void on_add_output_clicked();
   void on_add_linear_morph_clicked();
   void on_load_index_clicked();
+  void on_file_import_clicked();
+  void on_file_export_clicked();
 
   void on_context_rename();
   void on_context_remove();

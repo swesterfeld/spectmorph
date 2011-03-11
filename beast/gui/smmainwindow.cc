@@ -32,6 +32,7 @@
 #include "smmainwindow.hh"
 #include "smrenameoperatordialog.hh"
 #include "smmorphoperatorview.hh"
+#include "smstdioout.hh"
 
 using namespace SpectMorph;
 
@@ -86,6 +87,11 @@ MainWindow::MainWindow() :
   plan_vbox.set_border_width (10);
 
   ref_action_group = Gtk::ActionGroup::create();
+  ref_action_group->add (Gtk::Action::create ("FileMenu", "File"));
+  ref_action_group->add (Gtk::Action::create ("FileImport", "Import..."),
+                         sigc::mem_fun (*this, &MainWindow::on_file_import_clicked));
+  ref_action_group->add (Gtk::Action::create ("FileExport", "Export..."),
+                         sigc::mem_fun (*this, &MainWindow::on_file_export_clicked));
   ref_action_group->add (Gtk::Action::create ("EditMenu", "Edit"));
   ref_action_group->add (Gtk::Action::create ("EditAddOperator", "Add Operator"));
   ref_action_group->add (Gtk::Action::create ("EditAddSource", "Source"),
@@ -114,6 +120,10 @@ MainWindow::MainWindow() :
   Glib::ustring ui_info =
     "<ui>"
     "  <menubar name='MenuBar'>"
+    "    <menu action='FileMenu'>"
+    "      <menuitem action='FileImport' />"
+    "      <menuitem action='FileExport' />"
+    "    </menu>"
     "    <menu action='EditMenu'>"
     "      <menu action='EditAddOperator'>"
     "        <menuitem action='EditAddSource' />"
@@ -211,4 +221,43 @@ MainWindow::where (MorphOperator *op, double x, double y)
     return 0;
   else
     return result;
+}
+
+void
+MainWindow::on_file_import_clicked()
+{
+}
+
+void
+MainWindow::on_file_export_clicked()
+{
+  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dialog.set_transient_for (*this);
+
+  // buttons
+  dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+  // allow only .smplan files
+  Gtk::FileFilter filter_smplan;
+  filter_smplan.set_name ("SpectMorph plan files");
+  filter_smplan.add_pattern ("*.smplan");
+  dialog.add_filter (filter_smplan);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      GenericOut *out = StdioOut::open (dialog.get_filename());
+      if (out)
+        {
+          morph_plan.save (out);
+          delete out; // close file
+        }
+      else
+        {
+          Gtk::MessageDialog dlg (Birnet::string_printf ("Export failed, unable to open file '%s'.",
+                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
+          dlg.run();
+        }
+    }
 }

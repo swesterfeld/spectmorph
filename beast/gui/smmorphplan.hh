@@ -20,6 +20,7 @@
 
 #include "smindex.hh"
 #include "smmorphoperator.hh"
+#include "smaudio.hh"
 #include <sigc++/sigc++.h>
 
 namespace SpectMorph
@@ -52,6 +53,8 @@ public:
 
   void set_plan_str (const std::string& plan_str);
   void on_plan_changed();
+
+  BseErrorType save (GenericOut *file);
 
   int  structure_version();
 };
