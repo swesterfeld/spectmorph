@@ -84,3 +84,9 @@ MorphOperator::can_rename (const string& name)
     }
   return true;
 }
+
+string
+MorphOperator::type_name()
+{
+  return string (type()).substr (string ("SpectMorph::Morph").size());
+}

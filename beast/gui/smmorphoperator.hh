@@ -52,6 +52,8 @@ public:
 
   MorphPlan *morph_plan();
 
+  std::string type_name();
+
   std::string name();
   void set_name (const std::string &name);
 

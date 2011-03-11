@@ -83,7 +83,7 @@ MorphOperatorView::on_button_release_event (GdkEventButton *event)
 void
 MorphOperatorView::on_operators_changed()
 {
-  frame.set_label (m_op->name());
+  frame.set_label (m_op->type_name() + ": " + m_op->name());
 }
 
 MorphOperator *

@@ -76,8 +76,7 @@ MorphPlan::add_operator (MorphOperator *op, const string& load_name)
         {
           i++;
           uniq = true;
-          name = Birnet::string_printf ("%s #%d",
-                    string (op->type()).substr (string ("SpectMorph::Morph").size()).c_str(), i);
+          name = Birnet::string_printf ("%s #%d", op->type_name().c_str(), i);
 
           for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
             {
