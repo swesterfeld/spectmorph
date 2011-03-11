@@ -14,13 +14,17 @@ SMSRCS = smspectrumview.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc
 
 noinst_PROGRAMS = testinspector
+noinst_LTLIBRARIES = libsminspector.la
 
 bin_PROGRAMS = sminspector
 
-sminspector_SOURCES = sminspector.cc $(SMSRCS) $(SMHDRS)
-sminspector_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+libsminspector_la_SOURCES = $(SMSRCS) $(SMHDRS)
+libsminspector_la_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
+
+sminspector_SOURCES = sminspector.cc
+sminspector_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libsminspector.la
 sminspector_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
-testinspector_SOURCES = testinspector.cc $(SMSRCS) $(SMHDRS)
-testinspector_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+testinspector_SOURCES = testinspector.cc
+testinspector_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libsminspector.la
 testinspector_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
