@@ -14,12 +14,16 @@ SMSRCS = smmorphplan.cc smmorphoperator.cc smindex.cc smmorphsource.cc smmorphpl
          smmorphlinear.cc smmorphlinearview.cc smcomboboxoperator.cc smrenameoperatordialog.cc \
          smmoveindicator.cc
 
+noinst_LTLIBRARIES = libspectmorphgui.la
+libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
+libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
+
 bin_PROGRAMS = spectmorphoscgui smrunplan
 
-spectmorphoscgui_SOURCES = $(SMSRCS) $(SMHDRS) spectmorphoscgui.cc
-spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+spectmorphoscgui_SOURCES = spectmorphoscgui.cc
+spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libspectmorphgui.la
 spectmorphoscgui_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
-smrunplan_SOURCES = $(SMSRCS) $(SMHDRS) smrunplan.cc
-smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+smrunplan_SOURCES = smrunplan.cc
+smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libspectmorphgui.la
 smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
