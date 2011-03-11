@@ -17,6 +17,7 @@
 
 #include "smmorphplanview.hh"
 #include "smmorphsourceview.hh"
+#include "smmoveindicator.hh"
 #include <birnet/birnet.hh>
 
 using namespace SpectMorph;
@@ -44,6 +45,7 @@ MorphPlanView::on_plan_changed()
 
   g_printerr ("structure changed\n");
 
+  // delete old MorphOperatorView and MoveIndicator widgets
   vector<Widget *> old_children = get_children();
   for (vector<Widget *>::iterator ci = old_children.begin(); ci != old_children.end(); ci++)
     {
@@ -53,6 +55,18 @@ MorphPlanView::on_plan_changed()
     }
 
   m_op_views.clear();
+  move_indicators.clear();
+
+  /*** rebuild gui elements ***/
+
+  // first move indicator
+  {
+    MoveIndicator *indicator = new MoveIndicator();
+    pack_start (*indicator, Gtk::PACK_SHRINK);
+    indicator->show();
+    move_indicators.push_back (indicator);
+  }
+
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
@@ -60,6 +74,14 @@ MorphPlanView::on_plan_changed()
       pack_start (*op_view, Gtk::PACK_SHRINK);
       op_view->show();
       m_op_views.push_back (op_view);
+
+      op_view->signal_move_indication.connect (sigc::mem_fun (*this, &MorphPlanView::on_move_indication));
+
+      MoveIndicator *indicator = new MoveIndicator();
+      pack_start (*indicator, Gtk::PACK_SHRINK);
+      indicator->show();
+
+      move_indicators.push_back (indicator);
     }
 }
 
@@ -67,4 +89,24 @@ const vector<MorphOperatorView *>&
 MorphPlanView::op_views()
 {
   return m_op_views;
+}
+
+void
+MorphPlanView::on_move_indication (MorphOperator *op)
+{
+  g_return_if_fail (m_op_views.size() + 1 == move_indicators.size());
+  g_return_if_fail (!move_indicators.empty());
+
+  size_t active_i = move_indicators.size() - 1;  // op == NULL -> last move indicator
+  if (op)
+    {
+      for (size_t i = 0; i < m_op_views.size(); i++)
+        {
+          if (m_op_views[i]->op() == op)
+            active_i = i;
+        }
+    }
+
+  for (size_t i = 0; i < move_indicators.size(); i++)
+    move_indicators[i]->set_active (i == active_i);
 }

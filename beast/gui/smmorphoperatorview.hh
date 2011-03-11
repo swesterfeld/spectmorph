@@ -28,6 +28,8 @@ class MorphOperator;
 class MorphOperatorView : public Gtk::EventBox
 {
 protected:
+  bool           in_move;
+
   Gtk::VBox      vbox;
   Gtk::Frame     frame;
   MainWindow    *main_window;
@@ -44,6 +46,8 @@ public:
   bool on_button_press_event (GdkEventButton *event);
   bool on_motion_notify_event (GdkEventMotion *event);
   bool on_button_release_event (GdkEventButton *event);
+
+  sigc::signal<void, MorphOperator *> signal_move_indication;
 };
 
 }

@@ -21,6 +21,7 @@
 using namespace SpectMorph;
 
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
+  in_move (false),
   main_window (main_window),
   m_op (op)
 {
@@ -39,7 +40,7 @@ MorphOperatorView::on_button_press_event (GdkEventButton *event)
       Glib::RefPtr<Gdk::Window> window = get_window();
       window->set_cursor (move_cursor);
 
-      printf ("move start\n");
+      in_move = true;
       return true;
     }
   else if (event->type == GDK_BUTTON_PRESS && event->button == 3)
@@ -54,6 +55,11 @@ MorphOperatorView::on_button_press_event (GdkEventButton *event)
 bool
 MorphOperatorView::on_motion_notify_event (GdkEventMotion *event)
 {
+  if (in_move)
+    {
+      MorphOperator *op_next = main_window->where (m_op, event->x_root, event->y_root);
+      signal_move_indication (op_next);
+    }
   return false;
 }
 
@@ -65,7 +71,9 @@ MorphOperatorView::on_button_release_event (GdkEventButton *event)
       Glib::RefPtr<Gdk::Window> window = get_window();
       window->set_cursor ();
       MorphOperator *op_next = main_window->where (m_op, event->x_root, event->y_root);
-      printf ("move: %s before %s\n", m_op->name().c_str(), op_next ? op_next->name().c_str() : "null");
+      in_move = false;
+
+      // DELETION can occur here
       m_op->morph_plan()->move (m_op, op_next);
       return true;
     }

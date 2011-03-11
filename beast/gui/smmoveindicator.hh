@@ -15,33 +15,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MORPH_PLAN_VIEW_HH
-#define SPECTMORPH_MORPH_PLAN_VIEW_HH
+#ifndef SPECTMORPH_MOVE_INDICATOR_HH
+#define SPECTMORPH_MOVE_INDICATOR_HH
 
 #include <gtkmm.h>
-
-#include "smmorphplan.hh"
-#include "smmoveindicator.hh"
 
 namespace SpectMorph
 {
 
-class MorphPlanView : public Gtk::VBox
+class MoveIndicator : public Gtk::DrawingArea
 {
-  MorphPlan                    *morph_plan;
-  int                           old_structure_version;
-  MainWindow                   *main_window;
+protected:
+  bool m_active;
 
-  std::vector<MorphOperatorView *> m_op_views;
-  std::vector<MoveIndicator *>  move_indicators;
+  void force_redraw();
 
 public:
-  MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window);
+  MoveIndicator();
 
-  const std::vector<MorphOperatorView *>& op_views();
-
-  void on_plan_changed();
-  void on_move_indication (MorphOperator *op);
+  void set_active (bool active);
+  bool on_expose_event (GdkEventExpose *event);
 };
 
 }
