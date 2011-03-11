@@ -38,7 +38,7 @@ void
 MorphSource::set_smset (const string& smset)
 {
   m_smset = smset;
-  m_morph_plan->signal_plan_changed();
+  m_morph_plan->emit_plan_changed();
 }
 
 string

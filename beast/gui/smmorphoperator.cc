@@ -48,7 +48,7 @@ MorphOperator::set_name (const string& name)
 
   m_name = name;
 
-  m_morph_plan->signal_plan_changed();
+  m_morph_plan->emit_plan_changed();
 }
 
 void

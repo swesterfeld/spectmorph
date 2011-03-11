@@ -94,10 +94,8 @@ MorphPlan::add_operator (MorphOperator *op, const string& load_name)
 
   m_operators.push_back (op);
   m_structure_version++;
-  if (!in_restore)
-    {
-      signal_plan_changed();
-    }
+
+  emit_plan_changed();
 }
 
 void
@@ -245,7 +243,7 @@ MorphPlan::load (GenericIn *in)
     }
 
   in_restore = false;
-  signal_plan_changed();
+  emit_plan_changed();
 
   return BSE_ERROR_NONE;
 }
@@ -282,7 +280,7 @@ MorphPlan::remove (MorphOperator *op)
   m_structure_version++;
 
   signal_operator_removed (op);
-  signal_plan_changed();
+  emit_plan_changed();
 }
 
 void
@@ -305,7 +303,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   m_structure_version++;
   m_operators = new_operators;
 
-  signal_plan_changed();
+  emit_plan_changed();
 }
 
 BseErrorType
@@ -333,4 +331,11 @@ MorphPlan::save (GenericOut *file)
       of.end_section();
     }
   return BSE_ERROR_NONE;
+}
+
+void
+MorphPlan::emit_plan_changed()
+{
+  if (!in_restore)
+    signal_plan_changed();
 }

@@ -53,6 +53,7 @@ public:
 
   void set_plan_str (const std::string& plan_str);
   void on_plan_changed();
+  void emit_plan_changed();
 
   BseErrorType save (GenericOut *file);
   BseErrorType load (GenericIn *in);

@@ -125,7 +125,7 @@ MorphOutput::set_channel_op (int ch, MorphOperator *op)
   assert (ch >= 0 && ch < CHANNEL_OP_COUNT);
 
   channel_ops[ch] = op;
-  m_morph_plan->signal_plan_changed();
+  m_morph_plan->emit_plan_changed();
 }
 
 MorphOperator *
