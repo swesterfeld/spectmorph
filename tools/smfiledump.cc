@@ -113,17 +113,22 @@ main (int argc, char **argv)
 {
   if (argc != 2)
     {
-      printf ("usage: %s <hexdata>\n", argv[0]);
-      return 1;
-    }
-  vector<unsigned char> data;
-  if (!HexString::decode (argv[1], data))
-    {
-      printf ("error decoding string\n");
+      printf ("usage: %s [<hexdata>|<filename>]\n", argv[0]);
       return 1;
     }
 
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  vector<unsigned char> data;
+
+  GenericIn *in = StdioIn::open (argv[1]);
+  if (!in)
+    {
+      if (!HexString::decode (argv[1], data))
+        {
+          printf ("error decoding string\n");
+          return 1;
+        }
+      in = MMapIn::open_mem (&data[0], &data[data.size()]);
+    }
   display_file (in);
   delete in;
 }
