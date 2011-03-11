@@ -116,13 +116,20 @@ MorphPlan::on_plan_changed()
 void
 MorphPlan::set_plan_str (const string& str)
 {
-  in_restore = true;
-
   vector<unsigned char> data;
   if (!HexString::decode (str, data))
     return;
 
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  load (in);
+  delete in;
+}
+
+BseErrorType
+MorphPlan::load (GenericIn *in)
+{
+  in_restore = true;
+
   InFile ifile (in);
 
   index_filename = "";
@@ -228,7 +235,6 @@ MorphPlan::set_plan_str (const string& str)
         }
       ifile.next_event();
     }
-  delete in;
 
   load_index (index_filename);
 
@@ -240,6 +246,8 @@ MorphPlan::set_plan_str (const string& str)
 
   in_restore = false;
   signal_plan_changed();
+
+  return BSE_ERROR_NONE;
 }
 
 const vector<MorphOperator*>&

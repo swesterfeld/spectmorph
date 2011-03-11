@@ -55,6 +55,7 @@ public:
   void on_plan_changed();
 
   BseErrorType save (GenericOut *file);
+  BseErrorType load (GenericIn *in);
 
   int  structure_version();
 };
