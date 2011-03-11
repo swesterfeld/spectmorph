@@ -54,10 +54,6 @@ MoveIndicator::on_expose_event (GdkEventExpose *event)
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window && m_active)
     {
-      Gtk::Allocation allocation = get_allocation();
-      const int width = allocation.get_width();
-      const int height = allocation.get_height();
-
       Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
       cr->rectangle (event->area.x, event->area.y, event->area.width, event->area.height);
       cr->clip();
