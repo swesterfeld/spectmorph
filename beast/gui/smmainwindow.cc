@@ -65,19 +65,19 @@ MainWindow::on_load_index_clicked()
 void
 MainWindow::on_add_source_clicked()
 {
-  morph_plan.add_operator (new MorphSource (&morph_plan));
+  add_operator ("SpectMorph::MorphSource");
 }
 
 void
 MainWindow::on_add_output_clicked()
 {
-  morph_plan.add_operator (new MorphOutput (&morph_plan));
+  add_operator ("SpectMorph::MorphOutput");
 }
 
 void
 MainWindow::on_add_linear_morph_clicked()
 {
-  morph_plan.add_operator (new MorphLinear (&morph_plan));
+  add_operator ("SpectMorph::MorphLinear");
 }
 
 MainWindow::MainWindow() :
@@ -260,4 +260,14 @@ MainWindow::on_file_export_clicked()
           dlg.run();
         }
     }
+}
+
+void
+MainWindow::add_operator (const string& type)
+{
+  MorphOperator *op = MorphOperator::create (type, &morph_plan);
+
+  g_return_if_fail (op != NULL);
+
+  morph_plan.add_operator (op);
 }

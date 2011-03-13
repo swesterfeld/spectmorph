@@ -164,22 +164,10 @@ MorphPlan::load (GenericIn *in)
                 {
                   string operator_type = ifile.event_data();
 
-                  if (operator_type == "SpectMorph::MorphSource")
+                  load_op = MorphOperator::create (operator_type, this);
+                  if (!load_op)
                     {
-                      load_op = new MorphSource (this);
-                    }
-                  else if (operator_type == "SpectMorph::MorphOutput")
-                    {
-                      load_op = new MorphOutput (this);
-                    }
-                  else if (operator_type == "SpectMorph::MorphLinear")
-                    {
-                      load_op = new MorphLinear (this);
-                    }
-                  else
-                    {
-                      g_printerr ("unknown operator type %s", operator_type.c_str());
-                      load_op = NULL;
+                      g_printerr ("unknown operator type %s\n", operator_type.c_str());
                     }
                 }
               else if (ifile.event_name() == "name")

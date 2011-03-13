@@ -63,6 +63,7 @@ public:
   MorphOperator *where (MorphOperator *op, double x, double y);
 
   void show_popup (GdkEventButton *event, MorphOperator *op);
+  void add_operator (const std::string& type);
 };
 
 }

@@ -16,17 +16,50 @@
  */
 #include "smmorphplan.hh"
 #include "smmorphoutput.hh"
+#include "smmorphoperatormodule.hh"
 #include "smmain.hh"
 
 using namespace SpectMorph;
 
 using std::vector;
+using std::string;
+
+namespace SpectMorph
+{
+
+class MorphLinearModule : public MorphOperatorModule
+{
+public:
+  MorphLinearModule();
+
+  void set_config (MorphOperator *op);
+};
+
+MorphLinearModule::MorphLinearModule()
+{
+}
+
+void
+MorphLinearModule::set_config (MorphOperator *op)
+{
+}
+
+}
+
+MorphOperatorModule*
+MorphOperatorModule::create (MorphOperator *op)
+{
+  string type = op->type();
+
+  if (type == "SpectMorph::MorphLinear") return new MorphLinearModule();
+
+  return NULL;
+}
 
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
-
   if (argc != 2)
     {
       printf ("usage: %s <plan>\n", argv[0]);
@@ -64,5 +97,9 @@ main (int argc, char **argv)
       printf ("no output 0 defined\n");
       exit (1);
     }
-  printf ("Output[0] = %s\n", out_op->name().c_str());
+  printf ("Output[0] name: %s\n", out_op->name().c_str());
+  printf ("Output[0] type: %s\n", out_op->type());
+
+  MorphOperatorModule *mod = MorphOperatorModule::create (out_op);
+  printf ("Output[0] mod: %p\n", mod);
 }

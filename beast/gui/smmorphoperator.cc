@@ -90,3 +90,19 @@ MorphOperator::type_name()
 {
   return string (type()).substr (string ("SpectMorph::Morph").size());
 }
+
+#include "smmorphoutput.hh"
+#include "smmorphlinear.hh"
+#include "smmorphsource.hh"
+
+MorphOperator *
+MorphOperator::create (const string& type, MorphPlan *plan)
+{
+  g_return_val_if_fail (plan != NULL, NULL);
+
+  if (type == "SpectMorph::MorphSource") return new MorphSource (plan);
+  if (type == "SpectMorph::MorphLinear") return new MorphLinear (plan);
+  if (type == "SpectMorph::MorphOutput") return new MorphOutput (plan);
+
+  return NULL;
+}

@@ -58,6 +58,8 @@ public:
   void set_name (const std::string &name);
 
   bool can_rename (const std::string& name);
+
+  static MorphOperator *create (const std::string& type, MorphPlan *plan);
 };
 
 }
