@@ -48,6 +48,8 @@ public:
   bool on_button_release_event (GdkEventButton *event);
 
   sigc::signal<void, MorphOperator *> signal_move_indication;
+
+  static MorphOperatorView *create (MorphOperator *op, MainWindow *window);
 };
 
 }

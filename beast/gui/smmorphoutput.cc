@@ -35,12 +35,6 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   morph_plan->signal_operator_removed.connect (sigc::mem_fun (*this, &MorphOutput::on_operator_removed));
 }
 
-MorphOperatorView *
-MorphOutput::create_view (MainWindow *main_window)
-{
-  return new MorphOutputView (this, main_window);
-}
-
 const char *
 MorphOutput::type()
 {

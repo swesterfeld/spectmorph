@@ -20,6 +20,8 @@
 
 using namespace SpectMorph;
 
+using std::string;
+
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
   in_move (false),
   main_window (main_window),
@@ -90,4 +92,20 @@ MorphOperator *
 MorphOperatorView::op()
 {
   return m_op;
+}
+
+#include "smmorphsourceview.hh"
+#include "smmorphoutputview.hh"
+#include "smmorphlinearview.hh"
+
+MorphOperatorView *
+MorphOperatorView::create (MorphOperator *op, MainWindow *window)
+{
+  string type = op->type();
+
+  if (type == "SpectMorph::MorphSource") return new MorphSourceView (static_cast<MorphSource *> (op), window);
+  if (type == "SpectMorph::MorphOutput") return new MorphOutputView (static_cast<MorphOutput *> (op), window);
+  if (type == "SpectMorph::MorphLinear") return new MorphLinearView (static_cast<MorphLinear *> (op), window);
+
+  return NULL;
 }

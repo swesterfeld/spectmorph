@@ -43,7 +43,6 @@ public:
   };
   MorphOperator (MorphPlan *morph_plan);
 
-  virtual MorphOperatorView *create_view (MainWindow *main_window) = 0;
   virtual const char *type() = 0;
   virtual bool save (OutFile& out_file) = 0;
   virtual bool load (InFile& in_file) = 0;

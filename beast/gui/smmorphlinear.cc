@@ -36,12 +36,6 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   m_morphing = 0;
 }
 
-MorphOperatorView *
-MorphLinear::create_view (MainWindow *main_window)
-{
-  return new MorphLinearView (this, main_window);
-}
-
 const char *
 MorphLinear::type()
 {

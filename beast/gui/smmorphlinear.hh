@@ -38,7 +38,6 @@ public:
   MorphLinear (MorphPlan *morph_plan);
 
   // inherited from MorphOperator
-  MorphOperatorView *create_view (MainWindow *main_window);
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);

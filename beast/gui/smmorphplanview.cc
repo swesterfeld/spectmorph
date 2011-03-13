@@ -70,7 +70,7 @@ MorphPlanView::on_plan_changed()
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
-      MorphOperatorView *op_view = (*oi)->create_view (main_window);
+      MorphOperatorView *op_view = MorphOperatorView::create (*oi, main_window);
       pack_start (*op_view, Gtk::PACK_SHRINK);
       op_view->show();
       m_op_views.push_back (op_view);
