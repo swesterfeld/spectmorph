@@ -20,6 +20,9 @@
 #include "smlivedecoder.hh"
 #include "smwavset.hh"
 #include "smmain.hh"
+#include "smmorphplan.hh"
+#include "smmorphplanvoice.hh"
+#include "smmorphoutputmodule.hh"
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseengine.h>
@@ -34,34 +37,17 @@ namespace SpectMorph {
 
 using namespace Bse;
 
-class AudioRepo {
-  Birnet::Mutex mutex;
-  map<string, WavSet *> wav_set_map;
-public:
-  WavSet *get_wav_set (const string& filename)
-  {
-    Birnet::AutoLocker lock (mutex);
-
-    return wav_set_map[filename];
-  }
-  void put_wav_set (const string& filename, WavSet *wav_set)
-  {
-    Birnet::AutoLocker lock (mutex);
-
-    wav_set_map[filename] = wav_set;
-  }
-} audio_repo;
-
 class Osc : public OscBase {
   struct Properties : public OscProperties {
+    MorphPlan *morph_plan;
     Properties (Osc *osc) : OscProperties (osc)
     {
+      morph_plan = osc->morph_plan();
     }
   };
   class Module : public SynthesisModule {
   private:
-    WavSet        *wav_set;
-    LiveDecoder   *live_decoder;
+    MorphPlanVoice *morph_plan_voice;
     float          last_sync_level;
     float          current_freq;
     bool           need_retrigger;
@@ -69,18 +55,17 @@ class Osc : public OscBase {
     float          frequency;
   public:
     Module() :
-      wav_set (NULL),
-      live_decoder (NULL),
+      morph_plan_voice (NULL),
       need_retrigger (false)
     {
       //
     }
     ~Module()
     {
-      if (live_decoder)
+      if (morph_plan_voice)
         {
-          delete live_decoder;
-          live_decoder = NULL;
+          delete morph_plan_voice;
+          morph_plan_voice = NULL;
         }
     }
     void reset()
@@ -105,30 +90,30 @@ class Osc : public OscBase {
           retrigger (new_freq, midi_velocity);
           need_retrigger = false;
         }
-      live_decoder->process (n_values, NULL, NULL, audio_out1);
+      if (!morph_plan_voice->output())
+        g_printerr ("no output\n");
+      else
+        morph_plan_voice->output()->process (n_values, audio_out1);
+      //live_decoder->process (n_values, NULL, NULL, audio_out1);
     }
     void
     retrigger (float freq, int midi_velocity)
     {
-      if (live_decoder)
-        live_decoder->retrigger (channel, freq, midi_velocity, mix_freq());
+      if (morph_plan_voice->output())
+        morph_plan_voice->output()->retrigger (channel, freq, midi_velocity, mix_freq());
 
       current_freq = freq;
     }
     void
     config (Properties *properties)
     {
-      wav_set = audio_repo.get_wav_set (properties->filename.c_str());
-      channel = properties->channel - 1;
       frequency = properties->frequency;
 
-      if (live_decoder)
-        delete live_decoder;
-
-      live_decoder = new LiveDecoder (wav_set);
-      live_decoder->enable_sines (properties->sines);
-      live_decoder->enable_noise (properties->noise);
-      live_decoder->enable_original_samples (properties->use_samples);
+      if (morph_plan_voice)
+        delete morph_plan_voice;
+      printf ("constructing MorphPlanVoice object, properties->morph_plan->operators().size() = %zd\n",
+                                                   properties->morph_plan->operators().size());
+      morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
     }
   };
 
@@ -137,36 +122,14 @@ class Osc : public OscBase {
   GPollFD  gui_poll_fd;
   GSource *gui_source;
   int      gui_pid;
-public:
-  void
-  load_file (const string& filename)
-  {
-    static bool sm_init_ok = false;
-    if (!sm_init_ok)
-      {
-        sm_init_plugin();
-        sm_init_ok = true;
-      }
-    BseErrorType error;
 
-    WavSet *wav_set = new WavSet;
-    error = wav_set->load (filename);
-    if (!error)
-      {
-        audio_repo.put_wav_set (filename, wav_set);
-      }
-    else
-      delete wav_set;
-  }
-  void
-  prepare1()
+  MorphPlan m_morph_plan;
+
+public:
+  MorphPlan*
+  morph_plan()
   {
-    WavSet *wav_set = audio_repo.get_wav_set (filename.c_str());
-    if (wav_set)
-      {
-        LiveDecoder decoder (wav_set);
-        decoder.precompute_tables (bse_engine_sample_freq());
-      }
+    return &m_morph_plan;
   }
   static gboolean
   gui_source_pending (Osc *osc, gint *timeout)
@@ -198,6 +161,8 @@ public:
         osc->set ("plan", s.c_str(), NULL);
         osc->notify ("plan");
         printf ("PLAN: %s\n", s.c_str());
+        osc->m_morph_plan.set_plan_str (s.c_str());
+        printf ("%zd operators\n", osc->m_morph_plan.operators().size());
       }
   }
   bool
@@ -205,9 +170,6 @@ public:
   {
     switch (prop_id)
       {
-        case PROP_FILENAME:
-          load_file (filename.c_str());
-          break;
         case PROP_EDIT_SETTINGS:
           if (edit_settings)
             {
@@ -231,6 +193,13 @@ public:
   {
     gui_pipe_stdin = NULL;
     gui_pipe_stdout = NULL;
+
+    static bool sm_init_ok = false;
+    if (!sm_init_ok)
+      {
+        sm_init_plugin();
+        sm_init_ok = true;
+      }
   }
   void
   start_gui()
