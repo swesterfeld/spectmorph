@@ -25,9 +25,18 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+void
+Index::clear()
+{
+  m_smset_dir = "";
+  m_smsets.clear();
+}
+
 bool
 Index::load_file (const string& filename)
 {
+  clear();
+
   MicroConf cfg (filename);
 
   while (cfg.next())

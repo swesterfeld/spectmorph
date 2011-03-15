@@ -30,6 +30,7 @@ class Index
   std::string              m_smset_dir;
 
 public:
+  void clear();
   bool load_file (const std::string& filename);
 
   std::vector<std::string> smsets();
