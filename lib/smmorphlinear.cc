@@ -16,7 +16,6 @@
  */
 
 #include "smmorphlinear.hh"
-#include "smmorphlinearview.hh"
 #include "smmorphplan.hh"
 
 #include <assert.h>

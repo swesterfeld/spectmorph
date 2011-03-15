@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Stefan Westerfeld
+ * Copyright (C) 2010-2011 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -16,16 +16,30 @@
  */
 
 #include "smmorphoperatormodule.hh"
+#include "smwavset.hh"
 
-using namespace SpectMorph;
-
-MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
-  morph_plan_voice (voice)
+namespace SpectMorph
 {
-}
 
-LiveDecoderSource *
-MorphOperatorModule::source()
+class MorphSourceModule : public MorphOperatorModule
 {
-  return NULL;
+protected:
+  WavSet wav_set;
+
+  struct MySource : public LiveDecoderSource
+  {
+    void
+    retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+    {
+      g_printerr ("retrigger %d, %f, %f\n", channel, freq, mix_freq);
+    }
+    Audio* audio() { return NULL; }
+    AudioBlock *audio_block (size_t index) { return NULL; }
+  } my_source;
+public:
+  MorphSourceModule (MorphPlanVoice *voice);
+
+  void set_config (MorphOperator *op);
+  LiveDecoderSource *source();
+};
 }

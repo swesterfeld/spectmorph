@@ -4,15 +4,15 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-SMHDRS = smmorphplan.hh smmorphoperator.hh smindex.hh smmorphsource.hh smmorphplanview.hh \
-         smmorphoperatorview.hh smmorphsourceview.hh smmainwindow.hh smmorphoutput.hh smmorphoutputview.hh \
-         smmorphlinear.hh smmorphlinearview.hh smcomboboxoperator.hh smrenameoperatordialog.hh \
-         smmoveindicator.hh smmorphoperatormodule.hh smmorphplanvoice.hh
+SMHDRS = smmorphplanview.hh \
+         smmorphoperatorview.hh smmorphsourceview.hh smmainwindow.hh smmorphoutputview.hh \
+         smmorphlinearview.hh smcomboboxoperator.hh smrenameoperatordialog.hh \
+         smmoveindicator.hh
 
-SMSRCS = smmorphplan.cc smmorphoperator.cc smindex.cc smmorphsource.cc smmorphplanview.cc \
-         smmorphoperatorview.cc smmorphsourceview.cc smmainwindow.cc smmorphoutput.cc smmorphoutputview.cc \
-         smmorphlinear.cc smmorphlinearview.cc smcomboboxoperator.cc smrenameoperatordialog.cc \
-         smmoveindicator.cc smmorphoperatormodule.cc smmorphplanvoice.cc
+SMSRCS = smmorphplanview.cc \
+         smmorphoperatorview.cc smmorphsourceview.cc smmainwindow.cc smmorphoutputview.cc \
+         smmorphlinearview.cc smcomboboxoperator.cc smrenameoperatordialog.cc \
+         smmoveindicator.cc
 
 noinst_LTLIBRARIES = libspectmorphgui.la
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)

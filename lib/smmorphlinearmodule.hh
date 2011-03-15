@@ -14,52 +14,25 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#ifndef SPECTMORPH_MORPH_LINEAR_MODULE_HH
+#define SPECTMORPH_MORPH_LINEAR_MODULE_HH
+
 #include "smmorphplan.hh"
 #include "smmorphoutput.hh"
 #include "smmorphoperatormodule.hh"
-#include "smmorphoutputmodule.hh"
-#include "smmorphsource.hh"
-#include "smmain.hh"
-
-#include <assert.h>
-
-using namespace SpectMorph;
-
-using std::vector;
-using std::string;
 
 namespace SpectMorph
 {
 
-}
-
-int
-main (int argc, char **argv)
+class MorphLinearModule : public MorphOperatorModule
 {
-  sm_init (&argc, &argv);
-  if (argc != 2)
-    {
-      printf ("usage: %s <plan>\n", argv[0]);
-      exit (1);
-    }
+public:
+  MorphLinearModule (MorphPlanVoice *voice);
 
-  MorphPlan plan;
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", argv[1]);
-      exit (1);
-    }
-  plan.load (in);
-  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan.operators().size());
+  void set_config (MorphOperator *op);
+};
 
-  MorphPlanVoice voice (&plan);
-  assert (voice.output());
-
-  vector<float> samples (44100);
-  voice.output()->process (samples.size(), &samples[0]);
-  for (size_t i = 0; i < samples.size(); i++)
-    {
-      printf ("%.17g\n", samples[i]);
-    }
 }
+
+#endif

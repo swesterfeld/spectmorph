@@ -16,7 +16,6 @@
  */
 
 #include "smmorphoutput.hh"
-#include "smmorphoutputview.hh"
 #include "smmorphplan.hh"
 
 #include <assert.h>

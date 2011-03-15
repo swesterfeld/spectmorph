@@ -16,7 +16,6 @@
  */
 
 #include "smmorphsource.hh"
-#include "smmorphsourceview.hh"
 #include "smmorphplan.hh"
 
 using namespace SpectMorph;
