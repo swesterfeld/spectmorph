@@ -19,6 +19,8 @@
 #include "smmorphoperatormodule.hh"
 #include "smmain.hh"
 
+#include <assert.h>
+
 using namespace SpectMorph;
 
 using std::vector;
@@ -44,6 +46,48 @@ MorphLinearModule::set_config (MorphOperator *op)
 {
 }
 
+class MorphSourceModule : public MorphOperatorModule
+{
+public:
+  MorphSourceModule();
+
+  void set_config (MorphOperator *op);
+};
+
+MorphSourceModule::MorphSourceModule()
+{
+}
+
+void
+MorphSourceModule::set_config (MorphOperator *op)
+{
+}
+
+class MorphOutputModule : public MorphOperatorModule
+{
+public:
+  MorphOutputModule();
+
+  void set_config (MorphOperator *op);
+  void process (size_t n_values, float *values);
+};
+
+MorphOutputModule::MorphOutputModule()
+{
+}
+
+void
+MorphOutputModule::set_config (MorphOperator *op)
+{
+}
+
+void
+MorphOutputModule::process (size_t n_values, float *values)
+{
+  for (size_t i = 0; i < n_values; i++)
+    values[i] = 0.0;
+}
+
 }
 
 MorphOperatorModule*
@@ -52,8 +96,47 @@ MorphOperatorModule::create (MorphOperator *op)
   string type = op->type();
 
   if (type == "SpectMorph::MorphLinear") return new MorphLinearModule();
+  if (type == "SpectMorph::MorphSource") return new MorphSourceModule();
+  if (type == "SpectMorph::MorphOutput") return new MorphOutputModule();
 
   return NULL;
+}
+
+namespace SpectMorph {
+
+class MorphPlanVoice {
+  vector<MorphOperatorModule *> modules;
+
+  MorphOutputModule            *m_output;
+public:
+  MorphPlanVoice (MorphPlan *plan)
+  {
+    const vector<MorphOperator *>& ops = plan->operators();
+    for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+      {
+        MorphOperatorModule *module = MorphOperatorModule::create (*oi);
+        string type = (*oi)->type();
+
+        if (!module)
+          {
+            g_warning ("operator type %s lacks MorphOperatorModule\n", type.c_str());
+          }
+        else
+          {
+            modules.push_back (module);
+
+            if (type == "SpectMorph::MorphOutput")
+              m_output = dynamic_cast<MorphOutputModule *> (module);
+          }
+      }
+  }
+  MorphOutputModule *
+  output()
+  {
+    return m_output;
+  }
+};
+
 }
 
 int
@@ -76,30 +159,16 @@ main (int argc, char **argv)
   plan.load (in);
   printf ("\n\nSUCCESS: plan loaded, %zd operators found.\n", plan.operators().size());
 
-  const vector<MorphOperator *>& ops = plan.operators();
+  MorphPlanVoice voice (&plan);
+  assert (voice.output());
 
-  MorphOutput *output = NULL;
-  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
-    {
-      MorphOperator *op = *oi;
-      if (!strcmp (op->type(), "SpectMorph::MorphOutput"))
-        output = dynamic_cast<MorphOutput *> (op);
-    }
-  if (!output)
-    {
-      printf ("failed to find output\n");
-      exit (1);
-    }
-  printf ("Output: %s\n", output->name().c_str());
-  MorphOperator *out_op = output->channel_op (0);
-  if (!out_op)
-    {
-      printf ("no output 0 defined\n");
-      exit (1);
-    }
-  printf ("Output[0] name: %s\n", out_op->name().c_str());
-  printf ("Output[0] type: %s\n", out_op->type());
+  vector<float> samples;
 
-  MorphOperatorModule *mod = MorphOperatorModule::create (out_op);
-  printf ("Output[0] mod: %p\n", mod);
+  for (size_t i = 0; i < 44100; i++)
+    {
+      float f;
+
+      voice.output()->process (1, &f);
+      samples.push_back (f);
+    }
 }
