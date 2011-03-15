@@ -2,11 +2,11 @@ include $(top_srcdir)/Makefile.decl
 
 plugindir=/usr/local/beast/lib/bse/v$(BSE_VERSION)/plugins
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -O3 -D_BIRNET_SOURCE_EXTENSIONS -I$(top_srcdir)/lib
+AM_CXXFLAGS=$(BSE_CFLAGS) $(SIGCXX_CFLAGS) -O3 -D_BIRNET_SOURCE_EXTENSIONS -I$(top_srcdir)/lib
 
 SUBDIRS = gui
 
-plugin_cxxflags = $(BSE_CFLAGS)
+plugin_cxxflags = $(BSE_CFLAGS) $(SIGCXX_FLAGS)
 plugin_libs = $(BSE_LIBS) $(top_builddir)/lib/libspectmorph.la
 plugin_ldflags = $(BSE_LDFLAGS) -avoid-version
 plugin_LTLIBRARIES =
