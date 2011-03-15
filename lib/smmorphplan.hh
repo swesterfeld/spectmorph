@@ -56,6 +56,7 @@ public:
 
   BseErrorType save (GenericOut *file);
   BseErrorType load (GenericIn *in);
+  void clear();
 
   int  structure_version();
 };

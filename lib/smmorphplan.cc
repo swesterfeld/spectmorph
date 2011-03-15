@@ -42,9 +42,22 @@ MorphPlan::MorphPlan()
   m_structure_version = 0;
 }
 
+void
+MorphPlan::clear()
+{
+  m_structure_version = 0;
+
+  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+    delete (*oi);
+  m_operators.clear();
+  m_index.clear();
+}
+
 MorphPlan::~MorphPlan()
 {
   assert (!in_restore);
+
+  clear();
 }
 
 bool
@@ -113,6 +126,7 @@ MorphPlan::load (GenericIn *in)
 {
   in_restore = true;
 
+  clear();
   InFile ifile (in);
 
   index_filename = "";
