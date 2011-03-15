@@ -33,6 +33,8 @@
 #include "smrenameoperatordialog.hh"
 #include "smmorphoperatorview.hh"
 #include "smstdioout.hh"
+#include "smmemout.hh"
+#include "smhexstring.hh"
 
 using namespace SpectMorph;
 
@@ -159,6 +161,8 @@ MainWindow::MainWindow() :
   plan_vbox.add (morph_plan_view);
   add (window_vbox);
 
+  morph_plan.signal_plan_changed.connect (sigc::mem_fun (*this, &MainWindow::on_plan_changed));
+
   show_all_children();
 }
 
@@ -167,6 +171,17 @@ MainWindow::set_plan_str (const string& plan_str)
 {
   morph_plan.set_plan_str (plan_str);
 }
+
+void
+MainWindow::on_plan_changed()
+{
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  morph_plan.save (&mo);
+  printf ("%s\n", HexString::encode (data).c_str());
+  fflush (stdout);
+}
+
 
 void
 MainWindow::on_context_rename()

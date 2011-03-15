@@ -50,15 +50,19 @@ public:
   MainWindow();
 
   void set_plan_str (const std::string& plan_str);
+
   void on_add_source_clicked();
   void on_add_output_clicked();
   void on_add_linear_morph_clicked();
+
   void on_load_index_clicked();
   void on_file_import_clicked();
   void on_file_export_clicked();
 
   void on_context_rename();
   void on_context_remove();
+
+  void on_plan_changed();
 
   MorphOperator *where (MorphOperator *op, double x, double y);
 

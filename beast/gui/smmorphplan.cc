@@ -40,8 +40,6 @@ MorphPlan::MorphPlan()
   in_restore = false;
 
   m_structure_version = 0;
-
-  signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlan::on_plan_changed));
 }
 
 MorphPlan::~MorphPlan()
@@ -96,19 +94,6 @@ MorphPlan::add_operator (MorphOperator *op, const string& load_name)
   m_structure_version++;
 
   emit_plan_changed();
-}
-
-void
-MorphPlan::on_plan_changed()
-{
-  if (!in_restore)
-    {
-      vector<unsigned char> data;
-      MemOut mo (&data);
-      save (&mo);
-      printf ("%s\n", HexString::encode (data).c_str());
-      fflush (stdout);
-    }
 }
 
 void
