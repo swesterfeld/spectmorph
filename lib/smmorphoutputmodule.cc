@@ -58,7 +58,11 @@ MorphOutputModule::set_config (MorphOperator *op)
 void
 MorphOutputModule::process (size_t n_values, float *values)
 {
-  g_printerr ("process called; out_ops[0] = %p\n", out_ops[0]);
-  out_decoders[0]->retrigger (0, 440, 127, 48000);
   out_decoders[0]->process (n_values, 0, 0, values);
+}
+
+void
+MorphOutputModule::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+{
+  out_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
 }

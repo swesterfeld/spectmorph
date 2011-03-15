@@ -34,6 +34,7 @@ public:
 
   void set_config (MorphOperator *op);
   void process (size_t n_values, float *values);
+  void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
 };
 
 }
