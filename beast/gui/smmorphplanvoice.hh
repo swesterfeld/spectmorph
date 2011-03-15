@@ -15,49 +15,34 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smindex.hh"
-#include "smmicroconf.hh"
+#ifndef SPECTMORPH_MORPH_PLAN_VOICE_HH
+#define SPECTMORPH_MORPH_PLAN_VOICE_HH
 
-#include <glib.h>
+#include "smmorphplan.hh"
+#include "smmorphoperatormodule.hh"
 
-using namespace SpectMorph;
+namespace SpectMorph {
 
-using std::string;
-using std::vector;
+class MorphOutputModule;
 
-bool
-Index::load_file (const string& filename)
-{
-  MicroConf cfg (filename);
+class MorphPlanVoice {
+protected:
+  struct OpModule {
+    MorphOperatorModule *module;
+    MorphOperator       *op;
+  };
+  std::vector<OpModule> modules;
 
-  while (cfg.next())
-    {
-      string str;
+  MorphOutputModule            *m_output;
+public:
+  MorphPlanVoice (MorphPlan *plan);
 
-      if (cfg.command ("smset", str))
-        {
-          m_smsets.push_back (str);
-        }
-      else if (cfg.command ("smset_dir", str))
-        {
-          m_smset_dir = str;
-        }
-      else
-        {
-          cfg.die_if_unknown();
-        }
-    }
-  return true;
+  MorphOperatorModule *module (MorphOperator *op);
+
+  MorphOutputModule *output();
+};
+
 }
 
-vector<string>
-Index::smsets()
-{
-  return m_smsets;
-}
 
-string
-Index::smset_dir()
-{
-  return m_smset_dir;
-}
+#endif

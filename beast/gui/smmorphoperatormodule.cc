@@ -15,49 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smindex.hh"
-#include "smmicroconf.hh"
-
-#include <glib.h>
+#include "smmorphoperatormodule.hh"
 
 using namespace SpectMorph;
 
-using std::string;
-using std::vector;
-
-bool
-Index::load_file (const string& filename)
+MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
+  morph_plan_voice (voice)
 {
-  MicroConf cfg (filename);
-
-  while (cfg.next())
-    {
-      string str;
-
-      if (cfg.command ("smset", str))
-        {
-          m_smsets.push_back (str);
-        }
-      else if (cfg.command ("smset_dir", str))
-        {
-          m_smset_dir = str;
-        }
-      else
-        {
-          cfg.die_if_unknown();
-        }
-    }
-  return true;
 }
 
-vector<string>
-Index::smsets()
+LiveDecoderSource *
+MorphOperatorModule::source()
 {
-  return m_smsets;
-}
-
-string
-Index::smset_dir()
-{
-  return m_smset_dir;
+  return NULL;
 }

@@ -19,18 +19,27 @@
 #define SPECTMORPH_MORPH_OPERATOR_MODULE_HH
 
 #include "smmorphoperator.hh"
+#include "smlivedecodersource.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
 
+class MorphPlanVoice;
+
 class MorphOperatorModule
 {
-public:
-  virtual void set_config (MorphOperator *op) = 0;
+protected:
+  MorphPlanVoice *morph_plan_voice;
 
-  static MorphOperatorModule *create (MorphOperator *op);
+public:
+  MorphOperatorModule (MorphPlanVoice *voice);
+
+  virtual void set_config (MorphOperator *op) = 0;
+  virtual LiveDecoderSource *source();
+
+  static MorphOperatorModule *create (MorphOperator *op, MorphPlanVoice *voice);
 };
 
 }
