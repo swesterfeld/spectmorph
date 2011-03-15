@@ -18,6 +18,7 @@
 #include "smmorphsourcemodule.hh"
 #include "smmorphsource.hh"
 #include "smmorphplan.hh"
+#include "smwavsetrepo.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -51,8 +52,7 @@ MorphSourceModule::set_config (MorphOperator *op)
   string smset_dir = source->morph_plan()->index()->smset_dir();
   string path = smset_dir + "/" + smset;
   g_printerr ("loading %s...\n", path.c_str());
-  wav_set.load (path);
-  my_source.wav_set = &wav_set;
+  my_source.wav_set = WavSetRepo::the()->get (path);
 }
 
 void

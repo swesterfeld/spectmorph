@@ -24,8 +24,6 @@ namespace SpectMorph
 class MorphSourceModule : public MorphOperatorModule
 {
 protected:
-  WavSet wav_set;
-
   struct MySource : public LiveDecoderSource
   {
     WavSet *wav_set;
