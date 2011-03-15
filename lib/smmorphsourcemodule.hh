@@ -28,13 +28,12 @@ protected:
 
   struct MySource : public LiveDecoderSource
   {
-    void
-    retrigger (int channel, float freq, int midi_velocity, float mix_freq)
-    {
-      g_printerr ("retrigger %d, %f, %f\n", channel, freq, mix_freq);
-    }
-    Audio* audio() { return NULL; }
-    AudioBlock *audio_block (size_t index) { return NULL; }
+    WavSet *wav_set;
+    Audio  *active_audio;
+
+    void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+    Audio* audio();
+    AudioBlock *audio_block (size_t index);
   } my_source;
 public:
   MorphSourceModule (MorphPlanVoice *voice);
