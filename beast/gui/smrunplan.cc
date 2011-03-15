@@ -14,11 +14,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "smmorphplan.hh"
-#include "smmorphoutput.hh"
-#include "smmorphoperatormodule.hh"
+#include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
-#include "smmorphsource.hh"
 #include "smmain.hh"
 
 #include <assert.h>
@@ -27,11 +24,6 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
-
-namespace SpectMorph
-{
-
-}
 
 int
 main (int argc, char **argv)

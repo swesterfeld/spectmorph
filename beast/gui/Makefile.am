@@ -25,5 +25,5 @@ spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIB
 spectmorphoscgui_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
 smrunplan_SOURCES = smrunplan.cc
-smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libspectmorphgui.la
+smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
