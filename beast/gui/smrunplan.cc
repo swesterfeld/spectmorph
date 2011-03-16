@@ -49,6 +49,7 @@ main (int argc, char **argv)
   assert (voice.output());
 
   vector<float> samples (44100);
+  voice.output()->retrigger (0, 440, 100, 44100);
   voice.output()->process (samples.size(), &samples[0]);
   for (size_t i = 0; i < samples.size(); i++)
     {
