@@ -241,6 +241,35 @@ MainWindow::where (MorphOperator *op, double x, double y)
 void
 MainWindow::on_file_import_clicked()
 {
+  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file to import", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dialog.set_transient_for (*this);
+
+  // buttons
+  dialog.add_button (Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  dialog.add_button (Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+  // allow only .smplan files
+  Gtk::FileFilter filter_smplan;
+  filter_smplan.set_name ("SpectMorph plan files");
+  filter_smplan.add_pattern ("*.smplan");
+  dialog.add_filter (filter_smplan);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      GenericIn *in = StdioIn::open (dialog.get_filename());
+      if (in)
+        {
+          morph_plan.load (in);
+          delete in; // close file
+        }
+      else
+        {
+          Gtk::MessageDialog dlg (Birnet::string_printf ("Import failed, unable to open file '%s'.",
+                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
+          dlg.run();
+        }
+    }
 }
 
 void
