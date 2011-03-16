@@ -23,7 +23,8 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
-MorphPlanVoice::MorphPlanVoice (MorphPlan *plan)
+MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
+  m_output (NULL)
 {
   const vector<MorphOperator *>& ops = plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)

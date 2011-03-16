@@ -51,7 +51,7 @@ MorphSourceModule::set_config (MorphOperator *op)
   string smset = source->smset();
   string smset_dir = source->morph_plan()->index()->smset_dir();
   string path = smset_dir + "/" + smset;
-  g_printerr ("loading %s...\n", path.c_str());
+
   my_source.wav_set = WavSetRepo::the()->get (path);
 }
 
