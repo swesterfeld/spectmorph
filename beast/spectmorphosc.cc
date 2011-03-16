@@ -72,10 +72,10 @@ class Osc : public OscBase {
     {
       need_retrigger = true;
     }
-    void process (unsigned int n_values)
+    void
+    process (unsigned int n_values)
     {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
-      gfloat *audio_out1 = ostream (OCHANNEL_AUDIO_OUT1).values;
       if (need_retrigger)
         {
           // get frequency
@@ -91,10 +91,15 @@ class Osc : public OscBase {
           need_retrigger = false;
         }
       if (!morph_plan_voice->output())
-        g_printerr ("no output\n");
+        {
+          ostream_set (OCHANNEL_AUDIO_OUT1, const_values (0));
+        }
       else
-        morph_plan_voice->output()->process (n_values, audio_out1);
-      //live_decoder->process (n_values, NULL, NULL, audio_out1);
+        {
+          gfloat *audio_out1 = ostream (OCHANNEL_AUDIO_OUT1).values;
+
+          morph_plan_voice->output()->process (n_values, audio_out1);
+        }
     }
     void
     retrigger (float freq, int midi_velocity)
@@ -208,7 +213,7 @@ public:
     int child_stdin = -1, child_stdout = -1;
     char **argv;
     argv = (char **) g_malloc (2 * sizeof (char *));
-    argv[0] = "spectmorphoscgui";
+    argv[0] = (char *) "spectmorphoscgui";
     argv[1] = NULL;
     GError *error = NULL;
     GPid child_pid;
