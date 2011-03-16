@@ -186,9 +186,9 @@ public:
           edit_settings = false;
           break;
         case PROP_PLAN:
+          m_morph_plan.set_plan_str (plan.c_str());
           printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
                   plan.length(), m_morph_plan.operators().size());
-          m_morph_plan.set_plan_str (plan.c_str());
           break;
         default:
           break;
