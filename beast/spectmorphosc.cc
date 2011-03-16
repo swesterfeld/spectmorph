@@ -111,8 +111,7 @@ class Osc : public OscBase {
 
       if (morph_plan_voice)
         delete morph_plan_voice;
-      printf ("constructing MorphPlanVoice object, properties->morph_plan->operators().size() = %zd\n",
-                                                   properties->morph_plan->operators().size());
+
       morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
     }
   };
@@ -160,9 +159,6 @@ public:
       {
         osc->set ("plan", s.c_str(), NULL);
         osc->notify ("plan");
-        printf ("PLAN: %s\n", s.c_str());
-        osc->m_morph_plan.set_plan_str (s.c_str());
-        printf ("%zd operators\n", osc->m_morph_plan.operators().size());
       }
   }
   bool
@@ -183,6 +179,11 @@ public:
                 }
             }
           edit_settings = false;
+          break;
+        case PROP_PLAN:
+          printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
+                  plan.length(), m_morph_plan.operators().size());
+          m_morph_plan.set_plan_str (plan.c_str());
           break;
         default:
           break;
