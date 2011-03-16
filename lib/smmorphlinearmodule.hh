@@ -27,10 +27,24 @@ namespace SpectMorph
 
 class MorphLinearModule : public MorphOperatorModule
 {
+  MorphOperatorModule *left_mod;
+  MorphOperatorModule *right_mod;
+  float                morphing;
+
+  struct MySource : public LiveDecoderSource
+  {
+    MorphLinearModule *module;
+
+    void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+    Audio* audio();
+    AudioBlock *audio_block (size_t index);
+  } my_source;
+
 public:
   MorphLinearModule (MorphPlanVoice *voice);
 
   void set_config (MorphOperator *op);
+  LiveDecoderSource *source();
 };
 
 }
