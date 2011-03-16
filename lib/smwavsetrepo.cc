@@ -41,7 +41,7 @@ WavSetRepo::get (const string& filename)
   if (!wav_set)
     {
       wav_set = new WavSet();
-      wav_set->load (filename);
+      wav_set->load (filename, AUDIO_SKIP_DEBUG);
     }
   return wav_set;
 }

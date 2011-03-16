@@ -98,7 +98,7 @@ WavSet::save (const string& filename, bool embed_models)
 }
 
 BseErrorType
-WavSet::load (const string& filename)
+WavSet::load (const string& filename, AudioLoadOptions load_options)
 {
   clear();        // delete old contents (if any)
 
@@ -200,7 +200,7 @@ WavSet::load (const string& filename)
                   assert (!wave->audio);
 
                   wave->audio = new Audio();
-                  wave->audio->load (ifile.open_blob());
+                  wave->audio->load (ifile.open_blob(), load_options);
 
                   blob_map[ifile.event_blob_sum()] = wave->audio;
                 }
