@@ -58,11 +58,21 @@ MorphOutputModule::set_config (MorphOperator *op)
 void
 MorphOutputModule::process (size_t n_values, float *values)
 {
-  out_decoders[0]->process (n_values, 0, 0, values);
+  if (out_decoders[0])
+    {
+      out_decoders[0]->process (n_values, 0, 0, values);
+    }
+  else
+    {
+      zero_float_block (n_values, values);
+    }
 }
 
 void
 MorphOutputModule::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  out_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
+  if (out_decoders[0])
+    {
+      out_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
+    }
 }
