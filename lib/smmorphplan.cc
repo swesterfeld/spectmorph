@@ -69,7 +69,7 @@ MorphPlan::load_index (const string& filename)
       result = m_index.load_file (filename);
     }
   index_filename = filename;
-  signal_index_changed();
+  emit_index_changed();
   return result;
 }
 
@@ -325,4 +325,11 @@ MorphPlan::emit_plan_changed()
 {
   if (!in_restore)
     signal_plan_changed();
+}
+
+void
+MorphPlan::emit_index_changed()
+{
+  if (!in_restore)
+    signal_index_changed();
 }
