@@ -82,56 +82,180 @@ MorphLinearModule::MySource::audio()
   return &module->audio;
 }
 
+bool
+get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block)
+{
+  Audio *audio = source->audio();
+
+  if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+    {
+      size_t loop_start_index = sm_round_positive (audio->loop_start * 1000.0 / audio->mix_freq);
+      size_t loop_end_index   = sm_round_positive (audio->loop_end   * 1000.0 / audio->mix_freq);
+
+      if (loop_start_index >= loop_end_index)
+        {
+          /* loop_start_index usually should be less than loop_end_index, this is just
+           * to handle corner cases and pathological cases
+           */
+          index = min (index, loop_start_index);
+        }
+      else
+        {
+          while (index >= loop_end_index)
+            {
+              index -= (loop_end_index - loop_start_index);
+            }
+        }
+    }
+
+  double time_ms = index; // 1ms frame step
+  int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
+
+  AudioBlock *block_ptr = source->audio_block (source_index);
+
+  if (!block_ptr)
+    return false;
+
+  out_audio_block.noise  = block_ptr->noise;
+  out_audio_block.mags   = block_ptr->mags;
+  out_audio_block.phases = block_ptr->phases;  // usually not used
+  out_audio_block.freqs.resize (block_ptr->freqs.size());
+
+  for (size_t i = 0; i < block_ptr->freqs.size(); i++)
+    out_audio_block.freqs[i] = block_ptr->freqs[i] * 440 / audio->fundamental_freq;
+
+  return true;
+}
+
+struct PartialData
+{
+  float freq;
+  float mag;
+  float phase;
+};
+
+static bool
+pd_cmp (const PartialData& p1, const PartialData& p2)
+{
+  return p1.freq < p2.freq;
+}
+
+static void
+sort_freqs (AudioBlock& block)
+{
+  // sort partials by frequency
+  vector<PartialData> pvec;
+
+  for (size_t p = 0; p < block.freqs.size(); p++)
+    {
+      PartialData pd;
+      pd.freq = block.freqs[p];
+      pd.mag = block.mags[p];
+      pd.phase = block.phases[p];
+      pvec.push_back (pd);
+    }
+  sort (pvec.begin(), pvec.end(), pd_cmp);
+
+  // replace partial data with sorted partial data
+  block.freqs.clear();
+  block.mags.clear();
+  block.phases.clear();
+
+  for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
+    {
+      block.freqs.push_back (pi->freq);
+      block.mags.push_back (pi->mag);
+      block.phases.push_back (pi->phase);
+    }
+}
+
 AudioBlock *
 MorphLinearModule::MySource::audio_block (size_t index)
 {
+  bool have_left = false, have_right = false;
+
+  AudioBlock left_block, right_block;
+
   if (module->left_mod && module->left_mod->source())
+    have_left = get_normalized_block (module->left_mod->source(), index, left_block);
+
+  if (module->right_mod && module->right_mod->source())
+    have_right = get_normalized_block (module->right_mod->source(), index, right_block);
+
+  if (have_left && have_right) // true morph: both sources present
     {
-      Audio *left_audio = module->left_mod->source()->audio();
+      module->audio_block.freqs.clear();
+      module->audio_block.mags.clear();
+      module->audio_block.phases.clear();
 
-      if (left_audio->loop_type == Audio::LOOP_TIME_FORWARD)
+      for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
-          size_t loop_start_index = sm_round_positive (left_audio->loop_start * 1000.0 / left_audio->mix_freq);
-          size_t loop_end_index   = sm_round_positive (left_audio->loop_end   * 1000.0 / left_audio->mix_freq);
+          double min_diff = 1e20;
+          size_t best_j;
 
-          if (loop_start_index >= loop_end_index)
+          for (size_t j = 0; j < right_block.freqs.size(); j++)
             {
-              /* loop_start_index usually should be less than loop_end_index, this is just
-               * to handle corner cases and pathological cases
-               */
-              index = min (index, loop_start_index);
-            }
-          else
-            {
-              while (index >= loop_end_index)
+              double diff = fabs (left_block.freqs[i] - right_block.freqs[j]);
+              if (diff < min_diff)
                 {
-                  index -= (loop_end_index - loop_start_index);
+                  best_j = j;
+                  min_diff = diff;
                 }
             }
-        }
-
-      double time_ms = index; // 1ms frame step
-      int left_index = sm_round_positive (time_ms / left_audio->frame_step_ms);
-
-      AudioBlock *left_block_ptr = module->left_mod->source()->audio_block (left_index);
-
-      if (left_block_ptr)
-        {
-          module->audio_block.noise = left_block_ptr->noise;
-          module->audio_block.mags  = left_block_ptr->mags;
-          module->audio_block.phases = left_block_ptr->phases;  // usually not used
-          module->audio_block.freqs.resize (left_block_ptr->freqs.size());
-
-          for (size_t i = 0; i < left_block_ptr->freqs.size(); i++)
+          if (min_diff < 220)
             {
-              module->audio_block.freqs[i] = left_block_ptr->freqs[i] * 440 / left_audio->fundamental_freq;
-            }
-          return &module->audio_block;
-        }
-      else
-        return NULL;
-    }
+              double freq = (left_block.freqs[i] + right_block.freqs[best_j]) / 2; // <- NEEDS better averaging
+              double mag  = (left_block.mags[i]  + right_block.mags[best_j]) / 2;
+              double phase = (left_block.phases[i] + right_block.phases[best_j]) / 2;
 
+              module->audio_block.freqs.push_back (freq);
+              module->audio_block.mags.push_back (mag);
+              module->audio_block.phases.push_back (phase);
+              left_block.freqs[i] = 0;
+              right_block.freqs[best_j] = 0;
+            }
+        }
+      for (size_t i = 0; i < left_block.freqs.size(); i++)
+        {
+          if (left_block.freqs[i] != 0)
+            {
+              module->audio_block.freqs.push_back (left_block.freqs[i]);
+              module->audio_block.mags.push_back (left_block.mags[i]);
+              module->audio_block.phases.push_back (left_block.phases[i]);
+            }
+        }
+      for (size_t i = 0; i < right_block.freqs.size(); i++)
+        {
+          if (right_block.freqs[i] != 0)
+            {
+              module->audio_block.freqs.push_back (right_block.freqs[i]);
+              module->audio_block.mags.push_back (right_block.mags[i]);
+              module->audio_block.phases.push_back (right_block.phases[i]);
+            }
+        }
+      assert (left_block.noise.size() == right_block.noise.size());
+
+      module->audio_block.noise.clear();
+      for (size_t i = 0; i < left_block.noise.size(); i++)
+        {
+          module->audio_block.noise.push_back ((left_block.noise[i] + right_block.noise[i]) / 2);
+        }
+      sort_freqs (module->audio_block);
+
+      return &module->audio_block;
+    }
+  else if (have_left) // only left source output present
+    {
+      module->audio_block = left_block;
+
+      return &module->audio_block;
+    }
+  else if (have_right) // only right source output present
+    {
+      module->audio_block = right_block;
+
+      return &module->audio_block;
+    }
   return NULL;
 }
 
