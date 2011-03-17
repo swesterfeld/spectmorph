@@ -66,10 +66,8 @@ BEAST:
 sminspector:
 - threaded analysis
 - reconstruct sines only button
-- CWT with frequency adjusted window size
 - boost feature
 - play support
-- CWT parameter settings
 - figure out why mix_freq is 0 for inspect1 foo.wav
 
 morphing:
