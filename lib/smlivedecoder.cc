@@ -243,10 +243,18 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 frame_idx = loop_point;
             }
 
-          if (source || (frame_idx + 1) < audio->contents.size()) // FIXME: block selection pass
+          AudioBlock *audio_block_ptr = NULL;
+          if (source)
             {
-              const AudioBlock& audio_block = source ? *source->audio_block (frame_idx)
-                                                     : audio->contents[frame_idx];
+              audio_block_ptr = source->audio_block (frame_idx);
+            }
+          else if (frame_idx < audio->contents.size())
+            {
+              audio_block_ptr = &audio->contents[frame_idx];
+            }
+          if (audio_block_ptr)
+            {
+              const AudioBlock& audio_block = *audio_block_ptr;
 
               ifft_synth->clear_partials();
 
