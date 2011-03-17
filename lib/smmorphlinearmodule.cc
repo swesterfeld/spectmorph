@@ -21,11 +21,13 @@
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
 #include <glib.h>
+#include <assert.h>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::min;
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
@@ -86,6 +88,27 @@ MorphLinearModule::MySource::audio_block (size_t index)
   if (module->left_mod && module->left_mod->source())
     {
       Audio *left_audio = module->left_mod->source()->audio();
+
+      if (left_audio->loop_type == Audio::LOOP_TIME_FORWARD)
+        {
+          size_t loop_start_index = sm_round_positive (left_audio->loop_start * 1000.0 / left_audio->mix_freq);
+          size_t loop_end_index   = sm_round_positive (left_audio->loop_end   * 1000.0 / left_audio->mix_freq);
+
+          if (loop_start_index >= loop_end_index)
+            {
+              /* loop_start_index usually should be less than loop_end_index, this is just
+               * to handle corner cases and pathological cases
+               */
+              index = min (index, loop_start_index);
+            }
+          else
+            {
+              while (index >= loop_end_index)
+                {
+                  index -= (loop_end_index - loop_start_index);
+                }
+            }
+        }
 
       double time_ms = index; // 1ms frame step
       int left_index = sm_round_positive (time_ms / left_audio->frame_step_ms);
