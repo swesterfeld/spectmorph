@@ -31,6 +31,9 @@ class MorphLinearModule : public MorphOperatorModule
   MorphOperatorModule *right_mod;
   float                morphing;
 
+  Audio                audio;
+  AudioBlock           audio_block;
+
   struct MySource : public LiveDecoderSource
   {
     MorphLinearModule *module;
