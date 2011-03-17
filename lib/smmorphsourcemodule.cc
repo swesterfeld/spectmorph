@@ -92,5 +92,8 @@ MorphSourceModule::MySource::audio()
 AudioBlock *
 MorphSourceModule::MySource::audio_block (size_t index)
 {
-  return &active_audio->contents[index];
+  if (index < active_audio->contents.size())
+    return &active_audio->contents[index];
+  else
+    return NULL;
 }
