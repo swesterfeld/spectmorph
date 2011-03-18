@@ -4,6 +4,7 @@
 #include <bse/bse.h>
 #include <bse/bsemathsignal.h>
 #include "smmain.hh"
+#include "smzoomcontroller.hh"
 
 using namespace SpectMorph;
 
@@ -33,10 +34,21 @@ struct FrameData
 class MorphView : public Gtk::DrawingArea
 {
   std::map<size_t, FrameData> frame_data;
+  double hzoom;
+  double vzoom;
 public:
+  MorphView();
   bool on_expose_event (GdkEventExpose* ev);
   void load (const string& filename);
+  void set_zoom (double hzoom, double vzoom);
+  void force_redraw();
 };
+
+MorphView::MorphView()
+{
+  hzoom = 1;
+  vzoom = 1;
+}
 
 void
 MorphView::load (const string& filename)
@@ -113,9 +125,6 @@ plot (Cairo::RefPtr<Cairo::Context> cr, vector<SpectData>& spect, int n, int wid
 bool
 MorphView::on_expose_event (GdkEventExpose* ev)
 {
-  double hzoom = 1.0;
-  double vzoom = 1.0;
-
   const int width =  800 * hzoom;
   const int height = 600 * vzoom;
 
@@ -169,15 +178,56 @@ MorphView::on_expose_event (GdkEventExpose* ev)
   return true;
 }
 
+void
+MorphView::set_zoom (double new_hzoom, double new_vzoom)
+{
+  hzoom = new_hzoom;
+  vzoom = new_vzoom;
+
+  force_redraw();
+}
+
+void
+MorphView::force_redraw()
+{
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
+    }
+}
+
 class MorphPlotWindow : public Gtk::Window
 {
-  MorphView morph_view;
+  Gtk::ScrolledWindow scrolled_win;
+  MorphView           morph_view;
+  Gtk::VBox           vbox;
+  ZoomController      zoom_controller;
+
 public:
   MorphPlotWindow (const string& filename)
   {
     morph_view.load (filename);
-    add (morph_view);
+
+    set_border_width (10);
+    set_default_size (800, 600);
+
+    vbox.pack_start (scrolled_win);
+    vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+
+    scrolled_win.add (morph_view);
+    add (vbox);
+
+    zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MorphPlotWindow::on_zoom_changed));
+
     show_all_children();
+  }
+
+  void
+  on_zoom_changed()
+  {
+    morph_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
   }
 };
 

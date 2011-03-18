@@ -1,8 +1,9 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
+AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
 SMHDRS = smmorphplanview.hh \
          smmorphoperatorview.hh smmorphsourceview.hh smmainwindow.hh smmorphoutputview.hh \
@@ -30,5 +31,5 @@ smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
 
 smmorphplot_SOURCES = smmorphplot.cc
-smmorphplot_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+smmorphplot_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS)
 smmorphplot_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
