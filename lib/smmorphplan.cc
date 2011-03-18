@@ -206,7 +206,7 @@ MorphPlan::load (GenericIn *in)
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
 
-                  add_operator (load_op, load_name);
+                  add_operator (load_op, load_name, load_id);
                 }
             }
         }

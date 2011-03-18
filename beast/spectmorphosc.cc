@@ -115,7 +115,17 @@ class Osc : public OscBase {
       frequency = properties->frequency;
 
       if (morph_plan_voice)
-        delete morph_plan_voice;
+        {
+          if (morph_plan_voice->try_update (properties->morph_plan))
+            {
+              return; // update successful
+            }
+          else
+            {
+              // need to create new voice
+              delete morph_plan_voice;
+            }
+        }
 
       morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
     }
@@ -127,13 +137,13 @@ class Osc : public OscBase {
   GSource *gui_source;
   int      gui_pid;
 
-  MorphPlan m_morph_plan;
+  MorphPlan *m_morph_plan;
 
 public:
   MorphPlan*
   morph_plan()
   {
-    return &m_morph_plan;
+    return m_morph_plan;
   }
   static gboolean
   gui_source_pending (Osc *osc, gint *timeout)
@@ -186,9 +196,11 @@ public:
           edit_settings = false;
           break;
         case PROP_PLAN:
-          m_morph_plan.set_plan_str (plan.c_str());
+          // LEAK! fix concurrent "elimination when done"
+          m_morph_plan = new MorphPlan();
+          m_morph_plan->set_plan_str (plan.c_str());
           printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
-                  plan.length(), m_morph_plan.operators().size());
+                  plan.length(), m_morph_plan->operators().size());
           break;
         default:
           break;

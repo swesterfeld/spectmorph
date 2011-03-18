@@ -18,10 +18,13 @@
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
 #include <assert.h>
+#include <map>
 
 using namespace SpectMorph;
 using std::vector;
 using std::string;
+using std::sort;
+using std::map;
 
 MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
   m_output (NULL)
@@ -69,4 +72,61 @@ MorphPlanVoice::module (MorphOperator *op)
       return modules[i].module;
 
   return NULL;
+}
+
+bool
+MorphPlanVoice::try_update (MorphPlan *new_plan)
+{
+  vector<string>               old_ids, new_ids;
+  map<string, MorphOperator *> op_map;
+
+  printf ("try_update\n");
+
+  // make a list of old operator ids
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      string id = modules[i].op->id();
+      printf ("OLD:%s\n", id.c_str());
+      if (id.empty())
+        return false;
+      old_ids.push_back (id);
+    }
+  printf (" - old list\n");
+  // make a list of new operator ids
+  const vector<MorphOperator *>& new_ops = new_plan->operators();
+  for (vector<MorphOperator *>::const_iterator oi = new_ops.begin(); oi != new_ops.end(); oi++)
+    {
+      string id = (*oi)->id();
+      printf ("NEW:%s\n", id.c_str());
+      if (id.empty())
+        return false;
+      new_ids.push_back (id);
+      op_map[id] = *oi;
+    }
+
+  printf (" - new list\n");
+  // update can only be done if the id lists match
+  sort (old_ids.begin(), old_ids.end());
+  sort (new_ids.begin(), new_ids.end());
+
+  if (old_ids != new_ids)
+    {
+      printf (" - lists don't match\n");
+      return false;
+    }
+  printf (" - lists do match\n");
+
+  // exchange old operators with new operators
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      modules[i].op = op_map[modules[i].op->id()];
+      assert (modules[i].op);
+    }
+  // reconfigure modules
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      modules[i].module->set_config (modules[i].op);
+    }
+  printf (" - good update\n");
+  return true;
 }
