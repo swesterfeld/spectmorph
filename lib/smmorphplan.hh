@@ -42,7 +42,7 @@ public:
   bool   load_index (const std::string& filename);
   Index *index();
 
-  void add_operator (MorphOperator *op, const std::string& name = "");
+  void add_operator (MorphOperator *op, const std::string& name = "", const std::string& id = "");
   const std::vector<MorphOperator *>& operators();
   void remove (MorphOperator *op);
   void move (MorphOperator *op, MorphOperator *op_next);
@@ -60,6 +60,9 @@ public:
   void clear();
 
   int  structure_version();
+
+  static std::string id_chars();
+  static std::string generate_id();
 };
 
 }

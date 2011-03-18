@@ -33,6 +33,7 @@ class MorphOperator
 protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;
+  std::string m_id;
 
   void write_operator (OutFile& file, const std::string& name, MorphOperator *op);
 
@@ -54,9 +55,12 @@ public:
   std::string type_name();
 
   std::string name();
-  void set_name (const std::string &name);
+  void set_name (const std::string& name);
 
   bool can_rename (const std::string& name);
+
+  std::string id();
+  void set_id (const std::string& id);
 
   static MorphOperator *create (const std::string& type, MorphPlan *plan);
 };

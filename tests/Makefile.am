@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 $(SSE_FLAGS)
+AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 $(SSE_FLAGS) $(SIGCXX_CFLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
@@ -11,7 +11,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 EXTRA_DIST += saw440.wav sin440.wav sin440.py
 CLEANFILES += sin440-4567.wav
 
-TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter
+TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testjobqueue
@@ -21,6 +21,9 @@ testfastsin_LDADD = $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
 testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+testgenid_SOURCES = testgenid.cc
+testgenid_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 testfft_SOURCES = testfft.cc
 testfft_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)

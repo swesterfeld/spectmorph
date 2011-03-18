@@ -74,7 +74,7 @@ MorphPlan::load_index (const string& filename)
 }
 
 void
-MorphPlan::add_operator (MorphOperator *op, const string& load_name)
+MorphPlan::add_operator (MorphOperator *op, const string& load_name, const string& load_id)
 {
   if (load_name == "")
     {
@@ -101,6 +101,14 @@ MorphPlan::add_operator (MorphOperator *op, const string& load_name)
   else
     {
       op->set_name (load_name);
+    }
+  if (load_id == "")
+    {
+      op->set_id (generate_id());
+    }
+  else
+    {
+      op->set_id (load_id);
     }
 
   m_operators.push_back (op);
@@ -135,6 +143,7 @@ MorphPlan::load (GenericIn *in)
   string section;
   MorphOperator *load_op = NULL;
   string         load_name;
+  string         load_id;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
@@ -172,6 +181,10 @@ MorphPlan::load (GenericIn *in)
               else if (ifile.event_name() == "name")
                 {
                   load_name = ifile.event_data();
+                }
+              else if (ifile.event_name() == "id")
+                {
+                  load_id = ifile.event_data();
                 }
             }
         }
@@ -305,6 +318,7 @@ MorphPlan::save (GenericOut *file)
       of.begin_section ("operator");
       of.write_string ("type", op->type());
       of.write_string ("name", op->name());
+      of.write_string ("id", op->id());
 
       vector<unsigned char> op_data;
       MemOut                op_mo (&op_data);
@@ -332,4 +346,22 @@ MorphPlan::emit_index_changed()
 {
   if (!in_restore)
     signal_index_changed();
+}
+
+string
+MorphPlan::generate_id()
+{
+  string chars = id_chars();
+
+  string id;
+  for (size_t i = 0; i < 20; i++)
+    id += chars[g_random_int_range (0, chars.size())];
+
+  return id;
+}
+
+string
+MorphPlan::id_chars()
+{
+  return G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_-.:,;/&%$*+@?!#|{}()[]<>=^";
 }

@@ -51,6 +51,18 @@ MorphOperator::set_name (const string& name)
   m_morph_plan->emit_plan_changed();
 }
 
+string
+MorphOperator::id()
+{
+  return m_id;
+}
+
+void
+MorphOperator::set_id (const string& id)
+{
+  m_id = id;
+}
+
 void
 MorphOperator::post_load()
 {
