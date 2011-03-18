@@ -70,6 +70,9 @@ sminspector:
 - play support
 - figure out why mix_freq is 0 for inspect1 foo.wav
 
+gui:
+- die if parent process dies
+
 morphing:
 - model: explain observation of the peaks using a gaussian-mixture-model which
   predicts them; that way, peaks of the same gaussian distribution are "one
