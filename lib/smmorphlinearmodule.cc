@@ -29,6 +29,8 @@ using std::string;
 using std::vector;
 using std::min;
 
+#define DEBUG (1)
+
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
@@ -169,6 +171,25 @@ sort_freqs (AudioBlock& block)
     }
 }
 
+void
+dump_block (size_t index, const char *what, const AudioBlock& block)
+{
+  if (DEBUG)
+    {
+      for (size_t i = 0; i < block.freqs.size(); i++)
+        printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs[i], block.mags[i]);
+    }
+}
+
+void
+dump_line (size_t index, const char *what, double start, double end)
+{
+  if (DEBUG)
+    {
+      printf ("%zd:%s %.17g %.17g\n", index, what, start, end);
+    }
+}
+
 AudioBlock *
 MorphLinearModule::MySource::audio_block (size_t index)
 {
@@ -188,10 +209,12 @@ MorphLinearModule::MySource::audio_block (size_t index)
       module->audio_block.mags.clear();
       module->audio_block.phases.clear();
 
+      dump_block (index, "A", left_block);
+      dump_block (index, "B", right_block);
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
           double min_diff = 1e20;
-          size_t best_j;
+          size_t best_j = 0; // initialized to avoid compiler warning
 
           for (size_t j = 0; j < right_block.freqs.size(); j++)
             {
@@ -211,6 +234,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
               module->audio_block.freqs.push_back (freq);
               module->audio_block.mags.push_back (mag);
               module->audio_block.phases.push_back (phase);
+              dump_line (index, "L", left_block.freqs[i], right_block.freqs[best_j]);
               left_block.freqs[i] = 0;
               right_block.freqs[best_j] = 0;
             }
