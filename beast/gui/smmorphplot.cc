@@ -161,6 +161,20 @@ MorphView::on_expose_event (GdkEventExpose* ev)
       cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
       cr->clip();
 
+      std::valarray<double> dashes(2);
+      dashes[0] = 2.0;
+      dashes[1] = 2.0;
+      cr->set_dash (dashes, 0.0);
+
+      cr->set_source_rgb (0.9, 0.9, 0.9);
+      for (size_t i = 440; i < 22050; i += 440)
+        {
+          double x =  double (i) / 22050 * width;
+          cr->move_to (x, 0);
+          cr->line_to (x, MAX (height, 3000));
+        }
+      cr->stroke();
+      cr->unset_dash();
 
       FrameData& fd = frame_data[frame];
       cr->set_source_rgb (0.8, 0.0, 0.0);
