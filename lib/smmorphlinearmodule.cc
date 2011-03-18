@@ -190,6 +190,45 @@ dump_line (size_t index, const char *what, double start, double end)
     }
 }
 
+struct MagData
+{
+  enum {
+    BLOCK_LEFT  = 0,
+    BLOCK_RIGHT = 1
+  }      block;
+  size_t index;
+  double mag;
+};
+
+static bool
+md_cmp (const MagData& m1, const MagData& m2)
+{
+  return m1.mag > m2.mag;  // sort with biggest magnitude first
+}
+
+static bool
+find_match (float freq, vector<float>& freqs, size_t *index)
+{
+  double min_diff = 1e20;
+  size_t best_index = 0; // initialized to avoid compiler warning
+
+  for (size_t i = 0; i < freqs.size(); i++)
+    {
+      double diff = fabs (freq - freqs[i]);
+      if (diff < min_diff)
+        {
+          best_index = i;
+          min_diff = diff;
+        }
+    }
+  if (min_diff < 220 && (freq > 1) && (freqs[best_index] > 1))
+    {
+      *index = best_index;
+      return true;
+    }
+  return false;
+}
+
 AudioBlock *
 MorphLinearModule::MySource::audio_block (size_t index)
 {
@@ -211,32 +250,45 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
+
+      vector<MagData> mds;
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
-          double min_diff = 1e20;
-          size_t best_j = 0; // initialized to avoid compiler warning
-
-          for (size_t j = 0; j < right_block.freqs.size(); j++)
+          MagData md = { MagData::BLOCK_LEFT, i, left_block.mags[i] };
+          mds.push_back (md);
+        }
+      for (size_t i = 0; i < right_block.freqs.size(); i++)
+        {
+          MagData md = { MagData::BLOCK_RIGHT, i, right_block.mags[i] };
+          mds.push_back (md);
+        }
+      sort (mds.begin(), mds.end(), md_cmp);
+      for (size_t m = 0; m < mds.size(); m++)
+        {
+          size_t i, j;
+          bool match;
+          if (mds[m].block == MagData::BLOCK_LEFT)
             {
-              double diff = fabs (left_block.freqs[i] - right_block.freqs[j]);
-              if (diff < min_diff)
-                {
-                  best_j = j;
-                  min_diff = diff;
-                }
+              i = mds[m].index;
+              match = find_match (left_block.freqs[i], right_block.freqs, &j);
             }
-          if (min_diff < 220)
+          else // (mds[m].block == MagData::BLOCK_RIGHT)
             {
-              double freq = (left_block.freqs[i] + right_block.freqs[best_j]) / 2; // <- NEEDS better averaging
-              double mag  = (left_block.mags[i]  + right_block.mags[best_j]) / 2;
-              double phase = (left_block.phases[i] + right_block.phases[best_j]) / 2;
+              j = mds[m].index;
+              match = find_match (right_block.freqs[j], left_block.freqs, &i);
+            }
+          if (match)
+            {
+              double freq = (left_block.freqs[i] + right_block.freqs[j]) / 2; // <- NEEDS better averaging
+              double mag  = (left_block.mags[i]  + right_block.mags[j]) / 2;
+              double phase = (left_block.phases[i] + right_block.phases[j]) / 2;
 
               module->audio_block.freqs.push_back (freq);
               module->audio_block.mags.push_back (mag);
               module->audio_block.phases.push_back (phase);
-              dump_line (index, "L", left_block.freqs[i], right_block.freqs[best_j]);
+              dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_block.freqs[i] = 0;
-              right_block.freqs[best_j] = 0;
+              right_block.freqs[j] = 0;
             }
         }
       for (size_t i = 0; i < left_block.freqs.size(); i++)
