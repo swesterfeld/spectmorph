@@ -1,10 +1,10 @@
 #include <gtkmm.h>
 #include <assert.h>
-#include <map>
 #include <bse/bse.h>
 #include <bse/bsemathsignal.h>
 #include "smmain.hh"
 #include "smzoomcontroller.hh"
+#include "smmath.hh"
 
 using namespace SpectMorph;
 
@@ -26,6 +26,7 @@ struct LineData
 
 struct FrameData
 {
+  size_t            index;
   vector<SpectData> a;
   vector<SpectData> b;
   vector<LineData>  lines;
@@ -33,21 +34,25 @@ struct FrameData
 
 class MorphView : public Gtk::DrawingArea
 {
-  std::map<size_t, FrameData> frame_data;
+  vector<FrameData> frame_data;
   double hzoom;
   double vzoom;
+  size_t frame;
 public:
   MorphView();
   bool on_expose_event (GdkEventExpose* ev);
   void load (const string& filename);
   void set_zoom (double hzoom, double vzoom);
+  void set_frame (size_t frame);
   void force_redraw();
+  size_t frames();
 };
 
 MorphView::MorphView()
 {
   hzoom = 1;
   vzoom = 1;
+  frame = 0;
 }
 
 void
@@ -55,6 +60,7 @@ MorphView::load (const string& filename)
 {
   FILE *input = fopen (filename.c_str(), "r");
   assert (input);
+  size_t last_index = 1 << 31;
 
   char buffer[1024];
   while (fgets (buffer, 1024, input))
@@ -87,12 +93,20 @@ MorphView::load (const string& filename)
       l_data.freq1 = g_strtod (value1, NULL);
       l_data.freq2 = g_strtod (value2, NULL);
 
+      size_t index = atoi(id_index);
+      if (last_index != index)
+        {
+          frame_data.push_back (FrameData());
+          frame_data.back().index = index;
+          last_index = index;
+        }
+
       if (id_type == string ("A"))
-        frame_data[atoi(id_index)].a.push_back (s_data);
+        frame_data.back().a.push_back (s_data);
       else if (id_type == string ("B"))
-        frame_data[atoi(id_index)].b.push_back (s_data);
+        frame_data.back().b.push_back (s_data);
       else if (id_type == string ("L"))
-        frame_data[atoi(id_index)].lines.push_back (l_data);
+        frame_data.back().lines.push_back (l_data);
 
       //printf ("INDEX(%s) TYPE(%s) VALUE(%s) VALUE(%s)\n", id_index, id_type, value1, value2);
     }
@@ -103,7 +117,7 @@ plot (Cairo::RefPtr<Cairo::Context> cr, vector<SpectData>& spect, int n, int wid
 {
   for (size_t i = 0; i < spect.size(); i++)
     {
-      double x = spect[i].freq / 8000 * width;
+      double x = spect[i].freq / 22050 * width;
       double db_mag = bse_db_from_factor (spect[i].mag, -200);
       double xmag = (db_mag + 60) / 60;
 
@@ -127,13 +141,6 @@ MorphView::on_expose_event (GdkEventExpose* ev)
 {
   const int width =  800 * hzoom;
   const int height = 600 * vzoom;
-
-  size_t frame = 130;
-  while (frame_data[frame].a.empty())
-    {
-      frame++;
-    }
-  printf ("frame=%zd\n", frame);
 
   set_size_request (width, height);
 
@@ -167,8 +174,8 @@ MorphView::on_expose_event (GdkEventExpose* ev)
       cr->set_source_rgb (0.0, 0.0, 0.5);
       for (size_t i = 0; i < fd.lines.size(); i++)
         {
-          double x1 = fd.lines[i].freq1 / 8000 * width;
-          double x2 = fd.lines[i].freq2 / 8000 * width;
+          double x1 = fd.lines[i].freq1 / 22050 * width;
+          double x2 = fd.lines[i].freq2 / 22050 * width;
           cr->move_to (x1, 0.45 * height);
           cr->line_to (x2, 0.55 * height);
         }
@@ -188,6 +195,14 @@ MorphView::set_zoom (double new_hzoom, double new_vzoom)
 }
 
 void
+MorphView::set_frame (size_t new_frame)
+{
+  frame = new_frame;
+
+  force_redraw();
+}
+
+void
 MorphView::force_redraw()
 {
   Glib::RefPtr<Gdk::Window> win = get_window();
@@ -198,6 +213,12 @@ MorphView::force_redraw()
     }
 }
 
+size_t
+MorphView::frames()
+{
+  return frame_data.size();
+}
+
 class MorphPlotWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -205,8 +226,13 @@ class MorphPlotWindow : public Gtk::Window
   Gtk::VBox           vbox;
   ZoomController      zoom_controller;
 
+  Gtk::HScale         position_scale;
+  Gtk::Label          position_label;
+  Gtk::HBox           position_hbox;
+
 public:
-  MorphPlotWindow (const string& filename)
+  MorphPlotWindow (const string& filename) :
+    position_scale (0, 1, 0.0001)
   {
     morph_view.load (filename);
 
@@ -215,6 +241,14 @@ public:
 
     vbox.pack_start (scrolled_win);
     vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+
+    vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
+    position_hbox.pack_start (position_scale);
+    position_hbox.pack_start (position_label, Gtk::PACK_SHRINK);
+    position_scale.set_draw_value (false);
+    position_label.set_text ("frame 0");
+    position_hbox.set_border_width (10);
+    position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphPlotWindow::on_position_changed));
 
     scrolled_win.add (morph_view);
     add (vbox);
@@ -228,6 +262,16 @@ public:
   on_zoom_changed()
   {
     morph_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  }
+
+  void
+  on_position_changed()
+  {
+    size_t f = size_t (sm_round_positive (position_scale.get_value() * morph_view.frames()));
+    morph_view.set_frame (CLAMP  (f, 0, morph_view.frames() - 1));
+    char buffer[1024];
+    sprintf (buffer, "frame %zd", f);
+    position_label.set_text (buffer);
   }
 };
 
