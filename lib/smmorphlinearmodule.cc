@@ -29,7 +29,7 @@ using std::string;
 using std::vector;
 using std::min;
 
-#define DEBUG (1)
+#define DEBUG (0)
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
@@ -88,6 +88,8 @@ bool
 get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block)
 {
   Audio *audio = source->audio();
+  if (!audio)
+    return false;
 
   if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
     {
@@ -234,6 +236,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
+  const double interp = (module->morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
+
   AudioBlock left_block, right_block;
 
   if (module->left_mod && module->left_mod->source())
@@ -279,9 +283,9 @@ MorphLinearModule::MySource::audio_block (size_t index)
             }
           if (match)
             {
-              double freq = (left_block.freqs[i] + right_block.freqs[j]) / 2; // <- NEEDS better averaging
-              double mag  = (left_block.mags[i]  + right_block.mags[j]) / 2;
-              double phase = (left_block.phases[i] + right_block.phases[j]) / 2;
+              double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
+              double mag  =  (1 - interp) * left_block.mags[i]   + interp * right_block.mags[j];
+              double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
 
               module->audio_block.freqs.push_back (freq);
               module->audio_block.mags.push_back (mag);
@@ -296,7 +300,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
           if (left_block.freqs[i] != 0)
             {
               module->audio_block.freqs.push_back (left_block.freqs[i]);
-              module->audio_block.mags.push_back (left_block.mags[i]);
+              module->audio_block.mags.push_back ((1 - interp) * left_block.mags[i]);
               module->audio_block.phases.push_back (left_block.phases[i]);
             }
         }
@@ -305,7 +309,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
           if (right_block.freqs[i] != 0)
             {
               module->audio_block.freqs.push_back (right_block.freqs[i]);
-              module->audio_block.mags.push_back (right_block.mags[i]);
+              module->audio_block.mags.push_back (interp * right_block.mags[i]);
               module->audio_block.phases.push_back (right_block.phases[i]);
             }
         }
@@ -313,9 +317,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       module->audio_block.noise.clear();
       for (size_t i = 0; i < left_block.noise.size(); i++)
-        {
-          module->audio_block.noise.push_back ((left_block.noise[i] + right_block.noise[i]) / 2);
-        }
+        module->audio_block.noise.push_back ((1 - interp) * left_block.noise[i] + interp * right_block.noise[i]);
+
       sort_freqs (module->audio_block);
 
       return &module->audio_block;

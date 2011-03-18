@@ -35,7 +35,8 @@ freq_to_note (float freq)
 MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  my_source.wav_set = NULL;
+  my_source.wav_set      = NULL;
+  my_source.active_audio = NULL;
 }
 
 LiveDecoderSource *
@@ -92,7 +93,7 @@ MorphSourceModule::MySource::audio()
 AudioBlock *
 MorphSourceModule::MySource::audio_block (size_t index)
 {
-  if (index < active_audio->contents.size())
+  if (active_audio && index < active_audio->contents.size())
     return &active_audio->contents[index];
   else
     return NULL;
