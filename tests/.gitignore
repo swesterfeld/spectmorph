@@ -14,5 +14,6 @@ testnoisemodes
 testnoiseperf
 testppinter
 testjobqueue
+testgenid
 .libs
 .deps
