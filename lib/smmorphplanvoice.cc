@@ -86,35 +86,27 @@ MorphPlanVoice::try_update (MorphPlan *new_plan)
   for (size_t i = 0; i < modules.size(); i++)
     {
       string id = modules[i].op->id();
-      printf ("OLD:%s\n", id.c_str());
       if (id.empty())
         return false;
       old_ids.push_back (id);
     }
-  printf (" - old list\n");
   // make a list of new operator ids
   const vector<MorphOperator *>& new_ops = new_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = new_ops.begin(); oi != new_ops.end(); oi++)
     {
       string id = (*oi)->id();
-      printf ("NEW:%s\n", id.c_str());
       if (id.empty())
         return false;
       new_ids.push_back (id);
       op_map[id] = *oi;
     }
 
-  printf (" - new list\n");
   // update can only be done if the id lists match
   sort (old_ids.begin(), old_ids.end());
   sort (new_ids.begin(), new_ids.end());
 
   if (old_ids != new_ids)
-    {
-      printf (" - lists don't match\n");
-      return false;
-    }
-  printf (" - lists do match\n");
+    return false;
 
   // exchange old operators with new operators
   for (size_t i = 0; i < modules.size(); i++)
