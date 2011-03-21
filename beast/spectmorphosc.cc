@@ -216,8 +216,10 @@ public:
           // LEAK! fix concurrent "elimination when done"
           m_morph_plan = new MorphPlan();
           m_morph_plan->set_plan_str (plan.c_str());
+#if 0
           printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
                   plan.length(), m_morph_plan->operators().size());
+#endif
           break;
         default:
           break;

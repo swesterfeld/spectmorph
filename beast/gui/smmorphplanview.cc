@@ -37,13 +37,9 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window) :
 void
 MorphPlanView::on_plan_changed()
 {
-  g_printerr ("plan changed\n");
-
   if (morph_plan->structure_version() == old_structure_version)
     return; // nothing to do, view widgets should be fine
   old_structure_version = morph_plan->structure_version();
-
-  g_printerr ("structure changed\n");
 
   // delete old MorphOperatorView and MoveIndicator widgets
   vector<Widget *> old_children = get_children();

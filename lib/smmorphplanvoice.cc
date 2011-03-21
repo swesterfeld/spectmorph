@@ -83,8 +83,6 @@ MorphPlanVoice::try_update (MorphPlan *new_plan)
   vector<string>               old_ids, new_ids;
   map<string, MorphOperator *> op_map;
 
-  printf ("try_update\n");
-
   // make a list of old operator ids
   for (size_t i = 0; i < modules.size(); i++)
     {
@@ -122,7 +120,6 @@ MorphPlanVoice::try_update (MorphPlan *new_plan)
     {
       modules[i].module->set_config (modules[i].op);
     }
-  printf (" - good update\n");
   return true;
 }
 
