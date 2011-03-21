@@ -51,7 +51,6 @@ class Osc : public OscBase {
     float          last_sync_level;
     float          current_freq;
     bool           need_retrigger;
-    int            channel;
     float          frequency;
   public:
     Module() :
@@ -123,7 +122,7 @@ class Osc : public OscBase {
     retrigger (float freq, int midi_velocity)
     {
       if (morph_plan_voice->output())
-        morph_plan_voice->output()->retrigger (channel, freq, midi_velocity, mix_freq());
+        morph_plan_voice->output()->retrigger (0, freq, midi_velocity, mix_freq());
 
       current_freq = freq;
     }
