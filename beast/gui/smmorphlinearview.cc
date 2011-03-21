@@ -43,6 +43,10 @@ struct MyOperatorFilter : public OperatorFilter
 
 }
 
+#define CONTROL_TEXT_GUI "Gui Slider"
+#define CONTROL_TEXT_1   "Control Signal #1"
+#define CONTROL_TEXT_2   "Control Signal #2"
+
 MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_window) :
   MorphOperatorView (morph_linear, main_window),
   morph_linear (morph_linear),
@@ -66,8 +70,28 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_wi
   table.attach (right_label, 0, 1, 1, 2, Gtk::SHRINK);
   table.attach (right_combobox, 1, 2, 1, 2);
 
-  table.attach (hscale_label, 0, 1, 2, 3, Gtk::SHRINK);
-  table.attach (hscale, 1, 2, 2, 3);
+  control_type_combobox.append_text (CONTROL_TEXT_GUI);
+  control_type_combobox.append_text (CONTROL_TEXT_1);
+  control_type_combobox.append_text (CONTROL_TEXT_2);
+  control_type_label.set_text ("Control Input");
+
+  if (morph_linear->control_type() == MorphLinear::CONTROL_GUI)
+    control_type_combobox.set_active_text (CONTROL_TEXT_GUI);
+  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_1)
+    control_type_combobox.set_active_text (CONTROL_TEXT_1);
+  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_2)
+    control_type_combobox.set_active_text (CONTROL_TEXT_2);
+  else
+    {
+      assert (false);
+    }
+  update_slider();
+
+  table.attach (control_type_label, 0, 1, 2, 3, Gtk::SHRINK);
+  table.attach (control_type_combobox, 1, 2, 2, 3);
+
+  table.attach (hscale_label, 0, 1, 3, 4, Gtk::SHRINK);
+  table.attach (hscale, 1, 2, 3, 4);
 
   table.set_spacings (10);
   table.set_border_width (5);
@@ -76,6 +100,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_wi
 
   left_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
   right_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
+  control_type_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_control_type_changed));
   hscale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_morphing_changed));
 
   show_all_children();
@@ -96,4 +121,29 @@ void
 MorphLinearView::on_morphing_changed()
 {
   morph_linear->set_morphing (hscale.get_value());
+}
+
+void
+MorphLinearView::on_control_type_changed()
+{
+  string text = control_type_combobox.get_active_text();
+
+  if (text == CONTROL_TEXT_GUI)
+    morph_linear->set_control_type (MorphLinear::CONTROL_GUI);
+  else if (text == CONTROL_TEXT_1)
+    morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_1);
+  else if (text == CONTROL_TEXT_2)
+    morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
+  else
+    {
+      assert (false);
+    }
+  update_slider();
+}
+
+void
+MorphLinearView::update_slider()
+{
+  bool gui = (morph_linear->control_type() == MorphLinear::CONTROL_GUI);
+  hscale.set_sensitive (gui);
 }

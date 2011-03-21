@@ -27,12 +27,19 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
+public:
+  enum ControlType {
+    CONTROL_GUI      = 1,
+    CONTROL_SIGNAL_1 = 2,
+    CONTROL_SIGNAL_2 = 3
+  };
 protected:
   std::string    load_left, load_right;
 
   MorphOperator *m_left_op;
   MorphOperator *m_right_op;
   double         m_morphing;
+  ControlType    m_control_type;
 
 public:
   MorphLinear (MorphPlan *morph_plan);
@@ -52,6 +59,9 @@ public:
 
   double morphing();
   void set_morphing (double new_morphing);
+
+  ControlType control_type();
+  void set_control_type (ControlType new_control_type);
 
   void on_operator_removed (MorphOperator *op);
 };

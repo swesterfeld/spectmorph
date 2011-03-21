@@ -29,6 +29,8 @@ class Osc : Effect {
   Info    blurb       = _("Oscillator based on SpectMorph instruments.");
   IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
   IStream velocity_in = (_("Velocity In"), _("Velocity of the note press"));
+  IStream ctrl_in1   = (_("Ctrl In1"), _("First control input"));
+  IStream ctrl_in2   = (_("Ctrl In2"), _("Second control input"));
 
   OStream audio_out1  = (_("Audio Out1"), _("Audio output 1"));
   OStream audio_out2  = (_("Audio Out2"), _("Audio output 2"));

@@ -33,6 +33,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   m_left_op = NULL;
   m_right_op = NULL;
   m_morphing = 0;
+  m_control_type = CONTROL_GUI;
 }
 
 const char *
@@ -47,6 +48,7 @@ MorphLinear::save (OutFile& out_file)
   write_operator (out_file, "left", m_left_op);
   write_operator (out_file, "right", m_right_op);
   out_file.write_float ("morphing", m_morphing);
+  out_file.write_int ("control_type", m_control_type);
 
   return true;
 }
@@ -84,6 +86,18 @@ MorphLinear::load (InFile& ifile)
           else
             {
               g_printerr ("bad float\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::INT)
+        {
+          if (ifile.event_name() == "control_type")
+            {
+              m_control_type = static_cast<ControlType> (ifile.event_int());
+            }
+          else
+            {
+              g_printerr ("bad int\n");
               return false;
             }
         }
@@ -164,6 +178,20 @@ void
 MorphLinear::set_morphing (double new_morphing)
 {
   m_morphing = new_morphing;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphLinear::ControlType
+MorphLinear::control_type()
+{
+  return m_control_type;
+}
+
+void
+MorphLinear::set_control_type (ControlType new_control_type)
+{
+  m_control_type = new_control_type;
 
   m_morph_plan->emit_plan_changed();
 }

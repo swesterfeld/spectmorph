@@ -42,9 +42,14 @@ protected:
   Gtk::Label                       right_label;
   ComboBoxOperator                 right_combobox;
 
+  Gtk::Label                       control_type_label;
+  Gtk::ComboBoxText                control_type_combobox;
+
   void on_operator_changed();
   void on_morphing_changed();
+  void on_control_type_changed();
 
+  void update_slider();
 public:
   MorphLinearView (MorphLinear *op, MainWindow *main_window);
   ~MorphLinearView();
