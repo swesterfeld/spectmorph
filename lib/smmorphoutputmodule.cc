@@ -20,6 +20,8 @@
 #include "smmorphplan.hh"
 #include <glib.h>
 
+#define CHANNEL_OP_COUNT 4
+
 using namespace SpectMorph;
 
 using std::string;
@@ -28,6 +30,8 @@ using std::vector;
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
+  out_ops.resize (CHANNEL_OP_COUNT);
+  out_decoders.resize (CHANNEL_OP_COUNT);
 }
 
 void
@@ -36,22 +40,32 @@ MorphOutputModule::set_config (MorphOperator *op)
   MorphOutput *out_op = dynamic_cast <MorphOutput *> (op);
   g_return_if_fail (out_op != NULL);
 
-  out_ops.clear();
-  out_decoders.clear(); // FIXME: LEAK ?
-  for (size_t ch = 0; ch < 4; ch++)
+  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       MorphOperatorModule *mod = NULL;
       LiveDecoder *dec = NULL;
 
       MorphOperator *op = out_op->channel_op (ch);
       if (op)
+        mod = morph_plan_voice->module (op);
+
+      if (mod == out_ops[ch]) // same source
         {
-          mod = morph_plan_voice->module (op);
-          dec = new LiveDecoder (mod->source());
+          dec = out_decoders[ch];
+          // keep decoder as it is
+        }
+      else
+        {
+          if (out_decoders[ch])
+            delete out_decoders[ch];
+          if (mod)
+            {
+              dec = new LiveDecoder (mod->source());
+            }
         }
 
-      out_ops.push_back (mod);
-      out_decoders.push_back (dec);
+      out_ops[ch] = mod;
+      out_decoders[ch] = dec;
     }
 }
 
