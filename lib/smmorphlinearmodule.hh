@@ -21,6 +21,7 @@
 #include "smmorphplan.hh"
 #include "smmorphoutput.hh"
 #include "smmorphoperatormodule.hh"
+#include "smmorphlinear.hh"
 
 namespace SpectMorph
 {
@@ -30,6 +31,8 @@ class MorphLinearModule : public MorphOperatorModule
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
   float                morphing;
+
+  MorphLinear::ControlType control_type;
 
   Audio                audio;
   AudioBlock           audio_block;

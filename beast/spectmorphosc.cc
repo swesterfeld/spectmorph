@@ -76,6 +76,24 @@ class Osc : public OscBase {
     process (unsigned int n_values)
     {
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
+      if (istream (ICHANNEL_CTRL_IN1).connected)
+        {
+          const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN1).values;
+          morph_plan_voice->set_control_input (0, ctrl_in[0]);
+        }
+      else
+        {
+          morph_plan_voice->set_control_input (0, 0);
+        }
+      if (istream (ICHANNEL_CTRL_IN2).connected)
+        {
+          const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN2).values;
+          morph_plan_voice->set_control_input (1, ctrl_in[0]);
+        }
+      else
+        {
+          morph_plan_voice->set_control_input (1, 0);
+        }
       if (need_retrigger)
         {
           // get frequency

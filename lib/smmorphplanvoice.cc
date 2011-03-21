@@ -26,7 +26,10 @@ using std::string;
 using std::sort;
 using std::map;
 
+#define N_CONTROL_INPUTS 2
+
 MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
+  m_control_input (N_CONTROL_INPUTS),
   m_output (NULL)
 {
   const vector<MorphOperator *>& ops = plan->operators();
@@ -121,4 +124,19 @@ MorphPlanVoice::try_update (MorphPlan *new_plan)
     }
   printf (" - good update\n");
   return true;
+}
+
+double
+MorphPlanVoice::control_input (int i)
+{
+  assert (i >= 0 && i < N_CONTROL_INPUTS);
+  return m_control_input[i];
+}
+
+void
+MorphPlanVoice::set_control_input (int i, double value)
+{
+  assert (i >= 0 && i < N_CONTROL_INPUTS);
+
+  m_control_input[i] = value;
 }

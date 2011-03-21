@@ -66,6 +66,7 @@ MorphLinearModule::set_config (MorphOperator *op)
     right_mod = NULL;
 
   morphing = linear->morphing();
+  control_type = linear->control_type();
 }
 
 void
@@ -236,7 +237,18 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  const double interp = (module->morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
+  double morphing;
+
+  if (module->control_type == MorphLinear::CONTROL_GUI)
+    morphing = module->morphing;
+  else if (module->control_type == MorphLinear::CONTROL_SIGNAL_1)
+    morphing = module->morph_plan_voice->control_input (0);
+  else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
+    morphing = module->morph_plan_voice->control_input (1);
+  else
+    g_assert_not_reached();
+
+  const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
 
   AudioBlock left_block, right_block;
 

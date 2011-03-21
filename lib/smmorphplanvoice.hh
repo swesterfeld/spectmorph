@@ -33,6 +33,7 @@ protected:
   };
   std::vector<OpModule> modules;
 
+  std::vector<double>           m_control_input;
   MorphOutputModule            *m_output;
 public:
   MorphPlanVoice (MorphPlan *plan);
@@ -40,6 +41,9 @@ public:
   bool try_update (MorphPlan *plan);
 
   MorphOperatorModule *module (MorphOperator *op);
+
+  double control_input (int i);
+  void   set_control_input (int i, double value);
 
   MorphOutputModule *output();
 };
