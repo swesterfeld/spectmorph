@@ -32,6 +32,15 @@ MicroConf::MicroConf (const string& filename)
   current_no = 0;
 }
 
+MicroConf::~MicroConf()
+{
+  if (cfg_file)
+    {
+      fclose (cfg_file);
+      cfg_file = NULL;
+    }
+}
+
 bool
 MicroConf::open_ok()
 {

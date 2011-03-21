@@ -41,6 +41,7 @@ private:
   bool tokenize();
 public:
   MicroConf (const std::string& filename);
+  ~MicroConf();
 
   bool open_ok();
   bool next();
