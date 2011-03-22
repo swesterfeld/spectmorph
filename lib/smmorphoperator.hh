@@ -43,6 +43,7 @@ public:
     OUTPUT_AUDIO
   };
   MorphOperator (MorphPlan *morph_plan);
+  virtual ~MorphOperator();
 
   virtual const char *type() = 0;
   virtual bool save (OutFile& out_file) = 0;

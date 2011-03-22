@@ -31,7 +31,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 #define N_CONTROL_INPUTS 2
 
-MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
+MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
   m_control_input (N_CONTROL_INPUTS),
   m_output (NULL)
 {
@@ -62,6 +62,7 @@ MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
     {
       modules[i].module->set_config (modules[i].op);
     }
+  m_plan = plan;
   leak_debugger.add (this);
 }
 
@@ -87,7 +88,7 @@ MorphPlanVoice::module (MorphOperator *op)
 }
 
 bool
-MorphPlanVoice::try_update (MorphPlan *new_plan)
+MorphPlanVoice::try_update (MorphPlanPtr new_plan)
 {
   vector<string>               old_ids, new_ids;
   map<string, MorphOperator *> op_map;
@@ -129,6 +130,7 @@ MorphPlanVoice::try_update (MorphPlan *new_plan)
     {
       modules[i].module->set_config (modules[i].op);
     }
+  m_plan = new_plan;
   return true;
 }
 

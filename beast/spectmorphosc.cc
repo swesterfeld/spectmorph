@@ -39,7 +39,7 @@ using namespace Bse;
 
 class Osc : public OscBase {
   struct Properties : public OscProperties {
-    MorphPlan *morph_plan;
+    MorphPlanPtr morph_plan;
     Properties (Osc *osc) : OscProperties (osc)
     {
       morph_plan = osc->morph_plan();
@@ -154,10 +154,10 @@ class Osc : public OscBase {
   GSource *gui_source;
   int      gui_pid;
 
-  MorphPlan *m_morph_plan;
+  MorphPlanPtr m_morph_plan;
 
 public:
-  MorphPlan*
+  MorphPlanPtr
   morph_plan()
   {
     return m_morph_plan;
@@ -213,7 +213,6 @@ public:
           edit_settings = false;
           break;
         case PROP_PLAN:
-          // LEAK! fix concurrent "elimination when done"
           m_morph_plan = new MorphPlan();
           m_morph_plan->set_plan_str (plan.c_str());
 #if 0

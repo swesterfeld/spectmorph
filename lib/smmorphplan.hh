@@ -20,13 +20,14 @@
 
 #include "smindex.hh"
 #include "smmorphoperator.hh"
+#include "smobject.hh"
 #include "smaudio.hh"
 #include <sigc++/sigc++.h>
 
 namespace SpectMorph
 {
 
-class MorphPlan
+class MorphPlan : public Object
 {
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
@@ -64,6 +65,8 @@ public:
   static std::string id_chars();
   static std::string generate_id();
 };
+
+typedef RefPtr<MorphPlan> MorphPlanPtr;
 
 }
 
