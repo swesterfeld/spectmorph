@@ -32,7 +32,10 @@ LeakDebugger::ptr_add (void *p)
     {
       Birnet::AutoLocker lock (mutex);
 
-      assert (ptr_map[p] == 0);
+      if (ptr_map[p] != 0)
+        g_critical ("LeakDebugger: invalid registration of object type %s detected; ptr_map[p] is %d\n",
+                    type.c_str(), ptr_map[p]);
+
       ptr_map[p]++;
     }
 }
@@ -44,7 +47,10 @@ LeakDebugger::ptr_del (void *p)
     {
       Birnet::AutoLocker lock (mutex);
 
-      assert (ptr_map[p] == 1);
+      if (ptr_map[p] != 1)
+        g_critical ("LeakDebugger: invalid deletion of object type %s detected; ptr_map[p] is %d\n",
+                    type.c_str(), ptr_map[p]);
+
       ptr_map[p]--;
     }
 }
