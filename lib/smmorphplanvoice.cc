@@ -17,6 +17,7 @@
 
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
+#include "smleakdebugger.hh"
 #include <assert.h>
 #include <map>
 
@@ -25,6 +26,8 @@ using std::vector;
 using std::string;
 using std::sort;
 using std::map;
+
+static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 #define N_CONTROL_INPUTS 2
 
@@ -59,6 +62,12 @@ MorphPlanVoice::MorphPlanVoice (MorphPlan *plan) :
     {
       modules[i].module->set_config (modules[i].op);
     }
+  leak_debugger.add (this);
+}
+
+MorphPlanVoice::~MorphPlanVoice()
+{
+  leak_debugger.del (this);
 }
 
 MorphOutputModule *

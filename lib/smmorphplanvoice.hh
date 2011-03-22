@@ -37,6 +37,7 @@ protected:
   MorphOutputModule            *m_output;
 public:
   MorphPlanVoice (MorphPlan *plan);
+  ~MorphPlanVoice();
 
   bool try_update (MorphPlan *plan);
 

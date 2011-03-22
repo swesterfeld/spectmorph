@@ -17,6 +17,7 @@
 
 #include "smmorphoutput.hh"
 #include "smmorphplan.hh"
+#include "smleakdebugger.hh"
 
 #include <assert.h>
 
@@ -27,11 +28,19 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
+
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT)
 {
   morph_plan->signal_operator_removed.connect (sigc::mem_fun (*this, &MorphOutput::on_operator_removed));
+  leak_debugger.add (this);
+}
+
+MorphOutput::~MorphOutput()
+{
+  leak_debugger.del (this);
 }
 
 const char *

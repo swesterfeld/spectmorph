@@ -32,6 +32,7 @@ class MorphOutput : public MorphOperator
 
 public:
   MorphOutput (MorphPlan *morph_plan);
+  ~MorphOutput();
 
   // inherited from MorphOperator
   const char        *type();
