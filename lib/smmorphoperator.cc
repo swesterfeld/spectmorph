@@ -29,6 +29,11 @@ MorphOperator::MorphOperator (MorphPlan *morph_plan) :
 {
 }
 
+MorphOperator::~MorphOperator()
+{
+  // virtual destructor for proper subclass deletion
+}
+
 MorphPlan*
 MorphOperator::morph_plan()
 {
