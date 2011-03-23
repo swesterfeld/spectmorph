@@ -43,6 +43,8 @@ main (int argc, char **argv)
       exit (1);
     }
   plan->load (in);
+  delete in;
+
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
   MorphPlanVoice voice (plan);
