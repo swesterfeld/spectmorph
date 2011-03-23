@@ -69,8 +69,6 @@ LeakDebugger::~LeakDebugger()
 {
   if (DEBUG)
     {
-      assert (sm_init_done());
-
       int alive = 0;
 
       for (map<void *, int>::iterator pi = ptr_map.begin(); pi != ptr_map.end(); pi++)
