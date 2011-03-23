@@ -48,6 +48,7 @@ class MorphLinearModule : public MorphOperatorModule
 
 public:
   MorphLinearModule (MorphPlanVoice *voice);
+  ~MorphLinearModule();
 
   void set_config (MorphOperator *op);
   LiveDecoderSource *source();

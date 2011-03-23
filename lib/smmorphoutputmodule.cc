@@ -18,6 +18,7 @@
 #include "smmorphoutputmodule.hh"
 #include "smmorphoutput.hh"
 #include "smmorphplan.hh"
+#include "smleakdebugger.hh"
 #include <glib.h>
 
 #define CHANNEL_OP_COUNT 4
@@ -27,11 +28,20 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
+
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
+
+  leak_debugger.add (this);
+}
+
+MorphOutputModule::~MorphOutputModule()
+{
+  leak_debugger.del (this);
 }
 
 void

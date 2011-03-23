@@ -31,6 +31,7 @@ class MorphOutputModule : public MorphOperatorModule
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
+  ~MorphOutputModule();
 
   void set_config (MorphOperator *op);
   void process (size_t n_values, float *values);

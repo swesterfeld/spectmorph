@@ -20,6 +20,7 @@
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
+#include "smleakdebugger.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -28,6 +29,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::min;
+
+static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
 
 #define DEBUG (0)
 
@@ -46,6 +49,13 @@ MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   audio.loop_type            = Audio::LOOP_NONE;
   audio.zero_values_at_start = 0;
   audio.sample_count         = 2 << 31;
+
+  leak_debugger.add (this);
+}
+
+MorphLinearModule::~MorphLinearModule()
+{
+  leak_debugger.del (this);
 }
 
 void

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Stefan Westerfeld
+ * Copyright (C) 2009-2011 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -17,16 +17,20 @@
 
 #include "smlivedecoder.hh"
 #include "smmath.hh"
+#include "smleakdebugger.hh"
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
 
 #include <stdio.h>
 
-using SpectMorph::LiveDecoder;
+using namespace SpectMorph;
+
 using std::vector;
 using Birnet::AlignedArray;
 using std::min;
+
+static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");
 
 #define ANTIALIAS_FILTER_TABLE_SIZE 256
 
@@ -70,6 +74,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   sse_samples (NULL)
 {
   init_aa_filter();
+  leak_debugger.add (this);
 }
 
 LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
@@ -85,6 +90,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   sse_samples (NULL)
 {
   init_aa_filter();
+  leak_debugger.add (this);
 }
 
 LiveDecoder::~LiveDecoder()
@@ -104,6 +110,7 @@ LiveDecoder::~LiveDecoder()
       delete sse_samples;
       sse_samples = NULL;
     }
+  leak_debugger.del (this);
 }
 
 void

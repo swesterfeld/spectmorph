@@ -17,14 +17,23 @@
 
 #include "smmorphsource.hh"
 #include "smmorphplan.hh"
+#include "smleakdebugger.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 
+static LeakDebugger leak_debugger ("SpectMorph::MorphSource");
+
 MorphSource::MorphSource (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
+  leak_debugger.add (this);
+}
+
+MorphSource::~MorphSource()
+{
+  leak_debugger.del (this);
 }
 
 void

@@ -35,6 +35,7 @@ protected:
   } my_source;
 public:
   MorphSourceModule (MorphPlanVoice *voice);
+  ~MorphSourceModule();
 
   void set_config (MorphOperator *op);
   LiveDecoderSource *source();

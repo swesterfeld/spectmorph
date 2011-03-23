@@ -30,6 +30,11 @@ MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
 {
 }
 
+MorphOperatorModule::~MorphOperatorModule()
+{
+  // virtual destructor to allow subclass deletion
+}
+
 LiveDecoderSource *
 MorphOperatorModule::source()
 {

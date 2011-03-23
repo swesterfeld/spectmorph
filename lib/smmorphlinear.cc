@@ -17,6 +17,7 @@
 
 #include "smmorphlinear.hh"
 #include "smmorphplan.hh"
+#include "smleakdebugger.hh"
 
 #include <assert.h>
 
@@ -24,6 +25,8 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+
+static LeakDebugger leak_debugger ("SpectMorph::MorphLinear");
 
 MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
@@ -34,6 +37,13 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   m_right_op = NULL;
   m_morphing = 0;
   m_control_type = CONTROL_GUI;
+
+  leak_debugger.add (this);
+}
+
+MorphLinear::~MorphLinear()
+{
+  leak_debugger.del (this);
 }
 
 const char *

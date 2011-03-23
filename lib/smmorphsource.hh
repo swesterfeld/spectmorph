@@ -30,6 +30,7 @@ class MorphSource : public MorphOperator
   std::string m_smset;
 public:
   MorphSource (MorphPlan *morph_plan);
+  ~MorphSource();
 
   // inherited from MorphOperator
   const char        *type();
