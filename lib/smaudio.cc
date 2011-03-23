@@ -43,7 +43,13 @@ BseErrorType
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
   GenericIn *file = GenericIn::open (filename);
-  return load (file, load_options);
+  if (!file)
+    return BSE_ERROR_FILE_NOT_FOUND;
+
+  BseErrorType result = load (file, load_options);
+  delete file;
+
+  return result;
 }
 
 BseErrorType
