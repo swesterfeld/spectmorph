@@ -81,6 +81,7 @@ read_testblob()
               assert (in_blob->get_byte() == xdata[i]);
             }
           assert (in_blob->get_byte() == EOF);
+          delete in_blob; // close subfile handle
         }
       else
         {
