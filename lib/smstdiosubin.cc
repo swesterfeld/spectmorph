@@ -23,7 +23,7 @@
 
 using namespace SpectMorph;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
+static LeakDebugger leak_debugger ("SpectMorph::StdioSubIn");
 
 GenericIn*
 StdioSubIn::open (const std::string& filename, size_t pos, size_t len)
