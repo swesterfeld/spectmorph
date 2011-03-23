@@ -68,6 +68,13 @@ MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
 
 MorphPlanVoice::~MorphPlanVoice()
 {
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      assert (modules[i].module != NULL);
+      delete modules[i].module;
+    }
+  modules.clear();
+
   leak_debugger.del (this);
 }
 
