@@ -19,8 +19,11 @@
 #include "sminfile.hh"
 #include "smmain.hh"
 
+#include <stdlib.h>
 #include <stdio.h>
 #include <glib.h>
+
+#define PROG_NAME "smfiledump"
 
 using namespace SpectMorph;
 
@@ -74,7 +77,13 @@ display_file (GenericIn *in, int indent = 0)
           printf ("blob %s {\n", ifile.event_name().c_str());
 
           GenericIn *blob_in = ifile.open_blob();
+          if (!blob_in)
+            {
+              fprintf (stderr, PROG_NAME ": error opening input\n");
+              exit (1);
+            }
           display_file (blob_in, indent + 2);
+          delete blob_in;
 
           printf ("%s}\n", spaces (indent).c_str());
         }
@@ -127,10 +136,15 @@ main (int argc, char **argv)
     {
       if (!HexString::decode (argv[1], data))
         {
-          printf ("error decoding string\n");
+          fprintf (stderr, PROG_NAME ": error decoding string\n");
           return 1;
         }
       in = MMapIn::open_mem (&data[0], &data[data.size()]);
+    }
+  if (!in)
+    {
+      fprintf (stderr, PROG_NAME ": error opening input\n");
+      return 1;
     }
   display_file (in);
   delete in;
