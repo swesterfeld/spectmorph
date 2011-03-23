@@ -35,17 +35,17 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MorphPlan plan;
+  MorphPlanPtr plan = new MorphPlan();
   GenericIn *in = StdioIn::open (argv[1]);
   if (!in)
     {
       g_printerr ("Error opening '%s'.\n", argv[1]);
       exit (1);
     }
-  plan.load (in);
-  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan.operators().size());
+  plan->load (in);
+  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (&plan);
+  MorphPlanVoice voice (plan);
   assert (voice.output());
 
   vector<float> samples (44100);
