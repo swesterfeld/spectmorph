@@ -17,6 +17,7 @@
 
 #include "smhexstring.hh"
 #include "sminfile.hh"
+#include "smmain.hh"
 
 #include <stdio.h>
 #include <glib.h>
@@ -111,6 +112,8 @@ display_file (GenericIn *in, int indent = 0)
 int
 main (int argc, char **argv)
 {
+  sm_init (&argc, &argv);
+
   if (argc != 2)
     {
       printf ("usage: %s [<hexdata>|<filename>]\n", argv[0]);
