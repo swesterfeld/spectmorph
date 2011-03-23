@@ -16,6 +16,7 @@
  */
 
 #include "smmorphplan.hh"
+#include "smmain.hh"
 #include <assert.h>
 
 using namespace SpectMorph;
@@ -23,8 +24,10 @@ using namespace SpectMorph;
 using std::string;
 
 int
-main()
+main (int argc, char **argv)
 {
+  sm_init (&argc, &argv);
+
   string id = MorphPlan::generate_id();
   string id_chars = MorphPlan::id_chars();
 
