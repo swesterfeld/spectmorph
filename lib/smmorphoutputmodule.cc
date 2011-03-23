@@ -41,6 +41,14 @@ MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
 
 MorphOutputModule::~MorphOutputModule()
 {
+  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
+    {
+      if (out_decoders[ch])
+        {
+          delete out_decoders[ch];
+          out_decoders[ch] = NULL;
+        }
+    }
   leak_debugger.del (this);
 }
 
