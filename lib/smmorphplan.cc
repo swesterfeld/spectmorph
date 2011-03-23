@@ -209,9 +209,13 @@ MorphPlan::load (GenericIn *in)
                   while ((ch = blob_in->get_byte()) >= 0)
                     blob_data.push_back (ch);
 
+                  delete blob_in; // close blob file handle
+
                   GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
+
+                  delete in; // close memory file handle
 
                   add_operator (load_op, load_name, load_id);
                 }
@@ -228,6 +232,8 @@ MorphPlan::load (GenericIn *in)
                   GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
+
+                  delete in; // close memory file handle
 
                   add_operator (load_op);
                 }
