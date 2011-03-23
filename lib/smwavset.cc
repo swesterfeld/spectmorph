@@ -199,8 +199,12 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
                   assert (wave);
                   assert (!wave->audio);
 
+                  GenericIn *blob_in = ifile.open_blob();
+
                   wave->audio = new Audio();
-                  wave->audio->load (ifile.open_blob(), load_options);
+                  wave->audio->load (blob_in, load_options);
+
+                  delete blob_in; // close input file
 
                   blob_map[ifile.event_blob_sum()] = wave->audio;
                 }
