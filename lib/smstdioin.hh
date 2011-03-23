@@ -30,6 +30,7 @@ class StdioIn : public GenericIn
   std::string  filename;
 
   StdioIn (FILE *file, const std::string& filename);
+  ~StdioIn();
 public:
   static GenericIn* open (const std::string& filename);
 

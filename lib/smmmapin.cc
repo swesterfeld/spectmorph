@@ -16,6 +16,7 @@
  */
 
 #include "smmmapin.hh"
+#include "smleakdebugger.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -26,8 +27,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-using SpectMorph::MMapIn;
-using SpectMorph::GenericIn;
+using namespace SpectMorph;
+
+static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
 
 GenericIn*
 MMapIn::open (const std::string& filename)
@@ -64,6 +66,8 @@ MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
   fd (fd)
 {
   pos = static_cast<unsigned char *> (mapfile);
+
+  leak_debugger.add (this);
 }
 
 MMapIn::~MMapIn()
@@ -73,6 +77,7 @@ MMapIn::~MMapIn()
       munmap (mapfile, mapend - mapfile);
       close (fd);
     }
+  leak_debugger.del (this);
 }
 
 int

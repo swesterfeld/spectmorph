@@ -31,6 +31,7 @@ class MemOut : public GenericOut
 
 public:
   MemOut (std::vector<unsigned char> *output);
+  ~MemOut();
 
   int put_byte (int c);
   int write (const void *ptr, size_t size);

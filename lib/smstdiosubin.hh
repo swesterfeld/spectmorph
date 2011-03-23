@@ -32,6 +32,8 @@ class StdioSubIn : public GenericIn
 
   StdioSubIn (FILE *file, size_t pos, size_t len);
 public:
+  ~StdioSubIn();
+
   static GenericIn* open (const std::string& filename, size_t pos, size_t len);
 
   int get_byte();     // like fgetc

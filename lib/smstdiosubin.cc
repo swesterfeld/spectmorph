@@ -16,12 +16,14 @@
  */
 
 #include "smstdiosubin.hh"
+#include "smleakdebugger.hh"
 
 #include <stdio.h>
 #include <assert.h>
 
-using SpectMorph::StdioSubIn;
-using SpectMorph::GenericIn;
+using namespace SpectMorph;
+
+static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 
 GenericIn*
 StdioSubIn::open (const std::string& filename, size_t pos, size_t len)
@@ -40,6 +42,13 @@ StdioSubIn::StdioSubIn (FILE *file, size_t pos, size_t len) :
   fseek (file, pos, SEEK_SET);
   file_pos = 0;
   file_len = len;
+
+  leak_debugger.add (this);
+}
+
+StdioSubIn::~StdioSubIn()
+{
+  leak_debugger.del (this);
 }
 
 int

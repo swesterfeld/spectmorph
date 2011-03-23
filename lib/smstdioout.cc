@@ -16,10 +16,12 @@
  */
 
 #include "smstdioout.hh"
+#include "smleakdebugger.hh"
 #include <stdio.h>
 
-using SpectMorph::GenericOut;
-using SpectMorph::StdioOut;
+using namespace SpectMorph;
+
+static LeakDebugger leak_debugger ("SpectMorph::StdioOut");
 
 GenericOut*
 StdioOut::open (const std::string& filename)
@@ -35,6 +37,7 @@ StdioOut::open (const std::string& filename)
 StdioOut::StdioOut (FILE *file)
   : file (file)
 {
+  leak_debugger.add (this);
 }
 
 StdioOut::~StdioOut()
@@ -44,6 +47,7 @@ StdioOut::~StdioOut()
       fclose (file);
       file = NULL;
     }
+  leak_debugger.del (this);
 }
 
 int

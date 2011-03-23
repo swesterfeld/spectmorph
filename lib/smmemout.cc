@@ -16,15 +16,24 @@
  */
 
 #include "smmemout.hh"
+#include "smleakdebugger.hh"
 #include <stdio.h>
 
-using SpectMorph::GenericOut;
-using SpectMorph::MemOut;
+using namespace SpectMorph;
+
 using std::vector;
+
+static LeakDebugger leak_debugger ("SpectMorph::MemOut");
 
 MemOut::MemOut (vector<unsigned char> *output)
   : output (output)
 {
+  leak_debugger.add (this);
+}
+
+MemOut::~MemOut()
+{
+  leak_debugger.del (this);
 }
 
 int

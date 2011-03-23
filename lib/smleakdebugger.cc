@@ -16,6 +16,7 @@
  */
 
 #include "smleakdebugger.hh"
+#include "smmain.hh"
 #include <assert.h>
 
 #define DEBUG (1)
@@ -30,6 +31,8 @@ LeakDebugger::ptr_add (void *p)
 {
   if (DEBUG)
     {
+      assert (sm_init_done());
+
       Birnet::AutoLocker lock (mutex);
 
       if (ptr_map[p] != 0)
@@ -45,6 +48,8 @@ LeakDebugger::ptr_del (void *p)
 {
   if (DEBUG)
     {
+      assert (sm_init_done());
+
       Birnet::AutoLocker lock (mutex);
 
       if (ptr_map[p] != 1)
@@ -64,6 +69,8 @@ LeakDebugger::~LeakDebugger()
 {
   if (DEBUG)
     {
+      assert (sm_init_done());
+
       int alive = 0;
 
       for (map<void *, int>::iterator pi = ptr_map.begin(); pi != ptr_map.end(); pi++)

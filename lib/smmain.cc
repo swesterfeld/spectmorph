@@ -42,9 +42,19 @@ sm_sse()
   return use_sse;
 }
 
+static bool sm_init_done_flag = false;
+
+bool
+sm_init_done()
+{
+  return sm_init_done_flag;
+}
+
 void
 sm_init_plugin()
 {
+  assert (sm_init_done_flag == false);
+
   FFT::load_wisdom();
   int_sincos_init();
 
@@ -54,6 +64,8 @@ sm_init_plugin()
   assert (sm_round_positive (2.1) == 2);
   assert (sm_round_positive (0.7) == 1);
   assert (sm_round_positive (0.2) == 0);
+
+  sm_init_done_flag = true;
 }
 
 void

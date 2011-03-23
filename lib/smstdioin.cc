@@ -17,15 +17,16 @@
 
 #include "smstdioin.hh"
 #include "smstdiosubin.hh"
+#include "smleakdebugger.hh"
 
 #include <stdio.h>
 #include <assert.h>
 
-using SpectMorph::StdioIn;
-using SpectMorph::StdioSubIn;
-using SpectMorph::GenericIn;
+using namespace SpectMorph;
 
 using std::string;
+
+static LeakDebugger leak_debugger ("SpectMorph::StdioIn");
 
 GenericIn*
 StdioIn::open (const string& filename)
@@ -42,6 +43,12 @@ StdioIn::StdioIn (FILE *file, const string& filename) :
   file (file),
   filename (filename)
 {
+  leak_debugger.add (this);
+}
+
+StdioIn::~StdioIn()
+{
+  leak_debugger.del (this);
 }
 
 int
