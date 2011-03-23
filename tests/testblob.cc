@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "smmain.hh"
 #include "smoutfile.hh"
 #include "sminfile.hh"
 #include "smgenericin.hh"
@@ -24,9 +25,8 @@
 #include <stdlib.h>
 #include <assert.h>
 
-using SpectMorph::InFile;
-using SpectMorph::OutFile;
-using SpectMorph::GenericIn;
+using namespace SpectMorph;
+
 using std::vector;
 using std::string;
 
@@ -97,8 +97,10 @@ read_testblob()
 }
 
 int
-main()
+main (int argc, char **argv)
 {
+  sm_init (&argc, &argv);
+
   create_testblob();
   read_testblob();
 
