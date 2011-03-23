@@ -48,6 +48,8 @@ StdioSubIn::StdioSubIn (FILE *file, size_t pos, size_t len) :
 
 StdioSubIn::~StdioSubIn()
 {
+  assert (file);
+  fclose (file);
   leak_debugger.del (this);
 }
 

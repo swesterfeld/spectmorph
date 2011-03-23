@@ -48,6 +48,8 @@ StdioIn::StdioIn (FILE *file, const string& filename) :
 
 StdioIn::~StdioIn()
 {
+  assert (file);
+  fclose (file);
   leak_debugger.del (this);
 }
 
