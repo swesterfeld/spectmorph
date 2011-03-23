@@ -263,6 +263,12 @@ InFile::skip_raw_float_block()
   return file->skip (size * 4);
 }
 
+/**
+ * This function will open the blob (it will only work for BLOB events, not BLOB_REF events)
+ * and the returned GenericIn object be used to read the content of the BLOB. The caller
+ * is responsible for freeing the GenericIn object when done. NULL will be returned on
+ * error.
+ */
 GenericIn *
 InFile::open_blob()
 {
