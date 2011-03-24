@@ -27,10 +27,46 @@
 #include "smmorphsource.hh"
 #include "smmorphplanview.hh"
 #include "smmorphplanwindow.hh"
+#include "smmemout.hh"
+#include "smhexstring.hh"
 
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
+
+class OscGui
+{
+  MorphPlanPtr      morph_plan;
+  MorphPlanWindow   window;
+public:
+  OscGui (MorphPlanPtr plan);
+  void run();
+  void on_plan_changed();
+};
+
+OscGui::OscGui (MorphPlanPtr plan) :
+  morph_plan (plan),
+  window (morph_plan)
+{
+  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &OscGui::on_plan_changed));
+}
+
+void
+OscGui::run()
+{
+  Gtk::Main::run (window);
+}
+
+void
+OscGui::on_plan_changed()
+{
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  morph_plan->save (&mo);
+  printf ("%s\n", HexString::encode (data).c_str());
+  fflush (stdout);
+}
 
 int
 main (int argc, char **argv)
@@ -56,11 +92,10 @@ main (int argc, char **argv)
   fflush (stdout);
 
   MorphPlanPtr morph_plan = new MorphPlan();
-  MorphPlanWindow window (morph_plan);
+  morph_plan->set_plan_str (plan_str);
 
-  window.set_plan_str (plan_str);
-
-  Gtk::Main::run (window);
+  OscGui gui (morph_plan);
+  gui.run();
 
   // let parent know that the user closed the gui window
   printf ("quit\n");

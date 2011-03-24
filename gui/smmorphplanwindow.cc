@@ -162,27 +162,8 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
   plan_vbox.add (morph_plan_view);
   add (window_vbox);
 
-  m_morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanWindow::on_plan_changed));
-
   show_all_children();
 }
-
-void
-MorphPlanWindow::set_plan_str (const string& plan_str)
-{
-  m_morph_plan->set_plan_str (plan_str);
-}
-
-void
-MorphPlanWindow::on_plan_changed()
-{
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  m_morph_plan->save (&mo);
-  printf ("%s\n", HexString::encode (data).c_str());
-  fflush (stdout);
-}
-
 
 void
 MorphPlanWindow::on_context_rename()
