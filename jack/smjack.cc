@@ -17,9 +17,13 @@
 
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
+#include "smmorphplan.hh"
+#include "smmorphplanview.hh"
+#include "smmainwindow.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
+#include <gtkmm.h>
 
 #include "smmain.hh"
 
@@ -27,13 +31,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-using SpectMorph::WavSet;
-using SpectMorph::WavSetWave;
-using SpectMorph::Audio;
-using SpectMorph::LiveDecoder;
-using SpectMorph::sm_init;
-using SpectMorph::zero_float_block;
-using SpectMorph::sm_round_positive;
+using namespace SpectMorph;
 
 using std::vector;
 using std::string;
@@ -355,11 +353,49 @@ is_newline (char ch)
   return (ch == '\n' || ch == '\r');
 }
 
+class JackWindow : public Gtk::Window
+{
+  MorphPlanPtr   morph_plan;
+  Gtk::VBox      vbox;
+  Gtk::HBox      inst_hbox;
+  Gtk::Label     inst_label;
+  Gtk::Button    inst_button;
+  MainWindow     inst_window;
+public:
+  JackWindow()
+  {
+    set_title ("SpectMorph JACK client");
+    set_border_width (10);
+    inst_label.set_text ("SpectMorph Instrument");
+    inst_button.set_label ("Edit");
+    inst_hbox.pack_start (inst_label);
+    inst_hbox.pack_start (inst_button);
+    inst_button.signal_clicked().connect (sigc::mem_fun (*this, &JackWindow::on_edit_clicked));
+    vbox.pack_start (inst_hbox);
+    add (vbox);
+    show_all_children();
+  }
+  void
+  on_edit_clicked()
+  {
+    if (inst_window.get_visible())
+      inst_window.hide();
+    else
+      inst_window.show();
+  }
+};
+
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+  Gtk::Main kit (argc, argv);
+
+  JackWindow window;
+
+  Gtk::Main::run (window);
+#if 0
   if (argc != 2)
     {
       printf ("usage: smjack <smset_filename>\n");
@@ -410,4 +446,5 @@ main (int argc, char **argv)
           return 0;
         }
     }
+#endif
 }
