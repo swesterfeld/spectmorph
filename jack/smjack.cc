@@ -20,6 +20,7 @@
 #include "smmorphplanwindow.hh"
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
+#include "smmemout.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -84,9 +85,12 @@ protected:
   vector<Voice*>        active_voices;
   vector<Voice*>        release_voices;
 
+  Birnet::Mutex         mutex;
+
 public:
   JackSynth();
   void init (jack_client_t *client, MorphPlanPtr morph_plan);
+  void change_plan (MorphPlanPtr plan);
   int  process (jack_nframes_t nframes);
   void reschedule();
 };
@@ -141,6 +145,7 @@ JackSynth::reschedule()
 int
 JackSynth::process (jack_nframes_t nframes)
 {
+  mutex.lock();
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   // zero output buffer, so voices can be added
@@ -292,6 +297,7 @@ JackSynth::process (jack_nframes_t nframes)
         }
       i = end;
     }
+  mutex.unlock();
   return 0;
 }
 
@@ -314,14 +320,14 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
   release_ms = 150;
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = new MorphPlanVoice (morph_plan.c_ptr());
+    vi->mp_voice = new MorphPlanVoice (morph_plan);
 
   jack_set_process_callback (client, jack_process, this);
 
   jack_mix_freq = jack_get_sample_rate (client);
 
   // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice *mp_voice = new MorphPlanVoice (morph_plan.c_ptr());
+  MorphPlanVoice *mp_voice = new MorphPlanVoice (morph_plan);
   MorphOutputModule *om = mp_voice->output();
   if (om)
     {
@@ -341,18 +347,46 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
     }
 }
 
+void
+JackSynth::change_plan (MorphPlanPtr plan)
+{
+  // this might take a while, and cannot be used in RT callback
+  MorphPlanVoice *mp_voice = new MorphPlanVoice (plan);
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1, jack_mix_freq);
+      float s;
+      om->process (1, &s);
+    }
+  mutex.lock();
+  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+    {
+      Voice& voice = (*vi);
+      if (!voice.mp_voice->try_update (plan))
+        {
+          delete voice.mp_voice;
+          voice.mp_voice = new MorphPlanVoice (plan);
+        }
+    }
+  mutex.unlock();
+}
+
 class JackWindow : public Gtk::Window
 {
-  MorphPlanPtr    morph_plan;
   Gtk::VBox       vbox;
   Gtk::HBox       inst_hbox;
   Gtk::Label      inst_label;
   Gtk::Button     inst_button;
   MorphPlanWindow inst_window;
+  MorphPlanPtr    morph_plan;
+  jack_client_t  *client;
+
+  JackSynth       synth;
 public:
   JackWindow (MorphPlanPtr plan) :
-    morph_plan (plan),
-    inst_window (morph_plan)
+    inst_window (plan),
+    morph_plan (plan)
   {
     set_title ("SpectMorph JACK client");
     set_border_width (10);
@@ -360,10 +394,27 @@ public:
     inst_button.set_label ("Edit");
     inst_hbox.pack_start (inst_label);
     inst_hbox.pack_start (inst_button);
+    inst_hbox.set_spacing (10);
     inst_button.signal_clicked().connect (sigc::mem_fun (*this, &JackWindow::on_edit_clicked));
     vbox.pack_start (inst_hbox);
     add (vbox);
     show_all_children();
+
+    morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &JackWindow::on_plan_changed));
+
+    client = jack_client_open ("smjack", JackNullOption, NULL);
+
+    if (!client)
+      {
+        fprintf (stderr, "unable to connect to jack server\n");
+        exit (1);
+      }
+
+    synth.init (client, morph_plan);
+  }
+  ~JackWindow()
+  {
+    jack_deactivate (client);
   }
   void
   on_edit_clicked()
@@ -372,6 +423,21 @@ public:
       inst_window.hide();
     else
       inst_window.show();
+  }
+  void
+  on_plan_changed()
+  {
+    MorphPlanPtr plan_clone = new MorphPlan();
+
+    vector<unsigned char> data;
+    MemOut mo (&data);
+    morph_plan->save (&mo);
+
+    GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+    plan_clone->load (in);
+    delete in;
+
+    synth.change_plan (plan_clone);
   }
 };
 
@@ -412,18 +478,6 @@ main (int argc, char **argv)
     }
 
   JackWindow window (morph_plan);
-
-  jack_client_t *client;
-  client = jack_client_open ("smjack", JackNullOption, NULL);
-
-  if (!client)
-    {
-      fprintf (stderr, "unable to connect to jack server\n");
-      exit (1);
-    }
-
-  JackSynth synth;
-  synth.init (client, morph_plan);
 
   Gtk::Main::run (window);
 }
