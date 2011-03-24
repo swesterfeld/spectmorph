@@ -5,15 +5,8 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
-SMHDRS = smmorphplanview.hh \
-         smmorphoperatorview.hh smmorphsourceview.hh smmainwindow.hh smmorphoutputview.hh \
-         smmorphlinearview.hh smcomboboxoperator.hh smrenameoperatordialog.hh \
-         smmoveindicator.hh
-
-SMSRCS = smmorphplanview.cc \
-         smmorphoperatorview.cc smmorphsourceview.cc smmainwindow.cc smmorphoutputview.cc \
-         smmorphlinearview.cc smcomboboxoperator.cc smrenameoperatordialog.cc \
-         smmoveindicator.cc
+SMHDRS =
+SMSRCS =
 
 noinst_LTLIBRARIES = libspectmorphgui.la
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
@@ -23,7 +16,7 @@ bin_PROGRAMS = spectmorphoscgui
 noinst_PROGRAMS = smrunplan smmorphplot
 
 spectmorphoscgui_SOURCES = spectmorphoscgui.cc
-spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS) libspectmorphgui.la
+spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) libspectmorphgui.la
 spectmorphoscgui_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
 smrunplan_SOURCES = smrunplan.cc

@@ -26,7 +26,6 @@ namespace SpectMorph
 
 class MorphOperatorView;
 class MorphPlan;
-class MainWindow;
 
 class MorphOperator
 {

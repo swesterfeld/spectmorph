@@ -26,6 +26,7 @@
 namespace SpectMorph
 {
 
+class MainWindow;
 class MorphPlanView : public Gtk::VBox
 {
   MorphPlan                    *morph_plan;
