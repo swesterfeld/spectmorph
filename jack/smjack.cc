@@ -335,6 +335,7 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
       float s;
       om->process (1, &s);
     }
+  delete mp_voice;
   //voices[0].decoders[0]->precompute_tables (jack_mix_freq);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
@@ -359,6 +360,8 @@ JackSynth::change_plan (MorphPlanPtr plan)
       float s;
       om->process (1, &s);
     }
+  delete mp_voice;
+
   mutex.lock();
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
     {
