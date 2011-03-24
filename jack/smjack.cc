@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Stefan Westerfeld
+ * Copyright (C) 2010-2011 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -15,11 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smwavset.hh"
-#include "smlivedecoder.hh"
 #include "smmorphplan.hh"
 #include "smmorphplanview.hh"
 #include "smmorphplanwindow.hh"
+#include "smmorphplanvoice.hh"
+#include "smmorphoutputmodule.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -46,7 +46,7 @@ public:
     STATE_ON,
     STATE_RELEASE
   };
-  vector<LiveDecoder *> decoders;
+  MorphPlanVoice *mp_voice;
 
   State        state;
   bool         pedal;
@@ -55,15 +55,18 @@ public:
   double       velocity;
 
   Voice() :
+    mp_voice (NULL),
     state (STATE_IDLE),
     pedal (false)
   {
   }
   ~Voice()
   {
-    for (vector<LiveDecoder *>::iterator di = decoders.begin(); di != decoders.end(); di++)
-      delete *di;
-    decoders.clear();
+    if (mp_voice)
+      {
+        delete mp_voice;
+        mp_voice = NULL;
+      }
   }
 };
 
@@ -73,8 +76,6 @@ protected:
   double                jack_mix_freq;
   jack_port_t          *input_port;
   vector<jack_port_t *> output_ports;
-  WavSet               *smset;
-  int                   channels;
   bool                  need_reschedule;
   bool                  pedal_down;
 
@@ -85,7 +86,7 @@ protected:
 
 public:
   JackSynth();
-  void init (jack_client_t *client, WavSet *wset, int channels);
+  void init (jack_client_t *client, MorphPlanPtr morph_plan);
   int  process (jack_nframes_t nframes);
   void reschedule();
 };
@@ -140,14 +141,10 @@ JackSynth::reschedule()
 int
 JackSynth::process (jack_nframes_t nframes)
 {
-  vector<jack_default_audio_sample_t *> outputs (channels);  /* FIXME: could be malloc-free */
-  for (int c = 0; c < channels; c++)
-    {
-      outputs[c] = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[c], nframes);
+  float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
-      // zero output buffer, so voices can be added
-      zero_float_block (nframes, outputs[c]);
-    }
+  // zero output buffer, so voices can be added
+  zero_float_block (nframes, audio_out);
 
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
@@ -175,12 +172,15 @@ JackSynth::process (jack_nframes_t nframes)
                 vi++;
               if (vi != voices.end())
                 {
-                  for (int c = 0; c < channels; c++)
-                    vi->decoders[c]->retrigger (c, freq_from_note (midi_note), midi_velocity, jack_mix_freq);
-                  vi->state = Voice::STATE_ON;
-                  vi->midi_note = midi_note;
-                  vi->velocity = velocity;
-                  need_reschedule = true;
+                  MorphOutputModule *output = vi->mp_voice->output();
+                  if (output)
+                    {
+                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity, jack_mix_freq);
+                      vi->state = Voice::STATE_ON;
+                      vi->midi_note = midi_note;
+                      vi->velocity = velocity;
+                      need_reschedule = true;
+                    }
                 }
             }
           else if (is_note_off (in_event))
@@ -251,12 +251,13 @@ JackSynth::process (jack_nframes_t nframes)
       for (vector<Voice*>::iterator avi = active_voices.begin(); avi != active_voices.end(); avi++)
         {
           Voice *v = *avi;
-          for (int c = 0; c < channels; c++)
+          MorphOutputModule *output = v->mp_voice->output();
+          if (output)
             {
               float samples[end - i];
-              v->decoders[c]->process (end - i, NULL, NULL, samples);
+              output->process (end - i, samples);
               for (size_t j = i; j < end; j++)
-                outputs[c][j] += samples[j-i] * v->velocity;
+                audio_out[j] += samples[j-i] * v->velocity;
             }
         }
       // compute voices with state == STATE_RELEASE
@@ -279,13 +280,14 @@ JackSynth::process (jack_nframes_t nframes)
               v->env -= v_decrement;
               envelope[j-i] = v->env;
             }
-          for (int c = 0; c < channels; c++)
+          float samples[envelope_end - i];
+          MorphOutputModule *output = v->mp_voice->output();
+          if (output)
             {
-              float samples[envelope_end - i];
-              v->decoders[c]->process (envelope_end - i, NULL, NULL, samples);
+              output->process (envelope_end - i, samples);
 
               for (size_t j = i; j < envelope_end; j++)
-                outputs[c][j] += samples[j - i] * envelope[j - i] * v->velocity;
+                audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;
             }
         }
       i = end;
@@ -307,50 +309,36 @@ JackSynth::JackSynth()
 }
 
 void
-JackSynth::init (jack_client_t *client, WavSet *smset, int channels)
+JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
 {
-  this->smset = smset;
-  this->channels = channels;
   release_ms = 150;
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    {
-      for (int c = 0; c < channels; c++)
-        vi->decoders.push_back (new LiveDecoder (smset));
-    }
+    vi->mp_voice = new MorphPlanVoice (morph_plan.c_ptr());
 
   jack_set_process_callback (client, jack_process, this);
 
   jack_mix_freq = jack_get_sample_rate (client);
 
   // this might take a while, and cannot be used in RT callback
-  voices[0].decoders[0]->precompute_tables (jack_mix_freq);
+  MorphPlanVoice *mp_voice = new MorphPlanVoice (morph_plan.c_ptr());
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1, jack_mix_freq);
+      float s;
+      om->process (1, &s);
+    }
+  //voices[0].decoders[0]->precompute_tables (jack_mix_freq);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-
-  const char *pattern;
-  if (channels == 0)
-    pattern = "audio_out";
-  else
-    pattern = "audio_out_%d";
-
-  for (int c = 0; c < channels; c++)
-    {
-      string port_name = Birnet::string_printf (pattern, c + 1);
-      output_ports.push_back (jack_port_register (client, port_name.c_str(), JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
-    }
+  output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
 
   if (jack_activate (client))
     {
       fprintf (stderr, "cannot activate client");
       exit (1);
     }
-}
-
-static bool
-is_newline (char ch)
-{
-  return (ch == '\n' || ch == '\r');
 }
 
 class JackWindow : public Gtk::Window
@@ -425,19 +413,6 @@ main (int argc, char **argv)
 
   JackWindow window (morph_plan);
 
-  Gtk::Main::run (window);
-#if 0
-
-  printf ("loading %s ...", argv[1]);
-  fflush (stdout);
-
-  WavSet wset;
-  BseErrorType error = wset.load (argv[1]);
-  int n_channels = 1;
-  for (size_t i = 0; i < wset.waves.size(); i++)
-    n_channels = max (n_channels, wset.waves[i].channel + 1);
-  printf ("%zd audio entries with %d channels found.\n", wset.waves.size(), n_channels);
-
   jack_client_t *client;
   client = jack_client_open ("smjack", JackNullOption, NULL);
 
@@ -448,23 +423,7 @@ main (int argc, char **argv)
     }
 
   JackSynth synth;
-  synth.init (client, &wset, n_channels);
+  synth.init (client, morph_plan);
 
-  while (1)
-    {
-      printf ("SpectMorphJack> ");
-      fflush (stdout);
-      char buffer[1024];
-      fgets (buffer, 1024, stdin);
-
-      while (strlen (buffer) && is_newline (buffer[strlen (buffer) - 1]))
-        buffer[strlen (buffer) - 1] = 0;
-
-      if (strcmp (buffer, "q") == 0 || strcmp (buffer, "quit") == 0)
-        {
-          jack_deactivate (client);
-          return 0;
-        }
-    }
-#endif
+  Gtk::Main::run (window);
 }
