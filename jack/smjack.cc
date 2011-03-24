@@ -362,8 +362,8 @@ class JackWindow : public Gtk::Window
   Gtk::Button     inst_button;
   MorphPlanWindow inst_window;
 public:
-  JackWindow() :
-    morph_plan (new MorphPlan()),
+  JackWindow (MorphPlanPtr plan) :
+    morph_plan (plan),
     inst_window (morph_plan)
   {
     set_title ("SpectMorph JACK client");
@@ -394,27 +394,45 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  JackWindow window;
+  if (argc > 2)
+    {
+      printf ("usage: smjack [ <plan_filename> ]\n");
+      exit (1);
+    }
+
+  MorphPlanPtr morph_plan = new MorphPlan;
+
+  if (argc == 2)
+    {
+      BseErrorType error;
+
+      GenericIn *file = GenericIn::open (argv[1]);
+      if (file)
+        {
+          error = morph_plan->load (file);
+          delete file;
+        }
+      else
+        {
+          error = BSE_ERROR_FILE_NOT_FOUND;
+        }
+      if (error)
+        {
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          exit (1);
+        }
+    }
+
+  JackWindow window (morph_plan);
 
   Gtk::Main::run (window);
 #if 0
-  if (argc != 2)
-    {
-      printf ("usage: smjack <smset_filename>\n");
-      exit (1);
-    }
 
   printf ("loading %s ...", argv[1]);
   fflush (stdout);
 
   WavSet wset;
   BseErrorType error = wset.load (argv[1]);
-  if (error)
-    {
-      printf ("\n");
-      fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
-      exit (1);
-    }
   int n_channels = 1;
   for (size_t i = 0; i < wset.waves.size(); i++)
     n_channels = max (n_channels, wset.waves[i].channel + 1);
