@@ -55,7 +55,8 @@ main (int argc, char **argv)
   printf ("pid %d\n", getpid());
   fflush (stdout);
 
-  MorphPlanWindow window;
+  MorphPlanPtr morph_plan = new MorphPlan();
+  MorphPlanWindow window (morph_plan);
 
   window.set_plan_str (plan_str);
 

@@ -60,7 +60,7 @@ MorphPlanWindow::on_load_index_clicked()
   int result = dialog.run();
   if (result == Gtk::RESPONSE_OK)
     {
-      morph_plan.load_index (dialog.get_filename());
+      m_morph_plan->load_index (dialog.get_filename());
     }
 }
 
@@ -82,8 +82,9 @@ MorphPlanWindow::on_add_linear_morph_clicked()
   add_operator ("SpectMorph::MorphLinear");
 }
 
-MorphPlanWindow::MorphPlanWindow() :
-  morph_plan_view (&morph_plan, this)
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
+  m_morph_plan (morph_plan),
+  morph_plan_view (morph_plan.c_ptr(), this)
 {
   set_default_size (250, 100);
   plan_vbox.set_border_width (10);
@@ -161,7 +162,7 @@ MorphPlanWindow::MorphPlanWindow() :
   plan_vbox.add (morph_plan_view);
   add (window_vbox);
 
-  morph_plan.signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanWindow::on_plan_changed));
+  m_morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanWindow::on_plan_changed));
 
   show_all_children();
 }
@@ -169,7 +170,7 @@ MorphPlanWindow::MorphPlanWindow() :
 void
 MorphPlanWindow::set_plan_str (const string& plan_str)
 {
-  morph_plan.set_plan_str (plan_str);
+  m_morph_plan->set_plan_str (plan_str);
 }
 
 void
@@ -177,7 +178,7 @@ MorphPlanWindow::on_plan_changed()
 {
   vector<unsigned char> data;
   MemOut mo (&data);
-  morph_plan.save (&mo);
+  m_morph_plan->save (&mo);
   printf ("%s\n", HexString::encode (data).c_str());
   fflush (stdout);
 }
@@ -198,7 +199,7 @@ MorphPlanWindow::on_context_rename()
 void
 MorphPlanWindow::on_context_remove()
 {
-  morph_plan.remove (popup_op);
+  m_morph_plan->remove (popup_op);
 }
 
 void
@@ -260,7 +261,7 @@ MorphPlanWindow::on_file_import_clicked()
       GenericIn *in = StdioIn::open (dialog.get_filename());
       if (in)
         {
-          morph_plan.load (in);
+          m_morph_plan->load (in);
           delete in; // close file
         }
       else
@@ -294,7 +295,7 @@ MorphPlanWindow::on_file_export_clicked()
       GenericOut *out = StdioOut::open (dialog.get_filename());
       if (out)
         {
-          morph_plan.save (out);
+          m_morph_plan->save (out);
           delete out; // close file
         }
       else
@@ -309,9 +310,9 @@ MorphPlanWindow::on_file_export_clicked()
 void
 MorphPlanWindow::add_operator (const string& type)
 {
-  MorphOperator *op = MorphOperator::create (type, &morph_plan);
+  MorphOperator *op = MorphOperator::create (type, m_morph_plan.c_ptr());
 
   g_return_if_fail (op != NULL);
 
-  morph_plan.add_operator (op);
+  m_morph_plan->add_operator (op);
 }

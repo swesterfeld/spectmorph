@@ -38,7 +38,7 @@ class MorphPlanWindow : public Gtk::Window
 {
   Gtk::VBox     window_vbox;
   Gtk::VBox     plan_vbox;
-  MorphPlan     morph_plan;
+  MorphPlanPtr  m_morph_plan;
   MorphPlanView morph_plan_view;
 
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
@@ -47,7 +47,9 @@ class MorphPlanWindow : public Gtk::Window
   Gtk::Menu                      *popup_menu;
   MorphOperator                  *popup_op;
 public:
-  MorphPlanWindow();
+  MorphPlanWindow (MorphPlanPtr morph_plan);
+
+  MorphPlanPtr morph_plan();
 
   void set_plan_str (const std::string& plan_str);
 

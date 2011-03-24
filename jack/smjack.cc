@@ -362,7 +362,9 @@ class JackWindow : public Gtk::Window
   Gtk::Button     inst_button;
   MorphPlanWindow inst_window;
 public:
-  JackWindow()
+  JackWindow() :
+    morph_plan (new MorphPlan()),
+    inst_window (morph_plan)
   {
     set_title ("SpectMorph JACK client");
     set_border_width (10);

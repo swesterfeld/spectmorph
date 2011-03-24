@@ -76,6 +76,11 @@ public:
   {
     return ptr;
   }
+  T*
+  c_ptr()
+  {
+    return ptr;
+  }
   ~RefPtr()
   {
     if (ptr)
