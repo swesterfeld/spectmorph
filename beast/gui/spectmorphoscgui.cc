@@ -26,7 +26,7 @@
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
 #include "smmorphplanview.hh"
-#include "smmainwindow.hh"
+#include "smmorphplanwindow.hh"
 
 using namespace SpectMorph;
 
@@ -55,7 +55,7 @@ main (int argc, char **argv)
   printf ("pid %d\n", getpid());
   fflush (stdout);
 
-  MainWindow window;
+  MorphPlanWindow window;
 
   window.set_plan_str (plan_str);
 

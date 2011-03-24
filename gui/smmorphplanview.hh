@@ -26,18 +26,18 @@
 namespace SpectMorph
 {
 
-class MainWindow;
+class MorphPlanWindow;
 class MorphPlanView : public Gtk::VBox
 {
   MorphPlan                    *morph_plan;
   int                           old_structure_version;
-  MainWindow                   *main_window;
+  MorphPlanWindow              *morph_plan_window;
 
   std::vector<MorphOperatorView *> m_op_views;
   std::vector<MoveIndicator *>  move_indicators;
 
 public:
-  MorphPlanView (MorphPlan *morph_plan, MainWindow *main_window);
+  MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   const std::vector<MorphOperatorView *>& op_views();
 

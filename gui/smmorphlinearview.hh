@@ -51,7 +51,7 @@ protected:
 
   void update_slider();
 public:
-  MorphLinearView (MorphLinear *op, MainWindow *main_window);
+  MorphLinearView (MorphLinear *op, MorphPlanWindow *morph_plan_window);
   ~MorphLinearView();
 };
 

@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MAIN_WINDOW_HH
-#define SPECTMORPH_MAIN_WINDOW_HH
+#ifndef SPECTMORPH_MORPH_PLAN_WINDOW_HH
+#define SPECTMORPH_MORPH_PLAN_WINDOW_HH
 
 #include <gtkmm.h>
 #include <assert.h>
@@ -34,7 +34,7 @@
 namespace SpectMorph
 {
 
-class MainWindow : public Gtk::Window
+class MorphPlanWindow : public Gtk::Window
 {
   Gtk::VBox     window_vbox;
   Gtk::VBox     plan_vbox;
@@ -47,7 +47,7 @@ class MainWindow : public Gtk::Window
   Gtk::Menu                      *popup_menu;
   MorphOperator                  *popup_op;
 public:
-  MainWindow();
+  MorphPlanWindow();
 
   void set_plan_str (const std::string& plan_str);
 

@@ -47,8 +47,8 @@ struct MyOperatorFilter : public OperatorFilter
 #define CONTROL_TEXT_1   "Control Signal #1"
 #define CONTROL_TEXT_2   "Control Signal #2"
 
-MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MainWindow *main_window) :
-  MorphOperatorView (morph_linear, main_window),
+MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_linear, morph_plan_window),
   morph_linear (morph_linear),
   hscale (-1, 1, 0.01),
   operator_filter (new MyOperatorFilter (morph_linear)),

@@ -29,7 +29,7 @@
 #include "smmorphoutput.hh"
 #include "smmorphlinear.hh"
 #include "smmorphplanview.hh"
-#include "smmainwindow.hh"
+#include "smmorphplanwindow.hh"
 #include "smrenameoperatordialog.hh"
 #include "smmorphoperatorview.hh"
 #include "smstdioout.hh"
@@ -42,7 +42,7 @@ using std::string;
 using std::vector;
 
 void
-MainWindow::on_load_index_clicked()
+MorphPlanWindow::on_load_index_clicked()
 {
   Gtk::FileChooserDialog dialog ("Select SpectMorph index file", Gtk::FILE_CHOOSER_ACTION_OPEN);
   dialog.set_transient_for (*this);
@@ -65,24 +65,24 @@ MainWindow::on_load_index_clicked()
 }
 
 void
-MainWindow::on_add_source_clicked()
+MorphPlanWindow::on_add_source_clicked()
 {
   add_operator ("SpectMorph::MorphSource");
 }
 
 void
-MainWindow::on_add_output_clicked()
+MorphPlanWindow::on_add_output_clicked()
 {
   add_operator ("SpectMorph::MorphOutput");
 }
 
 void
-MainWindow::on_add_linear_morph_clicked()
+MorphPlanWindow::on_add_linear_morph_clicked()
 {
   add_operator ("SpectMorph::MorphLinear");
 }
 
-MainWindow::MainWindow() :
+MorphPlanWindow::MorphPlanWindow() :
   morph_plan_view (&morph_plan, this)
 {
   set_default_size (250, 100);
@@ -91,28 +91,28 @@ MainWindow::MainWindow() :
   ref_action_group = Gtk::ActionGroup::create();
   ref_action_group->add (Gtk::Action::create ("FileMenu", "File"));
   ref_action_group->add (Gtk::Action::create ("FileImport", "Import..."),
-                         sigc::mem_fun (*this, &MainWindow::on_file_import_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_file_import_clicked));
   ref_action_group->add (Gtk::Action::create ("FileExport", "Export..."),
-                         sigc::mem_fun (*this, &MainWindow::on_file_export_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_file_export_clicked));
   ref_action_group->add (Gtk::Action::create ("EditMenu", "Edit"));
   ref_action_group->add (Gtk::Action::create ("EditAddOperator", "Add Operator"));
   ref_action_group->add (Gtk::Action::create ("EditAddSource", "Source"),
-                         sigc::mem_fun (*this, &MainWindow::on_add_source_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_source_clicked));
   ref_action_group->add (Gtk::Action::create ("EditAddOutput", "Output"),
-                         sigc::mem_fun (*this, &MainWindow::on_add_output_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_output_clicked));
   ref_action_group->add (Gtk::Action::create ("EditAddLinearMorph", "Linear Morph"),
-                         sigc::mem_fun (*this, &MainWindow::on_add_linear_morph_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_linear_morph_clicked));
   ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
-                         sigc::mem_fun (*this, &MainWindow::on_load_index_clicked));
+                         sigc::mem_fun (*this, &MorphPlanWindow::on_load_index_clicked));
 
   ref_action_group->add (Gtk::Action::create ("ContextMenu", "Context Menu"));
 
   ref_action_group->add (Gtk::Action::create ("ContextRename", "Rename"),
-          sigc::mem_fun(*this, &MainWindow::on_context_rename));
+          sigc::mem_fun(*this, &MorphPlanWindow::on_context_rename));
 
   ref_action_group->add(Gtk::Action::create ("ContextRemove", "Remove"),
           //Gtk::AccelKey("<control>P"),
-          sigc::mem_fun (*this, &MainWindow::on_context_remove));
+          sigc::mem_fun (*this, &MorphPlanWindow::on_context_remove));
 
 
   ref_ui_manager = Gtk::UIManager::create();
@@ -161,19 +161,19 @@ MainWindow::MainWindow() :
   plan_vbox.add (morph_plan_view);
   add (window_vbox);
 
-  morph_plan.signal_plan_changed.connect (sigc::mem_fun (*this, &MainWindow::on_plan_changed));
+  morph_plan.signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanWindow::on_plan_changed));
 
   show_all_children();
 }
 
 void
-MainWindow::set_plan_str (const string& plan_str)
+MorphPlanWindow::set_plan_str (const string& plan_str)
 {
   morph_plan.set_plan_str (plan_str);
 }
 
 void
-MainWindow::on_plan_changed()
+MorphPlanWindow::on_plan_changed()
 {
   vector<unsigned char> data;
   MemOut mo (&data);
@@ -184,7 +184,7 @@ MainWindow::on_plan_changed()
 
 
 void
-MainWindow::on_context_rename()
+MorphPlanWindow::on_context_rename()
 {
   RenameOperatorDialog dialog (popup_op);
 
@@ -196,20 +196,20 @@ MainWindow::on_context_rename()
 }
 
 void
-MainWindow::on_context_remove()
+MorphPlanWindow::on_context_remove()
 {
   morph_plan.remove (popup_op);
 }
 
 void
-MainWindow::show_popup (GdkEventButton *event, MorphOperator *op)
+MorphPlanWindow::show_popup (GdkEventButton *event, MorphOperator *op)
 {
   popup_op = op;
   popup_menu->popup (event->button, event->time);
 }
 
 MorphOperator *
-MainWindow::where (MorphOperator *op, double x, double y)
+MorphPlanWindow::where (MorphOperator *op, double x, double y)
 {
   vector<int> start_position;
   int end_y = 0;
@@ -239,7 +239,7 @@ MainWindow::where (MorphOperator *op, double x, double y)
 }
 
 void
-MainWindow::on_file_import_clicked()
+MorphPlanWindow::on_file_import_clicked()
 {
   Gtk::FileChooserDialog dialog ("Select SpectMorph plan file to import", Gtk::FILE_CHOOSER_ACTION_OPEN);
   dialog.set_transient_for (*this);
@@ -273,7 +273,7 @@ MainWindow::on_file_import_clicked()
 }
 
 void
-MainWindow::on_file_export_clicked()
+MorphPlanWindow::on_file_export_clicked()
 {
   Gtk::FileChooserDialog dialog ("Select SpectMorph plan file", Gtk::FILE_CHOOSER_ACTION_SAVE);
   dialog.set_transient_for (*this);
@@ -307,7 +307,7 @@ MainWindow::on_file_export_clicked()
 }
 
 void
-MainWindow::add_operator (const string& type)
+MorphPlanWindow::add_operator (const string& type)
 {
   MorphOperator *op = MorphOperator::create (type, &morph_plan);
 

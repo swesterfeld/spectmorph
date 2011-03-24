@@ -22,9 +22,9 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphOperatorView::MorphOperatorView (MorphOperator *op, MainWindow *main_window) :
+MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :
   in_move (false),
-  main_window (main_window),
+  morph_plan_window (morph_plan_window),
   m_op (op)
 {
   on_operators_changed();
@@ -47,7 +47,7 @@ MorphOperatorView::on_button_press_event (GdkEventButton *event)
     }
   else if (event->type == GDK_BUTTON_PRESS && event->button == 3)
     {
-      main_window->show_popup (event, m_op);
+      morph_plan_window->show_popup (event, m_op);
       return true; // it has been handled
     }
   else
@@ -59,7 +59,7 @@ MorphOperatorView::on_motion_notify_event (GdkEventMotion *event)
 {
   if (in_move)
     {
-      MorphOperator *op_next = main_window->where (m_op, event->x_root, event->y_root);
+      MorphOperator *op_next = morph_plan_window->where (m_op, event->x_root, event->y_root);
       signal_move_indication (op_next);
     }
   return false;
@@ -72,7 +72,7 @@ MorphOperatorView::on_button_release_event (GdkEventButton *event)
     {
       Glib::RefPtr<Gdk::Window> window = get_window();
       window->set_cursor ();
-      MorphOperator *op_next = main_window->where (m_op, event->x_root, event->y_root);
+      MorphOperator *op_next = morph_plan_window->where (m_op, event->x_root, event->y_root);
       in_move = false;
 
       // DELETION can occur here
@@ -99,7 +99,7 @@ MorphOperatorView::op()
 #include "smmorphlinearview.hh"
 
 MorphOperatorView *
-MorphOperatorView::create (MorphOperator *op, MainWindow *window)
+MorphOperatorView::create (MorphOperator *op, MorphPlanWindow *window)
 {
   string type = op->type();
 

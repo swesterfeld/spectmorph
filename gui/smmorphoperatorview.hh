@@ -19,7 +19,7 @@
 #define SPECTMORPH_MORPH_OPERATOR_VIEW_HH
 
 #include <gtkmm.h>
-#include "smmainwindow.hh"
+#include "smmorphplanwindow.hh"
 
 namespace SpectMorph
 {
@@ -28,18 +28,18 @@ class MorphOperator;
 class MorphOperatorView : public Gtk::EventBox
 {
 protected:
-  bool           in_move;
+  bool              in_move;
 
-  Gtk::VBox      vbox;
-  Gtk::Frame     frame;
-  MainWindow    *main_window;
-  MorphOperator *m_op;
+  Gtk::VBox         vbox;
+  Gtk::Frame        frame;
+  MorphPlanWindow  *morph_plan_window;
+  MorphOperator    *m_op;
 
   Gdk::Cursor    move_cursor;
 
   void on_operators_changed();
 public:
-  MorphOperatorView (MorphOperator *op, MainWindow *main_window);
+  MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window);
 
   MorphOperator *op();
 
@@ -49,7 +49,7 @@ public:
 
   sigc::signal<void, MorphOperator *> signal_move_indication;
 
-  static MorphOperatorView *create (MorphOperator *op, MainWindow *window);
+  static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
 };
 
 }

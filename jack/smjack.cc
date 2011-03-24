@@ -19,7 +19,7 @@
 #include "smlivedecoder.hh"
 #include "smmorphplan.hh"
 #include "smmorphplanview.hh"
-#include "smmainwindow.hh"
+#include "smmorphplanwindow.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -355,12 +355,12 @@ is_newline (char ch)
 
 class JackWindow : public Gtk::Window
 {
-  MorphPlanPtr   morph_plan;
-  Gtk::VBox      vbox;
-  Gtk::HBox      inst_hbox;
-  Gtk::Label     inst_label;
-  Gtk::Button    inst_button;
-  MainWindow     inst_window;
+  MorphPlanPtr    morph_plan;
+  Gtk::VBox       vbox;
+  Gtk::HBox       inst_hbox;
+  Gtk::Label      inst_label;
+  Gtk::Button     inst_button;
+  MorphPlanWindow inst_window;
 public:
   JackWindow()
   {

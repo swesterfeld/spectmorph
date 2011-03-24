@@ -4,11 +4,11 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-SMHDRS = smzoomcontroller.hh smcomboboxoperator.hh smmainwindow.hh smrenameoperatordialog.hh \
+SMHDRS = smzoomcontroller.hh smcomboboxoperator.hh smmorphplanwindow.hh smrenameoperatordialog.hh \
          smmorphplanview.hh smmorphsourceview.hh smmorphoperatorview.hh smmoveindicator.hh \
          smmorphlinearview.hh smmorphoutputview.hh
 
-SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmainwindow.cc smrenameoperatordialog.cc \
+SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrenameoperatordialog.cc \
          smmorphplanview.cc smmorphsourceview.cc smmorphoperatorview.cc smmoveindicator.cc \
          smmorphlinearview.cc smmorphoutputview.cc
 

@@ -32,7 +32,7 @@ class MorphSourceView : public MorphOperatorView
   MorphSource      *morph_source;
 
 public:
-  MorphSourceView (MorphSource *morph_source, MainWindow *main_window);
+  MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window);
 
   void on_index_changed();
   void on_instrument_changed();

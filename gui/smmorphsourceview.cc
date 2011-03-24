@@ -23,8 +23,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphSourceView::MorphSourceView (MorphSource *morph_source, MainWindow *main_window) :
-  MorphOperatorView (morph_source, main_window),
+MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_source, morph_plan_window),
   instrument_label ("Instrument"),
   morph_source (morph_source)
 {

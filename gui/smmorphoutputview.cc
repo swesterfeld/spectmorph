@@ -36,8 +36,8 @@ struct MyOperatorFilter : public OperatorFilter
 
 }
 
-MorphOutputView::MorphOutputView (MorphOutput *morph_output, MainWindow *main_window) :
-  MorphOperatorView (morph_output, main_window),
+MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output)
 {
   for (int ch = 0; ch < 4; ch++)
