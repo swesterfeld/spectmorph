@@ -54,4 +54,5 @@ Object::unref()
 Object::~Object()
 {
   // need virtual destructor to be able to delete derived classes properly
+  g_return_if_fail (object_ref_count == 0);
 }
