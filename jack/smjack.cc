@@ -148,17 +148,19 @@ int
 JackSynth::process (jack_nframes_t nframes)
 {
   // update plan with new parameters / new modules if necessary
-  m_new_plan_mutex.lock();
-  if (m_new_plan)
+  if (m_new_plan_mutex.trylock())
     {
-      for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+      if (m_new_plan)
         {
-          Voice& voice = (*vi);
-          voice.mp_voice->update (m_new_plan);
+          for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+            {
+              Voice& voice = (*vi);
+              voice.mp_voice->update (m_new_plan);
+            }
+          m_new_plan = NULL;
         }
-      m_new_plan = NULL;
+      m_new_plan_mutex.unlock();
     }
-  m_new_plan_mutex.unlock();
 
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
