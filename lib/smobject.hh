@@ -86,6 +86,10 @@ public:
     if (ptr)
       ptr->unref();
   }
+  operator bool() const
+  {
+    return (ptr != 0);
+  }
 };
 
 }

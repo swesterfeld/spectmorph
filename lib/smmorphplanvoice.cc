@@ -53,6 +53,9 @@ MorphPlanVoice::configure_modules()
 void
 MorphPlanVoice::create_modules()
 {
+  if (!m_plan)
+    return;
+
   const vector<MorphOperator *>& ops = m_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {

@@ -47,7 +47,7 @@ class Osc : public OscBase {
   };
   class Module : public SynthesisModule {
   private:
-    MorphPlanVoice *morph_plan_voice;
+    MorphPlanVoice morph_plan_voice;
     float          last_sync_level;
     float          current_freq;
     bool           need_retrigger;
@@ -58,14 +58,6 @@ class Osc : public OscBase {
       need_retrigger (false)
     {
       //
-    }
-    ~Module()
-    {
-      if (morph_plan_voice)
-        {
-          delete morph_plan_voice;
-          morph_plan_voice = NULL;
-        }
     }
     void reset()
     {
@@ -78,20 +70,20 @@ class Osc : public OscBase {
       if (istream (ICHANNEL_CTRL_IN1).connected)
         {
           const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN1).values;
-          morph_plan_voice->set_control_input (0, ctrl_in[0]);
+          morph_plan_voice.set_control_input (0, ctrl_in[0]);
         }
       else
         {
-          morph_plan_voice->set_control_input (0, 0);
+          morph_plan_voice.set_control_input (0, 0);
         }
       if (istream (ICHANNEL_CTRL_IN2).connected)
         {
           const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN2).values;
-          morph_plan_voice->set_control_input (1, ctrl_in[0]);
+          morph_plan_voice.set_control_input (1, ctrl_in[0]);
         }
       else
         {
-          morph_plan_voice->set_control_input (1, 0);
+          morph_plan_voice.set_control_input (1, 0);
         }
       if (need_retrigger)
         {
@@ -107,7 +99,7 @@ class Osc : public OscBase {
           retrigger (new_freq, midi_velocity);
           need_retrigger = false;
         }
-      if (!morph_plan_voice->output())
+      if (!morph_plan_voice.output())
         {
           ostream_set (OCHANNEL_AUDIO_OUT1, const_values (0));
         }
@@ -115,14 +107,14 @@ class Osc : public OscBase {
         {
           gfloat *audio_out1 = ostream (OCHANNEL_AUDIO_OUT1).values;
 
-          morph_plan_voice->output()->process (n_values, audio_out1);
+          morph_plan_voice.output()->process (n_values, audio_out1);
         }
     }
     void
     retrigger (float freq, int midi_velocity)
     {
-      if (morph_plan_voice->output())
-        morph_plan_voice->output()->retrigger (0, freq, midi_velocity, mix_freq());
+      if (morph_plan_voice.output())
+        morph_plan_voice.output()->retrigger (0, freq, midi_velocity, mix_freq());
 
       current_freq = freq;
     }
@@ -131,14 +123,7 @@ class Osc : public OscBase {
     {
       frequency = properties->frequency;
 
-      if (morph_plan_voice)
-        {
-          morph_plan_voice->update (properties->morph_plan);
-        }
-      else
-        {
-          morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
-        }
+      morph_plan_voice.update (properties->morph_plan);
     }
   };
 
