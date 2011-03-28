@@ -227,6 +227,8 @@ MorphPlan::load (GenericIn *in)
             {
               if (ifile.event_name() == "data")
                 {
+                  assert (load_op != NULL);
+
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
 
                   GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
@@ -235,7 +237,7 @@ MorphPlan::load (GenericIn *in)
 
                   delete in; // close memory file handle
 
-                  add_operator (load_op);
+                  add_operator (load_op, load_name, load_id);
                 }
             }
         }
