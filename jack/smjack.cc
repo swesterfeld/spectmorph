@@ -85,7 +85,8 @@ protected:
   vector<Voice*>        active_voices;
   vector<Voice*>        release_voices;
 
-  Birnet::Mutex         mutex;
+  Birnet::Mutex         m_new_plan_mutex;
+  MorphPlanPtr          m_new_plan;
 
 public:
   JackSynth();
@@ -146,7 +147,19 @@ JackSynth::reschedule()
 int
 JackSynth::process (jack_nframes_t nframes)
 {
-  mutex.lock();
+  // update plan with new parameters / new modules if necessary
+  m_new_plan_mutex.lock();
+  if (m_new_plan)
+    {
+      for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+        {
+          Voice& voice = (*vi);
+          voice.mp_voice->update (m_new_plan);
+        }
+      m_new_plan = NULL;
+    }
+  m_new_plan_mutex.unlock();
+
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   // zero output buffer, so voices can be added
@@ -298,7 +311,6 @@ JackSynth::process (jack_nframes_t nframes)
         }
       i = end;
     }
-  mutex.unlock();
   return 0;
 }
 
@@ -358,13 +370,9 @@ JackSynth::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  mutex.lock();
-  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    {
-      Voice& voice = (*vi);
-      voice.mp_voice->update (plan);
-    }
-  mutex.unlock();
+  m_new_plan_mutex.lock();
+  m_new_plan = plan;
+  m_new_plan_mutex.unlock();
 }
 
 class JackWindow : public Gtk::Window
