@@ -90,6 +90,7 @@ protected:
 public:
   JackSynth();
   void init (jack_client_t *client, MorphPlanPtr morph_plan);
+  void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   int  process (jack_nframes_t nframes);
   void reschedule();
@@ -315,28 +316,32 @@ JackSynth::JackSynth()
 }
 
 void
-JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
+JackSynth::preinit_plan (MorphPlanPtr plan)
 {
-  release_ms = 150;
-  voices.resize (64);
-  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = new MorphPlanVoice (morph_plan);
-
-  jack_set_process_callback (client, jack_process, this);
-
-  jack_mix_freq = jack_get_sample_rate (client);
-
   // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice *mp_voice = new MorphPlanVoice (morph_plan);
-  MorphOutputModule *om = mp_voice->output();
+  MorphPlanVoice mp_voice (plan);
+  MorphOutputModule *om = mp_voice.output();
   if (om)
     {
       om->retrigger (0, 440, 1, jack_mix_freq);
       float s;
       om->process (1, &s);
     }
-  delete mp_voice;
-  //voices[0].decoders[0]->precompute_tables (jack_mix_freq);
+}
+
+void
+JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
+{
+  jack_mix_freq = jack_get_sample_rate (client);
+
+  preinit_plan (morph_plan);
+
+  release_ms = 150;
+  voices.resize (64);
+  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+    vi->mp_voice = new MorphPlanVoice (morph_plan);
+
+  jack_set_process_callback (client, jack_process, this);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
   output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
@@ -351,16 +356,7 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
 void
 JackSynth::change_plan (MorphPlanPtr plan)
 {
-  // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice *mp_voice = new MorphPlanVoice (plan);
-  MorphOutputModule *om = mp_voice->output();
-  if (om)
-    {
-      om->retrigger (0, 440, 1, jack_mix_freq);
-      float s;
-      om->process (1, &s);
-    }
-  delete mp_voice;
+  preinit_plan (plan);
 
   mutex.lock();
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
