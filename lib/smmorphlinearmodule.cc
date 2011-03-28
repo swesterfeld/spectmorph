@@ -126,6 +126,14 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   double time_ms = index; // 1ms frame step
   int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
 
+  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+    {
+      if (audio->loop_start != -1 && source_index > audio->loop_start)
+        {
+          source_index = audio->loop_start;
+        }
+    }
+
   AudioBlock *block_ptr = source->audio_block (source_index);
 
   if (!block_ptr)
