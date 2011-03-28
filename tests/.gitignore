@@ -15,5 +15,7 @@ testnoiseperf
 testppinter
 testjobqueue
 testgenid
+testparamupdate
+testrefptr
 .libs
 .deps
