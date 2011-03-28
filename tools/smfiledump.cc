@@ -71,6 +71,16 @@ display_file (GenericIn *in, int indent = 0)
           printf ("%s", spaces (indent).c_str());
           printf ("float %s = %.7g\n", ifile.event_name().c_str(), ifile.event_float());
         }
+      else if (ifile.event() == InFile::FLOAT_BLOCK)
+        {
+          printf ("%s", spaces (indent).c_str());
+          printf ("float_block %s = {...}\n", ifile.event_name().c_str());
+        }
+      else if (ifile.event() == InFile::INT)
+        {
+          printf ("%s", spaces (indent).c_str());
+          printf ("int %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
+        }
       else if (ifile.event() == InFile::BLOB)
         {
           printf ("%s", spaces (indent).c_str());
