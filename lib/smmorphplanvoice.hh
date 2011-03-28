@@ -36,11 +36,17 @@ protected:
   std::vector<double>           m_control_input;
   MorphOutputModule            *m_output;
   MorphPlanPtr                  m_plan;
+
+  bool try_update (MorphPlanPtr plan);
+  void clear_modules();
+  void create_modules();
+  void configure_modules();
+
 public:
   MorphPlanVoice (MorphPlanPtr plan);
   ~MorphPlanVoice();
 
-  bool try_update (MorphPlanPtr plan);
+  void update (MorphPlanPtr plan);
 
   MorphOperatorModule *module (MorphOperator *op);
 

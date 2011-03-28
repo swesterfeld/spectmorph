@@ -33,9 +33,27 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
   m_control_input (N_CONTROL_INPUTS),
-  m_output (NULL)
+  m_output (NULL),
+  m_plan (plan)
 {
-  const vector<MorphOperator *>& ops = plan->operators();
+  create_modules();
+  configure_modules();
+  leak_debugger.add (this);
+}
+
+void
+MorphPlanVoice::configure_modules()
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      modules[i].module->set_config (modules[i].op);
+    }
+}
+
+void
+MorphPlanVoice::create_modules()
+{
+  const vector<MorphOperator *>& ops = m_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
       MorphOperatorModule *module = MorphOperatorModule::create (*oi, this);
@@ -58,15 +76,10 @@ MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
             m_output = dynamic_cast<MorphOutputModule *> (module);
         }
     }
-  for (size_t i = 0; i < modules.size(); i++)
-    {
-      modules[i].module->set_config (modules[i].op);
-    }
-  m_plan = plan;
-  leak_debugger.add (this);
 }
 
-MorphPlanVoice::~MorphPlanVoice()
+void
+MorphPlanVoice::clear_modules()
 {
   for (size_t i = 0; i < modules.size(); i++)
     {
@@ -75,6 +88,12 @@ MorphPlanVoice::~MorphPlanVoice()
     }
   modules.clear();
 
+  m_output = NULL;
+}
+
+MorphPlanVoice::~MorphPlanVoice()
+{
+  clear_modules();
   leak_debugger.del (this);
 }
 
@@ -92,6 +111,23 @@ MorphPlanVoice::module (MorphOperator *op)
       return modules[i].module;
 
   return NULL;
+}
+
+void
+MorphPlanVoice::update (MorphPlanPtr new_plan)
+{
+  if (!try_update (new_plan))
+    {
+      m_plan = new_plan;
+
+      /* This will loose the original state information which means the audio
+       * will not transition smoothely. However, this should only occur for plan
+       * changes, not parameter updates.
+       */
+      clear_modules();
+      create_modules();
+      configure_modules();
+    }
 }
 
 bool
@@ -133,10 +169,7 @@ MorphPlanVoice::try_update (MorphPlanPtr new_plan)
       assert (modules[i].op);
     }
   // reconfigure modules
-  for (size_t i = 0; i < modules.size(); i++)
-    {
-      modules[i].module->set_config (modules[i].op);
-    }
+  configure_modules();
   m_plan = new_plan;
   return true;
 }

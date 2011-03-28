@@ -366,11 +366,7 @@ JackSynth::change_plan (MorphPlanPtr plan)
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
     {
       Voice& voice = (*vi);
-      if (!voice.mp_voice->try_update (plan))
-        {
-          delete voice.mp_voice;
-          voice.mp_voice = new MorphPlanVoice (plan);
-        }
+      voice.mp_voice->update (plan);
     }
   mutex.unlock();
 }

@@ -133,18 +133,12 @@ class Osc : public OscBase {
 
       if (morph_plan_voice)
         {
-          if (morph_plan_voice->try_update (properties->morph_plan))
-            {
-              return; // update successful
-            }
-          else
-            {
-              // need to create new voice
-              delete morph_plan_voice;
-            }
+          morph_plan_voice->update (properties->morph_plan);
         }
-
-      morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
+      else
+        {
+          morph_plan_voice = new MorphPlanVoice (properties->morph_plan);
+        }
     }
   };
 
