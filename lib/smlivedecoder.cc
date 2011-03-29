@@ -23,6 +23,7 @@
 #include <bse/bseblockutils.hh>
 
 #include <stdio.h>
+#include <assert.h>
 
 using namespace SpectMorph;
 
@@ -71,6 +72,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_enabled (true),
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
+  noise_seed (-1),
   sse_samples (NULL)
 {
   init_aa_filter();
@@ -87,6 +89,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   noise_enabled (true),
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
+  noise_seed (-1),
   sse_samples (NULL)
 {
   init_aa_filter();
@@ -165,6 +168,9 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       if (noise_decoder)
         delete noise_decoder;
       noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq, block_size);
+
+      if (noise_seed != -1)
+        noise_decoder->set_seed (noise_seed);
 
       if (ifft_synth)
         delete ifft_synth;
@@ -441,4 +447,11 @@ LiveDecoder::precompute_tables (float mix_freq)
 
   retrigger (0, 440, 127, mix_freq);
   process (1, NULL, NULL, &out);
+}
+
+void
+LiveDecoder::set_noise_seed (int seed)
+{
+  assert (seed >= -1);
+  noise_seed = seed;
 }

@@ -66,6 +66,8 @@ class LiveDecoder
   size_t              frame_idx;
   float               original_sample_pos;
 
+  int                 noise_seed;
+
   Birnet::AlignedArray<float,16> *sse_samples;
 public:
   LiveDecoder (WavSet *smset);
@@ -76,6 +78,7 @@ public:
   void enable_sines (bool se);
   void enable_debug_fft_perf (bool dfp);
   void enable_original_samples (bool eos);
+  void set_noise_seed (int seed);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
