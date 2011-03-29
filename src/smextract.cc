@@ -18,6 +18,8 @@
 #include <vector>
 #include <stdio.h>
 #include "smaudio.hh"
+#include "smwavset.hh"
+#include "smlivedecoder.hh"
 #include "smmain.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
@@ -150,6 +152,50 @@ find_nan (vector<float>& data)
     if (isnan (data[x]))
       return true;
   return false;
+}
+
+static double
+compute_energy (const Audio& audio, double percent)
+{
+  double percent_start = percent - 5;
+  double percent_stop = percent + 5;
+  if (percent_start < 0 || percent_stop > 100)
+    {
+      fprintf (stderr, "bad volume percentage: %f\n", percent);
+      exit (1);
+    }
+
+  Audio *noloop_audio = new Audio (audio);
+  noloop_audio->loop_type = Audio::LOOP_NONE;  // don't use looped signal, but original signal
+
+  WavSet smset;
+  WavSetWave new_wave;
+  new_wave.midi_note = 60; // doesn't matter
+  new_wave.channel = 0;
+  new_wave.velocity_range_min = 0;
+  new_wave.velocity_range_max = 127;
+  new_wave.audio = noloop_audio;
+  smset.waves.push_back (new_wave);
+
+  LiveDecoder decoder (&smset);
+  // we need reproducable noise to get the same energy every time
+  decoder.set_noise_seed (42);
+  decoder.retrigger (0, audio.fundamental_freq, 127, audio.mix_freq);
+  vector<float> samples (audio.sample_count);
+  decoder.process (samples.size(), 0, 0, &samples[0]);
+
+  double energy = 0;
+  size_t energy_norm = 0;
+  for (size_t pos = 0; pos < samples.size(); pos++)
+    {
+      double percent = (pos * 100.0) / samples.size();
+      if (percent > percent_start && percent < percent_stop)
+        {
+          energy += samples[pos] * samples[pos];
+          energy_norm++;
+        }
+    }
+  return energy / energy_norm;
 }
 
 int
@@ -495,6 +541,34 @@ main (int argc, char **argv)
         }
       printf ("total-noise: %.17g\n", total_noise);
       printf ("peak-noise:  %.17g\n", peak_noise);
+    }
+  else if (mode == "volume")
+    {
+      check_usage (argc, 4, "volume <percent>");
+
+      const double energy = compute_energy (audio, atof (argv[3]));
+      printf ("avg_energy: %.17g\n", energy);
+    }
+  else if (mode == "auto-volume")
+    {
+      check_usage (argc, 4, "auto-volume <percent>");
+
+      const double energy = compute_energy (audio, atof (argv[3]));
+      const double target_energy = 0.05;
+      const double norm = sqrt (target_energy / energy);
+      printf ("avg_energy: %.17g\n", energy);
+      printf ("norm:       %.17g\n", norm);
+      for (size_t f = 0; f < audio.contents.size(); f++)
+        {
+          vector<float>& mags = audio.contents[f].mags;
+          for (size_t i = 0; i < mags.size(); i++)
+            mags[i] *= norm;
+
+          vector<float>& noise = audio.contents[f].noise;
+          for (size_t i = 0; i < noise.size(); i++)
+            noise[i] *= norm * norm;
+        }
+      need_save = true;
     }
   if (need_save)
     {
