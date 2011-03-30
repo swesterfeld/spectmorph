@@ -107,6 +107,7 @@ void
 MainWindow::on_dhandle_changed()
 {
   time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), fft_param_window.get_analysis_params());
+  sample_window.load (navigator.get_dhandle(), navigator.get_audio());
 }
 
 void

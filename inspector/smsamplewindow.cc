@@ -21,5 +21,21 @@ using namespace SpectMorph;
 
 SampleWindow::SampleWindow()
 {
+  set_border_width (10);
+  set_default_size (800, 600);
+
+  vbox.pack_start (scrolled_win);
+  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+
+  add (vbox);
+  scrolled_win.add (sample_view);
+
+  show_all_children();
   show();
+}
+
+void
+SampleWindow::load (GslDataHandle *dhandle, Audio *audio)
+{
+  sample_view.load (dhandle, audio);
 }

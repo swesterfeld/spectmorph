@@ -19,13 +19,23 @@
 #define SPECTMORPH_SAMPLE_WINDOW_HH
 
 #include <gtkmm.h>
+#include "smsampleview.hh"
+#include "smzoomcontroller.hh"
+#include "smwavset.hh"
 
 namespace SpectMorph {
 
 class SampleWindow : public Gtk::Window
 {
+  Gtk::ScrolledWindow scrolled_win;
+  SampleView          sample_view;
+  ZoomController      zoom_controller;
+
+  Gtk::VBox           vbox;
 public:
   SampleWindow();
+
+  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 };
 
 }

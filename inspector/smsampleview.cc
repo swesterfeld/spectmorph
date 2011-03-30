@@ -16,8 +16,11 @@
  */
 
 #include "smsampleview.hh"
+#include <bse/bseloader.h>
 
 using namespace SpectMorph;
+
+using std::vector;
 
 SampleView::SampleView()
 {
@@ -46,14 +49,86 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
       cr->clip();
 
+      cr->save();
+      cr->set_source_rgb (1.0, 1.0, 1.0);   // white
+      cr->paint();
+      cr->restore();
+
       // red:
       cr->set_source_rgb (1.0, 0.0, 0.0);
 
-      cr->move_to (0, 0);
-      cr->line_to (1, 1);
+      double x = 0;
+      double zz = 0.01;
+      for (size_t i = 0; i < signal.size(); i++)
+        {
+          cr->move_to (zz * (i - 1), 200 + x * 200);
+          x = signal[i];
+          cr->line_to (zz * i, 200 + x * 200);
+        }
       cr->stroke();
     }
   return true;
+}
+
+
+void
+SampleView::load (GslDataHandle *dhandle, Audio *audio)
+{
+  signal.clear();
+
+  if (!dhandle) // no sample selected
+    return;
+
+  BseErrorType error = gsl_data_handle_open (dhandle);
+  if (error)
+    {
+      fprintf (stderr, "SampleView: can't open the input data handle: %s\n", bse_error_blurb (error));
+      exit (1);
+    }
+
+  vector<float> block (1024);
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      for (uint64 t = 0; t < r; t++)
+        signal.push_back (block[t]);
+      pos += r;
+    }
+  gsl_data_handle_close (dhandle);
+
+  force_redraw();
+}
+
+void
+SampleView::force_redraw()
+{
+#if 0
+  // resize widget according to zoom if necessary
+  double scaled_hzoom, scaled_vzoom;
+  scale_zoom (&scaled_hzoom, &scaled_vzoom);
+
+  int new_width = image.get_width() * scaled_hzoom;
+  int new_height = image.get_height() * scaled_vzoom;
+  if (new_width != old_width || new_height != old_height)
+    {
+      set_size_request (new_width, new_height);
+      signal_resized (old_width, old_height, new_width, new_height);
+
+      old_height = new_height;
+      old_width = new_width;
+    }
+#endif
+
+  Glib::RefPtr<Gdk::Window> win = get_window();
+  if (win)
+    {
+      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
+      win->invalidate_rect (r, false);
+    }
 }
 
 

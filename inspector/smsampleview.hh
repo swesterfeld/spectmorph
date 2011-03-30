@@ -20,12 +20,19 @@
 
 #include <gtkmm.h>
 
+#include "smaudio.hh"
+
 namespace SpectMorph {
 
 class SampleView : public Gtk::DrawingArea
 {
+  std::vector<float> signal;
+
+  void force_redraw();
 public:
   SampleView();
+
+  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
   bool on_expose_event (GdkEventExpose *ev);
 };
