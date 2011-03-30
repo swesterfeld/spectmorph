@@ -90,6 +90,5 @@ ComboBoxOperator::on_combobox_changed()
       if (morph_op->name() == get_active_text())
         op = morph_op;
     }
-  g_printerr ("combobox changed => %s\n", op ? op->name().c_str() : "NONE");
   signal_active_changed();
 }

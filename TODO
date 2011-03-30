@@ -73,6 +73,7 @@ sminspector:
 gui:
 - die if parent process dies
 - object level file versioning
+- support unsetting operators
 
 morphing:
 - model: explain observation of the peaks using a gaussian-mixture-model which
