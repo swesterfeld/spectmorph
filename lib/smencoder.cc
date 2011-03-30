@@ -928,17 +928,32 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const ve
     {
       const vector<double>& frame_signal = unscaled_signal[f];
       size_t zero_values = 0;
-      double scale = 1.0; /* init to get rid of gcc warning */
+      double scale = 1.0;
 
       for (size_t n = 0; n < frame_signal.size(); n++)
         {
           const double n_ms = f * enc_params.frame_step_ms + n * 1000.0 / enc_params.mix_freq;
           double env;
-          scale = (zero_values > 0) ? frame_signal.size() / double (frame_signal.size() - zero_values) : 1.0;
           if (n_ms < attack.attack_start_ms)
             {
               env = 0;
               zero_values++;
+
+              size_t samples_in_frame = frame_signal.size() - zero_values;
+              if (samples_in_frame < (frame_signal.size() / 8))
+                {
+                  /* if we have very few samples in frame, the partials will
+                   * not be reliable, so in this case we cancel out the frame
+                   */
+                  scale = 0;
+                }
+              else
+                {
+                  /* based on an incomplete frame, we boost the partials
+                   * to obtain an estimate for one whole frame
+                   */
+                  scale = frame_signal.size() / double (samples_in_frame);
+                }
             }
           else if (n_ms < attack.attack_end_ms)  // during attack
             {
