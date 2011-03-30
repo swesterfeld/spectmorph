@@ -20,7 +20,6 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include <bse/bseblockutils.hh>
-#include <bse/gslfft.h>
 #include <bse/bsemathsignal.h>
 #include <stdio.h>
 #include <math.h>

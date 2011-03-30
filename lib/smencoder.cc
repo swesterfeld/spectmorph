@@ -22,7 +22,6 @@
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
-#include <bse/gslfft.h>
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
