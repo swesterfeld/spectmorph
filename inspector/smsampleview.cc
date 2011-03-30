@@ -25,19 +25,17 @@ using std::vector;
 SampleView::SampleView()
 {
   set_size_request (400, 400);
+  attack_start = 0;
+  attack_end = 0;
+  hzoom = 1;
+  vzoom = 1;
+  old_width = -1;
+  old_height = -1;
 }
 
 bool
 SampleView::on_expose_event (GdkEventExpose *ev)
 {
-  // draw contents
-  //Glib::RefPtr<Gdk::Pixbuf> zimage;
-  //zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position,
-   //                   display_min_db, display_boost);
-  //zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
-   //                           zimage->get_width(), zimage->get_height(),
-    //                          Gdk::RGB_DITHER_NONE, 0, 0);
-
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
     {
@@ -50,22 +48,39 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       cr->clip();
 
       cr->save();
-      cr->set_source_rgb (1.0, 1.0, 1.0);   // white
+      cr->set_source_rgb (1.0, 1.0, 1.0);   // white background
       cr->paint();
       cr->restore();
 
-      // red:
-      cr->set_source_rgb (1.0, 0.0, 0.0);
+      // blue sample:
+      cr->set_source_rgb (0.8, 0.0, 0.0);
 
       double x = 0;
-      double zz = 0.01;
+      double zz = 0.01 * hzoom;
+      double vz = 200 * vzoom;
       for (size_t i = 0; i < signal.size(); i++)
         {
-          cr->move_to (zz * (i - 1), 200 + x * 200);
+          cr->move_to (zz * MAX (0, i - 1), vz + x * vz);
           x = signal[i];
-          cr->line_to (zz * i, 200 + x * 200);
+          cr->line_to (zz * i, vz + x * vz);
         }
       cr->stroke();
+
+      // attack markers:
+      cr->set_source_rgb (0.6, 0.6, 0.6);
+      cr->move_to (zz * attack_start, 0);
+      cr->line_to (zz * attack_start, 2 * vz);
+
+      cr->move_to (zz * attack_end, 0);
+      cr->line_to (zz * attack_end, 2 * vz);
+      cr->stroke();
+
+      // dark blue line @ zero:
+      cr->set_source_rgb (0.0, 0.0, 0.0);
+      cr->move_to (0, vz);
+      cr->line_to (signal.size() * zz, vz);
+      cr->stroke();
+
     }
   return true;
 }
@@ -75,6 +90,8 @@ void
 SampleView::load (GslDataHandle *dhandle, Audio *audio)
 {
   signal.clear();
+  attack_start = 0;
+  attack_end = 0;
 
   if (!dhandle) // no sample selected
     return;
@@ -100,28 +117,24 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio)
     }
   gsl_data_handle_close (dhandle);
 
+  attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+  attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+
   force_redraw();
 }
 
 void
 SampleView::force_redraw()
 {
-#if 0
-  // resize widget according to zoom if necessary
-  double scaled_hzoom, scaled_vzoom;
-  scale_zoom (&scaled_hzoom, &scaled_vzoom);
-
-  int new_width = image.get_width() * scaled_hzoom;
-  int new_height = image.get_height() * scaled_vzoom;
+  int new_width = 0.01 * signal.size() * hzoom;
+  int new_height = 400 * vzoom;
   if (new_width != old_width || new_height != old_height)
     {
       set_size_request (new_width, new_height);
-      signal_resized (old_width, old_height, new_width, new_height);
 
       old_height = new_height;
       old_width = new_width;
     }
-#endif
 
   Glib::RefPtr<Gdk::Window> win = get_window();
   if (win)
@@ -131,4 +144,11 @@ SampleView::force_redraw()
     }
 }
 
+void
+SampleView::set_zoom (double new_hzoom, double new_vzoom)
+{
+  hzoom = new_hzoom;
+  vzoom = new_vzoom;
 
+  force_redraw();
+}

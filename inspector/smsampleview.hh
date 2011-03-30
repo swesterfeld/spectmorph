@@ -27,7 +27,12 @@ namespace SpectMorph {
 class SampleView : public Gtk::DrawingArea
 {
   std::vector<float> signal;
+  double hzoom;
+  double vzoom;
+  double attack_start;
+  double attack_end;
 
+  int old_width, old_height;
   void force_redraw();
 public:
   SampleView();
@@ -35,6 +40,7 @@ public:
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
   bool on_expose_event (GdkEventExpose *ev);
+  void set_zoom (double hzoom, double vzoom);
 };
 
 }

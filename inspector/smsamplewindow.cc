@@ -30,6 +30,8 @@ SampleWindow::SampleWindow()
   add (vbox);
   scrolled_win.add (sample_view);
 
+  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SampleWindow::on_zoom_changed));
+
   show_all_children();
   show();
 }
@@ -38,4 +40,10 @@ void
 SampleWindow::load (GslDataHandle *dhandle, Audio *audio)
 {
   sample_view.load (dhandle, audio);
+}
+
+void
+SampleWindow::on_zoom_changed()
+{
+  sample_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }

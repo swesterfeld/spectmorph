@@ -36,6 +36,8 @@ public:
   SampleWindow();
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
+
+  void on_zoom_changed();
 };
 
 }
