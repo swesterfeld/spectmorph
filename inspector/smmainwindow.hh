@@ -25,6 +25,7 @@
 #include "smnavigator.hh"
 #include "smspectrumwindow.hh"
 #include "smfftparamwindow.hh"
+#include "smsamplewindow.hh"
 
 namespace SpectMorph {
 
@@ -51,6 +52,7 @@ class MainWindow : public Gtk::Window
   Navigator           navigator;
   SpectrumWindow      spectrum_window;
   FFTParamWindow      fft_param_window;
+  SampleWindow        sample_window;
 
 public:
   MainWindow (const std::string& filename);

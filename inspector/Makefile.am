@@ -6,12 +6,12 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libsp
 
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smmainwindow.hh smfftparamwindow.hh smfftthread.hh \
-         smcommon.hh smcwt.hh
+         smcommon.hh smcwt.hh smsampleview.hh smsamplewindow.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smnavigator.cc smmainwindow.cc \
-         smfftparamwindow.cc smfftthread.cc smcwt.cc
+         smfftparamwindow.cc smfftthread.cc smcwt.cc smsampleview.cc smsamplewindow.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
