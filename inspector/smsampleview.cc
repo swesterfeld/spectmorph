@@ -22,6 +22,8 @@ using namespace SpectMorph;
 
 using std::vector;
 
+#define HZOOM_SCALE 0.05
+
 SampleView::SampleView()
 {
   set_size_request (400, 400);
@@ -30,7 +32,6 @@ SampleView::SampleView()
   hzoom = 1;
   vzoom = 1;
   old_width = -1;
-  old_height = -1;
 }
 
 bool
@@ -39,6 +40,9 @@ SampleView::on_expose_event (GdkEventExpose *ev)
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
     {
+      Gtk::Allocation allocation = get_allocation();
+      const int height = allocation.get_height();
+
       Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
       cr->set_line_width (1.0);
 
@@ -56,31 +60,30 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       cr->set_source_rgb (0.8, 0.0, 0.0);
 
       double x = 0;
-      double zz = 0.01 * hzoom;
-      double vz = 200 * vzoom;
+      double zz = HZOOM_SCALE * hzoom;
+      double vz = (height / 2) * vzoom;
       for (size_t i = 0; i < signal.size(); i++)
         {
-          cr->move_to (zz * MAX (0, i - 1), vz + x * vz);
+          cr->move_to (zz * MAX (0, i - 1), (height / 2) + x * vz);
           x = signal[i];
-          cr->line_to (zz * i, vz + x * vz);
+          cr->line_to (zz * i, (height / 2) + x * vz);
         }
       cr->stroke();
 
       // attack markers:
       cr->set_source_rgb (0.6, 0.6, 0.6);
       cr->move_to (zz * attack_start, 0);
-      cr->line_to (zz * attack_start, 2 * vz);
+      cr->line_to (zz * attack_start, height);
 
       cr->move_to (zz * attack_end, 0);
-      cr->line_to (zz * attack_end, 2 * vz);
+      cr->line_to (zz * attack_end, height);
       cr->stroke();
 
       // dark blue line @ zero:
       cr->set_source_rgb (0.0, 0.0, 0.0);
-      cr->move_to (0, vz);
-      cr->line_to (signal.size() * zz, vz);
+      cr->move_to (0, (height / 2));
+      cr->line_to (signal.size() * zz, (height / 2));
       cr->stroke();
-
     }
   return true;
 }
@@ -126,14 +129,12 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio)
 void
 SampleView::force_redraw()
 {
-  int new_width = 0.01 * signal.size() * hzoom;
-  int new_height = 400 * vzoom;
-  if (new_width != old_width || new_height != old_height)
+  int new_width = HZOOM_SCALE * signal.size() * hzoom;
+  if (new_width != old_width);
     {
-      set_size_request (new_width, new_height);
-      signal_resized (old_width, old_height, new_width, new_height);
+      set_size_request (new_width, -1);
+      signal_resized (old_width, new_width);
 
-      old_height = new_height;
       old_width = new_width;
     }
 

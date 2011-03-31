@@ -38,7 +38,7 @@ public:
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
   void on_zoom_changed();
-  void on_resized (int old_width, int old_height, int new_width, int new_height);
+  void on_resized (int old_width, int new_width);
 };
 
 }

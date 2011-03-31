@@ -30,6 +30,7 @@ SampleWindow::SampleWindow()
 
   add (vbox);
   scrolled_win.add (sample_view);
+  scrolled_win.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_NEVER);
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SampleWindow::on_zoom_changed));
   sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
@@ -51,17 +52,15 @@ SampleWindow::on_zoom_changed()
 }
 
 void
-SampleWindow::on_resized (int old_width, int old_height, int new_width, int new_height)
+SampleWindow::on_resized (int old_width, int new_width)
 {
-  if (old_width > 0 && old_height > 0 && new_width > 0 && new_height > 0)
+  if (old_width > 0 && new_width > 0)
     {
       Gtk::Viewport *view_port = dynamic_cast<Gtk::Viewport*> (scrolled_win.get_child());
-      const int h_2 = view_port->get_height() / 2;
-      const int w_2 = view_port->get_width() / 2;
-      Gtk::Adjustment *vadj = scrolled_win.get_vadjustment();
       Gtk::Adjustment *hadj = scrolled_win.get_hadjustment();
 
-      vadj->set_value ((vadj->get_value() + h_2) / old_height * new_height - h_2);
+      const int w_2 = view_port->get_width() / 2;
+
       hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
     }
 }

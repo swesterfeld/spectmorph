@@ -32,12 +32,12 @@ class SampleView : public Gtk::DrawingArea
   double attack_start;
   double attack_end;
 
-  int old_width, old_height;
+  int old_width;
   void force_redraw();
 public:
   SampleView();
 
-  sigc::signal<void, int, int, int, int> signal_resized;
+  sigc::signal<void, int, int> signal_resized;
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
