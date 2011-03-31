@@ -61,54 +61,24 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       // blue sample:
       cr->set_source_rgb (0.8, 0.0, 0.0);
 
-      double zz = HZOOM_SCALE * hzoom;
+      double hz = HZOOM_SCALE * hzoom;
       double vz = (height / 2) * vzoom;
-      {
-        int last_x = 0;
-        double last_value = 0, min_value = 0, max_value = 0;
-        for (size_t i = 0; i < signal.size(); i++)
-          {
-            double value = signal[i];
-            int x = zz * i;
-            if (x == last_x)
-              {
-                min_value = min (value, min_value);
-                max_value = max (value, max_value);
-              }
-            else
-              {
-                if (last_x >= ev->area.x && x < ev->area.x + ev->area.width)
-                  {
-                    if (min_value != max_value)
-                      {
-                        cr->move_to (last_x, (height / 2) + min_value * vz);
-                        cr->line_to (last_x, (height / 2) + max_value * vz);
-                      }
-                    cr->move_to (last_x, (height / 2) + last_value * vz);
-                    cr->line_to (x, (height / 2) + value * vz);
-                  }
-                min_value = value;
-                max_value = value;
-              }
-            last_value = value;
-            last_x = x;
-          }
-      }
+      draw_signal (signal, cr, ev, height, vz, hz);
       cr->stroke();
 
       // attack markers:
       cr->set_source_rgb (0.6, 0.6, 0.6);
-      cr->move_to (zz * attack_start, 0);
-      cr->line_to (zz * attack_start, height);
+      cr->move_to (hz * attack_start, 0);
+      cr->line_to (hz * attack_start, height);
 
-      cr->move_to (zz * attack_end, 0);
-      cr->line_to (zz * attack_end, height);
+      cr->move_to (hz * attack_end, 0);
+      cr->line_to (hz * attack_end, height);
       cr->stroke();
 
       // dark blue line @ zero:
       cr->set_source_rgb (0.0, 0.0, 0.0);
       cr->move_to (0, (height / 2));
-      cr->line_to (signal.size() * zz, (height / 2));
+      cr->line_to (signal.size() * hz, (height / 2));
       cr->stroke();
     }
   return true;
