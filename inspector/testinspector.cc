@@ -26,10 +26,13 @@
 #include "smmainwindow.hh"
 #include "smwavloader.hh"
 #include "smcwt.hh"
+#include "smsampleview.hh"
 
 using std::vector;
 using std::string;
 using std::max;
+using std::pair;
+using std::make_pair;
 
 using namespace SpectMorph;
 
@@ -53,6 +56,15 @@ show_progress (double p)
       old_progress = p;
     }
 }
+
+#define DEBUG 0
+
+struct DrawOps
+{
+  vector< pair<double, double> > v;
+  void move_to (double x, double y) { if (DEBUG) printf ("move_to %f %f\n", x, y); v.push_back (make_pair (x, y)); }
+  void line_to (double x, double y) { if (DEBUG) printf ("line_to %f %f\n", x, y); v.push_back (make_pair (x, y)); }
+} dops;
 
 int
 main (int argc, char **argv)
@@ -83,6 +95,29 @@ main (int argc, char **argv)
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
       printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
+    }
+  else if (argc == 2 && string (argv[1]) == "sample")
+    {
+      vector<float> signal;
+      for (size_t i = 0; i < 1000000; i++)
+        signal.push_back (g_random_double());
+
+      int width = 1000;
+      int height = 1000;
+
+      GdkEventExpose ev;
+      ev.area.x = 0;
+      ev.area.width = width;
+      const double vz = height / 2;
+      const double hz = double (width) / signal.size();
+
+      const unsigned int runs = 100;
+      double start = gettime();
+      for (unsigned int i = 0; i < runs; i++)
+        SampleView::draw_signal (signal, &dops, &ev, height, vz, hz);
+      double end = gettime();
+
+      printf ("draw_signal: %f clocks/value\n", clocks_per_sec * (end - start) / (signal.size()) / runs);
     }
   else if (argc == 3 && string (argv[1]) == "cwt")
     {
