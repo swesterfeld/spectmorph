@@ -55,8 +55,10 @@ public:
         int x = hz * i;
         if (x == last_x)
           {
-            min_value = std::min (value, min_value);
-            max_value = std::max (value, max_value);
+            if (value < min_value)
+              min_value = value;
+            if (value > max_value)
+              max_value = value;
           }
         else
           {
