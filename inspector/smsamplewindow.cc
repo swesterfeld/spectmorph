@@ -19,7 +19,8 @@
 
 using namespace SpectMorph;
 
-SampleWindow::SampleWindow()
+SampleWindow::SampleWindow() :
+  zoom_controller (5000, 5000)
 {
   set_border_width (10);
   set_default_size (800, 600);

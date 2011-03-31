@@ -21,6 +21,8 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::min;
+using std::max;
 
 #define HZOOM_SCALE 0.05
 
@@ -59,15 +61,39 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       // blue sample:
       cr->set_source_rgb (0.8, 0.0, 0.0);
 
-      double x = 0;
       double zz = HZOOM_SCALE * hzoom;
       double vz = (height / 2) * vzoom;
-      for (size_t i = 0; i < signal.size(); i++)
-        {
-          cr->move_to (zz * MAX (0, i - 1), (height / 2) + x * vz);
-          x = signal[i];
-          cr->line_to (zz * i, (height / 2) + x * vz);
-        }
+      {
+        int last_x = 0;
+        double last_value = 0, min_value = 0, max_value = 0;
+        for (size_t i = 0; i < signal.size(); i++)
+          {
+            double value = signal[i];
+            int x = zz * i;
+            if (x == last_x)
+              {
+                min_value = min (value, min_value);
+                max_value = max (value, max_value);
+              }
+            else
+              {
+                if (last_x >= ev->area.x && x < ev->area.x + ev->area.width)
+                  {
+                    if (min_value != max_value)
+                      {
+                        cr->move_to (last_x, (height / 2) + min_value * vz);
+                        cr->line_to (last_x, (height / 2) + max_value * vz);
+                      }
+                    cr->move_to (last_x, (height / 2) + last_value * vz);
+                    cr->line_to (x, (height / 2) + value * vz);
+                  }
+                min_value = value;
+                max_value = value;
+              }
+            last_value = value;
+            last_x = x;
+          }
+      }
       cr->stroke();
 
       // attack markers:
