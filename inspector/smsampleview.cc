@@ -131,6 +131,7 @@ SampleView::force_redraw()
   if (new_width != old_width || new_height != old_height)
     {
       set_size_request (new_width, new_height);
+      signal_resized (old_width, old_height, new_width, new_height);
 
       old_height = new_height;
       old_width = new_width;

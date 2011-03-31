@@ -23,6 +23,8 @@ SpectrumWindow::SpectrumWindow()
 {
   set_border_width (10);
   set_default_size (800, 600);
+  set_title ("Spectrum View");
+
   vbox.pack_start (scrolled_win);
   vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
 

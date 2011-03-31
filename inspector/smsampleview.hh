@@ -37,6 +37,8 @@ class SampleView : public Gtk::DrawingArea
 public:
   SampleView();
 
+  sigc::signal<void, int, int, int, int> signal_resized;
+
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
   bool on_expose_event (GdkEventExpose *ev);
