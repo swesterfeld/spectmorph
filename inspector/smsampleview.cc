@@ -26,9 +26,13 @@ using std::max;
 
 #define HZOOM_SCALE 0.05
 
-SampleView::SampleView()
+SampleView::SampleView() :
+  audio (NULL)
 {
   set_size_request (400, 400);
+
+  add_events (Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_RELEASE_MASK);
+
   attack_start = 0;
   attack_end = 0;
   hzoom = 1;
@@ -43,6 +47,7 @@ SampleView::on_expose_event (GdkEventExpose *ev)
   if (window)
     {
       Gtk::Allocation allocation = get_allocation();
+      const int width = allocation.get_width();
       const int height = allocation.get_height();
 
       Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
@@ -75,19 +80,61 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       cr->line_to (hz * attack_end, height);
       cr->stroke();
 
+      if (audio)
+        {
+          int start = audio->start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+          cr->set_source_rgb (0, 0, 0.8);
+          cr->move_to (hz * start, 0);
+          cr->line_to (hz * start, height);
+          cr->stroke();
+        }
+
       // dark blue line @ zero:
       cr->set_source_rgb (0.0, 0.0, 0.0);
       cr->move_to (0, (height / 2));
-      cr->line_to (signal.size() * hz, (height / 2));
+      cr->line_to (width, (height / 2));
       cr->stroke();
     }
   return true;
 }
 
+bool
+SampleView::on_button_press_event (GdkEventButton *event)
+{
+  move_marker (event->x);
+}
+
+void
+SampleView::move_marker (int x)
+{
+  if (audio)
+    {
+      double hz = HZOOM_SCALE * hzoom;
+      int index = x / hz;
+
+      audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
+
+      force_redraw();
+    }
+}
+
+bool
+SampleView::on_motion_notify_event (GdkEventMotion *event)
+{
+  move_marker (event->x);
+}
+
+bool
+SampleView::on_button_release_event (GdkEventButton *event)
+{
+  move_marker (event->x);
+}
 
 void
 SampleView::load (GslDataHandle *dhandle, Audio *audio)
 {
+  this->audio = audio;
+
   signal.clear();
   attack_start = 0;
   attack_end = 0;

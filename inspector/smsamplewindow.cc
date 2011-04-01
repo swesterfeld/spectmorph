@@ -28,6 +28,10 @@ SampleWindow::SampleWindow() :
 
   vbox.pack_start (scrolled_win);
   vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+  vbox.pack_start (button_hbox, Gtk::PACK_SHRINK);
+
+  button_hbox.add (edit_start_marker);
+  edit_start_marker.set_label ("Edit Start Marker");
 
   add (vbox);
   scrolled_win.add (sample_view);

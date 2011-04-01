@@ -82,6 +82,11 @@ Navigator::Navigator (const string& filename) :
   index_vbox.pack_start (show_analysis_button, Gtk::PACK_SHRINK);
   show_analysis_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_analysis_changed));
 
+  save_button.set_label ("Save");
+  index_vbox.pack_start (save_button, Gtk::PACK_SHRINK);
+  save_button.signal_clicked().connect (sigc::mem_fun (*this, &Navigator::on_save_clicked));
+
+  show();
   show();
   show_all_children();
   smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_combo_changed));
@@ -121,12 +126,12 @@ Navigator::on_selection_changed()
 void
 Navigator::on_combo_changed()
 {
-  std::string file = smset_dir + "/" + smset_combobox.get_active_text().c_str();
-  printf ("loading %s...\n", file.c_str());
-  BseErrorType error = wset.load (file);
+  wset_filename = smset_dir + "/" + smset_combobox.get_active_text().c_str();
+  printf ("loading %s...\n", wset_filename.c_str());
+  BseErrorType error = wset.load (wset_filename);
   if (error)
     {
-      fprintf (stderr, "sminspector: can't open input file: %s: %s\n", file.c_str(), bse_error_blurb (error));
+      fprintf (stderr, "sminspector: can't open input file: %s: %s\n", wset_filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
 
@@ -183,4 +188,19 @@ Audio *
 Navigator::get_audio()
 {
   return audio;
+}
+
+void
+Navigator::on_save_clicked()
+{
+  if (wset_filename != "")
+    {
+      BseErrorType error = wset.save (wset_filename);
+      if (error)
+        {
+          fprintf (stderr, "sminspector: can't write output file: %s: %s\n", wset_filename.c_str(), bse_error_blurb (error));
+          exit (1);
+        }
+    }
+
 }

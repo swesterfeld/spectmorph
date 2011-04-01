@@ -30,6 +30,9 @@ class SampleWindow : public Gtk::Window
   Gtk::ScrolledWindow scrolled_win;
   SampleView          sample_view;
   ZoomController      zoom_controller;
+  Gtk::HBox           button_hbox;
+
+  Gtk::ToggleButton   edit_start_marker;
 
   Gtk::VBox           vbox;
 public:

@@ -27,12 +27,14 @@ namespace SpectMorph {
 class Navigator : public Gtk::Window
 {
   SpectMorph::WavSet    wset;
+  std::string           wset_filename;
 
   std::string           smset_dir;
   Gtk::ComboBoxText     smset_combobox;
   Gtk::VBox             index_vbox;
   Gtk::ToggleButton     show_position_button;
   Gtk::ToggleButton     show_analysis_button;
+  Gtk::Button           save_button;
   std::vector<float>    decoded_samples;
 
   struct ModelColumns : public Gtk::TreeModel::ColumnRecord
@@ -74,6 +76,7 @@ public:
   void on_selection_changed();
   void on_show_position_changed();
   void on_show_analysis_changed();
+  void on_save_clicked();
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();
