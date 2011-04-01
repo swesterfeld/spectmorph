@@ -224,3 +224,17 @@ Navigator::on_audio_edit()
 {
   wset_edit = true;
 }
+
+void
+Navigator::on_next_sample()
+{
+  Gtk::TreeModel::iterator iter = ref_tree_selection->get_selected();
+  if (iter)
+    {
+      iter++;
+      if (iter)
+        {
+          ref_tree_selection->select (iter);
+        }
+    }
+}

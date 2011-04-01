@@ -17,11 +17,43 @@
 
 #include "smsamplewindow.hh"
 
+#include <iostream>
+
 using namespace SpectMorph;
 
 SampleWindow::SampleWindow() :
   zoom_controller (5000, 5000)
 {
+  ref_action_group = Gtk::ActionGroup::create();
+  ref_action_group->add (Gtk::Action::create ("SampleMenu", "Sample"));
+  ref_action_group->add (Gtk::Action::create ("SampleNext", "Next Sample"), Gtk::AccelKey ('n', Gdk::ModifierType (0)),
+                         sigc::mem_fun (*this, &SampleWindow::on_next_sample));
+
+  ref_ui_manager = Gtk::UIManager::create();
+  ref_ui_manager-> insert_action_group (ref_action_group);
+  add_accel_group (ref_ui_manager->get_accel_group());
+
+  Glib::ustring ui_info =
+    "<ui>"
+    "  <menubar name='MenuBar'>"
+    "    <menu action='SampleMenu'>"
+    "      <menuitem action='SampleNext' />"
+    "    </menu>"
+    "  </menubar>"
+    "</ui>";
+  try
+    {
+      ref_ui_manager->add_ui_from_string (ui_info);
+    }
+  catch (const Glib::Error& ex)
+    {
+      std::cerr << "building menus failed: " << ex.what();
+    }
+
+  Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
+  if (menu_bar)
+    vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
+
   set_border_width (10);
   set_default_size (800, 600);
   set_title ("Sample View");
@@ -74,4 +106,10 @@ SampleView&
 SampleWindow::sample_view()
 {
   return m_sample_view;
+}
+
+void
+SampleWindow::on_next_sample()
+{
+  signal_next_sample();
 }

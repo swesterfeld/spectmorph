@@ -80,6 +80,7 @@ public:
   void on_show_analysis_changed();
   void on_save_clicked();
   void on_audio_edit();
+  void on_next_sample();
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();

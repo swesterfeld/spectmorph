@@ -27,6 +27,9 @@ namespace SpectMorph {
 
 class SampleWindow : public Gtk::Window
 {
+  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
+  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
+
   Gtk::ScrolledWindow scrolled_win;
   SampleView          m_sample_view;
   ZoomController      zoom_controller;
@@ -43,6 +46,9 @@ public:
 
   void on_zoom_changed();
   void on_resized (int old_width, int new_width);
+  void on_next_sample();
+
+  sigc::signal<void> signal_next_sample;
 };
 
 }
