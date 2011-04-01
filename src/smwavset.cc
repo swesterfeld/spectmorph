@@ -26,6 +26,7 @@
 #include <smwavset.hh>
 #include <smaudio.hh>
 #include <smmain.hh>
+#include <smmicroconf.hh>
 #include <bse/bseloader.h>
 
 #include <string>
@@ -68,7 +69,7 @@ struct Options
   int             min_velocity;
   int             max_velocity;
   vector<string>  format;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT } command;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -199,6 +200,14 @@ Options::parse (int   *argc_p,
           else if (strcmp (argv[1], "extract") == 0)
             {
               command = EXTRACT;
+            }
+          else if (strcmp (argv[1], "get-markers") == 0)
+            {
+              command = GET_MARKERS;
+            }
+          else if (strcmp (argv[1], "set-markers") == 0)
+            {
+              command = SET_MARKERS;
             }
 
           if (command != NONE)
@@ -542,6 +551,65 @@ main (int argc, char **argv)
           }
       fprintf (stderr, "error: path %s not found\n", argv[2]);
       exit (1);
+    }
+  else if (options.command == Options::GET_MARKERS)
+    {
+      assert (argc == 2);
+
+      WavSet wset;
+      load_or_die (wset, argv[1]);
+
+      printf ("# smwavset markers for %s\n", argv[1]);
+      printf ("\n");
+
+      for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        {
+          printf ("set-marker start %d %d %d %d %.17g\n", wi->midi_note, wi->channel,
+            wi->velocity_range_min, wi->velocity_range_max, wi->audio->start_ms);
+        }
+    }
+  else if (options.command == Options::SET_MARKERS)
+    {
+      assert (argc == 3);
+
+      WavSet wset;
+      load_or_die (wset, argv[1]);
+
+      MicroConf cfg (argv[2]);
+      while (cfg.next())
+        {
+          string marker_type;
+          int midi_note, channel, vmin, vmax;
+          double pos;
+
+          if (cfg.command ("set-marker", marker_type, midi_note, channel, vmin, vmax, pos))
+            {
+              bool match = false;
+              for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+                {
+                  if ((marker_type == "start")
+                  &&  (wi->midi_note == midi_note)
+                  &&  (wi->channel   == channel)
+                  &&  (wi->velocity_range_min == vmin)
+                  &&  (wi->velocity_range_max == vmax))
+                    {
+                      wi->audio->start_ms = pos;
+                      match = true;
+                    }
+                }
+              if (!match)
+                {
+                  printf ("no match for marker %s %d %d %d %d %.17g\n", marker_type.c_str(), midi_note, channel,
+                          vmin, vmax, pos);
+                  exit (1);
+                }
+            }
+          else
+            {
+              cfg.die_if_unknown();
+            }
+        }
+      wset.save (argv[1]);
     }
   else
     {
