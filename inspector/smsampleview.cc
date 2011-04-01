@@ -166,6 +166,7 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio)
   attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
   attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
 
+  old_width = -1;
   force_redraw();
 }
 
