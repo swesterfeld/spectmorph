@@ -47,6 +47,44 @@ public:
   template<class DrawOps> static void
   draw_signal (std::vector<float>& signal, DrawOps ops, GdkEventExpose *ev, int height, double vz, double hz)
   {
+    int x = ev->area.x;
+    int last_i0 = -1;
+    int last_x = 0;
+    double last_value = 0;
+    while (x < ev->area.x + ev->area.width)
+      {
+        int i0 = x / hz;
+        int i1 = (x + 1) / hz + 1;
+
+        if (last_i0 != i0)
+          {
+            if (i0 < int (signal.size()) && i0 >= 0 && i1 < int (signal.size() + 1) && i1 > 0)
+              {
+                ops->move_to (last_x, (height / 2) + last_value * vz);
+                ops->line_to (x, (height / 2) + signal[i0] * vz);
+
+                double min_value = signal[i0];
+                double max_value = signal[i0];
+                for (int i = i0; i < i1; i++)
+                  {
+                    const double value = signal[i];
+
+                    if (value < min_value)
+                      min_value = value;
+                    if (value > max_value)
+                      max_value = value;
+                  }
+                ops->move_to (x, (height / 2) + min_value * vz);
+                ops->line_to (x, (height / 2) + max_value * vz);
+
+                last_x = x;
+                last_value = signal[i1 - 1];
+              }
+            last_i0 = i0;
+          }
+        x++;
+      }
+#if 0
     int last_x = 0;
     double last_value = 0, min_value = 0, max_value = 0;
     for (size_t i = 0; i < signal.size(); i++)
@@ -78,6 +116,7 @@ public:
         last_value = value;
         last_x = x;
       }
+#endif
   }
 };
 
