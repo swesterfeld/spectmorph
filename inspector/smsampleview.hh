@@ -21,6 +21,7 @@
 #include <gtkmm.h>
 
 #include "smaudio.hh"
+#include <bse/bseblockutils.hh>
 
 namespace SpectMorph {
 
@@ -63,17 +64,9 @@ public:
                 ops->move_to (last_x, (height / 2) + last_value * vz);
                 ops->line_to (x, (height / 2) + signal[i0] * vz);
 
-                double min_value = signal[i0];
-                double max_value = signal[i0];
-                for (int i = i0; i < i1; i++)
-                  {
-                    const double value = signal[i];
+                float min_value, max_value;
+                Bse::Block::range (i1 - i0, &signal[i0], min_value, max_value);
 
-                    if (value < min_value)
-                      min_value = value;
-                    if (value > max_value)
-                      max_value = value;
-                  }
                 ops->move_to (x, (height / 2) + min_value * vz);
                 ops->line_to (x, (height / 2) + max_value * vz);
 
