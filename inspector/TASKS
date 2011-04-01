@@ -1,0 +1,28 @@
+1) re-encode
+
+- SpectMorph file format and/or encoding algorithm changed
+- given samples and additional markers/loop points
+=> generate updated smset
+
+2) loop design
+
+- unlooped or badly looped instrument input
+- reset loop points at gui
+=> generate updated smset
+
+3) encoder test
+
+- given original signal and encoded signal
+- inspect accuracy of spectrum
+- listen to original and encoded samples
+
+4) morphing test
+
+- given two smsets
+- inspect spectrum
+- inspect assignment between partials
+
+5) time alignment
+
+- given smset
+- set time alignment markers for attack
