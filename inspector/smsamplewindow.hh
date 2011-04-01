@@ -28,7 +28,7 @@ namespace SpectMorph {
 class SampleWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
-  SampleView          sample_view;
+  SampleView          m_sample_view;
   ZoomController      zoom_controller;
   Gtk::HBox           button_hbox;
 
@@ -39,6 +39,7 @@ public:
   SampleWindow();
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
+  SampleView& sample_view();
 
   void on_zoom_changed();
   void on_resized (int old_width, int new_width);

@@ -30,7 +30,6 @@ Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL)
 {
-  printf ("loading index: %s\n", filename.c_str());
   MicroConf cfg (filename);
 
   while (cfg.next())
@@ -87,9 +86,10 @@ Navigator::Navigator (const string& filename) :
   save_button.signal_clicked().connect (sigc::mem_fun (*this, &Navigator::on_save_clicked));
 
   show();
-  show();
   show_all_children();
   smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_combo_changed));
+
+  wset_edit = false;
 }
 
 void
@@ -126,8 +126,21 @@ Navigator::on_selection_changed()
 void
 Navigator::on_combo_changed()
 {
-  wset_filename = smset_dir + "/" + smset_combobox.get_active_text().c_str();
-  printf ("loading %s...\n", wset_filename.c_str());
+  string new_filename = smset_dir + "/" + smset_combobox.get_active_text().c_str();
+  if (wset_edit && new_filename != wset_filename)
+    {
+      Gtk::MessageDialog dlg (Birnet::string_printf ("You changed instrument '%s' - if you switch instruments now your changes will be lost.", wset_filename.c_str()),
+                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_CANCEL);
+      dlg.add_button ("Continue without saving", Gtk::RESPONSE_ACCEPT);
+      if (dlg.run() != Gtk::RESPONSE_ACCEPT)
+        {
+          smset_combobox.set_active_text (wset_active_text);
+          return;
+        }
+    }
+  wset_filename = new_filename;
+  wset_edit = false;
+  wset_active_text = smset_combobox.get_active_text();
   BseErrorType error = wset.load (wset_filename);
   if (error)
     {
@@ -201,6 +214,13 @@ Navigator::on_save_clicked()
           fprintf (stderr, "sminspector: can't write output file: %s: %s\n", wset_filename.c_str(), bse_error_blurb (error));
           exit (1);
         }
+      wset_edit = false;
     }
 
+}
+
+void
+Navigator::on_audio_edit()
+{
+  wset_edit = true;
 }

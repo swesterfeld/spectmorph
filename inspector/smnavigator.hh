@@ -28,6 +28,8 @@ class Navigator : public Gtk::Window
 {
   SpectMorph::WavSet    wset;
   std::string           wset_filename;
+  std::string           wset_active_text;
+  bool                  wset_edit;
 
   std::string           smset_dir;
   Gtk::ComboBoxText     smset_combobox;
@@ -77,6 +79,7 @@ public:
   void on_show_position_changed();
   void on_show_analysis_changed();
   void on_save_clicked();
+  void on_audio_edit();
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();

@@ -41,6 +41,7 @@ public:
   SampleView();
 
   sigc::signal<void, int, int> signal_resized;
+  sigc::signal<void>           signal_audio_edit;
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 

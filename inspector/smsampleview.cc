@@ -114,6 +114,7 @@ SampleView::move_marker (int x)
 
       audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
 
+      signal_audio_edit();
       force_redraw();
     }
 }

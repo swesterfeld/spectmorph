@@ -75,6 +75,8 @@ MainWindow::MainWindow (const string& filename) :
   time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &MainWindow::on_progress_changed));
   time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
+  sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (navigator, &Navigator::on_audio_edit));
+
   spectrum_window.set_spectrum_model (time_freq_view);
 }
 

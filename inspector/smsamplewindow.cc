@@ -34,11 +34,11 @@ SampleWindow::SampleWindow() :
   edit_start_marker.set_label ("Edit Start Marker");
 
   add (vbox);
-  scrolled_win.add (sample_view);
+  scrolled_win.add (m_sample_view);
   scrolled_win.set_policy (Gtk::POLICY_AUTOMATIC, Gtk::POLICY_NEVER);
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SampleWindow::on_zoom_changed));
-  sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
+  m_sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
 
   show_all_children();
   show();
@@ -47,13 +47,13 @@ SampleWindow::SampleWindow() :
 void
 SampleWindow::load (GslDataHandle *dhandle, Audio *audio)
 {
-  sample_view.load (dhandle, audio);
+  m_sample_view.load (dhandle, audio);
 }
 
 void
 SampleWindow::on_zoom_changed()
 {
-  sample_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  m_sample_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
 
 void
@@ -68,4 +68,10 @@ SampleWindow::on_resized (int old_width, int new_width)
 
       hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
     }
+}
+
+SampleView&
+SampleWindow::sample_view()
+{
+  return m_sample_view;
 }
