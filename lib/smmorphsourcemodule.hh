@@ -37,6 +37,7 @@ public:
   MorphSourceModule (MorphPlanVoice *voice);
   ~MorphSourceModule();
 
+  float latency_ms();
   void set_config (MorphOperator *op);
   LiveDecoderSource *source();
 };

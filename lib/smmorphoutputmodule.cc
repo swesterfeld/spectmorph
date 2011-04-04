@@ -20,6 +20,7 @@
 #include "smmorphplan.hh"
 #include "smleakdebugger.hh"
 #include <glib.h>
+#include <assert.h>
 
 #define CHANNEL_OP_COUNT 4
 
@@ -84,6 +85,16 @@ MorphOutputModule::set_config (MorphOperator *op)
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
+    }
+}
+
+void
+MorphOutputModule::set_latency_ms (float latency_ms)
+{
+  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
+    {
+      if (out_decoders[ch])
+        out_decoders[ch]->set_latency_ms (latency_ms);
     }
 }
 

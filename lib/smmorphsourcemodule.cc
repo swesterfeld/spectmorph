@@ -26,6 +26,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::max;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphSourceModule");
 
@@ -64,6 +65,20 @@ MorphSourceModule::set_config (MorphOperator *op)
   string path = smset_dir + "/" + smset;
 
   my_source.wav_set = WavSetRepo::the()->get (path);
+}
+
+float
+MorphSourceModule::latency_ms()
+{
+  float max_start_ms = 0;
+  if (my_source.wav_set)
+    {
+      for (vector<WavSetWave>::iterator wi = my_source.wav_set->waves.begin(); wi != my_source.wav_set->waves.end(); wi++)
+        {
+          max_start_ms = max (wi->audio->start_ms, max_start_ms);
+        }
+    }
+  return max_start_ms;
 }
 
 void

@@ -41,6 +41,18 @@ MorphOperatorModule::source()
   return NULL;
 }
 
+float
+MorphOperatorModule::latency_ms()
+{
+  return 0; // default
+}
+
+void
+MorphOperatorModule::set_latency_ms (float latency_ms)
+{
+  // default
+}
+
 MorphOperatorModule*
 MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
 {
@@ -52,5 +64,3 @@ MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
 
   return NULL;
 }
-
-

@@ -58,6 +58,7 @@ class LiveDecoder
   int                 loop_point;
   float               current_freq;
   float               current_mix_freq;
+  float               latency_ms;
 
   size_t              have_samples;
   size_t              block_size;
@@ -66,6 +67,7 @@ class LiveDecoder
   size_t              frame_idx;
   float               original_sample_pos;
 
+  size_t              latency_zero_samples;
   int                 noise_seed;
 
   Birnet::AlignedArray<float,16> *sse_samples;
@@ -79,6 +81,7 @@ public:
   void enable_debug_fft_perf (bool dfp);
   void enable_original_samples (bool eos);
   void set_noise_seed (int seed);
+  void set_latency_ms (float latency_ms);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);

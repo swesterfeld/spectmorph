@@ -26,6 +26,7 @@ using std::vector;
 using std::string;
 using std::sort;
 using std::map;
+using std::max;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
@@ -44,9 +45,15 @@ MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
 void
 MorphPlanVoice::configure_modules()
 {
+  float latency_ms = 0;
   for (size_t i = 0; i < modules.size(); i++)
     {
       modules[i].module->set_config (modules[i].op);
+      latency_ms = max (modules[i].module->latency_ms(), latency_ms);
+    }
+  for (size_t i = 0; i < modules.size(); i++)
+    {
+      modules[i].module->set_latency_ms (latency_ms);
     }
 }
 
