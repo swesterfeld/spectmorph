@@ -111,7 +111,7 @@ TimeFreqWindow::on_dhandle_changed()
 void
 TimeFreqWindow::on_progress_changed()
 {
-  // fft_param_window.set_progress (time_freq_view.get_progress()); FIXME
+  navigator->fft_param_window()->set_progress (m_time_freq_view.get_progress());
 }
 
 void
