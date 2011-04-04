@@ -25,8 +25,11 @@
 
 namespace SpectMorph {
 
+class Navigator;
 class SampleWindow : public Gtk::Window
 {
+  Navigator          *navigator;
+
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 
@@ -39,11 +42,12 @@ class SampleWindow : public Gtk::Window
 
   Gtk::VBox           vbox;
 public:
-  SampleWindow();
+  SampleWindow (Navigator *navigator);
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
   SampleView& sample_view();
 
+  void on_dhandle_changed();
   void on_zoom_changed();
   void on_resized (int old_width, int new_width);
   void on_next_sample();

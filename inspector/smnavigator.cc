@@ -30,6 +30,7 @@ using std::string;
 Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL),
+  sample_window (this),
   time_freq_window (this)
 {
   MicroConf cfg (filename);
@@ -56,6 +57,12 @@ Navigator::Navigator (const string& filename) :
   ref_action_group->add (Gtk::Action::create ("ViewMenu", "View"));
   ref_action_group->add (Gtk::Action::create ("ViewTimeFreq", "Time/Frequency View"),
                          sigc::mem_fun (*this, &Navigator::on_view_time_freq));
+  ref_action_group->add (Gtk::Action::create ("ViewSample", "Sample View"),
+                         sigc::mem_fun (*this, &Navigator::on_view_sample));
+  ref_action_group->add (Gtk::Action::create ("ViewSpectrum", "Spectrum View"),
+                         sigc::mem_fun (*this, &Navigator::on_view_spectrum));
+  ref_action_group->add (Gtk::Action::create ("ViewFFTParams", "FFT Params"),
+                         sigc::mem_fun (*this, &Navigator::on_view_fft_params));
 
   ref_ui_manager = Gtk::UIManager::create();
   ref_ui_manager-> insert_action_group (ref_action_group);
@@ -66,6 +73,9 @@ Navigator::Navigator (const string& filename) :
     "  <menubar name='MenuBar'>"
     "    <menu action='ViewMenu'>"
     "      <menuitem action='ViewTimeFreq' />"
+    "      <menuitem action='ViewSample' />"
+    "      <menuitem action='ViewSpectrum' />"
+    "      <menuitem action='ViewFFTParams' />"
     "    </menu>"
     "  </menubar>"
     "</ui>";
@@ -124,8 +134,14 @@ Navigator::Navigator (const string& filename) :
   wset_edit = false;
 
   signal_dhandle_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_dhandle_changed));
+  signal_dhandle_changed.connect (sigc::mem_fun (sample_window, &SampleWindow::on_dhandle_changed));
   signal_show_position_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_position_changed));
   signal_show_analysis_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_analysis_changed));
+
+  sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (*this, &Navigator::on_audio_edit));
+  sample_window.signal_next_sample.connect (sigc::mem_fun (*this, &Navigator::on_next_sample));
+
+  spectrum_window.set_spectrum_model (*time_freq_window.time_freq_view());
 }
 
 void
@@ -279,6 +295,24 @@ void
 Navigator::on_view_time_freq()
 {
   time_freq_window.show();
+}
+
+void
+Navigator::on_view_fft_params()
+{
+  m_fft_param_window.show();
+}
+
+void
+Navigator::on_view_spectrum()
+{
+  spectrum_window.show();
+}
+
+void
+Navigator::on_view_sample()
+{
+  sample_window.show();
 }
 
 FFTParamWindow*

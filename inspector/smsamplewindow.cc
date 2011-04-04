@@ -16,12 +16,14 @@
  */
 
 #include "smsamplewindow.hh"
+#include "smnavigator.hh"
 
 #include <iostream>
 
 using namespace SpectMorph;
 
-SampleWindow::SampleWindow() :
+SampleWindow::SampleWindow (Navigator *navigator) :
+  navigator (navigator),
   zoom_controller (5000, 5000)
 {
   ref_action_group = Gtk::ActionGroup::create();
@@ -73,6 +75,12 @@ SampleWindow::SampleWindow() :
   m_sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
 
   show_all_children();
+}
+
+void
+SampleWindow::on_dhandle_changed()
+{
+  load (navigator->get_dhandle(), navigator->get_audio());
 }
 
 void

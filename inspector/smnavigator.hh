@@ -71,10 +71,10 @@ class Navigator : public Gtk::Window
   GslDataHandle                     *dhandle;
   Audio                             *audio;
 
-  TimeFreqWindow                     time_freq_window;
   SpectrumWindow                     spectrum_window;
   FFTParamWindow                     m_fft_param_window;
   SampleWindow                       sample_window;
+  TimeFreqWindow                     time_freq_window;
 public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
@@ -90,6 +90,9 @@ public:
   void on_audio_edit();
   void on_next_sample();
   void on_view_time_freq();
+  void on_view_sample();
+  void on_view_spectrum();
+  void on_view_fft_params();
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();

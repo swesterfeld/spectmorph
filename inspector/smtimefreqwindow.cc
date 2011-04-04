@@ -65,55 +65,47 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   boost_scale.set_value (0);
 
   add (vbox);
-  scrolled_win.add (time_freq_view);
+  scrolled_win.add (m_time_freq_view);
   show_all_children();
 
-  // fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed)); FIXME
-  time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_progress_changed));
-  time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_resized));
-
-  // sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (navigator, &Navigator::on_audio_edit)); FIXME
-  // sample_window.signal_next_sample.connect (sigc::mem_fun (navigator, &Navigator::on_next_sample)); FIXME
-
-  // spectrum_window.set_spectrum_model (time_freq_view); FIXME
+  navigator->fft_param_window()->signal_params_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed));
+  m_time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_progress_changed));
+  m_time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_resized));
 }
 
 void
 TimeFreqWindow::on_zoom_changed()
 {
-  time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  m_time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
 
 void
 TimeFreqWindow::on_position_changed()
 {
-  int frames = time_freq_view.get_frames();
+  int frames = m_time_freq_view.get_frames();
   int position = CLAMP (sm_round_positive (position_adjustment.get_value() * frames), 0, frames - 1);
   char buffer[1024];
   sprintf (buffer, "frame %d", position);
   position_label.set_text (buffer);
 #if 0 /* FIXME */
   if (navigator.get_show_position())
-    time_freq_view.set_position (position);
+    m_time_freq_view.set_position (position);
   else
-    time_freq_view.set_position (-1);
+    m_time_freq_view.set_position (-1);
 #endif
 }
 
 void
 TimeFreqWindow::on_analysis_changed()
 {
-  time_freq_view.set_show_analysis (navigator->get_show_analysis());
+  m_time_freq_view.set_show_analysis (navigator->get_show_analysis());
 }
 
 void
 TimeFreqWindow::on_dhandle_changed()
 {
-  time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),
+  m_time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),
                        navigator->fft_param_window()->get_analysis_params());
-#if 0
-  sample_window.load (navigator.get_dhandle(), navigator.get_audio());
-#endif /* FIXME */
 }
 
 void
@@ -127,7 +119,7 @@ TimeFreqWindow::on_display_params_changed()
 {
   min_db_label.set_text (Birnet::string_printf ("min_db %.2f", min_db_scale.get_value()));
   boost_label.set_text (Birnet::string_printf ("boost %.2f", boost_scale.get_value()));
-  time_freq_view.set_display_params (min_db_scale.get_value(), boost_scale.get_value());
+  m_time_freq_view.set_display_params (min_db_scale.get_value(), boost_scale.get_value());
 }
 
 void
@@ -144,4 +136,10 @@ TimeFreqWindow::on_resized (int old_width, int old_height, int new_width, int ne
       vadj->set_value ((vadj->get_value() + h_2) / old_height * new_height - h_2);
       hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
     }
+}
+
+TimeFreqView*
+TimeFreqWindow::time_freq_view()
+{
+  return &m_time_freq_view;
 }
