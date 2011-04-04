@@ -17,11 +17,21 @@ spectmorphosc_la_LDFLAGS = -module $(plugin_ldflags)
 spectmorphosc_la_LIBADD  = $(plugin_libs)
 plugin_LTLIBRARIES += spectmorphosc.la
 
-EXTRA_DIST += spectmorphosc.idl
+## SpectMorph Delay
+spectmorphdelay_la_SOURCES = spectmorphdelay.cc
+spectmorphdelay_la_LDFLAGS = -module $(plugin_ldflags)
+spectmorphdelay_la_LIBADD  = $(plugin_libs)
+plugin_LTLIBRARIES += spectmorphdelay.la
+
+EXTRA_DIST += spectmorphosc.idl spectmorphdelay.idl
 
 spectmorphosc.genidl.hh: $(srcdir)/spectmorphosc.idl
 	sfidl --plugin $(srcdir)/spectmorphosc.idl > spectmorphosc.genidl.hh
 
-$(srcdir)/spectmorphosc.cc: spectmorphosc.genidl.hh
+spectmorphdelay.genidl.hh: $(srcdir)/spectmorphdelay.idl
+	sfidl --plugin $(srcdir)/spectmorphdelay.idl > spectmorphdelay.genidl.hh
 
-CLEANFILES += spectmorphosc.genidl.hh
+$(srcdir)/spectmorphosc.cc: spectmorphosc.genidl.hh
+$(srcdir)/spectmorphdelay.cc: spectmorphdelay.genidl.hh
+
+CLEANFILES += spectmorphosc.genidl.hh spectmorphdelay.genidl.hh

@@ -1,0 +1,37 @@
+/* BseNoise - BSE FM Operator		-*-mode: c++;-*-
+ * Copyright (C) 2006 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+#include <bse/bsecxxmodule.idl>
+
+namespace SpectMorph {
+
+using namespace Bse;
+
+class Delay : Effect {
+  Info    authors     = "Stefan Westerfeld";
+  Info    license     = _("GNU Lesser General Public License");
+  Info    category    = _("/Audio Sources/SpectMorph Delay");
+  Info    blurb       = _("Delay for SpectMorph instruments.");
+  IStream gate_in     = (_("Gate In"), _("Gate Input"));
+  OStream gate_out    = (_("Gate Out"), _("Gate Output"));
+
+  group _("Delay") {
+    Real delay_ms     = Real (_("Delay [ms]"), _("Set the delay time in milliseconds"), 10.0, 0.1, 250.0, 10.0, STANDARD ":scale");
+  };
+};
+};
