@@ -29,7 +29,8 @@ using std::string;
 
 Navigator::Navigator (const string& filename) :
   dhandle (NULL),
-  audio (NULL)
+  audio (NULL),
+  time_freq_window (this)
 {
   MicroConf cfg (filename);
 
@@ -121,6 +122,10 @@ Navigator::Navigator (const string& filename) :
   smset_combobox.signal_changed().connect (sigc::mem_fun (*this, &Navigator::on_combo_changed));
 
   wset_edit = false;
+
+  signal_dhandle_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_dhandle_changed));
+  signal_show_position_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_position_changed));
+  signal_show_analysis_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_analysis_changed));
 }
 
 void
@@ -273,5 +278,11 @@ Navigator::on_next_sample()
 void
 Navigator::on_view_time_freq()
 {
-  printf ("FIXME: view time/freq widget\n");
+  time_freq_window.show();
+}
+
+FFTParamWindow*
+Navigator::fft_param_window()
+{
+  return &m_fft_param_window;
 }

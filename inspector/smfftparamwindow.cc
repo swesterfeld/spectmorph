@@ -97,7 +97,6 @@ FFTParamWindow::FFTParamWindow() :
   cwt_time_res_scale.set_value (0);
   add (table);
 
-  show();
   show_all_children();
 }
 

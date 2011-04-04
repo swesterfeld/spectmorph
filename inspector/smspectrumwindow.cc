@@ -31,7 +31,6 @@ SpectrumWindow::SpectrumWindow()
   scrolled_win.add (spectrum_view);
   add (vbox);
 
-  show();
   show_all_children();
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));

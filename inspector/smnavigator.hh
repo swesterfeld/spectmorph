@@ -21,6 +21,7 @@
 #include <gtkmm.h>
 
 #include "smwavset.hh"
+#include "smtimefreqwindow.hh"
 
 namespace SpectMorph {
 
@@ -70,6 +71,10 @@ class Navigator : public Gtk::Window
   GslDataHandle                     *dhandle;
   Audio                             *audio;
 
+  TimeFreqWindow                     time_freq_window;
+  SpectrumWindow                     spectrum_window;
+  FFTParamWindow                     m_fft_param_window;
+  SampleWindow                       sample_window;
 public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
@@ -90,6 +95,7 @@ public:
   Audio         *get_audio();
   bool           get_show_position();
   bool           get_show_analysis();
+  FFTParamWindow *fft_param_window();
 };
 
 }

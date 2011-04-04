@@ -73,7 +73,6 @@ SampleWindow::SampleWindow() :
   m_sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
 
   show_all_children();
-  show();
 }
 
 void

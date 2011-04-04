@@ -22,13 +22,13 @@
 
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
-#include "smnavigator.hh"
 #include "smspectrumwindow.hh"
 #include "smfftparamwindow.hh"
 #include "smsamplewindow.hh"
 
 namespace SpectMorph {
 
+class Navigator;
 class TimeFreqWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -49,13 +49,10 @@ class TimeFreqWindow : public Gtk::Window
   Gtk::HBox           boost_hbox;
 
   Gtk::VBox           vbox;
-  Navigator           navigator;
-  SpectrumWindow      spectrum_window;
-  FFTParamWindow      fft_param_window;
-  SampleWindow        sample_window;
+  Navigator          *navigator;
 
 public:
-  TimeFreqWindow (const std::string& filename);
+  TimeFreqWindow (Navigator *navigator);
 
   void on_zoom_changed();
   void on_dhandle_changed();

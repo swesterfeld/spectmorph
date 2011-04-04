@@ -17,20 +17,20 @@
 
 #include "smtimefreqwindow.hh"
 #include "smmath.hh"
+#include "smnavigator.hh"
 
 using std::vector;
 using std::string;
 
 using namespace SpectMorph;
 
-TimeFreqWindow::TimeFreqWindow (const string& filename) :
-  //time_freq_view (filename),
+TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   zoom_controller (5000, 5000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
   position_scale (position_adjustment),
   min_db_scale (-192, -3, 0.01),
   boost_scale (0, 100, 0.01),
-  navigator (filename)
+  navigator (navigator)
 {
   set_border_width (10);
   set_default_size (800, 600);
@@ -68,17 +68,14 @@ TimeFreqWindow::TimeFreqWindow (const string& filename) :
   scrolled_win.add (time_freq_view);
   show_all_children();
 
-  navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed));
-  navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_position_changed));
-  navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_analysis_changed));
-  fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed));
+  // fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed)); FIXME
   time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_progress_changed));
   time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_resized));
 
-  sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (navigator, &Navigator::on_audio_edit));
-  sample_window.signal_next_sample.connect (sigc::mem_fun (navigator, &Navigator::on_next_sample));
+  // sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (navigator, &Navigator::on_audio_edit)); FIXME
+  // sample_window.signal_next_sample.connect (sigc::mem_fun (navigator, &Navigator::on_next_sample)); FIXME
 
-  spectrum_window.set_spectrum_model (time_freq_view);
+  // spectrum_window.set_spectrum_model (time_freq_view); FIXME
 }
 
 void
@@ -95,29 +92,34 @@ TimeFreqWindow::on_position_changed()
   char buffer[1024];
   sprintf (buffer, "frame %d", position);
   position_label.set_text (buffer);
+#if 0 /* FIXME */
   if (navigator.get_show_position())
     time_freq_view.set_position (position);
   else
     time_freq_view.set_position (-1);
+#endif
 }
 
 void
 TimeFreqWindow::on_analysis_changed()
 {
-  time_freq_view.set_show_analysis (navigator.get_show_analysis());
+  time_freq_view.set_show_analysis (navigator->get_show_analysis());
 }
 
 void
 TimeFreqWindow::on_dhandle_changed()
 {
-  time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), fft_param_window.get_analysis_params());
+  time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),
+                       navigator->fft_param_window()->get_analysis_params());
+#if 0
   sample_window.load (navigator.get_dhandle(), navigator.get_audio());
+#endif /* FIXME */
 }
 
 void
 TimeFreqWindow::on_progress_changed()
 {
-  fft_param_window.set_progress (time_freq_view.get_progress());
+  // fft_param_window.set_progress (time_freq_view.get_progress()); FIXME
 }
 
 void
