@@ -52,7 +52,7 @@ main (int argc, char **argv)
 
   vector<float> samples (44100);
   voice.output()->retrigger (0, 440, 100, 44100);
-  voice.output()->process (samples.size(), &samples[0]);
+  voice.output()->process (/* port */ 0, samples.size(), &samples[0]);
   for (size_t i = 0; i < samples.size(); i++)
     {
       printf ("%.17g\n", samples[i]);

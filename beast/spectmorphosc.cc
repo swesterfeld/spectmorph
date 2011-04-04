@@ -102,12 +102,22 @@ class Osc : public OscBase {
       if (!morph_plan_voice.output())
         {
           ostream_set (OCHANNEL_AUDIO_OUT1, const_values (0));
+          ostream_set (OCHANNEL_AUDIO_OUT2, const_values (0));
+          ostream_set (OCHANNEL_AUDIO_OUT3, const_values (0));
+          ostream_set (OCHANNEL_AUDIO_OUT4, const_values (0));
         }
       else
         {
-          gfloat *audio_out1 = ostream (OCHANNEL_AUDIO_OUT1).values;
+          int channels[4] = { OCHANNEL_AUDIO_OUT1, OCHANNEL_AUDIO_OUT2, OCHANNEL_AUDIO_OUT3, OCHANNEL_AUDIO_OUT4 };
 
-          morph_plan_voice.output()->process (n_values, audio_out1);
+          for (int port = 0; port < 4; port++)
+            {
+              if (ostream (channels[port]).connected)
+                {
+                  float *audio_out = ostream (channels[port]).values;
+                  morph_plan_voice.output()->process (port, n_values, audio_out);
+                }
+            }
         }
     }
     void
