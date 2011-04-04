@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "smmainwindow.hh"
+#include "smtimefreqwindow.hh"
 #include "smmath.hh"
 
 using std::vector;
@@ -23,7 +23,7 @@ using std::string;
 
 using namespace SpectMorph;
 
-MainWindow::MainWindow (const string& filename) :
+TimeFreqWindow::TimeFreqWindow (const string& filename) :
   //time_freq_view (filename),
   zoom_controller (5000, 5000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
@@ -38,7 +38,7 @@ MainWindow::MainWindow (const string& filename) :
   vbox.pack_start (scrolled_win);
 
   vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
-  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWindow::on_zoom_changed));
+  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_zoom_changed));
 
   vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
   position_hbox.pack_start (position_scale);
@@ -46,14 +46,14 @@ MainWindow::MainWindow (const string& filename) :
   position_scale.set_draw_value (false);
   position_label.set_text ("frame 0");
   position_hbox.set_border_width (10);
-  position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
+  position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &TimeFreqWindow::on_position_changed));
 
   vbox.pack_start (min_db_hbox, Gtk::PACK_SHRINK);
   min_db_hbox.pack_start (min_db_scale);
   min_db_hbox.pack_start (min_db_label, Gtk::PACK_SHRINK);
   min_db_scale.set_draw_value (false);
   min_db_hbox.set_border_width (10);
-  min_db_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_display_params_changed));
+  min_db_scale.signal_value_changed().connect (sigc::mem_fun (*this, &TimeFreqWindow::on_display_params_changed));
   min_db_scale.set_value (-96);
 
   vbox.pack_start (boost_hbox, Gtk::PACK_SHRINK);
@@ -61,19 +61,19 @@ MainWindow::MainWindow (const string& filename) :
   boost_hbox.pack_start (boost_label, Gtk::PACK_SHRINK);
   boost_scale.set_draw_value (false);
   boost_hbox.set_border_width (10);
-  boost_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_display_params_changed));
+  boost_scale.signal_value_changed().connect (sigc::mem_fun (*this, &TimeFreqWindow::on_display_params_changed));
   boost_scale.set_value (0);
 
   add (vbox);
   scrolled_win.add (time_freq_view);
   show_all_children();
 
-  navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
-  navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &MainWindow::on_position_changed));
-  navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &MainWindow::on_analysis_changed));
-  fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &MainWindow::on_dhandle_changed));
-  time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &MainWindow::on_progress_changed));
-  time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
+  navigator.signal_dhandle_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed));
+  navigator.signal_show_position_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_position_changed));
+  navigator.signal_show_analysis_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_analysis_changed));
+  fft_param_window.signal_params_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_dhandle_changed));
+  time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_progress_changed));
+  time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_resized));
 
   sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (navigator, &Navigator::on_audio_edit));
   sample_window.signal_next_sample.connect (sigc::mem_fun (navigator, &Navigator::on_next_sample));
@@ -82,13 +82,13 @@ MainWindow::MainWindow (const string& filename) :
 }
 
 void
-MainWindow::on_zoom_changed()
+TimeFreqWindow::on_zoom_changed()
 {
   time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
 
 void
-MainWindow::on_position_changed()
+TimeFreqWindow::on_position_changed()
 {
   int frames = time_freq_view.get_frames();
   int position = CLAMP (sm_round_positive (position_adjustment.get_value() * frames), 0, frames - 1);
@@ -102,26 +102,26 @@ MainWindow::on_position_changed()
 }
 
 void
-MainWindow::on_analysis_changed()
+TimeFreqWindow::on_analysis_changed()
 {
   time_freq_view.set_show_analysis (navigator.get_show_analysis());
 }
 
 void
-MainWindow::on_dhandle_changed()
+TimeFreqWindow::on_dhandle_changed()
 {
   time_freq_view.load (navigator.get_dhandle(), "fn", navigator.get_audio(), fft_param_window.get_analysis_params());
   sample_window.load (navigator.get_dhandle(), navigator.get_audio());
 }
 
 void
-MainWindow::on_progress_changed()
+TimeFreqWindow::on_progress_changed()
 {
   fft_param_window.set_progress (time_freq_view.get_progress());
 }
 
 void
-MainWindow::on_display_params_changed()
+TimeFreqWindow::on_display_params_changed()
 {
   min_db_label.set_text (Birnet::string_printf ("min_db %.2f", min_db_scale.get_value()));
   boost_label.set_text (Birnet::string_printf ("boost %.2f", boost_scale.get_value()));
@@ -129,7 +129,7 @@ MainWindow::on_display_params_changed()
 }
 
 void
-MainWindow::on_resized (int old_width, int old_height, int new_width, int new_height)
+TimeFreqWindow::on_resized (int old_width, int old_height, int new_width, int new_height)
 {
   if (old_width > 0 && old_height > 0 && new_width > 0 && new_height > 0)
     {

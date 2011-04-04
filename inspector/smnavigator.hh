@@ -26,6 +26,9 @@ namespace SpectMorph {
 
 class Navigator : public Gtk::Window
 {
+  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
+  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
+
   SpectMorph::WavSet    wset;
   std::string           wset_filename;
   std::string           wset_active_text;
@@ -81,6 +84,7 @@ public:
   void on_save_clicked();
   void on_audio_edit();
   void on_next_sample();
+  void on_view_time_freq();
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();

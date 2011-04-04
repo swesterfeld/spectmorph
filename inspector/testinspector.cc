@@ -23,7 +23,7 @@
 #include <string>
 
 #include "smmain.hh"
-#include "smmainwindow.hh"
+#include "smtimefreqwindow.hh"
 #include "smwavloader.hh"
 #include "smcwt.hh"
 #include "smsampleview.hh"

@@ -5,12 +5,12 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la
 
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
-         smnavigator.hh smmainwindow.hh smfftparamwindow.hh smfftthread.hh \
+         smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh smsampleview.hh smsamplewindow.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
-         smnavigator.cc smmainwindow.cc \
+         smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsampleview.cc smsamplewindow.cc
 
 noinst_PROGRAMS = testinspector

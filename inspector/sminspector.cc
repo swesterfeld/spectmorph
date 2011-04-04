@@ -23,7 +23,7 @@
 #include <string>
 
 #include "smmain.hh"
-#include "smmainwindow.hh"
+#include "smnavigator.hh"
 
 using namespace SpectMorph;
 
@@ -40,7 +40,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MainWindow window (argv[1]);
+  Navigator window (argv[1]);
 
   Gtk::Main::run (window);
 }

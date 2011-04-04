@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MAIN_WINDOW_HH
-#define SPECTMORPH_MAIN_WINDOW_HH
+#ifndef SPECTMORPH_TIME_FREQ_WINDOW_HH
+#define SPECTMORPH_TIME_FREQ_WINDOW_HH
 
 #include <gtkmm.h>
 
@@ -29,7 +29,7 @@
 
 namespace SpectMorph {
 
-class MainWindow : public Gtk::Window
+class TimeFreqWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        time_freq_view;
@@ -55,7 +55,7 @@ class MainWindow : public Gtk::Window
   SampleWindow        sample_window;
 
 public:
-  MainWindow (const std::string& filename);
+  TimeFreqWindow (const std::string& filename);
 
   void on_zoom_changed();
   void on_dhandle_changed();

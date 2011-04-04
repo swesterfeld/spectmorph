@@ -21,6 +21,7 @@
 
 #include <assert.h>
 #include <bse/bseloader.h>
+#include <iostream>
 
 using namespace SpectMorph;
 
@@ -49,6 +50,36 @@ Navigator::Navigator (const string& filename) :
           cfg.die_if_unknown();
         }
     }
+
+  ref_action_group = Gtk::ActionGroup::create();
+  ref_action_group->add (Gtk::Action::create ("ViewMenu", "View"));
+  ref_action_group->add (Gtk::Action::create ("ViewTimeFreq", "Time/Frequency View"),
+                         sigc::mem_fun (*this, &Navigator::on_view_time_freq));
+
+  ref_ui_manager = Gtk::UIManager::create();
+  ref_ui_manager-> insert_action_group (ref_action_group);
+  add_accel_group (ref_ui_manager->get_accel_group());
+
+  Glib::ustring ui_info =
+    "<ui>"
+    "  <menubar name='MenuBar'>"
+    "    <menu action='ViewMenu'>"
+    "      <menuitem action='ViewTimeFreq' />"
+    "    </menu>"
+    "  </menubar>"
+    "</ui>";
+  try
+    {
+      ref_ui_manager->add_ui_from_string (ui_info);
+    }
+  catch (const Glib::Error& ex)
+    {
+      std::cerr << "building menus failed: " << ex.what();
+    }
+
+  Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
+  if (menu_bar)
+    index_vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
 
   set_title ("Instrument Navigator");
   set_border_width (10);
@@ -237,4 +268,10 @@ Navigator::on_next_sample()
           ref_tree_selection->select (iter);
         }
     }
+}
+
+void
+Navigator::on_view_time_freq()
+{
+  printf ("FIXME: view time/freq widget\n");
 }
