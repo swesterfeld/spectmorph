@@ -87,12 +87,10 @@ TimeFreqWindow::on_position_changed()
   char buffer[1024];
   sprintf (buffer, "frame %d", position);
   position_label.set_text (buffer);
-#if 0 /* FIXME */
-  if (navigator.get_show_position())
+  if (navigator->get_show_position())
     m_time_freq_view.set_position (position);
   else
     m_time_freq_view.set_position (-1);
-#endif
 }
 
 void

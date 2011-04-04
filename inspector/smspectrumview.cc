@@ -32,16 +32,11 @@ SpectrumView::SpectrumView()
 static float
 value_scale (float value)
 {
-  if (true)
-    {
-      double db = bse_db_from_factor (value, -200);
-      if (db > -96)
-        return db + 96;
-      else
-        return 0;
-    }
+  double db = value;
+  if (db > -96)
+    return db + 96;
   else
-    return value;
+    return 0;
 }
 
 bool

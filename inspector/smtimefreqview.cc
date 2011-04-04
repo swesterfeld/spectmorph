@@ -142,8 +142,6 @@ TimeFreqView::load (const string& filename)
 void
 TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
 {
-  results.clear();
-
   if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
     FFTThread::the()->compute_image (image, dhandle, analysis_params);
 
@@ -155,7 +153,7 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
 int
 TimeFreqView::get_frames()
 {
-  return results.size();
+  return image.get_width();
 }
 
 #define FRAC_SHIFT       12
@@ -267,8 +265,20 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
 FFTResult
 TimeFreqView::get_spectrum()
 {
-  if (position >= 0 && position < int (results.size()))
-    return results[position];
+  if (position >= 0 && position < int (image.get_width()))
+    {
+      FFTResult result;
+      result.mags.resize (image.get_height());
+
+      int *ip = image.get_pixels() + position;
+      for (size_t y = 0; y < image.get_height(); y++)
+        {
+          // we insert data backwards, so that low frequencies are it the beginning of the result vector
+          result.mags[image.get_height() - y - 1] = *ip * (1.0 / 256);  // undo 8 bits fixed point
+          ip += image.get_rowstride();
+        }
+      return result;
+    }
 
   return FFTResult();
 }

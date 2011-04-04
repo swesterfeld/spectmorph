@@ -29,7 +29,6 @@ namespace SpectMorph {
 class TimeFreqView : public Gtk::DrawingArea
 {
 protected:
-  std::vector<FFTResult> results;
   PixelArray  image;
   Audio      *audio;
   double hzoom, vzoom;
