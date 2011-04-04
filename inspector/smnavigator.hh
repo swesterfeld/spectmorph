@@ -93,6 +93,7 @@ public:
   void on_view_sample();
   void on_view_spectrum();
   void on_view_fft_params();
+  bool on_delete_event (GdkEventAny* event);
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();

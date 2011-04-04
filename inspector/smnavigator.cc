@@ -320,3 +320,17 @@ Navigator::fft_param_window()
 {
   return &m_fft_param_window;
 }
+
+bool
+Navigator::on_delete_event (GdkEventAny* event)
+{
+  if (wset_edit)
+    {
+      Gtk::MessageDialog dlg (Birnet::string_printf ("You changed instrument '%s' - if you quit now your changes will be lost.", wset_filename.c_str()),
+                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_CANCEL);
+      dlg.add_button ("Quit without saving", Gtk::RESPONSE_ACCEPT);
+      if (dlg.run() != Gtk::RESPONSE_ACCEPT)
+        return true;    // postpone quit
+    }
+  return false;         // -> quit
+}
