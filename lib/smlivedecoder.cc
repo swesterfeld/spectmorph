@@ -200,7 +200,15 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       pstate[1].clear();
       last_pstate = &pstate[0];
 
-      latency_zero_samples = (latency_ms - best_audio->start_ms) / 1000 * mix_freq;
+      int signed_latency_zero_samples = (latency_ms - best_audio->start_ms) / 1000 * mix_freq;
+      if (signed_latency_zero_samples >= 0)
+        latency_zero_samples = signed_latency_zero_samples;
+      else
+        {
+          g_warning ("SpectMorph::LiveDecoder: latency problem: latency_zero_samples = %d --> 0\n",
+                     signed_latency_zero_samples);
+          latency_zero_samples = 0;
+        }
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
