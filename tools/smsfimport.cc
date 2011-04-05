@@ -835,6 +835,7 @@ read_sf2 (const string& filename)
       printf ("Sample %s\n", si->name.c_str());
     }
 #endif
+  delete in;
   return 0;
 }
 
