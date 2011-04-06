@@ -494,6 +494,7 @@ main (int argc, char **argv)
 
           WavSetWave new_wave = *si;
           new_wave.path = wavpath;
+          new_wave.audio = NULL;  // without this, Audio destructor will be run twice
           wset.waves.push_back (new_wave);
         }
       wset.save (argv[2]);
