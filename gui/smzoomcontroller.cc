@@ -25,6 +25,21 @@ ZoomController::ZoomController (double hzoom_max, double vzoom_max) :
   vzoom_adjustment (0.0, -1.0, log10 (vzoom_max) - 2, 0.01, 1.0, 0.0),
   vzoom_scale (vzoom_adjustment)
 {
+  init();
+}
+
+ZoomController::ZoomController (double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max) :
+  hzoom_adjustment (0.0, log10 (hzoom_min) - 2, log10 (hzoom_max) - 2, 0.01, 1.0, 0.0),
+  hzoom_scale (hzoom_adjustment),
+  vzoom_adjustment (0.0, log10 (vzoom_min) - 2, log10 (vzoom_max) - 2, 0.01, 1.0, 0.0),
+  vzoom_scale (vzoom_adjustment)
+{
+  init();
+}
+
+void
+ZoomController::init()
+{
   pack_start (hzoom_hbox, Gtk::PACK_SHRINK);
   hzoom_hbox.pack_start (hzoom_scale);
   hzoom_hbox.pack_start (hzoom_label, Gtk::PACK_SHRINK);

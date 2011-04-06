@@ -24,7 +24,7 @@ using namespace SpectMorph;
 
 SampleWindow::SampleWindow (Navigator *navigator) :
   navigator (navigator),
-  zoom_controller (5000, 5000)
+  zoom_controller (1, 5000, 10, 5000)
 {
   ref_action_group = Gtk::ActionGroup::create();
   ref_action_group->add (Gtk::Action::create ("SampleMenu", "Sample"));
