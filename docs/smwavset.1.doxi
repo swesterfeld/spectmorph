@@ -43,6 +43,8 @@ smwavset - Program to manage spectmorph multiwave files
        ensure that scripts setup a different value.
 @item @manb{--format} @mani{<field1>},@mani{<field2>},@mani{<field3>},...,@mani{<fieldN>} @*
        Set the output format for the list command.
+@item @manb{-j} @mani{<jobs>}@*
+       Use <jobs> parallel jobs for encoding (for systems with more than one processor).
 @done
 
 @heading COMMANDS

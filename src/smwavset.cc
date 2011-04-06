@@ -248,6 +248,7 @@ Options::print_usage ()
   printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
   printf (" -c, --channel <ch>          set channel for added .sm file\n");
   printf (" --format <f1>,...,<fN>      set fields to display in list\n");
+  printf (" -j <jobs>                   run <jobs> commands simultaneously (use multiple cpus for encoding)\n");
   printf ("\n");
 }
 
