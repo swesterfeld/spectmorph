@@ -28,6 +28,7 @@
 #include <smmain.hh>
 #include <smmicroconf.hh>
 #include <bse/bseloader.h>
+#include "smjobqueue.hh"
 
 #include <string>
 #include <map>
@@ -69,6 +70,7 @@ struct Options
   int             min_velocity;
   int             max_velocity;
   vector<string>  format;
+  int             max_jobs;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS } command;
 
   Options ();
@@ -87,6 +89,7 @@ Options::Options ()
   min_velocity = 0;
   max_velocity = 127;
   format = string_tokenize ("midi-note,filename");
+  max_jobs = 1;
 }
 
 #include "stwutils.hh"
@@ -147,6 +150,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--format", &opt_arg))
         {
           format = string_tokenize (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "-j", &opt_arg))
+        {
+          max_jobs = atoi (opt_arg);
         }
     }
 
@@ -443,16 +450,23 @@ main (int argc, char **argv)
       WavSet wset, smset;
       load_or_die (wset, argv[1]);
 
+      JobQueue job_queue (options.max_jobs);
+
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
           string cmd = "smenc -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
           printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
-          system (cmd.c_str());
+          job_queue.run (cmd);
 
           WavSetWave new_wave = *wi;
           new_wave.path = smpath;
           smset.waves.push_back (new_wave);
+        }
+      if (!job_queue.wait_for_all())
+        {
+          g_printerr ("smwavset: encoding commands did not complete successfully\n");
+          exit (1);
         }
       smset.save (argv[2]);
     }
