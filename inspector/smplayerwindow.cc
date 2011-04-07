@@ -82,7 +82,7 @@ PlayerWindow::process (jack_nframes_t nframes)
     {
       decoder->process (nframes, 0, 0, audio_out);
       for (size_t i = 0; i < nframes; i++)
-        audio_out[i] *= 0.01;
+        audio_out[i] *= decoder_volume;
     }
   else
     {
@@ -98,7 +98,9 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   navigator (navigator),
   decoder (NULL),
   decoder_audio (NULL),
-  decoder_source (NULL)
+  decoder_source (NULL),
+  decoder_volume (0), // will be initialized by scale widget
+  volume_scale (-96, 24, 0.01)
 {
   set_border_width (10);
   set_default_size (300, 100);
@@ -110,10 +112,24 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   stop_button.set_label ("Stop");
   stop_button.signal_clicked().connect (sigc::mem_fun (*this, &PlayerWindow::on_stop_clicked));
 
+  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &PlayerWindow::on_volume_changed));
+
   button_hbox.pack_start (play_button);
   button_hbox.pack_start (stop_button);
   button_hbox.set_spacing (10);
-  add (button_hbox);
+
+  volume_label.set_label ("Volume");
+  volume_scale.set_value (-20);
+  volume_scale.set_draw_value (false);
+
+  volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
+  volume_hbox.pack_start (volume_scale);
+  volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
+
+  vbox.add (button_hbox);
+  vbox.add (volume_hbox);
+
+  add (vbox);
 
   show_all_children();
 
@@ -207,4 +223,14 @@ void
 PlayerWindow::on_stop_clicked()
 {
   update_decoder (NULL, NULL, NULL);
+}
+
+void
+PlayerWindow::on_volume_changed()
+{
+  double new_decoder_volume = bse_db_to_factor (volume_scale.get_value());
+  volume_value_label.set_text (Birnet::string_printf ("%.1f dB", volume_scale.get_value()));
+
+  AutoLocker lock (decoder_mutex);
+  decoder_volume = new_decoder_volume;
 }

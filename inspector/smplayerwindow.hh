@@ -29,16 +29,25 @@ class Navigator;
 class PlayerWindow : public Gtk::Window
 {
   Navigator          *navigator;
+
   Gtk::Button         play_button;
   Gtk::Button         stop_button;
   Gtk::HBox           button_hbox;
+  Gtk::HBox           volume_hbox;
+  Gtk::VBox           vbox;
+
   jack_port_t        *audio_out_port;
   jack_client_t      *jack_client;
   LiveDecoder        *decoder;            // decoder_mutex!
   Audio              *decoder_audio;      // decoder_mutex!
   LiveDecoderSource  *decoder_source;     // decoder_mutex!
+  double              decoder_volume;     // decoder_mutex!
   double              jack_mix_freq;
   Birnet::Mutex       decoder_mutex;
+
+  Gtk::HScale         volume_scale;
+  Gtk::Label          volume_label;
+  Gtk::Label          volume_value_label;
 
   void update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source);
 public:
@@ -48,6 +57,7 @@ public:
   int  process (jack_nframes_t nframes);
   void on_play_clicked();
   void on_stop_clicked();
+  void on_volume_changed();
 };
 
 }
