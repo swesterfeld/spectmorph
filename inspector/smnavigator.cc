@@ -31,7 +31,8 @@ Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL),
   sample_window (this),
-  time_freq_window (this)
+  time_freq_window (this),
+  player_window (this)
 {
   MicroConf cfg (filename);
 
@@ -63,6 +64,8 @@ Navigator::Navigator (const string& filename) :
                          sigc::mem_fun (*this, &Navigator::on_view_spectrum));
   ref_action_group->add (Gtk::Action::create ("ViewFFTParams", "FFT Params"),
                          sigc::mem_fun (*this, &Navigator::on_view_fft_params));
+  ref_action_group->add (Gtk::Action::create ("ViewPlayer", "Player"),
+                         sigc::mem_fun (*this, &Navigator::on_view_player));
 
   ref_ui_manager = Gtk::UIManager::create();
   ref_ui_manager-> insert_action_group (ref_action_group);
@@ -76,6 +79,7 @@ Navigator::Navigator (const string& filename) :
     "      <menuitem action='ViewSample' />"
     "      <menuitem action='ViewSpectrum' />"
     "      <menuitem action='ViewFFTParams' />"
+    "      <menuitem action='ViewPlayer' />"
     "    </menu>"
     "  </menubar>"
     "</ui>";
@@ -313,6 +317,12 @@ void
 Navigator::on_view_sample()
 {
   sample_window.show();
+}
+
+void
+Navigator::on_view_player()
+{
+  player_window.show();
 }
 
 FFTParamWindow*

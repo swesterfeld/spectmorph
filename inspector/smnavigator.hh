@@ -22,6 +22,7 @@
 
 #include "smwavset.hh"
 #include "smtimefreqwindow.hh"
+#include "smplayerwindow.hh"
 
 namespace SpectMorph {
 
@@ -75,6 +76,7 @@ class Navigator : public Gtk::Window
   FFTParamWindow                     m_fft_param_window;
   SampleWindow                       sample_window;
   TimeFreqWindow                     time_freq_window;
+  PlayerWindow                       player_window;
 public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
@@ -93,6 +95,7 @@ public:
   void on_view_sample();
   void on_view_spectrum();
   void on_view_fft_params();
+  void on_view_player();
   bool on_delete_event (GdkEventAny* event);
 
   GslDataHandle *get_dhandle();
