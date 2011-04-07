@@ -101,12 +101,19 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   decoder_source (NULL)
 {
   set_border_width (10);
-  set_default_size (300, 200);
+  set_default_size (300, 100);
   set_title ("Player");
 
   play_button.set_label ("Play");
   play_button.signal_clicked().connect (sigc::mem_fun (*this, &PlayerWindow::on_play_clicked));
-  add (play_button);
+
+  stop_button.set_label ("Stop");
+  stop_button.signal_clicked().connect (sigc::mem_fun (*this, &PlayerWindow::on_stop_clicked));
+
+  button_hbox.pack_start (play_button);
+  button_hbox.pack_start (stop_button);
+  button_hbox.set_spacing (10);
+  add (button_hbox);
 
   show_all_children();
 
@@ -127,22 +134,8 @@ PlayerWindow::~PlayerWindow()
 {
   jack_deactivate (jack_client);
 
-  AutoLocker lock (decoder_mutex);
-  if (decoder)
-    {
-      delete decoder;
-      decoder = NULL;
-    }
-  if (decoder_source)
-    {
-      delete decoder_source;
-      decoder_source = NULL;
-    }
-  if (decoder_audio)
-    {
-      delete decoder_audio;
-      decoder_audio = NULL;
-    }
+  // delete old decoder objects (if any)
+  update_decoder (NULL, NULL, NULL);
 }
 
 void
@@ -178,7 +171,12 @@ PlayerWindow::on_play_clicked()
       // finally setup decoder for JACK thread
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
     }
+  update_decoder (new_decoder, new_decoder_audio, new_decoder_source);
+}
 
+void
+PlayerWindow::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source)
+{
   LiveDecoder       *old_decoder;
   Audio             *old_decoder_audio;
   LiveDecoderSource *old_decoder_source;
@@ -203,4 +201,10 @@ PlayerWindow::on_play_clicked()
     delete old_decoder_audio;
   if (old_decoder_source)
     delete old_decoder_source;
+}
+
+void
+PlayerWindow::on_stop_clicked()
+{
+  update_decoder (NULL, NULL, NULL);
 }
