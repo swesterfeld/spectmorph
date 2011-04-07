@@ -96,7 +96,9 @@ PlayerWindow::process (jack_nframes_t nframes)
 
 PlayerWindow::PlayerWindow (Navigator *navigator) :
   navigator (navigator),
-  decoder (NULL)
+  decoder (NULL),
+  decoder_audio (NULL),
+  decoder_source (NULL)
 {
   set_border_width (10);
   set_default_size (300, 200);
@@ -131,12 +133,25 @@ PlayerWindow::~PlayerWindow()
       delete decoder;
       decoder = NULL;
     }
+  if (decoder_source)
+    {
+      delete decoder_source;
+      decoder_source = NULL;
+    }
+  if (decoder_audio)
+    {
+      delete decoder_audio;
+      decoder_audio = NULL;
+    }
 }
 
 void
 PlayerWindow::on_play_clicked()
 {
-  LiveDecoder *new_decoder = NULL;
+  LiveDecoder       *new_decoder        = NULL;
+  Audio             *new_decoder_audio  = NULL;
+  LiveDecoderSource *new_decoder_source = NULL;
+
   Audio *audio = navigator->get_audio();
   if (audio)
     {
@@ -146,14 +161,14 @@ PlayerWindow::on_play_clicked()
       MemOut                audio_mo (&audio_data);
       audio->save (&audio_mo);
 
-      Audio *audio_clone = new Audio();
+      new_decoder_audio = new Audio();
       GenericIn *in = MMapIn::open_mem (&audio_data[0], &audio_data[audio_data.size()]);
-      audio_clone->load (in);
+      new_decoder_audio->load (in);
       delete in;
 
-      Source *source = new Source (audio_clone);
+      new_decoder_source = new Source (new_decoder_audio);
 
-      new_decoder = new LiveDecoder (source);
+      new_decoder = new LiveDecoder (new_decoder_source);
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
 
       // touch decoder in non-RT-thread to precompute tables & co
@@ -163,10 +178,29 @@ PlayerWindow::on_play_clicked()
       // finally setup decoder for JACK thread
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
     }
+
+  LiveDecoder       *old_decoder;
+  Audio             *old_decoder_audio;
+  LiveDecoderSource *old_decoder_source;
+
+  /* setup new player objects for JACK thread */
   decoder_mutex.lock();
-  LiveDecoder *old_decoder = decoder;
+
+  old_decoder = decoder;
+  old_decoder_source = decoder_source;
+  old_decoder_audio = decoder_audio;
+
   decoder = new_decoder;
+  decoder_source = new_decoder_source;
+  decoder_audio = new_decoder_audio;
+
   decoder_mutex.unlock();
+
+  /* delete old (no longer needed) player objects */
   if (old_decoder)
     delete old_decoder;
+  if (old_decoder_audio)
+    delete old_decoder_audio;
+  if (old_decoder_source)
+    delete old_decoder_source;
 }

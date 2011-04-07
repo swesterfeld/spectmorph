@@ -32,7 +32,9 @@ class PlayerWindow : public Gtk::Window
   Gtk::Button         play_button;
   jack_port_t        *audio_out_port;
   jack_client_t      *jack_client;
-  LiveDecoder        *decoder;
+  LiveDecoder        *decoder;            // decoder_mutex!
+  Audio              *decoder_audio;      // decoder_mutex!
+  LiveDecoderSource  *decoder_source;     // decoder_mutex!
   double              jack_mix_freq;
   Birnet::Mutex       decoder_mutex;
 public:
