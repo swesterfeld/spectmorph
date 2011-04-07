@@ -65,6 +65,7 @@ class Audio
 {
 public:
   Audio();
+  ~Audio();
 
   enum LoopType {
     LOOP_NONE = 0,
