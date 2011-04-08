@@ -172,9 +172,12 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
 
   if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
     {
-      if (audio->loop_start != -1 && source_index > audio->loop_start)
+      if (source_index > audio->loop_start)
         {
-          source_index = audio->loop_start;
+          assert (audio->loop_end >= audio->loop_start);
+
+          size_t loop_len = audio->loop_end + 1 - audio->loop_start;
+          source_index = audio->loop_start + (source_index - audio->loop_start) % loop_len;
         }
     }
 
