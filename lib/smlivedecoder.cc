@@ -289,6 +289,17 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 }
               frame_idx = xenv_pos / frame_step;
             }
+          else if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+            {
+              frame_idx = env_pos / frame_step;
+              if (frame_idx > audio->loop_start)
+                {
+                  assert (audio->loop_end >= audio->loop_start);
+
+                  size_t loop_len = audio->loop_end + 1 - audio->loop_start;
+                  frame_idx = audio->loop_start + (frame_idx - audio->loop_start) % loop_len;
+                }
+            }
           else
             {
               frame_idx = env_pos / frame_step;
