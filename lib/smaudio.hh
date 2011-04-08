@@ -98,6 +98,9 @@ public:
   BseErrorType save (SpectMorph::GenericOut *file) const;
 
   Audio *clone() const; // create a deep copy
+
+  static bool loop_type_to_string (LoopType loop_type, std::string& s);
+  static bool string_to_loop_type (const std::string& s, LoopType& loop_type);
 };
 
 }

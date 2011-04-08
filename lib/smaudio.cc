@@ -331,3 +331,71 @@ Audio::clone() const
 
   return audio_clone;
 }
+
+bool
+Audio::loop_type_to_string (LoopType loop_type, string& s)
+{
+  switch (loop_type)
+    {
+      case LOOP_NONE:
+        {
+          s = "loop-none";
+          break;
+        }
+      case LOOP_FRAME_FORWARD:
+        {
+          s = "loop-frame-forward";
+          break;
+        }
+      case LOOP_FRAME_PING_PONG:
+        {
+          s = "loop-frame-ping-pong";
+          break;
+        }
+      case LOOP_TIME_FORWARD:
+        {
+          s = "loop-time-forward";
+          break;
+        }
+      case LOOP_TIME_PING_PONG:
+        {
+          s = "loop-time-ping-pong";
+          break;
+        }
+      default:
+        {
+          return false;  // unknown loop type
+        }
+    }
+  return true;
+}
+
+bool
+Audio::string_to_loop_type (const string& s, LoopType& loop_type)
+{
+  if (s == "loop-none")
+    {
+      loop_type = LOOP_NONE;
+    }
+  else if (s == "loop-frame-forward")
+    {
+      loop_type = LOOP_FRAME_FORWARD;
+    }
+  else if (s == "loop-frame-ping-pong")
+    {
+      loop_type = LOOP_FRAME_PING_PONG;
+    }
+  else if (s == "loop-time-forward")
+    {
+      loop_type = LOOP_TIME_FORWARD;
+    }
+  else if (s == "loop-time-ping-pong")
+    {
+      loop_type = LOOP_TIME_PING_PONG;
+    }
+  else
+    {
+      return false; // unknown loop type
+    }
+  return true;
+}
