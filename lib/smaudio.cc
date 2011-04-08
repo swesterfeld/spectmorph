@@ -20,6 +20,8 @@
 #include "sminfile.hh"
 #include "smstdioout.hh"
 #include "smleakdebugger.hh"
+#include "smmemout.hh"
+#include "smmmapin.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -252,7 +254,7 @@ Audio::~Audio()
  * \returns a BseErrorType indicating saving loading was successful
  */
 BseErrorType
-SpectMorph::Audio::save (const string& filename)
+SpectMorph::Audio::save (const string& filename) const
 {
   GenericOut *out = StdioOut::open (filename);
   if (!out)
@@ -267,7 +269,7 @@ SpectMorph::Audio::save (const string& filename)
 }
 
 BseErrorType
-SpectMorph::Audio::save (GenericOut *file)
+SpectMorph::Audio::save (GenericOut *file) const
 {
   OutFile of (file, "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);
   assert (of.open_ok());
@@ -311,4 +313,21 @@ SpectMorph::Audio::save (GenericOut *file)
       of.end_section();
     }
   return BSE_ERROR_NONE;
+}
+
+Audio *
+Audio::clone() const
+{
+  // create a deep copy (by saving/loading)
+  vector<unsigned char> audio_data;
+  MemOut                audio_mo (&audio_data);
+
+  save (&audio_mo);
+
+  Audio *audio_clone = new Audio();
+  GenericIn *in = MMapIn::open_mem (&audio_data[0], &audio_data[audio_data.size()]);
+  audio_clone->load (in);
+  delete in;
+
+  return audio_clone;
 }
