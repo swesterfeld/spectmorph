@@ -81,18 +81,22 @@ protected:
   bool                  pedal_down;
 
   double                release_ms;
+  double                m_volume;
+
   vector<Voice>         voices;
   vector<Voice*>        active_voices;
   vector<Voice*>        release_voices;
 
   Birnet::Mutex         m_new_plan_mutex;
   MorphPlanPtr          m_new_plan;
+  double                m_new_volume;
 
 public:
   JackSynth();
   void init (jack_client_t *client, MorphPlanPtr morph_plan);
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
+  void change_volume (double new_volume);
   int  process (jack_nframes_t nframes);
   void reschedule();
 };
@@ -159,6 +163,7 @@ JackSynth::process (jack_nframes_t nframes)
             }
           m_new_plan = NULL;
         }
+      m_volume = m_new_volume;
       m_new_plan_mutex.unlock();
     }
 
@@ -313,6 +318,8 @@ JackSynth::process (jack_nframes_t nframes)
         }
       i = end;
     }
+  for (size_t i = 0; i < nframes; i++)
+    audio_out[i] *= m_volume;
   return 0;
 }
 
@@ -327,6 +334,8 @@ JackSynth::JackSynth()
 {
   need_reschedule = false;
   pedal_down = false;
+  m_volume = 1;
+  m_new_volume = 1;
 }
 
 void
@@ -377,6 +386,14 @@ JackSynth::change_plan (MorphPlanPtr plan)
   m_new_plan_mutex.unlock();
 }
 
+void
+JackSynth::change_volume (double new_volume)
+{
+  m_new_plan_mutex.lock();
+  m_new_volume = new_volume;
+  m_new_plan_mutex.unlock();
+}
+
 class JackWindow : public Gtk::Window
 {
   Gtk::VBox       vbox;
@@ -387,11 +404,18 @@ class JackWindow : public Gtk::Window
   MorphPlanPtr    morph_plan;
   jack_client_t  *client;
 
+  Gtk::HScale     volume_scale;
+  Gtk::Label      volume_label;
+  Gtk::Label      volume_value_label;
+  Gtk::HBox       volume_hbox;
+
   JackSynth       synth;
+
 public:
   JackWindow (MorphPlanPtr plan) :
     inst_window (plan),
-    morph_plan (plan)
+    morph_plan (plan),
+    volume_scale (-96, 24, 0.01)
   {
     set_title ("SpectMorph JACK client");
     set_border_width (10);
@@ -401,7 +425,19 @@ public:
     inst_hbox.pack_start (inst_button);
     inst_hbox.set_spacing (10);
     inst_button.signal_clicked().connect (sigc::mem_fun (*this, &JackWindow::on_edit_clicked));
+    
+    volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &JackWindow::on_volume_changed));
+
+    volume_label.set_label ("Volume");
+    volume_scale.set_value (-20);
+    volume_scale.set_draw_value (false);
+
+    volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
+    volume_hbox.pack_start (volume_scale);
+    volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
+
     vbox.pack_start (inst_hbox);
+    vbox.pack_start (volume_hbox);
     add (vbox);
     show_all_children();
 
@@ -443,6 +479,13 @@ public:
     delete in;
 
     synth.change_plan (plan_clone);
+  }
+  void
+  on_volume_changed()
+  {
+    double new_decoder_volume = bse_db_to_factor (volume_scale.get_value());
+    volume_value_label.set_text (Birnet::string_printf ("%.1f dB", volume_scale.get_value()));
+    synth.change_volume (new_decoder_volume);
   }
 };
 
