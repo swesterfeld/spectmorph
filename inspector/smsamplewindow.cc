@@ -65,7 +65,18 @@ SampleWindow::SampleWindow (Navigator *navigator) :
   vbox.pack_start (button_hbox, Gtk::PACK_SHRINK);
 
   button_hbox.add (edit_start_marker);
+  button_hbox.add (edit_loop_start);
+  button_hbox.add (edit_loop_end);
+
   edit_start_marker.set_label ("Edit Start Marker");
+  edit_start_marker.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &SampleWindow::on_edit_marker_changed),
+                                                          SampleView::MARKER_START));
+  edit_loop_start.set_label ("Edit Loop Start");
+  edit_loop_start.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &SampleWindow::on_edit_marker_changed),
+                                                        SampleView::MARKER_LOOP_START));
+  edit_loop_end.set_label ("Edit Loop End");
+  edit_loop_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &SampleWindow::on_edit_marker_changed),
+                                                      SampleView::MARKER_LOOP_END));
 
   add (vbox);
   scrolled_win.add (m_sample_view);
@@ -75,6 +86,8 @@ SampleWindow::SampleWindow (Navigator *navigator) :
   m_sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
 
   show_all_children();
+
+  in_update_buttons = false;
 }
 
 void
@@ -119,4 +132,22 @@ void
 SampleWindow::on_next_sample()
 {
   signal_next_sample();
+}
+
+void
+SampleWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
+{
+  if (in_update_buttons)
+    return;
+
+  if (m_sample_view.edit_marker_type() == marker_type)  // we're selected already -> turn it off
+    marker_type = SampleView::MARKER_NONE;
+
+  m_sample_view.set_edit_marker_type (marker_type);
+
+  in_update_buttons = true;
+  edit_start_marker.set_active (marker_type == SampleView::MARKER_START);
+  edit_loop_start.set_active (marker_type == SampleView::MARKER_LOOP_START);
+  edit_loop_end.set_active (marker_type == SampleView::MARKER_LOOP_END);
+  in_update_buttons = false;
 }

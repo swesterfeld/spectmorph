@@ -39,6 +39,9 @@ class SampleWindow : public Gtk::Window
   Gtk::HBox           button_hbox;
 
   Gtk::ToggleButton   edit_start_marker;
+  Gtk::ToggleButton   edit_loop_start;
+  Gtk::ToggleButton   edit_loop_end;
+  bool                in_update_buttons;
 
   Gtk::VBox           vbox;
 public:
@@ -51,6 +54,7 @@ public:
   void on_zoom_changed();
   void on_resized (int old_width, int new_width);
   void on_next_sample();
+  void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
 
   sigc::signal<void> signal_next_sample;
 };
