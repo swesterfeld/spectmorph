@@ -163,7 +163,7 @@ Navigator::on_selection_changed()
       audio = wset.waves[i].audio;
       assert (wset.waves[i].audio);
 
-      if (source_button.get_active())
+      if (spectmorph_signal_active())
         {
           LiveDecoder decoder (&wset);
           decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
@@ -177,6 +177,12 @@ Navigator::on_selection_changed()
         }
       signal_dhandle_changed();
     }
+}
+
+bool
+Navigator::spectmorph_signal_active()
+{
+  return source_button.get_active();
 }
 
 void

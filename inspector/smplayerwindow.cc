@@ -178,6 +178,9 @@ PlayerWindow::on_play_clicked()
       new_decoder_source = new Source (new_decoder_audio);
 
       new_decoder = new LiveDecoder (new_decoder_source);
+
+      new_decoder->enable_original_samples (!navigator->spectmorph_signal_active());
+
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
 
       // touch decoder in non-RT-thread to precompute tables & co
