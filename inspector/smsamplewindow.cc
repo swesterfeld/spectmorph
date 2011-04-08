@@ -22,6 +22,12 @@
 
 using namespace SpectMorph;
 
+#define LOOP_NONE_TEXT              "No loop"
+#define LOOP_FRAME_FORWARD_TEXT     "Frame loop forward"
+#define LOOP_FRAME_PING_PONG_TEXT   "Frame loop ping-pong"
+#define LOOP_TIME_FORWARD_TEXT      "Time loop forward"
+#define LOOP_TIME_PING_PONG_TEXT    "Time loop ping-pong"
+
 SampleWindow::SampleWindow (Navigator *navigator) :
   navigator (navigator),
   zoom_controller (1, 5000, 10, 5000)
@@ -64,9 +70,17 @@ SampleWindow::SampleWindow (Navigator *navigator) :
   vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
   vbox.pack_start (button_hbox, Gtk::PACK_SHRINK);
 
+  loop_type_combo.append_text (LOOP_NONE_TEXT);
+  loop_type_combo.append_text (LOOP_FRAME_FORWARD_TEXT);
+  loop_type_combo.append_text (LOOP_FRAME_PING_PONG_TEXT);
+  loop_type_combo.append_text (LOOP_TIME_FORWARD_TEXT);
+  loop_type_combo.append_text (LOOP_TIME_PING_PONG_TEXT);
+  loop_type_combo.signal_changed().connect (sigc::mem_fun (*this, &SampleWindow::on_loop_type_changed));
+
   button_hbox.add (edit_start_marker);
   button_hbox.add (edit_loop_start);
   button_hbox.add (edit_loop_end);
+  button_hbox.add (loop_type_combo);
 
   edit_start_marker.set_label ("Edit Start Marker");
   edit_start_marker.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &SampleWindow::on_edit_marker_changed),
@@ -100,6 +114,46 @@ void
 SampleWindow::load (GslDataHandle *dhandle, Audio *audio)
 {
   m_sample_view.load (dhandle, audio);
+  if (audio)
+    {
+      if (audio->loop_type == Audio::LOOP_NONE)
+        loop_type_combo.set_active_text (LOOP_NONE_TEXT);
+      else if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+        loop_type_combo.set_active_text (LOOP_FRAME_FORWARD_TEXT);
+      else if (audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+        loop_type_combo.set_active_text (LOOP_FRAME_PING_PONG_TEXT);
+      else if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+        loop_type_combo.set_active_text (LOOP_TIME_FORWARD_TEXT);
+      else if (audio->loop_type == Audio::LOOP_TIME_PING_PONG)
+        loop_type_combo.set_active_text (LOOP_TIME_PING_PONG_TEXT);
+      else
+        {
+          g_assert_not_reached();
+        }
+    }
+}
+
+void
+SampleWindow::on_loop_type_changed()
+{
+  Audio *audio = navigator->get_audio();
+  if (audio)
+    {
+      if (loop_type_combo.get_active_text() == LOOP_NONE_TEXT)
+        audio->loop_type = Audio::LOOP_NONE;
+      else if (loop_type_combo.get_active_text() == LOOP_FRAME_FORWARD_TEXT)
+        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+      else if (loop_type_combo.get_active_text() == LOOP_FRAME_PING_PONG_TEXT)
+        audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
+      else if (loop_type_combo.get_active_text() == LOOP_TIME_FORWARD_TEXT)
+        audio->loop_type = Audio::LOOP_TIME_FORWARD;
+      else if (loop_type_combo.get_active_text() == LOOP_TIME_PING_PONG_TEXT)
+        audio->loop_type = Audio::LOOP_TIME_PING_PONG;
+      else
+        {
+          g_assert_not_reached();
+        }
+    }
 }
 
 void
