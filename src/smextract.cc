@@ -125,10 +125,9 @@ check_usage (int argc, int need_argc, const string& usage)
     }
 }
 
-Audio
-load_or_die (const string& filename, const string& mode)
+void
+load_or_die (Audio& audio, const string& filename, const string& mode)
 {
-  Audio audio;
   AudioLoadOptions load_options = AUDIO_LOAD_DEBUG;
 
   if (mode == "fundamental-freq" || mode == "freq"
@@ -142,7 +141,6 @@ load_or_die (const string& filename, const string& mode)
       fprintf (stderr, "can't load file: %s\n",filename.c_str());
       exit (1);
     }
-  return audio;
 }
 
 static bool
@@ -165,7 +163,7 @@ compute_energy (const Audio& audio, double percent)
       exit (1);
     }
 
-  Audio *noloop_audio = new Audio (audio);
+  Audio *noloop_audio = audio.clone();
   noloop_audio->loop_type = Audio::LOOP_NONE;  // don't use looped signal, but original signal
 
   WavSet smset;
@@ -211,7 +209,9 @@ main (int argc, char **argv)
 
   const string& mode = argv[2];
 
-  Audio audio = load_or_die (argv[1], mode);
+  Audio audio;
+  load_or_die (audio, argv[1], mode);
+
   size_t frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
   bool need_save = false;
 

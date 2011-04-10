@@ -164,20 +164,13 @@ PlayerWindow::on_play_clicked()
   Audio *audio = navigator->get_audio();
   if (audio)
     {
-      // create a deep copy (by saving/loading), so that JACK thread can access data in JACK thread
-
-      vector<unsigned char> audio_data;
-      MemOut                audio_mo (&audio_data);
-      audio->save (&audio_mo);
-
-      new_decoder_audio = new Audio();
-      GenericIn *in = MMapIn::open_mem (&audio_data[0], &audio_data[audio_data.size()]);
-      new_decoder_audio->load (in);
-      delete in;
+      // create a deep copy, so that JACK thread can access data in JACK thread
+      new_decoder_audio = audio->clone();
 
       new_decoder_source = new Source (new_decoder_audio);
-
       new_decoder = new LiveDecoder (new_decoder_source);
+
+      new_decoder->enable_original_samples (!navigator->spectmorph_signal_active());
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
 
       // touch decoder in non-RT-thread to precompute tables & co

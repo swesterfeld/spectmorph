@@ -27,12 +27,22 @@ namespace SpectMorph {
 
 class SampleView : public Gtk::DrawingArea
 {
+public:
+  enum EditMarkerType {
+    MARKER_NONE,
+    MARKER_START,
+    MARKER_LOOP_START,
+    MARKER_LOOP_END
+  };
+
+private:
   Audio *audio;
   std::vector<float> signal;
   double hzoom;
   double vzoom;
   double attack_start;
   double attack_end;
+  EditMarkerType m_edit_marker_type;
 
   int old_width;
   void force_redraw();
@@ -51,6 +61,9 @@ public:
   bool on_button_release_event (GdkEventButton *event);
 
   void set_zoom (double hzoom, double vzoom);
+
+  void set_edit_marker_type (EditMarkerType marker_type);
+  EditMarkerType edit_marker_type();
 
   template<class DrawOps> static void
   draw_signal (std::vector<float>& signal, DrawOps ops, GdkEventExpose *ev, int height, double vz, double hz)
@@ -84,39 +97,6 @@ public:
           }
         x++;
       }
-#if 0
-    int last_x = 0;
-    double last_value = 0, min_value = 0, max_value = 0;
-    for (size_t i = 0; i < signal.size(); i++)
-      {
-        double value = signal[i];
-        int x = hz * i;
-        if (x == last_x)
-          {
-            if (value < min_value)
-              min_value = value;
-            if (value > max_value)
-              max_value = value;
-          }
-        else
-          {
-            if (last_x >= ev->area.x && x < ev->area.x + ev->area.width)
-              {
-                if (min_value != max_value)
-                  {
-                    ops->move_to (last_x, (height / 2) + min_value * vz);
-                    ops->line_to (last_x, (height / 2) + max_value * vz);
-                  }
-                ops->move_to (last_x, (height / 2) + last_value * vz);
-                ops->line_to (x, (height / 2) + value * vz);
-              }
-            min_value = value;
-            max_value = value;
-          }
-        last_value = value;
-        last_x = x;
-      }
-#endif
   }
 };
 

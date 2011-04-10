@@ -38,6 +38,7 @@ SampleView::SampleView() :
   hzoom = 1;
   vzoom = 1;
   old_width = -1;
+  m_edit_marker_type = MARKER_NONE;
 }
 
 bool
@@ -63,7 +64,7 @@ SampleView::on_expose_event (GdkEventExpose *ev)
       cr->paint();
       cr->restore();
 
-      // blue sample:
+      // red sample:
       cr->set_source_rgb (0.8, 0.0, 0.0);
 
       double hz = HZOOM_SCALE * hzoom;
@@ -82,11 +83,44 @@ SampleView::on_expose_event (GdkEventExpose *ev)
 
       if (audio)
         {
+          // start marker
           int start = audio->start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
-          cr->set_source_rgb (0, 0, 0.8);
+
+          if (edit_marker_type() == MARKER_START)
+            cr->set_source_rgb (0, 0, 0.8);
+          else
+            cr->set_source_rgb (0.6, 0.6, 0.6);
+
           cr->move_to (hz * start, 0);
           cr->line_to (hz * start, height);
           cr->stroke();
+
+          if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+            {
+              // loop start marker
+              int loop_start = audio->loop_start * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+
+              if (edit_marker_type() == MARKER_LOOP_START)
+                cr->set_source_rgb (0, 0, 0.8);
+              else
+                cr->set_source_rgb (0.6, 0.6, 0.6);
+
+              cr->move_to (hz * loop_start, 0);
+              cr->line_to (hz * loop_start, height);
+              cr->stroke();
+
+              // loop end marker
+              int loop_end = audio->loop_end * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+
+              if (edit_marker_type() == MARKER_LOOP_END)
+                cr->set_source_rgb (0, 0, 0.8);
+              else
+                cr->set_source_rgb (0.6, 0.6, 0.6);
+
+              cr->move_to (hz * loop_end, 0);
+              cr->line_to (hz * loop_end, height);
+              cr->stroke();
+            }
         }
 
       // dark blue line @ zero:
@@ -102,6 +136,7 @@ bool
 SampleView::on_button_press_event (GdkEventButton *event)
 {
   move_marker (event->x);
+  return true;
 }
 
 void
@@ -112,8 +147,21 @@ SampleView::move_marker (int x)
       double hz = HZOOM_SCALE * hzoom;
       int index = x / hz;
 
-      audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
-
+      if (m_edit_marker_type == MARKER_START)
+        {
+          audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
+        }
+      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+        {
+          if (m_edit_marker_type == MARKER_LOOP_START)
+            {
+              audio->loop_start = index / (audio->frame_step_ms / 1000 * audio->mix_freq);
+            }
+          else if (m_edit_marker_type == MARKER_LOOP_END)
+            {
+              audio->loop_end = index / (audio->frame_step_ms / 1000 * audio->mix_freq);
+            }
+        }
       signal_audio_edit();
       force_redraw();
     }
@@ -123,12 +171,14 @@ bool
 SampleView::on_motion_notify_event (GdkEventMotion *event)
 {
   move_marker (event->x);
+  return true;
 }
 
 bool
 SampleView::on_button_release_event (GdkEventButton *event)
 {
   move_marker (event->x);
+  return true;
 }
 
 void
@@ -141,7 +191,10 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio)
   attack_end = 0;
 
   if (!dhandle) // no sample selected
-    return;
+    {
+      force_redraw();
+      return;
+    }
 
   BseErrorType error = gsl_data_handle_open (dhandle);
   if (error)
@@ -197,5 +250,18 @@ SampleView::set_zoom (double new_hzoom, double new_vzoom)
   hzoom = new_hzoom;
   vzoom = new_vzoom;
 
+  force_redraw();
+}
+
+SampleView::EditMarkerType
+SampleView::edit_marker_type()
+{
+  return m_edit_marker_type;
+}
+
+void
+SampleView::set_edit_marker_type (EditMarkerType marker_type)
+{
+  m_edit_marker_type = marker_type;
   force_redraw();
 }

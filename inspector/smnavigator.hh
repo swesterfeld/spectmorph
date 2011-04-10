@@ -102,6 +102,7 @@ public:
   Audio         *get_audio();
   bool           get_show_position();
   bool           get_show_analysis();
+  bool           spectmorph_signal_active();
   FFTParamWindow *fft_param_window();
 };
 

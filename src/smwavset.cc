@@ -71,6 +71,7 @@ struct Options
   int             max_velocity;
   vector<string>  format;
   int             max_jobs;
+  bool            loop_markers;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS } command;
 
   Options ();
@@ -90,6 +91,7 @@ Options::Options ()
   max_velocity = 127;
   format = string_tokenize ("midi-note,filename");
   max_jobs = 1;
+  loop_markers = false;
 }
 
 #include "stwutils.hh"
@@ -154,6 +156,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-j", &opt_arg))
         {
           max_jobs = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--loop"))
+        {
+          loop_markers = true;
         }
     }
 
@@ -582,6 +588,22 @@ main (int argc, char **argv)
         {
           printf ("set-marker start %d %d %d %d %.17g\n", wi->midi_note, wi->channel,
             wi->velocity_range_min, wi->velocity_range_max, wi->audio->start_ms);
+
+          string loop_type;
+          if (!Audio::loop_type_to_string (wi->audio->loop_type, loop_type))
+            {
+              g_printerr ("smwavset: can't convert loop type to string");
+              exit (1);
+            }
+          if (options.loop_markers)
+            {
+              printf ("set-marker loop-type %d %d %d %d %s\n", wi->midi_note, wi->channel,
+                wi->velocity_range_min, wi->velocity_range_max, loop_type.c_str());
+              printf ("set-marker loop-start %d %d %d %d %d\n", wi->midi_note, wi->channel,
+                wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_start);
+              printf ("set-marker loop-end %d %d %d %d %d\n", wi->midi_note, wi->channel,
+                wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_end);
+            }
         }
     }
   else if (options.command == Options::SET_MARKERS)
@@ -596,27 +618,54 @@ main (int argc, char **argv)
         {
           string marker_type;
           int midi_note, channel, vmin, vmax;
-          double pos;
+          string arg;
 
-          if (cfg.command ("set-marker", marker_type, midi_note, channel, vmin, vmax, pos))
+          if (cfg.command ("set-marker", marker_type, midi_note, channel, vmin, vmax, arg))
             {
               bool match = false;
               for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
                 {
-                  if ((marker_type == "start")
-                  &&  (wi->midi_note == midi_note)
+                  if ((wi->midi_note == midi_note)
                   &&  (wi->channel   == channel)
                   &&  (wi->velocity_range_min == vmin)
                   &&  (wi->velocity_range_max == vmax))
                     {
-                      wi->audio->start_ms = pos;
-                      match = true;
+                      if (marker_type == "start")
+                        {
+                          wi->audio->start_ms = atof (arg.c_str());
+                          match = true;
+                        }
+                      else if (marker_type == "loop-type")
+                        {
+                          Audio::LoopType loop_type;
+
+                          if (Audio::string_to_loop_type (arg, loop_type))
+                            {
+                              wi->audio->loop_type = loop_type;
+                              match = true;
+                            }
+                          else
+                            {
+                              g_printerr ("smwavset: unknown loop_type %s\n", arg.c_str());
+                              exit (1);
+                            }
+                        }
+                      else if (marker_type == "loop-start")
+                        {
+                          wi->audio->loop_start = atoi (arg.c_str());
+                          match = true;
+                        }
+                      else if (marker_type == "loop-end")
+                        {
+                          wi->audio->loop_end = atoi (arg.c_str());
+                          match = true;
+                        }
                     }
                 }
               if (!match)
                 {
-                  printf ("no match for marker %s %d %d %d %d %.17g\n", marker_type.c_str(), midi_note, channel,
-                          vmin, vmax, pos);
+                  printf ("no match for marker %s %d %d %d %d %s\n", marker_type.c_str(), midi_note, channel,
+                          vmin, vmax, arg.c_str());
                   exit (1);
                 }
             }

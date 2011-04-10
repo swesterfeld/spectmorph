@@ -63,6 +63,7 @@ enum AudioLoadOptions
  */
 class Audio
 {
+  BIRNET_PRIVATE_CLASS_COPY (Audio);
 public:
   Audio();
   ~Audio();
@@ -93,8 +94,13 @@ public:
 
   BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   BseErrorType load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  BseErrorType save (const std::string& filename);
-  BseErrorType save (SpectMorph::GenericOut *file);
+  BseErrorType save (const std::string& filename) const;
+  BseErrorType save (SpectMorph::GenericOut *file) const;
+
+  Audio *clone() const; // create a deep copy
+
+  static bool loop_type_to_string (LoopType loop_type, std::string& s);
+  static bool string_to_loop_type (const std::string& s, LoopType& loop_type);
 };
 
 }
