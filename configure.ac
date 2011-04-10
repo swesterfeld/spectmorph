@@ -49,10 +49,10 @@ dnl libgtk
 dnl
 AC_DEFUN([AC_GTK_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(GTK, [gtk+-2.0],[:],[
-      AC_MSG_ERROR([You need to install libgtk-2.0 to build this package.
+    PKG_CHECK_MODULES(GTK, [gtk+-2.0 gdk-pixbuf-2.0],[:],[
+      AC_MSG_ERROR([You need to install libgtk-2.0 and libgdk-pixbuf-2.0 to build this package.
 
-Debian users: aptitude install libgtk2.0-dev
+Debian users: aptitude install libgtk2.0-dev libgdk-pixbuf2.0-dev
 ])
     ])
     AC_SUBST(GTK_CFLAGS)
