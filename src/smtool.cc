@@ -120,7 +120,7 @@ check_usage (int argc, int need_argc, const string& usage)
 {
   if (argc != need_argc)
     {
-      printf ("usage: smextract <sm_file> %s\n", usage.c_str());
+      printf ("usage: smtool <sm_file> %s\n", usage.c_str());
       exit (1);
     }
 }
@@ -940,13 +940,13 @@ main (int argc, char **argv)
 
   if (argc < 3)
     {
-      printf ("usage: smextract <sm_file> <mode> [ <mode_specific_args> ]\n");
+      printf ("usage: smtool <sm_file> <mode> [ <mode_specific_args> ]\n");
       printf ("\n");
       printf ("mode specific args:\n\n");
 
       for (vector<Command *>::iterator ci = Command::registry()->begin(); ci != Command::registry()->end(); ci++)
         {
-          printf ("  smextract <sm_file> %s ", (*ci)->mode().c_str());
+          printf ("  smtool <sm_file> %s ", (*ci)->mode().c_str());
           (*ci)->usage (true);
         }
       return 1;
@@ -974,7 +974,7 @@ main (int argc, char **argv)
 
           if (!cmd->parse_args (args))
             {
-              printf ("usage: smextract <sm_file> %s ", cmd->mode().c_str());
+              printf ("usage: smtool <sm_file> %s ", cmd->mode().c_str());
               cmd->usage (true);
               return 1;
             }
