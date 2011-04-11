@@ -230,9 +230,16 @@ public:
     registry()->push_back (this);
     m_mode = mode;
   }
-  virtual bool parse_args (vector<string>& args) = 0;
+  virtual bool
+  parse_args (vector<string>& args)
+  {
+    return args.size() == 0;
+  }
   virtual bool exec (Audio& audio) = 0;
-  virtual void usage (bool one_line) = 0;
+  virtual void usage (bool one_line)
+  {
+    printf ("\n");
+  }
   virtual ~Command()
   {
   }
@@ -283,6 +290,95 @@ public:
   }
 } volume_command;
 
+class FundamentalFreqCommand : public Command
+{
+public:
+  FundamentalFreqCommand() : Command ("fundamental-freq")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("fundamental-freq: %f\n", audio.fundamental_freq);
+    return true;
+  }
+} fundamental_freq_command;
+
+class MixFreqCommand : public Command
+{
+public:
+  MixFreqCommand() : Command ("mix-freq")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("mix-freq: %f\n", audio.mix_freq);
+    return true;
+  }
+} mix_freq_command;
+
+class ZeroValuesAtStartCommand : public Command
+{
+public:
+  ZeroValuesAtStartCommand() : Command ("zero-values-at-start")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
+    return true;
+  }
+} zero_values_at_start_command;
+
+class AttackCommand : public Command
+{
+public:
+  AttackCommand() : Command ("attack")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
+    printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
+    return true;
+  }
+} attack_command;
+
+class SizeCommand : public Command
+{
+public:
+  SizeCommand() : Command ("size")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    size_t phase_bytes = 0, freq_bytes = 0, mag_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        phase_bytes += audio.contents[f].phases.size() * sizeof (float);
+        freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
+        mag_bytes += audio.contents[f].mags.size() * sizeof (float);
+        debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
+        original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
+        noise_bytes += audio.contents[f].noise.size() * sizeof (float);
+      }
+    size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
+
+    printf ("frequencies  : %zd bytes\n", freq_bytes);
+    printf ("mags         : %zd bytes\n", mag_bytes);
+    printf ("phases       : %zd bytes\n", phase_bytes);
+    printf ("dbgsamples   : %zd bytes\n", debug_samples_bytes);
+    printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
+    printf ("noise        : %zd bytes\n", noise_bytes);
+    printf ("orig_samples : %zd bytes\n", original_samples_bytes);
+    return true;
+  }
+} size_command;
+
 int
 main (int argc, char **argv)
 {
@@ -291,7 +387,15 @@ main (int argc, char **argv)
   if (argc < 3)
     {
       printf ("usage: smextract <sm_file> <mode> [ <mode_specific_args> ]\n");
-      exit (1);
+      printf ("\n");
+      printf ("mode specific args:\n\n");
+
+      for (vector<Command *>::iterator ci = Command::registry()->begin(); ci != Command::registry()->end(); ci++)
+        {
+          printf ("  smextract <sm_file> %s ", (*ci)->mode().c_str());
+          (*ci)->usage (true);
+        }
+      return 1;
     }
 
   const string& mode = argv[2];
@@ -432,49 +536,6 @@ main (int argc, char **argv)
           printf ("%f\n", audio.contents[f].noise[i]);
         }
     }
-  else if (mode == "attack")
-    {
-      check_usage (argc, 3, "attack");
-
-      printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
-      printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
-    }
-  else if (mode == "size")
-    {
-      check_usage (argc, 3, "size");
-
-      size_t phase_bytes = 0, freq_bytes = 0, mag_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
-      for (size_t f = 0; f < audio.contents.size(); f++)
-        {
-          phase_bytes += audio.contents[f].phases.size() * sizeof (float);
-          freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
-          mag_bytes += audio.contents[f].mags.size() * sizeof (float);
-          debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
-          original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
-          noise_bytes += audio.contents[f].noise.size() * sizeof (float);
-        }
-      size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
-
-      printf ("frequencies  : %zd bytes\n", freq_bytes);
-      printf ("mags         : %zd bytes\n", mag_bytes);
-      printf ("phases       : %zd bytes\n", phase_bytes);
-      printf ("dbgsamples   : %zd bytes\n", debug_samples_bytes);
-      printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
-      printf ("noise        : %zd bytes\n", noise_bytes);
-      printf ("orig_samples : %zd bytes\n", original_samples_bytes);
-    }
-  else if (mode == "fundamental-freq")
-    {
-      check_usage (argc, 3, "fundamental-freq");
-
-      printf ("fundamental-freq: %f\n", audio.fundamental_freq);
-    }
-  else if (mode == "mix-freq")
-    {
-      check_usage (argc, 3, "mix-freq");
-
-      printf ("mix-freq: %f\n", audio.mix_freq);
-    }
   else if (mode == "auto-tune")
     {
       check_usage (argc, 3, "auto-tune");
@@ -568,12 +629,6 @@ main (int argc, char **argv)
       audio.loop_start = loop_point;
       audio.loop_end = loop_point;
       need_save = true;
-    }
-  else if (mode == "zero-values-at-start")
-    {
-      check_usage (argc, 3, "zero-values-at-start");
-
-      printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
     }
   else if (mode == "original-samples")
     {
@@ -677,7 +732,6 @@ main (int argc, char **argv)
 
               if (!cmd->parse_args (args))
                 {
-                  g_printerr ("can't parse args\n");
                   printf ("usage: smextract <sm_file> %s ", cmd->mode().c_str());
                   cmd->usage (true);
                   return 1;
