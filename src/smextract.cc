@@ -379,6 +379,97 @@ public:
   }
 } size_command;
 
+class LoopParamsCommand : public Command
+{
+public:
+  LoopParamsCommand() : Command ("loop-params")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("frames: %zd\n", audio.contents.size());
+    string loop_str;
+    if (audio.loop_type_to_string (audio.loop_type, loop_str))
+      printf ("loop type: %s\n", loop_str.c_str());
+    else
+      printf ("loop type: *unknown* (%d)\n", audio.loop_type);
+    printf ("loop start: %d\n", audio.loop_start);
+    printf ("loop end: %d\n", audio.loop_end);
+
+    return true;
+  }
+} loop_params_command;
+
+class NoiseParamsCommand : public Command
+{
+  int frame;
+public:
+  NoiseParamsCommand() : Command ("noise-params")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        frame = atoi (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  bool
+  exec (Audio& audio)
+  {
+    for (size_t i = 0; i < audio.contents[frame].noise.size(); i++)
+      printf ("%f\n", audio.contents[frame].noise[i]);
+    return true;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<frame_no>\n");
+  }
+} noise_params_command;
+
+class FrameCommand : public Command
+{
+  int frame;
+public:
+  FrameCommand() : Command ("frame")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        frame = atoi (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  bool
+  exec (Audio& audio)
+  {
+    int i = frame;
+    size_t frame_size = audio.contents[i].debug_samples.size();
+    vector<double> sines (frame_size);
+    reconstruct (audio.contents[i], sines, audio.mix_freq);
+    for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
+      {
+        double v = audio.contents[i].debug_samples[n];
+        printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
+      }
+    return true;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<frame_no>\n");
+  }
+} frame_command;
+
 int
 main (int argc, char **argv)
 {
@@ -483,20 +574,6 @@ main (int argc, char **argv)
           printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
         }
     }
-  else if (mode == "frame")
-    {
-      check_usage (argc, 4, "frame <frame_no>");
-
-      int i = atoi (argv[3]);
-      size_t frame_size = audio.contents[i].debug_samples.size();
-      vector<double> sines (frame_size);
-      reconstruct (audio.contents[i], sines, audio.mix_freq);
-      for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
-        {
-          double v = audio.contents[i].debug_samples[n];
-          printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
-        }
-    }
   else if (mode == "frameparams")
     {
       check_usage (argc, 4, "frameparams <frame_no>");
@@ -524,16 +601,6 @@ main (int argc, char **argv)
             {
               break;
             }
-        }
-    }
-  else if (mode == "noiseparams")
-    {
-      check_usage (argc, 4, "noiseparams <frame_no>");
-
-      int f = atoi (argv[3]);
-      for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
-        {
-          printf ("%f\n", audio.contents[f].noise[i]);
         }
     }
   else if (mode == "auto-tune")
@@ -579,19 +646,6 @@ main (int argc, char **argv)
 
           need_save = true;
         }
-    }
-  else if (mode == "loopparams")
-    {
-      check_usage (argc, 3, "loopparams");
-
-      printf ("frames: %zd\n", audio.contents.size());
-      string loop_str;
-      if (audio.loop_type_to_string (audio.loop_type, loop_str))
-        printf ("loop type: %s\n", loop_str.c_str());
-      else
-        printf ("loop type: *unknown* (%d)\n", audio.loop_type);
-      printf ("loop start: %d\n", audio.loop_start);
-      printf ("loop end: %d\n", audio.loop_end);
     }
   else if (mode == "auto-loop")
     {
