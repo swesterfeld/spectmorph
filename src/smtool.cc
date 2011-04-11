@@ -21,6 +21,7 @@
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
 #include "smmain.hh"
+#include "sminfile.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.h>
 #include <bse/gslfft.h>
@@ -30,6 +31,7 @@ using std::vector;
 using std::min;
 using std::max;
 using std::string;
+using std::set;
 
 double
 vector_delta (const vector<double>& a, const vector<double>& b)
@@ -954,8 +956,38 @@ main (int argc, char **argv)
 
   const string& mode = argv[2];
 
-  Audio audio;
-  load_or_die (audio, argv[1], mode);
+  /* figure out file type (we support SpectMorph::WavSet and SpectMorph::Audio) */
+  InFile *file = new InFile (argv[1]);
+  if (!file->open_ok())
+    {
+      fprintf (stderr, "%s: can't open input file: %s\n", argv[0], argv[1]);
+      exit (1);
+    }
+  string file_type = file->file_type();
+  delete file;
+
+  Audio *audio = NULL;
+  WavSet *wav_set = NULL;
+  if (file_type == "SpectMorph::Audio")
+    {
+      audio = new Audio;
+      load_or_die (*audio, argv[1], mode);
+    }
+  else if (file_type == "SpectMorph::WavSet")
+    {
+      wav_set = new WavSet;
+      BseErrorType error = wav_set->load (argv[1]);
+      if (error)
+        {
+          fprintf (stderr, "smtool: can't load file: %s\n", argv[1]);
+          return 1;
+        }
+    }
+  else
+    {
+      g_printerr ("unknown file_type: %s\n", file_type.c_str());
+      return 1;
+    }
 
   bool need_save = false;
   bool found_command = false;
@@ -978,7 +1010,27 @@ main (int argc, char **argv)
               cmd->usage (true);
               return 1;
             }
-          cmd->exec (audio);
+          if (audio)
+            cmd->exec (*audio);
+          if (wav_set)
+            {
+              set<Audio *> done;
+
+              for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
+                {
+                  printf ("## midi_note=%d channel=%d velocity_range=%d..%d\n", wi->midi_note, wi->channel,
+                          wi->velocity_range_min, wi->velocity_range_max);
+                  if (done.find (wi->audio) != done.end())
+                    {
+                      printf ("## ==> skipped (was processed earlier)\n");
+                    }
+                  else
+                    {
+                      cmd->exec (*wi->audio);
+                      done.insert (wi->audio);
+                    }
+                }
+            }
 
           need_save = cmd->need_save();
         }
@@ -989,10 +1041,25 @@ main (int argc, char **argv)
     }
   if (need_save)
     {
-      if (audio.save (argv[1]) != BSE_ERROR_NONE)
+      if (audio && audio->save (argv[1]) != BSE_ERROR_NONE)
         {
-          fprintf (stderr, "error saving file: %s\n", argv[1]);
-          exit (1);
+          fprintf (stderr, "error saving audio file: %s\n", argv[1]);
+          return 1;
         }
+      if (wav_set && wav_set->save (argv[1]) != BSE_ERROR_NONE)
+        {
+          fprintf (stderr, "error saving wavset file: %s\n", argv[1]);
+          return 1;
+        }
+    }
+  if (wav_set)
+    {
+      delete wav_set;
+      wav_set = 0;
+    }
+  if (audio)
+    {
+      delete audio;
+      audio = 0;
     }
 }
