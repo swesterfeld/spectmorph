@@ -4,7 +4,7 @@ Makefile.in
 smenc
 smplay
 smvisualize
-smextract
+smtool
 smstrip
 smwavset
 .deps
