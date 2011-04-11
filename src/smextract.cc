@@ -223,12 +223,14 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
 class Command
 {
   string m_mode;
+  bool   m_need_save;
 public:
   static vector<Command *> *registry();
   Command (const string& mode)
   {
     registry()->push_back (this);
     m_mode = mode;
+    m_need_save = false;
   }
   virtual bool
   parse_args (vector<string>& args)
@@ -243,10 +245,19 @@ public:
   virtual ~Command()
   {
   }
-
   string mode()
   {
     return m_mode;
+  }
+  bool
+  need_save()
+  {
+    return m_need_save;
+  }
+  void
+  set_need_save (bool s)
+  {
+    m_need_save = s;
   }
 };
 
@@ -587,6 +598,341 @@ public:
   }
 } nan_test_command;
 
+class OriginalSamplesCommand : public Command
+{
+public:
+  OriginalSamplesCommand() : Command ("original-samples")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    for (size_t i = 0; i < audio.original_samples.size(); i++)
+      printf ("%.17g\n", audio.original_samples[i]);
+
+    return true;
+  }
+} original_samples_command;
+
+class FreqCommand : public Command
+{
+  double freq_min, freq_max;
+public:
+  FreqCommand() : Command ("freq")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 2)
+      {
+        freq_min = atof (args[0].c_str());
+        freq_max = atof (args[1].c_str());
+        return true;
+      }
+    return false;
+  }
+  bool
+  exec (Audio& audio)
+  {
+    for (size_t i = 0; i < audio.contents.size(); i++)
+      {
+        const AudioBlock& block = audio.contents[i];
+        for (size_t n = 0; n < block.freqs.size(); n++)
+          {
+            if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
+              {
+                printf ("%zd %f %f\n", i, block.freqs[n], block.mags[n]);
+              }
+          }
+      }
+    return true;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<freq_min> <freq_max>\n");
+  }
+} freq_command;
+
+class SpectrumCommand : public Command
+{
+  int frame;
+public:
+  SpectrumCommand() : Command ("spectrum")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        frame = atoi (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<frame_no>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    size_t frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
+    int i = frame;
+    vector<double> spectrum;
+    vector<double> sines (frame_size);
+
+    reconstruct (audio.contents[i], sines, audio.mix_freq);
+
+    /* compute block size from frame size (smallest 2^k value >= frame_size) */
+    size_t block_size = 1;
+    while (block_size < frame_size)
+      block_size *= 2;
+
+    // construct window
+    vector<float> window (block_size);
+    for (guint i = 0; i < window.size(); i++)
+      {
+        if (i < frame_size)
+          window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+        else
+          window[i] = 0;
+      }
+
+    // apply window to reconstructed signal
+    sines.resize (block_size);
+    for (guint i = 0; i < sines.size(); i++)
+      sines[i] *= window[i];
+
+    // zeropad
+    const int    zeropad  = 4;
+    sines.resize (block_size * zeropad);
+    vector<double> out (block_size * zeropad);
+
+    gsl_power2_fftar (block_size * zeropad, &sines[0], &out[0]);
+
+    vector<double> sines_spectrum;
+    for (size_t n = 0; n < audio.contents[i].original_fft.size(); n += 2)
+      {
+        double re = audio.contents[i].original_fft[n];
+        double im = audio.contents[i].original_fft[n + 1];
+        spectrum.push_back (sqrt (re * re + im * im));
+        sines_spectrum.push_back (mag (out[n], out[n+1]));
+      }
+    for (size_t n = 0; n < spectrum.size(); n++)
+      {
+        double s = 0;
+        for (size_t r = 0; r < 1; r++)
+          {
+            if (n + r < spectrum.size())
+              s = std::max (s, spectrum[n + r]);
+            if (r < n)
+              s = std::max (s, spectrum[n - r]);
+          }
+        printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
+      }
+    return true;
+  }
+} spectrum_command;
+
+class AutoLoopCommand : public Command
+{
+  double percent;
+public:
+  AutoLoopCommand() : Command ("auto-loop")
+  {
+    set_need_save (true);
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        percent = atof (args[0].c_str());
+        if (percent < 0 || percent > 100)
+          {
+            fprintf (stderr, "bad loop percentage: %f\n", percent);
+            return false;
+          }
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<percent>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    int loop_point = audio.contents.size() * percent / 100;
+    if (loop_point < 0)
+      loop_point = 0;
+    if (size_t (loop_point) >= (audio.contents.size() - 1))
+      loop_point = audio.contents.size() - 1;
+    audio.loop_type = Audio::LOOP_FRAME_FORWARD;
+    audio.loop_start = loop_point;
+    audio.loop_end = loop_point;
+    return true;
+  }
+} auto_loop_command;
+
+class TailLoopCommand : public Command
+{
+public:
+  TailLoopCommand() : Command ("tail-loop")
+  {
+    set_need_save (true);
+  }
+  bool
+  exec (Audio& audio)
+  {
+    int loop_point = -1;
+    size_t frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
+    const int frame_step = audio.frame_step_ms * audio.mix_freq / 1000;
+
+    // we need the largest frame that doesn't include any data beyond the original file end
+    for (size_t i = 0; i < audio.contents.size(); i++)
+      {
+        if (i * frame_step + frame_size < size_t (audio.sample_count))
+          loop_point = i;
+      }
+    audio.loop_type = Audio::LOOP_FRAME_FORWARD;
+    audio.loop_start = loop_point;
+    audio.loop_end = loop_point;
+
+    return true;
+  }
+} tail_loop_command;
+
+class AutoTuneCommand : public Command
+{
+public:
+  AutoTuneCommand() : Command ("auto-tune")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    const double freq_min = audio.fundamental_freq * 0.8;
+    const double freq_max = audio.fundamental_freq / 0.8;
+    double freq_sum = 0, mag_sum = 0;
+
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        double position_percent = f * 100.0 / audio.contents.size();
+        if (position_percent >= 40 && position_percent <= 60)
+          {
+            const AudioBlock& block = audio.contents[f];
+            double best_freq = -1;
+            double best_mag = 0;
+            for (size_t n = 0; n < block.freqs.size(); n++)
+              {
+                if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
+                  {
+                    double m = block.mags[n];
+                    if (m > best_mag)
+                      {
+                        best_mag = m;
+                        best_freq = block.freqs[n];
+                      }
+                  }
+              }
+            if (best_mag > 0)
+              {
+                freq_sum += best_freq * best_mag;
+                mag_sum += best_mag;
+              }
+          }
+      }
+    if (mag_sum > 0)
+      {
+        double fundamental_freq = freq_sum / mag_sum;
+        audio.fundamental_freq = fundamental_freq;
+        printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
+
+        set_need_save (true);
+      }
+    return true;
+  }
+} auto_tune_command;
+
+static void
+normalize_energy (double energy, Audio& audio)
+{
+  const double target_energy = 0.05;
+  const double norm = sqrt (target_energy / energy);
+  printf ("avg_energy: %.17g\n", energy);
+  printf ("norm:       %.17g\n", norm);
+  for (size_t f = 0; f < audio.contents.size(); f++)
+    {
+      vector<float>& mags = audio.contents[f].mags;
+      for (size_t i = 0; i < mags.size(); i++)
+        mags[i] *= norm;
+
+      vector<float>& noise = audio.contents[f].noise;
+      for (size_t i = 0; i < noise.size(); i++)
+        noise[i] *= norm * norm;
+    }
+}
+
+class AutoVolumeCommand : public Command
+{
+  double percent;
+public:
+  AutoVolumeCommand() : Command ("auto-volume")
+  {
+    set_need_save (true);
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        percent = atof (args[0].c_str());
+        if (percent < 0 || percent > 100)
+          {
+            fprintf (stderr, "bad volume percentage: %f\n", percent);
+            return false;
+          }
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<percent>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    double energy = compute_energy (audio, percent, false);
+    normalize_energy (energy, audio);
+    return true;
+  }
+} auto_volume_command;
+
+class AutoVolumeFromLoopCommand : public Command
+{
+public:
+  AutoVolumeFromLoopCommand() : Command ("auto-volume-from-loop")
+  {
+    set_need_save (true);
+  }
+  bool
+  exec (Audio& audio)
+  {
+    double energy = compute_energy (audio, /* dummy */ 50, true);
+    normalize_energy (energy, audio);
+    return true;
+  }
+} auto_volume_from_loop_command;
+
 int
 main (int argc, char **argv)
 {
@@ -611,235 +957,35 @@ main (int argc, char **argv)
   Audio audio;
   load_or_die (audio, argv[1], mode);
 
-  size_t frame_size = audio.frame_size_ms * audio.mix_freq / 1000;
   bool need_save = false;
+  bool found_command = false;
 
-  if (mode == "freq")
+  vector<string> args;
+  for (int i = 3; i < argc; i++)
+    args.push_back (argv[i]);
+
+  for (vector<Command *>::iterator ci = Command::registry()->begin(); ci != Command::registry()->end(); ci++)
     {
-      check_usage (argc, 5, "freq <freq_min> <freq_max>");
-
-      float freq_min = atof (argv[3]);
-      float freq_max = atof (argv[4]);
-
-      for (size_t i = 0; i < audio.contents.size(); i++)
+      Command *cmd = *ci;
+      if (cmd->mode() == mode)
         {
-          const AudioBlock& block = audio.contents[i];
-          for (size_t n = 0; n < block.freqs.size(); n++)
+          assert (!found_command);
+          found_command = true;
+
+          if (!cmd->parse_args (args))
             {
-              if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
-                {
-                  printf ("%zd %f %f\n", i, block.freqs[n], block.mags[n]);
-                }
+              printf ("usage: smextract <sm_file> %s ", cmd->mode().c_str());
+              cmd->usage (true);
+              return 1;
             }
+          cmd->exec (audio);
+
+          need_save = cmd->need_save();
         }
     }
-  else if (mode == "spectrum")
+  if (!found_command)
     {
-      check_usage (argc, 4, "spectrum <frame_no>");
-
-      int i = atoi (argv[3]);
-      vector<double> spectrum;
-      vector<double> sines (frame_size);
-
-      reconstruct (audio.contents[i], sines, audio.mix_freq);
-
-      /* compute block size from frame size (smallest 2^k value >= frame_size) */
-      size_t block_size = 1;
-      while (block_size < frame_size)
-        block_size *= 2;
-
-      // construct window
-      vector<float> window (block_size);
-      for (guint i = 0; i < window.size(); i++)
-        {
-          if (i < frame_size)
-            window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
-          else
-            window[i] = 0;
-        }
-
-      // apply window to reconstructed signal
-      sines.resize (block_size);
-      for (guint i = 0; i < sines.size(); i++)
-        sines[i] *= window[i];
-
-      // zeropad
-      const int    zeropad  = 4;
-      sines.resize (block_size * zeropad);
-      vector<double> out (block_size * zeropad);
-
-      gsl_power2_fftar (block_size * zeropad, &sines[0], &out[0]);
-
-      vector<double> sines_spectrum;
-      for (size_t n = 0; n < audio.contents[i].original_fft.size(); n += 2)
-        {
-          double re = audio.contents[i].original_fft[n];
-          double im = audio.contents[i].original_fft[n + 1];
-          spectrum.push_back (sqrt (re * re + im * im));
-          sines_spectrum.push_back (mag (out[n], out[n+1]));
-        }
-      for (size_t n = 0; n < spectrum.size(); n++)
-        {
-          double s = 0;
-          for (size_t r = 0; r < 1; r++)
-            {
-              if (n + r < spectrum.size())
-                s = std::max (s, spectrum[n + r]);
-              if (r < n)
-                s = std::max (s, spectrum[n - r]);
-            }
-          printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
-        }
-    }
-  else if (mode == "auto-tune")
-    {
-      check_usage (argc, 3, "auto-tune");
-
-      const double freq_min = audio.fundamental_freq * 0.8;
-      const double freq_max = audio.fundamental_freq / 0.8;
-      double freq_sum = 0, mag_sum = 0;
-
-      for (size_t f = 0; f < audio.contents.size(); f++)
-        {
-          double position_percent = f * 100.0 / audio.contents.size();
-          if (position_percent >= 40 && position_percent <= 60)
-            {
-              const AudioBlock& block = audio.contents[f];
-              double best_freq = -1;
-              double best_mag = 0;
-              for (size_t n = 0; n < block.freqs.size(); n++)
-                {
-                  if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
-                    {
-                      double m = block.mags[n];
-                      if (m > best_mag)
-                        {
-                          best_mag = m;
-                          best_freq = block.freqs[n];
-                        }
-                    }
-                }
-              if (best_mag > 0)
-                {
-                  freq_sum += best_freq * best_mag;
-                  mag_sum += best_mag;
-                }
-            }
-        }
-      if (mag_sum > 0)
-        {
-          double fundamental_freq = freq_sum / mag_sum;
-          audio.fundamental_freq = fundamental_freq;
-          printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
-
-          need_save = true;
-        }
-    }
-  else if (mode == "auto-loop")
-    {
-      check_usage (argc, 4, "auto-loop <percent>");
-
-      double percent = atof (argv[3]);
-      if (percent < 0 || percent > 100)
-        {
-          fprintf (stderr, "bad loop percentage: %f\n", percent);
-          exit (1);
-        }
-
-      int loop_point = audio.contents.size() * percent / 100;
-      if (loop_point < 0)
-        loop_point = 0;
-      if (size_t (loop_point) >= (audio.contents.size() - 1))
-        loop_point = audio.contents.size() - 1;
-      audio.loop_type = Audio::LOOP_FRAME_FORWARD;
-      audio.loop_start = loop_point;
-      audio.loop_end = loop_point;
-      need_save = true;
-    }
-  else if (mode == "tail-loop")
-    {
-      check_usage (argc, 3, "tail-loop");
-
-      int loop_point = -1;
-      const int frame_step = audio.frame_step_ms * audio.mix_freq / 1000;
-
-      // we need the largest frame that doesn't include any data beyond the original file end
-      for (size_t i = 0; i < audio.contents.size(); i++)
-        {
-          if (i * frame_step + frame_size < size_t (audio.sample_count))
-            loop_point = i;
-        }
-      audio.loop_type = Audio::LOOP_FRAME_FORWARD;
-      audio.loop_start = loop_point;
-      audio.loop_end = loop_point;
-      need_save = true;
-    }
-  else if (mode == "original-samples")
-    {
-      check_usage (argc, 3, "original-samples");
-
-      for (size_t i = 0; i < audio.original_samples.size(); i++)
-        printf ("%.17g\n", audio.original_samples[i]);
-    }
-  else if (mode == "auto-volume" || mode == "auto-volume-from-loop")
-    {
-      double energy = 0;
-
-      if (mode == "auto-volume")
-        {
-          check_usage (argc, 4, "auto-volume <percent>");
-          energy = compute_energy (audio, atof (argv[3]), false);
-        }
-      if (mode == "auto-volume-from-loop")
-        {
-          check_usage (argc, 3, "auto-volume-from-loop");
-          energy = compute_energy (audio, /* dummy */ 50, true);
-        }
-      const double target_energy = 0.05;
-      const double norm = sqrt (target_energy / energy);
-      printf ("avg_energy: %.17g\n", energy);
-      printf ("norm:       %.17g\n", norm);
-      for (size_t f = 0; f < audio.contents.size(); f++)
-        {
-          vector<float>& mags = audio.contents[f].mags;
-          for (size_t i = 0; i < mags.size(); i++)
-            mags[i] *= norm;
-
-          vector<float>& noise = audio.contents[f].noise;
-          for (size_t i = 0; i < noise.size(); i++)
-            noise[i] *= norm * norm;
-        }
-      need_save = true;
-    }
-  else
-    {
-      bool found_command = false;
-
-      vector<string> args;
-      for (int i = 3; i < argc; i++)
-        args.push_back (argv[i]);
-
-      for (vector<Command *>::iterator ci = Command::registry()->begin(); ci != Command::registry()->end(); ci++)
-        {
-          Command *cmd = *ci;
-          if (cmd->mode() == mode)
-            {
-              assert (!found_command);
-              found_command = true;
-
-              if (!cmd->parse_args (args))
-                {
-                  printf ("usage: smextract <sm_file> %s ", cmd->mode().c_str());
-                  cmd->usage (true);
-                  return 1;
-                }
-              cmd->exec (audio);
-            }
-        }
-      if (!found_command)
-        {
-          g_printerr ("unknown mode: %s\n", mode.c_str());
-        }
+      g_printerr ("unknown mode: %s\n", mode.c_str());
     }
   if (need_save)
     {
