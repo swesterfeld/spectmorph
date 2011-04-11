@@ -470,6 +470,123 @@ public:
   }
 } frame_command;
 
+class FrameParamsCommand : public Command
+{
+  int frame;
+public:
+  FrameParamsCommand() : Command ("frame-params")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        frame = atoi (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<frame_no>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    int i = frame;
+    for(;;)
+      {
+        double maxm = 0;
+        size_t maxp = 0;
+        for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
+          {
+            const double m = audio.contents[i].mags[partial];
+            if (m > maxm)
+              {
+                maxm = m;
+                maxp = partial;
+              }
+          }
+        if (maxm > 0)
+          {
+            printf ("%f Hz: %f\n", audio.contents[i].freqs[maxp], bse_db_from_factor (maxm, -200));
+            audio.contents[i].mags[maxp] = 0;
+          }
+        else
+          {
+            break;
+          }
+      }
+    return true;
+  }
+} frame_params_command;
+
+class TotalNoiseCommand : public Command
+{
+public:
+  TotalNoiseCommand() : Command ("total-noise")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    double total_noise = 0;
+    double peak_noise  = 0;
+
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
+          {
+            double noise = audio.contents[f].noise[i];
+
+            total_noise += noise;
+            peak_noise   = max (peak_noise, noise);
+          }
+      }
+    printf ("total-noise: %.17g\n", total_noise);
+    printf ("peak-noise:  %.17g\n", peak_noise);
+    return true;
+  }
+} total_noise_command;
+
+class NanTestCommand : public Command
+{
+public:
+  NanTestCommand() : Command ("nan-test")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    int nan_phases = 0, nan_freqs = 0, nan_mags = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
+
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        if (find_nan (audio.contents[f].phases))
+          nan_phases++;
+        if (find_nan (audio.contents[f].freqs))
+          nan_freqs++;
+        if (find_nan (audio.contents[f].mags))
+          nan_mags++;
+        if (find_nan (audio.contents[f].debug_samples))
+          nan_ds++;
+        if (find_nan (audio.contents[f].original_fft))
+          nan_fft++;
+        if (find_nan (audio.contents[f].noise))
+          nan_noise++;
+      }
+    printf ("nan-phases:        %d\n", nan_phases);
+    printf ("nan-freqs:         %d\n", nan_freqs);
+    printf ("nan-mags:          %d\n", nan_mags);
+    printf ("nan-debug-samples: %d\n", nan_ds);
+    printf ("nan-original-fft:  %d\n", nan_fft);
+    printf ("nan-noise:         %d\n", nan_noise);
+    return true;
+  }
+} nan_test_command;
+
 int
 main (int argc, char **argv)
 {
@@ -574,35 +691,6 @@ main (int argc, char **argv)
           printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
         }
     }
-  else if (mode == "frameparams")
-    {
-      check_usage (argc, 4, "frameparams <frame_no>");
-
-      int i = atoi (argv[3]);
-      for(;;)
-        {
-          double maxm = 0;
-          size_t maxp = 0;
-          for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
-            {
-              const double m = audio.contents[i].mags[partial];
-              if (m > maxm)
-                {
-                  maxm = m;
-                  maxp = partial;
-                }
-            }
-          if (maxm > 0)
-            {
-              printf ("%f Hz: %f\n", audio.contents[i].freqs[maxp], bse_db_from_factor (maxm, -200));
-              audio.contents[i].mags[maxp] = 0;
-            }
-          else
-            {
-              break;
-            }
-        }
-    }
   else if (mode == "auto-tune")
     {
       check_usage (argc, 3, "auto-tune");
@@ -692,53 +780,6 @@ main (int argc, char **argv)
 
       for (size_t i = 0; i < audio.original_samples.size(); i++)
         printf ("%.17g\n", audio.original_samples[i]);
-    }
-  else if (mode == "nan-test")
-    {
-      check_usage (argc, 3, "nan-test");
-
-      int nan_phases = 0, nan_freqs = 0, nan_mags = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
-
-      for (size_t f = 0; f < audio.contents.size(); f++)
-        {
-          if (find_nan (audio.contents[f].phases))
-            nan_phases++;
-          if (find_nan (audio.contents[f].freqs))
-            nan_freqs++;
-          if (find_nan (audio.contents[f].mags))
-            nan_mags++;
-          if (find_nan (audio.contents[f].debug_samples))
-            nan_ds++;
-          if (find_nan (audio.contents[f].original_fft))
-            nan_fft++;
-          if (find_nan (audio.contents[f].noise))
-            nan_noise++;
-        }
-      printf ("nan-phases:        %d\n", nan_phases);
-      printf ("nan-freqs:         %d\n", nan_freqs);
-      printf ("nan-mags:          %d\n", nan_mags);
-      printf ("nan-debug-samples: %d\n", nan_ds);
-      printf ("nan-original-fft:  %d\n", nan_fft);
-      printf ("nan-noise:         %d\n", nan_noise);
-    }
-  else if (mode == "total-noise")
-    {
-      double total_noise = 0;
-      double peak_noise  = 0;
-
-      check_usage (argc, 3, "total-noise");
-      for (size_t f = 0; f < audio.contents.size(); f++)
-        {
-          for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
-            {
-              double noise = audio.contents[f].noise[i];
-
-              total_noise += noise;
-              peak_noise   = max (peak_noise, noise);
-            }
-        }
-      printf ("total-noise: %.17g\n", total_noise);
-      printf ("peak-noise:  %.17g\n", peak_noise);
     }
   else if (mode == "auto-volume" || mode == "auto-volume-from-loop")
     {
