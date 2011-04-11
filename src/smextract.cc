@@ -153,7 +153,7 @@ find_nan (vector<float>& data)
 }
 
 static double
-compute_energy (const Audio& audio, double percent)
+compute_energy (const Audio& audio, double percent, bool from_loop)
 {
   double percent_start = percent - 5;
   double percent_stop = percent + 5;
@@ -164,7 +164,10 @@ compute_energy (const Audio& audio, double percent)
     }
 
   Audio *noloop_audio = audio.clone();
-  noloop_audio->loop_type = Audio::LOOP_NONE;  // don't use looped signal, but original signal
+  if (!from_loop)
+    {
+      noloop_audio->loop_type = Audio::LOOP_NONE;  // don't use looped signal, but original signal
+    }
 
   WavSet smset;
   WavSetWave new_wave;
@@ -179,22 +182,106 @@ compute_energy (const Audio& audio, double percent)
   // we need reproducable noise to get the same energy every time
   decoder.set_noise_seed (42);
   decoder.retrigger (0, audio.fundamental_freq, 127, audio.mix_freq);
-  vector<float> samples (audio.sample_count);
+  vector<float> samples;
+  if (from_loop)
+    {
+      // at least one second, or twice the original len, whatever is longer
+      samples.resize (audio.sample_count + MAX (audio.sample_count, audio.mix_freq));
+    }
+  else
+    {
+      samples.resize (audio.sample_count);
+    }
   decoder.process (samples.size(), 0, 0, &samples[0]);
 
   double energy = 0;
   size_t energy_norm = 0;
-  for (size_t pos = 0; pos < samples.size(); pos++)
+  if (from_loop)
     {
-      double percent = (pos * 100.0) / samples.size();
-      if (percent > percent_start && percent < percent_stop)
+      // start evaluating energy after end of original data (so we're counting the looped part only
+      for (size_t pos = audio.sample_count; pos < samples.size(); pos++)
         {
           energy += samples[pos] * samples[pos];
           energy_norm++;
         }
     }
+  else
+    {
+      for (size_t pos = 0; pos < samples.size(); pos++)
+        {
+          double percent = (pos * 100.0) / samples.size();
+          if (percent > percent_start && percent < percent_stop)
+            {
+              energy += samples[pos] * samples[pos];
+              energy_norm++;
+            }
+        }
+    }
   return energy / energy_norm;
 }
+
+class Command
+{
+  string m_mode;
+public:
+  static vector<Command *> *registry();
+  Command (const string& mode)
+  {
+    registry()->push_back (this);
+    m_mode = mode;
+  }
+  virtual bool parse_args (vector<string>& args) = 0;
+  virtual bool exec (Audio& audio) = 0;
+  virtual void usage (bool one_line) = 0;
+  virtual ~Command()
+  {
+  }
+
+  string mode()
+  {
+    return m_mode;
+  }
+};
+
+vector<Command *> *
+Command::registry()
+{
+  static vector<Command *> *rx = 0;
+  if (!rx)
+    rx = new vector<Command *>;
+  return rx;
+}
+
+class VolumeCommand : public Command
+{
+  double percent;
+public:
+  VolumeCommand() : Command ("volume")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        percent = atof (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  bool
+  exec (Audio& audio)
+  {
+    const double energy = compute_energy (audio, percent, false);
+    printf ("avg_energy: %.17g\n", energy);
+    return true;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<percent>\n");
+  }
+} volume_command;
 
 int
 main (int argc, char **argv)
@@ -542,18 +629,20 @@ main (int argc, char **argv)
       printf ("total-noise: %.17g\n", total_noise);
       printf ("peak-noise:  %.17g\n", peak_noise);
     }
-  else if (mode == "volume")
+  else if (mode == "auto-volume" || mode == "auto-volume-from-loop")
     {
-      check_usage (argc, 4, "volume <percent>");
+      double energy = 0;
 
-      const double energy = compute_energy (audio, atof (argv[3]));
-      printf ("avg_energy: %.17g\n", energy);
-    }
-  else if (mode == "auto-volume")
-    {
-      check_usage (argc, 4, "auto-volume <percent>");
-
-      const double energy = compute_energy (audio, atof (argv[3]));
+      if (mode == "auto-volume")
+        {
+          check_usage (argc, 4, "auto-volume <percent>");
+          energy = compute_energy (audio, atof (argv[3]), false);
+        }
+      if (mode == "auto-volume-from-loop")
+        {
+          check_usage (argc, 3, "auto-volume-from-loop");
+          energy = compute_energy (audio, /* dummy */ 50, true);
+        }
       const double target_energy = 0.05;
       const double norm = sqrt (target_energy / energy);
       printf ("avg_energy: %.17g\n", energy);
@@ -569,6 +658,37 @@ main (int argc, char **argv)
             noise[i] *= norm * norm;
         }
       need_save = true;
+    }
+  else
+    {
+      bool found_command = false;
+
+      vector<string> args;
+      for (int i = 3; i < argc; i++)
+        args.push_back (argv[i]);
+
+      for (vector<Command *>::iterator ci = Command::registry()->begin(); ci != Command::registry()->end(); ci++)
+        {
+          Command *cmd = *ci;
+          if (cmd->mode() == mode)
+            {
+              assert (!found_command);
+              found_command = true;
+
+              if (!cmd->parse_args (args))
+                {
+                  g_printerr ("can't parse args\n");
+                  printf ("usage: smextract <sm_file> %s ", cmd->mode().c_str());
+                  cmd->usage (true);
+                  return 1;
+                }
+              cmd->exec (audio);
+            }
+        }
+      if (!found_command)
+        {
+          g_printerr ("unknown mode: %s\n", mode.c_str());
+        }
     }
   if (need_save)
     {
