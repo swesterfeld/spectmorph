@@ -585,9 +585,11 @@ main (int argc, char **argv)
       check_usage (argc, 3, "loopparams");
 
       printf ("frames: %zd\n", audio.contents.size());
-      const char *lt2name[] = { "LOOP_NONE", "LOOP_FRAME_FORWARD", "LOOP_FRAME_PING_PONG",
-                          "LOOP_TIME_FORWARD", "LOOP_TIME_PING_PONG" };
-      printf ("loop type: %s\n", lt2name[audio.loop_type]);
+      string loop_str;
+      if (audio.loop_type_to_string (audio.loop_type, loop_str))
+        printf ("loop type: %s\n", loop_str.c_str());
+      else
+        printf ("loop type: *unknown* (%d)\n", audio.loop_type);
       printf ("loop start: %d\n", audio.loop_start);
       printf ("loop end: %d\n", audio.loop_end);
     }
