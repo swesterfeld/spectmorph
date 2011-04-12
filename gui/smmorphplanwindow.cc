@@ -64,24 +64,6 @@ MorphPlanWindow::on_load_index_clicked()
     }
 }
 
-void
-MorphPlanWindow::on_add_source_clicked()
-{
-  add_operator ("SpectMorph::MorphSource");
-}
-
-void
-MorphPlanWindow::on_add_output_clicked()
-{
-  add_operator ("SpectMorph::MorphOutput");
-}
-
-void
-MorphPlanWindow::on_add_linear_morph_clicked()
-{
-  add_operator ("SpectMorph::MorphLinear");
-}
-
 MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
   m_morph_plan (morph_plan),
   morph_plan_view (morph_plan.c_ptr(), this)
@@ -97,12 +79,21 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
                          sigc::mem_fun (*this, &MorphPlanWindow::on_file_export_clicked));
   ref_action_group->add (Gtk::Action::create ("EditMenu", "Edit"));
   ref_action_group->add (Gtk::Action::create ("EditAddOperator", "Add Operator"));
+
+  // Source
   ref_action_group->add (Gtk::Action::create ("EditAddSource", "Source"),
-                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_source_clicked));
+                         sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
+                                     "SpectMorph::MorphSource"));
+  // Output
   ref_action_group->add (Gtk::Action::create ("EditAddOutput", "Output"),
-                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_output_clicked));
+                         sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
+                                     "SpectMorph::MorphOutput"));
+  // Linear
   ref_action_group->add (Gtk::Action::create ("EditAddLinearMorph", "Linear Morph"),
-                         sigc::mem_fun (*this, &MorphPlanWindow::on_add_linear_morph_clicked));
+                         sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
+                                     "SpectMorph::MorphLinear"));
+
+
   ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
                          sigc::mem_fun (*this, &MorphPlanWindow::on_load_index_clicked));
 
