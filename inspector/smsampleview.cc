@@ -31,7 +31,7 @@ SampleView::SampleView() :
 {
   set_size_request (400, 400);
 
-  add_events (Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_RELEASE_MASK);
+  add_events (Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
 
   attack_start = 0;
   attack_end = 0;
@@ -39,6 +39,7 @@ SampleView::SampleView() :
   vzoom = 1;
   old_width = -1;
   m_edit_marker_type = MARKER_NONE;
+  button_1_pressed = false;
 }
 
 bool
@@ -135,6 +136,9 @@ SampleView::on_expose_event (GdkEventExpose *ev)
 bool
 SampleView::on_button_press_event (GdkEventButton *event)
 {
+  if (event->button == 1)
+    button_1_pressed = true;
+
   move_marker (event->x);
   return true;
 }
@@ -142,7 +146,7 @@ SampleView::on_button_press_event (GdkEventButton *event)
 void
 SampleView::move_marker (int x)
 {
-  if (audio)
+  if (button_1_pressed && audio)
     {
       double hz = HZOOM_SCALE * hzoom;
       int index = x / hz;
@@ -170,6 +174,13 @@ SampleView::move_marker (int x)
 bool
 SampleView::on_motion_notify_event (GdkEventMotion *event)
 {
+  if (audio)
+    {
+      double hz = HZOOM_SCALE * hzoom;
+      int index = event->x / hz;
+
+      signal_mouse_time_changed (index / audio->mix_freq * 1000);
+    }
   move_marker (event->x);
   return true;
 }
@@ -178,6 +189,9 @@ bool
 SampleView::on_button_release_event (GdkEventButton *event)
 {
   move_marker (event->x);
+
+  if (event->button == 1)
+    button_1_pressed = false;
   return true;
 }
 

@@ -38,6 +38,7 @@ class SampleWindow : public Gtk::Window
   ZoomController      zoom_controller;
   Gtk::HBox           button_hbox;
 
+  Gtk::Label          time_label;
   Gtk::ToggleButton   edit_start_marker;
   Gtk::ToggleButton   edit_loop_start;
   Gtk::ToggleButton   edit_loop_end;
@@ -57,6 +58,7 @@ public:
   void on_next_sample();
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_loop_type_changed();
+  void on_mouse_time_changed (int time);
 
   sigc::signal<void> signal_next_sample;
 };

@@ -77,11 +77,13 @@ SampleWindow::SampleWindow (Navigator *navigator) :
   loop_type_combo.append_text (LOOP_TIME_PING_PONG_TEXT);
   loop_type_combo.signal_changed().connect (sigc::mem_fun (*this, &SampleWindow::on_loop_type_changed));
 
+  button_hbox.add (time_label);
   button_hbox.add (edit_start_marker);
   button_hbox.add (edit_loop_start);
   button_hbox.add (edit_loop_end);
   button_hbox.add (loop_type_combo);
 
+  time_label.set_label ("Time: 00:00:000 ms");
   edit_start_marker.set_label ("Edit Start Marker");
   edit_start_marker.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &SampleWindow::on_edit_marker_changed),
                                                           SampleView::MARKER_START));
@@ -98,6 +100,8 @@ SampleWindow::SampleWindow (Navigator *navigator) :
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SampleWindow::on_zoom_changed));
   m_sample_view.signal_resized.connect (sigc::mem_fun (*this, &SampleWindow::on_resized));
+
+  m_sample_view.signal_mouse_time_changed.connect (sigc::mem_fun (*this, &SampleWindow::on_mouse_time_changed));
 
   show_all_children();
 
@@ -204,4 +208,15 @@ SampleWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
   edit_loop_start.set_active (marker_type == SampleView::MARKER_LOOP_START);
   edit_loop_end.set_active (marker_type == SampleView::MARKER_LOOP_END);
   in_update_buttons = false;
+}
+
+void
+SampleWindow::on_mouse_time_changed (int time)
+{
+  int ms = time % 1000;
+  time /= 1000;
+  int s = time % 60;
+  time /= 60;
+  int m = time;
+  time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
 }

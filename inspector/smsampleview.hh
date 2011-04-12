@@ -43,6 +43,7 @@ private:
   double attack_start;
   double attack_end;
   EditMarkerType m_edit_marker_type;
+  bool   button_1_pressed;
 
   int old_width;
   void force_redraw();
@@ -52,6 +53,7 @@ public:
 
   sigc::signal<void, int, int> signal_resized;
   sigc::signal<void>           signal_audio_edit;
+  sigc::signal<void, int>      signal_mouse_time_changed;
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
