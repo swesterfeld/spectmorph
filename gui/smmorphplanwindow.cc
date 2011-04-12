@@ -94,7 +94,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
                                      "SpectMorph::MorphLinear"));
 
 
-  ref_action_group->add (Gtk::Action::create ("EditLoadIndex", "Load Index"),
+  ref_action_group->add (Gtk::Action::create ("FileLoadIndex", "Load Index"),
                          sigc::mem_fun (*this, &MorphPlanWindow::on_load_index_clicked));
 
   ref_action_group->add (Gtk::Action::create ("ContextMenu", "Context Menu"));
@@ -117,6 +117,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
     "    <menu action='FileMenu'>"
     "      <menuitem action='FileImport' />"
     "      <menuitem action='FileExport' />"
+    "      <menuitem action='FileLoadIndex' />"
     "    </menu>"
     "    <menu action='EditMenu'>"
     "      <menu action='EditAddOperator'>"
@@ -124,7 +125,6 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
     "        <menuitem action='EditAddOutput' />"
     "        <menuitem action='EditAddLinearMorph' />"
     "      </menu>"
-    "      <menuitem action='EditLoadIndex' />"
     "    </menu>"
     "  </menubar>"
     "  <popup name='PopupMenu'>"
