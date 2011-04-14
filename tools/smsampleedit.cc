@@ -33,6 +33,44 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+class SampleEditMarkers : public SampleView::Markers
+{
+public:
+  vector<float> positions;
+  SampleEditMarkers() :
+    positions (2)
+  {
+  }
+  size_t count()
+  {
+    return positions.size();
+  }
+  float
+  position (size_t m)
+  {
+    g_return_val_if_fail (m >= 0 && m < positions.size(), 0.0);
+
+    return positions[m];
+  }
+  void
+  set_position (size_t m, float new_pos)
+  {
+    g_return_if_fail (m >= 0 && m < positions.size());
+
+    positions[m] = new_pos;
+  }
+  SampleView::EditMarkerType
+  type (size_t m)
+  {
+    if (m == 0)
+      return SampleView::MARKER_CLIP_START;
+    else if (m == 1)
+      return SampleView::MARKER_CLIP_END;
+    else
+      return SampleView::MARKER_NONE;
+  }
+};
+
 class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -44,10 +82,13 @@ class MainWindow : public Gtk::Window
   Gtk::ToggleButton   edit_clip_start;
   Gtk::ToggleButton   edit_clip_end;
   Gtk::Label          time_label;
+  SampleEditMarkers   markers;
+  bool                in_update_buttons;
 
 public:
   MainWindow();
 
+  void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_zoom_changed();
   void on_mouse_time_changed (int time);
   void load (GslDataHandle *dhandle);
@@ -56,6 +97,7 @@ public:
 MainWindow::MainWindow() :
   zoom_controller (1, 5000, 10, 5000)
 {
+  in_update_buttons = false;
   scrolled_win.add (sample_view);
 
   vbox.pack_start (scrolled_win);
@@ -64,6 +106,12 @@ MainWindow::MainWindow() :
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWindow::on_zoom_changed));
   sample_view.signal_mouse_time_changed.connect (sigc::mem_fun (*this, &MainWindow::on_mouse_time_changed));
+
+  edit_clip_start.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
+                                            SampleView::MARKER_CLIP_START));
+  edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
+                                          SampleView::MARKER_CLIP_END));
+
   on_mouse_time_changed (0); // init label
 
   edit_clip_start.set_label ("Edit Clip Start");
@@ -76,11 +124,28 @@ MainWindow::MainWindow() :
 }
 
 void
+MainWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
+{
+  if (in_update_buttons)
+    return;
+
+  if (sample_view.edit_marker_type() == marker_type)  // we're selected already -> turn it off
+    marker_type = SampleView::MARKER_NONE;
+
+  sample_view.set_edit_marker_type (marker_type);
+
+  in_update_buttons = true;
+  edit_clip_start.set_active (marker_type == SampleView::MARKER_CLIP_START);
+  edit_clip_end.set_active (marker_type == SampleView::MARKER_CLIP_END);
+  in_update_buttons = false;
+}
+
+void
 MainWindow::load (GslDataHandle *dhandle)
 {
   gsl_data_handle_open (dhandle);
   audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
-  sample_view.load (dhandle, &audio);
+  sample_view.load (dhandle, &audio, &markers);
   gsl_data_handle_close (dhandle);
 }
 

@@ -32,11 +32,21 @@ public:
     MARKER_NONE,
     MARKER_START,
     MARKER_LOOP_START,
-    MARKER_LOOP_END
+    MARKER_LOOP_END,
+    MARKER_CLIP_START,
+    MARKER_CLIP_END
+  };
+  class Markers {
+  public:
+    virtual size_t          count() = 0;
+    virtual EditMarkerType  type (size_t marker) = 0;
+    virtual float           position (size_t marker) = 0;
+    virtual void            set_position (size_t marker, float new_position) = 0;
   };
 
 private:
-  Audio *audio;
+  Audio   *audio;
+  Markers *markers;
   std::vector<float> signal;
   double hzoom;
   double vzoom;
@@ -55,7 +65,7 @@ public:
   sigc::signal<void>           signal_audio_edit;
   sigc::signal<void, int>      signal_mouse_time_changed;
 
-  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
+  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
 
   bool on_expose_event (GdkEventExpose *ev);
   bool on_button_press_event (GdkEventButton *event);

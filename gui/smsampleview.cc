@@ -27,7 +27,8 @@ using std::max;
 #define HZOOM_SCALE 0.05
 
 SampleView::SampleView() :
-  audio (NULL)
+  audio (NULL),
+  markers (NULL)
 {
   set_size_request (400, 400);
 
@@ -123,6 +124,22 @@ SampleView::on_expose_event (GdkEventExpose *ev)
               cr->stroke();
             }
         }
+      if (markers)
+        {
+          for (size_t i = 0; i < markers->count(); i++)
+            {
+              int marker_pos = markers->position (i) / 1000.0 * audio->mix_freq;
+
+              if (markers->type (i) == m_edit_marker_type)
+                cr->set_source_rgb (0, 0, 0.8);
+              else
+                cr->set_source_rgb (0.6, 0.6, 0.6);
+
+              cr->move_to (hz * marker_pos, 0);
+              cr->line_to (hz * marker_pos, height);
+              cr->stroke();
+            }
+        }
 
       // dark blue line @ zero:
       cr->set_source_rgb (0.0, 0.0, 0.0);
@@ -166,6 +183,14 @@ SampleView::move_marker (int x)
               audio->loop_end = index / (audio->frame_step_ms / 1000 * audio->mix_freq);
             }
         }
+      if (markers)
+        {
+          for (size_t m = 0; m < markers->count(); m++)
+            {
+              if (markers->type (m) == m_edit_marker_type)
+                markers->set_position (m, index / audio->mix_freq * 1000);
+            }
+        }
       signal_audio_edit();
       force_redraw();
     }
@@ -196,9 +221,10 @@ SampleView::on_button_release_event (GdkEventButton *event)
 }
 
 void
-SampleView::load (GslDataHandle *dhandle, Audio *audio)
+SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers)
 {
   this->audio = audio;
+  this->markers = markers;
 
   signal.clear();
   attack_start = 0;
