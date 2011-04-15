@@ -16,6 +16,7 @@
  */
 
 #include "smwavloader.hh"
+#include "smleakdebugger.hh"
 
 #include <bse/bseloader.h>
 #include <stdio.h>
@@ -82,6 +83,18 @@ WavLoader::load (const string& filename)
   result->m_mix_freq = gsl_data_handle_mix_freq (dhandle);
 
   return result;
+}
+
+static LeakDebugger leak_debugger ("SpectMorph::WavLoader");
+
+WavLoader::WavLoader()
+{
+  leak_debugger.add (this);
+}
+
+WavLoader::~WavLoader()
+{
+  leak_debugger.del (this);
 }
 
 const vector<float>&
