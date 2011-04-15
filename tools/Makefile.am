@@ -4,6 +4,7 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/s
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
+SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
 EXTRA_DIST += delta.py
 
@@ -30,5 +31,5 @@ tld_SOURCES = tld.cc
 tld_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smsampleedit_SOURCES = smsampleedit.cc
-smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS)
-smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui
+smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS)
+smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack

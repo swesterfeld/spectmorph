@@ -27,11 +27,15 @@
 #include "smmain.hh"
 #include "smsampleview.hh"
 #include "smzoomcontroller.hh"
+#include "smsimplejackplayer.hh"
+#include "smwavloader.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+
+GslDataHandle* dhandle_from_file (const string& filename);
 
 class SampleEditMarkers : public SampleView::Markers
 {
@@ -79,24 +83,29 @@ class MainWindow : public Gtk::Window
   SampleView          sample_view;
   Audio               audio;
   ZoomController      zoom_controller;
+  Gtk::Button         play_button;
   Gtk::ToggleButton   edit_clip_start;
   Gtk::ToggleButton   edit_clip_end;
   Gtk::Label          time_label;
   SampleEditMarkers   markers;
   bool                in_update_buttons;
+  SimpleJackPlayer    jack_player;
+  WavLoader          *samples;
 
 public:
   MainWindow();
 
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
+  void on_play_clicked();
   void on_zoom_changed();
   void on_mouse_time_changed (int time);
-  void load (GslDataHandle *dhandle);
+  void load (const string& filename);
   void on_resized (int old_width, int new_width);
 };
 
 MainWindow::MainWindow() :
-  zoom_controller (1, 5000, 10, 5000)
+  zoom_controller (1, 5000, 10, 5000),
+  jack_player ("smsampleedit")
 {
   in_update_buttons = false;
   scrolled_win.add (sample_view);
@@ -112,18 +121,23 @@ MainWindow::MainWindow() :
                                             SampleView::MARKER_CLIP_START));
   edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
                                           SampleView::MARKER_CLIP_END));
+  play_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_play_clicked));
 
   sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
   on_mouse_time_changed (0); // init label
 
+  play_button.set_label ("Play");
   edit_clip_start.set_label ("Edit Clip Start");
   edit_clip_end.set_label ("Edit Clip End");
   button_hbox.pack_start (time_label);
+  button_hbox.pack_start (play_button);
   button_hbox.pack_start (edit_clip_start);
   button_hbox.pack_start (edit_clip_end);
   add (vbox);
   show_all_children();
+
+  jack_player.set_volume (0.125);
 }
 
 void
@@ -159,8 +173,14 @@ MainWindow::on_resized (int old_width, int new_width)
 
 
 void
-MainWindow::load (GslDataHandle *dhandle)
+MainWindow::load (const string& filename)
 {
+  samples = WavLoader::load (filename);
+  if (samples)
+    audio.original_samples = samples->samples();
+
+  GslDataHandle *dhandle = dhandle_from_file (filename);
+
   gsl_data_handle_open (dhandle);
   audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
   sample_view.load (dhandle, &audio, &markers);
@@ -182,6 +202,12 @@ MainWindow::on_mouse_time_changed (int time)
   time /= 60;
   int m = time;
   time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
+}
+
+void
+MainWindow::on_play_clicked()
+{
+  jack_player.play (&audio, true);
 }
 
 GslDataHandle*
@@ -227,7 +253,7 @@ main (int argc, char **argv)
     }
 
   MainWindow main_window;
-  main_window.load (dhandle_from_file (argv[1]));
+  main_window.load (argv[1]);
   Gtk::Main::run (main_window);
 
   return 0;

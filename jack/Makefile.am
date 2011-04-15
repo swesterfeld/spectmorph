@@ -12,3 +12,12 @@ smjack_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS
 
 smjackvel_SOURCES = smjackvel.cc
 smjackvel_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+
+lib_LTLIBRARIES = libspectmorphjack.la
+
+SMJSRCS = smsimplejackplayer.cc
+SMJHDRS = smsimplejackplayer.hh
+
+libspectmorphjack_la_SOURCES = $(SMJSRCS) $(SMJHDRS)
+libspectmorphjack_la_CXXFLAGS = $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(AM_CXXFLAGS)
+libspectmorphjack_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
