@@ -128,16 +128,19 @@ SampleView::on_expose_event (GdkEventExpose *ev)
         {
           for (size_t i = 0; i < markers->count(); i++)
             {
-              int marker_pos = markers->position (i) / 1000.0 * audio->mix_freq;
+              if (markers->valid (i))
+                {
+                  int marker_pos = markers->position (i) / 1000.0 * audio->mix_freq;
 
-              if (markers->type (i) == m_edit_marker_type)
-                cr->set_source_rgb (0, 0, 0.8);
-              else
-                cr->set_source_rgb (0.6, 0.6, 0.6);
+                  if (markers->type (i) == m_edit_marker_type)
+                    cr->set_source_rgb (0, 0, 0.8);
+                  else
+                    cr->set_source_rgb (0.6, 0.6, 0.6);
 
-              cr->move_to (hz * marker_pos, 0);
-              cr->line_to (hz * marker_pos, height);
-              cr->stroke();
+                  cr->move_to (hz * marker_pos, 0);
+                  cr->line_to (hz * marker_pos, height);
+                  cr->stroke();
+                }
             }
         }
 

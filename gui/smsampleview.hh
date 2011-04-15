@@ -41,7 +41,9 @@ public:
     virtual size_t          count() = 0;
     virtual EditMarkerType  type (size_t marker) = 0;
     virtual float           position (size_t marker) = 0;
+    virtual bool            valid (size_t marker) = 0;
     virtual void            set_position (size_t marker, float new_position) = 0;
+    virtual void            clear (size_t marker) = 0;
   };
 
 private:

@@ -41,13 +41,22 @@ class SampleEditMarkers : public SampleView::Markers
 {
 public:
   vector<float> positions;
+  vector<bool>  m_valid;
+
   SampleEditMarkers() :
-    positions (2)
+    positions (2),
+    m_valid (positions.size())
   {
   }
-  size_t count()
+  size_t
+  count()
   {
     return positions.size();
+  }
+  bool
+  valid (size_t m)
+  {
+    return m_valid[m];
   }
   float
   position (size_t m)
@@ -62,6 +71,7 @@ public:
     g_return_if_fail (m >= 0 && m < positions.size());
 
     positions[m] = new_pos;
+    m_valid[m] = true;
   }
   SampleView::EditMarkerType
   type (size_t m)
@@ -72,6 +82,25 @@ public:
       return SampleView::MARKER_CLIP_END;
     else
       return SampleView::MARKER_NONE;
+  }
+  void
+  clear (size_t m)
+  {
+    g_return_if_fail (m >= 0 && m < positions.size());
+
+    m_valid[m] = false;
+  }
+  float
+  clip_start (bool& v)
+  {
+    v = m_valid[0];
+    return positions[0];
+  }
+  float
+  clip_end (bool& v)
+  {
+    v = m_valid[1];
+    return positions[1];
   }
 };
 
@@ -176,8 +205,6 @@ void
 MainWindow::load (const string& filename)
 {
   samples = WavLoader::load (filename);
-  if (samples)
-    audio.original_samples = samples->samples();
 
   GslDataHandle *dhandle = dhandle_from_file (filename);
 
@@ -207,6 +234,39 @@ MainWindow::on_mouse_time_changed (int time)
 void
 MainWindow::on_play_clicked()
 {
+  if (samples)
+    {
+      audio.original_samples = samples->samples();
+
+      bool  clip_end_valid;
+      float clip_end = markers.clip_end (clip_end_valid);
+      if (clip_end_valid && clip_end >= 0)
+        {
+          int iclipend = clip_end * samples->mix_freq() / 1000.0;
+          if (iclipend >= 0 && iclipend < int (audio.original_samples.size()))
+            {
+              vector<float>::iterator si = audio.original_samples.begin();
+
+              audio.original_samples.erase (si + iclipend, audio.original_samples.end());
+            }
+        }
+
+      bool  clip_start_valid;
+      float clip_start = markers.clip_start (clip_start_valid);
+      if (clip_start_valid && clip_start >= 0)
+        {
+          int iclipstart = clip_start * samples->mix_freq() / 1000.0;
+          if (iclipstart >= 0 && iclipstart < int (audio.original_samples.size()))
+            {
+              vector<float>::iterator si = audio.original_samples.begin();
+
+              audio.original_samples.erase (si, si + iclipstart);
+            }
+        }
+    }
+  else
+    audio.original_samples.clear();
+
   jack_player.play (&audio, true);
 }
 
