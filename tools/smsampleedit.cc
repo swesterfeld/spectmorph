@@ -92,6 +92,7 @@ public:
   void on_zoom_changed();
   void on_mouse_time_changed (int time);
   void load (GslDataHandle *dhandle);
+  void on_resized (int old_width, int new_width);
 };
 
 MainWindow::MainWindow() :
@@ -111,6 +112,8 @@ MainWindow::MainWindow() :
                                             SampleView::MARKER_CLIP_START));
   edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
                                           SampleView::MARKER_CLIP_END));
+
+  sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
   on_mouse_time_changed (0); // init label
 
@@ -139,6 +142,21 @@ MainWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
   edit_clip_end.set_active (marker_type == SampleView::MARKER_CLIP_END);
   in_update_buttons = false;
 }
+
+void
+MainWindow::on_resized (int old_width, int new_width)
+{
+  if (old_width > 0 && new_width > 0)
+    {
+      Gtk::Viewport *view_port = dynamic_cast<Gtk::Viewport*> (scrolled_win.get_child());
+      Gtk::Adjustment *hadj = scrolled_win.get_hadjustment();
+
+      const int w_2 = view_port->get_width() / 2;
+
+      hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
+    }
+}
+
 
 void
 MainWindow::load (GslDataHandle *dhandle)
