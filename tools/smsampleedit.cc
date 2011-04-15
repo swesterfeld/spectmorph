@@ -104,6 +104,14 @@ public:
   }
 };
 
+namespace {
+struct Wave
+{
+  string              path;
+  SampleEditMarkers   markers;
+};
+}
+
 class MainWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -116,10 +124,12 @@ class MainWindow : public Gtk::Window
   Gtk::ToggleButton   edit_clip_start;
   Gtk::ToggleButton   edit_clip_end;
   Gtk::Label          time_label;
-  SampleEditMarkers   markers;
   bool                in_update_buttons;
   SimpleJackPlayer    jack_player;
   WavLoader          *samples;
+  Gtk::ComboBoxText   sample_combobox;
+  vector<Wave>        waves;
+  Wave               *current_wave;
 
 public:
   MainWindow();
@@ -127,6 +137,7 @@ public:
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_play_clicked();
   void on_zoom_changed();
+  void on_combo_changed();
   void on_mouse_time_changed (int time);
   void load (const string& filename);
   void on_resized (int old_width, int new_width);
@@ -137,6 +148,7 @@ MainWindow::MainWindow() :
   jack_player ("smsampleedit")
 {
   in_update_buttons = false;
+  current_wave = NULL;
   scrolled_win.add (sample_view);
 
   vbox.pack_start (scrolled_win);
@@ -154,12 +166,15 @@ MainWindow::MainWindow() :
 
   sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
+  sample_combobox.signal_changed().connect (sigc::mem_fun (*this, &MainWindow::on_combo_changed));
+
   on_mouse_time_changed (0); // init label
 
   play_button.set_label ("Play");
   edit_clip_start.set_label ("Edit Clip Start");
   edit_clip_end.set_label ("Edit Clip End");
   button_hbox.pack_start (time_label);
+  button_hbox.pack_start (sample_combobox);
   button_hbox.pack_start (play_button);
   button_hbox.pack_start (edit_clip_start);
   button_hbox.pack_start (edit_clip_end);
@@ -204,6 +219,18 @@ MainWindow::on_resized (int old_width, int new_width)
 void
 MainWindow::load (const string& filename)
 {
+  WavSet wset;
+  wset.load (filename);
+  for (size_t i = 0; i < wset.waves.size(); i++)
+    {
+      sample_combobox.append_text (wset.waves[i].path);
+
+      Wave wave;
+      wave.path = wset.waves[i].path;
+      waves.push_back (wave);
+    }
+  printf ("loaded %zd waves.\n", wset.waves.size());
+#if 0
   samples = WavLoader::load (filename);
 
   GslDataHandle *dhandle = dhandle_from_file (filename);
@@ -212,6 +239,41 @@ MainWindow::load (const string& filename)
   audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
   sample_view.load (dhandle, &audio, &markers);
   gsl_data_handle_close (dhandle);
+#endif
+}
+
+void
+MainWindow::on_combo_changed()
+{
+  string sample_dir = "."; // FIXME
+  string path = sample_combobox.get_active_text().c_str();
+  string filename = sample_dir + "/" + path;
+
+  vector<Wave>::iterator wi = waves.begin();
+  while (wi != waves.end())
+    {
+      if (wi->path == path)
+        break;
+      else
+        wi++;
+    }
+  if (wi == waves.end()) // should not happen
+    {
+      g_warning ("Wave for %s not found.\n", path.c_str());
+      current_wave = NULL;
+      return;
+    }
+
+  samples = WavLoader::load (filename);
+
+  GslDataHandle *dhandle = dhandle_from_file (filename);
+  gsl_data_handle_open (dhandle);
+  audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
+  audio.fundamental_freq = 440; /* doesn't matter */
+  sample_view.load (dhandle, &audio, &wi->markers);
+  gsl_data_handle_close (dhandle);
+
+  current_wave = &(*wi);
 }
 
 void
@@ -234,12 +296,12 @@ MainWindow::on_mouse_time_changed (int time)
 void
 MainWindow::on_play_clicked()
 {
-  if (samples)
+  if (samples && current_wave)
     {
       audio.original_samples = samples->samples();
 
       bool  clip_end_valid;
-      float clip_end = markers.clip_end (clip_end_valid);
+      float clip_end = current_wave->markers.clip_end (clip_end_valid);
       if (clip_end_valid && clip_end >= 0)
         {
           int iclipend = clip_end * samples->mix_freq() / 1000.0;
@@ -252,7 +314,7 @@ MainWindow::on_play_clicked()
         }
 
       bool  clip_start_valid;
-      float clip_start = markers.clip_start (clip_start_valid);
+      float clip_start = current_wave->markers.clip_start (clip_start_valid);
       if (clip_start_valid && clip_start >= 0)
         {
           int iclipstart = clip_start * samples->mix_freq() / 1000.0;
