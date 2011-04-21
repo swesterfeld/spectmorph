@@ -18,6 +18,7 @@
  */
 #include <stdlib.h>
 #include <assert.h>
+#include <glib.h>
 #include "smmicroconf.hh"
 
 using std::string;
@@ -30,6 +31,7 @@ MicroConf::MicroConf (const string& filename)
 
   current_file = filename;
   current_no = 0;
+  m_number_format = I18N;
 }
 
 MicroConf::~MicroConf()
@@ -177,7 +179,10 @@ MicroConf::convert (const std::string& token, int& arg)
 bool
 MicroConf::convert (const std::string& token, double& arg)
 {
-  arg = atof (token.c_str());
+  if (m_number_format == I18N)
+    arg = atof (token.c_str());
+  else
+    arg = g_ascii_strtod (token.c_str(), NULL);
   return true;
 }
 
@@ -197,4 +202,16 @@ MicroConf::die_if_unknown()
                current_file.c_str(), current_no, current_line.c_str());
       exit (1);
     }
+}
+
+void
+MicroConf::set_number_format (NumberFormat new_nf)
+{
+  m_number_format = new_nf;
+}
+
+MicroConf::NumberFormat
+MicroConf::number_format()
+{
+  return m_number_format;
 }

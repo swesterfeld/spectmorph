@@ -26,6 +26,11 @@ namespace SpectMorph
 
 class MicroConf
 {
+public:
+  enum NumberFormat {
+    I18N,
+    NO_I18N
+  };
 private:
   FILE                    *cfg_file;
   std::string              current_line;
@@ -33,6 +38,7 @@ private:
   std::string              current_file;
   std::vector<std::string> tokens;
   bool                     tokenizer_error;
+  NumberFormat             m_number_format;
 
   bool convert (const std::string& token, int& arg);
   bool convert (const std::string& token, double& arg);
@@ -42,6 +48,9 @@ private:
 public:
   MicroConf (const std::string& filename);
   ~MicroConf();
+
+  NumberFormat number_format();
+  void set_number_format (NumberFormat new_number_format);
 
   bool open_ok();
   bool next();
