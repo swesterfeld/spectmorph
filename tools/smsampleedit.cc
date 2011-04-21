@@ -23,6 +23,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "smmain.hh"
 #include "smsampleview.hh"
@@ -145,6 +146,8 @@ class MainWindow : public Gtk::Window
   vector<Wave>        waves;
   Wave               *current_wave;
   string              marker_filename;
+  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
+  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 
 public:
   MainWindow();
@@ -153,6 +156,7 @@ public:
   void on_play_clicked();
   void on_save_clicked();
   void on_zoom_changed();
+  void on_next_sample();
   void on_combo_changed();
   void on_mouse_time_changed (int time);
   void load (const string& filename, const string& clip_markers);
@@ -163,6 +167,36 @@ MainWindow::MainWindow() :
   zoom_controller (1, 5000, 10, 5000),
   jack_player ("smsampleedit")
 {
+  ref_action_group = Gtk::ActionGroup::create();
+  ref_action_group->add (Gtk::Action::create ("SampleMenu", "Sample"));
+  ref_action_group->add (Gtk::Action::create ("SampleNext", "Next Sample"), Gtk::AccelKey ('n', Gdk::ModifierType (0)),
+                         sigc::mem_fun (*this, &MainWindow::on_next_sample));
+
+  ref_ui_manager = Gtk::UIManager::create();
+  ref_ui_manager-> insert_action_group (ref_action_group);
+  add_accel_group (ref_ui_manager->get_accel_group());
+
+  Glib::ustring ui_info =
+    "<ui>"
+    "  <menubar name='MenuBar'>"
+    "    <menu action='SampleMenu'>"
+    "      <menuitem action='SampleNext' />"
+    "    </menu>"
+    "  </menubar>"
+    "</ui>";
+  try
+    {
+      ref_ui_manager->add_ui_from_string (ui_info);
+    }
+  catch (const Glib::Error& ex)
+    {
+      std::cerr << "building menus failed: " << ex.what();
+    }
+
+  Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
+  if (menu_bar)
+    vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
+
   in_update_buttons = false;
   current_wave = NULL;
   scrolled_win.add (sample_view);
@@ -201,6 +235,12 @@ MainWindow::MainWindow() :
   show_all_children();
 
   jack_player.set_volume (0.125);
+}
+
+void
+MainWindow::on_next_sample()
+{
+  printf ("FIXME: implement on_next_sample();\n");
 }
 
 void
