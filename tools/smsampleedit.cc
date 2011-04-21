@@ -29,6 +29,7 @@
 #include "smzoomcontroller.hh"
 #include "smsimplejackplayer.hh"
 #include "smwavloader.hh"
+#include "smmicroconf.hh"
 
 using namespace SpectMorph;
 
@@ -102,6 +103,18 @@ public:
     v = m_valid[1];
     return positions[1];
   }
+  void
+  set_clip_start (float pos)
+  {
+    m_valid[0] = true;
+    positions[0] = pos;
+  }
+  void
+  set_clip_end (float pos)
+  {
+    m_valid[1] = true;
+    positions[1] = pos;
+  }
 };
 
 namespace {
@@ -121,6 +134,7 @@ class MainWindow : public Gtk::Window
   Audio               audio;
   ZoomController      zoom_controller;
   Gtk::Button         play_button;
+  Gtk::Button         save_button;
   Gtk::ToggleButton   edit_clip_start;
   Gtk::ToggleButton   edit_clip_end;
   Gtk::Label          time_label;
@@ -130,16 +144,18 @@ class MainWindow : public Gtk::Window
   Gtk::ComboBoxText   sample_combobox;
   vector<Wave>        waves;
   Wave               *current_wave;
+  string              marker_filename;
 
 public:
   MainWindow();
 
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_play_clicked();
+  void on_save_clicked();
   void on_zoom_changed();
   void on_combo_changed();
   void on_mouse_time_changed (int time);
-  void load (const string& filename);
+  void load (const string& filename, const string& clip_markers);
   void on_resized (int old_width, int new_width);
 };
 
@@ -163,6 +179,7 @@ MainWindow::MainWindow() :
   edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
                                           SampleView::MARKER_CLIP_END));
   play_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_play_clicked));
+  save_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_save_clicked));
 
   sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
 
@@ -171,11 +188,13 @@ MainWindow::MainWindow() :
   on_mouse_time_changed (0); // init label
 
   play_button.set_label ("Play");
+  save_button.set_label ("Save");
   edit_clip_start.set_label ("Edit Clip Start");
   edit_clip_end.set_label ("Edit Clip End");
   button_hbox.pack_start (time_label);
   button_hbox.pack_start (sample_combobox);
   button_hbox.pack_start (play_button);
+  button_hbox.pack_start (save_button);
   button_hbox.pack_start (edit_clip_start);
   button_hbox.pack_start (edit_clip_end);
   add (vbox);
@@ -217,7 +236,7 @@ MainWindow::on_resized (int old_width, int new_width)
 
 
 void
-MainWindow::load (const string& filename)
+MainWindow::load (const string& filename, const string& clip_markers)
 {
   WavSet wset;
   wset.load (filename);
@@ -230,16 +249,54 @@ MainWindow::load (const string& filename)
       waves.push_back (wave);
     }
   printf ("loaded %zd waves.\n", wset.waves.size());
-#if 0
-  samples = WavLoader::load (filename);
+  marker_filename = clip_markers;
+  MicroConf cfg (marker_filename.c_str());
+  if (cfg.open_ok())
+    {
+      cfg.set_number_format (MicroConf::NO_I18N);
 
-  GslDataHandle *dhandle = dhandle_from_file (filename);
+      while (cfg.next())
+        {
+          string marker_type, path;
+          double marker_pos;
 
-  gsl_data_handle_open (dhandle);
-  audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
-  sample_view.load (dhandle, &audio, &markers);
-  gsl_data_handle_close (dhandle);
-#endif
+          if (cfg.command ("set-marker", marker_type, path, marker_pos))
+            {
+              vector<Wave>::iterator wi = waves.begin();
+
+              while (wi != waves.end())
+                {
+                  if (wi->path == path)
+                    break;
+                  else
+                    wi++;
+                }
+              if (wi == waves.end())
+                {
+                  g_printerr ("NOTE %s not found\n", path.c_str());
+                }
+              else
+                {
+                  if (marker_type == "clip-start")
+                    {
+                      wi->markers.set_clip_start (marker_pos);
+                    }
+                  else if (marker_type == "clip_end")
+                    {
+                      wi->markers.set_clip_end (marker_pos);
+                    }
+                  else
+                    {
+                      g_printerr ("MARKER-TYPE %s not supported\n", marker_type.c_str());
+                    }
+                }
+            }
+          else
+            {
+              cfg.die_if_unknown();
+            }
+        }
+    }
 }
 
 void
@@ -332,6 +389,36 @@ MainWindow::on_play_clicked()
   jack_player.play (&audio, true);
 }
 
+static string
+double_to_string (double value)
+{
+  gchar numbuf[G_ASCII_DTOSTR_BUF_SIZE + 1] = "";
+  g_ascii_formatd (numbuf, G_ASCII_DTOSTR_BUF_SIZE, "%.9g", value);
+  return numbuf;
+}
+
+void
+MainWindow::on_save_clicked()
+{
+  FILE *file = fopen (marker_filename.c_str(), "w");
+  g_return_if_fail (file != NULL);
+
+  for (vector<Wave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
+    {
+      bool  clip_start_valid;
+      float clip_start = wi->markers.clip_start (clip_start_valid);
+
+      if (clip_start_valid)
+        fprintf (file, "set-marker clip-start %s %s\n", wi->path.c_str(), double_to_string (clip_start).c_str());
+
+      bool  clip_end_valid;
+      float clip_end = wi->markers.clip_end (clip_end_valid);
+      if (clip_end_valid)
+        fprintf (file, "set-marker clip-end %s %s\n", wi->path.c_str(), double_to_string (clip_end).c_str());
+    }
+  fclose (file);
+}
+
 GslDataHandle*
 dhandle_from_file (const string& filename)
 {
@@ -368,14 +455,14 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  if (argc != 2)
+  if (argc != 3)
     {
-      printf ("usage: %s <wave>\n", argv[0]);
+      printf ("usage: %s <wavset> <clip-markers>\n", argv[0]);
       exit (1);
     }
 
   MainWindow main_window;
-  main_window.load (argv[1]);
+  main_window.load (argv[1], argv[2]);
   Gtk::Main::run (main_window);
 
   return 0;
