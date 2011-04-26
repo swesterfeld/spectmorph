@@ -321,7 +321,7 @@ MainWindow::load (const string& filename, const string& clip_markers)
                     {
                       wi->markers.set_clip_start (marker_pos);
                     }
-                  else if (marker_type == "clip_end")
+                  else if (marker_type == "clip-end")
                     {
                       wi->markers.set_clip_end (marker_pos);
                     }
