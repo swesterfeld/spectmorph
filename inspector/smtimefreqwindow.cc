@@ -100,6 +100,12 @@ TimeFreqWindow::on_analysis_changed()
 }
 
 void
+TimeFreqWindow::on_frequency_grid_changed()
+{
+  m_time_freq_view.set_show_frequency_grid (navigator->get_show_frequency_grid());
+}
+
+void
 TimeFreqWindow::on_dhandle_changed()
 {
   m_time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),

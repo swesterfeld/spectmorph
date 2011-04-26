@@ -127,6 +127,10 @@ Navigator::Navigator (const string& filename) :
   index_vbox.pack_start (show_analysis_button, Gtk::PACK_SHRINK);
   show_analysis_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_analysis_changed));
 
+  show_frequency_grid_button.set_label ("Show Frequency Grid");
+  index_vbox.pack_start (show_frequency_grid_button, Gtk::PACK_SHRINK);
+  show_frequency_grid_button.signal_toggled().connect (sigc::mem_fun (*this, &Navigator::on_show_frequency_grid_changed));
+
   save_button.set_label ("Save");
   index_vbox.pack_start (save_button, Gtk::PACK_SHRINK);
   save_button.signal_clicked().connect (sigc::mem_fun (*this, &Navigator::on_save_clicked));
@@ -141,6 +145,7 @@ Navigator::Navigator (const string& filename) :
   signal_dhandle_changed.connect (sigc::mem_fun (sample_window, &SampleWindow::on_dhandle_changed));
   signal_show_position_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_position_changed));
   signal_show_analysis_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_analysis_changed));
+  signal_show_frequency_grid_changed.connect (sigc::mem_fun (time_freq_window, &TimeFreqWindow::on_frequency_grid_changed));
 
   sample_window.sample_view().signal_audio_edit.connect (sigc::mem_fun (*this, &Navigator::on_audio_edit));
   sample_window.signal_next_sample.connect (sigc::mem_fun (*this, &Navigator::on_next_sample));
@@ -241,6 +246,12 @@ Navigator::on_show_analysis_changed()
   signal_show_analysis_changed();
 }
 
+void
+Navigator::on_show_frequency_grid_changed()
+{
+  signal_show_frequency_grid_changed();
+}
+
 GslDataHandle *
 Navigator::get_dhandle()
 {
@@ -257,6 +268,12 @@ bool
 Navigator::get_show_analysis()
 {
   return show_analysis_button.get_active();
+}
+
+bool
+Navigator::get_show_frequency_grid()
+{
+  return show_frequency_grid_button.get_active();
 }
 
 Audio *

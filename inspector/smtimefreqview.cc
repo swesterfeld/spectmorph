@@ -41,6 +41,7 @@ TimeFreqView::TimeFreqView()
   position = -1;
   audio = NULL;
   show_analysis = false;
+  show_frequency_grid = false;
 
   old_height = -1;
   old_width = -1;
@@ -225,7 +226,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
                               Gdk::RGB_DITHER_NONE, 0, 0);
 
   Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window && audio && show_analysis)
+  if (window && audio)
     {
       Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
       cr->set_line_width (1.0);
@@ -235,29 +236,47 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
       cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
       cr->clip();
 
-      // red:
-      cr->set_source_rgb (1.0, 0.0, 0.0);
-
       int width = image.get_width() * scaled_hzoom, height = image.get_height() * scaled_vzoom;
 
-      const double size = 3;
-      for (size_t i = 0; i < audio->contents.size(); i++)
+      if (show_analysis)
         {
-          double posx = width * double (i) / audio->contents.size();
-          if (posx > ev->area.x - 10 && posx < ev->area.width + ev->area.x + 10)
+          // red:
+          cr->set_source_rgb (1.0, 0.0, 0.0);
+
+          const double size = 3;
+          for (size_t i = 0; i < audio->contents.size(); i++)
             {
-              const AudioBlock& ab = audio->contents[i];
-              for (size_t f = 0; f < ab.freqs.size(); f++)
+              double posx = width * double (i) / audio->contents.size();
+              if (posx > ev->area.x - 10 && posx < ev->area.width + ev->area.x + 10)
                 {
-                  double posy = height - height * ab.freqs[f] / (audio->mix_freq / 2);
-                  cr->move_to (posx - size, posy - size);
-                  cr->line_to (posx + size, posy + size);
-                  cr->move_to (posx - size, posy + size);
-                  cr->line_to (posx + size, posy - size);
+                  const AudioBlock& ab = audio->contents[i];
+                  for (size_t f = 0; f < ab.freqs.size(); f++)
+                    {
+                      double posy = height - height * ab.freqs[f] / (audio->mix_freq / 2);
+                      cr->move_to (posx - size, posy - size);
+                      cr->line_to (posx + size, posy + size);
+                      cr->move_to (posx - size, posy + size);
+                      cr->line_to (posx + size, posy - size);
+                    }
                 }
             }
+          cr->stroke();
         }
-      cr->stroke();
+      if (show_frequency_grid)
+        {
+          cr->set_source_rgb (0.5, 0.5, 1.0);
+
+          for (int partial = 1; ; partial++)
+            {
+              double posy = height - height * partial * audio->fundamental_freq / (audio->mix_freq / 2);
+              if (posy < 0)
+                break;
+
+              cr->move_to (0, posy);
+              cr->line_to (width, posy);
+            }
+          cr->stroke();
+        }
     }
   return true;
 }
@@ -287,6 +306,14 @@ void
 TimeFreqView::set_show_analysis (bool new_show_analysis)
 {
   show_analysis = new_show_analysis;
+
+  force_redraw();
+}
+
+void
+TimeFreqView::set_show_frequency_grid (bool new_show_frequency_grid)
+{
+  show_frequency_grid = new_show_frequency_grid;
 
   force_redraw();
 }

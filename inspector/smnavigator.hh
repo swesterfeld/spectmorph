@@ -41,6 +41,7 @@ class Navigator : public Gtk::Window
   Gtk::VBox             index_vbox;
   Gtk::ToggleButton     show_position_button;
   Gtk::ToggleButton     show_analysis_button;
+  Gtk::ToggleButton     show_frequency_grid_button;
   Gtk::Button           save_button;
   std::vector<float>    decoded_samples;
 
@@ -81,6 +82,7 @@ public:
   sigc::signal<void> signal_dhandle_changed;
   sigc::signal<void> signal_show_position_changed;
   sigc::signal<void> signal_show_analysis_changed;
+  sigc::signal<void> signal_show_frequency_grid_changed;
 
   Navigator (const std::string& filename);
 
@@ -88,6 +90,7 @@ public:
   void on_selection_changed();
   void on_show_position_changed();
   void on_show_analysis_changed();
+  void on_show_frequency_grid_changed();
   void on_save_clicked();
   void on_audio_edit();
   void on_next_sample();
@@ -102,6 +105,7 @@ public:
   Audio         *get_audio();
   bool           get_show_position();
   bool           get_show_analysis();
+  bool           get_show_frequency_grid();
   bool           spectmorph_signal_active();
   FFTParamWindow *fft_param_window();
 };
