@@ -97,7 +97,7 @@ SampleView::on_expose_event (GdkEventExpose *ev)
           cr->line_to (hz * start, height);
           cr->stroke();
 
-          if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+          if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
             {
               // loop start marker
               int loop_start = audio->loop_start * audio->frame_step_ms / 1000.0 * audio->mix_freq;
