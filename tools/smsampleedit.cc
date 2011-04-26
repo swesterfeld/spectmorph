@@ -20,6 +20,9 @@
 #include <sys/time.h>
 #include <bse/gsldatautils.h>
 #include <bse/bseloader.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <errno.h>
 
 #include <vector>
 #include <string>
@@ -149,6 +152,7 @@ class MainWindow : public Gtk::Window
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 
+  vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
 public:
   MainWindow();
 
@@ -160,6 +164,7 @@ public:
   void on_combo_changed();
   void on_mouse_time_changed (int time);
   void load (const string& filename, const string& clip_markers);
+  void clip();
   void on_resized (int old_width, int new_width);
 };
 
@@ -339,6 +344,45 @@ MainWindow::load (const string& filename, const string& clip_markers)
     }
 }
 
+static void
+dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
+{
+  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
+  BseErrorType error = gsl_data_handle_open (out_dhandle);
+  if (error)
+    {
+      fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
+      exit (1);
+    }
+
+  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  if (fd < 0)
+    {
+      BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+    }
+  int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
+  if (xerrno)
+    {
+      BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+    }
+}
+
+
+void
+MainWindow::clip()
+{
+  for (vector<Wave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
+    {
+      WavLoader *samples = WavLoader::load (wi->path.c_str());
+      vector<float> clipped_samples = get_clipped_samples (&*wi, samples);
+
+      printf ("%s %zd\n", wi->path.c_str(), clipped_samples.size());
+      dump_wav ("/tmp/test.wav", clipped_samples, samples->mix_freq(), 1);
+    }
+}
+
 void
 MainWindow::on_combo_changed()
 {
@@ -390,41 +434,48 @@ MainWindow::on_mouse_time_changed (int time)
   time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
 }
 
-void
-MainWindow::on_play_clicked()
+vector<float>
+MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
 {
-  if (samples && current_wave)
+  vector<float> result;
+
+  if (samples && wave)
     {
-      audio.original_samples = samples->samples();
+      result = samples->samples();
 
       bool  clip_end_valid;
-      float clip_end = current_wave->markers.clip_end (clip_end_valid);
+      float clip_end = wave->markers.clip_end (clip_end_valid);
       if (clip_end_valid && clip_end >= 0)
         {
           int iclipend = clip_end * samples->mix_freq() / 1000.0;
-          if (iclipend >= 0 && iclipend < int (audio.original_samples.size()))
+          if (iclipend >= 0 && iclipend < int (result.size()))
             {
-              vector<float>::iterator si = audio.original_samples.begin();
+              vector<float>::iterator si = result.begin();
 
-              audio.original_samples.erase (si + iclipend, audio.original_samples.end());
+              result.erase (si + iclipend, result.end());
             }
         }
 
       bool  clip_start_valid;
-      float clip_start = current_wave->markers.clip_start (clip_start_valid);
+      float clip_start = wave->markers.clip_start (clip_start_valid);
       if (clip_start_valid && clip_start >= 0)
         {
           int iclipstart = clip_start * samples->mix_freq() / 1000.0;
-          if (iclipstart >= 0 && iclipstart < int (audio.original_samples.size()))
+          if (iclipstart >= 0 && iclipstart < int (result.size()))
             {
-              vector<float>::iterator si = audio.original_samples.begin();
+              vector<float>::iterator si = result.begin();
 
-              audio.original_samples.erase (si, si + iclipstart);
+              result.erase (si, si + iclipstart);
             }
         }
     }
-  else
-    audio.original_samples.clear();
+  return result;
+}
+
+void
+MainWindow::on_play_clicked()
+{
+  audio.original_samples = get_clipped_samples (current_wave, samples);
 
   jack_player.play (&audio, true);
 }
@@ -495,14 +546,35 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  if (argc != 3)
+  enum { EDIT, CLIP } mode;
+  string wav_set, clip_markers;
+
+  if (argc == 4 && strcmp (argv[1], "clip") == 0)
+    {
+      mode = CLIP;
+      wav_set = argv[2];
+      clip_markers = argv[3];
+    }
+  else if (argc == 3)
+    {
+      mode = EDIT;
+      wav_set = argv[1];
+      clip_markers = argv[2];
+    }
+  else
     {
       printf ("usage: %s <wavset> <clip-markers>\n", argv[0]);
+      printf ("usage: %s clip <wavset> <clip-markers>\n", argv[0]);
       exit (1);
     }
 
   MainWindow main_window;
-  main_window.load (argv[1], argv[2]);
+  main_window.load (wav_set, clip_markers);
+  if (mode == CLIP)
+    {
+      main_window.clip();
+      return 0;
+    }
   Gtk::Main::run (main_window);
 
   return 0;
