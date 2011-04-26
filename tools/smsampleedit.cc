@@ -305,23 +305,24 @@ MainWindow::load (const string& filename, const string& clip_markers)
 
       while (cfg.next())
         {
-          string marker_type, path;
+          string marker_type;
+          int    midi_note;
           double marker_pos;
 
-          if (cfg.command ("set-marker", marker_type, path, marker_pos))
+          if (cfg.command ("set-marker", marker_type, midi_note, marker_pos))
             {
               vector<Wave>::iterator wi = waves.begin();
 
               while (wi != waves.end())
                 {
-                  if (wi->path == path)
+                  if (wi->midi_note == midi_note)
                     break;
                   else
                     wi++;
                 }
               if (wi == waves.end())
                 {
-                  g_printerr ("NOTE %s not found\n", path.c_str());
+                  g_printerr ("NOTE %d not found\n", midi_note);
                 }
               else
                 {
@@ -508,12 +509,12 @@ MainWindow::on_save_clicked()
       float clip_start = wi->markers.clip_start (clip_start_valid);
 
       if (clip_start_valid)
-        fprintf (file, "set-marker clip-start %s %s\n", wi->path.c_str(), double_to_string (clip_start).c_str());
+        fprintf (file, "set-marker clip-start %d %s\n", wi->midi_note, double_to_string (clip_start).c_str());
 
       bool  clip_end_valid;
       float clip_end = wi->markers.clip_end (clip_end_valid);
       if (clip_end_valid)
-        fprintf (file, "set-marker clip-end %s %s\n", wi->path.c_str(), double_to_string (clip_end).c_str());
+        fprintf (file, "set-marker clip-end %d %s\n", wi->midi_note, double_to_string (clip_end).c_str());
     }
   fclose (file);
 }
