@@ -21,6 +21,7 @@
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
 #include "smleakdebugger.hh"
+#include "smlivedecoder.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -170,15 +171,9 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   double time_ms = index; // 1ms frame step
   int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
 
-  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
     {
-      if (source_index > audio->loop_start)
-        {
-          assert (audio->loop_end >= audio->loop_start);
-
-          size_t loop_len = audio->loop_end + 1 - audio->loop_start;
-          source_index = audio->loop_start + (source_index - audio->loop_start) % loop_len;
-        }
+      source_index = LiveDecoder::compute_loop_frame_index (source_index, audio);
     }
 
   AudioBlock *block_ptr = source->audio_block (source_index);

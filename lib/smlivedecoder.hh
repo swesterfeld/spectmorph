@@ -90,6 +90,7 @@ public:
                 const float *freq_mod_in,
                 float       *audio_out);
 
+  static size_t compute_loop_frame_index (size_t index, Audio *audio);
 // later:  bool done();
 };
 

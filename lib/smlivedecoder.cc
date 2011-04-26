@@ -214,6 +214,44 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
   current_mix_freq = mix_freq;
 }
 
+size_t
+LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
+{
+  if (frame_idx > audio->loop_start)
+    {
+      assert (audio->loop_end >= audio->loop_start);
+
+      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+        {
+          size_t loop_len = audio->loop_end + 1 - audio->loop_start;
+          frame_idx = audio->loop_start + (frame_idx - audio->loop_start) % loop_len;
+        }
+      else if (audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+        {
+          size_t loop_len = audio->loop_end - audio->loop_start;
+          if (loop_len > 0)
+            {
+              size_t ping_pong_len = loop_len * 2;
+              size_t ping_pong_pos = (frame_idx - audio->loop_start) % ping_pong_len;
+
+              if (ping_pong_pos < loop_len) // ping part of the ping-pong loop (forward)
+                {
+                  frame_idx = audio->loop_start + ping_pong_pos;
+                }
+              else                          // pong part of the ping-pong loop (backward)
+                {
+                  frame_idx = audio->loop_end - (ping_pong_pos - loop_len);
+                }
+            }
+          else
+            {
+              frame_idx = audio->loop_start;
+            }
+        }
+    }
+  return frame_idx;
+}
+
 void
 LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_mod_in, float *audio_out)
 {
@@ -289,16 +327,9 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 }
               frame_idx = xenv_pos / frame_step;
             }
-          else if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+          else if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
             {
-              frame_idx = env_pos / frame_step;
-              if (frame_idx > audio->loop_start)
-                {
-                  assert (audio->loop_end >= audio->loop_start);
-
-                  size_t loop_len = audio->loop_end + 1 - audio->loop_start;
-                  frame_idx = audio->loop_start + (frame_idx - audio->loop_start) % loop_len;
-                }
+              frame_idx = compute_loop_frame_index (env_pos / frame_step, audio);
             }
           else
             {
