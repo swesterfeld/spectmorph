@@ -125,6 +125,7 @@ namespace {
 struct Wave
 {
   string              path;
+  string              label;
   int                 midi_note;
   SampleEditMarkers   markers;
 };
@@ -288,11 +289,11 @@ MainWindow::load (const string& filename, const string& clip_markers)
   wset.load (filename);
   for (size_t i = 0; i < wset.waves.size(); i++)
     {
-      sample_combobox.append_text (wset.waves[i].path);
-
       Wave wave;
       wave.path = wset.waves[i].path;
       wave.midi_note = wset.waves[i].midi_note;
+      wave.label = Birnet::string_printf ("%s (note %d)", wset.waves[i].path.c_str(), wset.waves[i].midi_note);
+      sample_combobox.append_text (wave.label);
       waves.push_back (wave);
     }
   printf ("loaded %zd waves.\n", wset.waves.size());
@@ -389,27 +390,28 @@ MainWindow::clip (const string& export_pattern)
 void
 MainWindow::on_combo_changed()
 {
-  string sample_dir = "."; // FIXME
-  string path = sample_combobox.get_active_text().c_str();
-  string filename = sample_dir + "/" + path;
-
-  if (!path.empty() && path[0] == '/') // absolute path
-    filename = path;
-
+  string label = sample_combobox.get_active_text().c_str();
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
     {
-      if (wi->path == path)
+      if (wi->label == label)
         break;
       else
         wi++;
     }
   if (wi == waves.end()) // should not happen
     {
-      g_warning ("Wave for %s not found.\n", path.c_str());
+      g_warning ("Wave for %s not found.\n", label.c_str());
       current_wave = NULL;
       return;
     }
+
+  string path = wi->path;
+  string sample_dir = "."; // FIXME
+  string filename = sample_dir + "/" + path;
+
+  if (!path.empty() && path[0] == '/') // absolute path
+    filename = path;
 
   samples = WavLoader::load (filename);
 
