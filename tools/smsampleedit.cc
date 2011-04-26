@@ -125,6 +125,7 @@ namespace {
 struct Wave
 {
   string              path;
+  int                 midi_note;
   SampleEditMarkers   markers;
 };
 }
@@ -164,7 +165,7 @@ public:
   void on_combo_changed();
   void on_mouse_time_changed (int time);
   void load (const string& filename, const string& clip_markers);
-  void clip();
+  void clip (const string& export_pattern);
   void on_resized (int old_width, int new_width);
 };
 
@@ -291,6 +292,7 @@ MainWindow::load (const string& filename, const string& clip_markers)
 
       Wave wave;
       wave.path = wset.waves[i].path;
+      wave.midi_note = wset.waves[i].midi_note;
       waves.push_back (wave);
     }
   printf ("loaded %zd waves.\n", wset.waves.size());
@@ -371,15 +373,16 @@ dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_c
 
 
 void
-MainWindow::clip()
+MainWindow::clip (const string& export_pattern)
 {
   for (vector<Wave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
     {
       WavLoader *samples = WavLoader::load (wi->path.c_str());
       vector<float> clipped_samples = get_clipped_samples (&*wi, samples);
 
-      printf ("%s %zd\n", wi->path.c_str(), clipped_samples.size());
-      dump_wav ("/tmp/test.wav", clipped_samples, samples->mix_freq(), 1);
+      printf ("%s %zd %d\n", wi->path.c_str(), clipped_samples.size(), wi->midi_note);
+      string export_wav = Birnet::string_printf (export_pattern.c_str(), wi->midi_note);
+      dump_wav (export_wav, clipped_samples, samples->mix_freq(), 1);
     }
 }
 
@@ -389,6 +392,9 @@ MainWindow::on_combo_changed()
   string sample_dir = "."; // FIXME
   string path = sample_combobox.get_active_text().c_str();
   string filename = sample_dir + "/" + path;
+
+  if (!path.empty() && path[0] == '/') // absolute path
+    filename = path;
 
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
@@ -547,13 +553,14 @@ main (int argc, char **argv)
   Gtk::Main kit (argc, argv);
 
   enum { EDIT, CLIP } mode;
-  string wav_set, clip_markers;
+  string wav_set, clip_markers, export_pattern;
 
-  if (argc == 4 && strcmp (argv[1], "clip") == 0)
+  if (argc == 5 && strcmp (argv[1], "clip") == 0)
     {
       mode = CLIP;
       wav_set = argv[2];
       clip_markers = argv[3];
+      export_pattern = argv[4];
     }
   else if (argc == 3)
     {
@@ -564,7 +571,7 @@ main (int argc, char **argv)
   else
     {
       printf ("usage: %s <wavset> <clip-markers>\n", argv[0]);
-      printf ("usage: %s clip <wavset> <clip-markers>\n", argv[0]);
+      printf ("usage: %s clip <wavset> <clip-markers> <export-pattern>\n", argv[0]);
       exit (1);
     }
 
@@ -572,7 +579,7 @@ main (int argc, char **argv)
   main_window.load (wav_set, clip_markers);
   if (mode == CLIP)
     {
-      main_window.clip();
+      main_window.clip (export_pattern);
       return 0;
     }
   Gtk::Main::run (main_window);
