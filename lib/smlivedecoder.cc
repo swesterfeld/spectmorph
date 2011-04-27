@@ -217,9 +217,9 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
 size_t
 LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 {
-  if (frame_idx > audio->loop_start)
+  if (int (frame_idx) > audio->loop_start)
     {
-      assert (audio->loop_end >= audio->loop_start);
+      g_return_val_if_fail (audio->loop_end >= audio->loop_start, frame_idx);
 
       if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
         {
