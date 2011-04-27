@@ -382,9 +382,10 @@ MainWindow::clip (const string& export_pattern)
       WavLoader *samples = WavLoader::load (wi->path.c_str());
       vector<float> clipped_samples = get_clipped_samples (&*wi, samples);
 
-      printf ("%s %zd %d\n", wi->path.c_str(), clipped_samples.size(), wi->midi_note);
       string export_wav = Birnet::string_printf (export_pattern.c_str(), wi->midi_note);
       dump_wav (export_wav, clipped_samples, samples->mix_freq(), 1);
+
+      delete samples;
     }
 }
 
