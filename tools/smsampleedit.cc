@@ -157,6 +157,7 @@ class MainWindow : public Gtk::Window
   vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
 public:
   MainWindow();
+  ~MainWindow();
 
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_play_clicked();
@@ -206,6 +207,8 @@ MainWindow::MainWindow() :
 
   in_update_buttons = false;
   current_wave = NULL;
+  samples = NULL;
+
   scrolled_win.add (sample_view);
 
   vbox.pack_start (scrolled_win);
@@ -242,6 +245,15 @@ MainWindow::MainWindow() :
   show_all_children();
 
   jack_player.set_volume (0.125);
+}
+
+MainWindow::~MainWindow()
+{
+  if (samples)
+    {
+      delete samples;
+      samples = NULL;
+    }
 }
 
 void
@@ -392,6 +404,11 @@ MainWindow::clip (const string& export_pattern)
 void
 MainWindow::on_combo_changed()
 {
+  if (samples)
+    {
+      delete samples;
+      samples = NULL;
+    }
   string label = sample_combobox.get_active_text().c_str();
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
