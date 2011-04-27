@@ -175,7 +175,7 @@ SampleView::move_marker (int x)
         {
           audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
         }
-      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD)
+      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
         {
           if (m_edit_marker_type == MARKER_LOOP_START)
             {
