@@ -198,7 +198,10 @@ main (int argc, char **argv)
   delete file;
 
   SpectMorph::Audio *audio_ptr = NULL;
-  SpectMorph::WavSet wset;
+
+  // only one of these two will be used, depending on the file_type
+  SpectMorph::WavSet wset;                  // for audio object within wavset playback
+  SpectMorph::Audio  audio_to_play;         // for single audio object playback
 
   if (file_type == "SpectMorph::WavSet")    // load wavset
     {
@@ -221,7 +224,7 @@ main (int argc, char **argv)
     }
   else                                     // load single audio file
     {
-      audio_ptr = new SpectMorph::Audio();
+      audio_ptr = &audio_to_play;
       error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
       if (error)
         {
