@@ -854,8 +854,8 @@ public:
     if (mag_sum > 0)
       {
         double fundamental_freq = freq_sum / mag_sum;
-        audio.fundamental_freq = fundamental_freq;
         printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
+        audio.fundamental_freq = fundamental_freq;
 
         set_need_save (true);
       }
