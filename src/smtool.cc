@@ -811,6 +811,12 @@ public:
   }
 } tail_loop_command;
 
+double
+freq_ratio_to_cent (double freq_ratio)
+{
+  return log (freq_ratio) / log (2) * 1200;
+}
+
 class AutoTuneCommand : public Command
 {
 public:
@@ -854,7 +860,8 @@ public:
     if (mag_sum > 0)
       {
         double fundamental_freq = freq_sum / mag_sum;
-        printf ("%.17g %.17g\n", audio.fundamental_freq, fundamental_freq);
+        printf ("%.17g %.17g  %.3f cent\n", audio.fundamental_freq, fundamental_freq,
+                                            freq_ratio_to_cent (audio.fundamental_freq / fundamental_freq));
         audio.fundamental_freq = fundamental_freq;
 
         set_need_save (true);
