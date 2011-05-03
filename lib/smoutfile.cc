@@ -141,25 +141,13 @@ OutFile::write_float_block (const string& s,
   write_raw_string (s);
   write_raw_int (fb.size());
 
-  vector<unsigned char> buffer (fb.size() * 4);
-  size_t bpos = 0;
-  for (size_t i = 0; i < fb.size(); i++)
-    {
-      union {
-        float f;
-        int i;
-      } u;
-      u.f = fb[i];
-      // write_raw_int (u.i);
+  const int *fb_data = reinterpret_cast<const int *> (&fb[0]);
 
-      // little endian encoding
-      buffer[bpos++] = u.i;
-      buffer[bpos++] = u.i >> 8;
-      buffer[bpos++] = u.i >> 16;
-      buffer[bpos++] = u.i >> 24;
-    }
-  assert (bpos == buffer.size());
-  file->write (&buffer[0], buffer.size());
+  vector<int> buffer (fb.size());
+  for (size_t i = 0; i < fb.size(); i++)
+    buffer[i] = GINT32_TO_LE (fb_data[i]); // little endian encoding
+
+  file->write (&buffer[0], buffer.size() * 4);
 }
 
 static string
