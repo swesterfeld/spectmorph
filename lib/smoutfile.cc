@@ -141,6 +141,7 @@ OutFile::write_float_block (const string& s,
   write_raw_string (s);
   write_raw_int (fb.size());
 
+#if G_BYTE_ORDER != G_LITTLE_ENDIAN
   const int *fb_data = reinterpret_cast<const int *> (&fb[0]);
 
   vector<int> buffer (fb.size());
@@ -148,6 +149,9 @@ OutFile::write_float_block (const string& s,
     buffer[i] = GINT32_TO_LE (fb_data[i]); // little endian encoding
 
   file->write (&buffer[0], buffer.size() * 4);
+#else
+  file->write (&fb[0], fb.size() * 4);
+#endif
 }
 
 static string
