@@ -136,6 +136,12 @@ class MainWindow : public Gtk::Window
   Gtk::ScrolledWindow scrolled_win;
   Gtk::HBox           button_hbox;
   Gtk::VBox           vbox;
+
+  Gtk::HBox           volume_hbox;
+  Gtk::Label          volume_label;
+  Gtk::HScale         volume_scale;
+  Gtk::Label          volume_value_label;
+
   SampleView          sample_view;
   Audio               audio;
   ZoomController      zoom_controller;
@@ -166,12 +172,15 @@ public:
   void on_next_sample();
   void on_combo_changed();
   void on_mouse_time_changed (int time);
+  void on_volume_changed();
+
   void load (const string& filename, const string& clip_markers);
   void clip (const string& export_pattern);
   void on_resized (int old_width, int new_width);
 };
 
 MainWindow::MainWindow() :
+  volume_scale (-96, 20, 0.01),
   zoom_controller (1, 5000, 10, 5000),
   jack_player ("smsampleedit")
 {
@@ -235,16 +244,24 @@ MainWindow::MainWindow() :
   save_button.set_label ("Save");
   edit_clip_start.set_label ("Edit Clip Start");
   edit_clip_end.set_label ("Edit Clip End");
-  button_hbox.pack_start (time_label);
+  button_hbox.pack_start (time_label, Gtk::PACK_SHRINK);
   button_hbox.pack_start (sample_combobox);
   button_hbox.pack_start (play_button);
   button_hbox.pack_start (save_button);
+  button_hbox.pack_start (volume_hbox);
   button_hbox.pack_start (edit_clip_start);
   button_hbox.pack_start (edit_clip_end);
+
+  volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
+  volume_hbox.pack_start (volume_scale);
+  volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
+  volume_label.set_label ("Volume");
+  volume_scale.set_draw_value (false);
+  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_volume_changed));
+  volume_scale.set_value (-20);  // calls on_volume_changed()
+
   add (vbox);
   show_all_children();
-
-  jack_player.set_volume (0.125);
 }
 
 MainWindow::~MainWindow()
@@ -260,6 +277,15 @@ void
 MainWindow::on_next_sample()
 {
   printf ("FIXME: implement on_next_sample();\n");
+}
+
+void
+MainWindow::on_volume_changed()
+{
+  double new_decoder_volume = bse_db_to_factor (volume_scale.get_value());
+  volume_value_label.set_text (Birnet::string_printf ("%.1f dB", volume_scale.get_value()));
+
+  jack_player.set_volume (new_decoder_volume);
 }
 
 void
