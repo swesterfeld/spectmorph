@@ -66,6 +66,7 @@ struct Options
   string	  program_name; /* FIXME: what to do with that */
   string          data_dir;
   string          args;
+  string          smenc;
   int             channel;
   int             min_velocity;
   int             max_velocity;
@@ -83,6 +84,7 @@ struct Options
 Options::Options ()
 {
   program_name = "smwavset";
+  smenc = "smenc";
   data_dir = "/tmp";
   args = "";
   command = NONE;
@@ -130,6 +132,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--args", &opt_arg))
         {
           args = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "--smenc", &opt_arg))
+        {
+          smenc = opt_arg;
         }
       else if (check_arg (argc, argv, &i, "-d", &opt_arg) ||
                check_arg (argc, argv, &i, "--data-dir", &opt_arg))
@@ -255,6 +261,7 @@ Options::print_usage ()
   printf (" -c, --channel <ch>          set channel for added .sm file\n");
   printf (" --format <f1>,...,<fN>      set fields to display in list\n");
   printf (" -j <jobs>                   run <jobs> commands simultaneously (use multiple cpus for encoding)\n");
+  printf (" --smenc <cmd>               use <cmd> as smenc command\n");
   printf ("\n");
 }
 
@@ -462,7 +469,7 @@ main (int argc, char **argv)
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
-          string cmd = "smenc -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
+          string cmd = options.smenc + " -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
           printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           job_queue.run (cmd);
 
