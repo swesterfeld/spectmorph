@@ -231,14 +231,18 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
       fft_out[fft_size + 1] = 0;
       fft_out[1] = 0;
 
-      /* find peak */
-      double peak = 0;
+      /* find peak (we search biggest squared peak, but thats the same) */
+      double peak_2 = 0;
       for (size_t t = 2; t < fft_size; t += 2)  // ignore DC
         {
           const float a = fft_out[t];
           const float b = fft_out[t+1];
-          peak = max (peak, sqrt (a * a + b * b));
+          const double a_2_b_2 = a * a + b * b;
+
+          if (a_2_b_2 > peak_2)
+            peak_2 = a_2_b_2;
         }
+      double peak = sqrt (peak_2);
       peaks.push_back (peak);
     }
   // normalize peaks with the biggest peak
