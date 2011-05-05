@@ -870,6 +870,45 @@ public:
   }
 } auto_tune_command;
 
+class TuneAllFramesCommand : public Command
+{
+public:
+  TuneAllFramesCommand() : Command ("tune-all-frames")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    const double freq_min = audio.fundamental_freq * 0.8;
+    const double freq_max = audio.fundamental_freq / 0.8;
+
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        AudioBlock& block = audio.contents[f];
+        double max_mag = -1;
+        size_t max_p = 0;
+        for (size_t p = 0; p < block.mags.size(); p++)
+          {
+            if (block.freqs[p] > freq_min && block.freqs[p] < freq_max && block.mags[p] > max_mag)
+              {
+                max_mag = block.mags[p];
+                max_p = p;
+              }
+          }
+        if (max_mag > 0)
+          {
+            double tune_factor = audio.fundamental_freq / block.freqs[max_p];
+            for (size_t p = 0; p < block.freqs.size(); p++)
+              {
+                block.freqs[p] *= tune_factor;
+                set_need_save (true);
+              }
+          }
+      }
+    return true;
+  }
+} tune_all_frames_command;
+
 static void
 normalize_energy (double energy, Audio& audio)
 {
