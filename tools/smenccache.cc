@@ -92,6 +92,10 @@ Options::parse (int   *argc_p,
         {
           args.push_back ("-s");
         }
+      else if (check_arg (argc, argv, &i, "--keep-samples"))
+        {
+          args.push_back ("--keep-samples");
+        }
       else if (check_arg (argc, argv, &i, "--no-attack"))
         {
           args.push_back ("--no-attack");

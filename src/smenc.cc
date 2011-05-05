@@ -93,6 +93,7 @@ struct Options
 {
   string	program_name; /* FIXME: what to do with that */
   bool          strip_models;
+  bool          keep_samples;
   bool          attack;
   bool          track_sines;
   float         fundamental_freq;
@@ -114,6 +115,7 @@ Options::Options ()
   fundamental_freq = 0; // unset
   optimization_level = 0;
   strip_models = false;
+  keep_samples = false;
   track_sines = true;   // perform peak tracking to find sine components
   attack = true;        // perform attack time optimization
   loop_start = -1;
@@ -182,6 +184,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "-s"))
         {
           strip_models = true;
+        }
+      else if (check_arg (argc, argv, &i, "--keep-samples"))
+        {
+          keep_samples = true;
         }
       else if (check_arg (argc, argv, &i, "--no-attack"))
         {
@@ -393,7 +399,10 @@ main (int argc, char **argv)
               audio_blocks[i].debug_samples.clear();
               audio_blocks[i].original_fft.clear();
             }
-          encoder.original_samples.clear();
+          if (!options.keep_samples)
+            {
+              encoder.original_samples.clear();
+            }
         }
       if (options.loop_start == -1 && options.loop_end == -1)
         {
