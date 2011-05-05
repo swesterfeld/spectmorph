@@ -21,6 +21,7 @@
 #include <bse/gsldatautils.h>
 
 #include "smmain.hh"
+#include "smfft.hh"
 #include "config.h"
 
 #include <assert.h>
@@ -38,7 +39,8 @@
 using std::string;
 using std::vector;
 using std::max;
-using SpectMorph::sm_init;
+
+using namespace SpectMorph;
 
 /// @cond
 struct Options
@@ -194,6 +196,9 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
   while (fft_size < nl * 4)
     fft_size *= 2;
 
+  float *fft_in = FFT::new_array_float (fft_size);
+  float *fft_out = FFT::new_array_float (fft_size + 2);
+
   for (size_t offset = channel; offset < input_data.size(); offset += block_size * n_channels)
     {
       size_t input_pos = offset;
@@ -206,9 +211,6 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
           input_pos += n_channels;
         }
 
-      vector<double> out (fft_size + 2);
-      vector<double> in (fft_size);
-
       // produce fft-size periodic signal via linear interpolation from block-size periodic signal
       double pos = 0;
       double pos_inc = (1.0 / fft_size) * block.size();
@@ -218,23 +220,23 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
           double dpos = pos - ipos;
 
           if (ipos + 1 < block.size())
-            in[in_pos] = block[ipos] * (1.0 - dpos) + block[ipos + 1] * dpos;
+            fft_in[in_pos] = block[ipos] * (1.0 - dpos) + block[ipos + 1] * dpos;
           else
-            in[in_pos] = block[ipos % block.size()] * (1.0 - dpos) + block[(ipos + 1) % block.size()] * dpos;
+            fft_in[in_pos] = block[ipos % block.size()] * (1.0 - dpos) + block[(ipos + 1) % block.size()] * dpos;
           pos += pos_inc;
         }
 
-      gsl_power2_fftar (fft_size, &in[0], &out[0]);
-      out[fft_size] = out[1];
-      out[fft_size + 1] = 0;
-      out[1] = 0;
+      FFT::fftar_float (fft_size, fft_in, fft_out);
+      fft_out[fft_size] = fft_out[1];
+      fft_out[fft_size + 1] = 0;
+      fft_out[1] = 0;
 
       /* find peak */
       double peak = 0;
-      for (uint64 t = 2; t < in.size(); t += 2)  // ignore DC
+      for (size_t t = 2; t < fft_size; t += 2)  // ignore DC
         {
-          double a = out[t];
-          double b = out[t+1];
+          const float a = fft_out[t];
+          const float b = fft_out[t+1];
           peak = max (peak, sqrt (a * a + b * b));
         }
       peaks.push_back (peak);
@@ -250,6 +252,8 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
       peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
       //printf ("%.17g\n", peaks[i]);
     }
+  FFT::free_array_float (fft_in);
+  FFT::free_array_float (fft_out);
 }
 
 int
