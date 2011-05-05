@@ -188,42 +188,40 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
   peaks.clear();
 
   const size_t nl = note_len;
+  vector<float> block (nl);
+
+  size_t fft_size = 1;
+  while (fft_size < nl * 4)
+    fft_size *= 2;
 
   for (size_t offset = channel; offset < input_data.size(); offset += block_size * n_channels)
     {
-      vector<float> block;
-
+      size_t input_pos = offset;
       for (size_t i = 0; i < nl; i++)
         {
-          size_t pos = offset + i * n_channels;
-          if (pos < input_data.size())
-            block.push_back (input_data[pos]);
+          if (input_pos < input_data.size())
+            block[i] = input_data[input_pos];
           else
-            block.push_back (0);
+            block[i] = 0;
+          input_pos += n_channels;
         }
-
-      size_t fft_size = 1;
-      while (fft_size < block.size() * 4)
-        fft_size *= 2;
 
       vector<double> out (fft_size + 2);
       vector<double> in (fft_size);
 
       // produce fft-size periodic signal via linear interpolation from block-size periodic signal
+      double pos = 0;
+      double pos_inc = (1.0 / fft_size) * block.size();
       for (size_t in_pos = 0; in_pos < fft_size; in_pos++)
         {
-          double pos = in_pos;
-
-          pos /= fft_size;
-          pos *= block.size();
-
           int ipos = pos;
           double dpos = pos - ipos;
 
-          double left = block[ipos % block.size()];
-          double right = block[(ipos + 1) % block.size()];
-
-          in[in_pos] = left * (1.0 - dpos) + right * dpos;
+          if (ipos + 1 < block.size())
+            in[in_pos] = block[ipos] * (1.0 - dpos) + block[ipos + 1] * dpos;
+          else
+            in[in_pos] = block[ipos % block.size()] * (1.0 - dpos) + block[(ipos + 1) % block.size()] * dpos;
+          pos += pos_inc;
         }
 
       gsl_power2_fftar (fft_size, &in[0], &out[0]);
