@@ -81,6 +81,11 @@ display_file (GenericIn *in, int indent = 0)
           printf ("%s", spaces (indent).c_str());
           printf ("int %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
         }
+      else if (ifile.event() == InFile::BOOL)
+        {
+          printf ("%s", spaces (indent).c_str());
+          printf ("bool %s = %s\n", ifile.event_name().c_str(), ifile.event_bool() ? "true" : "false");
+        }
       else if (ifile.event() == InFile::BLOB)
         {
           printf ("%s", spaces (indent).c_str());
