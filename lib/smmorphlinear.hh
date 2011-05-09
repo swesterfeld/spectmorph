@@ -40,6 +40,7 @@ protected:
   MorphOperator *m_right_op;
   double         m_morphing;
   ControlType    m_control_type;
+  bool           m_db_linear;
 
 public:
   MorphLinear (MorphPlan *morph_plan);
@@ -63,6 +64,9 @@ public:
 
   ControlType control_type();
   void set_control_type (ControlType new_control_type);
+
+  bool db_linear();
+  void set_db_linear (bool new_db_linear);
 
   void on_operator_removed (MorphOperator *op);
 };

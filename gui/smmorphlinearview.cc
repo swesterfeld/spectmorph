@@ -87,11 +87,16 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
     }
   update_slider();
 
+  db_linear_check_button.set_active (morph_linear->db_linear());
+  db_linear_check_button.set_label ("dB Linear Morphing");
+
   table.attach (control_type_label, 0, 1, 2, 3, Gtk::SHRINK);
   table.attach (control_type_combobox, 1, 2, 2, 3);
 
   table.attach (hscale_label, 0, 1, 3, 4, Gtk::SHRINK);
   table.attach (hscale, 1, 2, 3, 4);
+
+  table.attach (db_linear_check_button, 0, 2, 4, 5);
 
   table.set_spacings (10);
   table.set_border_width (5);
@@ -102,6 +107,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   right_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
   control_type_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_control_type_changed));
   hscale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_morphing_changed));
+  db_linear_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLinearView::on_db_linear_changed));
 
   show_all_children();
 }
@@ -139,6 +145,12 @@ MorphLinearView::on_control_type_changed()
       assert (false);
     }
   update_slider();
+}
+
+void
+MorphLinearView::on_db_linear_changed()
+{
+  morph_linear->set_db_linear (db_linear_check_button.get_active());
 }
 
 void

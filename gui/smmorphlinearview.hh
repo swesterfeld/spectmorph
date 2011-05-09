@@ -45,9 +45,12 @@ protected:
   Gtk::Label                       control_type_label;
   Gtk::ComboBoxText                control_type_combobox;
 
+  Gtk::CheckButton                 db_linear_check_button;
+
   void on_operator_changed();
   void on_morphing_changed();
   void on_control_type_changed();
+  void on_db_linear_changed();
 
   void update_slider();
 public:

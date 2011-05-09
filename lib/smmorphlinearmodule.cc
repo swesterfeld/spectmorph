@@ -83,6 +83,7 @@ MorphLinearModule::set_config (MorphOperator *op)
 
   morphing = linear->morphing();
   control_type = linear->control_type();
+  db_linear = linear->db_linear();
 }
 
 void
@@ -356,9 +357,21 @@ MorphLinearModule::MySource::audio_block (size_t index)
           if (match)
             {
               double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
-              double mag  =  (1 - interp) * left_block.mags[i]   + interp * right_block.mags[j];
               double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
+              double mag;
+              if (module->db_linear)
+                {
+                  double lmag_db = bse_db_from_factor (left_block.mags[i], -100);
+                  double rmag_db = bse_db_from_factor (right_block.mags[j], -100);
 
+                  double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+
+                  mag = bse_db_to_factor (mag_db);
+                }
+              else
+                {
+                  mag = (1 - interp) * left_block.mags[i] + interp * right_block.mags[j];
+                }
               module->audio_block.freqs.push_back (freq);
               module->audio_block.mags.push_back (mag);
               module->audio_block.phases.push_back (phase);

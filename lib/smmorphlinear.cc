@@ -37,6 +37,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   m_right_op = NULL;
   m_morphing = 0;
   m_control_type = CONTROL_GUI;
+  m_db_linear = false;
 
   leak_debugger.add (this);
 }
@@ -59,6 +60,7 @@ MorphLinear::save (OutFile& out_file)
   write_operator (out_file, "right", m_right_op);
   out_file.write_float ("morphing", m_morphing);
   out_file.write_int ("control_type", m_control_type);
+  out_file.write_bool ("db_linear", m_db_linear);
 
   return true;
 }
@@ -108,6 +110,18 @@ MorphLinear::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::BOOL)
+        {
+          if (ifile.event_name() == "db_linear")
+            {
+              m_db_linear = ifile.event_bool();
+            }
+          else
+            {
+              g_printerr ("bad bool\n");
               return false;
             }
         }
@@ -202,6 +216,20 @@ void
 MorphLinear::set_control_type (ControlType new_control_type)
 {
   m_control_type = new_control_type;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphLinear::db_linear()
+{
+  return m_db_linear;
+}
+
+void
+MorphLinear::set_db_linear (bool dbl)
+{
+  m_db_linear = dbl;
 
   m_morph_plan->emit_plan_changed();
 }
