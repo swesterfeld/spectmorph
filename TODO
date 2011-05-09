@@ -53,9 +53,6 @@ adventure:
 
 samples:
 - test with samples from the net
-- write automatic cutter for IMIS samples
-- preserve microintonanation by using ping pong loops
-- write sf2 to smset converter
 
 documentation:
 - update API documentation with new classes (LiveDecoder, GenericIn*)
@@ -64,10 +61,7 @@ BEAST:
 - midi export
 
 sminspector:
-- threaded analysis
 - reconstruct sines only button
-- boost feature
-- play support
 - figure out why mix_freq is 0 for inspect1 foo.wav
 
 gui:
