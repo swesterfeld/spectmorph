@@ -52,6 +52,7 @@ public:
   void begin_section (const std::string& s);
   void end_section();
 
+  void write_bool (const std::string& s, bool b);
   void write_int (const std::string& s, int i);
   void write_string (const std::string& s, const std::string& data);
   void write_float (const std::string& s, double f);

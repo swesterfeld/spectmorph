@@ -133,6 +133,15 @@ OutFile::write_string (const string& s,
 }
 
 void
+OutFile::write_bool (const string& s,
+                     bool          b)
+{
+  file->put_byte ('b'); // bool
+  write_raw_string (s);
+  file->put_byte (b ? 1 : 0);
+}
+
+void
 OutFile::write_float_block (const string& s,
                             const vector<float>& fb)
 {

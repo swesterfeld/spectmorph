@@ -38,6 +38,7 @@ public:
     READ_ERROR,
     BEGIN_SECTION,
     END_SECTION,
+    BOOL,
     INT,
     STRING,
     FLOAT,
@@ -51,6 +52,7 @@ protected:
   bool               file_delete;
   Event              current_event;
   std::string        current_event_str;
+  bool               current_event_bool;
   int                current_event_int;
   std::string        current_event_data;
   float              current_event_float;
@@ -63,6 +65,7 @@ protected:
 
   std::set<std::string> skip_events;
 
+  bool        read_raw_bool (bool& b);
   bool        read_raw_string (std::string& str);
   bool        read_raw_int (int &i);
   bool        read_raw_float (float &f);
@@ -85,6 +88,7 @@ public:
   std::string  event_name();
   float        event_float();
   int          event_int();
+  bool         event_bool();
   std::string  event_data();
   const std::vector<float>& event_float_block();
   std::string  event_blob_sum();

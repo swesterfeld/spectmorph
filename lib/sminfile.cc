@@ -142,6 +142,13 @@ InFile::next_event()
         if (read_raw_int (current_event_int))
           current_event = INT;
     }
+  else if (c == 'b')
+    {
+      current_event = READ_ERROR;
+      if (read_raw_string (current_event_str))
+        if (read_raw_bool (current_event_bool))
+          current_event = BOOL;
+    }
   else if (c == 's')
     {
       current_event = READ_ERROR;
@@ -222,6 +229,26 @@ InFile::read_raw_int (int& i)
 }
 
 bool
+InFile::read_raw_bool (bool& b)
+{
+  char bchar;
+  if (file->read (&bchar, 1) == 1)
+    {
+      if (bchar == 0)
+        {
+          b = false;
+          return true;
+        }
+      else if (bchar == 1)
+        {
+          b = true;
+          return true;
+        }
+    }
+  return false;
+}
+
+bool
 InFile::read_raw_float (float &f)
 {
   union {
@@ -291,6 +318,12 @@ int
 InFile::event_int()
 {
   return current_event_int;
+}
+
+bool
+InFile::event_bool()
+{
+  return current_event_bool;
 }
 
 string
