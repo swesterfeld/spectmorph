@@ -276,7 +276,24 @@ MainWindow::~MainWindow()
 void
 MainWindow::on_next_sample()
 {
-  printf ("FIXME: implement on_next_sample();\n");
+  string label = sample_combobox.get_active_text().c_str();
+  vector<Wave>::iterator wi = waves.begin();
+  while (wi != waves.end())
+    {
+      if (wi->label == label)
+        break;
+      else
+        wi++;
+    }
+  if (wi == waves.end()) // should not happen
+    return;
+  wi++; // next sample
+  if (wi == waves.end())
+    {
+      // no next sample
+      return;
+    }
+  sample_combobox.set_active_text (wi->label);
 }
 
 void
