@@ -70,6 +70,26 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
     cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
     cr->clip();
 
+    cr->set_source_rgb (0.0, 0.0, 0.8);
+    if (time_freq_view_ptr->show_frequency_grid())
+      {
+        double fundamental_freq = time_freq_view_ptr->fundamental_freq();
+        double mix_freq = time_freq_view_ptr->mix_freq();
+
+        double pos;
+        int partial = 1;
+        do
+          {
+            pos = partial * fundamental_freq / (mix_freq / 2);
+            partial++;
+
+            cr->move_to (pos * width, 0);
+            cr->line_to (pos * width, height);
+          }
+        while (pos < 1);
+      }
+    cr->stroke();
+
     // draw red lines out from the center of the window
     cr->set_source_rgb (0.8, 0.0, 0.0);
     for (size_t i = 0; i < spectrum.mags.size(); i++)

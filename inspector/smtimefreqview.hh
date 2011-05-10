@@ -36,7 +36,7 @@ protected:
   int old_height;
   int old_width;
   bool show_analysis;
-  bool show_frequency_grid;
+  bool m_show_frequency_grid;
   double display_min_db;
   double display_boost;
 
@@ -70,6 +70,9 @@ public:
   static Glib::RefPtr<Gdk::Pixbuf> zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
                                               double hzoom, double vzoom, int position,
                                               double display_min_db, double display_boost);
+  bool show_frequency_grid();
+  double fundamental_freq();
+  double mix_freq();
 };
 
 }

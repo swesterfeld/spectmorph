@@ -41,7 +41,7 @@ TimeFreqView::TimeFreqView()
   position = -1;
   audio = NULL;
   show_analysis = false;
-  show_frequency_grid = false;
+  m_show_frequency_grid = false;
 
   old_height = -1;
   old_width = -1;
@@ -86,8 +86,10 @@ void
 TimeFreqView::on_result_available()
 {
   if (FFTThread::the()->get_result (image))
-    force_redraw();
-
+    {
+      force_redraw();
+      signal_spectrum_changed();
+    }
   signal_progress_changed();
 }
 
@@ -147,8 +149,6 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
     FFTThread::the()->compute_image (image, dhandle, analysis_params);
 
   this->audio = audio;
-
-  signal_spectrum_changed(); // FIXME: not here
 }
 
 int
@@ -262,8 +262,9 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
             }
           cr->stroke();
         }
-      if (show_frequency_grid)
+      if (m_show_frequency_grid)
         {
+          cr->set_line_width (2.0);
           cr->set_source_rgb (0.5, 0.5, 1.0);
 
           for (int partial = 1; ; partial++)
@@ -313,7 +314,7 @@ TimeFreqView::set_show_analysis (bool new_show_analysis)
 void
 TimeFreqView::set_show_frequency_grid (bool new_show_frequency_grid)
 {
-  show_frequency_grid = new_show_frequency_grid;
+  m_show_frequency_grid = new_show_frequency_grid;
 
   force_redraw();
 }
@@ -330,4 +331,28 @@ TimeFreqView::set_display_params (double min_db, double boost)
   display_min_db = min_db;
   display_boost = boost;
   force_redraw();
+}
+
+double
+TimeFreqView::fundamental_freq()
+{
+  if (audio)
+    return audio->fundamental_freq;
+  else
+    return 0;
+}
+
+double
+TimeFreqView::mix_freq()
+{
+  if (audio)
+    return audio->mix_freq;
+  else
+    return 0;
+}
+
+bool
+TimeFreqView::show_frequency_grid()
+{
+  return m_show_frequency_grid;
 }
