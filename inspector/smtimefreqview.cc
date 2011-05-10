@@ -17,6 +17,7 @@
 
 #include "smtimefreqview.hh"
 #include "smfft.hh"
+#include "smmath.hh"
 
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
@@ -157,17 +158,13 @@ TimeFreqView::get_frames()
   return image.get_width();
 }
 
-#define FRAC_SHIFT       12
-#define FRAC_FACTOR      (1 << FRAC_SHIFT)
-#define FRAC_HALF_FACTOR (1 << (FRAC_SHIFT - 1))
-
 Glib::RefPtr<Gdk::Pixbuf>
 TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom,
                          int position, double display_min_db, double display_boost)
 {
   Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
-  int hzoom_inv_frac = FRAC_FACTOR / hzoom;
-  int vzoom_inv_frac = FRAC_FACTOR / vzoom;
+  const double hzoom_inv = 1.0 / hzoom;
+  const double vzoom_inv = 1.0 / vzoom;
 
   guchar *p = zimage->get_pixels();
   size_t  row_stride = zimage->get_rowstride();
@@ -180,14 +177,20 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
   const int pixel_add   = 256 * (abs_min_db + display_boost);   // 8 bits fixed point
   const int pixel_scale = 64 * 255 / abs_min_db;                // 6 bits fixed point
 
+  int scaledx[destw];
+  for (int x = 0; x < destw; x++)
+    {
+      scaledx[x] = sm_round_positive ((x + destx) * hzoom_inv);
+    }
+
   for (int y = 0; y < desth; y++)
     {
       guchar *pp = (p + row_stride * y);
-      size_t outy = ((y + desty) * vzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+      size_t outy = sm_round_positive ((y + desty) * vzoom_inv);
 
       for (int x = 0; x < destw; x++)
         {
-          size_t outx = ((x + destx) * hzoom_inv_frac + FRAC_HALF_FACTOR) >> FRAC_SHIFT;
+          size_t outx = scaledx[x];
           int color;
           if (outx < image.get_width() && outy < image.get_height())
             {
