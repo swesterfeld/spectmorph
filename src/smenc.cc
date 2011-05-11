@@ -344,9 +344,6 @@ main (int argc, char **argv)
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
 
-  if (options.fundamental_freq > 0)
-    fprintf (stderr, "fundamental freq = %f\n", options.fundamental_freq);
-
   int n_channels = gsl_data_handle_n_channels (dhandle);
 
   for (int channel = 0; channel < n_channels; channel++)
