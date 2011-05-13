@@ -44,43 +44,59 @@ class Delay : public DelayBase {
     }
   };
   class Module : public SynthesisModule {
-    float delay_ms;
-    vector<float> delay_buffer;
-    size_t w, r;
+    struct ChannelState {
+      vector<float> delay_buffer;
+      size_t w, r;
+    } cstate[3];
   public:
     Module()
     {
-      w = r = 0;
+      for (size_t i = 0; i < 3; i++)
+        {
+          cstate[i].w = cstate[i].r = 0;
+        }
     }
     void reset()
     {
-      fill (delay_buffer.begin(), delay_buffer.end(), 1);
+      fill (cstate[0].delay_buffer.begin(), cstate[0].delay_buffer.end(), 1);
+      fill (cstate[1].delay_buffer.begin(), cstate[1].delay_buffer.end(), 0);
+      fill (cstate[2].delay_buffer.begin(), cstate[2].delay_buffer.end(), 0);
     }
     void
-    process (unsigned int n_values)
+    process (unsigned int n_values, int ichannel, int ochannel, ChannelState& state)
     {
-      if (istream (ICHANNEL_GATE_IN).connected && ostream (OCHANNEL_GATE_OUT).connected)
+      if (istream (ichannel).connected && ostream (ochannel).connected)
         {
-          const float *gate_in = istream (ICHANNEL_GATE_IN).values;
-          float *gate_out = ostream (OCHANNEL_GATE_OUT).values;
+          const float *in = istream (ichannel).values;
+          float *out = ostream (ochannel).values;
           for (size_t i = 0; i < n_values; i++)
             {
-              delay_buffer[w++] = gate_in[i];
-              gate_out[i] = delay_buffer[r++];
-              if (w == delay_buffer.size())
-                w = 0;
-              if (r == delay_buffer.size())
-                r = 0;
+              state.delay_buffer[state.w++] = in[i];
+              out[i] = state.delay_buffer[state.r++];
+              if (state.w == state.delay_buffer.size())
+                state.w = 0;
+              if (state.r == state.delay_buffer.size())
+                state.r = 0;
             }
         }
     }
     void
+    process (unsigned int n_values)
+    {
+      process (n_values, ICHANNEL_GATE_IN, OCHANNEL_GATE_OUT, cstate[0]);
+      process (n_values, ICHANNEL_AUDIO_IN1, OCHANNEL_AUDIO_OUT1, cstate[1]);
+      process (n_values, ICHANNEL_AUDIO_IN2, OCHANNEL_AUDIO_OUT2, cstate[2]);
+    }
+    void
     config (Properties *properties)
     {
-      delay_ms = properties->delay_ms;
-      delay_buffer.resize (delay_ms * mix_freq() / 1000);
-      w = delay_buffer.size() - 1;
-      r = 0;
+      float delay_ms = properties->delay_ms;
+      for (size_t i = 0; i < 3; i++)
+        {
+          cstate[i].delay_buffer.resize (delay_ms * mix_freq() / 1000);
+          cstate[i].w = cstate[i].delay_buffer.size() - 1;
+          cstate[i].r = 0;
+        }
     }
   };
 
