@@ -2,7 +2,8 @@
 
 smwavset init /tmp/foo.smset
 smwavset add /tmp/foo.smset 60 "$1"
-smwavset link /tmp/foo.smset
-echo "smset_dir /tmp" > /tmp/foo.smindex
-echo "smset foo.smset" >> /tmp/foo.smindex
-sminspector /tmp/foo.smindex
+smwavset encode /tmp/foo.smset /tmp/fooe.smset
+smwavset link /tmp/fooe.smset
+echo "smset_dir /tmp" > /tmp/fooe.smindex
+echo "smset fooe.smset" >> /tmp/fooe.smindex
+sminspector /tmp/fooe.smindex
