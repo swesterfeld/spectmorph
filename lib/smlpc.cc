@@ -20,6 +20,7 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/lu.hpp>
 #include <glib.h>
+#include <stdio.h>
 
 using namespace SpectMorph;
 namespace ublas = boost::numeric::ublas;
@@ -132,7 +133,7 @@ LPC::lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std
   for (size_t i = 0; i < lpc.size(); i++)
     {
       p.push_back (-(lpc[i] + lpc[lpc.size() - 1 - i]));
-      p.push_back (-(lpc[i] - lpc[lpc.size() - 1 - i]));
+      q.push_back (-(lpc[i] - lpc[lpc.size() - 1 - i]));
     }
   p.push_back (1);
   q.push_back (-1);
@@ -144,7 +145,7 @@ LPC::lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std
 double
 LPC::eval_lpc_lsf (double f, vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
 {
-  g_return_val_if_fail (lpc_lsf_p.size() != lpc_lsf_q.size(), 0);
+  g_return_val_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size(), 0);
 
   complex<double> z (cos (f), sin (f));
   complex<double> acc_p = 0.5;
