@@ -116,6 +116,7 @@ public:
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise (const std::vector<float>& window);
   void compute_attack_params (const std::vector<float>& window);
+  void compute_lpc_lsf();
   void sort_freqs();
 
   // all-in-one encoding function:

@@ -18,6 +18,7 @@
 #include "smencoder.hh"
 #include "smmath.hh"
 #include "smfft.hh"
+#include "smlpc.hh"
 #include "smdebug.hh"
 
 #include <bse/bsemathsignal.h>
@@ -1116,6 +1117,35 @@ Encoder::sort_freqs()
     }
 }
 
+void
+Encoder::compute_lpc_lsf()
+{
+  const size_t frame_size = enc_params.frame_size;
+  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
+    {
+      AlignedArray<float,16> signal (frame_size);
+      for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
+	{
+          const double freq = audio_blocks[frame].freqs[i];
+	  const double mag = audio_blocks[frame].mags[i];
+	  const double phase = audio_blocks[frame].phases[i];
+
+          VectorSinParams params;
+          params.mix_freq = enc_params.mix_freq;
+          params.freq = freq;
+          params.phase = phase;
+          params.mag = mag;
+          params.mode = VectorSinParams::ADD;
+
+          fast_vector_sinf (params, &signal[0], &signal[frame_size]);
+	}
+      vector<double> lpc (50);
+
+      LPC::compute_lpc (lpc, &signal[0], &signal[frame_size]);
+      LPC::lpc2lsf (lpc, audio_blocks[frame].lpc_lsf_p, audio_blocks[frame].lpc_lsf_q);
+    }
+}
+
 /**
  * This function calls all steps necessary for encoding in the right order.
  *
@@ -1141,6 +1171,7 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
       spectral_subtract (window);
     }
   approx_noise (window);
+  compute_lpc_lsf();
 
   if (attack)
     compute_attack_params (window);
