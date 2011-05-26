@@ -27,6 +27,7 @@ class SpectrumView : public Gtk::DrawingArea
 {
   TimeFreqView *time_freq_view_ptr;
   FFTResult     spectrum;
+  AudioBlock    audio_block;
   double        hzoom;
   double        vzoom;
 

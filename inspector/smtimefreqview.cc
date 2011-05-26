@@ -40,7 +40,7 @@ TimeFreqView::TimeFreqView()
   hzoom = 1;
   vzoom = 1;
   position = -1;
-  audio = NULL;
+  m_audio = NULL;
   show_analysis = false;
   m_show_frequency_grid = false;
 
@@ -149,7 +149,7 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
   if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
     FFTThread::the()->compute_image (image, dhandle, analysis_params);
 
-  this->audio = audio;
+  m_audio = audio;
 }
 
 int
@@ -229,7 +229,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
                               Gdk::RGB_DITHER_NONE, 0, 0);
 
   Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window && audio)
+  if (window && m_audio)
     {
       Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
       cr->set_line_width (1.0);
@@ -247,15 +247,15 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
           cr->set_source_rgb (1.0, 0.0, 0.0);
 
           const double size = 3;
-          for (size_t i = 0; i < audio->contents.size(); i++)
+          for (size_t i = 0; i < m_audio->contents.size(); i++)
             {
-              double posx = width * double (i) / audio->contents.size();
+              double posx = width * double (i) / m_audio->contents.size();
               if (posx > ev->area.x - 10 && posx < ev->area.width + ev->area.x + 10)
                 {
-                  const AudioBlock& ab = audio->contents[i];
+                  const AudioBlock& ab = m_audio->contents[i];
                   for (size_t f = 0; f < ab.freqs.size(); f++)
                     {
-                      double posy = height - height * ab.freqs[f] / (audio->mix_freq / 2);
+                      double posy = height - height * ab.freqs[f] / (m_audio->mix_freq / 2);
                       cr->move_to (posx - size, posy - size);
                       cr->line_to (posx + size, posy + size);
                       cr->move_to (posx - size, posy + size);
@@ -272,7 +272,7 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
 
           for (int partial = 1; ; partial++)
             {
-              double posy = height - height * partial * audio->fundamental_freq / (audio->mix_freq / 2);
+              double posy = height - height * partial * m_audio->fundamental_freq / (m_audio->mix_freq / 2);
               if (posy < 0)
                 break;
 
@@ -339,8 +339,8 @@ TimeFreqView::set_display_params (double min_db, double boost)
 double
 TimeFreqView::fundamental_freq()
 {
-  if (audio)
-    return audio->fundamental_freq;
+  if (m_audio)
+    return m_audio->fundamental_freq;
   else
     return 0;
 }
@@ -348,8 +348,8 @@ TimeFreqView::fundamental_freq()
 double
 TimeFreqView::mix_freq()
 {
-  if (audio)
-    return audio->mix_freq;
+  if (m_audio)
+    return m_audio->mix_freq;
   else
     return 0;
 }
@@ -358,4 +358,16 @@ bool
 TimeFreqView::show_frequency_grid()
 {
   return m_show_frequency_grid;
+}
+
+Audio *
+TimeFreqView::audio()
+{
+  return m_audio;
+}
+
+double
+TimeFreqView::position_frac()
+{
+  return position / double (image.get_width());
 }

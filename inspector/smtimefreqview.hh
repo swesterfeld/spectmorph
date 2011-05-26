@@ -30,7 +30,7 @@ class TimeFreqView : public Gtk::DrawingArea
 {
 protected:
   PixelArray  image;
-  Audio      *audio;
+  Audio      *m_audio;
   double hzoom, vzoom;
   int position;
   int old_height;
@@ -73,6 +73,8 @@ public:
   bool show_frequency_grid();
   double fundamental_freq();
   double mix_freq();
+  Audio *audio();
+  double position_frac();
 };
 
 }

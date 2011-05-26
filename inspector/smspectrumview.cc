@@ -16,6 +16,7 @@
  */
 
 #include "smspectrumview.hh"
+#include "smlpc.hh"
 
 using namespace SpectMorph;
 
@@ -97,8 +98,27 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
         cr->line_to (double (i) / spectrum.mags.size() * width, height - value_scale (spectrum.mags[i]) / max_value * height);
       }
     cr->stroke();
-  }
 
+    // draw lpc envelope
+    if (audio_block.lpc_lsf_p.size() > 10)
+      {
+        cr->set_source_rgb (0.0, 0.8, 0.0);
+        double max_lpc_value = 0;
+        for (float freq = 0; freq < M_PI; freq += 0.001)
+          {
+            double value = LPC::eval_lpc_lsf (freq, audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+            double value_db = bse_db_from_factor (value, -200);
+            max_lpc_value = max (max_lpc_value, value_db);
+          }
+        for (float freq = 0; freq < M_PI; freq += 0.001)
+          {
+            double value = LPC::eval_lpc_lsf (freq, audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+            double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
+            cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
+          }
+        cr->stroke();
+      }
+  }
   return true;
 }
 
@@ -113,6 +133,19 @@ void
 SpectrumView::on_spectrum_changed()
 {
   spectrum = time_freq_view_ptr->get_spectrum();
+  audio_block = AudioBlock(); // reset
+
+  Audio *audio = time_freq_view_ptr->audio();
+  if (audio)
+    {
+      int frame = time_freq_view_ptr->position_frac() * audio->contents.size();
+      int frame_count = audio->contents.size();
+
+      if (frame >= 0 && frame < frame_count)
+        {
+          audio_block = audio->contents[frame];
+        }
+    }
 
   force_redraw();
 }
