@@ -74,7 +74,7 @@ display_file (GenericIn *in, int indent = 0)
       else if (ifile.event() == InFile::FLOAT_BLOCK)
         {
           printf ("%s", spaces (indent).c_str());
-          printf ("float_block %s = {...}\n", ifile.event_name().c_str());
+          printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
         }
       else if (ifile.event() == InFile::INT)
         {
