@@ -29,6 +29,8 @@ namespace LPC
 
 void compute_lpc (std::vector<double>& lpc, const float *begin, const float *end);
 void lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
+
+double eval_lpc (const std::vector<double>& lpc, double f);
 double eval_lpc_lsf (double f, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
 
 }

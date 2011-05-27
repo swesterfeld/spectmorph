@@ -186,3 +186,15 @@ LPC::eval_lpc_lsf (double f, vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
   return value;
 }
 
+double
+LPC::eval_lpc (const vector<double>& lpc, double f)
+{
+  complex<double> z (cos (f), sin (f));
+
+  complex<double> acc = -1;
+  for (int j = 0; j < int (lpc.size()); j++)
+    acc += pow (z, -(j + 1)) * lpc[j];
+
+  double value = 1 / abs (acc);
+  return value;
+}
