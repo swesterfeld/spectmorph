@@ -16,6 +16,7 @@
  */
 
 #include "smlpc.hh"
+#include "smmath.hh"
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/lu.hpp>
@@ -103,12 +104,28 @@ find_roots (const vector<double>& p, vector<float>& roots)
   double a = 0, last_a = 1e5, last_last_a = 1e6; // decreasing to find root at 0 (which has increasing a)
   double delta_f = 0.0001;
   double last_f = 0;
+
+  vector<double> sin_values (p.size());
+  vector<double> cos_values (p.size());
+
   for (double f = 0; f < M_PI + 2 * delta_f; f += delta_f)
     {
+      VectorSinParams vsparams;
+      vsparams.mix_freq = 2 * M_PI;
+      vsparams.freq = f;
+      vsparams.phase = 0;
+      vsparams.mag = 1;
+      vsparams.mode = VectorSinParams::REPLACE;
+
+      if (vsparams.freq < (delta_f / 2))  // fast_vector_sincos needs (vsparams.freq > 0)
+        vsparams.freq += 2 * M_PI;
+
+      fast_vector_sincos (vsparams, sin_values.begin(), sin_values.end(), cos_values.begin());
+
       complex<double> acc;
       for (size_t j = 0; j < p.size(); j++)
         {
-          complex<double> z_j (cos (f * j), sin (f * j));
+          complex<double> z_j (cos_values[j], sin_values[j]);
           acc += p[j] * z_j;
         }
 
