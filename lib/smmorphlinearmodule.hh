@@ -32,6 +32,7 @@ class MorphLinearModule : public MorphOperatorModule
   MorphOperatorModule *right_mod;
   float                morphing;
   bool                 db_linear;
+  bool                 use_lpc;
 
   MorphLinear::ControlType control_type;
 

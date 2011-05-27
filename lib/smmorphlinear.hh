@@ -41,6 +41,7 @@ protected:
   double         m_morphing;
   ControlType    m_control_type;
   bool           m_db_linear;
+  bool           m_use_lpc;
 
 public:
   MorphLinear (MorphPlan *morph_plan);
@@ -67,6 +68,9 @@ public:
 
   bool db_linear();
   void set_db_linear (bool new_db_linear);
+
+  bool use_lpc();
+  void set_use_lpc (bool new_use_lpc);
 
   void on_operator_removed (MorphOperator *op);
 };

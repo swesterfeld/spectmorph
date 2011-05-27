@@ -20,6 +20,7 @@
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
+#include "smlpc.hh"
 #include "smleakdebugger.hh"
 #include "smlivedecoder.hh"
 #include <glib.h>
@@ -84,6 +85,7 @@ MorphLinearModule::set_config (MorphOperator *op)
   morphing = linear->morphing();
   control_type = linear->control_type();
   db_linear = linear->db_linear();
+  use_lpc = linear->use_lpc();
 }
 
 void
@@ -189,6 +191,9 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
 
   for (size_t i = 0; i < block_ptr->freqs.size(); i++)
     out_audio_block.freqs[i] = block_ptr->freqs[i] * 440 / audio->fundamental_freq;
+
+  out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
+  out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
 
   return true;
 }
@@ -321,9 +326,32 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
   if (have_left && have_right) // true morph: both sources present
     {
+      Audio *left_audio = module->left_mod->source()->audio();
+      Audio *right_audio = module->right_mod->source()->audio();
+      assert (left_audio && right_audio);
+
       module->audio_block.freqs.clear();
       module->audio_block.mags.clear();
       module->audio_block.phases.clear();
+
+      // compute interpolated LPC envelope
+      bool use_lpc = false;
+      vector<float> interp_lsf_p (26);
+      vector<float> interp_lsf_q (26);
+
+      if (left_block.lpc_lsf_p.size() == 26 &&
+          left_block.lpc_lsf_q.size() == 26 &&
+          right_block.lpc_lsf_p.size() == 26 &&
+          right_block.lpc_lsf_p.size() == 26 &&
+          module->use_lpc)
+        {
+          for (size_t i = 0; i < interp_lsf_p.size(); i++)
+            {
+              interp_lsf_p[i] = (1 - interp) * left_block.lpc_lsf_p[i] + interp * right_block.lpc_lsf_p[i];
+              interp_lsf_q[i] = (1 - interp) * left_block.lpc_lsf_q[i] + interp * right_block.lpc_lsf_q[i];
+            }
+          use_lpc = true;
+        }
 
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
@@ -364,7 +392,43 @@ MorphLinearModule::MySource::audio_block (size_t index)
                   double lmag_db = bse_db_from_factor (left_block.mags[i], -100);
                   double rmag_db = bse_db_from_factor (right_block.mags[j], -100);
 
+                  //--------------------------- LPC stuff ---------------------------
+                  double l_env_mag_db = 0;
+                  double r_env_mag_db = 0;
+                  double interp_env_mag_db = 0;
+
+                  if (use_lpc)
+                    {
+                      double l_freq = left_block.freqs[i] / 440 * left_audio->fundamental_freq;
+                      l_freq *= 2 * M_PI / left_audio->mix_freq; /* frequency in original data */
+
+                      double r_freq = right_block.freqs[j] / 440 * right_audio->fundamental_freq;
+                      r_freq *= 2 * M_PI / right_audio->mix_freq; /* frequency in original data */
+
+                      l_env_mag_db = bse_db_from_factor (
+                        LPC::eval_lpc_lsf (l_freq,
+                                           left_block.lpc_lsf_p,
+                                           left_block.lpc_lsf_q), -100);
+
+                      r_env_mag_db = bse_db_from_factor (
+                        LPC::eval_lpc_lsf (r_freq,
+                                           right_block.lpc_lsf_p,
+                                           right_block.lpc_lsf_q), -100);
+
+                      double interp_freq = (1 - interp) * l_freq + interp * r_freq;
+                      interp_env_mag_db = bse_db_from_factor (
+                        LPC::eval_lpc_lsf (interp_freq, interp_lsf_p, interp_lsf_q), -100);
+                    }
+                  //--------------------------- LPC stuff ---------------------------
+
+                  // whiten spectrum
+                  lmag_db -= l_env_mag_db;
+                  rmag_db -= r_env_mag_db;
+
                   double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+
+                  // recolorize
+                  mag_db += interp_env_mag_db;
 
                   mag = bse_db_to_factor (mag_db);
                 }
