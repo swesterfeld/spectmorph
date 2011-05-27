@@ -90,6 +90,9 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   db_linear_check_button.set_active (morph_linear->db_linear());
   db_linear_check_button.set_label ("dB Linear Morphing");
 
+  use_lpc_check_button.set_active (morph_linear->use_lpc());
+  use_lpc_check_button.set_label ("Use LPC Envelope");
+
   table.attach (control_type_label, 0, 1, 2, 3, Gtk::SHRINK);
   table.attach (control_type_combobox, 1, 2, 2, 3);
 
@@ -97,6 +100,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   table.attach (hscale, 1, 2, 3, 4);
 
   table.attach (db_linear_check_button, 0, 2, 4, 5);
+  table.attach (use_lpc_check_button, 0, 2, 5, 6);
 
   table.set_spacings (10);
   table.set_border_width (5);
@@ -108,6 +112,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   control_type_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_control_type_changed));
   hscale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_morphing_changed));
   db_linear_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLinearView::on_db_linear_changed));
+  use_lpc_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLinearView::on_use_lpc_changed));
 
   show_all_children();
 }
@@ -151,6 +156,12 @@ void
 MorphLinearView::on_db_linear_changed()
 {
   morph_linear->set_db_linear (db_linear_check_button.get_active());
+}
+
+void
+MorphLinearView::on_use_lpc_changed()
+{
+  morph_linear->set_use_lpc (use_lpc_check_button.get_active());
 }
 
 void
