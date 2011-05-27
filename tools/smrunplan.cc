@@ -16,6 +16,7 @@
  */
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
+#include "smmorphlinear.hh"
 #include "smmain.hh"
 #include "config.h"
 
@@ -25,12 +26,15 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::min;
 
 /// @cond
 struct Options
 {
   string	      program_name; /* FIXME: what to do with that */
   int                 midi_note;
+  double              len;
+  bool                fade;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -42,7 +46,9 @@ struct Options
 
 Options::Options () :
   program_name ("smrunplan"),
-  midi_note (-1)
+  midi_note (-1),
+  len (1),
+  fade (false)
 {
 }
 
@@ -80,6 +86,14 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           midi_note = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--len", &opt_arg) || check_arg (argc, argv, &i, "-l", &opt_arg))
+        {
+          len = atof (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--fade") || check_arg (argc, argv, &i, "-f"))
+        {
+          fade = true;
         }
     }
 
@@ -139,14 +153,39 @@ main (int argc, char **argv)
   MorphPlanVoice voice (plan);
   assert (voice.output());
 
-  vector<float> samples (44100);
+  vector<float> samples (44100 * options.len);
 
   float freq = 440;
   if (options.midi_note >= 0)
     freq = freq_from_note (options.midi_note);
 
+  MorphLinear *linear_op = 0;
+
+  vector<MorphOperator *> ops = plan->operators();
+  for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
+      if (op->type_name() == "Linear")
+        linear_op = dynamic_cast<MorphLinear *> (op);
+    }
+
   voice.output()->retrigger (0, freq, 100, 44100);
-  voice.output()->process (/* port */ 0, samples.size(), &samples[0]);
+
+  const size_t STEP = 100;
+  for (size_t i = 0; i < samples.size(); i += STEP)
+    {
+      if (options.fade)
+        {
+          double morphing = 2 * double (i) / samples.size() - 1;
+          linear_op->set_morphing (morphing);
+          voice.update (plan);
+        }
+
+      size_t todo = min (STEP, samples.size());
+
+      voice.output()->process (/* port */ 0, todo, &samples[i]);
+    }
   for (size_t i = 0; i < samples.size(); i++)
     {
       printf ("%.17g\n", samples[i]);
