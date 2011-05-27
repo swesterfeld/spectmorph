@@ -47,7 +47,9 @@ main (int argc, char **argv)
 
   for (double freq = 0; freq < M_PI; freq += 0.001)
     {
+      double lpc_value = LPC::eval_lpc (lpc, freq);
       double value = LPC::eval_lpc_lsf (freq, lsf_p, lsf_q);
-      printf ("%f %.17g\n", freq / (2 * M_PI) * 44100, value);
+      printf ("%f %.17g %.17g\n", freq / (2 * M_PI) * 44100, value, lpc_value);
     }
+  delete wav_loader;
 }
