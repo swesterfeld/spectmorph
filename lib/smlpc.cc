@@ -159,36 +159,16 @@ LPC::lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std
   find_roots (q, lpc_lsf_q);
 }
 
-double
-LPC::eval_lpc_lsf (double f, vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
+LPC::LSFEnvelope::LSFEnvelope()
 {
-  g_return_val_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size(), 0);
-
-  complex<double> z (cos (f), sin (f));
-  complex<double> acc_p = 0.5;
-  complex<double> acc_q = 0.5;
-  for (size_t j = 0; j < lpc_lsf_p.size(); j++)
-    {
-      complex<double> r_p (cos (lpc_lsf_p[j]), sin (lpc_lsf_p[j]));
-      complex<double> r_q (cos (lpc_lsf_q[j]), sin (lpc_lsf_q[j]));
-
-      if (j == lpc_lsf_p.size() - 1) // real root at nyquist
-        acc_p *= (z - r_p);
-      else
-        acc_p *= (z - r_p) * (z - conj (r_p));
-
-      if (j == 0)                  // real root at 0
-        acc_q *= (z - r_q);
-      else
-        acc_q *= (z - r_q) * (z - conj (r_q));
-    }
-  double value = 1 / abs (acc_p + acc_q);
-  return value;
+  m_init = false;
 }
 
-LPC::LSFEnvelope::LSFEnvelope (vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
+bool
+LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc_lsf_q)
 {
-  g_return_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size());
+  m_init = false;
+  g_return_val_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size(), false);
 
   for (size_t j = 0; j < lpc_lsf_p.size(); j++)
     {
@@ -205,11 +185,16 @@ LPC::LSFEnvelope::LSFEnvelope (vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_
       else
         q_roots.push_back (r_q);
     }
+  m_init = true;
+
+  return true;
 }
 
 double
 LPC::LSFEnvelope::eval (double f)
 {
+  g_return_val_if_fail (m_init, 0);
+
   complex<double> z (cos (f), sin (f));
   complex<double> acc_p = 0.5;
   complex<double> acc_q = 0.5;

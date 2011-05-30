@@ -39,13 +39,14 @@ class LSFEnvelope {
 
   std::vector< std::complex<double> > q_roots;
   std::complex<double>                q_real_root;
-public:
-  LSFEnvelope (std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
 
+  bool                                m_init;
+public:
+  LSFEnvelope();
+
+  bool init (const std::vector<float>& lpc_lsf_p, const std::vector<float>& lpc_lsf_q);
   double eval (double f);
 };
-
-double eval_lpc_lsf (double f, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q); /* SLOW! */
 
 }
 
