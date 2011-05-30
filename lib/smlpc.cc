@@ -17,6 +17,7 @@
 
 #include "smlpc.hh"
 #include "smmath.hh"
+#include <bse/bsemathsignal.h>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/lu.hpp>
@@ -97,7 +98,7 @@ LPC::compute_lpc (std::vector<double>& lpc, const float *begin, const float *end
 }
 
 static void
-find_roots (const vector<double>& p, vector<float>& roots)
+find_lsf_roots (const vector<double>& p, vector<float>& roots)
 {
   roots.clear();
 
@@ -155,8 +156,8 @@ LPC::lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std
   p.push_back (1);
   q.push_back (-1);
 
-  find_roots (p, lpc_lsf_p);
-  find_roots (q, lpc_lsf_q);
+  find_lsf_roots (p, lpc_lsf_p);
+  find_lsf_roots (q, lpc_lsf_q);
 }
 
 LPC::LSFEnvelope::LSFEnvelope()
@@ -225,4 +226,58 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
 
   double value = 1 / abs (acc);
   return value;
+}
+
+double
+LPC::eval_z (const vector<double>& lpc, complex<double> z)
+{
+  complex<double> acc = -1;
+  complex<double> zinv = 1.0 / z;
+  complex<double> zpow = zinv;
+  for (size_t j = 0; j < lpc.size(); j++)
+    {
+      acc += zpow * lpc[j];
+      zpow *= zinv;
+    }
+  return abs (acc);
+}
+
+void
+LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
+{
+  roots.clear();
+  while (roots.size() != lpc.size())
+    {
+      double root_re = g_random_double_range (-1, 1);
+      double root_im = g_random_double_range (-1, 1);
+
+      for (size_t i = 0; i < 100000; i++)
+        {
+          double value = eval_z (lpc, complex<double> (root_re, root_im));
+          double factor = bse_db_to_factor (g_random_double_range (-96, 0));
+          double delta_re = g_random_double_range (-0.1, 0.1) * factor;
+          double delta_im = g_random_double_range (-0.1, 0.1) * factor;
+          double new_value = eval_z (lpc, complex<double> (root_re + delta_re, root_im + delta_im));
+          if (new_value < value)
+            {
+              root_re += delta_re;
+              root_im += delta_im;
+            }
+        }
+      complex<double> root_c (root_re, root_im);
+      size_t t;
+      for (t = 0; t < roots.size(); t++)
+        {
+          if (abs (root_c - roots[t]) < 0.01)
+            break;
+        }
+      if (t == roots.size())
+        {
+          double value = eval_z (lpc, root_c);
+          if (value < 0.01)
+            {
+              roots.push_back (root_c);
+            }
+        }
+    }
 }
