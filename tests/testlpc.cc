@@ -45,7 +45,8 @@ main (int argc, char **argv)
   LPC::lpc2lsf (lpc, lsf_p, lsf_q);
   assert (lsf_p.size() == lsf_q.size());
 
-  LPC::LSFEnvelope env (lsf_p, lsf_q);
+  LPC::LSFEnvelope env;
+  env.init (lsf_p, lsf_q);
   for (double freq = 0; freq < M_PI; freq += 0.001)
     {
       double lpc_value = LPC::eval_lpc (lpc, freq);
