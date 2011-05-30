@@ -20,6 +20,7 @@
 #define SPECTMORPH_LPC_HH
 
 #include <vector>
+#include <complex>
 
 namespace SpectMorph
 {
@@ -31,7 +32,20 @@ void compute_lpc (std::vector<double>& lpc, const float *begin, const float *end
 void lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
 
 double eval_lpc (const std::vector<double>& lpc, double f);
-double eval_lpc_lsf (double f, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
+
+class LSFEnvelope {
+  std::vector< std::complex<double> > p_roots;
+  std::complex<double>                p_real_root;
+
+  std::vector< std::complex<double> > q_roots;
+  std::complex<double>                q_real_root;
+public:
+  LSFEnvelope (std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
+
+  double eval (double f);
+};
+
+double eval_lpc_lsf (double f, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q); /* SLOW! */
 
 }
 

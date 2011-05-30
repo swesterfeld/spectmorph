@@ -186,6 +186,49 @@ LPC::eval_lpc_lsf (double f, vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
   return value;
 }
 
+LPC::LSFEnvelope::LSFEnvelope (vector<float>& lpc_lsf_p, vector<float>& lpc_lsf_q)
+{
+  g_return_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size());
+
+  for (size_t j = 0; j < lpc_lsf_p.size(); j++)
+    {
+      complex<double> r_p (cos (lpc_lsf_p[j]), sin (lpc_lsf_p[j]));
+      complex<double> r_q (cos (lpc_lsf_q[j]), sin (lpc_lsf_q[j]));
+
+      if (j == lpc_lsf_p.size() - 1) // real root at nyquist
+        p_real_root = r_p;
+      else
+        p_roots.push_back (r_p);
+
+      if (j == 0)                  // real root at 0
+        q_real_root = r_q;
+      else
+        q_roots.push_back (r_q);
+    }
+}
+
+double
+LPC::LSFEnvelope::eval (double f)
+{
+  complex<double> z (cos (f), sin (f));
+  complex<double> acc_p = 0.5;
+  complex<double> acc_q = 0.5;
+
+  acc_p *= (z - p_real_root);
+  acc_q *= (z - q_real_root);
+
+  for (size_t j = 0; j < p_roots.size(); j++)
+    {
+      complex<double> r_p (p_roots[j]);
+      complex<double> r_q (q_roots[j]);
+
+      acc_p *= (z - r_p) * (z - conj (r_p));
+      acc_q *= (z - r_q) * (z - conj (r_q));
+    }
+  double value = 1 / abs (acc_p + acc_q);
+  return value;
+}
+
 double
 LPC::eval_lpc (const vector<double>& lpc, double f)
 {
