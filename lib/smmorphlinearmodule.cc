@@ -339,6 +339,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
       vector<float> interp_lsf_p (26);
       vector<float> interp_lsf_q (26);
 
+      LPC::LSFEnvelope left_env, right_env, interp_env;
+
       if (left_block.lpc_lsf_p.size() == 26 &&
           left_block.lpc_lsf_q.size() == 26 &&
           right_block.lpc_lsf_p.size() == 26 &&
@@ -350,6 +352,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
               interp_lsf_p[i] = (1 - interp) * left_block.lpc_lsf_p[i] + interp * right_block.lpc_lsf_p[i];
               interp_lsf_q[i] = (1 - interp) * left_block.lpc_lsf_q[i] + interp * right_block.lpc_lsf_q[i];
             }
+          left_env.init (left_block.lpc_lsf_p, left_block.lpc_lsf_q);
+          right_env.init (right_block.lpc_lsf_p, right_block.lpc_lsf_q);
+          interp_env.init (interp_lsf_p, interp_lsf_q);
+
           use_lpc = true;
         }
 
@@ -405,19 +411,11 @@ MorphLinearModule::MySource::audio_block (size_t index)
                       double r_freq = right_block.freqs[j] / 440 * right_audio->fundamental_freq;
                       r_freq *= 2 * M_PI / right_audio->mix_freq; /* frequency in original data */
 
-                      l_env_mag_db = bse_db_from_factor (
-                        LPC::eval_lpc_lsf (l_freq,
-                                           left_block.lpc_lsf_p,
-                                           left_block.lpc_lsf_q), -100);
-
-                      r_env_mag_db = bse_db_from_factor (
-                        LPC::eval_lpc_lsf (r_freq,
-                                           right_block.lpc_lsf_p,
-                                           right_block.lpc_lsf_q), -100);
+                      l_env_mag_db = bse_db_from_factor (left_env.eval (l_freq), -100);
+                      r_env_mag_db = bse_db_from_factor (right_env.eval (r_freq), -100);
 
                       double interp_freq = (1 - interp) * l_freq + interp * r_freq;
-                      interp_env_mag_db = bse_db_from_factor (
-                        LPC::eval_lpc_lsf (interp_freq, interp_lsf_p, interp_lsf_q), -100);
+                      interp_env_mag_db = bse_db_from_factor (interp_env.eval (interp_freq), -100);
                     }
                   //--------------------------- LPC stuff ---------------------------
 
