@@ -102,17 +102,20 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
     // draw lpc envelope
     if (audio_block.lpc_lsf_p.size() > 10)
       {
+        LPC::LSFEnvelope env;
+        env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+
         cr->set_source_rgb (0.0, 0.8, 0.0);
         double max_lpc_value = 0;
         for (float freq = 0; freq < M_PI; freq += 0.001)
           {
-            double value = LPC::eval_lpc_lsf (freq, audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+            double value = env.eval (freq);
             double value_db = bse_db_from_factor (value, -200);
             max_lpc_value = max (max_lpc_value, value_db);
           }
         for (float freq = 0; freq < M_PI; freq += 0.001)
           {
-            double value = LPC::eval_lpc_lsf (freq, audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+            double value = env.eval (freq);
             double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
             cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
           }
