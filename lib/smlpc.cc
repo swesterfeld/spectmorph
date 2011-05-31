@@ -281,6 +281,8 @@ polish_root (const vector<double>& lpc, complex<double>& root)
 void
 LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
 {
+  const double PRECISION = 1e-10;
+
   roots.clear();
   while (roots.size() != lpc.size())
     {
@@ -318,7 +320,7 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
               root_re += delta_re;
               root_im += delta_im;
             }
-          if (new_value < 1e-12)
+          if (new_value < PRECISION)  // we'll polish the root anyway, so a very close starting point is sufficient
             break;
         }
 
@@ -334,10 +336,8 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
       if (t == roots.size())
         {
           double value = eval_z (lpc, root_c);
-          if (value < 1e-12)
-            {
-              roots.push_back (root_c);
-            }
+          if (value < PRECISION)
+            roots.push_back (root_c);
         }
     }
 }
