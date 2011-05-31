@@ -287,7 +287,7 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
               root_re += delta_re;
               root_im += delta_im;
             }
-          if (new_value < 1e-14)
+          if (new_value < 1e-12)
             break;
         }
       complex<double> root_c (root_re, root_im);
@@ -300,7 +300,7 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
       if (t == roots.size())
         {
           double value = eval_z (lpc, root_c);
-          if (value < 0.01)
+          if (value < 1e-12)
             {
               roots.push_back (root_c);
             }
