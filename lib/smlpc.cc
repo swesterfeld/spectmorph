@@ -242,10 +242,40 @@ eval_z_complex (const vector<double>& lpc, complex<double> z)
   return acc;
 }
 
+static inline complex<double>
+eval_z_complex_exclude_roots (const vector<double>& lpc, complex<double> z, const vector< complex<double> >& roots)
+{
+  complex<double> value = eval_z_complex (lpc, z);
+  for (size_t i = 0; i < roots.size(); i++)
+    value /= (1.0 / z - 1.0 / roots[i]);
+  return value;
+}
+
 double
 LPC::eval_z (const vector<double>& lpc, complex<double> z)
 {
   return abs (eval_z_complex (lpc, z));
+}
+
+static double
+eval_z_exclude_roots (const vector<double>& lpc, complex<double> z, const vector< complex<double> >& roots)
+{
+  return abs (eval_z_complex_exclude_roots (lpc, z, roots));
+}
+
+static void
+polish_root (const vector<double>& lpc, complex<double>& root)
+{
+  for (size_t i = 0; i < 20; i++)
+    {
+      // Numerical derivative:
+      // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
+      const double epsilon = 1.0 / (1 << 30);
+      complex<double> deriv = (eval_z_complex (lpc, root + epsilon) - eval_z_complex (lpc, root)) / epsilon;
+      // Newton step:
+      // z_i+1 = z_i - f(z_i) / f'(z_i)
+      root -= eval_z_complex (lpc, root) / deriv;
+    }
 }
 
 void
@@ -259,7 +289,7 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
 
       for (size_t i = 0; i < 100000; i++)
         {
-          double value = eval_z (lpc, complex<double> (root_re, root_im));
+          double value = eval_z_exclude_roots (lpc, complex<double> (root_re, root_im), roots);
           double delta_re, delta_im;
           if ((rand() & 3) == 0 || (value > 0.01))
             {
@@ -272,16 +302,17 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
               // Numerical derivative:
               // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
               const double epsilon = 1.0 / (1 << 30);
-              complex<double> deriv = (eval_z_complex (lpc, complex<double> (root_re + epsilon, root_im)) -
-                                       eval_z_complex (lpc, complex<double> (root_re, root_im))) / epsilon;
+              complex<double> deriv = (
+                eval_z_complex_exclude_roots (lpc, complex<double> (root_re + epsilon, root_im), roots) -
+                eval_z_complex_exclude_roots (lpc, complex<double> (root_re, root_im), roots)) / epsilon;
 
               // Newton step:
               // z_i+1 = z_i - f(z_i) / f'(z_i)
-              complex<double> delta = -eval_z_complex (lpc, complex<double> (root_re, root_im)) / deriv;
+              complex<double> delta = -eval_z_complex_exclude_roots (lpc, complex<double> (root_re, root_im), roots) / deriv;
               delta_re = delta.real();
               delta_im = delta.imag();
             }
-          double new_value = eval_z (lpc, complex<double> (root_re + delta_re, root_im + delta_im));
+          double new_value = eval_z_exclude_roots (lpc, complex<double> (root_re + delta_re, root_im + delta_im), roots);
           if (new_value < value)
             {
               root_re += delta_re;
@@ -290,7 +321,10 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
           if (new_value < 1e-12)
             break;
         }
+
       complex<double> root_c (root_re, root_im);
+      polish_root (lpc, root_c);
+
       size_t t;
       for (t = 0; t < roots.size(); t++)
         {
