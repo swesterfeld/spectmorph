@@ -228,8 +228,8 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
   return value;
 }
 
-double
-LPC::eval_z (const vector<double>& lpc, complex<double> z)
+static inline complex<double>
+eval_z_complex (const vector<double>& lpc, complex<double> z)
 {
   complex<double> acc = -1;
   complex<double> zinv = 1.0 / z;
@@ -239,7 +239,13 @@ LPC::eval_z (const vector<double>& lpc, complex<double> z)
       acc += zpow * lpc[j];
       zpow *= zinv;
     }
-  return abs (acc);
+  return acc;
+}
+
+double
+LPC::eval_z (const vector<double>& lpc, complex<double> z)
+{
+  return abs (eval_z_complex (lpc, z));
 }
 
 void
@@ -254,15 +260,35 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
       for (size_t i = 0; i < 100000; i++)
         {
           double value = eval_z (lpc, complex<double> (root_re, root_im));
-          double factor = bse_db_to_factor (g_random_double_range (-96, 0));
-          double delta_re = g_random_double_range (-0.1, 0.1) * factor;
-          double delta_im = g_random_double_range (-0.1, 0.1) * factor;
+          double delta_re, delta_im;
+          if ((rand() & 3) == 0 || (value > 0.01))
+            {
+              double factor = bse_db_to_factor (g_random_double_range (-96, 0));
+              delta_re = g_random_double_range (-0.1, 0.1) * factor;
+              delta_im = g_random_double_range (-0.1, 0.1) * factor;
+            }
+          else
+            {
+              // Numerical derivative:
+              // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
+              const double epsilon = 1.0 / (1 << 30);
+              complex<double> deriv = (eval_z_complex (lpc, complex<double> (root_re + epsilon, root_im)) -
+                                       eval_z_complex (lpc, complex<double> (root_re, root_im))) / epsilon;
+
+              // Newton step:
+              // z_i+1 = z_i - f(z_i) / f'(z_i)
+              complex<double> delta = -eval_z_complex (lpc, complex<double> (root_re, root_im)) / deriv;
+              delta_re = delta.real();
+              delta_im = delta.imag();
+            }
           double new_value = eval_z (lpc, complex<double> (root_re + delta_re, root_im + delta_im));
           if (new_value < value)
             {
               root_re += delta_re;
               root_im += delta_im;
             }
+          if (new_value < 1e-14)
+            break;
         }
       complex<double> root_c (root_re, root_im);
       size_t t;
