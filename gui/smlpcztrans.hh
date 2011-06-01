@@ -22,10 +22,33 @@
 #include <complex>
 #include <vector>
 #include <gdk-pixbuf/gdk-pixbuf.h>
+#include "smlpc.hh"
 
 namespace SpectMorph
 {
 
+struct LPCZFunction
+{
+  virtual double eval (std::complex<double> z) const = 0;
+};
+
+struct LPCZFunctionLPC : public LPCZFunction
+{
+  std::vector<double> a;
+
+  LPCZFunctionLPC (const std::vector<double>& a)
+    : a (a)
+  {
+  }
+  double
+  eval (std::complex<double> z) const
+  {
+    return LPC::eval_z (a, z);
+  }
+};
+
+
+GdkPixbuf *lpc_z_transform (const LPCZFunction& zfunc, const std::vector< std::complex<double> >& roots);
 GdkPixbuf *lpc_z_transform (const std::vector<double>& a, const std::vector< std::complex<double> >& roots);
 
 }
