@@ -26,8 +26,32 @@ using namespace SpectMorph;
 using std::vector;
 using std::complex;
 
-GdkPixbuf *
-SpectMorph::lpc_z_transform (const vector<double>& a, const vector< complex<double> >& roots)
+struct LPCZFunction
+{
+  virtual double eval (complex<double> z) const = 0;
+};
+
+struct LPCZFunctionLPC : public LPCZFunction
+{
+  vector<double> a;
+
+  LPCZFunctionLPC (const vector<double>& a)
+    : a (a)
+  {
+  }
+  double
+  eval (complex<double> z) const
+  {
+    complex<double> acc = -1;
+
+    for (int j = 0; j < int (a.size()); j++)
+      acc += pow (z, -(j + 1)) * a[j];
+    return 1 / abs (acc);
+  }
+};
+
+static GdkPixbuf *
+lpc_z_transform (const LPCZFunction& zfunc, const vector< complex<double> >& roots)
 {
   const size_t width = 1000, height = 1000;
 
@@ -43,11 +67,7 @@ SpectMorph::lpc_z_transform (const vector<double>& a, const vector< complex<doub
           guchar *p = gdk_pixbuf_get_pixels (pixbuf) + 3 * x + y * row_stride;
 
           complex<double> z (re, im);
-          complex<double> acc = -1;
-
-          for (int j = 0; j < int (a.size()); j++)
-            acc += pow (z, -(j + 1)) * a[j];
-          double value = 1 / abs (acc);
+          double value = zfunc.eval (z);
           double db = bse_db_from_factor (value, -200);
           db += 150;
 
@@ -77,4 +97,9 @@ SpectMorph::lpc_z_transform (const vector<double>& a, const vector< complex<doub
   return pixbuf;
 }
 
+GdkPixbuf *
+SpectMorph::lpc_z_transform (const vector<double>& a, const vector< complex<double> >& roots)
+{
+  return lpc_z_transform (LPCZFunctionLPC (a), roots);
+}
 
