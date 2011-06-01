@@ -6,11 +6,11 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 SMHDRS = smzoomcontroller.hh smcomboboxoperator.hh smmorphplanwindow.hh smrenameoperatordialog.hh \
          smmorphplanview.hh smmorphsourceview.hh smmorphoperatorview.hh smmoveindicator.hh \
-         smmorphlinearview.hh smmorphoutputview.hh smsampleview.hh
+         smmorphlinearview.hh smmorphoutputview.hh smsampleview.hh smlpcztrans.hh
 
 SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrenameoperatordialog.cc \
          smmorphplanview.cc smmorphsourceview.cc smmorphoperatorview.cc smmoveindicator.cc \
-         smmorphlinearview.cc smmorphoutputview.cc smsampleview.cc
+         smmorphlinearview.cc smmorphoutputview.cc smsampleview.cc smlpcztrans.cc
 
 lib_LTLIBRARIES = libspectmorphgui.la
 
