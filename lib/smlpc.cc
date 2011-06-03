@@ -294,8 +294,11 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out
       for (size_t i = 0; i < 200; i++)
         {
           complex<long double> value = eval_z_complex_exclude_roots (lpc, root, roots);
-          if (abs (value) < PRECISION)
-            break;
+          if (abs (value) < PRECISION) // found good root
+            {
+              polish_root (lpc, root);
+              break;
+            }
 
           // Numerical derivative:
           // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
@@ -309,8 +312,6 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out
           if (abs (root) > 200)       // failed to converge
             break;
         }
-
-      polish_root (lpc, root);
 
       /* Ideally, we would use eval_z (to get the value on non-deflated polynomial).
        * However for roots that are far within the unit circle, the value of eval_z
