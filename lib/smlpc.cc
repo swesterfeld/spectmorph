@@ -291,12 +291,12 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
       for (size_t i = 0; i < 100000; i++)
         {
           double value = eval_z_exclude_roots (lpc, root, roots);
-          double delta_re, delta_im;
+          complex<double> delta;
+
           if ((rand() & 3) == 0 || (value > 0.01))
             {
               double factor = bse_db_to_factor (g_random_double_range (-96, 0));
-              delta_re = g_random_double_range (-0.1, 0.1) * factor;
-              delta_im = g_random_double_range (-0.1, 0.1) * factor;
+              delta = complex<double> (g_random_double_range (-0.1, 0.1),  g_random_double_range (-0.1, 0.1)) * factor;
             }
           else
             {
@@ -309,13 +309,11 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
 
               // Newton step:
               // z_i+1 = z_i - f(z_i) / f'(z_i)
-              complex<double> delta = -eval_z_complex_exclude_roots (lpc, root, roots) / deriv;
-              delta_re = delta.real();
-              delta_im = delta.imag();
+              delta = -eval_z_complex_exclude_roots (lpc, root, roots) / deriv;
             }
-          double new_value = eval_z_exclude_roots (lpc, root + complex<double> (delta_re, delta_im), roots);
+          double new_value = eval_z_exclude_roots (lpc, root + delta, roots);
           if (new_value < value)
-            root += complex<double> (delta_re, delta_im);
+            root += delta;
 
           if (new_value < PRECISION)  // we'll polish the root anyway, so a very close starting point is sufficient
             break;
