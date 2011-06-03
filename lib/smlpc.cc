@@ -228,50 +228,51 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
   return value;
 }
 
-static inline complex<double>
-eval_z_complex (const vector<double>& lpc, complex<double> z)
+static inline complex<long double>
+eval_z_complex (const vector<double>& lpc, complex<long double> z)
 {
-  complex<double> acc = -1;
-  complex<double> zinv = 1.0 / z;
-  complex<double> zpow = zinv;
+  complex<long double> acc = -1;
+  complex<long double> zinv = 1.0L / z;
+  complex<long double> zpow = zinv;
   for (size_t j = 0; j < lpc.size(); j++)
     {
-      acc += zpow * lpc[j];
+      long double a = lpc[j];
+      acc += zpow * a;
       zpow *= zinv;
     }
   return acc;
 }
 
-static inline complex<double>
-eval_z_complex_exclude_roots (const vector<double>& lpc, complex<double> z, const vector< complex<double> >& roots)
+static inline complex<long double>
+eval_z_complex_exclude_roots (const vector<double>& lpc, complex<long double> z, const vector< complex<long double> >& roots)
 {
-  complex<double> value = eval_z_complex (lpc, z);
+  complex<long double> value = eval_z_complex (lpc, z);
   for (size_t i = 0; i < roots.size(); i++)
-    value /= (1.0 / z - 1.0 / roots[i]);
+    value /= (1.0L / z - 1.0L / roots[i]);
   return value;
 }
 
-double
-LPC::eval_z (const vector<double>& lpc, complex<double> z)
+long double
+LPC::eval_z (const vector<double>& lpc, complex<long double> z)
 {
   return abs (eval_z_complex (lpc, z));
 }
 
-static double
-eval_z_exclude_roots (const vector<double>& lpc, complex<double> z, const vector< complex<double> >& roots)
+static long double
+eval_z_exclude_roots (const vector<double>& lpc, complex<long double> z, const vector< complex<long double> >& roots)
 {
   return abs (eval_z_complex_exclude_roots (lpc, z, roots));
 }
 
 static void
-polish_root (const vector<double>& lpc, complex<double>& root)
+polish_root (const vector<double>& lpc, complex<long double>& root)
 {
   for (size_t i = 0; i < 20; i++)
     {
       // Numerical derivative:
       // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
-      const double epsilon = 1.0 / (1 << 30);
-      complex<double> deriv = (eval_z_complex (lpc, root + epsilon) - eval_z_complex (lpc, root)) / epsilon;
+      const long double epsilon = 1.0 / (1 << 30);
+      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - eval_z_complex (lpc, root)) / epsilon;
       // Newton step:
       // z_i+1 = z_i - f(z_i) / f'(z_i)
       root -= eval_z_complex (lpc, root) / deriv;
@@ -279,31 +280,31 @@ polish_root (const vector<double>& lpc, complex<double>& root)
 }
 
 void
-LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
+LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out)
 {
-  const double PRECISION = 1e-10;
+  const long double PRECISION = 1e-10;
 
-  roots.clear();
+  vector< complex<long double> > roots;
   while (roots.size() != lpc.size())
     {
-      complex<double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
+      complex<long double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
 
       for (size_t i = 0; i < 100000; i++)
         {
           double value = eval_z_exclude_roots (lpc, root, roots);
-          complex<double> delta;
+          complex<long double> delta;
 
           if ((rand() & 3) == 0 || (value > 0.01))
             {
-              double factor = bse_db_to_factor (g_random_double_range (-96, 0));
-              delta = complex<double> (g_random_double_range (-0.1, 0.1),  g_random_double_range (-0.1, 0.1)) * factor;
+              long double factor = bse_db_to_factor (g_random_double_range (-96, 0));
+              delta = complex<long double> (g_random_double_range (-0.1, 0.1),  g_random_double_range (-0.1, 0.1)) * factor;
             }
           else
             {
               // Numerical derivative:
               // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
-              const double epsilon = 1.0 / (1 << 30);
-              complex<double> deriv = (
+              const long double epsilon = 1.0 / (1 << 30);
+              complex<long double> deriv = (
                 eval_z_complex_exclude_roots (lpc, root + epsilon, roots) -
                 eval_z_complex_exclude_roots (lpc, root, roots)) / epsilon;
 
@@ -311,7 +312,7 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
               // z_i+1 = z_i - f(z_i) / f'(z_i)
               delta = -eval_z_complex_exclude_roots (lpc, root, roots) / deriv;
             }
-          double new_value = eval_z_exclude_roots (lpc, root + delta, roots);
+          long double new_value = eval_z_exclude_roots (lpc, root + delta, roots);
           if (new_value < value)
             root += delta;
 
@@ -329,9 +330,13 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
         }
       if (t == roots.size())
         {
-          double value = eval_z (lpc, root);
+          long double value = eval_z (lpc, root);
           if (value < PRECISION)
             roots.push_back (root);
         }
     }
+
+  // convert "long double" precision roots down to "double" precision roots
+  roots_out.resize (roots.size());
+  std::copy (roots.begin(), roots.end(), roots_out.begin());
 }
