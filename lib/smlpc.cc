@@ -269,13 +269,14 @@ polish_root (const vector<double>& lpc, complex<long double>& root)
 {
   for (size_t i = 0; i < 20; i++)
     {
+      complex<long double> value = eval_z_complex (lpc, root);
       // Numerical derivative:
       // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
       const long double epsilon = 1.0 / (1 << 30);
-      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - eval_z_complex (lpc, root)) / epsilon;
+      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - value) / epsilon;
       // Newton step:
       // z_i+1 = z_i - f(z_i) / f'(z_i)
-      root -= eval_z_complex (lpc, root) / deriv;
+      root -= value / deriv;
     }
 }
 
