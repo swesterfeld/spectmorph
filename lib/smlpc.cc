@@ -330,7 +330,13 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out
         }
       if (t == roots.size())
         {
-          long double value = eval_z (lpc, root);
+          /* Ideally, we would use eval_z (to get the value on non-deflated polynomial).
+           * However for roots that are far within the unit circle, the value of eval_z
+           * is very high (due to the factors contributed by other roots) which means we
+           * get a result a lot bigger than zero due to limited precision of the polynomial
+           * evaluation and quantized root value.
+           */
+          long double value = eval_z_exclude_roots (lpc, root, roots);
           if (value < PRECISION)
             roots.push_back (root);
         }
