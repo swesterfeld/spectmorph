@@ -292,20 +292,18 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out
 
       for (size_t i = 0; i < 200; i++)
         {
-          long double value = eval_z_exclude_roots (lpc, root, roots);
-          if (value < PRECISION)
+          complex<long double> value = eval_z_complex_exclude_roots (lpc, root, roots);
+          if (abs (value) < PRECISION)
             break;
 
           // Numerical derivative:
           // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
           const long double epsilon = 1.0 / (1 << 30);
-          complex<long double> deriv = (
-            eval_z_complex_exclude_roots (lpc, root + epsilon, roots) -
-            eval_z_complex_exclude_roots (lpc, root, roots)) / epsilon;
+          complex<long double> deriv = (eval_z_complex_exclude_roots (lpc, root + epsilon, roots) - value) / epsilon;
 
           // Newton step:
           // z_i+1 = z_i - f(z_i) / f'(z_i)
-          root -= eval_z_complex_exclude_roots (lpc, root, roots) / deriv;
+          root -= value / deriv;
 
           if (abs (root) > 200)       // failed to converge
             break;
