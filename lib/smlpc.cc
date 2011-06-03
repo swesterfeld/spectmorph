@@ -286,12 +286,11 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
   roots.clear();
   while (roots.size() != lpc.size())
     {
-      double root_re = g_random_double_range (-1, 1);
-      double root_im = g_random_double_range (-1, 1);
+      complex<double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
 
       for (size_t i = 0; i < 100000; i++)
         {
-          double value = eval_z_exclude_roots (lpc, complex<double> (root_re, root_im), roots);
+          double value = eval_z_exclude_roots (lpc, root, roots);
           double delta_re, delta_im;
           if ((rand() & 3) == 0 || (value > 0.01))
             {
@@ -305,39 +304,36 @@ LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots)
               // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
               const double epsilon = 1.0 / (1 << 30);
               complex<double> deriv = (
-                eval_z_complex_exclude_roots (lpc, complex<double> (root_re + epsilon, root_im), roots) -
-                eval_z_complex_exclude_roots (lpc, complex<double> (root_re, root_im), roots)) / epsilon;
+                eval_z_complex_exclude_roots (lpc, root + epsilon, roots) -
+                eval_z_complex_exclude_roots (lpc, root, roots)) / epsilon;
 
               // Newton step:
               // z_i+1 = z_i - f(z_i) / f'(z_i)
-              complex<double> delta = -eval_z_complex_exclude_roots (lpc, complex<double> (root_re, root_im), roots) / deriv;
+              complex<double> delta = -eval_z_complex_exclude_roots (lpc, root, roots) / deriv;
               delta_re = delta.real();
               delta_im = delta.imag();
             }
-          double new_value = eval_z_exclude_roots (lpc, complex<double> (root_re + delta_re, root_im + delta_im), roots);
+          double new_value = eval_z_exclude_roots (lpc, root + complex<double> (delta_re, delta_im), roots);
           if (new_value < value)
-            {
-              root_re += delta_re;
-              root_im += delta_im;
-            }
+            root += complex<double> (delta_re, delta_im);
+
           if (new_value < PRECISION)  // we'll polish the root anyway, so a very close starting point is sufficient
             break;
         }
 
-      complex<double> root_c (root_re, root_im);
-      polish_root (lpc, root_c);
+      polish_root (lpc, root);
 
       size_t t;
       for (t = 0; t < roots.size(); t++)
         {
-          if (abs (root_c - roots[t]) < 0.01)
+          if (abs (root - roots[t]) < 0.01)
             break;
         }
       if (t == roots.size())
         {
-          double value = eval_z (lpc, root_c);
+          double value = eval_z (lpc, root);
           if (value < PRECISION)
-            roots.push_back (root_c);
+            roots.push_back (root);
         }
     }
 }
