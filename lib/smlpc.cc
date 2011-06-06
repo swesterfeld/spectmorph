@@ -231,9 +231,9 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
 static inline complex<long double>
 eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> z)
 {
-  complex<long double> acc = -1;
+  complex<long double> acc = 0;
   complex<long double> zinv = 1.0L / z;
-  complex<long double> zpow = zinv;
+  complex<long double> zpow = 1.0;
   for (size_t j = 0; j < lpc.size(); j++)
     {
       acc += zpow * lpc[j];
@@ -290,9 +290,12 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
   size_t iterations = 0;
 
   // convert real coefficients to complex coefficients
-  vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
+  vector< complex<long double> > lpc (lpc_real.size() + 1);
+  lpc[0] = -1;
+  std::copy (lpc_real.begin(), lpc_real.end(), lpc.begin() + 1);
+
   vector< complex<long double> > roots;
-  while (roots.size() != lpc.size())
+  while (roots.size() != lpc_real.size())
     {
       complex<long double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
 
