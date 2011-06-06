@@ -242,18 +242,6 @@ eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> 
   return acc;
 }
 
-#if 0
-static inline complex<long double>
-eval_z_complex_exclude_roots (const vector<complex<long double> >& lpc, complex<long double> z,
-                              const vector< complex<long double> >& roots)
-{
-  complex<long double> value = eval_z_complex (lpc, z);
-  for (size_t i = 0; i < roots.size(); i++)
-    value /= (1.0L / z - 1.0L / roots[i]);
-  return value;
-}
-#endif
-
 long double
 LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
 {
@@ -262,15 +250,6 @@ LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
   vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
   return abs (eval_z_complex (lpc, z));
 }
-
-#if 0
-static long double
-eval_z_exclude_roots (const vector< complex<long double> >& lpc, complex<long double> z,
-                      const vector< complex<long double> >& roots)
-{
-  return abs (eval_z_complex_exclude_roots (lpc, z, roots));
-}
-#endif
 
 static void
 polish_root (const vector< complex<long double> >& lpc, complex<long double>& root)
@@ -339,7 +318,25 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
 
           // Newton step:
           // z_i+1 = z_i - f(z_i) / f'(z_i)
-          root -= value / deriv;
+          long double factor = 1;
+          complex<long double> delta = value / deriv;
+
+          for (size_t k = 0; k < 32; k++)
+            {
+              complex<long double> new_root = root - factor * delta;
+              if (abs (eval_z_complex (lpc, new_root)) < abs (value))
+                {
+                  root = new_root;
+                  break;
+                }
+              else
+                {
+                  /* if a full Newton step doesn't improve the result, we try to walk
+                   * in the Newton step direction, but less far
+                   */
+                  factor *= 0.5;
+                }
+            }
 
           if (abs (root) > 200)       // failed to converge
             break;
@@ -358,7 +355,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
           deflate (lpc, root);
         }
 
-      if (iterations > lpc_real.size() * 100)
+      if (iterations > lpc_real.size() * 1000)
         {
           g_assert_not_reached();
         }
