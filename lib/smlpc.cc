@@ -242,6 +242,7 @@ eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> 
   return acc;
 }
 
+#if 0
 static inline complex<long double>
 eval_z_complex_exclude_roots (const vector<complex<long double> >& lpc, complex<long double> z,
                               const vector< complex<long double> >& roots)
@@ -251,21 +252,25 @@ eval_z_complex_exclude_roots (const vector<complex<long double> >& lpc, complex<
     value /= (1.0L / z - 1.0L / roots[i]);
   return value;
 }
+#endif
 
 long double
 LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
 {
   // convert real coefficients to complex coefficients
+  // FIXME: constant coefficient
   vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
   return abs (eval_z_complex (lpc, z));
 }
 
+#if 0
 static long double
 eval_z_exclude_roots (const vector< complex<long double> >& lpc, complex<long double> z,
                       const vector< complex<long double> >& roots)
 {
   return abs (eval_z_complex_exclude_roots (lpc, z, roots));
 }
+#endif
 
 static void
 polish_root (const vector< complex<long double> >& lpc, complex<long double>& root)
@@ -282,6 +287,25 @@ polish_root (const vector< complex<long double> >& lpc, complex<long double>& ro
       root -= value / deriv;
     }
 }
+
+/* divide coefficient array by (1 - 1.0 / root), to eliminate the zero from
+ * the polynomial
+ */
+static void
+deflate (vector< complex<long double> >& lpc, complex<long double> root)
+{
+  root = 1.0L / root;
+  vector< complex<long double> > new_lpc (lpc.size() - 1);
+  for (int i = lpc.size() - 2; i >= 0; i--)
+    {
+      complex<long double> factor = lpc[i + 1];
+      new_lpc[i] = factor;
+      lpc[i + 1] -= factor;
+      lpc[i] += root * factor;
+    }
+  lpc = new_lpc;
+}
+
 
 void
 LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
@@ -301,7 +325,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
 
       for (size_t i = 0; i < 200; i++)
         {
-          complex<long double> value = eval_z_complex_exclude_roots (lpc, root, roots);
+          complex<long double> value = eval_z_complex (lpc, root);
           if (abs (value) < PRECISION) // found good root
             {
               polish_root (lpc, root);
@@ -311,7 +335,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
           // Numerical derivative:
           // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
           const long double epsilon = 1.0 / (1 << 30);
-          complex<long double> deriv = (eval_z_complex_exclude_roots (lpc, root + epsilon, roots) - value) / epsilon;
+          complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - value) / epsilon;
 
           // Newton step:
           // z_i+1 = z_i - f(z_i) / f'(z_i)
@@ -327,11 +351,14 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
        * get a result a lot bigger than zero due to limited precision of the polynomial
        * evaluation and quantized root value.
        */
-      long double value = eval_z_exclude_roots (lpc, root, roots);
+      long double value = abs (eval_z_complex (lpc, root));
       if (value < PRECISION)
-        roots.push_back (root);
+        {
+          roots.push_back (root);
+          deflate (lpc, root);
+        }
 
-      if (iterations > lpc.size() * 100)
+      if (iterations > lpc_real.size() * 100)
         {
           g_assert_not_reached();
         }
