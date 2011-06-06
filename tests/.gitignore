@@ -17,5 +17,8 @@ testjobqueue
 testgenid
 testparamupdate
 testrefptr
+testloopindex
+testlpc
+testoutfileperf
 .libs
 .deps
