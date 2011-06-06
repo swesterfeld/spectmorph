@@ -229,22 +229,22 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
 }
 
 static inline complex<long double>
-eval_z_complex (const vector<double>& lpc, complex<long double> z)
+eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> z)
 {
   complex<long double> acc = -1;
   complex<long double> zinv = 1.0L / z;
   complex<long double> zpow = zinv;
   for (size_t j = 0; j < lpc.size(); j++)
     {
-      long double a = lpc[j];
-      acc += zpow * a;
+      acc += zpow * lpc[j];
       zpow *= zinv;
     }
   return acc;
 }
 
 static inline complex<long double>
-eval_z_complex_exclude_roots (const vector<double>& lpc, complex<long double> z, const vector< complex<long double> >& roots)
+eval_z_complex_exclude_roots (const vector<complex<long double> >& lpc, complex<long double> z,
+                              const vector< complex<long double> >& roots)
 {
   complex<long double> value = eval_z_complex (lpc, z);
   for (size_t i = 0; i < roots.size(); i++)
@@ -253,19 +253,22 @@ eval_z_complex_exclude_roots (const vector<double>& lpc, complex<long double> z,
 }
 
 long double
-LPC::eval_z (const vector<double>& lpc, complex<long double> z)
+LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
 {
+  // convert real coefficients to complex coefficients
+  vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
   return abs (eval_z_complex (lpc, z));
 }
 
 static long double
-eval_z_exclude_roots (const vector<double>& lpc, complex<long double> z, const vector< complex<long double> >& roots)
+eval_z_exclude_roots (const vector< complex<long double> >& lpc, complex<long double> z,
+                      const vector< complex<long double> >& roots)
 {
   return abs (eval_z_complex_exclude_roots (lpc, z, roots));
 }
 
 static void
-polish_root (const vector<double>& lpc, complex<long double>& root)
+polish_root (const vector< complex<long double> >& lpc, complex<long double>& root)
 {
   for (size_t i = 0; i < 20; i++)
     {
@@ -281,11 +284,13 @@ polish_root (const vector<double>& lpc, complex<long double>& root)
 }
 
 void
-LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out)
+LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
 {
   const long double PRECISION = 1e-10;
   size_t iterations = 0;
 
+  // convert real coefficients to complex coefficients
+  vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
   vector< complex<long double> > roots;
   while (roots.size() != lpc.size())
     {
