@@ -62,6 +62,8 @@ Navigator::Navigator (const string& filename) :
                          sigc::mem_fun (*this, &Navigator::on_view_sample));
   ref_action_group->add (Gtk::Action::create ("ViewSpectrum", "Spectrum View"),
                          sigc::mem_fun (*this, &Navigator::on_view_spectrum));
+  ref_action_group->add (Gtk::Action::create ("ViewLPC", "LPC View"),
+                         sigc::mem_fun (*this, &Navigator::on_view_lpc));
   ref_action_group->add (Gtk::Action::create ("ViewFFTParams", "FFT Params"),
                          sigc::mem_fun (*this, &Navigator::on_view_fft_params));
   ref_action_group->add (Gtk::Action::create ("ViewPlayer", "Player"),
@@ -78,6 +80,7 @@ Navigator::Navigator (const string& filename) :
     "      <menuitem action='ViewTimeFreq' />"
     "      <menuitem action='ViewSample' />"
     "      <menuitem action='ViewSpectrum' />"
+    "      <menuitem action='ViewLPC' />"
     "      <menuitem action='ViewFFTParams' />"
     "      <menuitem action='ViewPlayer' />"
     "    </menu>"
@@ -340,6 +343,12 @@ void
 Navigator::on_view_sample()
 {
   sample_window.show();
+}
+
+void
+Navigator::on_view_lpc()
+{
+  lpc_window.show();
 }
 
 void
