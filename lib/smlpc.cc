@@ -369,3 +369,29 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
   roots_out.resize (roots.size());
   std::copy (roots.begin(), roots.end(), roots_out.begin());
 }
+
+/* multiply coefficient array to add one root to the polynomial */
+static void
+inflate (vector< complex<long double> >& lpc, complex<long double> root)
+{
+  //root = 1.0L / root;
+  vector< complex<long double> > new_lpc (lpc.size() + 1);
+  for (size_t i = 0; i < lpc.size(); i++)
+    {
+      new_lpc[i + 1] = lpc[i];
+      new_lpc[i] -= root * lpc[i];
+    }
+  lpc = new_lpc;
+}
+
+void
+LPC::roots2lpc (const vector< complex<double> >& roots, vector<double>& lpc)
+{
+  vector<complex<long double> > new_lpc;
+  new_lpc.push_back (-1);
+  for (size_t i = 0; i < roots.size(); i++)
+    inflate (new_lpc, roots[i]);
+  lpc.resize (roots.size());
+  for (size_t i = 0; i < roots.size(); i++)
+    lpc[lpc.size() - 1 - i] = new_lpc[i].real();
+}
