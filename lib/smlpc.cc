@@ -405,3 +405,40 @@ LPC::make_stable_roots (vector< complex<double> >& roots)
         roots[i] = 1.0 / conj (roots[i]);
     }
 }
+
+void
+LPC::lsf2lpc (const vector<float>& lsf_p, const vector<float>& lsf_q, vector<double>& lpc)
+{
+  vector< complex<long double> > p, q;
+  p.push_back (1);
+  q.push_back (1);
+  for (size_t i = 0; i < lsf_p.size(); i++)
+    {
+      complex<double> r_p (cos (lsf_p[i]), sin (lsf_p[i]));
+      complex<double> r_q (cos (lsf_q[i]), sin (lsf_q[i]));
+      if (i == lsf_p.size() - 1) // real root at nyquist
+        {
+          inflate (p, r_p);
+        }
+      else
+        {
+          inflate (p, r_p);
+          inflate (p, conj (r_p));
+        }
+      if (i == 0)                  // real root at 0
+        {
+          inflate (q, r_q);
+        }
+      else
+        {
+          inflate (q, r_q);
+          inflate (q, conj (r_q));
+        }
+    }
+  lpc.clear();
+  for (size_t i = p.size() - 2; i > 0; i--)
+    {
+      complex<long double> value = (p[i] + q[i]);
+      lpc.push_back (-0.5 * value.real());
+    }
+}
