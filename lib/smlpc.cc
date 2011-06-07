@@ -395,3 +395,13 @@ LPC::roots2lpc (const vector< complex<double> >& roots, vector<double>& lpc)
   for (size_t i = 0; i < roots.size(); i++)
     lpc[lpc.size() - 1 - i] = new_lpc[i].real();
 }
+
+void
+LPC::make_stable_roots (vector< complex<double> >& roots)
+{
+  for (size_t i = 0; i < roots.size(); i++)
+    {
+      if (abs (roots[i]) > 1.0)
+        roots[i] = 1.0 / conj (roots[i]);
+    }
+}

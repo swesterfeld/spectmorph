@@ -51,6 +51,8 @@ public:
 long double eval_z (const std::vector<double>& lpc, std::complex<long double> z);
 void find_roots (const std::vector<double>& lpc, std::vector< std::complex<double> >& roots);
 void roots2lpc (const std::vector< std::complex<double> >& roots, std::vector<double>& lpc);
+void make_stable_roots (std::vector< std::complex<double> >& roots);
+
 }
 
 }
