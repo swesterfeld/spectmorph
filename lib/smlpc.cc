@@ -273,7 +273,7 @@ polish_root (const vector< complex<long double> >& lpc, complex<long double>& ro
 static void
 deflate (vector< complex<long double> >& lpc, complex<long double> root)
 {
-  root = 1.0L / root;
+  root = 1.0L / root;  // FIXME: may want to make inflate<->deflate symmetric
   vector< complex<long double> > new_lpc (lpc.size() - 1);
   for (int i = lpc.size() - 2; i >= 0; i--)
     {
