@@ -154,6 +154,7 @@ Navigator::Navigator (const string& filename) :
   sample_window.signal_next_sample.connect (sigc::mem_fun (*this, &Navigator::on_next_sample));
 
   spectrum_window.set_spectrum_model (*time_freq_window.time_freq_view());
+  lpc_window.set_lpc_model (*time_freq_window.time_freq_view());
 }
 
 void

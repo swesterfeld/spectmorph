@@ -21,6 +21,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::complex;
 using std::max;
 
 LPCView::LPCView()
@@ -46,50 +47,44 @@ LPCView::on_expose_event (GdkEventExpose* ev)
       cr->set_source_rgb (1.0, 1.0, 1.0);   // white
       cr->paint();
       cr->restore();
-    }
+
+      // clip to the area indicated by the expose event so that we only redraw
+      // the portion of the window that needs to be redrawn
+      cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
+      cr->clip();
+
+      // draw lpc zeros
+      if (audio_block.lpc_lsf_p.size() == 26 && audio_block.lpc_lsf_q.size() == 26)
+        {
+          vector<double> lpc;
+          LPC::lsf2lpc (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q, lpc);
+
+          vector< complex<double> > roots;
+          LPC::find_roots (lpc, roots);
+
+          cr->set_source_rgb (0.8, 0.0, 0.0);
+          cr->set_line_width (1.0);
+          for (size_t i = 0; i < roots.size(); i++)
+            {
+              double root_x = (roots[i].real() + 1) / 2 * width;
+              double root_y = (roots[i].imag() + 1) / 2 * width;
+
+              cr->move_to (root_x - 5, root_y - 5);
+              cr->line_to (root_x + 5, root_y + 5);
+              cr->move_to (root_x + 5, root_y - 5);
+              cr->line_to (root_x - 5, root_y + 5);
+            }
+          cr->stroke();
+          cr->set_source_rgb (0.0, 0.0, 0.8);
+          for (double t = 0; t < 2 * M_PI + 0.2; t += 0.1)
+            {
+              double x = (sin (t) + 1) / 2 * width;
+              double y = (cos (t) + 1) / 2 * width;
+              cr->line_to (x, y);
+            }
+          cr->stroke();
+
 #if 0
-    cr->set_line_width (2.0);
-
-    // clip to the area indicated by the expose event so that we only redraw
-    // the portion of the window that needs to be redrawn
-    cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
-    cr->clip();
-
-    cr->set_source_rgb (0.0, 0.0, 0.8);
-    if (time_freq_view_ptr->show_frequency_grid())
-      {
-        double fundamental_freq = time_freq_view_ptr->fundamental_freq();
-        double mix_freq = time_freq_view_ptr->mix_freq();
-
-        double pos;
-        int partial = 1;
-        do
-          {
-            pos = partial * fundamental_freq / (mix_freq / 2);
-            partial++;
-
-            cr->move_to (pos * width, 0);
-            cr->line_to (pos * width, height);
-          }
-        while (pos < 1);
-      }
-    cr->stroke();
-
-    // draw red lines out from the center of the window
-    cr->set_source_rgb (0.8, 0.0, 0.0);
-    for (size_t i = 0; i < spectrum.mags.size(); i++)
-      {
-        cr->line_to (double (i) / spectrum.mags.size() * width, height - value_scale (spectrum.mags[i]) / max_value * height);
-      }
-    cr->stroke();
-
-    // draw lpc envelope
-    if (audio_block.lpc_lsf_p.size() > 10)
-      {
-        LPC::LSFEnvelope env;
-        env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
-
-        cr->set_source_rgb (0.0, 0.8, 0.0);
         double max_lpc_value = 0;
         for (float freq = 0; freq < M_PI; freq += 0.001)
           {
@@ -103,10 +98,9 @@ LPCView::on_expose_event (GdkEventExpose* ev)
             double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
             cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
           }
-        cr->stroke();
-      }
-  }
 #endif
+        }
+    }
   return true;
 }
 
@@ -120,8 +114,6 @@ LPCView::set_lpc_model (TimeFreqView& tfview)
 void
 LPCView::on_lpc_changed()
 {
-#if 0
-  spectrum = time_freq_view_ptr->get_spectrum();
   audio_block = AudioBlock(); // reset
 
   Audio *audio = time_freq_view_ptr->audio();
@@ -135,7 +127,6 @@ LPCView::on_lpc_changed()
           audio_block = audio->contents[frame];
         }
     }
-#endif
   force_redraw();
 }
 

@@ -36,6 +36,8 @@ class LPCWindow : public Gtk::Window
 
 public:
   LPCWindow();
+
+  void set_lpc_model (TimeFreqView& time_freq_view);
 };
 
 }

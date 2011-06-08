@@ -35,3 +35,9 @@ LPCWindow::LPCWindow()
 
   //zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
 }
+
+void
+LPCWindow::set_lpc_model (TimeFreqView& time_freq_view)
+{
+  lpc_view.set_lpc_model (time_freq_view);
+}
