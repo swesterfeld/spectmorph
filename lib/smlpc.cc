@@ -306,10 +306,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
         {
           complex<long double> value = eval_z_complex (lpc, root);
           if (abs (value) < PRECISION) // found good root
-            {
-              polish_root (lpc, root);
-              break;
-            }
+            break;
 
           // Numerical derivative:
           // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
@@ -321,12 +318,15 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
           long double factor = 1;
           complex<long double> delta = value / deriv;
 
+          bool improved_root = false;
+
           for (size_t k = 0; k < 32; k++)
             {
               complex<long double> new_root = root - factor * delta;
               if (abs (eval_z_complex (lpc, new_root)) < abs (value))
                 {
                   root = new_root;
+                  improved_root = true;
                   break;
                 }
               else
@@ -337,6 +337,8 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
                   factor *= 0.5;
                 }
             }
+          if (!improved_root)
+            break;
         }
 
       /* Ideally, we would use eval_z (to get the value on non-deflated polynomial).
@@ -348,8 +350,14 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
       long double value = abs (eval_z_complex (lpc, root));
       if (value < PRECISION)
         {
-          roots.push_back (root);
-          deflate (lpc, root);
+          polish_root (lpc, root);
+
+          value = abs (eval_z_complex (lpc, root));
+          if (value < PRECISION)
+            {
+              roots.push_back (root);
+              deflate (lpc, root);
+            }
         }
 
       if (iterations > lpc_real.size() * 1000)
