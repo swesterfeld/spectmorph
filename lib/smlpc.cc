@@ -231,14 +231,11 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
 static inline complex<long double>
 eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> z)
 {
-  complex<long double> acc = 0;
+  complex<long double> acc = lpc.back();
   complex<long double> zinv = 1.0L / z;
-  complex<long double> zpow = 1.0;
-  for (size_t j = 0; j < lpc.size(); j++)
-    {
-      acc += zpow * lpc[j];
-      zpow *= zinv;
-    }
+
+  for (int j = lpc.size() - 2; j >= 0; j--)
+    acc = lpc[j] + zinv * acc;
   return acc;
 }
 
