@@ -337,9 +337,6 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
                   factor *= 0.5;
                 }
             }
-
-          if (abs (root) > 200)       // failed to converge
-            break;
         }
 
       /* Ideally, we would use eval_z (to get the value on non-deflated polynomial).
