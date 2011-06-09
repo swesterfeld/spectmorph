@@ -283,7 +283,7 @@ deflate (vector< complex<long double> >& lpc, complex<long double> root)
 }
 
 
-void
+bool
 LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
 {
   const long double PRECISION = 1e-10;
@@ -357,9 +357,9 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
             }
         }
 
-      if (iterations > lpc_real.size() * 1000)
+      if (iterations > lpc_real.size() * 100)
         {
-          g_assert_not_reached();
+          return false;
         }
       else
         {
@@ -370,6 +370,8 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
   // convert "long double" precision roots down to "double" precision roots
   roots_out.resize (roots.size());
   std::copy (roots.begin(), roots.end(), roots_out.begin());
+
+  return true;
 }
 
 /* multiply coefficient array to add one root to the polynomial */
