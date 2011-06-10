@@ -294,6 +294,13 @@ deflate (vector< complex<long double> >& lpc, complex<long double> root)
   lpc = new_lpc;
 }
 
+static bool
+good_root (complex<long double> root, complex<long double> value, long double err)
+{
+  if (abs (value) > err)
+    return false;
+  return finite (root.real()) && finite (root.imag()) && finite (value.real()) && finite (value.imag());
+}
 
 bool
 LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
@@ -314,7 +321,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
       for (size_t i = 0; i < 200; i++)
         {
           complex<long double> value = eval_z_complex (lpc, root, err);
-          if (abs (value) < err) // found good root
+          if (good_root (root, value, err)) // found good root
             break;
 
           // Numerical derivative:
@@ -356,13 +363,13 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
        * get a result a lot bigger than zero due to limited precision of the polynomial
        * evaluation and quantized root value.
        */
-      long double value = abs (eval_z_complex (lpc, root, err));
-      if (value < err)
+      complex<long double> value = eval_z_complex (lpc, root, err);
+      if (good_root (root, value, err))
         {
           polish_root (lpc, root);
 
-          value = abs (eval_z_complex (lpc, root, err));
-          if (value < err)
+          value = eval_z_complex (lpc, root, err);
+          if (good_root (root, value, err))
             {
               roots.push_back (root);
               deflate (lpc, root);
