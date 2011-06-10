@@ -312,6 +312,8 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
   lpc[0] = -1;
   std::copy (lpc_real.begin(), lpc_real.end(), lpc.begin() + 1);
 
+  vector< complex<long double> > lpc_orig (lpc);
+
   vector< complex<long double> > roots;
   while (roots.size() != lpc_real.size())
     {
@@ -357,18 +359,12 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
             break;
         }
 
-      /* Ideally, we would use eval_z (to get the value on non-deflated polynomial).
-       * However for roots that are far within the unit circle, the value of eval_z
-       * is very high (due to the factors contributed by other roots) which means we
-       * get a result a lot bigger than zero due to limited precision of the polynomial
-       * evaluation and quantized root value.
-       */
       complex<long double> value = eval_z_complex (lpc, root, err);
       if (good_root (root, value, err))
         {
-          polish_root (lpc, root);
+          polish_root (lpc_orig, root);
 
-          value = eval_z_complex (lpc, root, err);
+          value = eval_z_complex (lpc_orig, root, err);
           if (good_root (root, value, err))
             {
               roots.push_back (root);
