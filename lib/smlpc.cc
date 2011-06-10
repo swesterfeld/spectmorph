@@ -229,13 +229,23 @@ LPC::eval_lpc (const vector<double>& lpc, double f)
 }
 
 static inline complex<long double>
-eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> z)
+eval_z_complex (const vector< complex<long double> >& lpc, complex<long double> z, long double& err)
 {
   complex<long double> acc = lpc.back();
   complex<long double> zinv = 1.0L / z;
+  long double          abs_zinv = abs (zinv);
+
+  /* err is the estimated error of this polynomial evaluation, from
+   * Numerical Recipies, Third Edition, Section 9.5.3
+   */
+  err = abs (acc);
 
   for (int j = lpc.size() - 2; j >= 0; j--)
-    acc = lpc[j] + zinv * acc;
+    {
+      acc = lpc[j] + zinv * acc;
+      err = abs (acc) + abs_zinv * err;
+    }
+  err *= 1e-10;
   return acc;
 }
 
@@ -245,7 +255,8 @@ LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
   // convert real coefficients to complex coefficients
   // FIXME: constant coefficient
   vector< complex<long double> > lpc (lpc_real.begin(), lpc_real.end());
-  return abs (eval_z_complex (lpc, z));
+  long double err;
+  return abs (eval_z_complex (lpc, z, err));
 }
 
 static void
@@ -253,11 +264,12 @@ polish_root (const vector< complex<long double> >& lpc, complex<long double>& ro
 {
   for (size_t i = 0; i < 20; i++)
     {
-      complex<long double> value = eval_z_complex (lpc, root);
+      long double err;
+      complex<long double> value = eval_z_complex (lpc, root, err);
       // Numerical derivative:
       // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
       const long double epsilon = 1.0 / (1 << 30);
-      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - value) / epsilon;
+      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon, err) - value) / epsilon;
       // Newton step:
       // z_i+1 = z_i - f(z_i) / f'(z_i)
       root -= value / deriv;
@@ -286,7 +298,6 @@ deflate (vector< complex<long double> >& lpc, complex<long double> root)
 bool
 LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
 {
-  const long double PRECISION = 1e-10;
   size_t iterations = 0;
 
   // convert real coefficients to complex coefficients
@@ -298,17 +309,18 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
   while (roots.size() != lpc_real.size())
     {
       complex<long double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
+      long double err;
 
       for (size_t i = 0; i < 200; i++)
         {
-          complex<long double> value = eval_z_complex (lpc, root);
-          if (abs (value) < PRECISION) // found good root
+          complex<long double> value = eval_z_complex (lpc, root, err);
+          if (abs (value) < err) // found good root
             break;
 
           // Numerical derivative:
           // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
           const long double epsilon = 1.0 / (1 << 30);
-          complex<long double> deriv = (eval_z_complex (lpc, root + epsilon) - value) / epsilon;
+          complex<long double> deriv = (eval_z_complex (lpc, root + epsilon, err) - value) / epsilon;
 
           // Newton step:
           // z_i+1 = z_i - f(z_i) / f'(z_i)
@@ -320,7 +332,7 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
           for (size_t k = 0; k < 32; k++)
             {
               complex<long double> new_root = root - factor * delta;
-              if (abs (eval_z_complex (lpc, new_root)) < abs (value))
+              if (abs (eval_z_complex (lpc, new_root, err)) < abs (value))
                 {
                   root = new_root;
                   improved_root = true;
@@ -344,13 +356,13 @@ LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& root
        * get a result a lot bigger than zero due to limited precision of the polynomial
        * evaluation and quantized root value.
        */
-      long double value = abs (eval_z_complex (lpc, root));
-      if (value < PRECISION)
+      long double value = abs (eval_z_complex (lpc, root, err));
+      if (value < err)
         {
           polish_root (lpc, root);
 
-          value = abs (eval_z_complex (lpc, root));
-          if (value < PRECISION)
+          value = abs (eval_z_complex (lpc, root, err));
+          if (value < err)
             {
               roots.push_back (root);
               deflate (lpc, root);
