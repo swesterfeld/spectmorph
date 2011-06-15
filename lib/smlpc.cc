@@ -259,128 +259,69 @@ LPC::eval_z (const vector<double>& lpc_real, complex<long double> z)
   return abs (eval_z_complex (lpc, z, err));
 }
 
-static void
-polish_root (const vector< complex<long double> >& lpc, complex<long double>& root)
+// first coefficient => z^n
+// last coefficient  => constant
+template<class Real, class Complex> static inline Complex
+eval_poly_dk (const vector<Real>& lpc, Complex z)
 {
-  for (size_t i = 0; i < 20; i++)
-    {
-      long double err;
-      complex<long double> value = eval_z_complex (lpc, root, err);
-      // Numerical derivative:
-      // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
-      const long double epsilon = 1.0 / (1 << 30);
-      complex<long double> deriv = (eval_z_complex (lpc, root + epsilon, err) - value) / epsilon;
-      // Newton step:
-      // z_i+1 = z_i - f(z_i) / f'(z_i)
-      root -= value / deriv;
-    }
+  Complex acc = lpc.front();
+
+  for (size_t j = 1; j < lpc.size(); j++)
+    acc = lpc[j] + z * acc;
+  return acc;
 }
 
-/* divide coefficient array by (1 - 1.0 / root), to eliminate the zero from
- * the polynomial
- */
-static void
-deflate (vector< complex<long double> >& lpc, complex<long double> root)
-{
-  root = 1.0L / root;  // FIXME: may want to make inflate<->deflate symmetric
-  vector< complex<long double> > new_lpc (lpc.size() - 1);
-  for (int i = lpc.size() - 2; i >= 0; i--)
-    {
-      complex<long double> factor = lpc[i + 1];
-      new_lpc[i] = factor;
-      lpc[i + 1] -= factor;
-      lpc[i] += root * factor;
-    }
-  lpc = new_lpc;
-}
-
-static bool
-good_root (complex<long double> root, complex<long double> value, long double err)
-{
-  if (abs (value) > err)
-    return false;
-  return finite (root.real()) && finite (root.imag()) && finite (value.real()) && finite (value.imag());
-}
-
+// find roots using Durand-Kerner method
 bool
-LPC::find_roots (const vector<double>& lpc_real, vector< complex<double> >& roots_out)
+LPC::find_roots (const vector<double>& lpc, vector< complex<double> >& roots_out)
 {
-  size_t iterations = 0;
+  vector< complex<long double> > roots (lpc.size());
 
-  // convert real coefficients to complex coefficients
-  vector< complex<long double> > lpc (lpc_real.size() + 1);
-  lpc[0] = -1;
-  std::copy (lpc_real.begin(), lpc_real.end(), lpc.begin() + 1);
+  /* For LPC, our polynomial is -1 + a(0) * z^-1 + a(1) * z^-2 + ... + a(n-1) * z^-n
+   * to find roots, we multiply it with -z^n, to get z^n + a(0) * z^(n-1) + a(1) * z^(n-2) ... + a(n-1)
+   *
+   * This means:
+   *   - leading coefficient is 1   (as required by Durand-Kerner algorithm)
+   *   - roots remain the same
+   */
+  vector<long double> poly (lpc.size() + 1);
+  poly[0] = 1;
+  for (size_t i = 0; i < lpc.size(); i++)
+    poly[i + 1] = -lpc[i];
 
-  vector< complex<long double> > lpc_orig (lpc);
-
-  vector< complex<long double> > roots;
-  while (roots.size() != lpc_real.size())
+  bool restart;
+  do
     {
-      complex<long double> root (g_random_double_range (-1, 1), g_random_double_range (-1, 1));
-      long double err;
+      restart = false;
 
-      for (size_t i = 0; i < 200; i++)
+      // start with random roots
+      for (size_t i = 0; i < roots.size(); i++)
+        roots[i] = complex<long double> (g_random_double_range (-1, 1),
+                                         g_random_double_range (-1, 1));
+
+      for (size_t x = 0; x < 100; x++)
         {
-          complex<long double> value = eval_z_complex (lpc, root, err);
-          if (good_root (root, value, err)) // found good root
-            break;
-
-          // Numerical derivative:
-          // f'(z) ~= (f(z + epsilon) - f(z)) / epsilon
-          const long double epsilon = 1.0 / (1 << 30);
-          complex<long double> deriv = (eval_z_complex (lpc, root + epsilon, err) - value) / epsilon;
-
-          // Newton step:
-          // z_i+1 = z_i - f(z_i) / f'(z_i)
-          long double factor = 1;
-          complex<long double> delta = value / deriv;
-
-          bool improved_root = false;
-
-          for (size_t k = 0; k < 32; k++)
+          for (size_t i = 0; i < roots.size(); i++)
             {
-              complex<long double> new_root = root - factor * delta;
-              if (abs (eval_z_complex (lpc, new_root, err)) < abs (value))
-                {
-                  root = new_root;
-                  improved_root = true;
-                  break;
-                }
-              else
-                {
-                  /* if a full Newton step doesn't improve the result, we try to walk
-                   * in the Newton step direction, but less far
-                   */
-                  factor *= 0.5;
-                }
-            }
-          if (!improved_root)
-            break;
-        }
+              complex<long double> value = eval_poly_dk (poly, roots[i]);
 
-      complex<long double> value = eval_z_complex (lpc, root, err);
-      if (good_root (root, value, err))
-        {
-          polish_root (lpc_orig, root);
-
-          value = eval_z_complex (lpc_orig, root, err);
-          if (good_root (root, value, err))
-            {
-              roots.push_back (root);
-              deflate (lpc, root);
+              for (size_t j = 0; j < roots.size(); j++)
+                {
+                  if (j != i)
+                    value /= (roots[i] - roots[j]);
+                }
+              roots[i] -= value;
             }
         }
-
-      if (iterations > lpc_real.size() * 100)
+      roots_out.resize (lpc.size());
+      for (size_t i = 0; i < roots.size(); i++)
         {
-          return false;
-        }
-      else
-        {
-          iterations++;
+          complex<long double> root = roots[i];
+          if (!finite (root.real()) || !finite (root.imag()))
+            restart = true;
         }
     }
+  while (restart);
 
   // convert "long double" precision roots down to "double" precision roots
   roots_out.resize (roots.size());
