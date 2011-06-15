@@ -19,6 +19,7 @@
 #include "smtimefreqview.hh"
 #include "smfft.hh"
 #include "smcwt.hh"
+#include "smlpc.hh"
 
 #include <bse/bseblockutils.hh>
 #include <bse/bseglobals.h>
@@ -149,6 +150,7 @@ struct AnalysisCommand : public FFTThread::Command
   ~AnalysisCommand();
   void execute();
   void execute_cwt();
+  void execute_lpc();
 
   void set_progress (double progress);
 };
@@ -229,6 +231,76 @@ AnalysisCommand::execute_cwt()
 }
 
 void
+AnalysisCommand::execute_lpc()
+{
+  vector<float> signal;
+  vector<float> block (1024);
+
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      for (uint64 t = 0; t < r; t++)
+        signal.push_back (block[t]);
+      pos += r;
+    }
+
+  double mix_freq = gsl_data_handle_mix_freq (dhandle);
+
+  vector< vector<float> > results;
+
+  for (size_t start = 0; start < n_values; start += 1500)
+    {
+      size_t end = start + mix_freq * 0.030; // 30 ms;
+      if (start < end && end < signal.size())
+        {
+          vector<double> lpc (50);
+          LPC::compute_lpc (lpc, &signal[start], &signal[end]);
+          vector<float> result;
+          for (float freq = 0; freq < M_PI; freq += 0.001)
+            {
+              float mag = LPC::eval_lpc (lpc, freq);
+              result.push_back (mag);
+            }
+          results.push_back (result);
+        }
+      set_progress (CLAMP (start / double (n_values), 0.0, 1.0));
+    }
+
+  size_t width = results.size();
+  size_t height = 0;
+  if (!results.empty())
+    height = results[0].size();
+
+  image.resize (width, height);
+
+  float max_value = -200;
+  for (vector< vector<float> >::iterator fi = results.begin(); fi != results.end(); fi++)
+    {
+      for (vector<float>::iterator mi = fi->begin(); mi != fi->end(); mi++)
+        {
+          *mi = value_scale (*mi);
+          max_value = max (max_value, *mi);
+        }
+    }
+  int    *p = image.get_pixels();
+  size_t  row_stride = image.get_rowstride();
+  for (size_t frame = 0; frame < width; frame++)
+    {
+      for (size_t y = 0; y < height; y++)
+        {
+          size_t src_y = height - y - 1;
+          p[src_y * row_stride] = (results[frame][y] - max_value) * 256;  // 8 bits fixed point
+        }
+      p++;
+    }
+}
+
+
+void
 AnalysisCommand::execute()
 {
   BseErrorType error = gsl_data_handle_open (dhandle);
@@ -247,6 +319,11 @@ AnalysisCommand::execute()
   if (analysis_params.transform_type == SM_TRANSFORM_CWT)
     {
       execute_cwt();
+      return;
+    }
+  else if (analysis_params.transform_type == SM_TRANSFORM_LPC)
+    {
+      execute_lpc();
       return;
     }
   size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;

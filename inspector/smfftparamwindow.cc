@@ -21,6 +21,10 @@
 
 using namespace SpectMorph;
 
+#define TEXT_FFT "Fourier Transform"
+#define TEXT_CWT "Wavelet Transform"
+#define TEXT_LPC "LPC Transform"
+
 #define TEXT_VTIME "Frequency dependant time scale"
 #define TEXT_CTIME "Constant time scale"
 
@@ -38,9 +42,10 @@ FFTParamWindow::FFTParamWindow() :
   table.attach (transform_label, 0, 1, 0, 1, Gtk::SHRINK);
   table.attach (transform_combobox, 1, 3, 0, 1, Gtk::EXPAND|Gtk::FILL, Gtk::EXPAND);
   transform_label.set_text ("Transform Type");
-  transform_combobox.append_text ("Fourier Transform");
-  transform_combobox.append_text ("Wavelet Transform");
-  transform_combobox.set_active_text ("Fourier Transform");
+  transform_combobox.append_text (TEXT_FFT);
+  transform_combobox.append_text (TEXT_CWT);
+  transform_combobox.append_text (TEXT_LPC);
+  transform_combobox.set_active_text (TEXT_FFT);
   transform_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
 
   fft_frame_table.attach (frame_size_label, 0, 1, 0, 1, Gtk::SHRINK);
@@ -105,10 +110,12 @@ FFTParamWindow::get_analysis_params()
 {
   AnalysisParams params;
 
-  if (transform_combobox.get_active_text() == "Fourier Transform")
+  if (transform_combobox.get_active_text() == TEXT_FFT)
     params.transform_type = SM_TRANSFORM_FFT;
-  else if (transform_combobox.get_active_text() == "Wavelet Transform")
+  else if (transform_combobox.get_active_text() == TEXT_CWT)
     params.transform_type = SM_TRANSFORM_CWT;
+  else if (transform_combobox.get_active_text() == TEXT_LPC)
+    params.transform_type = SM_TRANSFORM_LPC;
   else
     assert (false);
 
