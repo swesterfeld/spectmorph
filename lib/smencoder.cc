@@ -39,6 +39,7 @@ using std::vector;
 using std::string;
 using std::map;
 using std::max;
+using std::complex;
 
 static double
 magnitude (vector<float>::iterator i)
@@ -1142,6 +1143,14 @@ Encoder::compute_lpc_lsf()
       vector<double> lpc (50);
 
       LPC::compute_lpc (lpc, &signal[0], &signal[frame_size]);
+
+      // make LPC filter stable
+      vector< complex<double> > roots;
+      bool good_roots = LPC::find_roots (lpc, roots);
+      assert (good_roots);
+      LPC::make_stable_roots (roots);
+      LPC::roots2lpc (roots, lpc);
+
       LPC::lpc2lsf (lpc, audio_blocks[frame].lpc_lsf_p, audio_blocks[frame].lpc_lsf_q);
     }
 }
