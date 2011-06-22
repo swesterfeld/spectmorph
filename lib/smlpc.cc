@@ -359,10 +359,15 @@ LPC::roots2lpc (const vector< complex<double> >& roots, vector<double>& lpc)
 void
 LPC::make_stable_roots (vector< complex<double> >& roots)
 {
+  double max_abs = 1 - 1e-4;  // maximum abs value for roots (to prevent problems in LPC->LSF conversion)
   for (size_t i = 0; i < roots.size(); i++)
     {
+      // move root into unit circle if necessary
       if (abs (roots[i]) > 1.0)
         roots[i] = 1.0 / conj (roots[i]);
+      // ensure that |roots[i]| <= max_abs;
+      if (abs (roots[i]) > max_abs)
+        roots[i] = (roots[i] / abs (roots[i])) * max_abs;
     }
 }
 
