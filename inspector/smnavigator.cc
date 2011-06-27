@@ -66,6 +66,8 @@ Navigator::Navigator (const string& filename) :
                          sigc::mem_fun (*this, &Navigator::on_view_lpc));
   ref_action_group->add (Gtk::Action::create ("ViewFFTParams", "FFT Params"),
                          sigc::mem_fun (*this, &Navigator::on_view_fft_params));
+  ref_action_group->add (Gtk::Action::create ("ViewDisplayParams", "Display Params"),
+                         sigc::mem_fun (*this, &Navigator::on_view_display_params));
   ref_action_group->add (Gtk::Action::create ("ViewPlayer", "Player"),
                          sigc::mem_fun (*this, &Navigator::on_view_player));
 
@@ -82,6 +84,7 @@ Navigator::Navigator (const string& filename) :
     "      <menuitem action='ViewSpectrum' />"
     "      <menuitem action='ViewLPC' />"
     "      <menuitem action='ViewFFTParams' />"
+    "      <menuitem action='ViewDisplayParams' />"
     "      <menuitem action='ViewPlayer' />"
     "    </menu>"
     "  </menubar>"
@@ -332,6 +335,12 @@ void
 Navigator::on_view_fft_params()
 {
   m_fft_param_window.show();
+}
+
+void
+Navigator::on_view_display_params()
+{
+  m_display_param_window.show();
 }
 
 void

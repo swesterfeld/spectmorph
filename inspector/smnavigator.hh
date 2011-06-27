@@ -24,6 +24,7 @@
 #include "smtimefreqwindow.hh"
 #include "smplayerwindow.hh"
 #include "smlpcwindow.hh"
+#include "smdisplayparamwindow.hh"
 
 namespace SpectMorph {
 
@@ -76,6 +77,7 @@ class Navigator : public Gtk::Window
 
   SpectrumWindow                     spectrum_window;
   FFTParamWindow                     m_fft_param_window;
+  DisplayParamWindow                 m_display_param_window;
   SampleWindow                       sample_window;
   TimeFreqWindow                     time_freq_window;
   PlayerWindow                       player_window;
@@ -100,6 +102,7 @@ public:
   void on_view_sample();
   void on_view_spectrum();
   void on_view_fft_params();
+  void on_view_display_params();
   void on_view_lpc();
   void on_view_player();
   bool on_delete_event (GdkEventAny* event);

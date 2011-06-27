@@ -9,13 +9,13 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh smlpcwindow.hh \
-         smlpcview.hh
+         smlpcview.hh smdisplayparamwindow.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
-         smplayerwindow.cc smlpcwindow.cc smlpcview.cc
+         smplayerwindow.cc smlpcwindow.cc smlpcview.cc smdisplayparamwindow.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
