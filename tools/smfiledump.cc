@@ -79,7 +79,6 @@ Options::parse (int   *argc_p,
 
   for (i = 1; i < argc; i++)
     {
-      const char *opt_arg;
       if (strcmp (argv[i], "--help") == 0 ||
           strcmp (argv[i], "-h") == 0)
 	{
