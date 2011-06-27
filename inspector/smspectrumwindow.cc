@@ -16,10 +16,12 @@
  */
 
 #include "smspectrumwindow.hh"
+#include "smnavigator.hh"
 
 using namespace SpectMorph;
 
-SpectrumWindow::SpectrumWindow() :
+SpectrumWindow::SpectrumWindow (Navigator *navigator) :
+  spectrum_view (navigator),
   zoom_controller (5000, 1000)
 {
   set_border_width (10);
@@ -35,6 +37,7 @@ SpectrumWindow::SpectrumWindow() :
   show_all_children();
 
   zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
+  navigator->display_param_window()->signal_params_changed.connect (sigc::mem_fun (spectrum_view, &SpectrumView::on_display_params_changed));
 }
 
 void

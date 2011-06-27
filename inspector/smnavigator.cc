@@ -30,6 +30,7 @@ using std::string;
 Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL),
+  spectrum_window (this),
   sample_window (this),
   time_freq_window (this),
   player_window (this)
@@ -371,6 +372,12 @@ FFTParamWindow*
 Navigator::fft_param_window()
 {
   return &m_fft_param_window;
+}
+
+DisplayParamWindow *
+Navigator::display_param_window()
+{
+  return &m_display_param_window;
 }
 
 bool

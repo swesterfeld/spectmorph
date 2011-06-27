@@ -29,8 +29,17 @@ namespace SpectMorph {
 
 class DisplayParamWindow : public Gtk::Window
 {
+  Gtk::VBox          vbox;
+  Gtk::CheckButton   show_lsf_button;
+  Gtk::CheckButton   show_lpc_button;
+
+  void on_param_changed();
+
 public:
   DisplayParamWindow();
+
+  bool show_lsf();
+  bool show_lpc();
 
   sigc::signal<void> signal_params_changed;
 };

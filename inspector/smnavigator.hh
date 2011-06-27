@@ -75,9 +75,9 @@ class Navigator : public Gtk::Window
   GslDataHandle                     *dhandle;
   Audio                             *audio;
 
-  SpectrumWindow                     spectrum_window;
   FFTParamWindow                     m_fft_param_window;
   DisplayParamWindow                 m_display_param_window;
+  SpectrumWindow                     spectrum_window;
   SampleWindow                       sample_window;
   TimeFreqWindow                     time_freq_window;
   PlayerWindow                       player_window;
@@ -113,7 +113,9 @@ public:
   bool           get_show_analysis();
   bool           get_show_frequency_grid();
   bool           spectmorph_signal_active();
-  FFTParamWindow *fft_param_window();
+
+  FFTParamWindow     *fft_param_window();
+  DisplayParamWindow *display_param_window();
 };
 
 }
