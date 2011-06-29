@@ -77,6 +77,7 @@ protected:
   double                jack_mix_freq;
   jack_port_t          *input_port;
   vector<jack_port_t *> output_ports;
+  vector<jack_port_t *> control_ports;
   bool                  need_reschedule;
   bool                  pedal_down;
 
@@ -167,6 +168,8 @@ JackSynth::process (jack_nframes_t nframes)
       m_new_plan_mutex.unlock();
     }
 
+  float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
+  float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   // zero output buffer, so voices can be added
@@ -278,6 +281,11 @@ JackSynth::process (jack_nframes_t nframes)
         {
           Voice *v = *avi;
           MorphOutputModule *output = v->mp_voice->output();
+
+          // update control input values
+          v->mp_voice->set_control_input (0, control_in_1[i]);
+          v->mp_voice->set_control_input (1, control_in_2[i]);
+
           if (output)
             {
               float samples[end - i];
@@ -290,6 +298,10 @@ JackSynth::process (jack_nframes_t nframes)
       for (vector<Voice*>::iterator rvi = release_voices.begin(); rvi != release_voices.end(); rvi++)
         {
           Voice *v = *rvi;
+
+          // update control input values
+          v->mp_voice->set_control_input (0, control_in_1[i]);
+          v->mp_voice->set_control_input (1, control_in_2[i]);
 
           double v_decrement = (1000.0 / jack_mix_freq) / release_ms;
           size_t envelope_len = max (sm_round_positive (v->env / v_decrement), 0);
@@ -367,6 +379,10 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
   jack_set_process_callback (client, jack_process, this);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+  control_ports.push_back (jack_port_register (client, "control_in_1", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
+  control_ports.push_back (jack_port_register (client, "control_in_2", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
   output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
 
   if (jack_activate (client))
