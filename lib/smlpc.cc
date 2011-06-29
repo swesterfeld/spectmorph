@@ -214,12 +214,12 @@ LPC::LSFEnvelope::eval (double f)
   g_return_val_if_fail (m_init, 0);
 
   complex<double> z (cos (f), sin (f));
-  complex<double> z2 (cos (2 * f), sin (2 * f));
+  complex<double> z2 = xmul (z, z);
   complex<double> acc_p = 0.5;
   complex<double> acc_q = 0.5;
 
-  acc_p *= (z - p_real_root);
-  acc_q *= (z - q_real_root);
+  acc_p = xmul (acc_p, z - p_real_root);
+  acc_q = xmul (acc_q, z - q_real_root);
 
   for (size_t j = 0; j < p_a.size(); j++)
     {
