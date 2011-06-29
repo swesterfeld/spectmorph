@@ -131,4 +131,19 @@ main (int argc, char **argv)
       max_diff = max (max_diff, fabs (mag_lpc - mag_lsf) / max (mag_lpc, mag_lsf));
     }
   printf ("max relative diff [lpc/lsf] = %.17g\n", max_diff);
+
+  best = 1e30;
+  for (size_t reps = 0; reps < 10; reps++)
+    {
+      double start = gettime();
+      double x = 0;
+      for (size_t i = 0; i < runs; i++)
+        {
+          LPC::LSFEnvelope env;
+          env.init (lsf_p, lsf_q);
+        }
+      double end = gettime();
+      best = min (end - start, best);
+    }
+  printf ("setup time: %f clocks/value\n", clocks_per_sec * best / runs);
 }
