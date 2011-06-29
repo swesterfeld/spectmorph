@@ -200,12 +200,21 @@ LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc
 static inline complex<double>
 xmul (complex<double> a, complex<double> b)
 {
-  double rr = a.real() * b.real();
-  double ri = a.real() * b.imag();
-  double ir = a.imag() * b.real();
-  double ii = a.imag() * b.imag();
+  const double rr = a.real() * b.real();
+  const double ri = a.real() * b.imag();
+  const double ir = a.imag() * b.real();
+  const double ii = a.imag() * b.imag();
 
   return complex<double> (rr - ii, ir + ri);
+}
+
+static inline double
+xabs (complex<double> z)
+{
+  const double rr = z.real() * z.real();
+  const double ii = z.imag() * z.imag();
+
+  return sqrt (rr + ii);
 }
 
 double
@@ -226,7 +235,7 @@ LPC::LSFEnvelope::eval (double f)
       acc_p = xmul (acc_p, z2 + z * p_a[j] + p_b[j]);
       acc_q = xmul (acc_q, z2 + z * q_a[j] + q_b[j]);
     }
-  double value = 1 / abs (acc_p + acc_q);
+  double value = 1 / xabs (acc_p + acc_q);
   return value;
 }
 
