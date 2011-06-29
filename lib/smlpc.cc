@@ -177,18 +177,35 @@ LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc
       complex<double> r_q (cos (lpc_lsf_q[j]), sin (lpc_lsf_q[j]));
 
       if (j == lpc_lsf_p.size() - 1) // real root at nyquist
-        p_real_root = r_p;
+        p_real_root = r_p.real();
       else
-        p_roots.push_back (r_p);
+        {
+          p_a.push_back (-2 * r_p.real());
+          p_b.push_back (r_p.real() * r_p.real() + r_p.imag() * r_p.imag());
+        }
 
       if (j == 0)                  // real root at 0
-        q_real_root = r_q;
+        q_real_root = r_q.real();
       else
-        q_roots.push_back (r_q);
+        {
+          q_a.push_back (-2 * r_q.real());
+          q_b.push_back (r_q.real() * r_q.real() + r_q.imag() * r_q.imag());
+        }
     }
   m_init = true;
 
   return true;
+}
+
+static inline complex<double>
+xmul (complex<double> a, complex<double> b)
+{
+  double rr = a.real() * b.real();
+  double ri = a.real() * b.imag();
+  double ir = a.imag() * b.real();
+  double ii = a.imag() * b.imag();
+
+  return complex<double> (rr - ii, ir + ri);
 }
 
 double
@@ -197,19 +214,17 @@ LPC::LSFEnvelope::eval (double f)
   g_return_val_if_fail (m_init, 0);
 
   complex<double> z (cos (f), sin (f));
+  complex<double> z2 (cos (2 * f), sin (2 * f));
   complex<double> acc_p = 0.5;
   complex<double> acc_q = 0.5;
 
   acc_p *= (z - p_real_root);
   acc_q *= (z - q_real_root);
 
-  for (size_t j = 0; j < p_roots.size(); j++)
+  for (size_t j = 0; j < p_a.size(); j++)
     {
-      complex<double> r_p (p_roots[j]);
-      complex<double> r_q (q_roots[j]);
-
-      acc_p *= (z - r_p) * (z - conj (r_p));
-      acc_q *= (z - r_q) * (z - conj (r_q));
+      acc_p = xmul (acc_p, z2 + z * p_a[j] + p_b[j]);
+      acc_q = xmul (acc_q, z2 + z * q_a[j] + q_b[j]);
     }
   double value = 1 / abs (acc_p + acc_q);
   return value;
