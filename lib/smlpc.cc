@@ -171,6 +171,11 @@ LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc
   m_init = false;
   g_return_val_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size(), false);
 
+  p_a.resize (lpc_lsf_p.size() - 1);
+  p_b.resize (lpc_lsf_p.size() - 1);
+  q_a.resize (lpc_lsf_p.size() - 1);
+  q_b.resize (lpc_lsf_p.size() - 1);
+
   for (size_t j = 0; j < lpc_lsf_p.size(); j++)
     {
       complex<double> r_p (cos (lpc_lsf_p[j]), sin (lpc_lsf_p[j]));
@@ -180,16 +185,16 @@ LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc
         p_real_root = r_p.real();
       else
         {
-          p_a.push_back (-2 * r_p.real());
-          p_b.push_back (r_p.real() * r_p.real() + r_p.imag() * r_p.imag());
+          p_a[j] = -2 * r_p.real();
+          p_b[j] = r_p.real() * r_p.real() + r_p.imag() * r_p.imag();
         }
 
       if (j == 0)                  // real root at 0
         q_real_root = r_q.real();
       else
         {
-          q_a.push_back (-2 * r_q.real());
-          q_b.push_back (r_q.real() * r_q.real() + r_q.imag() * r_q.imag());
+          q_a[j - 1] = -2 * r_q.real();
+          q_b[j - 1] = r_q.real() * r_q.real() + r_q.imag() * r_q.imag();
         }
     }
   m_init = true;
