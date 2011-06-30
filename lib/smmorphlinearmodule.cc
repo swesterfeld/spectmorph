@@ -278,13 +278,23 @@ md_cmp (const MagData& m1, const MagData& m2)
 static bool
 find_match (float freq, vector<float>& freqs, const vector<int>& used, size_t *index)
 {
-  //const float lower_bound = freq - 220;
+  const float lower_bound = freq - 220;
   const float upper_bound = freq + 220;
 
   double min_diff = 1e20;
   size_t best_index = 0; // initialized to avoid compiler warning
 
   size_t i = 0;
+
+  // quick scan for beginning of the region containing suitable candidates
+  size_t skip = freqs.size() / 2;
+  while (skip >= 4)
+    {
+      while (i + skip < freqs.size() && freqs[i + skip] < lower_bound)
+        i += skip;
+      skip /= 2;
+    }
+
   while (i < freqs.size() && freqs[i] < upper_bound)
     {
       if (!used[i])
