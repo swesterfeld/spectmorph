@@ -35,6 +35,7 @@ struct Options
   int                 midi_note;
   double              len;
   bool                fade;
+  bool                quiet;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -48,7 +49,8 @@ Options::Options () :
   program_name ("smrunplan"),
   midi_note (-1),
   len (1),
-  fade (false)
+  fade (false),
+  quiet (false)
 {
 }
 
@@ -95,6 +97,10 @@ Options::parse (int   *argc_p,
         {
           fade = true;
         }
+      else if (check_arg (argc, argv, &i, "--quiet") || check_arg (argc, argv, &i, "-q"))
+        {
+          quiet = true;
+        }
     }
 
   /* resort argc/argv */
@@ -118,6 +124,7 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
+  printf (" -q, --quiet                 suppress audio output\n");
   printf ("\n");
 }
 
@@ -186,8 +193,11 @@ main (int argc, char **argv)
 
       voice.output()->process (/* port */ 0, todo, &samples[i]);
     }
-  for (size_t i = 0; i < samples.size(); i++)
+  if (!options.quiet)
     {
-      printf ("%.17g\n", samples[i]);
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          printf ("%.17g\n", samples[i]);
+        }
     }
 }
