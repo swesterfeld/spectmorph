@@ -20,6 +20,7 @@
 #include "smmorphlinearmodule.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphsourcemodule.hh"
+#include "smmorphlfomodule.hh"
 
 using namespace SpectMorph;
 
@@ -61,6 +62,7 @@ MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
   if (type == "SpectMorph::MorphLinear") return new MorphLinearModule (voice);
   if (type == "SpectMorph::MorphSource") return new MorphSourceModule (voice);
   if (type == "SpectMorph::MorphOutput") return new MorphOutputModule (voice);
+  if (type == "SpectMorph::MorphLFO")    return new MorphLFOModule (voice);
 
   return NULL;
 }
