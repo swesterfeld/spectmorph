@@ -6,6 +6,9 @@ imiscutter
 smsfimport
 sminspector
 smfiledump
+smenccache
+smrunplan
+smsampleedit
 tld
 *.o
 .deps
