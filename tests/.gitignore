@@ -20,5 +20,7 @@ testrefptr
 testloopindex
 testlpc
 testoutfileperf
+testlsfperf
+testrootfinder
 .libs
 .deps
