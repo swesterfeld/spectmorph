@@ -97,6 +97,7 @@ MorphOperatorView::op()
 #include "smmorphsourceview.hh"
 #include "smmorphoutputview.hh"
 #include "smmorphlinearview.hh"
+#include "smmorphlfoview.hh"
 
 MorphOperatorView *
 MorphOperatorView::create (MorphOperator *op, MorphPlanWindow *window)
@@ -106,6 +107,7 @@ MorphOperatorView::create (MorphOperator *op, MorphPlanWindow *window)
   if (type == "SpectMorph::MorphSource") return new MorphSourceView (static_cast<MorphSource *> (op), window);
   if (type == "SpectMorph::MorphOutput") return new MorphOutputView (static_cast<MorphOutput *> (op), window);
   if (type == "SpectMorph::MorphLinear") return new MorphLinearView (static_cast<MorphLinear *> (op), window);
+  if (type == "SpectMorph::MorphLFO")    return new MorphLFOView    (static_cast<MorphLFO *> (op),    window);
 
   return NULL;
 }

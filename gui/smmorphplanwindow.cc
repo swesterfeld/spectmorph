@@ -92,6 +92,11 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
   ref_action_group->add (Gtk::Action::create ("EditAddLinearMorph", "Linear Morph"),
                          sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
                                      "SpectMorph::MorphLinear"));
+  // LFO
+  ref_action_group->add (Gtk::Action::create ("EditAddLFO", "LFO"),
+                         sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
+                                     "SpectMorph::MorphLFO"));
+
 
 
   ref_action_group->add (Gtk::Action::create ("FileLoadIndex", "Load Index"),
@@ -124,6 +129,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
     "        <menuitem action='EditAddSource' />"
     "        <menuitem action='EditAddOutput' />"
     "        <menuitem action='EditAddLinearMorph' />"
+    "        <menuitem action='EditAddLFO' />"
     "      </menu>"
     "    </menu>"
     "  </menubar>"
