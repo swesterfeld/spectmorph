@@ -23,7 +23,6 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
-  double phase;
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();

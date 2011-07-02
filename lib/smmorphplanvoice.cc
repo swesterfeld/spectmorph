@@ -32,10 +32,11 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 #define N_CONTROL_INPUTS 2
 
-MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan) :
+MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan, float mix_freq) :
   m_control_input (N_CONTROL_INPUTS),
   m_output (NULL),
-  m_plan (plan)
+  m_plan (plan),
+  m_mix_freq (mix_freq)
 {
   create_modules();
   configure_modules();
@@ -197,4 +198,22 @@ MorphPlanVoice::set_control_input (int i, double value)
   assert (i >= 0 && i < N_CONTROL_INPUTS);
 
   m_control_input[i] = value;
+}
+
+guint64
+MorphPlanVoice::local_time()
+{
+  return m_local_time;
+}
+
+void
+MorphPlanVoice::set_local_time (guint64 value)
+{
+  m_local_time = value;
+}
+
+float
+MorphPlanVoice::mix_freq() const
+{
+  return m_mix_freq;
 }

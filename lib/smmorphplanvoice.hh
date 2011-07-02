@@ -34,8 +34,10 @@ protected:
   std::vector<OpModule> modules;
 
   std::vector<double>           m_control_input;
+  guint64                       m_local_time;
   MorphOutputModule            *m_output;
   MorphPlanPtr                  m_plan;
+  float                         m_mix_freq;
 
   bool try_update (MorphPlanPtr plan);
   void clear_modules();
@@ -43,7 +45,7 @@ protected:
   void configure_modules();
 
 public:
-  MorphPlanVoice (MorphPlanPtr plan);
+  MorphPlanVoice (MorphPlanPtr plan, float mix_freq);
   ~MorphPlanVoice();
 
   void update (MorphPlanPtr plan);
@@ -52,6 +54,11 @@ public:
 
   double control_input (int i);
   void   set_control_input (int i, double value);
+
+  guint64 local_time();
+  void    set_local_time (guint64 value);
+
+  float mix_freq() const;
 
   MorphOutputModule *output();
 };

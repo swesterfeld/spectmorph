@@ -114,13 +114,20 @@ MorphOutputModule::process (int port, size_t n_values, float *values)
 }
 
 void
-MorphOutputModule::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
 {
   for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)
     {
       if (out_decoders[port])
         {
-          out_decoders[port]->retrigger (channel, freq, midi_velocity, mix_freq);
+          out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
+  morph_plan_voice->set_local_time (0);
+}
+
+void
+MorphOutputModule::update_local_time (size_t n_samples)
+{
+  morph_plan_voice->set_local_time (morph_plan_voice->local_time() + n_samples);
 }

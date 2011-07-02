@@ -20,6 +20,8 @@
 #include "smmorphplan.hh"
 #include "smwavsetrepo.hh"
 #include "smleakdebugger.hh"
+#include "smmorphplanvoice.hh"
+#include "smmath.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -34,8 +36,6 @@ MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
   leak_debugger.add (this);
-
-  phase = 0;
 }
 
 MorphLFOModule::~MorphLFOModule()
@@ -52,8 +52,7 @@ MorphLFOModule::set_config (MorphOperator *op)
 float
 MorphLFOModule::value()
 {
-  phase += 0.01;
-  if (phase > 2 * M_PI)
-    phase -= 2 * M_PI;
-  return sin (phase);
+  int imix_freq = sm_round_positive (morph_plan_voice->mix_freq());
+  double phase = double (morph_plan_voice->local_time() % imix_freq) / imix_freq;
+  return sin (phase * M_PI * 2);
 }
