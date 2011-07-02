@@ -47,6 +47,14 @@ ComboBoxOperator::on_operators_changed()
 
   clear();
 
+  for (vector<string>::const_iterator si = str_choices.begin(); si != str_choices.end(); si++)
+    {
+      append_text (*si);
+
+      if (*si == str_choice)
+        set_active_text (*si);
+    }
+
   const vector<MorphOperator *>& ops = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
@@ -64,7 +72,8 @@ ComboBoxOperator::on_operators_changed()
 void
 ComboBoxOperator::set_active (MorphOperator *new_op)
 {
-  op = new_op;
+  op         = new_op;
+  str_choice = "";
 
   on_operators_changed();
 }
@@ -76,19 +85,65 @@ ComboBoxOperator::active()
 }
 
 void
+ComboBoxOperator::add_str_choice (const string& str)
+{
+  str_choices.push_back (str);
+
+  on_operators_changed();
+}
+
+void
+ComboBoxOperator::set_active_str_choice (const string& new_str)
+{
+  for (vector<string>::const_iterator si = str_choices.begin(); si != str_choices.end(); si++)
+    {
+      if (new_str == *si)
+        {
+          op         = NULL;
+          str_choice = new_str;
+
+          on_operators_changed();
+
+          return;
+        }
+    }
+  printf ("ComboBoxOperator::set_active_str_choice (%s) failed\n", new_str.c_str());
+  g_assert_not_reached();
+}
+
+string
+ComboBoxOperator::active_str_choice()
+{
+  return str_choice;
+}
+
+void
 ComboBoxOperator::on_combobox_changed()
 {
   if (block_changed)
     return;
 
-  op = NULL;
+  op         = NULL;
+  str_choice = "";
 
   const vector<MorphOperator *>& ops = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
       MorphOperator *morph_op = *oi;
       if (morph_op->name() == get_active_text())
-        op = morph_op;
+        {
+          op         = morph_op;
+          str_choice = "";
+        }
+    }
+
+  for (vector<string>::const_iterator si = str_choices.begin(); si != str_choices.end(); si++)
+    {
+      if (*si == get_active_text())
+        {
+          op         = NULL;
+          str_choice = *si;
+        }
     }
   signal_active_changed();
 }
