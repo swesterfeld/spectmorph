@@ -204,7 +204,7 @@ JackSynth::process (jack_nframes_t nframes)
                   MorphOutputModule *output = vi->mp_voice->output();
                   if (output)
                     {
-                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity, jack_mix_freq);
+                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
                       vi->state = Voice::STATE_ON;
                       vi->midi_note = midi_note;
                       vi->velocity = velocity;
@@ -290,6 +290,7 @@ JackSynth::process (jack_nframes_t nframes)
             {
               float samples[end - i];
               output->process (0, end - i, samples);
+              output->update_local_time (end - i);
               for (size_t j = i; j < end; j++)
                 audio_out[j] += samples[j-i] * v->velocity;
             }
@@ -323,6 +324,7 @@ JackSynth::process (jack_nframes_t nframes)
           if (output)
             {
               output->process (0, envelope_end - i, samples);
+              output->update_local_time (envelope_end - i);
 
               for (size_t j = i; j < envelope_end; j++)
                 audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;
@@ -354,11 +356,11 @@ void
 JackSynth::preinit_plan (MorphPlanPtr plan)
 {
   // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice mp_voice (plan);
+  MorphPlanVoice mp_voice (plan, jack_mix_freq);
   MorphOutputModule *om = mp_voice.output();
   if (om)
     {
-      om->retrigger (0, 440, 1, jack_mix_freq);
+      om->retrigger (0, 440, 1);
       float s;
       om->process (0, 1, &s);
     }
@@ -374,7 +376,7 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
   release_ms = 150;
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = new MorphPlanVoice (morph_plan);
+    vi->mp_voice = new MorphPlanVoice (morph_plan, jack_mix_freq);
 
   jack_set_process_callback (client, jack_process, this);
 

@@ -157,7 +157,7 @@ main (int argc, char **argv)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (plan);
+  MorphPlanVoice voice (plan, 44100);
   assert (voice.output());
 
   vector<float> samples (44100 * options.len);
@@ -177,7 +177,7 @@ main (int argc, char **argv)
         linear_op = dynamic_cast<MorphLinear *> (op);
     }
 
-  voice.output()->retrigger (0, freq, 100, 44100);
+  voice.output()->retrigger (0, freq, 100);
 
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)

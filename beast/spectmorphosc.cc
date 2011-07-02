@@ -54,7 +54,7 @@ class Osc : public OscBase {
     float          frequency;
   public:
     Module() :
-      morph_plan_voice (NULL),
+      morph_plan_voice (NULL, mix_freq()),
       need_retrigger (false)
     {
       //
@@ -118,13 +118,14 @@ class Osc : public OscBase {
                   morph_plan_voice.output()->process (port, n_values, audio_out);
                 }
             }
+          morph_plan_voice.output()->update_local_time (n_values);
         }
     }
     void
     retrigger (float freq, int midi_velocity)
     {
       if (morph_plan_voice.output())
-        morph_plan_voice.output()->retrigger (0, freq, midi_velocity, mix_freq());
+        morph_plan_voice.output()->retrigger (0, freq, midi_velocity);
 
       current_freq = freq;
     }

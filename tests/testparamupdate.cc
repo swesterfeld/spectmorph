@@ -54,7 +54,7 @@ main (int argc, char **argv)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (plan);
+  MorphPlanVoice voice (plan, 44100);
 
   size_t runs = 1000000;
 
