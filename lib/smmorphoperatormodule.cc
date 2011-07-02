@@ -43,6 +43,12 @@ MorphOperatorModule::source()
 }
 
 float
+MorphOperatorModule::value()
+{
+  return 0;
+}
+
+float
 MorphOperatorModule::latency_ms()
 {
   return 0; // default

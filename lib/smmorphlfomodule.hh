@@ -23,10 +23,12 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
+  double phase;
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();
 
-  void set_config (MorphOperator *op);
+  void  set_config (MorphOperator *op);
+  float value();
 };
 }

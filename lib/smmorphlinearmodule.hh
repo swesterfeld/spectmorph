@@ -30,6 +30,7 @@ class MorphLinearModule : public MorphOperatorModule
 {
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
+  MorphOperatorModule *control_mod;
   float                morphing;
   bool                 db_linear;
   bool                 use_lpc;

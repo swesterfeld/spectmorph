@@ -34,6 +34,8 @@ MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
   leak_debugger.add (this);
+
+  phase = 0;
 }
 
 MorphLFOModule::~MorphLFOModule()
@@ -45,4 +47,13 @@ void
 MorphLFOModule::set_config (MorphOperator *op)
 {
   MorphLFO *lfo = dynamic_cast<MorphLFO *> (op);
+}
+
+float
+MorphLFOModule::value()
+{
+  phase += 0.01;
+  if (phase > 2 * M_PI)
+    phase -= 2 * M_PI;
+  return sin (phase);
 }

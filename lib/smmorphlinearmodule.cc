@@ -71,6 +71,7 @@ MorphLinearModule::set_config (MorphOperator *op)
   MorphLinear *linear = dynamic_cast<MorphLinear *> (op);
   MorphOperator *left_op = linear->left_op();
   MorphOperator *right_op = linear->right_op();
+  MorphOperator *control_op = linear->control_op();
 
   if (left_op)
     left_mod = morph_plan_voice->module (left_op);
@@ -81,6 +82,11 @@ MorphLinearModule::set_config (MorphOperator *op)
     right_mod = morph_plan_voice->module (right_op);
   else
     right_mod = NULL;
+
+  if (control_op)
+    control_mod = morph_plan_voice->module (control_op);
+  else
+    control_mod = NULL;
 
   morphing = linear->morphing();
   control_type = linear->control_type();
@@ -329,6 +335,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
     morphing = module->morph_plan_voice->control_input (0);
   else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
     morphing = module->morph_plan_voice->control_input (1);
+  else if (module->control_type == MorphLinear::CONTROL_OP)
+    morphing = module->control_mod->value();
   else
     g_assert_not_reached();
 
