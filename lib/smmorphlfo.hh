@@ -34,6 +34,7 @@ public:
   };
 protected:
   WaveType       m_wave_type;
+  float          m_frequency;
 
 public:
   MorphLFO (MorphPlan *morph_plan);
@@ -48,6 +49,9 @@ public:
 
   WaveType wave_type();
   void set_wave_type (WaveType new_wave_type);
+
+  float frequency() const;
+  void set_frequency (float new_frequency);
 };
 
 }

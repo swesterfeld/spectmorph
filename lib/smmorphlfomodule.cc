@@ -36,6 +36,8 @@ MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
   leak_debugger.add (this);
+
+  phase = 0;
 }
 
 MorphLFOModule::~MorphLFOModule()
@@ -47,12 +49,18 @@ void
 MorphLFOModule::set_config (MorphOperator *op)
 {
   MorphLFO *lfo = dynamic_cast<MorphLFO *> (op);
+
+  frequency = lfo->frequency();
 }
 
 float
 MorphLFOModule::value()
 {
-  int imix_freq = sm_round_positive (morph_plan_voice->mix_freq());
-  double phase = double (morph_plan_voice->local_time() % imix_freq) / imix_freq;
+  const int loop_samples = sm_round_positive (morph_plan_voice->mix_freq() / frequency);
+
+  phase += double ((morph_plan_voice->local_time() - last_local_time) % loop_samples) / loop_samples;
+  last_local_time = morph_plan_voice->local_time();
+
+  phase = fmod (phase, 1);
   return sin (phase * M_PI * 2);
 }

@@ -32,6 +32,7 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   m_wave_type = WAVE_SINE;
+  m_frequency = 1;
 
   leak_debugger.add (this);
 }
@@ -51,6 +52,7 @@ bool
 MorphLFO::save (OutFile& out_file)
 {
   out_file.write_int ("wave_type", m_wave_type);
+  out_file.write_float ("frequency", m_frequency);
 
   return true;
 }
@@ -69,6 +71,18 @@ MorphLFO::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::FLOAT)
+        {
+          if (ifile.event_name() == "frequency")
+            {
+              m_frequency = ifile.event_float();
+            }
+          else
+            {
+              g_printerr ("bad float\n");
               return false;
             }
         }
@@ -103,6 +117,20 @@ void
 MorphLFO::set_wave_type (WaveType new_wave_type)
 {
   m_wave_type = new_wave_type;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphLFO::frequency() const
+{
+  return m_frequency;
+}
+
+void
+MorphLFO::set_frequency (float frequency)
+{
+  m_frequency = frequency;
 
   m_morph_plan->emit_plan_changed();
 }

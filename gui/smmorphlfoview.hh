@@ -36,7 +36,13 @@ protected:
   Gtk::Label                       wave_type_label;
   Gtk::ComboBoxText                wave_type_combobox;
 
+  Gtk::Label                       frequency_label;
+  Gtk::HScale                      frequency_scale;
+  Gtk::Label                       frequency_value_label;
+  Gtk::HBox                        frequency_hbox;
+
   void on_wave_type_changed();
+  void on_frequency_changed();
 public:
   MorphLFOView (MorphLFO *op, MorphPlanWindow *morph_plan_window);
   ~MorphLFOView();

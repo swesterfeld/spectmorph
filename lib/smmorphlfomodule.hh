@@ -23,6 +23,10 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
+  float   frequency;
+  guint64 last_local_time;
+  double  phase;
+
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();

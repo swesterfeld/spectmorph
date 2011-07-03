@@ -29,7 +29,8 @@ using std::vector;
 
 MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_lfo, morph_plan_window),
-  morph_lfo (morph_lfo)
+  morph_lfo (morph_lfo),
+  frequency_scale (-2, 1, 0.0001)
 {
   wave_type_combobox.append_text (WAVE_TEXT_SINE);
   wave_type_combobox.append_text (WAVE_TEXT_TRIANGLE);
@@ -46,6 +47,17 @@ MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_win
 
   table.attach (wave_type_label, 0, 1, 0, 1, Gtk::SHRINK);
   table.attach (wave_type_combobox, 1, 2, 0, 1);
+
+  frequency_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLFOView::on_frequency_changed));
+  frequency_label.set_text ("Frequency");
+  frequency_scale.set_draw_value (false);
+  frequency_hbox.pack_start (frequency_scale);
+  frequency_hbox.pack_start (frequency_value_label, Gtk::PACK_SHRINK);
+  frequency_hbox.set_spacing (10);
+  frequency_scale.set_value (log10 (morph_lfo->frequency()));
+
+  table.attach (frequency_label, 0, 1, 1, 2, Gtk::SHRINK);
+  table.attach (frequency_hbox, 1, 2, 1, 2);
 
   table.set_spacings (10);
   table.set_border_width (5);
@@ -74,4 +86,12 @@ MorphLFOView::on_wave_type_changed()
     {
       assert (false);
     }
+}
+
+void
+MorphLFOView::on_frequency_changed()
+{
+  double frequency = pow (10, frequency_scale.get_value());
+  frequency_value_label.set_text (Birnet::string_printf ("%.3f Hz", frequency));
+  morph_lfo->set_frequency (frequency);
 }
