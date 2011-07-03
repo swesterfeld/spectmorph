@@ -35,6 +35,9 @@ public:
 protected:
   WaveType       m_wave_type;
   float          m_frequency;
+  float          m_depth;
+  float          m_center;
+  float          m_start_phase;
 
 public:
   MorphLFO (MorphPlan *morph_plan);
@@ -52,6 +55,15 @@ public:
 
   float frequency() const;
   void set_frequency (float new_frequency);
+
+  float depth() const;
+  void set_depth (float new_depth);
+
+  float center() const;
+  void set_center (float new_center);
+
+  float start_phase() const;
+  void set_start_phase (float new_start_phase);
 };
 
 }

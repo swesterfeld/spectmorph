@@ -33,6 +33,9 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
 {
   m_wave_type = WAVE_SINE;
   m_frequency = 1;
+  m_depth = 1;
+  m_center = 0;
+  m_start_phase = 0;
 
   leak_debugger.add (this);
 }
@@ -53,6 +56,9 @@ MorphLFO::save (OutFile& out_file)
 {
   out_file.write_int ("wave_type", m_wave_type);
   out_file.write_float ("frequency", m_frequency);
+  out_file.write_float ("depth", m_depth);
+  out_file.write_float ("center", m_center);
+  out_file.write_float ("start_phase", m_start_phase);
 
   return true;
 }
@@ -79,6 +85,18 @@ MorphLFO::load (InFile& ifile)
           if (ifile.event_name() == "frequency")
             {
               m_frequency = ifile.event_float();
+            }
+          else if (ifile.event_name() == "depth")
+            {
+              m_depth = ifile.event_float();
+            }
+          else if (ifile.event_name() == "center")
+            {
+              m_center = ifile.event_float();
+            }
+          else if (ifile.event_name() == "start_phase")
+            {
+              m_start_phase = ifile.event_float();
             }
           else
             {
@@ -131,6 +149,48 @@ void
 MorphLFO::set_frequency (float frequency)
 {
   m_frequency = frequency;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphLFO::depth() const
+{
+  return m_depth;
+}
+
+void
+MorphLFO::set_depth (float depth)
+{
+  m_depth = depth;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphLFO::center() const
+{
+  return m_center;
+}
+
+void
+MorphLFO::set_center (float center)
+{
+  m_center = center;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphLFO::start_phase() const
+{
+  return m_start_phase;
+}
+
+void
+MorphLFO::set_start_phase (float start_phase)
+{
+  m_start_phase = start_phase;
 
   m_morph_plan->emit_plan_changed();
 }

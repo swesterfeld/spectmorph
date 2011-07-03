@@ -24,6 +24,9 @@ namespace SpectMorph
 class MorphLFOModule : public MorphOperatorModule
 {
   float   frequency;
+  float   depth;
+  float   center;
+  float   start_phase;
   guint64 last_local_time;
   double  phase;
 

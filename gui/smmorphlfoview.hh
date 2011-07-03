@@ -39,10 +39,24 @@ protected:
   Gtk::Label                       frequency_label;
   Gtk::HScale                      frequency_scale;
   Gtk::Label                       frequency_value_label;
-  Gtk::HBox                        frequency_hbox;
+
+  Gtk::Label                       depth_label;
+  Gtk::HScale                      depth_scale;
+  Gtk::Label                       depth_value_label;
+
+  Gtk::Label                       center_label;
+  Gtk::HScale                      center_scale;
+  Gtk::Label                       center_value_label;
+
+  Gtk::Label                       start_phase_label;
+  Gtk::HScale                      start_phase_scale;
+  Gtk::Label                       start_phase_value_label;
 
   void on_wave_type_changed();
   void on_frequency_changed();
+  void on_depth_changed();
+  void on_center_changed();
+  void on_start_phase_changed();
 public:
   MorphLFOView (MorphLFO *op, MorphPlanWindow *morph_plan_window);
   ~MorphLFOView();

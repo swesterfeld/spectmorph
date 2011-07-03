@@ -51,16 +51,28 @@ MorphLFOModule::set_config (MorphOperator *op)
   MorphLFO *lfo = dynamic_cast<MorphLFO *> (op);
 
   frequency = lfo->frequency();
+  depth = lfo->depth();
+  center = lfo->center();
+  start_phase = lfo->start_phase();
 }
 
 float
 MorphLFOModule::value()
 {
-  const int loop_samples = sm_round_positive (morph_plan_voice->mix_freq() / frequency);
+  if (morph_plan_voice->local_time() == 0)  /* FIXME: doesn't work */
+    {
+      phase = 1 + start_phase / 360;
+    }
+  else
+    {
+      const int loop_samples = sm_round_positive (morph_plan_voice->mix_freq() / frequency);
 
-  phase += double ((morph_plan_voice->local_time() - last_local_time) % loop_samples) / loop_samples;
+      phase += double ((morph_plan_voice->local_time() - last_local_time) % loop_samples) / loop_samples;
+    }
   last_local_time = morph_plan_voice->local_time();
 
   phase = fmod (phase, 1);
-  return sin (phase * M_PI * 2);
+
+  double value = sin (phase * M_PI * 2) * depth + center;
+  return CLAMP (value, -1.0, 1.0);
 }
