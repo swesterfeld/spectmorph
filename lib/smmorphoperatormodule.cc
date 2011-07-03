@@ -43,7 +43,7 @@ MorphOperatorModule::source()
 }
 
 float
-MorphOperatorModule::value()
+MorphOperatorModule::value (double time_ms)
 {
   return 0;
 }

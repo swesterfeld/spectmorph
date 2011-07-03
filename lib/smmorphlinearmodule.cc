@@ -336,7 +336,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
   else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
     morphing = module->morph_plan_voice->control_input (1);
   else if (module->control_type == MorphLinear::CONTROL_OP)
-    morphing = module->control_mod->value();
+    morphing = module->control_mod->value (index);  // 1ms frame step
   else
     g_assert_not_reached();
 

@@ -290,7 +290,6 @@ JackSynth::process (jack_nframes_t nframes)
             {
               float samples[end - i];
               output->process (0, end - i, samples);
-              output->update_local_time (end - i);
               for (size_t j = i; j < end; j++)
                 audio_out[j] += samples[j-i] * v->velocity;
             }
@@ -324,7 +323,6 @@ JackSynth::process (jack_nframes_t nframes)
           if (output)
             {
               output->process (0, envelope_end - i, samples);
-              output->update_local_time (envelope_end - i);
 
               for (size_t j = i; j < envelope_end; j++)
                 audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;

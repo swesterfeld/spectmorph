@@ -200,18 +200,6 @@ MorphPlanVoice::set_control_input (int i, double value)
   m_control_input[i] = value;
 }
 
-guint64
-MorphPlanVoice::local_time()
-{
-  return m_local_time;
-}
-
-void
-MorphPlanVoice::set_local_time (guint64 value)
-{
-  m_local_time = value;
-}
-
 float
 MorphPlanVoice::mix_freq() const
 {

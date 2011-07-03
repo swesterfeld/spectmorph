@@ -123,11 +123,4 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
-  morph_plan_voice->set_local_time (0);
-}
-
-void
-MorphOutputModule::update_local_time (size_t n_samples)
-{
-  morph_plan_voice->set_local_time (morph_plan_voice->local_time() + n_samples);
 }

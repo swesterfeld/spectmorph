@@ -27,7 +27,6 @@ class MorphLFOModule : public MorphOperatorModule
   float   depth;
   float   center;
   float   start_phase;
-  guint64 last_local_time;
   double  phase;
 
 public:
@@ -35,6 +34,6 @@ public:
   ~MorphLFOModule();
 
   void  set_config (MorphOperator *op);
-  float value();
+  float value (double time_ms);
 };
 }

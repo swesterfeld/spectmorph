@@ -57,21 +57,10 @@ MorphLFOModule::set_config (MorphOperator *op)
 }
 
 float
-MorphLFOModule::value()
+MorphLFOModule::value (double time_ms)
 {
-  if (morph_plan_voice->local_time() == 0)  /* FIXME: doesn't work */
-    {
-      phase = 1 + start_phase / 360;
-    }
-  else
-    {
-      const int loop_samples = sm_round_positive (morph_plan_voice->mix_freq() / frequency);
-
-      phase += double ((morph_plan_voice->local_time() - last_local_time) % loop_samples) / loop_samples;
-    }
-  last_local_time = morph_plan_voice->local_time();
-
-  phase = fmod (phase, 1);
+  double phase = start_phase / 360;
+  phase += time_ms / 1000 * frequency;
 
   double value = sin (phase * M_PI * 2) * depth + center;
   return CLAMP (value, -1.0, 1.0);

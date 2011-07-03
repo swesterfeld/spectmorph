@@ -41,7 +41,7 @@ public:
   virtual void set_latency_ms (float latency_ms);
   virtual void set_config (MorphOperator *op) = 0;
   virtual LiveDecoderSource *source();
-  virtual float value();
+  virtual float value (double time_ms);
 
   static MorphOperatorModule *create (MorphOperator *op, MorphPlanVoice *voice);
 };

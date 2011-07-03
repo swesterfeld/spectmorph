@@ -118,7 +118,6 @@ class Osc : public OscBase {
                   morph_plan_voice.output()->process (port, n_values, audio_out);
                 }
             }
-          morph_plan_voice.output()->update_local_time (n_values);
         }
     }
     void
