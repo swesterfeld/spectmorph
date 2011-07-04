@@ -99,17 +99,23 @@ MorphOutputModule::set_latency_ms (float latency_ms)
 }
 
 void
-MorphOutputModule::process (int port, size_t n_values, float *values)
+MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports)
 {
-  g_return_if_fail (port >= 0 && size_t (port) < out_decoders.size());
+  g_return_if_fail (n_ports <= out_decoders.size());
 
-  if (out_decoders[port])
+  for (size_t port = 0; port < n_ports; port++)
     {
-      out_decoders[port]->process (n_values, 0, 0, values);
-    }
-  else
-    {
-      zero_float_block (n_values, values);
+      if (values[port])
+        {
+          if (out_decoders[port])
+            {
+              out_decoders[port]->process (n_samples, 0, 0, values[port]);
+            }
+          else
+            {
+              zero_float_block (n_samples, values[port]);
+            }
+        }
     }
 }
 

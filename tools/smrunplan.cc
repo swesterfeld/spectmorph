@@ -191,7 +191,8 @@ main (int argc, char **argv)
 
       size_t todo = min (STEP, samples.size());
 
-      voice.output()->process (/* port */ 0, todo, &samples[i]);
+      float *audio_out[1] = { &samples[i] };
+      voice.output()->process (todo, audio_out, 1);
     }
   if (!options.quiet)
     {

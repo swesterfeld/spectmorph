@@ -35,7 +35,7 @@ public:
 
   void set_latency_ms (float latency_ms);
   void set_config (MorphOperator *op);
-  void process (int port, size_t n_values, float *values);
+  void process (size_t n_samples, float **values, size_t n_ports);
   void retrigger (int channel, float freq, int midi_velocity);
 };
 

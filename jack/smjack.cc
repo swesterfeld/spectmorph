@@ -289,7 +289,8 @@ JackSynth::process (jack_nframes_t nframes)
           if (output)
             {
               float samples[end - i];
-              output->process (0, end - i, samples);
+              float *values[1] = { samples };
+              output->process (end - i, values, 1);
               for (size_t j = i; j < end; j++)
                 audio_out[j] += samples[j-i] * v->velocity;
             }
@@ -322,7 +323,8 @@ JackSynth::process (jack_nframes_t nframes)
           MorphOutputModule *output = v->mp_voice->output();
           if (output)
             {
-              output->process (0, envelope_end - i, samples);
+              float *values[1] = { samples };
+              output->process (envelope_end - i, values, 1);
 
               for (size_t j = i; j < envelope_end; j++)
                 audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;
@@ -360,7 +362,8 @@ JackSynth::preinit_plan (MorphPlanPtr plan)
     {
       om->retrigger (0, 440, 1);
       float s;
-      om->process (0, 1, &s);
+      float *values[1] = { &s };
+      om->process (1, values, 1);
     }
 }
 

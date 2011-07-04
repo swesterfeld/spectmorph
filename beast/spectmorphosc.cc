@@ -109,15 +109,14 @@ class Osc : public OscBase {
       else
         {
           int channels[4] = { OCHANNEL_AUDIO_OUT1, OCHANNEL_AUDIO_OUT2, OCHANNEL_AUDIO_OUT3, OCHANNEL_AUDIO_OUT4 };
+          float *audio_out[4] = { NULL, NULL, NULL, NULL };
 
           for (int port = 0; port < 4; port++)
             {
               if (ostream (channels[port]).connected)
-                {
-                  float *audio_out = ostream (channels[port]).values;
-                  morph_plan_voice.output()->process (port, n_values, audio_out);
-                }
+                audio_out[port] = ostream (channels[port]).values;
             }
+          morph_plan_voice.output()->process (n_values, audio_out, 4);
         }
     }
     void
