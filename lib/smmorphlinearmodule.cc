@@ -38,7 +38,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
 #define DEBUG (0)
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice, 3)
 {
   my_source.module = this;
 
@@ -87,6 +87,10 @@ MorphLinearModule::set_config (MorphOperator *op)
     control_mod = morph_plan_voice->module (control_op);
   else
     control_mod = NULL;
+
+  update_dependency (0, left_mod);
+  update_dependency (1, right_mod);
+  update_dependency (2, control_mod);
 
   morphing = linear->morphing();
   control_type = linear->control_type();
@@ -336,7 +340,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
   else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
     morphing = module->morph_plan_voice->control_input (1);
   else if (module->control_type == MorphLinear::CONTROL_OP)
-    morphing = module->control_mod->value (index);  // 1ms frame step
+    morphing = module->control_mod->value();
   else
     g_assert_not_reached();
 

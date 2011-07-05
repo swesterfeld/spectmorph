@@ -33,7 +33,7 @@ using std::max;
 static LeakDebugger leak_debugger ("SpectMorph::MorphLFOModule");
 
 MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice, 0)
 {
   leak_debugger.add (this);
 
@@ -57,11 +57,22 @@ MorphLFOModule::set_config (MorphOperator *op)
 }
 
 float
-MorphLFOModule::value (double time_ms)
+MorphLFOModule::value()
 {
-  double phase = start_phase / 360;
+  return m_value;
+}
+
+void
+MorphLFOModule::reset_value()
+{
+  phase = start_phase / 360;
+}
+
+void
+MorphLFOModule::update_value (double time_ms)
+{
   phase += time_ms / 1000 * frequency;
 
-  double value = sin (phase * M_PI * 2) * depth + center;
-  return CLAMP (value, -1.0, 1.0);
+  m_value = sin (phase * M_PI * 2) * depth + center;
+  m_value = CLAMP (m_value, -1.0, 1.0);
 }

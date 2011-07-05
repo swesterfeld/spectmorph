@@ -28,12 +28,15 @@ class MorphLFOModule : public MorphOperatorModule
   float   center;
   float   start_phase;
   double  phase;
+  double  m_value;
 
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();
 
   void  set_config (MorphOperator *op);
-  float value (double time_ms);
+  float value();
+  void  reset_value();
+  void  update_value (double time_ms);
 };
 }

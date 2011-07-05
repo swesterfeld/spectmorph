@@ -32,7 +32,7 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
 
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice, CHANNEL_OP_COUNT)
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
@@ -85,6 +85,8 @@ MorphOutputModule::set_config (MorphOperator *op)
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
+
+      update_dependency (ch, mod);
     }
 }
 
@@ -95,6 +97,53 @@ MorphOutputModule::set_latency_ms (float latency_ms)
     {
       if (out_decoders[ch])
         out_decoders[ch]->set_latency_ms (latency_ms);
+    }
+}
+
+static void
+recursive_reset_tag (MorphOperatorModule *module)
+{
+  if (!module)
+    return;
+
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_reset_tag (deps[i]);
+
+  module->update_value_tag() = 0;
+}
+
+static void
+recursive_update_value (MorphOperatorModule *module, double time_ms)
+{
+  if (!module)
+    return;
+
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_update_value (deps[i], time_ms);
+
+  if (!module->update_value_tag())
+    {
+      module->update_value (time_ms);
+      module->update_value_tag()++;
+    }
+}
+
+static void
+recursive_reset_value (MorphOperatorModule *module)
+{
+  if (!module)
+    return;
+
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_reset_value (deps[i]);
+
+  if (!module->update_value_tag())
+    {
+      module->reset_value();
+      module->update_value_tag()++;
     }
 }
 
@@ -117,6 +166,8 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports)
             }
         }
     }
+  recursive_reset_tag (this);
+  recursive_update_value (this, n_samples / morph_plan_voice->mix_freq() * 1000);
 }
 
 void
@@ -129,4 +180,6 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
+  recursive_reset_tag (this);
+  recursive_reset_value (this);
 }
