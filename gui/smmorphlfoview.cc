@@ -87,12 +87,18 @@ MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_win
   table.attach (start_phase_scale, 1, 2, 4, 5);
   table.attach (start_phase_value_label, 2, 3, 4, 5, Gtk::SHRINK);
 
+  sync_voices_check_button.set_active (morph_lfo->sync_voices());
+  sync_voices_check_button.set_label ("Sync phase for all voices");
+
+  table.attach (sync_voices_check_button, 0, 2, 5, 6);
+
   table.set_spacings (10);
   table.set_border_width (5);
 
   frame.add (table);
 
   wave_type_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphLFOView::on_wave_type_changed));
+  sync_voices_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLFOView::on_sync_voices_changed));
 
   show_all_children();
 }
@@ -146,4 +152,10 @@ MorphLFOView::on_start_phase_changed()
   double start_phase = start_phase_scale.get_value();
   start_phase_value_label.set_text (Birnet::string_printf ("%.2f", start_phase));
   morph_lfo->set_start_phase (start_phase);
+}
+
+void
+MorphLFOView::on_sync_voices_changed()
+{
+  morph_lfo->set_sync_voices (sync_voices_check_button.get_active());
 }
