@@ -28,6 +28,13 @@ namespace SpectMorph
 
 class MorphPlanVoice;
 
+class MorphModuleSharedState
+{
+public:
+  MorphModuleSharedState();
+  virtual ~MorphModuleSharedState();
+};
+
 class MorphOperatorModule
 {
 protected:
@@ -47,6 +54,7 @@ public:
   virtual float value();
   virtual void reset_value();
   virtual void update_value (double time_ms);
+  virtual void update_shared_state (double time_ms);
 
   const std::vector<MorphOperatorModule *>& dependencies() const;
   int& update_value_tag();

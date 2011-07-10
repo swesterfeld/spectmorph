@@ -21,6 +21,7 @@
 #include "smmorphoutputmodule.hh"
 #include "smmorphsourcemodule.hh"
 #include "smmorphlfomodule.hh"
+#include "smleakdebugger.hh"
 
 using namespace SpectMorph;
 
@@ -36,6 +37,18 @@ MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice, size_t n_depend
 MorphOperatorModule::~MorphOperatorModule()
 {
   // virtual destructor to allow subclass deletion
+}
+
+static LeakDebugger shared_state_leak_debugger ("SpectMorph::MorphModuleSharedState");
+
+MorphModuleSharedState::MorphModuleSharedState()
+{
+  shared_state_leak_debugger.add (this);
+}
+
+MorphModuleSharedState::~MorphModuleSharedState()
+{
+  shared_state_leak_debugger.del (this);
 }
 
 LiveDecoderSource *
@@ -57,6 +70,11 @@ MorphOperatorModule::reset_value()
 
 void
 MorphOperatorModule::update_value (double time_ms)
+{
+}
+
+void
+MorphOperatorModule::update_shared_state (double time_ms)
 {
 }
 
