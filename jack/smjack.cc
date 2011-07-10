@@ -364,8 +364,11 @@ void
 JackSynth::preinit_plan (MorphPlanPtr plan)
 {
   // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice mp_voice (plan, jack_mix_freq);
-  MorphOutputModule *om = mp_voice.output();
+  MorphPlanSynth mp_synth (jack_mix_freq);
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (plan);
+
+  MorphOutputModule *om = mp_voice->output();
   if (om)
     {
       om->retrigger (0, 440, 1);
