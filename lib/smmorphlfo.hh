@@ -38,6 +38,7 @@ protected:
   float          m_depth;
   float          m_center;
   float          m_start_phase;
+  bool           m_sync_voices;
 
 public:
   MorphLFO (MorphPlan *morph_plan);
@@ -64,6 +65,9 @@ public:
 
   float start_phase() const;
   void set_start_phase (float new_start_phase);
+
+  bool sync_voices() const;
+  void set_sync_voices (float new_sync_voices);
 };
 
 }

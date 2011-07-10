@@ -36,6 +36,7 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   m_depth = 1;
   m_center = 0;
   m_start_phase = 0;
+  m_sync_voices = false;
 
   leak_debugger.add (this);
 }
@@ -59,6 +60,7 @@ MorphLFO::save (OutFile& out_file)
   out_file.write_float ("depth", m_depth);
   out_file.write_float ("center", m_center);
   out_file.write_float ("start_phase", m_start_phase);
+  out_file.write_bool ("sync_voices", m_sync_voices);
 
   return true;
 }
@@ -101,6 +103,18 @@ MorphLFO::load (InFile& ifile)
           else
             {
               g_printerr ("bad float\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::BOOL)
+        {
+          if (ifile.event_name() == "sync_voices")
+            {
+              m_sync_voices = ifile.event_bool();
+            }
+          else
+            {
+              g_printerr ("bad bool\n");
               return false;
             }
         }
@@ -191,6 +205,20 @@ void
 MorphLFO::set_start_phase (float start_phase)
 {
   m_start_phase = start_phase;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphLFO::sync_voices() const
+{
+  return m_sync_voices;
+}
+
+void
+MorphLFO::set_sync_voices (float sync_voices)
+{
+  m_sync_voices = sync_voices;
 
   m_morph_plan->emit_plan_changed();
 }
