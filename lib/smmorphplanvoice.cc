@@ -32,11 +32,12 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 #define N_CONTROL_INPUTS 2
 
-MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan, float mix_freq) :
+MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan, float mix_freq, MorphPlanSynth *synth) :
   m_control_input (N_CONTROL_INPUTS),
   m_output (NULL),
   m_plan (plan),
-  m_mix_freq (mix_freq)
+  m_mix_freq (mix_freq),
+  m_morph_plan_synth (synth)
 {
   create_modules();
   configure_modules();
@@ -204,4 +205,17 @@ float
 MorphPlanVoice::mix_freq() const
 {
   return m_mix_freq;
+}
+
+MorphPlanSynth *
+MorphPlanVoice::morph_plan_synth() const
+{
+  return m_morph_plan_synth;
+}
+
+void
+MorphPlanVoice::update_shared_state (double time_ms)
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    modules[i].module->update_shared_state (time_ms);
 }

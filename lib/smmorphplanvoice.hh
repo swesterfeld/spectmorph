@@ -24,6 +24,7 @@
 namespace SpectMorph {
 
 class MorphOutputModule;
+class MorphPlanSynth;
 
 class MorphPlanVoice {
 protected:
@@ -37,6 +38,7 @@ protected:
   MorphOutputModule            *m_output;
   MorphPlanPtr                  m_plan;
   float                         m_mix_freq;
+  MorphPlanSynth               *m_morph_plan_synth;
 
   bool try_update (MorphPlanPtr plan);
   void clear_modules();
@@ -44,7 +46,7 @@ protected:
   void configure_modules();
 
 public:
-  MorphPlanVoice (MorphPlanPtr plan, float mix_freq);
+  MorphPlanVoice (MorphPlanPtr plan, float mix_freq, MorphPlanSynth *synth = NULL);
   ~MorphPlanVoice();
 
   void update (MorphPlanPtr plan);
@@ -57,6 +59,9 @@ public:
   float mix_freq() const;
 
   MorphOutputModule *output();
+  MorphPlanSynth *morph_plan_synth() const;
+
+  void update_shared_state (double time_ms);
 };
 
 }
