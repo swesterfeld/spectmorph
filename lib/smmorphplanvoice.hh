@@ -46,7 +46,7 @@ protected:
   void configure_modules();
 
 public:
-  MorphPlanVoice (MorphPlanPtr plan, float mix_freq, MorphPlanSynth *synth = NULL);
+  MorphPlanVoice (MorphPlanPtr plan, float mix_freq, MorphPlanSynth *synth);
   ~MorphPlanVoice();
 
   void update (MorphPlanPtr plan);
