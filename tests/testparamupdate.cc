@@ -33,6 +33,23 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
+static void
+measure_update (MorphPlanPtr plan, size_t n_voices)
+{
+  MorphPlanSynth synth (44100);
+  for (size_t i = 0; i < n_voices; i++)
+    synth.add_voice();
+
+  size_t runs = 1000000 / n_voices;
+
+  double start = gettime();
+  for (size_t j = 0; j < runs; j++)
+    synth.update_plan (plan);
+  double end = gettime();
+
+  printf ("update (%zd voices): %f updates per ms\n", n_voices, 1 / ((end - start) * 1000 / runs));
+}
+
 int
 main (int argc, char **argv)
 {
@@ -55,28 +72,6 @@ main (int argc, char **argv)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (plan, 44100);
-  size_t runs1 = 1000000;
-
-  double start, end;
-
-  start = gettime();
-  for (size_t j = 0; j < runs1; j++)
-    voice.update (plan);
-  end = gettime();
-
-  printf ("update (1 voice): %f updates per ms\n", 1 / ((end - start) * 1000 / runs1));
-
-  MorphPlanSynth synth (44100);
-  for (size_t i = 0; i < 10; i++)
-    synth.add_voice();
-
-  size_t runs = 100000;
-
-  start = gettime();
-  for (size_t j = 0; j < runs; j++)
-    synth.update_plan (plan);
-  end = gettime();
-
-  printf ("update (10 voices): %f updates per ms\n", 1 / ((end - start) * 1000 / runs));
+  measure_update (plan, 1);
+  measure_update (plan, 10);
 }
