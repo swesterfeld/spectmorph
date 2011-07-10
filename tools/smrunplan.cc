@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphlinear.hh"
 #include "smmain.hh"
@@ -157,7 +158,9 @@ main (int argc, char **argv)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (plan, 44100);
+  MorphPlanSynth synth (44100);
+  MorphPlanVoice& voice = *synth.add_voice();
+  synth.update_plan (plan);
   assert (voice.output());
 
   vector<float> samples (44100 * options.len);
