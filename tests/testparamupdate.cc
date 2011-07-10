@@ -16,6 +16,7 @@
  */
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmain.hh"
 
@@ -55,13 +56,27 @@ main (int argc, char **argv)
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
   MorphPlanVoice voice (plan, 44100);
+  size_t runs1 = 1000000;
 
-  size_t runs = 1000000;
+  double start, end;
 
-  double start = gettime();
-  for (size_t i = 0; i < runs; i++)
+  start = gettime();
+  for (size_t j = 0; j < runs1; j++)
     voice.update (plan);
-  double end = gettime();
+  end = gettime();
 
-  printf ("update: %f updates per ms\n", 1 / ((end - start) * 1000 / runs));
+  printf ("update (1 voice): %f updates per ms\n", 1 / ((end - start) * 1000 / runs1));
+
+  MorphPlanSynth synth (44100);
+  for (size_t i = 0; i < 10; i++)
+    synth.add_voice();
+
+  size_t runs = 100000;
+
+  start = gettime();
+  for (size_t j = 0; j < runs; j++)
+    synth.update_plan (plan);
+  end = gettime();
+
+  printf ("update (10 voices): %f updates per ms\n", 1 / ((end - start) * 1000 / runs));
 }
