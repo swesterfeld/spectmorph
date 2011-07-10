@@ -54,6 +54,7 @@ MorphPlanSynth::add_voice()
 void
 MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
 {
+  // FIXME: on mere property update, we should not free shared state
   free_shared_state();
 
   for (size_t i = 0; i < voices.size(); i++)
