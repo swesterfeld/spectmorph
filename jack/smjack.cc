@@ -19,6 +19,7 @@
 #include "smmorphplanview.hh"
 #include "smmorphplanwindow.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmemout.hh"
 
@@ -63,11 +64,7 @@ public:
   }
   ~Voice()
   {
-    if (mp_voice)
-      {
-        delete mp_voice;
-        mp_voice = NULL;
-      }
+    mp_voice = NULL;
   }
 };
 
@@ -84,6 +81,7 @@ protected:
   double                release_ms;
   double                m_volume;
 
+  MorphPlanSynth       *morph_plan_synth;
   vector<Voice>         voices;
   vector<Voice*>        active_voices;
   vector<Voice*>        release_voices;
@@ -94,6 +92,8 @@ protected:
 
 public:
   JackSynth();
+  ~JackSynth();
+
   void init (jack_client_t *client, MorphPlanPtr morph_plan);
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
@@ -157,11 +157,7 @@ JackSynth::process (jack_nframes_t nframes)
     {
       if (m_new_plan)
         {
-          for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-            {
-              Voice& voice = (*vi);
-              voice.mp_voice->update (m_new_plan);
-            }
+          morph_plan_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
       m_volume = m_new_volume;
@@ -334,6 +330,8 @@ JackSynth::process (jack_nframes_t nframes)
     }
   for (size_t i = 0; i < nframes; i++)
     audio_out[i] *= m_volume;
+
+  morph_plan_synth->update_shared_state (nframes / jack_mix_freq * 1000);
   return 0;
 }
 
@@ -350,6 +348,16 @@ JackSynth::JackSynth()
   pedal_down = false;
   m_volume = 1;
   m_new_volume = 1;
+  morph_plan_synth = NULL;
+}
+
+JackSynth::~JackSynth()
+{
+  if (morph_plan_synth)
+    {
+      delete morph_plan_synth;
+      morph_plan_synth = NULL;
+    }
 }
 
 void
@@ -375,9 +383,15 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
   preinit_plan (morph_plan);
 
   release_ms = 150;
+
+  assert (morph_plan_synth == NULL);
+  morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
+
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = new MorphPlanVoice (morph_plan, jack_mix_freq);
+    vi->mp_voice = morph_plan_synth->add_voice();
+
+  morph_plan_synth->update_plan (morph_plan);
 
   jack_set_process_callback (client, jack_process, this);
 
