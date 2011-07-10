@@ -27,8 +27,17 @@ class MorphLFOModule : public MorphOperatorModule
   float   depth;
   float   center;
   float   start_phase;
+  bool    sync_voices;
+
   double  phase;
   double  m_value;
+
+  struct SharedState : public MorphModuleSharedState
+  {
+    double  phase;
+    double  value;
+  };
+  SharedState *shared_state;
 
 public:
   MorphLFOModule (MorphPlanVoice *voice);
@@ -38,5 +47,6 @@ public:
   float value();
   void  reset_value();
   void  update_value (double time_ms);
+  void  update_shared_state (double time_ms);
 };
 }

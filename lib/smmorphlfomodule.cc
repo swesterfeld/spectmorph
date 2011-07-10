@@ -21,6 +21,7 @@
 #include "smwavsetrepo.hh"
 #include "smleakdebugger.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmath.hh"
 #include <glib.h>
 
@@ -38,6 +39,7 @@ MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
   leak_debugger.add (this);
 
   phase = 0;
+  shared_state = NULL;
 }
 
 MorphLFOModule::~MorphLFOModule()
@@ -54,12 +56,27 @@ MorphLFOModule::set_config (MorphOperator *op)
   depth = lfo->depth();
   center = lfo->center();
   start_phase = lfo->start_phase();
+  sync_voices = lfo->sync_voices();
+
+  MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
+  if (synth)
+    {
+      shared_state = dynamic_cast<SharedState *> (synth->shared_state (op));
+      if (!shared_state)
+        {
+          shared_state = new SharedState();
+          shared_state->phase = start_phase / 360;
+          shared_state->value = sin (shared_state->phase * M_PI * 2) * depth + center;
+          shared_state->value = CLAMP (shared_state->value, -1.0, 1.0);
+          synth->set_shared_state (op, shared_state);
+        }
+    }
 }
 
 float
 MorphLFOModule::value()
 {
-  return m_value;
+  return sync_voices ? shared_state->value : m_value;
 }
 
 void
@@ -75,4 +92,12 @@ MorphLFOModule::update_value (double time_ms)
 
   m_value = sin (phase * M_PI * 2) * depth + center;
   m_value = CLAMP (m_value, -1.0, 1.0);
+}
+
+void
+MorphLFOModule::update_shared_state (double time_ms)
+{
+  shared_state->phase += time_ms / 1000 * frequency;
+  shared_state->value = sin (shared_state->phase * M_PI * 2) * depth + center;
+  shared_state->value = CLAMP (shared_state->value, -1.0, 1.0);
 }
