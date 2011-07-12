@@ -41,13 +41,11 @@ using namespace Birnet;
 
 class Osc : public OscBase {
   struct Properties : public OscProperties {
-    MorphPlanPtr morph_plan;
     Osc *osc;
     Properties (Osc *osc) :
       OscProperties (osc),
       osc (osc)
     {
-      morph_plan = osc->morph_plan();
     }
   };
   class Module : public SynthesisModule {
@@ -75,6 +73,8 @@ class Osc : public OscBase {
     void
     process (unsigned int n_values)
     {
+      AutoLocker lock (osc->morph_plan_synth_mutex());
+
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
       if (istream (ICHANNEL_CTRL_IN1).connected)
         {
@@ -127,8 +127,7 @@ class Osc : public OscBase {
             }
           morph_plan_voice->output()->process (n_values, audio_out, 4);
         }
-      if (osc)
-        osc->update_shared_state (tick_stamp(), mix_freq());
+      osc->update_shared_state (tick_stamp(), mix_freq());
     }
     void
     retrigger (float freq, int midi_velocity)
@@ -149,8 +148,11 @@ class Osc : public OscBase {
           morph_plan_synth = osc->morph_plan_synth (mix_freq());
           morph_plan_voice = morph_plan_synth->add_voice();
         }
-      // FIXME: use morph_plan_synth->update_plan!
-      morph_plan_voice->update (properties->morph_plan);
+
+      AutoLocker lock (osc->morph_plan_synth_mutex());
+      MorphPlanPtr plan = osc->take_new_morph_plan();
+      if (plan)
+        morph_plan_synth->update_plan (plan);
     }
   };
 
@@ -161,20 +163,28 @@ class Osc : public OscBase {
   int      gui_pid;
 
   MorphPlanPtr     m_morph_plan;
+  MorphPlanPtr     m_new_morph_plan;
   MorphPlanSynth  *m_morph_plan_synth;
   uint64           last_tick_stamp;
-  Mutex            morph_plan_synth_mutex;
+  Mutex            m_morph_plan_synth_mutex;
 
 public:
   MorphPlanPtr
-  morph_plan()
+  take_new_morph_plan()
   {
-    return m_morph_plan;
+    MorphPlanPtr plan = m_new_morph_plan;
+    m_new_morph_plan = NULL;
+    return plan;
+  }
+  Mutex&
+  morph_plan_synth_mutex()
+  {
+    return m_morph_plan_synth_mutex;
   }
   MorphPlanSynth *
   morph_plan_synth (float mix_freq)
   {
-    AutoLocker lock (morph_plan_synth_mutex);
+    AutoLocker lock (m_morph_plan_synth_mutex);
 
     if (!m_morph_plan_synth)
       m_morph_plan_synth = new MorphPlanSynth (mix_freq);
@@ -191,13 +201,17 @@ public:
   void
   update_shared_state (uint64 tick_stamp, float mix_freq)
   {
-    AutoLocker lock (morph_plan_synth_mutex);
     if (tick_stamp > last_tick_stamp)
       {
         double delta_time_ms = (tick_stamp - last_tick_stamp) / mix_freq * 1000;
         m_morph_plan_synth->update_shared_state (delta_time_ms);
         last_tick_stamp = tick_stamp;
       }
+  }
+  void
+  prepare1()
+  {
+    m_new_morph_plan = m_morph_plan;
   }
   void
   reset1()
@@ -261,6 +275,10 @@ public:
         case PROP_PLAN:
           m_morph_plan = new MorphPlan();
           m_morph_plan->set_plan_str (plan.c_str());
+            {
+              AutoLocker lock (m_morph_plan_synth_mutex);
+              m_new_morph_plan = m_morph_plan;
+            }
 #if 0
           printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
                   plan.length(), m_morph_plan->operators().size());
