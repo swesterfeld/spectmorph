@@ -47,6 +47,7 @@ class MorphLinearModule : public MorphOperatorModule
   {
     MorphLinearModule *module;
 
+    void interp_mag_one (double interp, float *left, float *right);
     void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
     Audio* audio();
     AudioBlock *audio_block (size_t index);

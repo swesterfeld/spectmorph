@@ -326,6 +326,21 @@ find_match (float freq, vector<float>& freqs, const vector<int>& used, size_t *i
   return false;
 }
 
+void
+MorphLinearModule::MySource::interp_mag_one (double interp, float *left, float *right)
+{
+  float l_value = left ? *left : 0;
+  float r_value = right ? *right : 0;
+  if (left)
+    *left = (1 - interp) * l_value;
+  if (right)
+    *right = interp * r_value;
+  // FIXME:
+#if 0
+  if (module->db_linear)
+#endif
+}
+
 AudioBlock *
 MorphLinearModule::MySource::audio_block (size_t index)
 {
@@ -483,8 +498,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
           if (!left_used[i])
             {
               module->audio_block.freqs.push_back (left_block.freqs[i]);
-              module->audio_block.mags.push_back ((1 - interp) * left_block.mags[i]);
+              module->audio_block.mags.push_back (left_block.mags[i]);
               module->audio_block.phases.push_back (left_block.phases[i]);
+
+              interp_mag_one (interp, &module->audio_block.mags.back(), NULL);
             }
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
@@ -492,8 +509,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
           if (!right_used[i])
             {
               module->audio_block.freqs.push_back (right_block.freqs[i]);
-              module->audio_block.mags.push_back (interp * right_block.mags[i]);
+              module->audio_block.mags.push_back (right_block.mags[i]);
               module->audio_block.phases.push_back (right_block.phases[i]);
+
+              interp_mag_one (interp, NULL, &module->audio_block.mags.back());
             }
         }
       assert (left_block.noise.size() == right_block.noise.size());
@@ -509,12 +528,20 @@ MorphLinearModule::MySource::audio_block (size_t index)
   else if (have_left) // only left source output present
     {
       module->audio_block = left_block;
+      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
+        module->audio_block.noise[i] *= (1 - interp);
+      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
+        interp_mag_one (interp, &module->audio_block.mags[i], NULL);
 
       return &module->audio_block;
     }
   else if (have_right) // only right source output present
     {
       module->audio_block = right_block;
+      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
+        module->audio_block.noise[i] *= interp;
+      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
+        interp_mag_one (interp, NULL, &module->audio_block.mags[i]);
 
       return &module->audio_block;
     }
