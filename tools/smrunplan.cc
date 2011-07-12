@@ -189,7 +189,7 @@ main (int argc, char **argv)
         {
           double morphing = 2 * double (i) / samples.size() - 1;
           linear_op->set_morphing (morphing);
-          voice.update (plan);
+          synth.update_plan (plan);
         }
 
       size_t todo = min (STEP, samples.size());
