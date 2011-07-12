@@ -308,9 +308,10 @@ public:
   {
     int child_stdin = -1, child_stdout = -1;
     char **argv;
-    argv = (char **) g_malloc (2 * sizeof (char *));
+    argv = (char **) g_malloc (3 * sizeof (char *));
     argv[0] = (char *) "spectmorphoscgui";
-    argv[1] = NULL;
+    argv[1] = BSE_OBJECT_UNAME (gobject());
+    argv[2] = NULL;
     GError *error = NULL;
     GPid child_pid;
     g_spawn_async_with_pipes (NULL, /* working directory = current dir */

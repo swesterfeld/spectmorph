@@ -448,8 +448,8 @@ class JackWindow : public Gtk::Window
   JackSynth       synth;
 
 public:
-  JackWindow (MorphPlanPtr plan) :
-    inst_window (plan),
+  JackWindow (MorphPlanPtr plan, const string& title) :
+    inst_window (plan, title),
     morph_plan (plan),
     volume_scale (-96, 24, 0.01)
   {
@@ -540,6 +540,7 @@ main (int argc, char **argv)
 
   MorphPlanPtr morph_plan = new MorphPlan;
 
+  string title = "SpectMorph Instrument";
   if (argc == 2)
     {
       BseErrorType error;
@@ -559,9 +560,11 @@ main (int argc, char **argv)
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
         }
+      title += " - ";
+      title += g_basename (argv[1]);
     }
 
-  JackWindow window (morph_plan);
+  JackWindow window (morph_plan, title);
 
   Gtk::Main::run (window);
 }

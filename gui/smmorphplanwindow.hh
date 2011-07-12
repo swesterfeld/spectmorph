@@ -47,7 +47,7 @@ class MorphPlanWindow : public Gtk::Window
   Gtk::Menu                      *popup_menu;
   MorphOperator                  *popup_op;
 public:
-  MorphPlanWindow (MorphPlanPtr morph_plan);
+  MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
   MorphPlanPtr morph_plan();
 

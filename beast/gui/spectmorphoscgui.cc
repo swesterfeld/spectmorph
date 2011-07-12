@@ -40,14 +40,14 @@ class OscGui
   MorphPlanPtr      morph_plan;
   MorphPlanWindow   window;
 public:
-  OscGui (MorphPlanPtr plan);
+  OscGui (MorphPlanPtr plan, const string& title);
   void run();
   void on_plan_changed();
 };
 
-OscGui::OscGui (MorphPlanPtr plan) :
+OscGui::OscGui (MorphPlanPtr plan, const string& title) :
   morph_plan (plan),
-  window (morph_plan)
+  window (morph_plan, title)
 {
   morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &OscGui::on_plan_changed));
 }
@@ -75,9 +75,9 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  if (argc != 1)
+  if (argc != 2)
     {
-      printf ("usage: %s\n", argv[0]);
+      printf ("usage: %s <title>\n", argv[0]);
       exit (1);
     }
 
@@ -94,7 +94,7 @@ main (int argc, char **argv)
   MorphPlanPtr morph_plan = new MorphPlan();
   morph_plan->set_plan_str (plan_str);
 
-  OscGui gui (morph_plan);
+  OscGui gui (morph_plan, argv[1]);
   gui.run();
 
   // let parent know that the user closed the gui window

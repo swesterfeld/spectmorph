@@ -64,11 +64,12 @@ MorphPlanWindow::on_load_index_clicked()
     }
 }
 
-MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
   m_morph_plan (morph_plan),
   morph_plan_view (morph_plan.c_ptr(), this)
 {
   set_default_size (250, 100);
+  set_title (title);
   plan_vbox.set_border_width (10);
 
   ref_action_group = Gtk::ActionGroup::create();
