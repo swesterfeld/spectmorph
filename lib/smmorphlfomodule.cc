@@ -68,7 +68,7 @@ MorphLFOModule::set_config (MorphOperator *op)
           shared_state = new SharedState();
           shared_state->phase = start_phase / 360;
           shared_state->value = compute_value (shared_state->phase);
-          update_shared_state (0);
+          synth->set_shared_state (op, shared_state);
         }
     }
 }
