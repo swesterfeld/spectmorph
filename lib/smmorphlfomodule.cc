@@ -57,6 +57,7 @@ MorphLFOModule::set_config (MorphOperator *op)
   center = lfo->center();
   start_phase = lfo->start_phase();
   sync_voices = lfo->sync_voices();
+  wave_type = lfo->wave_type();
 
   MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
   if (synth)
@@ -66,9 +67,8 @@ MorphLFOModule::set_config (MorphOperator *op)
         {
           shared_state = new SharedState();
           shared_state->phase = start_phase / 360;
-          shared_state->value = sin (shared_state->phase * M_PI * 2) * depth + center;
-          shared_state->value = CLAMP (shared_state->value, -1.0, 1.0);
-          synth->set_shared_state (op, shared_state);
+          shared_state->value = compute_value (shared_state->phase);
+          update_shared_state (0);
         }
     }
 }
@@ -85,19 +85,51 @@ MorphLFOModule::reset_value()
   phase = start_phase / 360;
 }
 
+double
+MorphLFOModule::compute_value (double phase)
+{
+  double value;
+
+  if (wave_type == MorphLFO::WAVE_SINE)
+    {
+      value = sin (phase * M_PI * 2);
+    }
+  else if (wave_type == MorphLFO::WAVE_TRIANGLE)
+    {
+      double phase_mod = fmod (phase + 1, 1);
+      if (phase_mod < 0.25)
+        {
+          value = 4 * phase_mod;
+        }
+      else if (phase_mod < 0.75)
+        {
+          value = (phase_mod - 0.5) * -4;
+        }
+      else
+        {
+          value = 4 * (phase_mod - 1);
+        }
+    }
+  else
+    {
+      g_assert_not_reached();
+    }
+
+  value = value * depth + center;
+  return CLAMP (value, -1.0, 1.0);
+}
+
 void
 MorphLFOModule::update_value (double time_ms)
 {
   phase += time_ms / 1000 * frequency;
 
-  m_value = sin (phase * M_PI * 2) * depth + center;
-  m_value = CLAMP (m_value, -1.0, 1.0);
+  m_value = compute_value (phase);
 }
 
 void
 MorphLFOModule::update_shared_state (double time_ms)
 {
   shared_state->phase += time_ms / 1000 * frequency;
-  shared_state->value = sin (shared_state->phase * M_PI * 2) * depth + center;
-  shared_state->value = CLAMP (shared_state->value, -1.0, 1.0);
+  shared_state->value = compute_value (shared_state->phase);
 }

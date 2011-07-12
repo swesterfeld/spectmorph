@@ -16,6 +16,7 @@
  */
 
 #include "smmorphoperatormodule.hh"
+#include "smmorphlfo.hh"
 #include "smwavset.hh"
 
 namespace SpectMorph
@@ -23,6 +24,8 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
+  MorphLFO::WaveType wave_type;
+
   float   frequency;
   float   depth;
   float   center;
@@ -39,6 +42,7 @@ class MorphLFOModule : public MorphOperatorModule
   };
   SharedState *shared_state;
 
+  double compute_value (double phase);
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();
