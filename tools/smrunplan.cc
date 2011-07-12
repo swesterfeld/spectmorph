@@ -196,6 +196,8 @@ main (int argc, char **argv)
 
       float *audio_out[1] = { &samples[i] };
       voice.output()->process (todo, audio_out, 1);
+
+      synth.update_shared_state (todo * 1000.0 / voice.mix_freq());
     }
   if (!options.quiet)
     {
