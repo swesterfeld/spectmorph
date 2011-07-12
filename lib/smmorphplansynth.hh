@@ -30,7 +30,7 @@ class MorphModuleSharedState;
 class MorphPlanSynth {
 protected:
   std::vector<MorphPlanVoice *> voices;
-  std::map<MorphOperator *, MorphModuleSharedState *> m_shared_state;
+  std::map<std::string, MorphModuleSharedState *> m_shared_state;
 
   float        m_mix_freq;
   MorphPlanPtr plan;

@@ -22,6 +22,8 @@
 using namespace SpectMorph;
 
 using std::map;
+using std::vector;
+using std::string;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphPlanSynth");
 
@@ -46,19 +48,57 @@ MorphPlanSynth::~MorphPlanSynth()
 MorphPlanVoice *
 MorphPlanSynth::add_voice()
 {
-  MorphPlanVoice *voice = new MorphPlanVoice (NULL, m_mix_freq, this);
+  MorphPlanVoice *voice = new MorphPlanVoice (m_mix_freq, this);
+
+  if (plan)
+    voice->full_update (plan);
+
   voices.push_back (voice);
   return voice;
+}
+
+static vector<string>
+sorted_id_list (MorphPlanPtr plan)
+{
+  vector<string> ids;
+
+  if (plan)
+    {
+      const vector<MorphOperator *>& ops = plan->operators();
+      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+        {
+          ids.push_back ((*oi)->id());
+        }
+      sort (ids.begin(), ids.end());
+    }
+  return ids;
 }
 
 void
 MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
 {
-  // FIXME: on mere property update, we should not free shared state
-  free_shared_state();
+  vector<string> old_ids = sorted_id_list (plan);
+  vector<string> new_ids = sorted_id_list (new_plan);
 
-  for (size_t i = 0; i < voices.size(); i++)
-    voices[i]->update (new_plan);
+  if (old_ids == new_ids)
+    {
+      map<string, MorphOperator *> op_map;
+
+      const vector<MorphOperator *>& ops = new_plan->operators();
+      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+        op_map[(*oi)->id()] = *oi;
+
+      for (size_t i = 0; i < voices.size(); i++)
+        voices[i]->cheap_update (op_map);
+    }
+  else
+    {
+      free_shared_state();
+
+      for (size_t i = 0; i < voices.size(); i++)
+        voices[i]->full_update (new_plan);
+    }
+  plan = new_plan;
 }
 
 void
@@ -72,13 +112,13 @@ MorphPlanSynth::update_shared_state (double time_ms)
 MorphModuleSharedState *
 MorphPlanSynth::shared_state (MorphOperator *op)
 {
-  return m_shared_state[op];
+  return m_shared_state[op->id()];
 }
 
 void
 MorphPlanSynth::set_shared_state (MorphOperator *op, MorphModuleSharedState *shared_state)
 {
-  m_shared_state[op] = shared_state;
+  m_shared_state[op->id()] = shared_state;
 }
 
 float
@@ -90,7 +130,7 @@ MorphPlanSynth::mix_freq() const
 void
 MorphPlanSynth::free_shared_state()
 {
-  map<MorphOperator *, MorphModuleSharedState *>::iterator si;
+  map<string, MorphModuleSharedState *>::iterator si;
   for (si = m_shared_state.begin(); si != m_shared_state.end(); si++)
     delete si->second;
   m_shared_state.clear();

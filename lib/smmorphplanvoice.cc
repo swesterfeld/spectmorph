@@ -32,15 +32,12 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 #define N_CONTROL_INPUTS 2
 
-MorphPlanVoice::MorphPlanVoice (MorphPlanPtr plan, float mix_freq, MorphPlanSynth *synth) :
+MorphPlanVoice::MorphPlanVoice (float mix_freq, MorphPlanSynth *synth) :
   m_control_input (N_CONTROL_INPUTS),
   m_output (NULL),
-  m_plan (plan),
   m_mix_freq (mix_freq),
   m_morph_plan_synth (synth)
 {
-  create_modules();
-  configure_modules();
   leak_debugger.add (this);
 }
 
@@ -60,12 +57,12 @@ MorphPlanVoice::configure_modules()
 }
 
 void
-MorphPlanVoice::create_modules()
+MorphPlanVoice::create_modules (MorphPlanPtr plan)
 {
-  if (!m_plan)
+  if (!plan)
     return;
 
-  const vector<MorphOperator *>& ops = m_plan->operators();
+  const vector<MorphOperator *>& ops = plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
       MorphOperatorModule *module = MorphOperatorModule::create (*oi, this);
@@ -126,54 +123,20 @@ MorphPlanVoice::module (MorphOperator *op)
 }
 
 void
-MorphPlanVoice::update (MorphPlanPtr new_plan)
+MorphPlanVoice::full_update (MorphPlanPtr plan)
 {
-  if (!try_update (new_plan))
-    {
-      m_plan = new_plan;
-
-      /* This will loose the original state information which means the audio
-       * will not transition smoothely. However, this should only occur for plan
-       * changes, not parameter updates.
-       */
-      clear_modules();
-      create_modules();
-      configure_modules();
-    }
+  /* This will loose the original state information which means the audio
+   * will not transition smoothely. However, this should only occur for plan
+   * changes, not parameter updates.
+   */
+  clear_modules();
+  create_modules (plan);
+  configure_modules();
 }
 
-bool
-MorphPlanVoice::try_update (MorphPlanPtr new_plan)
+void
+MorphPlanVoice::cheap_update (map<string, MorphOperator *>& op_map)
 {
-  vector<string>               old_ids, new_ids;
-  map<string, MorphOperator *> op_map;
-
-  // make a list of old operator ids
-  for (size_t i = 0; i < modules.size(); i++)
-    {
-      string id = modules[i].op->id();
-      if (id.empty())
-        return false;
-      old_ids.push_back (id);
-    }
-  // make a list of new operator ids
-  const vector<MorphOperator *>& new_ops = new_plan->operators();
-  for (vector<MorphOperator *>::const_iterator oi = new_ops.begin(); oi != new_ops.end(); oi++)
-    {
-      string id = (*oi)->id();
-      if (id.empty())
-        return false;
-      new_ids.push_back (id);
-      op_map[id] = *oi;
-    }
-
-  // update can only be done if the id lists match
-  sort (old_ids.begin(), old_ids.end());
-  sort (new_ids.begin(), new_ids.end());
-
-  if (old_ids != new_ids)
-    return false;
-
   // exchange old operators with new operators
   for (size_t i = 0; i < modules.size(); i++)
     {
@@ -182,8 +145,6 @@ MorphPlanVoice::try_update (MorphPlanPtr new_plan)
     }
   // reconfigure modules
   configure_modules();
-  m_plan = new_plan;
-  return true;
 }
 
 double
