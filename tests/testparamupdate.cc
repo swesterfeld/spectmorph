@@ -34,6 +34,14 @@ gettime()
 }
 
 static void
+preinit_plan (MorphPlanPtr plan)
+{
+  MorphPlanSynth synth (44100);
+  synth.add_voice();
+  synth.update_plan (plan);
+}
+
+static void
 measure_update (MorphPlanPtr plan, size_t n_voices)
 {
   MorphPlanSynth synth (44100);
@@ -71,7 +79,7 @@ main (int argc, char **argv)
   delete in;
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-
+  preinit_plan (plan);
   measure_update (plan, 1);
   measure_update (plan, 10);
 }
