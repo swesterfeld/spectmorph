@@ -58,6 +58,20 @@ match_lhs (const string& command, const string& property, string& rhs)
 }
 
 void
+process_property (const string& property, string& value)
+{
+  for (vector<string>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
+    {
+      string new_value;
+      if (match_lhs (*ci, property, new_value))
+        value = new_value;
+    }
+
+  if (options.mode == "list")
+    printf ("%s=%s\n", property.c_str(), value.c_str());
+}
+
+void
 process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
 {
   map<string, vector<unsigned char> > output_blob_map;
@@ -88,21 +102,18 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
         {
           string value = ifile.event_data();
 
-          for (vector<string>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
-            {
-              string new_value;
-              if (match_lhs (*ci, property, new_value))
-                value = new_value;
-            }
-
-          if (options.mode == "list")
-            printf ("%s=%s\n", property.c_str(), value.c_str());
-
+          process_property (property, value);
           ofile.write_string (ifile.event_name(), value);
         }
       else if (ifile.event() == InFile::FLOAT)
         {
-          ofile.write_float (ifile.event_name(), ifile.event_float());
+          double fvalue = ifile.event_float();
+          string  value = Birnet::string_printf ("%.17g", fvalue);
+
+          process_property (property, value);
+          fvalue = atof (value.c_str());
+
+          ofile.write_float (ifile.event_name(), fvalue);
         }
       else if (ifile.event() == InFile::FLOAT_BLOCK)
         {
@@ -110,11 +121,35 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
         }
       else if (ifile.event() == InFile::INT)
         {
-          ofile.write_int (ifile.event_name().c_str(), ifile.event_int());
+          int ivalue = ifile.event_int();
+          string value = Birnet::string_printf ("%d", ivalue);
+
+          process_property (property, value);
+          ivalue = atoi (value.c_str());
+
+          ofile.write_int (ifile.event_name().c_str(), ivalue);
         }
       else if (ifile.event() == InFile::BOOL)
         {
-          ofile.write_bool (ifile.event_name(), ifile.event_bool());
+          bool bvalue = ifile.event_bool();
+          string value = bvalue ? "true" : "false";
+
+          process_property (property, value);
+          if (value == "true")
+            {
+              bvalue = true;
+            }
+          else if (value == "false")
+            {
+              bvalue = false;
+            }
+          else
+            {
+              fprintf (stderr, PROG_NAME ": bad boolean value: %s for property %s\n", value.c_str(), property.c_str());
+              exit (1);
+            }
+
+          ofile.write_bool (ifile.event_name(), bvalue);
         }
       else if (ifile.event() == InFile::BLOB)
         {
