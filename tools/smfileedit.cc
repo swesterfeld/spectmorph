@@ -22,6 +22,7 @@
 
 #include <map>
 
+#include <birnet/birnet.hh>
 #include <glib.h>
 #include <stdlib.h>
 
@@ -33,24 +34,71 @@ using std::vector;
 using std::string;
 using std::map;
 
+struct Options
+{
+  string         mode;
+  string         in_file;
+  string         out_file;
+  vector<string> commands;
+} options;
+
+bool
+match_lhs (const string& command, const string& property, string& rhs)
+{
+  size_t pos = command.find ('=');
+  if (pos != command.npos)
+    {
+      if (command.substr (0, pos) == property)
+        {
+          rhs = command.substr (pos + 1);
+          return true;
+        }
+    }
+  return false;
+}
+
 void
-process_file (InFile& ifile, OutFile& ofile)
+process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
 {
   map<string, vector<unsigned char> > output_blob_map;
+  map<string, int> section_counter;
+  map<string, int> name_counter;
+
+  string section_prefix;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
-     if (ifile.event() == InFile::BEGIN_SECTION)
+      string property = ifile.event_name();
+      property = property_prefix + section_prefix + property;
+      property = Birnet::string_printf ("%s[%d]", property.c_str(), name_counter[property]++);
+
+      if (ifile.event() == InFile::BEGIN_SECTION)
         {
+          const string& s = ifile.event_name();
+
           ofile.begin_section (ifile.event_name());
+          section_prefix = Birnet::string_printf ("%s[%d]", s.c_str(), section_counter[s]++) + ".";
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
+          section_prefix = "";
           ofile.end_section();
         }
       else if (ifile.event() == InFile::STRING)
         {
-          ofile.write_string (ifile.event_name(), ifile.event_data());
+          string value = ifile.event_data();
+
+          for (vector<string>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
+            {
+              string new_value;
+              if (match_lhs (*ci, property, new_value))
+                value = new_value;
+            }
+
+          if (options.mode == "list")
+            printf ("%s=%s\n", property.c_str(), value.c_str());
+
+          ofile.write_string (ifile.event_name(), value);
         }
       else if (ifile.event() == InFile::FLOAT)
         {
@@ -83,7 +131,7 @@ process_file (InFile& ifile, OutFile& ofile)
 
           {
             OutFile blob_ofile (&blob_mo, blob_ifile.file_type(), blob_ifile.file_version());
-            process_file (blob_ifile, blob_ofile);
+            process_file (property + ".", blob_ifile, blob_ofile);
             // blob_ofile destructor run here
           }
 
@@ -111,25 +159,67 @@ process_file (InFile& ifile, OutFile& ofile)
     }
 }
 
+void
+print_usage ()
+{
+  printf ("usage: %s <command> [ <options> ] [ <command specific args...> ]\n", PROG_NAME);
+  printf ("\n");
+  printf ("command specific args:\n");
+  printf ("\n");
+  printf (" %s list [ <options> ] <infile>\n", PROG_NAME);
+  printf (" %s edit [ <options> ] <infile> <outfile> [ <property1>=<value1> ... ]\n", PROG_NAME);
+  printf ("\n");
+}
+
+
 int
 main (int argc, char **argv)
 {
+  vector<string> commands;
+
   sm_init (&argc, &argv);
 
-  if (argc != 3)
+  if (argc < 3)
     {
-      printf ("usage: " PROG_NAME " <infile> <outfile> [<command>...]\n");
+      print_usage();
       return 1;
     }
-  GenericIn *in = StdioIn::open (argv[1]);
+
+  options.mode    = argv[1];
+  options.in_file = argv[2];
+
+  if (options.mode == "list")
+    {
+      options.out_file = "/dev/null";
+    }
+  else if (options.mode == "edit")
+    {
+      if (argc < 4)
+        {
+          print_usage();
+          return 1;
+        }
+
+      options.out_file = argv[3];
+      for (int i = 4; i < argc; i++)
+        options.commands.push_back (argv[i]);
+    }
+  else
+    {
+      printf ("command must be list or edit\n\n");
+      print_usage();
+      return 1;
+    }
+
+  GenericIn *in = StdioIn::open (options.in_file);
   if (!in)
     {
       fprintf (stderr, PROG_NAME ": error opening input\n");
       return 1;
     }
   InFile ifile (in);
-  OutFile ofile (argv[2], ifile.file_type(), ifile.file_version());
+  OutFile ofile (options.out_file, ifile.file_type(), ifile.file_version());
 
-  process_file (ifile, ofile);
+  process_file ("", ifile, ofile);
   delete in;
 }
