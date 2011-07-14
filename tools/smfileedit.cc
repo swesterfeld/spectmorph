@@ -19,6 +19,7 @@
 #include "smoutfile.hh"
 #include "smmemout.hh"
 #include "smmain.hh"
+#include "smhexstring.hh"
 
 #include <map>
 
@@ -203,6 +204,7 @@ print_usage ()
   printf ("\n");
   printf (" %s list [ <options> ] <infile>\n", PROG_NAME);
   printf (" %s edit [ <options> ] <infile> <outfile> [ <property1>=<value1> ... ]\n", PROG_NAME);
+  printf (" %s edit2hex [ <options> ] <infile> [ <property1>=<value1> ... ]\n", PROG_NAME);
   printf ("\n");
 }
 
@@ -223,6 +225,7 @@ main (int argc, char **argv)
   options.mode    = argv[1];
   options.in_file = argv[2];
 
+  bool edit2hex = false;
   if (options.mode == "list")
     {
       options.out_file = "/dev/null";
@@ -239,6 +242,18 @@ main (int argc, char **argv)
       for (int i = 4; i < argc; i++)
         options.commands.push_back (argv[i]);
     }
+  else if (options.mode == "edit2hex")
+    {
+      if (argc < 3)
+        {
+          print_usage();
+          return 1;
+        }
+      for (int i = 3; i < argc; i++)
+        options.commands.push_back (argv[i]);
+      edit2hex = true;
+      options.mode = "edit";
+    }
   else
     {
       printf ("command must be list or edit\n\n");
@@ -253,8 +268,24 @@ main (int argc, char **argv)
       return 1;
     }
   InFile ifile (in);
-  OutFile ofile (options.out_file, ifile.file_type(), ifile.file_version());
+  OutFile *ofile = NULL;
 
-  process_file ("", ifile, ofile);
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  if (edit2hex)
+    {
+      ofile = new OutFile (&mo, ifile.file_type(), ifile.file_version());
+    }
+  else
+    {
+      ofile = new OutFile (options.out_file, ifile.file_type(), ifile.file_version());
+    }
+
+  process_file ("", ifile, *ofile);
+
   delete in;
+  delete ofile;
+
+  if (edit2hex)
+    printf ("%s\n", HexString::encode (data).c_str());
 }
