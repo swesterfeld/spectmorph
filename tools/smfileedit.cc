@@ -80,7 +80,7 @@ process_file (InFile& ifile, OutFile& ofile)
             // blob_ofile destructor run here
           }
 
-          ofile.write_blob ("data", &blob_data[0], blob_data.size());
+          ofile.write_blob (ifile.event_name(), &blob_data[0], blob_data.size());
           delete blob_in;
         }
       ifile.next_event();
