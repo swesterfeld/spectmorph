@@ -20,6 +20,9 @@
 #include "smmemout.hh"
 #include "smmain.hh"
 
+#include <map>
+
+#include <glib.h>
 #include <stdlib.h>
 
 #define PROG_NAME "smfileedit"
@@ -27,10 +30,14 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::string;
+using std::map;
 
 void
 process_file (InFile& ifile, OutFile& ofile)
 {
+  map<string, vector<unsigned char> > output_blob_map;
+
   while (ifile.event() != InFile::END_OF_FILE)
     {
      if (ifile.event() == InFile::BEGIN_SECTION)
@@ -82,6 +89,23 @@ process_file (InFile& ifile, OutFile& ofile)
 
           ofile.write_blob (ifile.event_name(), &blob_data[0], blob_data.size());
           delete blob_in;
+
+          output_blob_map[ifile.event_blob_sum()] = blob_data;
+        }
+      else if (ifile.event() == InFile::BLOB_REF)
+        {
+          vector<unsigned char>& blob_data = output_blob_map[ifile.event_blob_sum()];
+
+          ofile.write_blob (ifile.event_name(), &blob_data[0], blob_data.size());
+        }
+      else if (ifile.event() == InFile::READ_ERROR)
+        {
+          g_printerr (PROG_NAME ": read error\n");
+          break;
+        }
+      else
+        {
+          g_printerr (PROG_NAME ": unhandled event %d\n", ifile.event());
         }
       ifile.next_event();
     }
