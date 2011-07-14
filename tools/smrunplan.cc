@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphlinear.hh"
 #include "smmain.hh"
@@ -35,6 +36,7 @@ struct Options
   int                 midi_note;
   double              len;
   bool                fade;
+  bool                quiet;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -48,7 +50,8 @@ Options::Options () :
   program_name ("smrunplan"),
   midi_note (-1),
   len (1),
-  fade (false)
+  fade (false),
+  quiet (false)
 {
 }
 
@@ -95,6 +98,10 @@ Options::parse (int   *argc_p,
         {
           fade = true;
         }
+      else if (check_arg (argc, argv, &i, "--quiet") || check_arg (argc, argv, &i, "-q"))
+        {
+          quiet = true;
+        }
     }
 
   /* resort argc/argv */
@@ -118,6 +125,7 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
+  printf (" -q, --quiet                 suppress audio output\n");
   printf ("\n");
 }
 
@@ -150,7 +158,9 @@ main (int argc, char **argv)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  MorphPlanVoice voice (plan);
+  MorphPlanSynth synth (44100);
+  MorphPlanVoice& voice = *synth.add_voice();
+  synth.update_plan (plan);
   assert (voice.output());
 
   vector<float> samples (44100 * options.len);
@@ -170,7 +180,7 @@ main (int argc, char **argv)
         linear_op = dynamic_cast<MorphLinear *> (op);
     }
 
-  voice.output()->retrigger (0, freq, 100, 44100);
+  voice.output()->retrigger (0, freq, 100);
 
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
@@ -179,15 +189,21 @@ main (int argc, char **argv)
         {
           double morphing = 2 * double (i) / samples.size() - 1;
           linear_op->set_morphing (morphing);
-          voice.update (plan);
+          synth.update_plan (plan);
         }
 
       size_t todo = min (STEP, samples.size());
 
-      voice.output()->process (/* port */ 0, todo, &samples[i]);
+      float *audio_out[1] = { &samples[i] };
+      voice.output()->process (todo, audio_out, 1);
+
+      synth.update_shared_state (todo * 1000.0 / voice.mix_freq());
     }
-  for (size_t i = 0; i < samples.size(); i++)
+  if (!options.quiet)
     {
-      printf ("%.17g\n", samples[i]);
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          printf ("%.17g\n", samples[i]);
+        }
     }
 }

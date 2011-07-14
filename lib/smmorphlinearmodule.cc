@@ -38,7 +38,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
 #define DEBUG (0)
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice, 3)
 {
   my_source.module = this;
 
@@ -71,6 +71,7 @@ MorphLinearModule::set_config (MorphOperator *op)
   MorphLinear *linear = dynamic_cast<MorphLinear *> (op);
   MorphOperator *left_op = linear->left_op();
   MorphOperator *right_op = linear->right_op();
+  MorphOperator *control_op = linear->control_op();
 
   if (left_op)
     left_mod = morph_plan_voice->module (left_op);
@@ -81,6 +82,15 @@ MorphLinearModule::set_config (MorphOperator *op)
     right_mod = morph_plan_voice->module (right_op);
   else
     right_mod = NULL;
+
+  if (control_op)
+    control_mod = morph_plan_voice->module (control_op);
+  else
+    control_mod = NULL;
+
+  update_dependency (0, left_mod);
+  update_dependency (1, right_mod);
+  update_dependency (2, control_mod);
 
   morphing = linear->morphing();
   control_type = linear->control_type();
@@ -276,26 +286,59 @@ md_cmp (const MagData& m1, const MagData& m2)
 }
 
 static bool
-find_match (float freq, vector<float>& freqs, size_t *index)
+find_match (float freq, vector<float>& freqs, const vector<int>& used, size_t *index)
 {
+  const float lower_bound = freq - 220;
+  const float upper_bound = freq + 220;
+
   double min_diff = 1e20;
   size_t best_index = 0; // initialized to avoid compiler warning
 
-  for (size_t i = 0; i < freqs.size(); i++)
+  size_t i = 0;
+
+  // quick scan for beginning of the region containing suitable candidates
+  size_t skip = freqs.size() / 2;
+  while (skip >= 4)
     {
-      double diff = fabs (freq - freqs[i]);
-      if (diff < min_diff)
-        {
-          best_index = i;
-          min_diff = diff;
-        }
+      while (i + skip < freqs.size() && freqs[i + skip] < lower_bound)
+        i += skip;
+      skip /= 2;
     }
-  if (min_diff < 220 && (freq > 1) && (freqs[best_index] > 1))
+
+  while (i < freqs.size() && freqs[i] < upper_bound)
+    {
+      if (!used[i])
+        {
+          double diff = fabs (freq - freqs[i]);
+          if (diff < min_diff)
+            {
+              best_index = i;
+              min_diff = diff;
+            }
+        }
+      i++;
+    }
+  if (min_diff < 220)
     {
       *index = best_index;
       return true;
     }
   return false;
+}
+
+void
+MorphLinearModule::MySource::interp_mag_one (double interp, float *left, float *right)
+{
+  float l_value = left ? *left : 0;
+  float r_value = right ? *right : 0;
+  if (left)
+    *left = (1 - interp) * l_value;
+  if (right)
+    *right = interp * r_value;
+  // FIXME:
+#if 0
+  if (module->db_linear)
+#endif
 }
 
 AudioBlock *
@@ -311,6 +354,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
     morphing = module->morph_plan_voice->control_input (0);
   else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
     morphing = module->morph_plan_voice->control_input (1);
+  else if (module->control_type == MorphLinear::CONTROL_OP)
+    morphing = module->control_mod->value();
   else
     g_assert_not_reached();
 
@@ -374,19 +419,25 @@ MorphLinearModule::MySource::audio_block (size_t index)
           mds.push_back (md);
         }
       sort (mds.begin(), mds.end(), md_cmp);
+
+      vector<int> left_used (left_block.freqs.size());
+      vector<int> right_used (right_block.freqs.size());
       for (size_t m = 0; m < mds.size(); m++)
         {
           size_t i, j;
-          bool match;
+          bool match = false;
           if (mds[m].block == MagData::BLOCK_LEFT)
             {
               i = mds[m].index;
-              match = find_match (left_block.freqs[i], right_block.freqs, &j);
+
+              if (!left_used[i])
+                match = find_match (left_block.freqs[i], right_block.freqs, right_used, &j);
             }
           else // (mds[m].block == MagData::BLOCK_RIGHT)
             {
               j = mds[m].index;
-              match = find_match (right_block.freqs[j], left_block.freqs, &i);
+              if (!right_used[j])
+                match = find_match (right_block.freqs[j], left_block.freqs, left_used, &i);
             }
           if (match)
             {
@@ -438,26 +489,30 @@ MorphLinearModule::MySource::audio_block (size_t index)
               module->audio_block.mags.push_back (mag);
               module->audio_block.phases.push_back (phase);
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
-              left_block.freqs[i] = 0;
-              right_block.freqs[j] = 0;
+              left_used[i] = 1;
+              right_used[j] = 1;
             }
         }
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
-          if (left_block.freqs[i] != 0)
+          if (!left_used[i])
             {
               module->audio_block.freqs.push_back (left_block.freqs[i]);
-              module->audio_block.mags.push_back ((1 - interp) * left_block.mags[i]);
+              module->audio_block.mags.push_back (left_block.mags[i]);
               module->audio_block.phases.push_back (left_block.phases[i]);
+
+              interp_mag_one (interp, &module->audio_block.mags.back(), NULL);
             }
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
         {
-          if (right_block.freqs[i] != 0)
+          if (!right_used[i])
             {
               module->audio_block.freqs.push_back (right_block.freqs[i]);
-              module->audio_block.mags.push_back (interp * right_block.mags[i]);
+              module->audio_block.mags.push_back (right_block.mags[i]);
               module->audio_block.phases.push_back (right_block.phases[i]);
+
+              interp_mag_one (interp, NULL, &module->audio_block.mags.back());
             }
         }
       assert (left_block.noise.size() == right_block.noise.size());
@@ -473,12 +528,20 @@ MorphLinearModule::MySource::audio_block (size_t index)
   else if (have_left) // only left source output present
     {
       module->audio_block = left_block;
+      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
+        module->audio_block.noise[i] *= (1 - interp);
+      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
+        interp_mag_one (interp, &module->audio_block.mags[i], NULL);
 
       return &module->audio_block;
     }
   else if (have_right) // only right source output present
     {
       module->audio_block = right_block;
+      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
+        module->audio_block.noise[i] *= interp;
+      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
+        interp_mag_one (interp, NULL, &module->audio_block.mags[i]);
 
       return &module->audio_block;
     }

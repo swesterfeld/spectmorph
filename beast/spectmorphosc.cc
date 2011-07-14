@@ -22,6 +22,7 @@
 #include "smmain.hh"
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 
 #include <bse/bsemathsignal.h>
@@ -36,25 +37,31 @@ using std::vector;
 namespace SpectMorph {
 
 using namespace Bse;
+using namespace Birnet;
 
 class Osc : public OscBase {
   struct Properties : public OscProperties {
-    MorphPlanPtr morph_plan;
-    Properties (Osc *osc) : OscProperties (osc)
+    Osc *osc;
+    Properties (Osc *osc) :
+      OscProperties (osc),
+      osc (osc)
     {
-      morph_plan = osc->morph_plan();
     }
   };
   class Module : public SynthesisModule {
   private:
-    MorphPlanVoice morph_plan_voice;
-    float          last_sync_level;
-    float          current_freq;
-    bool           need_retrigger;
-    float          frequency;
+    MorphPlanVoice *morph_plan_voice;
+    MorphPlanSynth *morph_plan_synth;
+    Osc            *osc;
+    float           last_sync_level;
+    float           current_freq;
+    bool            need_retrigger;
+    float           frequency;
   public:
     Module() :
       morph_plan_voice (NULL),
+      morph_plan_synth (NULL),
+      osc (NULL),
       need_retrigger (false)
     {
       //
@@ -66,24 +73,26 @@ class Osc : public OscBase {
     void
     process (unsigned int n_values)
     {
+      AutoLocker lock (osc->morph_plan_synth_mutex());
+
       //const gfloat *sync_in = istream (ICHANNEL_AUDIO_OUT).values;
       if (istream (ICHANNEL_CTRL_IN1).connected)
         {
           const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN1).values;
-          morph_plan_voice.set_control_input (0, ctrl_in[0]);
+          morph_plan_voice->set_control_input (0, ctrl_in[0]);
         }
       else
         {
-          morph_plan_voice.set_control_input (0, 0);
+          morph_plan_voice->set_control_input (0, 0);
         }
       if (istream (ICHANNEL_CTRL_IN2).connected)
         {
           const gfloat *ctrl_in = istream (ICHANNEL_CTRL_IN2).values;
-          morph_plan_voice.set_control_input (1, ctrl_in[0]);
+          morph_plan_voice->set_control_input (1, ctrl_in[0]);
         }
       else
         {
-          morph_plan_voice.set_control_input (1, 0);
+          morph_plan_voice->set_control_input (1, 0);
         }
       if (need_retrigger)
         {
@@ -99,7 +108,7 @@ class Osc : public OscBase {
           retrigger (new_freq, midi_velocity);
           need_retrigger = false;
         }
-      if (!morph_plan_voice.output())
+      if (!morph_plan_voice->output())
         {
           ostream_set (OCHANNEL_AUDIO_OUT1, const_values (0));
           ostream_set (OCHANNEL_AUDIO_OUT2, const_values (0));
@@ -109,22 +118,22 @@ class Osc : public OscBase {
       else
         {
           int channels[4] = { OCHANNEL_AUDIO_OUT1, OCHANNEL_AUDIO_OUT2, OCHANNEL_AUDIO_OUT3, OCHANNEL_AUDIO_OUT4 };
+          float *audio_out[4] = { NULL, NULL, NULL, NULL };
 
           for (int port = 0; port < 4; port++)
             {
               if (ostream (channels[port]).connected)
-                {
-                  float *audio_out = ostream (channels[port]).values;
-                  morph_plan_voice.output()->process (port, n_values, audio_out);
-                }
+                audio_out[port] = ostream (channels[port]).values;
             }
+          morph_plan_voice->output()->process (n_values, audio_out, 4);
         }
+      osc->update_shared_state (tick_stamp(), mix_freq());
     }
     void
     retrigger (float freq, int midi_velocity)
     {
-      if (morph_plan_voice.output())
-        morph_plan_voice.output()->retrigger (0, freq, midi_velocity, mix_freq());
+      if (morph_plan_voice->output())
+        morph_plan_voice->output()->retrigger (0, freq, midi_velocity);
 
       current_freq = freq;
     }
@@ -132,8 +141,18 @@ class Osc : public OscBase {
     config (Properties *properties)
     {
       frequency = properties->frequency;
+      osc       = properties->osc;
 
-      morph_plan_voice.update (properties->morph_plan);
+      if (!morph_plan_voice)
+        {
+          morph_plan_synth = osc->morph_plan_synth (mix_freq());
+          morph_plan_voice = morph_plan_synth->add_voice();
+        }
+
+      AutoLocker lock (osc->morph_plan_synth_mutex());
+      MorphPlanPtr plan = osc->take_new_morph_plan();
+      if (plan)
+        morph_plan_synth->update_plan (plan);
     }
   };
 
@@ -143,13 +162,65 @@ class Osc : public OscBase {
   GSource *gui_source;
   int      gui_pid;
 
-  MorphPlanPtr m_morph_plan;
+  MorphPlanPtr     m_morph_plan;
+  MorphPlanPtr     m_new_morph_plan;
+  MorphPlanSynth  *m_morph_plan_synth;
+  uint64           last_tick_stamp;
+  Mutex            m_morph_plan_synth_mutex;
 
 public:
   MorphPlanPtr
-  morph_plan()
+  take_new_morph_plan()
   {
-    return m_morph_plan;
+    MorphPlanPtr plan = m_new_morph_plan;
+    m_new_morph_plan = NULL;
+    return plan;
+  }
+  Mutex&
+  morph_plan_synth_mutex()
+  {
+    return m_morph_plan_synth_mutex;
+  }
+  MorphPlanSynth *
+  morph_plan_synth (float mix_freq)
+  {
+    AutoLocker lock (m_morph_plan_synth_mutex);
+
+    if (!m_morph_plan_synth)
+      m_morph_plan_synth = new MorphPlanSynth (mix_freq);
+
+    double epsilon = 1e-8;
+    if (fabs (m_morph_plan_synth->mix_freq() - mix_freq) > epsilon)
+      {
+        // mix_freq changed
+        delete m_morph_plan_synth;
+        m_morph_plan_synth = new MorphPlanSynth (mix_freq);
+      }
+    return m_morph_plan_synth;
+  }
+  void
+  update_shared_state (uint64 tick_stamp, float mix_freq)
+  {
+    if (tick_stamp > last_tick_stamp)
+      {
+        double delta_time_ms = (tick_stamp - last_tick_stamp) / mix_freq * 1000;
+        m_morph_plan_synth->update_shared_state (delta_time_ms);
+        last_tick_stamp = tick_stamp;
+      }
+  }
+  void
+  prepare1()
+  {
+    m_new_morph_plan = m_morph_plan;
+  }
+  void
+  reset1()
+  {
+    if (m_morph_plan_synth)
+      {
+        delete m_morph_plan_synth;
+        m_morph_plan_synth = NULL;
+      }
   }
   static gboolean
   gui_source_pending (Osc *osc, gint *timeout)
@@ -204,6 +275,10 @@ public:
         case PROP_PLAN:
           m_morph_plan = new MorphPlan();
           m_morph_plan->set_plan_str (plan.c_str());
+            {
+              AutoLocker lock (m_morph_plan_synth_mutex);
+              m_new_morph_plan = m_morph_plan;
+            }
 #if 0
           printf ("==<>== MorphPlan updated: new plan has %d chars; %zd operators\n",
                   plan.length(), m_morph_plan->operators().size());
@@ -218,6 +293,8 @@ public:
   {
     gui_pipe_stdin = NULL;
     gui_pipe_stdout = NULL;
+    m_morph_plan_synth = NULL;
+    last_tick_stamp = 0;
 
     static bool sm_init_ok = false;
     if (!sm_init_ok)
@@ -231,9 +308,10 @@ public:
   {
     int child_stdin = -1, child_stdout = -1;
     char **argv;
-    argv = (char **) g_malloc (2 * sizeof (char *));
+    argv = (char **) g_malloc (3 * sizeof (char *));
     argv[0] = (char *) "spectmorphoscgui";
-    argv[1] = NULL;
+    argv[1] = BSE_OBJECT_UNAME (gobject());
+    argv[2] = NULL;
     GError *error = NULL;
     GPid child_pid;
     g_spawn_async_with_pipes (NULL, /* working directory = current dir */

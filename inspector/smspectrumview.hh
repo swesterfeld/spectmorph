@@ -23,9 +23,11 @@
 
 namespace SpectMorph {
 
+class Navigator;
 class SpectrumView : public Gtk::DrawingArea
 {
   TimeFreqView *time_freq_view_ptr;
+  Navigator    *navigator;
   FFTResult     spectrum;
   AudioBlock    audio_block;
   double        hzoom;
@@ -34,9 +36,10 @@ class SpectrumView : public Gtk::DrawingArea
   void force_redraw();
 
 public:
-  SpectrumView();
+  SpectrumView (Navigator *navigator);
 
   bool on_expose_event (GdkEventExpose* ev);
+  void on_display_params_changed();
 
   void set_spectrum_model (TimeFreqView& tfview);
   void on_spectrum_changed();

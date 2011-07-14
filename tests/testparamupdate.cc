@@ -16,6 +16,7 @@
  */
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmain.hh"
 
@@ -30,6 +31,31 @@ gettime()
   gettimeofday (&tv, 0);
 
   return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+static void
+preinit_plan (MorphPlanPtr plan)
+{
+  MorphPlanSynth synth (44100);
+  synth.add_voice();
+  synth.update_plan (plan);
+}
+
+static void
+measure_update (MorphPlanPtr plan, size_t n_voices)
+{
+  MorphPlanSynth synth (44100);
+  for (size_t i = 0; i < n_voices; i++)
+    synth.add_voice();
+
+  size_t runs = 1000000 / n_voices;
+
+  double start = gettime();
+  for (size_t j = 0; j < runs; j++)
+    synth.update_plan (plan);
+  double end = gettime();
+
+  printf ("update (%zd voices): %f updates per ms\n", n_voices, 1 / ((end - start) * 1000 / runs));
 }
 
 int
@@ -53,15 +79,7 @@ main (int argc, char **argv)
   delete in;
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-
-  MorphPlanVoice voice (plan);
-
-  size_t runs = 1000000;
-
-  double start = gettime();
-  for (size_t i = 0; i < runs; i++)
-    voice.update (plan);
-  double end = gettime();
-
-  printf ("update: %f updates per ms\n", 1 / ((end - start) * 1000 / runs));
+  preinit_plan (plan);
+  measure_update (plan, 1);
+  measure_update (plan, 10);
 }

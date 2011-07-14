@@ -16,6 +16,7 @@
  */
 
 #include "smspectrumview.hh"
+#include "smnavigator.hh"
 #include "smlpc.hh"
 
 using namespace SpectMorph;
@@ -23,7 +24,8 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 
-SpectrumView::SpectrumView()
+SpectrumView::SpectrumView (Navigator *navigator) :
+  navigator (navigator)
 {
   time_freq_view_ptr = NULL;
   hzoom = 1;
@@ -100,7 +102,7 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
     cr->stroke();
 
     // draw lpc envelope
-    if (audio_block.lpc_lsf_p.size() > 10)
+    if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lpc())
       {
         LPC::LSFEnvelope env;
         env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
@@ -118,6 +120,24 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
             double value = env.eval (freq);
             double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
             cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
+          }
+        cr->stroke();
+      }
+    // draw lsf parameters
+    if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lsf())
+      {
+        cr->set_source_rgb (0.0, 0.0, 0.3);
+        for (size_t i = 0; i < audio_block.lpc_lsf_p.size(); i++)
+          {
+            cr->move_to (audio_block.lpc_lsf_p[i] / M_PI * width, 0);
+            cr->line_to (audio_block.lpc_lsf_p[i] / M_PI * width, height);
+          }
+        cr->stroke();
+        cr->set_source_rgb (0.0, 0.0, 0.8);
+        for (size_t i = 0; i < audio_block.lpc_lsf_q.size(); i++)
+          {
+            cr->move_to (audio_block.lpc_lsf_q[i] / M_PI * width, 0);
+            cr->line_to (audio_block.lpc_lsf_q[i] / M_PI * width, height);
           }
         cr->stroke();
       }
@@ -171,4 +191,10 @@ SpectrumView::force_redraw()
       Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
       win->invalidate_rect (r, false);
     }
+}
+
+void
+SpectrumView::on_display_params_changed()
+{
+  force_redraw();
 }

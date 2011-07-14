@@ -28,19 +28,36 @@ namespace SpectMorph
 
 class MorphPlanVoice;
 
+class MorphModuleSharedState
+{
+public:
+  MorphModuleSharedState();
+  virtual ~MorphModuleSharedState();
+};
+
 class MorphOperatorModule
 {
 protected:
-  MorphPlanVoice *morph_plan_voice;
+  MorphPlanVoice                     *morph_plan_voice;
+  std::vector<MorphOperatorModule *>  m_dependencies;
+  int                                 m_update_value_tag;
 
+  void update_dependency (size_t i, MorphOperatorModule *dep_mod);
 public:
-  MorphOperatorModule (MorphPlanVoice *voice);
+  MorphOperatorModule (MorphPlanVoice *voice, size_t n_dependencies);
   virtual ~MorphOperatorModule();
 
   virtual float latency_ms();
   virtual void set_latency_ms (float latency_ms);
   virtual void set_config (MorphOperator *op) = 0;
   virtual LiveDecoderSource *source();
+  virtual float value();
+  virtual void reset_value();
+  virtual void update_value (double time_ms);
+  virtual void update_shared_state (double time_ms);
+
+  const std::vector<MorphOperatorModule *>& dependencies() const;
+  int& update_value_tag();
 
   static MorphOperatorModule *create (MorphOperator *op, MorphPlanVoice *voice);
 };

@@ -35,6 +35,7 @@ protected:
   Gtk::HScale                      hscale;
 
   OperatorFilter                  *operator_filter;
+  OperatorFilter                  *control_operator_filter;
 
   Gtk::Label                       left_label;
   ComboBoxOperator                 left_combobox;
@@ -42,15 +43,15 @@ protected:
   Gtk::Label                       right_label;
   ComboBoxOperator                 right_combobox;
 
-  Gtk::Label                       control_type_label;
-  Gtk::ComboBoxText                control_type_combobox;
+  Gtk::Label                       control_label;
+  ComboBoxOperator                 control_combobox;
 
   Gtk::CheckButton                 db_linear_check_button;
   Gtk::CheckButton                 use_lpc_check_button;
 
   void on_operator_changed();
   void on_morphing_changed();
-  void on_control_type_changed();
+  void on_control_changed();
   void on_db_linear_changed();
   void on_use_lpc_changed();
 

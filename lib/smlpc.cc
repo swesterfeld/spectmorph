@@ -171,24 +171,55 @@ LPC::LSFEnvelope::init (const vector<float>& lpc_lsf_p, const vector<float>& lpc
   m_init = false;
   g_return_val_if_fail (lpc_lsf_p.size() == lpc_lsf_q.size(), false);
 
+  p_a.resize (lpc_lsf_p.size() - 1);
+  p_b.resize (lpc_lsf_p.size() - 1);
+  q_a.resize (lpc_lsf_p.size() - 1);
+  q_b.resize (lpc_lsf_p.size() - 1);
+
   for (size_t j = 0; j < lpc_lsf_p.size(); j++)
     {
       complex<double> r_p (cos (lpc_lsf_p[j]), sin (lpc_lsf_p[j]));
       complex<double> r_q (cos (lpc_lsf_q[j]), sin (lpc_lsf_q[j]));
 
       if (j == lpc_lsf_p.size() - 1) // real root at nyquist
-        p_real_root = r_p;
+        p_real_root = r_p.real();
       else
-        p_roots.push_back (r_p);
+        {
+          p_a[j] = -2 * r_p.real();
+          p_b[j] = r_p.real() * r_p.real() + r_p.imag() * r_p.imag();
+        }
 
       if (j == 0)                  // real root at 0
-        q_real_root = r_q;
+        q_real_root = r_q.real();
       else
-        q_roots.push_back (r_q);
+        {
+          q_a[j - 1] = -2 * r_q.real();
+          q_b[j - 1] = r_q.real() * r_q.real() + r_q.imag() * r_q.imag();
+        }
     }
   m_init = true;
 
   return true;
+}
+
+static inline complex<double>
+xmul (complex<double> a, complex<double> b)
+{
+  const double rr = a.real() * b.real();
+  const double ri = a.real() * b.imag();
+  const double ir = a.imag() * b.real();
+  const double ii = a.imag() * b.imag();
+
+  return complex<double> (rr - ii, ir + ri);
+}
+
+static inline double
+xabs (complex<double> z)
+{
+  const double rr = z.real() * z.real();
+  const double ii = z.imag() * z.imag();
+
+  return sqrt (rr + ii);
 }
 
 double
@@ -197,21 +228,19 @@ LPC::LSFEnvelope::eval (double f)
   g_return_val_if_fail (m_init, 0);
 
   complex<double> z (cos (f), sin (f));
+  complex<double> z2 = xmul (z, z);
   complex<double> acc_p = 0.5;
   complex<double> acc_q = 0.5;
 
-  acc_p *= (z - p_real_root);
-  acc_q *= (z - q_real_root);
+  acc_p = xmul (acc_p, z - p_real_root);
+  acc_q = xmul (acc_q, z - q_real_root);
 
-  for (size_t j = 0; j < p_roots.size(); j++)
+  for (size_t j = 0; j < p_a.size(); j++)
     {
-      complex<double> r_p (p_roots[j]);
-      complex<double> r_q (q_roots[j]);
-
-      acc_p *= (z - r_p) * (z - conj (r_p));
-      acc_q *= (z - r_q) * (z - conj (r_q));
+      acc_p = xmul (acc_p, z2 + z * p_a[j] + p_b[j]);
+      acc_q = xmul (acc_q, z2 + z * q_a[j] + q_b[j]);
     }
-  double value = 1 / abs (acc_p + acc_q);
+  double value = 1 / xabs (acc_p + acc_q);
   return value;
 }
 
@@ -359,10 +388,15 @@ LPC::roots2lpc (const vector< complex<double> >& roots, vector<double>& lpc)
 void
 LPC::make_stable_roots (vector< complex<double> >& roots)
 {
+  double max_abs = 1 - 1e-4;  // maximum abs value for roots (to prevent problems in LPC->LSF conversion)
   for (size_t i = 0; i < roots.size(); i++)
     {
+      // move root into unit circle if necessary
       if (abs (roots[i]) > 1.0)
         roots[i] = 1.0 / conj (roots[i]);
+      // ensure that |roots[i]| <= max_abs;
+      if (abs (roots[i]) > max_abs)
+        roots[i] = (roots[i] / abs (roots[i])) * max_abs;
     }
 }
 

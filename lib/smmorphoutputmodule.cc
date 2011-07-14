@@ -32,7 +32,7 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
 
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice, CHANNEL_OP_COUNT)
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
@@ -85,6 +85,8 @@ MorphOutputModule::set_config (MorphOperator *op)
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
+
+      update_dependency (ch, mod);
     }
 }
 
@@ -98,29 +100,86 @@ MorphOutputModule::set_latency_ms (float latency_ms)
     }
 }
 
-void
-MorphOutputModule::process (int port, size_t n_values, float *values)
+static void
+recursive_reset_tag (MorphOperatorModule *module)
 {
-  g_return_if_fail (port >= 0 && size_t (port) < out_decoders.size());
+  if (!module)
+    return;
 
-  if (out_decoders[port])
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_reset_tag (deps[i]);
+
+  module->update_value_tag() = 0;
+}
+
+static void
+recursive_update_value (MorphOperatorModule *module, double time_ms)
+{
+  if (!module)
+    return;
+
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_update_value (deps[i], time_ms);
+
+  if (!module->update_value_tag())
     {
-      out_decoders[port]->process (n_values, 0, 0, values);
+      module->update_value (time_ms);
+      module->update_value_tag()++;
     }
-  else
+}
+
+static void
+recursive_reset_value (MorphOperatorModule *module)
+{
+  if (!module)
+    return;
+
+  const vector<MorphOperatorModule *>& deps = module->dependencies();
+  for (size_t i = 0; i < deps.size(); i++)
+    recursive_reset_value (deps[i]);
+
+  if (!module->update_value_tag())
     {
-      zero_float_block (n_values, values);
+      module->reset_value();
+      module->update_value_tag()++;
     }
 }
 
 void
-MorphOutputModule::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports)
+{
+  g_return_if_fail (n_ports <= out_decoders.size());
+
+  for (size_t port = 0; port < n_ports; port++)
+    {
+      if (values[port])
+        {
+          if (out_decoders[port])
+            {
+              out_decoders[port]->process (n_samples, 0, 0, values[port]);
+            }
+          else
+            {
+              zero_float_block (n_samples, values[port]);
+            }
+        }
+    }
+  recursive_reset_tag (this);
+  recursive_update_value (this, n_samples / morph_plan_voice->mix_freq() * 1000);
+}
+
+void
+MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
 {
   for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)
     {
       if (out_decoders[port])
         {
-          out_decoders[port]->retrigger (channel, freq, midi_velocity, mix_freq);
+          out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
+  recursive_reset_tag (this);
+  recursive_reset_value (this);
 }

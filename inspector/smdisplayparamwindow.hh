@@ -15,28 +15,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef SPECTMORPH_MORPH_OUTPUT_MODULE_HH
-#define SPECTMORPH_MORPH_OUTPUT_MODULE_HH
 
-#include "smmorphoperatormodule.hh"
-#include "smmorphplanvoice.hh"
-#include "smlivedecoder.hh"
+#ifndef SPECTMORPH_DISPLAY_PARAMWINDOW_HH
+#define SPECTMORPH_DISPLAY_PARAMWINDOW_HH
+
+#include <gtkmm.h>
+
+#include "smspectrumview.hh"
+#include "smtimefreqview.hh"
+#include "smzoomcontroller.hh"
 
 namespace SpectMorph {
 
-class MorphOutputModule : public MorphOperatorModule
+class DisplayParamWindow : public Gtk::Window
 {
-  std::vector<MorphOperatorModule *> out_ops;
-  std::vector<LiveDecoder *>         out_decoders;
+  Gtk::VBox          vbox;
+  Gtk::CheckButton   show_lsf_button;
+  Gtk::CheckButton   show_lpc_button;
+
+  void on_param_changed();
 
 public:
-  MorphOutputModule (MorphPlanVoice *voice);
-  ~MorphOutputModule();
+  DisplayParamWindow();
 
-  void set_latency_ms (float latency_ms);
-  void set_config (MorphOperator *op);
-  void process (size_t n_samples, float **values, size_t n_ports);
-  void retrigger (int channel, float freq, int midi_velocity);
+  bool show_lsf();
+  bool show_lpc();
+
+  sigc::signal<void> signal_params_changed;
 };
 
 }

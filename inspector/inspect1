@@ -1,7 +1,13 @@
 #!/bin/bash
 
 smwavset init /tmp/foo.smset
-smwavset add /tmp/foo.smset 60 "$1"
+
+NOTE=60
+for FILE in "$@"
+do
+  smwavset add /tmp/foo.smset $NOTE "$FILE"
+  NOTE=$((NOTE + 1))
+done
 smwavset encode /tmp/foo.smset /tmp/fooe.smset
 smwavset link /tmp/fooe.smset
 echo "smset_dir /tmp" > /tmp/fooe.smindex

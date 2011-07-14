@@ -1,0 +1,75 @@
+/*
+ * Copyright (C) 2011 Stefan Westerfeld
+ *
+ * This library is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by the
+ * Free Software Foundation; either version 3 of the License, or (at your
+ * option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef SPECTMORPH_MORPH_LFO_HH
+#define SPECTMORPH_MORPH_LFO_HH
+
+#include "smmorphoperator.hh"
+
+#include <string>
+
+namespace SpectMorph
+{
+
+class MorphLFO : public MorphOperator
+{
+public:
+  enum WaveType {
+    WAVE_SINE        = 1,
+    WAVE_TRIANGLE    = 2,
+  };
+protected:
+  WaveType       m_wave_type;
+  float          m_frequency;
+  float          m_depth;
+  float          m_center;
+  float          m_start_phase;
+  bool           m_sync_voices;
+
+public:
+  MorphLFO (MorphPlan *morph_plan);
+  ~MorphLFO();
+
+  // inherited from MorphOperator
+  const char        *type();
+  bool               save (OutFile& out_file);
+  bool               load (InFile&  in_file);
+  void               post_load();
+  OutputType         output_type();
+
+  WaveType wave_type();
+  void set_wave_type (WaveType new_wave_type);
+
+  float frequency() const;
+  void set_frequency (float new_frequency);
+
+  float depth() const;
+  void set_depth (float new_depth);
+
+  float center() const;
+  void set_center (float new_center);
+
+  float start_phase() const;
+  void set_start_phase (float new_start_phase);
+
+  bool sync_voices() const;
+  void set_sync_voices (float new_sync_voices);
+};
+
+}
+
+#endif

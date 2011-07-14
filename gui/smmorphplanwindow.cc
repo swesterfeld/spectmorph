@@ -64,11 +64,12 @@ MorphPlanWindow::on_load_index_clicked()
     }
 }
 
-MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
   m_morph_plan (morph_plan),
   morph_plan_view (morph_plan.c_ptr(), this)
 {
   set_default_size (250, 100);
+  set_title (title);
   plan_vbox.set_border_width (10);
 
   ref_action_group = Gtk::ActionGroup::create();
@@ -92,6 +93,11 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
   ref_action_group->add (Gtk::Action::create ("EditAddLinearMorph", "Linear Morph"),
                          sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
                                      "SpectMorph::MorphLinear"));
+  // LFO
+  ref_action_group->add (Gtk::Action::create ("EditAddLFO", "LFO"),
+                         sigc::bind (sigc::mem_fun (*this, &MorphPlanWindow::add_operator),
+                                     "SpectMorph::MorphLFO"));
+
 
 
   ref_action_group->add (Gtk::Action::create ("FileLoadIndex", "Load Index"),
@@ -124,6 +130,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan) :
     "        <menuitem action='EditAddSource' />"
     "        <menuitem action='EditAddOutput' />"
     "        <menuitem action='EditAddLinearMorph' />"
+    "        <menuitem action='EditAddLFO' />"
     "      </menu>"
     "    </menu>"
     "  </menubar>"

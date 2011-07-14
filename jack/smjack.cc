@@ -19,6 +19,7 @@
 #include "smmorphplanview.hh"
 #include "smmorphplanwindow.hh"
 #include "smmorphplanvoice.hh"
+#include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmemout.hh"
 
@@ -63,11 +64,7 @@ public:
   }
   ~Voice()
   {
-    if (mp_voice)
-      {
-        delete mp_voice;
-        mp_voice = NULL;
-      }
+    mp_voice = NULL;
   }
 };
 
@@ -77,12 +74,14 @@ protected:
   double                jack_mix_freq;
   jack_port_t          *input_port;
   vector<jack_port_t *> output_ports;
+  vector<jack_port_t *> control_ports;
   bool                  need_reschedule;
   bool                  pedal_down;
 
   double                release_ms;
   double                m_volume;
 
+  MorphPlanSynth       *morph_plan_synth;
   vector<Voice>         voices;
   vector<Voice*>        active_voices;
   vector<Voice*>        release_voices;
@@ -93,6 +92,8 @@ protected:
 
 public:
   JackSynth();
+  ~JackSynth();
+
   void init (jack_client_t *client, MorphPlanPtr morph_plan);
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
@@ -156,17 +157,15 @@ JackSynth::process (jack_nframes_t nframes)
     {
       if (m_new_plan)
         {
-          for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-            {
-              Voice& voice = (*vi);
-              voice.mp_voice->update (m_new_plan);
-            }
+          morph_plan_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
       m_volume = m_new_volume;
       m_new_plan_mutex.unlock();
     }
 
+  float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
+  float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   // zero output buffer, so voices can be added
@@ -201,7 +200,7 @@ JackSynth::process (jack_nframes_t nframes)
                   MorphOutputModule *output = vi->mp_voice->output();
                   if (output)
                     {
-                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity, jack_mix_freq);
+                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
                       vi->state = Voice::STATE_ON;
                       vi->midi_note = midi_note;
                       vi->velocity = velocity;
@@ -278,10 +277,16 @@ JackSynth::process (jack_nframes_t nframes)
         {
           Voice *v = *avi;
           MorphOutputModule *output = v->mp_voice->output();
+
+          // update control input values
+          v->mp_voice->set_control_input (0, control_in_1[i]);
+          v->mp_voice->set_control_input (1, control_in_2[i]);
+
           if (output)
             {
               float samples[end - i];
-              output->process (0, end - i, samples);
+              float *values[1] = { samples };
+              output->process (end - i, values, 1);
               for (size_t j = i; j < end; j++)
                 audio_out[j] += samples[j-i] * v->velocity;
             }
@@ -290,6 +295,10 @@ JackSynth::process (jack_nframes_t nframes)
       for (vector<Voice*>::iterator rvi = release_voices.begin(); rvi != release_voices.end(); rvi++)
         {
           Voice *v = *rvi;
+
+          // update control input values
+          v->mp_voice->set_control_input (0, control_in_1[i]);
+          v->mp_voice->set_control_input (1, control_in_2[i]);
 
           double v_decrement = (1000.0 / jack_mix_freq) / release_ms;
           size_t envelope_len = max (sm_round_positive (v->env / v_decrement), 0);
@@ -310,7 +319,8 @@ JackSynth::process (jack_nframes_t nframes)
           MorphOutputModule *output = v->mp_voice->output();
           if (output)
             {
-              output->process (0, envelope_end - i, samples);
+              float *values[1] = { samples };
+              output->process (envelope_end - i, values, 1);
 
               for (size_t j = i; j < envelope_end; j++)
                 audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;
@@ -320,6 +330,8 @@ JackSynth::process (jack_nframes_t nframes)
     }
   for (size_t i = 0; i < nframes; i++)
     audio_out[i] *= m_volume;
+
+  morph_plan_synth->update_shared_state (nframes / jack_mix_freq * 1000);
   return 0;
 }
 
@@ -336,19 +348,33 @@ JackSynth::JackSynth()
   pedal_down = false;
   m_volume = 1;
   m_new_volume = 1;
+  morph_plan_synth = NULL;
+}
+
+JackSynth::~JackSynth()
+{
+  if (morph_plan_synth)
+    {
+      delete morph_plan_synth;
+      morph_plan_synth = NULL;
+    }
 }
 
 void
 JackSynth::preinit_plan (MorphPlanPtr plan)
 {
   // this might take a while, and cannot be used in RT callback
-  MorphPlanVoice mp_voice (plan);
-  MorphOutputModule *om = mp_voice.output();
+  MorphPlanSynth mp_synth (jack_mix_freq);
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (plan);
+
+  MorphOutputModule *om = mp_voice->output();
   if (om)
     {
-      om->retrigger (0, 440, 1, jack_mix_freq);
+      om->retrigger (0, 440, 1);
       float s;
-      om->process (0, 1, &s);
+      float *values[1] = { &s };
+      om->process (1, values, 1);
     }
 }
 
@@ -360,13 +386,23 @@ JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
   preinit_plan (morph_plan);
 
   release_ms = 150;
+
+  assert (morph_plan_synth == NULL);
+  morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
+
   voices.resize (64);
   for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = new MorphPlanVoice (morph_plan);
+    vi->mp_voice = morph_plan_synth->add_voice();
+
+  morph_plan_synth->update_plan (morph_plan);
 
   jack_set_process_callback (client, jack_process, this);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+  control_ports.push_back (jack_port_register (client, "control_in_1", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
+  control_ports.push_back (jack_port_register (client, "control_in_2", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
   output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
 
   if (jack_activate (client))
@@ -412,8 +448,8 @@ class JackWindow : public Gtk::Window
   JackSynth       synth;
 
 public:
-  JackWindow (MorphPlanPtr plan) :
-    inst_window (plan),
+  JackWindow (MorphPlanPtr plan, const string& title) :
+    inst_window (plan, title),
     morph_plan (plan),
     volume_scale (-96, 24, 0.01)
   {
@@ -504,6 +540,7 @@ main (int argc, char **argv)
 
   MorphPlanPtr morph_plan = new MorphPlan;
 
+  string title = "SpectMorph Instrument";
   if (argc == 2)
     {
       BseErrorType error;
@@ -523,9 +560,11 @@ main (int argc, char **argv)
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
         }
+      title += " - ";
+      title += g_basename (argv[1]);
     }
 
-  JackWindow window (morph_plan);
+  JackWindow window (morph_plan, title);
 
   Gtk::Main::run (window);
 }

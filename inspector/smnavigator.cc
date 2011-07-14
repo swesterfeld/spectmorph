@@ -30,6 +30,7 @@ using std::string;
 Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL),
+  spectrum_window (this),
   sample_window (this),
   time_freq_window (this),
   player_window (this)
@@ -66,6 +67,8 @@ Navigator::Navigator (const string& filename) :
                          sigc::mem_fun (*this, &Navigator::on_view_lpc));
   ref_action_group->add (Gtk::Action::create ("ViewFFTParams", "FFT Params"),
                          sigc::mem_fun (*this, &Navigator::on_view_fft_params));
+  ref_action_group->add (Gtk::Action::create ("ViewDisplayParams", "Display Params"),
+                         sigc::mem_fun (*this, &Navigator::on_view_display_params));
   ref_action_group->add (Gtk::Action::create ("ViewPlayer", "Player"),
                          sigc::mem_fun (*this, &Navigator::on_view_player));
 
@@ -82,6 +85,7 @@ Navigator::Navigator (const string& filename) :
     "      <menuitem action='ViewSpectrum' />"
     "      <menuitem action='ViewLPC' />"
     "      <menuitem action='ViewFFTParams' />"
+    "      <menuitem action='ViewDisplayParams' />"
     "      <menuitem action='ViewPlayer' />"
     "    </menu>"
     "  </menubar>"
@@ -335,6 +339,12 @@ Navigator::on_view_fft_params()
 }
 
 void
+Navigator::on_view_display_params()
+{
+  m_display_param_window.show();
+}
+
+void
 Navigator::on_view_spectrum()
 {
   spectrum_window.show();
@@ -362,6 +372,12 @@ FFTParamWindow*
 Navigator::fft_param_window()
 {
   return &m_fft_param_window;
+}
+
+DisplayParamWindow *
+Navigator::display_param_window()
+{
+  return &m_display_param_window;
 }
 
 bool

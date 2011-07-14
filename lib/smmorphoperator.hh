@@ -39,7 +39,8 @@ protected:
 public:
   enum OutputType {
     OUTPUT_NONE,
-    OUTPUT_AUDIO
+    OUTPUT_AUDIO,
+    OUTPUT_CONTROL
   };
   MorphOperator (MorphPlan *morph_plan);
   virtual ~MorphOperator();

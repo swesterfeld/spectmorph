@@ -18,6 +18,7 @@
 #include "smhexstring.hh"
 #include "sminfile.hh"
 #include "smmain.hh"
+#include "config.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -38,6 +39,87 @@ spaces (int indent)
     s += " ";
   return s;
 }
+
+/// @cond
+struct Options
+{
+  string	      program_name; /* FIXME: what to do with that */
+  bool                full;
+
+  Options ();
+  void parse (int *argc_p, char **argv_p[]);
+  static void print_usage ();
+} options;
+/// @endcond
+
+#include "stwutils.hh"
+
+Options::Options () :
+  program_name ("smfiledump"),
+  full (false)
+{
+}
+
+void
+Options::parse (int   *argc_p,
+                char **argv_p[])
+{
+  guint argc = *argc_p;
+  gchar **argv = *argv_p;
+  unsigned int i, e;
+
+  g_return_if_fail (argc >= 0);
+
+  /*  I am tired of seeing .libs/lt-gst123 all the time,
+   *  but basically this should be done (to allow renaming the binary):
+   *
+  if (argc && argv[0])
+    program_name = argv[0];
+  */
+
+  for (i = 1; i < argc; i++)
+    {
+      if (strcmp (argv[i], "--help") == 0 ||
+          strcmp (argv[i], "-h") == 0)
+	{
+	  print_usage();
+	  exit (0);
+	}
+      else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
+	{
+	  printf ("%s %s\n", program_name.c_str(), VERSION);
+	  exit (0);
+	}
+      else if (check_arg (argc, argv, &i, "--full") || check_arg (argc, argv, &i, "-f"))
+        {
+          full = true;
+        }
+    }
+
+  /* resort argc/argv */
+  e = 1;
+  for (i = 1; i < argc; i++)
+    if (argv[i])
+      {
+        argv[e++] = argv[i];
+        if (i >= e)
+          argv[i] = NULL;
+      }
+  *argc_p = e;
+}
+
+void
+Options::print_usage ()
+{
+  printf ("usage: %s [<hexdata>|<filename>]\n", options.program_name.c_str());
+  printf ("\n");
+  printf ("options:\n");
+  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  printf (" -v, --version               print version\n");
+  printf (" -f, --full                  dump float block data\n");
+  printf ("\n");
+}
+
 
 static void
 display_file (GenericIn *in, int indent = 0)
@@ -74,7 +156,20 @@ display_file (GenericIn *in, int indent = 0)
       else if (ifile.event() == InFile::FLOAT_BLOCK)
         {
           printf ("%s", spaces (indent).c_str());
-          printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
+          if (options.full)
+            {
+              const vector<float>& fb = ifile.event_float_block();
+              printf ("float_block %s[%zd] = {\n", ifile.event_name().c_str(), fb.size());
+              for (size_t i = 0; i < fb.size(); i++)
+                {
+                  printf ("%s  %.17g%s\n", spaces (indent).c_str(), fb[i], (i + 1) == fb.size() ? "" : ",");
+                }
+              printf ("%s}\n", spaces (indent).c_str());
+            }
+          else
+            {
+              printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
+            }
         }
       else if (ifile.event() == InFile::INT)
         {
@@ -138,9 +233,11 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+  options.parse (&argc, &argv);
+
   if (argc != 2)
     {
-      printf ("usage: %s [<hexdata>|<filename>]\n", argv[0]);
+      options.print_usage();
       return 1;
     }
 

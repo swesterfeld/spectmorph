@@ -35,7 +35,10 @@ protected:
   MorphPlan      *morph_plan;
   OperatorFilter *op_filter;
   MorphOperator  *op;
+  std::string     str_choice;
   bool            block_changed;
+
+  std::vector<std::string> str_choices;
 
   void on_operators_changed();
   void on_combobox_changed();
@@ -45,7 +48,12 @@ public:
   ~ComboBoxOperator();
 
   MorphOperator *active();
-  void set_active (MorphOperator *op);
+  void           set_active (MorphOperator *op);
+
+  void           add_str_choice (const std::string& str);
+
+  std::string    active_str_choice();
+  void           set_active_str_choice (const std::string& str);
 
   sigc::signal<void> signal_active_changed;
 };

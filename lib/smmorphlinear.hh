@@ -31,13 +31,15 @@ public:
   enum ControlType {
     CONTROL_GUI      = 1,
     CONTROL_SIGNAL_1 = 2,
-    CONTROL_SIGNAL_2 = 3
+    CONTROL_SIGNAL_2 = 3,
+    CONTROL_OP       = 4
   };
 protected:
-  std::string    load_left, load_right;
+  std::string    load_left, load_right, load_control;
 
   MorphOperator *m_left_op;
   MorphOperator *m_right_op;
+  MorphOperator *m_control_op;
   double         m_morphing;
   ControlType    m_control_type;
   bool           m_db_linear;
@@ -59,6 +61,9 @@ public:
 
   MorphOperator *right_op();
   void set_right_op (MorphOperator *op);
+
+  MorphOperator *control_op();
+  void set_control_op (MorphOperator *op);
 
   double morphing();
   void set_morphing (double new_morphing);

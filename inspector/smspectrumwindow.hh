@@ -27,6 +27,7 @@
 
 namespace SpectMorph {
 
+class Navigator;
 class SpectrumWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
@@ -35,7 +36,7 @@ class SpectrumWindow : public Gtk::Window
   ZoomController      zoom_controller;
 
 public:
-  SpectrumWindow();
+  SpectrumWindow (Navigator *navigator);
 
   void set_spectrum_model (TimeFreqView& time_freq_view);
   void on_zoom_changed();

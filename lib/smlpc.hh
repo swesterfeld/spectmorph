@@ -35,11 +35,13 @@ void lsf2lpc (const std::vector<float>& lsf_p, const std::vector<float>& lsf_q, 
 double eval_lpc (const std::vector<double>& lpc, double f);
 
 class LSFEnvelope {
-  std::vector< std::complex<double> > p_roots;
-  std::complex<double>                p_real_root;
+  std::vector<double>                 p_a;
+  std::vector<double>                 p_b;
+  double                              p_real_root;
 
-  std::vector< std::complex<double> > q_roots;
-  std::complex<double>                q_real_root;
+  std::vector<double>                 q_a;
+  std::vector<double>                 q_b;
+  double                              q_real_root;
 
   bool                                m_init;
 public:

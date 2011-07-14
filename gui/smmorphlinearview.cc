@@ -29,15 +29,17 @@ namespace {
 struct MyOperatorFilter : public OperatorFilter
 {
   MorphOperator *my_op;
+  MorphOperator::OutputType type;
 
-  MyOperatorFilter (MorphOperator *my_op) :
-    my_op (my_op)
+  MyOperatorFilter (MorphOperator *my_op, MorphOperator::OutputType type) :
+    my_op (my_op),
+    type (type)
   {
     //
   }
   bool filter (MorphOperator *op)
   {
-    return ((op != my_op) && op->output_type() == MorphOperator::OUTPUT_AUDIO);
+    return ((op != my_op) && op->output_type() == type);
   }
 };
 
@@ -51,9 +53,11 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   MorphOperatorView (morph_linear, morph_plan_window),
   morph_linear (morph_linear),
   hscale (-1, 1, 0.01),
-  operator_filter (new MyOperatorFilter (morph_linear)),
+  operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_AUDIO)),
+  control_operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_CONTROL)),
   left_combobox (morph_linear->morph_plan(), operator_filter),
-  right_combobox (morph_linear->morph_plan(), operator_filter)
+  right_combobox (morph_linear->morph_plan(), operator_filter),
+  control_combobox (morph_linear->morph_plan(), control_operator_filter)
 {
   hscale_label.set_text ("Morphing");
   hscale.set_value (morph_linear->morphing());
@@ -70,17 +74,19 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   table.attach (right_label, 0, 1, 1, 2, Gtk::SHRINK);
   table.attach (right_combobox, 1, 2, 1, 2);
 
-  control_type_combobox.append_text (CONTROL_TEXT_GUI);
-  control_type_combobox.append_text (CONTROL_TEXT_1);
-  control_type_combobox.append_text (CONTROL_TEXT_2);
-  control_type_label.set_text ("Control Input");
+  control_combobox.add_str_choice (CONTROL_TEXT_GUI);
+  control_combobox.add_str_choice (CONTROL_TEXT_1);
+  control_combobox.add_str_choice (CONTROL_TEXT_2);
+  control_label.set_text ("Control Input");
 
   if (morph_linear->control_type() == MorphLinear::CONTROL_GUI)
-    control_type_combobox.set_active_text (CONTROL_TEXT_GUI);
+    control_combobox.set_active_str_choice (CONTROL_TEXT_GUI);
   else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_1)
-    control_type_combobox.set_active_text (CONTROL_TEXT_1);
+    control_combobox.set_active_str_choice (CONTROL_TEXT_1);
   else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_2)
-    control_type_combobox.set_active_text (CONTROL_TEXT_2);
+    control_combobox.set_active_str_choice (CONTROL_TEXT_2);
+  else if (morph_linear->control_type() == MorphLinear::CONTROL_OP)
+    control_combobox.set_active (morph_linear->control_op());
   else
     {
       assert (false);
@@ -93,8 +99,8 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   use_lpc_check_button.set_active (morph_linear->use_lpc());
   use_lpc_check_button.set_label ("Use LPC Envelope");
 
-  table.attach (control_type_label, 0, 1, 2, 3, Gtk::SHRINK);
-  table.attach (control_type_combobox, 1, 2, 2, 3);
+  table.attach (control_label, 0, 1, 2, 3, Gtk::SHRINK);
+  table.attach (control_combobox, 1, 2, 2, 3);
 
   table.attach (hscale_label, 0, 1, 3, 4, Gtk::SHRINK);
   table.attach (hscale, 1, 2, 3, 4);
@@ -109,7 +115,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
 
   left_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
   right_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_operator_changed));
-  control_type_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_control_type_changed));
+  control_combobox.signal_active_changed.connect (sigc::mem_fun (*this, &MorphLinearView::on_control_changed));
   hscale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphLinearView::on_morphing_changed));
   db_linear_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLinearView::on_db_linear_changed));
   use_lpc_check_button.signal_toggled().connect (sigc::mem_fun (*this, &MorphLinearView::on_use_lpc_changed));
@@ -135,19 +141,28 @@ MorphLinearView::on_morphing_changed()
 }
 
 void
-MorphLinearView::on_control_type_changed()
+MorphLinearView::on_control_changed()
 {
-  string text = control_type_combobox.get_active_text();
-
-  if (text == CONTROL_TEXT_GUI)
-    morph_linear->set_control_type (MorphLinear::CONTROL_GUI);
-  else if (text == CONTROL_TEXT_1)
-    morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_1);
-  else if (text == CONTROL_TEXT_2)
-    morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
+  MorphOperator *op = control_combobox.active();
+  if (op)
+    {
+      morph_linear->set_control_op (op);
+      morph_linear->set_control_type (MorphLinear::CONTROL_OP);
+    }
   else
     {
-      assert (false);
+      string text = control_combobox.active_str_choice();
+
+      if (text == CONTROL_TEXT_GUI)
+        morph_linear->set_control_type (MorphLinear::CONTROL_GUI);
+      else if (text == CONTROL_TEXT_1)
+        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_1);
+      else if (text == CONTROL_TEXT_2)
+        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
+      else
+        {
+          assert (false);
+        }
     }
   update_slider();
 }

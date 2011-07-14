@@ -35,6 +35,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
 
   m_left_op = NULL;
   m_right_op = NULL;
+  m_control_op = NULL;
   m_morphing = 0;
   m_control_type = CONTROL_GUI;
   m_db_linear = false;
@@ -59,6 +60,7 @@ MorphLinear::save (OutFile& out_file)
 {
   write_operator (out_file, "left", m_left_op);
   write_operator (out_file, "right", m_right_op);
+  write_operator (out_file, "control", m_control_op);
   out_file.write_float ("morphing", m_morphing);
   out_file.write_int ("control_type", m_control_type);
   out_file.write_bool ("db_linear", m_db_linear);
@@ -70,8 +72,9 @@ MorphLinear::save (OutFile& out_file)
 bool
 MorphLinear::load (InFile& ifile)
 {
-  load_left = "";
-  load_right = "";
+  load_left    = "";
+  load_right   = "";
+  load_control = "";
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -84,6 +87,10 @@ MorphLinear::load (InFile& ifile)
           else if (ifile.event_name() == "right")
             {
               load_right = ifile.event_data();
+            }
+          else if (ifile.event_name() == "control")
+            {
+              load_control = ifile.event_data();
             }
           else
             {
@@ -148,6 +155,7 @@ MorphLinear::post_load()
 
   m_left_op = NULL;
   m_right_op = NULL;
+  m_control_op = NULL;
 
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
@@ -156,6 +164,8 @@ MorphLinear::post_load()
         m_left_op = morph_op;
       if (morph_op->name() == load_right)
         m_right_op = morph_op;
+      if (morph_op->name() == load_control)
+        m_control_op = morph_op;
     }
 }
 
@@ -182,6 +192,12 @@ MorphLinear::right_op()
   return m_right_op;
 }
 
+MorphOperator *
+MorphLinear::control_op()
+{
+  return m_control_op;
+}
+
 void
 MorphLinear::set_left_op (MorphOperator *op)
 {
@@ -194,6 +210,14 @@ void
 MorphLinear::set_right_op (MorphOperator *op)
 {
   m_right_op = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+void
+MorphLinear::set_control_op (MorphOperator *op)
+{
+  m_control_op = op;
 
   m_morph_plan->emit_plan_changed();
 }

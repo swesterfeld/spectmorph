@@ -30,6 +30,7 @@ class MorphLinearModule : public MorphOperatorModule
 {
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
+  MorphOperatorModule *control_mod;
   float                morphing;
   bool                 db_linear;
   bool                 use_lpc;
@@ -46,6 +47,7 @@ class MorphLinearModule : public MorphOperatorModule
   {
     MorphLinearModule *module;
 
+    void interp_mag_one (double interp, float *left, float *right);
     void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
     Audio* audio();
     AudioBlock *audio_block (size_t index);
