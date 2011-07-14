@@ -10,7 +10,7 @@ EXTRA_DIST += delta.py
 
 bin_PROGRAMS = smsfimport
 
-noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan
+noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan smfileedit
 
 ascii2wav_SOURCES = ascii2wav.cc
 ascii2wav_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
@@ -26,6 +26,9 @@ smsfimport_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smfiledump_SOURCES = smfiledump.cc
 smfiledump_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+
+smfileedit_SOURCES = smfileedit.cc
+smfileedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 tld_SOURCES = tld.cc
 tld_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
