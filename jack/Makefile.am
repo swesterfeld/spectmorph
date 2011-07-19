@@ -5,7 +5,8 @@ AM_CXXFLAGS = $(BSE_CFLAGS) $(JACK_CFLAGS) $(GTKMM_CFLAGS) -I$(top_srcdir)/lib -
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
-bin_PROGRAMS = smjack smjackvel
+bin_PROGRAMS = smjack
+noinst_PROGRAMS = smjackvel
 
 smjack_SOURCES = smjack.cc
 smjack_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS)
