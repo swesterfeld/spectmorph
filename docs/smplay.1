@@ -1,87 +1,56 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "smplay" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "smplay Manual Page"
+.TH "SMPLAY" "1" "2011\-07\-19" "Revision 581" "smplay Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+smplay - Program to play a SpectMorph model
 
-.PP
-smplay \- Program to play a SpectMorph model
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsmplay\fR [\fIOPTIONS\fR] \fISM-File|SMSet-File\fR
 
-.PP
-\fBsmplay\fP [\fIOPTIONS\fP] \fISM\-File\fP
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+\fBsmplay\fR is a command line based player for SpectMorph models (which can be created using \fBsmenc\fR). Playing can use the audio card, so that the model will be heard directly, or create a wav file instead if the \fB--export\fR option is used.
 
-.PP
-\fBsmplay\fP is a command line based player for SpectMorph models
-(which can be created using \fBsmenc\fP). Playing can use the audio card,
-so that the model will be heard directly, or create a wav file instead
-if the \fB\-\-export\fP option is used. Since the SpectMorph model consists
-of sine waves and noise, options to disable one of these components exist.
-.SH
-OPTIONS
+Since the SpectMorph model consists of sine waves and noise, options to disable one of these components exist.
 
+.SH OPTIONS
 
-.PP
-\fBsmplay\fP follows the usual GNU command line syntax, with long options starting with two dashes ('\-').
-.br
-
-.br
-
-
-
+\fBsmplay\fR follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 .TP
-\fB\-h\fP, \fB\-\-help\fP 
-.br
+\fB-h\fR, \fB--help\fR
 Shows a brief help message.
-
+.PP
 .TP
-\fB\-v\fP, \fB\-\-version\fP 
-.br
-Prints out \fBsmplay\fP version.
-
+\fB-v\fR, \fB--version\fR
+Prints out \fBsmplay\fR version.
+.PP
 .TP
-\fB\-\-rate\fP \fI<sampling rate>\fP 
-.br
-Set replay rate manually; also useful for specifying the desired rate of
-the wav file, if \-\-export is used.
-
+\fB--rate\fR \fI<sampling rate>\fR
+Set replay rate manually; also useful for specifying the desired rate of the wav file, if \fB--export\fR is used.
+.PP
 .TP
-\fB\-\-no\-noise\fP 
-.br
-Disable noise decoder, so that only the sine wave part of the signal is
-decoded.
-
+\fB--no-noise\fR
+Disable noise decoder, so that only the sine wave part of the signal is decoded.
+.PP
 .TP
-\fB\-\-no\-sines\fP 
-.br
+\fB--no-sines\fR
 Disable sine decoder, so that only the noise part of the signal is decoded.
-
+.PP
 .TP
-\fB\-\-det\-random\fP 
-.br
-Use deterministic random generator; this will produce identical noise
-components if the same file is decoded twice, making the audio output
-exactly the same.
-
+\fB--det-random\fR
+Use deterministic random generator; this will produce identical noise components if the same file is decoded twice, making the audio output exactly the same.
+.PP
 .TP
-\fB\-\-export\fP \fI<wav filename>\fP 
-.br
+\fB--export\fR \fI<wav filename>\fR
 Instead of playing the file, write the output to a wav file.
-
+.PP
+.TP
+\fB-m\fR, \fB--midi-note\fR \fI<note>\fR
+Select midi note to play, in case an SMSet-File was specified as input file.
 .PP
 
+.SH SEE ALSO
 
-.SH
-SEE ALSO
+smenc.1 <http://testbit.eu/Smenc.1>
 
-
-.PP
-smenc(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)

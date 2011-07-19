@@ -1,56 +1,29 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "sminspector" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "sminspector Manual Page"
+.TH "SMINSPECTOR" "1" "2011\-07\-19" "Revision 577" "sminspector Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+sminspector - program to visualize contents of SpectMorph instruments
 
-.PP
-sminspector \- Program to display time/frequency plots for SpectMorph models
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsminspector\fR \fI[OPTIONS]\fR \fISMIndex-File\fR
 
-.PP
-\fBsminspector\fP [\fIOPTIONS\fP] \fISMIndex\-File\fP
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+sminspector is a gui application which can be used to visualize SpectMorph models. An input file with containing a
+list of instruments to open should be passed as first argument. This file is a text file, consisting of the commands listed below, and specifies a set of instruments to work with.
 
-.PP
-\fBsminspector\fP is a gui application which can be used to visualize
-SpectMorph models. An input file with containing a list of instruments
-to open should be passed as first argument. This file is a text file,
-consisting of the commands listed below, and specifies a set of
-instruments to work with.
-.SH
-INDEX FILE COMMANDS
-
-
-.PP
-
-
-
-
+.SH INDEX FILE COMMANDS
 .TP
-\fBsmset_dir\fP "\fIdirectory\fP" 
-.br
+\fBsmset_dir\fR "\fIdirectory\fR"
 Set directory which contains the smset files.
-
+.PP
 .TP
-\fBsmset\fP "\fIinstrument.smset\fP" 
-.br
-Add smset\-instrument.
-
+\fBsmset\fR "\fIinstrument.smset\fR"
+Add smset-instrument.
 .PP
 
+.SH SEE ALSO
 
-.SH
-SEE ALSO
+smenc.1 <http://testbit.eu/Smenc.1>, smvisualize.1 <http://testbit.eu/index.php?title=Smvisualize.1&action=edit&redlink=1>
 
-
-.PP
-smenc(1),
-smvisualize(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)

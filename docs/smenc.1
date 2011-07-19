@@ -1,115 +1,73 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "smenc" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "smenc Manual Page"
+.TH "SMENC" "1" "2011\-07\-19" "Revision 576" "smenc Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+smenc - Program to encode a wav file into a SpectMorph model
 
-.PP
-smenc \- Program to encode a wav file into a SpectMorph model
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsmenc\fR [\fIOPTIONS\fR] \fIWAV-File\fR [\fISM-File\fR]
 
-.PP
-\fBsmenc\fP [\fIOPTIONS\fP] \fIWAV\-File\fP [ \fISM\-File\fP ]
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+\fBsmenc\fR is a command line tool to create SpectMorph models from audio files. Usually the input file should contain a
+single note of some instrument, like a single C4 note. Since lower notes require different analysis parameters than
+higher notes, its usually a good idea to use the -m option to let the encoding algorithm know which note is being
+encoded.
 
-.PP
-\fBsmenc\fP is a command line tool to create SpectMorph models from
-audio files. Usually the input file should contain a single note of
-some instrument, like a single C4 note. Since lower notes require
-different analysis parameters than higher notes, its usually a good
-idea to use the \-m option to let the encoding algorithm know which
-note is being encoded.
-.br
+There is also a quality / time tradeoff, which means you can use the -O0, -O1 or -O2 option to specify how accurate
+the analysis should be, with higher numbers meaning better quality, but longer analysis time.
 
-.br
-There is also a quality / time tradeoff, which means you can use the
-\-O0, \-O1 or \-O2 option to specify how accurate the analysis should be,
-with higher numbers meaning better quality, but longer analysis time.
-.br
-
-.br
-For multi\-channel inputs, each channel is encoded seperately. If
-you do not specify the output filename, the encoder will for instance
-create piano\-ch0.sm and piano\-ch1.sm from the stereo file piano.wav.
-If you do specify an output filename, you need to include a %c into
-the name, like piano\-ch%c.sm, which will be substituted with the
+For multi-channel inputs, each channel is encoded seperately. If you do not specify the output filename, the
+encoder will for instance create piano-ch0.sm and piano-ch1.sm from the stereo file piano.wav. If you do specify
+an output filename, you need to include a %c into the name, like piano-ch%c.sm, which will be substituted with the
 channel number.
-.SH
-OPTIONS
 
+.SH OPTIONS
 
-.PP
-\fBsmenc\fP follows the usual GNU command line syntax, with long options starting with two dashes ('\-').
-.br
-
-.br
-
-
-
+\fBsmenc\fR follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 .TP
-\fB\-h\fP, \fB\-\-help\fP 
-.br
+\fB-h\fR, \fB--help\fR
 Shows a brief help message.
-
+.PP
 .TP
-\fB\-v\fP, \fB\-\-version\fP 
-.br
-Prints out \fBsmenc\fP version.
-
+\fB-v\fR, \fB--version\fR
+Prints out smenc version.
+.PP
 .TP
-\fB\-f\fP \fI<frequency>\fP 
-.br
-Specify fundamental frequency in Hz \- this information is optional, but
-should be supplied when known, to increase the accuracy of the model.
-It is equivalent to specifying the midi note; only one of \-m and \-f
-should be used.
-
+\fB-f\fR \fI<frequency>\fR
+Specify fundamental frequency in Hz - this information is optional, but should be supplied when known, to increase the accuracy of the model. It is equivalent to specifying the midi note; only one of -m and -f should be used.
+.PP
 .TP
-\fB\-m\fP \fI<midi\-note>\fP 
-.br
-Specify the midi note of the input; this will be used to set the fundamental
-frequency in Hz. Adding this information is not required, but increases the
-accuracy of the analysis algorithm.
-Only one of \-m and \-f should be used.
-
+\fB-m\fR \fI<midi-note>\fR
+Specify the midi note of the input; this will be used to set the fundamental frequency in Hz. Adding this information is not required, but increases the accuracy of the analysis algorithm. Only one of -m and -f should be used.
+.PP
 .TP
-\fB\-O\fP \fI<level>\fP 
-.br
-For all frames of the input file, once smenc has found out which sine waves
-can be used to describe the frame, it needs to estimate the magnitude and
-phase of each sine wave for this frame. The optimization level chooses the
-algorithm used for finding the magnitude and phase; the higher the level,
-the more accurate the result will be. However, it defaults to \-O0, since
-this is the fastest algorithm: estimating the magnitude/phase from the
-FFT result. A good choice is \-O1, which is somewhat slower, but also
-somewhat better.
-
+\fB-O\fR \fI<level>\fR
+For all frames of the input file, once smenc has found out which sine waves can be used to describe the frame, it needs to estimate the magnitude and phase of each sine wave for this frame. The optimization level chooses the algorithm used for finding the magnitude and phase; the higher the level, the more accurate the result will be. However, it defaults to -O0, since this is the fastest algorithm: estimating the magnitude/phase from the FFT result. A good choice is -O1, which is somewhat slower, but also somewhat better.
+.PP
 .TP
-\fB\-s\fP 
-.br
-Right now, smenc defaults to including lots of information in the output
-.sm file, that is helpful for debugging smenc, but not essential for
-replaying the file. Therefore the files created by smenc are very large
-by default. To limit the file size, using the \-s option instruct smenc
-to create a "stripped" model, that contains only the information needed
-to play it. These stripped models are usually much smaller than unstripped
-models.
-
+\fB-s\fR
+Right now, smenc defaults to including lots of information in the output replaying the file. Therefore the files created by smenc are very large by default. To limit the file size, using the -s option instruct smenc to create a "stripped" model, that contains only the information needed to play it. These stripped models are usually much smaller than unstripped models.
+.PP
+.TP
+\fB--no-attack\fR
+By default, smenc tries to find an attack envelope at the beginning of the input, which describes at which time point the attack occurs and how fast the attack is. This option disables that step (which uses quite a bit of CPU time).
+.PP
+.TP
+\fB--no-sines\fR
+Skip analysis of the sine part of the signal (partial tracking).
+.PP
+.TP
+\fB--loop-start\fR
+Set start loop point (in samples) - loop type is set to timeloop.
+.PP
+.TP
+\fB--loop-end\fR
+Set end loop point (in samples) - loop type is set to timeloop.
 .PP
 
+.SH SEE ALSO
 
-.SH
-SEE ALSO
+smplay.1 <http://testbit.eu/Smplay.1>
 
-
-.PP
-smplay(1),
-smvisualize(1),
-smstrip(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)
