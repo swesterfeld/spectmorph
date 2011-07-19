@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.1.2])
+AC_INIT([spectmorph], [0.2.0])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -145,6 +145,27 @@ AC_DEFUN([AC_FFTW_CHECK],
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
 ])
 
+AC_DEFUN([AC_MAN_REQUIREMENTS],
+[
+  AC_PATH_PROGS(WIKIHTML2MAN, wikihtml2man wikihtml2man.py, false)
+  AC_PATH_PROG(GROFF, groff, false)
+  IFMAN=
+  IFAGING=
+  if test x"$enable_maintainer_mode" = xyes ; then
+    test x"$WIKIHTML2MAN" = xfalse && {
+      AC_MSG_ERROR(This package requires the wikihtml2man.py tool for maintainer builds)
+    }
+    echo "" | $GROFF -mandoc -Thtml 2>/dev/null | grep -Fq HTML || {
+      AC_MSG_ERROR(Failed to test-build HTML manual page via groff)
+    }
+  else
+    IFMAN="#"
+    IFAGING="#"
+  fi
+  AC_SUBST(IFMAN)
+  AC_SUBST(IFAGING)
+])
+
 dnl ----------------------------- from acbirnet.m4 -------------------------------
 dnl Check whether cc accepts a certain option
 dnl MC_PROG_CC_SUPPORTS_OPTION(OPTIONS, ACTION-IF-FOUND [,ACTION-IF-NOT-FOUND])
@@ -172,6 +193,7 @@ AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_GTKMM_REQUIREMENTS
 AC_JACK_REQUIREMENTS
+AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
 AC_SIGCXX_REQUIREMENTS
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
