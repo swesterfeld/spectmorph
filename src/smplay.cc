@@ -385,6 +385,7 @@ main (int argc, char **argv)
 
   if (options.export_wav == "")     /* no export -> play */
     {
+      bool clip_err = false;
       pos = 0;
       while (pos < sample.size())
         {
@@ -394,12 +395,15 @@ main (int argc, char **argv)
           for (int i = 0; i < todo; i++)
             {
               float f = sample[pos + i];
-              if (f > 1.0)
-                fprintf (stderr, "out of range\n");
-              if (f < -1.0)
-                fprintf (stderr, "out of range\n");
+              float cf = CLAMP (f, -1.0, 1.0);
 
-              svalues[i] = f * 32760;
+              if (cf != f && !clip_err)
+                {
+                  fprintf (stderr, "out of range\n");
+                  clip_err = true;
+                }
+
+              svalues[i] = cf * 32760;
             }
           //fwrite (svalues, 2, todo, stdout);
           ao_play (play_device, (char *)svalues, 2 * todo);
