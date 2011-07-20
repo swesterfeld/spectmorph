@@ -24,6 +24,11 @@ using SpectMorph::MMapIn;
 using SpectMorph::StdioIn;
 using std::string;
 
+/**
+ * Open a file for reading, using memory mapping if possible, stdio based reading otherwise.
+ *
+ * \returns the newly created GenericIn object, or NULL on error
+ */
 GenericIn*
 GenericIn::open (const std::string& filename)
 {
