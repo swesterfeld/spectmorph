@@ -1,47 +1,25 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "smvisualize" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "smvisualize Manual Page"
+.TH "SMVISUALIZE" "1" "2011\-07\-20" "Revision 587" "smvisualize Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+smvisualize - program to visualize a SpectMorph model by displaying its contents as PNG image
 
-.PP
-smvisualize \- program to visualize a SpectMorph model by displaying its contents as PNG image
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsmvisualize\fR \fI<SM-File>\fR \fI<PNG-File>\fR [ \fBdb\fR ]
 
-.PP
-\fBsmvisualize\fP \fISM\-File\fP \fIPNG\-File\fP [ db ]
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+\fBsmvisualize\fR displays the contents of a SpectMorph model as PNG image. The contents of the spectrum (original FFT results) will be displayed, with time being drawn from left to right, and frequencies being drawn from top (high frequencies) to bottom (low frequencies). There are two modes, one uses db scaling of the intensity, and is activated by using db as last argument, and the other uses linear scaling.
 
-.PP
-\fBsmvisualize\fP displays the contents of a SpectMorph model as PNG image.
-The contents of the spectrum (original FFT results) will be displayed, with
-time being drawn from left to right, and frequencies being drawn from top
-(high frequencies) to bottom (low frequencies). There are two modes, one uses
-db scaling of the intensity, and is activated by using db as last argument,
-and the other uses linear scaling.
-.br
-
-.br
 The red dots (and red lines) correspond to the detected sine frequencies.
-.SH
-OPTIONS
 
+.SH OPTIONS
 
-.PP
-\fBsmvisualize\fP can me used with two arguments; in this case the first
-argument is the SpectMorph model, and the second is the PNG file. An optional
-third argument can be "db". In this case the spectrum intensity will be plotted
-using a db scale. This is the more natural mode.
-.SH
-SEE ALSO
+smvisualize can me used with two arguments; in this case the first argument is the SpectMorph model, and the second is the PNG file. An optional third argument can be "db". In this case the spectrum intensity will be plotted using a db scale. This is the more natural mode.
 
+.SH SEE ALSO
 
-.PP
-smenc(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)
+smenc.1 <http://testbit.eu/Smenc.1>,
+sminspector.1 <http://testbit.eu/Sminspector.1>
+
