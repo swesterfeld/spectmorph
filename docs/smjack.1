@@ -1,0 +1,25 @@
+.TH "SMJACK" "1" "2011\-07\-19" "Revision 578" "smjack Manual Page"
+
+.SH NAME
+
+smjack - SpectMorph JACK Client
+
+.SH SYNOPSIS
+
+\fBsmjack\fR [\fImorphplan.smplan\fR]
+
+.SH DESCRIPTION
+
+\fBsmjack\fR is a graphical JACK Client for creating/executing SpectMorph morph plans. A morph plan describes how SpectMorph should morph data from different sources. The plan (which consists of operators) can be interactively edited and exported for later reuse. Passing no morph plan starts with an empty plan, whereas passing a morph plan loads this plan.
+
+Once started, \fBsmjack\fR creates JACK ports for midi input, control input and audio output, which need to be connected using qjackctl or similar.
+
+.SH OPTIONS
+
+There are no options other than the optional morph plan.
+
+.SH SEE ALSO
+
+smenc.1 <http://testbit.eu/Smenc.1>,
+sminspector.1 <http://testbit.eu/Sminspector.1>
+
