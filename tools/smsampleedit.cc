@@ -258,7 +258,7 @@ MainWindow::MainWindow() :
   volume_label.set_label ("Volume");
   volume_scale.set_draw_value (false);
   volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_volume_changed));
-  volume_scale.set_value (-20);  // calls on_volume_changed()
+  volume_scale.set_value (0);  // calls on_volume_changed()
 
   add (vbox);
   show_all_children();
