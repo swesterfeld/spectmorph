@@ -463,7 +463,7 @@ public:
     volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &JackWindow::on_volume_changed));
 
     volume_label.set_label ("Volume");
-    volume_scale.set_value (-20);
+    volume_scale.set_value (-6);
     volume_scale.set_draw_value (false);
 
     volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
