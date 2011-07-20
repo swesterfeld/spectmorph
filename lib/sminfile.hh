@@ -29,6 +29,14 @@
 namespace SpectMorph
 {
 
+/**
+ * \brief Class to read SpectMorph binary data.
+ *
+ * This class allows reading SpectMorph binary data from a file (with name) or
+ * from a GenericIn object; the files consist of events, which are read one by
+ * one until an error occurs or until EOF. The events are typed, end the event
+ * data should be queried according to the current event type.
+ */
 class InFile
 {
 public:
@@ -79,6 +87,11 @@ public:
   InFile (GenericIn *file);
   ~InFile();
 
+  /**
+   * Check if file open succeeded.
+   *
+   * \returns true if file was opened successfully, false otherwise
+   */
   bool
   open_ok()
   {

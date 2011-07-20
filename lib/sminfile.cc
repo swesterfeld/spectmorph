@@ -24,6 +24,11 @@ using std::vector;
 using SpectMorph::InFile;
 using SpectMorph::GenericIn;
 
+/**
+ * Create InFile object for reading a file.
+ *
+ * \param filename name of the file
+ */
 InFile::InFile (const string& filename) :
   file_delete (true)
 {
@@ -33,6 +38,11 @@ InFile::InFile (const string& filename) :
   read_file_type_and_version();
 }
 
+/**
+ * Create InFile object for reading an input stream.
+ *
+ * \param file the input stream object to read data from
+ */
 InFile::InFile (GenericIn *file) :
   file (file),
   file_delete (false)
@@ -65,6 +75,11 @@ InFile::read_file_type_and_version()
   m_file_version = 0;
 }
 
+/**
+ * Get current event type.
+ *
+ * \returns current event type (or READ_ERROR or END_OF_FILE).
+ */
 InFile::Event
 InFile::event()
 {
@@ -105,6 +120,9 @@ InFile::read_raw_string (string& str)
   return false;
 }
 
+/**
+ * Reads next event from file. Call event() to get event type, and event_*() to get event data.
+ */
 void
 InFile::next_event()
 {
@@ -302,60 +320,114 @@ InFile::open_blob()
   return file->open_subfile (current_event_blob_pos, current_event_blob_size);
 }
 
+/**
+ * Get name of the current event.
+ *
+ * \returns current event name
+ */
 string
 InFile::event_name()
 {
   return current_event_str;
 }
 
+/**
+ * Get float data of the current event (only if the event is a FLOAT).
+ *
+ * \returns current event float data.
+ */
 float
 InFile::event_float()
 {
   return current_event_float;
 }
 
+/**
+ * Get int data of the current event (only if the event is an INT).
+ *
+ * \returns current event int data
+ */
 int
 InFile::event_int()
 {
   return current_event_int;
 }
 
+/**
+ * Get bool data of the current event (only if the event is BOOL).
+ *
+ * \returns current event bool data
+ */
 bool
 InFile::event_bool()
 {
   return current_event_bool;
 }
 
+/**
+ * Get string data of the current event (only if the event is STRING).
+ *
+ * \returns current event string data
+ */
 string
 InFile::event_data()
 {
   return current_event_data;
 }
 
+/**
+ * Get float block data of the current event (only if the event is FLOAT_BLOCK).
+ *
+ * \returns current event float block data (by reference)
+ */
 const vector<float>&
 InFile::event_float_block()
 {
   return current_event_float_block;
 }
 
+/**
+ * Get blob's checksum.  This works for both: BLOB objects and BLOB_REF
+ * objects.  During writing files, the first occurence of a BLOB is stored
+ * completely, whereas after that, only the blob sum is stored as BLOB_REF
+ * event. During loading, code for handling both needs to be supplied.
+ *
+ * \returns the blob's checksum
+ */
 string
 InFile::event_blob_sum()
 {
   return current_event_blob_sum;
 }
 
+/**
+ * Add event names to skip (currently only implemented for FLOAT_BLOCK events); this
+ * speeds up reading files, while ignoring certain events.
+ *
+ * \param skip_event name of the event to skip
+ */
 void
 InFile::add_skip_event (const string& skip_event)
 {
   skip_events.insert (skip_event);
 }
 
+/**
+ * Get file type (usually a class name, like "SpectMorph::WavSet").
+ *
+ * \returns file type
+ */
 string
 InFile::file_type()
 {
   return m_file_type;
 }
 
+/**
+ * Get file version, an integer.
+ *
+ * \returns file version
+ */
 int
 InFile::file_version()
 {
