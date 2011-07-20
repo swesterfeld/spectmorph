@@ -184,12 +184,10 @@ JackSynth::process (jack_nframes_t nframes)
         {
           if (is_note_on (in_event))
             {
-              const double master_volume = 0.333;    /* empiric */
-
               const int midi_note = in_event.buffer[1];
               const int midi_velocity = in_event.buffer[2];
 
-              double velocity = midi_velocity / 127.0 * master_volume;
+              double velocity = midi_velocity / 127.0;
 
               // find unused voice
               vector<Voice>::iterator vi = voices.begin();
