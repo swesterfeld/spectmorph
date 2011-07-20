@@ -49,7 +49,18 @@ Index::load_file (const string& filename)
         }
       else if (cfg.command ("smset_dir", str))
         {
-          m_smset_dir = str;
+          if (!g_path_is_absolute (str.c_str()))
+            {
+              char *index_dirname = g_path_get_dirname (filename.c_str());
+              char *absolute_path = g_build_filename (index_dirname, str.c_str(), NULL);
+              m_smset_dir = absolute_path;
+              g_free (absolute_path);
+              g_free (index_dirname);
+            }
+          else
+            {
+              m_smset_dir = str;
+            }
         }
       else
         {
