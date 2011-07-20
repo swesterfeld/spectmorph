@@ -30,10 +30,7 @@
 #include <complex>
 #include <map>
 
-using SpectMorph::Encoder;
-using SpectMorph::AudioBlock;
-using SpectMorph::Tracksel;
-using SpectMorph::VectorSinParams;
+using namespace SpectMorph;
 using Birnet::AlignedArray;
 using std::vector;
 using std::string;
