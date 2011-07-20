@@ -1,179 +1,105 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "smwavset" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "smwavset Manual Page"
+.TH "SMWAVSET" "1" "2011\-07\-20" "Revision 591" "smwavset Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+smwavset - Program to manage spectmorph multiwave files
 
-.PP
-smwavset \- Program to manage spectmorph multiwave files
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsmwavset\fR \fI<command>\fR [\fIOPTIONS\fR] [ \fI<command specific args>...\fR ]
 
-.PP
-\fBsmwavset\fP <command> [\fIOPTIONS\fP] [ \fI<command specific args>...\fP ]
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+\fBsmwavset\fR is a command line tool to manage multi-wave files for SpectMorph. Ususally, a multi wave file is first initialized (using the \fBinit\fR command), then different wave files are added using the \fBadd\fR command. After this has been done, encoding all waves can be done with one single command, like decoding all waves.
 
-.PP
-\fBsmwavset\fP is a command line tool to manage multi\-wave files for
-SpectMorph. Ususally, a multi wave file is first initialized (using the
-init command), then different wave files are added using the add command.
-After this has been done, encoding all waves can be done with one single
-command, like decoding all waves.
-.SH
-OPTIONS
+.SH OPTIONS
 
-
-.PP
-\fBsmwavset\fP follows the usual GNU command line syntax, with long options
-starting with two dashes ('\-').
-.br
-
-.br
-
-
-
+\fBsmwavset\fR follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 .TP
-\fB\-h\fP, \fB\-\-help\fP 
-.br
+\fB-h\fR, \fB--help\fR
 Shows a brief help message.
-
+.PP
 .TP
-\fB\-v\fP, \fB\-\-version\fP 
-.br
-Prints out \fBsmwavset\fP version.
-
+\fB-v\fR, \fB--version\fR
+Prints out smwavset version.
+.PP
 .TP
-\fB\-\-args\fP \fI<arguments>\fP 
-.br
-Specify additional arguments to be passed to smenc/smplay. This could
-be \-\-args "\-O1" for encoding, or \-\-args "\-\-no\-sines" for decoding.
-
+\fB--args\fR \fI<arguments>\fR
+Specify additional arguments to be passed to smenc/smplay. This could be --args "-O1" for encoding, or --args "--no-sines" for decoding.
+.PP
 .TP
-\fB\-d\fP, \fB\-\-data\-dir\fP 
-.br
-For encoding/decoding, this sets a data directory where the .wav files or
-.sm files should be stored. Since a wavset is like an index pointing to
-a list of .wav files (or .sm files), it is important that different wavsets
-store their files in different directories (otherwise they will overwrite
-wav files that belong to a different wavset). So specifying a proper data
-directory which is different for each wavset is usually necessary. The
-default value is /tmp, which is only appropriate for testing; you should
-ensure that scripts setup a different value.
-
+\fB-d\fR, \fB--data-dir\fR
+For encoding/decoding, this sets a data directory where the .wav files or a list of .wav files (or .sm files), it is important that different wavsets store their files in different directories (otherwise they will overwrite wav files that belong to a different wavset). So specifying a proper data directory which is different for each wavset is usually necessary. The default value is /tmp, which is only appropriate for testing; you should ensure that scripts setup a different value.
+.PP
 .TP
-\fB\-\-format\fP \fI<field1>\fP,\fI<field2>\fP,\fI<field3>\fP,...,\fI<fieldN>\fP 
-.br
+\fB--format\fR \fI<field1>\fR,\fI<field2>\fR,\fI<field3>\fR,...,\fI<fieldN>\fR
 Set the output format for the list command.
-
+.PP
 .TP
-\fB\-j\fP \fI<jobs>\fP
-.br
-Use <jobs> parallel jobs for encoding (for systems with more than one processor).
-
+\fB-j\fR \fI<jobs>\fR
+Use \fI<jobs>\fR parallel jobs for encoding (for systems with more than one processor).
 .PP
 
-
-.SH
-COMMANDS
-
-.SS
-init [ <options> ] <wavset>...
-
-
-.PP
-
-Initializes a new wavset; can also initialize more than one wavset
-specified on the commandline.
-.SS
-add [ <options> ] <wavset> <midi_note> <path>
-
-
-.PP
-
-Adds a wave file to the wavset, where midi_note is the midi note the
-wave file has been recorded for.
-.SS
-list [ <options> ] <wavset>
-
-
-.PP
-
-Lists the wave files that are contained within the wavset. The output
-format for the list command can be specified using the format option
-(comma seperated fields).
-.br
-
-.br
-\fBValid fields:\fP
-
-
-
+.SH COMMANDS
 .TP
-midi\-note 
-.br
-Midi note of the audio entry (0\-127) 
-.TP
-channel 
-.br
-Channel for the audio entry (0 is the first channel) 
-.TP
-filename 
-.br
-Filename of the audio entry 
-.TP
-min\-velocity 
-.br
-Minimum velocity of the audio entry (0\-127) 
-.TP
-max\-velocity 
-.br
-Maximum velocity of the audio entry (0\-127)
-
+\fBinit\fR [ \fI<options>\fR ] \fI<wavset>\fR...
+Initializes a new wavset; can also initialize more than one wavset specified on the commandline.
 .PP
-
-
-.SS
-encode [ <options> ] <wset_filename> <smset_filename>
-
-
+.TP
+\fBadd\fR [ \fI<options>\fR ] \fI<wavset>\fR \fI<midi_note>\fR \fI<path>\fR
+Adds a wave file to the wavset, where midi_note is the midi note the wave file has been recorded for.
 .PP
-
+.TP
+\fBlist\fR [ \fI<options>\fR ] \fI<wavset>\fR
+Lists the wave files that are contained within the wavset. The output format for the list command can be specified using the format option (comma seperated fields). See FIELDS section for a list of valid fields
+.PP
+.TP
+\fBencode\fR [ \fI<options>\fR ] \fI<wset_filename>\fR \fI<smset_filename>\fR
 Encodes a wavset using smenc.
-.SS
-decode [ <options> ] <smset_filename> <wset_filename>
-
-
 .PP
-
+.TP
+\fBdecode\fR [ \fI<options>\fR ] \fI<smset_filename>\fR \fI<wset_filename>\fR
 Decodes a wavset using smplay.
-.SS
-delta [ <options> ] <wset_filename1>...<wset_filenameN>
-
-
+.PP
+.TP
+\fBdelta\fR [ \fI<options>\fR ] \fI<wset_filename1>\fR...\fI<wset_filenameN>\fR
+Computes the difference between many wavsets. The differencce between the first and second wavset is the reference which is 100%. The other wavsets are measured against that reference.
+.PP
+.TP
+\fBlink\fR \fI<smset>\fR
+This command includes all .sm files that are referred to by the smset in one big file. This is useful as final step when building instruments.
 .PP
 
-Computes the difference between many wavsets. The differencce between
-the first and second wavset is the reference which is 100%. The other
-wavsets are measured against that reference.
-.SS
-link <smset>
+.SH FIELDS
 
-
+For the list command, valid fields are:
+.TP
+\fBmidi-note\fR
+Midi note of the audio entry (0-127)
+.PP
+.TP
+\fBchannel\fR
+Channel for the audio entry (0 is the first channel)
+.PP
+.TP
+\fBfilename\fR
+Filename of the audio entry
+.PP
+.TP
+\fBmin-velocity\fR
+Minimum velocity of the audio entry (0-127)
+.PP
+.TP
+\fBmax-velocity\fR
+Maximum velocity of the audio entry (0-127)
 .PP
 
-This command includes all .sm files that are referred to by the smset
-in one big file. This is useful as final step when building instruments.
-.SH
-SEE ALSO
 
+.br
 
-.PP
-smenc(1),
-smplay(1),
-smstrip(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)
+.SH SEE ALSO
+
+smenc.1 <http://testbit.eu/Smenc.1>,
+smplay.1 <http://testbit.eu/Smplay.1>,
+smstrip.1 <http://testbit.eu/Smstrip.1>
+
