@@ -1,0 +1,109 @@
+.TH "SMTOOL" "1" "2011\-07\-20" "Revision 586" "smtool Manual Page"
+
+.SH NAME
+
+smtool - tool to show/change SpectMorph data from .sm/.smset files
+
+.SH SYNOPSIS
+
+\fBsmtool\fR \fI<sm_file>|<smset_file>\fR \fI<command>\fR [ \fI<command_specific_args>\fR ]
+
+.SH DESCRIPTION
+
+\fBsmtool\fR is a general purpose program that can perform operations on .sm/.smset files. Some of the operations extract data (like \fBsize\fR), others modify data (like \fBauto-tune\fR). If a .smset file is given as argument, the operation is performed on the individual .sm files that are contained in the .smset file.
+
+.SH OPTIONS
+
+\fBsmtool\fR options depend on the command used, the command specific arguments are listed below.
+
+.SH COMMANDS
+.TP
+\fBvolume\fR \fI<percent>\fR
+Compute average energy of the audio data around \fI<percent>\fR.
+.PP
+.TP
+\fBfundamental-freq\fR
+Output fundamental frequency of the audio data.
+.PP
+.TP
+\fBmix-freq\fR
+Output mixing frequency (sample rate) of the audio data.
+.PP
+.TP
+\fBzero-values-at-start\fR
+Output zero-values-at-start property of the audio data.
+.PP
+.TP
+\fBattack\fR
+Output attack parameters of the audio data.
+.PP
+.TP
+\fBsize\fR
+Output overview of the size in bytes of the different parts of the audio data.
+.PP
+.TP
+\fBloop-params\fR
+Output loop parameters of the audio data.
+.PP
+.TP
+\fBnoise-params\fR \fI<frame_no>\fR
+Output noise component of a frame of the audio data.
+.PP
+.TP
+\fBframe\fR \fI<frame_no>\fR
+Show original samples and reconstructed samples for one frame of the audio data.
+.PP
+.TP
+\fBframe-params\fR \fI<frame_no>\fR
+Show the freqencies/magnitudes of one frame of the audio data.
+.PP
+.TP
+\fBtotal-noise\fR
+Sum up all noise parameters of all frames of the audio data.
+.PP
+.TP
+\fBnan-test\fR
+Check all frame data contents for NaNs.
+.PP
+.TP
+\fBoriginal-samples\fR
+Show original samples of the audio data.
+.PP
+.TP
+\fBfreq\fR \fI<freq_min>\fR \fI<freq_max>\fR
+Show all frequency entries of the audio data in the specified range.
+.PP
+.TP
+\fBspectrum\fR \fI<frame_no>\fR
+Compare original and reconstructed spectrum for a given frame.
+.PP
+.TP
+\fBauto-loop\fR \fI<percent>\fR
+Set a one frame loop that starts and ends at the same point (given by \fI<percent>\fR).
+.PP
+.TP
+\fBtail-loop\fR
+Loop audio data at the end using a one frame loop.
+.PP
+.TP
+\fBauto-tune\fR
+Tune instrument using the (40%..60%) data to extract the actual frequency.
+.PP
+.TP
+\fBtune-all-frames\fR
+Tune each frame of the instrument. This will discard minimal changes in frequency which are normal for most instruments, so it might sound artificial.
+.PP
+.TP
+\fBauto-volume\fR \fI<percent>\fR
+Normalize audio volume, using the volume around \fI<percent>\fR as reference.
+.PP
+.TP
+\fBauto-volume-from-loop\fR
+Normalize audio volume, using the volume of the looped part as reference.
+.PP
+
+.SH SEE ALSO
+
+smenc.1 <http://testbit.eu/Smenc.1>,
+smplay.1 <http://testbit.eu/Smplay.1>
+

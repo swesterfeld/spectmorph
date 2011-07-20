@@ -1,86 +1,44 @@
-.\" generator: doxer.py 0.6
-.\" generation: 2011\-04\-06T12:18:24
-.TH "smsfimport" "1" "Wed Apr 19 00:50:37 2006" "spectmorph\-0.1.2" "smsfimport Manual Page"
+.TH "SMSFIMPORT" "1" "2011\-07\-20" "Revision 583" "smsfimport Manual Page"
 
-.SH
-NAME
+.SH NAME
 
+smsfimport - program to create SpectMorph models from SoundFont presets
 
-.PP
-smsfimport \- program to create SpectMorph models from SoundFont presets
-.SH
-SYNOPSIS
+.SH SYNOPSIS
 
+\fBsmsfimport\fR \fI<command>\fR \fI<SoundFontFile>\fR [\fIOPTIONS\fR] [\fI<command specific args>...\fR]
 
-.PP
-\fBsmsfimport\fP <command> \fI<SoundFontFile>\fP [\fIOPTIONS\fP] [ \fI<command specific args>...\fP ]
-.SH
-DESCRIPTION
+.SH DESCRIPTION
 
+\fBsmsfimport\fR can be used to convert SoundFont presets (.sf2 format) to SpectMorph instruments (.smset format). Since it does not implement all of the functionality provided by SoundFonts, the resulting files can sound different than the original SoundFont, and in some cases the import will fail completely.
 
-.PP
-\fBsmsfimport\fP can be used to convert SoundFont presets (.sf2 format) to
-SpectMorph instruments (.smset format). Since it does not implement all of
-the functionality provided by SoundFonts, the resulting files can sound
-different than the original SoundFont, and in some cases the import will
-fail completely.
-.SH
-OPTIONS
+.SH OPTIONS
 
-
-.PP
-\fBsmsfimport\fP follows the usual GNU command line syntax, with long options
-starting with two dashes ('\-').
-.br
-
-.br
-
-
-
+\fBsmsfimport\fR follows the usual GNU command line syntax, with long options starting with two dashes ('-').
 .TP
-\fB\-h\fP, \fB\-\-help\fP 
-.br
+\fB-h\fR, \fB--help\fR
 Shows a brief help message.
-
+.PP
 .TP
-\fB\-v\fP, \fB\-\-version\fP 
-.br
-Prints out \fBsmsfimport\fP version.
-
+\fB-v\fR, \fB--version\fR
+Prints out smsfimport version.
 .PP
 
-
-.SH
-COMMANDS
-
-.SS
-list \fI<SoundFontFile>\fP
-
-
-.PP
-
+.SH COMMANDS
+.TP
+\fBlist\fR \fI<SoundFontFile>\fR
 Shows all presets contained in the SoundFontFile.
-.SS
-dump \fI<SoundFontFile>\fP [ <PresetName> ]
-
-
+.PP
+.TP
+\fBdump\fR \fI<SoundFontFile>\fR [ \fI<PresetName>\fR ]
+Displays a detailed view of the parameters specified for a preset (or for all presets).
+.PP
+.TP
+\fBimport\fR \fI<SoundFontFile>\fR \fI<PresetName>\fR
+Imports a preset, creating a *.smset file. For preset "Grand Piano", the resulting output would be "grand_piano.smset".
 .PP
 
-Displays a detailed view of the parameters specified for a preset (or
-for all presets).
-.SS
-import \fI<SoundFontFile>\fP <PresetName>
+.SH SEE ALSO
 
+smenc.1 <http://testbit.eu/Smenc.1>, smplay.1 <http://testbit.eu/Smplay.1>
 
-.PP
-
-Imports a preset, creating a *.smset file. For preset "Grand Piano", the
-resulting output would be "grand_piano.smset".
-.SH
-SEE ALSO
-
-
-.PP
-smenc(1),
-smplay(1),
-SpectMorph Website (http://space.twc.de/~stefan/spectmorph.php)
