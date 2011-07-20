@@ -51,7 +51,7 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   button_hbox.set_spacing (10);
 
   volume_label.set_label ("Volume");
-  volume_scale.set_value (-20);
+  volume_scale.set_value (0);
   volume_scale.set_draw_value (false);
 
   volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
