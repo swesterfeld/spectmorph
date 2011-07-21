@@ -47,6 +47,10 @@ MorphPlan::MorphPlan()
   leak_debugger.add (this);
 }
 
+/**
+ * Clears MorphPlan, deletes all operators and resets all variables to return
+ * to a state that is completely empty (like after creation).
+ */
 void
 MorphPlan::clear()
 {
@@ -67,6 +71,10 @@ MorphPlan::~MorphPlan()
   leak_debugger.del (this);
 }
 
+/**
+ * Sets and loads instrument index to be used.
+ * \returns true if the instrument index was loaded successfully, false otherwise
+ */
 bool
 MorphPlan::load_index (const string& filename)
 {
@@ -136,6 +144,11 @@ MorphPlan::set_plan_str (const string& str)
   delete in;
 }
 
+/**
+ * Loads MorphPlan from input stream.
+ *
+ * \returns BSE_ERROR_NONE if everything worked, an error otherwise
+ */
 BseErrorType
 MorphPlan::load (GenericIn *in)
 {
@@ -263,6 +276,11 @@ MorphPlan::load (GenericIn *in)
   return BSE_ERROR_NONE;
 }
 
+/**
+ * Get MorphPlan operators.
+ *
+ * \returns a read-only reference to the vector containing the operators.
+ */
 const vector<MorphOperator*>&
 MorphPlan::operators()
 {
