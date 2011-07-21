@@ -1,4 +1,37 @@
+Overview of Changes in spectmorph-0.2.0:
+
+* implemented user defined morphing using a MorphPlan consisting of operators
+  - graphical representation of the operators
+  - graphical editing of the MorphPlan
+  - implement actual morphing (in per-operator per-voice module object)
+  - added MorphPlanSynth/MorphPlanVoice, which allow running MorphPlan's easily
+  - added LPC (linear prediction) during encoding, and LPC/LSF based morphing
+* BEAST plugin:
+  - added GUI required for editing a MorphPlan
+  - support four output channels, as well as twc control inputs
+  - delay compensation plugin (to compensate SpectMorph delay)
+* JACK client:
+  - support GUI MorphPlan editing
+* added sminspector (graphical tool for displaying SpectMorph instruments)
+  - zoomable time/frequency view
+  - configurable (FFT/CWT/LPC) time/frequency view transform parameters
+  - spectrum, sample, LPC visualization
+  - graphical loop point editing
+  - allow storing changes in .smset files (for editing loop points)
+  - play support via JACK
+* improved smtool (old name: smextract); its now installed by default
+  - lots of new commands (like "total-noise", "auto-volume", ...)
+  - support .smset as input (in addition to .sm); command is executed on all
+    .sm files in the .smset
+* added shared libraries for gui and jack code
+* new integrated memory leak debugger (to find missing delete's)
+* support ping-pong loops
+* doxygen API docs updates
+* migrated man pages from Doxer to testbit.eu wiki (and use wikihtml2man.py)
+* performance improvements
+
 Overview of Changes in spectmorph-0.1.1:
+
 * added tool for SoundFont (SF2) import: smsfimport
 * file format changes
   - allow time index based loops (required for looped SoundFont presets)
