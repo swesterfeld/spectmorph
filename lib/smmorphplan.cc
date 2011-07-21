@@ -287,7 +287,7 @@ MorphPlan::operators()
   return m_operators;
 }
 
-Index *
+const Index *
 MorphPlan::index()
 {
   return &m_index;

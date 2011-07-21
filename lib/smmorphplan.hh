@@ -40,8 +40,8 @@ public:
   MorphPlan();
   ~MorphPlan();
 
-  bool   load_index (const std::string& filename);
-  Index *index();
+  bool         load_index (const std::string& filename);
+  const Index *index();
 
   void add_operator (MorphOperator *op, const std::string& name = "", const std::string& id = "");
   const std::vector<MorphOperator *>& operators();

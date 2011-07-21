@@ -71,13 +71,13 @@ Index::load_file (const string& filename)
 }
 
 vector<string>
-Index::smsets()
+Index::smsets() const
 {
   return m_smsets;
 }
 
 string
-Index::smset_dir()
+Index::smset_dir() const
 {
   return m_smset_dir;
 }
