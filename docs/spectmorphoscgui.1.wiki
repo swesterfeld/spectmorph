@@ -1,0 +1,21 @@
+= spectmorphoscgui(1) =
+Manual: spectmorphoscgui Manual Page <br />
+Release: Revision {{REVISIONID}} <br />
+Updated: {{REVISIONYEAR}}-{{padleft:{{REVISIONMONTH}}|2}}-{{REVISIONDAY}} <br />
+
+==NAME==
+spectmorphoscgui - helper application for SpectMorph BEAST plugin
+
+==SYNOPSIS==
+'''spectmorphoscgui''' ''<title>''
+
+== DESCRIPTION ==
+
+'''spectmorphoscgui''' is a helper application which is used by the SpectMorph BEAST plugin to display a gui. It is only useful when called by the BEAST plugin.
+
+== OPTIONS ==
+
+The window title is set by the ''<title>'' argument.
+
+== SEE ALSO ==
+[[smjack.1]]

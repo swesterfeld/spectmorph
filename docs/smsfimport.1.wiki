@@ -1,0 +1,35 @@
+= smsfimport(1) =
+Manual: smsfimport Manual Page <br />
+Release: Revision {{REVISIONID}} <br />
+Updated: {{REVISIONYEAR}}-{{padleft:{{REVISIONMONTH}}|2}}-{{REVISIONDAY}} <br />
+
+==NAME==
+smsfimport - program to create SpectMorph models from SoundFont presets
+
+==SYNOPSIS==
+'''smsfimport''' ''<command>'' ''<SoundFontFile>'' [''OPTIONS''] [''<command specific args>...'']
+
+==DESCRIPTION==
+'''smsfimport''' can be used to convert SoundFont presets (.sf2 format) to SpectMorph instruments (.smset format). Since it does not implement all of the functionality provided by SoundFonts, the resulting files can sound different than the original SoundFont, and in some cases the import will fail completely.
+
+==OPTIONS==
+'''smsfimport''' follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+
+; '''-h''', '''--help'''
+: Shows a brief help message.
+
+; '''-v''', '''--version'''
+: Prints out smsfimport version.
+
+==COMMANDS==
+; '''list''' ''<SoundFontFile>''
+: Shows all presets contained in the SoundFontFile.
+
+; '''dump''' ''<SoundFontFile>'' [ ''<PresetName>'' ]
+: Displays a detailed view of the parameters specified for a preset (or for all presets).
+
+; '''import''' ''<SoundFontFile>'' ''<PresetName>''
+: Imports   a   preset,  creating  a  *.smset  file.  For  preset  "Grand  Piano",  the  resulting  output  would  be "grand_piano.smset".
+
+==SEE ALSO==
+[[smenc.1]], [[smplay.1]]

@@ -1,0 +1,80 @@
+= smwavset(1) =
+Manual: smwavset Manual Page <br />
+Release: Revision {{REVISIONID}} <br />
+Updated: {{REVISIONYEAR}}-{{padleft:{{REVISIONMONTH}}|2}}-{{REVISIONDAY}} <br />
+
+==NAME==
+smwavset - Program to manage spectmorph multiwave files
+
+==SYNOPSIS==
+'''smwavset''' ''<command>'' [''OPTIONS''] [ ''<command specific args>...'' ]
+
+==DESCRIPTION==
+'''smwavset''' is a command  line tool to manage multi-wave files for SpectMorph. Ususally, a multi wave file is first initialized (using the '''init''' command), then different wave files are added using the '''add''' command. After this has been done, encoding all waves can be done with one single command, like decoding all waves.
+
+==OPTIONS==
+'''smwavset''' follows the usual GNU command line syntax, with long options starting with two dashes ('-').
+
+; '''-h''', '''--help'''
+: Shows a brief help message.
+
+; '''-v''', '''--version'''
+: Prints out smwavset version.
+
+; '''--args''' ''<arguments>''
+: Specify additional arguments to be passed  to smenc/smplay. This could be --args "-O1" for encoding, or --args "--no-sines" for decoding.
+
+; '''-d''', '''--data-dir'''
+: For encoding/decoding, this sets a data directory where the .wav files or a  list  of  .wav  files  (or  .sm files), it is important that different wavsets store their files in different directories (otherwise they will overwrite wav files that belong to a different wavset). So specifying a proper data directory which is different for each wavset is usually necessary. The default value is /tmp, which is only appropriate for testing; you should ensure that scripts setup a different value.
+
+; '''--format''' ''<field1>'',''<field2>'',''<field3>'',...,''<fieldN>''
+: Set the output format for the list command.
+
+; '''-j''' ''<jobs>''
+: Use ''<jobs>'' parallel jobs for encoding (for systems with more than one processor).
+
+==COMMANDS==
+; '''init''' [ ''<options>'' ] ''<wavset>''...
+: Initializes a new wavset; can also initialize more than one wavset specified on the commandline.
+
+; '''add''' [ ''<options>'' ] ''<wavset>'' ''<midi_note>'' ''<path>''
+: Adds a wave file to the wavset, where midi_note is the midi note the wave file has been recorded for.
+
+; '''list''' [ ''<options>'' ] ''<wavset>''
+: Lists the wave files that are contained within the wavset. The output format for the list command can be  specified using the format option (comma seperated fields). See FIELDS section for a list of valid fields
+
+; '''encode''' [ ''<options>'' ] ''<wset_filename>'' ''<smset_filename>''
+: Encodes a wavset using smenc.
+
+; '''decode''' [ ''<options>'' ] ''<smset_filename>'' ''<wset_filename>''
+: Decodes a wavset using smplay.
+
+; '''delta''' [ ''<options>'' ] ''<wset_filename1>''...''<wset_filenameN>''
+: Computes  the difference between many wavsets. The differencce between the first and second wavset is the reference which is 100%. The other wavsets are measured against that reference.
+
+; '''link''' ''<smset>''
+: This command includes all .sm files that are referred to by the smset in one big file. This is useful as final step when building instruments.
+
+==FIELDS==
+For the list command, valid fields are:
+
+; '''midi-note'''
+: Midi note of the audio entry (0-127)
+
+; '''channel'''
+: Channel for the audio entry (0 is the first channel)
+
+; '''filename'''
+: Filename of the audio entry
+
+; '''min-velocity'''
+: Minimum velocity of the audio entry (0-127)
+
+; '''max-velocity'''
+: Maximum velocity of the audio entry (0-127)
+
+
+==SEE ALSO==
+[[smenc.1]],
+[[smplay.1]],
+[[smstrip.1]]

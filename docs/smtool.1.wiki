@@ -1,0 +1,87 @@
+= smtool(1) =
+Manual: smtool Manual Page <br />
+Release: Revision {{REVISIONID}} <br />
+Updated: {{REVISIONYEAR}}-{{padleft:{{REVISIONMONTH}}|2}}-{{REVISIONDAY}} <br />
+
+==NAME==
+smtool - tool to show/change SpectMorph data from .sm/.smset files
+
+==SYNOPSIS==
+'''smtool''' ''<sm_file>|<smset_file>'' ''<command>'' [ ''<command_specific_args>'' ]
+
+== DESCRIPTION ==
+
+'''smtool''' is a general purpose program that can perform operations on .sm/.smset files. Some of the operations extract data (like '''size'''), others modify data (like '''auto-tune'''). If a .smset file is given as argument, the operation is performed on the individual .sm files that are contained in the .smset file.
+
+== OPTIONS ==
+
+'''smtool''' options depend on the command used, the command specific arguments are listed below.
+
+== COMMANDS ==
+
+; '''volume''' ''<percent>''
+: Compute average energy of the audio data around ''<percent>''.
+
+; '''fundamental-freq''' 
+: Output fundamental frequency of the audio data.
+
+; '''mix-freq''' 
+: Output mixing frequency (sample rate) of the audio data.
+
+; '''zero-values-at-start''' 
+: Output zero-values-at-start property of the audio data.
+
+; '''attack''' 
+: Output attack parameters of the audio data.
+
+; '''size''' 
+: Output overview of the size in bytes of the different parts of the audio data.
+
+; '''loop-params''' 
+: Output loop parameters of the audio data.
+
+; '''noise-params''' ''<frame_no>''
+: Output noise component of a frame of the audio data.
+
+; '''frame''' ''<frame_no>''
+: Show original samples and reconstructed samples for one frame of the audio data.
+
+; '''frame-params''' ''<frame_no>''
+: Show the freqencies/magnitudes of one frame of the audio data.
+
+; '''total-noise''' 
+: Sum up all noise parameters of all frames of the audio data.
+
+; '''nan-test''' 
+: Check all frame data contents for NaNs.
+
+; '''original-samples''' 
+: Show original samples of the audio data.
+
+; '''freq''' ''<freq_min>'' ''<freq_max>''
+: Show all frequency entries of the audio data in the specified range.
+
+; '''spectrum''' ''<frame_no>''
+: Compare original and reconstructed spectrum for a given frame.
+
+; '''auto-loop''' ''<percent>''
+: Set a one frame loop that starts and ends at the same point (given by ''<percent>'').
+
+; '''tail-loop''' 
+: Loop audio data at the end using a one frame loop.
+
+; '''auto-tune''' 
+: Tune instrument using the (40%..60%) data to extract the actual frequency.
+
+; '''tune-all-frames''' 
+: Tune each frame of the instrument. This will discard minimal changes in frequency which are normal for most instruments, so it might sound artificial. 
+
+; '''auto-volume''' ''<percent>''
+: Normalize audio volume, using the volume around ''<percent>'' as reference.
+
+; '''auto-volume-from-loop''' 
+: Normalize audio volume, using the volume of the looped part as reference.
+
+== SEE ALSO ==
+[[smenc.1]],
+[[smplay.1]]
