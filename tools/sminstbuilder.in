@@ -17,17 +17,75 @@
 
 import sys, os
 
+class Config:
+  dir_count         = 0
+  auto_tune_count   = 0
+  auto_loop_count   = 0
+  auto_volume_count = 0
+  set_markers_count = 0
+  sample_count      = 0
+  samples           = []
+
 def die (message):
   print >> sys.stderr, "sminstbuilder: " + message
   exit (1)
 
+def parse_config (filename):
+  config = Config()
+  try:
+    f = open (filename)
+  except:
+    die ("file '%s' missing" % filename)
+  line_number = 1
+  for line in f:
+    tokens = line.split()
+    parse_ok = False
+    if len (tokens) == 0: # blank line: ok
+      parse_ok = True
+    if len (tokens) == 1:
+      if tokens[0] == 'auto-tune':
+        config.auto_tune = True
+        config.auto_tune_count += 1
+        parse_ok = True
+    if len (tokens) == 2:
+      if tokens[0] == 'dir':
+        config.dir = tokens[1]
+        config.dir_count += 1
+        parse_ok = True
+      elif tokens[0] == 'auto-loop':
+        config.auto_loop = tokens[1]
+        config.auto_loop_count += 1
+        parse_ok = True
+      elif tokens[0] == 'auto-volume':
+        config.auto_volume = tokens[1]
+        config.auto_volume_count += 1
+        parse_ok = True
+      elif tokens[0] == 'set-markers':
+        config.set_markers = tokens[1]
+        config.set_markers_count += 1
+        parse_ok = True
+    if len (tokens) == 3:
+      if tokens[0] == 'sample':
+        config.samples += [ tokens[1:] ]
+        config.sample_count += 1
+        parse_ok = True
+    if not parse_ok:
+      die ("parse error in line %d '%s'" % (line_number, line.strip()));
+    line_number += 1
+  if config.dir_count != 1:
+    die ("dir command must occur exactly once in config")
+  if config.auto_tune_count > 1:
+    die ("auto-tune command must occur at most once in config")
+  return config
+
 def build_instrument (inst_dir):
   old_path = os.getcwd()
-
   try:
     os.chdir (inst_dir)
   except:
     die ("directory '%s' not found" % inst_dir)
+
+  config = parse_config ("config")
 
   os.chdir (old_path)
 
