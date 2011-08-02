@@ -9,6 +9,7 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 EXTRA_DIST += delta.py
 
 bin_PROGRAMS = smsfimport
+bin_SCRIPTS  = sminstbuilder
 
 noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan smfileedit
 
@@ -43,3 +44,6 @@ smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(t
 smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
+
+install-exec-hook:
+	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder
