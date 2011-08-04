@@ -25,6 +25,8 @@ class Config:
   set_markers_count = 0
   sample_count      = 0
   samples           = []
+  cut_count         = 0
+  cut               = []
   tune_all_frames_count = 0
 
 class BuilderConfig:
@@ -76,6 +78,11 @@ def parse_config (filename):
       if tokens[0] == 'sample':
         config.samples += [ tokens[1:] ]
         config.sample_count += 1
+        parse_ok = True
+    if len (tokens) >= 4:
+      if tokens[0] == 'cut':
+        config.cut += [ tokens[1:] ]
+        config.cut_count += 1
         parse_ok = True
     if not parse_ok:
       die ("parse error in line %d '%s'" % (line_number, line.strip()));
@@ -138,6 +145,19 @@ def build_instrument (inst_dir, builder_config):
     die ("directory '%s' not found" % inst_dir)
 
   config = parse_config ("config")
+
+  ### Cut instrument using imiscutter (if necessary)
+  if (config.cut_count > 0):
+    for args in config.cut:
+      if len (args) < 3:
+        die ("bad args to cut")
+      if len (args) < 4:
+        args += [ ":" ]
+      if len (args) < 5:
+        args += [ "note-%d.wav" ]
+      src, regions, note_start, thresholds, pattern = args
+      system_or_die ("imiscutter %s %s %s %s" % (src, regions, note_start, pattern))
+
   system_or_die ("rm -rf %s" % config.dir)
   system_or_die ("mkdir -p %s" % config.dir)
   system_or_die ("smwavset init %s/instrument.wset" % config.dir);
