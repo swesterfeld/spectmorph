@@ -15,13 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os, subprocess
+import sys, os, subprocess, re
 
 class Config:
   dir_count         = 0
   auto_tune_count   = 0
   auto_loop_count   = 0
   auto_volume_count = 0
+  auto_volume_from_loop_count = 0
   set_markers_count = 0
   sample_count      = 0
   samples           = []
@@ -48,6 +49,8 @@ def parse_config (filename):
   for line in f:
     tokens = line.split()
     parse_ok = False
+    if re.match ("^#", line): # comment
+      tokens = []
     if len (tokens) == 0: # blank line: ok
       parse_ok = True
     if len (tokens) == 1:
@@ -56,6 +59,9 @@ def parse_config (filename):
         parse_ok = True
       elif tokens[0] == 'tune-all-frames':
         config.tune_all_frames_count += 1
+        parse_ok = True
+      elif tokens[0] == 'auto-volume-from-loop':
+        config.auto_volume_from_loop_count += 1
         parse_ok = True
     if len (tokens) == 2:
       if tokens[0] == 'dir':
@@ -78,6 +84,11 @@ def parse_config (filename):
       if tokens[0] == 'sample':
         config.samples += [ tokens[1:] ]
         config.sample_count += 1
+        parse_ok = True
+      elif tokens[0] == 'samples':
+        for i in range (int (tokens[1]), int (tokens[2]) + 1):
+          config.samples += [ [ i, "note-%d.wav" % i ] ]
+          config.sample_count += 1
         parse_ok = True
     if len (tokens) >= 4:
       if tokens[0] == 'cut':
@@ -156,7 +167,14 @@ def build_instrument (inst_dir, builder_config):
       if len (args) < 5:
         args += [ "note-%d.wav" ]
       src, regions, note_start, thresholds, pattern = args
-      system_or_die ("imiscutter %s %s %s %s" % (src, regions, note_start, pattern))
+      # parse thresholds (for example -40:-20)
+      threshold_args = ""
+      tmin, tmax = thresholds.split (":")
+      if (tmin != ""):
+        threshold_args += " --silence %s" % tmin;
+      if (tmax != ""):
+        threshold_args += " --signal %s" % tmax;
+      system_or_die ("imiscutter %s %s %s %s %s" % (src, regions, note_start, pattern, threshold_args))
 
   system_or_die ("rm -rf %s" % config.dir)
   system_or_die ("mkdir -p %s" % config.dir)
