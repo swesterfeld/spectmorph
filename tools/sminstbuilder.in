@@ -81,6 +81,8 @@ def parse_config (filename):
     die ("dir command must occur exactly once in config")
   if config.auto_tune_count > 1:
     die ("auto-tune command must occur at most once in config")
+  if config.set_markers_count > 1:
+    die ("set-markers command must occur at most once in config")
   return config
 
 def parse_builder_config (filename):
@@ -154,6 +156,9 @@ def build_instrument (inst_dir, builder_config):
   final_smset = config.dir + "/instrument.smset";
   system_or_die ("smwavset link %s" % final_smset);
   # missing: auto-tune & co
+  if (config.set_markers_count > 0):
+    system_or_die ("smwavset set-markers %s %s" % (final_smset, config.set_markers))
+
   system_or_die ("ls -l %s" % final_smset);
   system_or_die ("cp %s %s/%s.smset" % (final_smset, builder_config.output_dir, inst_dir));
 
