@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os
+import sys, os, subprocess
 
 class Config:
   dir_count         = 0
@@ -123,7 +123,9 @@ def parse_builder_config (filename):
 
 def system_or_die (command):
   print "+++ %s" % command
-  os.system (command)
+  return_code = subprocess.call (command, shell=True)
+  if return_code != 0:
+    die ("executing command '%s' failed, return_code=%d" % (command, return_code))
 
 def build_instrument (inst_dir, builder_config):
   old_path = os.getcwd()
