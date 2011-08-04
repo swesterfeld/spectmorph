@@ -78,6 +78,10 @@ def parse_config (filename):
     die ("auto-tune command must occur at most once in config")
   return config
 
+def system_or_die (command):
+  print "+++ %s" % command
+  os.system (command)
+
 def build_instrument (inst_dir):
   old_path = os.getcwd()
   try:
@@ -86,7 +90,16 @@ def build_instrument (inst_dir):
     die ("directory '%s' not found" % inst_dir)
 
   config = parse_config ("config")
+  system_or_die ("rm -rf %s" % config.dir)
+  system_or_die ("mkdir -p %s" % config.dir)
+  system_or_die ("smwavset init %s/instrument.wset" % config.dir);
+  system_or_die ("smwavset init %s/instrument-clipped.wset" % config.dir);
 
+  for sample in config.samples:
+    system_or_die ("smwavset add %s/instrument.wset %s %s" % (config.dir, sample[0], sample[1]));
+    system_or_die ("smwavset add %s/instrument-clipped.wset %s clipped-note-%s.wav" % (config.dir, sample[0], sample[0]));
+  # missing: samples command with loop
+  system_or_die ("smsampleedit clip %s/instrument.wset clip_markers clipped-note-%%d.wav" % config.dir);
   os.chdir (old_path)
 
 def main():
