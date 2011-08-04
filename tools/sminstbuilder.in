@@ -26,6 +26,11 @@ class Config:
   sample_count      = 0
   samples           = []
 
+class BuilderConfig:
+  jobs_count = 0
+  cache_count = 0
+  output_dir_count = 0
+
 def die (message):
   print >> sys.stderr, "sminstbuilder: " + message
   exit (1)
@@ -78,11 +83,47 @@ def parse_config (filename):
     die ("auto-tune command must occur at most once in config")
   return config
 
+def parse_builder_config (filename):
+  builder_config = BuilderConfig()
+  try:
+    f = open (filename)
+  except:
+    die ("file '%s' missing" % filename)
+  line_number = 1
+  for line in f:
+    tokens = line.split()
+    parse_ok = False
+    if len (tokens) == 0: # blank line: ok
+      parse_ok = True
+    if len (tokens) == 2:
+      if tokens[0] == 'jobs':
+        builder_config.jobs = int (tokens[1])
+        builder_config.jobs_count += 1
+        parse_ok = True
+      elif tokens[0] == 'cache':
+        builder_config.cache = int (tokens[1])
+        builder_config.cache_count += 1
+        parse_ok = True
+      elif tokens[0] == 'output-dir':
+        builder_config.output_dir = tokens[1]
+        builder_config.output_dir_count += 1
+        parse_ok = True
+    if not parse_ok:
+      die ("parse error in line %d '%s'" % (line_number, line.strip()));
+    line_number += 1
+  if builder_config.cache_count != 1:
+    die ("cache command must occur exactly once in config")
+  if builder_config.output_dir_count != 1:
+    die ("output-dir command must occur exactly once in config")
+  if builder_config.jobs_count != 1:
+    die ("jobs command must occur exactly once in config")
+  return builder_config
+
 def system_or_die (command):
   print "+++ %s" % command
   os.system (command)
 
-def build_instrument (inst_dir):
+def build_instrument (inst_dir, builder_config):
   old_path = os.getcwd()
   try:
     os.chdir (inst_dir)
@@ -100,12 +141,28 @@ def build_instrument (inst_dir):
     system_or_die ("smwavset add %s/instrument-clipped.wset %s clipped-note-%s.wav" % (config.dir, sample[0], sample[0]));
   # missing: samples command with loop
   system_or_die ("smsampleedit clip %s/instrument.wset clip_markers clipped-note-%%d.wav" % config.dir);
+
+  if (builder_config.cache > 0):
+    smencargs = "--smenc smenccache"
+  else:
+    smencargs = ""
+
+  pwd = os.getcwd()
+  system_or_die ("smwavset -j %s %s encode %s/instrument-clipped.wset %s/instrument.smset "
+                 "--data-dir %s/%s --args '-O1 -s --keep-samples'" %
+                 (builder_config.jobs, smencargs, config.dir, config.dir, pwd, config.dir));
+  final_smset = config.dir + "/instrument.smset";
+  system_or_die ("smwavset link %s" % final_smset);
+  # missing: auto-tune & co
+  system_or_die ("ls -l %s" % final_smset);
+  system_or_die ("cp %s %s/%s.smset" % (final_smset, builder_config.output_dir, inst_dir));
+
   os.chdir (old_path)
 
 def main():
   print "SpectMorph Instrument Builder, Version @VERSION@"
-
+  builder_config = parse_builder_config ("sminstbuilder.cfg")
   for inst_dir in sys.argv[1:]:
-    build_instrument (inst_dir)
+    build_instrument (inst_dir, builder_config)
 
 main()
