@@ -18,6 +18,7 @@
 #include "smnavigator.hh"
 #include "smmicroconf.hh"
 #include "smlivedecoder.hh"
+#include "smindex.hh"
 
 #include <assert.h>
 #include <bse/bseloader.h>
@@ -25,6 +26,7 @@
 
 using namespace SpectMorph;
 
+using std::vector;
 using std::string;
 
 Navigator::Navigator (const string& filename) :
@@ -35,25 +37,12 @@ Navigator::Navigator (const string& filename) :
   time_freq_window (this),
   player_window (this)
 {
-  MicroConf cfg (filename);
+  Index index;
+  index.load_file (filename);
 
-  while (cfg.next())
-    {
-      string str;
-
-      if (cfg.command ("smset", str))
-        {
-          smset_combobox.append_text (str);
-        }
-      else if (cfg.command ("smset_dir", str))
-        {
-          smset_dir = str;
-        }
-      else
-        {
-          cfg.die_if_unknown();
-        }
-    }
+  smset_dir = index.smset_dir();
+  for (vector<string>::const_iterator ii = index.smsets().begin(); ii != index.smsets().end(); ii++)
+    smset_combobox.append_text (*ii);
 
   ref_action_group = Gtk::ActionGroup::create();
   ref_action_group->add (Gtk::Action::create ("ViewMenu", "View"));
