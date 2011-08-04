@@ -9,6 +9,8 @@ smfiledump
 smenccache
 smrunplan
 smsampleedit
+smfileedit
+sminstbuilder
 tld
 *.o
 .deps
