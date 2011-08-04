@@ -33,8 +33,8 @@ public:
   void clear();
   bool load_file (const std::string& filename);
 
-  std::vector<std::string> smsets() const;
-  std::string              smset_dir() const;
+  const std::vector<std::string>& smsets() const;
+  std::string                     smset_dir() const;
 };
 
 }

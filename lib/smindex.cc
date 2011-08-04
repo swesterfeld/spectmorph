@@ -70,7 +70,7 @@ Index::load_file (const string& filename)
   return true;
 }
 
-vector<string>
+const vector<string>&
 Index::smsets() const
 {
   return m_smsets;
