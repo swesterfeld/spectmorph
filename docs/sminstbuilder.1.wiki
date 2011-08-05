@@ -1,0 +1,39 @@
+= sminstbuilder(1) =
+Manual: sminstbuilder Manual Page <br />
+Release: Revision {{REVISIONID}} <br />
+Updated: {{REVISIONYEAR}}-{{padleft:{{REVISIONMONTH}}|2}}-{{REVISIONDAY}} <br />
+
+==NAME==
+sminstbuilder - program to build .smset instruments from samples
+
+==SYNOPSIS==
+'''sminstbuilder''' ''Directory...''
+
+== DESCRIPTION ==
+
+'''sminstbuilder''' is a script which automatically performs all steps required to build an .smset instrument (to be used with SpectMorph morph plans) from samples. It is possible to do all the steps '''sminstbuilder''' does by hand, using smenc, smwavset, smtool, imiscutter and smsampleedit, but sminstbuilder makes the process to build an instrument much more convenient.
+
+The main idea is to have one directory per instrument, and in each directory one file named "config". Everything that sminstbuilder needs to know about the instrument goes into the "config" file. The commands are documented below.
+
+== OPTIONS ==
+
+'''sminstbuilder''' takes a list of one or more instrument directories as input. Each instrument needs to have a "config" file.
+
+== BUILDER CONFIG ==
+
+'''sminstbuilder''' reads the file "sminstbuilder.cfg" on startup. This file contains non-instrument-specific options. These are:
+
+; '''cache''' ''0/1''
+: While building instruments, it may be necessary to encode the same sample again and again (while changing other parameters). Since smenc is slow, this can take a long time. If '''cache''' is set to 1, sminstbuilder will use smenccache for encoding, and if the same sample was encoded previously, the result will be taken from ~/.smenccache, which is a lot faster than rerunning smenc.
+
+; '''jobs''' ''n_jobs''
+: Since encoding is expensive, distributing the encoder jobs on multi-core-cpus is usually desired. If you have a multi-core-cpu, set ''n_jobs'' to the number of cores (i.e. 1 for single-core, 2 for dual-core, ...)
+
+; '''output-dir''' ''directory''
+: After sucessfully building an instrument, sminstbuilder will copy the instrument to this directory. It should be specified using an absolute path (not relative path).
+
+== SEE ALSO ==
+
+[[smenc.1]],
+[[smtool.1]],
+[[smwavset.1]]
