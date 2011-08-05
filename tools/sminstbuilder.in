@@ -18,22 +18,24 @@
 import sys, os, subprocess, re
 
 class Config:
-  dir_count         = 0
-  auto_tune_count   = 0
-  auto_loop_count   = 0
-  auto_volume_count = 0
-  auto_volume_from_loop_count = 0
-  set_markers_count = 0
-  sample_count      = 0
-  samples           = []
-  cut_count         = 0
-  cut               = []
-  tune_all_frames_count = 0
+  def __init__ (self):
+    self.auto_loop_count   = 0
+    self.auto_tune_count   = 0
+    self.auto_volume_count = 0
+    self.auto_volume_from_loop_count = 0
+    self.cut_count         = 0
+    self.cut               = []
+    self.dir_count         = 0
+    self.sample_count      = 0
+    self.samples           = []
+    self.set_markers_count = 0
+    self.tune_all_frames_count = 0
 
 class BuilderConfig:
-  jobs_count = 0
-  cache_count = 0
-  output_dir_count = 0
+  def __init__ (self):
+    self.jobs_count = 0
+    self.cache_count = 0
+    self.output_dir_count = 0
 
 def die (message):
   print >> sys.stderr, "sminstbuilder: " + message
@@ -57,24 +59,24 @@ def parse_config (filename):
       if tokens[0] == 'auto-tune':
         config.auto_tune_count += 1
         parse_ok = True
-      elif tokens[0] == 'tune-all-frames':
-        config.tune_all_frames_count += 1
-        parse_ok = True
       elif tokens[0] == 'auto-volume-from-loop':
         config.auto_volume_from_loop_count += 1
         parse_ok = True
-    if len (tokens) == 2:
-      if tokens[0] == 'dir':
-        config.dir = tokens[1]
-        config.dir_count += 1
+      elif tokens[0] == 'tune-all-frames':
+        config.tune_all_frames_count += 1
         parse_ok = True
-      elif tokens[0] == 'auto-loop':
+    if len (tokens) == 2:
+      if tokens[0] == 'auto-loop':
         config.auto_loop = tokens[1]
         config.auto_loop_count += 1
         parse_ok = True
       elif tokens[0] == 'auto-volume':
         config.auto_volume = tokens[1]
         config.auto_volume_count += 1
+        parse_ok = True
+      elif tokens[0] == 'dir':
+        config.dir = tokens[1]
+        config.dir_count += 1
         parse_ok = True
       elif tokens[0] == 'set-markers':
         config.set_markers = tokens[1]
@@ -98,12 +100,22 @@ def parse_config (filename):
     if not parse_ok:
       die ("parse error in line %d '%s'" % (line_number, line.strip()));
     line_number += 1
+  if config.auto_tune_count > 1:
+    die ("auto-tune command can be used at most once in config")
+  if config.auto_loop_count > 1:
+    die ("auto-loop command can be used at most once in config")
+  if config.auto_volume_count > 1:
+    die ("auto-volume command can be used at most once in config")
+  if config.auto_volume_from_loop_count > 1:
+    die ("auto-volume-from-loop command can be used at most once in config")
   if config.dir_count != 1:
     die ("dir command must occur exactly once in config")
-  if config.auto_tune_count > 1:
-    die ("auto-tune command must occur at most once in config")
+  if config.sample_count < 1:
+    die ("sample/samples command must occur at least once in config")
   if config.set_markers_count > 1:
     die ("set-markers command must occur at most once in config")
+  if config.tune_all_frames_count > 1:
+    die ("tune-all-frames command can be used at most once in config")
   return config
 
 def parse_builder_config (filename):
