@@ -13,7 +13,7 @@ sminstbuilder - program to build .smset instruments from samples
 
 '''sminstbuilder''' is a script which automatically performs all steps required to build an .smset instrument (to be used with SpectMorph morph plans) from samples. It is possible to do all the steps '''sminstbuilder''' does by hand, using smenc, smwavset, smtool, imiscutter and smsampleedit, but sminstbuilder makes the process to build an instrument much more convenient.
 
-The main idea is to have one directory per instrument, and in each directory one file named "config". Everything that sminstbuilder needs to know about the instrument goes into the "config" file. The commands are documented below.
+The main idea is to have one directory per instrument, and in each directory one file named "config". Everything that sminstbuilder needs to know about the instrument goes into the "config" file. The commands are documented below in the CONFIG section.
 
 == OPTIONS ==
 
@@ -31,6 +31,38 @@ The main idea is to have one directory per instrument, and in each directory one
 
 ; '''output-dir''' ''directory''
 : After sucessfully building an instrument, sminstbuilder will copy the instrument to this directory. It should be specified using an absolute path (not relative path).
+
+== CONFIG ==
+
+; '''auto-loop''' ''<percent>''
+: Set a one frame loop that starts and ends at the same point (given by ''<percent>'').
+
+; '''auto-tune'''
+: Tune instrument using the (40%..60%) data to extract the actual frequency.
+
+; '''auto-volume''' ''<percent>''
+: Normalize audio volume, using the volume around ''<percent>'' as reference.
+
+; '''auto-volume-from-loop'''
+: Normalize audio volume, using the volume of the looped part as reference.
+
+; '''cut'''
+:
+
+; '''dir'''
+: Set data directory relative to instrument directory.
+
+; '''sample''' ''<midi-note>'' ''<filename>''
+: Add sample from file ''<filename>'' to instrument. The ''<midi-note>'' should be set to the note that was recorded, as number between 0 and 127. 
+
+; '''samples''' ''<start-midi-note>'' ''<end-midi-note>''
+: Add a set of samples to instrument. The sample files should be named note-''<N>''.wav, where ''<N>'' is the midi-note, counting from ''<start-midi-note>'' to ''<end-midi-note>''. 
+
+; '''set-markers'''
+: Set markers from marker file.
+
+; '''tune-all-frames'''
+: Tune each frame of the instrument. This will discard minimal changes in frequency which are normal for most instruments, so it might sound artificial.
 
 == SEE ALSO ==
 
