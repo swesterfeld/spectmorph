@@ -21,67 +21,67 @@ testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
-testblob_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testblob_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testgenid_SOURCES = testgenid.cc
-testgenid_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testgenid_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testfft_SOURCES = testfft.cc
-testfft_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testfft_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testfftperf_SOURCES = testfftperf.cc
-testfftperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testfftperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testparamupdate_SOURCES = testparamupdate.cc
-testparamupdate_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testparamupdate_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testrandom_SOURCES = testrandom.cc
-testrandom_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testrandom_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testnoise_SOURCES = testnoise.cc
-testnoise_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testnoise_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testnoisemodes_SOURCES = testnoisemodes.cc
-testnoisemodes_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testnoisemodes_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testrandperf_SOURCES = testrandperf.cc
-testrandperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testrandperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testnoiseperf_SOURCES = testnoiseperf.cc
-testnoiseperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testnoiseperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testisincos_SOURCES = testisincos.cc
-testisincos_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testisincos_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testifftsynth_SOURCES = testifftsynth.cc
-testifftsynth_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testifftsynth_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testaafilter_SOURCES = testaafilter.cc
-testaafilter_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testaafilter_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testppinter_SOURCES = testppinter.cc
-testppinter_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testppinter_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testjobqueue_SOURCES = testjobqueue.cc
-testjobqueue_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testjobqueue_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testrefptr_SOURCES = testrefptr.cc
-testrefptr_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testrefptr_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testloopindex_SOURCES = testloopindex.cc
-testloopindex_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testloopindex_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testoutfileperf_SOURCES = testoutfileperf.cc
-testoutfileperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testoutfileperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlpc_SOURCES = testlpc.cc
-testlpc_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testlpc_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testrootfinder_SOURCES = testrootfinder.cc
-testrootfinder_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testrootfinder_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlsfperf_SOURCES = testlsfperf.cc
-testlsfperf_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+testlsfperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test sin440-test sin440-4567-test
 
