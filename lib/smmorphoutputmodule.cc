@@ -83,6 +83,13 @@ MorphOutputModule::set_config (MorphOperator *op)
             }
         }
 
+      // update dec sines & noise
+      if (dec)
+        {
+          dec->enable_sines (out_op->sines());
+          dec->enable_noise (out_op->noise());
+        }
+
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
 

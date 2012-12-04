@@ -35,6 +35,10 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   channel_ops (CHANNEL_OP_COUNT)
 {
   morph_plan->signal_operator_removed.connect (sigc::mem_fun (*this, &MorphOutput::on_operator_removed));
+
+  m_sines = true;
+  m_noise = true;
+
   leak_debugger.add (this);
 }
 
@@ -61,6 +65,8 @@ MorphOutput::save (OutFile& out_file)
 
       out_file.write_string ("channel", name);
     }
+  out_file.write_bool ("sines", m_sines);
+  out_file.write_bool ("noise", m_noise);
   return true;
 }
 
@@ -80,6 +86,22 @@ MorphOutput::load (InFile& ifile)
           else
             {
               g_printerr ("bad string\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::BOOL)
+        {
+          if (ifile.event_name() == "sines")
+            {
+              m_sines = ifile.event_bool();
+            }
+          else if (ifile.event_name() == "noise")
+            {
+              m_noise = ifile.event_bool();
+            }
+          else
+            {
+              g_printerr ("bad bool\n");
               return false;
             }
         }
@@ -136,6 +158,34 @@ MorphOutput::channel_op (int ch)
   assert (ch >= 0 && ch < CHANNEL_OP_COUNT);
 
   return channel_ops[ch];
+}
+
+bool
+MorphOutput::sines()
+{
+  return m_sines;
+}
+
+void
+MorphOutput::set_sines (bool es)
+{
+  m_sines = es;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphOutput::noise()
+{
+  return m_noise;
+}
+
+void
+MorphOutput::set_noise (bool en)
+{
+  m_noise = en;
+
+  m_morph_plan->emit_plan_changed();
 }
 
 void

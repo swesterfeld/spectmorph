@@ -37,6 +37,8 @@ class MorphOutputView : public MorphOperatorView
   };
 
   Gtk::Table                  channel_table;
+  Gtk::CheckButton            sines_check_button;
+  Gtk::CheckButton            noise_check_button;
   std::vector<ChannelView *>  channels;
   MorphOutput                *morph_output;
 
@@ -45,6 +47,8 @@ public:
   ~MorphOutputView();
 
   void on_operator_changed();
+  void on_sines_changed();
+  void on_noise_changed();
 };
 
 }

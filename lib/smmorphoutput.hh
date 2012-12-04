@@ -30,6 +30,9 @@ class MorphOutput : public MorphOperator
   std::vector<std::string>     load_channel_op_names;
   std::vector<MorphOperator *> channel_ops;
 
+  bool                         m_sines;
+  bool                         m_noise;
+
 public:
   MorphOutput (MorphPlan *morph_plan);
   ~MorphOutput();
@@ -40,6 +43,12 @@ public:
   bool               load (InFile&  in_file);
   void               post_load();
   OutputType         output_type();
+
+  void           set_sines (bool es);
+  bool           sines();
+
+  void           set_noise (bool en);
+  bool           noise();
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
