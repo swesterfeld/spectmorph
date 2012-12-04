@@ -252,6 +252,8 @@ Options::print_usage ()
   printf (" smwavset decode [ <options> ] <smset_filename> <wset_filename>\n");
   printf (" smwavset delta [ <options> ] <wset_filename1>...<wset_filenameN>\n");
   printf (" smwavset link [ <options> ] <wset_filename>\n");
+  printf (" smwavset get-markers [ <options> ] <wset_filename>\n");
+  printf (" smwavset set-markers [ <options> ] <wset_filename> <marker_filename>\n");
   printf ("\n");
   printf ("options:\n");
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
