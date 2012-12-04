@@ -264,6 +264,7 @@ Options::print_usage ()
   printf (" --format <f1>,...,<fN>      set fields to display in list\n");
   printf (" -j <jobs>                   run <jobs> commands simultaneously (use multiple cpus for encoding)\n");
   printf (" --smenc <cmd>               use <cmd> as smenc command\n");
+  printf (" --loop                      also extract loop markers (for smwavset get-markers)\n");
   printf ("\n");
 }
 
