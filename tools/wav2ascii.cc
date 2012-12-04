@@ -88,12 +88,15 @@ main (int argc, char **argv)
   vector<float> block (1024);
 
   const uint64 n_values = gsl_data_handle_length (dhandle);
-  for (uint64 pos = 0; pos < n_values; pos += block.size())
+  uint64 pos = 0;
+  while (pos < n_values)
     {
       /* read data from file */
       uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
 
       for (uint64 t = 0; t < r; t++)
         printf ("%.17g\n", block[t]);
+
+      pos += r;
     }
 }
