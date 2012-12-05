@@ -124,6 +124,8 @@ Options::print_usage ()
   printf ("options:\n");
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
+  printf (" -f, --fade                  fade morphing parameter\n");
+  printf (" -l, --len                   set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
   printf ("\n");
