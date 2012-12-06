@@ -5,6 +5,7 @@
 #include "smmain.hh"
 #include "smzoomcontroller.hh"
 #include "smmath.hh"
+#include <map>
 
 using namespace SpectMorph;
 
@@ -34,7 +35,9 @@ struct FrameData
 
 class MorphView : public Gtk::DrawingArea
 {
-  vector<FrameData> frame_data;
+  vector<FrameData>                     frame_data;
+  std::map<string, vector<FrameData> >  frame_data_cache;
+
   double hzoom;
   double vzoom;
   size_t frame;
@@ -58,6 +61,15 @@ MorphView::MorphView()
 void
 MorphView::load (const string& filename)
 {
+  vector<FrameData>& cached_fd = frame_data_cache[filename];
+  if (!cached_fd.empty())
+    {
+      frame_data = cached_fd;
+      return;
+    }
+  frame_data.clear();
+  printf ("loading %s...\n", filename.c_str());
+
   FILE *input = fopen (filename.c_str(), "r");
   assert (input);
   size_t last_index = 1 << 31;
@@ -111,17 +123,8 @@ MorphView::load (const string& filename)
 
       // printf ("INDEX(%s) TYPE(%s) VALUE(%s) VALUE(%s)\n", id_index, id_type, value1, value2);
     }
+  cached_fd = frame_data;
 }
-
-#if 0
-static void
-plot (Cairo::RefPtr<Cairo::Context> cr, vector<SpectData>& spect, int n, int width, int height)
-{
-  for (size_t i = 0; i < spect.size(); i++)
-    {
-    }
-}
-#endif
 
 bool
 MorphView::on_expose_event (GdkEventExpose* ev)
@@ -229,30 +232,24 @@ class MorphPlotWindow : public Gtk::Window
   Gtk::VBox           vbox;
   ZoomController      zoom_controller;
 
-  Gtk::HScale         position_scale;
-  Gtk::Label          position_label;
-  Gtk::HBox           position_hbox;
+  Gtk::ComboBoxText   filename_combobox;
 
 public:
-  MorphPlotWindow (const string& filename) :
-    zoom_controller (5000, 5000),
-    position_scale (0, 1, 0.0001)
+  MorphPlotWindow (int argc, char **argv) :
+    zoom_controller (5000, 5000)
   {
-    morph_view.load (filename);
-
     set_border_width (10);
     set_default_size (800, 600);
 
     vbox.pack_start (scrolled_win);
     vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
 
-    vbox.pack_start (position_hbox, Gtk::PACK_SHRINK);
-    position_hbox.pack_start (position_scale);
-    position_hbox.pack_start (position_label, Gtk::PACK_SHRINK);
-    position_scale.set_draw_value (false);
-    position_label.set_text ("frame 0");
-    position_hbox.set_border_width (10);
-    position_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MorphPlotWindow::on_position_changed));
+    vbox.pack_start (filename_combobox, Gtk::PACK_SHRINK);
+
+    for (int i = 1; i < argc; i++)
+      filename_combobox.append_text (argv[i]);
+
+    filename_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphPlotWindow::on_position_changed));
 
     scrolled_win.add (morph_view);
     add (vbox);
@@ -271,11 +268,9 @@ public:
   void
   on_position_changed()
   {
-    size_t f = size_t (sm_round_positive (position_scale.get_value() * morph_view.frames()));
-    morph_view.set_frame (CLAMP  (f, 0, morph_view.frames() - 1));
-    char buffer[1024];
-    sprintf (buffer, "frame %zd", f);
-    position_label.set_text (buffer);
+    set_title ("smldplot - " + filename_combobox.get_active_text());
+    morph_view.load (filename_combobox.get_active_text());
+    morph_view.force_redraw();
   }
 };
 
@@ -286,12 +281,12 @@ main (int argc, char **argv)
 
   Gtk::Main kit (argc, argv);
 
-  if (argc != 2)
+  if (argc < 2)
     {
-      printf ("usage: %s <filename>\n", argv[0]);
+      printf ("usage: %s <filename> ...\n", argv[0]);
       exit (1);
     }
 
-  MorphPlotWindow window (argv[1]);
+  MorphPlotWindow window (argc, argv);
   Gtk::Main::run (window);
 }
