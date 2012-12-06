@@ -1,15 +1,18 @@
 #!/bin/bash
 
-smwavset init /tmp/foo.smset
+DIR=/tmp/inspect1_$$
+
+mkdir $DIR
+smwavset init $DIR/inst.smset
 
 NOTE=60
 for FILE in "$@"
 do
-  smwavset add /tmp/foo.smset $NOTE "$FILE"
+  smwavset add $DIR/inst.smset $NOTE "$FILE"
   NOTE=$((NOTE + 1))
 done
-smwavset encode /tmp/foo.smset /tmp/fooe.smset
-smwavset link /tmp/fooe.smset
-echo "smset_dir /tmp" > /tmp/fooe.smindex
-echo "smset fooe.smset" >> /tmp/fooe.smindex
-sminspector /tmp/fooe.smindex
+smwavset -d $DIR encode $DIR/inst.smset $DIR/inst_e.smset
+smwavset -d $DIR link $DIR/inst_e.smset
+echo "smset_dir /" > $DIR/inst_e.smindex
+echo "smset $DIR/inst_e.smset" >> $DIR/inst_e.smindex
+sminspector $DIR/inst_e.smindex
