@@ -150,6 +150,7 @@ MorphView::on_expose_event (GdkEventExpose* ev)
 
       for (size_t i = 0; i < frame_data.size(); i++)
         {
+          cr->set_line_width (1.0);
           for (size_t j = 0; j < frame_data[i].lines.size(); j++)
             {
               const LineData& line_data = frame_data[i].lines[j];
@@ -164,6 +165,21 @@ MorphView::on_expose_event (GdkEventExpose* ev)
               double x2 = double (i) / frame_data.size() * width;
               cr->move_to (x1, y1);
               cr->line_to (x2, y2);
+              cr->stroke();
+            }
+          cr->set_line_width (1.0);
+          for (size_t j = 0; j < frame_data[i].freqs.size(); j++)
+            {
+              const FreqData& freq_data = frame_data[i].freqs[j];
+
+              double db_mag = bse_db_from_factor (freq_data.mag, -200);
+              double color = 1.0 - CLAMP ((100 + db_mag) / 100, 0.0, 1.0);
+              cr->set_source_rgb (1, color, color);
+
+              double y = (1 - freq_data.freq / 22050) * height;
+              double x = double (i) / frame_data.size() * width;
+              cr->move_to (x, y - 5);
+              cr->line_to (x, y + 5);
               cr->stroke();
             }
         }
