@@ -11,7 +11,7 @@ do
   smwavset add $DIR/inst.smset $NOTE "$FILE"
   NOTE=$((NOTE + 1))
 done
-smwavset -d $DIR encode $DIR/inst.smset $DIR/inst_e.smset
+smwavset -d $DIR encode $DIR/inst.smset $DIR/inst_e.smset --smenc smenccache
 smwavset -d $DIR link $DIR/inst_e.smset
 echo "smset_dir /" > $DIR/inst_e.smindex
 echo "smset $DIR/inst_e.smset" >> $DIR/inst_e.smindex
