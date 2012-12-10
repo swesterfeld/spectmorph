@@ -1,11 +1,21 @@
 #include <gtkmm.h>
 #include <assert.h>
+#include <sys/time.h>
 #include <bse/bse.h>
 #include <bse/bsemathsignal.h>
 #include "smmain.hh"
 #include "smzoomcontroller.hh"
 #include "smmath.hh"
 #include <map>
+
+static double
+gettime()
+{
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
 
 using namespace SpectMorph;
 
@@ -132,12 +142,17 @@ MorphView::on_expose_event (GdkEventExpose* ev)
   const int width =  800 * hzoom;
   const int height = 600 * vzoom;
 
+  const double start_t = gettime();
+
   set_size_request (width, height);
 
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
     {
-      Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
+      Cairo::RefPtr<Cairo::ImageSurface> image_surface =
+        Cairo::ImageSurface::create (Cairo::FORMAT_RGB24, ev->area.width, ev->area.height);
+
+      Cairo::RefPtr<Cairo::Context> cr = Cairo::Context::create (image_surface);
 
       cr->save();
       cr->set_source_rgb (1.0, 1.0, 1.0);   // white
@@ -148,8 +163,12 @@ MorphView::on_expose_event (GdkEventExpose* ev)
 
       // clip to the area indicated by the expose event so that we only redraw
       // the portion of the window that needs to be redrawn
-      cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
+      cr->rectangle (0, 0, ev->area.width, ev->area.height);
       cr->clip();
+
+      // translate coords, so we draw operations will draw absolute coordinates
+      // relative to expose event x/y
+      cr->translate (-ev->area.x, -ev->area.y);
 
       for (size_t i = 0; i < frame_data.size(); i++)
         {
@@ -186,7 +205,19 @@ MorphView::on_expose_event (GdkEventExpose* ev)
               cr->stroke();
             }
         }
+
+      Cairo::RefPtr<Cairo::Context> win_ctx = window->create_cairo_context();
+
+      win_ctx->set_source (image_surface, ev->area.x, ev->area.y);
+      win_ctx->save();
+      win_ctx->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
+      win_ctx->clip();
+      win_ctx->paint();
+      win_ctx->restore();
     }
+  const double end_t = gettime();
+  (void) (end_t - start_t);
+  //printf ("drawing time: %.2f\n", end_t - start_t);
 
   return true;
 }
