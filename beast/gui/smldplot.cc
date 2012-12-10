@@ -50,15 +50,21 @@ class MorphView : public Gtk::DrawingArea
 
   double hzoom;
   double vzoom;
+  int    view_width;
+  int    view_height;
   size_t frame;
 public:
   MorphView();
+
+  sigc::signal<void, string, string> signal_mouse_changed;
+
   bool on_expose_event (GdkEventExpose* ev);
   void load (const string& filename);
   void set_zoom (double hzoom, double vzoom);
   void set_frame (size_t frame);
   void force_redraw();
   size_t frames();
+  bool on_motion_notify_event (GdkEventMotion *event);
 };
 
 MorphView::MorphView()
@@ -66,6 +72,8 @@ MorphView::MorphView()
   hzoom = 1;
   vzoom = 1;
   frame = 0;
+
+  add_events (Gdk::BUTTON_PRESS_MASK | Gdk::BUTTON_MOTION_MASK | Gdk::BUTTON_RELEASE_MASK | Gdk::POINTER_MOTION_MASK);
 }
 
 void
@@ -139,12 +147,12 @@ MorphView::load (const string& filename)
 bool
 MorphView::on_expose_event (GdkEventExpose* ev)
 {
-  const int width =  800 * hzoom;
-  const int height = 600 * vzoom;
+  view_width =  800 * hzoom;
+  view_height = 600 * vzoom;
 
   const double start_t = gettime();
 
-  set_size_request (width, height);
+  set_size_request (view_width, view_height);
 
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
@@ -181,10 +189,10 @@ MorphView::on_expose_event (GdkEventExpose* ev)
               double color = 1.0 - CLAMP ((100 + db_mag) / 100, 0.0, 1.0);
               cr->set_source_rgb (color, color, color);
 
-              double y1 = (1 - line_data.freq1 / 22050) * height;
-              double y2 = (1 - line_data.freq2 / 22050) * height;
-              double x1 = double (i - 1.0) / frame_data.size() * width;
-              double x2 = double (i) / frame_data.size() * width;
+              double y1 = (1 - line_data.freq1 / 22050) * view_height;
+              double y2 = (1 - line_data.freq2 / 22050) * view_height;
+              double x1 = double (i - 1.0) / frame_data.size() * view_width;
+              double x2 = double (i) / frame_data.size() * view_width;
               cr->move_to (x1, y1);
               cr->line_to (x2, y2);
               cr->stroke();
@@ -198,8 +206,8 @@ MorphView::on_expose_event (GdkEventExpose* ev)
               double color = 1.0 - CLAMP ((100 + db_mag) / 100, 0.0, 1.0);
               cr->set_source_rgb (1, color, color);
 
-              double y = (1 - freq_data.freq / 22050) * height;
-              double x = double (i) / frame_data.size() * width;
+              double y = (1 - freq_data.freq / 22050) * view_height;
+              double x = double (i) / frame_data.size() * view_width;
               cr->move_to (x, y - 5);
               cr->line_to (x, y + 5);
               cr->stroke();
@@ -256,11 +264,43 @@ MorphView::frames()
   return frame_data.size();
 }
 
+bool
+MorphView::on_motion_notify_event (GdkEventMotion *event)
+{
+  double height = view_height;
+  double width =  view_width;
+  double pos = (event->x / width) * frame_data.size();
+  int time = 0;
+  for (size_t i = 0; i < frame_data.size(); i++)
+    {
+      if (i > pos)
+        break;
+      else
+        time = 1000 * frame_data[i].index / 44100.0;
+    }
+  int ms = time % 1000;
+  time /= 1000;
+  int s = time % 60;
+  time /= 60;
+  int m = time;
+
+  double freq = (1 - event->y / height) * 22050;
+
+  signal_mouse_changed (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms),
+                        Birnet::string_printf ("Freq: %.2f Hz", freq));
+
+  return true;
+}
+
 class MorphPlotWindow : public Gtk::Window
 {
   Gtk::ScrolledWindow scrolled_win;
   MorphView           morph_view;
   Gtk::VBox           vbox;
+  Gtk::HBox           hbox;
+  Gtk::Label          time_label;
+  Gtk::Label          freq_label;
+  Gtk::Label          filename_label;
   ZoomController      zoom_controller;
 
   Gtk::ComboBoxText   filename_combobox;
@@ -275,19 +315,33 @@ public:
     vbox.pack_start (scrolled_win);
     vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
 
-    vbox.pack_start (filename_combobox, Gtk::PACK_SHRINK);
+    filename_label.set_text ("Filename:");
+
+    hbox.pack_start (time_label);
+    hbox.pack_start (freq_label);
+    hbox.pack_start (filename_label);
+    hbox.pack_start (filename_combobox);
+    vbox.pack_start (hbox, Gtk::PACK_SHRINK);
 
     for (int i = 1; i < argc; i++)
       filename_combobox.append_text (argv[i]);
 
-    filename_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphPlotWindow::on_position_changed));
+    filename_combobox.signal_changed().connect (sigc::mem_fun (*this, &MorphPlotWindow::on_filename_changed));
 
     scrolled_win.add (morph_view);
     add (vbox);
 
     zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MorphPlotWindow::on_zoom_changed));
+    morph_view.signal_mouse_changed.connect (sigc::mem_fun (*this, &MorphPlotWindow::on_mouse_changed));
 
     show_all_children();
+  }
+
+  void
+  on_mouse_changed (const string& time, const string& freq)
+  {
+    time_label.set_text (time);
+    freq_label.set_text (freq);
   }
 
   void
@@ -297,7 +351,7 @@ public:
   }
 
   void
-  on_position_changed()
+  on_filename_changed()
   {
     set_title ("smldplot - " + filename_combobox.get_active_text());
     morph_view.load (filename_combobox.get_active_text());
