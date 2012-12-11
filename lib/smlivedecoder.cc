@@ -35,6 +35,8 @@ static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");
 
 #define ANTIALIAS_FILTER_TABLE_SIZE 256
 
+#define DEBUG (0)
+
 static vector<float> antialias_filter_table;
 
 static void
@@ -428,8 +430,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                               const double lphase = old_pstate[old_partial].phase;
 
                               phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
+
+                              if (DEBUG)
+                                printf ("%zd:L %.17g %.17g %.17g\n", env_pos, lfreq, freq, mag);
                             }
                         }
+                      if (DEBUG)
+                        printf ("%zd:F %.17g %.17g\n", env_pos, freq, mag);
 
                       ifft_synth->render_partial (freq, mag, phase);
 
