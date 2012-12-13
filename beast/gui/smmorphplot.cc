@@ -119,7 +119,7 @@ plot (Cairo::RefPtr<Cairo::Context> cr, vector<SpectData>& spect, int n, int wid
     {
       double x = spect[i].freq / 22050 * width;
       double db_mag = bse_db_from_factor (spect[i].mag, -200);
-      double xmag = (db_mag + 60) / 60;
+      double xmag = (db_mag + 90) / 90;
 
       xmag = max (xmag, 0.05);
       // xmag is in range (1, 0.05)
