@@ -331,14 +331,26 @@ MorphLinearModule::MySource::interp_mag_one (double interp, float *left, float *
 {
   float l_value = left ? *left : 0;
   float r_value = right ? *right : 0;
-  if (left)
-    *left = (1 - interp) * l_value;
-  if (right)
-    *right = interp * r_value;
-  // FIXME:
-#if 0
   if (module->db_linear)
-#endif
+    {
+      double lmag_db = bse_db_from_factor (l_value, -100);
+      double rmag_db = bse_db_from_factor (r_value, -100);
+
+      double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+      double mag = bse_db_to_factor (mag_db);
+
+      if (left)
+        *left = mag;
+      if (right)
+        *right = mag;
+    }
+  else
+    {
+      if (left)
+        *left = (1 - interp) * l_value;
+      if (right)
+        *right = interp * r_value;
+    }
 }
 
 AudioBlock *
@@ -443,6 +455,25 @@ MorphLinearModule::MySource::audio_block (size_t index)
             {
               double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
               double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
+
+#if 1
+              /* prefer frequency of louder partial */
+              const double lfreq = left_block.freqs[i];
+              const double rfreq = right_block.freqs[j];
+
+              if (left_block.mags[i] > right_block.mags[j])
+                {
+                  const double mfact = right_block.mags[j] / left_block.mags[i];
+
+                  freq = lfreq + mfact * interp * (rfreq - lfreq);
+                }
+              else
+                {
+                  const double mfact = left_block.mags[i] / right_block.mags[j];
+
+                  freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
+                }
+#endif
               double mag;
               if (module->db_linear)
                 {
