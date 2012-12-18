@@ -163,7 +163,7 @@ main (int argc, char **argv)
 
   if (argc == 3)
     {
-      string cmdline = Birnet::string_printf ("smenc %s %s", argv[1], argv[2]);
+      string cmdline = Birnet::string_printf ("smenc \"%s\" \"%s\"", argv[1], argv[2]);
       string cmdargs;
       for (vector<string>::iterator ai = options.args.begin(); ai != options.args.end(); ai++)
         cmdargs += " " + *ai;
