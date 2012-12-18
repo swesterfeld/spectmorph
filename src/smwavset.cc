@@ -472,7 +472,7 @@ main (int argc, char **argv)
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
-          string cmd = options.smenc + " -m " + int2str (wi->midi_note) + " " + wi->path.c_str() + " " + smpath + " " + options.args;
+          string cmd = options.smenc + " -m " + int2str (wi->midi_note) + " \"" + wi->path.c_str() + "\" " + smpath + " " + options.args;
           printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           job_queue.run (cmd);
 
