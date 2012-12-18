@@ -18,6 +18,7 @@ smenc:
 - increase time resolution for residual for low notes
 - use NoiseBandPartition class to get faster noise band splitting
 - adjust noise bands according to frequency specs
+- should we normalize all samples before encoding?
 
 refactoring:
 - possibly rename SpectMorph::Audio to SpectMorph::Model
