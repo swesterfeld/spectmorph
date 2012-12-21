@@ -1041,6 +1041,7 @@ import_preset (const string& import_name)
                                   string loop_args;
                                   if (sample_modes & 1)
                                     {
+                                      loop_args += " --loop-type loop-time-forward";
                                       loop_args += Birnet::string_printf (" --loop-start %zd",
                                                                           samples[id].startloop - samples[id].start +
                                                                           loop_shift);

@@ -112,6 +112,10 @@ Options::parse (int   *argc_p,
         {
           args.push_back (Birnet::string_printf ("--loop-end %s", opt_arg));
         }
+      else if (check_arg (argc, argv, &i, "--loop-type", &opt_arg))
+        {
+          args.push_back (Birnet::string_printf ("--loop-type %s", opt_arg));
+        }
      }
 
   /* resort argc/argv */
@@ -149,9 +153,9 @@ Options::print_usage ()
 // smenc -m 84 clipped-note-84.wav /home/stefan/src/diplom/evaluation/violin/data/violin/84.sm -O1
 
 void
-die (const char *reason)
+die (const string& reason)
 {
-  printf ("smenccache: %s\n", reason);
+  printf ("smenccache: %s\n", reason.c_str());
   exit (1);
 }
 
@@ -213,5 +217,12 @@ main (int argc, char **argv)
 
       g_free (sha256_sum);
     }
-  die ("bad args");
+  string remaining = "";
+  for (int i = 1; i < argc; i++)
+    {
+      if (i != 1)
+        remaining += " ";
+      remaining += argv[i];
+    }
+  die ("bad args: " + remaining);
 }

@@ -41,6 +41,7 @@ using std::max;
 
 using namespace Birnet;
 
+using SpectMorph::Audio;
 using SpectMorph::AudioBlock;
 using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
@@ -100,6 +101,7 @@ struct Options
   int           optimization_level;
   int           loop_start;
   int           loop_end;
+  Audio::LoopType loop_type;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -120,6 +122,7 @@ Options::Options ()
   attack = true;        // perform attack time optimization
   loop_start = -1;
   loop_end = -1;
+  loop_type = Audio::LOOP_NONE;
 }
 
 void
@@ -204,6 +207,14 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--loop-end", &opt_arg))
         {
           loop_end = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--loop-type", &opt_arg))
+        {
+          if (!Audio::string_to_loop_type (opt_arg, loop_type))
+            {
+              fprintf (stderr, "%s: unsupported loop type %s\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
         }
      }
 
@@ -401,14 +412,15 @@ main (int argc, char **argv)
               encoder.original_samples.clear();
             }
         }
-      if (options.loop_start == -1 && options.loop_end == -1)
+      if (options.loop_type == Audio::LOOP_NONE && options.loop_start == -1 && options.loop_end == -1)
         {
           // no loop
         }
       else
         {
+          assert (options.loop_type != Audio::LOOP_NONE);
           assert (options.loop_start >= 0 && options.loop_end >= options.loop_start);
-          encoder.set_time_loop (options.loop_start, options.loop_end);
+          encoder.set_loop (options.loop_type, options.loop_start, options.loop_end);
         }
       encoder.save (sm_file, options.fundamental_freq);
     }
