@@ -99,9 +99,10 @@ struct Options
   bool          track_sines;
   float         fundamental_freq;
   int           optimization_level;
-  int           loop_start;
-  int           loop_end;
+  double        loop_start;
+  double        loop_end;
   Audio::LoopType loop_type;
+  bool          loop_unit_seconds;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -123,6 +124,7 @@ Options::Options ()
   loop_start = -1;
   loop_end = -1;
   loop_type = Audio::LOOP_NONE;
+  loop_unit_seconds = false;
 }
 
 void
@@ -202,11 +204,11 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--loop-start", &opt_arg))
         {
-          loop_start = atoi (opt_arg);
+          loop_start = atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--loop-end", &opt_arg))
         {
-          loop_end = atoi (opt_arg);
+          loop_end = atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--loop-type", &opt_arg))
         {
@@ -215,6 +217,15 @@ Options::parse (int   *argc_p,
               fprintf (stderr, "%s: unsupported loop type %s\n", options.program_name.c_str(), opt_arg);
               exit (1);
             }
+        }
+      else if (check_arg (argc, argv, &i, "--loop-unit", &opt_arg))
+        {
+          if (strcmp (opt_arg, "seconds") != 0)
+            {
+              fprintf (stderr, "%s: unsupported loop unit %s\n", options.program_name.c_str(), opt_arg);
+              exit (1);
+            }
+          loop_unit_seconds = true;
         }
      }
 
@@ -420,7 +431,15 @@ main (int argc, char **argv)
         {
           assert (options.loop_type != Audio::LOOP_NONE);
           assert (options.loop_start >= 0 && options.loop_end >= options.loop_start);
-          encoder.set_loop (options.loop_type, options.loop_start, options.loop_end);
+
+          if (options.loop_unit_seconds)
+            {
+              encoder.set_loop_seconds (options.loop_type, options.loop_start, options.loop_end);
+            }
+          else
+            {
+              encoder.set_loop (options.loop_type, options.loop_start, options.loop_end);
+            }
         }
       encoder.save (sm_file, options.fundamental_freq);
     }

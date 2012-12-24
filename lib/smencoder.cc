@@ -1194,6 +1194,16 @@ Encoder::set_loop (Audio::LoopType loop_type, int loop_start, int loop_end)
   this->loop_end = loop_end;
 }
 
+void
+Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, double loop_end_sec)
+{
+  this->loop_type = loop_type;
+
+  assert (loop_type == Audio::LOOP_FRAME_PING_PONG);
+  loop_start = (loop_start_sec * 1000) / enc_params.frame_step_ms;
+  loop_end = (loop_end_sec * 1000) / enc_params.frame_step_ms;
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */

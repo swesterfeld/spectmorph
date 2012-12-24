@@ -116,6 +116,10 @@ Options::parse (int   *argc_p,
         {
           args.push_back (Birnet::string_printf ("--loop-type %s", opt_arg));
         }
+      else if (check_arg (argc, argv, &i, "--loop-unit", &opt_arg))
+        {
+          args.push_back (Birnet::string_printf ("--loop-unit %s", opt_arg));
+        }
      }
 
   /* resort argc/argv */
