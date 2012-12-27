@@ -53,6 +53,7 @@ struct Options
   bool                deterministic_random;
   int                 rate;
   int                 midi_note;
+  double              gain;
   String              export_wav;
 
   Options ();
@@ -70,7 +71,8 @@ Options::Options () :
   sines_enabled (true),
   deterministic_random (false),
   rate (44100),
-  midi_note (-1)
+  midi_note (-1),
+  gain (1.0)
 {
 }
 
@@ -116,6 +118,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           midi_note = atoi (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
+        {
+          gain = atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--no-noise"))
         {
@@ -374,7 +380,7 @@ main (int argc, char **argv)
         {
           env = 1;
         }
-      sample[i] *= env;
+      sample[i] *= env * options.gain;
     }
 
   // strip zero values at start:
@@ -414,6 +420,17 @@ main (int argc, char **argv)
     }
   else /* export wav */
     {
+      for (int i = 0; i < sample.size(); i++)
+        {
+          float f = sample[i];
+          float cf = CLAMP (f, -1.0, 1.0);
+          if (f != cf)
+            {
+              fprintf (stderr, "out of range\n");
+              break;
+            }
+        }
+
       GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
       BseErrorType error = gsl_data_handle_open (out_dhandle);
       if (error)
