@@ -49,6 +49,7 @@ main (int argc, char **argv)
   string filename = argv[1];
   int    srate    = atoi (argv[2]);
 
+  int line = 1;
   while (fgets (buffer, 1024, stdin) != NULL)
     {
       if (buffer[0] == '#')
@@ -57,8 +58,26 @@ main (int argc, char **argv)
         }
       else
         {
-          signal.push_back (atof (buffer));
+          char *end_ptr;
+          bool parse_error = false;
+
+          signal.push_back (g_ascii_strtod (buffer, &end_ptr));
+
+          // chech that we parsed at least one character
+          parse_error = parse_error || (end_ptr == buffer);
+
+          // check that we parsed the whole line
+          while (*end_ptr == ' ' || *end_ptr == '\n' || *end_ptr == '\t' || *end_ptr == '\r')
+            end_ptr++;
+          parse_error = parse_error || (*end_ptr != 0);
+
+          if (parse_error)
+            {
+              g_printerr ("ascii2wav: parse error on line %d\n", line);
+              exit (1);
+            }
         }
+      line++;
     }
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, srate, 440, signal.size(), &signal[0], NULL);
   gsl_data_handle_open (dhandle);
@@ -67,14 +86,16 @@ main (int argc, char **argv)
   if (fd < 0)
     {
       BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+      g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+      exit (1);
     }
 
   int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
   if (xerrno)
     {
       BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+      g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+      exit (1);
     }
   close (fd);
 }
