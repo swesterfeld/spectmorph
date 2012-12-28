@@ -1109,9 +1109,13 @@ Encoder::sort_freqs()
 
       for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
         {
-          audio_blocks[frame].freqs.push_back (pi->freq);
-          audio_blocks[frame].mags.push_back (pi->mag);
-          audio_blocks[frame].phases.push_back (pi->phase);
+          // attack envelope computation produces some partials with mag = 0; we don't need to store these
+          if (pi->mag != 0)
+            {
+              audio_blocks[frame].freqs.push_back (pi->freq);
+              audio_blocks[frame].mags.push_back (pi->mag);
+              audio_blocks[frame].phases.push_back (pi->phase);
+            }
         }
     }
 }
@@ -1199,7 +1203,7 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
 {
   this->loop_type = loop_type;
 
-  assert (loop_type == Audio::LOOP_FRAME_PING_PONG);
+  assert (loop_type == Audio::LOOP_FRAME_PING_PONG || loop_type == Audio::LOOP_FRAME_FORWARD);
   loop_start = (loop_start_sec * 1000) / enc_params.frame_step_ms;
   loop_end = (loop_end_sec * 1000) / enc_params.frame_step_ms;
 }
