@@ -27,6 +27,8 @@
 #include <jack/midiport.h>
 #include <gtkmm.h>
 
+#include <QApplication>
+
 #include "smmain.hh"
 
 #include <unistd.h>
@@ -526,6 +528,10 @@ public:
 int
 main (int argc, char **argv)
 {
+  QApplication app (argc, argv);
+
+  return app.exec();
+#if 0
   sm_init (&argc, &argv);
 
   Gtk::Main kit (argc, argv);
@@ -565,4 +571,5 @@ main (int argc, char **argv)
   JackWindow window (morph_plan, title);
 
   Gtk::Main::run (window);
+#endif
 }
