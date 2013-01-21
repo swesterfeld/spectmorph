@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2011 Stefan Westerfeld
+ * Copyright (C) 2010-2013 Stefan Westerfeld
  *
  * This library is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as published by the
@@ -28,6 +28,12 @@
 #include <gtkmm.h>
 
 #include <QApplication>
+#include <QWidget>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QSlider>
 
 #include "smmain.hh"
 
@@ -430,6 +436,76 @@ JackSynth::change_volume (double new_volume)
   m_new_plan_mutex.unlock();
 }
 
+class JackWindow : public QWidget
+{
+  Q_OBJECT
+
+  QLabel         *inst_label;
+  QPushButton    *inst_button;
+
+  QLabel         *volume_label;
+  QSlider        *volume_slider;
+  QLabel         *volume_value_label;
+
+  jack_client_t  *client;
+
+  JackSynth       synth;
+public:
+  JackWindow (MorphPlanPtr plan, const string& title)
+  {
+    setWindowTitle ("SpectMorph JACK Client");
+
+    inst_label = new QLabel ("SpectMorph Instrument", this);
+    inst_button = new QPushButton ("Edit");
+
+    QHBoxLayout *inst_hbox = new QHBoxLayout;
+    inst_hbox->addWidget (inst_label);
+    inst_hbox->addWidget (inst_button);
+
+    volume_label = new QLabel ("Volume", this);
+    volume_slider = new QSlider (Qt::Horizontal, this);
+    volume_slider->setRange (-960, 240);
+    volume_value_label = new QLabel (this);
+    connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
+    volume_slider->setValue (-60);
+
+    QHBoxLayout *volume_hbox = new QHBoxLayout();
+    volume_hbox->addWidget (volume_label);
+    volume_hbox->addWidget (volume_slider);
+    volume_hbox->addWidget (volume_value_label);
+
+    QVBoxLayout *vbox = new QVBoxLayout();
+    vbox->addLayout (inst_hbox);
+    vbox->addLayout (volume_hbox);
+    setLayout (vbox);
+
+    client = jack_client_open ("smjack", JackNullOption, NULL);
+
+    if (!client)
+      {
+        fprintf (stderr, "unable to connect to jack server\n");
+        exit (1);
+      }
+
+    synth.init (client, plan);
+  }
+  ~JackWindow()
+  {
+    jack_deactivate (client);
+  }
+
+public slots:
+  void
+  on_volume_changed (int new_volume)
+  {
+    double new_volume_f = new_volume * 0.1;
+    double new_decoder_volume = bse_db_to_factor (new_volume_f);
+    volume_value_label->setText (Birnet::string_printf ("%.1f dB", new_volume_f).c_str());
+    synth.change_volume (new_decoder_volume);
+  }
+};
+
+#if 0
 class JackWindow : public Gtk::Window
 {
   Gtk::VBox       vbox;
@@ -524,17 +600,14 @@ public:
     synth.change_volume (new_decoder_volume);
   }
 };
+#endif
 
 int
 main (int argc, char **argv)
 {
-  QApplication app (argc, argv);
-
-  return app.exec();
-#if 0
   sm_init (&argc, &argv);
 
-  Gtk::Main kit (argc, argv);
+  QApplication app (argc, argv);
 
   if (argc > 2)
     {
@@ -569,7 +642,9 @@ main (int argc, char **argv)
     }
 
   JackWindow window (morph_plan, title);
+  window.show();
 
-  Gtk::Main::run (window);
-#endif
+  return app.exec();
 }
+
+#include "smjack.moc"

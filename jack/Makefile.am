@@ -8,7 +8,7 @@ SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 bin_PROGRAMS = smjack
 noinst_PROGRAMS = smjackvel
 
-smjack_SOURCES = smjack.cc
+smjack_SOURCES = smjack.cc smjack.moc
 smjack_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 
 smjackvel_SOURCES = smjackvel.cc
@@ -22,3 +22,6 @@ SMJHDRS = smsimplejackplayer.hh
 libspectmorphjack_la_SOURCES = $(SMJSRCS) $(SMJHDRS)
 libspectmorphjack_la_CXXFLAGS = $(AM_CXXFLAGS)
 libspectmorphjack_la_LIBADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+
+smjack.moc: smjack.cc
+	moc smjack.cc > smjack.moc
