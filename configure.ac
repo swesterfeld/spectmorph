@@ -71,6 +71,17 @@ Debian users: aptitude install libgtkmm-2.4-dev
     ])
 ])
 dnl
+dnl libqt5
+dnl
+AC_DEFUN([AC_QT_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
+      AC_MSG_ERROR([You need to install Qt5 to build this package.])
+    ])
+    AC_SUBST(QT_CFLAGS)
+    AC_SUBST(QT_LIBS)
+])
+dnl
 dnl libao
 dnl
 AC_DEFUN([AC_AO_REQUIREMENTS],
@@ -192,6 +203,7 @@ AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
 AC_GTK_REQUIREMENTS
 AC_GTKMM_REQUIREMENTS
+AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
@@ -199,6 +211,10 @@ AC_SIGCXX_REQUIREMENTS
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
   CFLAGS="$CFLAGS -Wall"
   CXXFLAGS="$CXXFLAGS -Wall"
+])
+MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
+  CFLAGS="$CFLAGS -fPIC"
+  CXXFLAGS="$CXXFLAGS -fPIC"
 ])
 
 MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
