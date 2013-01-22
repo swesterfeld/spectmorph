@@ -86,60 +86,16 @@ MorphPlanWindow::on_file_import_clicked()
                                  Birnet::string_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
         }
     }
-#if 0
-  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file to import", Gtk::FILE_CHOOSER_ACTION_OPEN);
-  dialog.set_transient_for (*this);
-
-  // buttons
-  dialog.add_button (Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  dialog.add_button (Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
-
-  // allow only .smplan files
-  Gtk::FileFilter filter_smplan;
-  filter_smplan.set_name ("SpectMorph plan files");
-  filter_smplan.add_pattern ("*.smplan");
-  dialog.add_filter (filter_smplan);
-
-  int result = dialog.run();
-  if (result == Gtk::RESPONSE_OK)
-    {
-      GenericIn *in = StdioIn::open (dialog.get_filename());
-      if (in)
-        {
-          m_morph_plan->load (in);
-          delete in; // close file
-        }
-      else
-        {
-          Gtk::MessageDialog dlg (Birnet::string_printf ("Import failed, unable to open file '%s'.",
-                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
-          dlg.run();
-        }
-    }
-#endif
 }
 
 void
 MorphPlanWindow::on_file_export_clicked()
 {
-#if 0
-  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file", Gtk::FILE_CHOOSER_ACTION_SAVE);
-  dialog.set_transient_for (*this);
-
-  // buttons
-  dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
-
-  // allow only .smplan files
-  Gtk::FileFilter filter_smplan;
-  filter_smplan.set_name ("SpectMorph plan files");
-  filter_smplan.add_pattern ("*.smplan");
-  dialog.add_filter (filter_smplan);
-
-  int result = dialog.run();
-  if (result == Gtk::RESPONSE_OK)
+  QString file_name = QFileDialog::getSaveFileName (this, "Select SpectMorph plan file", "", "SpectMorph plan files (*.smplan)");
+  if (!file_name.isEmpty())
     {
-      GenericOut *out = StdioOut::open (dialog.get_filename());
+      QByteArray file_name_local = QFile::encodeName (file_name);
+      GenericOut *out = StdioOut::open (file_name_local.data());
       if (out)
         {
           m_morph_plan->save (out);
@@ -147,12 +103,10 @@ MorphPlanWindow::on_file_export_clicked()
         }
       else
         {
-          Gtk::MessageDialog dlg (Birnet::string_printf ("Export failed, unable to open file '%s'.",
-                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
-          dlg.run();
+          QMessageBox::critical (this, "Error",
+                                 Birnet::string_printf ("Export failed, unable to open file '%s'.", file_name_local.data()).c_str());
         }
     }
-#endif
 }
 
 void
