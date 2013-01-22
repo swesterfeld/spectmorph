@@ -447,6 +447,8 @@ class JackWindow : public QWidget
   QSlider        *volume_slider;
   QLabel         *volume_value_label;
 
+  MorphPlanWindow2 inst_window;
+
   jack_client_t  *client;
 
   JackSynth       synth;
@@ -457,6 +459,7 @@ public:
 
     inst_label = new QLabel ("SpectMorph Instrument", this);
     inst_button = new QPushButton ("Edit");
+    connect (inst_button, SIGNAL (clicked()), this, SLOT (on_edit_clicked()));
 
     QHBoxLayout *inst_hbox = new QHBoxLayout;
     inst_hbox->addWidget (inst_label);
@@ -488,9 +491,12 @@ public:
       }
 
     synth.init (client, plan);
+
+    dumpObjectTree();
   }
   ~JackWindow()
   {
+    printf ("delete\n");
     jack_deactivate (client);
   }
 
@@ -502,6 +508,15 @@ public slots:
     double new_decoder_volume = bse_db_to_factor (new_volume_f);
     volume_value_label->setText (Birnet::string_printf ("%.1f dB", new_volume_f).c_str());
     synth.change_volume (new_decoder_volume);
+  }
+
+  void
+  on_edit_clicked()
+  {
+    if (inst_window.isVisible())
+      inst_window.hide();
+    else
+      inst_window.show();
   }
 };
 
@@ -643,7 +658,7 @@ main (int argc, char **argv)
 
   JackWindow window (morph_plan, title);
   window.show();
-
+  app.setMainWindow (&window);
   return app.exec();
 }
 

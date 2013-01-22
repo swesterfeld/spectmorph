@@ -31,8 +31,14 @@
 #include "smmorphplanview.hh"
 #include "smmorphoperator.hh"
 
+#include <QWidget>
+
 namespace SpectMorph
 {
+
+class MorphPlanWindow2 : public QWidget
+{
+};
 
 class MorphPlanWindow : public Gtk::Window
 {
