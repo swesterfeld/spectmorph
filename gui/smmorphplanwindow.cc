@@ -112,29 +112,14 @@ MorphPlanWindow::on_file_export_clicked()
 void
 MorphPlanWindow::on_load_index_clicked()
 {
-  QFileDialog::getOpenFileName (this, "Select SpectMorph index file", "", "SpectMorph index files (*.smindex)");
-#if 0
-  Gtk::FileChooserDialog dialog ("Select SpectMorph index file", Gtk::FILE_CHOOSER_ACTION_OPEN);
-  dialog.set_transient_for (*this);
+  QString file_name = QFileDialog::getOpenFileName (this, "Select SpectMorph index file", "", "SpectMorph index files (*.smindex)");
 
-  // buttons
-  dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
-  dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
-
-  // allow only .smindex files
-  Gtk::FileFilter filter_smindex;
-  filter_smindex.set_name ("SpectMorph index files");
-  filter_smindex.add_pattern ("*.smindex");
-  dialog.add_filter (filter_smindex);
-
-  int result = dialog.run();
-  if (result == Gtk::RESPONSE_OK)
+  if (!file_name.isEmpty())
     {
-      m_morph_plan->load_index (dialog.get_filename());
+      QByteArray file_name_local = QFile::encodeName (file_name);
+      m_morph_plan->load_index (file_name_local.data());
     }
-#endif
 }
-
 
 #if 0
 void
