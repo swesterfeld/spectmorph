@@ -108,6 +108,8 @@ public:
   JackWindow (SpectMorph::MorphPlanPtr plan, const std::string& title);
   ~JackWindow();
 
+  void closeEvent (QCloseEvent *event);
+
 public slots:
   void on_volume_changed (int new_volume);
   void on_edit_clicked();

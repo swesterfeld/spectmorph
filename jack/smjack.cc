@@ -34,6 +34,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QSlider>
+#include <QCloseEvent>
 
 #include "smmain.hh"
 #include "smjack.hh"
@@ -438,6 +439,13 @@ JackWindow::on_edit_clicked()
     inst_window.hide();
   else
     inst_window.show();
+}
+
+void
+JackWindow::closeEvent (QCloseEvent *event)
+{
+  QApplication::quit();
+  event->accept();
 }
 
 #if 0

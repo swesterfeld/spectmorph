@@ -75,7 +75,7 @@ dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
+    PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
       AC_MSG_ERROR([You need to install Qt5 to build this package.])
     ])
     AC_SUBST(QT_CFLAGS)
