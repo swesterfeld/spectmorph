@@ -100,6 +100,7 @@ class JackWindow : public QWidget
   QLabel         *volume_value_label;
 
   SpectMorph::MorphPlanWindow inst_window;
+  SpectMorph::MorphPlanPtr    morph_plan;
 
   jack_client_t  *client;
 
@@ -113,6 +114,7 @@ public:
 public slots:
   void on_volume_changed (int new_volume);
   void on_edit_clicked();
+  void on_plan_changed();
 };
 
 

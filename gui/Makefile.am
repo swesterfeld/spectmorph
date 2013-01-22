@@ -10,10 +10,14 @@ SMHDRS = smzoomcontroller.hh smcomboboxoperator.hh smmorphplanwindow.hh smrename
 
 SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrenameoperatordialog.cc \
          smmorphplanview.cc smmorphsourceview.cc smmorphoperatorview.cc smmoveindicator.cc \
-         smmorphlinearview.cc smmorphoutputview.cc smsampleview.cc smlpcztrans.cc smmorphlfoview.cc
+         smmorphlinearview.cc smmorphoutputview.cc smsampleview.cc smlpcztrans.cc smmorphlfoview.cc \
+         moc_smmorphplanwindow.cc
 
 lib_LTLIBRARIES = libspectmorphgui.la
 
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
 libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+
+moc_smmorphplanwindow.cc: smmorphplanwindow.hh
+	moc smmorphplanwindow.hh > moc_smmorphplanwindow.cc

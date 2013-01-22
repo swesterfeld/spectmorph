@@ -33,17 +33,27 @@
 
 #include <QWidget>
 #include <QMainWindow>
+#include <QMessageBox>
 
 namespace SpectMorph
 {
 
 class MorphPlanWindow : public QMainWindow
 {
+  Q_OBJECT
+
+  MorphPlanPtr  m_morph_plan;
+
 public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
   MorphOperator *where (MorphOperator *op, double x, double y) { /* FIXME */ return NULL; }
   void show_popup (GdkEventButton *event, MorphOperator *op) { /* FIXME */ }
+
+public slots:
+  void on_file_import_clicked();
+  void on_file_export_clicked();
+  void on_load_index_clicked();
 };
 
 #if 0

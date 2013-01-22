@@ -377,7 +377,8 @@ JackSynth::change_volume (double new_volume)
 }
 
 JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
-  inst_window (plan, title)
+  inst_window (plan, title),
+  morph_plan (plan)
 {
   setWindowTitle ("SpectMorph JACK Client");
 
@@ -406,6 +407,8 @@ JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
   vbox->addLayout (volume_hbox);
   setLayout (vbox);
 
+  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &JackWindow::on_plan_changed));
+
   client = jack_client_open ("smjack", JackNullOption, NULL);
 
   if (!client)
@@ -415,8 +418,6 @@ JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
     }
 
   synth.init (client, plan);
-
-  dumpObjectTree();
 }
 
 JackWindow::~JackWindow()
@@ -440,6 +441,22 @@ JackWindow::on_edit_clicked()
     inst_window.hide();
   else
     inst_window.show();
+}
+
+void
+JackWindow::on_plan_changed()
+{
+  MorphPlanPtr plan_clone = new MorphPlan();
+
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  morph_plan->save (&mo);
+
+  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  plan_clone->load (in);
+  delete in;
+
+  synth.change_plan (plan_clone);
 }
 
 void

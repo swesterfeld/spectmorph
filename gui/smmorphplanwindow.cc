@@ -24,6 +24,7 @@
 #include <iostream>
 
 #include <QMenuBar>
+#include <QFileDialog>
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
@@ -43,19 +44,143 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title)
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
+  m_morph_plan (morph_plan)
 {
   /* actions ... */
   QAction *import_action = new QAction ("&Import...", this);
+  QAction *export_action = new QAction ("&Export...", this);
+  QAction *load_index_action = new QAction ("&Load Index...", this);
+
+  connect (import_action, SIGNAL (triggered()), this, SLOT (on_file_import_clicked()));
+  connect (export_action, SIGNAL (triggered()), this, SLOT (on_file_export_clicked()));
+  connect (load_index_action, SIGNAL (triggered()), this, SLOT (on_load_index_clicked()));
 
   /* menus... */
   QMenuBar *menu_bar = menuBar();
 
   QMenu *file_menu = menu_bar->addMenu ("&File");
   file_menu->addAction (import_action);
+  file_menu->addAction (export_action);
+  file_menu->addAction (load_index_action);
 
   QMenu *edit_menu = menu_bar->addMenu ("&Edit");
 }
+
+void
+MorphPlanWindow::on_file_import_clicked()
+{
+  QString file_name = QFileDialog::getOpenFileName (this, "Select SpectMorph plan to import", "", "SpectMorph plan files (*.smplan)");
+  if (!file_name.isEmpty())
+    {
+      QByteArray file_name_local = QFile::encodeName (file_name);
+      GenericIn *in = StdioIn::open (file_name_local.data());
+      if (in)
+        {
+          m_morph_plan->load (in);
+          delete in; // close file
+        }
+      else
+        {
+          QMessageBox::critical (this, "Error",
+                                 Birnet::string_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
+        }
+    }
+#if 0
+  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file to import", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dialog.set_transient_for (*this);
+
+  // buttons
+  dialog.add_button (Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  dialog.add_button (Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+  // allow only .smplan files
+  Gtk::FileFilter filter_smplan;
+  filter_smplan.set_name ("SpectMorph plan files");
+  filter_smplan.add_pattern ("*.smplan");
+  dialog.add_filter (filter_smplan);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      GenericIn *in = StdioIn::open (dialog.get_filename());
+      if (in)
+        {
+          m_morph_plan->load (in);
+          delete in; // close file
+        }
+      else
+        {
+          Gtk::MessageDialog dlg (Birnet::string_printf ("Import failed, unable to open file '%s'.",
+                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
+          dlg.run();
+        }
+    }
+#endif
+}
+
+void
+MorphPlanWindow::on_file_export_clicked()
+{
+#if 0
+  Gtk::FileChooserDialog dialog ("Select SpectMorph plan file", Gtk::FILE_CHOOSER_ACTION_SAVE);
+  dialog.set_transient_for (*this);
+
+  // buttons
+  dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+  // allow only .smplan files
+  Gtk::FileFilter filter_smplan;
+  filter_smplan.set_name ("SpectMorph plan files");
+  filter_smplan.add_pattern ("*.smplan");
+  dialog.add_filter (filter_smplan);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      GenericOut *out = StdioOut::open (dialog.get_filename());
+      if (out)
+        {
+          m_morph_plan->save (out);
+          delete out; // close file
+        }
+      else
+        {
+          Gtk::MessageDialog dlg (Birnet::string_printf ("Export failed, unable to open file '%s'.",
+                                                         dialog.get_filename().c_str()), false, Gtk::MESSAGE_ERROR);
+          dlg.run();
+        }
+    }
+#endif
+}
+
+void
+MorphPlanWindow::on_load_index_clicked()
+{
+  QFileDialog::getOpenFileName (this, "Select SpectMorph index file", "", "SpectMorph index files (*.smindex)");
+#if 0
+  Gtk::FileChooserDialog dialog ("Select SpectMorph index file", Gtk::FILE_CHOOSER_ACTION_OPEN);
+  dialog.set_transient_for (*this);
+
+  // buttons
+  dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+  dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+  // allow only .smindex files
+  Gtk::FileFilter filter_smindex;
+  filter_smindex.set_name ("SpectMorph index files");
+  filter_smindex.add_pattern ("*.smindex");
+  dialog.add_filter (filter_smindex);
+
+  int result = dialog.run();
+  if (result == Gtk::RESPONSE_OK)
+    {
+      m_morph_plan->load_index (dialog.get_filename());
+    }
+#endif
+}
+
 
 #if 0
 void
