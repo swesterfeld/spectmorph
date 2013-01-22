@@ -36,6 +36,7 @@
 #include <QSlider>
 
 #include "smmain.hh"
+#include "smjack.hh"
 
 #include <unistd.h>
 #include <stdlib.h>
@@ -47,68 +48,6 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
-
-class Voice
-{
-public:
-  enum State {
-    STATE_IDLE,
-    STATE_ON,
-    STATE_RELEASE
-  };
-  MorphPlanVoice *mp_voice;
-
-  State        state;
-  bool         pedal;
-  int          midi_note;
-  double       env;
-  double       velocity;
-
-  Voice() :
-    mp_voice (NULL),
-    state (STATE_IDLE),
-    pedal (false)
-  {
-  }
-  ~Voice()
-  {
-    mp_voice = NULL;
-  }
-};
-
-class JackSynth
-{
-protected:
-  double                jack_mix_freq;
-  jack_port_t          *input_port;
-  vector<jack_port_t *> output_ports;
-  vector<jack_port_t *> control_ports;
-  bool                  need_reschedule;
-  bool                  pedal_down;
-
-  double                release_ms;
-  double                m_volume;
-
-  MorphPlanSynth       *morph_plan_synth;
-  vector<Voice>         voices;
-  vector<Voice*>        active_voices;
-  vector<Voice*>        release_voices;
-
-  Birnet::Mutex         m_new_plan_mutex;
-  MorphPlanPtr          m_new_plan;
-  double                m_new_volume;
-
-public:
-  JackSynth();
-  ~JackSynth();
-
-  void init (jack_client_t *client, MorphPlanPtr morph_plan);
-  void preinit_plan (MorphPlanPtr plan);
-  void change_plan (MorphPlanPtr plan);
-  void change_volume (double new_volume);
-  int  process (jack_nframes_t nframes);
-  void reschedule();
-};
 
 static bool
 is_note_on (const jack_midi_event_t& event)
@@ -436,89 +375,70 @@ JackSynth::change_volume (double new_volume)
   m_new_plan_mutex.unlock();
 }
 
-class JackWindow : public QWidget
+JackWindow::JackWindow (MorphPlanPtr plan, const string& title)
 {
-  Q_OBJECT
+  setWindowTitle ("SpectMorph JACK Client");
 
-  QLabel         *inst_label;
-  QPushButton    *inst_button;
+  inst_label = new QLabel ("SpectMorph Instrument", this);
+  inst_button = new QPushButton ("Edit");
+  connect (inst_button, SIGNAL (clicked()), this, SLOT (on_edit_clicked()));
 
-  QLabel         *volume_label;
-  QSlider        *volume_slider;
-  QLabel         *volume_value_label;
+  QHBoxLayout *inst_hbox = new QHBoxLayout;
+  inst_hbox->addWidget (inst_label);
+  inst_hbox->addWidget (inst_button);
 
-  MorphPlanWindow2 inst_window;
+  volume_label = new QLabel ("Volume", this);
+  volume_slider = new QSlider (Qt::Horizontal, this);
+  volume_slider->setRange (-960, 240);
+  volume_value_label = new QLabel (this);
+  connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
+  volume_slider->setValue (-60);
 
-  jack_client_t  *client;
+  QHBoxLayout *volume_hbox = new QHBoxLayout();
+  volume_hbox->addWidget (volume_label);
+  volume_hbox->addWidget (volume_slider);
+  volume_hbox->addWidget (volume_value_label);
 
-  JackSynth       synth;
-public:
-  JackWindow (MorphPlanPtr plan, const string& title)
-  {
-    setWindowTitle ("SpectMorph JACK Client");
+  QVBoxLayout *vbox = new QVBoxLayout();
+  vbox->addLayout (inst_hbox);
+  vbox->addLayout (volume_hbox);
+  setLayout (vbox);
 
-    inst_label = new QLabel ("SpectMorph Instrument", this);
-    inst_button = new QPushButton ("Edit");
-    connect (inst_button, SIGNAL (clicked()), this, SLOT (on_edit_clicked()));
+  client = jack_client_open ("smjack", JackNullOption, NULL);
 
-    QHBoxLayout *inst_hbox = new QHBoxLayout;
-    inst_hbox->addWidget (inst_label);
-    inst_hbox->addWidget (inst_button);
+  if (!client)
+    {
+      fprintf (stderr, "unable to connect to jack server\n");
+      exit (1);
+    }
 
-    volume_label = new QLabel ("Volume", this);
-    volume_slider = new QSlider (Qt::Horizontal, this);
-    volume_slider->setRange (-960, 240);
-    volume_value_label = new QLabel (this);
-    connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
-    volume_slider->setValue (-60);
+  synth.init (client, plan);
 
-    QHBoxLayout *volume_hbox = new QHBoxLayout();
-    volume_hbox->addWidget (volume_label);
-    volume_hbox->addWidget (volume_slider);
-    volume_hbox->addWidget (volume_value_label);
+  dumpObjectTree();
+}
 
-    QVBoxLayout *vbox = new QVBoxLayout();
-    vbox->addLayout (inst_hbox);
-    vbox->addLayout (volume_hbox);
-    setLayout (vbox);
+JackWindow::~JackWindow()
+{
+  jack_deactivate (client);
+}
 
-    client = jack_client_open ("smjack", JackNullOption, NULL);
+void
+JackWindow::on_volume_changed (int new_volume)
+{
+  double new_volume_f = new_volume * 0.1;
+  double new_decoder_volume = bse_db_to_factor (new_volume_f);
+  volume_value_label->setText (Birnet::string_printf ("%.1f dB", new_volume_f).c_str());
+  synth.change_volume (new_decoder_volume);
+}
 
-    if (!client)
-      {
-        fprintf (stderr, "unable to connect to jack server\n");
-        exit (1);
-      }
-
-    synth.init (client, plan);
-
-    dumpObjectTree();
-  }
-  ~JackWindow()
-  {
-    printf ("delete\n");
-    jack_deactivate (client);
-  }
-
-public slots:
-  void
-  on_volume_changed (int new_volume)
-  {
-    double new_volume_f = new_volume * 0.1;
-    double new_decoder_volume = bse_db_to_factor (new_volume_f);
-    volume_value_label->setText (Birnet::string_printf ("%.1f dB", new_volume_f).c_str());
-    synth.change_volume (new_decoder_volume);
-  }
-
-  void
-  on_edit_clicked()
-  {
-    if (inst_window.isVisible())
-      inst_window.hide();
-    else
-      inst_window.show();
-  }
-};
+void
+JackWindow::on_edit_clicked()
+{
+  if (inst_window.isVisible())
+    inst_window.hide();
+  else
+    inst_window.show();
+}
 
 #if 0
 class JackWindow : public Gtk::Window
@@ -658,8 +578,5 @@ main (int argc, char **argv)
 
   JackWindow window (morph_plan, title);
   window.show();
-  app.setMainWindow (&window);
   return app.exec();
 }
-
-#include "smjack.moc"
