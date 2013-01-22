@@ -32,14 +32,21 @@
 #include "smmorphoperator.hh"
 
 #include <QWidget>
+#include <QMainWindow>
 
 namespace SpectMorph
 {
 
-class MorphPlanWindow2 : public QWidget
+class MorphPlanWindow : public QMainWindow
 {
+public:
+  MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
+
+  MorphOperator *where (MorphOperator *op, double x, double y) { /* FIXME */ return NULL; }
+  void show_popup (GdkEventButton *event, MorphOperator *op) { /* FIXME */ }
 };
 
+#if 0
 class MorphPlanWindow : public Gtk::Window
 {
   Gtk::VBox     window_vbox;
@@ -69,6 +76,7 @@ public:
   void show_popup (GdkEventButton *event, MorphOperator *op);
   void add_operator (const std::string& type);
 };
+#endif
 
 }
 

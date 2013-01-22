@@ -376,7 +376,8 @@ JackSynth::change_volume (double new_volume)
   m_new_plan_mutex.unlock();
 }
 
-JackWindow::JackWindow (MorphPlanPtr plan, const string& title)
+JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
+  inst_window (plan, title)
 {
   setWindowTitle ("SpectMorph JACK Client");
 

@@ -55,7 +55,7 @@ OscGui::OscGui (MorphPlanPtr plan, const string& title) :
 void
 OscGui::run()
 {
-  Gtk::Main::run (window);
+//  Gtk::Main::run (window); FIXME
 }
 
 void

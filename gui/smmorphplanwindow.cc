@@ -23,6 +23,8 @@
 #include <string>
 #include <iostream>
 
+#include <QMenuBar>
+
 #include "smmain.hh"
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
@@ -41,6 +43,21 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title)
+{
+  /* actions ... */
+  QAction *import_action = new QAction ("&Import...", this);
+
+  /* menus... */
+  QMenuBar *menu_bar = menuBar();
+
+  QMenu *file_menu = menu_bar->addMenu ("&File");
+  file_menu->addAction (import_action);
+
+  QMenu *edit_menu = menu_bar->addMenu ("&Edit");
+}
+
+#if 0
 void
 MorphPlanWindow::on_load_index_clicked()
 {
@@ -295,3 +312,4 @@ MorphPlanWindow::add_operator (const string& type)
 
   m_morph_plan->add_operator (op);
 }
+#endif

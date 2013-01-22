@@ -99,7 +99,7 @@ class JackWindow : public QWidget
   QSlider        *volume_slider;
   QLabel         *volume_value_label;
 
-  SpectMorph::MorphPlanWindow2 inst_window;
+  SpectMorph::MorphPlanWindow inst_window;
 
   jack_client_t  *client;
 

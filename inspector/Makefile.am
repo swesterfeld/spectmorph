@@ -26,9 +26,9 @@ libsminspector_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libsminspector_la_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
 sminspector_SOURCES = sminspector.cc
-sminspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS)
+sminspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 sminspector_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 
 testinspector_SOURCES = testinspector.cc
-testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS)
+testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 testinspector_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
