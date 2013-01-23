@@ -26,6 +26,9 @@
 
 #include <jack/jack.h>
 
+namespace SpectMorph
+{
+
 class Voice
 {
 public:
@@ -34,7 +37,7 @@ public:
     STATE_ON,
     STATE_RELEASE
   };
-  SpectMorph::MorphPlanVoice *mp_voice;
+  MorphPlanVoice *mp_voice;
 
   State        state;
   bool         pedal;
@@ -67,22 +70,22 @@ protected:
   double                        release_ms;
   double                        m_volume;
 
-  SpectMorph::MorphPlanSynth   *morph_plan_synth;
+  MorphPlanSynth               *morph_plan_synth;
   std::vector<Voice>            voices;
   std::vector<Voice*>           active_voices;
   std::vector<Voice*>           release_voices;
 
   Birnet::Mutex                 m_new_plan_mutex;
-  SpectMorph::MorphPlanPtr      m_new_plan;
+  MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
 
 public:
   JackSynth();
   ~JackSynth();
 
-  void init (jack_client_t *client, SpectMorph::MorphPlanPtr morph_plan);
-  void preinit_plan (SpectMorph::MorphPlanPtr plan);
-  void change_plan (SpectMorph::MorphPlanPtr plan);
+  void init (jack_client_t *client, MorphPlanPtr morph_plan);
+  void preinit_plan (MorphPlanPtr plan);
+  void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
   int  process (jack_nframes_t nframes);
   void reschedule();
@@ -99,14 +102,14 @@ class JackWindow : public QWidget
   QSlider        *volume_slider;
   QLabel         *volume_value_label;
 
-  SpectMorph::MorphPlanWindow inst_window;
-  SpectMorph::MorphPlanPtr    morph_plan;
+  MorphPlanWindow inst_window;
+  MorphPlanPtr    morph_plan;
 
   jack_client_t  *client;
 
   JackSynth       synth;
 public:
-  JackWindow (SpectMorph::MorphPlanPtr plan, const std::string& title);
+  JackWindow (MorphPlanPtr plan, const std::string& title);
   ~JackWindow();
 
   void closeEvent (QCloseEvent *event);
@@ -117,4 +120,4 @@ public slots:
   void on_plan_changed();
 };
 
-
+}
