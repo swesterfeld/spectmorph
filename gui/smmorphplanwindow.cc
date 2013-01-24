@@ -65,10 +65,26 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   file_menu->addAction (load_index_action);
 
   QMenu *edit_menu = menu_bar->addMenu ("&Edit");
+  QMenu *add_op_menu = edit_menu->addMenu ("&Add Operator");
+
+  add_op_action (add_op_menu, "Source", "SpectMorph::MorphSource");
+  add_op_action (add_op_menu, "Output", "SpectMorph::MorphOutput");
+  add_op_action (add_op_menu, "Linear Morph", "SpectMorph::MorphLinear");
+  add_op_action (add_op_menu, "LFO", "SpectMorph::MorphLFO");
 
   /* central widget */
   MorphPlanView *morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
   setCentralWidget (morph_plan_view);
+}
+
+void
+MorphPlanWindow::add_op_action (QMenu *menu, const char *title, const char *type)
+{
+  QAction *action = new QAction (title, this);
+  action->setData (type);
+
+  menu->addAction (action);
+  connect (action, SIGNAL (triggered()), this, SLOT (on_add_operator()));
 }
 
 void
@@ -123,6 +139,18 @@ MorphPlanWindow::on_load_index_clicked()
       QByteArray file_name_local = QFile::encodeName (file_name);
       m_morph_plan->load_index (file_name_local.data());
     }
+}
+
+void
+MorphPlanWindow::on_add_operator()
+{
+  QAction *action = qobject_cast<QAction *>(sender());
+  string type = qvariant_cast<QString> (action->data()).toLatin1().data();
+  MorphOperator *op = MorphOperator::create (type, m_morph_plan.c_ptr());
+
+  g_return_if_fail (op != NULL);
+
+  m_morph_plan->add_operator (op);
 }
 
 #if 0

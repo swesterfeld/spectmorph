@@ -37,6 +37,8 @@ class MorphPlanView : public QWidget
 
   QVBoxLayout                  *vbox;
 
+  std::vector<MorphOperatorView *> m_op_views;
+
   int                           old_structure_version;
 public:
   MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);

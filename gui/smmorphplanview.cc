@@ -43,11 +43,18 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan
 void
 MorphPlanView::on_plan_changed()
 {
+  for (vector<MorphOperatorView *>::const_iterator ovi = m_op_views.begin(); ovi != m_op_views.end(); ovi++)
+    {
+      delete *ovi;
+    }
+  m_op_views.clear();
+
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
     {
       MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
       vbox->addWidget (op_view);
+      m_op_views.push_back (op_view);
     }
 }
 
