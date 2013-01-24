@@ -18,10 +18,33 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphoperator.hh"
 
+#include <QGroupBox>
+
 using namespace SpectMorph;
 
 using std::string;
 
+MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :
+  m_op (op)
+{
+  QVBoxLayout *layout = new QVBoxLayout (this);
+  frame_group_box = new QGroupBox (this);
+  layout->addWidget (frame_group_box);
+  setLayout (layout);
+
+  on_operators_changed();
+}
+
+void
+MorphOperatorView::on_operators_changed()
+{
+  string title = m_op->type_name() + ": " + m_op->name();
+
+  frame_group_box->setTitle (title.c_str());
+}
+
+
+#if 0
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :
   in_move (false),
   morph_plan_window (morph_plan_window),
@@ -93,6 +116,8 @@ MorphOperatorView::op()
 {
   return m_op;
 }
+
+#endif
 
 #include "smmorphsourceview.hh"
 #include "smmorphoutputview.hh"

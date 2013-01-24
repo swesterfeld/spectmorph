@@ -24,6 +24,12 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_output, morph_plan_window)
+{
+}
+
+#if 0
 namespace {
 
 struct MyOperatorFilter : public OperatorFilter
@@ -99,3 +105,4 @@ MorphOutputView::on_noise_changed()
 {
   morph_output->set_noise (noise_check_button.get_active());
 }
+#endif

@@ -24,6 +24,12 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_linear, morph_plan_window)
+{
+}
+
+#if 0
 namespace {
 
 struct MyOperatorFilter : public OperatorFilter
@@ -185,3 +191,4 @@ MorphLinearView::update_slider()
   bool gui = (morph_linear->control_type() == MorphLinear::CONTROL_GUI);
   hscale.set_sensitive (gui);
 }
+#endif

@@ -28,6 +28,12 @@ using std::vector;
 #define WAVE_TEXT_TRIANGLE "Triangle"
 
 MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_lfo, morph_plan_window)
+{
+}
+
+#if 0
+MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo),
   frequency_scale (-2, 1, 0.0001),
@@ -159,3 +165,4 @@ MorphLFOView::on_sync_voices_changed()
 {
   morph_lfo->set_sync_voices (sync_voices_check_button.get_active());
 }
+#endif

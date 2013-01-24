@@ -18,11 +18,28 @@
 #include "smmorphsourceview.hh"
 #include "smmorphplan.hh"
 
+#include <QComboBox>
+#include <QLabel>
+
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
+MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_source, morph_plan_window)
+{
+  QLabel *instrument_label = new QLabel ("Instrument");
+  QComboBox *instrument_combobox = new QComboBox();
+
+  QHBoxLayout *hbox = new QHBoxLayout();
+  hbox->addWidget (instrument_label);
+  hbox->addWidget (instrument_combobox);
+
+  frame_group_box->setLayout (hbox);
+}
+
+#if 0
 MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_source, morph_plan_window),
   instrument_label ("Instrument"),
@@ -61,3 +78,4 @@ MorphSourceView::on_instrument_changed()
 {
   morph_source->set_smset (instrument_combobox.get_active_text());
 }
+#endif

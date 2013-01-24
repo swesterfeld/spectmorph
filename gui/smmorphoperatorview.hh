@@ -21,10 +21,27 @@
 #include <gtkmm.h>
 #include "smmorphplanwindow.hh"
 
+#include <QGroupBox>
+
 namespace SpectMorph
 {
 
 class MorphOperator;
+class MorphOperatorView : public QWidget
+{
+protected:
+  QGroupBox        *frame_group_box;
+  MorphOperator    *m_op;
+
+  void on_operators_changed();
+
+public:
+  MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window);
+
+  static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
+};
+
+#if 0
 class MorphOperatorView : public Gtk::EventBox
 {
 protected:
@@ -51,6 +68,7 @@ public:
 
   static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
 };
+#endif
 
 }
 

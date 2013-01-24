@@ -27,6 +27,13 @@ namespace SpectMorph
 
 class MorphLFOView : public MorphOperatorView
 {
+public:
+  MorphLFOView (MorphLFO *op, MorphPlanWindow *morph_plan_window);
+};
+
+#if 0
+class MorphLFOView : public MorphOperatorView
+{
 protected:
   MorphLFO                        *morph_lfo;
   Gtk::Table                       table;
@@ -64,6 +71,7 @@ public:
   MorphLFOView (MorphLFO *op, MorphPlanWindow *morph_plan_window);
   ~MorphLFOView();
 };
+#endif
 
 }
 

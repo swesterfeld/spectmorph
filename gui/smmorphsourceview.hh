@@ -26,6 +26,13 @@ namespace SpectMorph
 
 class MorphSourceView : public MorphOperatorView
 {
+public:
+  MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window);
+};
+
+#if 0
+class MorphSourceView : public MorphOperatorView
+{
   Gtk::HBox         instrument_hbox;
   Gtk::Label        instrument_label;
   Gtk::ComboBoxText instrument_combobox;
@@ -37,6 +44,7 @@ public:
   void on_index_changed();
   void on_instrument_changed();
 };
+#endif
 
 }
 

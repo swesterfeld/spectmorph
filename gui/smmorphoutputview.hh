@@ -27,6 +27,13 @@ namespace SpectMorph
 
 class MorphOutputView : public MorphOperatorView
 {
+public:
+  MorphOutputView (MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
+};
+
+#if 0
+class MorphOutputView : public MorphOperatorView
+{
   struct ChannelView {
     ChannelView (MorphPlan *plan, OperatorFilter *of) :
       combobox (plan, of)
@@ -50,6 +57,7 @@ public:
   void on_sines_changed();
   void on_noise_changed();
 };
+#endif
 
 }
 

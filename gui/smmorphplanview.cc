@@ -43,8 +43,12 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan
 void
 MorphPlanView::on_plan_changed()
 {
-  vbox->addWidget (new QLabel ("foo!"));
-  // FIXME
+  const vector<MorphOperator *>& operators = morph_plan->operators();
+  for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
+    {
+      MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
+      vbox->addWidget (op_view);
+    }
 }
 
 #if 0
