@@ -37,6 +37,15 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
   hbox->addWidget (instrument_combobox);
 
   frame_group_box->setLayout (hbox);
+
+  // need extra function FIXME
+  vector<string> smsets = morph_source->morph_plan()->index()->smsets();
+  for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
+    instrument_combobox->addItem ((*si).c_str());
+
+  int index = instrument_combobox->findText (morph_source->smset().c_str());
+  if (index >= 0)
+    instrument_combobox->setCurrentIndex (index);
 }
 
 #if 0
