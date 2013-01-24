@@ -20,11 +20,34 @@
 #include "smmoveindicator.hh"
 #include <birnet/birnet.hh>
 
+#include <QLabel>
+
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
+MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
+  morph_plan (morph_plan),
+  morph_plan_window (morph_plan_window)
+{
+  vbox = new QVBoxLayout();
+  setLayout (vbox);
+
+  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanView::on_plan_changed));
+
+  old_structure_version = morph_plan->structure_version() - 1;
+  on_plan_changed();
+}
+
+void
+MorphPlanView::on_plan_changed()
+{
+  vbox->addWidget (new QLabel ("foo!"));
+  // FIXME
+}
+
+#if 0
 MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
   morph_plan (morph_plan),
   morph_plan_window (morph_plan_window)
@@ -107,3 +130,4 @@ MorphPlanView::on_move_indication (MorphOperator *op)
   for (size_t i = 0; i < move_indicators.size(); i++)
     move_indicators[i]->set_active (i == active_i);
 }
+#endif

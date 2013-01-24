@@ -65,6 +65,10 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   file_menu->addAction (load_index_action);
 
   QMenu *edit_menu = menu_bar->addMenu ("&Edit");
+
+  /* central widget */
+  MorphPlanView *morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
+  setCentralWidget (morph_plan_view);
 }
 
 void

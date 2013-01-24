@@ -20,6 +20,9 @@
 
 #include <gtkmm.h>
 
+#include <QWidget>
+#include <QVBoxLayout>
+
 #include "smmorphplan.hh"
 #include "smmoveindicator.hh"
 
@@ -27,6 +30,21 @@ namespace SpectMorph
 {
 
 class MorphPlanWindow;
+class MorphPlanView : public QWidget
+{
+  MorphPlan                    *morph_plan;
+  MorphPlanWindow              *morph_plan_window;
+
+  QVBoxLayout                  *vbox;
+
+  int                           old_structure_version;
+public:
+  MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
+
+  void on_plan_changed();
+};
+
+#if 0
 class MorphPlanView : public Gtk::VBox
 {
   MorphPlan                    *morph_plan;
@@ -44,6 +62,7 @@ public:
   void on_plan_changed();
   void on_move_indication (MorphOperator *op);
 };
+#endif
 
 }
 
