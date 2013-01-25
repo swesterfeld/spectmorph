@@ -19,11 +19,67 @@
 
 #include <assert.h>
 
+#include <QComboBox>
+
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
+ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *operator_filter) :
+  morph_plan (morph_plan),
+  op_filter (operator_filter)
+{
+  combo_box = new QComboBox();
+
+  QVBoxLayout *layout = new QVBoxLayout();
+  layout->addWidget (combo_box);
+  layout->setContentsMargins (0, 0, 0, 0);
+  setLayout (layout);
+
+  on_operators_changed();
+
+  connect (combo_box, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combobox_changed()));
+}
+
+void
+ComboBoxOperator::on_operators_changed()
+{
+  // clear();
+
+  const vector<MorphOperator *>& ops = morph_plan->operators();
+  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *morph_op = *oi;
+      if (op_filter->filter (morph_op))
+        {
+          combo_box->addItem (morph_op->name().c_str());
+          //if (morph_op == op)
+          //  set_active_text (morph_op->name());
+        }
+    }
+}
+
+void
+ComboBoxOperator::on_combobox_changed()
+{
+  string active_text = combo_box->currentText().toLatin1().data();
+
+  op         = NULL;
+
+  const vector<MorphOperator *>& ops = morph_plan->operators();
+  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *morph_op = *oi;
+      if (morph_op->name() == active_text)
+        {
+          op         = morph_op;
+        }
+    }
+  emit active_changed();
+}
+
+#if 0
 ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *operator_filter) :
   morph_plan (morph_plan),
   op_filter (operator_filter)
@@ -147,3 +203,4 @@ ComboBoxOperator::on_combobox_changed()
     }
   signal_active_changed();
 }
+#endif

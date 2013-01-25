@@ -33,8 +33,8 @@ class MorphOutputView : public MorphOperatorView
   Q_OBJECT
 
   struct ChannelView {
-    QLabel    *label;
-    QComboBox *combobox;
+    QLabel           *label;
+    ComboBoxOperator *combobox;
   };
   std::vector<ChannelView *>  channels;
   MorphOutput                *morph_output;

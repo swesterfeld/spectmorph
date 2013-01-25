@@ -21,6 +21,8 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphlinear.hh"
 
+#include <QComboBox>
+
 namespace SpectMorph
 {
 
@@ -29,6 +31,30 @@ struct OperatorFilter
   virtual bool filter (MorphOperator *op) = 0;
 };
 
+class ComboBoxOperator : public QWidget
+{
+  Q_OBJECT
+
+protected:
+  MorphPlan      *morph_plan;
+  OperatorFilter *op_filter;
+  MorphOperator  *op;
+
+  QComboBox      *combo_box;
+
+  void on_operators_changed();
+
+protected slots:
+  void on_combobox_changed();
+
+signals:
+  void active_changed();
+
+public:
+  ComboBoxOperator (MorphPlan *plan, OperatorFilter *op_filter);
+};
+
+#if 0
 class ComboBoxOperator : public Gtk::ComboBoxText
 {
 protected:
@@ -57,6 +83,7 @@ public:
 
   sigc::signal<void> signal_active_changed;
 };
+#endif
 
 }
 

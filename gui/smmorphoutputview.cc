@@ -26,6 +26,18 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+namespace {
+
+struct MyOperatorFilter : public OperatorFilter
+{
+  bool filter (MorphOperator *op)
+  {
+    return (op->output_type() == MorphOperator::OUTPUT_AUDIO);
+  }
+} op_filter_instance;
+
+}
+
 MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output)
@@ -35,9 +47,9 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
 
   for (int ch = 0; ch < 4; ch++)
     {
-      ChannelView *chv = new ChannelView(); // (morph_output->morph_plan(), &op_filter_instance);
+      ChannelView *chv = new ChannelView();
       chv->label = new QLabel (Birnet::string_printf ("Channel #%d", ch + 1).c_str());
-      chv->combobox = new QComboBox();
+      chv->combobox = new ComboBoxOperator (morph_output->morph_plan(), &op_filter_instance);
 
       grid_layout->addWidget (chv->label, ch, 0);
       grid_layout->addWidget (chv->combobox, ch, 1);
@@ -71,18 +83,6 @@ MorphOutputView::on_noise_changed (bool new_value)
 }
 
 #if 0
-namespace {
-
-struct MyOperatorFilter : public OperatorFilter
-{
-  bool filter (MorphOperator *op)
-  {
-    return (op->output_type() == MorphOperator::OUTPUT_AUDIO);
-  }
-} op_filter_instance;
-
-}
-
 MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output)
