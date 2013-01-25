@@ -19,14 +19,55 @@
 #include "smmorphplan.hh"
 #include <birnet/birnet.hh>
 
+#include <QLabel>
+
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
 MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
-  MorphOperatorView (morph_output, morph_plan_window)
+  MorphOperatorView (morph_output, morph_plan_window),
+  morph_output (morph_output)
 {
+  QGridLayout *grid_layout = new QGridLayout();
+  grid_layout->setColumnStretch (1, 1);
+
+  for (int ch = 0; ch < 4; ch++)
+    {
+      ChannelView *chv = new ChannelView(); // (morph_output->morph_plan(), &op_filter_instance);
+      chv->label = new QLabel (Birnet::string_printf ("Channel #%d", ch + 1).c_str());
+      chv->combobox = new QComboBox();
+
+      grid_layout->addWidget (chv->label, ch, 0);
+      grid_layout->addWidget (chv->combobox, ch, 1);
+      channels.push_back (chv);
+
+      //chv->combobox.set_active (morph_output->channel_op (ch));
+    }
+  QCheckBox *sines_check_box = new QCheckBox ("Enable Sine Synthesis");
+  sines_check_box->setChecked (morph_output->sines());
+  grid_layout->addWidget (sines_check_box, 4, 0, 1, 2);
+
+  QCheckBox *noise_check_box = new QCheckBox ("Enable Noise Synthesis");
+  noise_check_box->setChecked (morph_output->noise());
+  grid_layout->addWidget (noise_check_box, 5, 0, 1, 2);
+
+  connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
+  connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
+  frame_group_box->setLayout (grid_layout);
+}
+
+void
+MorphOutputView::on_sines_changed (bool new_value)
+{
+  morph_output->set_sines (new_value);
+}
+
+void
+MorphOutputView::on_noise_changed (bool new_value)
+{
+  morph_output->set_noise (new_value);
 }
 
 #if 0
