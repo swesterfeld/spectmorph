@@ -27,10 +27,11 @@ using std::string;
 using std::vector;
 
 MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window) :
-  MorphOperatorView (morph_source, morph_plan_window)
+  MorphOperatorView (morph_source, morph_plan_window),
+  morph_source (morph_source)
 {
   QLabel *instrument_label = new QLabel ("Instrument");
-  QComboBox *instrument_combobox = new QComboBox();
+  instrument_combobox = new QComboBox();
 
   QHBoxLayout *hbox = new QHBoxLayout();
   hbox->addWidget (instrument_label);
@@ -38,7 +39,17 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
 
   frame_group_box->setLayout (hbox);
 
-  // need extra function FIXME
+  on_index_changed();
+  morph_source->morph_plan()->signal_index_changed.connect (sigc::mem_fun (*this, &MorphSourceView::on_index_changed));
+
+  connect (instrument_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_instrument_changed()));
+}
+
+void
+MorphSourceView::on_index_changed()
+{
+  instrument_combobox->clear();
+
   vector<string> smsets = morph_source->morph_plan()->index()->smsets();
   for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
     instrument_combobox->addItem ((*si).c_str());
@@ -46,6 +57,12 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
   int index = instrument_combobox->findText (morph_source->smset().c_str());
   if (index >= 0)
     instrument_combobox->setCurrentIndex (index);
+}
+
+void
+MorphSourceView::on_instrument_changed()
+{
+  morph_source->set_smset (instrument_combobox->currentText().toLatin1().data());
 }
 
 #if 0

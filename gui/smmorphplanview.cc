@@ -43,6 +43,10 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan
 void
 MorphPlanView::on_plan_changed()
 {
+  if (morph_plan->structure_version() == old_structure_version)
+    return; // nothing to do, view widgets should be fine
+  old_structure_version = morph_plan->structure_version();
+
   for (vector<MorphOperatorView *>::const_iterator ovi = m_op_views.begin(); ovi != m_op_views.end(); ovi++)
     {
       delete *ovi;
