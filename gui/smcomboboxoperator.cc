@@ -45,7 +45,7 @@ ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *opera
 void
 ComboBoxOperator::on_operators_changed()
 {
-  // clear();
+  combo_box->clear();
 
   const vector<MorphOperator *>& ops = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
@@ -77,6 +77,21 @@ ComboBoxOperator::on_combobox_changed()
         }
     }
   emit active_changed();
+}
+
+void
+ComboBoxOperator::set_active (MorphOperator *new_op)
+{
+  op         = new_op;
+//  str_choice = "";
+
+  on_operators_changed();
+}
+
+MorphOperator *
+ComboBoxOperator::active()
+{
+  return op;
 }
 
 #if 0

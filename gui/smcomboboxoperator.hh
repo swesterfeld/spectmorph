@@ -52,6 +52,9 @@ signals:
 
 public:
   ComboBoxOperator (MorphPlan *plan, OperatorFilter *op_filter);
+
+  void set_active (MorphOperator *new_op);
+  MorphOperator *active();
 };
 
 #if 0

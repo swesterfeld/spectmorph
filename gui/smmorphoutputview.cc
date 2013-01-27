@@ -55,7 +55,9 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
       grid_layout->addWidget (chv->combobox, ch, 1);
       channels.push_back (chv);
 
-      //chv->combobox.set_active (morph_output->channel_op (ch));
+      chv->combobox->set_active (morph_output->channel_op (ch));
+
+      connect (chv->combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
     }
   QCheckBox *sines_check_box = new QCheckBox ("Enable Sine Synthesis");
   sines_check_box->setChecked (morph_output->sines());
@@ -80,6 +82,15 @@ void
 MorphOutputView::on_noise_changed (bool new_value)
 {
   morph_output->set_noise (new_value);
+}
+
+void
+MorphOutputView::on_operator_changed()
+{
+  for (size_t i = 0; i < channels.size(); i++)
+    {
+      morph_output->set_channel_op (i, channels[i]->combobox->active());
+    }
 }
 
 #if 0
