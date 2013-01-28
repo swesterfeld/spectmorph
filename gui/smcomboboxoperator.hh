@@ -41,6 +41,7 @@ protected:
   MorphOperator  *op;
 
   QComboBox      *combo_box;
+  bool            block_changed;
 
   void on_operators_changed();
 

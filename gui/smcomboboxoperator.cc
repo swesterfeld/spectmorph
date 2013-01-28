@@ -26,9 +26,12 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+#define OPERATOR_TEXT_NONE "<none>"
+
 ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *operator_filter) :
   morph_plan (morph_plan),
-  op_filter (operator_filter)
+  op_filter (operator_filter),
+  op (NULL)
 {
   combo_box = new QComboBox();
 
@@ -45,7 +48,11 @@ ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *opera
 void
 ComboBoxOperator::on_operators_changed()
 {
+  block_changed = true;
+
   combo_box->clear();
+
+  combo_box->addItem (OPERATOR_TEXT_NONE);
 
   const vector<MorphOperator *>& ops = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
@@ -58,11 +65,23 @@ ComboBoxOperator::on_operators_changed()
           //  set_active_text (morph_op->name());
         }
     }
+
+  // update selected item
+  string active_op_name = op ? op->name() : OPERATOR_TEXT_NONE;
+
+  int index = combo_box->findText (active_op_name.c_str());
+  if (index >= 0)
+    combo_box->setCurrentIndex (index);
+
+  block_changed = false;
 }
 
 void
 ComboBoxOperator::on_combobox_changed()
 {
+  if (block_changed)
+    return;
+
   string active_text = combo_box->currentText().toLatin1().data();
 
   op         = NULL;
