@@ -25,6 +25,7 @@
 #include <bse/gsldatahandle.h>
 #include <bse/gsldatautils.h>
 #include <errno.h>
+#include <unistd.h>
 #include "smmain.hh"
 
 using std::string;

@@ -24,6 +24,7 @@
 #include <bse/gslfft.h>
 #include <bse/bseblockutils.hh>
 #include <string.h>
+#include <unistd.h>
 
 using namespace SpectMorph;
 using std::map;

@@ -29,6 +29,7 @@
 #include <sys/resource.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <unistd.h>
 
 using SpectMorph::WavSet;
 using SpectMorph::LiveDecoder;

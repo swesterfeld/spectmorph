@@ -26,6 +26,7 @@
 #include <vector>
 #include <assert.h>
 #include <stdio.h>
+#include <unistd.h>
 
 using namespace SpectMorph;
 
