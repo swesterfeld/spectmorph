@@ -19,6 +19,8 @@
 #include "smmorphoperator.hh"
 
 #include <QGroupBox>
+#include <QMenu>
+#include <QContextMenuEvent>
 
 using namespace SpectMorph;
 
@@ -32,6 +34,15 @@ MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_
   layout->addWidget (frame_group_box);
   setLayout (layout);
 
+  QAction *action;
+  context_menu = new QMenu ("Operator Context Menu", this);
+  action = context_menu->addAction ("Rename");
+  connect (action, SIGNAL (triggered()), this, SLOT (on_rename()));
+
+  action = context_menu->addAction ("Remove");
+  connect (action, SIGNAL (triggered()), this, SLOT (on_remove()));
+  remove = false;
+
   on_operators_changed();
 }
 
@@ -43,6 +54,27 @@ MorphOperatorView::on_operators_changed()
   frame_group_box->setTitle (title.c_str());
 }
 
+void
+MorphOperatorView::contextMenuEvent (QContextMenuEvent *event)
+{
+  event->accept();
+  context_menu->exec (event->globalPos());
+  if (remove)
+    m_op->morph_plan()->remove (m_op);
+}
+
+void
+MorphOperatorView::on_rename()
+{
+  printf ("on_rename();\n");
+}
+
+void
+MorphOperatorView::on_remove()
+{
+  // can't remove in the context menu callstack - so do it later
+  remove = true;
+}
 
 #if 0
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :

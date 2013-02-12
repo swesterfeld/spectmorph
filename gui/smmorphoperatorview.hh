@@ -29,16 +29,24 @@ namespace SpectMorph
 class MorphOperator;
 class MorphOperatorView : public QWidget
 {
+  Q_OBJECT
 protected:
   QGroupBox        *frame_group_box;
+  QMenu            *context_menu;
   MorphOperator    *m_op;
+  bool              remove;
 
   void on_operators_changed();
+  void contextMenuEvent (QContextMenuEvent *event);
 
 public:
   MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window);
 
   static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
+
+public slots:
+  void on_rename();
+  void on_remove();
 };
 
 #if 0
