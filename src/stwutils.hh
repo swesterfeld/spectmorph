@@ -1,6 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/gsldatautils.h>
+#include <bse/gsldatautils.hh>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

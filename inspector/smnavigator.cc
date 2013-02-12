@@ -6,7 +6,7 @@
 #include "smindex.hh"
 
 #include <assert.h>
-#include <bse/bseloader.h>
+#include <bse/bseloader.hh>
 #include <iostream>
 
 #include <QVBoxLayout>

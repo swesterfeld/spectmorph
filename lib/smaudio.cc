@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <assert.h>
-#include <bse/bse.h>
+#include <bse/bse.hh>
 
 using std::string;
 using std::vector;

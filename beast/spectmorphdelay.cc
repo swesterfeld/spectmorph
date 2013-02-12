@@ -24,8 +24,8 @@
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
 
-#include <bse/bsemathsignal.h>
-#include <bse/bseengine.h>
+#include <bse/bsemathsignal.hh>
+#include <bse/bseengine.hh>
 
 #include <stdio.h>
 

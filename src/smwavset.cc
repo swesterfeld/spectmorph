@@ -12,7 +12,7 @@
 #include <smaudio.hh>
 #include <smmain.hh>
 #include <smmicroconf.hh>
-#include <bse/bseloader.h>
+#include <bse/bseloader.hh>
 #include "smjobqueue.hh"
 
 #include <string>

@@ -6,7 +6,7 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 
 #include <vector>
 #include <assert.h>

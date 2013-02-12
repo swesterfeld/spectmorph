@@ -3,7 +3,7 @@
 #include "smwavloader.hh"
 #include "smleakdebugger.hh"
 
-#include <bse/bseloader.h>
+#include <bse/bseloader.hh>
 #include <stdio.h>
 
 using namespace SpectMorph;

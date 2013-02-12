@@ -1,6 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <complex>
 #include <vector>
 #include "smlpcztrans.hh"

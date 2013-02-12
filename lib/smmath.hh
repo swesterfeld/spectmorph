@@ -7,7 +7,7 @@
 #include <glib.h>
 #include <string.h>
 #include <stdlib.h>
-#include <bse/bseieee754.h>
+#include <bse/bseieee754.hh>
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif

@@ -1,6 +1,6 @@
 #include <assert.h>
-#include <bse/bse.h>
-#include <bse/bsemathsignal.h>
+#include <bse/bse.hh>
+#include <bse/bsemathsignal.hh>
 #include "smmain.hh"
 #include "smzoomcontroller.hh"
 #include "smmath.hh"

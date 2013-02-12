@@ -17,8 +17,8 @@
 #include "smjobqueue.hh"
 #include "smwavset.hh"
 #include <stdlib.h>
-#include <bse/gsldatahandle.h>
-#include <bse/gsldatautils.h>
+#include <bse/gsldatahandle.hh>
+#include <bse/gsldatautils.hh>
 
 #if 1
 static inline void

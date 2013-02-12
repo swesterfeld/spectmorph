@@ -6,7 +6,7 @@
 #include "config.h"
 
 #include <glib.h>
-#include <bse/gslfft.h>
+#include <bse/gslfft.hh>
 #include <bse/bseblockutils.hh>
 #include <string.h>
 #include <unistd.h>

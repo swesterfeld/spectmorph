@@ -4,7 +4,7 @@
 #include "smmath.hh"
 #include "smleakdebugger.hh"
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
 
 #include <stdio.h>

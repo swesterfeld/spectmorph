@@ -2,7 +2,7 @@
 
 #include "smpolyphaseinter.hh"
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <math.h>
 
 using namespace SpectMorph;

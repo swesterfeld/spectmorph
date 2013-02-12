@@ -1,6 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/bse.h>
+#include <bse/bse.hh>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>

@@ -3,8 +3,8 @@
 #include "smifftsynth.hh"
 #include "smmath.hh"
 #include "smfft.hh"
-#include <bse/gslfft.h>
-#include <bse/bsemathsignal.h>
+#include <bse/gslfft.hh>
+#include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
 #include <assert.h>
 #include <stdio.h>

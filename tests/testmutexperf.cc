@@ -40,7 +40,7 @@ main (int argc, char **argv)
     printf ("%20s %.2f mlocks/sec\n", "QMutex", runs / (end - start) / (1000 * 1000));
   }
   {
-    Birnet::Mutex bmutex;
+    Bse::Mutex bmutex;
 
     // FIRST:
     bmutex.lock();
@@ -50,9 +50,9 @@ main (int argc, char **argv)
     double start = gettime();
     for (unsigned int i = 0; i < runs; i++)
       {
-        Birnet::AutoLocker block (bmutex);
+        Bse::ScopedLock<Bse::Mutex> block (bmutex);
       }
     double end = gettime();
-    printf ("%20s %.2f mlocks/sec\n", "Birnet::Mutex", runs / (end - start) / (1000 * 1000));
+    printf ("%20s %.2f mlocks/sec\n", "Bse::Mutex", runs / (end - start) / (1000 * 1000));
   }
 }

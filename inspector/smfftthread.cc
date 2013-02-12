@@ -7,8 +7,8 @@
 #include "smlpc.hh"
 
 #include <bse/bseblockutils.hh>
-#include <bse/bseglobals.h>
-#include <bse/bsemathsignal.h>
+#include <bse/bseglobals.hh>
+#include <bse/bsemathsignal.hh>
 
 #include <QSocketNotifier>
 

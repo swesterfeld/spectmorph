@@ -38,7 +38,7 @@ dnl libbse
 dnl
 AC_DEFUN([AC_BSE_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(BSE, bse >= 0.7.2)
+    PKG_CHECK_MODULES(BSE, bse >= 0.7.2 rapicorn1303)
     AC_SUBST(BSE_CFLAGS)
     AC_SUBST(BSE_LIBS)
     BSE_VERSION=`pkg-config --modversion bse`
@@ -177,6 +177,10 @@ MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   CFLAGS="$CFLAGS -fPIC"
   CXXFLAGS="$CXXFLAGS -fPIC"
 ])
+MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x], [
+  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+])
+
 
 MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
   SSE_FLAGS="-msse -mmmx -ftree-vectorize"

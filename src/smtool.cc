@@ -8,8 +8,8 @@
 #include "smmain.hh"
 #include "sminfile.hh"
 #include <assert.h>
-#include <bse/bsemathsignal.h>
-#include <bse/gslfft.h>
+#include <bse/bsemathsignal.hh>
+#include <bse/gslfft.hh>
 
 using namespace SpectMorph;
 using std::vector;

@@ -4,8 +4,7 @@
 #define SPECTMORPH_FFTTHREAD_HH
 
 #include <birnet/birnet.hh>
-#include <birnet/birnetthread.hh>
-#include <bse/bseloader.h>
+#include <bse/bseloader.hh>
 
 #include "smcommon.hh"
 #include "smpixelarray.hh"

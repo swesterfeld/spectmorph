@@ -5,7 +5,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include <bse/bseblockutils.hh>
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>

@@ -6,7 +6,7 @@
 #include "smlpc.hh"
 #include "smdebug.hh"
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
 #include <math.h>
 #include <stdio.h>

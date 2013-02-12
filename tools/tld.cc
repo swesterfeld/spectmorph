@@ -5,8 +5,8 @@
 #include "smfft.hh"
 #include "smmain.hh"
 
-#include <bse/gsldatahandle.h>
-#include <bse/gsldatautils.h>
+#include <bse/gsldatahandle.hh>
+#include <bse/gsldatautils.hh>
 
 #include <stdio.h>
 #include <assert.h>

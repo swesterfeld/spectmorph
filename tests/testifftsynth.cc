@@ -8,7 +8,7 @@
 #include "smfft.hh"
 
 #include <birnet/birnetutils.hh>
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 
 #include <vector>
 #include <stdio.h>

@@ -2,7 +2,7 @@
 
 #include "smlpc.hh"
 #include "smmath.hh"
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/lu.hpp>

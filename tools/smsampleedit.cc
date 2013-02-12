@@ -2,8 +2,8 @@
 
 #include <assert.h>
 #include <sys/time.h>
-#include <bse/gsldatautils.h>
-#include <bse/bseloader.h>
+#include <bse/gsldatautils.hh>
+#include <bse/bseloader.hh>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <errno.h>

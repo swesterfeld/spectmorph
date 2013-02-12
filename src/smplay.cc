@@ -1,12 +1,12 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include <birnet/birnet.hh>
-#include <bse/bse.h>
-#include <bse/gslfft.h>
-#include <bse/bsemathsignal.h>
-#include <bse/gsldatahandle.h>
+#include <bse/bse.hh>
+#include <bse/gslfft.hh>
+#include <bse/bsemathsignal.hh>
+#include <bse/gsldatahandle.hh>
 #include <bse/bseblockutils.hh>
-#include <sfi/sfiparams.h>
+#include <sfi/sfiparams.hh>
 #include "smaudio.hh"
 #include <fcntl.h>
 #include <errno.h>

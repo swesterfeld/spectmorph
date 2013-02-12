@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include <bse/bsemathsignal.h>
+#include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
 
 #include <QPainter>
