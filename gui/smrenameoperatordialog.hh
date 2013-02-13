@@ -18,14 +18,17 @@
 #ifndef SPECTMORPH_RENAME_OPERATOR_DIALOG_HH
 #define SPECTMORPH_RENAME_OPERATOR_DIALOG_HH
 
-#include <gtkmm.h>
 #include "smmorphoperator.hh"
+
+#include <QDialog>
+#include <QLineEdit>
 
 namespace SpectMorph
 {
 
-class RenameOperatorDialog : public Gtk::Dialog
+class RenameOperatorDialog : public QDialog
 {
+#if 0
 protected:
   Gtk::Label old_label;
   Gtk::Label old_name_label;
@@ -44,6 +47,20 @@ public:
   RenameOperatorDialog (MorphOperator *op);
 
   std::string new_name();
+#endif
+  Q_OBJECT
+
+  MorphOperator *op;
+
+  QLineEdit *new_name_edit;
+  QPushButton *ok_button;
+public:
+  RenameOperatorDialog (QWidget *parent, MorphOperator *op);
+
+  std::string new_name();
+
+public slots:
+  void on_name_changed();
 };
 
 }

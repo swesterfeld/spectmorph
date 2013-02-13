@@ -17,6 +17,7 @@
 
 #include "smmorphoperatorview.hh"
 #include "smmorphoperator.hh"
+#include "smrenameoperatordialog.hh"
 
 #include <QGroupBox>
 #include <QMenu>
@@ -66,7 +67,9 @@ MorphOperatorView::contextMenuEvent (QContextMenuEvent *event)
 void
 MorphOperatorView::on_rename()
 {
-  printf ("on_rename();\n");
+  RenameOperatorDialog dialog (this, m_op);
+  if (dialog.exec())
+    m_op->set_name (dialog.new_name());
 }
 
 void
