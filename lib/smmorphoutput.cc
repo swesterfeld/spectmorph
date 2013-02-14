@@ -34,7 +34,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT)
 {
-  morph_plan->signal_operator_removed.connect (sigc::mem_fun (*this, &MorphOutput::on_operator_removed));
+  connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
 
   m_sines = true;
   m_noise = true;

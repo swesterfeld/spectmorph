@@ -25,7 +25,6 @@
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
-#include <gtkmm.h>
 
 #include <QApplication>
 #include <QWidget>
@@ -407,7 +406,7 @@ JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
   vbox->addLayout (volume_hbox);
   setLayout (vbox);
 
-  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &JackWindow::on_plan_changed));
+  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 
   client = jack_client_open ("smjack", JackNullOption, NULL);
 

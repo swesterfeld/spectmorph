@@ -21,6 +21,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 MoveIndicator::MoveIndicator()
 {
   set_size_request (-1, 5);
@@ -62,3 +63,4 @@ MoveIndicator::on_expose_event (GdkEventExpose *event)
     }
   return true;
 }
+#endif

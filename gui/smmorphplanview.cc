@@ -34,7 +34,7 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan
   vbox = new QVBoxLayout();
   setLayout (vbox);
 
-  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &MorphPlanView::on_plan_changed));
+  connect (morph_plan, SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 
   old_structure_version = morph_plan->structure_version() - 1;
   on_plan_changed();

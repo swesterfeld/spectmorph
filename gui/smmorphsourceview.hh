@@ -36,9 +36,8 @@ class MorphSourceView : public MorphOperatorView
 public:
   MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window);
 
-  void on_index_changed();
-
 public slots:
+  void on_index_changed();
   void on_instrument_changed();
 };
 

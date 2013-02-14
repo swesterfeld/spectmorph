@@ -18,8 +18,6 @@
 #ifndef SPECTMORPH_MORPH_PLAN_VIEW_HH
 #define SPECTMORPH_MORPH_PLAN_VIEW_HH
 
-#include <gtkmm.h>
-
 #include <QWidget>
 #include <QVBoxLayout>
 
@@ -32,6 +30,8 @@ namespace SpectMorph
 class MorphPlanWindow;
 class MorphPlanView : public QWidget
 {
+  Q_OBJECT
+
   MorphPlan                    *morph_plan;
   MorphPlanWindow              *morph_plan_window;
 
@@ -43,6 +43,7 @@ class MorphPlanView : public QWidget
 public:
   MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
+public slots:
   void on_plan_changed();
 };
 

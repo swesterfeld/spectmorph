@@ -22,13 +22,13 @@
 #include "smmorphoperator.hh"
 #include "smobject.hh"
 #include "smaudio.hh"
-#include <sigc++/sigc++.h>
 
 namespace SpectMorph
 {
 
 class MorphPlan : public Object
 {
+  Q_OBJECT
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
   int                          m_structure_version;
@@ -48,10 +48,6 @@ public:
   void remove (MorphOperator *op);
   void move (MorphOperator *op, MorphOperator *op_next);
 
-  sigc::signal<void>                  signal_plan_changed;
-  sigc::signal<void>                  signal_index_changed;
-  sigc::signal<void, MorphOperator *> signal_operator_removed;
-
   void set_plan_str (const std::string& plan_str);
   void emit_plan_changed();
   void emit_index_changed();
@@ -64,6 +60,11 @@ public:
 
   static std::string id_chars();
   static std::string generate_id();
+
+signals:
+  void plan_changed();
+  void index_changed();
+  void operator_removed (MorphOperator *op);
 };
 
 typedef RefPtr<MorphPlan> MorphPlanPtr;

@@ -18,7 +18,6 @@
 #ifndef SPECTMORPH_MORPH_OPERATOR_VIEW_HH
 #define SPECTMORPH_MORPH_OPERATOR_VIEW_HH
 
-#include <gtkmm.h>
 #include "smmorphplanwindow.hh"
 
 #include <QGroupBox>
@@ -36,7 +35,6 @@ protected:
   MorphOperator    *m_op;
   bool              remove;
 
-  void on_operators_changed();
   void contextMenuEvent (QContextMenuEvent *event);
 
 public:
@@ -45,6 +43,7 @@ public:
   static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
 
 public slots:
+  void on_operators_changed();
   void on_rename();
   void on_remove();
 };

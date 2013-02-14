@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(SSE_FLAGS) $(FFTW_CFLAGS) $(SIGCXX_CFLAGS)
+AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(SSE_FLAGS) $(FFTW_CFLAGS) $(QT_CFLAGS)
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
@@ -27,8 +27,23 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smindex.cc smmorphsource.cc smmorphoutput.cc smmorphlinear.cc \
                            smmorphoperatormodule.cc smmorphsourcemodule.cc smmorphlinearmodule.cc \
                            smmorphoutputmodule.cc smwavsetrepo.cc smleakdebugger.cc smobject.cc \
-                           smlpc.cc smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS)
-libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(SIGCXX_LIBS)
+                           smlpc.cc smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS) \
+                           moc_smmorphplan.cc moc_smmorphlinear.cc moc_smmorphoperator.cc \
+                           moc_smmorphoutput.cc
+
+libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS)
 
 spectmorphincludedir = $(includedir)/spectmorph
 spectmorphinclude_HEADERS = $(SMHDRS)
+
+moc_smmorphplan.cc: smmorphplan.hh
+	moc smmorphplan.hh > moc_smmorphplan.cc
+
+moc_smmorphlinear.cc: smmorphlinear.hh
+	moc smmorphlinear.hh > moc_smmorphlinear.cc
+
+moc_smmorphoperator.cc: smmorphoperator.hh
+	moc smmorphoperator.hh > moc_smmorphoperator.cc
+
+moc_smmorphoutput.cc: smmorphoutput.hh
+	moc smmorphoutput.hh > moc_smmorphoutput.cc

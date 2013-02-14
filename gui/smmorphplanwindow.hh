@@ -18,7 +18,6 @@
 #ifndef SPECTMORPH_MORPH_PLAN_WINDOW_HH
 #define SPECTMORPH_MORPH_PLAN_WINDOW_HH
 
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
 
@@ -49,7 +48,6 @@ public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
   MorphOperator *where (MorphOperator *op, double x, double y) { /* FIXME */ return NULL; }
-  void show_popup (GdkEventButton *event, MorphOperator *op) { /* FIXME */ }
 
 public slots:
   void on_file_import_clicked();

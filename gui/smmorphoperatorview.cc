@@ -45,6 +45,7 @@ MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_
   remove = false;
 
   on_operators_changed();
+  connect (m_op->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_operators_changed()));
 }
 
 void

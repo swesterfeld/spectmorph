@@ -18,12 +18,11 @@
 #ifndef SPECTMORPH_ZOOMCONTROLLER_HH
 #define SPECTMORPH_ZOOMCONTROLLER_HH
 
-#include <gtkmm.h>
-
 namespace SpectMorph {
 
-class ZoomController : public Gtk::VBox
+class ZoomController //: public Gtk::VBox
 {
+#if 0
   Gtk::Adjustment     hzoom_adjustment;
   Gtk::HScale         hzoom_scale;
   Gtk::Label          hzoom_label;
@@ -45,6 +44,7 @@ public:
   double get_vzoom();
 
   sigc::signal<void> signal_zoom_changed;
+#endif
 };
 
 }

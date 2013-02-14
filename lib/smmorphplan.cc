@@ -312,7 +312,7 @@ MorphPlan::remove (MorphOperator *op)
     }
   m_structure_version++;
 
-  signal_operator_removed (op);
+  emit operator_removed (op);
   emit_plan_changed();
 }
 
@@ -371,14 +371,14 @@ void
 MorphPlan::emit_plan_changed()
 {
   if (!in_restore)
-    signal_plan_changed();
+    emit plan_changed();
 }
 
 void
 MorphPlan::emit_index_changed()
 {
   if (!in_restore)
-    signal_index_changed();
+    emit index_changed();
 }
 
 string

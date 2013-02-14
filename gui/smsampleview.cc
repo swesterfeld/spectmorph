@@ -26,6 +26,7 @@ using std::max;
 
 #define HZOOM_SCALE 0.05
 
+#if 0
 SampleView::SampleView() :
   audio (NULL),
   markers (NULL)
@@ -308,3 +309,4 @@ SampleView::set_edit_marker_type (EditMarkerType marker_type)
   m_edit_marker_type = marker_type;
   force_redraw();
 }
+#endif

@@ -40,8 +40,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
   frame_group_box->setLayout (hbox);
 
   on_index_changed();
-  morph_source->morph_plan()->signal_index_changed.connect (sigc::mem_fun (*this, &MorphSourceView::on_index_changed));
-
+  connect (morph_source->morph_plan(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
   connect (instrument_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_instrument_changed()));
 }
 

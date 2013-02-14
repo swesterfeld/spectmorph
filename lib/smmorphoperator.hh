@@ -21,14 +21,17 @@
 #include "smoutfile.hh"
 #include "sminfile.hh"
 
+#include <QObject>
+
 namespace SpectMorph
 {
 
 class MorphOperatorView;
 class MorphPlan;
 
-class MorphOperator
+class MorphOperator : public QObject
 {
+  Q_OBJECT
 protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;

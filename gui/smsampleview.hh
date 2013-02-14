@@ -18,15 +18,14 @@
 #ifndef SPECTMORPH_SAMPLE_VIEW_HH
 #define SPECTMORPH_SAMPLE_VIEW_HH
 
-#include <gtkmm.h>
-
 #include "smaudio.hh"
 #include <bse/bseblockutils.hh>
 
 namespace SpectMorph {
 
-class SampleView : public Gtk::DrawingArea
+class SampleView // : public Gtk::DrawingArea
 {
+#if 0
 public:
   enum EditMarkerType {
     MARKER_NONE,
@@ -63,9 +62,9 @@ private:
 public:
   SampleView();
 
-  sigc::signal<void, int, int> signal_resized;
-  sigc::signal<void>           signal_audio_edit;
-  sigc::signal<void, int>      signal_mouse_time_changed;
+  //sigc::signal<void, int, int> signal_resized;
+  //sigc::signal<void>           signal_audio_edit;
+  //sigc::signal<void, int>      signal_mouse_time_changed;
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
 
@@ -112,6 +111,7 @@ public:
         x++;
       }
   }
+#endif
 };
 
 }

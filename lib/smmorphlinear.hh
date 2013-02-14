@@ -27,6 +27,7 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
+  Q_OBJECT
 public:
   enum ControlType {
     CONTROL_GUI      = 1,
@@ -77,6 +78,7 @@ public:
   bool use_lpc();
   void set_use_lpc (bool new_use_lpc);
 
+public slots:
   void on_operator_removed (MorphOperator *op);
 };
 

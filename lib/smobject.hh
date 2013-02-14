@@ -20,10 +20,12 @@
 
 #include <birnet/birnet.hh>
 
+#include <QObject>
+
 namespace SpectMorph
 {
 
-class Object
+class Object : public QObject
 {
   Birnet::Mutex object_mutex;
   unsigned int  object_ref_count;
