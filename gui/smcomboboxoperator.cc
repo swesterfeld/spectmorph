@@ -43,6 +43,7 @@ ComboBoxOperator::ComboBoxOperator (MorphPlan *morph_plan, OperatorFilter *opera
   on_operators_changed();
 
   connect (combo_box, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combobox_changed()));
+  connect (morph_plan, SIGNAL (plan_changed()), this, SLOT (on_operators_changed()));
 }
 
 void

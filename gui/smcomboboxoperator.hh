@@ -43,10 +43,9 @@ protected:
   QComboBox      *combo_box;
   bool            block_changed;
 
-  void on_operators_changed();
-
 protected slots:
   void on_combobox_changed();
+  void on_operators_changed();
 
 signals:
   void active_changed();
