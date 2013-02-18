@@ -1,12 +1,12 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 $(SSE_FLAGS) $(SIGCXX_CFLAGS)
+AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -O3 $(SSE_FLAGS) $(QT_CFLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
 SMRESVALUE = $(top_builddir)/tests/smresvalue.sh
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QT_LIBS)
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py
 CLEANFILES += sin440-4567.wav
