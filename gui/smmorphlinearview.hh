@@ -22,13 +22,29 @@
 #include "smmorphlinear.hh"
 #include "smcomboboxoperator.hh"
 
+#include <QLabel>
+
 namespace SpectMorph
 {
 
 class MorphLinearView : public MorphOperatorView
 {
+  Q_OBJECT
+protected:
+  MorphLinear                     *morph_linear;
+
+  OperatorFilter                  *operator_filter;
+  OperatorFilter                  *control_operator_filter;
+  QLabel                          *morphing_label;
+
+  ComboBoxOperator                *control_combobox;
+
 public:
   MorphLinearView (MorphLinear *op, MorphPlanWindow *morph_plan_window);
+
+public slots:
+  void on_morphing_changed (int new_value);
+  void on_control_changed();
 };
 
 #if 0

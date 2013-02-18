@@ -43,6 +43,8 @@ protected:
   QComboBox      *combo_box;
   bool            block_changed;
 
+  std::vector<std::string> str_choices;
+
 protected slots:
   void on_combobox_changed();
   void on_operators_changed();
@@ -55,6 +57,8 @@ public:
 
   void set_active (MorphOperator *new_op);
   MorphOperator *active();
+
+  void add_str_choice (const std::string& str);
 };
 
 #if 0

@@ -17,17 +17,156 @@
 
 #include "smmorphlinearview.hh"
 #include "smmorphplan.hh"
+#include "smcomboboxoperator.hh"
 #include <birnet/birnet.hh>
+
+#include <QLabel>
+#include <QCheckBox>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
-MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
-  MorphOperatorView (morph_linear, morph_plan_window)
+namespace {
+
+struct MyOperatorFilter : public OperatorFilter
 {
+  MorphOperator *my_op;
+  MorphOperator::OutputType type;
+
+  MyOperatorFilter (MorphOperator *my_op, MorphOperator::OutputType type) :
+    my_op (my_op),
+    type (type)
+  {
+    //
+  }
+  bool filter (MorphOperator *op)
+  {
+    return ((op != my_op) && op->output_type() == type);
+  }
+};
+
 }
+
+#define CONTROL_TEXT_GUI "Gui Slider"
+#define CONTROL_TEXT_1   "Control Signal #1"
+#define CONTROL_TEXT_2   "Control Signal #2"
+
+MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
+  MorphOperatorView (morph_linear, morph_plan_window),
+  morph_linear (morph_linear),
+  operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_AUDIO)),
+  control_operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_CONTROL))
+{
+  QGridLayout *grid_layout = new QGridLayout();
+
+  // LEFT SOURCE
+  grid_layout->addWidget (new QLabel ("Left Source"), 0, 0);
+
+  ComboBoxOperator *left_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  grid_layout->addWidget (left_combobox, 0, 1, 1, 2);
+
+  // RIGHT SOURCE
+  grid_layout->addWidget (new QLabel ("Right Source"), 1, 0);
+  ComboBoxOperator *right_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  grid_layout->addWidget (right_combobox, 1, 1, 1, 2);
+
+  // CONTROL INPUT
+  grid_layout->addWidget (new QLabel ("Control Input"), 2, 0);
+
+  control_combobox = new ComboBoxOperator (morph_linear->morph_plan(), control_operator_filter);
+  control_combobox->add_str_choice (CONTROL_TEXT_GUI);
+  control_combobox->add_str_choice (CONTROL_TEXT_1);
+  control_combobox->add_str_choice (CONTROL_TEXT_2);
+  grid_layout->addWidget (control_combobox, 2, 1, 1, 2);
+
+  connect (control_combobox, SIGNAL (active_changed()), this, SLOT (on_control_changed()));
+
+#if 0
+  if (morph_linear->control_type() == MorphLinear::CONTROL_GUI) /* restore value */
+    control_combobox->set_active_str_choice (CONTROL_TEXT_GUI);
+  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_1)
+    control_combobox->set_active_str_choice (CONTROL_TEXT_1);
+  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_2)
+    control_combobox->set_active_str_choice (CONTROL_TEXT_2);
+#endif
+  if (morph_linear->control_type() == MorphLinear::CONTROL_OP)
+    control_combobox->set_active (morph_linear->control_op());
+#if 0
+  else
+    {
+      assert (false);
+    }
+#endif
+  // MORPHING
+  grid_layout->addWidget (new QLabel ("Morphing"), 3, 0);
+
+  QSlider *morphing_slider = new QSlider (Qt::Horizontal);
+  morphing_slider->setRange (-100, 100);
+
+  connect (morphing_slider, SIGNAL (valueChanged(int)), this, SLOT (on_morphing_changed(int)));
+  grid_layout->addWidget (morphing_slider, 3, 1);
+
+  morphing_label = new QLabel();
+  grid_layout->addWidget (morphing_label, 3, 2);
+
+  int morphing_slider_value = lrint (morph_linear->morphing() * 100); /* restore value from operator */
+  morphing_slider->setValue (morphing_slider_value);
+  on_morphing_changed (morphing_slider_value);
+
+  // FLAG: DB LINEAR
+  QCheckBox *db_linear_box = new QCheckBox ("dB Linear Morphing");
+  db_linear_box->setChecked (morph_linear->db_linear());
+  grid_layout->addWidget (db_linear_box, 4, 0, 1, 3);
+
+  // FLAG: USE LPC
+  QCheckBox *use_lpc_box = new QCheckBox ("Use LPC Envelope");
+  use_lpc_box->setChecked (morph_linear->use_lpc());
+  grid_layout->addWidget (use_lpc_box, 5, 0, 1, 3);
+
+  frame_group_box->setLayout (grid_layout);
+}
+
+void
+MorphLinearView::on_morphing_changed (int new_value)
+{
+  double dvalue = new_value * 0.01;
+  morphing_label->setText (Birnet::string_printf ("%.2f", dvalue).c_str());
+  morph_linear->set_morphing (dvalue);
+}
+
+void
+MorphLinearView::on_control_changed()
+{
+  MorphOperator *op = control_combobox->active();
+  if (op)
+    {
+      morph_linear->set_control_op (op);
+      morph_linear->set_control_type (MorphLinear::CONTROL_OP);
+    }
+  else
+    {
+#if 0
+      string text = control_combobox.active_str_choice();
+
+      if (text == CONTROL_TEXT_GUI)
+        morph_linear->set_control_type (MorphLinear::CONTROL_GUI);
+      else if (text == CONTROL_TEXT_1)
+        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_1);
+      else if (text == CONTROL_TEXT_2)
+        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
+      else
+        {
+          assert (false);
+        }
+#endif
+    }
+#if 0
+  update_slider();
+#endif
+}
+
 
 #if 0
 namespace {

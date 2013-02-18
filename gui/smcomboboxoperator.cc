@@ -55,6 +55,14 @@ ComboBoxOperator::on_operators_changed()
 
   combo_box->addItem (OPERATOR_TEXT_NONE);
 
+  for (vector<string>::const_iterator si = str_choices.begin(); si != str_choices.end(); si++)
+    {
+      combo_box->addItem (si->c_str());
+
+      // if (*si == str_choice)
+      //  set_active_text (*si);
+    }
+
   const vector<MorphOperator *>& ops = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
@@ -112,6 +120,14 @@ MorphOperator *
 ComboBoxOperator::active()
 {
   return op;
+}
+
+void
+ComboBoxOperator::add_str_choice (const string& str)
+{
+  str_choices.push_back (str);
+
+  on_operators_changed();
 }
 
 #if 0
