@@ -23,6 +23,8 @@
 #include "smcomboboxoperator.hh"
 
 #include <QLabel>
+#include <QSlider>
+#include <QStackedWidget>
 
 namespace SpectMorph
 {
@@ -36,8 +38,12 @@ protected:
   OperatorFilter                  *operator_filter;
   OperatorFilter                  *control_operator_filter;
   QLabel                          *morphing_label;
+  QSlider                         *morphing_slider;
+  QStackedWidget                  *morphing_stack;
 
   ComboBoxOperator                *control_combobox;
+
+  void update_slider();
 
 public:
   MorphLinearView (MorphLinear *op, MorphPlanWindow *morph_plan_window);

@@ -39,9 +39,11 @@ protected:
   MorphPlan      *morph_plan;
   OperatorFilter *op_filter;
   MorphOperator  *op;
+  std::string     str_choice;
 
   QComboBox      *combo_box;
   bool            block_changed;
+  bool            none_ok;
 
   std::vector<std::string> str_choices;
 
@@ -59,6 +61,11 @@ public:
   MorphOperator *active();
 
   void add_str_choice (const std::string& str);
+
+  std::string    active_str_choice();
+  void           set_active_str_choice (const std::string& str);
+
+  void           set_none_ok (bool none_ok);
 };
 
 #if 0
