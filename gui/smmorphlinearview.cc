@@ -64,13 +64,17 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   // LEFT SOURCE
   grid_layout->addWidget (new QLabel ("Left Source"), 0, 0);
 
-  ComboBoxOperator *left_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  left_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  left_combobox->set_active (morph_linear->left_op());
   grid_layout->addWidget (left_combobox, 0, 1);
+  connect (left_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
 
   // RIGHT SOURCE
   grid_layout->addWidget (new QLabel ("Right Source"), 1, 0);
-  ComboBoxOperator *right_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  right_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  right_combobox->set_active (morph_linear->right_op());
   grid_layout->addWidget (right_combobox, 1, 1);
+  connect (right_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
 
   // CONTROL INPUT
   grid_layout->addWidget (new QLabel ("Control Input"), 2, 0);
@@ -127,11 +131,13 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   QCheckBox *db_linear_box = new QCheckBox ("dB Linear Morphing");
   db_linear_box->setChecked (morph_linear->db_linear());
   grid_layout->addWidget (db_linear_box, 4, 0, 1, 2);
+  connect (db_linear_box, SIGNAL (toggled (bool)), this, SLOT (on_db_linear_changed (bool)));
 
   // FLAG: USE LPC
   QCheckBox *use_lpc_box = new QCheckBox ("Use LPC Envelope");
   use_lpc_box->setChecked (morph_linear->use_lpc());
   grid_layout->addWidget (use_lpc_box, 5, 0, 1, 2);
+  connect (use_lpc_box, SIGNAL (toggled (bool)), this, SLOT (on_use_lpc_changed (bool)));
 
   update_slider();
 
@@ -185,6 +191,26 @@ MorphLinearView::update_slider()
       morphing_stack->setCurrentIndex (1);
     }
 }
+
+void
+MorphLinearView::on_operator_changed()
+{
+  morph_linear->set_left_op (left_combobox->active());
+  morph_linear->set_right_op (right_combobox->active());
+}
+
+void
+MorphLinearView::on_db_linear_changed (bool new_value)
+{
+  morph_linear->set_db_linear (new_value);
+}
+
+void
+MorphLinearView::on_use_lpc_changed (bool new_value)
+{
+  morph_linear->set_use_lpc (new_value);
+}
+
 
 #if 0
 namespace {

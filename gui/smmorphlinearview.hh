@@ -41,6 +41,8 @@ protected:
   QSlider                         *morphing_slider;
   QStackedWidget                  *morphing_stack;
 
+  ComboBoxOperator                *left_combobox;
+  ComboBoxOperator                *right_combobox;
   ComboBoxOperator                *control_combobox;
 
   void update_slider();
@@ -51,6 +53,9 @@ public:
 public slots:
   void on_morphing_changed (int new_value);
   void on_control_changed();
+  void on_operator_changed();
+  void on_db_linear_changed (bool new_value);
+  void on_use_lpc_changed (bool new_value);
 };
 
 #if 0
