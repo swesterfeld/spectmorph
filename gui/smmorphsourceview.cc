@@ -35,7 +35,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
 
   QHBoxLayout *hbox = new QHBoxLayout();
   hbox->addWidget (instrument_label);
-  hbox->addWidget (instrument_combobox);
+  hbox->addWidget (instrument_combobox, 1);
 
   frame_group_box->setLayout (hbox);
 
