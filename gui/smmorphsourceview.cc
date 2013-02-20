@@ -37,7 +37,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
   hbox->addWidget (instrument_label);
   hbox->addWidget (instrument_combobox, 1);
 
-  frame_group_box->setLayout (hbox);
+  setLayout (hbox);
 
   on_index_changed();
   connect (morph_source->morph_plan(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));

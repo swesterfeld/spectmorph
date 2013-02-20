@@ -30,11 +30,6 @@ using std::string;
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :
   m_op (op)
 {
-  QVBoxLayout *layout = new QVBoxLayout (this);
-  frame_group_box = new QGroupBox (this);
-  layout->addWidget (frame_group_box);
-  setLayout (layout);
-
   QAction *action;
   context_menu = new QMenu ("Operator Context Menu", this);
   action = context_menu->addAction ("Rename");
@@ -53,7 +48,7 @@ MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
 
-  frame_group_box->setTitle (title.c_str());
+  setTitle (title.c_str());
 }
 
 void
@@ -63,6 +58,12 @@ MorphOperatorView::contextMenuEvent (QContextMenuEvent *event)
   context_menu->exec (event->globalPos());
   if (remove)
     m_op->morph_plan()->remove (m_op);
+}
+
+void
+MorphOperatorView::mousePressEvent (QMouseEvent * event)
+{
+  printf ("mouse press event\n");
 }
 
 void
