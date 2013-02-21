@@ -48,10 +48,19 @@ MorphPlanView::on_plan_changed()
   old_structure_version = morph_plan->structure_version();
 
   for (vector<MorphOperatorView *>::const_iterator ovi = m_op_views.begin(); ovi != m_op_views.end(); ovi++)
-    {
-      delete *ovi;
-    }
+    delete *ovi;
   m_op_views.clear();
+
+  for (vector<MoveIndicator *>::const_iterator mi = move_indicators.begin(); mi != move_indicators.end(); mi++)
+    delete *mi;
+  move_indicators.clear();
+
+  // first move indicator
+  {
+    MoveIndicator *indicator = new MoveIndicator();
+    vbox->addWidget (indicator);
+    move_indicators.push_back (indicator);
+  }
 
   const vector<MorphOperator *>& operators = morph_plan->operators();
   for (vector<MorphOperator *>::const_iterator oi = operators.begin(); oi != operators.end(); oi++)
@@ -59,7 +68,40 @@ MorphPlanView::on_plan_changed()
       MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
       vbox->addWidget (op_view);
       m_op_views.push_back (op_view);
+
+      connect (op_view, SIGNAL (move_indication (MorphOperator *)), this, SLOT (on_move_indication (MorphOperator *)));
+
+      MoveIndicator *indicator = new MoveIndicator();
+      vbox->addWidget (indicator);
+
+      move_indicators.push_back (indicator);
     }
+}
+
+const vector<MorphOperatorView *>&
+MorphPlanView::op_views()
+{
+  return m_op_views;
+}
+
+void
+MorphPlanView::on_move_indication (MorphOperator *op)
+{
+  g_return_if_fail (m_op_views.size() + 1 == move_indicators.size());
+  g_return_if_fail (!move_indicators.empty());
+
+  size_t active_i = move_indicators.size() - 1;  // op == NULL -> last move indicator
+  if (op)
+    {
+      for (size_t i = 0; i < m_op_views.size(); i++)
+        {
+          if (m_op_views[i]->op() == op)
+            active_i = i;
+        }
+    }
+
+  for (size_t i = 0; i < move_indicators.size(); i++)
+    move_indicators[i]->set_active (i == active_i);
 }
 
 #if 0

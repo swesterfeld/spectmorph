@@ -41,13 +41,14 @@ class MorphPlanWindow : public QMainWindow
 {
   Q_OBJECT
 
-  MorphPlanPtr  m_morph_plan;
+  MorphPlanPtr   m_morph_plan;
+  MorphPlanView *morph_plan_view;
 
   void add_op_action (QMenu *menu, const char *title, const char *type);
 public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
-  MorphOperator *where (MorphOperator *op, double x, double y) { /* FIXME */ return NULL; }
+  MorphOperator *where (MorphOperator *op, const QPoint& pos);
 
 public slots:
   void on_file_import_clicked();

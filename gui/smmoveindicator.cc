@@ -19,13 +19,15 @@
 
 #include <assert.h>
 
+#include <QPainter>
+
 using namespace SpectMorph;
 
-#if 0
 MoveIndicator::MoveIndicator()
 {
-  set_size_request (-1, 5);
   m_active = false;
+  setMinimumSize (QSize (0, 10));
+  setMaximumSize (QSize (QWIDGETSIZE_MAX, 10));
 }
 
 
@@ -33,34 +35,15 @@ void
 MoveIndicator::set_active (bool active)
 {
   m_active = active;
-
-  force_redraw();
+  update();
 }
 
 void
-MoveIndicator::force_redraw()
+MoveIndicator::paintEvent (QPaintEvent * /* event */)
 {
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
+  if (m_active)
     {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
+      QPainter painter (this);
+      painter.fillRect (rect(), QColor (0, 0, 200));
     }
 }
-
-
-bool
-MoveIndicator::on_expose_event (GdkEventExpose *event)
-{
-  Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window && m_active)
-    {
-      Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
-      cr->rectangle (event->area.x, event->area.y, event->area.width, event->area.height);
-      cr->clip();
-      cr->set_source_rgb (0, 0, 0.7);
-      cr->paint();
-    }
-  return true;
-}
-#endif

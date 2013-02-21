@@ -73,7 +73,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   add_op_action (add_op_menu, "LFO", "SpectMorph::MorphLFO");
 
   /* central widget */
-  MorphPlanView *morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
+  morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
   setCentralWidget (morph_plan_view);
 }
 
@@ -152,6 +152,37 @@ MorphPlanWindow::on_add_operator()
 
   m_morph_plan->add_operator (op);
 }
+
+MorphOperator *
+MorphPlanWindow::where (MorphOperator *op, const QPoint& pos)
+{
+  vector<int> start_position;
+  int end_y = 0;
+
+  MorphOperator *result = NULL;
+
+  const vector<MorphOperatorView *> op_views = morph_plan_view->op_views();
+  if (!op_views.empty())
+    result = op_views[0]->op();
+
+  for (vector<MorphOperatorView *>::const_iterator vi = op_views.begin(); vi != op_views.end(); vi++)
+    {
+      MorphOperatorView *view = *vi;
+
+      QPoint view_pos = view->mapToGlobal (QPoint (0, 0));
+
+      if (view_pos.y() < pos.y())
+        result = view->op();
+
+      end_y = view_pos.y() + view->height();
+    }
+
+  if (pos.y() > end_y)  // below last operator?
+    return NULL;
+  else
+    return result;
+}
+
 
 #if 0
 void

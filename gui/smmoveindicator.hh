@@ -18,23 +18,21 @@
 #ifndef SPECTMORPH_MOVE_INDICATOR_HH
 #define SPECTMORPH_MOVE_INDICATOR_HH
 
+#include <QWidget>
+
 namespace SpectMorph
 {
 
-class MoveIndicator // : public Gtk::DrawingArea
+class MoveIndicator : public QWidget
 {
-#if 0
 protected:
   bool m_active;
-
-  void force_redraw();
 
 public:
   MoveIndicator();
 
+  void paintEvent (QPaintEvent *event);
   void set_active (bool active);
-  bool on_expose_event (GdkEventExpose *event);
-#endif
 };
 
 }

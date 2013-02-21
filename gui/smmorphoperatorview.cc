@@ -28,7 +28,9 @@ using namespace SpectMorph;
 using std::string;
 
 MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window) :
-  m_op (op)
+  m_op (op),
+  morph_plan_window (morph_plan_window),
+  in_move (false)
 {
   QAction *action;
   context_menu = new QMenu ("Operator Context Menu", this);
@@ -61,9 +63,38 @@ MorphOperatorView::contextMenuEvent (QContextMenuEvent *event)
 }
 
 void
-MorphOperatorView::mousePressEvent (QMouseEvent * event)
+MorphOperatorView::mousePressEvent (QMouseEvent *event)
 {
-  printf ("mouse press event\n");
+  if (event->button() == Qt::LeftButton)
+    {
+      in_move = true;
+      setCursor (Qt::SizeAllCursor);
+    }
+}
+
+void
+MorphOperatorView::mouseMoveEvent (QMouseEvent *event)
+{
+  if (in_move)
+    {
+      MorphOperator *op_next = morph_plan_window->where (m_op, event->globalPos());
+
+      emit move_indication (op_next);
+    }
+}
+
+void
+MorphOperatorView::mouseReleaseEvent (QMouseEvent *event)
+{
+  if (event->button() == Qt::LeftButton)
+    {
+      MorphOperator *op_next = morph_plan_window->where (m_op, event->globalPos());
+      in_move = false;
+      unsetCursor();
+
+      // DELETION can occur here
+      m_op->morph_plan()->move (m_op, op_next);
+    }
 }
 
 void
@@ -148,13 +179,13 @@ MorphOperatorView::on_operators_changed()
   frame.set_label (m_op->type_name() + ": " + m_op->name());
 }
 
+#endif
+
 MorphOperator *
 MorphOperatorView::op()
 {
   return m_op;
 }
-
-#endif
 
 #include "smmorphsourceview.hh"
 #include "smmorphoutputview.hh"
