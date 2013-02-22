@@ -46,6 +46,12 @@ MainWindow::MainWindow() :
   samples = NULL;
 
   QVBoxLayout *vbox = new QVBoxLayout();
+
+  sample_view = new SampleView();
+  scroll_area = new QScrollArea();
+  scroll_area->setWidget (sample_view);
+  vbox->addWidget (scroll_area);
+
   QHBoxLayout *button_hbox = new QHBoxLayout();
   sample_combobox = new QComboBox();
 

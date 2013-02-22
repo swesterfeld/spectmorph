@@ -21,10 +21,13 @@
 #include "smaudio.hh"
 #include <bse/bseblockutils.hh>
 
+#include <QWidget>
+
 namespace SpectMorph {
 
-class SampleView // : public Gtk::DrawingArea
+class SampleView : public QWidget
 {
+  Q_OBJECT
 public:
   enum EditMarkerType {
     MARKER_NONE,
@@ -43,6 +46,9 @@ public:
     virtual void            set_position (size_t marker, float new_position) = 0;
     virtual void            clear (size_t marker) = 0;
   };
+
+  SampleView();
+  void paintEvent (QPaintEvent *event);
 
 #if 0
 private:

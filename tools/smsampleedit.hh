@@ -28,6 +28,7 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QScrollArea>
 
 namespace SpectMorph
 {
@@ -35,7 +36,6 @@ namespace SpectMorph
 class SampleEditMarkers : public SampleView::Markers
 {
 public:
-
   std::vector<float> positions;
   std::vector<bool>  m_valid;
 
@@ -125,30 +125,23 @@ class MainWindow : public QWidget
 {
   Q_OBJECT
 #if 0
-  Gtk::ScrolledWindow scrolled_win;
   Gtk::HBox           button_hbox;
   Gtk::VBox           vbox;
 
   Gtk::HBox           volume_hbox;
   Gtk::Label          volume_label;
 
-  SampleView          sample_view;
   Audio               audio;
   ZoomController      zoom_controller;
-  Gtk::Button         play_button;
-  Gtk::Button         save_button;
-  Gtk::ToggleButton   edit_clip_start;
-  Gtk::ToggleButton   edit_clip_end;
-  Gtk::Label          time_label;
   bool                in_update_buttons;
   Wave               *current_wave;
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 #endif
 
   SimpleJackPlayer    jack_player;
 
   bool                in_update_buttons;
+  SampleView         *sample_view;
+  QScrollArea        *scroll_area;
   QLabel             *time_label;
   QComboBox          *sample_combobox;
   QSlider            *volume_slider;

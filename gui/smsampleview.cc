@@ -18,6 +18,8 @@
 #include "smsampleview.hh"
 #include <bse/bseloader.h>
 
+#include <QPainter>
+
 using namespace SpectMorph;
 
 using std::vector;
@@ -25,6 +27,18 @@ using std::min;
 using std::max;
 
 #define HZOOM_SCALE 0.05
+
+SampleView::SampleView()
+{
+  setMinimumSize (100, 100); /* FIXME */
+}
+
+void
+SampleView::paintEvent (QPaintEvent * /* event */)
+{
+  QPainter painter (this);
+  painter.fillRect (rect(), QColor (255, 255, 255));
+}
 
 #if 0
 SampleView::SampleView() :
