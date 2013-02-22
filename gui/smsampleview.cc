@@ -35,8 +35,7 @@ SampleView::SampleView()
   attack_end = 0;
   hzoom = 1;
   vzoom = 1;
-  setMinimumSize (300, 400);
-  //update_size();
+  update_size();
 }
 
 void
@@ -134,8 +133,10 @@ void
 SampleView::update_size()
 {
   int new_width = HZOOM_SCALE * signal.size() * hzoom;
+
   setMinimumSize (new_width, 0);
   setMaximumSize (new_width, QWIDGETSIZE_MAX);
+
   // PORT signal_resized (old_width, new_width);
 }
 

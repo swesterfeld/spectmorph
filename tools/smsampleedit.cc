@@ -49,6 +49,7 @@ MainWindow::MainWindow() :
 
   sample_view = new SampleView();
   scroll_area = new QScrollArea();
+  scroll_area->setWidgetResizable (true);
   scroll_area->setWidget (sample_view);
   vbox->addWidget (scroll_area);
 
