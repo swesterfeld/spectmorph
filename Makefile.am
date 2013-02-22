@@ -3,7 +3,7 @@ include $(top_srcdir)/Makefile.decl
 AUTOMAKE_OPTIONS = 1.9 dist-bzip2 no-dist-gzip
 ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 
-SUBDIRS = lib gui jack src python tests docs # tools beast inspector
+SUBDIRS = lib gui jack src tools python tests docs # beast inspector
 EXTRA_DIST += TODO
 
 # === Release auxillary rule configuration ===

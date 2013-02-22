@@ -25,7 +25,6 @@ namespace SpectMorph {
 
 class SampleView // : public Gtk::DrawingArea
 {
-#if 0
 public:
   enum EditMarkerType {
     MARKER_NONE,
@@ -45,6 +44,7 @@ public:
     virtual void            clear (size_t marker) = 0;
   };
 
+#if 0
 private:
   Audio   *audio;
   Markers *markers;

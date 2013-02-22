@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
+AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
@@ -37,7 +37,7 @@ tld_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smenccache_SOURCES = smenccache.cc
 smenccache_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
-smsampleedit_SOURCES = smsampleedit.cc
+smsampleedit_SOURCES = smsampleedit.cc moc_smsampleedit.cc
 smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
 
@@ -47,3 +47,6 @@ smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
 
 install-exec-hook:
 	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder
+
+moc_smsampleedit.cc: smsampleedit.hh
+	moc smsampleedit.hh > moc_smsampleedit.cc

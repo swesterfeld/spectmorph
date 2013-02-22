@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
 #include <bse/gsldatautils.h>
@@ -31,9 +30,8 @@
 #include "smmain.hh"
 #include "smsampleview.hh"
 #include "smzoomcontroller.hh"
-#include "smsimplejackplayer.hh"
-#include "smwavloader.hh"
 #include "smmicroconf.hh"
+#include "smsampleedit.hh"
 
 using namespace SpectMorph;
 
@@ -42,143 +40,44 @@ using std::vector;
 
 GslDataHandle* dhandle_from_file (const string& filename);
 
-class SampleEditMarkers : public SampleView::Markers
+MainWindow::MainWindow() :
+  jack_player ("smsampleedit")
 {
-public:
-  vector<float> positions;
-  vector<bool>  m_valid;
+  samples = NULL;
 
-  SampleEditMarkers() :
-    positions (2),
-    m_valid (positions.size())
-  {
-  }
-  size_t
-  count()
-  {
-    return positions.size();
-  }
-  bool
-  valid (size_t m)
-  {
-    return m_valid[m];
-  }
-  float
-  position (size_t m)
-  {
-    g_return_val_if_fail (m >= 0 && m < positions.size(), 0.0);
+  QVBoxLayout *vbox = new QVBoxLayout();
+  QHBoxLayout *button_hbox = new QHBoxLayout();
+  sample_combobox = new QComboBox();
 
-    return positions[m];
-  }
-  void
-  set_position (size_t m, float new_pos)
-  {
-    g_return_if_fail (m >= 0 && m < positions.size());
+  time_label = new QLabel();
+  volume_label = new QLabel();
+  QPushButton *play_button = new QPushButton ("Play");
+  QPushButton *save_button = new QPushButton ("Save");
 
-    positions[m] = new_pos;
-    m_valid[m] = true;
-  }
-  SampleView::EditMarkerType
-  type (size_t m)
-  {
-    if (m == 0)
-      return SampleView::MARKER_CLIP_START;
-    else if (m == 1)
-      return SampleView::MARKER_CLIP_END;
-    else
-      return SampleView::MARKER_NONE;
-  }
-  void
-  clear (size_t m)
-  {
-    g_return_if_fail (m >= 0 && m < positions.size());
+  volume_slider = new QSlider (Qt::Horizontal, this);
+  volume_slider->setRange (-96000, 24000);
+  connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
 
-    m_valid[m] = false;
-  }
-  float
-  clip_start (bool& v)
-  {
-    v = m_valid[0];
-    return positions[0];
-  }
-  float
-  clip_end (bool& v)
-  {
-    v = m_valid[1];
-    return positions[1];
-  }
-  void
-  set_clip_start (float pos)
-  {
-    m_valid[0] = true;
-    positions[0] = pos;
-  }
-  void
-  set_clip_end (float pos)
-  {
-    m_valid[1] = true;
-    positions[1] = pos;
-  }
-};
+  edit_clip_start = new QPushButton ("Edit Clip Start");
+  edit_clip_end = new QPushButton ("Edit Clip End");
+  edit_clip_start->setCheckable (true);
+  edit_clip_end->setCheckable (true);
 
-namespace {
-struct Wave
-{
-  string              path;
-  string              label;
-  int                 midi_note;
-  SampleEditMarkers   markers;
-};
+  button_hbox->addWidget (time_label);
+  button_hbox->addWidget (sample_combobox);
+  button_hbox->addWidget (play_button);
+  button_hbox->addWidget (save_button);
+  button_hbox->addWidget (new QLabel ("Volume"));
+  button_hbox->addWidget (volume_slider);
+  button_hbox->addWidget (volume_label);
+  button_hbox->addWidget (edit_clip_start);
+  button_hbox->addWidget (edit_clip_end);
+
+  vbox->addLayout (button_hbox);
+  setLayout (vbox);
 }
 
-class MainWindow : public Gtk::Window
-{
-  Gtk::ScrolledWindow scrolled_win;
-  Gtk::HBox           button_hbox;
-  Gtk::VBox           vbox;
-
-  Gtk::HBox           volume_hbox;
-  Gtk::Label          volume_label;
-  Gtk::HScale         volume_scale;
-  Gtk::Label          volume_value_label;
-
-  SampleView          sample_view;
-  Audio               audio;
-  ZoomController      zoom_controller;
-  Gtk::Button         play_button;
-  Gtk::Button         save_button;
-  Gtk::ToggleButton   edit_clip_start;
-  Gtk::ToggleButton   edit_clip_end;
-  Gtk::Label          time_label;
-  bool                in_update_buttons;
-  SimpleJackPlayer    jack_player;
-  WavLoader          *samples;
-  Gtk::ComboBoxText   sample_combobox;
-  vector<Wave>        waves;
-  Wave               *current_wave;
-  string              marker_filename;
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
-
-  vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
-public:
-  MainWindow();
-  ~MainWindow();
-
-  void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
-  void on_play_clicked();
-  void on_save_clicked();
-  void on_zoom_changed();
-  void on_next_sample();
-  void on_combo_changed();
-  void on_mouse_time_changed (int time);
-  void on_volume_changed();
-
-  void load (const string& filename, const string& clip_markers);
-  void clip (const string& export_pattern);
-  void on_resized (int old_width, int new_width);
-};
-
+#if 0
 MainWindow::MainWindow() :
   volume_scale (-96, 20, 0.01),
   zoom_controller (1, 5000, 10, 5000),
@@ -263,6 +162,7 @@ MainWindow::MainWindow() :
   add (vbox);
   show_all_children();
 }
+#endif
 
 MainWindow::~MainWindow()
 {
@@ -273,6 +173,7 @@ MainWindow::~MainWindow()
     }
 }
 
+#if 0
 void
 MainWindow::on_next_sample()
 {
@@ -295,16 +196,19 @@ MainWindow::on_next_sample()
     }
   sample_combobox.set_active_text (wi->label);
 }
+#endif
 
 void
-MainWindow::on_volume_changed()
+MainWindow::on_volume_changed (int new_volume_int)
 {
-  double new_decoder_volume = bse_db_to_factor (volume_scale.get_value());
-  volume_value_label.set_text (Birnet::string_printf ("%.1f dB", volume_scale.get_value()));
+  double new_volume = new_volume_int / 1000.0;
+  double new_decoder_volume = bse_db_to_factor (new_volume);
+  volume_label->setText (Birnet::string_printf ("%.1f dB", new_volume).c_str());
 
   jack_player.set_volume (new_decoder_volume);
 }
 
+#if 0
 void
 MainWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
 {
@@ -335,7 +239,7 @@ MainWindow::on_resized (int old_width, int new_width)
       hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
     }
 }
-
+#endif
 
 void
 MainWindow::load (const string& filename, const string& clip_markers)
@@ -348,7 +252,7 @@ MainWindow::load (const string& filename, const string& clip_markers)
       wave.path = wset.waves[i].path;
       wave.midi_note = wset.waves[i].midi_note;
       wave.label = Birnet::string_printf ("%s (note %d)", wset.waves[i].path.c_str(), wset.waves[i].midi_note);
-      sample_combobox.append_text (wave.label);
+      sample_combobox->addItem (wave.label.c_str());
       waves.push_back (wave);
     }
   printf ("loaded %zd waves.\n", wset.waves.size());
@@ -444,6 +348,7 @@ MainWindow::clip (const string& export_pattern)
     }
 }
 
+#if 0
 void
 MainWindow::on_combo_changed()
 {
@@ -503,6 +408,7 @@ MainWindow::on_mouse_time_changed (int time)
   int m = time;
   time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
 }
+#endif
 
 vector<float>
 MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
@@ -542,6 +448,7 @@ MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
   return result;
 }
 
+#if 0
 void
 MainWindow::on_play_clicked()
 {
@@ -579,6 +486,7 @@ MainWindow::on_save_clicked()
     }
   fclose (file);
 }
+#endif
 
 GslDataHandle*
 dhandle_from_file (const string& filename)
@@ -614,7 +522,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  Gtk::Main kit (argc, argv);
+  QApplication app (argc, argv);
 
   enum { EDIT, CLIP } mode;
   string wav_set, clip_markers, export_pattern;
@@ -640,13 +548,12 @@ main (int argc, char **argv)
     }
 
   MainWindow main_window;
+  main_window.show();
   main_window.load (wav_set, clip_markers);
   if (mode == CLIP)
     {
       main_window.clip (export_pattern);
       return 0;
     }
-  Gtk::Main::run (main_window);
-
-  return 0;
+  return app.exec();
 }
