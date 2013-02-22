@@ -73,9 +73,9 @@ main (int argc, char **argv)
 
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-#if 0
   if (argc == 2 && string (argv[1]) == "zoom")
     {
+#if 0
       const unsigned int runs = 1000;
 
       PixelArray image;
@@ -94,6 +94,7 @@ main (int argc, char **argv)
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
       printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
+#endif
     }
   else if (argc == 2 && string (argv[1]) == "sample")
     {
@@ -104,22 +105,25 @@ main (int argc, char **argv)
       int width = 1000;
       int height = 1000;
 
+#if 0
       GdkEventExpose ev;
       ev.area.x = 0;
       ev.area.width = width;
+#endif
       const double vz = height / 2;
       const double hz = double (width) / signal.size();
 
       const unsigned int runs = 100;
       double start = gettime();
       for (unsigned int i = 0; i < runs; i++)
-        SampleView::draw_signal (signal, &dops, &ev, height, vz, hz);
+        SampleView::draw_signal (signal, &dops, /* &ev, */ height, vz, hz);
       double end = gettime();
 
       printf ("draw_signal: %f clocks/value\n", clocks_per_sec * (end - start) / (signal.size()) / runs);
     }
   else if (argc == 3 && string (argv[1]) == "cwt")
     {
+#if 0
       CWT cwt;
       WavLoader *loader = WavLoader::load (argv[2]);
       if (!loader)
@@ -140,13 +144,14 @@ main (int argc, char **argv)
       cwt.make_png (results);
 
       printf ("per sample cost: %f ops\n", (end - start) * clocks_per_sec / (signal.size() * results.size()));
+#endif
     }
   else
     {
       printf ("usage: testinspector zoom\n");
       printf ("or     testinspector cwt <somefile.wav>\n");
+      printf ("or     testinspector sample\n");
       return 1;
     }
-#endif
   return 0;
 }
