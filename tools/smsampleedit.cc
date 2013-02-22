@@ -53,6 +53,10 @@ MainWindow::MainWindow() :
   scroll_area->setWidget (sample_view);
   vbox->addWidget (scroll_area);
 
+  zoom_controller = new ZoomController (1, 5000, 10, 5000),
+  vbox->addWidget (zoom_controller);
+  connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
+
   QHBoxLayout *button_hbox = new QHBoxLayout();
   sample_combobox = new QComboBox();
   connect (sample_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combo_changed()));
@@ -400,13 +404,13 @@ MainWindow::on_combo_changed()
   current_wave = &(*wi);
 }
 
-#if 0
 void
 MainWindow::on_zoom_changed()
 {
-  sample_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  sample_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
+#if 0
 void
 MainWindow::on_mouse_time_changed (int time)
 {

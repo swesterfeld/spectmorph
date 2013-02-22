@@ -18,10 +18,36 @@
 #ifndef SPECTMORPH_ZOOMCONTROLLER_HH
 #define SPECTMORPH_ZOOMCONTROLLER_HH
 
+#include <QWidget>
+#include <QSlider>
+#include <QLabel>
+
 namespace SpectMorph {
 
-class ZoomController //: public Gtk::VBox
+class ZoomController : public QWidget
 {
+  Q_OBJECT
+
+  QSlider *hzoom_slider;
+  QLabel  *hzoom_label;
+  QSlider *vzoom_slider;
+  QLabel  *vzoom_label;
+
+  void init();
+public:
+  ZoomController (double hzoom_max = 1000.0, double vzoom_max = 1000.0);
+  ZoomController (double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max);
+
+  double get_hzoom();
+  double get_vzoom();
+
+public slots:
+  void on_hzoom_changed();
+  void on_vzoom_changed();
+
+signals:
+  void zoom_changed();
+
 #if 0
   Gtk::Adjustment     hzoom_adjustment;
   Gtk::HScale         hzoom_scale;

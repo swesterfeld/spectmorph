@@ -21,6 +21,7 @@
 #include "smsimplejackplayer.hh"
 #include "smsampleview.hh"
 #include "smwavloader.hh"
+#include "smzoomcontroller.hh"
 
 #include <QWidget>
 #include <QApplication>
@@ -131,7 +132,6 @@ class MainWindow : public QWidget
   Gtk::HBox           volume_hbox;
   Gtk::Label          volume_label;
 
-  ZoomController      zoom_controller;
   bool                in_update_buttons;
 #endif
   Audio               audio;
@@ -142,6 +142,7 @@ class MainWindow : public QWidget
   bool                in_update_buttons;
   SampleView         *sample_view;
   QScrollArea        *scroll_area;
+  ZoomController     *zoom_controller;
   QLabel             *time_label;
   QComboBox          *sample_combobox;
   QSlider            *volume_slider;
@@ -161,7 +162,6 @@ public:
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_play_clicked();
   void on_save_clicked();
-  void on_zoom_changed();
   void on_next_sample();
   void on_combo_changed();
   void on_mouse_time_changed (int time);
@@ -176,6 +176,7 @@ public:
 public slots:
   void on_volume_changed (int new_volume);
   void on_combo_changed();
+  void on_zoom_changed();
 };
 
 }

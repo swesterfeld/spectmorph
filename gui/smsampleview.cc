@@ -140,6 +140,16 @@ SampleView::update_size()
   // PORT signal_resized (old_width, new_width);
 }
 
+void
+SampleView::set_zoom (double new_hzoom, double new_vzoom)
+{
+  hzoom = new_hzoom;
+  vzoom = new_vzoom;
+
+  update_size();
+  update();
+}
+
 #if 0
 SampleView::SampleView() :
   audio (NULL),
