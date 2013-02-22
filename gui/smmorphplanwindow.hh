@@ -57,38 +57,6 @@ public slots:
   void on_add_operator();
 };
 
-#if 0
-class MorphPlanWindow : public Gtk::Window
-{
-  Gtk::VBox     window_vbox;
-  Gtk::VBox     plan_vbox;
-  MorphPlanPtr  m_morph_plan;
-  MorphPlanView morph_plan_view;
-
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
-
-  Gtk::Menu                      *popup_menu;
-  MorphOperator                  *popup_op;
-public:
-  MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
-
-  MorphPlanPtr morph_plan();
-
-  void on_load_index_clicked();
-  void on_file_import_clicked();
-  void on_file_export_clicked();
-
-  void on_context_rename();
-  void on_context_remove();
-
-  MorphOperator *where (MorphOperator *op, double x, double y);
-
-  void show_popup (GdkEventButton *event, MorphOperator *op);
-  void add_operator (const std::string& type);
-};
-#endif
-
 }
 
 #endif

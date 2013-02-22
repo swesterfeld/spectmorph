@@ -51,26 +51,6 @@ public slots:
   void on_move_indication (MorphOperator *op);
 };
 
-#if 0
-class MorphPlanView : public Gtk::VBox
-{
-  MorphPlan                    *morph_plan;
-  int                           old_structure_version;
-  MorphPlanWindow              *morph_plan_window;
-
-  std::vector<MorphOperatorView *> m_op_views;
-  std::vector<MoveIndicator *>  move_indicators;
-
-public:
-  MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
-
-  const std::vector<MorphOperatorView *>& op_views();
-
-  void on_plan_changed();
-  void on_move_indication (MorphOperator *op);
-};
-#endif
-
 }
 
 #endif

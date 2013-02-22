@@ -47,34 +47,6 @@ public slots:
   void on_operator_changed();
 };
 
-#if 0
-class MorphOutputView : public MorphOperatorView
-{
-  struct ChannelView {
-    ChannelView (MorphPlan *plan, OperatorFilter *of) :
-      combobox (plan, of)
-    {
-    }
-    Gtk::Label        label;
-    ComboBoxOperator  combobox;
-  };
-
-  Gtk::Table                  channel_table;
-  Gtk::CheckButton            sines_check_button;
-  Gtk::CheckButton            noise_check_button;
-  std::vector<ChannelView *>  channels;
-  MorphOutput                *morph_output;
-
-public:
-  MorphOutputView (MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
-  ~MorphOutputView();
-
-  void on_operator_changed();
-  void on_sines_changed();
-  void on_noise_changed();
-};
-#endif
-
 }
 
 #endif

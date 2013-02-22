@@ -57,35 +57,6 @@ signals:
   void move_indication (MorphOperator *op);
 };
 
-#if 0
-class MorphOperatorView : public Gtk::EventBox
-{
-protected:
-  bool              in_move;
-
-  Gtk::VBox         vbox;
-  Gtk::Frame        frame;
-  MorphPlanWindow  *morph_plan_window;
-  MorphOperator    *m_op;
-
-  Gdk::Cursor    move_cursor;
-
-  void on_operators_changed();
-public:
-  MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window);
-
-  MorphOperator *op();
-
-  bool on_button_press_event (GdkEventButton *event);
-  bool on_motion_notify_event (GdkEventMotion *event);
-  bool on_button_release_event (GdkEventButton *event);
-
-  sigc::signal<void, MorphOperator *> signal_move_indication;
-
-  static MorphOperatorView *create (MorphOperator *op, MorphPlanWindow *window);
-};
-#endif
-
 }
 
 #endif

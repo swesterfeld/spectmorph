@@ -28,26 +28,6 @@ namespace SpectMorph
 
 class RenameOperatorDialog : public QDialog
 {
-#if 0
-protected:
-  Gtk::Label old_label;
-  Gtk::Label old_name_label;
-  Gtk::Label new_label;
-  Gtk::Entry new_name_entry;
-  Gtk::Table table;
-
-  Gtk::Button *ok_button;
-
-  MorphOperator *op;
-
-  void on_name_changed();
-  void on_activate();
-
-public:
-  RenameOperatorDialog (MorphOperator *op);
-
-  std::string new_name();
-#endif
   Q_OBJECT
 
   MorphOperator *op;

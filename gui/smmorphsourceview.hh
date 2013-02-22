@@ -41,22 +41,6 @@ public slots:
   void on_instrument_changed();
 };
 
-#if 0
-class MorphSourceView : public MorphOperatorView
-{
-  Gtk::HBox         instrument_hbox;
-  Gtk::Label        instrument_label;
-  Gtk::ComboBoxText instrument_combobox;
-  MorphSource      *morph_source;
-
-public:
-  MorphSourceView (MorphSource *morph_source, MorphPlanWindow *morph_plan_window);
-
-  void on_index_changed();
-  void on_instrument_changed();
-};
-#endif
-
 }
 
 #endif

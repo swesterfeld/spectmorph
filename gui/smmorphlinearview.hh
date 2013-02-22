@@ -58,44 +58,6 @@ public slots:
   void on_use_lpc_changed (bool new_value);
 };
 
-#if 0
-class MorphLinearView : public MorphOperatorView
-{
-protected:
-  MorphLinear                     *morph_linear;
-  Gtk::Table                       table;
-
-  Gtk::Label                       hscale_label;
-  Gtk::HScale                      hscale;
-
-  OperatorFilter                  *operator_filter;
-  OperatorFilter                  *control_operator_filter;
-
-  Gtk::Label                       left_label;
-  ComboBoxOperator                 left_combobox;
-
-  Gtk::Label                       right_label;
-  ComboBoxOperator                 right_combobox;
-
-  Gtk::Label                       control_label;
-  ComboBoxOperator                 control_combobox;
-
-  Gtk::CheckButton                 db_linear_check_button;
-  Gtk::CheckButton                 use_lpc_check_button;
-
-  void on_operator_changed();
-  void on_morphing_changed();
-  void on_control_changed();
-  void on_db_linear_changed();
-  void on_use_lpc_changed();
-
-  void update_slider();
-public:
-  MorphLinearView (MorphLinear *op, MorphPlanWindow *morph_plan_window);
-  ~MorphLinearView();
-};
-#endif
-
 }
 
 #endif
