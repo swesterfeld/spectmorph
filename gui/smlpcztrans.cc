@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <bse/bsemathsignal.h>
 #include <complex>
 #include <vector>
@@ -26,6 +25,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::complex;
 
+#if 0
 GdkPixbuf *
 SpectMorph::lpc_z_transform (const LPCZFunction& zfunc, const vector< complex<double> >& roots)
 {
@@ -78,4 +78,4 @@ SpectMorph::lpc_z_transform (const vector<double>& a, const vector< complex<doub
 {
   return lpc_z_transform (LPCZFunctionLPC (a), roots);
 }
-
+#endif

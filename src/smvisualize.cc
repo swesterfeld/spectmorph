@@ -15,10 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <bse/bse.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
 #include "smaudio.hh"
@@ -74,6 +74,7 @@ main (int argc, char **argv)
   const double mix_freq = audio.mix_freq;
   const uint64 block_size = audio.contents[0].original_fft.size() - 2;
 
+#if 0
   GdkPixbuf *pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, /* has_alpha */ false, 8,
                       audio.contents.size() * 2 + BORDER_PIXELS * 2, (block_size + 2) / 2);
 
@@ -155,4 +156,5 @@ main (int argc, char **argv)
 
   GError *error = 0;
   gdk_pixbuf_save (pixbuf, argv[2], "png", &error, "compression", "0", NULL);
+#endif
 }

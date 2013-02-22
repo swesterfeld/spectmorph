@@ -15,11 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtkmm.h>
-
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
+#if 0
 int velocity = 100;
 
 class MainWindow : public Gtk::Window
@@ -92,9 +91,12 @@ jack_process (jack_nframes_t nframes, void *)
   return 0;
 }
 
+#endif
+
 int
 main (int argc, char **argv)
 {
+#if 0
   Gtk::Main kit (argc, argv);
 
   jack_client_t *client;
@@ -114,4 +116,5 @@ main (int argc, char **argv)
   MainWindow window;
 
   Gtk::Main::run (window);
+#endif
 }

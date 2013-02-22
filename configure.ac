@@ -45,32 +45,6 @@ AC_DEFUN([AC_BSE_REQUIREMENTS],
     AC_SUBST(BSE_VERSION)
 ])
 dnl
-dnl libgtk
-dnl
-AC_DEFUN([AC_GTK_REQUIREMENTS],
-[
-    PKG_CHECK_MODULES(GTK, [gtk+-2.0 gdk-pixbuf-2.0],[:],[
-      AC_MSG_ERROR([You need to install libgtk-2.0 and libgdk-pixbuf-2.0 to build this package.
-
-Debian users: aptitude install libgtk2.0-dev libgdk-pixbuf2.0-dev
-])
-    ])
-    AC_SUBST(GTK_CFLAGS)
-    AC_SUBST(GTK_LIBS)
-])
-dnl
-dnl libgtkmm
-dnl
-AC_DEFUN([AC_GTKMM_REQUIREMENTS],
-[
-    PKG_CHECK_MODULES(GTKMM, [gtkmm-2.4],[:],[
-      AC_MSG_ERROR([You need to install libgtkmm 2.4 to build this package.
-
-Debian users: aptitude install libgtkmm-2.4-dev
-])
-    ])
-])
-dnl
 dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
@@ -190,8 +164,6 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_GLIB_REQUIREMENTS
 AC_BSE_REQUIREMENTS
 AC_AO_REQUIREMENTS
-AC_GTK_REQUIREMENTS
-AC_GTKMM_REQUIREMENTS
 AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
 AC_MAN_REQUIREMENTS
