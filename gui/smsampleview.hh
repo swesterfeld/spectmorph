@@ -28,6 +28,7 @@ namespace SpectMorph {
 class SampleView : public QWidget
 {
   Q_OBJECT
+
 public:
   enum EditMarkerType {
     MARKER_NONE,
@@ -47,7 +48,20 @@ public:
     virtual void            clear (size_t marker) = 0;
   };
 
+private:
+  std::vector<float> signal;
+  Audio             *audio;
+  Markers           *markers;
+  double             attack_start;
+  double             attack_end;
+  double             hzoom;
+  double             vzoom;
+
+  void               update_size();
+
+public:
   SampleView();
+  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
   void paintEvent (QPaintEvent *event);
 
   template<class DrawOps> static void
@@ -87,13 +101,8 @@ public:
   }
 #if 0
 private:
-  Audio   *audio;
-  Markers *markers;
-  std::vector<float> signal;
   double hzoom;
   double vzoom;
-  double attack_start;
-  double attack_end;
   EditMarkerType m_edit_marker_type;
   bool   button_1_pressed;
 

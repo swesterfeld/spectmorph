@@ -54,6 +54,7 @@ MainWindow::MainWindow() :
 
   QHBoxLayout *button_hbox = new QHBoxLayout();
   sample_combobox = new QComboBox();
+  connect (sample_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combo_changed()));
 
   time_label = new QLabel();
   volume_label = new QLabel();
@@ -311,6 +312,7 @@ MainWindow::load (const string& filename, const string& clip_markers)
             }
         }
     }
+  on_combo_changed();
 }
 
 static void
@@ -354,7 +356,6 @@ MainWindow::clip (const string& export_pattern)
     }
 }
 
-#if 0
 void
 MainWindow::on_combo_changed()
 {
@@ -363,7 +364,7 @@ MainWindow::on_combo_changed()
       delete samples;
       samples = NULL;
     }
-  string label = sample_combobox.get_active_text().c_str();
+  string label = sample_combobox->currentText().toLatin1().data();
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
     {
@@ -392,12 +393,13 @@ MainWindow::on_combo_changed()
   gsl_data_handle_open (dhandle);
   audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
   audio.fundamental_freq = 440; /* doesn't matter */
-  sample_view.load (dhandle, &audio, &wi->markers);
+  sample_view->load (dhandle, &audio, &wi->markers);
   gsl_data_handle_close (dhandle);
 
   current_wave = &(*wi);
 }
 
+#if 0
 void
 MainWindow::on_zoom_changed()
 {

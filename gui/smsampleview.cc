@@ -17,6 +17,7 @@
 
 #include "smsampleview.hh"
 #include <bse/bseloader.h>
+#include <stdio.h>
 
 #include <QPainter>
 
@@ -30,14 +31,112 @@ using std::max;
 
 SampleView::SampleView()
 {
-  setMinimumSize (100, 100); /* FIXME */
+  attack_start = 0;
+  attack_end = 0;
+  hzoom = 1;
+  vzoom = 1;
+  setMinimumSize (300, 400);
+  //update_size();
 }
 
 void
 SampleView::paintEvent (QPaintEvent * /* event */)
 {
+  const int width = this->width();
+  const int height = this->height();
+
   QPainter painter (this);
   painter.fillRect (rect(), QColor (255, 255, 255));
+
+  painter.setPen (QColor (200, 0, 0));
+  double hz = HZOOM_SCALE * hzoom;
+  double vz = (height / 2) * vzoom;
+  {
+    int x = 0;
+    int last_i0 = -1;
+    int last_x = 0;
+    double last_value = 0;
+    while (x < width)
+      {
+        int i0 = x / hz;
+        int i1 = (x + 1) / hz + 1;
+
+        if (last_i0 != i0)
+          {
+            if (i0 < int (signal.size()) && i0 >= 0 && i1 < int (signal.size() + 1) && i1 > 0)
+              {
+                painter.drawLine (last_x, (height / 2) + last_value * vz, x, (height / 2) + signal[i0] * vz);
+
+                float min_value, max_value;
+                Bse::Block::range (i1 - i0, &signal[i0], min_value, max_value);
+
+                painter.drawLine (x, (height / 2) + min_value * vz, x, (height / 2) + max_value * vz);
+
+                last_x = x;
+                last_value = signal[i1 - 1];
+              }
+            last_i0 = i0;
+          }
+        x++;
+      }
+  }
+  // black line @ zero:
+  painter.setPen (QColor (0, 0, 0));
+  painter.drawLine (0, (height / 2), width, height / 2);
+}
+
+void
+SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers)
+{
+  this->audio = audio;
+  this->markers = markers;
+
+  signal.clear();
+  attack_start = 0;
+  attack_end = 0;
+
+  if (!dhandle) // no sample selected
+    {
+      update_size();
+      update();
+      return;
+    }
+
+  BseErrorType error = gsl_data_handle_open (dhandle);
+  if (error)
+    {
+      fprintf (stderr, "SampleView: can't open the input data handle: %s\n", bse_error_blurb (error));
+      exit (1);
+    }
+
+  vector<float> block (1024);
+  const uint64 n_values = gsl_data_handle_length (dhandle);
+  uint64 pos = 0;
+  while (pos < n_values)
+    {
+      /* read data from file */
+      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
+
+      for (uint64 t = 0; t < r; t++)
+        signal.push_back (block[t]);
+      pos += r;
+    }
+  gsl_data_handle_close (dhandle);
+
+  attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+  attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+
+  update_size();
+  update();
+}
+
+void
+SampleView::update_size()
+{
+  int new_width = HZOOM_SCALE * signal.size() * hzoom;
+  setMinimumSize (new_width, 0);
+  setMaximumSize (new_width, QWIDGETSIZE_MAX);
+  // PORT signal_resized (old_width, new_width);
 }
 
 #if 0

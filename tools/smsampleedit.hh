@@ -131,11 +131,11 @@ class MainWindow : public QWidget
   Gtk::HBox           volume_hbox;
   Gtk::Label          volume_label;
 
-  Audio               audio;
   ZoomController      zoom_controller;
   bool                in_update_buttons;
-  Wave               *current_wave;
 #endif
+  Audio               audio;
+  Wave               *current_wave;
 
   SimpleJackPlayer    jack_player;
 
@@ -175,6 +175,7 @@ public:
 #endif
 public slots:
   void on_volume_changed (int new_volume);
+  void on_combo_changed();
 };
 
 }
