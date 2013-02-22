@@ -28,6 +28,7 @@ using std::string;
 using std::vector;
 using std::max;
 
+#if 0
 namespace {
 struct Options {
   string program_name;
@@ -371,3 +372,4 @@ TimeFreqView::position_frac()
 {
   return position / double (image.get_width());
 }
+#endif

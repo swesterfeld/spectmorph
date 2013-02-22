@@ -19,8 +19,6 @@
 #ifndef SPECTMORPH_SPECTRUMWINDOW_HH
 #define SPECTMORPH_SPECTRUMWINDOW_HH
 
-#include <gtkmm.h>
-
 #include "smspectrumview.hh"
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
@@ -28,8 +26,9 @@
 namespace SpectMorph {
 
 class Navigator;
-class SpectrumWindow : public Gtk::Window
+class SpectrumWindow : public QWidget
 {
+#if 0 /* PORT */
   Gtk::ScrolledWindow scrolled_win;
   SpectrumView        spectrum_view;
   Gtk::VBox           vbox;
@@ -40,6 +39,7 @@ public:
 
   void set_spectrum_model (TimeFreqView& time_freq_view);
   void on_zoom_changed();
+#endif
 };
 
 }

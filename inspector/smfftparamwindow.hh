@@ -19,16 +19,15 @@
 #ifndef SPECTMORPH_FFTPARAMWINDOW_HH
 #define SPECTMORPH_FFTPARAMWINDOW_HH
 
-#include <gtkmm.h>
-
 #include "smspectrumview.hh"
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
 namespace SpectMorph {
 
-class FFTParamWindow : public Gtk::Window
+class FFTParamWindow : public QWidget
 {
+#if 0
   Gtk::Table          table;
 
   Gtk::ComboBoxText   transform_combobox;
@@ -76,6 +75,7 @@ public:
   AnalysisParams get_analysis_params();
 
   sigc::signal<void> signal_params_changed;
+#endif
 };
 
 }

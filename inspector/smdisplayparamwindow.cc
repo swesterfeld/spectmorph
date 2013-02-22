@@ -21,6 +21,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 DisplayParamWindow::DisplayParamWindow()
 {
   set_border_width (10);
@@ -56,3 +57,4 @@ DisplayParamWindow::show_lpc()
 {
   return show_lpc_button.get_active();
 }
+#endif

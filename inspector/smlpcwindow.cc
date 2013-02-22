@@ -19,6 +19,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 LPCWindow::LPCWindow()
 {
   set_border_width (10);
@@ -41,3 +42,4 @@ LPCWindow::set_lpc_model (TimeFreqView& time_freq_view)
 {
   lpc_view.set_lpc_model (time_freq_view);
 }
+#endif

@@ -18,8 +18,6 @@
 #ifndef SPECTMORPH_NAVIGATOR_HH
 #define SPECTMORPH_NAVIGATOR_HH
 
-#include <gtkmm.h>
-
 #include "smwavset.hh"
 #include "smtimefreqwindow.hh"
 #include "smplayerwindow.hh"
@@ -28,8 +26,9 @@
 
 namespace SpectMorph {
 
-class Navigator : public Gtk::Window
+class Navigator : public QWidget
 {
+#if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 
@@ -116,6 +115,7 @@ public:
 
   FFTParamWindow     *fft_param_window();
   DisplayParamWindow *display_param_window();
+#endif
 };
 
 }

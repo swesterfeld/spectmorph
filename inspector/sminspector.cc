@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
 
@@ -32,6 +31,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+#if 0
   Gtk::Main kit (argc, argv);
 
   if (argc != 2)
@@ -43,4 +43,5 @@ main (int argc, char **argv)
   Navigator window (argv[1]);
 
   Gtk::Main::run (window);
+#endif
 }

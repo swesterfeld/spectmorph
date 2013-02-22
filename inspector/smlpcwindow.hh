@@ -19,16 +19,15 @@
 #ifndef SPECTMORPH_LPC_WINDOW_HH
 #define SPECTMORPH_LPC_WINDOW_HH
 
-#include <gtkmm.h>
-
 #include "smlpcview.hh"
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
 namespace SpectMorph {
 
-class LPCWindow : public Gtk::Window
+class LPCWindow : public QWidget
 {
+#if 0
   Gtk::ScrolledWindow scrolled_win;
   LPCView             lpc_view;
   Gtk::VBox           vbox;
@@ -38,6 +37,7 @@ public:
   LPCWindow();
 
   void set_lpc_model (TimeFreqView& time_freq_view);
+#endif
 };
 
 }

@@ -18,16 +18,18 @@
 #ifndef SPECTMORPH_TIMEFREQVIEW_HH
 #define SPECTMORPH_TIMEFREQVIEW_HH
 
-#include <gtkmm.h>
 #include <bse/bseloader.h>
 #include "smpixelarray.hh"
 #include "smaudio.hh"
 #include "smfftthread.hh"
 
+#include <QWidget>
+
 namespace SpectMorph {
 
-class TimeFreqView : public Gtk::DrawingArea
+class TimeFreqView : public QWidget
 {
+#if 0 /* PORT */
 protected:
   PixelArray  image;
   Audio      *m_audio;
@@ -75,6 +77,7 @@ public:
   double mix_freq();
   Audio *audio();
   double position_frac();
+#endif
 };
 
 }

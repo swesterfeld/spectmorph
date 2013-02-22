@@ -29,6 +29,7 @@ using namespace SpectMorph;
 using std::vector;
 using Birnet::AutoLocker;
 
+#if 0
 PlayerWindow::PlayerWindow (Navigator *navigator) :
   navigator (navigator),
   volume_scale (-96, 24, 0.01),
@@ -92,3 +93,4 @@ PlayerWindow::on_volume_changed()
 
   jack_player.set_volume (new_decoder_volume);
 }
+#endif

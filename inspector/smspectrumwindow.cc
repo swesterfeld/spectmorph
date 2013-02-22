@@ -20,6 +20,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 SpectrumWindow::SpectrumWindow (Navigator *navigator) :
   spectrum_view (navigator),
   zoom_controller (5000, 1000)
@@ -51,3 +52,4 @@ SpectrumWindow::on_zoom_changed()
 {
   spectrum_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
 }
+#endif

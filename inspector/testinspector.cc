@@ -15,9 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
+#include <stdio.h>
 
 #include <vector>
 #include <string>
@@ -71,10 +71,9 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  Gtk::Main kit (argc, argv);
-
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
+#if 0
   if (argc == 2 && string (argv[1]) == "zoom")
     {
       const unsigned int runs = 1000;
@@ -148,6 +147,6 @@ main (int argc, char **argv)
       printf ("or     testinspector cwt <somefile.wav>\n");
       return 1;
     }
-
+#endif
   return 0;
 }

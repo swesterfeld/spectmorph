@@ -18,7 +18,8 @@
 #ifndef SPECTMORPH_PIXELARRAY_HH
 #define SPECTMORPH_PIXELARRAY_HH
 
-#include <gtkmm.h>
+#include <vector>
+#include <sys/types.h>
 
 namespace SpectMorph {
 

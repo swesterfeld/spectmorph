@@ -17,7 +17,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <bse/bse.h>
 #include <bse/bsemathsignal.h>
 #include <sys/types.h>
@@ -35,6 +34,7 @@
 #include "smfftthread.hh"
 #include <math.h>
 
+#if 0
 using std::vector;
 using std::max;
 using std::complex;
@@ -280,3 +280,4 @@ CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThr
     }
   return results;
 }
+#endif

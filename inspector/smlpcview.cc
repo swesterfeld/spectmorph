@@ -24,6 +24,7 @@ using std::vector;
 using std::complex;
 using std::max;
 
+#if 0
 LPCView::LPCView()
 {
   time_freq_view_ptr = NULL;
@@ -149,3 +150,4 @@ LPCView::force_redraw()
       win->invalidate_rect (r, false);
     }
 }
+#endif

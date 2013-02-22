@@ -18,8 +18,6 @@
 #ifndef SPECTMORPH_TIME_FREQ_WINDOW_HH
 #define SPECTMORPH_TIME_FREQ_WINDOW_HH
 
-#include <gtkmm.h>
-
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 #include "smspectrumwindow.hh"
@@ -29,8 +27,9 @@
 namespace SpectMorph {
 
 class Navigator;
-class TimeFreqWindow : public Gtk::Window
+class TimeFreqWindow : public QWidget
 {
+#if 0
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        m_time_freq_view;
   ZoomController      zoom_controller;
@@ -64,6 +63,7 @@ public:
   void on_resized (int old_width, int old_height, int new_width, int new_height);
 
   TimeFreqView *time_freq_view();
+#endif
 };
 
 }

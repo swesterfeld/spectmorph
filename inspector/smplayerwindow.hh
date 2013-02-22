@@ -18,7 +18,6 @@
 #ifndef SPECTMORPH_PLAYER_WINDOW_HH
 #define SPECTMORPH_PLAYER_WINDOW_HH
 
-#include <gtkmm.h>
 #include <jack/jack.h>
 
 #include "smsimplejackplayer.hh"
@@ -26,8 +25,9 @@
 namespace SpectMorph {
 
 class Navigator;
-class PlayerWindow : public Gtk::Window
+class PlayerWindow : public QWidget
 {
+#if 0
   Navigator          *navigator;
 
   Gtk::Button         play_button;
@@ -49,6 +49,7 @@ public:
   void on_play_clicked();
   void on_stop_clicked();
   void on_volume_changed();
+#endif
 };
 
 }

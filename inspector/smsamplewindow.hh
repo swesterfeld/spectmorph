@@ -18,7 +18,6 @@
 #ifndef SPECTMORPH_SAMPLE_WINDOW_HH
 #define SPECTMORPH_SAMPLE_WINDOW_HH
 
-#include <gtkmm.h>
 #include "smsampleview.hh"
 #include "smzoomcontroller.hh"
 #include "smwavset.hh"
@@ -26,8 +25,9 @@
 namespace SpectMorph {
 
 class Navigator;
-class SampleWindow : public Gtk::Window
+class SampleWindow : public QWidget
 {
+#if 0
   Navigator          *navigator;
 
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
@@ -61,6 +61,7 @@ public:
   void on_mouse_time_changed (int time);
 
   sigc::signal<void> signal_next_sample;
+#endif
 };
 
 }

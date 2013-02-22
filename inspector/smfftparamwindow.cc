@@ -21,6 +21,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 #define TEXT_FFT "Fourier Transform"
 #define TEXT_CWT "Wavelet Transform"
 #define TEXT_LPC "LPC Transform"
@@ -174,3 +175,4 @@ FFTParamWindow::set_progress (double progress)
 {
   progress_bar.set_fraction (progress);
 }
+#endif

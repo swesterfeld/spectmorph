@@ -24,6 +24,7 @@ using std::string;
 
 using namespace SpectMorph;
 
+#if 0
 TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   zoom_controller (5000, 10000),
   position_adjustment (0.0, 0.0, 1.0, 0.01, 1.0, 0.0),
@@ -147,3 +148,4 @@ TimeFreqWindow::time_freq_view()
 {
   return &m_time_freq_view;
 }
+#endif

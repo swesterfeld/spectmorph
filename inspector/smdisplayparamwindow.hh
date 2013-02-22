@@ -19,16 +19,15 @@
 #ifndef SPECTMORPH_DISPLAY_PARAMWINDOW_HH
 #define SPECTMORPH_DISPLAY_PARAMWINDOW_HH
 
-#include <gtkmm.h>
-
 #include "smspectrumview.hh"
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
 namespace SpectMorph {
 
-class DisplayParamWindow : public Gtk::Window
+class DisplayParamWindow : public QWidget
 {
+#if 0
   Gtk::VBox          vbox;
   Gtk::CheckButton   show_lsf_button;
   Gtk::CheckButton   show_lpc_button;
@@ -42,6 +41,7 @@ public:
   bool show_lpc();
 
   sigc::signal<void> signal_params_changed;
+#endif
 };
 
 }

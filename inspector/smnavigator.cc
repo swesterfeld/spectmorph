@@ -29,6 +29,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
+#if 0
 Navigator::Navigator (const string& filename) :
   dhandle (NULL),
   audio (NULL),
@@ -382,3 +383,4 @@ Navigator::on_delete_event (GdkEventAny* event)
     }
   return false;         // -> quit
 }
+#endif

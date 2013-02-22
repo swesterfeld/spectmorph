@@ -34,6 +34,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 
+#if 0
 void
 FFTThread::run()
 {
@@ -498,3 +499,4 @@ FFTThread::command_is_obsolete()
   Birnet::AutoLocker lock (command_mutex);
   return !commands.empty();
 }
+#endif

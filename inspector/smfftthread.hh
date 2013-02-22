@@ -31,6 +31,7 @@ namespace SpectMorph
 
 class FFTThread
 {
+#if 0 /* PORT */
 public:
   struct Command {
     virtual void execute() = 0;
@@ -64,6 +65,7 @@ public:
   static FFTThread *the();
 
   sigc::signal<void> signal_result_available;
+#endif
 };
 
 }

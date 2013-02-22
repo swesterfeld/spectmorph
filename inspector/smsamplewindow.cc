@@ -22,6 +22,7 @@
 
 using namespace SpectMorph;
 
+#if 0
 #define LOOP_NONE_TEXT              "No loop"
 #define LOOP_FRAME_FORWARD_TEXT     "Frame loop forward"
 #define LOOP_FRAME_PING_PONG_TEXT   "Frame loop ping-pong"
@@ -220,3 +221,4 @@ SampleWindow::on_mouse_time_changed (int time)
   int m = time;
   time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
 }
+#endif

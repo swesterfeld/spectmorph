@@ -24,6 +24,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 
+#if 0
 SpectrumView::SpectrumView (Navigator *navigator) :
   navigator (navigator)
 {
@@ -198,3 +199,4 @@ SpectrumView::on_display_params_changed()
 {
   force_redraw();
 }
+#endif

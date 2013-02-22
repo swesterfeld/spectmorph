@@ -20,7 +20,6 @@
 
 #include <vector>
 
-#include <gtkmm.h>        // signal
 #include "smcommon.hh"
 
 namespace SpectMorph {
@@ -34,7 +33,7 @@ public:
   std::vector< std::vector<float> > analyze_slow (const std::vector<float>& signal, FFTThread *fft_thread = 0);
   void make_png (std::vector< std::vector<float> >& results);
 
-  sigc::signal<void, double> signal_progress;
+//  sigc::signal<void, double> signal_progress; PORT
 };
 
 }

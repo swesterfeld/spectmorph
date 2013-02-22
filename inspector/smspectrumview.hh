@@ -18,14 +18,14 @@
 #ifndef SPECTMORPH_SPECTRUMVIEW_HH
 #define SPECTMORPH_SPECTRUMVIEW_HH
 
-#include <gtkmm.h>
 #include "smtimefreqview.hh"
 
 namespace SpectMorph {
 
 class Navigator;
-class SpectrumView : public Gtk::DrawingArea
+class SpectrumView : public QWidget
 {
+#if 0
   TimeFreqView *time_freq_view_ptr;
   Navigator    *navigator;
   FFTResult     spectrum;
@@ -45,6 +45,7 @@ public:
   void on_spectrum_changed();
 
   void set_zoom (double hzoom, double vzoom);
+#endif
 };
 
 }

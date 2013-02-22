@@ -18,13 +18,13 @@
 #ifndef SPECTMORPH_LPC_VIEW_HH
 #define SPECTMORPH_LPC_VIEW_HH
 
-#include <gtkmm.h>
 #include "smtimefreqview.hh"
 
 namespace SpectMorph {
 
-class LPCView : public Gtk::DrawingArea
+class LPCView : public QWidget
 {
+#if 0
   TimeFreqView *time_freq_view_ptr;
   AudioBlock    audio_block;
   double        hzoom;
@@ -41,6 +41,7 @@ public:
   void on_lpc_changed();
 
   void set_zoom (double hzoom, double vzoom);
+#endif
 };
 
 }
