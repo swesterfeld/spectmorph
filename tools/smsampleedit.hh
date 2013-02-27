@@ -30,6 +30,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QScrollArea>
+#include <QMainWindow>
 
 namespace SpectMorph
 {
@@ -122,7 +123,7 @@ struct Wave
   SampleEditMarkers   markers;
 };
 
-class MainWindow : public QWidget
+class MainWidget : public QWidget
 {
   Q_OBJECT
 
@@ -146,12 +147,11 @@ class MainWindow : public QWidget
 
   std::vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
 public:
-  MainWindow();
-  ~MainWindow();
+  MainWidget();
+  ~MainWidget();
 
 #if 0
   void on_save_clicked();
-  void on_next_sample();
 #endif
 
   void load (const std::string& filename, const std::string& clip_markers);
@@ -167,7 +167,22 @@ public slots:
   void on_play_clicked();
   void on_edit_marker_changed();
   void on_mouse_time_changed (int time);
+  void on_next_sample();
 };
+
+class MainWindow : public QMainWindow
+{
+  Q_OBJECT
+
+  MainWidget *main_widget;
+
+public:
+  MainWindow();
+
+  void load (const std::string& filename, const std::string& clip_markers);
+  void clip (const std::string& export_pattern);
+};
+
 
 }
 

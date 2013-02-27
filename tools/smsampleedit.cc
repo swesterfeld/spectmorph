@@ -33,6 +33,10 @@
 #include "smmicroconf.hh"
 #include "smsampleedit.hh"
 
+#include <QAction>
+#include <QMenuBar>
+#include <QMenu>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -40,7 +44,8 @@ using std::vector;
 
 GslDataHandle* dhandle_from_file (const string& filename);
 
-MainWindow::MainWindow() :
+
+MainWidget::MainWidget() :
   jack_player ("smsampleedit")
 {
   samples = NULL;
@@ -98,7 +103,7 @@ MainWindow::MainWindow() :
 }
 
 #if 0
-MainWindow::MainWindow() :
+MainWidget::MainWidget() :
   volume_scale (-96, 20, 0.01),
   zoom_controller (1, 5000, 10, 5000),
   jack_player ("smsampleedit")
@@ -106,7 +111,7 @@ MainWindow::MainWindow() :
   ref_action_group = Gtk::ActionGroup::create();
   ref_action_group->add (Gtk::Action::create ("SampleMenu", "Sample"));
   ref_action_group->add (Gtk::Action::create ("SampleNext", "Next Sample"), Gtk::AccelKey ('n', Gdk::ModifierType (0)),
-                         sigc::mem_fun (*this, &MainWindow::on_next_sample));
+                         sigc::mem_fun (*this, &MainWidget::on_next_sample));
 
   ref_ui_manager = Gtk::UIManager::create();
   ref_ui_manager-> insert_action_group (ref_action_group);
@@ -143,19 +148,19 @@ MainWindow::MainWindow() :
   vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
   vbox.pack_start (button_hbox, Gtk::PACK_SHRINK);
 
-  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWindow::on_zoom_changed));
-  sample_view.signal_mouse_time_changed.connect (sigc::mem_fun (*this, &MainWindow::on_mouse_time_changed));
+  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWidget::on_zoom_changed));
+  sample_view.signal_mouse_time_changed.connect (sigc::mem_fun (*this, &MainWidget::on_mouse_time_changed));
 
-  edit_clip_start.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
+  edit_clip_start.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWidget::on_edit_marker_changed),
                                             SampleView::MARKER_CLIP_START));
-  edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWindow::on_edit_marker_changed),
+  edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWidget::on_edit_marker_changed),
                                           SampleView::MARKER_CLIP_END));
-  play_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_play_clicked));
-  save_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWindow::on_save_clicked));
+  play_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWidget::on_play_clicked));
+  save_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWidget::on_save_clicked));
 
-  sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWindow::on_resized));
+  sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWidget::on_resized));
 
-  sample_combobox.signal_changed().connect (sigc::mem_fun (*this, &MainWindow::on_combo_changed));
+  sample_combobox.signal_changed().connect (sigc::mem_fun (*this, &MainWidget::on_combo_changed));
 
   on_mouse_time_changed (0); // init label
 
@@ -176,7 +181,7 @@ MainWindow::MainWindow() :
   volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
   volume_label.set_label ("Volume");
   volume_scale.set_draw_value (false);
-  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWindow::on_volume_changed));
+  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWidget::on_volume_changed));
   volume_scale.set_value (0);  // calls on_volume_changed()
 
   add (vbox);
@@ -184,7 +189,7 @@ MainWindow::MainWindow() :
 }
 #endif
 
-MainWindow::~MainWindow()
+MainWidget::~MainWidget()
 {
   if (samples)
     {
@@ -193,11 +198,10 @@ MainWindow::~MainWindow()
     }
 }
 
-#if 0
 void
-MainWindow::on_next_sample()
+MainWidget::on_next_sample()
 {
-  string label = sample_combobox.get_active_text().c_str();
+  string label = sample_combobox->currentText().toLatin1().data();
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
     {
@@ -214,12 +218,11 @@ MainWindow::on_next_sample()
       // no next sample
       return;
     }
-  sample_combobox.set_active_text (wi->label);
+  sample_combobox->setCurrentText (wi->label.c_str());
 }
-#endif
 
 void
-MainWindow::on_volume_changed (int new_volume_int)
+MainWidget::on_volume_changed (int new_volume_int)
 {
   double new_volume = new_volume_int / 1000.0;
   double new_decoder_volume = bse_db_to_factor (new_volume);
@@ -229,7 +232,7 @@ MainWindow::on_volume_changed (int new_volume_int)
 }
 
 void
-MainWindow::on_edit_marker_changed()
+MainWidget::on_edit_marker_changed()
 {
   SampleView::EditMarkerType marker_type;
 
@@ -252,7 +255,7 @@ MainWindow::on_edit_marker_changed()
 
 #if 0
 void
-MainWindow::on_resized (int old_width, int new_width)
+MainWidget::on_resized (int old_width, int new_width)
 {
   if (old_width > 0 && new_width > 0)
     {
@@ -267,7 +270,7 @@ MainWindow::on_resized (int old_width, int new_width)
 #endif
 
 void
-MainWindow::load (const string& filename, const string& clip_markers)
+MainWidget::load (const string& filename, const string& clip_markers)
 {
   WavSet wset;
   wset.load (filename);
@@ -360,7 +363,7 @@ dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_c
 
 
 void
-MainWindow::clip (const string& export_pattern)
+MainWidget::clip (const string& export_pattern)
 {
   for (vector<Wave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
     {
@@ -375,7 +378,7 @@ MainWindow::clip (const string& export_pattern)
 }
 
 void
-MainWindow::on_combo_changed()
+MainWidget::on_combo_changed()
 {
   if (samples)
     {
@@ -418,13 +421,13 @@ MainWindow::on_combo_changed()
 }
 
 void
-MainWindow::on_zoom_changed()
+MainWidget::on_zoom_changed()
 {
   sample_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
 void
-MainWindow::on_mouse_time_changed (int time)
+MainWidget::on_mouse_time_changed (int time)
 {
   int ms = time % 1000;
   time /= 1000;
@@ -435,7 +438,7 @@ MainWindow::on_mouse_time_changed (int time)
 }
 
 vector<float>
-MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
+MainWidget::get_clipped_samples (Wave *wave, WavLoader *samples)
 {
   vector<float> result;
 
@@ -473,7 +476,7 @@ MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
 }
 
 void
-MainWindow::on_play_clicked()
+MainWidget::on_play_clicked()
 {
   audio.original_samples = get_clipped_samples (current_wave, samples);
 
@@ -490,7 +493,7 @@ double_to_string (double value)
 }
 
 void
-MainWindow::on_save_clicked()
+MainWidget::on_save_clicked()
 {
   FILE *file = fopen (marker_filename.c_str(), "w");
   g_return_if_fail (file != NULL);
@@ -511,6 +514,36 @@ MainWindow::on_save_clicked()
   fclose (file);
 }
 #endif
+
+MainWindow::MainWindow()
+{
+  main_widget = new MainWidget();
+
+  /* actions ... */
+  QAction *next_action = new QAction ("Next Sample", this);
+  next_action->setShortcut (QString ("n"));
+  connect (next_action, SIGNAL (triggered()), main_widget, SLOT (on_next_sample()));
+
+  /* menus... */
+  QMenuBar *menu_bar = menuBar();
+
+  QMenu *sample_menu = menu_bar->addMenu ("&Sample");
+  sample_menu->addAction (next_action);
+
+  setCentralWidget (main_widget);
+}
+
+void
+MainWindow::load (const string& filename, const string& clip_markers)
+{
+  main_widget->load (filename, clip_markers);
+}
+
+void
+MainWindow::clip (const string& export_pattern)
+{
+  main_widget->clip (export_pattern);
+}
 
 GslDataHandle*
 dhandle_from_file (const string& filename)
