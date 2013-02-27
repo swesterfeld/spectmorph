@@ -139,7 +139,6 @@ class MainWindow : public QWidget
 
   SimpleJackPlayer    jack_player;
 
-  bool                in_update_buttons;
   SampleView         *sample_view;
   QScrollArea        *scroll_area;
   ZoomController     *zoom_controller;
@@ -177,6 +176,7 @@ public slots:
   void on_combo_changed();
   void on_zoom_changed();
   void on_play_clicked();
+  void on_edit_marker_changed();
 };
 
 }

@@ -76,6 +76,8 @@ MainWindow::MainWindow() :
   edit_clip_end = new QPushButton ("Edit Clip End");
   edit_clip_start->setCheckable (true);
   edit_clip_end->setCheckable (true);
+  connect (edit_clip_start, SIGNAL (clicked()), this, SLOT (on_edit_marker_changed()));
+  connect (edit_clip_end, SIGNAL (clicked()), this, SLOT (on_edit_marker_changed()));
 
   button_hbox->addWidget (time_label);
   button_hbox->addWidget (sample_combobox);
@@ -222,24 +224,29 @@ MainWindow::on_volume_changed (int new_volume_int)
   jack_player.set_volume (new_decoder_volume);
 }
 
-#if 0
 void
-MainWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
+MainWindow::on_edit_marker_changed()
 {
-  if (in_update_buttons)
-    return;
+  SampleView::EditMarkerType marker_type;
 
-  if (sample_view.edit_marker_type() == marker_type)  // we're selected already -> turn it off
+  QPushButton *btn = qobject_cast<QPushButton *> (sender());
+  if (btn == edit_clip_start)
+    marker_type = SampleView::MARKER_CLIP_START;
+  else if (btn == edit_clip_end)
+    marker_type = SampleView::MARKER_CLIP_END;
+  else
+    g_assert_not_reached();
+
+  if (sample_view->edit_marker_type() == marker_type)  // we're selected already -> turn it off
     marker_type = SampleView::MARKER_NONE;
 
-  sample_view.set_edit_marker_type (marker_type);
+  sample_view->set_edit_marker_type (marker_type);
 
-  in_update_buttons = true;
-  edit_clip_start.set_active (marker_type == SampleView::MARKER_CLIP_START);
-  edit_clip_end.set_active (marker_type == SampleView::MARKER_CLIP_END);
-  in_update_buttons = false;
+  edit_clip_start->setChecked (marker_type == SampleView::MARKER_CLIP_START);
+  edit_clip_end->setChecked (marker_type == SampleView::MARKER_CLIP_END);
 }
 
+#if 0
 void
 MainWindow::on_resized (int old_width, int new_width)
 {

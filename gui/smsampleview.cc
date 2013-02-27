@@ -35,6 +35,7 @@ SampleView::SampleView()
   attack_end = 0;
   hzoom = 1;
   vzoom = 1;
+  m_edit_marker_type = MARKER_NONE;
   update_size();
 }
 
@@ -79,6 +80,24 @@ SampleView::paintEvent (QPaintEvent * /* event */)
         x++;
       }
   }
+  if (markers)
+    {
+      for (size_t i = 0; i < markers->count(); i++)
+        {
+          if (markers->valid (i))
+            {
+              int marker_pos = markers->position (i) / 1000.0 * audio->mix_freq;
+
+              if (markers->type (i) == m_edit_marker_type)
+                painter.setPen (QColor (0, 0, 200));
+              else
+                painter.setPen (QColor (150, 150, 150));
+
+              painter.drawLine (hz * marker_pos, 0, hz * marker_pos, height);
+            }
+        }
+    }
+
   // black line @ zero:
   painter.setPen (QColor (0, 0, 0));
   painter.drawLine (0, (height / 2), width, height / 2);
@@ -147,6 +166,19 @@ SampleView::set_zoom (double new_hzoom, double new_vzoom)
   vzoom = new_vzoom;
 
   update_size();
+  update();
+}
+
+SampleView::EditMarkerType
+SampleView::edit_marker_type()
+{
+  return m_edit_marker_type;
+}
+
+void
+SampleView::set_edit_marker_type (EditMarkerType marker_type)
+{
+  m_edit_marker_type = marker_type;
   update();
 }
 

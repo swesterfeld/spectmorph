@@ -56,6 +56,7 @@ private:
   double             attack_end;
   double             hzoom;
   double             vzoom;
+  EditMarkerType     m_edit_marker_type;
 
   void               update_size();
 
@@ -64,6 +65,9 @@ public:
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
   void set_zoom (double hzoom, double vzoom);
   void paintEvent (QPaintEvent *event);
+
+  void set_edit_marker_type (EditMarkerType marker_type);
+  EditMarkerType edit_marker_type();
 
   template<class DrawOps> static void
   draw_signal (std::vector<float>& signal, DrawOps ops, /* GdkEventExpose *ev, */ int height, double vz, double hz)
@@ -104,7 +108,6 @@ public:
 private:
   double hzoom;
   double vzoom;
-  EditMarkerType m_edit_marker_type;
   bool   button_1_pressed;
 
   int old_width;
