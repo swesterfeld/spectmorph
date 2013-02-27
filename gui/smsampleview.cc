@@ -20,6 +20,7 @@
 #include <stdio.h>
 
 #include <QPainter>
+#include <QMouseEvent>
 
 using namespace SpectMorph;
 
@@ -36,6 +37,7 @@ SampleView::SampleView()
   hzoom = 1;
   vzoom = 1;
   m_edit_marker_type = MARKER_NONE;
+  button_1_pressed = false;
   update_size();
 }
 
@@ -168,6 +170,78 @@ SampleView::set_zoom (double new_hzoom, double new_vzoom)
   update_size();
   update();
 }
+
+void
+SampleView::mousePressEvent (QMouseEvent *event)
+{
+  if (event->button() == Qt::LeftButton)
+    {
+      button_1_pressed = true;
+      setCursor (Qt::SizeAllCursor);
+
+      move_marker (event->x());
+    }
+}
+
+void
+SampleView::move_marker (int x)
+{
+  if (button_1_pressed && audio)
+    {
+      double hz = HZOOM_SCALE * hzoom;
+      int index = x / hz;
+
+      if (m_edit_marker_type == MARKER_START)
+        {
+          audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
+        }
+      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+        {
+          if (m_edit_marker_type == MARKER_LOOP_START)
+            {
+              audio->loop_start = index / (audio->frame_step_ms / 1000 * audio->mix_freq);
+            }
+          else if (m_edit_marker_type == MARKER_LOOP_END)
+            {
+              audio->loop_end = index / (audio->frame_step_ms / 1000 * audio->mix_freq);
+            }
+        }
+      if (markers)
+        {
+          for (size_t m = 0; m < markers->count(); m++)
+            {
+              if (markers->type (m) == m_edit_marker_type)
+                markers->set_position (m, index / audio->mix_freq * 1000);
+            }
+        }
+      emit audio_edit();
+      update();
+    }
+}
+
+void
+SampleView::mouseMoveEvent (QMouseEvent *event)
+{
+  if (audio)
+    {
+      double hz = HZOOM_SCALE * hzoom;
+      int index = event->x() / hz;
+
+      emit mouse_time_changed (index / audio->mix_freq * 1000);
+    }
+  move_marker (event->x());
+}
+
+void
+SampleView::mouseReleaseEvent (QMouseEvent *event)
+{
+  move_marker (event->x());
+  unsetCursor();
+
+  if (event->button() == Qt::LeftButton)
+    button_1_pressed = false;
+}
+
 
 SampleView::EditMarkerType
 SampleView::edit_marker_type()

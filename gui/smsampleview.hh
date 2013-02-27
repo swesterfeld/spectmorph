@@ -57,8 +57,13 @@ private:
   double             hzoom;
   double             vzoom;
   EditMarkerType     m_edit_marker_type;
+  bool               button_1_pressed;
 
   void               update_size();
+  void               mousePressEvent (QMouseEvent *event);
+  void               move_marker (int x);
+  void               mouseMoveEvent (QMouseEvent *event);
+  void               mouseReleaseEvent (QMouseEvent *event);
 
 public:
   SampleView();
@@ -104,11 +109,14 @@ public:
       }
 #endif
   }
+signals:
+  void audio_edit();
+  void mouse_time_changed (int pos);
+
 #if 0
 private:
   double hzoom;
   double vzoom;
-  bool   button_1_pressed;
 
   int old_width;
   void force_redraw();
