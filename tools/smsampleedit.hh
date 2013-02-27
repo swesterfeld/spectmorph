@@ -125,15 +125,7 @@ struct Wave
 class MainWindow : public QWidget
 {
   Q_OBJECT
-#if 0
-  Gtk::HBox           button_hbox;
-  Gtk::VBox           vbox;
 
-  Gtk::HBox           volume_hbox;
-  Gtk::Label          volume_label;
-
-  bool                in_update_buttons;
-#endif
   Audio               audio;
   Wave               *current_wave;
 
@@ -158,11 +150,8 @@ public:
   ~MainWindow();
 
 #if 0
-  void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_save_clicked();
   void on_next_sample();
-  void on_combo_changed();
-  void on_mouse_time_changed (int time);
 #endif
 
   void load (const std::string& filename, const std::string& clip_markers);
@@ -177,6 +166,7 @@ public slots:
   void on_zoom_changed();
   void on_play_clicked();
   void on_edit_marker_changed();
+  void on_mouse_time_changed (int time);
 };
 
 }

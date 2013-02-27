@@ -39,6 +39,8 @@ SampleView::SampleView()
   m_edit_marker_type = MARKER_NONE;
   button_1_pressed = false;
   update_size();
+
+  setMouseTracking (true);
 }
 
 void
@@ -177,7 +179,8 @@ SampleView::mousePressEvent (QMouseEvent *event)
   if (event->button() == Qt::LeftButton)
     {
       button_1_pressed = true;
-      setCursor (Qt::SizeAllCursor);
+      if (m_edit_marker_type && audio)
+        setCursor (Qt::SizeAllCursor);
 
       move_marker (event->x());
     }

@@ -48,6 +48,7 @@ MainWindow::MainWindow() :
   QVBoxLayout *vbox = new QVBoxLayout();
 
   sample_view = new SampleView();
+
   scroll_area = new QScrollArea();
   scroll_area->setWidgetResizable (true);
   scroll_area->setWidget (sample_view);
@@ -63,6 +64,9 @@ MainWindow::MainWindow() :
 
   time_label = new QLabel();
   volume_label = new QLabel();
+  connect (sample_view, SIGNAL (mouse_time_changed (int)), this, SLOT (on_mouse_time_changed (int)));
+  on_mouse_time_changed (0);
+
   QPushButton *play_button = new QPushButton ("Play");
   QPushButton *save_button = new QPushButton ("Save");
   connect (play_button, SIGNAL (clicked()), this, SLOT (on_play_clicked()));
@@ -419,7 +423,6 @@ MainWindow::on_zoom_changed()
   sample_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
-#if 0
 void
 MainWindow::on_mouse_time_changed (int time)
 {
@@ -428,9 +431,8 @@ MainWindow::on_mouse_time_changed (int time)
   int s = time % 60;
   time /= 60;
   int m = time;
-  time_label.set_label (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms));
+  time_label->setText (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms).c_str());
 }
-#endif
 
 vector<float>
 MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
