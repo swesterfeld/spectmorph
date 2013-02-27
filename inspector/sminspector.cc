@@ -17,12 +17,15 @@
 
 #include <assert.h>
 #include <sys/time.h>
+#include <stdio.h>
 
 #include <vector>
 #include <string>
 
 #include "smmain.hh"
-#include "smnavigator.hh"
+#include "smnavigatorwindow.hh"
+
+#include <QApplication>
 
 using namespace SpectMorph;
 
@@ -31,8 +34,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-#if 0
-  Gtk::Main kit (argc, argv);
+  QApplication app (argc, argv);
 
   if (argc != 2)
     {
@@ -40,8 +42,8 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  Navigator window (argv[1]);
+  NavigatorWindow window (argv[1]);
+  window.show();
 
-  Gtk::Main::run (window);
-#endif
+  return app.exec();
 }

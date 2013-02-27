@@ -24,10 +24,18 @@
 #include "smlpcwindow.hh"
 #include "smdisplayparamwindow.hh"
 
+#include <QComboBox>
+
 namespace SpectMorph {
 
 class Navigator : public QWidget
 {
+private:
+  std::string           smset_dir;
+  QComboBox            *smset_combobox;
+
+public:
+  Navigator (const std::string& filename);
 #if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;

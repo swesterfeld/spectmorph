@@ -24,10 +24,28 @@
 #include <bse/bseloader.h>
 #include <iostream>
 
+#include <QVBoxLayout>
+
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+
+Navigator::Navigator (const string& filename)
+{
+  Index index;
+  index.load_file (filename);
+
+  smset_combobox = new QComboBox();
+
+  smset_dir = index.smset_dir();
+  for (vector<string>::const_iterator ii = index.smsets().begin(); ii != index.smsets().end(); ii++)
+    smset_combobox->addItem (ii->c_str());
+
+  QVBoxLayout *vbox = new QVBoxLayout();
+  vbox->addWidget (smset_combobox);
+  setLayout (vbox);
+}
 
 #if 0
 Navigator::Navigator (const string& filename) :
