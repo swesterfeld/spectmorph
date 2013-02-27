@@ -65,10 +65,12 @@ MainWindow::MainWindow() :
   volume_label = new QLabel();
   QPushButton *play_button = new QPushButton ("Play");
   QPushButton *save_button = new QPushButton ("Save");
+  connect (play_button, SIGNAL (clicked()), this, SLOT (on_play_clicked()));
 
   volume_slider = new QSlider (Qt::Horizontal, this);
   volume_slider->setRange (-96000, 24000);
   connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
+  on_volume_changed (0);
 
   edit_clip_start = new QPushButton ("Edit Clip Start");
   edit_clip_end = new QPushButton ("Edit Clip End");
@@ -461,7 +463,6 @@ MainWindow::get_clipped_samples (Wave *wave, WavLoader *samples)
   return result;
 }
 
-#if 0
 void
 MainWindow::on_play_clicked()
 {
@@ -470,6 +471,7 @@ MainWindow::on_play_clicked()
   jack_player.play (&audio, true);
 }
 
+#if 0
 static string
 double_to_string (double value)
 {

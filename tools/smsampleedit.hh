@@ -160,7 +160,6 @@ public:
 
 #if 0
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
-  void on_play_clicked();
   void on_save_clicked();
   void on_next_sample();
   void on_combo_changed();
@@ -177,6 +176,7 @@ public slots:
   void on_volume_changed (int new_volume);
   void on_combo_changed();
   void on_zoom_changed();
+  void on_play_clicked();
 };
 
 }
