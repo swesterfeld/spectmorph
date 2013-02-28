@@ -16,7 +16,8 @@ SMSRCS = smspectrumview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
          smplayerwindow.cc smlpcwindow.cc smlpcview.cc smdisplayparamwindow.cc smnavigatorwindow.cc \
-         moc_smnavigator.cc
+         smsamplewinview.cc \
+         moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -36,3 +37,9 @@ testinspector_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_smnavigator.cc: smnavigator.hh
 	moc smnavigator.hh > moc_smnavigator.cc
+
+moc_smsamplewinview.cc: smsamplewinview.hh
+	moc smsamplewinview.hh > moc_smsamplewinview.cc
+
+moc_smsamplewindow.cc: smsamplewindow.hh
+	moc smsamplewindow.hh > moc_smsamplewindow.cc

@@ -116,6 +116,8 @@ Navigator::Navigator (const string& filename)
   tree_view = new QTreeView();
   tree_view->setModel (tree_model);
   tree_view->setRootIsDecorated (false);
+  connect (tree_view->selectionModel(), SIGNAL (selectionChanged (const QItemSelection&, const QItemSelection&)),
+           this, SLOT (on_selection_changed()));
 
   on_combo_changed();
 
@@ -123,6 +125,9 @@ Navigator::Navigator (const string& filename)
   vbox->addWidget (smset_combobox);
   vbox->addWidget (tree_view);
   setLayout (vbox);
+
+  sample_window = new SampleWindow (this);
+  connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
 }
 
 void
@@ -158,22 +163,60 @@ Navigator::on_combo_changed()
   tree_model->update_wset();
   for (int column = 0; column < 4; column++)
     tree_view->resizeColumnToContents (column);
+
+  emit dhandle_changed();
+}
+
+void
+Navigator::on_selection_changed()
+{
+  int row = tree_view->selectionModel()->currentIndex().row();
+  int column = tree_view->selectionModel()->currentIndex().column();
+
+  printf ("selection changed (%d, %d)\n", row, column);
+  size_t i = row;
+  assert (i < wset.waves.size());
+
+  int channel = wset.waves[i].channel;
+
+  audio = wset.waves[i].audio;
+  assert (wset.waves[i].audio);
+
 #if 0
-  signal_dhandle_changed();
-
-  ref_tree_model->clear();
-  for (size_t i = 0; i < wset.waves.size(); i++)
+  if (spectmorph_signal_active())
     {
-      const WavSetWave& wave = wset.waves[i];
-
-      Gtk::TreeModel::Row row = *(ref_tree_model->append());
-      row[audio_chooser_cols.col_note] = wave.midi_note;
-      row[audio_chooser_cols.col_channel] = wave.channel;
-      row[audio_chooser_cols.col_range] = Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max);
-      row[audio_chooser_cols.col_path] = wave.path;
-      row[audio_chooser_cols.col_wave_nr] = i;
+      LiveDecoder decoder (&wset);
+      decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
+      decoded_samples.resize (audio->sample_count);
+      decoder.process (decoded_samples.size(), 0, 0, &decoded_samples[0]);
+      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, decoded_samples.size(), &decoded_samples[0], NULL);
+    }
+  else
+    {
+#endif
+      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
+#if 0
     }
 #endif
+  emit dhandle_changed();
+}
+
+void
+Navigator::on_view_sample()
+{
+  sample_window->show();
+}
+
+Audio *
+Navigator::get_audio()
+{
+  return audio;
+}
+
+GslDataHandle *
+Navigator::get_dhandle()
+{
+  return dhandle;
 }
 
 #if 0

@@ -20,6 +20,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   QAction *view_time_freq_action = new QAction ("Time/Frequency View", this);
   // connect (next_action, SIGNAL (triggered()), main_widget, SLOT (on_next_sample()));
   QAction *view_sample_action = new QAction ("Sample View", this);
+  connect (view_sample_action, SIGNAL (triggered()), navigator, SLOT (on_view_sample()));
   QAction *view_spectrum_action = new QAction ("Spectrum View", this);
   QAction *view_lpc_action = new QAction ("LPC View", this);
   QAction *view_fft_params_action = new QAction ("FFT Params", this);

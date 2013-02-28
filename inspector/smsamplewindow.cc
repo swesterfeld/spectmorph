@@ -16,11 +16,26 @@
  */
 
 #include "smsamplewindow.hh"
+#include "smsamplewinview.hh"
 #include "smnavigator.hh"
 
 #include <iostream>
 
 using namespace SpectMorph;
+
+SampleWindow::SampleWindow (Navigator *navigator)
+{
+  this->navigator = navigator;
+
+  sample_win_view = new SampleWinView();
+  setCentralWidget (sample_win_view);
+}
+
+void
+SampleWindow::on_dhandle_changed()
+{
+  sample_win_view->load (navigator->get_dhandle(), navigator->get_audio());
+}
 
 #if 0
 #define LOOP_NONE_TEXT              "No loop"

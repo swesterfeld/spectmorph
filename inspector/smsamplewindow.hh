@@ -22,14 +22,28 @@
 #include "smzoomcontroller.hh"
 #include "smwavset.hh"
 
+#include <QMainWindow>
+
 namespace SpectMorph {
 
 class Navigator;
-class SampleWindow : public QWidget
+class SampleWinView;
+class SampleWindow : public QMainWindow
 {
-#if 0
-  Navigator          *navigator;
+  Q_OBJECT
 
+private:
+  Navigator          *navigator;
+  SampleWinView      *sample_win_view;
+
+public:
+  SampleWindow (Navigator *navigator);
+
+  void load (GslDataHandle *dhandle, Audio *audio);
+
+public slots:
+  void on_dhandle_changed();
+#if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
 

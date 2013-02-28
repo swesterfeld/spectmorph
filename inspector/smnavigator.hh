@@ -47,11 +47,20 @@ private:
   TreeModel            *tree_model;
   QTreeView            *tree_view;
 
+  SampleWindow         *sample_window;
 public:
   Navigator (const std::string& filename);
 
+  GslDataHandle *get_dhandle();
+  Audio         *get_audio();
+
 public slots:
   void on_combo_changed();
+  void on_view_sample();
+  void on_selection_changed();
+
+signals:
+  void dhandle_changed();
 #if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
