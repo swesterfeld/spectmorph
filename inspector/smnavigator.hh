@@ -25,6 +25,7 @@
 #include "smdisplayparamwindow.hh"
 
 #include <QComboBox>
+#include <QTreeView>
 
 namespace SpectMorph {
 
@@ -44,6 +45,7 @@ private:
   Audio                *audio;
   GslDataHandle        *dhandle;
   TreeModel            *tree_model;
+  QTreeView            *tree_view;
 
 public:
   Navigator (const std::string& filename);

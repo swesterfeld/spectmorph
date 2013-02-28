@@ -69,6 +69,21 @@ public:
       }
     return QVariant();
   }
+  QVariant
+  headerData (int section, Qt::Orientation orientation, int role) const
+  {
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+      {
+        switch (section)
+          {
+            case 0: return "Note";
+            case 1: return "Ch";
+            case 2: return "Range";
+            case 3: return "Path";
+          }
+      }
+    return QVariant();
+  }
   void
   update_wset()
   {
@@ -98,11 +113,11 @@ Navigator::Navigator (const string& filename)
   connect (smset_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combo_changed()));
 
   tree_model = new TreeModel (this, &wset);
-  on_combo_changed();
-
-  QTreeView *tree_view = new QTreeView();
+  tree_view = new QTreeView();
   tree_view->setModel (tree_model);
   tree_view->setRootIsDecorated (false);
+
+  on_combo_changed();
 
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (smset_combobox);
@@ -141,6 +156,8 @@ Navigator::on_combo_changed()
   dhandle = NULL;
 
   tree_model->update_wset();
+  for (int column = 0; column < 4; column++)
+    tree_view->resizeColumnToContents (column);
 #if 0
   signal_dhandle_changed();
 
