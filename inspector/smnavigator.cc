@@ -25,11 +25,65 @@
 #include <iostream>
 
 #include <QVBoxLayout>
+#include <QHeaderView>
+#include <QAbstractTableModel>
+#include <QTreeView>
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+
+namespace SpectMorph {
+
+class TreeModel : public QAbstractTableModel
+{
+  WavSet *wset;
+public:
+  TreeModel (QWidget *parent, WavSet *wset);
+
+  int
+  rowCount (const QModelIndex& index) const
+  {
+    return wset->waves.size();
+  }
+  int
+  columnCount (const QModelIndex& index) const
+  {
+    return 4;
+  }
+  QVariant
+  data (const QModelIndex& index, int role) const
+  {
+    if (role == Qt::DisplayRole)
+      {
+        const WavSetWave& wave = wset->waves[index.row()];
+
+        switch (index.column())
+          {
+            case 0: return wset->waves[index.row()].midi_note;
+            case 1: return wave.channel;
+            case 2: return Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max).c_str();
+            case 3: return wave.path.c_str();
+          }
+      }
+    return QVariant();
+  }
+  void
+  update_wset()
+  {
+    beginResetModel();
+    endResetModel();
+  }
+};
+
+TreeModel::TreeModel (QWidget *parent, WavSet *wset) :
+  QAbstractTableModel (parent),
+  wset (wset)
+{
+}
+
+}
 
 Navigator::Navigator (const string& filename)
 {
@@ -41,10 +95,68 @@ Navigator::Navigator (const string& filename)
   smset_dir = index.smset_dir();
   for (vector<string>::const_iterator ii = index.smsets().begin(); ii != index.smsets().end(); ii++)
     smset_combobox->addItem (ii->c_str());
+  connect (smset_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_combo_changed()));
+
+  tree_model = new TreeModel (this, &wset);
+  on_combo_changed();
+
+  QTreeView *tree_view = new QTreeView();
+  tree_view->setModel (tree_model);
+  tree_view->setRootIsDecorated (false);
 
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (smset_combobox);
+  vbox->addWidget (tree_view);
   setLayout (vbox);
+}
+
+void
+Navigator::on_combo_changed()
+{
+  string new_filename = smset_dir + "/" + smset_combobox->currentText().toLatin1().data();
+#if 0
+  if (wset_edit && new_filename != wset_filename)
+    {
+      Gtk::MessageDialog dlg (Birnet::string_printf ("You changed instrument '%s' - if you switch instruments now your changes will be lost.", wset_filename.c_str()),
+                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_CANCEL);
+      dlg.add_button ("Continue without saving", Gtk::RESPONSE_ACCEPT);
+      if (dlg.run() != Gtk::RESPONSE_ACCEPT)
+        {
+          smset_combobox.set_active_text (wset_active_text);
+          return;
+        }
+    }
+#endif
+  wset_filename = new_filename;
+  wset_edit = false;
+  wset_active_text = smset_combobox->currentText().toLatin1().data();
+  BseErrorType error = wset.load (wset_filename);
+  if (error)
+    {
+      fprintf (stderr, "sminspector: can't open input file: %s: %s\n", wset_filename.c_str(), bse_error_blurb (error));
+      exit (1);
+    }
+
+  audio = NULL;
+  dhandle = NULL;
+
+  tree_model->update_wset();
+#if 0
+  signal_dhandle_changed();
+
+  ref_tree_model->clear();
+  for (size_t i = 0; i < wset.waves.size(); i++)
+    {
+      const WavSetWave& wave = wset.waves[i];
+
+      Gtk::TreeModel::Row row = *(ref_tree_model->append());
+      row[audio_chooser_cols.col_note] = wave.midi_note;
+      row[audio_chooser_cols.col_channel] = wave.channel;
+      row[audio_chooser_cols.col_range] = Birnet::string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max);
+      row[audio_chooser_cols.col_path] = wave.path;
+      row[audio_chooser_cols.col_wave_nr] = i;
+    }
+#endif
 }
 
 #if 0

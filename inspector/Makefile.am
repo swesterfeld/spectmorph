@@ -15,7 +15,8 @@ SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
-         smplayerwindow.cc smlpcwindow.cc smlpcview.cc smdisplayparamwindow.cc smnavigatorwindow.cc
+         smplayerwindow.cc smlpcwindow.cc smlpcview.cc smdisplayparamwindow.cc smnavigatorwindow.cc \
+         moc_smnavigator.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -32,3 +33,6 @@ sminspector_CXXFLAGS = $(AM_CXXFLAGS)
 testinspector_SOURCES = testinspector.cc
 testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
 testinspector_CXXFLAGS = $(AM_CXXFLAGS)
+
+moc_smnavigator.cc: smnavigator.hh
+	moc smnavigator.hh > moc_smnavigator.cc

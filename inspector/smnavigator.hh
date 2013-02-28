@@ -28,14 +28,28 @@
 
 namespace SpectMorph {
 
+class TreeModel;
 class Navigator : public QWidget
 {
+  Q_OBJECT
+
 private:
   std::string           smset_dir;
   QComboBox            *smset_combobox;
+  WavSet                wset;
+  std::string           wset_filename;
+  std::string           wset_active_text;
+  bool                  wset_edit;
+
+  Audio                *audio;
+  GslDataHandle        *dhandle;
+  TreeModel            *tree_model;
 
 public:
   Navigator (const std::string& filename);
+
+public slots:
+  void on_combo_changed();
 #if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
