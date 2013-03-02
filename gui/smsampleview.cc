@@ -44,7 +44,7 @@ SampleView::SampleView()
 }
 
 void
-SampleView::paintEvent (QPaintEvent * /* event */)
+SampleView::paintEvent (QPaintEvent *event)
 {
   const int width = this->width();
   const int height = this->height();
@@ -56,11 +56,11 @@ SampleView::paintEvent (QPaintEvent * /* event */)
   double hz = HZOOM_SCALE * hzoom;
   double vz = (height / 2) * vzoom;
   {
-    int x = 0;
+    int x = event->rect().x();
     int last_i0 = -1;
     int last_x = 0;
     double last_value = 0;
-    while (x < width)
+    while (x < event->rect().x() + event->rect().width())
       {
         int i0 = x / hz;
         int i1 = (x + 1) / hz + 1;
