@@ -84,6 +84,45 @@ SampleView::paintEvent (QPaintEvent * /* event */)
         x++;
       }
   }
+
+  // attack markers:
+  painter.setPen (QColor (150, 150, 150));
+  painter.drawLine (hz * attack_start, 0, hz * attack_start, height);
+  painter.drawLine (hz * attack_end, 0, hz * attack_end, height);
+
+  if (audio)
+    {
+      // start marker
+      int start = audio->start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+
+      if (edit_marker_type() == MARKER_START)
+        painter.setPen (QColor (0, 0, 200));
+      else
+        painter.setPen (QColor (150, 150, 150));
+      painter.drawLine (hz * start, 0, hz * start, height);
+
+      if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+        {
+          // loop start marker
+          int loop_start = audio->loop_start * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+
+          if (edit_marker_type() == MARKER_LOOP_START)
+            painter.setPen (QColor (0, 0, 200));
+          else
+            painter.setPen (QColor (150, 150, 150));
+          painter.drawLine (hz * loop_start, 0, hz * loop_start, height);
+
+          // loop end marker
+          int loop_end = audio->loop_end * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+
+          if (edit_marker_type() == MARKER_LOOP_END)
+            painter.setPen (QColor (0, 0, 200));
+          else
+            painter.setPen (QColor (150, 150, 150));
+          painter.drawLine (hz * loop_end, 0, hz * loop_end, height);
+        }
+    }
+
   if (markers)
     {
       for (size_t i = 0; i < markers->count(); i++)
