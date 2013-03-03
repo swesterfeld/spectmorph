@@ -45,17 +45,17 @@ public:
   int
   rowCount (const QModelIndex& index) const
   {
-    return wset->waves.size();
+    return index.isValid() ? 0 : wset->waves.size();
   }
   int
   columnCount (const QModelIndex& index) const
   {
-    return 4;
+    return index.isValid() ? 0 : 4;
   }
   QVariant
   data (const QModelIndex& index, int role) const
   {
-    if (role == Qt::DisplayRole)
+    if (index.isValid() && role == Qt::DisplayRole)
       {
         const WavSetWave& wave = wset->waves[index.row()];
 
@@ -173,7 +173,6 @@ Navigator::on_selection_changed()
   int row = tree_view->selectionModel()->currentIndex().row();
   int column = tree_view->selectionModel()->currentIndex().column();
 
-  printf ("selection changed (%d, %d)\n", row, column);
   size_t i = row;
   assert (i < wset.waves.size());
 
