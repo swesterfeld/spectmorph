@@ -40,6 +40,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   view_menu->addAction (view_player_action);
 
   setCentralWidget (navigator);
+  resize (300, 600);
 }
 
 
