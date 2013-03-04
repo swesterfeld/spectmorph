@@ -26,6 +26,7 @@
 
 #include <QComboBox>
 #include <QTreeView>
+#include <QPushButton>
 
 namespace SpectMorph {
 
@@ -41,11 +42,16 @@ private:
   std::string           wset_filename;
   std::string           wset_active_text;
   bool                  wset_edit;
+  std::vector<float>    decoded_samples;
 
   Audio                *audio;
   GslDataHandle        *dhandle;
   TreeModel            *tree_model;
   QTreeView            *tree_view;
+  QPushButton          *source_button;
+  QPushButton          *show_position_button;
+  QPushButton          *show_analysis_button;
+  QPushButton          *show_frequency_grid_button;
 
   SampleWindow         *sample_window;
   PlayerWindow         *player_window;
@@ -54,6 +60,7 @@ public:
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();
+  bool           spectmorph_signal_active();
 
 public slots:
   void on_combo_changed();
@@ -64,22 +71,7 @@ public slots:
 signals:
   void dhandle_changed();
 #if 0
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
-
-  SpectMorph::WavSet    wset;
-  std::string           wset_filename;
-  std::string           wset_active_text;
-  bool                  wset_edit;
-
-  std::string           smset_dir;
-  Gtk::ComboBoxText     smset_combobox;
   Gtk::VBox             index_vbox;
-  Gtk::ToggleButton     show_position_button;
-  Gtk::ToggleButton     show_analysis_button;
-  Gtk::ToggleButton     show_frequency_grid_button;
-  Gtk::Button           save_button;
-  std::vector<float>    decoded_samples;
 
   struct ModelColumns : public Gtk::TreeModel::ColumnRecord
   {

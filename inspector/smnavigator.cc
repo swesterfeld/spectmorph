@@ -28,6 +28,7 @@
 #include <QHeaderView>
 #include <QAbstractTableModel>
 #include <QTreeView>
+#include <QPushButton>
 
 using namespace SpectMorph;
 
@@ -121,9 +122,29 @@ Navigator::Navigator (const string& filename)
 
   on_combo_changed();
 
+  source_button = new QPushButton ("Source/Analysis");
+  source_button->setCheckable (true);
+
+  show_position_button = new QPushButton ("Show Position");
+  show_position_button->setCheckable (true);
+
+  show_analysis_button = new QPushButton ("Show Analysis");
+  show_analysis_button->setCheckable (true);
+
+  show_frequency_grid_button = new QPushButton ("Show Frequency");
+  show_frequency_grid_button->setCheckable (true);
+
+  QPushButton *save_button = new QPushButton ("Save");
+
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (smset_combobox);
   vbox->addWidget (tree_view);
+  vbox->addWidget (source_button);
+  vbox->addWidget (show_position_button);
+  vbox->addWidget (show_analysis_button);
+  vbox->addWidget (show_frequency_grid_button);
+  vbox->addWidget (save_button);
+
   setLayout (vbox);
 
   player_window = new PlayerWindow (this);
@@ -182,7 +203,6 @@ Navigator::on_selection_changed()
   audio = wset.waves[i].audio;
   assert (wset.waves[i].audio);
 
-#if 0
   if (spectmorph_signal_active())
     {
       LiveDecoder decoder (&wset);
@@ -193,11 +213,8 @@ Navigator::on_selection_changed()
     }
   else
     {
-#endif
       dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
-#if 0
     }
-#endif
   emit dhandle_changed();
 }
 
@@ -224,6 +241,13 @@ Navigator::get_dhandle()
 {
   return dhandle;
 }
+
+bool
+Navigator::spectmorph_signal_active()
+{
+  return source_button->isChecked();
+}
+
 
 #if 0
 Navigator::Navigator (const string& filename) :

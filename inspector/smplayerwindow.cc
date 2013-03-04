@@ -69,7 +69,7 @@ PlayerWindow::on_play_clicked()
 {
   Audio *audio = navigator->get_audio();
 
-  jack_player.play (audio, true); //!navigator->spectmorph_signal_active());
+  jack_player.play (audio, !navigator->spectmorph_signal_active());
 }
 
 void
