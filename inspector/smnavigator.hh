@@ -48,6 +48,7 @@ private:
   QTreeView            *tree_view;
 
   SampleWindow         *sample_window;
+  PlayerWindow         *player_window;
 public:
   Navigator (const std::string& filename);
 
@@ -57,6 +58,7 @@ public:
 public slots:
   void on_combo_changed();
   void on_view_sample();
+  void on_view_player();
   void on_selection_changed();
 
 signals:

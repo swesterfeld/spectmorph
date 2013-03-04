@@ -20,6 +20,10 @@
 
 #include <jack/jack.h>
 
+#include <QWidget>
+#include <QSlider>
+#include <QLabel>
+
 #include "smsimplejackplayer.hh"
 
 namespace SpectMorph {
@@ -27,29 +31,21 @@ namespace SpectMorph {
 class Navigator;
 class PlayerWindow : public QWidget
 {
-#if 0
+  Q_OBJECT
+
   Navigator          *navigator;
-
-  Gtk::Button         play_button;
-  Gtk::Button         stop_button;
-  Gtk::HBox           button_hbox;
-  Gtk::HBox           volume_hbox;
-  Gtk::VBox           vbox;
-
-  Gtk::HScale         volume_scale;
-  Gtk::Label          volume_label;
-  Gtk::Label          volume_value_label;
+  QSlider            *volume_slider;
+  QLabel             *volume_label;
 
   SimpleJackPlayer    jack_player;
 
 public:
   PlayerWindow (Navigator *navigator);
-  ~PlayerWindow();
 
+public slots:
   void on_play_clicked();
   void on_stop_clicked();
-  void on_volume_changed();
-#endif
+  void on_volume_changed (int new_volume);
 };
 
 }

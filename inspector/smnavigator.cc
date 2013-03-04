@@ -126,6 +126,7 @@ Navigator::Navigator (const string& filename)
   vbox->addWidget (tree_view);
   setLayout (vbox);
 
+  player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
 }
@@ -204,6 +205,12 @@ void
 Navigator::on_view_sample()
 {
   sample_window->show();
+}
+
+void
+Navigator::on_view_player()
+{
+  player_window->show();
 }
 
 Audio *
