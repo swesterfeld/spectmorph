@@ -34,7 +34,6 @@
 #include "smfftthread.hh"
 #include <math.h>
 
-#if 0
 using std::vector;
 using std::max;
 using std::complex;
@@ -50,6 +49,7 @@ value_scale (float value)
 void
 CWT::make_png (vector< vector<float> >& results)
 {
+#if 0
   const int width = results[0].size(), height = results.size();
   GdkPixbuf *pixbuf = gdk_pixbuf_new (GDK_COLORSPACE_RGB, /* has_alpha */ false, 8, width, height);
 
@@ -83,6 +83,7 @@ CWT::make_png (vector< vector<float> >& results)
     }
   GError *error = 0;
   gdk_pixbuf_save (pixbuf, "cwt.png", "png", &error, "compression", "0", NULL);
+#endif
 }
 
 template<class T> void
@@ -185,7 +186,7 @@ CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
           //printf ("%zd %.17g %.17g\n", i, out[i * 2], out[i * 2 + 1]);
         }
       results.push_back (line);
-      signal_progress (freq / 22050.0);
+      emit signal_progress (freq / 22050.0);
 
       if (fft_thread && fft_thread->command_is_obsolete()) // abort if user changed params
         break;
@@ -280,4 +281,3 @@ CWT::analyze (const vector<float>& asignal, const AnalysisParams& params, FFTThr
     }
   return results;
 }
-#endif

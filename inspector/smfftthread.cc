@@ -25,6 +25,8 @@
 #include <bse/bseglobals.h>
 #include <bse/bsemathsignal.h>
 
+#include <QSocketNotifier>
+
 #include <sys/poll.h>
 #include <stdio.h>
 #include <assert.h>
@@ -34,7 +36,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 
-#if 0
 void
 FFTThread::run()
 {
@@ -117,8 +118,13 @@ FFTThread::FFTThread()
   pipe (main_thread_wakeup_pfds);
   pthread_create (&thread, NULL, thread_start, this);
 
+  QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
+  connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_result_available()));
+
+#if 0
   Glib::signal_io().connect (sigc::mem_fun (this, &FFTThread::on_result_available),
                              main_thread_wakeup_pfds[0], Glib::IO_IN);
+#endif
 }
 
 FFTThread::~FFTThread()
@@ -138,23 +144,6 @@ value_scale (float value)
 {
   return bse_db_from_factor (value, -200);
 }
-
-struct AnalysisCommand : public FFTThread::Command
-{
-  FFTThread        *fft_thread;
-  GslDataHandle    *dhandle;
-  vector<FFTResult> results;
-  PixelArray        image;
-  AnalysisParams    analysis_params;
-
-  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread);
-  ~AnalysisCommand();
-  void execute();
-  void execute_cwt();
-  void execute_lpc();
-
-  void set_progress (double progress);
-};
 
 AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread) :
   fft_thread (fft_thread),
@@ -197,7 +186,7 @@ AnalysisCommand::execute_cwt()
 
   double mix_freq = gsl_data_handle_mix_freq (dhandle);
 
-  cwt.signal_progress.connect (sigc::mem_fun (*this, &AnalysisCommand::set_progress));
+  connect (&cwt, SIGNAL (signal_progress (double)), this, SLOT (set_progress (double)));
 
   vector< vector<float> > results;
   results = cwt.analyze (signal, analysis_params, fft_thread);
@@ -478,20 +467,20 @@ FFTThread::get_result (PixelArray& image)
   return false;
 }
 
-bool
-FFTThread::on_result_available (Glib::IOCondition io_condition)
+void
+FFTThread::on_result_available()
 {
-  signal_result_available();
-
-  return true;
+  emit result_available();
 }
 
+#if 0
 double
 FFTThread::get_progress()
 {
   Birnet::AutoLocker lock (command_mutex);
   return command_progress;
 }
+#endif
 
 bool
 FFTThread::command_is_obsolete()
@@ -499,4 +488,3 @@ FFTThread::command_is_obsolete()
   Birnet::AutoLocker lock (command_mutex);
   return !commands.empty();
 }
-#endif

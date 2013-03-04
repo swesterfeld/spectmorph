@@ -26,14 +26,16 @@
 #include "smcommon.hh"
 #include "smpixelarray.hh"
 
+#include <QObject>
+
 namespace SpectMorph
 {
 
-class FFTThread
+class FFTThread : public QObject
 {
-#if 0 /* PORT */
+  Q_OBJECT
 public:
-  struct Command {
+  struct Command : public QObject {
     virtual void execute() = 0;
   };
 
@@ -47,8 +49,6 @@ protected:
   int                     main_thread_wakeup_pfds[2];
 
   pthread_t thread;
-
-  bool on_result_available (Glib::IOCondition io_condition);
 
 public:
   FFTThread();
@@ -64,8 +64,31 @@ public:
 
   static FFTThread *the();
 
-  sigc::signal<void> signal_result_available;
-#endif
+public slots:
+  void on_result_available();
+
+signals:
+  void result_available();
+};
+
+class AnalysisCommand : public FFTThread::Command
+{
+  Q_OBJECT
+public:
+  FFTThread              *fft_thread;
+  GslDataHandle          *dhandle;
+  std::vector<FFTResult>  results;
+  PixelArray              image;
+  AnalysisParams          analysis_params;
+
+  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread);
+  ~AnalysisCommand();
+  void execute();
+  void execute_cwt();
+  void execute_lpc();
+
+public slots:
+  void set_progress (double progress);
 };
 
 }

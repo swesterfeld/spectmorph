@@ -45,6 +45,14 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
 
   resize (800, 600);
 }
+
+void
+TimeFreqWindow::on_dhandle_changed()
+{
+  m_time_freq_view->load (navigator->get_dhandle(), "fn", navigator->get_audio(),
+                          navigator->fft_param_window()->get_analysis_params());
+}
+
 #if 0
 TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   zoom_controller (5000, 10000),

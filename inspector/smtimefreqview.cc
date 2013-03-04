@@ -19,8 +19,13 @@
 #include "smfft.hh"
 #include "smmath.hh"
 
+#include <stdio.h>
+
 #include <bse/bsemathsignal.h>
 #include <bse/bseblockutils.hh>
+
+#include <QPainter>
+#include <QPaintEvent>
 
 using namespace SpectMorph;
 
@@ -28,27 +33,37 @@ using std::string;
 using std::vector;
 using std::max;
 
+void
+TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
+{
+  if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
+    FFTThread::the()->compute_image (image, dhandle, analysis_params);
+
+  m_audio = audio;
+}
+
 #if 0
 namespace {
 struct Options {
   string program_name;
 } options;
 }
+#endif
 
 TimeFreqView::TimeFreqView()
 {
-  set_size_request (400, 400);
+  resize (400, 400);
   hzoom = 1;
   vzoom = 1;
-  position = -1;
+  // position = -1;
   m_audio = NULL;
-  show_analysis = false;
-  m_show_frequency_grid = false;
+  // show_analysis = false;
+  // m_show_frequency_grid = false;
 
-  old_height = -1;
-  old_width = -1;
+  display_min_db = -96;
+  display_boost = 0;
 
-  FFTThread::the()->signal_result_available.connect (sigc::mem_fun (*this, &TimeFreqView::on_result_available));
+  connect (FFTThread::the(), SIGNAL (result_available()), this, SLOT (on_result_available()));
 }
 
 void
@@ -58,6 +73,7 @@ TimeFreqView::scale_zoom (double *scaled_hzoom, double *scaled_vzoom)
   *scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
 }
 
+#if 0
 void
 TimeFreqView::force_redraw()
 {
@@ -83,18 +99,33 @@ TimeFreqView::force_redraw()
       win->invalidate_rect (r, false);
     }
 }
+#endif
+
+void
+TimeFreqView::update_size()
+{
+  // resize widget according to zoom if necessary
+  double scaled_hzoom, scaled_vzoom;
+  scale_zoom (&scaled_hzoom, &scaled_vzoom);
+
+  int new_width = image.get_width() * scaled_hzoom;
+  int new_height = image.get_height() * scaled_vzoom;
+  setFixedSize (new_width, new_height);
+}
 
 void
 TimeFreqView::on_result_available()
 {
   if (FFTThread::the()->get_result (image))
     {
-      force_redraw();
-      signal_spectrum_changed();
+      update_size();
+      update();
+      emit spectrum_changed();
     }
-  signal_progress_changed();
+  emit progress_changed();
 }
 
+#if 0
 void
 TimeFreqView::set_zoom (double new_hzoom, double new_vzoom)
 {
@@ -158,17 +189,15 @@ TimeFreqView::get_frames()
 {
   return image.get_width();
 }
+#endif
 
-Glib::RefPtr<Gdk::Pixbuf>
+QImage
 TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom,
                          int position, double display_min_db, double display_boost)
 {
-  Glib::RefPtr<Gdk::Pixbuf> zimage = Gdk::Pixbuf::create (Gdk::COLORSPACE_RGB, false, 8, destw, desth);
+  QImage zqimage (destw, desth, QImage::Format_RGB32);
   const double hzoom_inv = 1.0 / hzoom;
   const double vzoom_inv = 1.0 / vzoom;
-
-  guchar *p = zimage->get_pixels();
-  size_t  row_stride = zimage->get_rowstride();
 
   int    *pixel_array_p          = image.get_pixels();
   size_t  pixel_array_row_stride = image.get_rowstride();
@@ -186,8 +215,8 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
 
   for (int y = 0; y < desth; y++)
     {
-      guchar *pp = (p + row_stride * y);
       size_t outy = sm_round_positive ((y + desty) * vzoom_inv);
+      QRgb *rgb = static_cast<QRgb*> ((void *)zqimage.scanLine (y));
 
       for (int x = 0; x < destw; x++)
         {
@@ -204,17 +233,17 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
             }
           else
             color = 0;
-          pp[0] = color;
-          pp[1] = color;
-          pp[2] = color;
+
           if (int (outx) == position)
-            pp[0] = 255;
-          pp += 3;
+            *rgb++ = qRgb (255, color, color);
+          else
+            *rgb++ = qRgb (color, color, color);
         }
     }
-  return zimage;
+  return zqimage;
 }
 
+#if 0
 bool
 TimeFreqView::on_expose_event (GdkEventExpose *ev)
 {
@@ -285,7 +314,27 @@ TimeFreqView::on_expose_event (GdkEventExpose *ev)
     }
   return true;
 }
+#endif
 
+void
+TimeFreqView::paintEvent (QPaintEvent *event)
+{
+  QPainter painter (this);
+  painter.fillRect (rect(), QColor (255, 255, 255));
+
+  double scaled_hzoom, scaled_vzoom;
+  scale_zoom (&scaled_hzoom, &scaled_vzoom);
+
+  QImage zqimage;
+  zqimage = zoom_rect (image, event->rect().x(), event->rect().y(), event->rect().width(), event->rect().height(),
+                       scaled_hzoom, scaled_vzoom, position,
+                       display_min_db, display_boost);
+
+  QPoint origin (event->rect().x(), event->rect().y());
+  painter.drawImage (origin, zqimage);
+}
+
+#if 0
 FFTResult
 TimeFreqView::get_spectrum()
 {

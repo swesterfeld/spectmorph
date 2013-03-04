@@ -29,31 +29,51 @@ namespace SpectMorph {
 
 class TimeFreqView : public QWidget
 {
-#if 0 /* PORT */
+  Q_OBJECT
 protected:
   PixelArray  image;
   Audio      *m_audio;
-  double hzoom, vzoom;
-  int position;
+  double      hzoom;
+  double      vzoom;
+  double      display_min_db;
+  double      display_boost;
+  int         position;
+
+  FFTThread  fft_thread;
+
+  void scale_zoom (double *scaled_hzoom, double *scaled_vzoom);
+
+public:
+  TimeFreqView();
+
+  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
+  void update_size();
+  void paintEvent (QPaintEvent *event);
+
+  static QImage zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
+                           double hzoom, double vzoom, int position,
+                           double display_min_db, double display_boost);
+
+public slots:
+  void on_result_available();
+
+signals:
+  void spectrum_changed();
+  void progress_changed();
+
+#if 0 /* PORT */
   int old_height;
   int old_width;
   bool show_analysis;
   bool m_show_frequency_grid;
-  double display_min_db;
-  double display_boost;
 
   void force_redraw();
-  void scale_zoom (double *scaled_hzoom, double *scaled_vzoom);
 
-  void on_result_available();
 
-  FFTThread  fft_thread;
 
 public:
   TimeFreqView (); //const std::string& filename);
 
-  sigc::signal<void> signal_spectrum_changed;
-  sigc::signal<void> signal_progress_changed;
   sigc::signal<void, int, int, int, int> signal_resized;
 
   void load (const std::string& filename);
@@ -69,9 +89,6 @@ public:
   int  get_frames();
   FFTResult get_spectrum();
   double get_progress();
-  static Glib::RefPtr<Gdk::Pixbuf> zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
-                                              double hzoom, double vzoom, int position,
-                                              double display_min_db, double display_boost);
   bool show_frequency_grid();
   double fundamental_freq();
   double mix_freq();

@@ -27,6 +27,10 @@ namespace SpectMorph {
 
 class FFTParamWindow : public QWidget
 {
+  Q_OBJECT
+public:
+  AnalysisParams get_analysis_params();
+
 #if 0
   Gtk::Table          table;
 

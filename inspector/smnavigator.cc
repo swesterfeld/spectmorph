@@ -150,8 +150,10 @@ Navigator::Navigator (const string& filename)
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
   time_freq_window = new TimeFreqWindow (this);
+  m_fft_param_window = new FFTParamWindow();
 
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
+  connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
 }
 
 void
@@ -254,6 +256,12 @@ bool
 Navigator::spectmorph_signal_active()
 {
   return source_button->isChecked();
+}
+
+FFTParamWindow*
+Navigator::fft_param_window()
+{
+  return m_fft_param_window;
 }
 
 

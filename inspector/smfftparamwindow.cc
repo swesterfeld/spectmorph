@@ -21,6 +21,40 @@
 
 using namespace SpectMorph;
 
+AnalysisParams
+FFTParamWindow::get_analysis_params()
+{
+  AnalysisParams params;
+
+#if 0
+  if (transform_combobox.get_active_text() == TEXT_FFT)
+    params.transform_type = SM_TRANSFORM_FFT;
+  else if (transform_combobox.get_active_text() == TEXT_CWT)
+    params.transform_type = SM_TRANSFORM_CWT;
+  else if (transform_combobox.get_active_text() == TEXT_LPC)
+    params.transform_type = SM_TRANSFORM_LPC;
+  else
+    assert (false);
+
+  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
+    params.cwt_mode = SM_CWT_MODE_VTIME;
+  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
+    params.cwt_mode = SM_CWT_MODE_CTIME;
+  else
+    assert (false);
+
+  params.frame_size_ms = get_frame_size();
+  params.frame_step_ms = get_frame_step();
+  params.cwt_freq_resolution = cwt_freq_res_scale.get_value();
+  params.cwt_time_resolution = get_cwt_time_resolution();
+#endif
+  params.frame_size_ms = 40;
+  params.frame_step_ms = 10;
+  params.transform_type = SM_TRANSFORM_FFT;
+
+  return params;
+}
+
 #if 0
 #define TEXT_FFT "Fourier Transform"
 #define TEXT_CWT "Wavelet Transform"
