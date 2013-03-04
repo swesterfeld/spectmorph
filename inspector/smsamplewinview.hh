@@ -6,9 +6,13 @@
 #include "smzoomcontroller.hh"
 #include <QWidget>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QComboBox>
 
 namespace SpectMorph
 {
+
+class Navigator;
 
 class SampleWinView : public QWidget
 {
@@ -17,13 +21,24 @@ class SampleWinView : public QWidget
   ZoomController *zoom_controller;
   SampleView     *sample_view;
   QScrollArea    *scroll_area;
+
+  QLabel         *time_label;
+  QPushButton    *edit_start_marker;
+  QPushButton    *edit_loop_start;
+  QPushButton    *edit_loop_end;
+  QComboBox      *loop_type_combo;
+
+  Navigator      *navigator;
 public:
-  SampleWinView();
+  SampleWinView (Navigator *navigator);
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
 
 public slots:
   void on_zoom_changed();
+  void on_mouse_time_changed (int new_time);
+  void on_edit_marker_changed();
+  void on_loop_type_changed();
 };
 
 }

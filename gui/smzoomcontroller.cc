@@ -46,10 +46,12 @@ ZoomController::init()
 
   QGridLayout *grid_layout = new QGridLayout();
 
-  grid_layout->addWidget (hzoom_slider, 0, 0);
-  grid_layout->addWidget (hzoom_label, 0, 1);
-  grid_layout->addWidget (vzoom_slider, 1, 0);
-  grid_layout->addWidget (vzoom_label, 1, 1);
+  grid_layout->addWidget (new QLabel ("HZoom"), 0, 0);
+  grid_layout->addWidget (hzoom_slider, 0, 1);
+  grid_layout->addWidget (hzoom_label, 0, 2);
+  grid_layout->addWidget (new QLabel ("VZoom"), 1, 0);
+  grid_layout->addWidget (vzoom_slider, 1, 1);
+  grid_layout->addWidget (vzoom_label, 1, 2);
   setLayout (grid_layout);
 
   connect (hzoom_slider, SIGNAL (valueChanged (int)), this, SLOT (on_hzoom_changed()));

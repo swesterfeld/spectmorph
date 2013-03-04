@@ -27,7 +27,7 @@ SampleWindow::SampleWindow (Navigator *navigator)
 {
   this->navigator = navigator;
 
-  sample_win_view = new SampleWinView();
+  sample_win_view = new SampleWinView (navigator);
   setCentralWidget (sample_win_view);
   resize (800, 500);
 }
