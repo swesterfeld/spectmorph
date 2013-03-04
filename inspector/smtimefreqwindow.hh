@@ -24,11 +24,22 @@
 #include "smfftparamwindow.hh"
 #include "smsamplewindow.hh"
 
+#include <QScrollArea>
+
 namespace SpectMorph {
 
 class Navigator;
 class TimeFreqWindow : public QWidget
 {
+  QScrollArea        *scroll_area;
+  TimeFreqView       *m_time_freq_view;
+  ZoomController     *zoom_controller;
+
+  Navigator          *navigator;
+
+public:
+  TimeFreqWindow (Navigator *navigator);
+
 #if 0
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        m_time_freq_view;
@@ -48,7 +59,6 @@ class TimeFreqWindow : public QWidget
   Gtk::HBox           boost_hbox;
 
   Gtk::VBox           vbox;
-  Navigator          *navigator;
 
 public:
   TimeFreqWindow (Navigator *navigator);

@@ -27,6 +27,8 @@ using namespace SpectMorph;
 ZoomController::ZoomController (double hzoom_max, double vzoom_max)
 {
   init();
+  hzoom_slider->setRange (-1000, (log10 (hzoom_max) - 2) * 1000);
+  vzoom_slider->setRange (-1000, (log10 (vzoom_max) - 2) * 1000);
 }
 
 ZoomController::ZoomController (double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max)

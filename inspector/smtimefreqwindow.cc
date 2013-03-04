@@ -19,11 +19,32 @@
 #include "smmath.hh"
 #include "smnavigator.hh"
 
+#include <QVBoxLayout>
+
 using std::vector;
 using std::string;
 
 using namespace SpectMorph;
 
+TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
+  navigator (navigator)
+{
+  setWindowTitle ("Time/Frequency View");
+
+  m_time_freq_view = new TimeFreqView();
+  scroll_area = new QScrollArea();
+  scroll_area->setWidgetResizable (true);
+  scroll_area->setWidget (m_time_freq_view);
+
+  zoom_controller = new ZoomController (5000, 10000);
+
+  QVBoxLayout *vbox = new QVBoxLayout();
+  vbox->addWidget (scroll_area);
+  vbox->addWidget (zoom_controller);
+  setLayout (vbox);
+
+  resize (800, 600);
+}
 #if 0
 TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   zoom_controller (5000, 10000),

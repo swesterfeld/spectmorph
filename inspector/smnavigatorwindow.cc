@@ -18,6 +18,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   /* actions ... */
 
   QAction *view_time_freq_action = new QAction ("Time/Frequency View", this);
+  connect (view_time_freq_action, SIGNAL (triggered()), navigator, SLOT (on_view_time_freq()));
 
   QAction *view_sample_action = new QAction ("Sample View", this);
   connect (view_sample_action, SIGNAL (triggered()), navigator, SLOT (on_view_sample()));

@@ -55,6 +55,7 @@ private:
 
   SampleWindow         *sample_window;
   PlayerWindow         *player_window;
+  TimeFreqWindow       *time_freq_window;
 public:
   Navigator (const std::string& filename);
 
@@ -67,6 +68,7 @@ public slots:
   void on_view_sample();
   void on_view_player();
   void on_selection_changed();
+  void on_view_time_freq();
 
 signals:
   void dhandle_changed();

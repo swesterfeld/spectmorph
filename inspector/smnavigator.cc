@@ -149,6 +149,8 @@ Navigator::Navigator (const string& filename)
 
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
+  time_freq_window = new TimeFreqWindow (this);
+
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
 }
 
@@ -228,6 +230,12 @@ void
 Navigator::on_view_player()
 {
   player_window->show();
+}
+
+void
+Navigator::on_view_time_freq()
+{
+  time_freq_window->show();
 }
 
 Audio *
