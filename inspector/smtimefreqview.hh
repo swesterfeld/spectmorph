@@ -55,6 +55,7 @@ public:
                            double display_min_db, double display_boost);
   void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
+  void set_display_params (double min_db, double boost);
 
   int  get_frames();
 
@@ -86,7 +87,6 @@ public:
 
   void set_show_analysis (bool new_show_analysis);
   void set_show_frequency_grid (bool new_show_frequency_grid);
-  void set_display_params (double min_db, double boost);
 
   FFTResult get_spectrum();
   double get_progress();

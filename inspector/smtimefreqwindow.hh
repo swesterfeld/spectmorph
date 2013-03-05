@@ -35,6 +35,10 @@ class TimeFreqWindow : public QWidget
 
   QLabel             *position_label;
   QSlider            *position_slider;
+  QLabel             *min_db_label;
+  QSlider            *min_db_slider;
+  QLabel             *boost_label;
+  QSlider            *boost_slider;
   QScrollArea        *scroll_area;
   TimeFreqView       *m_time_freq_view;
   ZoomController     *zoom_controller;
@@ -48,34 +52,15 @@ public slots:
   void on_dhandle_changed();
   void on_zoom_changed();
   void on_position_changed();
+  void on_display_params_changed();
 
 #if 0
-  Gtk::ScrolledWindow scrolled_win;
-  TimeFreqView        m_time_freq_view;
-  ZoomController      zoom_controller;
-
-  Gtk::Adjustment     position_adjustment;
-  Gtk::HScale         position_scale;
-  Gtk::Label          position_label;
-  Gtk::HBox           position_hbox;
-
-  Gtk::HScale         min_db_scale;
-  Gtk::Label          min_db_label;
-  Gtk::HBox           min_db_hbox;
-
-  Gtk::HScale         boost_scale;
-  Gtk::Label          boost_label;
-  Gtk::HBox           boost_hbox;
-
-  Gtk::VBox           vbox;
-
 public:
   TimeFreqWindow (Navigator *navigator);
 
   void on_analysis_changed();
   void on_frequency_grid_changed();
   void on_progress_changed();
-  void on_display_params_changed();
   void on_resized (int old_width, int old_height, int new_width, int new_height);
 
   TimeFreqView *time_freq_view();

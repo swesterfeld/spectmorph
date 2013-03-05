@@ -378,15 +378,17 @@ TimeFreqView::get_progress()
 {
   return fft_thread.get_progress();
 }
+#endif
 
 void
 TimeFreqView::set_display_params (double min_db, double boost)
 {
   display_min_db = min_db;
   display_boost = boost;
-  force_redraw();
+  update();
 }
 
+#if 0
 double
 TimeFreqView::fundamental_freq()
 {

@@ -47,10 +47,32 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   position_hbox->addWidget (position_label);
   connect (position_slider, SIGNAL (valueChanged (int)), this, SLOT (on_position_changed()));
 
+  QHBoxLayout *min_db_hbox = new QHBoxLayout();
+  min_db_slider = new QSlider (Qt::Horizontal);
+  min_db_slider->setRange (-192000, -3000);
+  min_db_slider->setValue (-96000);
+  min_db_label = new QLabel();
+  min_db_hbox->addWidget (min_db_slider);
+  min_db_hbox->addWidget (min_db_label);
+  connect (min_db_slider, SIGNAL (valueChanged (int)), this, SLOT (on_display_params_changed()));
+
+  QHBoxLayout *boost_hbox = new QHBoxLayout();
+  boost_slider = new QSlider (Qt::Horizontal);
+  boost_slider->setRange (0, 100000);
+  boost_slider->setValue (0);
+  boost_label = new QLabel();
+  boost_hbox->addWidget (boost_slider);
+  boost_hbox->addWidget (boost_label);
+  connect (boost_slider, SIGNAL (valueChanged (int)), this, SLOT (on_display_params_changed()));
+
+  on_display_params_changed();
+
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (scroll_area);
   vbox->addWidget (zoom_controller);
   vbox->addLayout (position_hbox);
+  vbox->addLayout (min_db_hbox);
+  vbox->addLayout (boost_hbox);
   setLayout (vbox);
 
   resize (800, 600);
@@ -160,15 +182,20 @@ TimeFreqWindow::on_progress_changed()
 {
   navigator->fft_param_window()->set_progress (m_time_freq_view.get_progress());
 }
+#endif
 
 void
 TimeFreqWindow::on_display_params_changed()
 {
-  min_db_label.set_text (Birnet::string_printf ("min_db %.2f", min_db_scale.get_value()));
-  boost_label.set_text (Birnet::string_printf ("boost %.2f", boost_scale.get_value()));
-  m_time_freq_view.set_display_params (min_db_scale.get_value(), boost_scale.get_value());
+  double min_db = min_db_slider->value() / 1000.0;
+  double boost = boost_slider->value() / 1000.0;
+
+  min_db_label->setText (Birnet::string_printf ("min_db %.2f", min_db).c_str());
+  boost_label->setText (Birnet::string_printf ("boost %.2f", boost).c_str());
+  m_time_freq_view->set_display_params (min_db, boost);
 }
 
+#if 0
 void
 TimeFreqWindow::on_resized (int old_width, int old_height, int new_width, int new_height)
 {
