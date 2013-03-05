@@ -29,6 +29,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   QAction *view_lpc_action = new QAction ("LPC View", this);
 
   QAction *view_fft_params_action = new QAction ("FFT Params", this);
+  connect (view_fft_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_fft_params()));
 
   QAction *view_display_params_action = new QAction ("Display Params", this);
 

@@ -23,33 +23,37 @@
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
+#include <QComboBox>
+
 namespace SpectMorph {
 
 class FFTParamWindow : public QWidget
 {
   Q_OBJECT
+
+  QComboBox *transform_combobox;
+  QSlider   *fft_frame_size_slider;
+  QLabel    *fft_frame_size_label;
+
+  QSlider   *fft_frame_overlap_slider;
+  QLabel    *fft_frame_overlap_label;
 public:
-  AnalysisParams get_analysis_params();
+  FFTParamWindow();
 
+  AnalysisParams  get_analysis_params();
+  double          get_frame_overlap();
+  double          get_frame_size();
+  double          get_frame_step();
+
+
+public slots:
+  void on_value_changed();
+
+signals:
+  void            params_changed();
 #if 0
-  Gtk::Table          table;
-
-  Gtk::ComboBoxText   transform_combobox;
-  Gtk::Label          transform_label;
-
-  Gtk::Frame          fft_frame;
-  Gtk::Table          fft_frame_table;
-
   Gtk::Frame          cwt_frame;
   Gtk::Table          cwt_frame_table;
-
-  Gtk::HScale         frame_size_scale;
-  Gtk::Label          frame_size_label;
-  Gtk::Label          frame_size_value_label;
-
-  Gtk::HScale         frame_overlap_scale;
-  Gtk::Label          frame_overlap_label;
-  Gtk::Label          frame_overlap_value_label;
 
   Gtk::ComboBoxText   cwt_mode_combobox;
   Gtk::Label          cwt_mode_label;
@@ -66,10 +70,6 @@ public:
 
   void on_value_changed();
 
-  double get_frame_overlap();
-  double get_frame_size();
-  double get_frame_step();
-
   double get_cwt_time_resolution();
 
 public:
@@ -78,7 +78,6 @@ public:
   void   set_progress (double progress);
   AnalysisParams get_analysis_params();
 
-  sigc::signal<void> signal_params_changed;
 #endif
 };
 

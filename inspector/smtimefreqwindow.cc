@@ -75,6 +75,8 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   vbox->addLayout (boost_hbox);
   setLayout (vbox);
 
+  connect (navigator->fft_param_window(), SIGNAL (params_changed()), this, SLOT (on_dhandle_changed()));
+
   resize (800, 600);
 }
 

@@ -19,6 +19,9 @@
 #include <assert.h>
 #include <birnet/birnet.hh>
 
+#include <QGridLayout>
+#include <QGroupBox>
+
 using namespace SpectMorph;
 
 AnalysisParams
@@ -48,14 +51,13 @@ FFTParamWindow::get_analysis_params()
   params.cwt_freq_resolution = cwt_freq_res_scale.get_value();
   params.cwt_time_resolution = get_cwt_time_resolution();
 #endif
-  params.frame_size_ms = 40;
-  params.frame_step_ms = 10;
+  params.frame_size_ms = get_frame_size();
+  params.frame_step_ms = get_frame_step();
   params.transform_type = SM_TRANSFORM_FFT;
 
   return params;
 }
 
-#if 0
 #define TEXT_FFT "Fourier Transform"
 #define TEXT_CWT "Wavelet Transform"
 #define TEXT_LPC "LPC Transform"
@@ -63,6 +65,53 @@ FFTParamWindow::get_analysis_params()
 #define TEXT_VTIME "Frequency dependant time scale"
 #define TEXT_CTIME "Constant time scale"
 
+FFTParamWindow::FFTParamWindow()
+{
+  setWindowTitle ("Transform Parameters");
+
+  QLabel *transform_label = new QLabel ("Transform Type");
+  transform_combobox = new QComboBox();
+  transform_combobox->addItem (TEXT_FFT);
+  transform_combobox->addItem (TEXT_CWT);
+  transform_combobox->addItem (TEXT_LPC);
+
+  QGroupBox *fft_groupbox = new QGroupBox ("Fourier Transform Parameters");
+  QGridLayout *fft_grid = new QGridLayout();
+
+  // FFT Frame Size
+  fft_grid->addWidget (new QLabel ("FFT Frame Size"), 0, 0);
+  fft_frame_size_slider = new QSlider (Qt::Horizontal);
+  fft_frame_size_slider->setRange (-1000, 1000);
+  fft_frame_size_label = new QLabel();
+  fft_grid->addWidget (fft_frame_size_slider, 0, 1);
+  fft_grid->addWidget (fft_frame_size_label, 0, 2);
+  connect (fft_frame_size_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
+
+  // FFT Frame Overlap
+  fft_grid->addWidget (new QLabel ("FFT Frame Overlap"), 1, 0);
+  fft_frame_overlap_slider = new QSlider (Qt::Horizontal);
+  fft_frame_overlap_slider->setRange (-1000, 2000);
+  fft_frame_overlap_label = new QLabel();
+  fft_grid->addWidget (fft_frame_overlap_slider, 1, 1);
+  fft_grid->addWidget (fft_frame_overlap_label, 1, 2);
+  connect (fft_frame_overlap_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
+
+  fft_groupbox->setLayout (fft_grid);
+
+  QGroupBox *cwt_groupbox = new QGroupBox ("Wavelet Transform Parameters");
+  QGridLayout *cwt_grid = new QGridLayout();
+
+  QGridLayout *grid = new QGridLayout();
+  grid->addWidget (transform_label, 0, 0);
+  grid->addWidget (transform_combobox, 0, 1);
+  grid->addWidget (fft_groupbox, 1, 0, 1, 2);
+  grid->addWidget (cwt_groupbox, 2, 0, 1, 2);
+  setLayout (grid);
+
+  on_value_changed(); // init value labels
+}
+
+#if 0
 FFTParamWindow::FFTParamWindow() :
   table (5, 3),
   frame_size_scale (-1, 1, 0.01),
@@ -168,18 +217,21 @@ FFTParamWindow::get_analysis_params()
 
   return params;
 }
+#endif
 
 double
 FFTParamWindow::get_frame_size()
 {
-  return 40 * pow (10, frame_size_scale.get_value());
+  return 40 * pow (10, fft_frame_size_slider->value() / 1000.0);
 }
 
+#if 0
 double
 FFTParamWindow::get_cwt_time_resolution()
 {
-  return 40 * pow (10, cwt_time_res_scale.get_value());
+  return 40 * pow (10, cwt_time_res_slider->value() / 1000.0);
 }
+#endif
 
 double
 FFTParamWindow::get_frame_step()
@@ -190,20 +242,23 @@ FFTParamWindow::get_frame_step()
 double
 FFTParamWindow::get_frame_overlap()
 {
-  return pow (4, frame_overlap_scale.get_value() + 1);
+  return pow (4, fft_frame_overlap_slider->value() / 1000.0 + 1);
 }
 
 void
 FFTParamWindow::on_value_changed()
 {
-  frame_size_value_label.set_text (Birnet::string_printf ("%.1f ms", get_frame_size()));
-  frame_overlap_value_label.set_text (Birnet::string_printf ("%.1f", get_frame_overlap()));
+  fft_frame_size_label->setText (Birnet::string_printf ("%.1f ms", get_frame_size()).c_str());
+  fft_frame_overlap_label->setText (Birnet::string_printf ("%.1f", get_frame_overlap()).c_str());
+#if 0
   cwt_freq_res_value_label.set_text (Birnet::string_printf ("%.1f Hz", cwt_freq_res_scale.get_value()));
   cwt_time_res_value_label.set_text (Birnet::string_printf ("%.1f ms", get_cwt_time_resolution()));
+#endif
 
-  signal_params_changed();
+  emit params_changed();
 }
 
+#if 0
 void
 FFTParamWindow::set_progress (double progress)
 {

@@ -74,6 +74,7 @@ public slots:
   void on_view_player();
   void on_selection_changed();
   void on_view_time_freq();
+  void on_view_fft_params();
   void on_show_position_changed();
 
 signals:
@@ -131,10 +132,8 @@ public:
   void on_save_clicked();
   void on_audio_edit();
   void on_next_sample();
-  void on_view_time_freq();
   void on_view_sample();
   void on_view_spectrum();
-  void on_view_fft_params();
   void on_view_display_params();
   void on_view_lpc();
   void on_view_player();

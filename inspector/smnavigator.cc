@@ -148,10 +148,11 @@ Navigator::Navigator (const string& filename)
 
   setLayout (vbox);
 
+  m_fft_param_window = new FFTParamWindow();
+
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
   time_freq_window = new TimeFreqWindow (this);
-  m_fft_param_window = new FFTParamWindow();
 
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
   connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
@@ -251,6 +252,12 @@ void
 Navigator::on_view_time_freq()
 {
   time_freq_window->show();
+}
+
+void
+Navigator::on_view_fft_params()
+{
+  m_fft_param_window->show();
 }
 
 Audio *
@@ -573,12 +580,6 @@ void
 Navigator::on_view_time_freq()
 {
   time_freq_window.show();
-}
-
-void
-Navigator::on_view_fft_params()
-{
-  m_fft_param_window.show();
 }
 
 void
