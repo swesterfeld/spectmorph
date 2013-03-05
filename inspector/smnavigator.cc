@@ -156,6 +156,17 @@ Navigator::Navigator (const string& filename)
   connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
 }
 
+bool
+Navigator::handle_close_event()
+{
+  player_window->close();
+  sample_window->close();
+  time_freq_window->close();
+  m_fft_param_window->close();
+
+  return true;
+}
+
 void
 Navigator::on_combo_changed()
 {

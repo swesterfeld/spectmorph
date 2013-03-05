@@ -16,6 +16,8 @@ class NavigatorWindow : public QMainWindow
   Navigator *navigator;
 public:
   NavigatorWindow (const std::string& filename);
+
+  void closeEvent (QCloseEvent *event);
 };
 
 }

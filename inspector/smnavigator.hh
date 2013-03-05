@@ -57,14 +57,15 @@ private:
   PlayerWindow         *player_window;
   TimeFreqWindow       *time_freq_window;
   FFTParamWindow       *m_fft_param_window;
+
 public:
   Navigator (const std::string& filename);
 
-  GslDataHandle *get_dhandle();
-  Audio         *get_audio();
-  bool           spectmorph_signal_active();
-
+  GslDataHandle        *get_dhandle();
+  Audio                *get_audio();
+  bool                  spectmorph_signal_active();
   FFTParamWindow       *fft_param_window();
+  bool                  handle_close_event(); /* returns true if close is ok */
 
 public slots:
   void on_combo_changed();

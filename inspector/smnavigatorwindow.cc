@@ -5,6 +5,7 @@
 #include <QAction>
 #include <QMenu>
 #include <QMenuBar>
+#include <QCloseEvent>
 
 using namespace SpectMorph;
 
@@ -48,6 +49,19 @@ NavigatorWindow::NavigatorWindow (const string& filename)
 
   setCentralWidget (navigator);
   resize (300, 600);
+}
+
+void
+NavigatorWindow::closeEvent (QCloseEvent *event)
+{
+  if (navigator->handle_close_event())
+    {
+      event->accept();
+    }
+  else
+    {
+      event->ignore();
+    }
 }
 
 
