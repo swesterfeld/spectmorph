@@ -63,6 +63,7 @@ public:
 
   GslDataHandle        *get_dhandle();
   Audio                *get_audio();
+  bool                  get_show_position();
   bool                  spectmorph_signal_active();
   FFTParamWindow       *fft_param_window();
   bool                  handle_close_event(); /* returns true if close is ok */
@@ -73,9 +74,11 @@ public slots:
   void on_view_player();
   void on_selection_changed();
   void on_view_time_freq();
+  void on_show_position_changed();
 
 signals:
   void dhandle_changed();
+  void show_position_changed();
 #if 0
   Gtk::VBox             index_vbox;
 
@@ -116,7 +119,6 @@ signals:
   LPCWindow                          lpc_window;
 public:
   sigc::signal<void> signal_dhandle_changed;
-  sigc::signal<void> signal_show_position_changed;
   sigc::signal<void> signal_show_analysis_changed;
   sigc::signal<void> signal_show_frequency_grid_changed;
 
@@ -124,7 +126,6 @@ public:
 
   void on_combo_changed();
   void on_selection_changed();
-  void on_show_position_changed();
   void on_show_analysis_changed();
   void on_show_frequency_grid_changed();
   void on_save_clicked();
@@ -141,7 +142,6 @@ public:
 
   GslDataHandle *get_dhandle();
   Audio         *get_audio();
-  bool           get_show_position();
   bool           get_show_analysis();
   bool           get_show_frequency_grid();
   bool           spectmorph_signal_active();

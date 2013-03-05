@@ -39,9 +39,18 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   zoom_controller = new ZoomController (5000, 10000);
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
+  QHBoxLayout *position_hbox = new QHBoxLayout();
+  position_slider = new QSlider (Qt::Horizontal);
+  position_label = new QLabel ("frame 0");
+  position_slider->setRange (0, 1000 * 1000);
+  position_hbox->addWidget (position_slider);
+  position_hbox->addWidget (position_label);
+  connect (position_slider, SIGNAL (valueChanged (int)), this, SLOT (on_position_changed()));
+
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (scroll_area);
   vbox->addWidget (zoom_controller);
+  vbox->addLayout (position_hbox);
   setLayout (vbox);
 
   resize (800, 600);
@@ -111,21 +120,22 @@ TimeFreqWindow::on_zoom_changed()
   m_time_freq_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
-#if 0
 void
 TimeFreqWindow::on_position_changed()
 {
-  int frames = m_time_freq_view.get_frames();
-  int position = CLAMP (sm_round_positive (position_adjustment.get_value() * frames), 0, frames - 1);
+  int new_pos = position_slider->value();
+  int frames = m_time_freq_view->get_frames();
+  int position = CLAMP (sm_round_positive (new_pos / 1000.0 / 1000.0 * frames), 0, frames - 1);
   char buffer[1024];
   sprintf (buffer, "frame %d", position);
-  position_label.set_text (buffer);
+  position_label->setText (buffer);
   if (navigator->get_show_position())
-    m_time_freq_view.set_position (position);
+    m_time_freq_view->set_position (position);
   else
-    m_time_freq_view.set_position (-1);
+    m_time_freq_view->set_position (-1);
 }
 
+#if 0
 void
 TimeFreqWindow::on_analysis_changed()
 {

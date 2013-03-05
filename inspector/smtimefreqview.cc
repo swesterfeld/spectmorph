@@ -135,16 +135,16 @@ TimeFreqView::set_zoom (double new_hzoom, double new_vzoom)
   update();
 }
 
-#if 0
 void
 TimeFreqView::set_position (int new_position)
 {
   position = new_position;
 
-  force_redraw();
-  signal_spectrum_changed();
+  update();
+  emit spectrum_changed();
 }
 
+#if 0
 void
 TimeFreqView::load (const string& filename)
 {
@@ -184,13 +184,13 @@ TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio
 
   m_audio = audio;
 }
+#endif
 
 int
 TimeFreqView::get_frames()
 {
   return image.get_width();
 }
-#endif
 
 QImage
 TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth, double hzoom, double vzoom,
