@@ -38,6 +38,8 @@ protected:
   double      display_min_db;
   double      display_boost;
   int         position;
+  bool        show_analysis;
+  bool        m_show_frequency_grid;
 
   FFTThread  fft_thread;
 
@@ -56,6 +58,8 @@ public:
   void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
   void set_display_params (double min_db, double boost);
+  void set_show_analysis (bool new_show_analysis);
+  void set_show_frequency_grid (bool new_show_frequency_grid);
 
   int    get_frames();
   double get_progress();
@@ -70,8 +74,6 @@ signals:
 #if 0 /* PORT */
   int old_height;
   int old_width;
-  bool show_analysis;
-  bool m_show_frequency_grid;
 
   void force_redraw();
 
@@ -86,8 +88,6 @@ public:
   void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
   bool on_expose_event (GdkEventExpose* ev);
 
-  void set_show_analysis (bool new_show_analysis);
-  void set_show_frequency_grid (bool new_show_frequency_grid);
 
   FFTResult get_spectrum();
   bool show_frequency_grid();

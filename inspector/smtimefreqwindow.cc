@@ -160,26 +160,17 @@ TimeFreqWindow::on_position_changed()
     m_time_freq_view->set_position (-1);
 }
 
-#if 0
 void
 TimeFreqWindow::on_analysis_changed()
 {
-  m_time_freq_view.set_show_analysis (navigator->get_show_analysis());
+  m_time_freq_view->set_show_analysis (navigator->get_show_analysis());
 }
 
 void
 TimeFreqWindow::on_frequency_grid_changed()
 {
-  m_time_freq_view.set_show_frequency_grid (navigator->get_show_frequency_grid());
+  m_time_freq_view->set_show_frequency_grid (navigator->get_show_frequency_grid());
 }
-
-void
-TimeFreqWindow::on_dhandle_changed()
-{
-  m_time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),
-                       navigator->fft_param_window()->get_analysis_params());
-}
-#endif
 
 void
 TimeFreqWindow::on_progress_changed()

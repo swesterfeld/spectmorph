@@ -55,10 +55,10 @@ TimeFreqView::TimeFreqView()
   resize (400, 400);
   hzoom = 1;
   vzoom = 1;
-  // position = -1;
+  position = -1;
   m_audio = NULL;
-  // show_analysis = false;
-  // m_show_frequency_grid = false;
+  show_analysis = false;
+  m_show_frequency_grid = false;
 
   display_min_db = -96;
   display_boost = 0;
@@ -175,15 +175,6 @@ TimeFreqView::load (const string& filename)
   params.frame_step_ms = 10;
   load (dhandle, filename, NULL, params);
 }
-
-void
-TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
-{
-  if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
-    FFTThread::the()->compute_image (image, dhandle, analysis_params);
-
-  m_audio = audio;
-}
 #endif
 
 int
@@ -244,84 +235,10 @@ TimeFreqView::zoom_rect (PixelArray& image, int destx, int desty, int destw, int
   return zqimage;
 }
 
-#if 0
-bool
-TimeFreqView::on_expose_event (GdkEventExpose *ev)
-{
-  double scaled_hzoom, scaled_vzoom;
-  scale_zoom (&scaled_hzoom, &scaled_vzoom);
-
-  // draw contents
-  Glib::RefPtr<Gdk::Pixbuf> zimage;
-  zimage = zoom_rect (image, ev->area.x, ev->area.y, ev->area.width, ev->area.height, scaled_hzoom, scaled_vzoom, position,
-                      display_min_db, display_boost);
-  zimage->render_to_drawable (get_window(), get_style()->get_black_gc(), 0, 0, ev->area.x, ev->area.y,
-                              zimage->get_width(), zimage->get_height(),
-                              Gdk::RGB_DITHER_NONE, 0, 0);
-
-  Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window && m_audio)
-    {
-      Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
-      cr->set_line_width (1.0);
-
-      // clip to the area indicated by the expose event so that we only redraw
-      // the portion of the window that needs to be redrawn
-      cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
-      cr->clip();
-
-      int width = image.get_width() * scaled_hzoom, height = image.get_height() * scaled_vzoom;
-
-      if (show_analysis)
-        {
-          // red:
-          cr->set_source_rgb (1.0, 0.0, 0.0);
-
-          const double size = 3;
-          for (size_t i = 0; i < m_audio->contents.size(); i++)
-            {
-              double posx = width * double (i) / m_audio->contents.size();
-              if (posx > ev->area.x - 10 && posx < ev->area.width + ev->area.x + 10)
-                {
-                  const AudioBlock& ab = m_audio->contents[i];
-                  for (size_t f = 0; f < ab.freqs.size(); f++)
-                    {
-                      double posy = height - height * ab.freqs[f] / (m_audio->mix_freq / 2);
-                      cr->move_to (posx - size, posy - size);
-                      cr->line_to (posx + size, posy + size);
-                      cr->move_to (posx - size, posy + size);
-                      cr->line_to (posx + size, posy - size);
-                    }
-                }
-            }
-          cr->stroke();
-        }
-      if (m_show_frequency_grid)
-        {
-          cr->set_line_width (2.0);
-          cr->set_source_rgb (0.5, 0.5, 1.0);
-
-          for (int partial = 1; ; partial++)
-            {
-              double posy = height - height * partial * m_audio->fundamental_freq / (m_audio->mix_freq / 2);
-              if (posy < 0)
-                break;
-
-              cr->move_to (0, posy);
-              cr->line_to (width, posy);
-            }
-          cr->stroke();
-        }
-    }
-  return true;
-}
-#endif
-
 void
 TimeFreqView::paintEvent (QPaintEvent *event)
 {
   QPainter painter (this);
-  painter.fillRect (rect(), QColor (255, 255, 255));
 
   double scaled_hzoom, scaled_vzoom;
   scale_zoom (&scaled_hzoom, &scaled_vzoom);
@@ -333,6 +250,41 @@ TimeFreqView::paintEvent (QPaintEvent *event)
 
   QPoint origin (event->rect().x(), event->rect().y());
   painter.drawImage (origin, zqimage);
+
+  const int width = image.get_width() * scaled_hzoom, height = image.get_height() * scaled_vzoom;
+  if (show_analysis)
+    {
+      // red:
+      painter.setPen (QColor (255, 0, 0));
+
+      const double size = 3;
+      for (size_t i = 0; i < m_audio->contents.size(); i++)
+        {
+          double posx = width * double (i) / m_audio->contents.size();
+          if (posx > event->rect().x() - 10 && posx < event->rect().width() + event->rect().x() + 10)
+            {
+              const AudioBlock& ab = m_audio->contents[i];
+              for (size_t f = 0; f < ab.freqs.size(); f++)
+                {
+                  double posy = height - height * ab.freqs[f] / (m_audio->mix_freq / 2);
+                  painter.drawLine (posx - size, posy - size, posx + size, posy + size);
+                  painter.drawLine (posx - size, posy + size, posx + size, posy - size);
+                }
+            }
+        }
+    }
+  if (m_show_frequency_grid)
+    {
+      painter.setPen (QPen (QColor (128, 128, 255), 2));
+      for (int partial = 1; ; partial++)
+        {
+          double posy = height - height * partial * m_audio->fundamental_freq / (m_audio->mix_freq / 2);
+          if (posy < 0)
+            break;
+
+          painter.drawLine (0, posy, width, posy);
+        }
+    }
 }
 
 #if 0
@@ -356,13 +308,14 @@ TimeFreqView::get_spectrum()
 
   return FFTResult();
 }
+#endif
 
 void
 TimeFreqView::set_show_analysis (bool new_show_analysis)
 {
   show_analysis = new_show_analysis;
 
-  force_redraw();
+  update();
 }
 
 void
@@ -370,9 +323,8 @@ TimeFreqView::set_show_frequency_grid (bool new_show_frequency_grid)
 {
   m_show_frequency_grid = new_show_frequency_grid;
 
-  force_redraw();
+  update();
 }
-#endif
 
 double
 TimeFreqView::get_progress()

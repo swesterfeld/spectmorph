@@ -131,9 +131,11 @@ Navigator::Navigator (const string& filename)
 
   show_analysis_button = new QPushButton ("Show Analysis");
   show_analysis_button->setCheckable (true);
+  connect (show_analysis_button, SIGNAL (clicked()), this, SLOT (on_show_analysis_changed()));
 
-  show_frequency_grid_button = new QPushButton ("Show Frequency");
+  show_frequency_grid_button = new QPushButton ("Show Frequency Grid");
   show_frequency_grid_button->setCheckable (true);
+  connect (show_frequency_grid_button, SIGNAL (clicked()), this, SLOT (on_show_frequency_grid_changed()));
 
   QPushButton *save_button = new QPushButton ("Save");
 
@@ -157,6 +159,8 @@ Navigator::Navigator (const string& filename)
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
   connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
   connect (this, SIGNAL (show_position_changed()), time_freq_window, SLOT (on_position_changed()));
+  connect (this, SIGNAL (show_analysis_changed()), time_freq_window, SLOT (on_analysis_changed()));
+  connect (this, SIGNAL (show_frequency_grid_changed()), time_freq_window, SLOT (on_frequency_grid_changed()));
 }
 
 bool
@@ -495,25 +499,17 @@ Navigator::on_show_position_changed()
   emit show_position_changed();
 }
 
-#if 0
 void
 Navigator::on_show_analysis_changed()
 {
-  signal_show_analysis_changed();
+  emit show_analysis_changed();
 }
 
 void
 Navigator::on_show_frequency_grid_changed()
 {
-  signal_show_frequency_grid_changed();
+  emit show_frequency_grid_changed();
 }
-
-GslDataHandle *
-Navigator::get_dhandle()
-{
-  return dhandle;
-}
-#endif
 
 bool
 Navigator::get_show_position()
@@ -521,25 +517,19 @@ Navigator::get_show_position()
   return show_position_button->isChecked();
 }
 
-#if 0
 bool
 Navigator::get_show_analysis()
 {
-  return show_analysis_button.get_active();
+  return show_analysis_button->isChecked();
 }
 
 bool
 Navigator::get_show_frequency_grid()
 {
-  return show_frequency_grid_button.get_active();
+  return show_frequency_grid_button->isChecked();
 }
 
-Audio *
-Navigator::get_audio()
-{
-  return audio;
-}
-
+#if 0
 void
 Navigator::on_save_clicked()
 {

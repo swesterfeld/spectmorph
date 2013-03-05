@@ -54,15 +54,11 @@ public slots:
   void on_position_changed();
   void on_display_params_changed();
   void on_progress_changed();
-
-#if 0
-public:
-  TimeFreqWindow (Navigator *navigator);
-
   void on_analysis_changed();
   void on_frequency_grid_changed();
-  void on_resized (int old_width, int old_height, int new_width, int new_height);
 
+#if 0
+  void on_resized (int old_width, int old_height, int new_width, int new_height);
   TimeFreqView *time_freq_view();
 #endif
 };
