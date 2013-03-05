@@ -24,6 +24,7 @@
 #include "smzoomcontroller.hh"
 
 #include <QComboBox>
+#include <QProgressBar>
 
 namespace SpectMorph {
 
@@ -46,6 +47,8 @@ class FFTParamWindow : public QWidget
   QSlider   *cwt_time_res_slider;
   QLabel    *cwt_time_res_label;
 
+  QProgressBar *progress_bar;
+
 public:
   FFTParamWindow();
 
@@ -54,16 +57,13 @@ public:
   double          get_frame_size();
   double          get_frame_step();
   double          get_cwt_time_resolution();
+  void            set_progress (double progress);
 
 public slots:
-  void on_value_changed();
+  void            on_value_changed();
 
 signals:
   void            params_changed();
-#if 0
-  Gtk::ProgressBar    progress_bar;
-  void   set_progress (double progress);
-#endif
 };
 
 }

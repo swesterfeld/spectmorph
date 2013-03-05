@@ -57,7 +57,8 @@ public:
   void set_position (int new_position);
   void set_display_params (double min_db, double boost);
 
-  int  get_frames();
+  int    get_frames();
+  double get_progress();
 
 public slots:
   void on_result_available();
@@ -89,7 +90,6 @@ public:
   void set_show_frequency_grid (bool new_show_frequency_grid);
 
   FFTResult get_spectrum();
-  double get_progress();
   bool show_frequency_grid();
   double fundamental_freq();
   double mix_freq();

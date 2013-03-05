@@ -76,6 +76,7 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   setLayout (vbox);
 
   connect (navigator->fft_param_window(), SIGNAL (params_changed()), this, SLOT (on_dhandle_changed()));
+  connect (m_time_freq_view, SIGNAL (progress_changed()), this, SLOT (on_progress_changed()));
 
   resize (800, 600);
 }
@@ -178,13 +179,13 @@ TimeFreqWindow::on_dhandle_changed()
   m_time_freq_view.load (navigator->get_dhandle(), "fn", navigator->get_audio(),
                        navigator->fft_param_window()->get_analysis_params());
 }
+#endif
 
 void
 TimeFreqWindow::on_progress_changed()
 {
-  navigator->fft_param_window()->set_progress (m_time_freq_view.get_progress());
+  navigator->fft_param_window()->set_progress (m_time_freq_view->get_progress());
 }
-#endif
 
 void
 TimeFreqWindow::on_display_params_changed()

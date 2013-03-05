@@ -473,14 +473,12 @@ FFTThread::on_result_available()
   emit result_available();
 }
 
-#if 0
 double
 FFTThread::get_progress()
 {
   Birnet::AutoLocker lock (command_mutex);
   return command_progress;
 }
-#endif
 
 bool
 FFTThread::command_is_obsolete()

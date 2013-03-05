@@ -16,6 +16,7 @@
  */
 
 #include "smfftparamwindow.hh"
+#include "smmath.hh"
 #include <assert.h>
 #include <birnet/birnet.hh>
 
@@ -70,32 +71,45 @@ FFTParamWindow::FFTParamWindow()
   QGroupBox *cwt_groupbox = new QGroupBox ("Wavelet Transform Parameters");
   QGridLayout *cwt_grid = new QGridLayout();
 
+  // CWT Mode
+  cwt_mode_combobox = new QComboBox();
+  cwt_mode_combobox->addItem (TEXT_VTIME);
+  cwt_mode_combobox->addItem (TEXT_CTIME);
+  cwt_grid->addWidget (new QLabel ("Transform Mode"), 0, 0);
+  cwt_grid->addWidget (cwt_mode_combobox, 0, 1, 1, 2);
+  connect (cwt_mode_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_value_changed()));
+
   // CWT Frequency Resolution
-  cwt_grid->addWidget (new QLabel ("Frequency Resolution"), 0, 0);
+  cwt_grid->addWidget (new QLabel ("Frequency Resolution"), 1, 0);
   cwt_freq_res_slider = new QSlider (Qt::Horizontal);
   cwt_freq_res_slider->setRange (1000, 100000);
   cwt_freq_res_slider->setValue (25000);
   cwt_freq_res_label = new QLabel();
-  cwt_grid->addWidget (cwt_freq_res_slider, 0, 1);
-  cwt_grid->addWidget (cwt_freq_res_label, 0, 2);
+  cwt_grid->addWidget (cwt_freq_res_slider, 1, 1);
+  cwt_grid->addWidget (cwt_freq_res_label, 1, 2);
   connect (cwt_freq_res_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
 
   // CWT Time Resolution
-  cwt_grid->addWidget (new QLabel ("Time Resolution"), 1, 0);
+  cwt_grid->addWidget (new QLabel ("Time Resolution"), 2, 0);
   cwt_time_res_slider = new QSlider (Qt::Horizontal);
   cwt_time_res_slider->setRange (-1000, 1000);
   cwt_time_res_label = new QLabel();
-  cwt_grid->addWidget (cwt_time_res_slider, 1, 1);
-  cwt_grid->addWidget (cwt_time_res_label, 1, 2);
+  cwt_grid->addWidget (cwt_time_res_slider, 2, 1);
+  cwt_grid->addWidget (cwt_time_res_label, 2, 2);
   connect (cwt_time_res_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
 
   cwt_groupbox->setLayout (cwt_grid);
+
+  // Progress bar
+  progress_bar = new QProgressBar();
+  progress_bar->setRange (0, 1000);
 
   QGridLayout *grid = new QGridLayout();
   grid->addWidget (transform_label, 0, 0);
   grid->addWidget (transform_combobox, 0, 1);
   grid->addWidget (fft_groupbox, 1, 0, 1, 2);
   grid->addWidget (cwt_groupbox, 2, 0, 1, 2);
+  grid->addWidget (progress_bar, 3, 0, 1, 3);
   setLayout (grid);
 
   on_value_changed(); // init value labels
@@ -117,15 +131,13 @@ FFTParamWindow::get_analysis_params()
   else
     assert (false);
 
-#if 0
-  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
+  string cwt_mode_text = cwt_mode_combobox->currentText().toLatin1().data();
+  if (cwt_mode_text == TEXT_VTIME)
     params.cwt_mode = SM_CWT_MODE_VTIME;
-  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
+  else if (cwt_mode_text == TEXT_CTIME)
     params.cwt_mode = SM_CWT_MODE_CTIME;
   else
     assert (false);
-#endif
-  params.cwt_mode = SM_CWT_MODE_CTIME;
 
   params.frame_size_ms = get_frame_size();
   params.frame_step_ms = get_frame_step();
@@ -215,34 +227,6 @@ FFTParamWindow::FFTParamWindow() :
   show_all_children();
 }
 
-AnalysisParams
-FFTParamWindow::get_analysis_params()
-{
-  AnalysisParams params;
-
-  if (transform_combobox.get_active_text() == TEXT_FFT)
-    params.transform_type = SM_TRANSFORM_FFT;
-  else if (transform_combobox.get_active_text() == TEXT_CWT)
-    params.transform_type = SM_TRANSFORM_CWT;
-  else if (transform_combobox.get_active_text() == TEXT_LPC)
-    params.transform_type = SM_TRANSFORM_LPC;
-  else
-    assert (false);
-
-  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
-    params.cwt_mode = SM_CWT_MODE_VTIME;
-  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
-    params.cwt_mode = SM_CWT_MODE_CTIME;
-  else
-    assert (false);
-
-  params.frame_size_ms = get_frame_size();
-  params.frame_step_ms = get_frame_step();
-  params.cwt_freq_resolution = cwt_freq_res_scale.get_value();
-  params.cwt_time_resolution = get_cwt_time_resolution();
-
-  return params;
-}
 #endif
 
 double
@@ -280,10 +264,8 @@ FFTParamWindow::on_value_changed()
   emit params_changed();
 }
 
-#if 0
 void
 FFTParamWindow::set_progress (double progress)
 {
-  progress_bar.set_fraction (progress);
+  progress_bar->setValue (sm_round_positive (progress * 1000));
 }
-#endif

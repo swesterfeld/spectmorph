@@ -372,13 +372,13 @@ TimeFreqView::set_show_frequency_grid (bool new_show_frequency_grid)
 
   force_redraw();
 }
+#endif
 
 double
 TimeFreqView::get_progress()
 {
   return fft_thread.get_progress();
 }
-#endif
 
 void
 TimeFreqView::set_display_params (double min_db, double boost)
