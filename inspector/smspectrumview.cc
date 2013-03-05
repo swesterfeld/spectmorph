@@ -134,22 +134,6 @@ SpectrumView::paintEvent (QPaintEvent *event)
     }
 }
 
-#if 0
-bool
-SpectrumView::on_expose_event (GdkEventExpose* ev)
-{
-  const int width =  800 * hzoom;
-  const int height = 600 * vzoom;
-  set_size_request (width, height);
-
-  Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window)
-  {
-  }
-  return true;
-}
-#endif
-
 void
 SpectrumView::set_spectrum_model (TimeFreqView *tfview)
 {

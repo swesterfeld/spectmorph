@@ -120,11 +120,6 @@ FFTThread::FFTThread()
 
   QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
   connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_result_available()));
-
-#if 0
-  Glib::signal_io().connect (sigc::mem_fun (this, &FFTThread::on_result_available),
-                             main_thread_wakeup_pfds[0], Glib::IO_IN);
-#endif
 }
 
 FFTThread::~FFTThread()

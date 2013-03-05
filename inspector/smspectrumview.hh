@@ -44,9 +44,6 @@ public:
 public slots:
   void on_display_params_changed();
   void on_spectrum_changed();
-#if 0
-  bool on_expose_event (GdkEventExpose* ev);
-#endif
 };
 
 }

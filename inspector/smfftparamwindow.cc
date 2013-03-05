@@ -37,6 +37,7 @@ using std::string;
 FFTParamWindow::FFTParamWindow()
 {
   setWindowTitle ("Transform Parameters");
+  resize (500, 200);
 
   QLabel *transform_label = new QLabel ("Transform Type");
   transform_combobox = new QComboBox();
@@ -109,7 +110,7 @@ FFTParamWindow::FFTParamWindow()
   grid->addWidget (transform_combobox, 0, 1);
   grid->addWidget (fft_groupbox, 1, 0, 1, 2);
   grid->addWidget (cwt_groupbox, 2, 0, 1, 2);
-  grid->addWidget (progress_bar, 3, 0, 1, 3);
+  grid->addWidget (progress_bar, 3, 0, 1, 2);
   setLayout (grid);
 
   on_value_changed(); // init value labels
@@ -148,86 +149,6 @@ FFTParamWindow::get_analysis_params()
   return params;
 }
 
-
-#if 0
-FFTParamWindow::FFTParamWindow() :
-  table (5, 3),
-  frame_size_scale (-1, 1, 0.01),
-  frame_overlap_scale (-1, 2, 0.01),
-  cwt_freq_res_scale (1, 100, 0.01),
-  cwt_time_res_scale (-1, 1, 0.01)
-{
-  set_border_width (10);
-  set_default_size (500, 200);
-  set_title ("Transform Parameters");
-
-  table.attach (transform_label, 0, 1, 0, 1, Gtk::SHRINK);
-  table.attach (transform_combobox, 1, 3, 0, 1, Gtk::EXPAND|Gtk::FILL, Gtk::EXPAND);
-  transform_label.set_text ("Transform Type");
-  transform_combobox.append_text (TEXT_FFT);
-  transform_combobox.append_text (TEXT_CWT);
-  transform_combobox.append_text (TEXT_LPC);
-  transform_combobox.set_active_text (TEXT_FFT);
-  transform_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  fft_frame_table.attach (frame_size_label, 0, 1, 0, 1, Gtk::SHRINK);
-  fft_frame_table.attach (frame_size_scale, 1, 2, 0, 1);
-  fft_frame_table.attach (frame_size_value_label, 2, 3, 0, 1, Gtk::SHRINK);
-  frame_size_label.set_text ("FFT Frame Size");
-  frame_size_scale.set_draw_value (false);
-  frame_size_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  fft_frame_table.attach (frame_overlap_label, 0, 1, 1, 2, Gtk::SHRINK);
-  fft_frame_table.attach (frame_overlap_scale, 1, 2, 1, 2);
-  fft_frame_table.attach (frame_overlap_value_label, 2, 3, 1, 2, Gtk::SHRINK);
-  frame_overlap_label.set_text ("FFT Frame Overlap");
-  frame_overlap_scale.set_draw_value (false);
-  frame_overlap_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  fft_frame.set_label ("Fourier Transform Parameters");
-  fft_frame_table.set_border_width (10);
-  fft_frame.add (fft_frame_table);
-  table.attach (fft_frame, 0, 3, 1, 2);
-
-  cwt_frame.set_label ("Wavelet Transform Parameters");
-  cwt_frame.add (cwt_frame_table);
-  cwt_frame_table.set_border_width (10);
-  table.attach (cwt_frame, 0, 3, 2, 3);
-
-  cwt_mode_label.set_label ("Transform Mode");
-  cwt_mode_combobox.append_text (TEXT_VTIME);
-  cwt_mode_combobox.append_text (TEXT_CTIME);
-  cwt_mode_combobox.set_active_text (TEXT_VTIME);
-  cwt_frame_table.attach (cwt_mode_label, 0, 1, 0, 1, Gtk::SHRINK);
-  cwt_frame_table.attach (cwt_mode_combobox, 1, 3, 0, 1);
-  cwt_mode_combobox.signal_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  cwt_frame_table.attach (cwt_freq_res_label, 0, 1, 1, 2, Gtk::SHRINK);
-  cwt_frame_table.attach (cwt_freq_res_scale, 1, 2, 1, 2);
-  cwt_frame_table.attach (cwt_freq_res_value_label, 2, 3, 1, 2, Gtk::SHRINK);
-  cwt_freq_res_label.set_text ("Frequency Resolution");
-  cwt_freq_res_scale.set_draw_value (false);
-  cwt_freq_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  cwt_frame_table.attach (cwt_time_res_label, 0, 1, 2, 3, Gtk::SHRINK);
-  cwt_frame_table.attach (cwt_time_res_scale, 1, 2, 2, 3);
-  cwt_frame_table.attach (cwt_time_res_value_label, 2, 3, 2, 3, Gtk::SHRINK);
-  cwt_time_res_label.set_text ("Time Resolution");
-  cwt_time_res_scale.set_draw_value (false);
-  cwt_time_res_scale.signal_value_changed().connect (sigc::mem_fun (*this, &FFTParamWindow::on_value_changed));
-
-  table.attach (progress_bar, 0, 3, 3, 4);
-
-  frame_size_scale.set_value (0);
-  frame_overlap_scale.set_value (0);
-  cwt_freq_res_scale.set_value (25);
-  cwt_time_res_scale.set_value (0);
-  add (table);
-
-  show_all_children();
-}
-
-#endif
 
 double
 FFTParamWindow::get_frame_size()
