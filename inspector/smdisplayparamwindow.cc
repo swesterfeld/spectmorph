@@ -19,42 +19,42 @@
 #include <assert.h>
 #include <birnet/birnet.hh>
 
+#include <QVBoxLayout>
+
 using namespace SpectMorph;
 
-#if 0
 DisplayParamWindow::DisplayParamWindow()
 {
-  set_border_width (10);
-  set_title ("Display Parameters");
+  setWindowTitle ("Display Parameters");
 
-  show_lpc_button.set_label ("Show LPC Envelope in Spectrum View");
-  show_lpc_button.signal_toggled().connect (sigc::mem_fun (*this, &DisplayParamWindow::on_param_changed));
-  vbox.pack_start (show_lpc_button, Gtk::PACK_SHRINK);
+  QVBoxLayout *vbox = new QVBoxLayout();
 
-  show_lsf_button.set_label ("Show LPC LSF Parameters in Spectrum View");
-  show_lsf_button.signal_toggled().connect (sigc::mem_fun (*this, &DisplayParamWindow::on_param_changed));
-  vbox.pack_start (show_lsf_button, Gtk::PACK_SHRINK);
+  show_lpc_checkbox = new QCheckBox ("Show LPC Envelope in Spectrum View");
+  show_lsf_checkbox = new QCheckBox ("Show LPC LSF Parameters in Spectrum View");
 
-  add (vbox);
+  connect (show_lpc_checkbox, SIGNAL (clicked()), this, SLOT (on_param_changed()));
+  connect (show_lsf_checkbox, SIGNAL (clicked()), this, SLOT (on_param_changed()));
 
-  show_all_children();
+  vbox->addWidget (show_lpc_checkbox);
+  vbox->addWidget (show_lsf_checkbox);
+
+  setLayout (vbox);
 }
 
 void
 DisplayParamWindow::on_param_changed()
 {
-  signal_params_changed();
+  emit params_changed();
 }
 
 bool
 DisplayParamWindow::show_lsf()
 {
-  return show_lsf_button.get_active();
+  return show_lsf_checkbox->isChecked();
 }
 
 bool
 DisplayParamWindow::show_lpc()
 {
-  return show_lpc_button.get_active();
+  return show_lpc_checkbox->isChecked();
 }
-#endif

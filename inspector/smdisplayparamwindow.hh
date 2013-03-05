@@ -23,25 +23,26 @@
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
+#include <QCheckBox>
+
 namespace SpectMorph {
 
 class DisplayParamWindow : public QWidget
 {
   Q_OBJECT
 
-#if 0
-  Gtk::VBox          vbox;
-  Gtk::CheckButton   show_lsf_button;
-  Gtk::CheckButton   show_lpc_button;
-
-  void on_param_changed();
+  QCheckBox         *show_lsf_checkbox;
+  QCheckBox         *show_lpc_checkbox;
 
 public:
   DisplayParamWindow();
 
   bool show_lsf();
   bool show_lpc();
-#endif
+
+public slots:
+  void on_param_changed();
+
 signals:
   void params_changed();
 };

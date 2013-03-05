@@ -77,9 +77,9 @@ SpectrumView::paintEvent (QPaintEvent *event)
       while (pos < 1);
     }
 
-  // draw red lines
+  // draw spectrum
   painter.setPen (QPen (QColor (200, 0, 0), 2));
-  int last_x, last_y;
+  int last_x = 0, last_y = 0;
   for (size_t i = 0; i < spectrum.mags.size(); i++)
     {
       int x = double (i) / spectrum.mags.size() * width;
@@ -89,6 +89,47 @@ SpectrumView::paintEvent (QPaintEvent *event)
 
       last_x = x;
       last_y = y;
+    }
+
+  // draw lpc envelope
+  if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lpc())
+    {
+      LPC::LSFEnvelope env;
+      env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
+
+      painter.setPen (QPen (QColor (0, 200, 0), 2));
+      double max_lpc_value = 0;
+      for (float freq = 0; freq < M_PI; freq += 0.001)
+        {
+          double value = env.eval (freq);
+          double value_db = bse_db_from_factor (value, -200);
+          max_lpc_value = max (max_lpc_value, value_db);
+        }
+      for (float freq = 0; freq < M_PI; freq += 0.001)
+        {
+          double value = env.eval (freq);
+          double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
+          int x = freq / M_PI * width;
+          int y = height - value_db / max_value * height;
+          if (freq > 0)
+            painter.drawLine (last_x, last_y, x, y);
+          last_x = x;
+          last_y = y;
+        }
+    }
+  // draw lsf parameters
+  if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lsf())
+    {
+      painter.setPen (QPen (QColor (0, 0, 80), 2));
+      for (size_t i = 0; i < audio_block.lpc_lsf_p.size(); i++)
+        {
+          painter.drawLine (audio_block.lpc_lsf_p[i] / M_PI * width, 0, audio_block.lpc_lsf_p[i] / M_PI * width, height);
+        }
+      painter.setPen (QPen (QColor (0, 0, 220), 2));
+      for (size_t i = 0; i < audio_block.lpc_lsf_q.size(); i++)
+        {
+          painter.drawLine (audio_block.lpc_lsf_q[i] / M_PI * width, 0, audio_block.lpc_lsf_q[i] / M_PI * width, height);
+        }
     }
 }
 
@@ -103,95 +144,6 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
   Glib::RefPtr<Gdk::Window> window = get_window();
   if (window)
   {
-    float max_value = 0;
-    for (vector<float>::const_iterator mi = spectrum.mags.begin(); mi != spectrum.mags.end(); mi++)
-      {
-        max_value = max (max_value, value_scale (*mi));
-      }
-
-
-    Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
-
-    cr->save();
-    cr->set_source_rgb (1.0, 1.0, 1.0);   // white
-    cr->paint();
-    cr->restore();
-
-    cr->set_line_width (2.0);
-
-    // clip to the area indicated by the expose event so that we only redraw
-    // the portion of the window that needs to be redrawn
-    cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
-    cr->clip();
-
-    cr->set_source_rgb (0.0, 0.0, 0.8);
-    if (time_freq_view_ptr->show_frequency_grid())
-      {
-        double fundamental_freq = time_freq_view_ptr->fundamental_freq();
-        double mix_freq = time_freq_view_ptr->mix_freq();
-
-        double pos;
-        int partial = 1;
-        do
-          {
-            pos = partial * fundamental_freq / (mix_freq / 2);
-            partial++;
-
-            cr->move_to (pos * width, 0);
-            cr->line_to (pos * width, height);
-          }
-        while (pos < 1);
-      }
-    cr->stroke();
-
-    // draw red lines out from the center of the window
-    cr->set_source_rgb (0.8, 0.0, 0.0);
-    for (size_t i = 0; i < spectrum.mags.size(); i++)
-      {
-        cr->line_to (double (i) / spectrum.mags.size() * width, height - value_scale (spectrum.mags[i]) / max_value * height);
-      }
-    cr->stroke();
-
-    // draw lpc envelope
-    if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lpc())
-      {
-        LPC::LSFEnvelope env;
-        env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
-
-        cr->set_source_rgb (0.0, 0.8, 0.0);
-        double max_lpc_value = 0;
-        for (float freq = 0; freq < M_PI; freq += 0.001)
-          {
-            double value = env.eval (freq);
-            double value_db = bse_db_from_factor (value, -200);
-            max_lpc_value = max (max_lpc_value, value_db);
-          }
-        for (float freq = 0; freq < M_PI; freq += 0.001)
-          {
-            double value = env.eval (freq);
-            double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
-            cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
-          }
-        cr->stroke();
-      }
-    // draw lsf parameters
-    if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lsf())
-      {
-        cr->set_source_rgb (0.0, 0.0, 0.3);
-        for (size_t i = 0; i < audio_block.lpc_lsf_p.size(); i++)
-          {
-            cr->move_to (audio_block.lpc_lsf_p[i] / M_PI * width, 0);
-            cr->line_to (audio_block.lpc_lsf_p[i] / M_PI * width, height);
-          }
-        cr->stroke();
-        cr->set_source_rgb (0.0, 0.0, 0.8);
-        for (size_t i = 0; i < audio_block.lpc_lsf_q.size(); i++)
-          {
-            cr->move_to (audio_block.lpc_lsf_q[i] / M_PI * width, 0);
-            cr->line_to (audio_block.lpc_lsf_q[i] / M_PI * width, height);
-          }
-        cr->stroke();
-      }
   }
   return true;
 }
