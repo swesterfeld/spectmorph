@@ -55,7 +55,7 @@ LPCView::paintEvent (QPaintEvent *event)
   for (double t = 0; t < 2 * M_PI + 0.2; t += 0.1)
     {
       int x = (sin (t) + 1) / 2 * width;
-      int y = (cos (t) + 1) / 2 * width;
+      int y = (cos (t) + 1) / 2 * height;
       if (t > 0)
         painter.drawLine (last_x, last_y, x, y);
       last_x = x;
@@ -75,7 +75,7 @@ LPCView::paintEvent (QPaintEvent *event)
       for (size_t i = 0; i < roots.size(); i++)
         {
           double root_x = (roots[i].real() + 1) / 2 * width;
-          double root_y = (roots[i].imag() + 1) / 2 * width;
+          double root_y = (roots[i].imag() + 1) / 2 * height;
 
           painter.drawLine (root_x - 5, root_y - 5, root_x + 5, root_y + 5);
           painter.drawLine (root_x + 5, root_y - 5, root_x - 5, root_y + 5);
@@ -125,24 +125,12 @@ LPCView::on_lpc_changed()
   update();
 }
 
-#if 0
 void
 LPCView::set_zoom (double new_hzoom, double new_vzoom)
 {
   hzoom = new_hzoom;
   vzoom = new_vzoom;
 
-  force_redraw();
+  update_size();
+  update();
 }
-  
-void
-LPCView::force_redraw()
-{
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
-}
-#endif

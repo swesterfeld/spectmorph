@@ -29,6 +29,8 @@ namespace SpectMorph {
 
 class LPCWindow : public QWidget
 {
+  Q_OBJECT
+
   QScrollArea      *scroll_area;
   LPCView          *lpc_view;
   ZoomController   *zoom_controller;
@@ -37,6 +39,9 @@ public:
   LPCWindow();
 
   void set_lpc_model (TimeFreqView *time_freq_view);
+
+public slots:
+  void on_zoom_changed();
 };
 
 }

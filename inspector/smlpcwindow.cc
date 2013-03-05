@@ -35,11 +35,17 @@ LPCWindow::LPCWindow()
   vbox->addWidget (scroll_area);
   vbox->addWidget (zoom_controller);
   setLayout (vbox);
-  //connect (zoom_controller, SIGNAL (zoom_changed()), .signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
+  connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 }
 
 void
 LPCWindow::set_lpc_model (TimeFreqView *time_freq_view)
 {
   lpc_view->set_lpc_model (time_freq_view);
+}
+
+void
+LPCWindow::on_zoom_changed()
+{
+  lpc_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
