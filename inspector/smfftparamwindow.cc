@@ -24,39 +24,7 @@
 
 using namespace SpectMorph;
 
-AnalysisParams
-FFTParamWindow::get_analysis_params()
-{
-  AnalysisParams params;
-
-#if 0
-  if (transform_combobox.get_active_text() == TEXT_FFT)
-    params.transform_type = SM_TRANSFORM_FFT;
-  else if (transform_combobox.get_active_text() == TEXT_CWT)
-    params.transform_type = SM_TRANSFORM_CWT;
-  else if (transform_combobox.get_active_text() == TEXT_LPC)
-    params.transform_type = SM_TRANSFORM_LPC;
-  else
-    assert (false);
-
-  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
-    params.cwt_mode = SM_CWT_MODE_VTIME;
-  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
-    params.cwt_mode = SM_CWT_MODE_CTIME;
-  else
-    assert (false);
-
-  params.frame_size_ms = get_frame_size();
-  params.frame_step_ms = get_frame_step();
-  params.cwt_freq_resolution = cwt_freq_res_scale.get_value();
-  params.cwt_time_resolution = get_cwt_time_resolution();
-#endif
-  params.frame_size_ms = get_frame_size();
-  params.frame_step_ms = get_frame_step();
-  params.transform_type = SM_TRANSFORM_FFT;
-
-  return params;
-}
+using std::string;
 
 #define TEXT_FFT "Fourier Transform"
 #define TEXT_CWT "Wavelet Transform"
@@ -74,6 +42,7 @@ FFTParamWindow::FFTParamWindow()
   transform_combobox->addItem (TEXT_FFT);
   transform_combobox->addItem (TEXT_CWT);
   transform_combobox->addItem (TEXT_LPC);
+  connect (transform_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_value_changed()));
 
   QGroupBox *fft_groupbox = new QGroupBox ("Fourier Transform Parameters");
   QGridLayout *fft_grid = new QGridLayout();
@@ -101,6 +70,27 @@ FFTParamWindow::FFTParamWindow()
   QGroupBox *cwt_groupbox = new QGroupBox ("Wavelet Transform Parameters");
   QGridLayout *cwt_grid = new QGridLayout();
 
+  // CWT Frequency Resolution
+  cwt_grid->addWidget (new QLabel ("Frequency Resolution"), 0, 0);
+  cwt_freq_res_slider = new QSlider (Qt::Horizontal);
+  cwt_freq_res_slider->setRange (1000, 100000);
+  cwt_freq_res_slider->setValue (25000);
+  cwt_freq_res_label = new QLabel();
+  cwt_grid->addWidget (cwt_freq_res_slider, 0, 1);
+  cwt_grid->addWidget (cwt_freq_res_label, 0, 2);
+  connect (cwt_freq_res_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
+
+  // CWT Time Resolution
+  cwt_grid->addWidget (new QLabel ("Time Resolution"), 1, 0);
+  cwt_time_res_slider = new QSlider (Qt::Horizontal);
+  cwt_time_res_slider->setRange (-1000, 1000);
+  cwt_time_res_label = new QLabel();
+  cwt_grid->addWidget (cwt_time_res_slider, 1, 1);
+  cwt_grid->addWidget (cwt_time_res_label, 1, 2);
+  connect (cwt_time_res_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
+
+  cwt_groupbox->setLayout (cwt_grid);
+
   QGridLayout *grid = new QGridLayout();
   grid->addWidget (transform_label, 0, 0);
   grid->addWidget (transform_combobox, 0, 1);
@@ -110,6 +100,42 @@ FFTParamWindow::FFTParamWindow()
 
   on_value_changed(); // init value labels
 }
+
+AnalysisParams
+FFTParamWindow::get_analysis_params()
+{
+  AnalysisParams params;
+
+  string transform_text = transform_combobox->currentText().toLatin1().data();
+
+  if (transform_text == TEXT_FFT)
+    params.transform_type = SM_TRANSFORM_FFT;
+  else if (transform_text == TEXT_CWT)
+    params.transform_type = SM_TRANSFORM_CWT;
+  else if (transform_text == TEXT_LPC)
+    params.transform_type = SM_TRANSFORM_LPC;
+  else
+    assert (false);
+
+#if 0
+  if (cwt_mode_combobox.get_active_text() == TEXT_VTIME)
+    params.cwt_mode = SM_CWT_MODE_VTIME;
+  else if (cwt_mode_combobox.get_active_text() == TEXT_CTIME)
+    params.cwt_mode = SM_CWT_MODE_CTIME;
+  else
+    assert (false);
+#endif
+  params.cwt_mode = SM_CWT_MODE_CTIME;
+
+  params.frame_size_ms = get_frame_size();
+  params.frame_step_ms = get_frame_step();
+
+  params.cwt_freq_resolution = cwt_freq_res_slider->value() / 1000.0;
+  params.cwt_time_resolution = get_cwt_time_resolution();
+
+  return params;
+}
+
 
 #if 0
 FFTParamWindow::FFTParamWindow() :
@@ -225,13 +251,11 @@ FFTParamWindow::get_frame_size()
   return 40 * pow (10, fft_frame_size_slider->value() / 1000.0);
 }
 
-#if 0
 double
 FFTParamWindow::get_cwt_time_resolution()
 {
   return 40 * pow (10, cwt_time_res_slider->value() / 1000.0);
 }
-#endif
 
 double
 FFTParamWindow::get_frame_step()
@@ -250,10 +274,8 @@ FFTParamWindow::on_value_changed()
 {
   fft_frame_size_label->setText (Birnet::string_printf ("%.1f ms", get_frame_size()).c_str());
   fft_frame_overlap_label->setText (Birnet::string_printf ("%.1f", get_frame_overlap()).c_str());
-#if 0
-  cwt_freq_res_value_label.set_text (Birnet::string_printf ("%.1f Hz", cwt_freq_res_scale.get_value()));
-  cwt_time_res_value_label.set_text (Birnet::string_printf ("%.1f ms", get_cwt_time_resolution()));
-#endif
+  cwt_freq_res_label->setText (Birnet::string_printf ("%.1f Hz", cwt_freq_res_slider->value() / 1000.0).c_str());
+  cwt_time_res_label->setText (Birnet::string_printf ("%.1f ms", get_cwt_time_resolution()).c_str());
 
   emit params_changed();
 }

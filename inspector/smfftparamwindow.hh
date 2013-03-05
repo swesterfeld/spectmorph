@@ -37,6 +37,15 @@ class FFTParamWindow : public QWidget
 
   QSlider   *fft_frame_overlap_slider;
   QLabel    *fft_frame_overlap_label;
+
+  QComboBox *cwt_mode_combobox;
+
+  QSlider   *cwt_freq_res_slider;
+  QLabel    *cwt_freq_res_label;
+
+  QSlider   *cwt_time_res_slider;
+  QLabel    *cwt_time_res_label;
+
 public:
   FFTParamWindow();
 
@@ -44,7 +53,7 @@ public:
   double          get_frame_overlap();
   double          get_frame_size();
   double          get_frame_step();
-
+  double          get_cwt_time_resolution();
 
 public slots:
   void on_value_changed();
@@ -52,32 +61,8 @@ public slots:
 signals:
   void            params_changed();
 #if 0
-  Gtk::Frame          cwt_frame;
-  Gtk::Table          cwt_frame_table;
-
-  Gtk::ComboBoxText   cwt_mode_combobox;
-  Gtk::Label          cwt_mode_label;
-
-  Gtk::HScale         cwt_freq_res_scale;
-  Gtk::Label          cwt_freq_res_label;
-  Gtk::Label          cwt_freq_res_value_label;
-
-  Gtk::HScale         cwt_time_res_scale;
-  Gtk::Label          cwt_time_res_label;
-  Gtk::Label          cwt_time_res_value_label;
-
   Gtk::ProgressBar    progress_bar;
-
-  void on_value_changed();
-
-  double get_cwt_time_resolution();
-
-public:
-  FFTParamWindow();
-
   void   set_progress (double progress);
-  AnalysisParams get_analysis_params();
-
 #endif
 };
 
