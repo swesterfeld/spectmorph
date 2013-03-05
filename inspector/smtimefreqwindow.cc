@@ -37,6 +37,7 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   scroll_area->setWidget (m_time_freq_view);
 
   zoom_controller = new ZoomController (5000, 10000);
+  connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (scroll_area);
@@ -102,13 +103,15 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   m_time_freq_view.signal_progress_changed.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_progress_changed));
   m_time_freq_view.signal_resized.connect (sigc::mem_fun (*this, &TimeFreqWindow::on_resized));
 }
+#endif
 
 void
 TimeFreqWindow::on_zoom_changed()
 {
-  m_time_freq_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  m_time_freq_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
+#if 0
 void
 TimeFreqWindow::on_position_changed()
 {

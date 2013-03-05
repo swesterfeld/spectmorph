@@ -125,16 +125,17 @@ TimeFreqView::on_result_available()
   emit progress_changed();
 }
 
-#if 0
 void
 TimeFreqView::set_zoom (double new_hzoom, double new_vzoom)
 {
   hzoom = new_hzoom;
   vzoom = new_vzoom;
 
-  force_redraw();
+  update_size();
+  update();
 }
 
+#if 0
 void
 TimeFreqView::set_position (int new_position)
 {

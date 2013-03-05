@@ -53,6 +53,7 @@ public:
   static QImage zoom_rect (PixelArray& image, int destx, int desty, int destw, int desth,
                            double hzoom, double vzoom, int position,
                            double display_min_db, double display_boost);
+  void set_zoom (double new_hzoom, double new_vzoom);
 
 public slots:
   void on_result_available();
@@ -80,7 +81,6 @@ public:
   void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
   bool on_expose_event (GdkEventExpose* ev);
 
-  void set_zoom (double new_hzoom, double new_vzoom);
   void set_position (int new_position);
   void set_show_analysis (bool new_show_analysis);
   void set_show_frequency_grid (bool new_show_frequency_grid);

@@ -44,6 +44,7 @@ public:
 
 public slots:
   void on_dhandle_changed();
+  void on_zoom_changed();
 #if 0
   Gtk::ScrolledWindow scrolled_win;
   TimeFreqView        m_time_freq_view;
@@ -67,7 +68,6 @@ public slots:
 public:
   TimeFreqWindow (Navigator *navigator);
 
-  void on_zoom_changed();
   void on_position_changed();
   void on_analysis_changed();
   void on_frequency_grid_changed();
