@@ -31,6 +31,13 @@ LPCView::LPCView()
   time_freq_view_ptr = NULL;
   hzoom = 1;
   vzoom = 1;
+  update_size();
+}
+
+void
+LPCView::update_size()
+{
+  resize (600 * hzoom, 600 * vzoom);
 }
 
 void
@@ -39,61 +46,40 @@ LPCView::paintEvent (QPaintEvent *event)
   QPainter painter (this);
 
   painter.fillRect (rect(), QColor (255, 255, 255));
-}
 
-#if 0
-bool
-LPCView::on_expose_event (GdkEventExpose* ev)
-{
   const int width =  600 * hzoom;
   const int height = 600 * vzoom;
-  set_size_request (width, height);
 
-  Glib::RefPtr<Gdk::Window> window = get_window();
-  if (window)
+  painter.setPen (QPen (QColor (0, 0, 200), 2));
+  int last_x = 0, last_y = 0;
+  for (double t = 0; t < 2 * M_PI + 0.2; t += 0.1)
     {
-      Cairo::RefPtr<Cairo::Context> cr = window->create_cairo_context();
+      int x = (sin (t) + 1) / 2 * width;
+      int y = (cos (t) + 1) / 2 * width;
+      if (t > 0)
+        painter.drawLine (last_x, last_y, x, y);
+      last_x = x;
+      last_y = y;
+    }
 
-      cr->save();
-      cr->set_source_rgb (1.0, 1.0, 1.0);   // white
-      cr->paint();
-      cr->restore();
+  // draw lpc zeros
+  if (audio_block.lpc_lsf_p.size() == 26 && audio_block.lpc_lsf_q.size() == 26)
+    {
+      vector<double> lpc;
+      LPC::lsf2lpc (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q, lpc);
 
-      // clip to the area indicated by the expose event so that we only redraw
-      // the portion of the window that needs to be redrawn
-      cr->rectangle (ev->area.x, ev->area.y, ev->area.width, ev->area.height);
-      cr->clip();
+      vector< complex<double> > roots;
+      LPC::find_roots (lpc, roots);
 
-      // draw lpc zeros
-      if (audio_block.lpc_lsf_p.size() == 26 && audio_block.lpc_lsf_q.size() == 26)
+      painter.setPen (QColor (200, 0, 0));
+      for (size_t i = 0; i < roots.size(); i++)
         {
-          vector<double> lpc;
-          LPC::lsf2lpc (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q, lpc);
+          double root_x = (roots[i].real() + 1) / 2 * width;
+          double root_y = (roots[i].imag() + 1) / 2 * width;
 
-          vector< complex<double> > roots;
-          LPC::find_roots (lpc, roots);
-
-          cr->set_source_rgb (0.8, 0.0, 0.0);
-          cr->set_line_width (1.0);
-          for (size_t i = 0; i < roots.size(); i++)
-            {
-              double root_x = (roots[i].real() + 1) / 2 * width;
-              double root_y = (roots[i].imag() + 1) / 2 * width;
-
-              cr->move_to (root_x - 5, root_y - 5);
-              cr->line_to (root_x + 5, root_y + 5);
-              cr->move_to (root_x + 5, root_y - 5);
-              cr->line_to (root_x - 5, root_y + 5);
-            }
-          cr->stroke();
-          cr->set_source_rgb (0.0, 0.0, 0.8);
-          for (double t = 0; t < 2 * M_PI + 0.2; t += 0.1)
-            {
-              double x = (sin (t) + 1) / 2 * width;
-              double y = (cos (t) + 1) / 2 * width;
-              cr->line_to (x, y);
-            }
-          cr->stroke();
+          painter.drawLine (root_x - 5, root_y - 5, root_x + 5, root_y + 5);
+          painter.drawLine (root_x + 5, root_y - 5, root_x - 5, root_y + 5);
+        }
 
 #if 0
         double max_lpc_value = 0;
@@ -111,10 +97,7 @@ LPCView::on_expose_event (GdkEventExpose* ev)
           }
 #endif
         }
-    }
-  return true;
 }
-#endif
 
 void
 LPCView::set_lpc_model (TimeFreqView *tfview)

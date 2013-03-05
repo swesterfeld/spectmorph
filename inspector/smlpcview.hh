@@ -31,6 +31,8 @@ class LPCView : public QWidget
   double        hzoom;
   double        vzoom;
 
+  void update_size();
+
 public:
   LPCView();
 
