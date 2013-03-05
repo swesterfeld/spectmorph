@@ -205,10 +205,10 @@ TimeFreqWindow::on_resized (int old_width, int old_height, int new_width, int ne
       hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
     }
 }
+#endif
 
 TimeFreqView*
 TimeFreqWindow::time_freq_view()
 {
-  return &m_time_freq_view;
+  return m_time_freq_view;
 }
-#endif

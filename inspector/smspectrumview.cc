@@ -19,12 +19,13 @@
 #include "smnavigator.hh"
 #include "smlpc.hh"
 
+#include <QPainter>
+
 using namespace SpectMorph;
 
 using std::vector;
 using std::max;
 
-#if 0
 SpectrumView::SpectrumView (Navigator *navigator) :
   navigator (navigator)
 {
@@ -43,6 +44,55 @@ value_scale (float value)
     return 0;
 }
 
+void
+SpectrumView::paintEvent (QPaintEvent *event)
+{
+  QPainter painter (this);
+  painter.fillRect (rect(), QColor (255, 255, 255));
+
+  float max_value = 0;
+  for (vector<float>::const_iterator mi = spectrum.mags.begin(); mi != spectrum.mags.end(); mi++)
+    {
+      max_value = max (max_value, value_scale (*mi));
+    }
+
+  const int width =  800 * hzoom;
+  const int height = 600 * vzoom;
+
+  painter.setPen (QPen (QColor (0, 0, 200), 2));
+  if (time_freq_view_ptr->show_frequency_grid())
+    {
+      double fundamental_freq = time_freq_view_ptr->fundamental_freq();
+      double mix_freq = time_freq_view_ptr->mix_freq();
+
+      double pos;
+      int partial = 1;
+      do
+        {
+          pos = partial * fundamental_freq / (mix_freq / 2);
+          partial++;
+
+          painter.drawLine (pos * width, 0, pos * width, height);
+        }
+      while (pos < 1);
+    }
+
+  // draw red lines
+  painter.setPen (QPen (QColor (200, 0, 0), 2));
+  int last_x, last_y;
+  for (size_t i = 0; i < spectrum.mags.size(); i++)
+    {
+      int x = double (i) / spectrum.mags.size() * width;
+      int y = height - value_scale (spectrum.mags[i]) / max_value * height;
+      if (i != 0)
+        painter.drawLine (last_x, last_y, x, y);
+
+      last_x = x;
+      last_y = y;
+    }
+}
+
+#if 0
 bool
 SpectrumView::on_expose_event (GdkEventExpose* ev)
 {
@@ -145,12 +195,13 @@ SpectrumView::on_expose_event (GdkEventExpose* ev)
   }
   return true;
 }
+#endif
 
 void
-SpectrumView::set_spectrum_model (TimeFreqView& tfview)
+SpectrumView::set_spectrum_model (TimeFreqView *tfview)
 {
-  tfview.signal_spectrum_changed.connect (sigc::mem_fun (*this, &SpectrumView::on_spectrum_changed));
-  time_freq_view_ptr = &tfview;
+  connect (tfview, SIGNAL (spectrum_changed()), this, SLOT (on_spectrum_changed()));
+  time_freq_view_ptr = tfview;
 }
 
 void
@@ -171,7 +222,7 @@ SpectrumView::on_spectrum_changed()
         }
     }
 
-  force_redraw();
+  update();
 }
 
 void
@@ -180,23 +231,18 @@ SpectrumView::set_zoom (double new_hzoom, double new_vzoom)
   hzoom = new_hzoom;
   vzoom = new_vzoom;
 
-  force_redraw();
+  update_size();
+  update();
 }
-  
+
 void
-SpectrumView::force_redraw()
+SpectrumView::update_size()
 {
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
+  resize (800 * hzoom, 600 * vzoom);
 }
 
 void
 SpectrumView::on_display_params_changed()
 {
-  force_redraw();
+  update();
 }
-#endif

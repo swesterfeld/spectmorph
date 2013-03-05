@@ -287,7 +287,6 @@ TimeFreqView::paintEvent (QPaintEvent *event)
     }
 }
 
-#if 0
 FFTResult
 TimeFreqView::get_spectrum()
 {
@@ -308,7 +307,6 @@ TimeFreqView::get_spectrum()
 
   return FFTResult();
 }
-#endif
 
 void
 TimeFreqView::set_show_analysis (bool new_show_analysis)
@@ -340,7 +338,6 @@ TimeFreqView::set_display_params (double min_db, double boost)
   update();
 }
 
-#if 0
 double
 TimeFreqView::fundamental_freq()
 {
@@ -376,4 +373,3 @@ TimeFreqView::position_frac()
 {
   return position / double (image.get_width());
 }
-#endif

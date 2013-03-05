@@ -151,10 +151,13 @@ Navigator::Navigator (const string& filename)
   setLayout (vbox);
 
   m_fft_param_window = new FFTParamWindow();
+  m_display_param_window = new DisplayParamWindow();
 
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
   time_freq_window = new TimeFreqWindow (this);
+  spectrum_window = new SpectrumWindow (this);
+  spectrum_window->set_spectrum_model (time_freq_window->time_freq_view());
 
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
   connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
@@ -169,7 +172,9 @@ Navigator::handle_close_event()
   player_window->close();
   sample_window->close();
   time_freq_window->close();
+  spectrum_window->close();
   m_fft_param_window->close();
+  m_display_param_window->close();
 
   return true;
 }
@@ -571,19 +576,21 @@ Navigator::on_view_time_freq()
 {
   time_freq_window.show();
 }
+#endif
 
 void
 Navigator::on_view_display_params()
 {
-  m_display_param_window.show();
+  m_display_param_window->show();
 }
 
 void
 Navigator::on_view_spectrum()
 {
-  spectrum_window.show();
+  spectrum_window->show();
 }
 
+#if 0
 void
 Navigator::on_view_sample()
 {
@@ -607,13 +614,15 @@ Navigator::fft_param_window()
 {
   return &m_fft_param_window;
 }
+#endif
 
 DisplayParamWindow *
 Navigator::display_param_window()
 {
-  return &m_display_param_window;
+  return m_display_param_window;
 }
 
+#if 0
 bool
 Navigator::on_delete_event (GdkEventAny* event)
 {

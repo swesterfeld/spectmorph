@@ -25,6 +25,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   connect (view_sample_action, SIGNAL (triggered()), navigator, SLOT (on_view_sample()));
 
   QAction *view_spectrum_action = new QAction ("Spectrum View", this);
+  connect (view_spectrum_action, SIGNAL (triggered()), navigator, SLOT (on_view_spectrum()));
 
   QAction *view_lpc_action = new QAction ("LPC View", this);
 
@@ -32,6 +33,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   connect (view_fft_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_fft_params()));
 
   QAction *view_display_params_action = new QAction ("Display Params", this);
+  connect (view_display_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_display_params()));
 
   QAction *view_player_action = new QAction ("Player", this);
   connect (view_player_action, SIGNAL (triggered()), navigator, SLOT (on_view_player()));

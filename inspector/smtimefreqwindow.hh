@@ -48,6 +48,8 @@ class TimeFreqWindow : public QWidget
 public:
   TimeFreqWindow (Navigator *navigator);
 
+  TimeFreqView *time_freq_view();
+
 public slots:
   void on_dhandle_changed();
   void on_zoom_changed();
@@ -59,7 +61,6 @@ public slots:
 
 #if 0
   void on_resized (int old_width, int old_height, int new_width, int new_height);
-  TimeFreqView *time_freq_view();
 #endif
 };
 

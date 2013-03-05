@@ -27,6 +27,8 @@ namespace SpectMorph {
 
 class DisplayParamWindow : public QWidget
 {
+  Q_OBJECT
+
 #if 0
   Gtk::VBox          vbox;
   Gtk::CheckButton   show_lsf_button;
@@ -39,9 +41,9 @@ public:
 
   bool show_lsf();
   bool show_lpc();
-
-  sigc::signal<void> signal_params_changed;
 #endif
+signals:
+  void params_changed();
 };
 
 }

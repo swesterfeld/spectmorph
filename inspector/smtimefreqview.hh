@@ -61,8 +61,14 @@ public:
   void set_show_analysis (bool new_show_analysis);
   void set_show_frequency_grid (bool new_show_frequency_grid);
 
-  int    get_frames();
-  double get_progress();
+  int     get_frames();
+  double  get_progress();
+  bool    show_frequency_grid();
+  double  fundamental_freq();
+  double  mix_freq();
+  FFTResult get_spectrum();
+  Audio  *audio();
+  double  position_frac();
 
 public slots:
   void on_result_available();
@@ -89,12 +95,6 @@ public:
   bool on_expose_event (GdkEventExpose* ev);
 
 
-  FFTResult get_spectrum();
-  bool show_frequency_grid();
-  double fundamental_freq();
-  double mix_freq();
-  Audio *audio();
-  double position_frac();
 #endif
 };
 

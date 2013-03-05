@@ -25,26 +25,27 @@ namespace SpectMorph {
 class Navigator;
 class SpectrumView : public QWidget
 {
-#if 0
-  TimeFreqView *time_freq_view_ptr;
+  Q_OBJECT
+
   Navigator    *navigator;
-  FFTResult     spectrum;
-  AudioBlock    audio_block;
   double        hzoom;
   double        vzoom;
-
-  void force_redraw();
-
+  TimeFreqView *time_freq_view_ptr;
+  FFTResult     spectrum;
+  AudioBlock    audio_block;
 public:
   SpectrumView (Navigator *navigator);
 
-  bool on_expose_event (GdkEventExpose* ev);
-  void on_display_params_changed();
-
-  void set_spectrum_model (TimeFreqView& tfview);
-  void on_spectrum_changed();
-
+  void update_size();
   void set_zoom (double hzoom, double vzoom);
+  void set_spectrum_model (TimeFreqView *tfview);
+  void paintEvent (QPaintEvent *event);
+
+public slots:
+  void on_display_params_changed();
+  void on_spectrum_changed();
+#if 0
+  bool on_expose_event (GdkEventExpose* ev);
 #endif
 };
 

@@ -18,38 +18,39 @@
 #include "smspectrumwindow.hh"
 #include "smnavigator.hh"
 
+#include <QVBoxLayout>
+
 using namespace SpectMorph;
 
-#if 0
-SpectrumWindow::SpectrumWindow (Navigator *navigator) :
-  spectrum_view (navigator),
-  zoom_controller (5000, 1000)
+SpectrumWindow::SpectrumWindow (Navigator *navigator)
 {
-  set_border_width (10);
-  set_default_size (800, 600);
-  set_title ("Spectrum View");
+  resize (800, 600);
+  setWindowTitle ("Spectrum View");
 
-  vbox.pack_start (scrolled_win);
-  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+  spectrum_view = new SpectrumView (navigator);
+  zoom_controller = new ZoomController (5000, 5000);
 
-  scrolled_win.add (spectrum_view);
-  add (vbox);
+  QVBoxLayout *vbox = new QVBoxLayout();
+  scroll_area = new QScrollArea();
+  scroll_area->setWidget (spectrum_view);
+  vbox->addWidget (scroll_area);
+  vbox->addWidget (zoom_controller);
 
-  show_all_children();
+  setLayout (vbox);
 
-  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
-  navigator->display_param_window()->signal_params_changed.connect (sigc::mem_fun (spectrum_view, &SpectrumView::on_display_params_changed));
+  connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
+  connect (navigator->display_param_window(), SIGNAL (params_changed()),
+           spectrum_view, SLOT (on_display_params_changed()));
 }
 
 void
-SpectrumWindow::set_spectrum_model (TimeFreqView& time_freq_view)
+SpectrumWindow::set_spectrum_model (TimeFreqView *time_freq_view)
 {
-  spectrum_view.set_spectrum_model (time_freq_view);
+  spectrum_view->set_spectrum_model (time_freq_view);
 }
 
 void
 SpectrumWindow::on_zoom_changed()
 {
-  spectrum_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
+  spectrum_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
-#endif

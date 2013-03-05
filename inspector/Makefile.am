@@ -19,7 +19,7 @@ SMSRCS = smspectrumview.cc \
          smsamplewinview.cc \
          moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
          moc_smtimefreqwindow.cc moc_smfftparamwindow.cc moc_smfftthread.cc moc_smcwt.cc \
-         moc_smtimefreqview.cc
+         moc_smtimefreqview.cc moc_smspectrumwindow.cc moc_smspectrumview.cc moc_smdisplayparamwindow.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -63,3 +63,12 @@ moc_smcwt.cc: smcwt.hh
 
 moc_smtimefreqview.cc: smtimefreqview.hh
 	moc smtimefreqview.hh > moc_smtimefreqview.cc
+
+moc_smspectrumwindow.cc: smspectrumwindow.hh
+	moc smspectrumwindow.hh > moc_smspectrumwindow.cc
+
+moc_smspectrumview.cc: smspectrumview.hh
+	moc smspectrumview.hh > moc_smspectrumview.cc
+
+moc_smdisplayparamwindow.cc: smdisplayparamwindow.hh
+	moc smdisplayparamwindow.hh > moc_smdisplayparamwindow.cc

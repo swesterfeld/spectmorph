@@ -23,23 +23,24 @@
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
+#include <QScrollArea>
+
 namespace SpectMorph {
 
 class Navigator;
 class SpectrumWindow : public QWidget
 {
-#if 0 /* PORT */
-  Gtk::ScrolledWindow scrolled_win;
-  SpectrumView        spectrum_view;
-  Gtk::VBox           vbox;
-  ZoomController      zoom_controller;
+  Q_OBJECT
 
+  QScrollArea        *scroll_area;
+  ZoomController     *zoom_controller;
+  SpectrumView       *spectrum_view;
 public:
   SpectrumWindow (Navigator *navigator);
 
-  void set_spectrum_model (TimeFreqView& time_freq_view);
+  void set_spectrum_model (TimeFreqView *time_freq_view);
+public slots:
   void on_zoom_changed();
-#endif
 };
 
 }
