@@ -32,6 +32,7 @@ SpectrumView::SpectrumView (Navigator *navigator) :
   time_freq_view_ptr = NULL;
   hzoom = 1;
   vzoom = 1;
+  update_size();
 }
 
 static float
