@@ -157,7 +157,10 @@ Navigator::Navigator (const string& filename)
   sample_window = new SampleWindow (this);
   time_freq_window = new TimeFreqWindow (this);
   spectrum_window = new SpectrumWindow (this);
+  lpc_window = new LPCWindow();
+
   spectrum_window->set_spectrum_model (time_freq_window->time_freq_view());
+  lpc_window->set_lpc_model (time_freq_window->time_freq_view());
 
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
   connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
@@ -175,6 +178,7 @@ Navigator::handle_close_event()
   spectrum_window->close();
   m_fft_param_window->close();
   m_display_param_window->close();
+  lpc_window->close();
 
   return true;
 }
@@ -590,31 +594,11 @@ Navigator::on_view_spectrum()
   spectrum_window->show();
 }
 
-#if 0
-void
-Navigator::on_view_sample()
-{
-  sample_window.show();
-}
-
 void
 Navigator::on_view_lpc()
 {
-  lpc_window.show();
+  lpc_window->show();
 }
-
-void
-Navigator::on_view_player()
-{
-  player_window.show();
-}
-
-FFTParamWindow*
-Navigator::fft_param_window()
-{
-  return &m_fft_param_window;
-}
-#endif
 
 DisplayParamWindow *
 Navigator::display_param_window()

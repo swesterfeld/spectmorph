@@ -59,6 +59,7 @@ private:
   FFTParamWindow       *m_fft_param_window;
   SpectrumWindow       *spectrum_window;
   DisplayParamWindow   *m_display_param_window;
+  LPCWindow            *lpc_window;
 
 public:
   Navigator (const std::string& filename);
@@ -85,6 +86,7 @@ public slots:
   void on_show_frequency_grid_changed();
   void on_view_spectrum();
   void on_view_display_params();
+  void on_view_lpc();
 
 signals:
   void dhandle_changed();
@@ -94,7 +96,6 @@ signals:
 #if 0
   DisplayParamWindow                 m_display_param_window;
   SpectrumWindow                     spectrum_window;
-  LPCWindow                          lpc_window;
 public:
 
   Navigator (const std::string& filename);
@@ -104,12 +105,7 @@ public:
   void on_save_clicked();
   void on_audio_edit();
   void on_next_sample();
-  void on_view_lpc();
   bool on_delete_event (GdkEventAny* event);
-
-  bool           spectmorph_signal_active();
-
-  FFTParamWindow     *fft_param_window();
 #endif
 };
 

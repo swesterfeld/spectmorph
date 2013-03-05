@@ -18,13 +18,14 @@
 #include "smlpcview.hh"
 #include "smlpc.hh"
 
+#include <QPainter>
+
 using namespace SpectMorph;
 
 using std::vector;
 using std::complex;
 using std::max;
 
-#if 0
 LPCView::LPCView()
 {
   time_freq_view_ptr = NULL;
@@ -32,6 +33,15 @@ LPCView::LPCView()
   vzoom = 1;
 }
 
+void
+LPCView::paintEvent (QPaintEvent *event)
+{
+  QPainter painter (this);
+
+  painter.fillRect (rect(), QColor (255, 255, 255));
+}
+
+#if 0
 bool
 LPCView::on_expose_event (GdkEventExpose* ev)
 {
@@ -104,12 +114,13 @@ LPCView::on_expose_event (GdkEventExpose* ev)
     }
   return true;
 }
+#endif
 
 void
-LPCView::set_lpc_model (TimeFreqView& tfview)
+LPCView::set_lpc_model (TimeFreqView *tfview)
 {
-  tfview.signal_spectrum_changed.connect (sigc::mem_fun (*this, &LPCView::on_lpc_changed));
-  time_freq_view_ptr = &tfview;
+  connect (tfview, SIGNAL (spectrum_changed()), this, SLOT (on_lpc_changed()));
+  time_freq_view_ptr = tfview;
 }
 
 void
@@ -128,9 +139,10 @@ LPCView::on_lpc_changed()
           audio_block = audio->contents[frame];
         }
     }
-  force_redraw();
+  update();
 }
 
+#if 0
 void
 LPCView::set_zoom (double new_hzoom, double new_vzoom)
 {

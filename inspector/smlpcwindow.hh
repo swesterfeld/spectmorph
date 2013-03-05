@@ -23,21 +23,20 @@
 #include "smtimefreqview.hh"
 #include "smzoomcontroller.hh"
 
+#include <QScrollArea>
+
 namespace SpectMorph {
 
 class LPCWindow : public QWidget
 {
-#if 0
-  Gtk::ScrolledWindow scrolled_win;
-  LPCView             lpc_view;
-  Gtk::VBox           vbox;
-  ZoomController      zoom_controller;
+  QScrollArea      *scroll_area;
+  LPCView          *lpc_view;
+  ZoomController   *zoom_controller;
 
 public:
   LPCWindow();
 
-  void set_lpc_model (TimeFreqView& time_freq_view);
-#endif
+  void set_lpc_model (TimeFreqView *time_freq_view);
 };
 
 }

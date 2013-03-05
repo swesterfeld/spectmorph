@@ -24,24 +24,23 @@ namespace SpectMorph {
 
 class LPCView : public QWidget
 {
-#if 0
+  Q_OBJECT
+
   TimeFreqView *time_freq_view_ptr;
   AudioBlock    audio_block;
   double        hzoom;
   double        vzoom;
 
-  void force_redraw();
-
 public:
   LPCView();
 
-  bool on_expose_event (GdkEventExpose* ev);
+  void paintEvent (QPaintEvent *event);
 
-  void set_lpc_model (TimeFreqView& tfview);
-  void on_lpc_changed();
-
+  void set_lpc_model (TimeFreqView *tfview);
   void set_zoom (double hzoom, double vzoom);
-#endif
+
+public slots:
+  void on_lpc_changed();
 };
 
 }

@@ -28,6 +28,7 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   connect (view_spectrum_action, SIGNAL (triggered()), navigator, SLOT (on_view_spectrum()));
 
   QAction *view_lpc_action = new QAction ("LPC View", this);
+  connect (view_lpc_action, SIGNAL (triggered()), navigator, SLOT (on_view_lpc()));
 
   QAction *view_fft_params_action = new QAction ("FFT Params", this);
   connect (view_fft_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_fft_params()));

@@ -17,29 +17,29 @@
 
 #include "smlpcwindow.hh"
 
+#include <QVBoxLayout>
+
 using namespace SpectMorph;
 
-#if 0
 LPCWindow::LPCWindow()
 {
-  set_border_width (10);
-  set_default_size (600, 600);
-  set_title ("LPC View");
+  resize (600, 600);
+  setWindowTitle ("LPC View");
 
-  vbox.pack_start (scrolled_win);
-  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
+  lpc_view = new LPCView();
+  zoom_controller = new ZoomController();
+  scroll_area = new QScrollArea();
+  scroll_area->setWidget (lpc_view);
 
-  scrolled_win.add (lpc_view);
-  add (vbox);
-
-  show_all_children();
-
-  //zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
+  QVBoxLayout *vbox = new QVBoxLayout();
+  vbox->addWidget (scroll_area);
+  vbox->addWidget (zoom_controller);
+  setLayout (vbox);
+  //connect (zoom_controller, SIGNAL (zoom_changed()), .signal_zoom_changed.connect (sigc::mem_fun (*this, &SpectrumWindow::on_zoom_changed));
 }
 
 void
-LPCWindow::set_lpc_model (TimeFreqView& time_freq_view)
+LPCWindow::set_lpc_model (TimeFreqView *time_freq_view)
 {
-  lpc_view.set_lpc_model (time_freq_view);
+  lpc_view->set_lpc_model (time_freq_view);
 }
-#endif
