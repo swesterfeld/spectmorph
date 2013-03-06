@@ -15,6 +15,7 @@ using std::string;
 NavigatorWindow::NavigatorWindow (const string& filename)
 {
   navigator = new Navigator (filename);
+  connect (navigator, SIGNAL (title_changed()), this, SLOT (update_title()));
 
   /* actions ... */
 
@@ -53,6 +54,8 @@ NavigatorWindow::NavigatorWindow (const string& filename)
 
   setCentralWidget (navigator);
   resize (300, 600);
+
+  update_title();
 }
 
 void
@@ -68,4 +71,8 @@ NavigatorWindow::closeEvent (QCloseEvent *event)
     }
 }
 
-
+void
+NavigatorWindow::update_title()
+{
+  setWindowTitle (navigator->title().c_str());
+}

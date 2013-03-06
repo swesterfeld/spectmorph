@@ -22,9 +22,9 @@ SampleWinView::SampleWinView (Navigator *navigator)
   zoom_controller = new ZoomController (1, 5000, 10, 5000);
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
-  sample_view = new SampleView();
+  m_sample_view = new SampleView();
   time_label = new QLabel();
-  connect (sample_view, SIGNAL (mouse_time_changed (int)), this, SLOT (on_mouse_time_changed (int)));
+  connect (m_sample_view, SIGNAL (mouse_time_changed (int)), this, SLOT (on_mouse_time_changed (int)));
   on_mouse_time_changed (0);
 
   edit_start_marker = new QPushButton ("Edit Start Marker");
@@ -50,7 +50,7 @@ SampleWinView::SampleWinView (Navigator *navigator)
 
   scroll_area = new QScrollArea();
   scroll_area->setWidgetResizable (true);
-  scroll_area->setWidget (sample_view);
+  scroll_area->setWidget (m_sample_view);
 
   zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
 
@@ -73,7 +73,7 @@ SampleWinView::SampleWinView (Navigator *navigator)
 void
 SampleWinView::load (GslDataHandle *dhandle, Audio *audio)
 {
-  sample_view->load (dhandle, audio);
+  m_sample_view->load (dhandle, audio);
   if (audio)
     {
       if (audio->loop_type == Audio::LOOP_NONE)
@@ -96,7 +96,7 @@ SampleWinView::load (GslDataHandle *dhandle, Audio *audio)
 void
 SampleWinView::on_zoom_changed()
 {
-  sample_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
+  m_sample_view->set_zoom (zoom_controller->get_hzoom(), zoom_controller->get_vzoom());
 }
 
 void
@@ -125,10 +125,10 @@ SampleWinView::on_edit_marker_changed()
   else
     g_assert_not_reached();
 
-  if (sample_view->edit_marker_type() == marker_type)  // we're selected already -> turn it off
+  if (m_sample_view->edit_marker_type() == marker_type)  // we're selected already -> turn it off
     marker_type = SampleView::MARKER_NONE;
 
-  sample_view->set_edit_marker_type (marker_type);
+  m_sample_view->set_edit_marker_type (marker_type);
 
   edit_start_marker->setChecked (marker_type == SampleView::MARKER_START);
   edit_loop_start->setChecked (marker_type == SampleView::MARKER_LOOP_START);
@@ -158,4 +158,10 @@ SampleWinView::on_loop_type_changed()
           g_assert_not_reached();
         }
     }
+}
+
+SampleView *
+SampleWinView::sample_view()
+{
+  return m_sample_view;
 }

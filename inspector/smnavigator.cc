@@ -29,6 +29,7 @@
 #include <QAbstractTableModel>
 #include <QTreeView>
 #include <QPushButton>
+#include <QMessageBox>
 
 using namespace SpectMorph;
 
@@ -156,6 +157,7 @@ Navigator::Navigator (const string& filename)
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
   connect (sample_window, SIGNAL (next_sample()), this, SLOT (on_next_sample()));
+  connect (sample_window->sample_view(), SIGNAL (audio_edit()), this, SLOT (on_audio_edit()));
 
   time_freq_window = new TimeFreqWindow (this);
   spectrum_window = new SpectrumWindow (this);
@@ -189,19 +191,24 @@ void
 Navigator::on_combo_changed()
 {
   string new_filename = smset_dir + "/" + smset_combobox->currentText().toLatin1().data();
-#if 0
-  if (wset_edit && new_filename != wset_filename)
+  if (new_filename == wset_filename)  // nothing to do (switch to already loaded instrument)
+    return;
+
+  if (wset_edit)
     {
-      Gtk::MessageDialog dlg (Birnet::string_printf ("You changed instrument '%s' - if you switch instruments now your changes will be lost.", wset_filename.c_str()),
-                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_CANCEL);
-      dlg.add_button ("Continue without saving", Gtk::RESPONSE_ACCEPT);
-      if (dlg.run() != Gtk::RESPONSE_ACCEPT)
+      int rc =
+        QMessageBox::warning (this, "SpectMorph Inspector",
+          Birnet::string_printf ("You changed instrument <b>'%s'</b>."
+                                 "<p>"
+                                 "If you switch instruments now your changes will be lost.",
+                                 smset_combobox->currentText().toLatin1().data()).c_str(),
+                                 QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
+      if (rc == QMessageBox::Cancel)
         {
-          smset_combobox.set_active_text (wset_active_text);
+          smset_combobox->setCurrentText (wset_active_text.c_str());
           return;
         }
     }
-#endif
   wset_filename = new_filename;
   wset_edit = false;
   wset_active_text = smset_combobox->currentText().toLatin1().data();
@@ -219,6 +226,7 @@ Navigator::on_combo_changed()
   for (int column = 0; column < 4; column++)
     tree_view->resizeColumnToContents (column);
 
+  emit title_changed();
   emit dhandle_changed();
 }
 
@@ -556,13 +564,14 @@ Navigator::on_save_clicked()
     }
 
 }
+#endif
 
 void
 Navigator::on_audio_edit()
 {
   wset_edit = true;
+  emit title_changed();
 }
-#endif
 
 void
 Navigator::on_next_sample()
@@ -608,6 +617,16 @@ DisplayParamWindow *
 Navigator::display_param_window()
 {
   return m_display_param_window;
+}
+
+string
+Navigator::title()
+{
+  string t = "Navigator - ";
+  if (wset_edit)
+    t += "*";
+  t += smset_combobox->currentText().toLatin1().data();
+  return t;
 }
 
 #if 0

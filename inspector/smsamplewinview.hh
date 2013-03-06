@@ -19,7 +19,7 @@ class SampleWinView : public QWidget
   Q_OBJECT
 
   ZoomController *zoom_controller;
-  SampleView     *sample_view;
+  SampleView     *m_sample_view;
   QScrollArea    *scroll_area;
 
   QLabel         *time_label;
@@ -33,6 +33,7 @@ public:
   SampleWinView (Navigator *navigator);
 
   void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
+  SampleView *sample_view();
 
 public slots:
   void on_zoom_changed();

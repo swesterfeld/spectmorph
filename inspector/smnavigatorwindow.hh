@@ -13,11 +13,15 @@ namespace SpectMorph {
 
 class NavigatorWindow : public QMainWindow
 {
+  Q_OBJECT
+
   Navigator *navigator;
 public:
   NavigatorWindow (const std::string& filename);
 
   void closeEvent (QCloseEvent *event);
+public slots:
+  void update_title();
 };
 
 }

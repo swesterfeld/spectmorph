@@ -192,32 +192,13 @@ SampleWindow::on_loop_type_changed()
     }
 }
 
-void
-SampleWindow::on_zoom_changed()
-{
-  m_sample_view.set_zoom (zoom_controller.get_hzoom(), zoom_controller.get_vzoom());
-}
+#endif
 
-void
-SampleWindow::on_resized (int old_width, int new_width)
-{
-  if (old_width > 0 && new_width > 0)
-    {
-      Gtk::Viewport *view_port = dynamic_cast<Gtk::Viewport*> (scrolled_win.get_child());
-      Gtk::Adjustment *hadj = scrolled_win.get_hadjustment();
-
-      const int w_2 = view_port->get_width() / 2;
-
-      hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
-    }
-}
-
-SampleView&
+SampleView *
 SampleWindow::sample_view()
 {
-  return m_sample_view;
+  return sample_win_view->sample_view();
 }
-#endif
 
 void
 SampleWindow::on_next_sample()

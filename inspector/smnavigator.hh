@@ -73,6 +73,7 @@ public:
   FFTParamWindow       *fft_param_window();
   DisplayParamWindow   *display_param_window();
   bool                  handle_close_event(); /* returns true if close is ok */
+  std::string           title();
 
 public slots:
   void on_combo_changed();
@@ -88,12 +89,14 @@ public slots:
   void on_view_display_params();
   void on_view_lpc();
   void on_next_sample();
+  void on_audio_edit();
 
 signals:
   void dhandle_changed();
   void show_position_changed();
   void show_analysis_changed();
   void show_frequency_grid_changed();
+  void title_changed();
 #if 0
   DisplayParamWindow                 m_display_param_window;
   SpectrumWindow                     spectrum_window;
@@ -104,7 +107,6 @@ public:
   void on_combo_changed();
   void on_selection_changed();
   void on_save_clicked();
-  void on_audio_edit();
   bool on_delete_event (GdkEventAny* event);
 #endif
 };

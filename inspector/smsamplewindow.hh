@@ -39,7 +39,8 @@ private:
 public:
   SampleWindow (Navigator *navigator);
 
-  void load (GslDataHandle *dhandle, Audio *audio);
+  void        load (GslDataHandle *dhandle, Audio *audio);
+  SampleView *sample_view();
 
 public slots:
   void on_dhandle_changed();
@@ -47,38 +48,6 @@ public slots:
 
 signals:
   void next_sample();
-#if 0
-  Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
-  Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
-
-  Gtk::ScrolledWindow scrolled_win;
-  SampleView          m_sample_view;
-  ZoomController      zoom_controller;
-  Gtk::HBox           button_hbox;
-
-  Gtk::Label          time_label;
-  Gtk::ToggleButton   edit_start_marker;
-  Gtk::ToggleButton   edit_loop_start;
-  Gtk::ToggleButton   edit_loop_end;
-  Gtk::ComboBoxText   loop_type_combo;
-  bool                in_update_buttons;
-
-  Gtk::VBox           vbox;
-public:
-  SampleWindow (Navigator *navigator);
-
-  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
-  SampleView& sample_view();
-
-  void on_dhandle_changed();
-  void on_zoom_changed();
-  void on_resized (int old_width, int new_width);
-  void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
-  void on_loop_type_changed();
-  void on_mouse_time_changed (int time);
-
-  sigc::signal<void> signal_next_sample;
-#endif
 };
 
 }
