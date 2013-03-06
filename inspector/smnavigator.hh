@@ -87,6 +87,7 @@ public slots:
   void on_view_spectrum();
   void on_view_display_params();
   void on_view_lpc();
+  void on_next_sample();
 
 signals:
   void dhandle_changed();
@@ -104,7 +105,6 @@ public:
   void on_selection_changed();
   void on_save_clicked();
   void on_audio_edit();
-  void on_next_sample();
   bool on_delete_event (GdkEventAny* event);
 #endif
 };

@@ -19,6 +19,9 @@
 #include "smsamplewinview.hh"
 #include "smnavigator.hh"
 
+#include <QAction>
+#include <QMenuBar>
+
 #include <iostream>
 
 using namespace SpectMorph;
@@ -28,6 +31,18 @@ SampleWindow::SampleWindow (Navigator *navigator)
   this->navigator = navigator;
 
   sample_win_view = new SampleWinView (navigator);
+
+  /* actions ... */
+  QAction *next_action = new QAction ("Next Sample", this);
+  next_action->setShortcut (QString ("n"));
+  connect (next_action, SIGNAL (triggered()), this, SLOT (on_next_sample()));
+
+  /* menus... */
+  QMenuBar *menu_bar = menuBar();
+
+  QMenu *sample_menu = menu_bar->addMenu ("&Sample");
+  sample_menu->addAction (next_action);
+
   setCentralWidget (sample_win_view);
   resize (800, 500);
 }
@@ -202,13 +217,15 @@ SampleWindow::sample_view()
 {
   return m_sample_view;
 }
+#endif
 
 void
 SampleWindow::on_next_sample()
 {
-  signal_next_sample();
+  emit next_sample();
 }
 
+#if 0
 void
 SampleWindow::on_edit_marker_changed (SampleView::EditMarkerType marker_type)
 {

@@ -43,6 +43,10 @@ public:
 
 public slots:
   void on_dhandle_changed();
+  void on_next_sample();
+
+signals:
+  void next_sample();
 #if 0
   Glib::RefPtr<Gtk::UIManager>    ref_ui_manager;
   Glib::RefPtr<Gtk::ActionGroup>  ref_action_group;
@@ -69,7 +73,6 @@ public:
   void on_dhandle_changed();
   void on_zoom_changed();
   void on_resized (int old_width, int new_width);
-  void on_next_sample();
   void on_edit_marker_changed (SampleView::EditMarkerType marker_type);
   void on_loop_type_changed();
   void on_mouse_time_changed (int time);

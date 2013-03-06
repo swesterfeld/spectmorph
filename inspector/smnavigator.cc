@@ -155,6 +155,8 @@ Navigator::Navigator (const string& filename)
 
   player_window = new PlayerWindow (this);
   sample_window = new SampleWindow (this);
+  connect (sample_window, SIGNAL (next_sample()), this, SLOT (on_next_sample()));
+
   time_freq_window = new TimeFreqWindow (this);
   spectrum_window = new SpectrumWindow (this);
   lpc_window = new LPCWindow();
@@ -560,21 +562,23 @@ Navigator::on_audio_edit()
 {
   wset_edit = true;
 }
+#endif
 
 void
 Navigator::on_next_sample()
 {
-  Gtk::TreeModel::iterator iter = ref_tree_selection->get_selected();
-  if (iter)
-    {
-      iter++;
-      if (iter)
-        {
-          ref_tree_selection->select (iter);
-        }
-    }
+  QModelIndex index = tree_view->selectionModel()->currentIndex();
+
+  if (index.isValid())
+    index = tree_model->index (index.row() + 1, 0);  // select next sample
+  else
+    index = tree_model->index (0, 0); // select first sample if nothing was selected
+
+  if (index.isValid())
+    tree_view->selectionModel()->setCurrentIndex (index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 }
 
+#if 0
 void
 Navigator::on_view_time_freq()
 {
