@@ -90,6 +90,7 @@ public slots:
   void on_view_lpc();
   void on_next_sample();
   void on_audio_edit();
+  void on_save_clicked();
 
 signals:
   void dhandle_changed();
@@ -97,18 +98,6 @@ signals:
   void show_analysis_changed();
   void show_frequency_grid_changed();
   void title_changed();
-#if 0
-  DisplayParamWindow                 m_display_param_window;
-  SpectrumWindow                     spectrum_window;
-public:
-
-  Navigator (const std::string& filename);
-
-  void on_combo_changed();
-  void on_selection_changed();
-  void on_save_clicked();
-  bool on_delete_event (GdkEventAny* event);
-#endif
 };
 
 }

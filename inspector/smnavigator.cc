@@ -139,6 +139,7 @@ Navigator::Navigator (const string& filename)
   connect (show_frequency_grid_button, SIGNAL (clicked()), this, SLOT (on_show_frequency_grid_changed()));
 
   QPushButton *save_button = new QPushButton ("Save");
+  connect (save_button, SIGNAL (clicked()), this, SLOT (on_save_clicked()));
 
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (smset_combobox);
@@ -176,6 +177,19 @@ Navigator::Navigator (const string& filename)
 bool
 Navigator::handle_close_event()
 {
+  if (wset_edit)
+    {
+      int rc =
+        QMessageBox::warning (this, "SpectMorph Inspector",
+          Birnet::string_printf ("You changed instrument <b>'%s'</b>."
+                                 "<p>"
+                                 "If you quit now your changes will be lost.",
+                                 smset_combobox->currentText().toLatin1().data()).c_str(),
+                                 QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
+      if (rc == QMessageBox::Cancel)
+        return false;
+    }
+
   player_window->close();
   sample_window->close();
   time_freq_window->close();
@@ -183,7 +197,6 @@ Navigator::handle_close_event()
   m_fft_param_window->close();
   m_display_param_window->close();
   lpc_window->close();
-
   return true;
 }
 
@@ -548,7 +561,6 @@ Navigator::get_show_frequency_grid()
   return show_frequency_grid_button->isChecked();
 }
 
-#if 0
 void
 Navigator::on_save_clicked()
 {
@@ -561,10 +573,10 @@ Navigator::on_save_clicked()
           exit (1);
         }
       wset_edit = false;
-    }
 
+      emit title_changed();
+    }
 }
-#endif
 
 void
 Navigator::on_audio_edit()
@@ -628,19 +640,3 @@ Navigator::title()
   t += smset_combobox->currentText().toLatin1().data();
   return t;
 }
-
-#if 0
-bool
-Navigator::on_delete_event (GdkEventAny* event)
-{
-  if (wset_edit)
-    {
-      Gtk::MessageDialog dlg (Birnet::string_printf ("You changed instrument '%s' - if you quit now your changes will be lost.", wset_filename.c_str()),
-                              false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_CANCEL);
-      dlg.add_button ("Quit without saving", Gtk::RESPONSE_ACCEPT);
-      if (dlg.run() != Gtk::RESPONSE_ACCEPT)
-        return true;    // postpone quit
-    }
-  return false;         // -> quit
-}
-#endif
