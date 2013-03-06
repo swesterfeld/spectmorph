@@ -105,14 +105,6 @@ MainWidget::MainWidget() :
   setLayout (vbox);
 }
 
-#if 0
-MainWidget::MainWidget()
-{
-  save_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWidget::on_save_clicked));
-  sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWidget::on_resized));
-}
-#endif
-
 MainWidget::~MainWidget()
 {
   if (samples)
@@ -176,22 +168,6 @@ MainWidget::on_edit_marker_changed()
   edit_clip_start->setChecked (marker_type == SampleView::MARKER_CLIP_START);
   edit_clip_end->setChecked (marker_type == SampleView::MARKER_CLIP_END);
 }
-
-#if 0
-void
-MainWidget::on_resized (int old_width, int new_width)
-{
-  if (old_width > 0 && new_width > 0)
-    {
-      Gtk::Viewport *view_port = dynamic_cast<Gtk::Viewport*> (scrolled_win.get_child());
-      Gtk::Adjustment *hadj = scrolled_win.get_hadjustment();
-
-      const int w_2 = view_port->get_width() / 2;
-
-      hadj->set_value ((hadj->get_value() + w_2) / old_width * new_width - w_2);
-    }
-}
-#endif
 
 void
 MainWidget::load (const string& filename, const string& clip_markers)

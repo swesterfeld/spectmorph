@@ -153,9 +153,6 @@ public:
   void load (const std::string& filename, const std::string& clip_markers);
   void clip (const std::string& export_pattern);
 
-#if 0
-  void on_resized (int old_width, int new_width);
-#endif
 public slots:
   void on_volume_changed (int new_volume);
   void on_combo_changed();
