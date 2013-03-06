@@ -59,12 +59,19 @@ show_progress (double p)
 
 #define DEBUG 0
 
-struct DrawOps
+struct DummyPainter
 {
-  vector< pair<double, double> > v;
-  void move_to (double x, double y) { if (DEBUG) printf ("move_to %f %f\n", x, y); v.push_back (make_pair (x, y)); }
-  void line_to (double x, double y) { if (DEBUG) printf ("line_to %f %f\n", x, y); v.push_back (make_pair (x, y)); }
-} dops;
+  vector<int> v;
+  void drawLine (int x, int y, int ex, int ey)
+  {
+    if (DEBUG)
+      printf ("drawLine (%d, %d, %d, %d);\n", x, y, ex, ey);
+    v.push_back (x);
+    v.push_back (y);
+    v.push_back (ex);
+    v.push_back (ey);
+  }
+} dummy_painter;
 
 int
 main (int argc, char **argv)
@@ -103,18 +110,15 @@ main (int argc, char **argv)
       int width = 1000;
       int height = 1000;
 
-#if 0
-      GdkEventExpose ev;
-      ev.area.x = 0;
-      ev.area.width = width;
-#endif
+      QRect rect (0, 0, width, height);
+
       const double vz = height / 2;
       const double hz = double (width) / signal.size();
 
       const unsigned int runs = 100;
       double start = gettime();
       for (unsigned int i = 0; i < runs; i++)
-        SampleView::draw_signal (signal, &dops, /* &ev, */ height, vz, hz);
+        SampleView::draw_signal (signal, dummy_painter, rect, height, vz, hz);
       double end = gettime();
 
       printf ("draw_signal: %f clocks/value\n", clocks_per_sec * (end - start) / (signal.size()) / runs);

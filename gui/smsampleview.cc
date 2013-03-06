@@ -57,35 +57,7 @@ SampleView::paintEvent (QPaintEvent *event)
   painter.setPen (QColor (200, 0, 0));
   double hz = HZOOM_SCALE * hzoom;
   double vz = (height / 2) * vzoom;
-  {
-    int x = event->rect().x();
-    int last_i0 = -1;
-    int last_x = 0;
-    double last_value = 0;
-    while (x < event->rect().x() + event->rect().width())
-      {
-        int i0 = x / hz;
-        int i1 = (x + 1) / hz + 1;
-
-        if (last_i0 != i0)
-          {
-            if (i0 < int (signal.size()) && i0 >= 0 && i1 < int (signal.size() + 1) && i1 > 0)
-              {
-                painter.drawLine (last_x, (height / 2) + last_value * vz, x, (height / 2) + signal[i0] * vz);
-
-                float min_value, max_value;
-                Bse::Block::range (i1 - i0, &signal[i0], min_value, max_value);
-
-                painter.drawLine (x, (height / 2) + min_value * vz, x, (height / 2) + max_value * vz);
-
-                last_x = x;
-                last_value = signal[i1 - 1];
-              }
-            last_i0 = i0;
-          }
-        x++;
-      }
-  }
+  draw_signal (signal, painter, event->rect(), height, vz, hz);
 
   // attack markers:
   painter.setPen (QColor (150, 150, 150));
