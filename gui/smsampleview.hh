@@ -112,35 +112,6 @@ public:
 signals:
   void audio_edit();
   void mouse_time_changed (int pos);
-
-#if 0
-private:
-  double hzoom;
-  double vzoom;
-
-  int old_width;
-  void force_redraw();
-  void move_marker (int x);
-public:
-  SampleView();
-
-  //sigc::signal<void, int, int> signal_resized;
-  //sigc::signal<void>           signal_audio_edit;
-  //sigc::signal<void, int>      signal_mouse_time_changed;
-
-  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
-
-  bool on_expose_event (GdkEventExpose *ev);
-  bool on_button_press_event (GdkEventButton *event);
-  bool on_motion_notify_event (GdkEventMotion *event);
-  bool on_button_release_event (GdkEventButton *event);
-
-  void set_zoom (double hzoom, double vzoom);
-
-  void set_edit_marker_type (EditMarkerType marker_type);
-  EditMarkerType edit_marker_type();
-
-#endif
 };
 
 }
