@@ -49,6 +49,7 @@ MainWidget::MainWidget() :
   jack_player ("smsampleedit")
 {
   samples = NULL;
+  current_wave = NULL;
 
   QVBoxLayout *vbox = new QVBoxLayout();
 
@@ -75,6 +76,7 @@ MainWidget::MainWidget() :
   QPushButton *play_button = new QPushButton ("Play");
   QPushButton *save_button = new QPushButton ("Save");
   connect (play_button, SIGNAL (clicked()), this, SLOT (on_play_clicked()));
+  connect (save_button, SIGNAL (clicked()), this, SLOT (on_save_clicked()));
 
   volume_slider = new QSlider (Qt::Horizontal, this);
   volume_slider->setRange (-96000, 24000);
@@ -103,89 +105,10 @@ MainWidget::MainWidget() :
 }
 
 #if 0
-MainWidget::MainWidget() :
-  volume_scale (-96, 20, 0.01),
-  zoom_controller (1, 5000, 10, 5000),
-  jack_player ("smsampleedit")
+MainWidget::MainWidget()
 {
-  ref_action_group = Gtk::ActionGroup::create();
-  ref_action_group->add (Gtk::Action::create ("SampleMenu", "Sample"));
-  ref_action_group->add (Gtk::Action::create ("SampleNext", "Next Sample"), Gtk::AccelKey ('n', Gdk::ModifierType (0)),
-                         sigc::mem_fun (*this, &MainWidget::on_next_sample));
-
-  ref_ui_manager = Gtk::UIManager::create();
-  ref_ui_manager-> insert_action_group (ref_action_group);
-  add_accel_group (ref_ui_manager->get_accel_group());
-
-  Glib::ustring ui_info =
-    "<ui>"
-    "  <menubar name='MenuBar'>"
-    "    <menu action='SampleMenu'>"
-    "      <menuitem action='SampleNext' />"
-    "    </menu>"
-    "  </menubar>"
-    "</ui>";
-  try
-    {
-      ref_ui_manager->add_ui_from_string (ui_info);
-    }
-  catch (const Glib::Error& ex)
-    {
-      std::cerr << "building menus failed: " << ex.what();
-    }
-
-  Gtk::Widget *menu_bar = ref_ui_manager->get_widget ("/MenuBar");
-  if (menu_bar)
-    vbox.pack_start (*menu_bar, Gtk::PACK_SHRINK);
-
-  in_update_buttons = false;
-  current_wave = NULL;
-  samples = NULL;
-
-  scrolled_win.add (sample_view);
-
-  vbox.pack_start (scrolled_win);
-  vbox.pack_start (zoom_controller, Gtk::PACK_SHRINK);
-  vbox.pack_start (button_hbox, Gtk::PACK_SHRINK);
-
-  zoom_controller.signal_zoom_changed.connect (sigc::mem_fun (*this, &MainWidget::on_zoom_changed));
-  sample_view.signal_mouse_time_changed.connect (sigc::mem_fun (*this, &MainWidget::on_mouse_time_changed));
-
-  edit_clip_start.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWidget::on_edit_marker_changed),
-                                            SampleView::MARKER_CLIP_START));
-  edit_clip_end.signal_toggled().connect (sigc::bind (sigc::mem_fun (*this, &MainWidget::on_edit_marker_changed),
-                                          SampleView::MARKER_CLIP_END));
-  play_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWidget::on_play_clicked));
   save_button.signal_clicked().connect (sigc::mem_fun (*this, &MainWidget::on_save_clicked));
-
   sample_view.signal_resized.connect (sigc::mem_fun (*this, &MainWidget::on_resized));
-
-  sample_combobox.signal_changed().connect (sigc::mem_fun (*this, &MainWidget::on_combo_changed));
-
-  on_mouse_time_changed (0); // init label
-
-  play_button.set_label ("Play");
-  save_button.set_label ("Save");
-  edit_clip_start.set_label ("Edit Clip Start");
-  edit_clip_end.set_label ("Edit Clip End");
-  button_hbox.pack_start (time_label, Gtk::PACK_SHRINK);
-  button_hbox.pack_start (sample_combobox);
-  button_hbox.pack_start (play_button);
-  button_hbox.pack_start (save_button);
-  button_hbox.pack_start (volume_hbox);
-  button_hbox.pack_start (edit_clip_start);
-  button_hbox.pack_start (edit_clip_end);
-
-  volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
-  volume_hbox.pack_start (volume_scale);
-  volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
-  volume_label.set_label ("Volume");
-  volume_scale.set_draw_value (false);
-  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &MainWidget::on_volume_changed));
-  volume_scale.set_value (0);  // calls on_volume_changed()
-
-  add (vbox);
-  show_all_children();
 }
 #endif
 
@@ -483,7 +406,6 @@ MainWidget::on_play_clicked()
   jack_player.play (&audio, true);
 }
 
-#if 0
 static string
 double_to_string (double value)
 {
@@ -513,7 +435,6 @@ MainWidget::on_save_clicked()
     }
   fclose (file);
 }
-#endif
 
 MainWindow::MainWindow()
 {

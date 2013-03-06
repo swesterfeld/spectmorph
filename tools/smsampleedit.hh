@@ -150,10 +150,6 @@ public:
   MainWidget();
   ~MainWidget();
 
-#if 0
-  void on_save_clicked();
-#endif
-
   void load (const std::string& filename, const std::string& clip_markers);
   void clip (const std::string& export_pattern);
 
@@ -164,10 +160,12 @@ public slots:
   void on_volume_changed (int new_volume);
   void on_combo_changed();
   void on_zoom_changed();
-  void on_play_clicked();
   void on_edit_marker_changed();
   void on_mouse_time_changed (int time);
   void on_next_sample();
+
+  void on_play_clicked();
+  void on_save_clicked();
 };
 
 class MainWindow : public QMainWindow
