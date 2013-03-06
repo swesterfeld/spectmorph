@@ -75,11 +75,10 @@ main (int argc, char **argv)
 
   if (argc == 2 && string (argv[1]) == "zoom")
     {
-#if 0
       const unsigned int runs = 1000;
 
       PixelArray image;
-      Glib::RefPtr<Gdk::Pixbuf> zimage;
+      QImage zimage;
       double hzoom = 1.3, vzoom = 1.5;
       image.resize (1024, 1024);
 
@@ -94,7 +93,6 @@ main (int argc, char **argv)
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
       printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
-#endif
     }
   else if (argc == 2 && string (argv[1]) == "sample")
     {
@@ -123,7 +121,6 @@ main (int argc, char **argv)
     }
   else if (argc == 3 && string (argv[1]) == "cwt")
     {
-#if 0
       CWT cwt;
       WavLoader *loader = WavLoader::load (argv[2]);
       if (!loader)
@@ -137,14 +134,13 @@ main (int argc, char **argv)
       params.cwt_time_resolution = 5;
 
       double start = gettime();
-      cwt.signal_progress.connect (sigc::ptr_fun (show_progress));
+      cwt.connect (&cwt, &CWT::signal_progress, show_progress);
       results = cwt.analyze (signal, params);
       double end = gettime();
       printf ("\n");
       cwt.make_png (results);
 
       printf ("per sample cost: %f ops\n", (end - start) * clocks_per_sec / (signal.size() * results.size()));
-#endif
     }
   else
     {
