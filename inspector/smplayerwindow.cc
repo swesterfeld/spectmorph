@@ -36,6 +36,9 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   navigator (navigator),
   jack_player ("sminspector")
 {
+  setWindowTitle ("Player");
+  resize (300, 10); /* h = 10 is too small, but the window will use the minimum height instead */
+
   QPushButton *play_button = new QPushButton ("Play");
   QPushButton *stop_button = new QPushButton ("Stop");
 
@@ -87,69 +90,3 @@ PlayerWindow::on_volume_changed (int new_volume_int)
 
   jack_player.set_volume (new_decoder_volume);
 }
-
-#if 0
-PlayerWindow::PlayerWindow (Navigator *navigator) :
-  navigator (navigator),
-  volume_scale (-96, 24, 0.01),
-  jack_player ("sminspector")
-{
-  set_border_width (10);
-  set_default_size (300, 100);
-  set_title ("Player");
-
-  play_button.set_label ("Play");
-  play_button.signal_clicked().connect (sigc::mem_fun (*this, &PlayerWindow::on_play_clicked));
-
-  stop_button.set_label ("Stop");
-  stop_button.signal_clicked().connect (sigc::mem_fun (*this, &PlayerWindow::on_stop_clicked));
-
-  volume_scale.signal_value_changed().connect (sigc::mem_fun (*this, &PlayerWindow::on_volume_changed));
-
-  button_hbox.pack_start (play_button);
-  button_hbox.pack_start (stop_button);
-  button_hbox.set_spacing (10);
-
-  volume_label.set_label ("Volume");
-  volume_scale.set_value (0);
-  volume_scale.set_draw_value (false);
-
-  volume_hbox.pack_start (volume_label, Gtk::PACK_SHRINK);
-  volume_hbox.pack_start (volume_scale);
-  volume_hbox.pack_start (volume_value_label, Gtk::PACK_SHRINK);
-
-  vbox.add (button_hbox);
-  vbox.add (volume_hbox);
-
-  add (vbox);
-
-  show_all_children();
-}
-
-PlayerWindow::~PlayerWindow()
-{
-}
-
-void
-PlayerWindow::on_play_clicked()
-{
-  Audio *audio = navigator->get_audio();
-
-  jack_player.play (audio, !navigator->spectmorph_signal_active());
-}
-
-void
-PlayerWindow::on_stop_clicked()
-{
-  jack_player.play (NULL, true);
-}
-
-void
-PlayerWindow::on_volume_changed()
-{
-  double new_decoder_volume = bse_db_to_factor (volume_scale.get_value());
-  volume_value_label.set_text (Birnet::string_printf ("%.1f dB", volume_scale.get_value()));
-
-  jack_player.set_volume (new_decoder_volume);
-}
-#endif
