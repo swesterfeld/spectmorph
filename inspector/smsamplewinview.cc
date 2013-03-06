@@ -52,6 +52,8 @@ SampleWinView::SampleWinView (Navigator *navigator)
   scroll_area->setWidgetResizable (true);
   scroll_area->setWidget (sample_view);
 
+  zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
+
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (scroll_area);
   vbox->addWidget (zoom_controller);

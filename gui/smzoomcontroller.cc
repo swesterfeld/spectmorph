@@ -41,6 +41,9 @@ ZoomController::ZoomController (double hzoom_min, double hzoom_max, double vzoom
 void
 ZoomController::init()
 {
+  vscrollbar = NULL;
+  hscrollbar = NULL;
+
   hzoom_slider = new QSlider (Qt::Horizontal);
   hzoom_label  = new QLabel();
   vzoom_slider = new QSlider (Qt::Horizontal);
@@ -58,6 +61,9 @@ ZoomController::init()
 
   connect (hzoom_slider, SIGNAL (valueChanged (int)), this, SLOT (on_hzoom_changed()));
   connect (vzoom_slider, SIGNAL (valueChanged (int)), this, SLOT (on_vzoom_changed()));
+
+  old_hzoom = 1;
+  old_vzoom = 1;
 
   on_hzoom_changed();
   on_vzoom_changed();
@@ -83,6 +89,12 @@ ZoomController::on_hzoom_changed()
   sprintf (buffer, "%3.2f%%", 100.0 * hzoom);
   hzoom_label->setText (buffer);
 
+  if (hscrollbar)
+    {
+      const double hfactor = hzoom / old_hzoom;
+      hscrollbar->setValue (hfactor * hscrollbar->value() + ((hfactor - 1) * hscrollbar->pageStep() / 2));
+    }
+  old_hzoom = hzoom;
   emit zoom_changed();
 }
 
@@ -94,5 +106,24 @@ ZoomController::on_vzoom_changed()
   sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
   vzoom_label->setText (buffer);
 
+  if (vscrollbar)
+    {
+      const double vfactor = vzoom / old_vzoom;
+      vscrollbar->setValue (vfactor * vscrollbar->value() + ((vfactor - 1) * vscrollbar->pageStep() / 2));
+    }
+  old_vzoom = vzoom;
   emit zoom_changed();
+  emit zoom_changed();
+}
+
+void
+ZoomController::set_vscrollbar (QScrollBar *scrollbar)
+{
+  vscrollbar = scrollbar;
+}
+
+void
+ZoomController::set_hscrollbar (QScrollBar *scrollbar)
+{
+  hscrollbar = scrollbar;
 }

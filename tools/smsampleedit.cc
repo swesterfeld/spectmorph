@@ -61,6 +61,7 @@ MainWidget::MainWidget() :
   vbox->addWidget (scroll_area);
 
   zoom_controller = new ZoomController (1, 5000, 10, 5000),
+  zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
   vbox->addWidget (zoom_controller);
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 

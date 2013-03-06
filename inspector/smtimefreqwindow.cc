@@ -37,6 +37,8 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator) :
   scroll_area->setWidget (m_time_freq_view);
 
   zoom_controller = new ZoomController (5000, 10000);
+  zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
+  zoom_controller->set_vscrollbar (scroll_area->verticalScrollBar());
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
   QHBoxLayout *position_hbox = new QHBoxLayout();

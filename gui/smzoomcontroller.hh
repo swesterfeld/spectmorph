@@ -20,6 +20,7 @@
 
 #include <QWidget>
 #include <QSlider>
+#include <QScrollBar>
 #include <QLabel>
 
 namespace SpectMorph {
@@ -28,10 +29,16 @@ class ZoomController : public QWidget
 {
   Q_OBJECT
 
+  double   old_hzoom;
+  double   old_vzoom;
+
   QSlider *hzoom_slider;
   QLabel  *hzoom_label;
   QSlider *vzoom_slider;
   QLabel  *vzoom_label;
+
+  QScrollBar  *vscrollbar;
+  QScrollBar  *hscrollbar;
 
   void init();
 public:
@@ -40,6 +47,9 @@ public:
 
   double get_hzoom();
   double get_vzoom();
+
+  void set_vscrollbar (QScrollBar *scrollbar);
+  void set_hscrollbar (QScrollBar *scrollbar);
 
 public slots:
   void on_hzoom_changed();

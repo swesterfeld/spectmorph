@@ -30,6 +30,8 @@ LPCWindow::LPCWindow()
   zoom_controller = new ZoomController();
   scroll_area = new QScrollArea();
   scroll_area->setWidget (lpc_view);
+  zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
+  zoom_controller->set_vscrollbar (scroll_area->verticalScrollBar());
 
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addWidget (scroll_area);
