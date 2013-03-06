@@ -531,6 +531,8 @@ MainWindow::MainWindow()
   sample_menu->addAction (next_action);
 
   setCentralWidget (main_widget);
+
+  resize (800, 600);
 }
 
 void
