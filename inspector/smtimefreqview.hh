@@ -78,23 +78,7 @@ signals:
   void progress_changed();
 
 #if 0 /* PORT */
-  int old_height;
-  int old_width;
-
-  void force_redraw();
-
-
-
-public:
-  TimeFreqView (); //const std::string& filename);
-
-  sigc::signal<void, int, int, int, int> signal_resized;
-
   void load (const std::string& filename);
-  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
-  bool on_expose_event (GdkEventExpose* ev);
-
-
 #endif
 };
 

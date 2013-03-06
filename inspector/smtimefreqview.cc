@@ -73,34 +73,6 @@ TimeFreqView::scale_zoom (double *scaled_hzoom, double *scaled_vzoom)
   *scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
 }
 
-#if 0
-void
-TimeFreqView::force_redraw()
-{
-  // resize widget according to zoom if necessary
-  double scaled_hzoom, scaled_vzoom;
-  scale_zoom (&scaled_hzoom, &scaled_vzoom);
-
-  int new_width = image.get_width() * scaled_hzoom;
-  int new_height = image.get_height() * scaled_vzoom;
-  if (new_width != old_width || new_height != old_height)
-    {
-      set_size_request (new_width, new_height);
-      signal_resized (old_width, old_height, new_width, new_height);
-
-      old_height = new_height;
-      old_width = new_width;
-    }
-
-  Glib::RefPtr<Gdk::Window> win = get_window();
-  if (win)
-    {
-      Gdk::Rectangle r (0, 0, get_allocation().get_width(), get_allocation().get_height());
-      win->invalidate_rect (r, false);
-    }
-}
-#endif
-
 void
 TimeFreqView::update_size()
 {
