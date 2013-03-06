@@ -69,7 +69,7 @@ TimeFreqView::TimeFreqView()
 void
 TimeFreqView::scale_zoom (double *scaled_hzoom, double *scaled_vzoom)
 {
-  *scaled_hzoom = 400 * hzoom / MAX (image.get_width(), 1);
+  *scaled_hzoom = 800 * hzoom / MAX (image.get_width(), 1);
   *scaled_vzoom = 2000 * vzoom / MAX (image.get_height(), 1);
 }
 
