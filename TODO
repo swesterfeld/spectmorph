@@ -79,3 +79,6 @@ morphing:
 qt5 port:
 - beast plugin
 - cleanup old gtk code
+- smldplot
+- smmorphplot
+- fix zoomcontroller layout integration
