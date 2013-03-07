@@ -8,7 +8,7 @@ SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 bin_PROGRAMS = smjack
 noinst_PROGRAMS = smjackvel
 
-smjack_SOURCES = smjack.cc moc_smjack.cc
+smjack_SOURCES = smjack.cc moc_smjack.cc smjack.hh
 smjack_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 
 smjackvel_SOURCES = smjackvel.cc

@@ -15,7 +15,7 @@ libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
 bin_PROGRAMS = spectmorphoscgui
 noinst_PROGRAMS = smmorphplot smldplot
 
-spectmorphoscgui_SOURCES = spectmorphoscgui.cc moc_spectmorphoscgui.cc
+spectmorphoscgui_SOURCES = spectmorphoscgui.cc moc_spectmorphoscgui.cc spectmorphoscgui.hh
 spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS) libspectmorphgui.la
 spectmorphoscgui_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
 

@@ -37,7 +37,7 @@ tld_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smenccache_SOURCES = smenccache.cc
 smenccache_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
-smsampleedit_SOURCES = smsampleedit.cc moc_smsampleedit.cc
+smsampleedit_SOURCES = smsampleedit.cc moc_smsampleedit.cc smsampleedit.hh
 smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
 

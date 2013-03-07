@@ -9,7 +9,7 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh smlpcwindow.hh \
-         smlpcview.hh smdisplayparamwindow.hh smnavigatorwindow.hh
+         smlpcview.hh smdisplayparamwindow.hh smnavigatorwindow.hh smsamplewinview.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
