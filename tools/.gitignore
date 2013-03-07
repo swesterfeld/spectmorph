@@ -13,5 +13,6 @@ smfileedit
 sminstbuilder
 tld
 *.o
+moc_*.cc
 .deps
 .libs
