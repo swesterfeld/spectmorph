@@ -21,6 +21,8 @@
 #include <vector>
 #include <string>
 
+#include <QApplication>
+
 #include "smmain.hh"
 #include "smmorphplan.hh"
 #include "smmorphsource.hh"
@@ -28,34 +30,19 @@
 #include "smmorphplanwindow.hh"
 #include "smmemout.hh"
 #include "smhexstring.hh"
+#include "spectmorphoscgui.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
-#if 0
-class OscGui
-{
-  MorphPlanPtr      morph_plan;
-  MorphPlanWindow   window;
-public:
-  OscGui (MorphPlanPtr plan, const string& title);
-  void run();
-  void on_plan_changed();
-};
-
 OscGui::OscGui (MorphPlanPtr plan, const string& title) :
-  morph_plan (plan),
-  window (morph_plan, title)
+  morph_plan (plan)
 {
-  morph_plan->signal_plan_changed.connect (sigc::mem_fun (*this, &OscGui::on_plan_changed));
-}
-
-void
-OscGui::run()
-{
-//  Gtk::Main::run (window); FIXME
+  window = new MorphPlanWindow (morph_plan, title);
+  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  window->show();
 }
 
 void
@@ -67,15 +54,13 @@ OscGui::on_plan_changed()
   printf ("%s\n", HexString::encode (data).c_str());
   fflush (stdout);
 }
-#endif
 
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-#if 0
-  Gtk::Main kit (argc, argv);
+  QApplication app (argc, argv);
 
   if (argc != 2)
     {
@@ -97,10 +82,11 @@ main (int argc, char **argv)
   morph_plan->set_plan_str (plan_str);
 
   OscGui gui (morph_plan, argv[1]);
-  gui.run();
+  int rc = app.exec();
 
   // let parent know that the user closed the gui window
   printf ("quit\n");
   fflush (stdout);
-#endif
+
+  return rc;
 }
