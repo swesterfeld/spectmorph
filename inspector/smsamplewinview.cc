@@ -142,20 +142,27 @@ SampleWinView::on_loop_type_changed()
   if (audio)
     {
       string text = loop_type_combo->currentText().toLatin1().data();
+      Audio::LoopType new_loop_type;
 
       if (text == LOOP_NONE_TEXT)
-        audio->loop_type = Audio::LOOP_NONE;
+        new_loop_type = Audio::LOOP_NONE;
       else if (text == LOOP_FRAME_FORWARD_TEXT)
-        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+        new_loop_type = Audio::LOOP_FRAME_FORWARD;
       else if (text == LOOP_FRAME_PING_PONG_TEXT)
-        audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
+        new_loop_type = Audio::LOOP_FRAME_PING_PONG;
       else if (text == LOOP_TIME_FORWARD_TEXT)
-        audio->loop_type = Audio::LOOP_TIME_FORWARD;
+        new_loop_type = Audio::LOOP_TIME_FORWARD;
       else if (text == LOOP_TIME_PING_PONG_TEXT)
-        audio->loop_type = Audio::LOOP_TIME_PING_PONG;
+        new_loop_type = Audio::LOOP_TIME_PING_PONG;
       else
         {
           g_assert_not_reached();
+        }
+
+      if (new_loop_type != audio->loop_type)
+        {
+          emit audio_edit();
+          audio->loop_type = new_loop_type;
         }
     }
 }

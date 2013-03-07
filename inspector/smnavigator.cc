@@ -121,6 +121,7 @@ Navigator::Navigator (const string& filename)
   connect (tree_view->selectionModel(), SIGNAL (selectionChanged (const QItemSelection&, const QItemSelection&)),
            this, SLOT (on_selection_changed()));
 
+  wset_edit = false;
   on_combo_changed();
 
   source_button = new QPushButton ("Source/Analysis");

@@ -31,6 +31,7 @@ SampleWindow::SampleWindow (Navigator *navigator)
   this->navigator = navigator;
 
   sample_win_view = new SampleWinView (navigator);
+  connect (sample_win_view, SIGNAL (audio_edit()), navigator, SLOT (on_audio_edit()));
 
   /* actions ... */
   QAction *next_action = new QAction ("Next Sample", this);

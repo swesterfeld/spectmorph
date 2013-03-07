@@ -40,6 +40,9 @@ public slots:
   void on_mouse_time_changed (int new_time);
   void on_edit_marker_changed();
   void on_loop_type_changed();
+
+signals:
+  void audio_edit();
 };
 
 }
