@@ -75,3 +75,8 @@ morphing:
   predicts them; that way, peaks of the same gaussian distribution are "one
   consistent partial" - for morphing, the remaining problem reduces to finding
   out which gaussian distribution should be morphed with which gaussian distribution
+
+qt5 port:
+- window titles
+- beast plugin
+- cleanup old gtk code
