@@ -1,4 +1,3 @@
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
 #include <bse/bse.h>
@@ -43,6 +42,7 @@ struct FrameData
   vector<LineData>  lines;
 };
 
+#if 0
 class MorphView : public Gtk::DrawingArea
 {
   vector<FrameData>                     frame_data;
@@ -358,12 +358,14 @@ public:
     morph_view.force_redraw();
   }
 };
+#endif
 
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+#if 0
   Gtk::Main kit (argc, argv);
 
   if (argc < 2)
@@ -374,4 +376,5 @@ main (int argc, char **argv)
 
   MorphPlotWindow window (argc, argv);
   Gtk::Main::run (window);
+#endif
 }

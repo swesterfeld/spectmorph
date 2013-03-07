@@ -1,4 +1,3 @@
-#include <gtkmm.h>
 #include <assert.h>
 #include <bse/bse.h>
 #include <bse/bsemathsignal.h>
@@ -32,6 +31,7 @@ struct FrameData
   vector<LineData>  lines;
 };
 
+#if 0
 class MorphView : public Gtk::DrawingArea
 {
   vector<FrameData> frame_data;
@@ -288,12 +288,14 @@ public:
     position_label.set_text (buffer);
   }
 };
+#endif
 
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+#if 0
   Gtk::Main kit (argc, argv);
 
   if (argc != 2)
@@ -304,4 +306,5 @@ main (int argc, char **argv)
 
   MorphPlotWindow window (argv[1]);
   Gtk::Main::run (window);
+#endif
 }

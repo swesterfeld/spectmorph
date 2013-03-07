@@ -15,7 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gtkmm.h>
 #include <assert.h>
 #include <sys/time.h>
 
@@ -35,6 +34,7 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+#if 0
 class OscGui
 {
   MorphPlanPtr      morph_plan;
@@ -67,12 +67,14 @@ OscGui::on_plan_changed()
   printf ("%s\n", HexString::encode (data).c_str());
   fflush (stdout);
 }
+#endif
 
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+#if 0
   Gtk::Main kit (argc, argv);
 
   if (argc != 2)
@@ -100,4 +102,5 @@ main (int argc, char **argv)
   // let parent know that the user closed the gui window
   printf ("quit\n");
   fflush (stdout);
+#endif
 }
