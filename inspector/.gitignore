@@ -3,5 +3,6 @@
 *.o
 *.lo
 *.la
+moc_*.cc
 sminspector
 testinspector
