@@ -268,17 +268,3 @@ SampleView::set_edit_marker_type (EditMarkerType marker_type)
   m_edit_marker_type = marker_type;
   update();
 }
-
-#if 0
-bool
-SampleView::on_expose_event (GdkEventExpose *ev)
-{
-  [...]
-  // red sample:
-  cr->set_source_rgb (0.8, 0.0, 0.0);
-
-  double hz = HZOOM_SCALE * hzoom;
-  double vz = (height / 2) * vzoom;
-  draw_signal (signal, cr, ev, height, vz, hz);
-}
-#endif

@@ -399,14 +399,6 @@ Navigator::on_next_sample()
     tree_view->selectionModel()->setCurrentIndex (index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 }
 
-#if 0
-void
-Navigator::on_view_time_freq()
-{
-  time_freq_window.show();
-}
-#endif
-
 void
 Navigator::on_view_display_params()
 {

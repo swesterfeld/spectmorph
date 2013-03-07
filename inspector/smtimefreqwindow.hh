@@ -58,10 +58,6 @@ public slots:
   void on_progress_changed();
   void on_analysis_changed();
   void on_frequency_grid_changed();
-
-#if 0
-  void on_resized (int old_width, int old_height, int new_width, int new_height);
-#endif
 };
 
 }
