@@ -10,12 +10,15 @@
 
 namespace SpectMorph {
 
-class ZoomController : public QWidget
+class ZoomController : public QObject
 {
   Q_OBJECT
 
   double   old_hzoom;
   double   old_vzoom;
+
+  QLabel  *hzoom_text;
+  QLabel  *vzoom_text;
 
   QSlider *hzoom_slider;
   QLabel  *hzoom_label;
@@ -27,8 +30,11 @@ class ZoomController : public QWidget
 
   void init();
 public:
-  ZoomController (double hzoom_max = 1000.0, double vzoom_max = 1000.0);
-  ZoomController (double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max);
+  ZoomController (QObject *parent, double hzoom_max = 1000.0, double vzoom_max = 1000.0);
+  ZoomController (QObject *parent, double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max);
+
+  QWidget *hwidget (int i);
+  QWidget *vwidget (int i);
 
   double get_hzoom();
   double get_vzoom();

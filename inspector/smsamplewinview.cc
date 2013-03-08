@@ -19,7 +19,7 @@ SampleWinView::SampleWinView (Navigator *navigator)
 {
   this->navigator = navigator;
 
-  zoom_controller = new ZoomController (1, 5000, 10, 5000);
+  zoom_controller = new ZoomController (this, 1, 5000, 10, 5000);
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
   m_sample_view = new SampleView();
@@ -53,10 +53,13 @@ SampleWinView::SampleWinView (Navigator *navigator)
   scroll_area->setWidget (m_sample_view);
 
   zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
-
-  QVBoxLayout *vbox = new QVBoxLayout();
-  vbox->addWidget (scroll_area);
-  vbox->addWidget (zoom_controller);
+  QGridLayout *grid = new QGridLayout();
+  grid->addWidget (scroll_area, 0, 0, 1, 3);
+  for (int i = 0; i < 3; i++)
+    {
+      grid->addWidget (zoom_controller->hwidget (i), 1, i);
+      grid->addWidget (zoom_controller->vwidget (i), 2, i);
+    }
 
   QHBoxLayout *button_hbox = new QHBoxLayout();
   button_hbox->addWidget (time_label);
@@ -65,9 +68,9 @@ SampleWinView::SampleWinView (Navigator *navigator)
   button_hbox->addWidget (edit_loop_end);
   button_hbox->addWidget (loop_type_combo);
 
-  vbox->addLayout (button_hbox);
+  grid->addLayout (button_hbox, 3, 0, 1, 3);
 
-  setLayout (vbox);
+  setLayout (grid);
 }
 
 void

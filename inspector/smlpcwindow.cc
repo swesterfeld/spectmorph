@@ -12,16 +12,21 @@ LPCWindow::LPCWindow()
   setWindowTitle ("LPC View");
 
   lpc_view = new LPCView();
-  zoom_controller = new ZoomController();
+  zoom_controller = new ZoomController (this);
   scroll_area = new QScrollArea();
   scroll_area->setWidget (lpc_view);
   zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
   zoom_controller->set_vscrollbar (scroll_area->verticalScrollBar());
 
-  QVBoxLayout *vbox = new QVBoxLayout();
-  vbox->addWidget (scroll_area);
-  vbox->addWidget (zoom_controller);
-  setLayout (vbox);
+  QGridLayout *grid = new QGridLayout();
+  grid->addWidget (scroll_area, 0, 0, 1, 3);
+  for (int i = 0; i < 3; i++)
+    {
+      grid->addWidget (zoom_controller->hwidget (i), 1, i);
+      grid->addWidget (zoom_controller->vwidget (i), 2, i);
+    }
+  setLayout (grid);
+
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 }
 

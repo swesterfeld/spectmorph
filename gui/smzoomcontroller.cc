@@ -4,19 +4,23 @@
 #include <math.h>
 #include <stdio.h>
 
+#include <glib.h>
+
 #include <QSlider>
 #include <QVBoxLayout>
 
 using namespace SpectMorph;
 
-ZoomController::ZoomController (double hzoom_max, double vzoom_max)
+ZoomController::ZoomController (QObject *parent, double hzoom_max, double vzoom_max) :
+  QObject (parent)
 {
   init();
   hzoom_slider->setRange (-1000, (log10 (hzoom_max) - 2) * 1000);
   vzoom_slider->setRange (-1000, (log10 (vzoom_max) - 2) * 1000);
 }
 
-ZoomController::ZoomController (double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max)
+ZoomController::ZoomController (QObject *parent, double hzoom_min, double hzoom_max, double vzoom_min, double vzoom_max) :
+  QObject (parent)
 {
   init();
   hzoom_slider->setRange ((log10 (hzoom_min) - 2) * 1000, (log10 (hzoom_max) - 2) * 1000);
@@ -29,20 +33,13 @@ ZoomController::init()
   vscrollbar = NULL;
   hscrollbar = NULL;
 
+  hzoom_text = new QLabel ("HZoom");
   hzoom_slider = new QSlider (Qt::Horizontal);
   hzoom_label  = new QLabel();
+
+  vzoom_text = new QLabel ("VZoom");
   vzoom_slider = new QSlider (Qt::Horizontal);
   vzoom_label  = new QLabel();
-
-  QGridLayout *grid_layout = new QGridLayout();
-
-  grid_layout->addWidget (new QLabel ("HZoom"), 0, 0);
-  grid_layout->addWidget (hzoom_slider, 0, 1);
-  grid_layout->addWidget (hzoom_label, 0, 2);
-  grid_layout->addWidget (new QLabel ("VZoom"), 1, 0);
-  grid_layout->addWidget (vzoom_slider, 1, 1);
-  grid_layout->addWidget (vzoom_label, 1, 2);
-  setLayout (grid_layout);
 
   connect (hzoom_slider, SIGNAL (valueChanged (int)), this, SLOT (on_hzoom_changed()));
   connect (vzoom_slider, SIGNAL (valueChanged (int)), this, SLOT (on_vzoom_changed()));
@@ -111,4 +108,28 @@ void
 ZoomController::set_hscrollbar (QScrollBar *scrollbar)
 {
   hscrollbar = scrollbar;
+}
+
+QWidget*
+ZoomController::hwidget (int i)
+{
+  switch (i)
+    {
+      case 0: return hzoom_text;
+      case 1: return hzoom_slider;
+      case 2: return hzoom_label;
+      default: g_assert_not_reached();
+    }
+}
+
+QWidget*
+ZoomController::vwidget (int i)
+{
+  switch (i)
+    {
+      case 0: return vzoom_text;
+      case 1: return vzoom_slider;
+      case 2: return vzoom_label;
+      default: g_assert_not_reached();
+    }
 }

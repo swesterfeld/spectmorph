@@ -3,7 +3,7 @@
 #include "smspectrumwindow.hh"
 #include "smnavigator.hh"
 
-#include <QVBoxLayout>
+#include <QGridLayout>
 
 using namespace SpectMorph;
 
@@ -13,15 +13,18 @@ SpectrumWindow::SpectrumWindow (Navigator *navigator)
   setWindowTitle ("Spectrum View");
 
   spectrum_view = new SpectrumView (navigator);
-  zoom_controller = new ZoomController (5000, 5000);
+  zoom_controller = new ZoomController (this, 5000, 5000);
 
-  QVBoxLayout *vbox = new QVBoxLayout();
+  QGridLayout *grid = new QGridLayout();
   scroll_area = new QScrollArea();
   scroll_area->setWidget (spectrum_view);
-  vbox->addWidget (scroll_area);
-  vbox->addWidget (zoom_controller);
-
-  setLayout (vbox);
+  grid->addWidget (scroll_area, 0, 0, 1, 3);
+  for (int i = 0; i < 3; i++)
+    {
+      grid->addWidget (zoom_controller->hwidget (i), 1, i);
+      grid->addWidget (zoom_controller->vwidget (i), 2, i);
+    }
+  setLayout (grid);
 
   zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
   zoom_controller->set_vscrollbar (scroll_area->verticalScrollBar());

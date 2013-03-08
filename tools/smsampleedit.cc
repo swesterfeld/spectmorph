@@ -36,18 +36,22 @@ MainWidget::MainWidget() :
   samples = NULL;
   current_wave = NULL;
 
-  QVBoxLayout *vbox = new QVBoxLayout();
+  QGridLayout *grid = new QGridLayout();
 
   sample_view = new SampleView();
 
   scroll_area = new QScrollArea();
   scroll_area->setWidgetResizable (true);
   scroll_area->setWidget (sample_view);
-  vbox->addWidget (scroll_area);
+  grid->addWidget (scroll_area, 0, 0, 1, 3);
 
-  zoom_controller = new ZoomController (1, 5000, 10, 5000),
+  zoom_controller = new ZoomController (this, 1, 5000, 10, 5000),
   zoom_controller->set_hscrollbar (scroll_area->horizontalScrollBar());
-  vbox->addWidget (zoom_controller);
+  for (int i = 0; i < 3; i++)
+    {
+      grid->addWidget (zoom_controller->hwidget (i), 1, i);
+      grid->addWidget (zoom_controller->vwidget (i), 2, i);
+    }
   connect (zoom_controller, SIGNAL (zoom_changed()), this, SLOT (on_zoom_changed()));
 
   QHBoxLayout *button_hbox = new QHBoxLayout();
@@ -86,8 +90,8 @@ MainWidget::MainWidget() :
   button_hbox->addWidget (edit_clip_start);
   button_hbox->addWidget (edit_clip_end);
 
-  vbox->addLayout (button_hbox);
-  setLayout (vbox);
+  grid->addLayout (button_hbox, 3, 0, 1, 3);
+  setLayout (grid);
 }
 
 MainWidget::~MainWidget()

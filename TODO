@@ -77,8 +77,6 @@ morphing:
   out which gaussian distribution should be morphed with which gaussian distribution
 
 qt5 port:
-- beast plugin
 - cleanup old gtk code
 - smldplot
 - smmorphplot
-- fix zoomcontroller layout integration
