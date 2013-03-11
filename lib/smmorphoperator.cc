@@ -95,6 +95,7 @@ MorphOperator::type_name()
 
 #include "smmorphoutput.hh"
 #include "smmorphlinear.hh"
+#include "smmorphgrid.hh"
 #include "smmorphsource.hh"
 #include "smmorphlfo.hh"
 
@@ -105,6 +106,7 @@ MorphOperator::create (const string& type, MorphPlan *plan)
 
   if (type == "SpectMorph::MorphSource") return new MorphSource (plan);
   if (type == "SpectMorph::MorphLinear") return new MorphLinear (plan);
+  if (type == "SpectMorph::MorphGrid") return new MorphGrid (plan);
   if (type == "SpectMorph::MorphOutput") return new MorphOutput (plan);
   if (type == "SpectMorph::MorphLFO")    return new MorphLFO (plan);
 

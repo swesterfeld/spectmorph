@@ -3,6 +3,7 @@
 #include "smmorphoperatormodule.hh"
 
 #include "smmorphlinearmodule.hh"
+#include "smmorphgridmodule.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphsourcemodule.hh"
 #include "smmorphlfomodule.hh"
@@ -100,10 +101,11 @@ MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
 {
   string type = op->type();
 
-  if (type == "SpectMorph::MorphLinear") return new MorphLinearModule (voice);
-  if (type == "SpectMorph::MorphSource") return new MorphSourceModule (voice);
-  if (type == "SpectMorph::MorphOutput") return new MorphOutputModule (voice);
-  if (type == "SpectMorph::MorphLFO")    return new MorphLFOModule (voice);
+  if (type == "SpectMorph::MorphLinear")  return new MorphLinearModule (voice);
+  if (type == "SpectMorph::MorphGrid")    return new MorphGridModule (voice);
+  if (type == "SpectMorph::MorphSource")  return new MorphSourceModule (voice);
+  if (type == "SpectMorph::MorphOutput")  return new MorphOutputModule (voice);
+  if (type == "SpectMorph::MorphLFO")     return new MorphLFOModule (voice);
 
   return NULL;
 }

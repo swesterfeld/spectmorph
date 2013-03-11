@@ -13,7 +13,8 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smindex.hh smmorphsource.hh smmorphoutput.hh smmorphlinear.hh \
          smmorphoperatormodule.hh smmorphsourcemodule.hh smmorphlinearmodule.hh \
          smmorphoutputmodule.hh smwavsetrepo.hh smleakdebugger.hh smobject.hh \
-         smlpc.hh smmorphlfo.hh smmorphlfomodule.hh smmorphplansynth.hh
+         smlpc.hh smmorphlfo.hh smmorphlfomodule.hh smmorphplansynth.hh \
+         smmorphgrid.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -29,7 +30,8 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smmorphoutputmodule.cc smwavsetrepo.cc smleakdebugger.cc smobject.cc \
                            smlpc.cc smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS) \
                            moc_smmorphplan.cc moc_smmorphlinear.cc moc_smmorphoperator.cc \
-                           moc_smmorphoutput.cc
+                           moc_smmorphoutput.cc smmorphgrid.cc moc_smmorphgrid.cc \
+                           smmorphgridmodule.cc
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS) $(BSE_LIBS)
 
@@ -47,3 +49,6 @@ moc_smmorphoperator.cc: smmorphoperator.hh
 
 moc_smmorphoutput.cc: smmorphoutput.hh
 	moc smmorphoutput.hh > moc_smmorphoutput.cc
+
+moc_smmorphgrid.cc: smmorphgrid.hh
+	moc smmorphgrid.hh > moc_smmorphgrid.cc

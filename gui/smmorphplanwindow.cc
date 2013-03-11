@@ -54,6 +54,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   add_op_action (add_op_menu, "Source", "SpectMorph::MorphSource");
   add_op_action (add_op_menu, "Output", "SpectMorph::MorphOutput");
   add_op_action (add_op_menu, "Linear Morph", "SpectMorph::MorphLinear");
+  add_op_action (add_op_menu, "Grid Morph", "SpectMorph::MorphGrid");
   add_op_action (add_op_menu, "LFO", "SpectMorph::MorphLFO");
 
   /* central widget */
