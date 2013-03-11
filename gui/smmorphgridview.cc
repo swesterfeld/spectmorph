@@ -29,7 +29,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   hbox->addWidget (new QLabel ("Height"));
   hbox->addWidget (height_spinbox);
 
-  MorphGridWidget *grid_widget = new MorphGridWidget();
+  MorphGridWidget *grid_widget = new MorphGridWidget (morph_grid);
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addLayout (hbox);
   vbox->addWidget (grid_widget);

@@ -2,6 +2,7 @@
 
 #include "smmorphgrid.hh"
 #include "smleakdebugger.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
@@ -49,6 +50,8 @@ void
 MorphGrid::set_width (int width)
 {
   m_width = width;
+
+  m_morph_plan->emit_plan_changed();
 }
 
 int
@@ -61,6 +64,8 @@ void
 MorphGrid::set_height (int height)
 {
   m_height = height;
+
+  m_morph_plan->emit_plan_changed();
 }
 
 int
