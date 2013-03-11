@@ -5,6 +5,8 @@
 
 #include "smmorphoperatorview.hh"
 #include "smmorphgrid.hh"
+#include "smcomboboxoperator.hh"
+#include "smmorphgridwidget.hh"
 
 #include <QSpinBox>
 
@@ -18,12 +20,16 @@ class MorphGridView : public MorphOperatorView
   QSpinBox         *width_spinbox;
   QSpinBox         *height_spinbox;
 
+  ComboBoxOperator *op_combobox;
   MorphGrid        *morph_grid;
+  MorphGridWidget  *grid_widget;
+
 public:
   MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window);
 
 public slots:
   void on_size_changed();
+  void on_selection_changed();
 };
 
 }

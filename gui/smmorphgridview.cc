@@ -3,12 +3,22 @@
 #include "smmorphgridview.hh"
 #include "smmorphgridwidget.hh"
 #include "smmorphplan.hh"
+#include "smcomboboxoperator.hh"
 
 #include <QSpinBox>
 #include <QLabel>
 #include <QPainter>
 
 using namespace SpectMorph;
+
+class OpFilter : public OperatorFilter
+{
+  bool
+  filter (MorphOperator *op)
+  {
+    return true; // FIXME
+  }
+} op_filter;
 
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_grid, morph_plan_window),
@@ -29,12 +39,20 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   hbox->addWidget (new QLabel ("Height"));
   hbox->addWidget (height_spinbox);
 
-  MorphGridWidget *grid_widget = new MorphGridWidget (morph_grid);
+  op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &op_filter);
+
+  QHBoxLayout *bottom_hbox = new QHBoxLayout();
+  bottom_hbox->addWidget (new QLabel ("Instrument/Source"));
+  bottom_hbox->addWidget (op_combobox);
+
+  grid_widget = new MorphGridWidget (morph_grid);
   QVBoxLayout *vbox = new QVBoxLayout();
   vbox->addLayout (hbox);
   vbox->addWidget (grid_widget);
+  vbox->addLayout (bottom_hbox);
   setLayout (vbox);
 
+  connect (grid_widget, SIGNAL (selection_changed()), this, SLOT (on_selection_changed()));
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (height_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
 }
@@ -44,4 +62,10 @@ MorphGridView::on_size_changed()
 {
   morph_grid->set_width (width_spinbox->value());
   morph_grid->set_height (height_spinbox->value());
+}
+
+void
+MorphGridView::on_selection_changed()
+{
+  op_combobox->setEnabled (grid_widget->has_selection());
 }

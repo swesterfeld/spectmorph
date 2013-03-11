@@ -30,9 +30,13 @@ public:
   MorphGridWidget (MorphGrid *morph_grid);
 
   void paintEvent (QPaintEvent *event);
+  bool has_selection();
 
 public slots:
   void on_plan_changed();
+
+signals:
+  void selection_changed();
 };
 
 }

@@ -15,6 +15,9 @@ MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
 {
   setMinimumSize (200, 200);
 
+  selected_x = -1;
+  selected_y = -1;
+
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
@@ -81,6 +84,16 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
 void
 MorphGridWidget::on_plan_changed()
 {
+  if (selected_x >= morph_grid->width())
+    {
+      selected_x = -1;
+      emit selection_changed();
+    }
+  if (selected_y >= morph_grid->height())
+    {
+      selected_y = -1;
+      emit selection_changed();
+    }
   update();
 }
 
@@ -105,6 +118,7 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
                 }
             }
         }
+      emit selection_changed();
       update();
     }
 }
@@ -117,4 +131,10 @@ MorphGridWidget::mouseMoveEvent (QMouseEvent *event)
 void
 MorphGridWidget::mouseReleaseEvent (QMouseEvent *event)
 {
+}
+
+bool
+MorphGridWidget::has_selection()
+{
+  return selected_x >= 0 && selected_y >= 0;
 }
