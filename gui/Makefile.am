@@ -13,7 +13,8 @@ SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrename
          smmorphlinearview.cc smmorphoutputview.cc smsampleview.cc smlpcztrans.cc smmorphlfoview.cc \
          moc_smmorphplanwindow.cc moc_smmorphsourceview.cc moc_smmorphoutputview.cc moc_smcomboboxoperator.cc \
          moc_smmorphoperatorview.cc moc_smrenameoperatordialog.cc moc_smmorphplanview.cc moc_smmorphlinearview.cc \
-         moc_smmorphlfoview.cc moc_smsampleview.cc moc_smzoomcontroller.cc smmorphgridview.cc moc_smmorphgridview.cc
+         moc_smmorphlfoview.cc moc_smsampleview.cc moc_smzoomcontroller.cc smmorphgridview.cc moc_smmorphgridview.cc \
+         smmorphgridwidget.cc moc_smmorphgridwidget.cc
 
 lib_LTLIBRARIES = libspectmorphgui.la
 
@@ -56,3 +57,6 @@ moc_smzoomcontroller.cc: smzoomcontroller.hh
 
 moc_smmorphgridview.cc: smmorphgridview.hh
 	moc smmorphgridview.hh > moc_smmorphgridview.cc
+
+moc_smmorphgridwidget.cc: smmorphgridwidget.hh
+	moc smmorphgridwidget.hh > moc_smmorphgridwidget.cc

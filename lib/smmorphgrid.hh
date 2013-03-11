@@ -11,6 +11,10 @@ namespace SpectMorph
 class MorphGrid : public MorphOperator
 {
   Q_OBJECT
+
+  int m_width;
+  int m_height;
+
 public:
   MorphGrid (MorphPlan *morph_plan);
   ~MorphGrid();
@@ -20,6 +24,12 @@ public:
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
   OutputType         output_type();
+
+  void        set_width (int width);
+  int         width();
+
+  void        set_height (int height);
+  int         height();
 };
 
 }

@@ -11,6 +11,9 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   leak_debugger.add (this);
+
+  m_width = 1;
+  m_height = 1;
 }
 
 MorphGrid::~MorphGrid()
@@ -42,4 +45,26 @@ MorphGrid::output_type()
   return OUTPUT_AUDIO;
 }
 
+void
+MorphGrid::set_width (int width)
+{
+  m_width = width;
+}
 
+int
+MorphGrid::width()
+{
+  return m_width;
+}
+
+void
+MorphGrid::set_height (int height)
+{
+  m_height = height;
+}
+
+int
+MorphGrid::height()
+{
+  return m_height;
+}
