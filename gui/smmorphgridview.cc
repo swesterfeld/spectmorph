@@ -11,15 +11,6 @@
 
 using namespace SpectMorph;
 
-class OpFilter : public OperatorFilter
-{
-  bool
-  filter (MorphOperator *op)
-  {
-    return true; // FIXME
-  }
-} op_filter;
-
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_grid, morph_plan_window),
   morph_grid (morph_grid),
