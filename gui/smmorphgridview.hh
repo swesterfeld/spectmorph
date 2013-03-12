@@ -17,12 +17,14 @@ class MorphGridView : public MorphOperatorView
 {
   Q_OBJECT
 
-  QSpinBox         *width_spinbox;
-  QSpinBox         *height_spinbox;
+  QSpinBox           *width_spinbox;
+  QSpinBox           *height_spinbox;
 
-  ComboBoxOperator *op_combobox;
-  MorphGrid        *morph_grid;
-  MorphGridWidget  *grid_widget;
+  MorphGrid          *morph_grid;
+  MorphGridWidget    *grid_widget;
+
+  ComboBoxOperator   *op_combobox;
+  TypeOperatorFilter  input_op_filter;
 
 public:
   MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window);

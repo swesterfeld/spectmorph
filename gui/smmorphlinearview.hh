@@ -20,8 +20,8 @@ class MorphLinearView : public MorphOperatorView
 protected:
   MorphLinear                     *morph_linear;
 
-  OperatorFilter                  *operator_filter;
-  OperatorFilter                  *control_operator_filter;
+  TypeOperatorFilter               operator_filter;
+  TypeOperatorFilter               control_operator_filter;
   QLabel                          *morphing_label;
   QSlider                         *morphing_slider;
   QStackedWidget                  *morphing_stack;

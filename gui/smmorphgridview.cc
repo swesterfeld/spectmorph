@@ -22,7 +22,8 @@ class OpFilter : public OperatorFilter
 
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_grid, morph_plan_window),
-  morph_grid (morph_grid)
+  morph_grid (morph_grid),
+  input_op_filter (TypeOperatorFilter (morph_grid, MorphOperator::OUTPUT_AUDIO))
 {
   width_spinbox = new QSpinBox();
   height_spinbox = new QSpinBox();
@@ -39,7 +40,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   hbox->addWidget (new QLabel ("Height"));
   hbox->addWidget (height_spinbox);
 
-  op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &op_filter);
+  op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &input_op_filter);
 
   QHBoxLayout *bottom_hbox = new QHBoxLayout();
   bottom_hbox->addWidget (new QLabel ("Instrument/Source"));

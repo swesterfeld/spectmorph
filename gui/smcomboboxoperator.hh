@@ -53,6 +53,24 @@ public:
   void           set_none_ok (bool none_ok);
 };
 
+// accepts all operators that have the required output type; rejects self
+struct TypeOperatorFilter : public OperatorFilter
+{
+  MorphOperator *my_op;
+  MorphOperator::OutputType type;
+
+  TypeOperatorFilter (MorphOperator *my_op, MorphOperator::OutputType type) :
+    my_op (my_op),
+    type (type)
+  {
+    //
+  }
+  bool filter (MorphOperator *op)
+  {
+    return ((op != my_op) && op->output_type() == type);
+  }
+};
+
 }
 
 #endif

@@ -13,27 +13,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-namespace {
-
-struct MyOperatorFilter : public OperatorFilter
-{
-  MorphOperator *my_op;
-  MorphOperator::OutputType type;
-
-  MyOperatorFilter (MorphOperator *my_op, MorphOperator::OutputType type) :
-    my_op (my_op),
-    type (type)
-  {
-    //
-  }
-  bool filter (MorphOperator *op)
-  {
-    return ((op != my_op) && op->output_type() == type);
-  }
-};
-
-}
-
 #define CONTROL_TEXT_GUI "Gui Slider"
 #define CONTROL_TEXT_1   "Control Signal #1"
 #define CONTROL_TEXT_2   "Control Signal #2"
@@ -41,22 +20,22 @@ struct MyOperatorFilter : public OperatorFilter
 MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_linear, morph_plan_window),
   morph_linear (morph_linear),
-  operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_AUDIO)),
-  control_operator_filter (new MyOperatorFilter (morph_linear, MorphOperator::OUTPUT_CONTROL))
+  operator_filter (morph_linear, MorphOperator::OUTPUT_AUDIO),
+  control_operator_filter (morph_linear, MorphOperator::OUTPUT_CONTROL)
 {
   QGridLayout *grid_layout = new QGridLayout();
 
   // LEFT SOURCE
   grid_layout->addWidget (new QLabel ("Left Source"), 0, 0);
 
-  left_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  left_combobox = new ComboBoxOperator (morph_linear->morph_plan(), &operator_filter);
   left_combobox->set_active (morph_linear->left_op());
   grid_layout->addWidget (left_combobox, 0, 1);
   connect (left_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
 
   // RIGHT SOURCE
   grid_layout->addWidget (new QLabel ("Right Source"), 1, 0);
-  right_combobox = new ComboBoxOperator (morph_linear->morph_plan(), operator_filter);
+  right_combobox = new ComboBoxOperator (morph_linear->morph_plan(), &operator_filter);
   right_combobox->set_active (morph_linear->right_op());
   grid_layout->addWidget (right_combobox, 1, 1);
   connect (right_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
@@ -64,7 +43,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   // CONTROL INPUT
   grid_layout->addWidget (new QLabel ("Control Input"), 2, 0);
 
-  control_combobox = new ComboBoxOperator (morph_linear->morph_plan(), control_operator_filter);
+  control_combobox = new ComboBoxOperator (morph_linear->morph_plan(), &control_operator_filter);
   control_combobox->add_str_choice (CONTROL_TEXT_GUI);
   control_combobox->add_str_choice (CONTROL_TEXT_1);
   control_combobox->add_str_choice (CONTROL_TEXT_2);
