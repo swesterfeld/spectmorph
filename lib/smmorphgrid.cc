@@ -96,27 +96,15 @@ MorphGrid::load (InFile& ifile)
 }
 
 void
-MorphGrid::post_load()
+MorphGrid::post_load (OpNameMap& op_name_map)
 {
-  const vector<MorphOperator *>& ops = m_morph_plan->operators();
-
-  // SLOW!
   for (int x = 0; x < m_width; x++)
     {
       for (int y = 0; y < m_height; y++)
         {
           string name = Birnet::string_printf ("input_op_%d_%d", x, y);
-          string op = load_map[name];
 
-          m_input_op[x][y] = NULL;
-
-          for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
-            {
-              MorphOperator *morph_op = *oi;
-
-              if (morph_op->name() == op)
-                m_input_op[x][y] = morph_op;
-            }
+          m_input_op[x][y] = op_name_map[load_map[name]];
         }
     }
 }

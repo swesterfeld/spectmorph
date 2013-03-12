@@ -113,11 +113,6 @@ MorphLFO::load (InFile& ifile)
   return true;
 }
 
-void
-MorphLFO::post_load()
-{
-}
-
 MorphOperator::OutputType
 MorphLFO::output_type()
 {

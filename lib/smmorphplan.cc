@@ -249,10 +249,16 @@ MorphPlan::load (GenericIn *in)
 
   load_index (index_filename);
 
+  map<string, MorphOperator *> op_name2ptr;
   for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
     {
       MorphOperator *op = *oi;
-      op->post_load();
+      op_name2ptr[op->name()] = *oi;
+    }
+  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      op->post_load (op_name2ptr);
     }
 
   in_restore = false;

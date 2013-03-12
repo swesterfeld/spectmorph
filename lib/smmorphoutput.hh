@@ -28,7 +28,7 @@ public:
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
-  void               post_load();
+  void               post_load (OpNameMap& op_name_map);
   OutputType         output_type();
 
   void           set_sines (bool es);

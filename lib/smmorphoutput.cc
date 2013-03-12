@@ -101,23 +101,14 @@ MorphOutput::load (InFile& ifile)
 }
 
 void
-MorphOutput::post_load()
+MorphOutput::post_load (OpNameMap& op_name_map)
 {
-  const vector<MorphOperator *>& ops = m_morph_plan->operators();
-
   for (size_t i = 0; i < channel_ops.size(); i++)
     {
-      string name;
       if (i < load_channel_op_names.size())
-        name = load_channel_op_names[i];
-
-      // search operator with the desired name
-      channel_ops[i] = NULL;
-      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
         {
-          MorphOperator *morph_op = *oi;
-          if (morph_op->name() == name)
-            channel_ops[i] = morph_op;
+          string name = load_channel_op_names[i];
+          channel_ops[i] = op_name_map[name];
         }
     }
 }

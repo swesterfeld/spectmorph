@@ -134,24 +134,11 @@ MorphLinear::load (InFile& ifile)
 }
 
 void
-MorphLinear::post_load()
+MorphLinear::post_load (OpNameMap& op_name_map)
 {
-  const vector<MorphOperator *>& ops = m_morph_plan->operators();
-
-  m_left_op = NULL;
-  m_right_op = NULL;
-  m_control_op = NULL;
-
-  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
-    {
-      MorphOperator *morph_op = *oi;
-      if (morph_op->name() == load_left)
-        m_left_op = morph_op;
-      if (morph_op->name() == load_right)
-        m_right_op = morph_op;
-      if (morph_op->name() == load_control)
-        m_control_op = morph_op;
-    }
+  m_left_op = op_name_map[load_left];
+  m_right_op = op_name_map[load_right];
+  m_control_op = op_name_map[load_control];
 }
 
 MorphOperator::OutputType

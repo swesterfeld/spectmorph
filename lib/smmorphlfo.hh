@@ -33,7 +33,6 @@ public:
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
-  void               post_load();
   OutputType         output_type();
 
   WaveType wave_type();

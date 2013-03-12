@@ -6,6 +6,8 @@
 #include "smoutfile.hh"
 #include "sminfile.hh"
 
+#include <map>
+
 #include <QObject>
 
 namespace SpectMorph
@@ -22,6 +24,8 @@ protected:
   std::string m_name;
   std::string m_id;
 
+  typedef std::map<std::string, MorphOperator *> OpNameMap;
+
   void write_operator (OutFile& file, const std::string& name, MorphOperator *op);
 
 public:
@@ -36,7 +40,7 @@ public:
   virtual const char *type() = 0;
   virtual bool save (OutFile& out_file) = 0;
   virtual bool load (InFile& in_file) = 0;
-  virtual void post_load();
+  virtual void post_load (OpNameMap& op_name_map);
   virtual OutputType output_type() = 0;
 
   MorphPlan *morph_plan();

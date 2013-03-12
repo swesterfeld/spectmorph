@@ -8,6 +8,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::map;
 
 MorphOperator::MorphOperator (MorphPlan *morph_plan) :
   m_morph_plan (morph_plan)
@@ -54,7 +55,7 @@ MorphOperator::set_id (const string& id)
 }
 
 void
-MorphOperator::post_load()
+MorphOperator::post_load (OpNameMap& op_name_map)
 {
   // override this for post load notification
 }
