@@ -17,6 +17,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   m_height = 1;
   m_selected_x = -1;
   m_selected_y = -1;
+
+  update_size();
 }
 
 MorphGrid::~MorphGrid()
@@ -52,6 +54,7 @@ void
 MorphGrid::set_width (int width)
 {
   m_width = width;
+  update_size();
 
   m_morph_plan->emit_plan_changed();
 }
@@ -66,6 +69,7 @@ void
 MorphGrid::set_height (int height)
 {
   m_height = height;
+  update_size();
 
   m_morph_plan->emit_plan_changed();
 }
@@ -108,4 +112,31 @@ bool
 MorphGrid::has_selection()
 {
   return m_selected_x >= 0 && m_selected_y >= 0;
+}
+
+void
+MorphGrid::update_size()
+{
+  m_input_op.resize (m_width);
+  for (int i = 0; i < m_width; i++)
+    m_input_op[i].resize (m_height);
+}
+
+MorphOperator *
+MorphGrid::input_op (int x, int y)
+{
+  g_return_val_if_fail (x >= 0 && x < m_width, NULL);
+  g_return_val_if_fail (y >= 0 && y < m_height, NULL);
+
+  return m_input_op[x][y];
+}
+
+void
+MorphGrid::set_input_op (int x, int y, MorphOperator *op)
+{
+  g_return_if_fail (x >= 0 && x < m_width);
+  g_return_if_fail (y >= 0 && y < m_height);
+
+  m_input_op[x][y] = op;
+  m_morph_plan->emit_plan_changed();
 }

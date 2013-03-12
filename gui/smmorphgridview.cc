@@ -55,6 +55,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   connect (grid_widget, SIGNAL (selection_changed()), this, SLOT (on_selection_changed()));
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (height_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
+  connect (op_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
 }
 
 void
@@ -68,4 +69,11 @@ void
 MorphGridView::on_selection_changed()
 {
   op_combobox->setEnabled (morph_grid->has_selection());
+}
+
+void
+MorphGridView::on_operator_changed()
+{
+  if (morph_grid->has_selection())
+    morph_grid->set_input_op (morph_grid->selected_x(), morph_grid->selected_y(), op_combobox->active());
 }

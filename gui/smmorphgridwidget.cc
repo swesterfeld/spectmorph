@@ -76,6 +76,18 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
             painter.drawLine (x_coord[x], y_coord[y - 1] + 10, x_coord[x], y_coord[y] - 10);
         }
     }
+  painter.setPen (QPen (QColor (200, 0, 0), 2));
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          if (!morph_grid->input_op (x, y))
+            {
+              painter.drawLine (x_coord[x] - 10, y_coord[y] - 10, x_coord[x] + 10, y_coord[y] + 10);
+              painter.drawLine (x_coord[x] + 10, y_coord[y] - 10, x_coord[x] - 10, y_coord[y] + 10);
+            }
+        }
+    }
 }
 
 void

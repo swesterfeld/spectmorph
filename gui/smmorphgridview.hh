@@ -30,6 +30,7 @@ public:
 public slots:
   void on_size_changed();
   void on_selection_changed();
+  void on_operator_changed();
 };
 
 }

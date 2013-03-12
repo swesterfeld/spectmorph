@@ -17,6 +17,9 @@ class MorphGrid : public MorphOperator
   int m_selected_x;
   int m_selected_y;
 
+  std::vector< std::vector<MorphOperator *> > m_input_op;
+
+  void update_size();
 public:
   MorphGrid (MorphPlan *morph_plan);
   ~MorphGrid();
@@ -27,17 +30,20 @@ public:
   bool               load (InFile&  in_file);
   OutputType         output_type();
 
-  void        set_width (int width);
-  int         width();
+  void            set_width (int width);
+  int             width();
 
-  void        set_height (int height);
-  int         height();
+  void            set_height (int height);
+  int             height();
 
-  void        set_selected_x (int x);
-  void        set_selected_y (int y);
-  int         selected_x();
-  int         selected_y();
-  bool        has_selection();
+  void            set_selected_x (int x);
+  void            set_selected_y (int y);
+  int             selected_x();
+  int             selected_y();
+  bool            has_selection();
+
+  void            set_input_op (int x, int y, MorphOperator *op);
+  MorphOperator  *input_op (int x, int y);
 };
 
 }
