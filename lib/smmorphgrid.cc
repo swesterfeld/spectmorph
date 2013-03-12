@@ -6,6 +6,9 @@
 
 using namespace SpectMorph;
 
+using std::vector;
+using std::string;
+
 static LeakDebugger leak_debugger ("SpectMorph::MorphGrid");
 
 MorphGrid::MorphGrid (MorphPlan *morph_plan) :
@@ -35,14 +38,89 @@ MorphGrid::type()
 bool
 MorphGrid::save (OutFile& out_file)
 {
+  out_file.write_int ("width", m_width);
+  out_file.write_int ("height", m_height);
+
+  for (int x = 0; x < m_width; x++)
+    {
+      for (int y = 0; y < m_height; y++)
+        {
+          string name = Birnet::string_printf ("input_op_%d_%d", x, y);
+
+          write_operator (out_file, name, m_input_op[x][y]);
+        }
+    }
+
   return true;
 }
 
 bool
 MorphGrid::load (InFile& ifile)
 {
+  load_map.clear();
+
+  while (ifile.event() != InFile::END_OF_FILE)
+    {
+      if (ifile.event() == InFile::INT)
+        {
+          if (ifile.event_name() == "width")
+            {
+              m_width = ifile.event_int();
+              update_size();
+            }
+          else if (ifile.event_name() == "height")
+            {
+              m_height = ifile.event_int();
+              update_size();
+            }
+          else
+            {
+              g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::STRING)
+        {
+          // we need to wait until all other operators have been loaded
+          // before we can put a pointer in the m_input_op data structure
+          load_map[ifile.event_name()] = ifile.event_data();
+        }
+      else
+        {
+          g_printerr ("bad event\n");
+          return false;
+        }
+      ifile.next_event();
+    }
   return true;
 }
+
+void
+MorphGrid::post_load()
+{
+  const vector<MorphOperator *>& ops = m_morph_plan->operators();
+
+  // SLOW!
+  for (int x = 0; x < m_width; x++)
+    {
+      for (int y = 0; y < m_height; y++)
+        {
+          string name = Birnet::string_printf ("input_op_%d_%d", x, y);
+          string op = load_map[name];
+
+          m_input_op[x][y] = NULL;
+
+          for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+            {
+              MorphOperator *morph_op = *oi;
+
+              if (morph_op->name() == op)
+                m_input_op[x][y] = morph_op;
+            }
+        }
+    }
+}
+
 
 MorphOperator::OutputType
 MorphGrid::output_type()

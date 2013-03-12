@@ -5,6 +5,8 @@
 
 #include "smmorphoperator.hh"
 
+#include <map>
+
 namespace SpectMorph
 {
 
@@ -18,6 +20,7 @@ class MorphGrid : public MorphOperator
   int m_selected_y;
 
   std::vector< std::vector<MorphOperator *> > m_input_op;
+  std::map<std::string, std::string>          load_map;
 
   void update_size();
 public:
@@ -28,6 +31,7 @@ public:
   const char        *type();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
+  void               post_load();
   OutputType         output_type();
 
   void            set_width (int width);
