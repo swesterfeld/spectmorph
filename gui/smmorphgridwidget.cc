@@ -15,9 +15,6 @@ MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
 {
   setMinimumSize (200, 200);
 
-  selected_x = -1;
-  selected_y = -1;
-
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
@@ -66,7 +63,7 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
     {
       for (int y = 0; y < morph_grid->height(); y++)
         {
-          if (x == selected_x && y == selected_y)
+          if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
             painter.setBrush (QColor (255, 255, 255, 230));
           else
             painter.setBrush (QColor (255, 255, 255, 128));
@@ -84,14 +81,14 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
 void
 MorphGridWidget::on_plan_changed()
 {
-  if (selected_x >= morph_grid->width())
+  if (morph_grid->selected_x() >= morph_grid->width())
     {
-      selected_x = -1;
+      morph_grid->set_selected_x (-1);
       emit selection_changed();
     }
-  if (selected_y >= morph_grid->height())
+  if (morph_grid->selected_y() >= morph_grid->height())
     {
-      selected_y = -1;
+      morph_grid->set_selected_y (-1);
       emit selection_changed();
     }
   update();
@@ -102,8 +99,8 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
     {
-      selected_x = -1;
-      selected_y = -1;
+      int selected_x = -1;
+      int selected_y = -1;
       for (int x = 0; x < morph_grid->width(); x++)
         {
           for (int y = 0; y < morph_grid->height(); y++)
@@ -118,6 +115,8 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
                 }
             }
         }
+      morph_grid->set_selected_x (selected_x);
+      morph_grid->set_selected_y (selected_y);
       emit selection_changed();
       update();
     }
@@ -131,10 +130,4 @@ MorphGridWidget::mouseMoveEvent (QMouseEvent *event)
 void
 MorphGridWidget::mouseReleaseEvent (QMouseEvent *event)
 {
-}
-
-bool
-MorphGridWidget::has_selection()
-{
-  return selected_x >= 0 && selected_y >= 0;
 }

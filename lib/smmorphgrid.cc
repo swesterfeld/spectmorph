@@ -15,6 +15,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 
   m_width = 1;
   m_height = 1;
+  m_selected_x = -1;
+  m_selected_y = -1;
 }
 
 MorphGrid::~MorphGrid()
@@ -72,4 +74,38 @@ int
 MorphGrid::height()
 {
   return m_height;
+}
+
+void
+MorphGrid::set_selected_x (int x)
+{
+  m_selected_x = x;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphGrid::selected_x()
+{
+  return m_selected_x;
+}
+
+void
+MorphGrid::set_selected_y (int y)
+{
+  m_selected_y = y;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphGrid::selected_y()
+{
+  return m_selected_y;
+}
+
+bool
+MorphGrid::has_selection()
+{
+  return m_selected_x >= 0 && m_selected_y >= 0;
 }

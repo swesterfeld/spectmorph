@@ -17,9 +17,6 @@ class MorphGridWidget : public QWidget
   std::vector<int> x_coord;
   std::vector<int> y_coord;
 
-  int selected_x;
-  int selected_y;
-
   MorphGrid *morph_grid;
 
   void mousePressEvent (QMouseEvent *event);
@@ -30,7 +27,6 @@ public:
   MorphGridWidget (MorphGrid *morph_grid);
 
   void paintEvent (QPaintEvent *event);
-  bool has_selection();
 
 public slots:
   void on_plan_changed();

@@ -67,5 +67,5 @@ MorphGridView::on_size_changed()
 void
 MorphGridView::on_selection_changed()
 {
-  op_combobox->setEnabled (grid_widget->has_selection());
+  op_combobox->setEnabled (morph_grid->has_selection());
 }

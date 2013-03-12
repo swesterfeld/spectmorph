@@ -14,6 +14,8 @@ class MorphGrid : public MorphOperator
 
   int m_width;
   int m_height;
+  int m_selected_x;
+  int m_selected_y;
 
 public:
   MorphGrid (MorphPlan *morph_plan);
@@ -30,6 +32,12 @@ public:
 
   void        set_height (int height);
   int         height();
+
+  void        set_selected_x (int x);
+  void        set_selected_y (int y);
+  int         selected_x();
+  int         selected_y();
+  bool        has_selection();
 };
 
 }
