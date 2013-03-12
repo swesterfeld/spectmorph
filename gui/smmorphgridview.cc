@@ -69,6 +69,11 @@ void
 MorphGridView::on_selection_changed()
 {
   op_combobox->setEnabled (morph_grid->has_selection());
+
+  if (morph_grid->has_selection())
+    {
+      op_combobox->set_active (morph_grid->input_op (morph_grid->selected_x(), morph_grid->selected_y()));
+    }
 }
 
 void
