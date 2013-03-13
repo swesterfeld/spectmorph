@@ -55,6 +55,12 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
   slider->setRange (-1000, 1000);
   label = new QLabel();
 
+  /* restore slider value from operator */
+  if (ctl_xy == CONTROL_X)
+    slider->setValue (morph_grid->x_morphing() * 1000);
+  else
+    slider->setValue (morph_grid->y_morphing() * 1000);
+
   stack->addWidget (new QLabel ("from control input"));
   stack->addWidget (slider);
 
@@ -62,6 +68,7 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
   connect (combobox, SIGNAL (active_changed()), this, SLOT (on_combobox_changed()));
 
   // initial slider state
+  on_slider_changed();
   on_combobox_changed();
 }
 
@@ -108,6 +115,10 @@ MorphGridControlUI::on_combobox_changed()
         morph_grid->set_y_control_type (new_type);
     }
   stack->setCurrentIndex (stack_index);
+  if (stack_index == 1)
+    label->show();
+  else
+    label->hide();
 }
 
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
