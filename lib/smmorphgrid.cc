@@ -20,6 +20,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   m_height = 1;
   m_selected_x = -1;
   m_selected_y = -1;
+  m_x_morphing = 0;
+  m_y_morphing = 0;
 
   update_size();
 }
@@ -204,5 +206,33 @@ MorphGrid::set_input_op (int x, int y, MorphOperator *op)
   g_return_if_fail (y >= 0 && y < m_height);
 
   m_input_op[x][y] = op;
+  m_morph_plan->emit_plan_changed();
+}
+
+double
+MorphGrid::x_morphing()
+{
+  return m_x_morphing;
+}
+
+void
+MorphGrid::set_x_morphing (double new_morphing)
+{
+  m_x_morphing = new_morphing;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+double
+MorphGrid::y_morphing()
+{
+  return m_y_morphing;
+}
+
+void
+MorphGrid::set_y_morphing (double new_morphing)
+{
+  m_y_morphing = new_morphing;
+
   m_morph_plan->emit_plan_changed();
 }

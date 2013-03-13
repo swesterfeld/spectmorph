@@ -9,9 +9,33 @@
 #include "smmorphgridwidget.hh"
 
 #include <QSpinBox>
+#include <QStackedWidget>
 
 namespace SpectMorph
 {
+
+class MorphGridView;
+class MorphGridControlUI : public QObject
+{
+  Q_OBJECT
+
+  TypeOperatorFilter  control_op_filter;
+public:
+  MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid);
+
+  ComboBoxOperator *combobox;
+  QSlider          *slider;
+  QLabel           *label;
+  QStackedWidget   *stack;
+  double            value;
+
+public slots:
+  void on_slider_changed();
+  void on_combobox_changed();
+
+signals:
+  void morphing_changed();
+};
 
 class MorphGridView : public MorphOperatorView
 {
@@ -20,11 +44,15 @@ class MorphGridView : public MorphOperatorView
   QSpinBox           *width_spinbox;
   QSpinBox           *height_spinbox;
 
+  MorphGridControlUI *x_ui;
+  MorphGridControlUI *y_ui;
+
   MorphGrid          *morph_grid;
   MorphGridWidget    *grid_widget;
 
-  ComboBoxOperator   *op_combobox;
   TypeOperatorFilter  input_op_filter;
+
+  ComboBoxOperator   *op_combobox;
 
 public:
   MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window);
@@ -33,6 +61,7 @@ public slots:
   void on_size_changed();
   void on_selection_changed();
   void on_operator_changed();
+  void on_morphing_changed();
 };
 
 }

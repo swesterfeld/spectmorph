@@ -88,6 +88,12 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
             }
         }
     }
+  int mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
+  int my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
+
+  painter.setPen (QPen (QColor (130, 130, 255), 3));
+  painter.drawLine (mx - 10, my - 10, mx + 10, my + 10);
+  painter.drawLine (mx - 10, my + 10, mx + 10, my - 10);
 }
 
 void
@@ -111,6 +117,23 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
     {
+      int start_x = 20;
+      int end_x = width() - 20;
+      int start_y = 20;
+      int end_y = height() - 20;
+
+      int mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
+      int my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
+
+      double mdx = mx - event->pos().x();
+      double mdy = my - event->pos().y();
+      double mdist = sqrt (mdx * mdx + mdy * mdy);
+      if (mdist < 11)
+        {
+          printf ("X marks the spot\n");
+          return;
+        }
+
       int selected_x = -1;
       int selected_y = -1;
       for (int x = 0; x < morph_grid->width(); x++)

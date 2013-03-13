@@ -8,13 +8,76 @@
 #include <QSpinBox>
 #include <QLabel>
 #include <QPainter>
+#include <QStackedWidget>
 
 using namespace SpectMorph;
+
+using std::string;
+
+#define CONTROL_TEXT_GUI "Gui Slider"
+#define CONTROL_TEXT_1   "Control Signal #1"
+#define CONTROL_TEXT_2   "Control Signal #2"
+
+MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid) :
+  control_op_filter (morph_grid, MorphOperator::OUTPUT_CONTROL)
+{
+  combobox = new ComboBoxOperator (morph_grid->morph_plan(), &control_op_filter);
+  combobox->add_str_choice (CONTROL_TEXT_GUI);
+  combobox->add_str_choice (CONTROL_TEXT_1);
+  combobox->add_str_choice (CONTROL_TEXT_2);
+  combobox->set_none_ok (false);
+
+  stack = new QStackedWidget();
+
+  slider = new QSlider (Qt::Horizontal);
+  slider->setRange (-1000, 1000);
+  label = new QLabel();
+
+  stack->addWidget (new QLabel ("from control input"));
+  stack->addWidget (slider);
+
+  connect (slider, SIGNAL (valueChanged(int)), this, SLOT (on_slider_changed()));
+  connect (combobox, SIGNAL (active_changed()), this, SLOT (on_combobox_changed()));
+
+  // initial slider state
+  on_combobox_changed();
+}
+
+void
+MorphGridControlUI::on_slider_changed()
+{
+  value = slider->value() / 1000.0;
+  label->setText (Birnet::string_printf ("%.2f", value).c_str());
+
+  emit morphing_changed();
+}
+
+void
+MorphGridControlUI::on_combobox_changed()
+{
+  MorphOperator *op = combobox->active();
+  if (op)
+    {
+      stack->setCurrentIndex (0);
+    }
+  else
+    {
+      string text = combobox->active_str_choice();
+      if (text == CONTROL_TEXT_GUI)
+        {
+          stack->setCurrentIndex (1);
+        }
+      else
+        {
+          stack->setCurrentIndex (0);
+        }
+    }
+}
 
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_grid, morph_plan_window),
   morph_grid (morph_grid),
-  input_op_filter (TypeOperatorFilter (morph_grid, MorphOperator::OUTPUT_AUDIO))
+  input_op_filter (morph_grid, MorphOperator::OUTPUT_AUDIO)
 {
   width_spinbox = new QSpinBox();
   height_spinbox = new QSpinBox();
@@ -31,7 +94,29 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   hbox->addWidget (new QLabel ("Height"));
   hbox->addWidget (height_spinbox);
 
+  QGridLayout *grid = new QGridLayout();
+  grid->addLayout (hbox, 0, 0, 1, 3);
+
   op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &input_op_filter);
+
+  x_ui = new MorphGridControlUI (this, morph_grid);
+  grid->addWidget (new QLabel ("X Control"), 1, 0);
+  grid->addWidget (x_ui->combobox, 1, 1, 1, 2);
+
+  y_ui = new MorphGridControlUI (this, morph_grid);
+  grid->addWidget (new QLabel ("Y Control"), 2, 0);
+  grid->addWidget (y_ui->combobox, 2, 1, 1, 2);
+
+  grid->addWidget (new QLabel ("X Value"), 3, 0);
+  grid->addWidget (x_ui->stack, 3, 1);
+  grid->addWidget (x_ui->label, 3, 2);
+
+  grid->addWidget (new QLabel ("Y Value"), 4, 0);
+  grid->addWidget (y_ui->stack, 4, 1);
+  grid->addWidget (y_ui->label, 4, 2);
+
+  connect (x_ui, SIGNAL (morphing_changed()), this, SLOT (on_morphing_changed()));
+  connect (y_ui, SIGNAL (morphing_changed()), this, SLOT (on_morphing_changed()));
 
   QHBoxLayout *bottom_hbox = new QHBoxLayout();
   bottom_hbox->addWidget (new QLabel ("Instrument/Source"));
@@ -39,7 +124,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
 
   grid_widget = new MorphGridWidget (morph_grid);
   QVBoxLayout *vbox = new QVBoxLayout();
-  vbox->addLayout (hbox);
+  vbox->addLayout (grid);
   vbox->addWidget (grid_widget);
   vbox->addLayout (bottom_hbox);
   setLayout (vbox);
@@ -73,4 +158,11 @@ MorphGridView::on_operator_changed()
 {
   if (morph_grid->has_selection())
     morph_grid->set_input_op (morph_grid->selected_x(), morph_grid->selected_y(), op_combobox->active());
+}
+
+void
+MorphGridView::on_morphing_changed()
+{
+  morph_grid->set_x_morphing (x_ui->value);
+  morph_grid->set_y_morphing (y_ui->value);
 }

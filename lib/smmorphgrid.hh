@@ -18,6 +18,8 @@ class MorphGrid : public MorphOperator
   int m_height;
   int m_selected_x;
   int m_selected_y;
+  double m_x_morphing;
+  double m_y_morphing;
 
   std::vector< std::vector<MorphOperator *> > m_input_op;
   std::map<std::string, std::string>          load_map;
@@ -45,6 +47,11 @@ public:
   int             selected_x();
   int             selected_y();
   bool            has_selection();
+
+  double          x_morphing();
+  double          y_morphing();
+  void            set_x_morphing (double new_value);
+  void            set_y_morphing (double new_value);
 
   void            set_input_op (int x, int y, MorphOperator *op);
   MorphOperator  *input_op (int x, int y);
