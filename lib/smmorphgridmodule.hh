@@ -8,6 +8,15 @@ namespace SpectMorph
 
 class MorphGridModule : public MorphOperatorModule
 {
+  std::vector< std::vector<MorphOperatorModule *> > input_mod;
+
+  struct MySource : public LiveDecoderSource
+  {
+    void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+    Audio* audio();
+    AudioBlock *audio_block (size_t index);
+  } my_source;
+
 public:
   MorphGridModule (MorphPlanVoice *voice);
   ~MorphGridModule();
