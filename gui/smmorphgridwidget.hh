@@ -18,6 +18,7 @@ class MorphGridWidget : public QWidget
   std::vector<int> y_coord;
 
   MorphGrid *morph_grid;
+  bool       move_controller;
 
   void mousePressEvent (QMouseEvent *event);
   void mouseMoveEvent (QMouseEvent *event);

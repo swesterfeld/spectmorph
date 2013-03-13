@@ -35,9 +35,6 @@ public:
 public slots:
   void on_slider_changed();
   void on_combobox_changed();
-
-signals:
-  void morphing_changed();
 };
 
 class MorphGridView : public MorphOperatorView
@@ -64,7 +61,7 @@ public slots:
   void on_size_changed();
   void on_selection_changed();
   void on_operator_changed();
-  void on_morphing_changed();
+  void on_plan_changed();
 };
 
 }

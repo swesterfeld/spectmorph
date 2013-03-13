@@ -15,6 +15,8 @@ MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
 {
   setMinimumSize (200, 200);
 
+  move_controller = false;
+
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
@@ -131,6 +133,8 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
       if (mdist < 11)
         {
           printf ("X marks the spot\n");
+          move_controller = true;
+          setCursor (Qt::SizeAllCursor);
           return;
         }
 
@@ -160,9 +164,25 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
 void
 MorphGridWidget::mouseMoveEvent (QMouseEvent *event)
 {
+  if (move_controller)
+    {
+      int start_x = 20;
+      int end_x = width() - 20;
+      int start_y = 20;
+      int end_y = height() - 20;
+      double dx = (event->pos().x() - start_x) / double (end_x - start_x) * 2.0 - 1.0;
+      double dy = (event->pos().y() - start_y) / double (end_y - start_y) * 2.0 - 1.0;
+      morph_grid->set_x_morphing (qBound (-1.0, dx, 1.0));
+      morph_grid->set_y_morphing (qBound (-1.0, dy, 1.0));
+    }
 }
 
 void
 MorphGridWidget::mouseReleaseEvent (QMouseEvent *event)
 {
+  if (event->button() == Qt::LeftButton)
+    {
+      move_controller = false;
+      unsetCursor();
+    }
 }

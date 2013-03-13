@@ -76,9 +76,11 @@ void
 MorphGridControlUI::on_slider_changed()
 {
   value = slider->value() / 1000.0;
-  label->setText (Birnet::string_printf ("%.2f", value).c_str());
 
-  emit morphing_changed();
+  if (ctl_xy == CONTROL_X)
+    morph_grid->set_x_morphing (value);
+  else
+    morph_grid->set_y_morphing (value);
 }
 
 void
@@ -162,9 +164,6 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   grid->addWidget (y_ui->stack, 4, 1);
   grid->addWidget (y_ui->label, 4, 2);
 
-  connect (x_ui, SIGNAL (morphing_changed()), this, SLOT (on_morphing_changed()));
-  connect (y_ui, SIGNAL (morphing_changed()), this, SLOT (on_morphing_changed()));
-
   QHBoxLayout *bottom_hbox = new QHBoxLayout();
   bottom_hbox->addWidget (new QLabel ("Instrument/Source"));
   bottom_hbox->addWidget (op_combobox);
@@ -180,6 +179,9 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (height_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (op_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
+  connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+
+  on_plan_changed(); // initial morphing slider/label setup
 }
 
 void
@@ -208,8 +210,10 @@ MorphGridView::on_operator_changed()
 }
 
 void
-MorphGridView::on_morphing_changed()
+MorphGridView::on_plan_changed()
 {
-  morph_grid->set_x_morphing (x_ui->value);
-  morph_grid->set_y_morphing (y_ui->value);
+  x_ui->slider->setValue (lrint (morph_grid->x_morphing() * 1000));
+  y_ui->slider->setValue (lrint (morph_grid->y_morphing() * 1000));
+  x_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->x_morphing()).c_str());
+  y_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->y_morphing()).c_str());
 }
