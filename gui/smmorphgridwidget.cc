@@ -132,7 +132,6 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
       double mdist = sqrt (mdx * mdx + mdy * mdy);
       if (mdist < 11)
         {
-          printf ("X marks the spot\n");
           move_controller = true;
           setCursor (Qt::SizeAllCursor);
           return;
