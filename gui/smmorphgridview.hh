@@ -20,8 +20,11 @@ class MorphGridControlUI : public QObject
   Q_OBJECT
 
   TypeOperatorFilter  control_op_filter;
+  MorphGrid          *morph_grid;
+
 public:
-  MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid);
+  enum ControlXYType { CONTROL_X, CONTROL_Y } ctl_xy;
+  MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid, ControlXYType ctl_xy);
 
   ComboBoxOperator *combobox;
   QSlider          *slider;

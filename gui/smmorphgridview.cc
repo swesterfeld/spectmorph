@@ -18,14 +18,36 @@ using std::string;
 #define CONTROL_TEXT_1   "Control Signal #1"
 #define CONTROL_TEXT_2   "Control Signal #2"
 
-MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid) :
-  control_op_filter (morph_grid, MorphOperator::OUTPUT_CONTROL)
+MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid, ControlXYType ctl_xy) :
+  control_op_filter (morph_grid, MorphOperator::OUTPUT_CONTROL),
+  morph_grid (morph_grid),
+  ctl_xy (ctl_xy)
 {
   combobox = new ComboBoxOperator (morph_grid->morph_plan(), &control_op_filter);
   combobox->add_str_choice (CONTROL_TEXT_GUI);
   combobox->add_str_choice (CONTROL_TEXT_1);
   combobox->add_str_choice (CONTROL_TEXT_2);
   combobox->set_none_ok (false);
+
+  /* restore initial combobox state */
+  MorphGrid::ControlType control_type = (ctl_xy == CONTROL_X) ?
+                                        morph_grid->x_control_type() :
+                                        morph_grid->y_control_type();
+
+  if (control_type == MorphGrid::CONTROL_GUI)
+    combobox->set_active_str_choice (CONTROL_TEXT_GUI);
+  else if (control_type == MorphGrid::CONTROL_SIGNAL_1)
+    combobox->set_active_str_choice (CONTROL_TEXT_1);
+  else if (control_type == MorphGrid::CONTROL_SIGNAL_2)
+    combobox->set_active_str_choice (CONTROL_TEXT_2);
+#if 0
+  else if (control_type == MorphGrid::CONTROL_OP)
+    combobox->set_active (morph_grid->control_op());
+#endif
+  else
+    {
+      assert (false);
+    }
 
   stack = new QStackedWidget();
 
@@ -55,23 +77,37 @@ MorphGridControlUI::on_slider_changed()
 void
 MorphGridControlUI::on_combobox_changed()
 {
+  int stack_index = 0;
   MorphOperator *op = combobox->active();
   if (op)
     {
-      stack->setCurrentIndex (0);
+      printf ("active op\n");
     }
   else
     {
       string text = combobox->active_str_choice();
+      MorphGrid::ControlType new_type;
+
       if (text == CONTROL_TEXT_GUI)
         {
-          stack->setCurrentIndex (1);
+          new_type = MorphGrid::CONTROL_GUI;
+
+          stack_index = 1;
         }
+      else if (text == CONTROL_TEXT_1)
+        new_type = MorphGrid::CONTROL_SIGNAL_1;
+      else if (text == CONTROL_TEXT_2)
+        new_type = MorphGrid::CONTROL_SIGNAL_2;
       else
         {
-          stack->setCurrentIndex (0);
+          assert (false);
         }
+      if (ctl_xy == CONTROL_X)
+        morph_grid->set_x_control_type (new_type);
+      else
+        morph_grid->set_y_control_type (new_type);
     }
+  stack->setCurrentIndex (stack_index);
 }
 
 MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
@@ -99,11 +135,11 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
 
   op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &input_op_filter);
 
-  x_ui = new MorphGridControlUI (this, morph_grid);
+  x_ui = new MorphGridControlUI (this, morph_grid, MorphGridControlUI::CONTROL_X);
   grid->addWidget (new QLabel ("X Control"), 1, 0);
   grid->addWidget (x_ui->combobox, 1, 1, 1, 2);
 
-  y_ui = new MorphGridControlUI (this, morph_grid);
+  y_ui = new MorphGridControlUI (this, morph_grid, MorphGridControlUI::CONTROL_Y);
   grid->addWidget (new QLabel ("Y Control"), 2, 0);
   grid->addWidget (y_ui->combobox, 2, 1, 1, 2);
 

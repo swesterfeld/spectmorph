@@ -14,12 +14,22 @@ class MorphGrid : public MorphOperator
 {
   Q_OBJECT
 
-  int m_width;
-  int m_height;
-  int m_selected_x;
-  int m_selected_y;
-  double m_x_morphing;
-  double m_y_morphing;
+public:
+  enum ControlType {
+    CONTROL_GUI      = 1,
+    CONTROL_SIGNAL_1 = 2,
+    CONTROL_SIGNAL_2 = 3,
+    CONTROL_OP       = 4
+  };
+protected:
+  int         m_width;
+  int         m_height;
+  int         m_selected_x;
+  int         m_selected_y;
+  double      m_x_morphing;
+  double      m_y_morphing;
+  ControlType m_x_control_type;
+  ControlType m_y_control_type;
 
   std::vector< std::vector<MorphOperator *> > m_input_op;
   std::map<std::string, std::string>          load_map;
@@ -49,9 +59,13 @@ public:
   bool            has_selection();
 
   double          x_morphing();
+  ControlType     x_control_type();
   double          y_morphing();
+  ControlType     y_control_type();
   void            set_x_morphing (double new_value);
   void            set_y_morphing (double new_value);
+  void            set_x_control_type (ControlType new_control_type);
+  void            set_y_control_type (ControlType new_control_type);
 
   void            set_input_op (int x, int y, MorphOperator *op);
   MorphOperator  *input_op (int x, int y);

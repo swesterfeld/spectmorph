@@ -22,6 +22,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   m_selected_y = -1;
   m_x_morphing = 0;
   m_y_morphing = 0;
+  m_x_control_type = CONTROL_GUI;
+  m_y_control_type = CONTROL_GUI;
 
   update_size();
 }
@@ -223,6 +225,20 @@ MorphGrid::set_x_morphing (double new_morphing)
   m_morph_plan->emit_plan_changed();
 }
 
+MorphGrid::ControlType
+MorphGrid::x_control_type()
+{
+  return m_x_control_type;
+}
+
+void
+MorphGrid::set_x_control_type (MorphGrid::ControlType control_type)
+{
+  m_x_control_type = control_type;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 double
 MorphGrid::y_morphing()
 {
@@ -233,6 +249,20 @@ void
 MorphGrid::set_y_morphing (double new_morphing)
 {
   m_y_morphing = new_morphing;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphGrid::ControlType
+MorphGrid::y_control_type()
+{
+  return m_y_control_type;
+}
+
+void
+MorphGrid::set_y_control_type (MorphGrid::ControlType control_type)
+{
+  m_y_control_type = control_type;
 
   m_morph_plan->emit_plan_changed();
 }
