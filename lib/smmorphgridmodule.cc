@@ -12,6 +12,7 @@
 using namespace SpectMorph;
 
 using std::min;
+using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
@@ -171,24 +172,240 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   return true;
 }
 
+namespace
+{
+struct MagData
+{
+  enum {
+    BLOCK_LEFT  = 0,
+    BLOCK_RIGHT = 1
+  }      block;
+  size_t index;
+  double mag;
+};
+
+static bool
+md_cmp (const MagData& m1, const MagData& m2)
+{
+  return m1.mag > m2.mag;  // sort with biggest magnitude first
+}
+
+static bool
+find_match (float freq, const vector<float>& freqs, const vector<int>& used, size_t *index)
+{
+  const float lower_bound = freq - 220;
+  const float upper_bound = freq + 220;
+
+  double min_diff = 1e20;
+  size_t best_index = 0; // initialized to avoid compiler warning
+
+  size_t i = 0;
+
+  // quick scan for beginning of the region containing suitable candidates
+  size_t skip = freqs.size() / 2;
+  while (skip >= 4)
+    {
+      while (i + skip < freqs.size() && freqs[i + skip] < lower_bound)
+        i += skip;
+      skip /= 2;
+    }
+
+  while (i < freqs.size() && freqs[i] < upper_bound)
+    {
+      if (!used[i])
+        {
+          double diff = fabs (freq - freqs[i]);
+          if (diff < min_diff)
+            {
+              best_index = i;
+              min_diff = diff;
+            }
+        }
+      i++;
+    }
+  if (min_diff < 220)
+    {
+      *index = best_index;
+      return true;
+    }
+  return false;
+}
+
+static void
+interp_mag_one (double interp, float *left, float *right)
+{
+  float l_value = left ? *left : 0;
+  float r_value = right ? *right : 0;
+#if 0
+  if (module->db_linear)
+    {
+#endif
+  // FIXME: handle non-db-linear interps
+      double lmag_db = bse_db_from_factor (l_value, -100);
+      double rmag_db = bse_db_from_factor (r_value, -100);
+
+      double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+      double mag = bse_db_to_factor (mag_db);
+
+      if (left)
+        *left = mag;
+      if (right)
+        *right = mag;
+#if 0
+    }
+  else
+    {
+      if (left)
+        *left = (1 - interp) * l_value;
+      if (right)
+        *right = interp * r_value;
+    }
+#endif
+}
+
+struct PartialData
+{
+  float freq;
+  float mag;
+  float phase;
+};
+
+static bool
+pd_cmp (const PartialData& p1, const PartialData& p2)
+{
+  return p1.freq < p2.freq;
+}
+
+static void
+sort_freqs (AudioBlock& block)
+{
+  // sort partials by frequency
+  vector<PartialData> pvec;
+
+  for (size_t p = 0; p < block.freqs.size(); p++)
+    {
+      PartialData pd;
+      pd.freq = block.freqs[p];
+      pd.mag = block.mags[p];
+      pd.phase = block.phases[p];
+      pvec.push_back (pd);
+    }
+  sort (pvec.begin(), pvec.end(), pd_cmp);
+
+  // replace partial data with sorted partial data
+  block.freqs.clear();
+  block.mags.clear();
+  block.phases.clear();
+
+  for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
+    {
+      block.freqs.push_back (pi->freq);
+      block.mags.push_back (pi->mag);
+      block.phases.push_back (pi->phase);
+    }
+}
+
+}
+
 bool
-morph (AudioBlock& out,
+morph (AudioBlock& out_block,
        bool have_left, const AudioBlock& left_block,
        bool have_right, const AudioBlock& right_block,
        double morphing)
 {
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
 
-  if (interp < 0.5)
+  assert (have_left);
+  assert (have_right);
+
+  // clear result block
+  out_block.freqs.clear();
+  out_block.mags.clear();
+  out_block.phases.clear();
+
+  // FIXME: lpc stuff
+  vector<MagData> mds;
+  for (size_t i = 0; i < left_block.freqs.size(); i++)
     {
-      out = left_block;
-      return have_left;
+      MagData md = { MagData::BLOCK_LEFT, i, left_block.mags[i] };
+      mds.push_back (md);
     }
-  else
+  for (size_t i = 0; i < right_block.freqs.size(); i++)
     {
-      out = right_block;
-      return have_right;
+      MagData md = { MagData::BLOCK_RIGHT, i, right_block.mags[i] };
+      mds.push_back (md);
     }
+  sort (mds.begin(), mds.end(), md_cmp);
+
+  vector<int> left_used (left_block.freqs.size());
+  vector<int> right_used (right_block.freqs.size());
+  for (size_t m = 0; m < mds.size(); m++)
+    {
+      size_t i, j;
+      bool match = false;
+      if (mds[m].block == MagData::BLOCK_LEFT)
+        {
+          i = mds[m].index;
+
+          if (!left_used[i])
+            match = find_match (left_block.freqs[i], right_block.freqs, right_used, &j);
+        }
+      else // (mds[m].block == MagData::BLOCK_RIGHT)
+        {
+          j = mds[m].index;
+          if (!right_used[j])
+            match = find_match (right_block.freqs[j], left_block.freqs, left_used, &i);
+        }
+      if (match)
+        {
+          const double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
+          const double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
+
+          // FIXME: prefer freq of louder partial
+          // FIXME: lpc
+          // FIXME: non-db
+
+          const double lmag_db = bse_db_from_factor (left_block.mags[i], -100);
+          const double rmag_db = bse_db_from_factor (right_block.mags[j], -100);
+          const double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+
+          const double mag = bse_db_to_factor (mag_db);
+          out_block.freqs.push_back (freq);
+          out_block.mags.push_back (mag);
+          out_block.phases.push_back (phase);
+
+          left_used[i] = 1;
+          right_used[j] = 1;
+        }
+    }
+  for (size_t i = 0; i < left_block.freqs.size(); i++)
+    {
+      if (!left_used[i])
+        {
+          out_block.freqs.push_back (left_block.freqs[i]);
+          out_block.mags.push_back (left_block.mags[i]);
+          out_block.phases.push_back (left_block.phases[i]);
+
+          interp_mag_one (interp, &out_block.mags.back(), NULL);
+        }
+    }
+  for (size_t i = 0; i < right_block.freqs.size(); i++)
+    {
+      if (!right_used[i])
+        {
+          out_block.freqs.push_back (right_block.freqs[i]);
+          out_block.mags.push_back (right_block.mags[i]);
+          out_block.phases.push_back (right_block.phases[i]);
+
+          interp_mag_one (interp, NULL, &out_block.mags.back());
+        }
+    }
+  out_block.noise.clear();
+  for (size_t i = 0; i < left_block.noise.size(); i++)
+    out_block.noise.push_back ((1 - interp) * left_block.noise[i] + interp * right_block.noise[i]);
+
+  sort_freqs (out_block);
+  return true;
 }
 
 AudioBlock *
