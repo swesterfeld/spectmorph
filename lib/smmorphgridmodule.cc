@@ -171,6 +171,26 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   return true;
 }
 
+bool
+morph (AudioBlock& out,
+       bool have_left, const AudioBlock& left_block,
+       bool have_right, const AudioBlock& right_block,
+       double morphing)
+{
+  const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
+
+  if (interp < 0.5)
+    {
+      out = left_block;
+      return have_left;
+    }
+  else
+    {
+      out = right_block;
+      return have_right;
+    }
+}
+
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
@@ -192,18 +212,13 @@ MorphGridModule::MySource::audio_block (size_t index)
 
   const double x_morphing = module->x_morphing;
   const double y_morphing = module->y_morphing;
-  if (y_morphing < 0)
-    if (x_morphing < 0)
-      module->audio_block = audio_block_a;
-    else
-      module->audio_block = audio_block_b;
-  else
-    if (x_morphing < 0)
-      module->audio_block = audio_block_c;
-    else
-      module->audio_block = audio_block_d;
 
-  return &module->audio_block;
+  AudioBlock audio_block_ab, audio_block_cd;
+  bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
+  bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morphing);
+  bool have_abcd = morph (module->audio_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morphing);
+
+  return have_abcd ? &module->audio_block : NULL;
 }
 
 LiveDecoderSource *
