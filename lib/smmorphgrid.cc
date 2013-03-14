@@ -45,6 +45,9 @@ MorphGrid::save (OutFile& out_file)
   out_file.write_int ("width", m_width);
   out_file.write_int ("height", m_height);
 
+  out_file.write_float ("x_morphing", m_x_morphing);
+  out_file.write_float ("y_morphing", m_y_morphing);
+
   for (int x = 0; x < m_width; x++)
     {
       for (int y = 0; y < m_height; y++)
@@ -80,6 +83,22 @@ MorphGrid::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::FLOAT)
+        {
+          if (ifile.event_name() == "x_morphing")
+            {
+              m_x_morphing = ifile.event_float();
+            }
+          else if (ifile.event_name() == "y_morphing")
+            {
+              m_y_morphing = ifile.event_float();
+            }
+          else
+            {
+              g_printerr ("bad float\n");
               return false;
             }
         }
