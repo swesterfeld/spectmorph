@@ -394,3 +394,50 @@ Audio::string_to_loop_type (const string& s, LoopType& loop_type)
     }
   return true;
 }
+
+namespace
+{
+
+struct PartialData
+{
+  float freq;
+  float mag;
+  float phase;
+};
+
+static bool
+pd_cmp (const PartialData& p1, const PartialData& p2)
+{
+  return p1.freq < p2.freq;
+}
+
+}
+
+void
+AudioBlock::sort_freqs()
+{
+  // sort partials by frequency
+  vector<PartialData> pvec;
+
+  for (size_t p = 0; p < freqs.size(); p++)
+    {
+      PartialData pd;
+      pd.freq = freqs[p];
+      pd.mag = mags[p];
+      pd.phase = phases[p];
+      pvec.push_back (pd);
+    }
+  sort (pvec.begin(), pvec.end(), pd_cmp);
+
+  // replace partial data with sorted partial data
+  freqs.clear();
+  mags.clear();
+  phases.clear();
+
+  for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
+    {
+      freqs.push_back (pi->freq);
+      mags.push_back (pi->mag);
+      phases.push_back (pi->phase);
+    }
+}

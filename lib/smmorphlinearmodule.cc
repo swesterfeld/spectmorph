@@ -193,48 +193,6 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   return true;
 }
 
-struct PartialData
-{
-  float freq;
-  float mag;
-  float phase;
-};
-
-static bool
-pd_cmp (const PartialData& p1, const PartialData& p2)
-{
-  return p1.freq < p2.freq;
-}
-
-static void
-sort_freqs (AudioBlock& block)
-{
-  // sort partials by frequency
-  vector<PartialData> pvec;
-
-  for (size_t p = 0; p < block.freqs.size(); p++)
-    {
-      PartialData pd;
-      pd.freq = block.freqs[p];
-      pd.mag = block.mags[p];
-      pd.phase = block.phases[p];
-      pvec.push_back (pd);
-    }
-  sort (pvec.begin(), pvec.end(), pd_cmp);
-
-  // replace partial data with sorted partial data
-  block.freqs.clear();
-  block.mags.clear();
-  block.phases.clear();
-
-  for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
-    {
-      block.freqs.push_back (pi->freq);
-      block.mags.push_back (pi->mag);
-      block.phases.push_back (pi->phase);
-    }
-}
-
 void
 dump_block (size_t index, const char *what, const AudioBlock& block)
 {
@@ -537,7 +495,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
       for (size_t i = 0; i < left_block.noise.size(); i++)
         module->audio_block.noise.push_back ((1 - interp) * left_block.noise[i] + interp * right_block.noise[i]);
 
-      sort_freqs (module->audio_block);
+      module->audio_block.sort_freqs();
 
       return &module->audio_block;
     }

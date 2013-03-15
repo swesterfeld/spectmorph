@@ -33,6 +33,8 @@ public:
   std::vector<float> lpc_lsf_q;      //!< LPC line spectrum frequencies, Q(z) roots
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
+
+  void sort_freqs();
 };
 
 enum AudioLoadOptions
