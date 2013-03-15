@@ -400,20 +400,26 @@ morph (AudioBlock& out_block,
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
-  if (module->width == 2 && module->height == 1)
+  if (module->height == 1)
     {
+      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
+      const double interp = (x_morphing + 1) / 2 * (module->width - 1); /* range for width=3: 0 ... 2.0 */
+      const int interp_left = qBound<int> (0, interp, module->width - 1);
+      const int interp_right = qBound<int> (0, interp_left + 1, module->width - 1);
+      const double interp_frac = qBound (0.0, interp - interp_left, 1.0);
+      const double morphing = interp_frac * 2 - 1; /* normalize fractional part to range -1.0 ... 1.0 */
+
       /*
        *  A ---- B
        */
 
       AudioBlock audio_block_a, audio_block_b;
 
-      bool have_a = get_normalized_block (module->input_mod[0][0]->source(), index, audio_block_a, 0);
-      bool have_b = get_normalized_block (module->input_mod[1][0]->source(), index, audio_block_b, 0);
+      bool have_a = get_normalized_block (module->input_mod[interp_left][0]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[interp_right][0]->source(), index, audio_block_b, 0);
 
-      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
 
-      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
+      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, morphing);
 
       return have_ab ? &module->audio_block : NULL;
     }
