@@ -40,10 +40,17 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
     combobox->set_active_str_choice (CONTROL_TEXT_1);
   else if (control_type == MorphGrid::CONTROL_SIGNAL_2)
     combobox->set_active_str_choice (CONTROL_TEXT_2);
-#if 0
   else if (control_type == MorphGrid::CONTROL_OP)
-    combobox->set_active (morph_grid->control_op());
-#endif
+    {
+      if (ctl_xy == CONTROL_X)
+        {
+          combobox->set_active (morph_grid->x_control_op());
+        }
+      else
+        {
+          combobox->set_active (morph_grid->y_control_op());
+        }
+    }
   else
     {
       assert (false);
@@ -90,7 +97,16 @@ MorphGridControlUI::on_combobox_changed()
   MorphOperator *op = combobox->active();
   if (op)
     {
-      printf ("active op\n");
+      if (ctl_xy == CONTROL_X)
+        {
+          morph_grid->set_x_control_op (op);
+          morph_grid->set_x_control_type (MorphGrid::CONTROL_OP);
+        }
+      else
+        {
+          morph_grid->set_y_control_op (op);
+          morph_grid->set_y_control_type (MorphGrid::CONTROL_OP);
+        }
     }
   else
     {

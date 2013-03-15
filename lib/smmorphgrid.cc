@@ -24,6 +24,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   m_y_morphing = 0;
   m_x_control_type = CONTROL_GUI;
   m_y_control_type = CONTROL_GUI;
+  m_x_control_op = NULL;
+  m_y_control_op = NULL;
 
   update_size();
 }
@@ -47,6 +49,12 @@ MorphGrid::save (OutFile& out_file)
 
   out_file.write_float ("x_morphing", m_x_morphing);
   out_file.write_float ("y_morphing", m_y_morphing);
+
+  out_file.write_int ("x_control_type", m_x_control_type);
+  out_file.write_int ("y_control_type", m_y_control_type);
+
+  write_operator (out_file, "x_control_op", m_x_control_op);
+  write_operator (out_file, "y_control_op", m_y_control_op);
 
   for (int x = 0; x < m_width; x++)
     {
@@ -79,6 +87,14 @@ MorphGrid::load (InFile& ifile)
             {
               m_height = ifile.event_int();
               update_size();
+            }
+          else if (ifile.event_name() == "x_control_type")
+            {
+              m_x_control_type = static_cast<ControlType> (ifile.event_int());
+            }
+          else if (ifile.event_name() == "y_control_type")
+            {
+              m_y_control_type = static_cast<ControlType> (ifile.event_int());
             }
           else
             {
@@ -130,6 +146,8 @@ MorphGrid::post_load (OpNameMap& op_name_map)
           m_input_op[x][y] = op_name_map[load_map[name]];
         }
     }
+  m_x_control_op = op_name_map[load_map["x_control_op"]];
+  m_y_control_op = op_name_map[load_map["y_control_op"]];
 }
 
 
@@ -258,6 +276,20 @@ MorphGrid::set_x_control_type (MorphGrid::ControlType control_type)
   m_morph_plan->emit_plan_changed();
 }
 
+MorphOperator *
+MorphGrid::x_control_op()
+{
+  return m_x_control_op;
+}
+
+void
+MorphGrid::set_x_control_op (MorphOperator *op)
+{
+  m_x_control_op = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 double
 MorphGrid::y_morphing()
 {
@@ -282,6 +314,20 @@ void
 MorphGrid::set_y_control_type (MorphGrid::ControlType control_type)
 {
   m_y_control_type = control_type;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphOperator *
+MorphGrid::y_control_op()
+{
+  return m_y_control_op;
+}
+
+void
+MorphGrid::set_y_control_op (MorphOperator *op)
+{
+  m_y_control_op = op;
 
   m_morph_plan->emit_plan_changed();
 }

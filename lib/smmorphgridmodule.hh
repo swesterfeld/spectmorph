@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphoperatormodule.hh"
+#include "smmorphgrid.hh"
 #include "smwavset.hh"
 
 namespace SpectMorph
@@ -13,8 +14,13 @@ class MorphGridModule : public MorphOperatorModule
   size_t              width;
   size_t              height;
 
-  double              x_morphing;
-  double              y_morphing;
+  double                  x_morphing;
+  MorphGrid::ControlType  x_control_type;
+  double                  y_morphing;
+  MorphGrid::ControlType  y_control_type;
+
+  MorphOperatorModule    *x_control_mod;
+  MorphOperatorModule    *y_control_mod;
 
   Audio               audio;
   AudioBlock          audio_block;

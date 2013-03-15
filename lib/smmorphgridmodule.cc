@@ -75,10 +75,28 @@ MorphGridModule::set_config (MorphOperator *op)
   x_morphing = grid->x_morphing();
   y_morphing = grid->y_morphing();
 
-  update_dependency (0, input_mod[0][0]);
-  update_dependency (1, input_mod[1][0]);
-  update_dependency (2, input_mod[0][1]);
-  update_dependency (3, input_mod[1][1]);
+  x_control_type = grid->x_control_type();
+  y_control_type = grid->y_control_type();
+
+  MorphOperator *x_control_op = grid->x_control_op();
+  if (x_control_op)
+    x_control_mod = morph_plan_voice->module (x_control_op);
+  else
+    x_control_mod = NULL;
+
+  MorphOperator *y_control_op = grid->y_control_op();
+  if (y_control_op)
+    y_control_mod = morph_plan_voice->module (y_control_op);
+  else
+    y_control_mod = NULL;
+
+  if (width == 2 && height == 2)  // FIXME
+    {
+      update_dependency (0, input_mod[0][0]);
+      update_dependency (1, input_mod[1][0]);
+      update_dependency (2, input_mod[0][1]);
+      update_dependency (3, input_mod[1][1]);
+    }
 }
 
 void
@@ -427,8 +445,8 @@ MorphGridModule::MySource::audio_block (size_t index)
   bool have_c = get_normalized_block (module->input_mod[0][1]->source(), index, audio_block_c, 0);
   bool have_d = get_normalized_block (module->input_mod[1][1]->source(), index, audio_block_d, 0);
 
-  const double x_morphing = module->x_morphing;
-  const double y_morphing = module->y_morphing;
+  const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
+  const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
 
   AudioBlock audio_block_ab, audio_block_cd;
   bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
