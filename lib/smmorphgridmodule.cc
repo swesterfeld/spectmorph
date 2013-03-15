@@ -90,18 +90,26 @@ MorphGridModule::set_config (MorphOperator *op)
   else
     y_control_mod = NULL;
 
-  if (width == 2 && height == 2)  // FIXME
-    {
-      update_dependency (0, input_mod[0][0]);
-      update_dependency (1, input_mod[1][0]);
-      update_dependency (2, input_mod[0][1]);
-      update_dependency (3, input_mod[1][1]);
+  for (int d = 0; d < 6; d++)
+    update_dependency (d, NULL);
 
-      if (x_control_mod)
-        update_dependency (4, x_control_mod);
-      if (y_control_mod)
-        update_dependency (5, y_control_mod);
+  int dep = 0;
+  for (size_t x = 0; x < width; x++)
+    {
+      for (size_t y = 0; y < height; y++)
+        {
+          MorphOperatorModule *mod = input_mod[x][y];
+
+          if (mod)
+            update_dependency (dep++, mod);
+        }
     }
+  if (x_control_mod)
+    update_dependency (dep++, x_control_mod);
+  if (y_control_mod)
+    update_dependency (dep++, y_control_mod);
+
+  assert (dep <= 6);
 }
 
 void
@@ -392,31 +400,51 @@ morph (AudioBlock& out_block,
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
-  assert (module->width == 2);
-  assert (module->height == 2);
+  if (module->width == 2 && module->height == 1)
+    {
+      /*
+       *  A ---- B
+       */
 
-  AudioBlock audio_block_a, audio_block_b, audio_block_c, audio_block_d;
+      AudioBlock audio_block_a, audio_block_b;
 
-  /*
-   *  A ---- B
-   *  |      |
-   *  |      |
-   *  C ---- D
-   */
-  bool have_a = get_normalized_block (module->input_mod[0][0]->source(), index, audio_block_a, 0);
-  bool have_b = get_normalized_block (module->input_mod[1][0]->source(), index, audio_block_b, 0);
-  bool have_c = get_normalized_block (module->input_mod[0][1]->source(), index, audio_block_c, 0);
-  bool have_d = get_normalized_block (module->input_mod[1][1]->source(), index, audio_block_d, 0);
+      bool have_a = get_normalized_block (module->input_mod[0][0]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[1][0]->source(), index, audio_block_b, 0);
 
-  const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
-  const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
+      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
 
-  AudioBlock audio_block_ab, audio_block_cd;
-  bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
-  bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morphing);
-  bool have_abcd = morph (module->audio_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morphing);
+      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
 
-  return have_abcd ? &module->audio_block : NULL;
+      return have_ab ? &module->audio_block : NULL;
+    }
+  else
+    {
+      assert (module->width == 2);
+      assert (module->height == 2);
+
+      AudioBlock audio_block_a, audio_block_b, audio_block_c, audio_block_d;
+
+      /*
+       *  A ---- B
+       *  |      |
+       *  |      |
+       *  C ---- D
+       */
+      bool have_a = get_normalized_block (module->input_mod[0][0]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[1][0]->source(), index, audio_block_b, 0);
+      bool have_c = get_normalized_block (module->input_mod[0][1]->source(), index, audio_block_c, 0);
+      bool have_d = get_normalized_block (module->input_mod[1][1]->source(), index, audio_block_d, 0);
+
+      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
+      const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
+
+      AudioBlock audio_block_ab, audio_block_cd;
+      bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morphing);
+      bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morphing);
+      bool have_abcd = morph (module->audio_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morphing);
+
+      return have_abcd ? &module->audio_block : NULL;
+    }
 }
 
 LiveDecoderSource *
