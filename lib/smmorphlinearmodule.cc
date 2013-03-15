@@ -23,7 +23,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
 #define DEBUG (0)
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice, 3)
+  MorphOperatorModule (voice)
 {
   my_source.module = this;
 
@@ -73,9 +73,10 @@ MorphLinearModule::set_config (MorphOperator *op)
   else
     control_mod = NULL;
 
-  update_dependency (0, left_mod);
-  update_dependency (1, right_mod);
-  update_dependency (2, control_mod);
+  clear_dependencies();
+  add_dependency (left_mod);
+  add_dependency (right_mod);
+  add_dependency (control_mod);
 
   morphing = linear->morphing();
   control_type = linear->control_type();

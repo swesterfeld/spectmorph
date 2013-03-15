@@ -17,7 +17,7 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
 
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice, CHANNEL_OP_COUNT)
+  MorphOperatorModule (voice)
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
@@ -44,6 +44,7 @@ MorphOutputModule::set_config (MorphOperator *op)
   MorphOutput *out_op = dynamic_cast <MorphOutput *> (op);
   g_return_if_fail (out_op != NULL);
 
+  clear_dependencies();
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       MorphOperatorModule *mod = NULL;
@@ -78,7 +79,7 @@ MorphOutputModule::set_config (MorphOperator *op)
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
 
-      update_dependency (ch, mod);
+      add_dependency (mod);
     }
 }
 

@@ -27,9 +27,10 @@ protected:
   std::vector<MorphOperatorModule *>  m_dependencies;
   int                                 m_update_value_tag;
 
-  void update_dependency (size_t i, MorphOperatorModule *dep_mod);
+  void clear_dependencies();
+  void add_dependency (MorphOperatorModule *dep_mod);
 public:
-  MorphOperatorModule (MorphPlanVoice *voice, size_t n_dependencies);
+  MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();
 
   virtual float latency_ms();

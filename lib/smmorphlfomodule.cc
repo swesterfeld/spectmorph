@@ -19,7 +19,7 @@ using std::max;
 static LeakDebugger leak_debugger ("SpectMorph::MorphLFOModule");
 
 MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice, 0)
+  MorphOperatorModule (voice)
 {
   leak_debugger.add (this);
 

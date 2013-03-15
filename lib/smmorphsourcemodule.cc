@@ -22,7 +22,7 @@ freq_to_note (float freq)
 }
 
 MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice, 0)
+  MorphOperatorModule (voice)
 {
   my_source.wav_set      = NULL;
   my_source.active_audio = NULL;

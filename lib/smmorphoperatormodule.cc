@@ -14,9 +14,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice, size_t n_dependencies) :
-  morph_plan_voice (voice),
-  m_dependencies (n_dependencies)
+MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
+  morph_plan_voice (voice)
 {
 }
 
@@ -77,11 +76,16 @@ MorphOperatorModule::set_latency_ms (float latency_ms)
 }
 
 void
-MorphOperatorModule::update_dependency (size_t i, MorphOperatorModule *dep_mod)
+MorphOperatorModule::clear_dependencies()
 {
-  g_return_if_fail (i < m_dependencies.size());
+  m_dependencies.clear();
+}
 
-  m_dependencies[i] = dep_mod;
+void
+MorphOperatorModule::add_dependency (MorphOperatorModule *dep_mod)
+{
+  if (dep_mod)
+    m_dependencies.push_back (dep_mod);
 }
 
 const vector<MorphOperatorModule *>&
