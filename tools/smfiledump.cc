@@ -182,24 +182,19 @@ display_file (GenericIn *in, int indent = 0)
 
           printf ("%s}\n", spaces (indent).c_str());
         }
-#if 0
       else if (ifile.event() == InFile::BLOB_REF)
         {
-          if (section == "operator")
+          printf ("%s", spaces (indent).c_str());
+          printf ("blob_ref %s {\n", ifile.event_name().c_str());
+          GenericIn *blob_in = ifile.open_blob();
+          if (!blob_in)
             {
-              if (ifile.event_name() == "data")
-                {
-                  vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
-
-                  GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
-                  InFile blob_infile (in);
-                  load_op->load (blob_infile);
-
-                  add_operator (load_op);
-                }
+              fprintf (stderr, PROG_NAME ": error opening input\n");
+              exit (1);
             }
+          display_file (blob_in, indent + 2);
+          printf ("%s}\n", spaces (indent).c_str());
         }
-#endif
       else if (ifile.event() == InFile::READ_ERROR)
         {
           g_printerr ("read error\n");
