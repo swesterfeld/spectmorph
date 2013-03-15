@@ -385,17 +385,41 @@ morph (AudioBlock& out_block,
   return true;
 }
 
+namespace
+{
+
+struct LocalMorphParams
+{
+  int     start;
+  int     end;
+  double  morphing;
+};
+
+static LocalMorphParams
+global_to_local_params (double global_morphing, int node_count)
+{
+  LocalMorphParams result;
+
+  /* interp: range for node_count=3: 0 ... 2.0 */
+  const double interp = (global_morphing + 1) / 2 * (node_count - 1);
+
+  // find the two adjecant nodes (double -> integer position)
+  result.start = qBound<int> (0, interp, (node_count - 1));
+  result.end   = qBound<int> (0, result.start + 1, (node_count - 1));
+
+  const double interp_frac = qBound (0.0, interp - result.start, 1.0); /* position between adjecant nodes */
+  result.morphing = interp_frac * 2 - 1; /* normalize fractional part to range -1.0 ... 1.0 */
+  return result;
+}
+}
+
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
   if (module->height == 1)
     {
       const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
-      const double interp = (x_morphing + 1) / 2 * (module->width - 1); /* range for width=3: 0 ... 2.0 */
-      const int interp_left = qBound<int> (0, interp, module->width - 1);
-      const int interp_right = qBound<int> (0, interp_left + 1, module->width - 1);
-      const double interp_frac = qBound (0.0, interp - interp_left, 1.0);
-      const double morphing = interp_frac * 2 - 1; /* normalize fractional part to range -1.0 ... 1.0 */
+      const LocalMorphParams morph_params = global_to_local_params (x_morphing, module->width);
 
       /*
        *  A ---- B
@@ -403,11 +427,11 @@ MorphGridModule::MySource::audio_block (size_t index)
 
       AudioBlock audio_block_a, audio_block_b;
 
-      bool have_a = get_normalized_block (module->input_mod[interp_left][0]->source(), index, audio_block_a, 0);
-      bool have_b = get_normalized_block (module->input_mod[interp_right][0]->source(), index, audio_block_b, 0);
+      bool have_a = get_normalized_block (module->input_mod[morph_params.start][0]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[morph_params.end][0]->source(), index, audio_block_b, 0);
 
 
-      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, morphing);
+      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, morph_params.morphing);
 
       return have_ab ? &module->audio_block : NULL;
     }
