@@ -17,7 +17,7 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
 MorphGridModule::MorphGridModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice, 4)
+  MorphOperatorModule (voice, 6)
 {
   leak_debugger.add (this);
 
@@ -96,6 +96,11 @@ MorphGridModule::set_config (MorphOperator *op)
       update_dependency (1, input_mod[1][0]);
       update_dependency (2, input_mod[0][1]);
       update_dependency (3, input_mod[1][1]);
+
+      if (x_control_mod)
+        update_dependency (4, x_control_mod);
+      if (y_control_mod)
+        update_dependency (5, y_control_mod);
     }
 }
 
