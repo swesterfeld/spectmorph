@@ -16,26 +16,26 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#include <bse/bsecxxmodule.idl>
+include "bse/bsecxxmodule.idl";
 
 namespace SpectMorph {
 
 using namespace Bse;
 
-class Osc : Effect {
+interface Osc : Effect {
   Info    authors     = "Stefan Westerfeld";
   Info    license     = _("GNU Lesser General Public License");
   Info    category    = _("/Audio Sources/SpectMorph Oscillator");
   Info    blurb       = _("Oscillator based on SpectMorph instruments.");
-  IStream freq_in     = (_("Frequency In"), _("Frequency Input"));
-  IStream velocity_in = (_("Velocity In"), _("Velocity of the note press"));
-  IStream ctrl_in1   = (_("Ctrl In1"), _("First control input"));
-  IStream ctrl_in2   = (_("Ctrl In2"), _("Second control input"));
+  IStream freq_in     = Stream (_("Frequency In"), _("Frequency Input"));
+  IStream velocity_in = Stream (_("Velocity In"), _("Velocity of the note press"));
+  IStream ctrl_in1   = Stream (_("Ctrl In1"), _("First control input"));
+  IStream ctrl_in2   = Stream (_("Ctrl In2"), _("Second control input"));
 
-  OStream audio_out1  = (_("Audio Out1"), _("Audio output 1"));
-  OStream audio_out2  = (_("Audio Out2"), _("Audio output 2"));
-  OStream audio_out3  = (_("Audio Out3"), _("Audio output 3"));
-  OStream audio_out4  = (_("Audio Out4"), _("Audio output 4"));
+  OStream audio_out1  = Stream (_("Audio Out1"), _("Audio output 1"));
+  OStream audio_out2  = Stream (_("Audio Out2"), _("Audio output 2"));
+  OStream audio_out3  = Stream (_("Audio Out3"), _("Audio output 3"));
+  OStream audio_out4  = Stream (_("Audio Out4"), _("Audio output 4"));
 
   group _("Source") {
     Bool   edit_settings  = Bool (_("Edit Settings"), _("Edit settings for SpectMorph OSC"), FALSE, STANDARD ":trigger:skip-undo");

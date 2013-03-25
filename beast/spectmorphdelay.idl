@@ -16,25 +16,25 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-#include <bse/bsecxxmodule.idl>
+include "bse/bsecxxmodule.idl";
 
 namespace SpectMorph {
 
 using namespace Bse;
 
-class Delay : Effect {
+interface Delay : Effect {
   Info    authors     = "Stefan Westerfeld";
   Info    license     = _("GNU Lesser General Public License");
   Info    category    = _("/Audio Sources/SpectMorph Delay");
   Info    blurb       = _("Delay for SpectMorph instruments.");
 
-  IStream gate_in     = (_("Gate In"), _("Gate Input"));
-  OStream gate_out    = (_("Gate Out"), _("Gate Output"));
+  IStream gate_in     = Stream (_("Gate In"), _("Gate Input"));
+  OStream gate_out    = Stream (_("Gate Out"), _("Gate Output"));
 
-  IStream audio_in1   = (_("Audio In1"), _("Audio Input 1"));
-  IStream audio_in2   = (_("Audio In2"), _("Audio Input 2"));
-  OStream audio_out1  = (_("Audio Out1"), _("Audio output 1"));
-  OStream audio_out2  = (_("Audio Out2"), _("Audio output 2"));
+  IStream audio_in1   = Stream (_("Audio In1"), _("Audio Input 1"));
+  IStream audio_in2   = Stream (_("Audio In2"), _("Audio Input 2"));
+  OStream audio_out1  = Stream (_("Audio Out1"), _("Audio output 1"));
+  OStream audio_out2  = Stream (_("Audio Out2"), _("Audio output 2"));
 
   group _("Delay") {
     Real delay_ms     = Real (_("Delay [ms]"), _("Set the delay time in milliseconds"), 10.0, 0.1, 250.0, 10.0, STANDARD ":scale");
