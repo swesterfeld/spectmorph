@@ -3,7 +3,6 @@
 #include "smmorphplanview.hh"
 #include "smmorphsourceview.hh"
 #include "smmoveindicator.hh"
-#include <birnet/birnet.hh>
 
 #include <QLabel>
 
