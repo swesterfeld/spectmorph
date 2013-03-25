@@ -6,13 +6,14 @@
 #include <birnet/birnet.hh>
 
 #include <QObject>
+#include <QMutex>
 
 namespace SpectMorph
 {
 
 class Object : public QObject
 {
-  Birnet::Mutex object_mutex;
+  QMutex        object_mutex;
   unsigned int  object_ref_count;
 
 public:

@@ -15,7 +15,6 @@
 using namespace SpectMorph;
 
 using std::vector;
-using Birnet::AutoLocker;
 
 PlayerWindow::PlayerWindow (Navigator *navigator) :
   navigator (navigator),

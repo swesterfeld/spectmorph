@@ -7,11 +7,13 @@
 
 #include <bse/bsecxxplugin.hh>
 
+#include <QMutex>
+
 namespace SpectMorph
 {
 
 class WavSetRepo {
-  Birnet::Mutex mutex;
+  QMutex mutex;
   std::map<std::string, WavSet *> wav_set_map;
 public:
   WavSet *get (const std::string& filename);

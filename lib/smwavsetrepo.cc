@@ -20,7 +20,7 @@ WavSetRepo::the()
 WavSet*
 WavSetRepo::get (const string& filename)
 {
-  Birnet::AutoLocker lock (mutex);
+  QMutexLocker lock (&mutex);
 
   WavSet*& wav_set = wav_set_map[filename];
   if (!wav_set)

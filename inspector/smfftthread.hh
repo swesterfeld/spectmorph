@@ -11,6 +11,7 @@
 #include "smpixelarray.hh"
 
 #include <QObject>
+#include <QMutex>
 
 namespace SpectMorph
 {
@@ -24,7 +25,7 @@ public:
   };
 
 protected:
-  Birnet::Mutex           command_mutex;
+  QMutex                  command_mutex;
   std::vector<Command *>  commands;
   std::vector<Command *>  command_results;
   double                  command_progress;

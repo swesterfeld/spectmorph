@@ -6,12 +6,14 @@
 #include <birnet/birnet.hh>
 #include <map>
 
+#include <QMutex>
+
 namespace SpectMorph
 {
 
 class LeakDebugger
 {
-  Birnet::Mutex            mutex;
+  QMutex                   mutex;
   std::map<void *, int>    ptr_map;
   std::string              type;
 

@@ -13,7 +13,7 @@ Object::Object()
 void
 Object::ref()
 {
-  Birnet::AutoLocker lock (object_mutex);
+  QMutexLocker lock (&object_mutex);
 
   assert (object_ref_count > 0);
   object_ref_count++;
@@ -25,7 +25,7 @@ Object::unref()
   bool destroy;
   // unlock before possible delete this
   {
-    Birnet::AutoLocker lock (object_mutex);
+    QMutexLocker lock (&object_mutex);
     assert (object_ref_count > 0);
     object_ref_count--;
     destroy = (object_ref_count == 0);

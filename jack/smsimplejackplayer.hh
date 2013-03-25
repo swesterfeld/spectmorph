@@ -5,6 +5,8 @@
 
 #include <jack/jack.h>
 
+#include <QMutex>
+
 #include "smlivedecoder.hh"
 
 namespace SpectMorph
@@ -15,7 +17,7 @@ class SimpleJackPlayer
   jack_port_t        *audio_out_port;
   jack_client_t      *jack_client;
 
-  Birnet::Mutex       decoder_mutex;
+  QMutex              decoder_mutex;
   LiveDecoder        *decoder;            // decoder_mutex!
   Audio              *decoder_audio;      // decoder_mutex!
   LiveDecoderSource  *decoder_source;     // decoder_mutex!

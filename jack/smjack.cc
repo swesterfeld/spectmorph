@@ -85,7 +85,7 @@ int
 JackSynth::process (jack_nframes_t nframes)
 {
   // update plan with new parameters / new modules if necessary
-  if (m_new_plan_mutex.trylock())
+  if (m_new_plan_mutex.tryLock())
     {
       if (m_new_plan)
         {

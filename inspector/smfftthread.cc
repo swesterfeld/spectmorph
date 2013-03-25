@@ -77,7 +77,7 @@ FFTThread::run()
 void
 FFTThread::set_command_progress (double progress)
 {
-  Birnet::AutoLocker lock (command_mutex);
+  QMutexLocker lock (&command_mutex);
   command_progress = progress;
 
   // wakeup main thread
@@ -410,7 +410,7 @@ AnalysisCommand::execute()
 void
 FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params)
 {
-  Birnet::AutoLocker lock (command_mutex);
+  QMutexLocker lock (&command_mutex);
   commands.push_back (new AnalysisCommand (dhandle, params, this));
 
   // wakeup FFT thread
@@ -421,7 +421,7 @@ FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, const Analy
 bool
 FFTThread::get_result (PixelArray& image)
 {
-  Birnet::AutoLocker lock (command_mutex);
+  QMutexLocker lock (&command_mutex);
 
   // clear wakeup pipe
   struct pollfd poll_fds[1];
@@ -456,13 +456,13 @@ FFTThread::on_result_available()
 double
 FFTThread::get_progress()
 {
-  Birnet::AutoLocker lock (command_mutex);
+  QMutexLocker lock (&command_mutex);
   return command_progress;
 }
 
 bool
 FFTThread::command_is_obsolete()
 {
-  Birnet::AutoLocker lock (command_mutex);
+  QMutexLocker lock (&command_mutex);
   return !commands.empty();
 }

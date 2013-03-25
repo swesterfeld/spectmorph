@@ -60,7 +60,7 @@ protected:
   std::vector<Voice*>           active_voices;
   std::vector<Voice*>           release_voices;
 
-  Birnet::Mutex                 m_new_plan_mutex;
+  QMutex                        m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
 

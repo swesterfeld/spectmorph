@@ -18,7 +18,7 @@ LeakDebugger::ptr_add (void *p)
     {
       assert (sm_init_done());
 
-      Birnet::AutoLocker lock (mutex);
+      QMutexLocker lock (&mutex);
 
       if (ptr_map[p] != 0)
         g_critical ("LeakDebugger: invalid registration of object type %s detected; ptr_map[p] is %d\n",
@@ -35,7 +35,7 @@ LeakDebugger::ptr_del (void *p)
     {
       assert (sm_init_done());
 
-      Birnet::AutoLocker lock (mutex);
+      QMutexLocker lock (&mutex);
 
       if (ptr_map[p] != 1)
         g_critical ("LeakDebugger: invalid deletion of object type %s detected; ptr_map[p] is %d\n",
