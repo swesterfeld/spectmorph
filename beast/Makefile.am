@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 plugindir=/usr/local/beast/lib/bse/v$(BSE_VERSION)/plugins
 
-AM_CXXFLAGS=$(BSE_CFLAGS) $(QT_CFLAGS) -O3 -D_BIRNET_SOURCE_EXTENSIONS -I$(top_srcdir)/lib
+AM_CXXFLAGS=$(BSE_CFLAGS) $(QT_CFLAGS) -O3 -I$(top_srcdir)/lib
 
 SUBDIRS = gui
 
