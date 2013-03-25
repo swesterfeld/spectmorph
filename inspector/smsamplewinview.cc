@@ -164,7 +164,7 @@ SampleWinView::on_loop_type_changed()
 
       if (new_loop_type != audio->loop_type)
         {
-          emit audio_edit();
+          Q_EMIT audio_edit();
           audio->loop_type = new_loop_type;
         }
     }

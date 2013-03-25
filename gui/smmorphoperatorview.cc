@@ -64,7 +64,7 @@ MorphOperatorView::mouseMoveEvent (QMouseEvent *event)
     {
       MorphOperator *op_next = morph_plan_window->where (m_op, event->globalPos());
 
-      emit move_indication (op_next);
+      Q_EMIT move_indication (op_next);
     }
 }
 

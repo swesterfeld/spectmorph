@@ -450,7 +450,7 @@ FFTThread::get_result (PixelArray& image)
 void
 FFTThread::on_result_available()
 {
-  emit result_available();
+  Q_EMIT result_available();
 }
 
 double

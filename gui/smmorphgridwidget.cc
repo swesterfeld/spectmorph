@@ -104,12 +104,12 @@ MorphGridWidget::on_plan_changed()
   if (morph_grid->selected_x() >= morph_grid->width())
     {
       morph_grid->set_selected_x (-1);
-      emit selection_changed();
+      Q_EMIT selection_changed();
     }
   if (morph_grid->selected_y() >= morph_grid->height())
     {
       morph_grid->set_selected_y (-1);
-      emit selection_changed();
+      Q_EMIT selection_changed();
     }
   update();
 }
@@ -155,7 +155,7 @@ MorphGridWidget::mousePressEvent (QMouseEvent *event)
         }
       morph_grid->set_selected_x (selected_x);
       morph_grid->set_selected_y (selected_y);
-      emit selection_changed();
+      Q_EMIT selection_changed();
       update();
     }
 }

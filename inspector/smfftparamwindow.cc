@@ -167,7 +167,7 @@ FFTParamWindow::on_value_changed()
   cwt_freq_res_label->setText (Birnet::string_printf ("%.1f Hz", cwt_freq_res_slider->value() / 1000.0).c_str());
   cwt_time_res_label->setText (Birnet::string_printf ("%.1f ms", get_cwt_time_resolution()).c_str());
 
-  emit params_changed();
+  Q_EMIT params_changed();
 }
 
 void

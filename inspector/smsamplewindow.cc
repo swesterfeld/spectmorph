@@ -49,5 +49,5 @@ SampleWindow::sample_view()
 void
 SampleWindow::on_next_sample()
 {
-  emit next_sample();
+  Q_EMIT next_sample();
 }

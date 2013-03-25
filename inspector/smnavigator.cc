@@ -229,8 +229,8 @@ Navigator::on_combo_changed()
   for (int column = 0; column < 4; column++)
     tree_view->resizeColumnToContents (column);
 
-  emit title_changed();
-  emit dhandle_changed();
+  Q_EMIT title_changed();
+  Q_EMIT dhandle_changed();
 }
 
 void
@@ -259,7 +259,7 @@ Navigator::on_selection_changed()
     {
       dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
     }
-  emit dhandle_changed();
+  Q_EMIT dhandle_changed();
 }
 
 void
@@ -313,19 +313,19 @@ Navigator::fft_param_window()
 void
 Navigator::on_show_position_changed()
 {
-  emit show_position_changed();
+  Q_EMIT show_position_changed();
 }
 
 void
 Navigator::on_show_analysis_changed()
 {
-  emit show_analysis_changed();
+  Q_EMIT show_analysis_changed();
 }
 
 void
 Navigator::on_show_frequency_grid_changed()
 {
-  emit show_frequency_grid_changed();
+  Q_EMIT show_frequency_grid_changed();
 }
 
 bool
@@ -359,7 +359,7 @@ Navigator::on_save_clicked()
         }
       wset_edit = false;
 
-      emit title_changed();
+      Q_EMIT title_changed();
     }
 }
 
@@ -367,7 +367,7 @@ void
 Navigator::on_audio_edit()
 {
   wset_edit = true;
-  emit title_changed();
+  Q_EMIT title_changed();
 }
 
 void

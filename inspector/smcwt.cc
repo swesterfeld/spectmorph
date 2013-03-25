@@ -171,7 +171,7 @@ CWT::analyze_slow (const vector<float>& signal, FFTThread *fft_thread)
           //printf ("%zd %.17g %.17g\n", i, out[i * 2], out[i * 2 + 1]);
         }
       results.push_back (line);
-      emit signal_progress (freq / 22050.0);
+      Q_EMIT signal_progress (freq / 22050.0);
 
       if (fft_thread && fft_thread->command_is_obsolete()) // abort if user changed params
         break;

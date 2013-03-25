@@ -77,7 +77,7 @@ ZoomController::on_hzoom_changed()
       hscrollbar->setValue (hfactor * hscrollbar->value() + ((hfactor - 1) * hscrollbar->pageStep() / 2));
     }
   old_hzoom = hzoom;
-  emit zoom_changed();
+  Q_EMIT zoom_changed();
 }
 
 void
@@ -94,8 +94,7 @@ ZoomController::on_vzoom_changed()
       vscrollbar->setValue (vfactor * vscrollbar->value() + ((vfactor - 1) * vscrollbar->pageStep() / 2));
     }
   old_vzoom = vzoom;
-  emit zoom_changed();
-  emit zoom_changed();
+  Q_EMIT zoom_changed();
 }
 
 void

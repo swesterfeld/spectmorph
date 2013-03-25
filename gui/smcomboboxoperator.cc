@@ -99,7 +99,7 @@ ComboBoxOperator::on_combobox_changed()
           str_choice = *si;
         }
     }
-  emit active_changed();
+  Q_EMIT active_changed();
 }
 
 void

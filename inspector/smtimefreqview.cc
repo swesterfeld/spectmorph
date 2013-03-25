@@ -77,9 +77,9 @@ TimeFreqView::on_result_available()
     {
       update_size();
       update();
-      emit spectrum_changed();
+      Q_EMIT spectrum_changed();
     }
-  emit progress_changed();
+  Q_EMIT progress_changed();
 }
 
 void
@@ -98,7 +98,7 @@ TimeFreqView::set_position (int new_position)
   position = new_position;
 
   update();
-  emit spectrum_changed();
+  Q_EMIT spectrum_changed();
 }
 
 #if 0

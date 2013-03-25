@@ -29,7 +29,7 @@ DisplayParamWindow::DisplayParamWindow()
 void
 DisplayParamWindow::on_param_changed()
 {
-  emit params_changed();
+  Q_EMIT params_changed();
 }
 
 bool

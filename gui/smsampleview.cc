@@ -212,7 +212,7 @@ SampleView::move_marker (int x)
                 markers->set_position (m, index / audio->mix_freq * 1000);
             }
         }
-      emit audio_edit();
+      Q_EMIT audio_edit();
       update();
     }
 }
@@ -225,7 +225,7 @@ SampleView::mouseMoveEvent (QMouseEvent *event)
       double hz = HZOOM_SCALE * hzoom;
       int index = event->x() / hz;
 
-      emit mouse_time_changed (index / audio->mix_freq * 1000);
+      Q_EMIT mouse_time_changed (index / audio->mix_freq * 1000);
     }
   move_marker (event->x());
 }
