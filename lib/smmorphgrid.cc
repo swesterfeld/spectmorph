@@ -139,6 +139,9 @@ MorphGrid::load (InFile& ifile)
                   g_printerr ("bad float\n");
                   return false;
                 }
+              const int x = it->second.first;
+              const int y = it->second.second;
+              m_input_node[x][y].delta_db = ifile.event_float();
             }
         }
       else if (ifile.event() == InFile::STRING)
