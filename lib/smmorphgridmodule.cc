@@ -127,7 +127,7 @@ static bool
 get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block, int delay_blocks)
 {
   g_return_val_if_fail (delay_blocks >= 0, false);
-  if (index < delay_blocks)
+  if (index < (size_t) delay_blocks)
     {
       out_audio_block.noise.resize (32);
       return true;  // morph with empty block to ensure correct time alignment
@@ -135,7 +135,7 @@ get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_a
   else
     {
       // shift audio for time alignment
-      assert (index >= delay_blocks);
+      assert (index >= (size_t) delay_blocks);
       index -= delay_blocks;
     }
 
@@ -416,38 +416,50 @@ global_to_local_params (double global_morphing, int node_count)
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
+  const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
+  const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
+
+  const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->width);
+  const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->height);
+
+  AudioBlock audio_block_a, audio_block_b, audio_block_c, audio_block_d;
   if (module->height == 1)
     {
-      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
-      const LocalMorphParams morph_params = global_to_local_params (x_morphing, module->width);
-
       /*
        *  A ---- B
        */
 
-      AudioBlock audio_block_a, audio_block_b;
+      bool have_a = get_normalized_block (module->input_mod[x_morph_params.start][0]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[x_morph_params.end  ][0]->source(), index, audio_block_b, 0);
 
-      bool have_a = get_normalized_block (module->input_mod[morph_params.start][0]->source(), index, audio_block_a, 0);
-      bool have_b = get_normalized_block (module->input_mod[morph_params.end][0]->source(), index, audio_block_b, 0);
+      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
 
-      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, morph_params.morphing);
+      return have_ab ? &module->audio_block : NULL;
+    }
+  else if (module->width == 1)
+    {
+      /*
+       *  A
+       *  |
+       *  |
+       *  B
+       */
+
+      bool have_a = get_normalized_block (module->input_mod[0][y_morph_params.start]->source(), index, audio_block_a, 0);
+      bool have_b = get_normalized_block (module->input_mod[0][y_morph_params.end  ]->source(), index, audio_block_b, 0);
+
+      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing);
 
       return have_ab ? &module->audio_block : NULL;
     }
   else
     {
-      const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
-      const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
-      const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->width);
-      const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->height);
-
       /*
        *  A ---- B
        *  |      |
        *  |      |
        *  C ---- D
        */
-      AudioBlock audio_block_a, audio_block_b, audio_block_c, audio_block_d;
       bool have_a = get_normalized_block (module->input_mod[x_morph_params.start][y_morph_params.start]->source(), index, audio_block_a, 0);
       bool have_b = get_normalized_block (module->input_mod[x_morph_params.end  ][y_morph_params.start]->source(), index, audio_block_b, 0);
       bool have_c = get_normalized_block (module->input_mod[x_morph_params.start][y_morph_params.end  ]->source(), index, audio_block_c, 0);
