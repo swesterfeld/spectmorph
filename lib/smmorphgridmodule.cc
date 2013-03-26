@@ -59,7 +59,8 @@ MorphGridModule::set_config (MorphOperator *op)
       input_mod[x].resize (height);
       for (size_t y = 0; y < height; y++)
         {
-          MorphOperator *input_op = grid->input_op (x, y);
+          MorphGridNode node = grid->input_node (x, y);
+          MorphOperator *input_op = node.op;
 
           if (input_op)
             {

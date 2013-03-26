@@ -10,6 +10,14 @@
 namespace SpectMorph
 {
 
+struct MorphGridNode
+{
+  MorphOperator *op;
+  double         delta_db;
+
+  MorphGridNode();
+};
+
 class MorphGrid : public MorphOperator
 {
   Q_OBJECT
@@ -33,8 +41,8 @@ protected:
   MorphOperator  *m_x_control_op;
   MorphOperator  *m_y_control_op;
 
-  std::vector< std::vector<MorphOperator *> > m_input_op;
-  std::map<std::string, std::string>          load_map;
+  std::vector< std::vector<MorphGridNode> > m_input_node;
+  std::map<std::string, std::string>        load_map;
 
   void update_size();
 public:
@@ -73,8 +81,8 @@ public:
   void            set_x_control_op (MorphOperator *op);
   void            set_y_control_op (MorphOperator *op);
 
-  void            set_input_op (int x, int y, MorphOperator *op);
-  MorphOperator  *input_op (int x, int y);
+  void            set_input_node (int x, int y, const MorphGridNode& node);
+  MorphGridNode   input_node (int x, int y);
 };
 
 }

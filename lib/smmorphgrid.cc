@@ -62,7 +62,7 @@ MorphGrid::save (OutFile& out_file)
         {
           string name = Birnet::string_printf ("input_op_%d_%d", x, y);
 
-          write_operator (out_file, name, m_input_op[x][y]);
+          write_operator (out_file, name, m_input_node[x][y].op);
         }
     }
 
@@ -143,7 +143,7 @@ MorphGrid::post_load (OpNameMap& op_name_map)
         {
           string name = Birnet::string_printf ("input_op_%d_%d", x, y);
 
-          m_input_op[x][y] = op_name_map[load_map[name]];
+          m_input_node[x][y].op = op_name_map[load_map[name]];
         }
     }
   m_x_control_op = op_name_map[load_map["x_control_op"]];
@@ -224,27 +224,27 @@ MorphGrid::has_selection()
 void
 MorphGrid::update_size()
 {
-  m_input_op.resize (m_width);
+  m_input_node.resize (m_width);
   for (int i = 0; i < m_width; i++)
-    m_input_op[i].resize (m_height);
+    m_input_node[i].resize (m_height);
 }
 
-MorphOperator *
-MorphGrid::input_op (int x, int y)
+MorphGridNode
+MorphGrid::input_node (int x, int y)
 {
-  g_return_val_if_fail (x >= 0 && x < m_width, NULL);
-  g_return_val_if_fail (y >= 0 && y < m_height, NULL);
+  g_return_val_if_fail (x >= 0 && x < m_width, MorphGridNode());
+  g_return_val_if_fail (y >= 0 && y < m_height, MorphGridNode());
 
-  return m_input_op[x][y];
+  return m_input_node[x][y];
 }
 
 void
-MorphGrid::set_input_op (int x, int y, MorphOperator *op)
+MorphGrid::set_input_node (int x, int y, const MorphGridNode& node)
 {
   g_return_if_fail (x >= 0 && x < m_width);
   g_return_if_fail (y >= 0 && y < m_height);
 
-  m_input_op[x][y] = op;
+  m_input_node[x][y] = node;
   m_morph_plan->emit_plan_changed();
 }
 
@@ -330,4 +330,10 @@ MorphGrid::set_y_control_op (MorphOperator *op)
   m_y_control_op = op;
 
   m_morph_plan->emit_plan_changed();
+}
+
+MorphGridNode::MorphGridNode() :
+  op (NULL),
+  delta_db (0)
+{
 }

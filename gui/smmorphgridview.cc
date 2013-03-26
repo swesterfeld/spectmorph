@@ -214,7 +214,8 @@ MorphGridView::on_selection_changed()
 
   if (morph_grid->has_selection())
     {
-      op_combobox->set_active (morph_grid->input_op (morph_grid->selected_x(), morph_grid->selected_y()));
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
+      op_combobox->set_active (node.op);
     }
 }
 
@@ -222,7 +223,12 @@ void
 MorphGridView::on_operator_changed()
 {
   if (morph_grid->has_selection())
-    morph_grid->set_input_op (morph_grid->selected_x(), morph_grid->selected_y(), op_combobox->active());
+    {
+      MorphGridNode node;
+
+      node.op = op_combobox->active();
+      morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
+    }
 }
 
 void
