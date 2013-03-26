@@ -53,6 +53,8 @@ class MorphGridView : public MorphOperatorView
   TypeOperatorFilter  input_op_filter;
 
   ComboBoxOperator   *op_combobox;
+  QSlider            *delta_db_slider;
+  QLabel             *delta_db_label;
 
 public:
   MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window);
@@ -61,6 +63,7 @@ public slots:
   void on_size_changed();
   void on_selection_changed();
   void on_operator_changed();
+  void on_delta_db_changed (int new_value);
   void on_plan_changed();
 };
 

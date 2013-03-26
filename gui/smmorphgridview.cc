@@ -180,21 +180,27 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   grid->addWidget (y_ui->stack, 4, 1);
   grid->addWidget (y_ui->label, 4, 2);
 
-  QHBoxLayout *bottom_hbox = new QHBoxLayout();
-  bottom_hbox->addWidget (new QLabel ("Instrument/Source"));
-  bottom_hbox->addWidget (op_combobox);
-
   grid_widget = new MorphGridWidget (morph_grid);
-  QVBoxLayout *vbox = new QVBoxLayout();
-  vbox->addLayout (grid);
-  vbox->addWidget (grid_widget);
-  vbox->addLayout (bottom_hbox);
-  setLayout (vbox);
+  grid->addWidget (grid_widget, 5, 0, 1, 3);
+
+  grid->addWidget (new QLabel ("Source"), 6, 0);
+  grid->addWidget (op_combobox, 6, 1, 1, 2);
+
+  delta_db_slider = new QSlider (Qt::Horizontal);
+  delta_db_slider->setRange (-48000, 48000);
+  delta_db_label = new QLabel (Birnet::string_printf ("%.1f dB", 0.0).c_str());
+
+  grid->addWidget (new QLabel ("Volume"), 7, 0);
+  grid->addWidget (delta_db_slider, 7, 1);
+  grid->addWidget (delta_db_label, 7, 2);
+
+  setLayout (grid);
 
   connect (grid_widget, SIGNAL (selection_changed()), this, SLOT (on_selection_changed()));
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (height_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (op_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
+  connect (delta_db_slider, SIGNAL (valueChanged(int)), this, SLOT (on_delta_db_changed (int)));
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 
   on_plan_changed(); // initial morphing slider/label setup
@@ -211,11 +217,14 @@ void
 MorphGridView::on_selection_changed()
 {
   op_combobox->setEnabled (morph_grid->has_selection());
+  delta_db_slider->setEnabled (morph_grid->has_selection());
+  delta_db_label->setEnabled (morph_grid->has_selection());
 
   if (morph_grid->has_selection())
     {
       MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
       op_combobox->set_active (node.op);
+      delta_db_slider->setValue (lrint (node.delta_db * 1000));
     }
 }
 
@@ -224,9 +233,26 @@ MorphGridView::on_operator_changed()
 {
   if (morph_grid->has_selection())
     {
-      MorphGridNode node;
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
 
       node.op = op_combobox->active();
+
+      morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
+    }
+}
+
+void MorphGridView::on_delta_db_changed (int new_value)
+{
+  const double db = new_value / 1000.0;
+
+  delta_db_label->setText (Birnet::string_printf ("%.1f dB", db).c_str());
+
+  if (morph_grid->has_selection())
+    {
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
+
+      node.delta_db = db;
+
       morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
     }
 }

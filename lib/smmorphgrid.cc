@@ -8,6 +8,9 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::map;
+using std::pair;
+using std::make_pair;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGrid");
 
@@ -60,9 +63,11 @@ MorphGrid::save (OutFile& out_file)
     {
       for (int y = 0; y < m_height; y++)
         {
-          string name = Birnet::string_printf ("input_op_%d_%d", x, y);
+          string op_name = Birnet::string_printf ("input_op_%d_%d", x, y);
+          string delta_db_name = Birnet::string_printf ("input_delta_db_%d_%d", x, y);
 
-          write_operator (out_file, name, m_input_node[x][y].op);
+          write_operator (out_file, op_name, m_input_node[x][y].op);
+          out_file.write_float (delta_db_name, m_input_node[x][y].delta_db);
         }
     }
 
@@ -72,6 +77,8 @@ MorphGrid::save (OutFile& out_file)
 bool
 MorphGrid::load (InFile& ifile)
 {
+  map<string, pair<int, int> > delta_db_map;
+
   load_map.clear();
 
   while (ifile.event() != InFile::END_OF_FILE)
@@ -114,8 +121,24 @@ MorphGrid::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad float\n");
-              return false;
+              if (delta_db_map.empty())
+                {
+                  for (int x = 0; x < m_width; x++)
+                    {
+                      for (int y = 0; y < m_height; y++)
+                        {
+                          string name = Birnet::string_printf ("input_delta_db_%d_%d", x, y);
+
+                          delta_db_map[name] = make_pair (x, y);
+                        }
+                    }
+                }
+              map<string, pair<int, int> >::const_iterator it = delta_db_map.find (ifile.event_name());
+              if (it == delta_db_map.end())
+                {
+                  g_printerr ("bad float\n");
+                  return false;
+                }
             }
         }
       else if (ifile.event() == InFile::STRING)
