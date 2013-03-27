@@ -11,6 +11,36 @@ using std::string;
 namespace Birnet
 {
 
+/* --- memory utils --- */
+void*
+malloc_aligned (gsize     total_size,
+                gsize     alignment,
+                guint8  **free_pointer)
+{
+  const bool  alignment_power_of_2 = (alignment & (alignment - 1)) == 0;
+  const gsize cache_line_size = 64; // ensure that no false sharing will occur (at begin and end of data)
+  if (alignment_power_of_2)
+    {
+      // for power of 2 alignment, we guarantee also cache line alignment
+      alignment = std::max (alignment, cache_line_size);
+      uint8 *aligned_mem = (uint8 *) g_malloc (total_size + (alignment - 1) + (cache_line_size - 1));
+      *free_pointer = aligned_mem;
+      if ((ptrdiff_t) aligned_mem % alignment)
+        aligned_mem += alignment - (ptrdiff_t) aligned_mem % alignment;
+      return aligned_mem;
+    }
+  else
+    {
+      uint8 *aligned_mem = (uint8 *) g_malloc (total_size + (alignment - 1) + (cache_line_size - 1) * 2);
+      *free_pointer = aligned_mem;
+      if ((ptrdiff_t) aligned_mem % cache_line_size)
+        aligned_mem += cache_line_size - (ptrdiff_t) aligned_mem % cache_line_size;
+      if ((ptrdiff_t) aligned_mem % alignment)
+        aligned_mem += alignment - (ptrdiff_t) aligned_mem % alignment;
+      return aligned_mem;
+    }
+}
+
 string
 string_vprintf (const char *format,
                 va_list     vargs)
@@ -119,7 +149,14 @@ gdouble
 bse_db_from_factor (gdouble        factor,
                     gdouble        min_dB)
 {
-  NO_BSE_NO_IMPL (bse_db_from_factor);
+  if (factor > 0)
+    {
+      double dB = log10 (factor); /* Bell */
+      dB *= 20;
+      return dB;
+    }
+  else
+    return min_dB;
 }
 
 int
@@ -144,7 +181,9 @@ bse_window_cos (double x)
 double
 bse_window_blackman (double x)
 {
-  NO_BSE_NO_IMPL (bse_window_blackman);
+  if (fabs (x) > 1)
+    return 0;
+  return 0.42 + 0.5 * cos (M_PI * x) + 0.08 * cos (2.0 * M_PI * x);
 }
 
 void
@@ -163,7 +202,8 @@ Block::add (guint           n_values,
             float          *ovalues,
             const float    *ivalues)
 {
-  NO_BSE_NO_IMPL (Block::add);
+  for (guint i = 0; i < n_values; i++)
+    ovalues[i] += ivalues[i];
 }
 
 void
@@ -171,7 +211,8 @@ Block::mul (guint           n_values,
             float          *ovalues,
             const float    *ivalues)
 {
-  NO_BSE_NO_IMPL (Block::mul);
+  for (guint i = 0; i < n_values; i++)
+    ovalues[i] *= ivalues[i];
 }
 
 void
