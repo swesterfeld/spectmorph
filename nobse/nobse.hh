@@ -11,6 +11,7 @@
 typedef long long           int64;
 typedef unsigned long long  uint64;
 typedef guint               uint;
+typedef guint8              uint8;
 
 /* Birnet */
 #define BIRNET_PRIVATE_CLASS_COPY(Class)        private: Class (const Class&); Class& operator= (const Class&);
@@ -18,22 +19,47 @@ typedef guint               uint;
 
 namespace Birnet
 {
+
+/* --- memory utils --- */
+void* malloc_aligned            (size_t                total_size,
+                                 size_t                alignment,
+                                 uint8               **free_pointer);
+
 template<class T, int ALIGN>
 class AlignedArray {
-public:
-  AlignedArray (size_t n_elements)
+  unsigned char *unaligned_mem;
+  T *data;
+  size_t n_elements;
+  void
+  allocate_aligned_data()
   {
-    g_assert_not_reached();
+    g_assert ((ALIGN % sizeof (T)) == 0);
+    data = reinterpret_cast<T *> (malloc_aligned (n_elements * sizeof (T), ALIGN, &unaligned_mem));
+  }
+public:
+  AlignedArray (size_t n_elements) :
+    n_elements (n_elements)
+  {
+    allocate_aligned_data();
+    for (size_t i = 0; i < n_elements; i++)
+      new (data + i) T();
+  }
+  ~AlignedArray()
+  {
+    /* C++ destruction order: last allocated element is deleted first */
+    while (n_elements)
+      data[--n_elements].~T();
+    g_free (unaligned_mem);
   }
   T&
   operator[] (size_t pos)
   {
-    g_assert_not_reached();
+    return data[pos];
   }
   const T&
   operator[] (size_t pos) const
   {
-    g_assert_not_reached();
+    return data[pos];
   }
 };
 
