@@ -2,6 +2,8 @@
 
 #include "nobse.hh"
 
+#include <math.h>
+
 #define NO_BSE_NO_IMPL(func) { g_printerr ("[libnobse] not implemented: %s\n", #func); g_assert_not_reached(); }
 
 using std::string;
@@ -10,9 +12,29 @@ namespace Birnet
 {
 
 string
+string_vprintf (const char *format,
+                va_list     vargs)
+{
+  char *str = NULL;
+  if (vasprintf (&str, format, vargs) >= 0 && str)
+    {
+      string s = str;
+      free (str);
+      return s;
+    }
+  else
+    return format;
+}
+
+string
 string_printf (const char *format, ...)
 {
-  NO_BSE_NO_IMPL (Birnet::string_printf);
+  string str;
+  va_list args;
+  va_start (args, format);
+  str = string_vprintf (format, args);
+  va_end (args);
+  return str;
 }
 
 }
@@ -89,7 +111,8 @@ gsl_data_handle_new_insert (GslDataHandle	  *src_handle,
 gdouble
 bse_db_to_factor (gdouble dB)
 {
-  NO_BSE_NO_IMPL (bse_db_to_factor);
+  double factor = dB / 20; /* Bell */
+  return pow (10, factor);
 }
 
 gdouble
@@ -102,13 +125,20 @@ bse_db_from_factor (gdouble        factor,
 int
 bse_fpu_okround()
 {
-  NO_BSE_NO_IMPL (bse_fpu_okround);
+  typedef unsigned short int BseFpuState;
+
+  BseFpuState cv;
+  __asm__ ("fnstcw %0"
+           : "=m" (*&cv));
+  return !(cv & 0x0c00);
 }
 
 double
 bse_window_cos (double x)
 {
-  NO_BSE_NO_IMPL (bse_window_cos);
+  if (fabs (x) > 1)
+    return 0;
+  return 0.5 * cos (x * M_PI) + 0.5;
 }
 
 double
@@ -167,7 +197,7 @@ bse_init_inprocess (gint           *argc,
                     const char     *app_name,
                     SfiInitValue    values[])
 {
-  NO_BSE_NO_IMPL (bse_init_inprocess);
+  // nothing
 }
 
 BseWaveFileInfo*
