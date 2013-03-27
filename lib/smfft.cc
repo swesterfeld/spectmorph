@@ -89,8 +89,19 @@ FFT::free_array_float (float *f)
 
 static map<int, fftwf_plan> fftar_float_plan;
 
+static int
+plan_flags (FFT::PlanMode plan_mode)
+{
+  switch (plan_mode)
+    {
+    case FFT::PLAN_PATIENT:    return (FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+    case FFT::PLAN_ESTIMATE:   return (FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
+    default:                   g_assert_not_reached();
+    }
+}
+
 void
-FFT::fftar_float (size_t N, float *in, float *out)
+FFT::fftar_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
   fftwf_plan& plan = fftar_float_plan[N];
 
@@ -98,12 +109,10 @@ FFT::fftar_float (size_t N, float *in, float *out)
     {
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
-      plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, plan_flags (plan_mode));
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
-          plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out,
-                                        FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
     }
@@ -115,7 +124,7 @@ FFT::fftar_float (size_t N, float *in, float *out)
 static map<int, fftwf_plan> fftsr_float_plan;
 
 void
-FFT::fftsr_float (size_t N, float *in, float *out)
+FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
   fftwf_plan& plan = fftsr_float_plan[N];
 
@@ -123,12 +132,10 @@ FFT::fftsr_float (size_t N, float *in, float *out)
     {
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
-      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
-                                    FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, plan_flags (plan_mode));
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
-          plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
-                                        FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+          plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
     }
@@ -144,20 +151,20 @@ FFT::fftsr_float (size_t N, float *in, float *out)
 static map<int, fftwf_plan> fftsr_destructive_float_plan;
 
 void
-FFT::fftsr_destructive_float (size_t N, float *in, float *out)
+FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
   fftwf_plan& plan = fftsr_destructive_float_plan[N];
 
   if (!plan)
     {
+      int xplan_flags = plan_flags (plan_mode) & ~FFTW_PRESERVE_INPUT;
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
-      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
-                                    FFTW_PATIENT | FFTW_WISDOM_ONLY);
+      plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, xplan_flags);
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
           plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out,
-                                        FFTW_PATIENT);
+                                        xplan_flags & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
     }
@@ -171,7 +178,7 @@ FFT::fftsr_destructive_float (size_t N, float *in, float *out)
 static map<int, fftwf_plan> fftac_float_plan;
 
 void
-FFT::fftac_float (size_t N, float *in, float *out)
+FFT::fftac_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
   fftwf_plan& plan = fftac_float_plan[N];
   if (!plan)
@@ -180,11 +187,11 @@ FFT::fftac_float (size_t N, float *in, float *out)
       float *plan_out = new_array_float (N * 2);
 
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+                                FFTW_FORWARD, plan_flags (plan_mode));
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_FORWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_FORWARD, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
     }
@@ -195,7 +202,7 @@ FFT::fftac_float (size_t N, float *in, float *out)
 static map<int, fftwf_plan> fftsc_float_plan;
 
 void
-FFT::fftsc_float (size_t N, float *in, float *out)
+FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
   fftwf_plan& plan = fftsc_float_plan[N];
   if (!plan)
@@ -204,11 +211,11 @@ FFT::fftsc_float (size_t N, float *in, float *out)
       float *plan_out = new_array_float (N * 2);
 
       plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
+                                FFTW_BACKWARD, plan_flags (plan_mode));
       if (!plan) /* missing from wisdom -> create plan and save it */
         {
           plan = fftwf_plan_dft_1d (N, (fftwf_complex *) plan_in, (fftwf_complex *) plan_out,
-                                    FFTW_BACKWARD, FFTW_PATIENT | FFTW_PRESERVE_INPUT);
+                                    FFTW_BACKWARD, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
      }
