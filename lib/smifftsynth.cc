@@ -35,18 +35,19 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
 
       table = new IFFTSynthTable();
 
-      vector<double> win (block_size * zero_padding);
-      vector<double> wspectrum (block_size * zero_padding);
+      const size_t win_size = block_size * zero_padding;
+      float *win = FFT::new_array_float (win_size);
+      float *wspectrum = FFT::new_array_float (win_size);
 
       for (size_t i = 0; i < block_size; i++)
         {
           if (i < block_size / 2)
             win[i] = window_blackman_harris_92 (double (block_size / 2 - i) / block_size * 2 - 1.0);
           else
-            win[win.size() - block_size + i] = window_blackman_harris_92 (double (i - block_size / 2) / block_size * 2 - 1.0);
+            win[win_size - block_size + i] = window_blackman_harris_92 (double (i - block_size / 2) / block_size * 2 - 1.0);
         }
 
-      gsl_power2_fftar (block_size * zero_padding, &win[0], &wspectrum[0]);
+      FFT::fftar_float (block_size * zero_padding, win, wspectrum, FFT::PLAN_ESTIMATE);
 
       // compute complete (symmetric) expanded window transform for all frequency fractions
       for (int freq_frac = 0; freq_frac < zero_padding; freq_frac++)
@@ -57,6 +58,8 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
               table->win_trans.push_back (wspectrum[abs (pos * 2)]);
             }
         }
+      FFT::free_array_float (win);
+      FFT::free_array_float (wspectrum);
 
       table->win_scale = FFT::new_array_float (block_size); // SSE
       for (size_t i = 0; i < block_size; i++)
