@@ -9,6 +9,8 @@
 
 #include <QMutex>
 
+#include <map>
+
 namespace SpectMorph
 {
 

@@ -14,6 +14,7 @@
 
 #include <complex>
 #include <map>
+#include <algorithm>
 
 using namespace SpectMorph;
 using Birnet::AlignedArray;
