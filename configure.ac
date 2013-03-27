@@ -45,6 +45,16 @@ AC_DEFUN([AC_BSE_REQUIREMENTS],
     AC_SUBST(BSE_VERSION)
 ])
 dnl
+dnl libnobse (used in case libbse is not present/wanted)
+dnl
+AC_DEFUN([AC_NOBSE_REQUIREMENTS],
+[
+    BSE_CFLAGS='-I$(top_srcdir)/nobse '$GLIB_CFLAGS
+    AC_SUBST(BSE_CFLAGS)
+    BSE_LIBS='$(top_srcdir)/nobse/libspectmorph_nobse.la'
+    AC_SUBST(BSE_LIBS)
+])
+dnl
 dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
@@ -163,7 +173,21 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Check requirement sets
 AC_GLIB_REQUIREMENTS
-AC_BSE_REQUIREMENTS
+
+dnl -------------------- libbse dependency can be disabled -------------------
+AC_ARG_WITH([beast],
+    AS_HELP_STRING([--without-beast], [Build SpectMorph without depending on BEAST]))
+
+if test "x$with_beast" = "xno"; then
+  AC_NOBSE_REQUIREMENTS
+  TOP_SUBDIRS="nobse lib jack python docs"
+  AC_SUBST(TOP_SUBDIRS)
+else
+  AC_BSE_REQUIREMENTS
+  TOP_SUBDIRS="lib gui jack src tools beast inspector python tests docs"
+  AC_SUBST(TOP_SUBDIRS)
+fi
+dnl -------------------------------------------------------------------------
 AC_AO_REQUIREMENTS
 AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
@@ -203,7 +227,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
   CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
 ])
 
-AC_CONFIG_FILES([Makefile lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
+AC_CONFIG_FILES([Makefile nobse/Makefile lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile tools/sminstbuilder spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
