@@ -286,7 +286,17 @@ interp_mag_one (double interp, float *left, float *right)
 
 }
 
-bool
+static void
+morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
+{
+  out_block = in_block;
+  for (size_t i = 0; i < out_block.noise.size(); i++)
+    out_block.noise[i] *= factor;
+  for (size_t i = 0; i < out_block.freqs.size(); i++)
+    interp_mag_one (factor, NULL, &out_block.mags[i]);
+}
+
+static bool
 morph (AudioBlock& out_block,
        bool have_left, const AudioBlock& left_block,
        bool have_right, const AudioBlock& right_block,
@@ -294,8 +304,19 @@ morph (AudioBlock& out_block,
 {
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
 
-  assert (have_left);
-  assert (have_right);
+  if (!have_left && !have_right) // nothing + nothing = nothing
+    return false;
+
+  if (!have_left) // nothing + interp * right = interp * right
+    {
+      morph_scale (out_block, right_block, interp);
+      return true;
+    }
+  if (!have_right) // (1 - interp) * left + nothing = (1 - interp) * left
+    {
+      morph_scale (out_block, left_block, 1 - interp);
+      return true;
+    }
 
   // clear result block
   out_block.freqs.clear();
