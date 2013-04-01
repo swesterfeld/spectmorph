@@ -85,6 +85,19 @@ main (int argc, char **argv)
   randomize_and_check (block_b);
 
   const unsigned int runs = 1000000;
+
+  // assignments are not cheap, so we measure them seperately and subtract the result
+  double xstart = gettime();
+  for (unsigned int i = 0; i < runs; i++)
+    {
+      block_c = block_a;
+      block_c = block_b;
+    }
+  double xend = gettime();
+  double xtime = xend - xstart;
+
+  printf ("%.2f assign_blocks/sec\n", runs / 2 / xtime);
+
   double start = gettime();
   for (unsigned int i = 0; i < runs; i++)
     {
@@ -94,5 +107,5 @@ main (int argc, char **argv)
       block_c.sort_freqs();
     }
   double end = gettime();
-  printf ("%.2f sort_freqs/sec\n", runs / 2 / (end - start));
+  printf ("%.2f sort_freqs/sec\n", runs / 2 / (end - start - xtime));
 }
