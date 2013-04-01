@@ -4,6 +4,7 @@
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphlinear.hh"
+#include "smmorphgrid.hh"
 #include "smmain.hh"
 #include "config.h"
 
@@ -158,6 +159,7 @@ main (int argc, char **argv)
     freq = freq_from_note (options.midi_note);
 
   MorphLinear *linear_op = 0;
+  MorphGrid   *grid_op = 0;
 
   vector<MorphOperator *> ops = plan->operators();
   for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
@@ -166,6 +168,8 @@ main (int argc, char **argv)
       g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
       if (op->type_name() == "Linear")
         linear_op = dynamic_cast<MorphLinear *> (op);
+      else if (op->type_name() == "Grid")
+        grid_op = dynamic_cast<MorphGrid *> (op);
     }
 
   voice.output()->retrigger (0, freq, 100);
@@ -176,7 +180,18 @@ main (int argc, char **argv)
       if (options.fade)
         {
           double morphing = 2 * double (i) / samples.size() - 1;
-          linear_op->set_morphing (morphing);
+          if (linear_op)
+            {
+              linear_op->set_morphing (morphing);
+            }
+          else if (grid_op)
+            {
+              grid_op->set_x_morphing (morphing);
+            }
+          else
+            {
+              g_assert_not_reached();
+            }
           synth.update_plan (plan);
         }
 
