@@ -2,6 +2,7 @@
 
 #include <sys/time.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "smaudio.hh"
 #include "smmain.hh"
@@ -35,6 +36,13 @@ randomize_and_check (AudioBlock& block)
   block.freqs = freqs_shuffle;
   block.mags.resize (block.freqs.size());
   block.phases.resize (block.freqs.size());
+
+  AudioBlock check_block = block;
+  check_block.sort_freqs();
+  for (size_t i = 0; i < check_block.freqs.size(); i++)
+    {
+      assert (check_block.freqs[i] == freqs[i]);
+    }
 }
 
 int
