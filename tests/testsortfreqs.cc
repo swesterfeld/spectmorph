@@ -21,27 +21,56 @@ gettime()
 
 using namespace SpectMorph;
 
+struct PData
+{
+  float freq;
+  float mag;
+  float phase;
+};
+
+float
+something()
+{
+  return g_random_double_range (0, 0.1);
+}
+
 void
 randomize_and_check (AudioBlock& block)
 {
-  vector<float> freqs;
+  vector<PData> partials;
 
   for (size_t i = 0; i < 30; i++)
     {
-      freqs.push_back (i * 440);
-    }
-  vector<float> freqs_shuffle = freqs;
-  std::random_shuffle (freqs_shuffle.begin(), freqs_shuffle.end());
+      PData pd;
+      pd.freq = i * 440 + something();
+      pd.mag = i * 0.1 + something();
+      pd.phase = i * 0.001 + something();
 
-  block.freqs = freqs_shuffle;
-  block.mags.resize (block.freqs.size());
-  block.phases.resize (block.freqs.size());
+      partials.push_back (pd);
+    }
+  vector<PData> partials_shuffle = partials;
+  std::random_shuffle (partials_shuffle.begin(), partials_shuffle.end());
+
+  assert (partials.size() == partials_shuffle.size());
+
+  block.freqs.clear();
+  block.mags.clear();
+  block.phases.clear();
+
+  for (size_t i = 0; i < partials.size(); i++)
+    {
+      block.freqs.push_back (partials_shuffle[i].freq);
+      block.mags.push_back (partials_shuffle[i].mag);
+      block.phases.push_back (partials_shuffle[i].phase);
+    }
 
   AudioBlock check_block = block;
   check_block.sort_freqs();
   for (size_t i = 0; i < check_block.freqs.size(); i++)
     {
-      assert (check_block.freqs[i] == freqs[i]);
+      assert (check_block.freqs[i] == partials[i].freq);
+      assert (check_block.mags[i] == partials[i].mag);
+      assert (check_block.phases[i] == partials[i].phase);
     }
 }
 
