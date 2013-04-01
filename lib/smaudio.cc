@@ -417,27 +417,22 @@ void
 AudioBlock::sort_freqs()
 {
   // sort partials by frequency
-  vector<PartialData> pvec;
+  const size_t N = freqs.size();
+  PartialData pvec[N];
 
-  for (size_t p = 0; p < freqs.size(); p++)
+  for (size_t p = 0; p < N; p++)
     {
-      PartialData pd;
-      pd.freq = freqs[p];
-      pd.mag = mags[p];
-      pd.phase = phases[p];
-      pvec.push_back (pd);
+      pvec[p].freq = freqs[p];
+      pvec[p].mag = mags[p];
+      pvec[p].phase = phases[p];
     }
-  sort (pvec.begin(), pvec.end(), pd_cmp);
+  std::sort (pvec, pvec + N, pd_cmp);
 
   // replace partial data with sorted partial data
-  freqs.clear();
-  mags.clear();
-  phases.clear();
-
-  for (vector<PartialData>::const_iterator pi = pvec.begin(); pi != pvec.end(); pi++)
+  for (size_t p = 0; p < N; p++)
     {
-      freqs.push_back (pi->freq);
-      mags.push_back (pi->mag);
-      phases.push_back (pi->phase);
+      freqs[p] = pvec[p].freq;
+      mags[p] = pvec[p].mag;
+      phases[p] = pvec[p].phase;
     }
 }
