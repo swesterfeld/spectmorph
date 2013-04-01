@@ -23,6 +23,10 @@ Index::load_file (const string& filename)
   clear();
 
   MicroConf cfg (filename);
+  if (!cfg.open_ok())
+    {
+      return false;
+    }
 
   while (cfg.next())
     {
