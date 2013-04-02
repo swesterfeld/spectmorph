@@ -39,6 +39,7 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
       float *win = FFT::new_array_float (win_size);
       float *wspectrum = FFT::new_array_float (win_size);
 
+      std::fill (win, win + win_size, 0);  // most of it should be zero due to zeropadding
       for (size_t i = 0; i < block_size; i++)
         {
           if (i < block_size / 2)
