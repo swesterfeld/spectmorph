@@ -24,6 +24,8 @@ class MorphGridWidget : public QWidget
   void mouseMoveEvent (QMouseEvent *event);
   void mouseReleaseEvent (QMouseEvent *event);
 
+  void update_size();
+
 public:
   MorphGridWidget (MorphGrid *morph_grid);
 

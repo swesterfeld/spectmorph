@@ -9,6 +9,7 @@
 #include <QLabel>
 #include <QPainter>
 #include <QStackedWidget>
+#include <QPushButton>
 
 using namespace SpectMorph;
 
@@ -162,43 +163,51 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   QGridLayout *grid = new QGridLayout();
   grid->addLayout (hbox, 0, 0, 1, 3);
 
+  zoom_spinbox = new QSpinBox();
+  zoom_spinbox->setRange (1, 25);
+  zoom_spinbox->setValue (morph_grid->zoom());
+
+  grid->addWidget (new QLabel ("Zoom"), 1, 0);
+  grid->addWidget (zoom_spinbox, 1, 1, 1, 2);
+
   op_combobox = new ComboBoxOperator (morph_grid->morph_plan(), &input_op_filter);
 
   x_ui = new MorphGridControlUI (this, morph_grid, MorphGridControlUI::CONTROL_X);
-  grid->addWidget (new QLabel ("X Control"), 1, 0);
-  grid->addWidget (x_ui->combobox, 1, 1, 1, 2);
+  grid->addWidget (new QLabel ("X Control"), 2, 0);
+  grid->addWidget (x_ui->combobox, 2, 1, 1, 2);
 
   y_ui = new MorphGridControlUI (this, morph_grid, MorphGridControlUI::CONTROL_Y);
-  grid->addWidget (new QLabel ("Y Control"), 2, 0);
-  grid->addWidget (y_ui->combobox, 2, 1, 1, 2);
+  grid->addWidget (new QLabel ("Y Control"), 3, 0);
+  grid->addWidget (y_ui->combobox, 3, 1, 1, 2);
 
-  grid->addWidget (new QLabel ("X Value"), 3, 0);
-  grid->addWidget (x_ui->stack, 3, 1);
-  grid->addWidget (x_ui->label, 3, 2);
+  grid->addWidget (new QLabel ("X Value"), 4, 0);
+  grid->addWidget (x_ui->stack, 4, 1);
+  grid->addWidget (x_ui->label, 4, 2);
 
-  grid->addWidget (new QLabel ("Y Value"), 4, 0);
-  grid->addWidget (y_ui->stack, 4, 1);
-  grid->addWidget (y_ui->label, 4, 2);
+  grid->addWidget (new QLabel ("Y Value"), 5, 0);
+  grid->addWidget (y_ui->stack, 5, 1);
+  grid->addWidget (y_ui->label, 5, 2);
 
   grid_widget = new MorphGridWidget (morph_grid);
-  grid->addWidget (grid_widget, 5, 0, 1, 3);
+  grid->addWidget (grid_widget, 6, 0, 1, 3);
 
-  grid->addWidget (new QLabel ("Source"), 6, 0);
-  grid->addWidget (op_combobox, 6, 1, 1, 2);
+  grid->addWidget (new QLabel ("Source"), 7, 0);
+  grid->addWidget (op_combobox, 7, 1, 1, 2);
 
   delta_db_slider = new QSlider (Qt::Horizontal);
   delta_db_slider->setRange (-48000, 48000);
   delta_db_label = new QLabel (Birnet::string_printf ("%.1f dB", 0.0).c_str());
 
-  grid->addWidget (new QLabel ("Volume"), 7, 0);
-  grid->addWidget (delta_db_slider, 7, 1);
-  grid->addWidget (delta_db_label, 7, 2);
+  grid->addWidget (new QLabel ("Volume"), 8, 0);
+  grid->addWidget (delta_db_slider, 8, 1);
+  grid->addWidget (delta_db_label, 8, 2);
 
   setLayout (grid);
 
   connect (grid_widget, SIGNAL (selection_changed()), this, SLOT (on_selection_changed()));
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
   connect (height_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));
+  connect (zoom_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_zoom_changed()));
   connect (op_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
   connect (delta_db_slider, SIGNAL (valueChanged(int)), this, SLOT (on_delta_db_changed (int)));
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
@@ -264,4 +273,10 @@ MorphGridView::on_plan_changed()
   y_ui->slider->setValue (lrint (morph_grid->y_morphing() * 1000));
   x_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->x_morphing()).c_str());
   y_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->y_morphing()).c_str());
+}
+
+void
+MorphGridView::on_zoom_changed()
+{
+  morph_grid->set_zoom (zoom_spinbox->value());
 }

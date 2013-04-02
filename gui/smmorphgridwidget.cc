@@ -13,11 +13,18 @@ using std::vector;
 MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
   morph_grid (morph_grid)
 {
-  setMinimumSize (200, 200);
-
   move_controller = false;
-
+  update_size();
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+}
+
+void
+MorphGridWidget::update_size()
+{
+  int base_size;
+  base_size = pow (1.2, morph_grid->zoom()) * 40;
+  setFixedSize ((morph_grid->width() - 1) * base_size + 30, 
+                (morph_grid->height() - 1) * base_size + 30);
 }
 
 void
@@ -113,6 +120,7 @@ MorphGridWidget::on_plan_changed()
       morph_grid->set_selected_y (-1);
       Q_EMIT selection_changed();
     }
+  update_size();
   update();
 }
 

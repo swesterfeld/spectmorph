@@ -43,6 +43,7 @@ class MorphGridView : public MorphOperatorView
 
   QSpinBox           *width_spinbox;
   QSpinBox           *height_spinbox;
+  QSpinBox           *zoom_spinbox;
 
   MorphGridControlUI *x_ui;
   MorphGridControlUI *y_ui;
@@ -65,6 +66,7 @@ public slots:
   void on_operator_changed();
   void on_delta_db_changed (int new_value);
   void on_plan_changed();
+  void on_zoom_changed();
 };
 
 }

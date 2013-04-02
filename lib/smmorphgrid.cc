@@ -21,6 +21,7 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 
   m_width = 1;
   m_height = 1;
+  m_zoom = 5;
   m_selected_x = -1;
   m_selected_y = -1;
   m_x_morphing = 0;
@@ -49,6 +50,7 @@ MorphGrid::save (OutFile& out_file)
 {
   out_file.write_int ("width", m_width);
   out_file.write_int ("height", m_height);
+  out_file.write_int ("zoom", m_zoom);
 
   out_file.write_float ("x_morphing", m_x_morphing);
   out_file.write_float ("y_morphing", m_y_morphing);
@@ -94,6 +96,10 @@ MorphGrid::load (InFile& ifile)
             {
               m_height = ifile.event_int();
               update_size();
+            }
+          else if (ifile.event_name() == "zoom")
+            {
+              m_zoom = ifile.event_int();
             }
           else if (ifile.event_name() == "x_control_type")
             {
@@ -272,6 +278,19 @@ MorphGrid::set_input_node (int x, int y, const MorphGridNode& node)
 
   m_input_node[x][y] = node;
   m_morph_plan->emit_plan_changed();
+}
+
+void
+MorphGrid::set_zoom (int z)
+{
+  m_zoom = z;
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphGrid::zoom()
+{
+  return m_zoom;
 }
 
 double

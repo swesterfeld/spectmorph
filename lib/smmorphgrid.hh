@@ -32,6 +32,7 @@ public:
 protected:
   int             m_width;
   int             m_height;
+  int             m_zoom;
   int             m_selected_x;
   int             m_selected_y;
   double          m_x_morphing;
@@ -61,6 +62,9 @@ public:
 
   void            set_height (int height);
   int             height();
+
+  void            set_zoom (int new_zoom);
+  int             zoom();
 
   void            set_selected_x (int x);
   void            set_selected_y (int y);
