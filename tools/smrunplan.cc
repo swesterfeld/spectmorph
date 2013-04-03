@@ -15,6 +15,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 using std::min;
+using std::max;
 
 /// @cond
 struct Options
@@ -24,6 +25,7 @@ struct Options
   double              len;
   bool                fade;
   bool                quiet;
+  bool                normalize;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -38,7 +40,8 @@ Options::Options () :
   midi_note (-1),
   len (1),
   fade (false),
-  quiet (false)
+  quiet (false),
+  normalize (false)
 {
 }
 
@@ -89,6 +92,10 @@ Options::parse (int   *argc_p,
         {
           quiet = true;
         }
+      else if (check_arg (argc, argv, &i, "--normalize") || check_arg (argc, argv, &i, "-n"))
+        {
+          normalize = true;
+        }
     }
 
   /* resort argc/argv */
@@ -112,6 +119,7 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
   printf (" -f, --fade                  fade morphing parameter\n");
+  printf (" -n, --normalize             normalize output samples\n");
   printf (" -l, --len                   set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
@@ -202,11 +210,19 @@ main (int argc, char **argv)
 
       synth.update_shared_state (todo * 1000.0 / voice.mix_freq());
     }
+  if (options.normalize)
+    {
+      double max_peak = 0.0001;
+      for (size_t i = 0; i < samples.size(); i++)
+        max_peak = max (max_peak, fabs (samples[i]));
+
+      const double factor = 1 / max_peak;
+      for (size_t i = 0; i < samples.size(); i++)
+        samples[i] *= factor;
+    }
   if (!options.quiet)
     {
       for (size_t i = 0; i < samples.size(); i++)
-        {
-          printf ("%.17g\n", samples[i]);
-        }
+        printf ("%.17g\n", samples[i]);
     }
 }
