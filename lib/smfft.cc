@@ -16,11 +16,18 @@ using std::map;
 using std::string;
 
 static bool enable_gsl_fft = false;
+static bool randomize_new_fft_arrays = false;
 
 void
 FFT::use_gsl_fft (bool new_enable_gsl_fft)
 {
   enable_gsl_fft = new_enable_gsl_fft;
+}
+
+void
+FFT::debug_randomize_new_arrays (bool b)
+{
+  randomize_new_fft_arrays = b;
 }
 
 static inline void
@@ -78,7 +85,16 @@ static void save_wisdom();
 float *
 FFT::new_array_float (size_t N)
 {
-  return (float *) fftwf_malloc (sizeof (float) * (N + 2));   /* extra space for r2c extra complex output */
+  const size_t N_2 = N + 2; /* extra space for r2c extra complex output */
+
+  float *result = (float *) fftwf_malloc (sizeof (float) * N_2);
+
+  if (randomize_new_fft_arrays)
+    {
+      for (size_t i = 0; i < N_2; i++)
+        result[i] = g_random_double_range (-1, 1);
+    }
+  return result;
 }
 
 void
