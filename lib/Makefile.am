@@ -14,7 +14,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmorphoperatormodule.hh smmorphsourcemodule.hh smmorphlinearmodule.hh \
          smmorphoutputmodule.hh smwavsetrepo.hh smleakdebugger.hh smobject.hh \
          smlpc.hh smmorphlfo.hh smmorphlfomodule.hh smmorphplansynth.hh \
-         smmorphgrid.hh
+         smmorphgrid.hh smmorphgridmodule.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
