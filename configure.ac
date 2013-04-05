@@ -178,14 +178,13 @@ dnl -------------------- libbse dependency can be disabled -------------------
 AC_ARG_WITH([beast],
     AS_HELP_STRING([--without-beast], [Build SpectMorph without depending on BEAST]))
 
+# build with beast dependency unless explicitely disabled
+AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
+
 if test "x$with_beast" = "xno"; then
   AC_NOBSE_REQUIREMENTS
-  TOP_SUBDIRS="nobse lib jack python docs"
-  AC_SUBST(TOP_SUBDIRS)
 else
   AC_BSE_REQUIREMENTS
-  TOP_SUBDIRS="lib gui jack src tools beast inspector python tests docs"
-  AC_SUBST(TOP_SUBDIRS)
 fi
 dnl -------------------------------------------------------------------------
 AC_AO_REQUIREMENTS
