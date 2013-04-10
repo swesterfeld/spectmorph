@@ -120,7 +120,6 @@ JackSynth::process (jack_nframes_t nframes)
               const int midi_velocity = in_event.buffer[2];
 
               double velocity = midi_velocity / 127.0;
-
               // find unused voice
               vector<Voice>::iterator vi = voices.begin();
               while (vi != voices.end() && vi->state != Voice::STATE_IDLE)
@@ -360,76 +359,38 @@ JackSynth::change_volume (double new_volume)
   m_new_plan_mutex.unlock();
 }
 
-JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
-  inst_window (plan, title),
+JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
+  synth (synth),
   morph_plan (plan)
 {
-  setWindowTitle ("SpectMorph JACK Client");
-
-  inst_label = new QLabel ("SpectMorph Instrument", this);
-  inst_button = new QPushButton ("Edit");
-  connect (inst_button, SIGNAL (clicked()), this, SLOT (on_edit_clicked()));
-
-  QHBoxLayout *inst_hbox = new QHBoxLayout;
-  inst_hbox->addWidget (inst_label);
-  inst_hbox->addWidget (inst_button);
-
-  volume_label = new QLabel ("Volume", this);
-  volume_slider = new QSlider (Qt::Horizontal, this);
+  QLabel *volume_label = new QLabel ("Volume", this);
+  QSlider *volume_slider = new QSlider (Qt::Horizontal, this);
   volume_slider->setRange (-960, 240);
   volume_value_label = new QLabel (this);
   connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
   volume_slider->setValue (-60);
 
-  QHBoxLayout *volume_hbox = new QHBoxLayout();
-  volume_hbox->addWidget (volume_label);
-  volume_hbox->addWidget (volume_slider);
-  volume_hbox->addWidget (volume_value_label);
+  QHBoxLayout *hbox = new QHBoxLayout (this);
+  hbox->addWidget (volume_label);
+  hbox->addWidget (volume_slider);
+  hbox->addWidget (volume_value_label);
+  setLayout (hbox);
+  setTitle ("Global Instrument Settings");
 
-  QVBoxLayout *vbox = new QVBoxLayout();
-  vbox->addLayout (inst_hbox);
-  vbox->addLayout (volume_hbox);
-  setLayout (vbox);
-
-  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
-
-  client = jack_client_open ("smjack", JackNullOption, NULL);
-
-  if (!client)
-    {
-      fprintf (stderr, "unable to connect to jack server\n");
-      exit (1);
-    }
-
-  synth.init (client, plan);
-  inst_window.show();
-}
-
-JackWindow::~JackWindow()
-{
-  jack_deactivate (client);
+  connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
 void
-JackWindow::on_volume_changed (int new_volume)
+JackControlWidget::on_volume_changed (int new_volume)
 {
   double new_volume_f = new_volume * 0.1;
   double new_decoder_volume = bse_db_to_factor (new_volume_f);
   volume_value_label->setText (Birnet::string_printf ("%.1f dB", new_volume_f).c_str());
-  synth.change_volume (new_decoder_volume);
+  synth->change_volume (new_decoder_volume);
 }
 
 void
-JackWindow::on_edit_clicked()
-{
-  if (inst_window.isVisible())
-    inst_window.hide();
-  else
-    inst_window.show();
-}
-
-void
-JackWindow::on_plan_changed()
+JackControlWidget::on_plan_changed()
 {
   MorphPlanPtr plan_clone = new MorphPlan();
 
@@ -441,14 +402,7 @@ JackWindow::on_plan_changed()
   plan_clone->load (in);
   delete in;
 
-  synth.change_plan (plan_clone);
-}
-
-void
-JackWindow::closeEvent (QCloseEvent *event)
-{
-  QApplication::quit();
-  event->accept();
+  synth->change_plan (plan_clone);
 }
 
 int
@@ -496,7 +450,22 @@ main (int argc, char **argv)
       morph_plan->add_operator (op);
     }
 
-  JackWindow window (morph_plan, title);
+  jack_client_t *client = jack_client_open ("smjack", JackNullOption, NULL);
+  if (!client)
+    {
+      fprintf (stderr, "%s: unable to connect to jack server\n", argv[0]);
+      exit (1);
+    }
+
+  JackSynth synth;
+  JackControlWidget *control_widget = new JackControlWidget (morph_plan, &synth);
+
+  synth.init (client, morph_plan);
+
+  MorphPlanWindow window (morph_plan, "SpectMorph JACK Client");
+  window.add_control_widget (control_widget);
   window.show();
-  return app.exec();
+  int rc = app.exec();
+  jack_deactivate (client);
+  return rc;
 }

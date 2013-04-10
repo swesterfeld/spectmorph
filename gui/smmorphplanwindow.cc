@@ -167,3 +167,9 @@ MorphPlanWindow::where (MorphOperator *op, const QPoint& pos)
   else
     return result;
 }
+
+void
+MorphPlanWindow::add_control_widget (QWidget *widget)
+{
+  morph_plan_view->add_control_widget (widget);
+}

@@ -60,6 +60,13 @@ MorphPlanView::on_plan_changed()
 
       move_indicators.push_back (indicator);
     }
+
+  // control widgets
+  for (vector<QWidget *>::const_iterator ci = control_widgets.begin(); ci != control_widgets.end(); ci++)
+    {
+      vbox->removeWidget (*ci);
+      vbox->addWidget (*ci);
+    }
 }
 
 const vector<MorphOperatorView *>&
@@ -86,4 +93,13 @@ MorphPlanView::on_move_indication (MorphOperator *op)
 
   for (size_t i = 0; i < move_indicators.size(); i++)
     move_indicators[i]->set_active (i == active_i);
+}
+
+void
+MorphPlanView::add_control_widget (QWidget *widget)
+{
+  control_widgets.push_back (widget);
+
+  old_structure_version = morph_plan->structure_version() - 1;
+  on_plan_changed();
 }

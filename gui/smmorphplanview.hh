@@ -24,12 +24,14 @@ class MorphPlanView : public QWidget
 
   std::vector<MorphOperatorView *> m_op_views;
   std::vector<MoveIndicator *>  move_indicators;
+  std::vector<QWidget *>        control_widgets;
 
   int                           old_structure_version;
 public:
   MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   const std::vector<MorphOperatorView *>& op_views();
+  void add_control_widget (QWidget *widget);
 
 public slots:
   void on_plan_changed();

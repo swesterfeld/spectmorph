@@ -34,6 +34,7 @@ public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
   MorphOperator *where (MorphOperator *op, const QPoint& pos);
+  void add_control_widget (QWidget *widget);
 
 public slots:
   void on_file_import_clicked();

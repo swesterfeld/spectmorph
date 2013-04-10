@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSlider>
+#include <QGroupBox>
 
 #include <jack/jack.h>
 
@@ -76,33 +77,20 @@ public:
   void reschedule();
 };
 
-class JackWindow : public QWidget
+class JackControlWidget : public QGroupBox
 {
   Q_OBJECT
 
-  QLabel         *inst_label;
-  QPushButton    *inst_button;
+  JackSynth    *synth;
+  MorphPlanPtr  morph_plan;
+  QLabel       *volume_value_label;
 
-  QLabel         *volume_label;
-  QSlider        *volume_slider;
-  QLabel         *volume_value_label;
-
-  MorphPlanWindow inst_window;
-  MorphPlanPtr    morph_plan;
-
-  jack_client_t  *client;
-
-  JackSynth       synth;
 public:
-  JackWindow (MorphPlanPtr plan, const std::string& title);
-  ~JackWindow();
-
-  void closeEvent (QCloseEvent *event);
+  JackControlWidget (MorphPlanPtr plan, JackSynth *synth);
 
 public slots:
-  void on_volume_changed (int new_volume);
-  void on_edit_clicked();
   void on_plan_changed();
+  void on_volume_changed (int new_volume);
 };
 
 }
