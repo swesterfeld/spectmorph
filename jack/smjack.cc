@@ -402,6 +402,7 @@ JackWindow::JackWindow (MorphPlanPtr plan, const string& title) :
     }
 
   synth.init (client, plan);
+  inst_window.show();
 }
 
 JackWindow::~JackWindow()
@@ -487,6 +488,12 @@ main (int argc, char **argv)
         }
       title += " - ";
       title += g_basename (argv[1]);
+    }
+  else
+    {
+      MorphOperator *op = MorphOperator::create ("SpectMorph::MorphOutput", morph_plan.c_ptr());
+      g_assert (op != NULL);
+      morph_plan->add_operator (op);
     }
 
   JackWindow window (morph_plan, title);
