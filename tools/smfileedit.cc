@@ -20,12 +20,18 @@ using std::vector;
 using std::string;
 using std::map;
 
+struct Command
+{
+  string cmd;
+  bool   used;
+};
+
 struct Options
 {
-  string         mode;
-  string         in_file;
-  string         out_file;
-  vector<string> commands;
+  string          mode;
+  string          in_file;
+  string          out_file;
+  vector<Command> commands;
 } options;
 
 bool
@@ -46,11 +52,14 @@ match_lhs (const string& command, const string& property, string& rhs)
 void
 process_property (const string& property, string& value)
 {
-  for (vector<string>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
+  for (vector<Command>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
     {
       string new_value;
-      if (match_lhs (*ci, property, new_value))
-        value = new_value;
+      if (match_lhs (ci->cmd, property, new_value))
+        {
+          value = new_value;
+          ci->used = true;
+        }
     }
 
   if (options.mode == "list")
@@ -225,7 +234,12 @@ main (int argc, char **argv)
 
       options.out_file = argv[3];
       for (int i = 4; i < argc; i++)
-        options.commands.push_back (argv[i]);
+        {
+          Command command;
+          command.cmd = argv[i];
+          command.used = false;
+          options.commands.push_back (command);
+        }
     }
   else if (options.mode == "edit2hex")
     {
@@ -235,7 +249,12 @@ main (int argc, char **argv)
           return 1;
         }
       for (int i = 3; i < argc; i++)
-        options.commands.push_back (argv[i]);
+        {
+          Command command;
+          command.cmd = argv[i];
+          command.used = false;
+          options.commands.push_back (command);
+        }
       edit2hex = true;
       options.mode = "edit";
     }
@@ -271,6 +290,20 @@ main (int argc, char **argv)
   delete in;
   delete ofile;
 
+  bool all_used = true;
+  for (vector<Command>::iterator ci = options.commands.begin(); ci != options.commands.end(); ci++)
+    {
+      if (!ci->used)
+        {
+          fprintf (stderr, "smfileedit: ''%s'' command not applied successfully\n", ci->cmd.c_str());
+          all_used = false;
+        }
+    }
+  if (!all_used)
+    {
+      fprintf (stderr, "smfileedit: exiting due to errors\n");
+      return 1;
+    }
   if (edit2hex)
     printf ("%s\n", HexString::encode (data).c_str());
 }
