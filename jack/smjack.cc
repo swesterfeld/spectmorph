@@ -291,7 +291,7 @@ jack_process (jack_nframes_t nframes, void *arg)
   return instance->process (nframes);
 }
 
-JackSynth::JackSynth() :
+JackSynth::JackSynth (jack_client_t *client) :
   m_voices_active (false)
 {
   need_reschedule = false;
@@ -305,6 +305,32 @@ JackSynth::JackSynth() :
 
   QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
   connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_voices_active_changed()));
+
+  jack_mix_freq = jack_get_sample_rate (client);
+
+  release_ms = 150;
+
+  assert (morph_plan_synth == NULL);
+  morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
+
+  voices.resize (64);
+  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
+    vi->mp_voice = morph_plan_synth->add_voice();
+
+  jack_set_process_callback (client, jack_process, this);
+
+  input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+  control_ports.push_back (jack_port_register (client, "control_in_1", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
+  control_ports.push_back (jack_port_register (client, "control_in_2", JACK_DEFAULT_AUDIO_TYPE,
+                                               JackPortIsInput, 0));
+  output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
+
+  if (jack_activate (client))
+    {
+      fprintf (stderr, "cannot activate client");
+      exit (1);
+    }
 }
 
 JackSynth::~JackSynth()
@@ -350,40 +376,6 @@ JackSynth::preinit_plan (MorphPlanPtr plan)
       float s;
       float *values[1] = { &s };
       om->process (1, values, 1);
-    }
-}
-
-void
-JackSynth::init (jack_client_t *client, MorphPlanPtr morph_plan)
-{
-  jack_mix_freq = jack_get_sample_rate (client);
-
-  preinit_plan (morph_plan);
-
-  release_ms = 150;
-
-  assert (morph_plan_synth == NULL);
-  morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
-
-  voices.resize (64);
-  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = morph_plan_synth->add_voice();
-
-  morph_plan_synth->update_plan (morph_plan);
-
-  jack_set_process_callback (client, jack_process, this);
-
-  input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-  control_ports.push_back (jack_port_register (client, "control_in_1", JACK_DEFAULT_AUDIO_TYPE,
-                                               JackPortIsInput, 0));
-  control_ports.push_back (jack_port_register (client, "control_in_2", JACK_DEFAULT_AUDIO_TYPE,
-                                               JackPortIsInput, 0));
-  output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
-
-  if (jack_activate (client))
-    {
-      fprintf (stderr, "cannot activate client");
-      exit (1);
     }
 }
 
@@ -434,6 +426,8 @@ JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
 
   connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+
+  on_plan_changed();
 }
 
 void
@@ -521,10 +515,9 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  JackSynth synth;
-  JackControlWidget *control_widget = new JackControlWidget (morph_plan, &synth);
+  JackSynth synth (client);
 
-  synth.init (client, morph_plan);
+  JackControlWidget *control_widget = new JackControlWidget (morph_plan, &synth);
 
   MorphPlanWindow window (morph_plan, "SpectMorph JACK Client");
   if (filename != "")

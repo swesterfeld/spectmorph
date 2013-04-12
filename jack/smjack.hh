@@ -71,10 +71,9 @@ protected:
   int                           main_thread_wakeup_pfds[2];
 
 public:
-  JackSynth();
+  JackSynth (jack_client_t *client);
   ~JackSynth();
 
-  void init (jack_client_t *client, MorphPlanPtr morph_plan);
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
