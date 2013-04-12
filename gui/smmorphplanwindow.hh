@@ -26,15 +26,20 @@ class MorphPlanWindow : public QMainWindow
 {
   Q_OBJECT
 
+  std::string    m_filename;
+  std::string    win_title;
   MorphPlanPtr   m_morph_plan;
   MorphPlanView *morph_plan_view;
 
   void add_op_action (QMenu *menu, const char *title, const char *type);
+  void update_window_title();
+
 public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
 
   MorphOperator *where (MorphOperator *op, const QPoint& pos);
   void add_control_widget (QWidget *widget);
+  void set_filename (const std::string& filename);
 
 public slots:
   void on_file_import_clicked();

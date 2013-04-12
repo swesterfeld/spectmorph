@@ -328,7 +328,8 @@ JackSynth::on_voices_active_changed()
   if (poll (poll_fds, 1, 0) > 0)
     {
       char c;
-      (void) read (main_thread_wakeup_pfds[0], &c, 1);
+      int rc = read (main_thread_wakeup_pfds[0], &c, 1);
+      g_assert (rc != -1 || errno == EAGAIN);
     }
 
   Q_EMIT voices_active_changed();
@@ -484,7 +485,7 @@ main (int argc, char **argv)
 
   MorphPlanPtr morph_plan = new MorphPlan;
 
-  string title = "SpectMorph Instrument";
+  string filename;
   if (argc == 2)
     {
       BseErrorType error;
@@ -504,8 +505,7 @@ main (int argc, char **argv)
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
         }
-      title += " - ";
-      title += g_basename (argv[1]);
+      filename = argv[1];
     }
   else
     {
@@ -527,6 +527,8 @@ main (int argc, char **argv)
   synth.init (client, morph_plan);
 
   MorphPlanWindow window (morph_plan, "SpectMorph JACK Client");
+  if (filename != "")
+    window.set_filename (filename);
   window.add_control_widget (control_widget);
   window.show();
   int rc = app.exec();

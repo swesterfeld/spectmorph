@@ -29,6 +29,7 @@ using std::string;
 using std::vector;
 
 MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
+  win_title (title),
   m_morph_plan (morph_plan)
 {
   /* actions ... */
@@ -60,6 +61,26 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   /* central widget */
   morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
   setCentralWidget (morph_plan_view);
+  update_window_title();
+}
+
+void
+MorphPlanWindow::set_filename (const string& filename)
+{
+  m_filename = filename;
+  update_window_title();
+}
+
+void
+MorphPlanWindow::update_window_title()
+{
+  if (m_filename != "")
+    {
+      QFileInfo fi (m_filename.c_str());
+      setWindowTitle (fi.baseName() + (" - " + win_title).c_str());
+    }
+  else
+    setWindowTitle (win_title.c_str());
 }
 
 void
@@ -84,6 +105,8 @@ MorphPlanWindow::on_file_import_clicked()
         {
           m_morph_plan->load (in);
           delete in; // close file
+
+          set_filename (file_name_local.data());
         }
       else
         {
@@ -105,6 +128,8 @@ MorphPlanWindow::on_file_export_clicked()
         {
           m_morph_plan->save (out);
           delete out; // close file
+
+          set_filename (file_name_local.data());
         }
       else
         {
