@@ -289,9 +289,10 @@ interp_mag_one (double interp, float *left, float *right)
 static void
 morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
 {
+  const double factor_2 = factor * factor; // noise contains squared values (energy from spectrum)
   out_block = in_block;
   for (size_t i = 0; i < out_block.noise.size(); i++)
-    out_block.noise[i] *= factor;
+    out_block.noise[i] *= factor_2;
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
 }
@@ -446,13 +447,16 @@ morph_delta_db (double left_db, double right_db, double morphing)
 static void
 apply_delta_db (AudioBlock& block, double delta_db)
 {
-  double factor = bse_db_to_factor (delta_db);
+  const double factor = bse_db_to_factor (delta_db);
+  const double factor_2 = factor * factor;
 
   // apply delta db volume to partials & noise
   for (size_t i = 0; i < block.mags.size(); i++)
     block.mags[i] *= factor;
+
+  // noise contains squared values (energy from spectrum)
   for (size_t i = 0; i < block.noise.size(); i++)
-    block.noise[i] *= factor;
+    block.noise[i] *= factor_2;
 }
 
 }
