@@ -3,6 +3,7 @@
 #include "smmorphplanwindow.hh"
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
+#include "smled.hh"
 
 #include <QWidget>
 #include <QLabel>
@@ -64,6 +65,7 @@ protected:
   QMutex                        m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
+  size_t                        m_active_voice_count;
 
 public:
   JackSynth();
@@ -73,6 +75,7 @@ public:
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
+  size_t active_voice_count();
   int  process (jack_nframes_t nframes);
   void reschedule();
 };
@@ -84,6 +87,7 @@ class JackControlWidget : public QGroupBox
   JackSynth    *synth;
   MorphPlanPtr  morph_plan;
   QLabel       *volume_value_label;
+  Led          *midi_led;
 
 public:
   JackControlWidget (MorphPlanPtr plan, JackSynth *synth);
@@ -91,6 +95,7 @@ public:
 public slots:
   void on_plan_changed();
   void on_volume_changed (int new_volume);
+  void on_update_led();
 };
 
 }

@@ -7,6 +7,7 @@
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmemout.hh"
+#include "smled.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -19,6 +20,7 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QCloseEvent>
+#include <QTimer>
 
 #include "smmain.hh"
 #include "smjack.hh"
@@ -93,6 +95,12 @@ JackSynth::process (jack_nframes_t nframes)
           m_new_plan = NULL;
         }
       m_volume = m_new_volume;
+      m_active_voice_count = 0;
+      for (size_t i = 0; i < voices.size(); i++)
+        {
+          if (voices[i].state != Voice::STATE_IDLE)
+            m_active_voice_count += 1;
+        }
       m_new_plan_mutex.unlock();
     }
 
@@ -271,7 +279,8 @@ jack_process (jack_nframes_t nframes, void *arg)
   return instance->process (nframes);
 }
 
-JackSynth::JackSynth()
+JackSynth::JackSynth() :
+  m_active_voice_count (0)
 {
   need_reschedule = false;
   pedal_down = false;
@@ -346,17 +355,22 @@ JackSynth::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  m_new_plan_mutex.lock();
+  QMutexLocker locker (&m_new_plan_mutex);
   m_new_plan = plan;
-  m_new_plan_mutex.unlock();
 }
 
 void
 JackSynth::change_volume (double new_volume)
 {
-  m_new_plan_mutex.lock();
+  QMutexLocker locker (&m_new_plan_mutex);
   m_new_volume = new_volume;
-  m_new_plan_mutex.unlock();
+}
+
+size_t
+JackSynth::active_voice_count()
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  return m_active_voice_count;
 }
 
 JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
@@ -370,13 +384,21 @@ JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
   connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
   volume_slider->setValue (-60);
 
+  midi_led = new Led();
+  midi_led->off();
   QHBoxLayout *hbox = new QHBoxLayout (this);
   hbox->addWidget (volume_label);
   hbox->addWidget (volume_slider);
   hbox->addWidget (volume_value_label);
+  hbox->addWidget (midi_led);
+
   setLayout (hbox);
   setTitle ("Global Instrument Settings");
 
+  QTimer *timer = new QTimer(this);
+  timer->start (100);
+
+  connect (timer, SIGNAL (timeout()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
@@ -403,6 +425,15 @@ JackControlWidget::on_plan_changed()
   delete in;
 
   synth->change_plan (plan_clone);
+}
+
+void
+JackControlWidget::on_update_led()
+{
+  if (synth->active_voice_count())
+    midi_led->on();
+  else
+    midi_led->off();
 }
 
 int
