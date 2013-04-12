@@ -7,7 +7,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SMHDRS = smzoomcontroller.hh smcomboboxoperator.hh smmorphplanwindow.hh smrenameoperatordialog.hh \
          smmorphplanview.hh smmorphsourceview.hh smmorphoperatorview.hh smmoveindicator.hh \
          smmorphlinearview.hh smmorphoutputview.hh smsampleview.hh smlpcztrans.hh smmorphlfoview.hh \
-         smmorphgridview.hh smmorphgridwidget.hh
+         smmorphgridview.hh smmorphgridwidget.hh smled.hh
 
 SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrenameoperatordialog.cc \
          smmorphplanview.cc smmorphsourceview.cc smmorphoperatorview.cc smmoveindicator.cc \
@@ -15,7 +15,7 @@ SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrename
          moc_smmorphplanwindow.cc moc_smmorphsourceview.cc moc_smmorphoutputview.cc moc_smcomboboxoperator.cc \
          moc_smmorphoperatorview.cc moc_smrenameoperatordialog.cc moc_smmorphplanview.cc moc_smmorphlinearview.cc \
          moc_smmorphlfoview.cc moc_smsampleview.cc moc_smzoomcontroller.cc smmorphgridview.cc moc_smmorphgridview.cc \
-         smmorphgridwidget.cc moc_smmorphgridwidget.cc
+         smmorphgridwidget.cc moc_smmorphgridwidget.cc smled.cc moc_smled.cc
 
 lib_LTLIBRARIES = libspectmorphgui.la
 
@@ -61,3 +61,6 @@ moc_smmorphgridview.cc: smmorphgridview.hh
 
 moc_smmorphgridwidget.cc: smmorphgridwidget.hh
 	moc smmorphgridwidget.hh > moc_smmorphgridwidget.cc
+
+moc_smled.cc: smled.hh
+	moc smled.hh > moc_smled.cc
