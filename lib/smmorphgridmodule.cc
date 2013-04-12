@@ -359,10 +359,35 @@ morph (AudioBlock& out_block,
         }
       if (match)
         {
-          const double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
           const double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
 
-          // FIXME: prefer freq of louder partial
+          /* prefer frequency of louder partial:
+           *
+           * if the magnitudes are similar, mfact will be close to 1, and freq will become approx.
+           *
+           *   freq = (1 - interp) * lfreq + interp * rfreq
+           *
+           * if the magnitudes are very different, mfact will be close to 0, and freq will become
+           *
+           *   freq ~= lfreq         // if left partial is louder
+           *   freq ~= rfreq         // if right partial is louder
+           */
+          const double lfreq = left_block.freqs[i];
+          const double rfreq = right_block.freqs[j];
+          double freq;
+
+          if (left_block.mags[i] > right_block.mags[j])
+            {
+              const double mfact = right_block.mags[j] / left_block.mags[i];
+
+              freq = lfreq + mfact * interp * (rfreq - lfreq);
+            }
+          else
+            {
+              const double mfact = left_block.mags[i] / right_block.mags[j];
+
+              freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
+            }
           // FIXME: lpc
           // FIXME: non-db
 
