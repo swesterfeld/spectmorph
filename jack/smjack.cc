@@ -20,7 +20,7 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QCloseEvent>
-#include <QTimer>
+#include <QSocketNotifier>
 
 #include "smmain.hh"
 #include "smjack.hh"
@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <poll.h>
 
 using namespace SpectMorph;
 
@@ -95,11 +96,22 @@ JackSynth::process (jack_nframes_t nframes)
           m_new_plan = NULL;
         }
       m_volume = m_new_volume;
-      m_active_voice_count = 0;
+
+      bool new_voices_active = false;
       for (size_t i = 0; i < voices.size(); i++)
         {
           if (voices[i].state != Voice::STATE_IDLE)
-            m_active_voice_count += 1;
+            {
+              new_voices_active = true;
+              break;
+            }
+        }
+      if (m_voices_active != new_voices_active)
+        {
+          m_voices_active = new_voices_active;
+          // wakeup main thread
+          while (write (main_thread_wakeup_pfds[1], "W", 1) != 1)
+            ;
         }
       m_new_plan_mutex.unlock();
     }
@@ -280,13 +292,19 @@ jack_process (jack_nframes_t nframes, void *arg)
 }
 
 JackSynth::JackSynth() :
-  m_active_voice_count (0)
+  m_voices_active (false)
 {
   need_reschedule = false;
   pedal_down = false;
   m_volume = 1;
   m_new_volume = 1;
   morph_plan_synth = NULL;
+
+  int pipe_rc = pipe (main_thread_wakeup_pfds);
+  g_assert (pipe_rc == 0);
+
+  QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
+  connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_voices_active_changed()));
 }
 
 JackSynth::~JackSynth()
@@ -296,6 +314,24 @@ JackSynth::~JackSynth()
       delete morph_plan_synth;
       morph_plan_synth = NULL;
     }
+}
+
+void
+JackSynth::on_voices_active_changed()
+{
+  // clear wakeup pipe
+  struct pollfd poll_fds[1];
+  poll_fds[0].fd = main_thread_wakeup_pfds[0];
+  poll_fds[0].events = POLLIN;
+  poll_fds[0].revents = 0;
+
+  if (poll (poll_fds, 1, 0) > 0)
+    {
+      char c;
+      (void) read (main_thread_wakeup_pfds[0], &c, 1);
+    }
+
+  Q_EMIT voices_active_changed();
 }
 
 void
@@ -366,11 +402,11 @@ JackSynth::change_volume (double new_volume)
   m_new_volume = new_volume;
 }
 
-size_t
-JackSynth::active_voice_count()
+bool
+JackSynth::voices_active()
 {
   QMutexLocker locker (&m_new_plan_mutex);
-  return m_active_voice_count;
+  return m_voices_active;
 }
 
 JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
@@ -395,10 +431,7 @@ JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
   setLayout (hbox);
   setTitle ("Global Instrument Settings");
 
-  QTimer *timer = new QTimer(this);
-  timer->start (100);
-
-  connect (timer, SIGNAL (timeout()), this, SLOT (on_update_led()));
+  connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
@@ -430,7 +463,7 @@ JackControlWidget::on_plan_changed()
 void
 JackControlWidget::on_update_led()
 {
-  if (synth->active_voice_count())
+  if (synth->voices_active())
     midi_led->on();
   else
     midi_led->off();

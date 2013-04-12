@@ -44,8 +44,9 @@ public:
   }
 };
 
-class JackSynth
+class JackSynth : public QObject
 {
+  Q_OBJECT
 protected:
   double                        jack_mix_freq;
   jack_port_t                  *input_port;
@@ -65,7 +66,9 @@ protected:
   QMutex                        m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
-  size_t                        m_active_voice_count;
+  bool                          m_voices_active;
+
+  int                           main_thread_wakeup_pfds[2];
 
 public:
   JackSynth();
@@ -75,9 +78,15 @@ public:
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
-  size_t active_voice_count();
+  bool voices_active();
   int  process (jack_nframes_t nframes);
   void reschedule();
+
+public slots:
+  void on_voices_active_changed();
+
+signals:
+  void voices_active_changed();
 };
 
 class JackControlWidget : public QGroupBox
