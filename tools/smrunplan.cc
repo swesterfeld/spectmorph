@@ -24,6 +24,7 @@ struct Options
   int                 midi_note;
   double              len;
   bool                fade;
+  vector<double>      fade_env;
   bool                quiet;
   bool                normalize;
 
@@ -88,6 +89,27 @@ Options::parse (int   *argc_p,
         {
           fade = true;
         }
+      else if (check_arg (argc, argv, &i, "--fade-env", &opt_arg) ||
+               check_arg (argc, argv, &i, "-e", &opt_arg))
+        {
+          fade = true;
+          string field;
+
+          while (*opt_arg)  // parse envelope arg: "<point1>,<point2>,...,<pointN>"
+            {
+              if (*opt_arg == ',')
+                {
+                  fade_env.push_back (atof (field.c_str()));
+                  field = "";
+                }
+              else
+                {
+                  field += *opt_arg;
+                }
+              opt_arg++;
+            }
+          fade_env.push_back (atof (field.c_str()));
+        }
       else if (check_arg (argc, argv, &i, "--quiet") || check_arg (argc, argv, &i, "-q"))
         {
           quiet = true;
@@ -119,8 +141,9 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
   printf (" -f, --fade                  fade morphing parameter\n");
+  printf (" -e, --fade-env <envelope>   fade morphing according to envelope\n");
   printf (" -n, --normalize             normalize output samples\n");
-  printf (" -l, --len                   set output sample len\n");
+  printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
   printf ("\n");
@@ -137,6 +160,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
   options.parse (&argc, &argv);
+
   if (argc != 2)
     {
       printf ("usage: %s <plan>\n", argv[0]);
@@ -187,7 +211,20 @@ main (int argc, char **argv)
     {
       if (options.fade)
         {
-          double morphing = 2 * double (i) / samples.size() - 1;
+          double morphing;
+          const int env_len = options.fade_env.size();
+          if (env_len)
+            {
+              const double fpos = double (i) / samples.size() * (env_len - 1);
+              const int    left = qBound<int> (0, fpos, env_len - 1);
+              const int    right = qBound (0, left + 1, env_len - 1);
+              const double interp = fpos - left;
+              morphing = 2 * (options.fade_env[left] * (1 - interp) + options.fade_env[right] * interp) - 1;
+            }
+          else
+            {
+              morphing = 2 * double (i) / samples.size() - 1;
+            }
           if (linear_op)
             {
               linear_op->set_morphing (morphing);
