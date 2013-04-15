@@ -37,6 +37,12 @@ MorphLFO::type()
   return "SpectMorph::MorphLFO";
 }
 
+int
+MorphLFO::insert_order()
+{
+  return 200;
+}
+
 bool
 MorphLFO::save (OutFile& out_file)
 {

@@ -160,7 +160,7 @@ MorphPlanWindow::on_add_operator()
 
   g_return_if_fail (op != NULL);
 
-  m_morph_plan->add_operator (op);
+  m_morph_plan->add_operator (op, MorphPlan::ADD_POS_AUTO);
 }
 
 MorphOperator *

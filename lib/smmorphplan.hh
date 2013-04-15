@@ -28,7 +28,12 @@ public:
   bool         load_index (const std::string& filename);
   const Index *index();
 
-  void add_operator (MorphOperator *op, const std::string& name = "", const std::string& id = "");
+  enum AddPos {
+    ADD_POS_AUTO,
+    ADD_POS_END
+  };
+
+  void add_operator (MorphOperator *op, AddPos = ADD_POS_END, const std::string& name = "", const std::string& id = "");
   const std::vector<MorphOperator *>& operators();
   void remove (MorphOperator *op);
   void move (MorphOperator *op, MorphOperator *op_next);

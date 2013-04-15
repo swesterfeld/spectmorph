@@ -45,6 +45,12 @@ MorphGrid::type()
   return "SpectMorph::MorphGrid";
 }
 
+int
+MorphGrid::insert_order()
+{
+  return 700;
+}
+
 bool
 MorphGrid::save (OutFile& out_file)
 {

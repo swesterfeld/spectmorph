@@ -38,6 +38,7 @@ public:
   virtual ~MorphOperator();
 
   virtual const char *type() = 0;
+  virtual int  insert_order() = 0;
   virtual bool save (OutFile& out_file) = 0;
   virtual bool load (InFile& in_file) = 0;
   virtual void post_load (OpNameMap& op_name_map);

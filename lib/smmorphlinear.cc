@@ -40,6 +40,12 @@ MorphLinear::type()
   return "SpectMorph::MorphLinear";
 }
 
+int
+MorphLinear::insert_order()
+{
+  return 500;
+}
+
 bool
 MorphLinear::save (OutFile& out_file)
 {

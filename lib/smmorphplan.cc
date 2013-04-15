@@ -74,7 +74,7 @@ MorphPlan::load_index (const string& filename)
 }
 
 void
-MorphPlan::add_operator (MorphOperator *op, const string& load_name, const string& load_id)
+MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_name, const string& load_id)
 {
   if (load_name == "")
     {
@@ -111,7 +111,21 @@ MorphPlan::add_operator (MorphOperator *op, const string& load_name, const strin
       op->set_id (load_id);
     }
 
-  m_operators.push_back (op);
+  if (add_pos == ADD_POS_AUTO)
+    {
+      size_t pos = 0;
+
+      for (size_t i = 0; i < m_operators.size(); i++)
+        {
+          if (m_operators[i]->insert_order() <= op->insert_order())
+            pos = i + 1;
+        }
+      m_operators.insert (m_operators.begin() + pos, op);
+    }
+  else
+    {
+      m_operators.push_back (op);
+    }
   m_structure_version++;
 
   emit_plan_changed();
@@ -215,7 +229,7 @@ MorphPlan::load (GenericIn *in)
 
                   delete in; // close memory file handle
 
-                  add_operator (load_op, load_name, load_id);
+                  add_operator (load_op, ADD_POS_END, load_name, load_id);
                 }
             }
         }
@@ -235,7 +249,7 @@ MorphPlan::load (GenericIn *in)
 
                   delete in; // close memory file handle
 
-                  add_operator (load_op, load_name, load_id);
+                  add_operator (load_op, ADD_POS_END, load_name, load_id);
                 }
             }
         }

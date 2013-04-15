@@ -40,6 +40,12 @@ MorphSource::type()
   return "SpectMorph::MorphSource";
 }
 
+int
+MorphSource::insert_order()
+{
+  return 0;
+}
+
 bool
 MorphSource::save (OutFile& out_file)
 {

@@ -53,6 +53,7 @@ public:
 
   // inherited from MorphOperator
   const char        *type();
+  int                insert_order();
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
   void               post_load (OpNameMap& op_name_map);

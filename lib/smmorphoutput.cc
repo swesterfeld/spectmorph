@@ -38,6 +38,12 @@ MorphOutput::type()
   return "SpectMorph::MorphOutput";
 }
 
+int
+MorphOutput::insert_order()
+{
+  return 1000;
+}
+
 bool
 MorphOutput::save (OutFile& out_file)
 {
