@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_JACK_HH
+#define SPECTMORPH_JACK_HH
+
 #include "smmorphplanwindow.hh"
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
@@ -107,3 +110,5 @@ public slots:
 };
 
 }
+
+#endif

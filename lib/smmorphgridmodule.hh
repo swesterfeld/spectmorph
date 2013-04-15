@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_MORPH_GRID_MODULE_HH
+#define SPECTMORPH_MORPH_GRID_MODULE_HH
+
 #include "smmorphoperatormodule.hh"
 #include "smmorphgrid.hh"
 #include "smwavset.hh"
@@ -54,3 +57,5 @@ public:
 };
 
 }
+
+#endif

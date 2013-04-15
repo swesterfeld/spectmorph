@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_STW_UTILS_HH
+#define SPECTMORPH_STW_UTILS_HH
+
 #include <bse/gsldatautils.hh>
 #include <stdio.h>
 #include <stdlib.h>
@@ -111,4 +114,4 @@ MiniResampler::length()
   return gsl_data_handle_n_values (m_dhandle) / m_speedup_factor;
 }
 
-
+#endif

@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_MORPH_LFO_MODULE_HH
+#define SPECTMORPH_MORPH_LFO_MODULE_HH
+
 #include "smmorphoperatormodule.hh"
 #include "smmorphlfo.hh"
 #include "smwavset.hh"
@@ -39,3 +42,5 @@ public:
   void  update_shared_state (double time_ms);
 };
 }
+
+#endif

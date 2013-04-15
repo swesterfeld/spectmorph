@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_DEBUG_HH
+#define SPECTMORPH_DEBUG_HH
+
 #include <string>
 #include <glib.h>
 
@@ -15,3 +18,5 @@ void debug_enable (const std::string& area);
 }
 
 }
+
+#endif
