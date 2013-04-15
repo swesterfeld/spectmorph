@@ -9,12 +9,14 @@ namespace SpectMorph
 
 class MorphGridModule : public MorphOperatorModule
 {
+public:
   struct InputNode
   {
     MorphOperatorModule *mod;
     double               delta_db;
   };
 
+private:
   std::vector< std::vector<InputNode> > input_node;
 
   size_t              width;
