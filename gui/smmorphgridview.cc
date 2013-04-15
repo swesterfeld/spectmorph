@@ -14,6 +14,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 #define CONTROL_TEXT_GUI "Gui Slider"
 #define CONTROL_TEXT_1   "Control Signal #1"
@@ -211,8 +212,11 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   connect (op_combobox, SIGNAL (active_changed()), this, SLOT (on_operator_changed()));
   connect (delta_db_slider, SIGNAL (valueChanged(int)), this, SLOT (on_delta_db_changed (int)));
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (morph_grid->morph_plan(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
 
-  on_plan_changed(); // initial morphing slider/label setup
+  on_index_changed();     // add instruments to op_combobox
+  on_plan_changed();      // initial morphing slider/label setup
+  on_selection_changed(); // initial selection
 }
 
 void
@@ -232,7 +236,16 @@ MorphGridView::on_selection_changed()
   if (morph_grid->has_selection())
     {
       MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
-      op_combobox->set_active (node.op);
+
+      if (node.smset != "")
+        {
+          g_assert (node.op == NULL);
+          op_combobox->set_active_str_choice (node.smset);
+        }
+      else
+        {
+          op_combobox->set_active (node.op);
+        }
       delta_db_slider->setValue (lrint (node.delta_db * 1000));
     }
 }
@@ -245,6 +258,7 @@ MorphGridView::on_operator_changed()
       MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
 
       node.op = op_combobox->active();
+      node.smset = op_combobox->active_str_choice();
 
       morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
     }
@@ -273,6 +287,16 @@ MorphGridView::on_plan_changed()
   y_ui->slider->setValue (lrint (morph_grid->y_morphing() * 1000));
   x_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->x_morphing()).c_str());
   y_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->y_morphing()).c_str());
+}
+
+void
+MorphGridView::on_index_changed()
+{
+  op_combobox->clear_str_choices();
+
+  vector<string> smsets = morph_grid->morph_plan()->index()->smsets();
+  for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
+    op_combobox->add_str_choice (*si);
 }
 
 void

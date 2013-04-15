@@ -67,6 +67,7 @@ public slots:
   void on_delta_db_changed (int new_value);
   void on_plan_changed();
   void on_zoom_changed();
+  void on_index_changed();
 };
 
 }

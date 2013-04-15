@@ -3,6 +3,7 @@
 #include "smmorphoperatormodule.hh"
 #include "smmorphgrid.hh"
 #include "smwavset.hh"
+#include "smmorphsourcemodule.hh"
 
 namespace SpectMorph
 {
@@ -14,6 +15,8 @@ public:
   {
     MorphOperatorModule *mod;
     double               delta_db;
+    bool                 has_source;
+    SimpleWavSetSource   source;
   };
 
 private:

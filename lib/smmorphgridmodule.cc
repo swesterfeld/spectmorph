@@ -13,6 +13,7 @@ using namespace SpectMorph;
 
 using std::min;
 using std::vector;
+using std::string;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
@@ -70,6 +71,19 @@ MorphGridModule::set_config (MorphOperator *op)
             {
               input_node[x][y].mod = NULL;
             }
+          if (node.smset != "")
+            {
+              string smset_dir = grid->morph_plan()->index()->smset_dir();
+              string path = smset_dir + "/" + node.smset;
+
+              input_node[x][y].source.set_wav_set (path);
+              input_node[x][y].has_source = true;
+            }
+          else
+            {
+              input_node[x][y].has_source = false;
+            }
+
           input_node[x][y].delta_db = node.delta_db;
         }
     }
@@ -109,11 +123,15 @@ MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity
     {
       for (size_t y = 0; y < module->height; y++)
         {
-          MorphOperatorModule *input_mod = module->input_node[x][y].mod;
+          InputNode& node = module->input_node[x][y];
 
-          if (input_mod && input_mod->source())
+          if (node.mod && node.mod->source())
             {
-              input_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+              node.mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+            }
+          if (node.has_source)
+            {
+              node.source.retrigger (channel, freq, midi_velocity, mix_freq);
             }
         }
     }
@@ -126,7 +144,7 @@ MorphGridModule::MySource::audio()
 }
 
 static bool
-get_normalized_block (const MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block, int delay_blocks)
+get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block, int delay_blocks)
 {
   g_return_val_if_fail (delay_blocks >= 0, false);
   if (index < (size_t) delay_blocks)
@@ -141,10 +159,17 @@ get_normalized_block (const MorphGridModule::InputNode& input_node, size_t index
       index -= delay_blocks;
     }
 
-  if (!input_node.mod)
-    return false;
+  LiveDecoderSource *source = NULL;
 
-  LiveDecoderSource *source = input_node.mod->source();
+  if (input_node.mod)
+    {
+      source = input_node.mod->source();
+    }
+  else if (input_node.has_source)
+    {
+      source = &input_node.source;
+    }
+
   if (!source)
     return false;
 
@@ -523,8 +548,8 @@ MorphGridModule::MySource::audio_block (size_t index)
        *  A ---- B
        */
 
-      const InputNode& node_a = module->input_node[x_morph_params.start][0];
-      const InputNode& node_b = module->input_node[x_morph_params.end  ][0];
+      InputNode& node_a = module->input_node[x_morph_params.start][0];
+      InputNode& node_b = module->input_node[x_morph_params.end  ][0];
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
       bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);
@@ -547,8 +572,8 @@ MorphGridModule::MySource::audio_block (size_t index)
        *  B
        */
 
-      const InputNode& node_a = module->input_node[0][y_morph_params.start];
-      const InputNode& node_b = module->input_node[0][y_morph_params.end  ];
+      InputNode& node_a = module->input_node[0][y_morph_params.start];
+      InputNode& node_b = module->input_node[0][y_morph_params.end  ];
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
       bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);
@@ -570,10 +595,10 @@ MorphGridModule::MySource::audio_block (size_t index)
        *  |      |
        *  C ---- D
        */
-      const InputNode& node_a = module->input_node[x_morph_params.start][y_morph_params.start];
-      const InputNode& node_b = module->input_node[x_morph_params.end  ][y_morph_params.start];
-      const InputNode& node_c = module->input_node[x_morph_params.start][y_morph_params.end  ];
-      const InputNode& node_d = module->input_node[x_morph_params.end  ][y_morph_params.end  ];
+      InputNode& node_a = module->input_node[x_morph_params.start][y_morph_params.start];
+      InputNode& node_b = module->input_node[x_morph_params.end  ][y_morph_params.start];
+      InputNode& node_c = module->input_node[x_morph_params.start][y_morph_params.end  ];
+      InputNode& node_d = module->input_node[x_morph_params.end  ][y_morph_params.end  ];
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
       bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);

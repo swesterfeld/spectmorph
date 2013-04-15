@@ -12,7 +12,8 @@ namespace SpectMorph
 
 struct MorphGridNode
 {
-  MorphOperator *op;
+  MorphOperator *op;                     // a node has either an operator (op) as input,
+  std::string    smset;                  // or an instrument (smset)
   double         delta_db;
 
   MorphGridNode();

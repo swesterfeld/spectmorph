@@ -92,7 +92,7 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
         {
           MorphGridNode node = morph_grid->input_node (x, y);
 
-          if (!node.op)
+          if (!node.op && node.smset == "")
             {
               painter.drawLine (x_coord[x] - 10, y_coord[y] - 10, x_coord[x] + 10, y_coord[y] + 10);
               painter.drawLine (x_coord[x] + 10, y_coord[y] - 10, x_coord[x] - 10, y_coord[y] + 10);
