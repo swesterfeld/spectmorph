@@ -21,44 +21,30 @@ freq_to_note (float freq)
   return 69 + 12 * log (freq / 440) / log (2);
 }
 
-MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+SimpleWavSetSource::SimpleWavSetSource() :
+  wav_set (NULL),
+  active_audio (NULL)
 {
-  my_source.wav_set      = NULL;
-  my_source.active_audio = NULL;
-
-  leak_debugger.add (this);
-}
-
-MorphSourceModule::~MorphSourceModule()
-{
-  leak_debugger.del (this);
-}
-
-LiveDecoderSource *
-MorphSourceModule::source()
-{
-  return &my_source;
 }
 
 void
-MorphSourceModule::set_config (MorphOperator *op)
+SimpleWavSetSource::set_wav_set (const string& path)
 {
-  MorphSource *source = dynamic_cast<MorphSource *> (op);
-  string smset = source->smset();
-  string smset_dir = source->morph_plan()->index()->smset_dir();
-  string path = smset_dir + "/" + smset;
-
-  my_source.wav_set = WavSetRepo::the()->get (path);
+  WavSet *new_wav_set = WavSetRepo::the()->get (path);
+  if (new_wav_set != wav_set)
+    {
+      wav_set = new_wav_set;
+      active_audio = NULL;
+    }
 }
 
 float
-MorphSourceModule::latency_ms()
+SimpleWavSetSource::latency_ms()
 {
   float max_start_ms = 0;
-  if (my_source.wav_set)
+  if (wav_set)
     {
-      for (vector<WavSetWave>::iterator wi = my_source.wav_set->waves.begin(); wi != my_source.wav_set->waves.end(); wi++)
+      for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
         {
           max_start_ms = max (wi->audio->start_ms, max_start_ms);
         }
@@ -67,7 +53,7 @@ MorphSourceModule::latency_ms()
 }
 
 void
-MorphSourceModule::MySource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+SimpleWavSetSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
   Audio *best_audio = NULL;
   float  best_diff  = 1e10;
@@ -95,16 +81,50 @@ MorphSourceModule::MySource::retrigger (int channel, float freq, int midi_veloci
 }
 
 Audio*
-MorphSourceModule::MySource::audio()
+SimpleWavSetSource::audio()
 {
   return active_audio;
 }
 
 AudioBlock *
-MorphSourceModule::MySource::audio_block (size_t index)
+SimpleWavSetSource::audio_block (size_t index)
 {
   if (active_audio && index < active_audio->contents.size())
     return &active_audio->contents[index];
   else
     return NULL;
+}
+
+MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
+  MorphOperatorModule (voice)
+{
+  leak_debugger.add (this);
+}
+
+MorphSourceModule::~MorphSourceModule()
+{
+  leak_debugger.del (this);
+}
+
+LiveDecoderSource *
+MorphSourceModule::source()
+{
+  return &my_source;
+}
+
+void
+MorphSourceModule::set_config (MorphOperator *op)
+{
+  MorphSource *source = dynamic_cast<MorphSource *> (op);
+  string smset = source->smset();
+  string smset_dir = source->morph_plan()->index()->smset_dir();
+  string path = smset_dir + "/" + smset;
+
+  my_source.set_wav_set (path);
+}
+
+float
+MorphSourceModule::latency_ms()
+{
+  return my_source.latency_ms();
 }

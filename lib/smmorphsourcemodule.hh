@@ -6,18 +6,28 @@
 namespace SpectMorph
 {
 
+class SimpleWavSetSource : public LiveDecoderSource
+{
+private:
+  WavSet *wav_set;
+  Audio  *active_audio;
+
+public:
+  SimpleWavSetSource();
+
+  void        set_wav_set (const std::string& path);
+  float       latency_ms();
+
+  void        retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+  Audio      *audio();
+  AudioBlock *audio_block (size_t index);
+};
+
 class MorphSourceModule : public MorphOperatorModule
 {
 protected:
-  struct MySource : public LiveDecoderSource
-  {
-    WavSet *wav_set;
-    Audio  *active_audio;
+  SimpleWavSetSource my_source;
 
-    void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
-    Audio* audio();
-    AudioBlock *audio_block (size_t index);
-  } my_source;
 public:
   MorphSourceModule (MorphPlanVoice *voice);
   ~MorphSourceModule();
