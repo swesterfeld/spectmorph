@@ -45,7 +45,8 @@ public:
   void set_active (MorphOperator *new_op);
   MorphOperator *active();
 
-  void add_str_choice (const std::string& str);
+  void           add_str_choice (const std::string& str);
+  void           clear_str_choices();
 
   std::string    active_str_choice();
   void           set_active_str_choice (const std::string& str);

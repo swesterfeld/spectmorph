@@ -125,6 +125,15 @@ ComboBoxOperator::add_str_choice (const string& str)
   on_operators_changed();
 }
 
+void
+ComboBoxOperator::clear_str_choices()
+{
+  str_choices.clear();
+  str_choice = "";
+
+  on_operators_changed();
+}
+
 string
 ComboBoxOperator::active_str_choice()
 {
