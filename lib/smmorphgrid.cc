@@ -19,7 +19,7 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 {
   leak_debugger.add (this);
 
-  m_width = 1;
+  m_width = 2;
   m_height = 1;
   m_zoom = 5;
   m_selected_x = -1;
