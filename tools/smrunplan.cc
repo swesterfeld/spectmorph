@@ -8,6 +8,7 @@
 #include "smmain.hh"
 #include "config.h"
 
+#include <sys/time.h>
 #include <assert.h>
 
 using namespace SpectMorph;
@@ -26,6 +27,7 @@ struct Options
   bool                fade;
   vector<double>      fade_env;
   bool                quiet;
+  bool                perf;
   bool                normalize;
 
   Options ();
@@ -118,6 +120,10 @@ Options::parse (int   *argc_p,
         {
           normalize = true;
         }
+      else if (check_arg (argc, argv, &i, "--perf") || check_arg (argc, argv, &i, "-p"))
+        {
+          perf = true;
+        }
     }
 
   /* resort argc/argv */
@@ -143,6 +149,7 @@ Options::print_usage ()
   printf (" -f, --fade                  fade morphing parameter\n");
   printf (" -e, --fade-env <envelope>   fade morphing according to envelope\n");
   printf (" -n, --normalize             normalize output samples\n");
+  printf (" -p, --perf                  run performance test\n");
   printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
@@ -153,6 +160,37 @@ static float
 freq_from_note (float note)
 {
   return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
+static double
+gettime()
+{
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+static int
+perf_test (MorphPlanVoice& voice)
+{
+  vector<float> samples (8192);
+
+  float *audio_out[1] = { &samples[0] };
+
+  // warmup
+  voice.output()->process (samples.size(), audio_out, 1);
+
+  double start = gettime();
+  const size_t RUNS = 1000;
+  for (size_t i = 0; i < RUNS; i++)
+    {
+      voice.output()->process (samples.size(), audio_out, 1);
+    }
+  double end = gettime();
+  printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
+
+  return 0;
 }
 
 int
@@ -205,6 +243,11 @@ main (int argc, char **argv)
     }
 
   voice.output()->retrigger (0, freq, 100);
+
+  if (options.perf)
+    {
+      return perf_test (voice);
+    }
 
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
