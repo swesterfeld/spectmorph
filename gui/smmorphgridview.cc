@@ -15,6 +15,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::set;
 
 #define CONTROL_TEXT_GUI "Gui Slider"
 #define CONTROL_TEXT_1   "Control Signal #1"
@@ -297,6 +298,23 @@ MorphGridView::on_index_changed()
   vector<string> smsets = morph_grid->morph_plan()->index()->smsets();
   for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
     op_combobox->add_str_choice (*si);
+
+  set<string> smset_set (smsets.begin(), smsets.end());
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          MorphGridNode node = morph_grid->input_node (x, y);
+
+          if (node.smset != "" && !smset_set.count (node.smset))
+            {
+              // instrument not present in new index, remove
+              // (probably should not be done in gui code)
+              node.smset = "";
+              morph_grid->set_input_node (x, y, node);
+            }
+        }
+    }
 }
 
 void
