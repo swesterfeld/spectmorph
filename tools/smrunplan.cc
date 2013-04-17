@@ -171,26 +171,52 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
+#define SAMPLE_RATE 44100
+
 class Player
 {
-  MorphLinear *linear_op;
-  MorphGrid   *grid_op;
+  MorphLinear    *linear_op;
+  MorphGrid      *grid_op;
+  MorphPlanVoice *voice;
+
+  MorphPlanPtr    plan;
+  MorphPlanSynth  synth;
 public:
   Player();
 
-  void find_operators (MorphPlanPtr plan);
-  void compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice);
+  void load_plan (const string& filename);
+  void retrigger();
+  void compute_samples (vector<float>& samples);
 };
 
 Player::Player() :
   linear_op (0),
-  grid_op (0)
+  grid_op (0),
+  voice (0),
+  plan (new MorphPlan()),
+  synth (SAMPLE_RATE)
 {
 }
 
 void
-Player::find_operators (MorphPlanPtr plan)
+Player::load_plan (const string& filename)
 {
+  GenericIn *in = StdioIn::open (filename);
+  if (!in)
+    {
+      g_printerr ("Error opening '%s'.\n", filename.c_str());
+      exit (1);
+    }
+  plan->load (in);
+  delete in;
+
+  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
+
+  voice = synth.add_voice();
+  synth.update_plan (plan);
+  assert (voice->output());
+
+  /* search operators for --fade, --fade-env */
   vector<MorphOperator *> ops = plan->operators();
   for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
     {
@@ -204,7 +230,17 @@ Player::find_operators (MorphPlanPtr plan)
 }
 
 void
-Player::compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice)
+Player::retrigger()
+{
+  float freq = 440;
+  if (options.midi_note >= 0)
+    freq = freq_from_note (options.midi_note);
+
+  voice->output()->retrigger (0, freq, 100);
+}
+
+void
+Player::compute_samples (vector<float>& samples)
 {
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
@@ -243,9 +279,9 @@ Player::compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPla
       size_t todo = min (STEP, samples.size());
 
       float *audio_out[1] = { &samples[i] };
-      voice.output()->process (todo, audio_out, 1);
+      voice->output()->process (todo, audio_out, 1);
 
-      synth.update_shared_state (todo * 1000.0 / voice.mix_freq());
+      synth.update_shared_state (todo * 1000.0 / voice->mix_freq());
     }
 }
 
@@ -261,47 +297,30 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MorphPlanPtr plan = new MorphPlan();
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", argv[1]);
-      exit (1);
-    }
-  plan->load (in);
-  delete in;
+  vector<float> samples (SAMPLE_RATE * options.len);
+  Player        player;
 
-  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-
-  MorphPlanSynth synth (44100);
-  MorphPlanVoice& voice = *synth.add_voice();
-  synth.update_plan (plan);
-  assert (voice.output());
-
-  vector<float> samples (44100 * options.len);
-
-  float freq = 440;
-  if (options.midi_note >= 0)
-    freq = freq_from_note (options.midi_note);
-
-  Player player;
-  player.find_operators (plan);
-  voice.output()->retrigger (0, freq, 100);
-
-  player.compute_samples (samples, synth, plan, voice); // for perf: warmup
+  player.load_plan (argv[1]);
+  player.retrigger();
 
   if (options.perf)
     {
+      player.compute_samples (samples); // warmup
+
       double start = gettime();
+
       const size_t RUNS = 10;
       for (size_t i = 0; i < RUNS; i++)
-        {
-          player.compute_samples (samples, synth, plan, voice);
-        }
+        player.compute_samples (samples);
+
       double end = gettime();
       printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
 
       return 0;
+    }
+  else
+    {
+      player.compute_samples (samples);
     }
 
   if (options.normalize)
