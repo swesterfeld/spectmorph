@@ -171,12 +171,40 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
-// ugly global variables
-static MorphLinear *linear_op = 0;
-static MorphGrid   *grid_op = 0;
+class Player
+{
+  MorphLinear *linear_op;
+  MorphGrid   *grid_op;
+public:
+  Player();
+
+  void find_operators (MorphPlanPtr plan);
+  void compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice);
+};
+
+Player::Player() :
+  linear_op (0),
+  grid_op (0)
+{
+}
 
 void
-compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice)
+Player::find_operators (MorphPlanPtr plan)
+{
+  vector<MorphOperator *> ops = plan->operators();
+  for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
+      if (op->type_name() == "Linear")
+        linear_op = dynamic_cast<MorphLinear *> (op);
+      else if (op->type_name() == "Grid")
+        grid_op = dynamic_cast<MorphGrid *> (op);
+    }
+}
+
+void
+Player::compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice)
 {
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
@@ -256,20 +284,11 @@ main (int argc, char **argv)
   if (options.midi_note >= 0)
     freq = freq_from_note (options.midi_note);
 
-  vector<MorphOperator *> ops = plan->operators();
-  for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
-    {
-      MorphOperator *op = *oi;
-      g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
-      if (op->type_name() == "Linear")
-        linear_op = dynamic_cast<MorphLinear *> (op);
-      else if (op->type_name() == "Grid")
-        grid_op = dynamic_cast<MorphGrid *> (op);
-    }
-
+  Player player;
+  player.find_operators (plan);
   voice.output()->retrigger (0, freq, 100);
 
-  compute_samples (samples, synth, plan, voice); // for perf: warmup
+  player.compute_samples (samples, synth, plan, voice); // for perf: warmup
 
   if (options.perf)
     {
@@ -277,7 +296,7 @@ main (int argc, char **argv)
       const size_t RUNS = 10;
       for (size_t i = 0; i < RUNS; i++)
         {
-          compute_samples (samples, synth, plan, voice); // for perf: warmup
+          player.compute_samples (samples, synth, plan, voice);
         }
       double end = gettime();
       printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
