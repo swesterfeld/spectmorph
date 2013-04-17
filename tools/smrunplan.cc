@@ -171,84 +171,13 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
-static int
-perf_test (MorphPlanVoice& voice)
+// ugly global variables
+static MorphLinear *linear_op = 0;
+static MorphGrid   *grid_op = 0;
+
+void
+compute_samples (vector<float>& samples, MorphPlanSynth& synth, MorphPlanPtr plan, MorphPlanVoice& voice)
 {
-  vector<float> samples (8192);
-
-  float *audio_out[1] = { &samples[0] };
-
-  // warmup
-  voice.output()->process (samples.size(), audio_out, 1);
-
-  double start = gettime();
-  const size_t RUNS = 1000;
-  for (size_t i = 0; i < RUNS; i++)
-    {
-      voice.output()->process (samples.size(), audio_out, 1);
-    }
-  double end = gettime();
-  printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
-
-  return 0;
-}
-
-int
-main (int argc, char **argv)
-{
-  sm_init (&argc, &argv);
-  options.parse (&argc, &argv);
-
-  if (argc != 2)
-    {
-      printf ("usage: %s <plan>\n", argv[0]);
-      exit (1);
-    }
-
-  MorphPlanPtr plan = new MorphPlan();
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", argv[1]);
-      exit (1);
-    }
-  plan->load (in);
-  delete in;
-
-  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-
-  MorphPlanSynth synth (44100);
-  MorphPlanVoice& voice = *synth.add_voice();
-  synth.update_plan (plan);
-  assert (voice.output());
-
-  vector<float> samples (44100 * options.len);
-
-  float freq = 440;
-  if (options.midi_note >= 0)
-    freq = freq_from_note (options.midi_note);
-
-  MorphLinear *linear_op = 0;
-  MorphGrid   *grid_op = 0;
-
-  vector<MorphOperator *> ops = plan->operators();
-  for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
-    {
-      MorphOperator *op = *oi;
-      g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
-      if (op->type_name() == "Linear")
-        linear_op = dynamic_cast<MorphLinear *> (op);
-      else if (op->type_name() == "Grid")
-        grid_op = dynamic_cast<MorphGrid *> (op);
-    }
-
-  voice.output()->retrigger (0, freq, 100);
-
-  if (options.perf)
-    {
-      return perf_test (voice);
-    }
-
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
     {
@@ -290,6 +219,72 @@ main (int argc, char **argv)
 
       synth.update_shared_state (todo * 1000.0 / voice.mix_freq());
     }
+}
+
+int
+main (int argc, char **argv)
+{
+  sm_init (&argc, &argv);
+  options.parse (&argc, &argv);
+
+  if (argc != 2)
+    {
+      printf ("usage: %s <plan>\n", argv[0]);
+      exit (1);
+    }
+
+  MorphPlanPtr plan = new MorphPlan();
+  GenericIn *in = StdioIn::open (argv[1]);
+  if (!in)
+    {
+      g_printerr ("Error opening '%s'.\n", argv[1]);
+      exit (1);
+    }
+  plan->load (in);
+  delete in;
+
+  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
+
+  MorphPlanSynth synth (44100);
+  MorphPlanVoice& voice = *synth.add_voice();
+  synth.update_plan (plan);
+  assert (voice.output());
+
+  vector<float> samples (44100 * options.len);
+
+  float freq = 440;
+  if (options.midi_note >= 0)
+    freq = freq_from_note (options.midi_note);
+
+  vector<MorphOperator *> ops = plan->operators();
+  for (vector<MorphOperator *>::iterator oi = ops.begin(); oi != ops.end(); oi++)
+    {
+      MorphOperator *op = *oi;
+      g_printerr ("  Operator: %s (%s)\n", op->name().c_str(), op->type_name().c_str());
+      if (op->type_name() == "Linear")
+        linear_op = dynamic_cast<MorphLinear *> (op);
+      else if (op->type_name() == "Grid")
+        grid_op = dynamic_cast<MorphGrid *> (op);
+    }
+
+  voice.output()->retrigger (0, freq, 100);
+
+  compute_samples (samples, synth, plan, voice); // for perf: warmup
+
+  if (options.perf)
+    {
+      double start = gettime();
+      const size_t RUNS = 10;
+      for (size_t i = 0; i < RUNS; i++)
+        {
+          compute_samples (samples, synth, plan, voice); // for perf: warmup
+        }
+      double end = gettime();
+      printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
+
+      return 0;
+    }
+
   if (options.normalize)
     {
       double max_peak = 0.0001;
