@@ -309,12 +309,13 @@ main (int argc, char **argv)
 
       double start = gettime();
 
-      const size_t RUNS = 10;
+      // at 100 bogo-voices, test should run 10 seconds
+      const size_t RUNS = max<int> (1, SAMPLE_RATE * 1000 / samples.size());
       for (size_t i = 0; i < RUNS; i++)
         player.compute_samples (samples);
 
       double end = gettime();
-      printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / 44100 / (end - start));
+      printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
 
       return 0;
     }
