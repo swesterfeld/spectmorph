@@ -359,7 +359,7 @@ public:
       {
         phase_bytes += audio.contents[f].phases.size() * sizeof (float);
         freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
-        mag_bytes += audio.contents[f].mags.size() * sizeof (float);
+        mag_bytes += audio.contents[f].mags.size() * sizeof (int16_t);
         debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
         original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
         noise_bytes += audio.contents[f].noise.size() * sizeof (float);
@@ -558,7 +558,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    int nan_phases = 0, nan_freqs = 0, nan_mags = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
+    int nan_phases = 0, nan_freqs = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
 
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
@@ -566,8 +566,6 @@ public:
           nan_phases++;
         if (find_nan (audio.contents[f].freqs))
           nan_freqs++;
-        if (find_nan (audio.contents[f].mags))
-          nan_mags++;
         if (find_nan (audio.contents[f].debug_samples))
           nan_ds++;
         if (find_nan (audio.contents[f].original_fft))
@@ -577,7 +575,6 @@ public:
       }
     printf ("nan-phases:        %d\n", nan_phases);
     printf ("nan-freqs:         %d\n", nan_freqs);
-    printf ("nan-mags:          %d\n", nan_mags);
     printf ("nan-debug-samples: %d\n", nan_ds);
     printf ("nan-original-fft:  %d\n", nan_fft);
     printf ("nan-noise:         %d\n", nan_noise);
@@ -629,7 +626,7 @@ public:
           {
             if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
               {
-                printf ("%zd %f %f\n", i, block.freqs[n], block.mags[n]);
+                printf ("%zd %f %f\n", i, block.freqs[n], float (block.mags[n])); // FIXME:INT
               }
           }
       }
@@ -903,7 +900,7 @@ normalize_energy (double energy, Audio& audio)
   printf ("norm:       %.17g\n", norm);
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
-      vector<float>& mags = audio.contents[f].mags;
+      vector<int16_t>& mags = audio.contents[f].mags;  // FIXME:INT
       for (size_t i = 0; i < mags.size(); i++)
         mags[i] *= norm;
 

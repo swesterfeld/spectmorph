@@ -27,7 +27,7 @@ using std::max;
 using namespace Birnet;
 
 using SpectMorph::Audio;
-using SpectMorph::AudioBlock;
+using SpectMorph::EncoderBlock;
 using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
@@ -385,7 +385,7 @@ main (int argc, char **argv)
       Encoder encoder (enc_params);
 
       vector<float> window (block_size);
-      vector<AudioBlock>& audio_blocks = encoder.audio_blocks;
+      vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;
 
       for (guint i = 0; i < window.size(); i++)
         {

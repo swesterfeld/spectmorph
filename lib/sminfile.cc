@@ -179,6 +179,27 @@ InFile::next_event()
             }
         }
     }
+  else if (c == '6') // 16bit block
+    {
+      current_event = READ_ERROR;
+
+      if (read_raw_string (current_event_str))
+        {
+          if (skip_events.find (current_event_str) != skip_events.end())
+            {
+              if (skip_raw_int16_block())
+                {
+                  next_event();
+                  return;
+                }
+            }
+          else
+            {
+              if (read_raw_int16_block (current_event_int16_block))
+                current_event = INT16_BLOCK;
+            }
+        }
+    }
   else if (c == 'O')
     {
       current_event = READ_ERROR;
@@ -284,6 +305,25 @@ InFile::read_raw_float_block (vector<float>& fb)
 }
 
 bool
+InFile::read_raw_int16_block (vector<int16_t>& ib)
+{
+  int size;
+  if (!read_raw_int (size))
+    return false;
+
+  ib.resize (size);
+
+  if (file->read (&ib[0], ib.size() * 2) != size * 2)
+    return false;
+
+#if G_BYTE_ORDER != G_LITTLE_ENDIAN
+  for (size_t x = 0; x < ib.size(); x++)
+    ib[x] = GINT16_FROM_LE (ib[x]);
+#endif
+  return true;
+}
+
+bool
 InFile::skip_raw_float_block()
 {
   int size;
@@ -291,6 +331,16 @@ InFile::skip_raw_float_block()
     return false;
 
   return file->skip (size * 4);
+}
+
+bool
+InFile::skip_raw_int16_block()
+{
+  int size;
+  if (!read_raw_int (size))
+    return false;
+
+  return file->skip (size * 2);
 }
 
 /**
@@ -369,6 +419,17 @@ const vector<float>&
 InFile::event_float_block()
 {
   return current_event_float_block;
+}
+
+/**
+ * Get int16 block data of the current event (only if the event is INT16_BLOCK).
+ *
+ * \returns current event int16 block data (by reference)
+ */
+const vector<int16_t>&
+InFile::event_int16_block()
+{
+  return current_event_int16_block;
 }
 
 /**

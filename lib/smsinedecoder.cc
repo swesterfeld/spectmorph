@@ -66,7 +66,7 @@ SineDecoder::process (const AudioBlock& block,
           const double mag_epsilon = 1e-8;
 
           VectorSinParams params;
-          params.mag = block.mags[i] * SA;
+          params.mag = sm_idb2factor (block.mags[i]) * SA;
           if (params.mag > mag_epsilon)
             {
               params.mix_freq = mix_freq;

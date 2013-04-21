@@ -146,7 +146,7 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
 
   for (uint64 pos = 0; pos < n_values; pos += enc_params.frame_step)
     {
-      AudioBlock audio_block;
+      EncoderBlock audio_block;
 
       /* read data from file, zeropad last blocks */
       uint64 todo = block.size(), offset = 0;
@@ -562,7 +562,7 @@ float_vector_delta (AIter ai, AIter aend, BIter bi)
 }
 
 static void
-refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
+refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
@@ -653,7 +653,7 @@ refine_sine_params_fast (AudioBlock& audio_block, double mix_freq, int frame, co
 }
 
 static void
-remove_small_partials (AudioBlock& audio_block)
+remove_small_partials (EncoderBlock& audio_block)
 {
   /*
    * this function mainly serves to eliminate side peaks introduced by windowing
@@ -978,7 +978,7 @@ Encoder::compute_attack_params (const vector<float>& window)
   vector< vector<double> > unscaled_signal;
   for (size_t f = 0; f < frames; f++)
     {
-      const AudioBlock& audio_block = audio_blocks[f];
+      const EncoderBlock& audio_block = audio_blocks[f];
       vector<double> frame_signal (frame_size);
 
       for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
@@ -1194,6 +1194,15 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
   loop_end = (loop_end_sec * 1000) / enc_params.frame_step_ms;
 }
 
+static void
+convert_mags (const vector<float>& mags, vector<int16_t>& imags)
+{
+  imags.resize (mags.size());
+
+  for (size_t i = 0; i < mags.size(); i++)
+    imags[i] = sm_factor2idb (mags[i]);
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -1209,7 +1218,20 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.attack_end_ms = optimal_attack.attack_end_ms;
   audio.zero_values_at_start = zero_values_at_start;
   audio.zeropad = enc_params.zeropad;
-  audio.contents = audio_blocks;
+
+  for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
+    {
+      AudioBlock block;
+      block.noise = ai->noise;
+      block.freqs = ai->freqs;
+      convert_mags (ai->mags, block.mags);
+      block.phases = ai->phases;
+      block.lpc_lsf_p = ai->lpc_lsf_p;
+      block.lpc_lsf_q = ai->lpc_lsf_q;
+      block.original_fft = ai->original_fft;
+      block.debug_samples = ai->debug_samples;
+      audio.contents.push_back (block);
+    }
   audio.sample_count = sample_count;
   audio.original_samples = original_samples;
   if (loop_start >= 0 && loop_end >= 0 && loop_type != Audio::LOOP_NONE)

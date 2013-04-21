@@ -398,6 +398,9 @@ sm_round_positive (float f)
 }
 #endif
 
+int16_t sm_factor2idb (double factor);
+double  sm_idb2factor (int16_t idb);
+
 } // namespace SpectMorph
 
 #endif

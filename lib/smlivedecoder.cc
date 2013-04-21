@@ -360,7 +360,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       const double freq = audio_block.freqs[partial] * freq_factor;
 
                       // anti alias filter:
-                      double mag         = audio_block.mags[partial];
+                      double mag         = sm_idb2factor (audio_block.mags[partial]);
                       double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
                       if (freq > filter_min_freq)
                         {

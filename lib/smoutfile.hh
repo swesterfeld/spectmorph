@@ -42,6 +42,7 @@ public:
   void write_string (const std::string& s, const std::string& data);
   void write_float (const std::string& s, double f);
   void write_float_block (const std::string& s, const std::vector<float>& fb);
+  void write_int16_block (const std::string& s, const std::vector<int16_t>& ib);
   void write_blob (const std::string& s, const void *data, size_t size);
 };
 

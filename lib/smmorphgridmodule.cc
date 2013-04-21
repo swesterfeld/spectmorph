@@ -232,9 +232,9 @@ struct MagData
   enum {
     BLOCK_LEFT  = 0,
     BLOCK_RIGHT = 1
-  }      block;
-  size_t index;
-  double mag;
+  }       block;
+  size_t  index;
+  int16_t mag;
 };
 
 static bool
@@ -285,7 +285,7 @@ find_match (float freq, const vector<float>& freqs, const vector<int>& used, siz
 }
 
 static void
-interp_mag_one (double interp, float *left, float *right)
+interp_mag_one (double interp, int16_t *left, int16_t *right)  // FIXME:INT
 {
   float l_value = left ? *left : 0;
   float r_value = right ? *right : 0;

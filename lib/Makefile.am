@@ -31,7 +31,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smlpc.cc smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS) \
                            moc_smmorphplan.cc moc_smmorphlinear.cc moc_smmorphoperator.cc \
                            moc_smmorphoutput.cc smmorphgrid.cc moc_smmorphgrid.cc \
-                           smmorphgridmodule.cc
+                           smmorphgridmodule.cc smmath.cc
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS) $(BSE_LIBS)
 

@@ -56,6 +56,19 @@ struct Tracksel {
   Tracksel *prev, *next;
 };
 
+class EncoderBlock
+{
+public:
+  std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
+  std::vector<float> freqs;          //!< frequencies of the sine components of this frame
+  std::vector<float> mags;           //!< magnitudes of the sine components
+  std::vector<float> phases;         //!< phases of the sine components
+  std::vector<float> lpc_lsf_p;      //!< LPC line spectrum frequencies, P(z) roots
+  std::vector<float> lpc_lsf_q;      //!< LPC line spectrum frequencies, Q(z) roots
+  std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
+  std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
+};
+
 /**
  * \brief Encoder producing SpectMorph parametric data from sample data
  *
@@ -83,7 +96,7 @@ class Encoder
   double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const std::vector<float>& window, const Attack& attack, std::vector<double>& out_scale);
 
 public:
-  std::vector<AudioBlock>              audio_blocks;    //!< current state, and end result of the encoding algorithm
+  std::vector<EncoderBlock>            audio_blocks;    //!< current state, and end result of the encoding algorithm
   Attack                               optimal_attack;
   size_t                               zero_values_at_start;
   size_t                               sample_count;

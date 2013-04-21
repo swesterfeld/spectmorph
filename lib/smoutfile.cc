@@ -148,6 +148,26 @@ OutFile::write_float_block (const string& s,
 #endif
 }
 
+void
+OutFile::write_int16_block (const string& s,
+                            const vector<int16_t>& ib)
+{
+  file->put_byte ('6');
+
+  write_raw_string (s);
+  write_raw_int (ib.size());
+
+#if G_BYTE_ORDER != G_LITTLE_ENDIAN
+  vector<int16_t> buffer (ib.size());
+  for (size_t i = 0; i < ib.size(); i++)
+    buffer[i] = GINT16_TO_LE (ib[i]); // little endian encoding
+
+  file->write (&buffer[0], buffer.size() * 2);
+#else
+  file->write (&ib[0], ib.size() * 2);
+#endif
+}
+
 static string
 blob_sum (const void *data, size_t size)
 {
