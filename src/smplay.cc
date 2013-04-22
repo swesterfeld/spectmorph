@@ -278,6 +278,8 @@ main (int argc, char **argv)
 
   vector<float> decoded_sines (frame_size);
 
+  sine_decoder.set_fundamental_freq (audio.fundamental_freq);
+
   // decode one frame before actual data (required for tracking decoder)
 
   if (mode != SineDecoder::MODE_PHASE_SYNC_OVERLAP)

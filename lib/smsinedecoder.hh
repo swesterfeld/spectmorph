@@ -41,6 +41,7 @@ public:
   };
 private:
   double mix_freq;
+  double fundamental_freq;
   size_t frame_size;
   size_t frame_step;
   std::vector<double> synth_fixed_phase, next_synth_fixed_phase;
@@ -50,6 +51,8 @@ private:
 public:
   SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
   ~SineDecoder();
+
+  void set_fundamental_freq (double fundamental_freq); // FIXME:INT
 
   void process (const AudioBlock& block,
                 const AudioBlock& next_block,

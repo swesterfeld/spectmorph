@@ -64,14 +64,15 @@ SineDecoder::process (const AudioBlock& block,
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
           const double mag_epsilon = 1e-8;
+          const double phase_factor = 2 * M_PI / 65536.0;
 
           VectorSinParams params;
           params.mag = sm_idb2factor (block.mags[i]) * SA;
           if (params.mag > mag_epsilon)
             {
               params.mix_freq = mix_freq;
-              params.freq = block.freqs[i];
-              params.phase = block.phases[i];
+              params.freq = sm_ifreq2freq (block.freqs[i]) * fundamental_freq;
+              params.phase = block.phases[i] * phase_factor;
               params.mode = VectorSinParams::ADD;
 
               fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
@@ -247,4 +248,8 @@ SineDecoder::process (const AudioBlock& block,
     }
 }
 
-
+void
+SineDecoder::set_fundamental_freq (double fundamental_freq) // FIXME:INT
+{
+  this->fundamental_freq = fundamental_freq;
+}
