@@ -357,8 +357,8 @@ public:
     size_t phase_bytes = 0, freq_bytes = 0, mag_bytes = 0, debug_samples_bytes = 0, original_fft_bytes = 0, noise_bytes = 0;
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
-        phase_bytes += audio.contents[f].phases.size() * sizeof (float);
-        freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
+        phase_bytes += audio.contents[f].phases.size() * sizeof (uint16_t);
+        freq_bytes += audio.contents[f].freqs.size() * sizeof (uint16_t);
         mag_bytes += audio.contents[f].mags.size() * sizeof (uint16_t);
         debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
         original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);

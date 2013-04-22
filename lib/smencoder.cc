@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <QtGlobal>
+
 #include <complex>
 #include <map>
 #include <algorithm>
@@ -1195,12 +1197,12 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
 }
 
 static void
-convert_freqs (const vector<float>& freqs, vector<uint16_t>& ifreqs)
+convert_freqs (const vector<float>& freqs, vector<uint16_t>& ifreqs, double fundamental_freq)
 {
   ifreqs.resize (freqs.size());
 
   for (size_t i = 0; i < freqs.size(); i++)
-    ifreqs[i] = freqs[i]; // FIXME:INT
+    ifreqs[i] = sm_freq2ifreq (freqs[i] / fundamental_freq);
 }
 
 static void
@@ -1215,10 +1217,10 @@ convert_mags (const vector<float>& mags, vector<uint16_t>& imags)
 static void
 convert_phases (const vector<float>& phases, vector<uint16_t>& iphases)
 {
-  iphases.resize (iphases.size());
+  iphases.resize (phases.size());
 
   for (size_t i = 0; i < phases.size(); i++)
-    iphases[i] = phases[i]; // FIXME:INT
+    iphases[i] = qBound<int> (0, sm_round_positive (phases[i] / 2 / M_PI * 65536), 65535);
 }
 
 /**
@@ -1241,7 +1243,7 @@ Encoder::save (const string& filename, double fundamental_freq)
     {
       AudioBlock block;
       block.noise = ai->noise;
-      convert_freqs (ai->freqs, block.freqs);
+      convert_freqs (ai->freqs, block.freqs, audio.fundamental_freq);
       convert_mags (ai->mags, block.mags);
       convert_phases (ai->phases, block.phases);
       block.lpc_lsf_p = ai->lpc_lsf_p;
