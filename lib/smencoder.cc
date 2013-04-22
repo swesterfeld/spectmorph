@@ -1195,12 +1195,30 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
 }
 
 static void
+convert_freqs (const vector<float>& freqs, vector<uint16_t>& ifreqs)
+{
+  ifreqs.resize (freqs.size());
+
+  for (size_t i = 0; i < freqs.size(); i++)
+    ifreqs[i] = freqs[i]; // FIXME:INT
+}
+
+static void
 convert_mags (const vector<float>& mags, vector<uint16_t>& imags)
 {
   imags.resize (mags.size());
 
   for (size_t i = 0; i < mags.size(); i++)
     imags[i] = sm_factor2idb (mags[i]);
+}
+
+static void
+convert_phases (const vector<float>& phases, vector<uint16_t>& iphases)
+{
+  iphases.resize (iphases.size());
+
+  for (size_t i = 0; i < phases.size(); i++)
+    iphases[i] = phases[i]; // FIXME:INT
 }
 
 /**
@@ -1223,9 +1241,9 @@ Encoder::save (const string& filename, double fundamental_freq)
     {
       AudioBlock block;
       block.noise = ai->noise;
-      block.freqs = ai->freqs;
+      convert_freqs (ai->freqs, block.freqs);
       convert_mags (ai->mags, block.mags);
-      block.phases = ai->phases;
+      convert_phases (ai->phases, block.phases);
       block.lpc_lsf_p = ai->lpc_lsf_p;
       block.lpc_lsf_q = ai->lpc_lsf_q;
       block.original_fft = ai->original_fft;

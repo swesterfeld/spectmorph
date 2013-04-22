@@ -230,7 +230,7 @@ md_cmp (const MagData& m1, const MagData& m2)
 }
 
 static bool
-find_match (float freq, vector<float>& freqs, const vector<int>& used, size_t *index)
+find_match (float freq, vector<uint16_t>& freqs, const vector<int>& used, size_t *index) // FIXME:INT
 {
   const float lower_bound = freq - 220;
   const float upper_bound = freq + 220;

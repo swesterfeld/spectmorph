@@ -26,9 +26,9 @@ class AudioBlock
 {
 public:
   std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
-  std::vector<float> freqs;          //!< frequencies of the sine components of this frame
+  std::vector<uint16_t> freqs;       //!< frequencies of the sine components of this frame
   std::vector<uint16_t> mags;        //!< magnitudes of the sine components
-  std::vector<float> phases;         //!< phases of the sine components
+  std::vector<uint16_t> phases;      //!< phases of the sine components
   std::vector<float> lpc_lsf_p;      //!< LPC line spectrum frequencies, P(z) roots
   std::vector<float> lpc_lsf_q;      //!< LPC line spectrum frequencies, Q(z) roots
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only

@@ -558,14 +558,10 @@ public:
   bool
   exec (Audio& audio)
   {
-    int nan_phases = 0, nan_freqs = 0, nan_ds = 0, nan_fft = 0, nan_noise = 0;
+    int nan_ds = 0, nan_fft = 0, nan_noise = 0;
 
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
-        if (find_nan (audio.contents[f].phases))
-          nan_phases++;
-        if (find_nan (audio.contents[f].freqs))
-          nan_freqs++;
         if (find_nan (audio.contents[f].debug_samples))
           nan_ds++;
         if (find_nan (audio.contents[f].original_fft))
@@ -573,8 +569,6 @@ public:
         if (find_nan (audio.contents[f].noise))
           nan_noise++;
       }
-    printf ("nan-phases:        %d\n", nan_phases);
-    printf ("nan-freqs:         %d\n", nan_freqs);
     printf ("nan-debug-samples: %d\n", nan_ds);
     printf ("nan-original-fft:  %d\n", nan_fft);
     printf ("nan-noise:         %d\n", nan_noise);

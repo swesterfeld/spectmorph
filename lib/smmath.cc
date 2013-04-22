@@ -2,6 +2,7 @@
 
 #include "smmath.hh"
 #include <bse/bsemathsignal.hh>
+#include <QtGlobal>
 
 namespace SpectMorph {
 
@@ -41,6 +42,21 @@ sm_idb2factor_init()
       idb2f_high[i] = sm_idb2factor_slow (i * 256);
       idb2f_low[i]  = sm_idb2factor_slow (64 * 512 + i);
     }
+}
+
+#define FAC 6000.0
+#define ADD (3 * FAC)
+
+uint16_t
+sm_freq2ifreq (double freq)
+{
+  return qBound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
+}
+
+double
+sm_ifreq2freq (uint16_t ifreq)
+{
+  return exp ((ifreq - ADD) / FAC);
 }
 
 }

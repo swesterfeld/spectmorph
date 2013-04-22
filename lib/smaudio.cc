@@ -167,27 +167,6 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                 {
                   audio_block->noise = fb;
                 }
-              else if (ifile.event_name() == "freqs")
-                {
-                  audio_block->freqs = fb;
-
-                  // ensure that freqs are sorted (we need that for LiveDecoder)
-                  double old_freq = -1;
-
-                  for (size_t f = 0; f < fb.size(); f++)
-                    {
-                      if (fb[f] <= old_freq)
-                        {
-                          printf ("frequency data is not sorted, can't play file\n");
-                          return BSE_ERROR_PARSE_ERROR;
-                        }
-                      old_freq = fb[f];
-                    }
-                }
-              else if (ifile.event_name() == "phases")
-                {
-                  audio_block->phases = fb;
-                }
               else if (ifile.event_name() == "lpc_lsf_p")
                 {
                   audio_block->lpc_lsf_p = fb;
@@ -214,9 +193,30 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
       else if (ifile.event() == InFile::UINT16_BLOCK)
         {
           const vector<uint16_t>& ib = ifile.event_uint16_block();
-          if (ifile.event_name() == "mags")
+          if (ifile.event_name() == "freqs")
+            {
+              audio_block->freqs = ib;
+
+              // ensure that freqs are sorted (we need that for LiveDecoder)
+              int old_freq = 0;
+
+              for (size_t i = 0; i < ib.size(); i++)
+                {
+                  if (ib[i] <= old_freq)
+                    {
+                      printf ("frequency data is not sorted, can't play file\n");
+                      return BSE_ERROR_PARSE_ERROR;
+                    }
+                  old_freq = ib[i];
+                }
+            }
+          else if (ifile.event_name() == "mags")
             {
               audio_block->mags = ib;
+            }
+          else if (ifile.event_name() == "phases")
+            {
+              audio_block->phases = ib;
             }
           else
             {
@@ -311,9 +311,9 @@ SpectMorph::Audio::save (GenericOut *file) const
 
       of.begin_section ("frame");
       of.write_float_block ("noise", contents[i].noise);
-      of.write_float_block ("freqs", contents[i].freqs);
+      of.write_uint16_block ("freqs", contents[i].freqs);
       of.write_uint16_block ("mags", contents[i].mags);
-      of.write_float_block ("phases", contents[i].phases);
+      of.write_uint16_block ("phases", contents[i].phases);
       of.write_float_block ("lpc_lsf_p", contents[i].lpc_lsf_p);
       of.write_float_block ("lpc_lsf_q", contents[i].lpc_lsf_q);
       of.write_float_block ("original_fft", contents[i].original_fft);

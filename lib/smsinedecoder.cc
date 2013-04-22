@@ -105,8 +105,8 @@ SineDecoder::process (const AudioBlock& block,
   zero_float_block (decoded_sines.size(), &decoded_sines[0]);
 
   /* phase distorted reconstruction */
-  vector<float> freqs = block.freqs;
-  vector<float> nfreqs = next_block.freqs;
+  vector<uint16_t> freqs = block.freqs; // FIXME:INT
+  vector<uint16_t> nfreqs = next_block.freqs; // FIXME:INT
 
   int todo = freqs.size() + nfreqs.size();
 
