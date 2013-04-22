@@ -211,9 +211,9 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                 }
             }
         }
-      else if (ifile.event() == InFile::INT16_BLOCK)
+      else if (ifile.event() == InFile::UINT16_BLOCK)
         {
-          const vector<int16_t>& ib = ifile.event_int16_block();
+          const vector<uint16_t>& ib = ifile.event_uint16_block();
           if (ifile.event_name() == "mags")
             {
               audio_block->mags = ib;
@@ -312,7 +312,7 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.begin_section ("frame");
       of.write_float_block ("noise", contents[i].noise);
       of.write_float_block ("freqs", contents[i].freqs);
-      of.write_int16_block ("mags", contents[i].mags);
+      of.write_uint16_block ("mags", contents[i].mags);
       of.write_float_block ("phases", contents[i].phases);
       of.write_float_block ("lpc_lsf_p", contents[i].lpc_lsf_p);
       of.write_float_block ("lpc_lsf_q", contents[i].lpc_lsf_q);

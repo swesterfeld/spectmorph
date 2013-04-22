@@ -36,7 +36,7 @@ public:
     STRING,
     FLOAT,
     FLOAT_BLOCK,
-    INT16_BLOCK,
+    UINT16_BLOCK,
     BLOB,
     BLOB_REF
   };
@@ -51,7 +51,7 @@ protected:
   std::string           current_event_data;
   float                 current_event_float;
   std::vector<float>    current_event_float_block;
-  std::vector<int16_t>  current_event_int16_block;
+  std::vector<uint16_t> current_event_uint16_block;
   size_t                current_event_blob_pos;
   size_t                current_event_blob_size;
   std::string           current_event_blob_sum;
@@ -66,8 +66,8 @@ protected:
   bool        read_raw_float (float &f);
   bool        read_raw_float_block (std::vector<float>& fb);
   bool        skip_raw_float_block();
-  bool        read_raw_int16_block (std::vector<int16_t>& ib);
-  bool        skip_raw_int16_block();
+  bool        read_raw_uint16_block (std::vector<uint16_t>& ib);
+  bool        skip_raw_uint16_block();
 
   void        read_file_type_and_version();
 
@@ -93,7 +93,7 @@ public:
   bool         event_bool();
   std::string  event_data();
   const std::vector<float>&     event_float_block();
-  const std::vector<int16_t>&   event_int16_block();
+  const std::vector<uint16_t>&  event_uint16_block();
   std::string  event_blob_sum();
 
   void         next_event();

@@ -156,13 +156,13 @@ display_file (GenericIn *in, int indent = 0)
               printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
             }
         }
-      else if (ifile.event() == InFile::INT16_BLOCK)
+      else if (ifile.event() == InFile::UINT16_BLOCK)
         {
           printf ("%s", spaces (indent).c_str());
           if (options.full)
             {
-              const vector<int16_t>& ib = ifile.event_int16_block();
-              printf ("int16_block %s[%zd] = {\n", ifile.event_name().c_str(), ib.size());
+              const vector<uint16_t>& ib = ifile.event_uint16_block();
+              printf ("uint16_block %s[%zd] = {\n", ifile.event_name().c_str(), ib.size());
               for (size_t i = 0; i < ib.size(); i++)
                 {
                   printf ("%s  %d%s\n", spaces (indent).c_str(), ib[i], (i + 1) == ib.size() ? "" : ",");
@@ -171,7 +171,7 @@ display_file (GenericIn *in, int indent = 0)
             }
           else
             {
-              printf ("int16_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_int16_block().size());
+              printf ("uint16_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_uint16_block().size());
             }
         }
       else if (ifile.event() == InFile::INT)

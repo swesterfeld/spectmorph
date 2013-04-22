@@ -271,7 +271,7 @@ find_match (float freq, vector<float>& freqs, const vector<int>& used, size_t *i
 }
 
 void
-MorphLinearModule::MySource::interp_mag_one (double interp, int16_t *left, int16_t *right)  // FIXME:INT
+MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)  // FIXME:INT
 {
   float l_value = left ? *left : 0;
   float r_value = right ? *right : 0;

@@ -12,6 +12,7 @@
 using namespace SpectMorph;
 
 using std::min;
+using std::max;
 using std::vector;
 using std::string;
 
@@ -285,37 +286,17 @@ find_match (float freq, const vector<float>& freqs, const vector<int>& used, siz
 }
 
 static void
-interp_mag_one (double interp, int16_t *left, int16_t *right)  // FIXME:INT
+interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 {
-  float l_value = left ? *left : 0;
-  float r_value = right ? *right : 0;
-#if 0
-  if (module->db_linear)
-    {
-#endif
-  // FIXME: handle non-db-linear interps
-      double lmag_db = bse_db_from_factor (l_value, -100);
-      double rmag_db = bse_db_from_factor (r_value, -100);
+  const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
+  const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
 
-      double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
-      double mag = bse_db_to_factor (mag_db);
+  const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
 
-      if (left)
-        *left = mag;
-      if (right)
-        *right = mag;
-#if 0
-    }
-  else
-    {
-      if (left)
-        *left = (1 - interp) * l_value;
-      if (right)
-        *right = interp * r_value;
-    }
-#endif
-}
-
+  if (left)
+    *left = mag_idb;
+  if (right)
+    *right = mag_idb;
 }
 
 static void
@@ -327,6 +308,8 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
     out_block.noise[i] *= factor_2;
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
+}
+
 }
 
 static bool
@@ -437,13 +420,12 @@ morph (AudioBlock& out_block,
           // FIXME: lpc
           // FIXME: non-db
 
-          const double lmag_db = bse_db_from_factor (left_block.mags[i], -100);
-          const double rmag_db = bse_db_from_factor (right_block.mags[j], -100);
-          const double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
+          const uint16_t lmag_idb = max (left_block.mags[i], SM_IDB_CONST_M96);
+          const uint16_t rmag_idb = max (right_block.mags[j], SM_IDB_CONST_M96);
+          const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
 
-          const double mag = bse_db_to_factor (mag_db);
           out_block.freqs.push_back (freq);
-          out_block.mags.push_back (mag);
+          out_block.mags.push_back (mag_idb);
           out_block.phases.push_back (phase);
 
           left_used[i] = 1;

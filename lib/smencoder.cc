@@ -1195,7 +1195,7 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
 }
 
 static void
-convert_mags (const vector<float>& mags, vector<int16_t>& imags)
+convert_mags (const vector<float>& mags, vector<uint16_t>& imags)
 {
   imags.resize (mags.size());
 

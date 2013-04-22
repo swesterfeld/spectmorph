@@ -149,8 +149,8 @@ OutFile::write_float_block (const string& s,
 }
 
 void
-OutFile::write_int16_block (const string& s,
-                            const vector<int16_t>& ib)
+OutFile::write_uint16_block (const string& s,
+                            const vector<uint16_t>& ib)
 {
   file->put_byte ('6');
 
@@ -160,7 +160,7 @@ OutFile::write_int16_block (const string& s,
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
   vector<int16_t> buffer (ib.size());
   for (size_t i = 0; i < ib.size(); i++)
-    buffer[i] = GINT16_TO_LE (ib[i]); // little endian encoding
+    buffer[i] = GUINT16_TO_LE (ib[i]); // little endian encoding
 
   file->write (&buffer[0], buffer.size() * 2);
 #else

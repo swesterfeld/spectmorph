@@ -187,7 +187,7 @@ InFile::next_event()
         {
           if (skip_events.find (current_event_str) != skip_events.end())
             {
-              if (skip_raw_int16_block())
+              if (skip_raw_uint16_block())
                 {
                   next_event();
                   return;
@@ -195,8 +195,8 @@ InFile::next_event()
             }
           else
             {
-              if (read_raw_int16_block (current_event_int16_block))
-                current_event = INT16_BLOCK;
+              if (read_raw_uint16_block (current_event_uint16_block))
+                current_event = UINT16_BLOCK;
             }
         }
     }
@@ -305,7 +305,7 @@ InFile::read_raw_float_block (vector<float>& fb)
 }
 
 bool
-InFile::read_raw_int16_block (vector<int16_t>& ib)
+InFile::read_raw_uint16_block (vector<uint16_t>& ib)
 {
   int size;
   if (!read_raw_int (size))
@@ -318,7 +318,7 @@ InFile::read_raw_int16_block (vector<int16_t>& ib)
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
   for (size_t x = 0; x < ib.size(); x++)
-    ib[x] = GINT16_FROM_LE (ib[x]);
+    ib[x] = GUINT16_FROM_LE (ib[x]);
 #endif
   return true;
 }
@@ -334,7 +334,7 @@ InFile::skip_raw_float_block()
 }
 
 bool
-InFile::skip_raw_int16_block()
+InFile::skip_raw_uint16_block()
 {
   int size;
   if (!read_raw_int (size))
@@ -422,14 +422,14 @@ InFile::event_float_block()
 }
 
 /**
- * Get int16 block data of the current event (only if the event is INT16_BLOCK).
+ * Get uint16 block data of the current event (only if the event is UINT16_BLOCK).
  *
- * \returns current event int16 block data (by reference)
+ * \returns current event uint16 block data (by reference)
  */
-const vector<int16_t>&
-InFile::event_int16_block()
+const vector<uint16_t>&
+InFile::event_uint16_block()
 {
-  return current_event_int16_block;
+  return current_event_uint16_block;
 }
 
 /**

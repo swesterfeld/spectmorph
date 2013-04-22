@@ -359,7 +359,7 @@ public:
       {
         phase_bytes += audio.contents[f].phases.size() * sizeof (float);
         freq_bytes += audio.contents[f].freqs.size() * sizeof (float);
-        mag_bytes += audio.contents[f].mags.size() * sizeof (int16_t);
+        mag_bytes += audio.contents[f].mags.size() * sizeof (uint16_t);
         debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
         original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
         noise_bytes += audio.contents[f].noise.size() * sizeof (float);
@@ -900,7 +900,7 @@ normalize_energy (double energy, Audio& audio)
   printf ("norm:       %.17g\n", norm);
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
-      vector<int16_t>& mags = audio.contents[f].mags;  // FIXME:INT
+      vector<uint16_t>& mags = audio.contents[f].mags;  // FIXME:INT
       for (size_t i = 0; i < mags.size(); i++)
         mags[i] *= norm;
 
