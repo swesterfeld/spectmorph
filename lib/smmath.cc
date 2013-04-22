@@ -14,10 +14,33 @@ sm_factor2idb (double factor)
 }
 
 double
-sm_idb2factor (uint16_t idb)
+sm_idb2factor_slow (uint16_t idb)
 {
   double db = idb / 64.0 - 512;
   return bse_db_to_factor (db);
+}
+
+/* tables for fast idb -> factor conversion
+ *
+ * exp (high + low) = exp (high) * exp (low)
+ */
+static float idb2f_high[256];
+static float idb2f_low[256];
+
+double
+sm_idb2factor (uint16_t idb)
+{
+  return idb2f_high[idb >> 8] * idb2f_low[idb & 0xff];
+}
+
+void
+sm_idb2factor_init()
+{
+  for (size_t i = 0; i < 256; i++)
+    {
+      idb2f_high[i] = sm_idb2factor_slow (i * 256);
+      idb2f_low[i]  = sm_idb2factor_slow (64 * 512 + i);
+    }
 }
 
 }

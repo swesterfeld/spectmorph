@@ -18,7 +18,13 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  double emin = 0, emax = 0;
+  double emin = 0, emax = 0, econv = 0;
+  for (size_t i = 0; i < 65536; i++)
+    {
+      econv = max (econv, (sm_idb2factor (i) - sm_idb2factor_slow (i)) / sm_idb2factor_slow (i));
+    }
+  const double conv_bound = 2e-7;
+  printf ("conversion error%%: %.6f bound %.6f\n", econv * 100, conv_bound * 100);
 
   for (double factor = 0.1; factor < 10; factor += 0.00001)
     {
@@ -33,6 +39,8 @@ main (int argc, char **argv)
     }
   const double bound = 0.0009;
   printf ("representation error%%: [%.6f, %.6f] bound %.6f\n", emin * 100, emax * 100, bound * 100);
+
+  assert (econv < conv_bound);
   assert (-emin < bound);
   assert (emax  < bound);
 }

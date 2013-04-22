@@ -401,7 +401,9 @@ sm_round_positive (float f)
 #define SM_IDB_CONST_M96 uint16_t ((512 - 96) * 64)
 
 uint16_t sm_factor2idb (double factor);
+double  sm_idb2factor_slow (uint16_t idb);
 double  sm_idb2factor (uint16_t idb);
+void    sm_idb2factor_init();
 
 } // namespace SpectMorph
 
