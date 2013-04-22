@@ -373,6 +373,9 @@ public:
     printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
     printf ("noise        : %zd bytes\n", noise_bytes);
     printf ("orig_samples : %zd bytes\n", original_samples_bytes);
+
+    size_t total_bytes = (freq_bytes + mag_bytes + phase_bytes + noise_bytes);
+    printf ("data rate    : %.2f K/s\n", total_bytes / 1024.0 / (audio.sample_count / audio.mix_freq));
     return true;
   }
 } size_command;
