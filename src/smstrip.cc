@@ -14,6 +14,7 @@ struct Options
 {
   string	      program_name; /* FIXME: what to do with that */
   bool                keep_samples;
+  bool                strip_lpc;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -25,7 +26,8 @@ struct Options
 
 Options::Options () :
   program_name ("smstrip"),
-  keep_samples (false)
+  keep_samples (false),
+  strip_lpc (false)
 {
 }
 
@@ -48,7 +50,6 @@ Options::parse (int   *argc_p,
 
   for (i = 1; i < argc; i++)
     {
-      const char *opt_arg;
       if (strcmp (argv[i], "--help") == 0 ||
           strcmp (argv[i], "-h") == 0)
 	{
@@ -59,6 +60,10 @@ Options::parse (int   *argc_p,
 	{
 	  printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
+	}
+      else if (check_arg (argc, argv, &i, "--strip-lpc") || check_arg (argc, argv, &i, "-l"))
+	{
+          strip_lpc = true;
 	}
       else if (check_arg (argc, argv, &i, "--keep-samples"))
         {
@@ -87,6 +92,7 @@ Options::print_usage ()
   printf (" -h, --help                  help for %s\n", options.program_name.c_str());
   printf (" -v, --version               print version\n");
   printf (" --keep-samples              keep original samples\n");
+  printf (" -l, --strip-lpc             strip lpc data\n");
   printf ("\n");
 }
 
@@ -113,6 +119,11 @@ main (int argc, char **argv)
         }
       for (size_t i = 0; i < audio.contents.size(); i++)
         {
+          if (options.strip_lpc)
+            {
+              audio.contents[i].lpc_lsf_p.clear();
+              audio.contents[i].lpc_lsf_q.clear();
+            }
           audio.contents[i].debug_samples.clear();
           audio.contents[i].original_fft.clear();
         }
