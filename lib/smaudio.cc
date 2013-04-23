@@ -198,7 +198,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
               audio_block->freqs = ib;
 
               // ensure that freqs are sorted (we need that for LiveDecoder)
-              int old_freq = 0;
+              int old_freq = -1;
 
               for (size_t i = 0; i < ib.size(); i++)
                 {
