@@ -16,7 +16,7 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testjobqueue testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
-        testlsfperf testmutexperf testsortfreqs
+        testlsfperf testmutexperf testsortfreqs testconvperf
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(BSE_LIBS)
@@ -95,6 +95,9 @@ testidb_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testifreq_SOURCES = testifreq.cc
 testifreq_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testconvperf_SOURCES = testconvperf.cc
+testconvperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test sin440-test sin440-4567-test
 
