@@ -403,9 +403,10 @@ sm_round_positive (float f)
 uint16_t sm_factor2idb (double factor);
 double   sm_idb2factor_slow (uint16_t idb);
 double   sm_idb2factor (uint16_t idb);
-void     sm_idb2factor_init();
+void     sm_math_init();
 
 uint16_t sm_freq2ifreq (double freq);
+double   sm_ifreq2freq_slow (uint16_t ifreq);
 double   sm_ifreq2freq (uint16_t ifreq);
 
 } // namespace SpectMorph

@@ -42,7 +42,7 @@ sm_init_plugin()
 
   FFT::load_wisdom();
   int_sincos_init();
-  sm_idb2factor_init();
+  sm_math_init();
 
   assert (bse_fpu_okround());
   assert (sm_round_positive (42.51) == 43);
