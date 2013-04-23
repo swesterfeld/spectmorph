@@ -18,7 +18,14 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  double emin = 0, emax = 0;
+  double emin = 0, emax = 0, econv = 0;
+  for (size_t i = 0; i < 65536; i++)
+    {
+      econv = max (econv, (sm_ifreq2freq (i) - sm_ifreq2freq_slow (i)) / sm_ifreq2freq_slow (i));
+    }
+  const double conv_bound = 2e-7;
+  printf ("conversion error%%: %.6f bound %.6f\n", econv * 100, conv_bound * 100);
+
   double base_freq = 15;
   const double CENT_FACTOR = pow (2, 1. / 1200);
 
