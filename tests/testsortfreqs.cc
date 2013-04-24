@@ -6,6 +6,7 @@
 
 #include "smaudio.hh"
 #include "smmain.hh"
+#include "smmath.hh"
 
 using namespace SpectMorph;
 using std::vector;
@@ -23,9 +24,9 @@ using namespace SpectMorph;
 
 struct PData
 {
-  float freq;
-  float mag;
-  float phase;
+  uint16_t freq;
+  uint16_t mag;
+  uint16_t phase;
 };
 
 float
@@ -42,9 +43,9 @@ randomize_and_check (AudioBlock& block)
   for (size_t i = 0; i < 30; i++)
     {
       PData pd;
-      pd.freq = i * 440 + something();
-      pd.mag = i * 0.1 + something();
-      pd.phase = i * 0.001 + something();
+      pd.freq = sm_freq2ifreq (i + something());
+      pd.mag = sm_factor2idb (i * 0.1 + something());
+      pd.phase = g_random_int_range (0, 65536);
 
       partials.push_back (pd);
     }
