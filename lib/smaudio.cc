@@ -413,9 +413,9 @@ namespace
 
 struct PartialData
 {
-  float freq;
-  float mag;
-  float phase;
+  uint16_t freq;
+  uint16_t mag;
+  uint16_t phase;
 };
 
 static bool
