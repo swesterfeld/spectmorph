@@ -215,10 +215,7 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, Audi
   out_audio_block.noise  = block_ptr->noise;
   out_audio_block.mags   = block_ptr->mags;
   out_audio_block.phases = block_ptr->phases;  // usually not used
-  out_audio_block.freqs.resize (block_ptr->freqs.size());
-
-  for (size_t i = 0; i < block_ptr->freqs.size(); i++)
-    out_audio_block.freqs[i] = block_ptr->freqs[i] * 440 / audio->fundamental_freq;
+  out_audio_block.freqs  = block_ptr->freqs;
 
   out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
   out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
