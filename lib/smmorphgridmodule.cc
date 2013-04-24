@@ -231,8 +231,8 @@ struct MagData
     BLOCK_LEFT  = 0,
     BLOCK_RIGHT = 1
   }       block;
-  size_t  index;
-  int16_t mag;
+  size_t   index;
+  uint16_t mag;
 };
 
 static bool
