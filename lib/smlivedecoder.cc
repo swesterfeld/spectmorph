@@ -338,6 +338,9 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
             {
               const AudioBlock& audio_block = *audio_block_ptr;
 
+              assert (audio_block.freqs.size() == audio_block.mags.size());
+              assert (audio_block.freqs.size() == audio_block.phases.size());
+
               ifft_synth->clear_partials();
 
               // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
@@ -350,14 +353,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               if (sines_enabled)
                 {
                   const double phase_factor = block_size * M_PI / current_mix_freq;
-                  const double freq_factor = want_freq / audio->fundamental_freq;
                   const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
                   const double filter_min_freq = filter_fact * current_mix_freq;
 
                   size_t old_partial = 0;
                   for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
                     {
-                      const double freq = audio_block.freqs[partial] * freq_factor;
+                      const double freq = audio_block.freqs_f (partial) * want_freq;
 
                       // anti alias filter:
                       double mag         = sm_idb2factor (audio_block.mags[partial]);

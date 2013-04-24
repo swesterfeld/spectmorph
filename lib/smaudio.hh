@@ -8,6 +8,7 @@
 
 #include "smgenericin.hh"
 #include "smgenericout.hh"
+#include "smmath.hh"
 
 #define SPECTMORPH_BINARY_FILE_VERSION 11
 
@@ -35,6 +36,12 @@ public:
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 
   void sort_freqs();
+
+  double
+  freqs_f (size_t i) const
+  {
+    return sm_ifreq2freq (freqs[i]);
+  }
 };
 
 enum AudioLoadOptions
