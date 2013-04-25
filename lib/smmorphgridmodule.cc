@@ -15,6 +15,7 @@ using std::min;
 using std::max;
 using std::vector;
 using std::string;
+using std::sort;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
@@ -337,32 +338,39 @@ morph (AudioBlock& out_block,
   out_block.phases.clear();
 
   // FIXME: lpc stuff
-  vector<MagData> mds;
+  MagData mds[left_block.freqs.size() + right_block.freqs.size()];
+  size_t  mds_size = 0;
   for (size_t i = 0; i < left_block.freqs.size(); i++)
     {
-      MagData md = { MagData::BLOCK_LEFT, i, left_block.mags[i] };
+      MagData& md = mds[mds_size];
       if (left_block.mags[i] == 0)
         {
           printf ("MorphGridModule: left input mag == 0; shouldn't happen\n");
         }
       else
         {
-          mds.push_back (md);
+          md.block = MagData::BLOCK_LEFT;
+          md.index = i;
+          md.mag   = left_block.mags[i];
+          mds_size++;
         }
     }
   for (size_t i = 0; i < right_block.freqs.size(); i++)
     {
-      MagData md = { MagData::BLOCK_RIGHT, i, right_block.mags[i] };
+      MagData& md = mds[mds_size];
       if (right_block.mags[i] == 0)
         {
           printf ("MorphGridModule: right input mag == 0; shouldn't happen\n");
         }
       else
         {
-          mds.push_back (md);
+          md.block = MagData::BLOCK_RIGHT;
+          md.index = i;
+          md.mag   = right_block.mags[i];
+          mds_size++;
         }
     }
-  sort (mds.begin(), mds.end(), md_cmp);
+  sort (mds, mds + mds_size, md_cmp);
 
   vector<int> left_used (left_block.freqs.size());
   vector<int> right_used (right_block.freqs.size());
@@ -370,7 +378,8 @@ morph (AudioBlock& out_block,
   vector<float> right_freqs_f (right_block.freqs.size());
   convert_freqs2f (left_block.freqs, left_freqs_f);
   convert_freqs2f (right_block.freqs, right_freqs_f);
-  for (size_t m = 0; m < mds.size(); m++)
+
+  for (size_t m = 0; m < mds_size; m++)
     {
       size_t i, j;
       bool match = false;
