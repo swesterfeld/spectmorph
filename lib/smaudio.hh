@@ -42,6 +42,12 @@ public:
   {
     return sm_ifreq2freq (freqs[i]);
   }
+
+  double
+  mags_f (size_t i) const
+  {
+    return sm_idb2factor (mags[i]);
+  }
 };
 
 enum AudioLoadOptions

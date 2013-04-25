@@ -802,8 +802,8 @@ public:
   bool
   exec (Audio& audio)
   {
-    const double freq_min = audio.fundamental_freq * 0.8;
-    const double freq_max = audio.fundamental_freq / 0.8;
+    const double freq_min = 0.8;
+    const double freq_max = 1.25;
     double freq_sum = 0, mag_sum = 0;
 
     for (size_t f = 0; f < audio.contents.size(); f++)
@@ -816,13 +816,15 @@ public:
             double best_mag = 0;
             for (size_t n = 0; n < block.freqs.size(); n++)
               {
-                if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
+                const double freq = block.freqs_f (n);
+
+                if (freq > freq_min && freq < freq_max)
                   {
-                    double m = block.mags[n];
+                    const double m = block.mags_f (n);
                     if (m > best_mag)
                       {
                         best_mag = m;
-                        best_freq = block.freqs[n];
+                        best_freq = block.freqs_f (n);
                       }
                   }
               }
@@ -835,10 +837,18 @@ public:
       }
     if (mag_sum > 0)
       {
-        double fundamental_freq = freq_sum / mag_sum;
-        printf ("%.17g %.17g  %.3f cent\n", audio.fundamental_freq, fundamental_freq,
-                                            freq_ratio_to_cent (audio.fundamental_freq / fundamental_freq));
-        audio.fundamental_freq = fundamental_freq;
+        double tune_factor = 1.0 / (freq_sum / mag_sum);
+        for (size_t f = 0; f < audio.contents.size(); f++)
+          {
+            AudioBlock& block = audio.contents[f];
+
+            for (size_t n = 0; n < block.freqs.size(); n++)
+              {
+                const double freq = block.freqs_f (n) * tune_factor;
+                block.freqs[n] = sm_freq2ifreq (freq);
+              }
+          }
+        printf ("%.17g  %.3f cent\n", audio.fundamental_freq, freq_ratio_to_cent (tune_factor));
 
         set_need_save (true);
       }
