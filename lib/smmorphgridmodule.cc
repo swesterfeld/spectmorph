@@ -242,10 +242,10 @@ md_cmp (const MagData& m1, const MagData& m2)
 }
 
 static bool
-find_match (uint16_t freq, const vector<uint16_t>& freqs, const vector<int>& used, size_t *index) // FIXME:INT
+find_match (float freq, const vector<float>& freqs, const vector<int>& used, size_t *index)
 {
-  const float lower_bound = freq - 220;
-  const float upper_bound = freq + 220;
+  const float lower_bound = freq - 0.5;
+  const float upper_bound = freq + 0.5;
 
   double min_diff = 1e20;
   size_t best_index = 0; // initialized to avoid compiler warning
@@ -274,7 +274,7 @@ find_match (uint16_t freq, const vector<uint16_t>& freqs, const vector<int>& use
         }
       i++;
     }
-  if (min_diff < 220)
+  if (min_diff < 0.5)
     {
       *index = best_index;
       return true;
@@ -305,6 +305,14 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
     out_block.noise[i] *= factor_2;
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
+}
+
+static void
+convert_freqs2f (const vector<uint16_t>& fint, vector<float>& ffloat)
+{
+  g_return_if_fail (fint.size() == ffloat.size());
+  for (size_t i = 0; i < fint.size(); i++)
+    ffloat[i] = sm_ifreq2freq (fint[i]);
 }
 
 }
@@ -366,6 +374,10 @@ morph (AudioBlock& out_block,
 
   vector<int> left_used (left_block.freqs.size());
   vector<int> right_used (right_block.freqs.size());
+  vector<float> left_freqs_f (left_block.freqs.size());
+  vector<float> right_freqs_f (right_block.freqs.size());
+  convert_freqs2f (left_block.freqs, left_freqs_f);
+  convert_freqs2f (right_block.freqs, right_freqs_f);
   for (size_t m = 0; m < mds.size(); m++)
     {
       size_t i, j;
@@ -375,13 +387,13 @@ morph (AudioBlock& out_block,
           i = mds[m].index;
 
           if (!left_used[i])
-            match = find_match (left_block.freqs[i], right_block.freqs, right_used, &j);
+            match = find_match (left_freqs_f[i], right_freqs_f, right_used, &j);
         }
       else // (mds[m].block == MagData::BLOCK_RIGHT)
         {
           j = mds[m].index;
           if (!right_used[j])
-            match = find_match (right_block.freqs[j], left_block.freqs, left_used, &i);
+            match = find_match (right_freqs_f[j], left_freqs_f, left_used, &i);
         }
       if (match)
         {
