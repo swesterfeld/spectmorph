@@ -332,11 +332,13 @@ main (int argc, char **argv)
 
   enc_params.mix_freq = mix_freq;
   enc_params.zeropad  = zeropad;
-  enc_params.frame_size_ms = 40;
-  if (options.fundamental_freq > 0)
+  if (options.fundamental_freq == 0)
     {
-      enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
+      fprintf (stderr, "%s: fundamental freq is required for encoding (use -f or -m options)\n", options.program_name.c_str());
+      exit (1);
     }
+  enc_params.frame_size_ms = 40; // at least 40ms frames
+  enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
 
   const size_t  frame_size = make_odd (mix_freq * 0.001 * enc_params.frame_size_ms);

@@ -163,11 +163,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else
             {
               assert (audio_block != NULL);
-              if (ifile.event_name() == "noise")
-                {
-                  audio_block->noise = fb;
-                }
-              else if (ifile.event_name() == "lpc_lsf_p")
+              if (ifile.event_name() == "lpc_lsf_p")
                 {
                   audio_block->lpc_lsf_p = fb;
                 }
@@ -217,6 +213,10 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else if (ifile.event_name() == "phases")
             {
               audio_block->phases = ib;
+            }
+          else if (ifile.event_name() == "noise")
+            {
+              audio_block->noise = ib;
             }
           else
             {
@@ -310,7 +310,7 @@ SpectMorph::Audio::save (GenericOut *file) const
         }
 
       of.begin_section ("frame");
-      of.write_float_block ("noise", contents[i].noise);
+      of.write_uint16_block ("noise", contents[i].noise);
       of.write_uint16_block ("freqs", contents[i].freqs);
       of.write_uint16_block ("mags", contents[i].mags);
       of.write_uint16_block ("phases", contents[i].phases);

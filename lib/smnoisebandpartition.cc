@@ -81,7 +81,7 @@ NoiseBandPartition::n_spectrum_bins()
 }
 
 void
-NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<float>& envelope, float *spectrum, double scale)
+NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector<uint16_t>& envelope, float *spectrum, double scale)
 {
   assert (envelope.size() == n_bands());
 
@@ -95,7 +95,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
 
   for (size_t b = 0; b < n_bands(); b++)
     {
-      const float value = sqrt (envelope[b] / band_count[b]) * scale;
+      const float value = sqrt (sm_idb2factor (envelope[b]) / band_count[b]) * scale;
 
       size_t start = band_start[b];
       size_t end = start + band_count[b] * 2;

@@ -1223,6 +1223,15 @@ convert_phases (const vector<float>& phases, vector<uint16_t>& iphases)
     iphases[i] = qBound<int> (0, sm_round_positive (phases[i] / 2 / M_PI * 65536), 65535);
 }
 
+static void
+convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
+{
+  inoise.resize (noise.size());
+
+  for (size_t i = 0; i < noise.size(); i++)
+    inoise[i] = sm_factor2idb (noise[i]);
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -1242,10 +1251,10 @@ Encoder::save (const string& filename, double fundamental_freq)
   for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
     {
       AudioBlock block;
-      block.noise = ai->noise;
       convert_freqs (ai->freqs, block.freqs, audio.fundamental_freq);
       convert_mags (ai->mags, block.mags);
       convert_phases (ai->phases, block.phases);
+      convert_noise (ai->noise, block.noise);
       block.lpc_lsf_p = ai->lpc_lsf_p;
       block.lpc_lsf_q = ai->lpc_lsf_q;
       block.original_fft = ai->original_fft;

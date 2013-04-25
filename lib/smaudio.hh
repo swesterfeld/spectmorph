@@ -26,7 +26,7 @@ namespace SpectMorph
 class AudioBlock
 {
 public:
-  std::vector<float> noise;          //!< noise envelope, representing the original signal minus sine components
+  std::vector<uint16_t> noise;       //!< noise envelope, representing the original signal minus sine components
   std::vector<uint16_t> freqs;       //!< frequencies of the sine components of this frame
   std::vector<uint16_t> mags;        //!< magnitudes of the sine components
   std::vector<uint16_t> phases;      //!< phases of the sine components

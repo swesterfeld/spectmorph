@@ -362,7 +362,7 @@ public:
         mag_bytes += audio.contents[f].mags.size() * sizeof (uint16_t);
         debug_samples_bytes += audio.contents[f].debug_samples.size() * sizeof (float);
         original_fft_bytes += audio.contents[f].original_fft.size() * sizeof (float);
-        noise_bytes += audio.contents[f].noise.size() * sizeof (float);
+        noise_bytes += audio.contents[f].noise.size() * sizeof (uint16_t);
       }
     size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
 
@@ -561,7 +561,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    int nan_ds = 0, nan_fft = 0, nan_noise = 0;
+    int nan_ds = 0, nan_fft = 0;
 
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
@@ -569,12 +569,9 @@ public:
           nan_ds++;
         if (find_nan (audio.contents[f].original_fft))
           nan_fft++;
-        if (find_nan (audio.contents[f].noise))
-          nan_noise++;
       }
     printf ("nan-debug-samples: %d\n", nan_ds);
     printf ("nan-original-fft:  %d\n", nan_fft);
-    printf ("nan-noise:         %d\n", nan_noise);
     return true;
   }
 } nan_test_command;
@@ -901,7 +898,7 @@ normalize_energy (double energy, Audio& audio)
       for (size_t i = 0; i < mags.size(); i++)
         mags[i] *= norm;
 
-      vector<float>& noise = audio.contents[f].noise;
+      vector<uint16_t>& noise = audio.contents[f].noise; // FIXME:INT
       for (size_t i = 0; i < noise.size(); i++)
         noise[i] *= norm * norm;
     }
