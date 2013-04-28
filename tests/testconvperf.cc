@@ -19,6 +19,8 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
+double global_var;
+
 int
 main (int argc, char **argv)
 {
@@ -36,7 +38,7 @@ main (int argc, char **argv)
 
   start = gettime();
   for (unsigned int i = 0; i < runs; i++)
-    sm_ifreq2freq (12345);
+    global_var += sm_ifreq2freq (i);
   const double t_ifreq2freq = gettime() - start;
 
   start = gettime();
@@ -46,7 +48,7 @@ main (int argc, char **argv)
 
   start = gettime();
   for (unsigned int i = 0; i < runs; i++)
-    sm_idb2factor (12345);
+    global_var += sm_idb2factor (i);
   const double t_idb2factor = gettime() - start;
 
   start = gettime();

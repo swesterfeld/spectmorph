@@ -398,16 +398,37 @@ sm_round_positive (float f)
 }
 #endif
 
+struct MathTables
+{
+  static float idb2f_high[256];
+  static float idb2f_low[256];
+
+  static float ifreq2f_high[256];
+  static float ifreq2f_low[256];
+};
+
 #define SM_IDB_CONST_M96 uint16_t ((512 - 96) * 64)
 
 uint16_t sm_factor2idb (double factor);
 double   sm_idb2factor_slow (uint16_t idb);
-double   sm_idb2factor (uint16_t idb);
+
 void     sm_math_init();
 
 uint16_t sm_freq2ifreq (double freq);
 double   sm_ifreq2freq_slow (uint16_t ifreq);
-double   sm_ifreq2freq (uint16_t ifreq);
+
+inline double
+sm_idb2factor (uint16_t idb)
+{
+  return MathTables::idb2f_high[idb >> 8] * MathTables::idb2f_low[idb & 0xff];
+}
+
+inline double
+sm_ifreq2freq (uint16_t ifreq)
+{
+  return MathTables::ifreq2f_high[ifreq >> 8] * MathTables::ifreq2f_low[ifreq & 0xff];
+}
+
 
 } // namespace SpectMorph
 

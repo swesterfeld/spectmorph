@@ -43,34 +43,22 @@ sm_ifreq2freq_slow (uint16_t ifreq)
  *
  * exp (high + low) = exp (high) * exp (low)
  */
-static float idb2f_high[256];
-static float idb2f_low[256];
+float MathTables::idb2f_high[256];
+float MathTables::idb2f_low[256];
 
-static float ifreq2f_high[256];
-static float ifreq2f_low[256];
-
-double
-sm_idb2factor (uint16_t idb)
-{
-  return idb2f_high[idb >> 8] * idb2f_low[idb & 0xff];
-}
-
-double
-sm_ifreq2freq (uint16_t ifreq)
-{
-  return ifreq2f_high[ifreq >> 8] * ifreq2f_low[ifreq & 0xff];
-}
+float MathTables::ifreq2f_high[256];
+float MathTables::ifreq2f_low[256];
 
 void
 sm_math_init()
 {
   for (size_t i = 0; i < 256; i++)
     {
-      idb2f_high[i] = sm_idb2factor_slow (i * 256);
-      idb2f_low[i]  = sm_idb2factor_slow (64 * 512 + i);
+      MathTables::idb2f_high[i] = sm_idb2factor_slow (i * 256);
+      MathTables::idb2f_low[i]  = sm_idb2factor_slow (64 * 512 + i);
 
-      ifreq2f_high[i] = sm_ifreq2freq_slow (i * 256);
-      ifreq2f_low[i]  = sm_ifreq2freq_slow (ADD + i);
+      MathTables::ifreq2f_high[i] = sm_ifreq2freq_slow (i * 256);
+      MathTables::ifreq2f_low[i]  = sm_ifreq2freq_slow (ADD + i);
     }
 }
 
