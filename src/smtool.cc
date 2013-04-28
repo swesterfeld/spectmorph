@@ -316,6 +316,20 @@ public:
   }
 } mix_freq_command;
 
+class SampleCountCommand : public Command
+{
+public:
+  SampleCountCommand() : Command ("sample-count")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    printf ("sample-count: %zd\n", audio.sample_count);
+    return true;
+  }
+} sample_count_command;
+
 class ZeroValuesAtStartCommand : public Command
 {
 public:
