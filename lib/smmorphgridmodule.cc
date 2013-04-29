@@ -145,6 +145,17 @@ MorphGridModule::MySource::audio()
   return &module->audio;
 }
 
+template<class T>
+static void
+my_assign_vector (const T& in, T& out)
+{
+  out.assign (in.begin(), in.end());
+
+// this causes malloc() to be called in some cases:
+//
+// out = in;
+}
+
 static bool
 get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block, int delay_blocks)
 {
@@ -213,13 +224,13 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, Audi
   if (!block_ptr)
     return false;
 
-  out_audio_block.noise  = block_ptr->noise;
-  out_audio_block.mags   = block_ptr->mags;
-  out_audio_block.phases = block_ptr->phases;  // usually not used
-  out_audio_block.freqs  = block_ptr->freqs;
+  my_assign_vector (block_ptr->noise,  out_audio_block.noise);
+  my_assign_vector (block_ptr->mags,   out_audio_block.mags);
+  my_assign_vector (block_ptr->phases, out_audio_block.phases);
+  my_assign_vector (block_ptr->freqs,  out_audio_block.freqs);
 
-  out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
-  out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
+  // out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
+  // out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
 
   return true;
 }
@@ -533,7 +544,6 @@ MorphGridModule::MySource::audio_block (size_t index)
   const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->width);
   const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->height);
 
-  AudioBlock audio_block_a, audio_block_b, audio_block_c, audio_block_d;
   if (module->height == 1)
     {
       /*
@@ -597,7 +607,6 @@ MorphGridModule::MySource::audio_block (size_t index)
       bool have_c = get_normalized_block (node_c, index, audio_block_c, 0);
       bool have_d = get_normalized_block (node_d, index, audio_block_d, 0);
 
-      AudioBlock audio_block_ab, audio_block_cd;
       bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
       bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morph_params.morphing);
       bool have_abcd = morph (module->audio_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morph_params.morphing);

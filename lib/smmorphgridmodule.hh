@@ -36,12 +36,21 @@ private:
   MorphOperatorModule    *x_control_mod;
   MorphOperatorModule    *y_control_mod;
 
+  // output
   Audio               audio;
   AudioBlock          audio_block;
 
   struct MySource : public LiveDecoderSource
   {
-    MorphGridModule *module;
+    // temporary blocks for morphing:
+    AudioBlock        audio_block_a;
+    AudioBlock        audio_block_b;
+    AudioBlock        audio_block_c;
+    AudioBlock        audio_block_d;
+    AudioBlock        audio_block_ab;
+    AudioBlock        audio_block_cd;
+
+    MorphGridModule  *module;
 
     void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
     Audio* audio();
