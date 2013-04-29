@@ -253,8 +253,20 @@ md_cmp (const MagData& m1, const MagData& m2)
   return m1.mag > m2.mag;  // sort with biggest magnitude first
 }
 
+struct FreqState
+{
+  float freq_f;
+  int   used;
+};
+
 static bool
-find_match (float freq, const vector<float>& freqs, const vector<int>& used, size_t *index)
+fs_cmp (const FreqState& fs1, const FreqState& fs2)
+{
+  return fs1.freq_f < fs2.freq_f;
+}
+
+static bool
+find_match (float freq, const FreqState *freq_state, size_t freq_state_size, size_t *index)
 {
   const float freq_start = freq - 0.5;
   const float freq_end   = freq + 0.5;
@@ -262,14 +274,15 @@ find_match (float freq, const vector<float>& freqs, const vector<int>& used, siz
   double min_diff = 1e20;
   size_t best_index = 0; // initialized to avoid compiler warning
 
-  vector<float>::const_iterator low_i = lower_bound (freqs.begin(), freqs.end(), freq_start);
-  size_t i = low_i - freqs.begin();
+  FreqState start_freq_state = {freq_start, 0};
+  const FreqState *start_ptr = std::lower_bound (freq_state, freq_state + freq_state_size, start_freq_state, fs_cmp);
+  size_t i = start_ptr - freq_state;
 
-  while (i < freqs.size() && freqs[i] < freq_end)
+  while (i < freq_state_size && freq_state[i].freq_f < freq_end)
     {
-      if (!used[i])
+      if (!freq_state[i].used)
         {
-          double diff = fabs (freq - freqs[i]);
+          double diff = fabs (freq - freq_state[i].freq_f);
           if (diff < min_diff)
             {
               best_index = i;
@@ -312,11 +325,13 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
 }
 
 static void
-convert_freqs2f (const vector<uint16_t>& fint, vector<float>& ffloat)
+init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)
 {
-  g_return_if_fail (fint.size() == ffloat.size());
   for (size_t i = 0; i < fint.size(); i++)
-    ffloat[i] = sm_ifreq2freq (fint[i]);
+    {
+      freq_state[i].freq_f = sm_ifreq2freq (fint[i]);
+      freq_state[i].used   = 0;
+    }
 }
 
 }
@@ -383,12 +398,13 @@ morph (AudioBlock& out_block,
     }
   sort (mds, mds + mds_size, md_cmp);
 
-  vector<int> left_used (left_block.freqs.size());
-  vector<int> right_used (right_block.freqs.size());
-  vector<float> left_freqs_f (left_block.freqs.size());
-  vector<float> right_freqs_f (right_block.freqs.size());
-  convert_freqs2f (left_block.freqs, left_freqs_f);
-  convert_freqs2f (right_block.freqs, right_freqs_f);
+  size_t    left_freqs_size = left_block.freqs.size();
+  size_t    right_freqs_size = right_block.freqs.size();
+  FreqState left_freqs[left_freqs_size];
+  FreqState right_freqs[right_freqs_size];
+
+  init_freq_state (left_block.freqs, left_freqs);
+  init_freq_state (right_block.freqs, right_freqs);
 
   for (size_t m = 0; m < mds_size; m++)
     {
@@ -398,14 +414,14 @@ morph (AudioBlock& out_block,
         {
           i = mds[m].index;
 
-          if (!left_used[i])
-            match = find_match (left_freqs_f[i], right_freqs_f, right_used, &j);
+          if (!left_freqs[i].used)
+            match = find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
         }
       else // (mds[m].block == MagData::BLOCK_RIGHT)
         {
           j = mds[m].index;
-          if (!right_used[j])
-            match = find_match (right_freqs_f[j], left_freqs_f, left_used, &i);
+          if (!right_freqs[j].used)
+            match = find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
         }
       if (match)
         {
@@ -449,13 +465,13 @@ morph (AudioBlock& out_block,
           out_block.mags.push_back (mag_idb);
           out_block.phases.push_back (phase);
 
-          left_used[i] = 1;
-          right_used[j] = 1;
+          left_freqs[i].used = 1;
+          right_freqs[j].used = 1;
         }
     }
-  for (size_t i = 0; i < left_block.freqs.size(); i++)
+  for (size_t i = 0; i < left_freqs_size; i++)
     {
-      if (!left_used[i])
+      if (!left_freqs[i].used)
         {
           out_block.freqs.push_back (left_block.freqs[i]);
           out_block.mags.push_back (left_block.mags[i]);
@@ -464,9 +480,9 @@ morph (AudioBlock& out_block,
           interp_mag_one (interp, &out_block.mags.back(), NULL);
         }
     }
-  for (size_t i = 0; i < right_block.freqs.size(); i++)
+  for (size_t i = 0; i < right_freqs_size; i++)
     {
-      if (!right_used[i])
+      if (!right_freqs[i].used)
         {
           out_block.freqs.push_back (right_block.freqs[i]);
           out_block.mags.push_back (right_block.mags[i]);
