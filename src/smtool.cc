@@ -33,19 +33,19 @@ vector_delta (const vector<double>& a, const vector<double>& b)
 static void
 reconstruct (AudioBlock&     audio_block,
              vector<double>& signal,
-             double          mix_freq)
+             const Audio&    audio)
 {
   for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
     {
-      double f     = audio_block.freqs[partial];
-      double mag   = audio_block.mags[partial];
-      double phase = audio_block.phases[partial];
+      double f     = audio_block.freqs_f (partial) * audio.fundamental_freq;
+      double mag   = audio_block.mags_f (partial);
+      double phase = audio_block.phases[partial] / 65536. * 2 * M_PI;
 
       // do a phase optimal reconstruction of that partial
       for (size_t n = 0; n < signal.size(); n++)
         {
           signal[n] += sin (phase) * mag;
-          phase += f / mix_freq * 2.0 * M_PI;
+          phase += f / audio.mix_freq * 2.0 * M_PI;
         }
     }
 }
@@ -471,7 +471,7 @@ public:
     int i = frame;
     size_t frame_size = audio.contents[i].debug_samples.size();
     vector<double> sines (frame_size);
-    reconstruct (audio.contents[i], sines, audio.mix_freq);
+    reconstruct (audio.contents[i], sines, audio);
     for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
       {
         double v = audio.contents[i].debug_samples[n];
@@ -682,7 +682,7 @@ public:
     vector<double> spectrum;
     vector<double> sines (frame_size);
 
-    reconstruct (audio.contents[i], sines, audio.mix_freq);
+    reconstruct (audio.contents[i], sines, audio);
 
     /* compute block size from frame size (smallest 2^k value >= frame_size) */
     size_t block_size = 1;
