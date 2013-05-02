@@ -106,8 +106,14 @@ SineDecoder::process (const AudioBlock& block,
   zero_float_block (decoded_sines.size(), &decoded_sines[0]);
 
   /* phase distorted reconstruction */
-  vector<uint16_t> freqs = block.freqs; // FIXME:INT
-  vector<uint16_t> nfreqs = next_block.freqs; // FIXME:INT
+  vector<float> freqs (block.freqs.size());
+  vector<float> nfreqs (next_block.freqs.size());
+
+  for (size_t i = 0; i < freqs.size(); i++)
+    freqs[i] = block.freqs_f (i) * fundamental_freq;
+
+  for (size_t i = 0; i < nfreqs.size(); i++)
+    nfreqs[i] = next_block.freqs_f (i) * fundamental_freq;
 
   int todo = freqs.size() + nfreqs.size();
 
@@ -140,8 +146,8 @@ SineDecoder::process (const AudioBlock& block,
 	  freqs[best_i] = -1;
 	  double nfreq = nfreqs[best_j];
 	  nfreqs[best_j] = -1;
-	  double mag = block.mags[best_i];
-	  double nmag = block.mags[best_j];
+	  double mag = block.mags_f (best_i);
+	  double nmag = block.mags_f (best_j);
 
 	  // fprintf (stderr, "%f | %f ==> %f | %f\n", freq, mag, nfreq, nmag);
 	  assert (fabs (nfreq - freq) / freq < 0.1);
@@ -185,7 +191,7 @@ SineDecoder::process (const AudioBlock& block,
 		{
 		  double freq = freqs[from];
 		  freqs[from] = -1;
-		  double mag = block.mags[from];
+		  double mag = block.mags_f (from);
 
 		  // fprintf (stderr, "%f | %f   >>> \n", freq, mag);
 
@@ -222,7 +228,7 @@ SineDecoder::process (const AudioBlock& block,
 		{
 		  double freq = nfreqs[to];
 		  nfreqs[to] = -1;
-		  double mag = next_block.mags[to];
+		  double mag = next_block.mags_f (to);
 
 		  // fprintf (stderr, "%f | %f   <<< \n", freq, mag);
 
