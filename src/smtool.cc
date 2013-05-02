@@ -514,11 +514,11 @@ public:
     int i = frame;
     for(;;)
       {
-        double maxm = 0;
+        int    maxm = 0;
         size_t maxp = 0;
         for (size_t partial = 0; partial < audio.contents[i].freqs.size(); partial++)
           {
-            const double m = audio.contents[i].mags[partial];
+            const int m = audio.contents[i].mags[partial];
             if (m > maxm)
               {
                 maxm = m;
@@ -527,7 +527,11 @@ public:
           }
         if (maxm > 0)
           {
-            printf ("%f Hz: %f\n", audio.contents[i].freqs[maxp], bse_db_from_factor (maxm, -200));
+            const double freq = audio.contents[i].freqs_f (maxp) * audio.fundamental_freq;
+            const double mag_factor = audio.contents[i].mags_f (maxp);
+            const double mag_db = bse_db_from_factor (mag_factor, -200);
+
+            printf ("%f Hz: %f\n", freq, mag_db);
             audio.contents[i].mags[maxp] = 0;
           }
         else
