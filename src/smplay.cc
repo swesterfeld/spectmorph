@@ -268,7 +268,7 @@ main (int argc, char **argv)
 
   size_t noise_block_size = NoiseDecoder::preferred_block_size (format.rate);
   NoiseDecoder noise_decoder (audio.mix_freq, format.rate, noise_block_size);
-  SineDecoder  sine_decoder (format.rate, frame_size, frame_step, mode);
+  SineDecoder  sine_decoder (audio.fundamental_freq, format.rate, frame_size, frame_step, mode);
 
   if (options.deterministic_random)
     noise_decoder.set_seed (0x123456);
@@ -277,8 +277,6 @@ main (int argc, char **argv)
   size_t end_point = audio.contents.size();
 
   vector<float> decoded_sines (frame_size);
-
-  sine_decoder.set_fundamental_freq (audio.fundamental_freq);
 
   // decode one frame before actual data (required for tracking decoder)
 

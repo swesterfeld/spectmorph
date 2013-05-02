@@ -23,11 +23,12 @@ using std::vector;
  * @param frame_step  frame step (in samples)
  * @param mode        selects decoding algorithm to be used
  */
-SineDecoder::SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode)
-  : mix_freq (mix_freq),
-    frame_size (frame_size),
-    frame_step (frame_step),
-    mode (mode)
+SineDecoder::SineDecoder (double fundamental_freq, double mix_freq, size_t frame_size, size_t frame_step, Mode mode) :
+  mix_freq (mix_freq),
+  fundamental_freq (fundamental_freq),
+  frame_size (frame_size),
+  frame_step (frame_step),
+  mode (mode)
 {
   ifft_synth = NULL;
 }
@@ -95,9 +96,10 @@ SineDecoder::process (const AudioBlock& block,
           const double SA = double (frame_step) / double (frame_size) * 2.0;
           const double mag_epsilon = 1e-8;
 
-          const double mag = block.mags[i] * SA;
+          const double mag = block.mags_f (i) * SA;
+          const double freq = block.freqs_f (i) * fundamental_freq;
           if (mag > mag_epsilon)
-            ifft_synth->render_partial (block.freqs[i], mag, fmod (block.phases[i], 2 * M_PI));
+            ifft_synth->render_partial (freq, mag, fmod (block.phases[i] / 65536.0 * 2 * M_PI, 2 * M_PI));
         }
       ifft_synth->get_samples (&decoded_sines[0]);
       return;
@@ -252,10 +254,4 @@ SineDecoder::process (const AudioBlock& block,
 	    }
 	}
     }
-}
-
-void
-SineDecoder::set_fundamental_freq (double fundamental_freq) // FIXME:INT
-{
-  this->fundamental_freq = fundamental_freq;
 }

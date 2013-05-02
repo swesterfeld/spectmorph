@@ -49,10 +49,8 @@ private:
   SpectMorph::IFFTSynth *ifft_synth;
 
 public:
-  SineDecoder (double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
+  SineDecoder (double fundamental_freq, double mix_freq, size_t frame_size, size_t frame_step, Mode mode);
   ~SineDecoder();
-
-  void set_fundamental_freq (double fundamental_freq); // FIXME:INT
 
   void process (const AudioBlock& block,
                 const AudioBlock& next_block,
