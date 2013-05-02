@@ -314,32 +314,20 @@ morph (AudioBlock& out_block,
   for (size_t i = 0; i < left_block.freqs.size(); i++)
     {
       MagData& md = mds[mds_size];
-      if (left_block.mags[i] == 0)
-        {
-          printf ("MorphGridModule: left input mag == 0; shouldn't happen\n");
-        }
-      else
-        {
-          md.block = MagData::BLOCK_LEFT;
-          md.index = i;
-          md.mag   = left_block.mags[i];
-          mds_size++;
-        }
+
+      md.block = MagData::BLOCK_LEFT;
+      md.index = i;
+      md.mag   = left_block.mags[i];
+      mds_size++;
     }
   for (size_t i = 0; i < right_block.freqs.size(); i++)
     {
       MagData& md = mds[mds_size];
-      if (right_block.mags[i] == 0)
-        {
-          printf ("MorphGridModule: right input mag == 0; shouldn't happen\n");
-        }
-      else
-        {
-          md.block = MagData::BLOCK_RIGHT;
-          md.index = i;
-          md.mag   = right_block.mags[i];
-          mds_size++;
-        }
+
+      md.block = MagData::BLOCK_RIGHT;
+      md.index = i;
+      md.mag   = right_block.mags[i];
+      mds_size++;
     }
   sort (mds, mds + mds_size, md_cmp);
 
