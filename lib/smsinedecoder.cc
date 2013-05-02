@@ -67,11 +67,11 @@ SineDecoder::process (const AudioBlock& block,
           const double phase_factor = 2 * M_PI / 65536.0;
 
           VectorSinParams params;
-          params.mag = sm_idb2factor (block.mags[i]) * SA;
+          params.mag = block.mags_f (i) * SA;
           if (params.mag > mag_epsilon)
             {
               params.mix_freq = mix_freq;
-              params.freq = sm_ifreq2freq (block.freqs[i]) * fundamental_freq;
+              params.freq = block.freqs_f (i) * fundamental_freq;
               params.phase = block.phases[i] * phase_factor;
               params.mode = VectorSinParams::ADD;
 
