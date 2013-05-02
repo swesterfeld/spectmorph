@@ -301,7 +301,7 @@ SpectMorph::Audio::save (GenericOut *file) const
   for (size_t i = 0; i < contents.size(); i++)
     {
       // ensure that freqs are sorted (we need that for LiveDecoder)
-      double old_freq = -1;
+      int old_freq = -1;
 
       for (size_t f = 0; f < contents[i].freqs.size(); f++)
         {
