@@ -6,6 +6,7 @@
 #include "smleakdebugger.hh"
 #include "smmath.hh"
 #include "smlivedecoder.hh"
+#include "smmorphutils.hh"
 
 #include <assert.h>
 
@@ -253,52 +254,6 @@ md_cmp (const MagData& m1, const MagData& m2)
   return m1.mag > m2.mag;  // sort with biggest magnitude first
 }
 
-struct FreqState
-{
-  float freq_f;
-  int   used;
-};
-
-static bool
-fs_cmp (const FreqState& fs1, const FreqState& fs2)
-{
-  return fs1.freq_f < fs2.freq_f;
-}
-
-static bool
-find_match (float freq, const FreqState *freq_state, size_t freq_state_size, size_t *index)
-{
-  const float freq_start = freq - 0.5;
-  const float freq_end   = freq + 0.5;
-
-  double min_diff = 1e20;
-  size_t best_index = 0; // initialized to avoid compiler warning
-
-  FreqState start_freq_state = {freq_start, 0};
-  const FreqState *start_ptr = std::lower_bound (freq_state, freq_state + freq_state_size, start_freq_state, fs_cmp);
-  size_t i = start_ptr - freq_state;
-
-  while (i < freq_state_size && freq_state[i].freq_f < freq_end)
-    {
-      if (!freq_state[i].used)
-        {
-          double diff = fabs (freq - freq_state[i].freq_f);
-          if (diff < min_diff)
-            {
-              best_index = i;
-              min_diff = diff;
-            }
-        }
-      i++;
-    }
-  if (min_diff < 0.5)
-    {
-      *index = best_index;
-      return true;
-    }
-  return false;
-}
-
 static void
 interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 {
@@ -322,16 +277,6 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
     out_block.noise[i] *= factor_2;
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
-}
-
-static void
-init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)
-{
-  for (size_t i = 0; i < fint.size(); i++)
-    {
-      freq_state[i].freq_f = sm_ifreq2freq (fint[i]);
-      freq_state[i].used   = 0;
-    }
 }
 
 }
@@ -400,8 +345,9 @@ morph (AudioBlock& out_block,
 
   size_t    left_freqs_size = left_block.freqs.size();
   size_t    right_freqs_size = right_block.freqs.size();
-  FreqState left_freqs[left_freqs_size];
-  FreqState right_freqs[right_freqs_size];
+
+  MorphUtils::FreqState   left_freqs[left_freqs_size];
+  MorphUtils::FreqState   right_freqs[right_freqs_size];
 
   init_freq_state (left_block.freqs, left_freqs);
   init_freq_state (right_block.freqs, right_freqs);
@@ -415,13 +361,13 @@ morph (AudioBlock& out_block,
           i = mds[m].index;
 
           if (!left_freqs[i].used)
-            match = find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
+            match = MorphUtils::find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
         }
       else // (mds[m].block == MagData::BLOCK_RIGHT)
         {
           j = mds[m].index;
           if (!right_freqs[j].used)
-            match = find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
+            match = MorphUtils::find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
         }
       if (match)
         {

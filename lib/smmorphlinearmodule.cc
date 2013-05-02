@@ -8,6 +8,7 @@
 #include "smlpc.hh"
 #include "smleakdebugger.hh"
 #include "smlivedecoder.hh"
+#include "smmorphutils.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -226,47 +227,6 @@ md_cmp (const MagData& m1, const MagData& m2)
   return m1.mag > m2.mag;  // sort with biggest magnitude first
 }
 
-static bool
-find_match (float freq, vector<uint16_t>& freqs, const vector<int>& used, size_t *index) // FIXME:INT
-{
-  const float lower_bound = freq - 220;
-  const float upper_bound = freq + 220;
-
-  double min_diff = 1e20;
-  size_t best_index = 0; // initialized to avoid compiler warning
-
-  size_t i = 0;
-
-  // quick scan for beginning of the region containing suitable candidates
-  size_t skip = freqs.size() / 2;
-  while (skip >= 4)
-    {
-      while (i + skip < freqs.size() && freqs[i + skip] < lower_bound)
-        i += skip;
-      skip /= 2;
-    }
-
-  while (i < freqs.size() && freqs[i] < upper_bound)
-    {
-      if (!used[i])
-        {
-          double diff = fabs (freq - freqs[i]);
-          if (diff < min_diff)
-            {
-              best_index = i;
-              min_diff = diff;
-            }
-        }
-      i++;
-    }
-  if (min_diff < 220)
-    {
-      *index = best_index;
-      return true;
-    }
-  return false;
-}
-
 void
 MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)  // FIXME:INT
 {
@@ -373,8 +333,15 @@ MorphLinearModule::MySource::audio_block (size_t index)
         }
       sort (mds.begin(), mds.end(), md_cmp);
 
-      vector<int> left_used (left_block.freqs.size());
-      vector<int> right_used (right_block.freqs.size());
+      size_t    left_freqs_size = left_block.freqs.size();
+      size_t    right_freqs_size = right_block.freqs.size();
+
+      MorphUtils::FreqState   left_freqs[left_freqs_size];
+      MorphUtils::FreqState   right_freqs[right_freqs_size];
+
+      init_freq_state (left_block.freqs, left_freqs);
+      init_freq_state (right_block.freqs, right_freqs);
+
       for (size_t m = 0; m < mds.size(); m++)
         {
           size_t i, j;
@@ -383,14 +350,14 @@ MorphLinearModule::MySource::audio_block (size_t index)
             {
               i = mds[m].index;
 
-              if (!left_used[i])
-                match = find_match (left_block.freqs[i], right_block.freqs, right_used, &j);
+              if (!left_freqs[i].used)
+                match = MorphUtils::find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
             }
           else // (mds[m].block == MagData::BLOCK_RIGHT)
             {
               j = mds[m].index;
-              if (!right_used[j])
-                match = find_match (right_block.freqs[j], left_block.freqs, left_used, &i);
+              if (!right_freqs[j].used)
+                match = MorphUtils::find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
             }
           if (match)
             {
@@ -461,13 +428,13 @@ MorphLinearModule::MySource::audio_block (size_t index)
               module->audio_block.mags.push_back (mag);
               module->audio_block.phases.push_back (phase);
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
-              left_used[i] = 1;
-              right_used[j] = 1;
+              left_freqs[i].used = 1;
+              right_freqs[j].used = 1;
             }
         }
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
-          if (!left_used[i])
+          if (!left_freqs[i].used)
             {
               module->audio_block.freqs.push_back (left_block.freqs[i]);
               module->audio_block.mags.push_back (left_block.mags[i]);
@@ -478,7 +445,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
         {
-          if (!right_used[i])
+          if (!right_freqs[i].used)
             {
               module->audio_block.freqs.push_back (right_block.freqs[i]);
               module->audio_block.mags.push_back (right_block.mags[i]);
