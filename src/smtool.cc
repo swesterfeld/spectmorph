@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <stdio.h>
+#include <QtGlobal>
 #include "smaudio.hh"
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
@@ -916,15 +917,18 @@ normalize_energy (double energy, Audio& audio)
   const double norm = sqrt (target_energy / energy);
   printf ("avg_energy: %.17g\n", energy);
   printf ("norm:       %.17g\n", norm);
+  const int    norm_delta_idb   = sm_factor2delta_idb (norm);
+  const int    norm_2_delta_idb = sm_factor2delta_idb (norm * norm);
+
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
-      vector<uint16_t>& mags = audio.contents[f].mags;  // FIXME:INT
+      vector<uint16_t>& mags = audio.contents[f].mags;
       for (size_t i = 0; i < mags.size(); i++)
-        mags[i] *= norm;
+        mags[i] = qBound<int> (0, mags[i] + norm_delta_idb, 65535);
 
-      vector<uint16_t>& noise = audio.contents[f].noise; // FIXME:INT
+      vector<uint16_t>& noise = audio.contents[f].noise;
       for (size_t i = 0; i < noise.size(); i++)
-        noise[i] *= norm * norm;
+        noise[i] = qBound<int> (0, noise[i] + norm_2_delta_idb, 65535);
     }
 }
 
