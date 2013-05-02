@@ -223,7 +223,7 @@ TimeFreqView::paintEvent (QPaintEvent *event)
               const AudioBlock& ab = m_audio->contents[i];
               for (size_t f = 0; f < ab.freqs.size(); f++)
                 {
-                  double posy = height - height * ab.freqs[f] / (m_audio->mix_freq / 2);
+                  double posy = height - height * ab.freqs_f (f) * m_audio->fundamental_freq / (m_audio->mix_freq / 2);
                   painter.drawLine (posx - size, posy - size, posx + size, posy + size);
                   painter.drawLine (posx - size, posy + size, posx + size, posy - size);
                 }
