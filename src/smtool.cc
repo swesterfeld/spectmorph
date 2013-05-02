@@ -853,6 +853,7 @@ public:
     if (mag_sum > 0)
       {
         double tune_factor = 1.0 / (freq_sum / mag_sum);
+        double new_fundamental_freq = audio.fundamental_freq / tune_factor;
         for (size_t f = 0; f < audio.contents.size(); f++)
           {
             AudioBlock& block = audio.contents[f];
@@ -863,7 +864,8 @@ public:
                 block.freqs[n] = sm_freq2ifreq (freq);
               }
           }
-        printf ("%.17g  %.3f cent\n", audio.fundamental_freq, freq_ratio_to_cent (tune_factor));
+        printf ("%.17g  %.17g  %.3f cent\n", audio.fundamental_freq, new_fundamental_freq, freq_ratio_to_cent (tune_factor));
+        audio.fundamental_freq = new_fundamental_freq;
 
         set_need_save (true);
       }
