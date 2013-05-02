@@ -472,15 +472,17 @@ static void
 apply_delta_db (AudioBlock& block, double delta_db)
 {
   const double factor = bse_db_to_factor (delta_db);
-  const double factor_2 = factor * factor;
+
+  const int    ddb    = sm_factor2delta_idb (factor);
+  const int    ddb_2  = sm_factor2delta_idb (factor * factor);
 
   // apply delta db volume to partials & noise
   for (size_t i = 0; i < block.mags.size(); i++)
-    block.mags[i] *= factor;
+    block.mags[i] = qBound<int> (0, block.mags[i] + ddb, 65535);
 
   // noise contains squared values (energy from spectrum)
   for (size_t i = 0; i < block.noise.size(); i++)
-    block.noise[i] *= factor_2;
+    block.noise[i] = qBound<int> (0, block.noise[i] + ddb_2, 65535);
 }
 
 }

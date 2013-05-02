@@ -410,6 +410,7 @@ struct MathTables
 #define SM_IDB_CONST_M96 uint16_t ((512 - 96) * 64)
 
 uint16_t sm_factor2idb (double factor);
+int      sm_factor2delta_idb (double factor);
 double   sm_idb2factor_slow (uint16_t idb);
 
 void     sm_math_init();

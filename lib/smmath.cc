@@ -14,6 +14,12 @@ sm_factor2idb (double factor)
   return sm_round_positive (db * 64 + 512 * 64);
 }
 
+int
+sm_factor2delta_idb (double factor)
+{
+  return int (sm_factor2idb (factor)) - (512 * 64);
+}
+
 double
 sm_idb2factor_slow (uint16_t idb)
 {
