@@ -48,6 +48,13 @@ public:
   {
     return sm_idb2factor (mags[i]);
   }
+
+  double
+  phases_f (size_t i) const
+  {
+    const double factor = 2.0 * M_PI / 65536.0;
+    return phases[i] * factor;
+  }
 };
 
 enum AudioLoadOptions
