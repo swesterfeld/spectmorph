@@ -228,29 +228,26 @@ md_cmp (const MagData& m1, const MagData& m2)
 }
 
 void
-MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)  // FIXME:INT
+MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 {
-  float l_value = left ? *left : 0;
-  float r_value = right ? *right : 0;
   if (module->db_linear)
     {
-      double lmag_db = bse_db_from_factor (l_value, -100);
-      double rmag_db = bse_db_from_factor (r_value, -100);
+      const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
+      const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
 
-      double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
-      double mag = bse_db_to_factor (mag_db);
+      const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
 
       if (left)
-        *left = mag;
+        *left = mag_idb;
       if (right)
-        *right = mag;
+        *right = mag_idb;
     }
   else
     {
       if (left)
-        *left = (1 - interp) * l_value;
+        *left = sm_factor2idb ((1 - interp) * sm_idb2factor (*left));
       if (right)
-        *right = interp * r_value;
+        *right = sm_factor2idb (interp * sm_idb2factor (*right));
     }
 }
 
@@ -385,8 +382,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
               double mag;
               if (module->db_linear)
                 {
-                  double lmag_db = bse_db_from_factor (left_block.mags[i], -100);
-                  double rmag_db = bse_db_from_factor (right_block.mags[j], -100);
+                  double lmag_db = bse_db_from_factor (left_block.mags_f (i), -100);
+                  double rmag_db = bse_db_from_factor (right_block.mags_f (j), -100);
 
                   //--------------------------- LPC stuff ---------------------------
                   double l_env_mag_db = 0;
@@ -395,10 +392,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
                   if (use_lpc)
                     {
-                      double l_freq = left_block.freqs[i] / 440 * left_audio->fundamental_freq;
+                      double l_freq = left_block.freqs_f (i) * left_audio->fundamental_freq;
                       l_freq *= 2 * M_PI / left_audio->mix_freq; /* frequency in original data */
 
-                      double r_freq = right_block.freqs[j] / 440 * right_audio->fundamental_freq;
+                      double r_freq = right_block.freqs_f (j) * right_audio->fundamental_freq;
                       r_freq *= 2 * M_PI / right_audio->mix_freq; /* frequency in original data */
 
                       l_env_mag_db = bse_db_from_factor (left_env.eval (l_freq), -100);
@@ -422,10 +419,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
                 }
               else
                 {
-                  mag = (1 - interp) * left_block.mags[i] + interp * right_block.mags[j];
+                  mag = (1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j);
                 }
               module->audio_block.freqs.push_back (freq);
-              module->audio_block.mags.push_back (mag);
+              module->audio_block.mags.push_back (sm_factor2idb (mag));
               module->audio_block.phases.push_back (phase);
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_freqs[i].used = 1;
