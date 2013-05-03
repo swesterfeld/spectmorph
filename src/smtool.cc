@@ -326,7 +326,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("sample-count: %zd\n", audio.sample_count);
+    printf ("sample-count: %d\n", audio.sample_count);
     return true;
   }
 } sample_count_command;
@@ -888,8 +888,8 @@ public:
   bool
   exec (Audio& audio)
   {
-    const double freq_min = audio.fundamental_freq * 0.8;
-    const double freq_max = audio.fundamental_freq / 0.8;
+    const double freq_min = 0.8;
+    const double freq_max = 1.25;
 
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
@@ -898,18 +898,20 @@ public:
         size_t max_p = 0;
         for (size_t p = 0; p < block.mags.size(); p++)
           {
-            if (block.freqs[p] > freq_min && block.freqs[p] < freq_max && block.mags[p] > max_mag)
+            if (block.freqs_f (p) > freq_min && block.freqs_f (p) < freq_max && block.mags_f (p) > max_mag)
               {
-                max_mag = block.mags[p];
+                max_mag = block.mags_f (p);
                 max_p = p;
               }
           }
         if (max_mag > 0)
           {
-            double tune_factor = audio.fundamental_freq / block.freqs[max_p];
+            const double tune_factor = 1 / block.freqs_f (max_p);
+
             for (size_t p = 0; p < block.freqs.size(); p++)
               {
-                block.freqs[p] *= tune_factor;
+                const double freq = block.freqs_f (p) * tune_factor;
+                block.freqs[p] = sm_freq2ifreq (freq);
                 set_need_save (true);
               }
           }
