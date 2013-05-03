@@ -368,13 +368,13 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
               if (left_block.mags[i] > right_block.mags[j])
                 {
-                  const double mfact = right_block.mags[j] / left_block.mags[i];
+                  const double mfact = right_block.mags_f (j) / left_block.mags_f (i);
 
                   freq = lfreq + mfact * interp * (rfreq - lfreq);
                 }
               else
                 {
-                  const double mfact = left_block.mags[i] / right_block.mags[j];
+                  const double mfact = left_block.mags_f (i) / right_block.mags_f (j);
 
                   freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
                 }
