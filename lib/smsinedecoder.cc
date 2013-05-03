@@ -65,7 +65,6 @@ SineDecoder::process (const AudioBlock& block,
         {
           const double SA = double (frame_step) / double (frame_size) * 2.0;
           const double mag_epsilon = 1e-8;
-          const double phase_factor = 2 * M_PI / 65536.0;
 
           VectorSinParams params;
           params.mag = block.mags_f (i) * SA;
@@ -73,7 +72,7 @@ SineDecoder::process (const AudioBlock& block,
             {
               params.mix_freq = mix_freq;
               params.freq = block.freqs_f (i) * fundamental_freq;
-              params.phase = block.phases[i] * phase_factor;
+              params.phase = block.phases_f (i);
               params.mode = VectorSinParams::ADD;
 
               fast_vector_sinf (params, &aligned_decoded_sines[0], &aligned_decoded_sines[frame_size]);
@@ -99,7 +98,7 @@ SineDecoder::process (const AudioBlock& block,
           const double mag = block.mags_f (i) * SA;
           const double freq = block.freqs_f (i) * fundamental_freq;
           if (mag > mag_epsilon)
-            ifft_synth->render_partial (freq, mag, fmod (block.phases[i] / 65536.0 * 2 * M_PI, 2 * M_PI));
+            ifft_synth->render_partial (freq, mag, block.phases_f (i));
         }
       ifft_synth->get_samples (&decoded_sines[0]);
       return;
