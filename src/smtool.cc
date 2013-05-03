@@ -438,7 +438,7 @@ public:
   exec (Audio& audio)
   {
     for (size_t i = 0; i < audio.contents[frame].noise.size(); i++)
-      printf ("%f\n", audio.contents[frame].noise[i]);
+      printf ("%.7g\n", audio.contents[frame].noise_f (i));
     return true;
   }
   void
@@ -559,7 +559,7 @@ public:
       {
         for (size_t i = 0; i < audio.contents[f].noise.size(); i++)
           {
-            double noise = audio.contents[f].noise[i];
+            const double noise = audio.contents[f].noise_f (i);
 
             total_noise += noise;
             peak_noise   = max (peak_noise, noise);
@@ -637,9 +637,11 @@ public:
         const AudioBlock& block = audio.contents[i];
         for (size_t n = 0; n < block.freqs.size(); n++)
           {
-            if (block.freqs[n] > freq_min && block.freqs[n] < freq_max)
+            const double freq = block.freqs_f (n) * audio.fundamental_freq;
+
+            if (freq > freq_min && freq < freq_max)
               {
-                printf ("%zd %f %f\n", i, block.freqs[n], float (block.mags[n])); // FIXME:INT
+                printf ("%zd %f %f\n", i, freq, block.mags_f (n));
               }
           }
       }
