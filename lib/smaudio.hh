@@ -55,6 +55,12 @@ public:
     const double factor = 2.0 * M_PI / 65536.0;
     return phases[i] * factor;
   }
+
+  double
+  noise_f (size_t i) const
+  {
+    return sm_idb2factor (noise[i]);
+  }
 };
 
 enum AudioLoadOptions
