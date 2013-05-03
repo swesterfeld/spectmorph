@@ -39,7 +39,7 @@ reconstruct (AudioBlock&     audio_block,
     {
       double f     = audio_block.freqs_f (partial) * audio.fundamental_freq;
       double mag   = audio_block.mags_f (partial);
-      double phase = audio_block.phases[partial] / 65536. * 2 * M_PI;
+      double phase = audio_block.phases_f (partial);
 
       // do a phase optimal reconstruction of that partial
       for (size_t n = 0; n < signal.size(); n++)
