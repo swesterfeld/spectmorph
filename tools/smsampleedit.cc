@@ -169,9 +169,12 @@ MainWidget::load (const string& filename, const string& clip_markers)
       wave.path = wset.waves[i].path;
       wave.midi_note = wset.waves[i].midi_note;
       wave.label = Birnet::string_printf ("%s (note %d)", wset.waves[i].path.c_str(), wset.waves[i].midi_note);
-      sample_combobox->addItem (wave.label.c_str());
       waves.push_back (wave);
     }
+  // create combobox entries
+  for (size_t i = 0; i < waves.size(); i++)
+    sample_combobox->addItem (waves[i].label.c_str());
+
   printf ("loaded %zd waves.\n", wset.waves.size());
   marker_filename = clip_markers;
   MicroConf cfg (marker_filename.c_str());
@@ -494,7 +497,10 @@ main (int argc, char **argv)
     }
 
   MainWindow main_window;
-  main_window.show();
+
+  if (mode != CLIP)
+    main_window.show();
+
   main_window.load (wav_set, clip_markers);
   if (mode == CLIP)
     {
