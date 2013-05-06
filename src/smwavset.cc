@@ -58,7 +58,7 @@ struct Options
   vector<string>  format;
   int             max_jobs;
   bool            loop_markers;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS } command;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS, SET_NAMES, GET_NAMES } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -212,6 +212,14 @@ Options::parse (int   *argc_p,
           else if (strcmp (argv[1], "set-markers") == 0)
             {
               command = SET_MARKERS;
+            }
+          else if (strcmp (argv[1], "set-names") == 0)
+            {
+              command = SET_NAMES;
+            }
+          else if (strcmp (argv[1], "get-names") == 0)
+            {
+              command = GET_NAMES;
             }
 
           if (command != NONE)
@@ -444,6 +452,25 @@ main (int argc, char **argv)
             }
           printf ("\n");
         }
+    }
+  else if (options.command == Options::SET_NAMES)
+    {
+      assert (argc == 4);
+
+      WavSet wset;
+      load_or_die (wset, argv[1]);
+      wset.name = argv[2];
+      wset.short_name = argv[3];
+      wset.save (argv[1]);
+    }
+  else if (options.command == Options::GET_NAMES)
+    {
+      assert (argc == 2);
+
+      WavSet wset;
+      load_or_die (wset, argv[1]);
+      printf ("name \"%s\"\n", wset.name.c_str());
+      printf ("short_name \"%s\"\n", wset.short_name.c_str());
     }
   else if (options.command == Options::ENCODE)
     {
