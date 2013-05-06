@@ -1197,30 +1197,27 @@ Encoder::set_loop_seconds (Audio::LoopType loop_type, double loop_start_sec, dou
 }
 
 static void
-convert_freqs (const vector<float>& freqs, vector<uint16_t>& ifreqs, double fundamental_freq)
+convert_freqs_mags_phases (const EncoderBlock& eblock, AudioBlock& ablock, double fundamental_freq)
 {
-  ifreqs.resize (freqs.size());
+  ablock.freqs.clear();
+  ablock.mags.clear();
+  ablock.phases.clear();
 
-  for (size_t i = 0; i < freqs.size(); i++)
-    ifreqs[i] = sm_freq2ifreq (freqs[i] / fundamental_freq);
-}
+  for (size_t i = 0; i < eblock.freqs.size(); i++)
+    {
+      const uint16_t ifreq  = sm_freq2ifreq (eblock.freqs[i] / fundamental_freq);
+      const uint16_t imag   = sm_factor2idb (eblock.mags[i]);
+      const uint16_t iphase = qBound<int> (0, sm_round_positive (eblock.phases[i] / 2 / M_PI * 65536), 65535);
 
-static void
-convert_mags (const vector<float>& mags, vector<uint16_t>& imags)
-{
-  imags.resize (mags.size());
-
-  for (size_t i = 0; i < mags.size(); i++)
-    imags[i] = sm_factor2idb (mags[i]);
-}
-
-static void
-convert_phases (const vector<float>& phases, vector<uint16_t>& iphases)
-{
-  iphases.resize (phases.size());
-
-  for (size_t i = 0; i < phases.size(); i++)
-    iphases[i] = qBound<int> (0, sm_round_positive (phases[i] / 2 / M_PI * 65536), 65535);
+      // corner frequencies are most likely not part of the sound, but analysis
+      // errors; so we don't save the smallest/largest possible freq
+      if (ifreq != 0 && ifreq != 65535)
+        {
+          ablock.freqs.push_back (ifreq);
+          ablock.mags.push_back (imag);
+          ablock.phases.push_back (iphase);
+        }
+    }
 }
 
 static void
@@ -1251,9 +1248,7 @@ Encoder::save (const string& filename, double fundamental_freq)
   for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
     {
       AudioBlock block;
-      convert_freqs (ai->freqs, block.freqs, audio.fundamental_freq);
-      convert_mags (ai->mags, block.mags);
-      convert_phases (ai->phases, block.phases);
+      convert_freqs_mags_phases (*ai, block, audio.fundamental_freq);
       convert_noise (ai->noise, block.noise);
       block.lpc_lsf_p = ai->lpc_lsf_p;
       block.lpc_lsf_q = ai->lpc_lsf_q;

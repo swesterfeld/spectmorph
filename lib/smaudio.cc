@@ -198,7 +198,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 
               for (size_t i = 0; i < ib.size(); i++)
                 {
-                  if (ib[i] <= old_freq)
+                  if (ib[i] < old_freq)
                     {
                       printf ("frequency data is not sorted, can't play file\n");
                       return BSE_ERROR_PARSE_ERROR;
@@ -305,7 +305,7 @@ SpectMorph::Audio::save (GenericOut *file) const
 
       for (size_t f = 0; f < contents[i].freqs.size(); f++)
         {
-          assert (contents[i].freqs[f] > old_freq);
+          assert (contents[i].freqs[f] >= old_freq);
           old_freq = contents[i].freqs[f];
         }
 
