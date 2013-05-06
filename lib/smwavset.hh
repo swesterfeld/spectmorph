@@ -31,6 +31,8 @@ class WavSet
 public:
   ~WavSet();
 
+  std::string              name;
+  std::string              short_name;
   std::vector<WavSetWave>  waves;
 
   void clear();

@@ -29,6 +29,9 @@ WavSet::save (const string& filename, bool embed_models)
       exit (1);
     }
 
+  of.write_string ("name", name);
+  of.write_string ("short_name", short_name);
+
   for (size_t i = 0; i < waves.size(); i++)
     {
       of.begin_section ("wave");
@@ -171,6 +174,19 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
                 }
               else
                 printf ("unhandled string %s %s\n", section.c_str(), ifile.event_name().c_str());
+            }
+          else if (section == "")
+            {
+              if (ifile.event_name() == "name")
+                {
+                  name = ifile.event_data();
+                }
+              else if (ifile.event_name() == "short_name")
+                {
+                  short_name = ifile.event_data();
+                }
+              else
+                printf ("unhandled global string %s\n", ifile.event_name().c_str());
             }
           else
             assert (false);
