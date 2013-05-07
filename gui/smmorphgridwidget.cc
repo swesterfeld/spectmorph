@@ -14,6 +14,7 @@ using std::max;
 MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
   morph_grid (morph_grid)
 {
+  // debug: label_font.setPixelSize (24);
   move_controller = false;
   update_size();
   connect (morph_grid->morph_plan(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
@@ -27,7 +28,7 @@ MorphGridWidget::update_size()
   compute_node_rect (&node_rect_width, &node_rect_height);
 
   int base_size;
-  base_size = pow (1.2, morph_grid->zoom()) * 40;
+  base_size = pow (1.2, morph_grid->zoom()) * max (node_rect_width, node_rect_height);
   setFixedSize ((morph_grid->width() - 1) * base_size + 20 + node_rect_width,
                 (morph_grid->height() - 1) * base_size + 20 + node_rect_height);
 }
@@ -87,8 +88,8 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
         }
     }
 
-  int start_y = 20;
-  int end_y = height() - 20;
+  int start_y = 10 + node_rect_height / 2;
+  int end_y = height() - node_rect_height / 2 - 10;
   for (int y = 0; y < morph_grid->height(); y++)
     {
       if (morph_grid->height() > 1)
@@ -111,12 +112,16 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
           else
             painter.setBrush (QColor (255, 255, 255, 128));
 
-          painter.drawRoundedRect (QRect (x_coord[x] - node_rect_width / 2, y_coord[y] - 10, node_rect_width, 20), 10, 10);
+          painter.drawRoundedRect (QRect (x_coord[x] - node_rect_width / 2,
+                                          y_coord[y] - node_rect_height / 2,
+                                          node_rect_width, node_rect_height), 10, 10);
 
           if (x > 0)
-            painter.drawLine (x_coord[x - 1] + node_rect_width / 2, y_coord[y], x_coord[x] - node_rect_width / 2, y_coord[y]);
+            painter.drawLine (x_coord[x - 1] + node_rect_width / 2, y_coord[y],
+                              x_coord[x]     - node_rect_width / 2, y_coord[y]);
           if (y > 0)
-            painter.drawLine (x_coord[x], y_coord[y - 1] + 10, x_coord[x], y_coord[y] - 10);
+            painter.drawLine (x_coord[x], y_coord[y - 1] + node_rect_height / 2,
+                              x_coord[x], y_coord[y]     - node_rect_height / 2);
         }
     }
 
@@ -134,7 +139,8 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
           if (!node.op && node.smset == "")
             painter.setPen (QColor (200, 0, 0));
 
-          QRect rect (x_coord[x] - 20, y_coord[y] - 10, 40, 20);
+          QRect rect (x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
+                      node_rect_width, node_rect_height);
           painter.drawText (rect, Qt::AlignCenter, morph_grid->input_node_label (x, y).c_str());
         }
     }
