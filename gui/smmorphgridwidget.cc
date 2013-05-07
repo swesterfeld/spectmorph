@@ -97,20 +97,6 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
             painter.drawLine (x_coord[x], y_coord[y - 1] + 10, x_coord[x], y_coord[y] - 10);
         }
     }
-  painter.setPen (QPen (QColor (200, 0, 0), 2));
-  for (int x = 0; x < morph_grid->width(); x++)
-    {
-      for (int y = 0; y < morph_grid->height(); y++)
-        {
-          MorphGridNode node = morph_grid->input_node (x, y);
-
-          if (!node.op && node.smset == "")
-            {
-              painter.drawLine (x_coord[x] - 10, y_coord[y] - 10, x_coord[x] + 10, y_coord[y] + 10);
-              painter.drawLine (x_coord[x] + 10, y_coord[y] - 10, x_coord[x] - 10, y_coord[y] + 10);
-            }
-        }
-    }
 
   for (int x = 0; x < morph_grid->width(); x++)
     {
@@ -122,6 +108,9 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
             painter.setPen (QColor (255, 255, 255));
 
           MorphGridNode node = morph_grid->input_node (x, y);
+
+          if (!node.op && node.smset == "")
+            painter.setPen (QColor (200, 0, 0));
 
           QRect rect (x_coord[x] - 20, y_coord[y] - 10, 40, 20);
           painter.drawText (rect, Qt::AlignCenter, morph_grid->input_node_label (x, y).c_str());
