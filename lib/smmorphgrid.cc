@@ -3,6 +3,8 @@
 #include "smmorphgrid.hh"
 #include "smleakdebugger.hh"
 #include "smmorphplan.hh"
+#include "smwavset.hh"
+#include "smwavsetrepo.hh"
 
 using namespace SpectMorph;
 
@@ -386,6 +388,41 @@ MorphGrid::set_y_control_op (MorphOperator *op)
   m_y_control_op = op;
 
   m_morph_plan->emit_plan_changed();
+}
+
+string
+MorphGrid::input_node_label (int x, int y)
+{
+  g_return_val_if_fail (x >= 0 && x < m_width, "XXX");
+  g_return_val_if_fail (y >= 0 && y < m_height, "XXX");
+
+  const MorphGridNode& node = m_input_node[x][y];
+  if (node.smset != "")
+    {
+      string smset_dir = m_morph_plan->index()->smset_dir();
+      string path = smset_dir + "/" + node.smset;
+
+      WavSet *wav_set = WavSetRepo::the()->get (path);
+      if (wav_set)
+        return wav_set->short_name;
+    }
+  else if (node.op)
+    {
+      string result;
+      string name = node.op->name();
+
+      if (name.size() >= 1)
+        result += name[0];
+
+      if (name.size() >= 3)
+        result += name[name.size() - 2];
+
+      if (name.size() >= 2)
+        result += name[name.size() - 1];
+
+      return result;
+    }
+  return "???";
 }
 
 MorphGridNode::MorphGridNode() :
