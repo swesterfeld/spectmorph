@@ -10,6 +10,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::max;
+using std::min;
 
 MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
   morph_grid (morph_grid)
@@ -74,8 +75,8 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
   int node_rect_width, node_rect_height;
   compute_node_rect (&node_rect_width, &node_rect_height);
 
-  int start_x = 10 + node_rect_width / 2;
-  int end_x = width() - node_rect_width / 2 - 10;
+  const int start_x = 10 + node_rect_width / 2;
+  const int end_x = width() - node_rect_width / 2 - 10;
   for (int x = 0; x < morph_grid->width(); x++)
     {
       if (morph_grid->width() > 1)
@@ -88,8 +89,8 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
         }
     }
 
-  int start_y = 10 + node_rect_height / 2;
-  int end_y = height() - node_rect_height / 2 - 10;
+  const int start_y = 10 + node_rect_height / 2;
+  const int end_y = height() - node_rect_height / 2 - 10;
   for (int y = 0; y < morph_grid->height(); y++)
     {
       if (morph_grid->height() > 1)
@@ -102,7 +103,7 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
         }
     }
 
-
+  const int corner_radius = min (node_rect_width, node_rect_height) / 2;
   for (int x = 0; x < morph_grid->width(); x++)
     {
       for (int y = 0; y < morph_grid->height(); y++)
@@ -114,7 +115,7 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
 
           painter.drawRoundedRect (QRect (x_coord[x] - node_rect_width / 2,
                                           y_coord[y] - node_rect_height / 2,
-                                          node_rect_width, node_rect_height), 10, 10);
+                                          node_rect_width, node_rect_height), corner_radius, corner_radius);
 
           if (x > 0)
             painter.drawLine (x_coord[x - 1] + node_rect_width / 2, y_coord[y],
@@ -144,8 +145,8 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
           painter.drawText (rect, Qt::AlignCenter, morph_grid->input_node_label (x, y).c_str());
         }
     }
-  int mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
-  int my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
+  const int mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
+  const int my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
 
   painter.setPen (QPen (QColor (130, 130, 255), 3));
   painter.drawLine (mx - 10, my - 10, mx + 10, my + 10);
