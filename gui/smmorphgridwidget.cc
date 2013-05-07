@@ -22,10 +22,39 @@ MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
 void
 MorphGridWidget::update_size()
 {
+  int node_rect_width;
+  int node_rect_height;
+  compute_node_rect (&node_rect_width, &node_rect_height);
+
   int base_size;
   base_size = pow (1.2, morph_grid->zoom()) * 40;
-  setFixedSize ((morph_grid->width() - 1) * base_size + 30, 
-                (morph_grid->height() - 1) * base_size + 30);
+  setFixedSize ((morph_grid->width() - 1) * base_size + 20 + node_rect_width,
+                (morph_grid->height() - 1) * base_size + 20 + node_rect_height);
+}
+
+void
+MorphGridWidget::compute_node_rect (int *width, int *height)
+{
+  QFontMetrics font_metrics (label_font);
+
+  int node_rect_width = 0, node_rect_height = 0;
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          QRect r = font_metrics.boundingRect (morph_grid->input_node_label (x, y).c_str());
+          node_rect_width = max (node_rect_width, r.width());
+          node_rect_height = max (node_rect_height, r.height());
+        }
+    }
+  node_rect_height += 5; // space around label
+  node_rect_width += 20; // round corners
+
+  if (width)
+    *width = node_rect_width;
+
+  if (height)
+    *height = node_rect_height;
 }
 
 void
@@ -36,20 +65,13 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
 
   painter.setBrush (QColor (255, 255, 255, 128));
   painter.setPen (QPen (QColor (200, 200, 200), 2));
+  painter.setFont (label_font);
 
   x_coord.resize (morph_grid->width());
   y_coord.resize (morph_grid->height());
 
-  int node_rect_width = 0;
-  for (int x = 0; x < morph_grid->width(); x++)
-    {
-      for (int y = 0; y < morph_grid->height(); y++)
-        {
-          QRect r = painter.fontMetrics().boundingRect (morph_grid->input_node_label (x, y).c_str());
-          node_rect_width = max (node_rect_width, r.width());
-        }
-    }
-  node_rect_width += 20; // round corners
+  int node_rect_width, node_rect_height;
+  compute_node_rect (&node_rect_width, &node_rect_height);
 
   int start_x = 10 + node_rect_width / 2;
   int end_x = width() - node_rect_width / 2 - 10;

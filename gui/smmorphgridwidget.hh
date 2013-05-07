@@ -17,6 +17,8 @@ class MorphGridWidget : public QWidget
   std::vector<int> x_coord;
   std::vector<int> y_coord;
 
+  QFont      label_font;
+
   MorphGrid *morph_grid;
   bool       move_controller;
 
@@ -25,6 +27,7 @@ class MorphGridWidget : public QWidget
   void mouseReleaseEvent (QMouseEvent *event);
 
   void update_size();
+  void compute_node_rect (int *width, int *height);
 
 public:
   MorphGridWidget (MorphGrid *morph_grid);
