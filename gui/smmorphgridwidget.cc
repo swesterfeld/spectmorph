@@ -9,6 +9,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::max;
 
 MorphGridWidget::MorphGridWidget (MorphGrid *morph_grid) :
   morph_grid (morph_grid)
@@ -39,8 +40,19 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
   x_coord.resize (morph_grid->width());
   y_coord.resize (morph_grid->height());
 
-  int start_x = 20;
-  int end_x = width() - 20;
+  int node_rect_width = 0;
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          QRect r = painter.fontMetrics().boundingRect (morph_grid->input_node_label (x, y).c_str());
+          node_rect_width = max (node_rect_width, r.width());
+        }
+    }
+  node_rect_width += 20; // round corners
+
+  int start_x = 10 + node_rect_width / 2;
+  int end_x = width() - node_rect_width / 2 - 10;
   for (int x = 0; x < morph_grid->width(); x++)
     {
       if (morph_grid->width() > 1)
@@ -77,10 +89,10 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
           else
             painter.setBrush (QColor (255, 255, 255, 128));
 
-          painter.drawEllipse (QRect (x_coord[x] - 10, y_coord[y] - 10, 20, 20));
+          painter.drawRoundedRect (QRect (x_coord[x] - node_rect_width / 2, y_coord[y] - 10, node_rect_width, 20), 10, 10);
 
           if (x > 0)
-            painter.drawLine (x_coord[x - 1] + 10, y_coord[y], x_coord[x] - 10, y_coord[y]);
+            painter.drawLine (x_coord[x - 1] + node_rect_width / 2, y_coord[y], x_coord[x] - node_rect_width / 2, y_coord[y]);
           if (y > 0)
             painter.drawLine (x_coord[x], y_coord[y - 1] + 10, x_coord[x], y_coord[y] - 10);
         }
@@ -97,6 +109,22 @@ MorphGridWidget::paintEvent (QPaintEvent *event)
               painter.drawLine (x_coord[x] - 10, y_coord[y] - 10, x_coord[x] + 10, y_coord[y] + 10);
               painter.drawLine (x_coord[x] + 10, y_coord[y] - 10, x_coord[x] - 10, y_coord[y] + 10);
             }
+        }
+    }
+
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
+            painter.setPen (QColor (0, 0, 0));
+          else
+            painter.setPen (QColor (255, 255, 255));
+
+          MorphGridNode node = morph_grid->input_node (x, y);
+
+          QRect rect (x_coord[x] - 20, y_coord[y] - 10, 40, 20);
+          painter.drawText (rect, Qt::AlignCenter, morph_grid->input_node_label (x, y).c_str());
         }
     }
   int mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
