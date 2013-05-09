@@ -57,15 +57,7 @@ sm_init_plugin()
 void
 sm_init (int *argc_p, char ***argv_p)
 {
-  SfiInitValue values[] = {
-    { "stand-alone",            "true" }, /* no rcfiles etc. */
-    { "wave-chunk-padding",     NULL, 1, },
-    { "dcache-block-size",      NULL, 8192, },
-    { "dcache-cache-memory",    NULL, 5 * 1024 * 1024, },
-    { "load-core-plugins", "1" },
-    { NULL }
-  };
-  bse_init_inprocess (argc_p, argv_p, NULL, values);
+  bse_init_inprocess (argc_p, *argv_p, NULL);
   sm_init_plugin();
 }
 

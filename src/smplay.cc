@@ -21,15 +21,15 @@
 
 #include <list>
 
-using namespace Birnet;
 using namespace SpectMorph;
 using std::max;
 using std::string;
+using std::vector;
 
 /// @cond
 struct Options
 {
-  String	      program_name; /* FIXME: what to do with that */
+  string	      program_name; /* FIXME: what to do with that */
   SineDecoder::Mode   decoder_mode;
   bool                noise_enabled;
   bool                sines_enabled;
@@ -37,7 +37,7 @@ struct Options
   int                 rate;
   int                 midi_note;
   double              gain;
-  String              export_wav;
+  string              export_wav;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);

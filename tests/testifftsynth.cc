@@ -6,8 +6,8 @@
 #include "smmath.hh"
 #include "smmain.hh"
 #include "smfft.hh"
+#include "smutils.hh"
 
-#include <birnet/birnetutils.hh>
 #include <bse/bsemathsignal.hh>
 
 #include <vector>
@@ -20,7 +20,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 using std::min;
-using Birnet::AlignedArray;
 
 double
 gettime()

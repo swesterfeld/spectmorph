@@ -17,12 +17,12 @@
 #include "smmath.hh"
 #include "smcwt.hh"
 #include "smfftthread.hh"
+#include "smutils.hh"
 #include <math.h>
 
 using std::vector;
 using std::max;
 using std::complex;
-using Birnet::AlignedArray;
 using namespace SpectMorph;
 
 float

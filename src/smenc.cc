@@ -15,6 +15,7 @@
 #include "smencoder.hh"
 #include "smmain.hh"
 #include "smdebug.hh"
+#include "smutils.hh"
 
 #include "config.h"
 
@@ -24,14 +25,13 @@ using std::list;
 using std::min;
 using std::max;
 
-using namespace Birnet;
-
 using SpectMorph::Audio;
 using SpectMorph::EncoderBlock;
 using SpectMorph::EncoderParams;
 using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
 using SpectMorph::sm_init;
+using SpectMorph::string_printf;
 
 static float
 freqFromNote (float note)

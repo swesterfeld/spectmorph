@@ -2,6 +2,7 @@
 
 #include "smobject.hh"
 #include <assert.h>
+#include <glib.h>
 
 using namespace SpectMorph;
 

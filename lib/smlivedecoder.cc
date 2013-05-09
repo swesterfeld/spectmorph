@@ -3,6 +3,7 @@
 #include "smlivedecoder.hh"
 #include "smmath.hh"
 #include "smleakdebugger.hh"
+#include "smutils.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
@@ -13,7 +14,6 @@
 using namespace SpectMorph;
 
 using std::vector;
-using Birnet::AlignedArray;
 using std::min;
 
 static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");

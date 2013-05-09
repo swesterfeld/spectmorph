@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_FFTTHREAD_HH
 #define SPECTMORPH_FFTTHREAD_HH
 
-#include <birnet/birnet.hh>
 #include <bse/bseloader.hh>
 
 #include "smcommon.hh"

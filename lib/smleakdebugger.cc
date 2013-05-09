@@ -3,6 +3,7 @@
 #include "smleakdebugger.hh"
 #include "smmain.hh"
 #include <assert.h>
+#include <glib.h>
 
 #define DEBUG (1)
 

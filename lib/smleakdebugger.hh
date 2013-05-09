@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_LEAK_DEBUGGER_HH
 #define SPECTMORPH_LEAK_DEBUGGER_HH
 
-#include <birnet/birnet.hh>
 #include <map>
 
 #include <QMutex>

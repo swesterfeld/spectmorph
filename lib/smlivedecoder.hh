@@ -8,7 +8,6 @@
 #include "smnoisedecoder.hh"
 #include "smlivedecodersource.hh"
 #include "smpolyphaseinter.hh"
-#include <birnet/birnet.hh>
 #include <vector>
 
 namespace SpectMorph {
@@ -54,7 +53,7 @@ class LiveDecoder
   size_t              latency_zero_samples;
   int                 noise_seed;
 
-  Birnet::AlignedArray<float,16> *sse_samples;
+  Rapicorn::AlignedArray<float,16> *sse_samples;
 public:
   LiveDecoder (WavSet *smset);
   LiveDecoder (LiveDecoderSource *source);

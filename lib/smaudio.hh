@@ -78,7 +78,7 @@ enum AudioLoadOptions
  */
 class Audio
 {
-  BIRNET_PRIVATE_CLASS_COPY (Audio);
+  RAPICORN_CLASS_NON_COPYABLE (Audio);
 public:
   Audio();
   ~Audio();

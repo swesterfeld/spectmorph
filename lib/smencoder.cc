@@ -5,6 +5,7 @@
 #include "smfft.hh"
 #include "smlpc.hh"
 #include "smdebug.hh"
+#include "smutils.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
@@ -19,7 +20,6 @@
 #include <algorithm>
 
 using namespace SpectMorph;
-using Birnet::AlignedArray;
 using std::vector;
 using std::string;
 using std::map;

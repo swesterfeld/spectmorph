@@ -14,7 +14,6 @@
 using std::vector;
 using SpectMorph::NoiseDecoder;
 using std::map;
-using Birnet::AlignedArray;
 using SpectMorph::sm_sse;
 
 static map<size_t, float *> cos_window_for_block_size;

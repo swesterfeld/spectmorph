@@ -37,7 +37,6 @@ using std::vector;
 namespace SpectMorph {
 
 using namespace Bse;
-using namespace Birnet;
 
 class Osc : public OscBase {
   struct Properties : public OscProperties {

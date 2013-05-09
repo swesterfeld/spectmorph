@@ -3,8 +3,6 @@
 #ifndef SPECTMORPH_OBJECT_HH
 #define SPECTMORPH_OBJECT_HH
 
-#include <birnet/birnet.hh>
-
 #include <QObject>
 #include <QMutex>
 

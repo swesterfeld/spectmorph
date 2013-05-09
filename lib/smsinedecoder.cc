@@ -5,14 +5,13 @@
 #include "smfft.hh"
 #include "smifftsynth.hh"
 #include "smaudio.hh"
-#include <birnet/birnetutils.hh>
+#include "smutils.hh"
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>
 
 using SpectMorph::SineDecoder;
 using SpectMorph::AudioBlock;
-using Birnet::AlignedArray;
 using std::vector;
 
 /**

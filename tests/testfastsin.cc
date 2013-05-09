@@ -1,15 +1,14 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmath.hh"
-#include <birnet/birnetutils.hh>
 #include <algorithm>
 #include <stdio.h>
 #include <sys/time.h>
 #include <assert.h>
+#include "smutils.hh"
 #include <string>
 
 using namespace SpectMorph;
-using Birnet::AlignedArray;
 using std::string;
 
 double

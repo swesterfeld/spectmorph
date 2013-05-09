@@ -4,12 +4,13 @@
 #define SPECTMORPH_UTIL_HH
 
 #include <string>
-#include <birnet/birnet.hh>
+#include <rapicorn.hh>
 
 namespace SpectMorph
 {
 
-std::string string_printf (const char *format, ...) BIRNET_PRINTF (1, 2);
+using Rapicorn::AlignedArray;
+std::string string_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
 
 } // namespace SpectMorph
 
