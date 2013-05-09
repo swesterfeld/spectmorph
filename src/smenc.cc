@@ -369,14 +369,14 @@ main (int argc, char **argv)
             sm_file = input_file.substr (0, dot_pos);
 
           if (n_channels != 1)
-            sm_file += Birnet::string_printf ("-ch%d", channel);
+            sm_file += string_printf ("-ch%d", channel);
           sm_file += ".sm";
         }
       else if (argc == 3)
         {
           input_file = argv[1];
           sm_file = argv[2];
-          substitute (sm_file, 'c', Birnet::string_printf ("%d", channel));
+          substitute (sm_file, 'c', string_printf ("%d", channel));
           if (sm_file == argv[2] && n_channels > 1)
             {
               fprintf (stderr, "%s: input file '%s' has more than one channel, need pattern %%c in output file name.\n", options.program_name.c_str(), input_file.c_str());

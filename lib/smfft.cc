@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smfft.hh"
+#include "smutils.hh"
 #include <algorithm>
 #include <map>
 #include "config.h"
@@ -252,7 +253,7 @@ save_wisdom()
   /* detect if we're running in valgrind - in this case newly accumulated wisdom is probably flawed */
   bool valgrind = false;
 
-  FILE *maps = fopen (Birnet::string_printf ("/proc/%d/maps", getpid()).c_str(), "r");
+  FILE *maps = fopen (string_printf ("/proc/%d/maps", getpid()).c_str(), "r");
   if (maps)
     {
       char buffer[1024];
@@ -272,7 +273,7 @@ save_wisdom()
    *
    * its theoretically possible (but highly unlikely) that we leak a *wisdom*.new.12345 file
    */
-  string new_wisdom_filename = Birnet::string_printf ("%s.new.%d", wisdom_filename().c_str(), getpid());
+  string new_wisdom_filename = string_printf ("%s.new.%d", wisdom_filename().c_str(), getpid());
   FILE *outfile = fopen (new_wisdom_filename.c_str(), "w");
   if (outfile)
     {

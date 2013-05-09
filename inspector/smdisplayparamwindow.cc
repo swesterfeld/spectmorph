@@ -2,7 +2,6 @@
 
 #include "smdisplayparamwindow.hh"
 #include <assert.h>
-#include <birnet/birnet.hh>
 
 #include <QVBoxLayout>
 

@@ -5,10 +5,10 @@
 #include "smmemout.hh"
 #include "smmain.hh"
 #include "smhexstring.hh"
+#include "smutils.hh"
 
 #include <map>
 
-#include <birnet/birnet.hh>
 #include <glib.h>
 #include <stdlib.h>
 
@@ -79,14 +79,14 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
     {
       string property = ifile.event_name();
       property = property_prefix + section_prefix + property;
-      property = Birnet::string_printf ("%s[%d]", property.c_str(), name_counter[property]++);
+      property = string_printf ("%s[%d]", property.c_str(), name_counter[property]++);
 
       if (ifile.event() == InFile::BEGIN_SECTION)
         {
           const string& s = ifile.event_name();
 
           ofile.begin_section (ifile.event_name());
-          section_prefix = Birnet::string_printf ("%s[%d]", s.c_str(), section_counter[s]++) + ".";
+          section_prefix = string_printf ("%s[%d]", s.c_str(), section_counter[s]++) + ".";
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
@@ -103,7 +103,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
       else if (ifile.event() == InFile::FLOAT)
         {
           double fvalue = ifile.event_float();
-          string  value = Birnet::string_printf ("%.17g", fvalue);
+          string  value = string_printf ("%.17g", fvalue);
 
           process_property (property, value);
           fvalue = atof (value.c_str());
@@ -117,7 +117,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
       else if (ifile.event() == InFile::INT)
         {
           int ivalue = ifile.event_int();
-          string value = Birnet::string_printf ("%d", ivalue);
+          string value = string_printf ("%d", ivalue);
 
           process_property (property, value);
           ivalue = atoi (value.c_str());

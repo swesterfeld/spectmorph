@@ -2,7 +2,7 @@
 
 #include "smmorphlfoview.hh"
 #include "smmorphplan.hh"
-#include <birnet/birnet.hh>
+#include "smutils.hh"
 
 #include <QLabel>
 #include <QCheckBox>
@@ -122,7 +122,7 @@ void
 MorphLFOView::on_frequency_changed (int new_value)
 {
   double frequency = pow (10, new_value / 100.0);
-  frequency_label->setText (Birnet::string_printf ("%.3f Hz", frequency).c_str());
+  frequency_label->setText (string_printf ("%.3f Hz", frequency).c_str());
   morph_lfo->set_frequency (frequency);
 }
 
@@ -130,7 +130,7 @@ void
 MorphLFOView::on_depth_changed (int new_value)
 {
   double depth = new_value / 100.0;
-  depth_label->setText (Birnet::string_printf ("%.1f %%", depth * 100).c_str());
+  depth_label->setText (string_printf ("%.1f %%", depth * 100).c_str());
   morph_lfo->set_depth (depth);
 }
 
@@ -138,7 +138,7 @@ void
 MorphLFOView::on_center_changed (int new_value)
 {
   double center = new_value / 100.0;
-  center_label->setText (Birnet::string_printf ("%.2f", center).c_str());
+  center_label->setText (string_printf ("%.2f", center).c_str());
   morph_lfo->set_center (center);
 }
 
@@ -146,7 +146,7 @@ void
 MorphLFOView::on_start_phase_changed (int new_value)
 {
   double start_phase = new_value;
-  start_phase_label->setText (Birnet::string_printf ("%.2f", start_phase).c_str());
+  start_phase_label->setText (string_printf ("%.2f", start_phase).c_str());
   morph_lfo->set_start_phase (start_phase);
 }
 

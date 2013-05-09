@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmain.hh"
+#include "smutils.hh"
 #include <string>
 #include <vector>
 
@@ -51,11 +52,11 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
-          args.push_back (Birnet::string_printf ("-f %s", opt_arg));
+          args.push_back (string_printf ("-f %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("-m %s", opt_arg));
+          args.push_back (string_printf ("-m %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "-O0"))
         {
@@ -71,7 +72,7 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "-O", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("-O %s", opt_arg));
+          args.push_back (string_printf ("-O %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "-s"))
         {
@@ -91,19 +92,19 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--loop-start", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("--loop-start %s", opt_arg));
+          args.push_back (string_printf ("--loop-start %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "--loop-end", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("--loop-end %s", opt_arg));
+          args.push_back (string_printf ("--loop-end %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "--loop-type", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("--loop-type %s", opt_arg));
+          args.push_back (string_printf ("--loop-type %s", opt_arg));
         }
       else if (check_arg (argc, argv, &i, "--loop-unit", &opt_arg))
         {
-          args.push_back (Birnet::string_printf ("--loop-unit %s", opt_arg));
+          args.push_back (string_printf ("--loop-unit %s", opt_arg));
         }
      }
 
@@ -156,7 +157,7 @@ main (int argc, char **argv)
 
   if (argc == 3)
     {
-      string cmdline = Birnet::string_printf ("smenc \"%s\" \"%s\"", argv[1], argv[2]);
+      string cmdline = string_printf ("smenc \"%s\" \"%s\"", argv[1], argv[2]);
       string cmdargs;
       for (vector<string>::iterator ai = options.args.begin(); ai != options.args.end(); ai++)
         cmdargs += " " + *ai;
@@ -177,11 +178,11 @@ main (int argc, char **argv)
 
       char *sha256_sum = g_compute_checksum_for_data (G_CHECKSUM_SHA256, &data[0], data.size());
 
-      string cache_filename = Birnet::string_printf ("%s/.smenccache/%s", getenv ("HOME"), sha256_sum);
+      string cache_filename = string_printf ("%s/.smenccache/%s", getenv ("HOME"), sha256_sum);
       FILE *cache_file = fopen (cache_filename.c_str(), "r");
       if (cache_file)
         {
-          string cpcmd = Birnet::string_printf ("cp %s %s", cache_filename.c_str(), argv[2]);
+          string cpcmd = string_printf ("cp %s %s", cache_filename.c_str(), argv[2]);
           int cret = system (cpcmd.c_str());
           int cxstatus = WEXITSTATUS (cret);
           exit (cxstatus);
@@ -193,7 +194,7 @@ main (int argc, char **argv)
           int xstatus = WEXITSTATUS (ret);
           if (xstatus == 0)
             {
-              string cpcmd = Birnet::string_printf ("cp %s %s", argv[2], cache_filename.c_str());
+              string cpcmd = string_printf ("cp %s %s", argv[2], cache_filename.c_str());
               int cret = system (cpcmd.c_str());
               int cxstatus = WEXITSTATUS (cret);
               exit (cxstatus);

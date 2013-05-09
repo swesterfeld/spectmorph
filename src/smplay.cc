@@ -1,6 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <birnet/birnet.hh>
 #include <bse/bse.hh>
 #include <bse/gslfft.hh>
 #include <bse/bsemathsignal.hh>

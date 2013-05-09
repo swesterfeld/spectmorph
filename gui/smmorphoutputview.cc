@@ -2,7 +2,7 @@
 
 #include "smmorphoutputview.hh"
 #include "smmorphplan.hh"
-#include <birnet/birnet.hh>
+#include "smutils.hh"
 
 #include <QLabel>
 
@@ -33,7 +33,7 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   for (int ch = 0; ch < 4; ch++)
     {
       ChannelView *chv = new ChannelView();
-      chv->label = new QLabel (Birnet::string_printf ("Channel #%d", ch + 1).c_str());
+      chv->label = new QLabel (string_printf ("Channel #%d", ch + 1).c_str());
       chv->combobox = new ComboBoxOperator (morph_output->morph_plan(), &op_filter_instance);
 
       grid_layout->addWidget (chv->label, ch, 0);

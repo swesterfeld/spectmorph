@@ -286,8 +286,8 @@ MorphView::on_motion_notify_event (GdkEventMotion *event)
 
   double freq = (1 - event->y / height) * 22050;
 
-  signal_mouse_changed (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms),
-                        Birnet::string_printf ("Freq: %.2f Hz", freq));
+  signal_mouse_changed (string_printf ("Time: %02d:%02d:%03d ms", m, s, ms),
+                        string_printf ("Freq: %.2f Hz", freq));
 
   return true;
 }

@@ -1,9 +1,9 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smhexstring.hh"
+#include "smutils.hh"
 
 #include <glib.h>
-#include <birnet/birnet.hh>
 
 using namespace SpectMorph;
 
@@ -52,7 +52,7 @@ HexString::encode (const vector<unsigned char>& data)
   string out;
   for (size_t i = 0; i < data.size(); i++)
     {
-      out += Birnet::string_printf ("%02x", data[i]);
+      out += string_printf ("%02x", data[i]);
     }
   return out;
 }

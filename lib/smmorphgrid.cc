@@ -5,6 +5,7 @@
 #include "smmorphplan.hh"
 #include "smwavset.hh"
 #include "smwavsetrepo.hh"
+#include "smutils.hh"
 
 using namespace SpectMorph;
 
@@ -73,9 +74,9 @@ MorphGrid::save (OutFile& out_file)
     {
       for (int y = 0; y < m_height; y++)
         {
-          string op_name = Birnet::string_printf ("input_op_%d_%d", x, y);
-          string delta_db_name = Birnet::string_printf ("input_delta_db_%d_%d", x, y);
-          string smset_name = Birnet::string_printf ("input_smset_%d_%d", x, y);
+          string op_name = string_printf ("input_op_%d_%d", x, y);
+          string delta_db_name = string_printf ("input_delta_db_%d_%d", x, y);
+          string smset_name = string_printf ("input_smset_%d_%d", x, y);
 
           write_operator (out_file, op_name, m_input_node[x][y].op);
           out_file.write_float (delta_db_name, m_input_node[x][y].delta_db);
@@ -143,7 +144,7 @@ MorphGrid::load (InFile& ifile)
                     {
                       for (int y = 0; y < m_height; y++)
                         {
-                          string name = Birnet::string_printf ("input_delta_db_%d_%d", x, y);
+                          string name = string_printf ("input_delta_db_%d_%d", x, y);
 
                           delta_db_map[name] = make_pair (x, y);
                         }
@@ -183,8 +184,8 @@ MorphGrid::post_load (OpNameMap& op_name_map)
     {
       for (int y = 0; y < m_height; y++)
         {
-          string name = Birnet::string_printf ("input_op_%d_%d", x, y);
-          string smset_name = Birnet::string_printf ("input_smset_%d_%d", x, y);
+          string name = string_printf ("input_op_%d_%d", x, y);
+          string smset_name = string_printf ("input_smset_%d_%d", x, y);
 
           m_input_node[x][y].op = op_name_map[load_map[name]];
           m_input_node[x][y].smset = load_map[smset_name];

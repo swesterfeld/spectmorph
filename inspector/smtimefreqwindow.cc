@@ -3,6 +3,7 @@
 #include "smtimefreqwindow.hh"
 #include "smmath.hh"
 #include "smnavigator.hh"
+#include "smutils.hh"
 
 #include <QVBoxLayout>
 
@@ -123,8 +124,8 @@ TimeFreqWindow::on_display_params_changed()
   double min_db = min_db_slider->value() / 1000.0;
   double boost = boost_slider->value() / 1000.0;
 
-  min_db_label->setText (Birnet::string_printf ("%.2f", min_db).c_str());
-  boost_label->setText (Birnet::string_printf ("%.2f", boost).c_str());
+  min_db_label->setText (string_printf ("%.2f", min_db).c_str());
+  boost_label->setText (string_printf ("%.2f", boost).c_str());
   m_time_freq_view->set_display_params (min_db, boost);
 }
 

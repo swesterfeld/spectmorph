@@ -11,6 +11,7 @@
 #include "smmorphlinear.hh"
 #include "smhexstring.hh"
 #include "smleakdebugger.hh"
+#include "smutils.hh"
 
 #include <map>
 #include <assert.h>
@@ -87,7 +88,7 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
         {
           i++;
           uniq = true;
-          name = Birnet::string_printf ("%s #%d", op->type_name().c_str(), i);
+          name = string_printf ("%s #%d", op->type_name().c_str(), i);
 
           for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
             {

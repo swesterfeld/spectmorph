@@ -3,7 +3,7 @@
 #include "smmorphlinearview.hh"
 #include "smmorphplan.hh"
 #include "smcomboboxoperator.hh"
-#include <birnet/birnet.hh>
+#include "smutils.hh"
 
 #include <QLabel>
 #include <QCheckBox>
@@ -112,7 +112,7 @@ void
 MorphLinearView::on_morphing_changed (int new_value)
 {
   double dvalue = new_value * 0.01;
-  morphing_label->setText (Birnet::string_printf ("%.2f", dvalue).c_str());
+  morphing_label->setText (string_printf ("%.2f", dvalue).c_str());
   morph_linear->set_morphing (dvalue);
 }
 

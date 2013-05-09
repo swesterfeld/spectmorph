@@ -4,6 +4,7 @@
 #include "smmorphgridwidget.hh"
 #include "smmorphplan.hh"
 #include "smcomboboxoperator.hh"
+#include "smutils.hh"
 
 #include <QSpinBox>
 #include <QLabel>
@@ -198,7 +199,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
 
   delta_db_slider = new QSlider (Qt::Horizontal);
   delta_db_slider->setRange (-48000, 48000);
-  delta_db_label = new QLabel (Birnet::string_printf ("%.1f dB", 0.0).c_str());
+  delta_db_label = new QLabel (string_printf ("%.1f dB", 0.0).c_str());
 
   grid->addWidget (new QLabel ("Volume"), 8, 0);
   grid->addWidget (delta_db_slider, 8, 1);
@@ -269,7 +270,7 @@ void MorphGridView::on_delta_db_changed (int new_value)
 {
   const double db = new_value / 1000.0;
 
-  delta_db_label->setText (Birnet::string_printf ("%.1f dB", db).c_str());
+  delta_db_label->setText (string_printf ("%.1f dB", db).c_str());
 
   if (morph_grid->has_selection())
     {
@@ -286,8 +287,8 @@ MorphGridView::on_plan_changed()
 {
   x_ui->slider->setValue (lrint (morph_grid->x_morphing() * 1000));
   y_ui->slider->setValue (lrint (morph_grid->y_morphing() * 1000));
-  x_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->x_morphing()).c_str());
-  y_ui->label->setText (Birnet::string_printf ("%.2f", morph_grid->y_morphing()).c_str());
+  x_ui->label->setText (string_printf ("%.2f", morph_grid->x_morphing()).c_str());
+  y_ui->label->setText (string_printf ("%.2f", morph_grid->y_morphing()).c_str());
 }
 
 void

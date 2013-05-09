@@ -2,6 +2,7 @@
 
 #include "smsamplewinview.hh"
 #include "smnavigator.hh"
+#include "smutils.hh"
 
 #include <QVBoxLayout>
 
@@ -110,7 +111,7 @@ SampleWinView::on_mouse_time_changed (int time)
   int s = time % 60;
   time /= 60;
   int m = time;
-  time_label->setText (Birnet::string_printf ("Time: %02d:%02d:%03d ms", m, s, ms).c_str());
+  time_label->setText (string_printf ("Time: %02d:%02d:%03d ms", m, s, ms).c_str());
 }
 
 void

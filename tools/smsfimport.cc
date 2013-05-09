@@ -16,6 +16,7 @@
 #include "smmain.hh"
 #include "smjobqueue.hh"
 #include "smwavset.hh"
+#include "smutils.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.hh>
 #include <bse/gsldatautils.hh>
@@ -893,7 +894,7 @@ list_sf2()
 {
   vector<string> preset_out;
   for (vector<Preset>::iterator pi = presets.begin(); pi < presets.end() - 1; pi++)
-    preset_out.push_back (Birnet::string_printf ("%03d:%03d %s", pi->bank, pi->preset, pi->name.c_str()));
+    preset_out.push_back (string_printf ("%03d:%03d %s", pi->bank, pi->preset, pi->name.c_str()));
 
   // FIXME: check_import (*pi).c_str()
 
@@ -1015,8 +1016,8 @@ import_preset (const string& import_name)
                             {
                               printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
 
-                              string filename = Birnet::string_printf ("sample%zd-%d.wav", id, midi_note);
-                              string smname = Birnet::string_printf ("sample%zd-%d.sm", id, midi_note);
+                              string filename = string_printf ("sample%zd-%d.wav", id, midi_note);
+                              string smname = string_printf ("sample%zd-%d.sm", id, midi_note);
 
                               if (!is_encoded[smname])
                                 {
@@ -1027,12 +1028,12 @@ import_preset (const string& import_name)
                                   if (sample_modes & 1)
                                     {
                                       loop_args += " --loop-type loop-time-forward";
-                                      loop_args += Birnet::string_printf (" --loop-start %zd",
-                                                                          samples[id].startloop - samples[id].start +
-                                                                          loop_shift);
-                                      loop_args += Birnet::string_printf (" --loop-end %zd",
-                                                                          samples[id].endloop - samples[id].start +
-                                                                          loop_shift);
+                                      loop_args += string_printf (" --loop-start %zd",
+                                                                  samples[id].startloop - samples[id].start +
+                                                                  loop_shift);
+                                      loop_args += string_printf (" --loop-end %zd",
+                                                                  samples[id].endloop - samples[id].start +
+                                                                  loop_shift);
 
                                       // 200 ms padding at the end of the loop, to ensure that silence after sample
                                       // is not encoded by encoder
@@ -1073,12 +1074,12 @@ import_preset (const string& import_name)
                                   string import_args = options.fast_import ? "--no-attack -O0" : "-O1";
 
                                   enc_commands.push_back (
-                                    Birnet::string_printf ("smenc -m %d %s %s %s %s",
-                                                           midi_note, import_args.c_str(),
-                                                           filename.c_str(), smname.c_str(), loop_args.c_str()));
+                                    string_printf ("smenc -m %d %s %s %s %s",
+                                                   midi_note, import_args.c_str(),
+                                                   filename.c_str(), smname.c_str(), loop_args.c_str()));
                                   if (!options.debug)
                                     strip_commands.push_back (
-                                      Birnet::string_printf ("smstrip --keep-samples %s", smname.c_str()));
+                                      string_printf ("smstrip --keep-samples %s", smname.c_str()));
 
                                   is_encoded[smname] = true;
                                 }
@@ -1099,7 +1100,7 @@ import_preset (const string& import_name)
           run_all (strip_commands, "Strip", options.max_jobs);
 
           wav_set.save (preset_xname + ".smset");
-          xsystem (Birnet::string_printf ("smwavset link %s.smset", preset_xname.c_str()));
+          xsystem (string_printf ("smwavset link %s.smset", preset_xname.c_str()));
         }
     }
   return 0;
