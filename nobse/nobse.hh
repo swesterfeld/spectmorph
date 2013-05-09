@@ -63,8 +63,6 @@ public:
   }
 };
 
-std::string string_printf (const char *format, ...) BIRNET_PRINTF (1, 2);
-
 }
 
 /* Bse Error Type */

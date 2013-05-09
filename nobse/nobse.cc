@@ -41,32 +41,6 @@ malloc_aligned (gsize     total_size,
     }
 }
 
-string
-string_vprintf (const char *format,
-                va_list     vargs)
-{
-  char *str = NULL;
-  if (vasprintf (&str, format, vargs) >= 0 && str)
-    {
-      string s = str;
-      free (str);
-      return s;
-    }
-  else
-    return format;
-}
-
-string
-string_printf (const char *format, ...)
-{
-  string str;
-  va_list args;
-  va_start (args, format);
-  str = string_vprintf (format, args);
-  va_end (args);
-  return str;
-}
-
 }
 
 const gchar*
