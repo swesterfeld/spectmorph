@@ -36,5 +36,5 @@ $SMENC $SMENCFLAGS -f $FREQ $WAV $SM || die "smenc failed"
 $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
 $WAV2ASCII $WAV > $TWAV
 $WAV2ASCII $DWAV > $TDWAV
-$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 5e-8) exit(1); else exit (0);}' || exit 1
+$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
 rm $SM $TWAV $TDWAV $DWAV
