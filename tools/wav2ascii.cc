@@ -7,11 +7,13 @@
 #include <vector>
 
 #include "smmain.hh"
+#include "smutils.hh"
 
 using std::string;
 using std::vector;
 
 using SpectMorph::sm_init;
+using SpectMorph::sm_printf;
 
 /// @cond
 struct Options
@@ -80,7 +82,7 @@ main (int argc, char **argv)
       uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
 
       for (uint64 t = 0; t < r; t++)
-        printf ("%.17g\n", block[t]);
+        sm_printf ("%.17g\n", block[t]);
 
       pos += r;
     }
