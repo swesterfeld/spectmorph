@@ -8,6 +8,7 @@
 #include "smlivedecoder.hh"
 #include "smmain.hh"
 #include "sminfile.hh"
+#include "smutils.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.hh>
 #include <bse/gslfft.hh>
@@ -279,7 +280,7 @@ public:
   exec (Audio& audio)
   {
     const double energy = compute_energy (audio, percent, false);
-    printf ("avg_energy: %.17g\n", energy);
+    sm_printf ("avg_energy: %.17g\n", energy);
     return true;
   }
   void
@@ -298,7 +299,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("fundamental-freq: %f\n", audio.fundamental_freq);
+    sm_printf ("fundamental-freq: %f\n", audio.fundamental_freq);
     return true;
   }
 } fundamental_freq_command;
@@ -312,7 +313,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("mix-freq: %f\n", audio.mix_freq);
+    sm_printf ("mix-freq: %f\n", audio.mix_freq);
     return true;
   }
 } mix_freq_command;
@@ -326,7 +327,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("sample-count: %d\n", audio.sample_count);
+    sm_printf ("sample-count: %d\n", audio.sample_count);
     return true;
   }
 } sample_count_command;
@@ -340,7 +341,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
+    sm_printf ("zero-values-at-start: %d\n", audio.zero_values_at_start);
     return true;
   }
 } zero_values_at_start_command;
@@ -354,8 +355,8 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
-    printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
+    sm_printf ("start of attack: %.2f ms\n", audio.attack_start_ms);
+    sm_printf ("  end of attack: %.2f ms\n", audio.attack_end_ms);
     return true;
   }
 } attack_command;
@@ -381,16 +382,16 @@ public:
       }
     size_t original_samples_bytes = audio.original_samples.size() * sizeof (float);
 
-    printf ("frequencies  : %zd bytes\n", freq_bytes);
-    printf ("mags         : %zd bytes\n", mag_bytes);
-    printf ("phases       : %zd bytes\n", phase_bytes);
-    printf ("dbgsamples   : %zd bytes\n", debug_samples_bytes);
-    printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
-    printf ("noise        : %zd bytes\n", noise_bytes);
-    printf ("orig_samples : %zd bytes\n", original_samples_bytes);
+    sm_printf ("frequencies  : %zd bytes\n", freq_bytes);
+    sm_printf ("mags         : %zd bytes\n", mag_bytes);
+    sm_printf ("phases       : %zd bytes\n", phase_bytes);
+    sm_printf ("dbgsamples   : %zd bytes\n", debug_samples_bytes);
+    sm_printf ("orig_fft     : %zd bytes\n", original_fft_bytes);
+    sm_printf ("noise        : %zd bytes\n", noise_bytes);
+    sm_printf ("orig_samples : %zd bytes\n", original_samples_bytes);
 
     size_t total_bytes = (freq_bytes + mag_bytes + phase_bytes + noise_bytes);
-    printf ("data rate    : %.2f K/s\n", total_bytes / 1024.0 / (audio.sample_count / audio.mix_freq));
+    sm_printf ("data rate    : %.2f K/s\n", total_bytes / 1024.0 / (audio.sample_count / audio.mix_freq));
     return true;
   }
 } size_command;
@@ -404,14 +405,14 @@ public:
   bool
   exec (Audio& audio)
   {
-    printf ("frames: %zd\n", audio.contents.size());
+    sm_printf ("frames: %zd\n", audio.contents.size());
     string loop_str;
     if (audio.loop_type_to_string (audio.loop_type, loop_str))
-      printf ("loop type: %s\n", loop_str.c_str());
+      sm_printf ("loop type: %s\n", loop_str.c_str());
     else
-      printf ("loop type: *unknown* (%d)\n", audio.loop_type);
-    printf ("loop start: %d\n", audio.loop_start);
-    printf ("loop end: %d\n", audio.loop_end);
+      sm_printf ("loop type: *unknown* (%d)\n", audio.loop_type);
+    sm_printf ("loop start: %d\n", audio.loop_start);
+    sm_printf ("loop end: %d\n", audio.loop_end);
 
     return true;
   }
@@ -438,7 +439,7 @@ public:
   exec (Audio& audio)
   {
     for (size_t i = 0; i < audio.contents[frame].noise.size(); i++)
-      printf ("%.7g\n", audio.contents[frame].noise_f (i));
+      sm_printf ("%.7g\n", audio.contents[frame].noise_f (i));
     return true;
   }
   void
@@ -475,7 +476,7 @@ public:
     for (size_t n = 0; n < audio.contents[i].debug_samples.size(); n++)
       {
         double v = audio.contents[i].debug_samples[n];
-        printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
+        sm_printf ("%zd %f %f %f\n", n, v, sines[n], v - sines[n]);
       }
     return true;
   }
@@ -531,7 +532,7 @@ public:
             const double mag_factor = audio.contents[i].mags_f (maxp);
             const double mag_db = bse_db_from_factor (mag_factor, -200);
 
-            printf ("%f Hz: %f\n", freq, mag_db);
+            sm_printf ("%f Hz: %f\n", freq, mag_db);
             audio.contents[i].mags[maxp] = 0;
           }
         else
@@ -565,8 +566,8 @@ public:
             peak_noise   = max (peak_noise, noise);
           }
       }
-    printf ("total-noise: %.17g\n", total_noise);
-    printf ("peak-noise:  %.17g\n", peak_noise);
+    sm_printf ("total-noise: %.17g\n", total_noise);
+    sm_printf ("peak-noise:  %.17g\n", peak_noise);
     return true;
   }
 } total_noise_command;
@@ -589,8 +590,8 @@ public:
         if (find_nan (audio.contents[f].original_fft))
           nan_fft++;
       }
-    printf ("nan-debug-samples: %d\n", nan_ds);
-    printf ("nan-original-fft:  %d\n", nan_fft);
+    sm_printf ("nan-debug-samples: %d\n", nan_ds);
+    sm_printf ("nan-original-fft:  %d\n", nan_fft);
     return true;
   }
 } nan_test_command;
@@ -605,7 +606,7 @@ public:
   exec (Audio& audio)
   {
     for (size_t i = 0; i < audio.original_samples.size(); i++)
-      printf ("%.17g\n", audio.original_samples[i]);
+      sm_printf ("%.17g\n", audio.original_samples[i]);
 
     return true;
   }
@@ -641,7 +642,7 @@ public:
 
             if (freq > freq_min && freq < freq_max)
               {
-                printf ("%zd %f %f\n", i, freq, block.mags_f (n));
+                sm_printf ("%zd %f %f\n", i, freq, block.mags_f (n));
               }
           }
       }
@@ -731,7 +732,7 @@ public:
             if (r < n)
               s = std::max (s, spectrum[n - r]);
           }
-        printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
+        sm_printf ("%f %f %f\n", n * 0.5 * audio.mix_freq / spectrum.size(), s, sines_spectrum[n]);
       }
     return true;
   }
@@ -870,7 +871,7 @@ public:
                 block.freqs[n] = sm_freq2ifreq (freq);
               }
           }
-        printf ("%.17g  %.17g  %.3f cent\n", audio.fundamental_freq, new_fundamental_freq, freq_ratio_to_cent (tune_factor));
+        sm_printf ("%.17g  %.17g  %.3f cent\n", audio.fundamental_freq, new_fundamental_freq, freq_ratio_to_cent (tune_factor));
         audio.fundamental_freq = new_fundamental_freq;
 
         set_need_save (true);
@@ -925,8 +926,8 @@ normalize_energy (double energy, Audio& audio)
 {
   const double target_energy = 0.05;
   const double norm = sqrt (target_energy / energy);
-  printf ("avg_energy: %.17g\n", energy);
-  printf ("norm:       %.17g\n", norm);
+  sm_printf ("avg_energy: %.17g\n", energy);
+  sm_printf ("norm:       %.17g\n", norm);
   const int    norm_delta_idb   = sm_factor2delta_idb (norm);
   const int    norm_2_delta_idb = sm_factor2delta_idb (norm * norm);
 
@@ -1078,11 +1079,11 @@ main (int argc, char **argv)
 
               for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
                 {
-                  printf ("## midi_note=%d channel=%d velocity_range=%d..%d\n", wi->midi_note, wi->channel,
-                          wi->velocity_range_min, wi->velocity_range_max);
+                  sm_printf ("## midi_note=%d channel=%d velocity_range=%d..%d\n", wi->midi_note, wi->channel,
+                             wi->velocity_range_min, wi->velocity_range_max);
                   if (done.find (wi->audio) != done.end())
                     {
-                      printf ("## ==> skipped (was processed earlier)\n");
+                      sm_printf ("## ==> skipped (was processed earlier)\n");
                     }
                   else
                     {
