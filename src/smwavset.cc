@@ -14,6 +14,7 @@
 #include <smmicroconf.hh>
 #include <bse/bseloader.hh>
 #include "smjobqueue.hh"
+#include "smutils.hh"
 
 #include <string>
 #include <map>
@@ -111,7 +112,7 @@ Options::parse (int   *argc_p,
 	}
       else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
 	{
-	  printf ("%s %s\n", program_name.c_str(), VERSION);
+	  sm_printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
       else if (check_arg (argc, argv, &i, "--args", &opt_arg))
@@ -234,31 +235,31 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  printf ("usage: %s <command> [ <options> ] [ <command specific args...> ]\n", options.program_name.c_str());
-  printf ("\n");
-  printf ("command specific args:\n");
-  printf ("\n");
-  printf (" smwavset init [ <options> ] <wset_filename>...\n");
-  printf (" smwavset add [ <options> ] <wset_filename> <midi_note> <path>\n");
-  printf (" smwavset list [ <options> ] <wset_filename>\n");
-  printf (" smwavset encode [ <options> ] <wset_filename> <smset_filename>\n");
-  printf (" smwavset decode [ <options> ] <smset_filename> <wset_filename>\n");
-  printf (" smwavset delta [ <options> ] <wset_filename1>...<wset_filenameN>\n");
-  printf (" smwavset link [ <options> ] <wset_filename>\n");
-  printf (" smwavset get-markers [ <options> ] <wset_filename>\n");
-  printf (" smwavset set-markers [ <options> ] <wset_filename> <marker_filename>\n");
-  printf ("\n");
-  printf ("options:\n");
-  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
-  printf (" -v, --version               print version\n");
-  printf (" --args \"<args>\"             arguments for decoder or encoder\n");
-  printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
-  printf (" -c, --channel <ch>          set channel for added .sm file\n");
-  printf (" --format <f1>,...,<fN>      set fields to display in list\n");
-  printf (" -j <jobs>                   run <jobs> commands simultaneously (use multiple cpus for encoding)\n");
-  printf (" --smenc <cmd>               use <cmd> as smenc command\n");
-  printf (" --loop                      also extract loop markers (for smwavset get-markers)\n");
-  printf ("\n");
+  sm_printf ("usage: %s <command> [ <options> ] [ <command specific args...> ]\n", options.program_name.c_str());
+  sm_printf ("\n");
+  sm_printf ("command specific args:\n");
+  sm_printf ("\n");
+  sm_printf (" smwavset init [ <options> ] <wset_filename>...\n");
+  sm_printf (" smwavset add [ <options> ] <wset_filename> <midi_note> <path>\n");
+  sm_printf (" smwavset list [ <options> ] <wset_filename>\n");
+  sm_printf (" smwavset encode [ <options> ] <wset_filename> <smset_filename>\n");
+  sm_printf (" smwavset decode [ <options> ] <smset_filename> <wset_filename>\n");
+  sm_printf (" smwavset delta [ <options> ] <wset_filename1>...<wset_filenameN>\n");
+  sm_printf (" smwavset link [ <options> ] <wset_filename>\n");
+  sm_printf (" smwavset get-markers [ <options> ] <wset_filename>\n");
+  sm_printf (" smwavset set-markers [ <options> ] <wset_filename> <marker_filename>\n");
+  sm_printf ("\n");
+  sm_printf ("options:\n");
+  sm_printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  sm_printf (" -v, --version               print version\n");
+  sm_printf (" --args \"<args>\"             arguments for decoder or encoder\n");
+  sm_printf (" -d, --data-dir <dir>        set data directory for newly created .sm or .wav files\n");
+  sm_printf (" -c, --channel <ch>          set channel for added .sm file\n");
+  sm_printf (" --format <f1>,...,<fN>      set fields to display in list\n");
+  sm_printf (" -j <jobs>                   run <jobs> commands simultaneously (use multiple cpus for encoding)\n");
+  sm_printf (" --smenc <cmd>               use <cmd> as smenc command\n");
+  sm_printf (" --loop                      also extract loop markers (for smwavset get-markers)\n");
+  sm_printf ("\n");
 }
 
 string
@@ -433,24 +434,24 @@ main (int argc, char **argv)
           for (vector<string>::const_iterator fi = options.format.begin(); fi != options.format.end(); fi++)
             {
               if (fi != options.format.begin()) // not first field
-                printf (" ");
+                sm_printf (" ");
               if (*fi == "midi-note")
-                printf ("%d", wi->midi_note);
+                sm_printf ("%d", wi->midi_note);
               else if (*fi == "filename")
-                printf ("%s", wi->path.c_str());
+                sm_printf ("%s", wi->path.c_str());
               else if (*fi == "channel")
-                printf ("%d", wi->channel);
+                sm_printf ("%d", wi->channel);
               else if (*fi == "min-velocity")
-                printf ("%d", wi->velocity_range_min);
+                sm_printf ("%d", wi->velocity_range_min);
               else if (*fi == "max-velocity")
-                printf ("%d", wi->velocity_range_max);
+                sm_printf ("%d", wi->velocity_range_max);
               else
                 {
                   sfi_error ("list command: invalid field for format: %s", fi->c_str());
                   exit (1);
                 }
             }
-          printf ("\n");
+          sm_printf ("\n");
         }
     }
   else if (options.command == Options::SET_NAMES)
@@ -469,8 +470,8 @@ main (int argc, char **argv)
 
       WavSet wset;
       load_or_die (wset, argv[1]);
-      printf ("name \"%s\"\n", wset.name.c_str());
-      printf ("short_name \"%s\"\n", wset.short_name.c_str());
+      sm_printf ("name \"%s\"\n", wset.name.c_str());
+      sm_printf ("short_name \"%s\"\n", wset.short_name.c_str());
     }
   else if (options.command == Options::ENCODE)
     {
@@ -485,7 +486,7 @@ main (int argc, char **argv)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
           string cmd = options.smenc + " -m " + int2str (wi->midi_note) + " \"" + wi->path.c_str() + "\" " + smpath + " " + options.args;
-          printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
+          sm_printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           job_queue.run (cmd);
 
           WavSetWave new_wave = *wi;
@@ -511,13 +512,13 @@ main (int argc, char **argv)
           Audio audio;
           if (audio.load (si->path, AUDIO_SKIP_DEBUG) != BSE_ERROR_NONE)
             {
-              printf ("can't load %s\n", si->path.c_str());
+              sm_printf ("can't load %s\n", si->path.c_str());
               exit (1);
             }
 
           string wavpath = options.data_dir + "/" + int2str (si->midi_note) + ".wav";
           string cmd = "smplay --rate=" + int2str (audio.mix_freq) + " " +si->path.c_str() + " --export " + wavpath + " " + options.args;
-          printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
+          sm_printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
           system (cmd.c_str());
 
           WavSetWave new_wave = *si;
@@ -548,7 +549,7 @@ main (int argc, char **argv)
             {
               double ref_delta = -1; /* init to get rid of gcc warning */
 
-              printf ("%3d: ", i);
+              sm_printf ("%3d: ", i);
               vector<WavSetWave>::iterator w0 = find_wave (wsets[0], i);
               assert (w0 != wsets[0].waves.end());
               for (size_t w = 1; w < wsets.size(); w++)
@@ -562,15 +563,15 @@ main (int argc, char **argv)
                       double this_delta = delta (data0, data1);
                       if (w == 1)
                         ref_delta = this_delta;
-                      printf ("%3.4f%% ", 100 * this_delta / ref_delta);
+                      sm_printf ("%3.4f%% ", 100 * this_delta / ref_delta);
                     }
                   else
                     {
-                      printf ("an error occured during loading the files.\n");
+                      sm_printf ("an error occured during loading the files.\n");
                       exit (1);
                     }
                 }
-              printf ("\n");
+              sm_printf ("\n");
             }
         }
     }
@@ -603,12 +604,12 @@ main (int argc, char **argv)
       WavSet wset;
       load_or_die (wset, argv[1]);
 
-      printf ("# smwavset markers for %s\n", argv[1]);
-      printf ("\n");
+      sm_printf ("# smwavset markers for %s\n", argv[1]);
+      sm_printf ("\n");
 
       for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
-          printf ("set-marker start %d %d %d %d %.17g\n", wi->midi_note, wi->channel,
+          sm_printf ("set-marker start %d %d %d %d %.17g\n", wi->midi_note, wi->channel,
             wi->velocity_range_min, wi->velocity_range_max, wi->audio->start_ms);
 
           string loop_type;
@@ -619,11 +620,11 @@ main (int argc, char **argv)
             }
           if (options.loop_markers)
             {
-              printf ("set-marker loop-type %d %d %d %d %s\n", wi->midi_note, wi->channel,
+              sm_printf ("set-marker loop-type %d %d %d %d %s\n", wi->midi_note, wi->channel,
                 wi->velocity_range_min, wi->velocity_range_max, loop_type.c_str());
-              printf ("set-marker loop-start %d %d %d %d %d\n", wi->midi_note, wi->channel,
+              sm_printf ("set-marker loop-start %d %d %d %d %d\n", wi->midi_note, wi->channel,
                 wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_start);
-              printf ("set-marker loop-end %d %d %d %d %d\n", wi->midi_note, wi->channel,
+              sm_printf ("set-marker loop-end %d %d %d %d %d\n", wi->midi_note, wi->channel,
                 wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_end);
             }
         }
@@ -686,8 +687,8 @@ main (int argc, char **argv)
                 }
               if (!match)
                 {
-                  printf ("no match for marker %s %d %d %d %d %s\n", marker_type.c_str(), midi_note, channel,
-                          vmin, vmax, arg.c_str());
+                  sm_printf ("no match for marker %s %d %d %d %d %s\n", marker_type.c_str(), midi_note, channel,
+                             vmin, vmax, arg.c_str());
                   exit (1);
                 }
             }
@@ -700,7 +701,7 @@ main (int argc, char **argv)
     }
   else
     {
-      printf ("You need to specify a command (init, add, list, encode, decode, delta).\n\n");
+      sm_printf ("You need to specify a command (init, add, list, encode, decode, delta).\n\n");
       Options::print_usage();
       exit (1);
     }
