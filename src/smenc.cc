@@ -32,6 +32,7 @@ using SpectMorph::Encoder;
 using SpectMorph::Tracksel;
 using SpectMorph::sm_init;
 using SpectMorph::string_printf;
+using SpectMorph::sm_printf;
 
 static float
 freqFromNote (float note)
@@ -140,7 +141,7 @@ Options::parse (int   *argc_p,
 	}
       else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
 	{
-	  printf ("%s %s\n", program_name.c_str(), VERSION);
+	  sm_printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
       else if (check_arg (argc, argv, &i, "-d"))
@@ -229,20 +230,20 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  printf ("usage: %s [ <options> ] <src_audio_file> [ <dest_sm_file> ]\n", options.program_name.c_str());
-  printf ("\n");
-  printf ("options:\n");
-  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
-  printf (" --version                   print version\n");
-  printf (" -f <freq>                   specify fundamental frequency in Hz\n");
-  printf (" -m <note>                   specify midi note for fundamental frequency\n");
-  printf (" -O <level>                  set optimization level\n");
-  printf (" -s                          produced stripped models\n");
-  printf (" --no-attack                 skip attack time optimization\n");
-  printf (" --no-sines                  skip partial tracking\n");
-  printf (" --loop-start                set timeloop start\n");
-  printf (" --loop-end                  set timeloop end\n");
-  printf ("\n");
+  sm_printf ("usage: %s [ <options> ] <src_audio_file> [ <dest_sm_file> ]\n", options.program_name.c_str());
+  sm_printf ("\n");
+  sm_printf ("options:\n");
+  sm_printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  sm_printf (" --version                   print version\n");
+  sm_printf (" -f <freq>                   specify fundamental frequency in Hz\n");
+  sm_printf (" -m <note>                   specify midi note for fundamental frequency\n");
+  sm_printf (" -O <level>                  set optimization level\n");
+  sm_printf (" -s                          produced stripped models\n");
+  sm_printf (" --no-attack                 skip attack time optimization\n");
+  sm_printf (" --no-sines                  skip partial tracking\n");
+  sm_printf (" --loop-start                set timeloop start\n");
+  sm_printf (" --loop-end                  set timeloop end\n");
+  sm_printf ("\n");
 }
 
 void
@@ -267,7 +268,7 @@ wintrans (const vector<float>& window)
       double re = out[i];
       double im = out[i + 1];
       double mag = sqrt (re * re + im * im);
-      printf ("%zd %g\n", i / 2, mag);
+      sm_printf ("%zd %g\n", i / 2, mag);
     }
 }
 
