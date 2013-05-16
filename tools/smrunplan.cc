@@ -6,6 +6,7 @@
 #include "smmorphlinear.hh"
 #include "smmorphgrid.hh"
 #include "smmain.hh"
+#include "smutils.hh"
 #include "config.h"
 
 #include <sys/time.h>
@@ -315,7 +316,7 @@ main (int argc, char **argv)
         player.compute_samples (samples);
 
       double end = gettime();
-      printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
+      sm_printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
 
       return 0;
     }
@@ -337,6 +338,6 @@ main (int argc, char **argv)
   if (!options.quiet)
     {
       for (size_t i = 0; i < samples.size(); i++)
-        printf ("%.17g\n", samples[i]);
+        sm_printf ("%.17g\n", samples[i]);
     }
 }
