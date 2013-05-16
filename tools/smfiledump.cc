@@ -3,6 +3,7 @@
 #include "smhexstring.hh"
 #include "sminfile.hh"
 #include "smmain.hh"
+#include "smutils.hh"
 #include "config.h"
 
 #include <stdlib.h>
@@ -72,7 +73,7 @@ Options::parse (int   *argc_p,
 	}
       else if (strcmp (argv[i], "--version") == 0 || strcmp (argv[i], "-v") == 0)
 	{
-	  printf ("%s %s\n", program_name.c_str(), VERSION);
+	  sm_printf ("%s %s\n", program_name.c_str(), VERSION);
 	  exit (0);
 	}
       else if (check_arg (argc, argv, &i, "--full") || check_arg (argc, argv, &i, "-f"))
@@ -96,13 +97,13 @@ Options::parse (int   *argc_p,
 void
 Options::print_usage ()
 {
-  printf ("usage: %s [<hexdata>|<filename>]\n", options.program_name.c_str());
-  printf ("\n");
-  printf ("options:\n");
-  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
-  printf (" -v, --version               print version\n");
-  printf (" -f, --full                  dump float block data\n");
-  printf ("\n");
+  sm_printf ("usage: %s [<hexdata>|<filename>]\n", options.program_name.c_str());
+  sm_printf ("\n");
+  sm_printf ("options:\n");
+  sm_printf (" -h, --help                  help for %s\n", options.program_name.c_str());
+  sm_printf (" -v, --version               print version\n");
+  sm_printf (" -f, --full                  dump float block data\n");
+  sm_printf ("\n");
 }
 
 
@@ -110,84 +111,84 @@ static void
 display_file (GenericIn *in, int indent = 0)
 {
   InFile ifile (in);
-  printf ("%sfile header {\n", spaces (indent).c_str());
-  printf ("%s  type = %s\n", spaces (indent).c_str(), ifile.file_type().c_str());
-  printf ("%s  version = %d\n", spaces (indent).c_str(), ifile.file_version());
-  printf ("%s}\n\n", spaces (indent).c_str());
+  sm_printf ("%sfile header {\n", spaces (indent).c_str());
+  sm_printf ("%s  type = %s\n", spaces (indent).c_str(), ifile.file_type().c_str());
+  sm_printf ("%s  version = %d\n", spaces (indent).c_str(), ifile.file_version());
+  sm_printf ("%s}\n\n", spaces (indent).c_str());
   while (ifile.event() != InFile::END_OF_FILE)
     {
      if (ifile.event() == InFile::BEGIN_SECTION)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("section %s {\n", ifile.event_name().c_str());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("section %s {\n", ifile.event_name().c_str());
           indent += 2;
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
           indent -= 2;
-          printf ("%s", spaces (indent).c_str());
-          printf ("}\n");
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("}\n");
         }
       else if (ifile.event() == InFile::STRING)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("string %s = \"%s\"\n", ifile.event_name().c_str(), ifile.event_data().c_str());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("string %s = \"%s\"\n", ifile.event_name().c_str(), ifile.event_data().c_str());
         }
       else if (ifile.event() == InFile::FLOAT)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("float %s = %.7g\n", ifile.event_name().c_str(), ifile.event_float());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("float %s = %.7g\n", ifile.event_name().c_str(), ifile.event_float());
         }
       else if (ifile.event() == InFile::FLOAT_BLOCK)
         {
-          printf ("%s", spaces (indent).c_str());
+          sm_printf ("%s", spaces (indent).c_str());
           if (options.full)
             {
               const vector<float>& fb = ifile.event_float_block();
-              printf ("float_block %s[%zd] = {\n", ifile.event_name().c_str(), fb.size());
+              sm_printf ("float_block %s[%zd] = {\n", ifile.event_name().c_str(), fb.size());
               for (size_t i = 0; i < fb.size(); i++)
                 {
-                  printf ("%s  %.17g%s\n", spaces (indent).c_str(), fb[i], (i + 1) == fb.size() ? "" : ",");
+                  sm_printf ("%s  %.17g%s\n", spaces (indent).c_str(), fb[i], (i + 1) == fb.size() ? "" : ",");
                 }
-              printf ("%s}\n", spaces (indent).c_str());
+              sm_printf ("%s}\n", spaces (indent).c_str());
             }
           else
             {
-              printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
+              sm_printf ("float_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_float_block().size());
             }
         }
       else if (ifile.event() == InFile::UINT16_BLOCK)
         {
-          printf ("%s", spaces (indent).c_str());
+          sm_printf ("%s", spaces (indent).c_str());
           if (options.full)
             {
               const vector<uint16_t>& ib = ifile.event_uint16_block();
-              printf ("uint16_block %s[%zd] = {\n", ifile.event_name().c_str(), ib.size());
+              sm_printf ("uint16_block %s[%zd] = {\n", ifile.event_name().c_str(), ib.size());
               for (size_t i = 0; i < ib.size(); i++)
                 {
-                  printf ("%s  %d%s\n", spaces (indent).c_str(), ib[i], (i + 1) == ib.size() ? "" : ",");
+                  sm_printf ("%s  %d%s\n", spaces (indent).c_str(), ib[i], (i + 1) == ib.size() ? "" : ",");
                 }
-              printf ("%s}\n", spaces (indent).c_str());
+              sm_printf ("%s}\n", spaces (indent).c_str());
             }
           else
             {
-              printf ("uint16_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_uint16_block().size());
+              sm_printf ("uint16_block %s[%zd] = {...}\n", ifile.event_name().c_str(), ifile.event_uint16_block().size());
             }
         }
       else if (ifile.event() == InFile::INT)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("int %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("int %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
         }
       else if (ifile.event() == InFile::BOOL)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("bool %s = %s\n", ifile.event_name().c_str(), ifile.event_bool() ? "true" : "false");
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("bool %s = %s\n", ifile.event_name().c_str(), ifile.event_bool() ? "true" : "false");
         }
       else if (ifile.event() == InFile::BLOB)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("blob %s {\n", ifile.event_name().c_str());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("blob %s {\n", ifile.event_name().c_str());
 
           GenericIn *blob_in = ifile.open_blob();
           if (!blob_in)
@@ -198,12 +199,12 @@ display_file (GenericIn *in, int indent = 0)
           display_file (blob_in, indent + 2);
           delete blob_in;
 
-          printf ("%s}\n", spaces (indent).c_str());
+          sm_printf ("%s}\n", spaces (indent).c_str());
         }
       else if (ifile.event() == InFile::BLOB_REF)
         {
-          printf ("%s", spaces (indent).c_str());
-          printf ("blob_ref %s {\n", ifile.event_name().c_str());
+          sm_printf ("%s", spaces (indent).c_str());
+          sm_printf ("blob_ref %s {\n", ifile.event_name().c_str());
           GenericIn *blob_in = ifile.open_blob();
           if (!blob_in)
             {
@@ -211,7 +212,7 @@ display_file (GenericIn *in, int indent = 0)
               exit (1);
             }
           display_file (blob_in, indent + 2);
-          printf ("%s}\n", spaces (indent).c_str());
+          sm_printf ("%s}\n", spaces (indent).c_str());
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
@@ -220,7 +221,7 @@ display_file (GenericIn *in, int indent = 0)
         }
       else
         {
-          printf ("unhandled event %d\n", ifile.event());
+          sm_printf ("unhandled event %d\n", ifile.event());
         }
       ifile.next_event();
     }
