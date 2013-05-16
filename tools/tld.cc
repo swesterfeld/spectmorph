@@ -4,6 +4,7 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 #include "smmain.hh"
+#include "smutils.hh"
 
 #include <bse/gsldatahandle.hh>
 #include <bse/gsldatautils.hh>
@@ -16,9 +17,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-using SpectMorph::WavSet;
-using SpectMorph::LiveDecoder;
-using SpectMorph::sm_init;
+using namespace SpectMorph;
 
 using std::vector;
 using std::string;
@@ -98,12 +97,12 @@ main (int argc, char **argv)
               clocks_per_sample[i] = best_time * clocks_per_sec / n / runs;
             }
         }
-      printf ("all..:  %f\n", clocks_per_sample[3]);
-      printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[4]);
-      printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[4]);
-      printf ("fft:    %f\n", clocks_per_sample[4] - clocks_per_sample[0]);
-      printf ("other:  %f\n", clocks_per_sample[0]);
-      printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
+      sm_printf ("all..:  %f\n", clocks_per_sample[3]);
+      sm_printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[4]);
+      sm_printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[4]);
+      sm_printf ("fft:    %f\n", clocks_per_sample[4] - clocks_per_sample[0]);
+      sm_printf ("other:  %f\n", clocks_per_sample[0]);
+      sm_printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
     }
   else if (argc == 4 && (string (argv[3]) == "avg-samples"))
     {
@@ -132,8 +131,8 @@ main (int argc, char **argv)
           best_time = min (best_time, (end_t - start_t));
         }
       clocks_per_sample = best_time * clocks_per_sec / n / runs;
-      printf ("samples:  %f\n", clocks_per_sample);
-      printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
+      sm_printf ("samples:  %f\n", clocks_per_sample);
+      sm_printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
     }
   else if (argc == 4 && string (argv[3]) == "export")
     {
@@ -178,8 +177,8 @@ main (int argc, char **argv)
               decoder.process (n, 0, 0, &audio_out[0]);
             }
           double end_t = gettime();
-          printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
+          sm_printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
         }
     }
-  printf ("# nice priority %d\n", priority);
+  sm_printf ("# nice priority %d\n", priority);
 }
