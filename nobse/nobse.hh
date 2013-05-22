@@ -5,6 +5,8 @@
 
 #include <glib.h>
 #include <string>
+#include <vector>
+#include <string>
 
 /* Rapicorn fake */
 
@@ -13,11 +15,10 @@ typedef unsigned long long  uint64;
 typedef guint               uint;
 typedef guint8              uint8;
 
-/* Birnet */
-#define BIRNET_PRIVATE_CLASS_COPY(Class)        private: Class (const Class&); Class& operator= (const Class&);
-#define BIRNET_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+#define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
+#define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
 
-namespace Birnet
+namespace Rapicorn
 {
 
 /* --- memory utils --- */
@@ -276,9 +277,9 @@ typedef struct
 } SfiInitValue;
 
 void bse_init_inprocess      (gint           *argc,
-                              gchar        ***argv,
+                              gchar         **argv,
                               const char     *app_name,
-                              SfiInitValue    values[]);
+                              const std::vector<std::string>& args = std::vector<std::string>());
 
 /* --- bse loader --- */
 struct BseLoader;

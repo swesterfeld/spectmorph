@@ -7,8 +7,9 @@
 #define NO_BSE_NO_IMPL(func) { g_printerr ("[libnobse] not implemented: %s\n", #func); g_assert_not_reached(); }
 
 using std::string;
+using std::vector;
 
-namespace Birnet
+namespace Rapicorn
 {
 
 /* --- memory utils --- */
@@ -208,9 +209,9 @@ BSE_SIGNAL_TO_FREQ (double sig)
 
 void
 bse_init_inprocess (gint           *argc,
-                    gchar        ***argv,
+                    gchar         **argv,
                     const char     *app_name,
-                    SfiInitValue    values[])
+                    const vector<string>& args)
 {
   // nothing
 }
