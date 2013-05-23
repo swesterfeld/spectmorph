@@ -487,11 +487,36 @@ apply_delta_db (AudioBlock& block, double delta_db)
 
 }
 
+static double
+get_morphing (MorphGrid::ControlType type, double gui_value, MorphOperatorModule *mod, MorphPlanVoice *voice)
+{
+  if (type == MorphGrid::CONTROL_GUI)
+    {
+      return gui_value;
+    }
+  else if (type == MorphGrid::CONTROL_OP)
+    {
+      return mod->value();
+    }
+  else if (type == MorphGrid::CONTROL_SIGNAL_1)
+    {
+      return voice->control_input (0);
+    }
+  else if (type == MorphGrid::CONTROL_SIGNAL_2)
+    {
+      return voice->control_input (1);
+    }
+  else
+    {
+      g_assert_not_reached();
+    }
+}
+
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
-  const double x_morphing = (module->x_control_type == MorphGrid::CONTROL_GUI) ? module->x_morphing : module->x_control_mod->value();
-  const double y_morphing = (module->y_control_type == MorphGrid::CONTROL_GUI) ? module->y_morphing : module->y_control_mod->value();
+  const double x_morphing = get_morphing (module->x_control_type, module->x_morphing, module->x_control_mod, module->morph_plan_voice);
+  const double y_morphing = get_morphing (module->y_control_type, module->y_morphing, module->y_control_mod, module->morph_plan_voice);
 
   const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->width);
   const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->height);
