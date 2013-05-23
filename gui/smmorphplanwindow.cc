@@ -112,7 +112,7 @@ MorphPlanWindow::on_file_import_clicked()
       else
         {
           QMessageBox::critical (this, "Error",
-                                 string_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
+                                 string_locale_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
         }
     }
 }
@@ -135,7 +135,7 @@ MorphPlanWindow::on_file_export_clicked()
       else
         {
           QMessageBox::critical (this, "Error",
-                                 string_printf ("Export failed, unable to open file '%s'.", file_name_local.data()).c_str());
+                                 string_locale_printf ("Export failed, unable to open file '%s'.", file_name_local.data()).c_str());
         }
     }
 }

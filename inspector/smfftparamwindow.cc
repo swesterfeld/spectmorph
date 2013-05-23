@@ -162,10 +162,10 @@ FFTParamWindow::get_frame_overlap()
 void
 FFTParamWindow::on_value_changed()
 {
-  fft_frame_size_label->setText (string_printf ("%.1f ms", get_frame_size()).c_str());
-  fft_frame_overlap_label->setText (string_printf ("%.1f", get_frame_overlap()).c_str());
-  cwt_freq_res_label->setText (string_printf ("%.1f Hz", cwt_freq_res_slider->value() / 1000.0).c_str());
-  cwt_time_res_label->setText (string_printf ("%.1f ms", get_cwt_time_resolution()).c_str());
+  fft_frame_size_label->setText (string_locale_printf ("%.1f ms", get_frame_size()).c_str());
+  fft_frame_overlap_label->setText (string_locale_printf ("%.1f", get_frame_overlap()).c_str());
+  cwt_freq_res_label->setText (string_locale_printf ("%.1f Hz", cwt_freq_res_slider->value() / 1000.0).c_str());
+  cwt_time_res_label->setText (string_locale_printf ("%.1f ms", get_cwt_time_resolution()).c_str());
 
   Q_EMIT params_changed();
 }

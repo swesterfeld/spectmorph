@@ -132,7 +132,7 @@ MainWidget::on_volume_changed (int new_volume_int)
 {
   double new_volume = new_volume_int / 1000.0;
   double new_decoder_volume = bse_db_to_factor (new_volume);
-  volume_label->setText (string_printf ("%.1f dB", new_volume).c_str());
+  volume_label->setText (string_locale_printf ("%.1f dB", new_volume).c_str());
 
   jack_player.set_volume (new_decoder_volume);
 }
@@ -169,7 +169,7 @@ MainWidget::load (const string& filename, const string& clip_markers)
       Wave wave;
       wave.path = wset.waves[i].path;
       wave.midi_note = wset.waves[i].midi_note;
-      wave.label = string_printf ("%s (note %d)", wset.waves[i].path.c_str(), wset.waves[i].midi_note);
+      wave.label = string_locale_printf ("%s (note %d)", wset.waves[i].path.c_str(), wset.waves[i].midi_note);
       waves.push_back (wave);
     }
   // create combobox entries
@@ -327,7 +327,7 @@ MainWidget::on_mouse_time_changed (int time)
   int s = time % 60;
   time /= 60;
   int m = time;
-  time_label->setText (string_printf ("Time: %02d:%02d:%03d ms", m, s, ms).c_str());
+  time_label->setText (string_locale_printf ("Time: %02d:%02d:%03d ms", m, s, ms).c_str());
 }
 
 vector<float>

@@ -9,6 +9,7 @@
 #include "smleakdebugger.hh"
 #include "smlivedecoder.hh"
 #include "smmorphutils.hh"
+#include "smutils.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -198,7 +199,7 @@ dump_block (size_t index, const char *what, const AudioBlock& block)
   if (DEBUG)
     {
       for (size_t i = 0; i < block.freqs.size(); i++)
-        printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs[i], block.mags[i]);
+        sm_printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs[i], block.mags[i]);
     }
 }
 
@@ -207,7 +208,7 @@ dump_line (size_t index, const char *what, double start, double end)
 {
   if (DEBUG)
     {
-      printf ("%zd:%s %.17g %.17g\n", index, what, start, end);
+      sm_printf ("%zd:%s %.17g %.17g\n", index, what, start, end);
     }
 }
 

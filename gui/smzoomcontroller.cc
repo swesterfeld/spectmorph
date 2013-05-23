@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smzoomcontroller.hh"
+#include "smutils.hh"
 #include <math.h>
 #include <stdio.h>
 
@@ -10,6 +11,8 @@
 #include <QVBoxLayout>
 
 using namespace SpectMorph;
+
+using std::string;
 
 ZoomController::ZoomController (QObject *parent, double hzoom_max, double vzoom_max) :
   QObject (parent)
@@ -67,9 +70,8 @@ void
 ZoomController::on_hzoom_changed()
 {
   double hzoom = get_hzoom();
-  char buffer[1024];
-  sprintf (buffer, "%3.2f%%", 100.0 * hzoom);
-  hzoom_label->setText (buffer);
+  string s = string_locale_printf ("%3.2f%%", 100.0 * hzoom);
+  hzoom_label->setText (s.c_str());
 
   if (hscrollbar)
     {
@@ -84,9 +86,8 @@ void
 ZoomController::on_vzoom_changed()
 {
   double vzoom = get_vzoom();
-  char buffer[1024];
-  sprintf (buffer, "%3.2f%%", 100.0 * vzoom);
-  vzoom_label->setText (buffer);
+  string s = string_locale_printf ("%3.2f%%", 100.0 * vzoom);
+  vzoom_label->setText (s.c_str());
 
   if (vscrollbar)
     {

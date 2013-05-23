@@ -91,9 +91,8 @@ TimeFreqWindow::on_position_changed()
   int new_pos = position_slider->value();
   int frames = m_time_freq_view->get_frames();
   int position = CLAMP (sm_round_positive (new_pos / 1000.0 / 1000.0 * frames), 0, frames - 1);
-  char buffer[1024];
-  sprintf (buffer, "%d", position);
-  position_label->setText (buffer);
+  string s = string_locale_printf ("%d", position);
+  position_label->setText (s.c_str());
   if (navigator->get_show_position())
     m_time_freq_view->set_position (position);
   else
@@ -124,8 +123,8 @@ TimeFreqWindow::on_display_params_changed()
   double min_db = min_db_slider->value() / 1000.0;
   double boost = boost_slider->value() / 1000.0;
 
-  min_db_label->setText (string_printf ("%.2f", min_db).c_str());
-  boost_label->setText (string_printf ("%.2f", boost).c_str());
+  min_db_label->setText (string_locale_printf ("%.2f", min_db).c_str());
+  boost_label->setText (string_locale_printf ("%.2f", boost).c_str());
   m_time_freq_view->set_display_params (min_db, boost);
 }
 

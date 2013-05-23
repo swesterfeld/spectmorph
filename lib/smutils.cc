@@ -124,6 +124,17 @@ string_printf (const char *format, ...)
   return str;
 }
 
+string
+string_locale_printf (const char *format, ...)
+{
+  string str;
+  va_list args;
+  va_start (args, format);
+  str = string_vprintf (format, args);
+  va_end (args);
+  return str;
+}
+
 void
 sm_printf (const char *format, ...)
 {

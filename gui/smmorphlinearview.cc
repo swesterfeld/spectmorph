@@ -112,7 +112,7 @@ void
 MorphLinearView::on_morphing_changed (int new_value)
 {
   double dvalue = new_value * 0.01;
-  morphing_label->setText (string_printf ("%.2f", dvalue).c_str());
+  morphing_label->setText (string_locale_printf ("%.2f", dvalue).c_str());
   morph_linear->set_morphing (dvalue);
 }
 

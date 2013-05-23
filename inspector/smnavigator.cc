@@ -51,7 +51,7 @@ public:
           {
             case 0: return wset->waves[index.row()].midi_note;
             case 1: return wave.channel;
-            case 2: return string_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max).c_str();
+            case 2: return string_locale_printf ("%d..%d", wave.velocity_range_min, wave.velocity_range_max).c_str();
             case 3: return wave.path.c_str();
           }
       }
@@ -172,11 +172,11 @@ Navigator::handle_close_event()
     {
       int rc =
         QMessageBox::warning (this, "SpectMorph Inspector",
-          string_printf ("You changed instrument <b>'%s'</b>."
-                         "<p>"
-                         "If you quit now your changes will be lost.",
-                         smset_combobox->currentText().toLatin1().data()).c_str(),
-                         QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
+          string_locale_printf ("You changed instrument <b>'%s'</b>."
+                                "<p>"
+                                "If you quit now your changes will be lost.",
+                                smset_combobox->currentText().toLatin1().data()).c_str(),
+                                QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
       if (rc == QMessageBox::Cancel)
         return false;
     }
@@ -202,11 +202,11 @@ Navigator::on_combo_changed()
     {
       int rc =
         QMessageBox::warning (this, "SpectMorph Inspector",
-          string_printf ("You changed instrument <b>'%s'</b>."
-                         "<p>"
-                         "If you switch instruments now your changes will be lost.",
-                         smset_combobox->currentText().toLatin1().data()).c_str(),
-                         QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
+          string_locale_printf ("You changed instrument <b>'%s'</b>."
+                                "<p>"
+                                "If you switch instruments now your changes will be lost.",
+                                smset_combobox->currentText().toLatin1().data()).c_str(),
+                                QMessageBox::Discard | QMessageBox::Cancel, QMessageBox::Cancel);
       if (rc == QMessageBox::Cancel)
         {
           smset_combobox->setCurrentText (wset_active_text.c_str());
