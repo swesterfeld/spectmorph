@@ -256,11 +256,11 @@ Encoder::search_local_maxima()
                 }
             }
 
+          const double mag2 = bse_db_from_factor (mag_values[d / 2] / max_mag, -100);
+          debug ("dbspectrum:%zd %f\n", n, mag2);
+
           if (peak_type != PEAK_NONE)
             {
-              /* need [] operater in fblock */
-              double mag2 = bse_db_from_factor (mag_values[d / 2] / max_mag, -100);
-              debug ("dbspectrum:%zd %f\n", n, mag2);
               if (mag2 > -90)
                 {
                   size_t ds, de;
@@ -268,8 +268,8 @@ Encoder::search_local_maxima()
                   for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] > mag_values[de + 1]; de++);
                   if (de - ds > 12)
                     {
-                      double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
-                      double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
+                      const double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
+                      const double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
                       //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
 
                       /* a*x^2 + b*x + c */
