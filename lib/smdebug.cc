@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smdebug.hh"
+#include "smutils.hh"
 #include <stdio.h>
 #include <stdarg.h>
 #include <set>
@@ -28,7 +29,7 @@ Debug::debug (const char *area, const char *fmt, ...)
       va_list ap;
 
       va_start (ap, fmt);
-      vfprintf (debug_file, fmt, ap);
+      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
       va_end (ap);
     }
 }
