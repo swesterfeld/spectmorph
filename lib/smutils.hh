@@ -12,7 +12,10 @@ namespace SpectMorph
 using Rapicorn::AlignedArray;
 
 std::string string_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
+std::string string_vprintf (const char *format, va_list vargs);
+
 std::string string_locale_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
+
 void        sm_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
 
 } // namespace SpectMorph

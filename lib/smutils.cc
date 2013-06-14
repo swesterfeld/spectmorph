@@ -94,8 +94,8 @@ ScopedPosixLocale::posix_locale ()
 using std::string;
 
 static string
-string_vprintf (const char *format,
-                va_list     vargs)
+string_current_vprintf (const char *format,
+                        va_list     vargs)
 {
   char *str = NULL;
   if (vasprintf (&str, format, vargs) >= 0 && str)
@@ -112,10 +112,17 @@ namespace SpectMorph
 {
 
 string
-string_printf (const char *format, ...)
+string_vprintf (const char *format,
+                va_list     vargs)
 {
   ScopedPosixLocale posix_locale_scope; // pushes POSIX locale for this scope
 
+  return string_current_vprintf (format, vargs);
+}
+
+string
+string_printf (const char *format, ...)
+{
   string str;
   va_list args;
   va_start (args, format);
@@ -130,7 +137,7 @@ string_locale_printf (const char *format, ...)
   string str;
   va_list args;
   va_start (args, format);
-  str = string_vprintf (format, args);
+  str = string_current_vprintf (format, args);
   va_end (args);
   return str;
 }
@@ -138,8 +145,6 @@ string_locale_printf (const char *format, ...)
 void
 sm_printf (const char *format, ...)
 {
-  ScopedPosixLocale posix_locale_scope; // pushes POSIX locale for this scope
-
   string str;
   va_list args;
   va_start (args, format);
