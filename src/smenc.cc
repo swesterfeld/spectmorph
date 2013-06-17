@@ -89,6 +89,7 @@ struct Options
   double        loop_end;
   Audio::LoopType loop_type;
   bool          loop_unit_seconds;
+  string        debug_decode_filename;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -188,6 +189,10 @@ Options::parse (int   *argc_p,
         {
           track_sines = false;
         }
+      else if (check_arg (argc, argv, &i, "--debug-decode", &opt_arg))
+        {
+          debug_decode_filename = opt_arg;
+        }
       else if (check_arg (argc, argv, &i, "--loop-start", &opt_arg))
         {
           loop_start = atof (opt_arg);
@@ -243,6 +248,7 @@ Options::print_usage ()
   sm_printf (" --no-sines                  skip partial tracking\n");
   sm_printf (" --loop-start                set timeloop start\n");
   sm_printf (" --loop-end                  set timeloop end\n");
+  sm_printf (" --debug-decode              debug decode sm file using unquantized values");
   sm_printf ("\n");
 }
 
@@ -429,6 +435,9 @@ main (int argc, char **argv)
               encoder.set_loop (options.loop_type, options.loop_start, options.loop_end);
             }
         }
+      if (options.debug_decode_filename != "")
+        encoder.debug_decode (options.debug_decode_filename, window);
+
       encoder.save (sm_file, options.fundamental_freq);
     }
 }
