@@ -1273,6 +1273,57 @@ Encoder::save (const string& filename, double fundamental_freq)
   audio.save (filename);
 }
 
+void
+Encoder::debug_decode (const string& filename, const vector<float>& window)
+{
+  const double mix_freq   = enc_params.mix_freq;
+  const size_t frame_size = enc_params.frame_size;
+  const size_t frame_step = enc_params.frame_step;
+
+  size_t pos = 0;
+  vector<double> dec_signal;
+
+  assert (window.size() >= frame_size);
+
+  for (size_t i = 0; i < audio_blocks.size(); i++)
+    {
+      const EncoderBlock& block = audio_blocks[i];
+
+      dec_signal.resize (pos + frame_size);
+      for (size_t partial = 0; partial < block.freqs.size(); partial++)
+        {
+          const double SA = 0.5;
+          const double mag   = block.mags[partial] * SA;
+          const double f     = block.freqs[partial];
+          double       phase = block.phases[partial];
+
+          // do a phase optimal reconstruction of that partial
+          for (size_t n = 0; n < frame_size; n++)
+            {
+              dec_signal[pos + n] += sin (phase) * mag * window[n];
+              phase += f / mix_freq * 2.0 * M_PI;
+            }
+        }
+      pos += frame_step;
+    }
+
+  // strip zero values at start:
+  std::copy (dec_signal.begin() + zero_values_at_start, dec_signal.end(), dec_signal.begin());
+  dec_signal.resize (dec_signal.size() - zero_values_at_start);
+
+  FILE *dec_file = fopen (filename.c_str(), "w");
+  if (!dec_file)
+    {
+      fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
+      exit (1);
+    }
+  for (size_t i = 0; i < dec_signal.size(); i++)
+    {
+      fprintf (dec_file, "%s", string_printf ("%.17g\n", dec_signal[i]).c_str());
+    }
+  fclose (dec_file);
+}
+
 
 
 

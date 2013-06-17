@@ -115,6 +115,7 @@ public:
   void compute_attack_params (const std::vector<float>& window);
   void compute_lpc_lsf();
   void sort_freqs();
+  void debug_decode (const std::string& filename, const std::vector<float>& window);
 
   // all-in-one encoding function:
   void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
