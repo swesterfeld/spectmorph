@@ -8,8 +8,8 @@ SMRESVALUE = $(top_builddir)/tests/smresvalue.sh
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QT_LIBS)
 
-EXTRA_DIST += saw440.wav sin440.wav sin440.py
-CLEANFILES += sin440-4567.wav
+EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py
+CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid \
         testidb testifreq
@@ -99,10 +99,13 @@ testifreq_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 testconvperf_SOURCES = testconvperf.cc
 testconvperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
-check: saw440-test sin440-test sin440-4567-test
+check: saw440-test saw440x-test sin440-test sin440-4567-test
 
 saw440-test:
 	@$(SMRESVALUE) saw440.wav 3000 24000 44100 440
+
+saw440x-test: saw440x.wav
+	@$(SMRESVALUE) saw440x.wav 2000 20000 44100 440
 
 sin440-test:
 	@$(SMRESVALUE) sin440.wav 2900 16300 96000 440
@@ -112,3 +115,6 @@ sin440-4567-test: sin440-4567.wav
 
 sin440-4567.wav: Makefile
 	$(SINSIGNAL) 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav 96000
+
+saw440x.wav: saw440x.py
+	$(top_srcdir)/tests/saw440x.py | $(ASCII2WAV) saw440x.wav 44100
