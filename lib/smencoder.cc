@@ -1274,16 +1274,20 @@ Encoder::save (const string& filename, double fundamental_freq)
 }
 
 void
-Encoder::debug_decode (const string& filename, const vector<float>& window)
+Encoder::debug_decode (const string& filename, const vector<float>& enc_window)
 {
   const double mix_freq   = enc_params.mix_freq;
-  const size_t frame_size = enc_params.frame_size;
   const size_t frame_step = enc_params.frame_step;
+  const size_t frame_size = 4 * frame_step + 1;
 
   size_t pos = 0;
   vector<double> dec_signal;
 
-  assert (window.size() >= frame_size);
+  vector<double> dec_window (frame_size);
+  for (size_t i = 0; i < dec_window.size(); i++)
+    dec_window[i] = bse_window_cos (2.0 * i / (frame_size - 1) - 1.0);
+
+  assert (dec_window.size() >= frame_size);
 
   for (size_t i = 0; i < audio_blocks.size(); i++)
     {
@@ -1300,7 +1304,7 @@ Encoder::debug_decode (const string& filename, const vector<float>& window)
           // do a phase optimal reconstruction of that partial
           for (size_t n = 0; n < frame_size; n++)
             {
-              dec_signal[pos + n] += sin (phase) * mag * window[n];
+              dec_signal[pos + n] += sin (phase) * mag * dec_window[n];
               phase += f / mix_freq * 2.0 * M_PI;
             }
         }
