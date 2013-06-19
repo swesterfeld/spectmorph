@@ -31,10 +31,12 @@ SM=$(echo "$1" | sed s/.wav$/.sm/g)
 DWAV=$(echo "$1" | sed s/.wav$/-dec.wav/g)
 TWAV=$(echo "$1" | sed s/.wav$/.txt/g)
 TDWAV=$(echo "$1" | sed s/.wav$/-dec.txt/g)
+TDEBUGDEC=$(echo "$1" | sed s/.wav$/-debug-dec.txt/g)
 
-$SMENC $SMENCFLAGS -f $FREQ $WAV $SM || die "smenc failed"
+$SMENC $SMENCFLAGS -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
 $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
 $WAV2ASCII $WAV > $TWAV
 $WAV2ASCII $DWAV > $TDWAV
-$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
-rm $SM $TWAV $TDWAV $DWAV
+$DELTA $TWAV $TDEBUGDEC | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
+$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value (int16 quantization):",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
+rm $SM $TWAV $TDWAV $DWAV $TDEBUGDEC
