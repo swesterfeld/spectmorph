@@ -106,7 +106,7 @@ public:
 
   // single encoder steps:
   void compute_stft (GslDataHandle *dhandle, int channel, const std::vector<float>& window);
-  void search_local_maxima();
+  void search_local_maxima (const std::vector<float>& window);
   void link_partials();
   void validate_partials();
   void optimize_partials (const std::vector<float>& window, int optimization_level);

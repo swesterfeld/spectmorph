@@ -200,12 +200,18 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
  * This function searches for peaks in the frame ffts. These are stored in frame_tracksels.
  */
 void
-Encoder::search_local_maxima()
+Encoder::search_local_maxima (const vector<float>& window)
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
   const int    zeropad    = enc_params.zeropad;
   const double mix_freq   = enc_params.mix_freq;
+
+  // figure out normalization for window
+  double window_weight = 0;
+  for (size_t i = 0; i < frame_size; i++)
+    window_weight += window[i];
+  const double window_scale = 0.5 * frame_size / window_weight;
 
   // initialize tracksel structure
   frame_tracksels.clear();
@@ -300,7 +306,7 @@ Encoder::search_local_maxima()
                       tracksel.frame = n;
                       tracksel.d = d;
                       tracksel.freq = tfreq;
-                      tracksel.mag = peak_mag / frame_size * zeropad;
+                      tracksel.mag = peak_mag / frame_size * zeropad * window_scale;
                       tracksel.mag2 = mag2;
                       tracksel.next = 0;
                       tracksel.prev = 0;
@@ -1161,7 +1167,7 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
 
   if (track_sines)
     {
-      search_local_maxima();
+      search_local_maxima (window);
       link_partials();
       validate_partials();
 
