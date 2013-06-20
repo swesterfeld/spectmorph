@@ -196,6 +196,34 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
   FFT::free_array_float (fft_out);
 }
 
+namespace
+{
+
+class QInterpolator
+{
+  double a, b, c;
+
+public:
+  QInterpolator (double y1, double y2, double y3)
+  {
+    a = (y1 + y3 - 2*y2) / 2;
+    b = y3 - y2 - a;
+    c = y2;
+  }
+  double
+  eval (double x)
+  {
+    return a * x * x + b * x + c;
+  }
+  double
+  x_max()
+  {
+    return -b / (2 * a);
+  }
+};
+
+}
+
 /**
  * This function searches for peaks in the frame ffts. These are stored in frame_tracksels.
  */
@@ -278,26 +306,16 @@ Encoder::search_local_maxima (const vector<float>& window)
                       const double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
                       //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
 
-                      /* a*x^2 + b*x + c */
-                      double a = (mag1 + mag3 - 2*mag2) / 2;
-                      double b = mag3 - mag2 - a;
-                      double c = mag2;
-                      //printf ("f%d(x) = %f * x * x + %f * x + %f\n", n, a, b, c);
-                      double x_max = -b / (2 * a);
-                      //printf ("x_max%d=%f\n", n, x_max);
+                      QInterpolator mag_interp (mag1, mag2, mag3);
+                      double x_max = mag_interp.x_max();
                       double tfreq = (d / 2 + x_max) * mix_freq / (block_size * zeropad);
 
-                      double peak_mag_db = a * x_max * x_max + b * x_max + c;
+                      double peak_mag_db = mag_interp.eval (x_max);
                       double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
 
                       // use the interpolation formula for the complex values to find the phase
-                      std::complex<double> c1 (audio_blocks[n].noise[d-2], audio_blocks[n].noise[d-1]);
-                      std::complex<double> c2 (audio_blocks[n].noise[d], audio_blocks[n].noise[d+1]);
-                      std::complex<double> c3 (audio_blocks[n].noise[d+2], audio_blocks[n].noise[d+3]);
-                      std::complex<double> ca = (c1 + c3 - 2.0*c2) / 2.0;
-                      std::complex<double> cb = c3 - c2 - ca;
-                      std::complex<double> cc = c2;
-                      std::complex<double> interp_c = ca * x_max * x_max + cb * x_max + cc;
+                      QInterpolator re_interp (audio_blocks[n].noise[d-2], audio_blocks[n].noise[d], audio_blocks[n].noise[d+2]);
+                      QInterpolator im_interp (audio_blocks[n].noise[d-1], audio_blocks[n].noise[d+1], audio_blocks[n].noise[d+3]);
     /*
                       if (mag2 > -20)
                         printf ("%f %f %f %f %f\n", phase, last_phase[d], phase_diff, phase_diff * mix_freq / (block_size * zeropad) * overlap, tfreq);
@@ -311,8 +329,8 @@ Encoder::search_local_maxima (const vector<float>& window)
                       tracksel.next = 0;
                       tracksel.prev = 0;
 
-                      const double cmag = interp_c.real() / frame_size * zeropad;
-                      const double smag = -interp_c.imag() / frame_size * zeropad;
+                      const double cmag = re_interp.eval (x_max) / frame_size * zeropad;
+                      const double smag = -im_interp.eval (x_max) / frame_size * zeropad;
                       double phase = atan2 (cmag, smag);
                       // correct for the odd-centered analysis
                         {
