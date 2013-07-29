@@ -43,6 +43,8 @@ struct EncoderParams
 
   /** user defined fundamental freq */
   double  fundamental_freq;
+
+  EncoderParams();
 };
 
 struct Tracksel {
@@ -123,7 +125,7 @@ public:
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);
   void set_loop_seconds (Audio::LoopType loop_type, double loop_start, double loop_end);
-  void save (const std::string& filename, double fundamental_freq);
+  void save (const std::string& filename);
 };
 
 }

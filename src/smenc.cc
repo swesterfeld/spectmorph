@@ -344,6 +344,7 @@ main (int argc, char **argv)
       fprintf (stderr, "%s: fundamental freq is required for encoding (use -f or -m options)\n", options.program_name.c_str());
       exit (1);
     }
+  enc_params.fundamental_freq = options.fundamental_freq;
   enc_params.frame_size_ms = 40; // at least 40ms frames
   enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
@@ -438,6 +439,6 @@ main (int argc, char **argv)
       if (options.debug_decode_filename != "")
         encoder.debug_decode (options.debug_decode_filename, window);
 
-      encoder.save (sm_file, options.fundamental_freq);
+      encoder.save (sm_file);
     }
 }

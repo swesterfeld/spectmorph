@@ -33,6 +33,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   EncoderParams enc_params;
   enc_params.mix_freq = 44100;
   enc_params.zeropad = 4;
+  enc_params.fundamental_freq = 440;
   enc_params.frame_size_ms = 40;
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
   enc_params.frame_size = make_odd (enc_params.mix_freq * 0.001 * enc_params.frame_size_ms);
@@ -61,7 +62,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   const char *sm_file = "testaafilter.tmp.sm";
   encoder.encode (dhandle, 0, window, 1, false, true);
-  encoder.save (sm_file, 440);
+  encoder.save (sm_file);
 
   WavSet wav_set;
   LiveDecoder decoder (&wav_set);

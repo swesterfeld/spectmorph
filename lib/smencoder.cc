@@ -44,12 +44,34 @@ normalize_phase (double phase)
 
 #define debug(...) SpectMorph::Debug::debug ("encoder", __VA_ARGS__)
 
+EncoderParams::EncoderParams() :
+  mix_freq (0),
+  frame_step_ms (0),
+  frame_size_ms (0),
+  zeropad (0),
+  frame_step (0),
+  frame_size (0),
+  block_size (0),
+  fundamental_freq (0)
+{
+}
+
 /**
  * Constructor which initializes the Encoders parameters.
  */
 Encoder::Encoder (const EncoderParams& enc_params)
 {
+  assert (enc_params.mix_freq > 0);
+  assert (enc_params.frame_step_ms > 0);
+  assert (enc_params.frame_size_ms > 0);
+  assert (enc_params.zeropad > 0);
+  assert (enc_params.frame_step > 0);
+  assert (enc_params.frame_size > 0);
+  assert (enc_params.block_size > 0);
+  assert (enc_params.fundamental_freq > 0);
+
   this->enc_params = enc_params;
+
   loop_start = -1;
   loop_end = -1;
   loop_type = Audio::LOOP_NONE;
@@ -1257,10 +1279,10 @@ convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
 void
-Encoder::save (const string& filename, double fundamental_freq)
+Encoder::save (const string& filename)
 {
   SpectMorph::Audio audio;
-  audio.fundamental_freq = fundamental_freq;
+  audio.fundamental_freq = enc_params.fundamental_freq;
   audio.mix_freq = enc_params.mix_freq;
   audio.frame_size_ms = enc_params.frame_size_ms;
   audio.frame_step_ms = enc_params.frame_step_ms;
