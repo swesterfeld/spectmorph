@@ -329,9 +329,9 @@ Encoder::search_local_maxima (const vector<float>& window)
                       tracksel.next = 0;
                       tracksel.prev = 0;
 
-                      const double cmag = re_interp.eval (x_max) / frame_size * zeropad;
-                      const double smag = -im_interp.eval (x_max) / frame_size * zeropad;
-                      double phase = atan2 (cmag, smag);
+                      const double re_mag = re_interp.eval (x_max);
+                      const double im_mag = im_interp.eval (x_max);
+                      double phase = atan2 (im_mag, re_mag) + 0.5 * M_PI;
                       // correct for the odd-centered analysis
                         {
                           phase -= (frame_size - 1) / 2.0 / mix_freq * tracksel.freq * 2 * M_PI;
