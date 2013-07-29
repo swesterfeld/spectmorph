@@ -22,5 +22,10 @@ testlpc
 testoutfileperf
 testlsfperf
 testrootfinder
+testconvperf
+testidb
+testifreq
+testmutexperf
+testsortfreqs
 .libs
 .deps
