@@ -38,7 +38,7 @@ dnl libbse
 dnl
 AC_DEFUN([AC_BSE_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(BSE, bse >= 0.7.2 rapicorn1303)
+    PKG_CHECK_MODULES(BSE, bse >= 0.7.2 rapicorn1307)
     AC_SUBST(BSE_CFLAGS)
     AC_SUBST(BSE_LIBS)
     BSE_VERSION=`pkg-config --modversion bse`
