@@ -261,7 +261,7 @@ Encoder::search_local_maxima (const vector<float>& window)
   double window_weight = 0;
   for (size_t i = 0; i < frame_size; i++)
     window_weight += window[i];
-  const double window_scale = 0.5 * frame_size / window_weight;
+  const double window_scale = 2.0 / window_weight;
 
   // initialize tracksel structure
   frame_tracksels.clear();
@@ -346,7 +346,7 @@ Encoder::search_local_maxima (const vector<float>& window)
                       tracksel.frame = n;
                       tracksel.d = d;
                       tracksel.freq = tfreq;
-                      tracksel.mag = peak_mag / frame_size * zeropad * window_scale;
+                      tracksel.mag = peak_mag * window_scale;
                       tracksel.mag2 = mag2;
                       tracksel.next = 0;
                       tracksel.prev = 0;
@@ -625,6 +625,7 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   double window_weight = 0;
   for (size_t i = 0; i < frame_size; i++)
     window_weight += window[i];
+  const double window_scale = 2.0 / window_weight;
 
   double max_mag;
   size_t partial = 0;
@@ -674,7 +675,7 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
               cmag += v * window[n] * cos_vec[n];
             }
 
-          double magnitude = sqrt (smag * smag + cmag * cmag) / window_weight * 2;
+          double magnitude = sqrt (smag * smag + cmag * cmag) * window_scale;
           phase = atan2 (cmag, smag);
           phase -= (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
           phase = normalize_phase (phase);
