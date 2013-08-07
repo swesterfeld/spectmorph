@@ -621,6 +621,11 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   vector<float> good_mags;
   vector<float> good_phases;
 
+  // figure out normalization for window
+  double window_weight = 0;
+  for (size_t i = 0; i < frame_size; i++)
+    window_weight += window[i];
+
   double max_mag;
   size_t partial = 0;
   do
@@ -649,7 +654,6 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
           // determine "perfect" phase and magnitude instead of using interpolated fft phase
           double smag = 0;
           double cmag = 0;
-          double snorm = 0, cnorm = 0;
 
           VectorSinParams params;
 
@@ -665,18 +669,12 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
           for (size_t n = 0; n < frame_size; n++)
             {
               const double v = audio_block.debug_samples[n] - sines[n];
-              const double swin = sin_vec[n] * window[n];
-              const double cwin = cos_vec[n] * window[n];
 
-              smag += v * window[n] * swin;
-              cmag += v * window[n] * cwin;
-              snorm += swin * swin;
-              cnorm += cwin * cwin;
+              smag += v * window[n] * sin_vec[n];
+              cmag += v * window[n] * cos_vec[n];
             }
-          smag /= snorm;
-          cmag /= cnorm;
 
-          double magnitude = sqrt (smag * smag + cmag * cmag);
+          double magnitude = sqrt (smag * smag + cmag * cmag) / window_weight * 2;
           phase = atan2 (cmag, smag);
           phase -= (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
           phase = normalize_phase (phase);
