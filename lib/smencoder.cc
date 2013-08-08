@@ -653,8 +653,8 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
 
           double phase;
           // determine "perfect" phase and magnitude instead of using interpolated fft phase
-          double smag = 0;
-          double cmag = 0;
+          double x_re = 0;
+          double x_im = 0;
 
           VectorSinParams params;
 
@@ -671,12 +671,15 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
             {
               const double v = audio_block.debug_samples[n] - sines[n];
 
-              smag += v * window[n] * sin_vec[n];
-              cmag += v * window[n] * cos_vec[n];
+              // multiply windowed signal with complex exp function from fourier transform:
+              //
+              //   v * w * exp (-j * x) = v * w * (cos (x) - j * sin (x))
+              x_re +=      v * window[n] * cos_vec[n];
+              x_im += -1 * v * window[n] * sin_vec[n];
             }
 
-          double magnitude = sqrt (smag * smag + cmag * cmag) * window_scale;
-          phase = atan2 (cmag, smag);
+          double magnitude = sqrt (x_re * x_re + x_im * x_im) * window_scale;
+          phase = atan2 (x_im, x_re) + 0.5 * M_PI;
           phase -= (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
           phase = normalize_phase (phase);
 
