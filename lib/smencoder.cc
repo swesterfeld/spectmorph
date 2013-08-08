@@ -669,14 +669,15 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
 
           for (size_t n = 0; n < frame_size; n++)
             {
-              const double v = audio_block.debug_samples[n] - sines[n];
+              double v = audio_block.debug_samples[n] - sines[n];
+              v *= window[n];
 
               // multiply windowed signal with complex exp function from fourier transform:
               //
-              //   v * w * exp (-j * x) = v * w * (cos (x) - j * sin (x))
-              x_re +=      v * window[n] * cos_vec[n];
-              x_im += -1 * v * window[n] * sin_vec[n];
-            }
+              //   v * exp (-j * x) = v * (cos (x) - j * sin (x))
+              x_re += v * cos_vec[n];
+              x_im -= v * sin_vec[n];
+          }
 
           double magnitude = sqrt (x_re * x_re + x_im * x_im) * window_scale;
           phase = atan2 (x_im, x_re) + 0.5 * M_PI;
