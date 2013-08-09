@@ -4,7 +4,7 @@ SMENC=@top_builddir@/src/smenc
 SMPLAY=@top_builddir@/src/smplay
 SMENCFLAGS="-O0 --no-attack"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
-DELTA=@top_srcdir@/tools/delta.py
+SN_DELTA=@top_srcdir@/tests/sn_delta.py
 
 die()
 {
@@ -37,6 +37,7 @@ $SMENC $SMENCFLAGS -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc fai
 $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
 $WAV2ASCII $WAV > $TWAV
 $WAV2ASCII $DWAV > $TDWAV
-$DELTA $TWAV $TDEBUGDEC | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value:",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
-$DELTA $TWAV $TDWAV | LANG=C awk 'FNR > '$START' && FNR < '$STOP' { r += $1 * $1; c += 1 } END { print "'$1' residual value (int16 quantization):",r/c; if (r/c > 4e-5) exit(1); else exit (0);}' || exit 1
+SN=$($SN_DELTA $TWAV $TDEBUGDEC $START $STOP 70) || exit 1
+SN_QUANT=$($SN_DELTA $TWAV $TDWAV $START $STOP 60) || exit 1
+printf "%-15s   S/N value:   %s      quant   %s\n" $1 $SN $SN_QUANT
 rm $SM $TWAV $TDWAV $DWAV $TDEBUGDEC
