@@ -99,7 +99,7 @@ testifreq_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 testconvperf_SOURCES = testconvperf.cc
 testconvperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
-check: saw440-test saw440x-test sin440-test sin440-4567-test
+check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test
 
 saw440-test:
 	@$(SMRESVALUE) saw440.wav 3000 24000 44100 440
@@ -112,6 +112,18 @@ sin440-test:
 
 sin440-4567-test: sin440-4567.wav
 	@$(SMRESVALUE) sin440-4567.wav 3500 6000 96000 440
+
+TXT-saw440-test:
+	$(top_srcdir)/tests/saw440x.py > TXT-saw440.txt
+	@$(SMRESVALUE) TXT-saw440.txt 2000 20000 44100 440
+
+TXT-sin440-test:
+	$(SINSIGNAL) 44100 440 0.9 > TXT-sin440.txt
+	@$(SMRESVALUE) TXT-sin440.txt 2000 20000 44100 440
+
+TXT-sin440-4567-test:
+	$(SINSIGNAL) 44100 440 0.4 4567 0.5 > TXT-sin440-4567.txt
+	@$(SMRESVALUE) TXT-sin440-4567.txt 2000 20000 44100 440
 
 sin440-4567.wav: Makefile
 	$(SINSIGNAL) 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav 96000

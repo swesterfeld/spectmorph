@@ -24,20 +24,27 @@ START="$2"
 STOP="$3"
 RATE="$4"
 FREQ="$5"
+FMT="$(echo $1 | sed 's/.*[.]//g')"
 
 test -z "$FREQ" && die "freq parameter missing"
 
-SM=$(echo "$1" | sed s/.wav$/.sm/g)
-DWAV=$(echo "$1" | sed s/.wav$/-dec.wav/g)
-TWAV=$(echo "$1" | sed s/.wav$/.txt/g)
-TDWAV=$(echo "$1" | sed s/.wav$/-dec.txt/g)
-TDEBUGDEC=$(echo "$1" | sed s/.wav$/-debug-dec.txt/g)
+SM=$(echo "$1" | sed s/.$FMT$/.sm/g)
+DWAV=$(echo "$1" | sed s/.$FMT$/-dec.wav/g)
+TWAV=$(echo "$1" | sed s/.$FMT$/.txt/g)
+TDWAV=$(echo "$1" | sed s/.$FMT$/-dec.txt/g)
+TDEBUGDEC=$(echo "$1" | sed s/.$FMT$/-debug-dec.txt/g)
 
-$SMENC $SMENCFLAGS -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
+if [ "x$FMT" = "xwav" ]; then
+  $SMENC $SMENCFLAGS -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
+  $WAV2ASCII $WAV > $TWAV
+else
+  $SMENC $SMENCFLAGS -f $FREQ --text-input-file $RATE $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
+  # $WAV and $TWAV contain the same filename
+fi
+
 $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
-$WAV2ASCII $WAV > $TWAV
 $WAV2ASCII $DWAV > $TDWAV
 SN=$($SN_DELTA $TWAV $TDEBUGDEC $START $STOP 70) || exit 1
 SN_QUANT=$($SN_DELTA $TWAV $TDWAV $START $STOP 60) || exit 1
-printf "%-15s   S/N value:   %s      quant   %s\n" $1 $SN $SN_QUANT
+printf "%-25sS/N value:   %7s      quant   %7s\n" $1 $SN $SN_QUANT
 rm $SM $TWAV $TDWAV $DWAV $TDEBUGDEC
