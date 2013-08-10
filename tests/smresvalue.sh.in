@@ -2,7 +2,7 @@
 
 SMENC=@top_builddir@/src/smenc
 SMPLAY=@top_builddir@/src/smplay
-SMENCFLAGS="-O0 --no-attack"
+SMENCFLAGS="--no-attack"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
 SN_DELTA=@top_srcdir@/tests/sn_delta.py
 
@@ -34,17 +34,20 @@ TWAV=$(echo "$1" | sed s/.$FMT$/.txt/g)
 TDWAV=$(echo "$1" | sed s/.$FMT$/-dec.txt/g)
 TDEBUGDEC=$(echo "$1" | sed s/.$FMT$/-debug-dec.txt/g)
 
-if [ "x$FMT" = "xwav" ]; then
-  $SMENC $SMENCFLAGS -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
-  $WAV2ASCII $WAV > $TWAV
-else
-  $SMENC $SMENCFLAGS -f $FREQ --text-input-file $RATE $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
-  # $WAV and $TWAV contain the same filename
-fi
+for ENCOPT in 0 1
+do
+  if [ "x$FMT" = "xwav" ]; then
+    $SMENC $SMENCFLAGS -O$ENCOPT -f $FREQ $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
+    $WAV2ASCII $WAV > $TWAV
+  else
+    $SMENC $SMENCFLAGS -O$ENCOPT -f $FREQ --text-input-file $RATE $WAV $SM --debug-decode $TDEBUGDEC || die "smenc failed"
+    # $WAV and $TWAV contain the same filename
+  fi
 
-$SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
-$WAV2ASCII $DWAV > $TDWAV
-SN=$($SN_DELTA $TWAV $TDEBUGDEC $START $STOP 70) || exit 1
-SN_QUANT=$($SN_DELTA $TWAV $TDWAV $START $STOP 60) || exit 1
-printf "%-25sS/N value:   %7s      quant   %7s\n" $1 $SN $SN_QUANT
+  $SMPLAY $SM --no-noise --rate=$RATE --export $DWAV || die "smplay failed"
+  $WAV2ASCII $DWAV > $TDWAV
+  SN=$($SN_DELTA $TWAV $TDEBUGDEC $START $STOP 70) || exit 1
+  SN_QUANT=$($SN_DELTA $TWAV $TDWAV $START $STOP 60) || exit 1
+  printf "%-25sS/N value:   %7s      quant   %7s   -O$ENCOPT\n" $1 $SN $SN_QUANT
+done
 rm $SM $TWAV $TDWAV $DWAV $TDEBUGDEC
