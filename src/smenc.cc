@@ -80,6 +80,8 @@ struct Options
 {
   string	program_name; /* FIXME: what to do with that */
   bool          strip_models;
+  bool          text_input_file;
+  int           text_input_rate;
   bool          keep_samples;
   bool          attack;
   bool          track_sines;
@@ -108,6 +110,8 @@ Options::Options ()
   keep_samples = false;
   track_sines = true;   // perform peak tracking to find sine components
   attack = true;        // perform attack time optimization
+  text_input_file = false;
+  text_input_rate = 0;
   loop_start = -1;
   loop_end = -1;
   loop_type = Audio::LOOP_NONE;
@@ -218,6 +222,11 @@ Options::parse (int   *argc_p,
             }
           loop_unit_seconds = true;
         }
+      else if (check_arg (argc, argv, &i, "--text-input-file", &opt_arg))
+        {
+          text_input_file = true;
+          text_input_rate = atoi (opt_arg);
+        }
      }
 
   /* resort argc/argv */
@@ -248,7 +257,8 @@ Options::print_usage ()
   sm_printf (" --no-sines                  skip partial tracking\n");
   sm_printf (" --loop-start                set timeloop start\n");
   sm_printf (" --loop-end                  set timeloop end\n");
-  sm_printf (" --debug-decode              debug decode sm file using unquantized values");
+  sm_printf (" --debug-decode              debug decode sm file using unquantized values\n");
+  sm_printf (" --text-input-file <rate>    set input file format to human readable text values\n");
   sm_printf ("\n");
 }
 
@@ -286,6 +296,54 @@ make_odd (size_t n)
   return n - 1;
 }
 
+vector<float>
+parse_text_input_file (const string& filename)
+{
+  char buffer[1024];
+  vector<float> signal;
+
+  FILE *input_file = fopen (filename.c_str(), "r");
+  if (!input_file)
+    {
+      fprintf (stderr, "%s: can't open the input file %s\n", options.program_name.c_str(), filename.c_str());
+      exit (1);
+    }
+
+  int line = 1;
+  while (fgets (buffer, 1024, input_file) != NULL)
+    {
+      if (buffer[0] == '#')
+        {
+          // skip comments
+        }
+      else
+        {
+          char *end_ptr;
+          bool parse_error = false;
+
+          signal.push_back (g_ascii_strtod (buffer, &end_ptr));
+
+          // chech that we parsed at least one character
+          parse_error = parse_error || (end_ptr == buffer);
+
+          // check that we parsed the whole line
+          while (*end_ptr == ' ' || *end_ptr == '\n' || *end_ptr == '\t' || *end_ptr == '\r')
+            end_ptr++;
+          parse_error = parse_error || (*end_ptr != 0);
+
+          if (parse_error)
+            {
+              g_printerr ("%s: parse error on line %d\n", options.program_name.c_str(), line);
+              exit (1);
+            }
+        }
+      line++;
+    }
+
+  fclose (input_file);
+  return signal;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -306,25 +364,37 @@ main (int argc, char **argv)
 
   string input_file = argv[1];
 
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (input_file.c_str(), &error);
-  if (!wave_file_info)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
+  GslDataHandle *dhandle;
+  vector<float> text_input_signal;
 
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
+  if (options.text_input_file)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
+      text_input_signal = parse_text_input_file (input_file);
 
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
+      dhandle = gsl_data_handle_new_mem (1, 32, options.text_input_rate, 440, text_input_signal.size(), &text_input_signal[0], NULL);
+    }
+  else
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-      exit (1);
+      BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (input_file.c_str(), &error);
+      if (!wave_file_info)
+        {
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
+          exit (1);
+        }
+
+      BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
+      if (!waveDsc)
+        {
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
+          exit (1);
+        }
+
+      dhandle = bse_wave_handle_create (waveDsc, 0, &error);
+      if (!dhandle)
+        {
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
+          exit (1);
+        }
     }
 
   error = gsl_data_handle_open (dhandle);
