@@ -14,7 +14,7 @@ while i < len (sys.argv):
   i += 2
 
 phases = [ 0 ] * len (partials)
-for t in range (int (rate * 0.1)):                          # generate a 0.1 second test signal
+for t in range (int (rate * 0.5)):                          # generate a 0.5 second test signal
   value = 0
   for p in range (len (partials)):
     value += sin (phases[p]) * partials[p][1]
