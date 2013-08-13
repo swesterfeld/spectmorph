@@ -617,6 +617,8 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   AlignedArray<float, 16> sin_vec (frame_size);
   AlignedArray<float, 16> cos_vec (frame_size);
   AlignedArray<float, 16> sines (frame_size);
+  AlignedArray<float, 16> all_sines (frame_size);
+
   vector<float> good_freqs;
   vector<float> good_mags;
   vector<float> good_phases;
@@ -625,6 +627,19 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   double window_weight = 0;
   for (size_t i = 0; i < frame_size; i++)
     window_weight += window[i];
+
+  for (size_t i = 0; i < audio_block.freqs.size(); i++)
+    {
+      VectorSinParams params;
+
+      params.mix_freq = mix_freq;
+      params.freq     = audio_block.freqs[i];
+      params.mag      = audio_block.mags[i];
+      params.phase    = audio_block.phases[i];
+      params.mode     = VectorSinParams::ADD;
+
+      fast_vector_sinf (params, &all_sines[0], &all_sines[frame_size]);
+    }
 
   double max_mag;
   size_t partial = 0;
@@ -666,9 +681,16 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
 
           fast_vector_sincosf (params, &sin_vec[0], &sin_vec[frame_size], &cos_vec[0]);
 
+          params.freq  = f;
+          params.mag   = max_mag;
+          params.phase = audio_block.phases[partial];
+          params.mode  = VectorSinParams::REPLACE;
+
+          fast_vector_sinf (params, &sines[0], &sines[frame_size]);
+
           for (size_t n = 0; n < frame_size; n++)
             {
-              double v = audio_block.debug_samples[n] - sines[n];
+              double v = audio_block.debug_samples[n] - all_sines[n] + sines[n];
               v *= window[n];
 
               // multiply windowed signal with complex exp function from fourier transform:
