@@ -625,7 +625,6 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   double window_weight = 0;
   for (size_t i = 0; i < frame_size; i++)
     window_weight += window[i];
-  const double window_scale = 2.0 / window_weight;
 
   double max_mag;
   size_t partial = 0;
@@ -677,14 +676,32 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
               //   v * exp (-j * x) = v * (cos (x) - j * sin (x))
               x_re += v * cos_vec[n];
               x_im -= v * sin_vec[n];
-          }
+            }
 
-          double magnitude = sqrt (x_re * x_re + x_im * x_im) * window_scale;
+          // correct influence of mirrored window (caused by negative frequency component)
+          params.mix_freq = mix_freq;
+          params.freq = 2 * f;
+          params.mag = 1;
+          params.phase = -((frame_size - 1) / 2.0) * (2 * f) / mix_freq * 2.0 * M_PI + 0.5 * M_PI;
+          params.phase = normalize_phase (params.phase);
+          params.mode = VectorSinParams::REPLACE;
+          fast_vector_sinf (params, &cos_vec[0], &cos_vec[frame_size]);
+
+          double w2omega = 0;
+          for (size_t n = 0; n < frame_size; n++)
+            w2omega += window[n] * cos_vec[n];
+
+          x_re *= 2 / (window_weight + w2omega);
+          x_im *= 2 / (window_weight - w2omega);
+
+          // compute final magnitude & phase
+          double magnitude = sqrt (x_re * x_re + x_im * x_im);
           phase = atan2 (x_im, x_re) + 0.5 * M_PI;
           phase -= (frame_size - 1) / 2.0 / mix_freq * f * 2 * M_PI;
           phase = normalize_phase (phase);
 
           // restore partial => sines; keep params.freq & params.mix_freq
+          params.freq = f;
           params.phase = phase;
           params.mag = magnitude;
           params.mode = VectorSinParams::ADD;
