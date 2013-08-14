@@ -322,7 +322,9 @@ Encoder::search_local_maxima (const vector<float>& window)
                   size_t ds, de;
                   for (ds = d / 2 - 1; ds > 0 && mag_values[ds] < mag_values[ds + 1]; ds--);
                   for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] > mag_values[de + 1]; de++);
-                  if (de - ds > 12)
+
+                  const double normalized_peak_width = (de - ds) * frame_size / double (block_size * zeropad);
+                  if (normalized_peak_width > 2.9)
                     {
                       const double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
                       const double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
