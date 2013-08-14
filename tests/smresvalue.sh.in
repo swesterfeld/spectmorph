@@ -2,7 +2,7 @@
 
 SMENC=@top_builddir@/src/smenc
 SMPLAY=@top_builddir@/src/smplay
-SMENCFLAGS="--no-attack"
+SMENCFLAGS="--no-attack --no-lpc"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
 SN_DELTA=@top_srcdir@/tests/sn_delta.py
 

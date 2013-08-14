@@ -59,7 +59,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   assert (!error);
 
   const char *sm_file = "testnoise.tmp.sm";
-  encoder.encode (dhandle, 0, window, 1, false, false);
+  encoder.encode (dhandle, 0, window, 1, false, false, true);
   encoder.save (sm_file);
 
   WavSet wav_set;

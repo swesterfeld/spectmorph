@@ -1243,7 +1243,7 @@ Encoder::compute_lpc_lsf()
  */
 void
 Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level,
-                 bool attack, bool track_sines)
+                 bool attack, bool track_sines, bool do_lpc)
 {
   compute_stft (dhandle, channel, window);
 
@@ -1258,7 +1258,9 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
       spectral_subtract (window);
     }
   approx_noise (window);
-  compute_lpc_lsf();
+
+  if (do_lpc)
+    compute_lpc_lsf();
 
   if (attack)
     compute_attack_params (window);
