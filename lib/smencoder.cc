@@ -229,7 +229,7 @@ public:
   QInterpolator (double y1, double y2, double y3)
   {
     a = (y1 + y3 - 2*y2) / 2;
-    b = y3 - y2 - a;
+    b = (y3 - y1) / 2;
     c = y2;
   }
   double
