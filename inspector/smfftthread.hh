@@ -41,7 +41,7 @@ public:
   bool command_is_obsolete();
 
   void run();
-  void compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params);
+  void compute_image (GslDataHandle *dhandle, const AnalysisParams& params);
   bool get_result (PixelArray& image);
   double get_progress();
 

@@ -22,7 +22,7 @@ void
 TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
 {
   if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
-    FFTThread::the()->compute_image (image, dhandle, analysis_params);
+    FFTThread::the()->compute_image (dhandle, analysis_params);
 
   m_audio = audio;
 }

@@ -409,7 +409,7 @@ AnalysisCommand::execute()
 }
 
 void
-FFTThread::compute_image (PixelArray& image, GslDataHandle *dhandle, const AnalysisParams& params)
+FFTThread::compute_image (GslDataHandle *dhandle, const AnalysisParams& params)
 {
   QMutexLocker lock (&command_mutex);
   commands.push_back (new AnalysisCommand (dhandle, params, this));
