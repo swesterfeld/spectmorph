@@ -77,6 +77,17 @@ TimeFreqView::on_result_available()
     {
       update_size();
       update();
+
+      FILE *out = fopen ("/tmp/out", "w");
+      for (size_t y = 0; y < image.get_height(); y++)
+        {
+          const int *pixels = image.get_pixels() + y * image.get_rowstride();
+          for (size_t x = 0; x < image.get_width(); x++)
+            fprintf (out, "%d ", *pixels++);
+          fprintf (out, "\n");
+        }
+      fclose (out);
+
       Q_EMIT spectrum_changed();
     }
   Q_EMIT progress_changed();

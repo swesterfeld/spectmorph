@@ -8,6 +8,9 @@
 #include "smplayerwindow.hh"
 #include "smlpcwindow.hh"
 #include "smdisplayparamwindow.hh"
+#include "smfftparamwindow.hh"
+#include "smspectrumwindow.hh"
+#include "smsamplewindow.hh"
 
 #include <QComboBox>
 #include <QTreeView>
