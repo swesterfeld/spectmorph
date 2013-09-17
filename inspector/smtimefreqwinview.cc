@@ -15,8 +15,6 @@ using namespace SpectMorph;
 TimeFreqWinView::TimeFreqWinView (Navigator *navigator) :
   navigator (navigator)
 {
-  setWindowTitle ("Time/Frequency View");
-
   m_time_freq_view = new TimeFreqView();
   scroll_area = new QScrollArea();
   scroll_area->setWidgetResizable (true);

@@ -57,6 +57,7 @@ public:
 
 public slots:
   void on_result_available();
+  void on_export();
 
 signals:
   void spectrum_changed();

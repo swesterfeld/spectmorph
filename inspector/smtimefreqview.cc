@@ -11,6 +11,7 @@
 
 #include <QPainter>
 #include <QPaintEvent>
+#include <QFileDialog>
 
 using namespace SpectMorph;
 
@@ -78,7 +79,20 @@ TimeFreqView::on_result_available()
       update_size();
       update();
 
-      FILE *out = fopen ("/tmp/out", "w");
+      Q_EMIT spectrum_changed();
+    }
+  Q_EMIT progress_changed();
+}
+
+void
+TimeFreqView::on_export()
+{
+  QString fileName = QFileDialog::getSaveFileName (this, "Save File");
+
+  if (!fileName.isEmpty())
+    {
+      std::string fn = fileName.toLocal8Bit().data();
+      FILE *out = fopen (fn.c_str(), "w");
       for (size_t y = 0; y < image.get_height(); y++)
         {
           const int *pixels = image.get_pixels() + y * image.get_rowstride();
@@ -87,10 +101,7 @@ TimeFreqView::on_result_available()
           fprintf (out, "\n");
         }
       fclose (out);
-
-      Q_EMIT spectrum_changed();
     }
-  Q_EMIT progress_changed();
 }
 
 void
