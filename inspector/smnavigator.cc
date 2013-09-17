@@ -159,10 +159,6 @@ Navigator::Navigator (const string& filename)
   lpc_window->set_lpc_model (time_freq_window->time_freq_view());
 
   connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
-  connect (this, SIGNAL (dhandle_changed()), time_freq_window, SLOT (on_dhandle_changed()));
-  connect (this, SIGNAL (show_position_changed()), time_freq_window, SLOT (on_position_changed()));
-  connect (this, SIGNAL (show_analysis_changed()), time_freq_window, SLOT (on_analysis_changed()));
-  connect (this, SIGNAL (show_frequency_grid_changed()), time_freq_window, SLOT (on_frequency_grid_changed()));
 }
 
 bool

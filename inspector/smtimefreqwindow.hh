@@ -22,12 +22,6 @@ public:
   TimeFreqWindow (Navigator *navigator);
 
   TimeFreqView *time_freq_view();
-
-public slots:
-  void on_dhandle_changed();
-  void on_position_changed();
-  void on_analysis_changed();
-  void on_frequency_grid_changed();
 };
 
 }

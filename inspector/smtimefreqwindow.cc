@@ -18,23 +18,3 @@ TimeFreqWindow::time_freq_view()
 {
   return time_freq_win_view->time_freq_view();
 }
-
-void
-TimeFreqWindow::on_dhandle_changed()
-{
-}
-
-void
-TimeFreqWindow::on_position_changed()
-{
-}
-
-void
-TimeFreqWindow::on_analysis_changed()
-{
-}
-
-void
-TimeFreqWindow::on_frequency_grid_changed()
-{
-}
