@@ -9,6 +9,8 @@ TimeFreqWindow::TimeFreqWindow (Navigator *navigator)
   time_freq_win_view = new TimeFreqWinView (navigator);
 
   setCentralWidget (time_freq_win_view);
+
+  resize (800, 600);
 }
 
 TimeFreqView *

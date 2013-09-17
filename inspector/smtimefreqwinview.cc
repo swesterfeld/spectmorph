@@ -68,8 +68,6 @@ TimeFreqWinView::TimeFreqWinView (Navigator *navigator) :
 
   connect (navigator->fft_param_window(), SIGNAL (params_changed()), this, SLOT (on_dhandle_changed()));
   connect (m_time_freq_view, SIGNAL (progress_changed()), this, SLOT (on_progress_changed()));
-
-  resize (800, 600);
 }
 
 void
