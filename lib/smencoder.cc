@@ -101,7 +101,7 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
   return false;
 }
 
-BseErrorType
+Bse::ErrorType
 read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
 {
   signal.clear();
@@ -117,10 +117,10 @@ read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
       if (r > 0)
         signal.insert (signal.end(), block.begin(), block.begin() + r);
       else
-        return BSE_ERROR_FILE_READ_FAILED;
+        return Bse::ERROR_FILE_READ_FAILED;
       pos += r;
     }
-  return BSE_ERROR_NONE;
+  return Bse::ERROR_NONE;
 }
 
 /**
@@ -134,8 +134,8 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
   vector<float> multi_channel_signal;
   vector<float> single_channel_signal;
 
-  BseErrorType error = read_dhandle (multi_channel_dhandle, multi_channel_signal);
-  assert (error == BSE_ERROR_NONE); // FIXME
+  Bse::ErrorType error = read_dhandle (multi_channel_dhandle, multi_channel_signal);
+  assert (error == Bse::ERROR_NONE); // FIXME
 
   const size_t n_channels = gsl_data_handle_n_channels (multi_channel_dhandle);
   const int mix_freq = gsl_data_handle_mix_freq (multi_channel_dhandle);

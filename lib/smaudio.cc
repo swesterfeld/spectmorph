@@ -25,22 +25,22 @@ static LeakDebugger leak_debugger ("SpectMorph::Audio");
  *
  * \param filename the name of the SM-File to be loaded
  * \param load_options specify whether to load or skip debug information
- * \returns a BseErrorType indicating whether loading was successful
+ * \returns a Bse::ErrorType indicating whether loading was successful
  */
-BseErrorType
+Bse::ErrorType
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
   GenericIn *file = GenericIn::open (filename);
   if (!file)
-    return BSE_ERROR_FILE_NOT_FOUND;
+    return Bse::ERROR_FILE_NOT_FOUND;
 
-  BseErrorType result = load (file, load_options);
+  Bse::ErrorType result = load (file, load_options);
   delete file;
 
   return result;
 }
 
-BseErrorType
+Bse::ErrorType
 SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 {
   SpectMorph::AudioBlock *audio_block = NULL;
@@ -51,13 +51,13 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
   size_t contents_pos = 0; /* init to get rid of gcc warning */
 
   if (!ifile.open_ok())
-    return BSE_ERROR_FILE_NOT_FOUND;
+    return Bse::ERROR_FILE_NOT_FOUND;
 
   if (ifile.file_type() != "SpectMorph::Audio")
-    return BSE_ERROR_FORMAT_INVALID;
+    return Bse::ERROR_FORMAT_INVALID;
 
   if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
-    return BSE_ERROR_FORMAT_INVALID;
+    return Bse::ERROR_FORMAT_INVALID;
 
   if (load_options == AUDIO_SKIP_DEBUG)
     {
@@ -201,7 +201,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                   if (ib[i] < old_freq)
                     {
                       printf ("frequency data is not sorted, can't play file\n");
-                      return BSE_ERROR_PARSE_ERROR;
+                      return Bse::ERROR_PARSE_ERROR;
                     }
                   old_freq = ib[i];
                 }
@@ -226,15 +226,15 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
-          return BSE_ERROR_PARSE_ERROR;
+          return Bse::ERROR_PARSE_ERROR;
         }
       else
         {
-          return BSE_ERROR_PARSE_ERROR;
+          return Bse::ERROR_PARSE_ERROR;
         }
       ifile.next_event();
     }
-  return BSE_ERROR_NONE;
+  return Bse::ERROR_NONE;
 }
 
 
@@ -257,9 +257,9 @@ Audio::~Audio()
  * This function saves a SM-File.
  *
  * \param filename the name of the SM-File to be written
- * \returns a BseErrorType indicating saving loading was successful
+ * \returns a Bse::ErrorType indicating saving loading was successful
  */
-BseErrorType
+Bse::ErrorType
 SpectMorph::Audio::save (const string& filename) const
 {
   GenericOut *out = StdioOut::open (filename);
@@ -268,13 +268,13 @@ SpectMorph::Audio::save (const string& filename) const
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
       exit (1);
     }
-  BseErrorType result = save (out);
+  Bse::ErrorType result = save (out);
   delete out; // close file
 
   return result;
 }
 
-BseErrorType
+Bse::ErrorType
 SpectMorph::Audio::save (GenericOut *file) const
 {
   OutFile of (file, "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);
@@ -320,7 +320,7 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();
     }
-  return BSE_ERROR_NONE;
+  return Bse::ERROR_NONE;
 }
 
 Audio *

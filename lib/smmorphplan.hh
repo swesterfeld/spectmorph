@@ -42,8 +42,8 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  BseErrorType save (GenericOut *file);
-  BseErrorType load (GenericIn *in);
+  Bse::ErrorType save (GenericOut *file);
+  Bse::ErrorType load (GenericIn *in);
   void clear();
 
   int  structure_version();

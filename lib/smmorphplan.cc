@@ -149,7 +149,7 @@ MorphPlan::set_plan_str (const string& str)
  *
  * \returns BSE_ERROR_NONE if everything worked, an error otherwise
  */
-BseErrorType
+Bse::ErrorType
 MorphPlan::load (GenericIn *in)
 {
   in_restore = true;
@@ -279,7 +279,7 @@ MorphPlan::load (GenericIn *in)
   in_restore = false;
   emit_plan_changed();
 
-  return BSE_ERROR_NONE;
+  return Bse::ERROR_NONE;
 }
 
 /**
@@ -345,7 +345,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   emit_plan_changed();
 }
 
-BseErrorType
+Bse::ErrorType
 MorphPlan::save (GenericOut *file)
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
@@ -370,7 +370,7 @@ MorphPlan::save (GenericOut *file)
       of.write_blob ("data", &op_data[0], op_data.size());
       of.end_section();
     }
-  return BSE_ERROR_NONE;
+  return Bse::ERROR_NONE;
 }
 
 void

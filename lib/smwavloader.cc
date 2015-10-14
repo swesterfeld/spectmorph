@@ -14,7 +14,7 @@ WavLoader*
 WavLoader::load (const string& filename)
 {
   /* open input */
-  BseErrorType error;
+  Bse::ErrorType error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
   if (!wave_file_info)

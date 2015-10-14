@@ -107,10 +107,10 @@ public:
   std::vector<float> original_samples;  //!< original time domain signal as samples (debugging only)
   std::vector<AudioBlock> contents;     //!< the actual frame data
 
-  BseErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  BseErrorType load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  BseErrorType save (const std::string& filename) const;
-  BseErrorType save (SpectMorph::GenericOut *file) const;
+  Bse::ErrorType load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Bse::ErrorType load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Bse::ErrorType save (const std::string& filename) const;
+  Bse::ErrorType save (SpectMorph::GenericOut *file) const;
 
   Audio *clone() const; // create a deep copy
 
