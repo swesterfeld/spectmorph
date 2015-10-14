@@ -122,7 +122,7 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers)
       return;
     }
 
-  BseErrorType error = gsl_data_handle_open (dhandle);
+  Bse::ErrorType error = gsl_data_handle_open (dhandle);
   if (error)
     {
       fprintf (stderr, "SampleView: can't open the input data handle: %s\n", bse_error_blurb (error));
