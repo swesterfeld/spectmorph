@@ -274,7 +274,7 @@ AnalysisCommand::execute_lpc()
 void
 AnalysisCommand::execute()
 {
-  BseErrorType error = gsl_data_handle_open (dhandle);
+  Bse::ErrorType error = gsl_data_handle_open (dhandle);
   if (error)
     {
       fprintf (stderr, "FFTThread: can't open the input data handle: %s\n", bse_error_blurb (error));
