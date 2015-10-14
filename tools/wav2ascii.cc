@@ -36,7 +36,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  BseErrorType error;
+  Bse::ErrorType error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
   if (!wave_file_info)
