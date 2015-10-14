@@ -1,6 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/bse.hh>
 #include <bse/gslfft.hh>
 #include <bse/bsemathsignal.hh>
 #include <bse/gsldatahandle.hh>
@@ -174,7 +173,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  BseErrorType error;
+  Bse::ErrorType error;
 
   /* figure out file type (we support SpectMorph::WavSet and SpectMorph::Audio) */
   InFile *file = new InFile (argv[1]);
@@ -415,7 +414,7 @@ main (int argc, char **argv)
         }
 
       GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
-      BseErrorType error = gsl_data_handle_open (out_dhandle);
+      Bse::ErrorType error = gsl_data_handle_open (out_dhandle);
       if (error)
         {
           fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
@@ -425,13 +424,13 @@ main (int argc, char **argv)
       int fd = open (options.export_wav.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (fd < 0)
         {
-          BseErrorType error = bse_error_from_errno (errno, BSE_ERROR_FILE_OPEN_FAILED);
+          Bse::ErrorType error = bse_error_from_errno (errno, Bse::ERROR_FILE_OPEN_FAILED);
           sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), bse_error_blurb (error));
         }
       int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
       if (xerrno)
         {
-          BseErrorType error = bse_error_from_errno (xerrno, BSE_ERROR_FILE_WRITE_FAILED);
+          Bse::ErrorType error = bse_error_from_errno (xerrno, Bse::ERROR_FILE_WRITE_FAILED);
           sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), bse_error_blurb (error));
         }
     }

@@ -1,6 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/bse.hh>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -49,7 +48,7 @@ main (int argc, char **argv)
     }
 
   SpectMorph::Audio audio;
-  BseErrorType file_error = audio.load (argv[1]);
+  Bse::ErrorType file_error = audio.load (argv[1]);
   if (file_error)
     {
       fprintf (stderr, "can't read input file: %s\n", bse_error_blurb (file_error));

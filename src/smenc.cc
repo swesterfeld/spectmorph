@@ -366,7 +366,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  BseErrorType error;
+  Bse::ErrorType error;
 
   string input_file = argv[1];
 
