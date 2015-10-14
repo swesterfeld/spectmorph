@@ -55,7 +55,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   Encoder encoder (enc_params);
 
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, audio_in.size(), &audio_in[0], NULL);
-  BseErrorType error = gsl_data_handle_open (dhandle);
+  Bse::ErrorType error = gsl_data_handle_open (dhandle);
   assert (!error);
 
   const char *sm_file = "testnoise.tmp.sm";
@@ -122,7 +122,7 @@ void
 highpass (vector<float>& audio_in, vector<float>& audio_out, double cutoff_freq)
 {
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), &audio_in[0], NULL);
-  BseErrorType error = gsl_data_handle_open (dhandle);
+  Bse::ErrorType error = gsl_data_handle_open (dhandle);
   assert (!error);
 
   GslDataHandle *highpass_dhandle = bse_data_handle_new_fir_highpass (dhandle, cutoff_freq, 64);
