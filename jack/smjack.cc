@@ -483,7 +483,7 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      BseErrorType error;
+      Bse::ErrorType error;
 
       GenericIn *file = GenericIn::open (argv[1]);
       if (file)
@@ -493,7 +493,7 @@ main (int argc, char **argv)
         }
       else
         {
-          error = BSE_ERROR_FILE_NOT_FOUND;
+          error = Bse::ERROR_FILE_NOT_FOUND;
         }
       if (error)
         {
