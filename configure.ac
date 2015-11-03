@@ -38,11 +38,10 @@ dnl libbse
 dnl
 AC_DEFUN([AC_BSE_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(BSE, bse-0.9 >= 0.7.2 rapicorn-15.09)
+    PKG_CHECK_MODULES(BSE, bse >= 0.9)
     AC_SUBST(BSE_CFLAGS)
-    BSE_LIBS=`echo $BSE_LIBS | sed s/-lbse-0.9/-lbse/g`
     AC_SUBST(BSE_LIBS)
-    BSE_VERSION=`pkg-config --modversion bse-0.9`
+    BSE_VERSION=`pkg-config --modversion bse`
     AC_SUBST(BSE_VERSION)
 ])
 dnl
