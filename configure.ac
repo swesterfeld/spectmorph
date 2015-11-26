@@ -43,6 +43,8 @@ AC_DEFUN([AC_BSE_REQUIREMENTS],
     AC_SUBST(BSE_LIBS)
     BSE_VERSION=`pkg-config --modversion bse`
     AC_SUBST(BSE_VERSION)
+    bseplugindir=`pkg-config --variable=plugindir bse`
+    AC_SUBST(bseplugindir)
 ])
 dnl
 dnl libnobse (used in case libbse is not present/wanted)
