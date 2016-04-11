@@ -120,8 +120,8 @@ static void
 dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
 {
   GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
-  Bse::ErrorType error = gsl_data_handle_open (out_dhandle);
-  if (error)
+  Bse::Error error = gsl_data_handle_open (out_dhandle);
+  if (error != 0)
     {
       fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
       exit (1);
@@ -130,13 +130,13 @@ dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_c
   int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (fd < 0)
     {
-      Bse::ErrorType error = bse_error_from_errno (errno, Bse::ERROR_FILE_OPEN_FAILED);
+      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
       sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
     }
   int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
   if (xerrno)
     {
-      Bse::ErrorType error = bse_error_from_errno (xerrno, Bse::ERROR_FILE_WRITE_FAILED);
+      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
       sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
     }
 }
@@ -147,7 +147,7 @@ freq_from_note (float note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
-Bse::ErrorType
+Bse::Error
 read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
 {
   signal.clear();
@@ -163,10 +163,10 @@ read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
       if (r > 0)
         signal.insert (signal.end(), block.begin(), block.begin() + r);
       else
-        return Bse::ERROR_FILE_READ_FAILED;
+        return Bse::Error::FILE_READ_FAILED;
       pos += r;
     }
-  return Bse::ERROR_NONE;
+  return Bse::Error::NONE;
 }
 
 static void
@@ -258,7 +258,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
   if (!wave_file_info)
@@ -282,7 +282,7 @@ main (int argc, char **argv)
     }
 
   error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (error != 0)
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
       exit (1);
@@ -298,7 +298,7 @@ main (int argc, char **argv)
   vector<double> peaks;
 
   error = read_dhandle (dhandle, input_data);
-  if (error)
+  if (error != 0)
     {
       printf ("error reading input file %s: %s\n", argv[1], bse_error_blurb (error));
       exit (1);

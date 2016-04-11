@@ -80,8 +80,8 @@ MiniResampler::MiniResampler (GslDataHandle *dhandle, double speedup_factor)
     {
       m_dhandle = bse_data_handle_new_upsample2 (m_dhandle, 24);
       m_speedup_factor *= 2;
-      Bse::ErrorType error = gsl_data_handle_open (m_dhandle);
-      if (error)
+      Bse::Error error = gsl_data_handle_open (m_dhandle);
+      if (error != 0)
 	{
 	  fprintf (stderr, "foo\n");
 	  exit (1);

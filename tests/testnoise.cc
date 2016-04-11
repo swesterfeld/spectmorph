@@ -55,8 +55,8 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   Encoder encoder (enc_params);
 
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, audio_in.size(), &audio_in[0], NULL);
-  Bse::ErrorType error = gsl_data_handle_open (dhandle);
-  assert (!error);
+  Bse::Error error = gsl_data_handle_open (dhandle);
+  assert (error == 0);
 
   const char *sm_file = "testnoise.tmp.sm";
   encoder.encode (dhandle, 0, window, 1, false, false, true);
@@ -75,7 +75,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   wav_set = WavSet();
   error = wav_set.load ("testnoise.tmp.smset");
-  assert (!error);
+  assert (error == 0);
 
   float freq = 440;
   decoder.retrigger (0, freq, 127, enc_params.mix_freq);
@@ -122,12 +122,12 @@ void
 highpass (vector<float>& audio_in, vector<float>& audio_out, double cutoff_freq)
 {
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), &audio_in[0], NULL);
-  Bse::ErrorType error = gsl_data_handle_open (dhandle);
-  assert (!error);
+  Bse::Error error = gsl_data_handle_open (dhandle);
+  assert (error == 0);
 
   GslDataHandle *highpass_dhandle = bse_data_handle_new_fir_highpass (dhandle, cutoff_freq, 64);
   error = gsl_data_handle_open (highpass_dhandle);
-  assert (!error);
+  assert (error == 0);
 
   GslDataPeekBuffer peek_buffer = { 0, };
   audio_out.resize (audio_in.size());

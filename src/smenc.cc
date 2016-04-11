@@ -366,7 +366,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   string input_file = argv[1];
 
@@ -404,7 +404,7 @@ main (int argc, char **argv)
     }
 
   error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (error != 0)
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
       exit (1);

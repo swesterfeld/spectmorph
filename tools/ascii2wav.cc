@@ -71,7 +71,7 @@ main (int argc, char **argv)
   int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
   if (fd < 0)
     {
-      Bse::ErrorType error = bse_error_from_errno (errno, Bse::ERROR_FILE_OPEN_FAILED);
+      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
       g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
       exit (1);
     }
@@ -79,7 +79,7 @@ main (int argc, char **argv)
   int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
   if (xerrno)
     {
-      Bse::ErrorType error = bse_error_from_errno (xerrno, Bse::ERROR_FILE_WRITE_FAILED);
+      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
       g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
       exit (1);
     }

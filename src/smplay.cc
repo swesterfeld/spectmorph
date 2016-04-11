@@ -173,7 +173,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   /* figure out file type (we support SpectMorph::WavSet and SpectMorph::Audio) */
   InFile *file = new InFile (argv[1]);
@@ -194,7 +194,7 @@ main (int argc, char **argv)
   if (file_type == "SpectMorph::WavSet")    // load wavset
     {
       error = wset.load (argv[1]);
-      if (error)
+      if (error != 0)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
@@ -214,7 +214,7 @@ main (int argc, char **argv)
     {
       audio_ptr = &audio_to_play;
       error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
-      if (error)
+      if (error != 0)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
@@ -414,8 +414,8 @@ main (int argc, char **argv)
         }
 
       GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
-      Bse::ErrorType error = gsl_data_handle_open (out_dhandle);
-      if (error)
+      Bse::Error error = gsl_data_handle_open (out_dhandle);
+      if (error != 0)
         {
           fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
           exit (1);
@@ -424,13 +424,13 @@ main (int argc, char **argv)
       int fd = open (options.export_wav.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (fd < 0)
         {
-          Bse::ErrorType error = bse_error_from_errno (errno, Bse::ERROR_FILE_OPEN_FAILED);
+          Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
           sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), bse_error_blurb (error));
         }
       int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
       if (xerrno)
         {
-          Bse::ErrorType error = bse_error_from_errno (xerrno, Bse::ERROR_FILE_WRITE_FAILED);
+          Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
           sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), bse_error_blurb (error));
         }
     }

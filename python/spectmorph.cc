@@ -644,7 +644,7 @@ load_stwafile (PyObject* self, PyObject* args)
       newaudio->audio_contents = PyObject_New (spectmorph_AudioContentsObject, &spectmorph_AudioContentsType);
       newaudio->audio_contents->audio = newaudio->audio;
 
-      Bse::ErrorType error = newaudio->audio->load (filename);
+      Bse::Error error = newaudio->audio->load (filename);
     }
 
   return (PyObject *)newaudio;

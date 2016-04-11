@@ -311,7 +311,7 @@ bool
 load_wav_file (const string& filename, vector<float>& data_out)
 {
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
   if (!wave_file_info)
@@ -335,7 +335,7 @@ load_wav_file (const string& filename, vector<float>& data_out)
     }
 
   error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (error != 0)
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
       return false;
@@ -382,8 +382,8 @@ delta (vector<float>& d0, vector<float>& d1)
 void
 load_or_die (WavSet& wset, string name)
 {
-  Bse::ErrorType error = wset.load (name);
-  if (error)
+  Bse::Error error = wset.load (name);
+  if (error != 0)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), name.c_str(), bse_error_blurb (error));
       exit (1);
@@ -510,7 +510,7 @@ main (int argc, char **argv)
       for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
         {
           Audio audio;
-          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != Bse::ERROR_NONE)
+          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != Bse::Error::NONE)
             {
               sm_printf ("can't load %s\n", si->path.c_str());
               exit (1);

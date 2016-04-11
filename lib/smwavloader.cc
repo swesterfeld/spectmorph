@@ -14,7 +14,7 @@ WavLoader*
 WavLoader::load (const string& filename)
 {
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
   if (!wave_file_info)
@@ -38,7 +38,7 @@ WavLoader::load (const string& filename)
     }
 
   error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (error != 0)
     {
       fprintf (stderr, "SpectMorph::WavLoader: can't open the input file %s: %s\n", filename.c_str(), bse_error_blurb (error));
       return NULL;

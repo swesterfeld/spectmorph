@@ -36,7 +36,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::ErrorType error;
+  Bse::Error error;
 
   BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
   if (!wave_file_info)
@@ -60,7 +60,7 @@ main (int argc, char **argv)
     }
 
   error = gsl_data_handle_open (dhandle);
-  if (error)
+  if (error != 0)
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
       exit (1);

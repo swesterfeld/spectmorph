@@ -57,8 +57,8 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   Encoder encoder (enc_params);
 
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, audio_in.size(), &audio_in[0], NULL);
-  Bse::ErrorType error = gsl_data_handle_open (dhandle);
-  assert (!error);
+  Bse::Error error = gsl_data_handle_open (dhandle);
+  assert (error == 0);
 
   const char *sm_file = "testaafilter.tmp.sm";
   encoder.encode (dhandle, 0, window, 1, false, true, true);
@@ -77,7 +77,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   wav_set = WavSet();
   error = wav_set.load ("testaafilter.tmp.smset");
-  assert (!error);
+  assert (error == 0);
 
   decoder.enable_noise (false);
   for (double freq = 10; freq < 70000; freq = min (freq * 1.1, freq + 10))

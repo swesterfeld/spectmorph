@@ -111,8 +111,8 @@ main (int argc, char **argv)
   for (int n = 1; n < argc; n++)
     {
       SpectMorph::Audio audio;
-      Bse::ErrorType error = audio.load (argv[n], SpectMorph::AUDIO_SKIP_DEBUG);
-      if (error)
+      Bse::Error error = audio.load (argv[n], SpectMorph::AUDIO_SKIP_DEBUG);
+      if (error != 0)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[n], bse_error_blurb (error));
           exit (1);

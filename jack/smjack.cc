@@ -483,7 +483,7 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      Bse::ErrorType error;
+      Bse::Error error;
 
       GenericIn *file = GenericIn::open (argv[1]);
       if (file)
@@ -493,9 +493,9 @@ main (int argc, char **argv)
         }
       else
         {
-          error = Bse::ERROR_FILE_NOT_FOUND;
+          error = Bse::Error::FILE_NOT_FOUND;
         }
-      if (error)
+      if (error != 0)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
           exit (1);
