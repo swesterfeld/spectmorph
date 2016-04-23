@@ -136,7 +136,7 @@ static bool
 find_nan (vector<float>& data)
 {
   for (size_t x = 0; x < data.size(); x++)
-    if (isnan (data[x]))
+    if (std::isnan (data[x]))
       return true;
   return false;
 }
