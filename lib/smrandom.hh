@@ -5,57 +5,39 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <glib.h>
+#include <boost/random.hpp>
 
 namespace SpectMorph
 {
 
 class Random
 {
-  char                state[32];
-  struct random_data  buf;
+  boost::taus88 rand_gen;
 public:
   Random();
 
-  void set_seed (int seed);
+  void set_seed (uint32_t seed);
 
   inline double
   random_double_range (double begin, double end)
   {
-    int32_t r;
-    random_r (&buf, &r);
+    const uint32_t  r = random_uint32();
+    const double    scale = 1.0 / (double (rand_gen.max()) + 1.0);
 
-    const double scale = 1.0 / (double (RAND_MAX) + 1.0);
     return r * scale * (end - begin) + begin;
   }
-  inline int32_t
-  random_int32()
+  inline uint32_t
+  random_uint32()
   {
-    int32_t r;
-    random_r (&buf, &r);
-    return r;
+    return rand_gen();
   }
   inline void
-  random_block (size_t   n_values,
-                guint32 *values)
+  random_block (size_t n_values, uint32_t *values)
   {
-    guint64 random_data = 0;
-    int     random_bits = 0;
-
     while (n_values--)
-      {
-        while (random_bits < 32)
-          {
-            random_data ^= guint64 (random_int32()) << random_bits;
-            random_bits += 31;
-          }
-        *values++ = random_data;
-        random_data >>= 32;
-        random_bits -= 32;
-      }
+      *values++ = random_uint32();
   }
 };
 
 }
-
 #endif
