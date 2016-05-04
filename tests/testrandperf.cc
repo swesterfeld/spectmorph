@@ -40,7 +40,7 @@ main (int argc, char **argv)
 
       guint8 *block_b = reinterpret_cast<guint8 *>(&block[0]);
       for (int b = 0; b < bs; b++)
-        block_b[b] = random.random_int32();
+        block_b[b] = random.random_uint32();
     }
   double end = gettime();
   printf ("%f clocks/value\n", clocks_per_sec * (end - start) / runs / bs);
