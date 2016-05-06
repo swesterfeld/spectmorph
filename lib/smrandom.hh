@@ -5,14 +5,14 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <boost/random.hpp>
+#include <rapicorn.hh>
 
 namespace SpectMorph
 {
 
 class Random
 {
-  boost::taus88 rand_gen;
+  Rapicorn::Pcg32Rng rand_gen;
 public:
   Random();
 
@@ -21,15 +21,16 @@ public:
   inline double
   random_double_range (double begin, double end)
   {
+    const uint32_t  rand_max = 0xffffffff;    // Pcg32Rng output: complete 32-bit values
     const uint32_t  r = random_uint32();
-    const double    scale = 1.0 / (double (rand_gen.max()) + 1.0);
+    const double    scale = 1.0 / (double (rand_max) + 1.0);
 
     return r * scale * (end - begin) + begin;
   }
   inline uint32_t
   random_uint32()
   {
-    return rand_gen();
+    return rand_gen.random();
   }
   inline void
   random_block (size_t n_values, uint32_t *values)
