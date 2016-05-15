@@ -5,6 +5,7 @@
 #include "smfft.hh"
 #include "smmain.hh"
 #include "smpolyphaseinter.hh"
+#include "smminiresampler.hh"
 #include <assert.h>
 
 #include <bse/bsemathsignal.hh>
@@ -14,20 +15,6 @@ using std::vector;
 using std::max;
 
 using namespace SpectMorph;
-
-/// @cond
-struct Options
-{
-  string	      program_name; /* FIXME: what to do with that */
-  bool                full;
-
-  Options () {}
-  void parse (int *argc_p, char **argv_p[]);
-  static void print_usage ();
-} options;
-/// @endcond
-
-#include "stwutils.hh"
 
 void
 get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>& xout)
@@ -92,7 +79,7 @@ error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 
   double normalize = 0;
 
-  for (int i = 0; i < FFT_SIZE; i++)
+  for (guint i = 0; i < FFT_SIZE; i++)
     {
       const double w = bse_window_blackman ((2.0 * i - FFT_SIZE) / FFT_SIZE);
 

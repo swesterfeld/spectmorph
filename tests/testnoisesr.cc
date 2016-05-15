@@ -4,6 +4,7 @@
 #include "smrandom.hh"
 #include "smencoder.hh"
 #include "smlivedecoder.hh"
+#include "smminiresampler.hh"
 
 #include <assert.h>
 
@@ -11,20 +12,6 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
-
-/// @cond
-struct Options
-{
-  string	      program_name; /* FIXME: what to do with that */
-  bool                full;
-
-  Options () {}
-  void parse (int *argc_p, char **argv_p[]);
-  static void print_usage ();
-} options;
-/// @endcond
-
-#include "stwutils.hh"
 
 size_t
 make_odd (size_t n)
