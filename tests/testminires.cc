@@ -5,6 +5,7 @@
 #include "smfft.hh"
 #include "smmain.hh"
 #include "smpolyphaseinter.hh"
+#include <assert.h>
 
 #include <bse/bsemathsignal.hh>
 
@@ -29,14 +30,13 @@ struct Options
 #include "stwutils.hh"
 
 void
-get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>& out)
+get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>& xout)
 {
-  vector<float> audio_in (high_sr);
+  vector<float> audio_in (high_sr), out (sr);
   for (size_t i = 0; i < audio_in.size(); i++)
     {
       audio_in[i] = sin (2 * M_PI * i * freq / high_sr);
     }
-  out.resize (sr);
 
   if (use_ppi)
     {
@@ -52,10 +52,11 @@ get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>&
       MiniResampler mini_resampler (dhandle, double (high_sr) / sr);
       mini_resampler.read (0, out.size(), &out[0]);
     }
-  for (size_t i = 0; i < out.size(); i++)
+  assert (xout.size() == 0);
+  for (size_t i = 100; i < out.size() - 100; i++)
     {
       double expect = sin (2 * M_PI * i * freq / sr);
-      out[i] -= expect;
+      xout.push_back (out[i] - expect);
     }
 }
 
@@ -64,36 +65,15 @@ scan (int high_sr, int sr, bool use_ppi)
 {
   printf ("# scan: high_sr=%d, sr=%d, use_ppi=%s\n", high_sr, sr, use_ppi ? "true" : "false");
 
-  for (double freq = 100; freq < (sr/2.0 - 1.0); freq += 123.456789)
+  for (double freq = 100; freq < (sr/2.0 - 1.0); freq += 100)
     {
-      vector<float> audio_in (high_sr);
-      for (size_t i = 0; i < audio_in.size(); i++)
-        {
-          audio_in[i] = sin (2 * M_PI * i * freq / high_sr);
-        }
-      vector<float> out (sr);
-
-      if (use_ppi)
-        {
-          PolyPhaseInter *ppi = PolyPhaseInter::the();
-          for (size_t i = 0; i < out.size(); i++)
-            {
-              out[i] = ppi->get_sample (audio_in, double (high_sr) / double (sr) * i);
-            }
-        }
-      else
-        {
-          GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, high_sr, 440, audio_in.size(), &audio_in[0], NULL);
-          MiniResampler mini_resampler (dhandle, double (high_sr) / sr);
-          mini_resampler.read (0, out.size(), &out[0]);
-        }
+      vector<float> out;
+      get_error_signal (high_sr, sr, freq, use_ppi, out);
 
       double max_diff = 0;
-      for (size_t i = 100; i < out.size() - 100; i++)
+      for (size_t i = 0; i < out.size(); i++)
         {
-          double expect = sin (2 * M_PI * i * freq / sr);
-          //printf ("%zd %.17g %.17g\n", i, out[i], expect);
-          max_diff = max (max_diff, fabs (out[i] - expect));
+          max_diff = max (max_diff, double (out[i]));
         }
       double max_diff_db = 20 * log (max_diff) / log (10);
       printf ("%.17g %.17g\n", freq, max_diff_db);
