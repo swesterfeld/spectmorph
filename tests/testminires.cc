@@ -29,6 +29,37 @@ struct Options
 #include "stwutils.hh"
 
 void
+get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>& out)
+{
+  vector<float> audio_in (high_sr);
+  for (size_t i = 0; i < audio_in.size(); i++)
+    {
+      audio_in[i] = sin (2 * M_PI * i * freq / high_sr);
+    }
+  out.resize (sr);
+
+  if (use_ppi)
+    {
+      PolyPhaseInter *ppi = PolyPhaseInter::the();
+      for (size_t i = 0; i < out.size(); i++)
+        {
+          out[i] = ppi->get_sample (audio_in, double (high_sr) / double (sr) * i);
+        }
+    }
+  else
+    {
+      GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, high_sr, 440, audio_in.size(), &audio_in[0], NULL);
+      MiniResampler mini_resampler (dhandle, double (high_sr) / sr);
+      mini_resampler.read (0, out.size(), &out[0]);
+    }
+  for (size_t i = 0; i < out.size(); i++)
+    {
+      double expect = sin (2 * M_PI * i * freq / sr);
+      out[i] -= expect;
+    }
+}
+
+void
 scan (int high_sr, int sr, bool use_ppi)
 {
   printf ("# scan: high_sr=%d, sr=%d, use_ppi=%s\n", high_sr, sr, use_ppi ? "true" : "false");
@@ -69,21 +100,12 @@ scan (int high_sr, int sr, bool use_ppi)
     }
 }
 
-int
-main (int argc, char **argv)
+void
+error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 {
-  sm_init (&argc, &argv);
+  vector<float> out;
+  get_error_signal (high_sr, sr, freq, use_ppi, out);
 
-  if (argc == 4 && strcmp (argv[1], "scan") == 0)
-    {
-      scan (atoi (argv[2]), atoi (argv[3]), false);
-    }
-  else if (argc == 4 && strcmp (argv[1], "scanpp") == 0)
-    {
-      scan (atoi (argv[2]), atoi (argv[3]), true);
-    }
-
-#if 0
   size_t FFT_SIZE = 32768;
   float *fft_in = FFT::new_array_float (FFT_SIZE);
   float *fft_out = FFT::new_array_float (FFT_SIZE);
@@ -111,5 +133,27 @@ main (int argc, char **argv)
 
   FFT::free_array_float (fft_in);
   FFT::free_array_float (fft_out);
-#endif
+}
+
+int
+main (int argc, char **argv)
+{
+  sm_init (&argc, &argv);
+
+  if (argc == 4 && strcmp (argv[1], "scan") == 0)
+    {
+      scan (atoi (argv[2]), atoi (argv[3]), false);
+    }
+  else if (argc == 4 && strcmp (argv[1], "scan-pp") == 0)
+    {
+      scan (atoi (argv[2]), atoi (argv[3]), true);
+    }
+  else if (argc == 5 && strcmp (argv[1], "error-spectrum") == 0)
+    {
+      error_spectrum (atoi (argv[2]), atoi (argv[3]), atof (argv[4]), false);
+    }
+  else if (argc == 5 && strcmp (argv[1], "error-spectrum-pp") == 0)
+    {
+      error_spectrum (atoi (argv[2]), atoi (argv[3]), atof (argv[4]), true);
+    }
 }
