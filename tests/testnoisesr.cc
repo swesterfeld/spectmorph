@@ -191,6 +191,28 @@ energy (vector<float>& audio)
   return e;
 }
 
+void
+dump_noise_envelope()
+{
+  WavSet wav_set;
+  Bse::Error error = wav_set.load ("testnoisesr.tmp.smset");
+  assert (error == 0);
+
+  assert (wav_set.waves.size() == 1);
+  Audio *audio = wav_set.waves[0].audio;
+
+  vector<float> noise_env (32);
+  for (size_t pos = 0; pos < audio->contents.size(); pos++)
+    {
+      AudioBlock *block = &audio->contents[pos];
+      assert (noise_env.size() == block->noise.size());
+      for (size_t i = 0; i < block->noise.size(); i++)
+        noise_env[i] += block->noise_f (i);
+    }
+  for (size_t i = 0; i < noise_env.size(); i++)
+    printf ("noise-envelope %zd %.17g\n", i, noise_env[i] / audio->contents.size());
+}
+
 int
 main (int argc, char **argv)
 {
@@ -218,6 +240,8 @@ main (int argc, char **argv)
     }
 
   encode (noise, sr);
+  dump_noise_envelope();
+
   printf ("noise-in-energy %.17g\n", energy (noise_48000));
 
   vector<float> audio_out (noise_48000.size());
