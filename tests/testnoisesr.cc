@@ -5,6 +5,7 @@
 #include "smencoder.hh"
 #include "smlivedecoder.hh"
 #include "smminiresampler.hh"
+#include "smfft.hh"
 
 #include <assert.h>
 
@@ -12,6 +13,96 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+
+/* this generates noise signals for any sample rate >= 48000 with noise in frequency range [0,24000] */
+class NoiseGenerator
+{
+  vector<float> noise_96000;
+public:
+  vector<float> gen_noise (int sr);
+};
+
+vector<float>
+NoiseGenerator::gen_noise (int sr)
+{
+  assert (sr >= 48000);
+
+  Random random;
+  if (!noise_96000.size())
+    {
+      const size_t FFT_SIZE = 512 * 1024; // should be power of two, greater than 5 seconds at 96000 (480000)
+
+      float *in = FFT::new_array_float (FFT_SIZE);
+      float *out = FFT::new_array_float (FFT_SIZE);
+
+      for (size_t i = 0; i < FFT_SIZE; i++)
+        in[i] = random.random_double_range (-0.5, 0.5);
+
+      vector<float> old_in (in, in+FFT_SIZE);
+
+      FFT::fftar_float (FFT_SIZE, in, out, FFT::PLAN_ESTIMATE);
+
+      // band limit noise spectrum, highest permitted frequency: 24000 Hz
+      for (size_t i = 0; i < FFT_SIZE / 2; i++)
+        {
+          if (i >= FFT_SIZE / 4)
+            out[i * 2] = out[i * 2 + 1] = 0;
+        }
+
+      FFT::fftsr_float (FFT_SIZE, out, in, FFT::PLAN_ESTIMATE);
+
+      // normalization, output
+      noise_96000.resize (FFT_SIZE);
+      for (size_t i = 0; i < FFT_SIZE; i++)
+        noise_96000[i] = in[i] / FFT_SIZE;
+
+      FFT::free_array_float (in);
+      FFT::free_array_float (out);
+    }
+
+  vector<float> out (5 * sr);
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 96000, 440, noise_96000.size(), &noise_96000[0], NULL);
+  MiniResampler mini_resampler (dhandle, 96000 / double (sr));
+  mini_resampler.read (0, out.size(), &out[0]);
+  return out;
+}
+
+void
+avg_spectrum (const char *label, vector<float>& signal, int sr)
+{
+  const size_t block_size = 2048;
+  size_t offset = 0;
+
+  vector<float> avg (block_size / 2 + 1);
+  vector<float> window (block_size);
+
+  for (guint i = 0; i < window.size(); i++)
+    window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+
+  float *in = FFT::new_array_float (block_size);
+  float *out = FFT::new_array_float (block_size + 2);
+
+  while (offset + block_size < signal.size())
+    {
+      std::copy (signal.begin() + offset, signal.begin() + offset + block_size, in);
+      for (size_t i = 0; i < block_size; i++)
+        in[i] *= window[i];
+
+      FFT::fftar_float (block_size, in, out);
+
+      out[block_size] = out[1];
+      out[block_size+1] = 0;
+      out[1] = 0;
+
+      for (size_t d = 0; d < block_size + 2; d += 2)
+        avg[d/2] += out[d] * out[d] + out[d+1] * out[d+1];
+      offset += block_size / 4;
+    }
+
+  for (size_t i = 0; i < avg.size(); i++)
+    printf ("%s %g %g\n", label, i * double (sr) / block_size, avg[i]);
+}
+
 
 size_t
 make_odd (size_t n)
@@ -105,6 +196,16 @@ main (int argc, char **argv)
   Random random;
 
   sm_init (&argc, &argv);
+
+  NoiseGenerator noise_generator;
+/*
+  vector<float> noise_77000 = noise_generator.gen_noise (77000);
+  avg_spectrum ("noise-77000", noise_77000, 77000);
+  vector<float> noise_48000 = noise_generator.gen_noise (48000);
+  avg_spectrum ("noise-48000", noise_48000, 48000);
+  vector<float> noise_96000 = noise_generator.gen_noise (96000);
+  avg_spectrum ("noise-96000", noise_96000, 96000);
+*/
 
   vector<float> noise (48000 * 5);
   vector<float> audio_out (noise.size());
