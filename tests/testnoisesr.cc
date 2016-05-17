@@ -35,8 +35,9 @@ NoiseGenerator::gen_noise (int sr)
       float *in = FFT::new_array_float (FFT_SIZE);
       float *out = FFT::new_array_float (FFT_SIZE);
 
+      const double MAG = sqrt (0.5);
       for (size_t i = 0; i < FFT_SIZE; i++)
-        in[i] = random.random_double_range (-0.5, 0.5);
+        in[i] = random.random_double_range (-MAG, MAG);
 
       vector<float> old_in (in, in+FFT_SIZE);
 
@@ -113,10 +114,10 @@ make_odd (size_t n)
 }
 
 void
-encode (vector<float>& audio_in)
+encode (vector<float>& audio_in, int sr)
 {
   EncoderParams enc_params;
-  enc_params.mix_freq = 48000;
+  enc_params.mix_freq = sr;
   enc_params.zeropad = 4;
   enc_params.fundamental_freq = 440;
   enc_params.frame_size_ms = 40;
@@ -197,26 +198,29 @@ main (int argc, char **argv)
 
   sm_init (&argc, &argv);
 
+  int sr = (argc == 2) ? atoi (argv[1]) : 48000;
+  printf ("# sr = %d\n", sr);
+
   NoiseGenerator noise_generator;
-/*
-  vector<float> noise_77000 = noise_generator.gen_noise (77000);
-  avg_spectrum ("noise-77000", noise_77000, 77000);
-  vector<float> noise_48000 = noise_generator.gen_noise (48000);
-  avg_spectrum ("noise-48000", noise_48000, 48000);
-  vector<float> noise_96000 = noise_generator.gen_noise (96000);
-  avg_spectrum ("noise-96000", noise_96000, 96000);
-*/
+  vector<float> noise;
+  vector<float> noise_48000;
+  if (sr == 48000)
+    {
+      noise.resize (sr * 5);
+      for (size_t i = 0; i < noise.size(); i++)
+        noise[i] = random.random_double_range (-0.5, 0.5);
+      noise_48000 = noise;
+    }
+  else
+    {
+      noise       = noise_generator.gen_noise (sr);
+      noise_48000 = noise_generator.gen_noise (48000);
+    }
 
-  vector<float> noise (48000 * 5);
-  vector<float> audio_out (noise.size());
+  encode (noise, sr);
+  printf ("noise-in-energy %.17g\n", energy (noise_48000));
 
-  for (size_t i = 0; i < noise.size(); i++)
-    noise[i] = random.random_double_range (-0.5, 0.5);
-
-  encode (noise);
-
-  printf ("noise-in-energy %.17g\n", energy (noise));
-
+  vector<float> audio_out (noise_48000.size());
   for (int i = 48000; i < 197000; i += 12000)
     {
       decode (audio_out, i);
