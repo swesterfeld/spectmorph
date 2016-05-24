@@ -6,6 +6,7 @@
 #include "smlivedecoder.hh"
 #include "smminiresampler.hh"
 #include "smfft.hh"
+#include "smdebug.hh"
 
 #include <assert.h>
 
@@ -114,7 +115,7 @@ make_odd (size_t n)
 }
 
 void
-encode (vector<float>& audio_in, int sr)
+encode (vector<float>& audio_in, int sr, const string& win)
 {
   EncoderParams enc_params;
   enc_params.mix_freq = sr;
@@ -135,7 +136,20 @@ encode (vector<float>& audio_in, int sr)
   for (guint i = 0; i < window.size(); i++)
     {
       if (i < enc_params.frame_size)
-        window[i] = bse_window_cos (2.0 * i / enc_params.frame_size - 1.0);
+        {
+          if (win == "rect")
+            {
+              window[i] = 1;
+            }
+          else if (win == "cos")
+            {
+              window[i] = bse_window_cos (2.0 * i / enc_params.frame_size - 1.0);
+            }
+          else
+            {
+              assert (false); // not reached
+            }
+        }
       else
         window[i] = 0;
     }
@@ -220,7 +234,11 @@ main (int argc, char **argv)
 
   sm_init (&argc, &argv);
 
-  int sr = (argc == 2) ? atoi (argv[1]) : 48000;
+// Debug::debug_enable ("encoder");
+
+  int sr = (argc >= 2) ? atoi (argv[1]) : 48000;
+  string win = (argc >= 3) ? argv[2] : "cos";
+
   printf ("# sr = %d\n", sr);
 
   NoiseGenerator noise_generator;
@@ -239,10 +257,11 @@ main (int argc, char **argv)
       noise_48000 = noise_generator.gen_noise (48000);
     }
 
-  encode (noise, sr);
+  encode (noise, sr, win);
   dump_noise_envelope();
 
   printf ("noise-in-energy %.17g\n", energy (noise_48000));
+  printf ("noise-in-level %.17g\n", sqrt (energy (noise_48000) / noise_48000.size()));
 
   vector<float> audio_out (noise_48000.size());
   for (int i = 48000; i < 197000; i += 12000)
