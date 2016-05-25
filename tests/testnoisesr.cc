@@ -215,16 +215,18 @@ dump_noise_envelope()
   assert (wav_set.waves.size() == 1);
   Audio *audio = wav_set.waves[0].audio;
 
+  size_t count = 0;
   vector<float> noise_env (32);
-  for (size_t pos = 0; pos < audio->contents.size(); pos++)
+  for (size_t pos = 4; pos < audio->contents.size() - 4; pos++)
     {
       AudioBlock *block = &audio->contents[pos];
       assert (noise_env.size() == block->noise.size());
       for (size_t i = 0; i < block->noise.size(); i++)
         noise_env[i] += block->noise_f (i);
+      count++;
     }
   for (size_t i = 0; i < noise_env.size(); i++)
-    printf ("noise-envelope %zd %.17g\n", i, noise_env[i] / audio->contents.size());
+    printf ("noise-envelope %zd %.17g\n", i, noise_env[i] / count);
 }
 
 int
@@ -262,6 +264,7 @@ main (int argc, char **argv)
 
   printf ("noise-in-energy %.17g\n", energy (noise_48000));
   printf ("noise-in-level %.17g\n", sqrt (energy (noise_48000) / noise_48000.size()));
+  printf ("noise-sr-level %.17g\n", sqrt (energy (noise) / noise.size()));
 
   vector<float> audio_out (noise_48000.size());
   for (int i = 48000; i < 197000; i += 12000)
