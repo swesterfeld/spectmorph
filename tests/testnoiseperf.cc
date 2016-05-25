@@ -40,7 +40,7 @@ main (int argc, char **argv)
 
   random.set_seed (42);
   for (int i = 0; i < 32; i++)
-    audio_block.noise.push_back (random.random_double_range (0.1, 1.0));
+    audio_block.noise.push_back (sm_factor2idb (random.random_double_range (0.1, 1.0)));
 
   const int RUNS = 20000, REPS = 13;
 
