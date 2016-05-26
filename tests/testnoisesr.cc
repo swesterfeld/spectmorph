@@ -229,6 +229,48 @@ dump_noise_envelope()
     printf ("noise-envelope %zd %.17g\n", i, noise_env[i] / count);
 }
 
+void
+xxx_decode (vector<float>& audio_out, int sr)
+{
+  WavSet wav_set;
+  Bse::Error error = wav_set.load ("testnoisesr.tmp.smset");
+  assert (error == 0);
+
+  LiveDecoder decoder (&wav_set);
+
+  float freq = 440;
+  decoder.retrigger (0, freq, 127, sr);
+  decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+}
+
+int
+reencode (int argc, char **argv)
+{
+  assert (argc >= 4);
+  int from_sr = atoi (argv[2]);
+  int to_sr   = atoi (argv[3]);
+  string win = (argc >= 5) ? argv[4] : "cos";
+
+  printf ("# reencode from_sr = %d to_sr = %d, win = %s\n", from_sr, to_sr, win.c_str());
+
+  Random random;
+
+  vector<float> noise (from_sr * 5);
+  for (size_t i = 0; i < noise.size(); i++)
+    noise[i] = random.random_double_range (-0.5, 0.5);
+
+  encode (noise, from_sr, win);
+  dump_noise_envelope();
+
+  vector<float> audio_out (to_sr * 5);
+  xxx_decode (audio_out, to_sr);
+
+  encode (audio_out, to_sr, win);
+  dump_noise_envelope();
+
+  return 0;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -238,10 +280,16 @@ main (int argc, char **argv)
 
 // Debug::debug_enable ("encoder");
 
+  if (argc >= 2 && strcmp (argv[1], "reencode") == 0)   // noise reencode test
+    {
+      return reencode (argc, argv);
+    }
+
+  // default noise sr test
   int sr = (argc >= 2) ? atoi (argv[1]) : 48000;
   string win = (argc >= 3) ? argv[2] : "cos";
 
-  printf ("# sr = %d\n", sr);
+  printf ("# sr = %d, win = %s\n", sr, win.c_str());
 
   NoiseGenerator noise_generator;
   vector<float> noise;
