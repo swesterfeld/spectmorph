@@ -184,11 +184,17 @@ decode (vector<float>& audio_out, int sr)
 
   LiveDecoder decoder (&wav_set);
 
-  vector<float> audio_high (sr * 5);
-
   float freq = 440;
   decoder.retrigger (0, freq, 127, sr);
-  decoder.process (audio_high.size(), 0, 0, &audio_high[0]);
+  decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+}
+
+void
+decode_resample (vector<float>& audio_out, int sr)
+{
+  vector<float> audio_high (sr * 5);
+
+  decode (audio_high, sr);
 
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, sr, 440, audio_high.size(), &audio_high[0], NULL);
   MiniResampler mini_resampler (dhandle, double (sr) / 48000.);
@@ -239,20 +245,6 @@ dump_noise_envelope()
     printf ("noise-envelope %zd %.17g\n", i, noise_env[i]);
 }
 
-void
-xxx_decode (vector<float>& audio_out, int sr)
-{
-  WavSet wav_set;
-  Bse::Error error = wav_set.load ("testnoisesr.tmp.smset");
-  assert (error == 0);
-
-  LiveDecoder decoder (&wav_set);
-
-  float freq = 440;
-  decoder.retrigger (0, freq, 127, sr);
-  decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
-}
-
 int
 reencode (int argc, char **argv)
 {
@@ -275,7 +267,7 @@ reencode (int argc, char **argv)
   vector<float> from_env = get_noise_envelope();
 
   vector<float> audio_out (to_sr * 5);
-  xxx_decode (audio_out, to_sr);
+  decode (audio_out, to_sr);
 
   printf ("noise-to-level %.17g\n", sqrt (energy (audio_out) / audio_out.size()));
 
@@ -336,7 +328,7 @@ main (int argc, char **argv)
   vector<float> audio_out (noise_48000.size());
   for (int i = 48000; i < 197000; i += 12000)
     {
-      decode (audio_out, i);
+      decode_resample (audio_out, i);
       printf ("noise-out-energy %d %.17g\n", i, energy (audio_out));
     }
 }
