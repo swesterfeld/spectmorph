@@ -205,8 +205,8 @@ energy (vector<float>& audio)
   return e;
 }
 
-void
-dump_noise_envelope()
+vector<float>
+get_noise_envelope()
 {
   WavSet wav_set;
   Bse::Error error = wav_set.load ("testnoisesr.tmp.smset");
@@ -226,7 +226,17 @@ dump_noise_envelope()
       count++;
     }
   for (size_t i = 0; i < noise_env.size(); i++)
-    printf ("noise-envelope %zd %.17g\n", i, noise_env[i] / count);
+    noise_env[i] /= count;
+  return noise_env;
+}
+
+void
+dump_noise_envelope()
+{
+  vector<float> noise_env = get_noise_envelope();
+
+  for (size_t i = 0; i < noise_env.size(); i++)
+    printf ("noise-envelope %zd %.17g\n", i, noise_env[i]);
 }
 
 void
@@ -259,15 +269,24 @@ reencode (int argc, char **argv)
   for (size_t i = 0; i < noise.size(); i++)
     noise[i] = random.random_double_range (-0.5, 0.5);
 
+  printf ("noise-from-level %.17g\n", sqrt (energy (noise) / noise.size()));
+
   encode (noise, from_sr, win);
-  dump_noise_envelope();
+  vector<float> from_env = get_noise_envelope();
 
   vector<float> audio_out (to_sr * 5);
   xxx_decode (audio_out, to_sr);
 
-  encode (audio_out, to_sr, win);
-  dump_noise_envelope();
+  printf ("noise-to-level %.17g\n", sqrt (energy (audio_out) / audio_out.size()));
 
+  encode (audio_out, to_sr, win);
+  vector<float> to_env = get_noise_envelope();
+
+  assert (from_env.size() == to_env.size());
+  for (size_t i = 0; i < from_env.size(); i++)
+    {
+      printf ("noise-envelope %2zd %6.2f %.17g %.17g\n", i, to_env[i] / from_env[i] * 100., from_env[i], to_env[i]);
+    }
   return 0;
 }
 
