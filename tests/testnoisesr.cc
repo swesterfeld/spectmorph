@@ -14,6 +14,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::max;
 
 /* this generates noise signals for any sample rate >= 48000 with noise in frequency range [0,24000] */
 class NoiseGenerator
@@ -115,13 +116,14 @@ make_odd (size_t n)
 }
 
 void
-encode (vector<float>& audio_in, int sr, const string& win)
+encode (vector<float>& audio_in, int sr, const string& win, float fundamental_freq)
 {
   EncoderParams enc_params;
   enc_params.mix_freq = sr;
   enc_params.zeropad = 4;
-  enc_params.fundamental_freq = 440;
+  enc_params.fundamental_freq = fundamental_freq;
   enc_params.frame_size_ms = 40;
+  enc_params.frame_size_ms = max<double> (enc_params.frame_size_ms, 1000 / enc_params.fundamental_freq * 4);
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
   enc_params.frame_size = make_odd (enc_params.mix_freq * 0.001 * enc_params.frame_size_ms);
   enc_params.frame_step = enc_params.mix_freq * 0.001 * enc_params.frame_step_ms;
@@ -252,8 +254,9 @@ reencode (int argc, char **argv)
   int from_sr = atoi (argv[2]);
   int to_sr   = atoi (argv[3]);
   string win = (argc >= 5) ? argv[4] : "cos";
+  float fundamental_freq = (argc >= 6) ? atof (argv[5]) : 440;
 
-  printf ("# reencode from_sr = %d to_sr = %d, win = %s\n", from_sr, to_sr, win.c_str());
+  printf ("# reencode from_sr = %d to_sr = %d, win = %s, fundamental = %f\n", from_sr, to_sr, win.c_str(), fundamental_freq);
 
   Random random;
 
@@ -263,7 +266,7 @@ reencode (int argc, char **argv)
 
   printf ("noise-from-level %.17g\n", sqrt (energy (noise) / noise.size()));
 
-  encode (noise, from_sr, win);
+  encode (noise, from_sr, win, fundamental_freq);
   vector<float> from_env = get_noise_envelope();
 
   vector<float> audio_out (to_sr * 5);
@@ -271,7 +274,7 @@ reencode (int argc, char **argv)
 
   printf ("noise-to-level %.17g\n", sqrt (energy (audio_out) / audio_out.size()));
 
-  encode (audio_out, to_sr, win);
+  encode (audio_out, to_sr, win, fundamental_freq);
   vector<float> to_env = get_noise_envelope();
 
   assert (from_env.size() == to_env.size());
@@ -299,8 +302,9 @@ main (int argc, char **argv)
   // default noise sr test
   int sr = (argc >= 2) ? atoi (argv[1]) : 48000;
   string win = (argc >= 3) ? argv[2] : "cos";
+  float fundamental_freq = (argc >= 4) ? atof (argv[3]) : 440;
 
-  printf ("# sr = %d, win = %s\n", sr, win.c_str());
+  printf ("# sr = %d, win = %s, fundamental_freq = %f\n", sr, win.c_str(), fundamental_freq);
 
   NoiseGenerator noise_generator;
   vector<float> noise;
@@ -318,7 +322,7 @@ main (int argc, char **argv)
       noise_48000 = noise_generator.gen_noise (48000);
     }
 
-  encode (noise, sr, win);
+  encode (noise, sr, win, fundamental_freq);
   dump_noise_envelope();
 
   printf ("noise-in-energy %.17g\n", energy (noise_48000));
