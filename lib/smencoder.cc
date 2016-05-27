@@ -850,16 +850,19 @@ approximate_noise_spectrum (int frame,
             }
         }
       double f_hz = mix_freq / 2.0 * d / spectrum.size();
+      int n_values = 0;
       while (f_hz < hz_high)
         {
           if (d < spectrum.size())
             {
               envelope[band] += (spectrum[d] * spectrum[d] + spectrum[d + 1] * spectrum[d + 1]);
+              n_values++;
             }
           d += 2;
           f_hz = mix_freq / 2.0 * d / spectrum.size();
         }
-      envelope[band] /= norm;
+      if (n_values > 0)
+        envelope[band] = sqrt (envelope[band] / norm / n_values);
     }
 }
 
@@ -967,7 +970,7 @@ Encoder::approx_noise (const vector<float>& window)
       spectrum[0] /= sqrt (2);
       spectrum[spectrum.size() - 2] /= sqrt (2);
 
-      approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, norm);
+      approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, enc_params.mix_freq * 0.5 * (frame_size * expected_value_w2));
 
       /// DEBUG CODE {
       vector<double> approx_spectrum (2050);

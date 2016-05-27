@@ -89,7 +89,7 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   float *interpolated_spectrum = FFT::new_array_float (block_size + 18) + 8;
 
   const double Eww = 0.375; // expected value of the energy of the window
-  const double norm = 1 / Eww;
+  const double norm = (mix_freq / spectrum_size) / Eww;
 
   noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
 
