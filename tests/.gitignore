@@ -27,5 +27,7 @@ testidb
 testifreq
 testmutexperf
 testsortfreqs
+testminires
+testnoisesr
 .libs
 .deps
