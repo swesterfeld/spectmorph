@@ -33,9 +33,10 @@ main (int argc, char **argv)
   float *xwin_samples = FFT::new_array_float (block_size);
   float *fft_samples = FFT::new_array_float (block_size);
 
+  const double white_noise_level = 0.0025; // constant to keep output approximately in range [-1;1]
   random.set_seed (42);
   for (int i = 0; i < 32; i++)
-    audio_block.noise.push_back (sm_factor2idb (random.random_double_range (0.1, 1.0)));
+    audio_block.noise.push_back (sm_factor2idb (white_noise_level * random.random_double_range (0.5, 1.0)));
 
   // NOISE DEBUG MODE
 
@@ -86,7 +87,7 @@ main (int argc, char **argv)
         s_diff_max = max (s_diff_max, fabs (spectrum[i] - dbg_spectrum[i] / block_size));
       printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);
       printf ("noise test: sse=%d s_diff_max=%.17g\n", sse, s_diff_max);
-      assert (t_diff_max < 3e-5);
-      assert (s_diff_max < 1e-7);
+      assert (t_diff_max < 1e-6);
+      assert (s_diff_max < 3e-9);
     }
 }
