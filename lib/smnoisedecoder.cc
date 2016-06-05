@@ -191,10 +191,10 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   expand_in[0] = 0.0;
   expand_in[1] = 0.0;
 
-  const float K0 = 0.35874998569488525;
-  const float K1 = 0.24414500594139099;
-  const float K2 = 0.070639997720718384;
-  const float K3 = 0.0058400016278028488;
+  const float K0 = 0.35875;   // a0
+  const float K1 = 0.244145;  // a1 / 2
+  const float K2 = 0.07064;   // a2 / 2
+  const float K3 = 0.00584;   // a3 / 2
 
 #ifdef __SSE__ /* fast SSEified convolution */
   if (sm_sse())
