@@ -867,9 +867,11 @@ approximate_noise_spectrum (int frame,
 }
 
 void
-xnoise_envelope_to_spectrum (double mix_freq,
+xnoise_envelope_to_spectrum (int frame,
+                             double mix_freq,
                              const vector<double>& envelope,
-			     vector<double>& spectrum)
+			     vector<double>& spectrum,
+                             double norm)
 {
   vector<int>  band_from_d (spectrum.size());
   vector<int>  band_count (envelope.size());
@@ -926,10 +928,10 @@ xnoise_envelope_to_spectrum (double mix_freq,
 	}
       else
 	{
-	  spectrum[d] = sqrt (envelope[b] / band_count[b]);
+	  spectrum[d] = envelope[b] * sqrt (norm);
 	}
       spectrum[d+1] = 0;
-      debug ("noiseint %f\n", spectrum[d]);
+      debug ("noiseint:%d %f\n", frame, spectrum[d]);
     }
 }
 
@@ -973,14 +975,14 @@ Encoder::approx_noise (const vector<float>& window)
       approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, enc_params.mix_freq * 0.5 * (frame_size * expected_value_w2));
 
       /// DEBUG CODE {
-      vector<double> approx_spectrum (2050);
-      xnoise_envelope_to_spectrum (enc_params.mix_freq, noise_envelope, approx_spectrum);
-      for (int i = 0; i < 2048; i += 2)
-	debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
+      vector<double> approx_spectrum (fft_size);
+      xnoise_envelope_to_spectrum (frame, enc_params.mix_freq, noise_envelope, approx_spectrum, enc_params.mix_freq * 0.5 * (frame_size * expected_value_w2));
+      for (int i = 0; i < approx_spectrum.size(); i += 2)
+        debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
 
       double spect_energy = 0;
-      for (vector<double>::iterator si = noise_envelope.begin(); si != noise_envelope.end(); si++)
-        spect_energy += *si;
+      for (vector<double>::iterator si = approx_spectrum.begin(); si != approx_spectrum.end(); si++)
+        spect_energy += *si * *si / norm;
 
       double b4_energy = 0;
       for (vector<double>::iterator si = spectrum.begin(); si != spectrum.end(); si++)
@@ -988,7 +990,7 @@ Encoder::approx_noise (const vector<float>& window)
 
       double r_energy = 0;
       for (vector<float>::iterator ri = audio_blocks[frame].debug_samples.begin(); ri != audio_blocks[frame].debug_samples.end(); ri++)
-        r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size() * expected_value_w2;
+        r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size();
 
       debug ("noiseenergy:%lld %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
       /// } DEBUG_CODE
