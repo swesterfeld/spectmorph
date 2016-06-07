@@ -9,6 +9,7 @@
 #include "smdebug.hh"
 
 #include <assert.h>
+#include <unistd.h>
 
 using namespace SpectMorph;
 
@@ -203,6 +204,13 @@ decode_resample (vector<float>& audio_out, int sr)
   mini_resampler.read (0, audio_out.size(), &audio_out[0]);
 }
 
+void
+delete_tmp_files()
+{
+  unlink ("testnoisesr.tmp.smset");
+  unlink ("testnoisesr.tmp.sm");
+}
+
 double
 energy (vector<float>& audio)
 {
@@ -282,6 +290,8 @@ reencode (int argc, char **argv)
     {
       printf ("noise-envelope %2zd %6.2f %.17g %.17g\n", i, to_env[i] / from_env[i] * 100., from_env[i], to_env[i]);
     }
+
+  delete_tmp_files();
   return 0;
 }
 
@@ -335,4 +345,5 @@ main (int argc, char **argv)
       decode_resample (audio_out, i);
       printf ("noise-out-energy %d %.17g\n", i, energy (audio_out));
     }
+  delete_tmp_files();
 }
