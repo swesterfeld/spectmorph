@@ -946,14 +946,12 @@ Encoder::approx_noise (const vector<float>& window)
   const size_t frame_size = enc_params.frame_size;
   const size_t zeropad = enc_params.zeropad;
 
-  const size_t fft_size = block_size * zeropad;
-
-  double expected_value_w2 = 0;
+  double sum_w2 = 0;
   for (size_t x = 0; x < frame_size; x++)
-    expected_value_w2 += window[x] * window[x];
-  expected_value_w2 /= frame_size;
+    sum_w2 += window[x] * window[x];
 
-  const double norm = fft_size * frame_size * 0.5 * expected_value_w2;
+  // sum_w2 is the average influence of the window (w[x]^2), multiplied with frame_size
+  const double norm = 0.5 * enc_params.mix_freq * sum_w2;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
@@ -972,21 +970,24 @@ Encoder::approx_noise (const vector<float>& window)
       spectrum[0] /= sqrt (2);
       spectrum[spectrum.size() - 2] /= sqrt (2);
 
-      approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, enc_params.mix_freq * 0.5 * (frame_size * expected_value_w2));
+      approximate_noise_spectrum (frame, enc_params.mix_freq, spectrum, noise_envelope, norm);
 
       /// DEBUG CODE {
+      const size_t fft_size = block_size * zeropad;
+      const double debug_norm = fft_size * 0.5 * sum_w2;
+
       vector<double> approx_spectrum (fft_size);
-      xnoise_envelope_to_spectrum (frame, enc_params.mix_freq, noise_envelope, approx_spectrum, enc_params.mix_freq * 0.5 * (frame_size * expected_value_w2));
+      xnoise_envelope_to_spectrum (frame, enc_params.mix_freq, noise_envelope, approx_spectrum, norm);
       for (int i = 0; i < approx_spectrum.size(); i += 2)
         debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
 
       double spect_energy = 0;
       for (vector<double>::iterator si = approx_spectrum.begin(); si != approx_spectrum.end(); si++)
-        spect_energy += *si * *si / norm;
+        spect_energy += *si * *si / debug_norm;
 
       double b4_energy = 0;
       for (vector<double>::iterator si = spectrum.begin(); si != spectrum.end(); si++)
-        b4_energy += *si * *si / norm;
+        b4_energy += *si * *si / debug_norm;
 
       double r_energy = 0;
       for (vector<float>::iterator ri = audio_blocks[frame].debug_samples.begin(); ri != audio_blocks[frame].debug_samples.end(); ri++)
