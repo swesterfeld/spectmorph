@@ -4,7 +4,7 @@ AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -O3 $(SSE_FLAG
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
-SMRESVALUE = $(top_builddir)/tests/smresvalue.sh
+SMRESVALUE = $(top_srcdir)/tests/smresvalue.sh
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QT_LIBS)
 
