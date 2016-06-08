@@ -7,10 +7,10 @@ EXIT=0
 for MODE in noise saw
 do
   if [ "x$MODE" = "xnoise" ]; then
-    $WHITENOISE > noise.txt
-    $SMENC -f 440 --text-input-file 48000 --no-lpc --no-sines --no-attack noise.txt
+    $WHITENOISE > test-norm.txt
+    $SMENC -f 440 --text-input-file 48000 --no-lpc --no-sines --no-attack test-norm.txt
   elif [ "x$MODE" = "xsaw" ]; then
-    $SMENC -f 440 --no-attack --no-lpc -O1 $(infile_location saw440.wav) noise.sm
+    $SMENC -f 440 --no-attack --no-lpc -O1 $(infile_location saw440.wav) test-norm.sm
   else
     echo "bad MODE $mode"
     exit 1
@@ -18,16 +18,16 @@ do
   {
   echo "======== MODE $MODE ========"
   echo
-  $SMPLAY noise.sm --det-random --rate 48000 --export noise-out.wav 2>&1
-  ENERGY1=$($WAV2ASCII noise-out.wav | $AVG_ENERGY 5000 15000)
+  $SMPLAY test-norm.sm --det-random --rate 48000 --export test-norm.wav 2>&1
+  ENERGY1=$($WAV2ASCII test-norm.wav | $AVG_ENERGY 5000 15000)
   echo "avg energy1 (db) = $ENERGY1"
-  $SMTOOL noise.sm auto-volume 50 | sed 's/^/     | /'
-  $SMPLAY noise.sm --det-random --rate 48000 --export noise-out.wav 2>&1
-  ENERGY2=$($WAV2ASCII noise-out.wav | $AVG_ENERGY 5000 15000)
+  $SMTOOL test-norm.sm auto-volume 50 | sed 's/^/     | /'
+  $SMPLAY test-norm.sm --det-random --rate 48000 --export test-norm.wav 2>&1
+  ENERGY2=$($WAV2ASCII test-norm.wav | $AVG_ENERGY 5000 15000)
   echo "avg energy2 (db) = $ENERGY2"
-  $SMTOOL noise.sm auto-volume 50 | sed 's/^/     | /'
-  $SMPLAY noise.sm --det-random --rate 48000 --export noise-out.wav 2>&1
-  ENERGY3=$($WAV2ASCII noise-out.wav | $AVG_ENERGY 5000 15000)
+  $SMTOOL test-norm.sm auto-volume 50 | sed 's/^/     | /'
+  $SMPLAY test-norm.sm --det-random --rate 48000 --export test-norm.wav 2>&1
+  ENERGY3=$($WAV2ASCII test-norm.wav | $AVG_ENERGY 5000 15000)
   echo "avg energy3 (db) = $ENERGY3"
   echo
   } > test-norm.log
@@ -55,5 +55,7 @@ do
     echo "OK test-norm-$MODE $ENERGY1 $ENERGY2 $ENERGY3"
   fi
 done
+
+rm test-norm.sm test-norm.log test-norm.wav test-norm.txt
 
 exit $EXIT
