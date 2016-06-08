@@ -23,4 +23,4 @@ for x in signal:
   energy += x * x
 
 energy /= len (signal)
-print "avg energy (db) = ", 10 * math.log10 (energy)
+print 10 * math.log10 (energy)
