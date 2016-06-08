@@ -4,7 +4,7 @@ source test-common.sh
 
 for mode in tune-all-frames auto-tune
 do
-  $SMENC -f 420 --no-attack --no-lpc -O1 saw440.wav tune-test.sm
+  $SMENC -f 420 --no-attack --no-lpc -O1 $(infile_location saw440.wav) tune-test.sm
   $SMTOOL tune-test.sm $mode > /dev/null
   if [ "x$($SMTOOL tune-test.sm frame-params 30 | head -5 | awk '
     BEGIN {
