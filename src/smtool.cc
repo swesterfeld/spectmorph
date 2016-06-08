@@ -928,7 +928,6 @@ normalize_energy (double energy, Audio& audio)
   sm_printf ("avg_energy: %.17g\n", energy);
   sm_printf ("norm:       %.17g\n", norm);
   const int    norm_delta_idb   = sm_factor2delta_idb (norm);
-  const int    norm_2_delta_idb = sm_factor2delta_idb (norm * norm);
 
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
@@ -938,7 +937,7 @@ normalize_energy (double energy, Audio& audio)
 
       vector<uint16_t>& noise = audio.contents[f].noise;
       for (size_t i = 0; i < noise.size(); i++)
-        noise[i] = qBound<int> (0, noise[i] + norm_2_delta_idb, 65535);
+        noise[i] = qBound<int> (0, noise[i] + norm_delta_idb, 65535);
     }
 }
 
