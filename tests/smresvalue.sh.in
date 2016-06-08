@@ -1,25 +1,10 @@
 #!/bin/bash
 
-SMENC=@top_builddir@/src/smenc
-SMPLAY=@top_builddir@/src/smplay
+source test-common.sh
+
 SMENCFLAGS="--no-attack --no-lpc"
-WAV2ASCII=@top_builddir@/tools/wav2ascii
-SN_DELTA=@top_srcdir@/tests/sn_delta.py
 
-die()
-{
-  echo "$0: $@"
-  exit 1
-}
-
-if test -f "@srcdir@/$1"; then
-  WAV="@srcdir@/$1"
-elif test -f "@top_builddir@/tests/$1"; then
-  WAV="@top_builddir@/tests/$1"
-else
-  echo "$0: $1 not found"
-  exit 1
-fi
+WAV=$(infile_location "$1")
 START="$2"
 STOP="$3"
 RATE="$4"

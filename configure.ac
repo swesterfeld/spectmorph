@@ -234,4 +234,5 @@ lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Make
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile tools/sminstbuilder spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
+AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT

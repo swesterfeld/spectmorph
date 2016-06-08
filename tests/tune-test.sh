@@ -1,7 +1,6 @@
 #!/bin/bash
 
-SMENC=../src/smenc
-SMTOOL=../src/smtool
+source test-common.sh
 
 for mode in tune-all-frames auto-tune
 do

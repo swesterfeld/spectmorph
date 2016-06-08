@@ -1,0 +1,31 @@
+# program locations
+
+SMENC=@top_builddir@/src/smenc
+SMPLAY=@top_builddir@/src/smplay
+SMTOOL=@top_builddir@/src/smtool
+WAV2ASCII=@top_builddir@/tools/wav2ascii
+
+# script locations
+
+SN_DELTA=@top_srcdir@/tests/sn_delta.py
+AVG_ENERGY=@top_srcdir@/tests/avg_energy.py
+WHITENOISE=@top_srcdir@/tests/whitenoise.py
+
+# common shell functions
+
+die()
+{
+  echo "$0: $@"
+  exit 1
+}
+
+infile_location()
+{
+  if test -f "@srcdir@/$1"; then
+    echo "@srcdir@/$1"
+  elif test -f "@top_builddir@/tests/$1"; then
+    echo "@top_builddir@/tests/$1"
+  else
+    die "$1 not found"
+  fi
+}
