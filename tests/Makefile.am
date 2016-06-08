@@ -106,7 +106,7 @@ testnoisesr_SOURCES = testnoisesr.cc
 testnoisesr_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
-       TXT-sin100-test TXT-sin140-test tune-test
+       TXT-sin100-test TXT-sin140-test tune-test test-norm
 
 saw440-test:
 	@$(SMRESVALUE) saw440.wav 3000 24000 44100 440
@@ -148,3 +148,6 @@ saw440x.wav: saw440x.py
 
 tune-test:
 	$(top_srcdir)/tests/tune-test.sh
+
+test-norm:
+	$(top_srcdir)/tests/test-norm.sh
