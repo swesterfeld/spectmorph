@@ -8,7 +8,8 @@ SMRESVALUE = $(top_srcdir)/tests/smresvalue.sh
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QT_LIBS)
 
-EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py
+EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
+        smresvalue.sh tune-test.sh test-norm.sh
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid \
