@@ -38,7 +38,7 @@ do
     delta23 = $2 - $3
     if (delta23 < 0) { delta23 = -delta23 }
 
-    if (delta12 > 2 && delta23 < 1e-6)
+    if (delta12 > 1.5 && delta23 < 1e-6)
       {
         print "OK"
       }
