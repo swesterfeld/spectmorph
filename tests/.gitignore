@@ -1,4 +1,4 @@
-smresvalue.sh
+test-common.sh
 *.o
 testfastsin
 testblob

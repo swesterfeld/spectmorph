@@ -233,6 +233,5 @@ nobse/Makefile nobse/birnet/Makefile nobse/bse/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile tools/sminstbuilder spectmorph.pc
 ])
-AC_CONFIG_FILES([tests/smresvalue.sh], [chmod +x tests/smresvalue.sh])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
