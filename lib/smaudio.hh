@@ -10,7 +10,7 @@
 #include "smgenericout.hh"
 #include "smmath.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION 11
+#define SPECTMORPH_BINARY_FILE_VERSION 12
 
 namespace SpectMorph
 {
