@@ -249,8 +249,9 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
         s = _mm_add_ps (s, _mm_mul_ps (I3, k5)); \
         f = _mm_add_ps (f, _mm_mul_ps (I3, k6)); \
         s = _mm_add_ps (s, _mm_mul_ps (I4, k7)); \
-        const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,3,2)); \
-        OUT = _mm_add_ps (OUT, _mm_shuffle_ps (_mm_add_ps (f, hi), _mm_add_ps (s, hi), _MM_SHUFFLE (3,2,1,0))); \
+        const __m128 hi = _mm_shuffle_ps (f, s, _MM_SHUFFLE (3,2,3,2)); \
+        const __m128 lo = _mm_shuffle_ps (f, s, _MM_SHUFFLE (1,0,1,0)); \
+        OUT = _mm_add_ps (OUT, _mm_add_ps (hi, lo)); \
       }
       size_t i = 0;
       __m128 i0 = in[0];
