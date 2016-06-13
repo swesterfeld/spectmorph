@@ -30,8 +30,8 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  double mix_freq = 48000;
-  size_t block_size = 1024;
+  const double mix_freq = 48000;
+  const size_t block_size = 1024;
 
   AudioBlock audio_block;
   NoiseDecoder noise_dec (mix_freq, mix_freq, block_size);
@@ -66,8 +66,13 @@ main (int argc, char **argv)
           min_time[mode] = min (min_time[mode], end - start);
         }
     }
-  printf ("noise decoder (spectrum gen): %f cycles/sample\n", min_time[3] * 2500.0 * 1000 * 1000 / RUNS / block_size);
-  printf ("noise decoder (convolve):     %f cycles/sample\n", (min_time[2] - min_time[3]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
-  printf ("noise decoder (convolve/SSE): %f cycles/sample\n", (min_time[1] - min_time[3]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
-  printf ("noise decoder (ifft):         %f cycles/sample\n", (min_time[0] - min_time[1]) * 2500.0 * 1000 * 1000 / RUNS / block_size);
+  const double ns_per_sec = 1e9;
+  /* we use overlap-add sythesis - for each output sample two noise blocks are used
+   * so we need to scale our times with a factor of 2 to get per-output-sample costs
+   */
+  const double time_norm = 2 * ns_per_sec / RUNS / block_size;
+  printf ("noise decoder (spectrum gen): %2f ns/sample\n", min_time[3] * time_norm);
+  printf ("noise decoder (convolve):     %2f ns/sample\n", (min_time[2] - min_time[3]) * time_norm);
+  printf ("noise decoder (convolve/SSE): %2f ns/sample\n", (min_time[1] - min_time[3]) * time_norm);
+  printf ("noise decoder (ifft):         %2f ns/sample\n", (min_time[0] - min_time[1]) * time_norm);
 }
