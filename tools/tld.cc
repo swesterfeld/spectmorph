@@ -58,12 +58,12 @@ main (int argc, char **argv)
   assert (freq >= 20 && freq < 22000);
 
   int priority = adjust_priority();
-  double clocks_per_sec = 2500.0 * 1000 * 1000;
+  const double ns_per_sec = 1e9;
 
   LiveDecoder decoder (&smset);
   if (argc == 4 && (string (argv[3]) == "avg" || string (argv[3]) == "avg-all"))
     {
-      float clocks_per_sample[5] = { 0, };
+      float ns_per_sample[5] = { 0, };
       for (int i = 0; i < 5; i++)
         {
           if (string (argv[3]) != "avg-all" || i == 3)
@@ -94,19 +94,18 @@ main (int argc, char **argv)
                   double end_t = gettime();
                   best_time = min (best_time, (end_t - start_t));
                 }
-              clocks_per_sample[i] = best_time * clocks_per_sec / n / runs;
+              ns_per_sample[i] = best_time * ns_per_sec / n / runs;
             }
         }
-      sm_printf ("all..:  %f\n", clocks_per_sample[3]);
-      sm_printf ("sines:  %f\n", clocks_per_sample[2] - clocks_per_sample[4]);
-      sm_printf ("noise:  %f\n", clocks_per_sample[1] - clocks_per_sample[4]);
-      sm_printf ("fft:    %f\n", clocks_per_sample[4] - clocks_per_sample[0]);
-      sm_printf ("other:  %f\n", clocks_per_sample[0]);
-      sm_printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample[3] * 48000));
+      sm_printf ("all..:  %f\n", ns_per_sample[3]);
+      sm_printf ("sines:  %f\n", ns_per_sample[2] - ns_per_sample[4]);
+      sm_printf ("noise:  %f\n", ns_per_sample[1] - ns_per_sample[4]);
+      sm_printf ("fft:    %f\n", ns_per_sample[4] - ns_per_sample[0]);
+      sm_printf ("other:  %f\n", ns_per_sample[0]);
+      sm_printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample[3] * 48000));
     }
   else if (argc == 4 && (string (argv[3]) == "avg-samples"))
     {
-      float clocks_per_sample;
       decoder.enable_original_samples (true);
 
       const int n = 20000;
@@ -130,9 +129,9 @@ main (int argc, char **argv)
           double end_t = gettime();
           best_time = min (best_time, (end_t - start_t));
         }
-      clocks_per_sample = best_time * clocks_per_sec / n / runs;
-      sm_printf ("samples:  %f\n", clocks_per_sample);
-      sm_printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
+      const double ns_per_sample = best_time * ns_per_sec / n / runs;
+      sm_printf ("samples:  %f\n", ns_per_sample);
+      sm_printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample * 48000));
     }
   else if (argc == 4 && string (argv[3]) == "export")
     {
@@ -177,7 +176,7 @@ main (int argc, char **argv)
               decoder.process (n, 0, 0, &audio_out[0]);
             }
           double end_t = gettime();
-          sm_printf ("%d %.17g\n", n, (end_t - start_t) * clocks_per_sec / n / runs);
+          sm_printf ("%d %.17g\n", n, (end_t - start_t) * ns_per_sec / n / runs);
         }
     }
   sm_printf ("# nice priority %d\n", priority);
