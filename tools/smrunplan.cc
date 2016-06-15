@@ -316,7 +316,10 @@ main (int argc, char **argv)
         player.compute_samples (samples);
 
       double end = gettime();
-      sm_printf ("%.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
+
+      const double ns_per_sec = 1e9;
+      sm_printf ("%6.2f ns/sample\n", (end - start) * ns_per_sec / (RUNS * samples.size()));
+      sm_printf ("%6.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
 
       return 0;
     }
