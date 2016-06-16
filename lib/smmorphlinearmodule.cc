@@ -456,7 +456,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       module->audio_block.noise.clear();
       for (size_t i = 0; i < left_block.noise.size(); i++)
-        module->audio_block.noise.push_back ((1 - interp) * left_block.noise[i] + interp * right_block.noise[i]);
+        module->audio_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
 
       module->audio_block.sort_freqs();
 
@@ -466,7 +466,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
     {
       module->audio_block = left_block;
       for (size_t i = 0; i < module->audio_block.noise.size(); i++)
-        module->audio_block.noise[i] *= (1 - interp);
+        module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * (1 - interp));
       for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
         interp_mag_one (interp, &module->audio_block.mags[i], NULL);
 
@@ -476,7 +476,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
     {
       module->audio_block = right_block;
       for (size_t i = 0; i < module->audio_block.noise.size(); i++)
-        module->audio_block.noise[i] *= interp;
+        module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * interp);
       for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
         interp_mag_one (interp, NULL, &module->audio_block.mags[i]);
 
