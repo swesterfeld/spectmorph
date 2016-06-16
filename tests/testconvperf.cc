@@ -20,6 +20,7 @@ gettime()
 }
 
 double global_var;
+int global_int;
 
 int
 main (int argc, char **argv)
@@ -53,7 +54,7 @@ main (int argc, char **argv)
 
   start = gettime();
   for (unsigned int i = 0; i < runs; i++)
-    sm_factor2idb (7.342);
+    global_int += sm_factor2idb (i);
   const double t_factor2idb = gettime() - start;
 
   printf ("%9.4f ifreq2freq\n", clocks_per_sec * t_ifreq2freq / runs);
