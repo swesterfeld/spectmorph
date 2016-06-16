@@ -32,6 +32,7 @@ class Config:
     self.tune_all_frames_count = 0
     self.name_count        = 0
     self.short_name_count  = 0
+    self.encoder_args_count = 0
 
 class BuilderConfig:
   def __init__ (self):
@@ -149,6 +150,10 @@ def parse_config (filename):
         config.short_name = tokens[1]
         config.short_name_count += 1
         parse_ok = True
+      elif tokens[0] == 'encoder-args':
+        config.encoder_args = tokens[1]
+        config.encoder_args_count += 1
+        parse_ok = True
     if len (tokens) == 3:
       if tokens[0] == 'sample':
         config.samples += [ tokens[1:] ]
@@ -185,6 +190,8 @@ def parse_config (filename):
     die ("set-markers command must occur at most once in config")
   if config.tune_all_frames_count > 1:
     die ("tune-all-frames command can be used at most once in config")
+  if config.encoder_args_count > 1:
+    die ("encoder_args_count command can be used at most once in config")
   return config
 
 def parse_builder_config (filename):
@@ -273,10 +280,14 @@ def build_instrument (inst_dir, builder_config):
   else:
     smencargs = ""
 
+  encoder_args = "-O1 -s --keep-samples"
+  if (config.encoder_args_count > 0):
+    encoder_args += " " + config.encoder_args
+
   pwd = os.getcwd()
   system_or_die ("smwavset -j %s %s encode %s/instrument-clipped.wset %s/instrument.smset "
-                 "--data-dir %s/%s --args '-O1 -s --keep-samples'" %
-                 (builder_config.jobs, smencargs, config.dir, config.dir, pwd, config.dir));
+                 "--data-dir %s/%s --args '%s'" %
+                 (builder_config.jobs, smencargs, config.dir, config.dir, pwd, config.dir, encoder_args));
   final_smset = config.dir + "/instrument.smset";
   system_or_die ("smwavset link %s" % final_smset);
   # missing: auto-tune & co
