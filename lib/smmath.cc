@@ -6,14 +6,6 @@
 
 namespace SpectMorph {
 
-uint16_t
-sm_factor2idb (double factor)
-{
-  double db = bse_db_from_factor (factor, -500);
-
-  return sm_round_positive (db * 64 + 512 * 64);
-}
-
 int
 sm_factor2delta_idb (double factor)
 {

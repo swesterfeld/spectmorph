@@ -409,7 +409,6 @@ struct MathTables
 
 #define SM_IDB_CONST_M96 uint16_t ((512 - 96) * 64)
 
-uint16_t sm_factor2idb (double factor);
 int      sm_factor2delta_idb (double factor);
 double   sm_idb2factor_slow (uint16_t idb);
 
@@ -428,6 +427,20 @@ inline double
 sm_ifreq2freq (uint16_t ifreq)
 {
   return MathTables::ifreq2f_high[ifreq >> 8] * MathTables::ifreq2f_low[ifreq & 0xff];
+}
+
+inline uint16_t
+sm_factor2idb (double factor)
+{
+  /* 1e-25 is about the smallest factor we can properly represent as integer, as
+   *
+   *   20 * log10(1e-25) = 20 * -25 = -500 db
+   *
+   * so we map every factor that is smaller, like 0, to this value
+   */
+  const double db = 20 * log10 (std::max (factor, 1e-25));
+
+  return sm_round_positive (db * 64 + 512 * 64);
 }
 
 
