@@ -1,3 +1,9 @@
+NEXT RELEASE:
+- swap sin and cos in smnoisebandpartition.cc
+- fix sm_factor2idb: inline, qBound (factor, 1e-25, 1e25)
+- fix various usages of .noise[x] in linear/grid morph
+- why does white noise not sound like white noise?
+
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
