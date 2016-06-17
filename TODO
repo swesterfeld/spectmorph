@@ -8,7 +8,6 @@ smenc:
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
-- normalize noise
 - make window function configurable
 - debug performance problems
   => implement downsampling for really low notes
@@ -43,9 +42,6 @@ smlive:
   * write out result
   * combine loop with apply window
 - SSEify render_partial
-
-tests:
-- add test cases
 
 lag diagrams of note start
 
