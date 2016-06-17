@@ -83,6 +83,3 @@ qt5 port:
 - cleanup old gtk code
 - smldplot
 - smmorphplot
-
-multimorph:
-- it seems that the delta db noise normalization is not the same like in auto-volume-from-loop
