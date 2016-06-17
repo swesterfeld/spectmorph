@@ -1,3 +1,18 @@
+Overview of Changes in spectmorph-0.3.0:
+
+* Incompatible file format changes:
+  - use 16-bit integer values for sine and noise data instead of floats
+    to reduce file size on disk and in memory
+  - introduce short_name & name field for instruments
+  - changed the way noise is represented from total band energy to
+    normalized noise level
+* Use Qt5 for the GUI, instead of gtkmm.
+* Added Grid Morph operator: allows morphing between more than two sources.
+* Adapted code to work with newer beast (0.10.0) and rapicorn (0.16.0).
+* Improved tests.
+* Various bugfixes.
+* Performance improvements.
+
 Overview of Changes in spectmorph-0.2.0:
 
 * implemented user defined morphing using a MorphPlan consisting of operators
