@@ -271,10 +271,12 @@ interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 static void
 morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
 {
-  const double factor_2 = factor * factor; // noise contains squared values (energy from spectrum)
+  const int ddb = sm_factor2delta_idb (factor);
+
   out_block = in_block;
   for (size_t i = 0; i < out_block.noise.size(); i++)
-    out_block.noise[i] *= factor_2;
+    out_block.noise[i] = qBound<int> (0, out_block.noise[i] + ddb, 65535);
+
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
 }
@@ -427,7 +429,7 @@ morph (AudioBlock& out_block,
     }
   out_block.noise.clear();
   for (size_t i = 0; i < left_block.noise.size(); i++)
-    out_block.noise.push_back ((1 - interp) * left_block.noise[i] + interp * right_block.noise[i]);
+    out_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
 
   out_block.sort_freqs();
   return true;
@@ -472,17 +474,14 @@ static void
 apply_delta_db (AudioBlock& block, double delta_db)
 {
   const double factor = bse_db_to_factor (delta_db);
-
   const int    ddb    = sm_factor2delta_idb (factor);
-  const int    ddb_2  = sm_factor2delta_idb (factor * factor);
 
   // apply delta db volume to partials & noise
   for (size_t i = 0; i < block.mags.size(); i++)
     block.mags[i] = qBound<int> (0, block.mags[i] + ddb, 65535);
 
-  // noise contains squared values (energy from spectrum)
   for (size_t i = 0; i < block.noise.size(); i++)
-    block.noise[i] = qBound<int> (0, block.noise[i] + ddb_2, 65535);
+    block.noise[i] = qBound<int> (0, block.noise[i] + ddb, 65535);
 }
 
 }

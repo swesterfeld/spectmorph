@@ -1,6 +1,5 @@
 NEXT RELEASE:
 - swap sin and cos in smnoisebandpartition.cc
-- fix various usages of .noise[x] in linear/grid morph
 - why does white noise not sound like white noise?
 
 smenc:
