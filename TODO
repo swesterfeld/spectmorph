@@ -34,7 +34,6 @@ python:
 - http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- use faster random number generation
 - noise masking (no noise resynthesis if its inaudible anyway)
 - make FFTW integration thread safe
 - maybe use integer phase representation (-> less floor()/float->int/int->float cycles)
