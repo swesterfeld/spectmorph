@@ -53,7 +53,7 @@ AC_DEFUN([AC_NOBSE_REQUIREMENTS],
 [
     BSE_CFLAGS='-I$(top_srcdir)/nobse '$GLIB_CFLAGS
     AC_SUBST(BSE_CFLAGS)
-    BSE_LIBS='$(top_srcdir)/nobse/libspectmorph_nobse.la'
+    BSE_LIBS='$(top_srcdir)/nobse/libspectmorph_nobse.la '$GLIB_LIBS
     AC_SUBST(BSE_LIBS)
 ])
 dnl
