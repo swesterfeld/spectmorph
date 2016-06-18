@@ -17,6 +17,11 @@ typedef guint8              uint8;
 
 #define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 #define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+#define RAPICORN_AIDA_ENUM_DEFINE_ARITHMETIC_EQ(Enum)   \
+  bool constexpr operator== (Enum v, int64_t n) { return int64_t (v) == n; } \
+  bool constexpr operator== (int64_t n, Enum v) { return n == int64_t (v); } \
+  bool constexpr operator!= (Enum v, int64_t n) { return int64_t (v) != n; } \
+  bool constexpr operator!= (int64_t n, Enum v) { return n != int64_t (v); }
 
 namespace Rapicorn
 {
@@ -66,89 +71,85 @@ public:
 
 }
 
-/* Bse Error Type */
-typedef enum
-{
-  BSE_ERROR_NONE		= 0,
-  BSE_ERROR_INTERNAL,
-  BSE_ERROR_UNKNOWN,
-  /* general errors */
-  BSE_ERROR_IO,
-  BSE_ERROR_PERMS,
-  /* file errors */
-  BSE_ERROR_FILE_BUSY,
-  BSE_ERROR_FILE_EXISTS,
-  BSE_ERROR_FILE_EOF,
-  BSE_ERROR_FILE_EMPTY,
-  BSE_ERROR_FILE_NOT_FOUND,
-  BSE_ERROR_FILE_IS_DIR,
-  BSE_ERROR_FILE_OPEN_FAILED,
-  BSE_ERROR_FILE_SEEK_FAILED,
-  BSE_ERROR_FILE_READ_FAILED,
-  BSE_ERROR_FILE_WRITE_FAILED,
-  /* out of resource conditions */
-  BSE_ERROR_MANY_FILES,
-  BSE_ERROR_NO_FILES,
-  BSE_ERROR_NO_SPACE,
-  BSE_ERROR_NO_MEMORY,
-  /* content errors */
-  BSE_ERROR_NO_HEADER,
-  BSE_ERROR_NO_SEEK_INFO,
-  BSE_ERROR_NO_DATA,
-  BSE_ERROR_DATA_CORRUPT,
-  BSE_ERROR_WRONG_N_CHANNELS,
-  BSE_ERROR_FORMAT_INVALID,
-  BSE_ERROR_FORMAT_UNKNOWN,
-  BSE_ERROR_DATA_UNMATCHED,
-  /* miscellaneous errors */
-  BSE_ERROR_TEMP,
-  BSE_ERROR_WAVE_NOT_FOUND,
-  BSE_ERROR_CODEC_FAILURE,
-  BSE_ERROR_UNIMPLEMENTED,
-  BSE_ERROR_INVALID_PROPERTY,
-  BSE_ERROR_INVALID_MIDI_CONTROL,
-  BSE_ERROR_PARSE_ERROR,
-  BSE_ERROR_SPAWN,
-  /* Device errors */
-  BSE_ERROR_DEVICE_NOT_AVAILABLE,
-  BSE_ERROR_DEVICE_ASYNC,
-  BSE_ERROR_DEVICE_BUSY,
-  BSE_ERROR_DEVICE_FORMAT,
-  BSE_ERROR_DEVICE_BUFFER,
-  BSE_ERROR_DEVICE_LATENCY,
-  BSE_ERROR_DEVICE_CHANNELS,
-  BSE_ERROR_DEVICE_FREQUENCY,
-  BSE_ERROR_DEVICES_MISMATCH,
-  /* BseSource errors */
-  BSE_ERROR_SOURCE_NO_SUCH_MODULE,
-  BSE_ERROR_SOURCE_NO_SUCH_ICHANNEL,
-  BSE_ERROR_SOURCE_NO_SUCH_OCHANNEL,
-  BSE_ERROR_SOURCE_NO_SUCH_CONNECTION,
-  BSE_ERROR_SOURCE_PRIVATE_ICHANNEL,
-  BSE_ERROR_SOURCE_ICHANNEL_IN_USE,
-  BSE_ERROR_SOURCE_CHANNELS_CONNECTED,
-  BSE_ERROR_SOURCE_CONNECTION_INVALID,
-  BSE_ERROR_SOURCE_PARENT_MISMATCH,
-  BSE_ERROR_SOURCE_BAD_LOOPBACK,
-  BSE_ERROR_SOURCE_BUSY,
-  BSE_ERROR_SOURCE_TYPE_INVALID,
-  /* BseProcedure errors */
-  BSE_ERROR_PROC_NOT_FOUND,
-  BSE_ERROR_PROC_BUSY,
-  BSE_ERROR_PROC_PARAM_INVAL,
-  BSE_ERROR_PROC_EXECUTION,
-  BSE_ERROR_PROC_ABORT,
-  /* various procedure errors */
-  BSE_ERROR_NO_ENTRY,
-  BSE_ERROR_NO_EVENT,
-  BSE_ERROR_NO_TARGET,
-  BSE_ERROR_NOT_OWNER,
-  BSE_ERROR_INVALID_OFFSET,
-  BSE_ERROR_INVALID_DURATION,
-  BSE_ERROR_INVALID_OVERLAP,
-} BseErrorType;
+namespace Bse {
 
-const gchar* bse_error_blurb (BseErrorType error_value);
+/* Bse Error Type */
+enum class Error : int64_t {
+  NONE = 0, // _("OK")
+  INTERNAL = 1, // _("Internal error (please report)")
+  UNKNOWN = 2, // _("Unknown error")
+  IO = 3, // _("Input/output error")
+  PERMS = 4, // _("Insufficient permissions")
+  FILE_BUSY = 5, // _("Device or resource busy")
+  FILE_EXISTS = 6, // _("File exists already")
+  FILE_EOF = 7, // _("End of file")
+  FILE_EMPTY = 8, // _("File empty")
+  FILE_NOT_FOUND = 9, // _("No such file, device or directory")
+  FILE_IS_DIR = 10, // _("Is a directory")
+  FILE_OPEN_FAILED = 11, // _("Open failed")
+  FILE_SEEK_FAILED = 12, // _("Seek failed")
+  FILE_READ_FAILED = 13, // _("Read failed")
+  FILE_WRITE_FAILED = 14, // _("Write failed")
+  MANY_FILES = 15, // _("Too many open files")
+  NO_FILES = 16, // _("Too many open files in system")
+  NO_SPACE = 17, // _("No space left on device")
+  NO_MEMORY = 18, // _("Out of memory")
+  NO_HEADER = 19, // _("Failed to detect header")
+  NO_SEEK_INFO = 20, // _("Failed to retrieve seek information")
+  NO_DATA = 21, // _("No data available")
+  DATA_CORRUPT = 22, // _("Data corrupt")
+  WRONG_N_CHANNELS = 23, // _("Wrong number of channels")
+  FORMAT_INVALID = 24, // _("Invalid format")
+  FORMAT_UNKNOWN = 25, // _("Unknown format")
+  DATA_UNMATCHED = 26, // _("Requested data values unmatched")
+  TEMP = 27, // _("Temporary error")
+  WAVE_NOT_FOUND = 28, // _("No such wave")
+  CODEC_FAILURE = 29, // _("Codec failure")
+  UNIMPLEMENTED = 30, // _("Functionality not implemented")
+  INVALID_PROPERTY = 31, // _("Invalid object property")
+  INVALID_MIDI_CONTROL = 32, // _("Invalid MIDI control type")
+  PARSE_ERROR = 33, // _("Parsing error")
+  SPAWN = 34, // _("Failed to spawn child process")
+  DEVICE_NOT_AVAILABLE = 35, // _("No device (driver) available")
+  DEVICE_ASYNC = 36, // _("Device not async capable")
+  DEVICE_BUSY = 37, // _("Device busy")
+  DEVICE_FORMAT = 38, // _("Failed to configure device format")
+  DEVICE_BUFFER = 39, // _("Failed to configure device buffer")
+  DEVICE_LATENCY = 40, // _("Failed to configure device latency")
+  DEVICE_CHANNELS = 41, // _("Failed to configure number of device channels")
+  DEVICE_FREQUENCY = 42, // _("Failed to configure device frequency")
+  DEVICES_MISMATCH = 43, // _("Device configurations mismatch")
+  SOURCE_NO_SUCH_MODULE = 44, // _("No such synthesis module")
+  SOURCE_NO_SUCH_ICHANNEL = 45, // _("No such input channel")
+  SOURCE_NO_SUCH_OCHANNEL = 46, // _("No such output channel")
+  SOURCE_NO_SUCH_CONNECTION = 47, // _("Input/Output channels not connected")
+  SOURCE_PRIVATE_ICHANNEL = 48, // _("Input channel is private")
+  SOURCE_ICHANNEL_IN_USE = 49, // _("Input channel already in use")
+  SOURCE_CHANNELS_CONNECTED = 50, // _("Input/output channels already connected")
+  SOURCE_CONNECTION_INVALID = 51, // _("Invalid synthesis module connection")
+  SOURCE_PARENT_MISMATCH = 52, // _("Parent mismatch")
+  SOURCE_BAD_LOOPBACK = 53, // _("Bad loopback")
+  SOURCE_BUSY = 54, // _("Synthesis module currently busy")
+  SOURCE_TYPE_INVALID = 55, // _("Invalid synthsis module type")
+  PROC_NOT_FOUND = 56, // _("No such procedure")
+  PROC_BUSY = 57, // _("Procedure currently busy")
+  PROC_PARAM_INVAL = 58, // _("Procedure parameter invalid")
+  PROC_EXECUTION = 59, // _("Procedure execution failed")
+  PROC_ABORT = 60, // _("Procedure execution aborted")
+  NO_ENTRY = 61, // _("No such entry")
+  NO_EVENT = 62, // _("No such event")
+  NO_TARGET = 63, // _("No target")
+  NOT_OWNER = 64, // _("Ownership mismatch")
+  INVALID_OFFSET = 65, // _("Invalid offset")
+  INVALID_DURATION = 66, // _("Invalid duration")
+  INVALID_OVERLAP = 67, // _("Invalid overlap")
+};
+
+RAPICORN_AIDA_ENUM_DEFINE_ARITHMETIC_EQ (Error);
+
+}
+
+const gchar* bse_error_blurb (Bse::Error error_value);
 
 namespace Bse
 {
@@ -163,7 +164,7 @@ struct GslDataHandleSetup;
 
 struct GslDataHandleFuncs
 {
-  BseErrorType	 (*open)		(GslDataHandle		*data_handle,
+  Bse::Error 	 (*open)		(GslDataHandle		*data_handle,
 					 GslDataHandleSetup	*setup);
   int64		 (*read)		(GslDataHandle		*data_handle,
 					 int64			 voffset, /* in values */
@@ -195,7 +196,11 @@ struct GslDataHandle
   /* opened data handle setup (open_count > 0) */
   GslDataHandleSetup  setup;
 };
-BseErrorType	  gsl_data_handle_open		    (GslDataHandle	  *dhandle);
+struct GslDataPeekBuffer
+{
+};
+
+Bse::Error   	  gsl_data_handle_open		    (GslDataHandle	  *dhandle);
 void              gsl_data_handle_close             (GslDataHandle        *dhandle);
 int64		  gsl_data_handle_length	    (GslDataHandle	  *data_handle);
 int64		  gsl_data_handle_read		    (GslDataHandle	  *data_handle,
@@ -217,6 +222,15 @@ GslDataHandle*	  gsl_data_handle_new_insert	    (GslDataHandle	  *src_handle,
 						     int64		   n_paste_values,
 						     const gfloat	  *paste_values,
 						     void                (*free) (gpointer values));
+GslDataHandle*	  bse_data_handle_new_upsample2	    (GslDataHandle  *src_handle,	// implemented in bsedatahandle-resample.cc
+						     int             precision_bits);
+int64		  gsl_data_handle_length	    (GslDataHandle	  *data_handle);
+#define	          gsl_data_handle_n_values(	     dh) \
+						     gsl_data_handle_length (dh)
+float             gsl_data_handle_peek_value        (GslDataHandle	*dhandle,
+						     int64		 position,
+						     GslDataPeekBuffer	*peekbuf);
+
 /* --- decibel conversion --- */
 gdouble bse_db_to_factor        (gdouble        dB);
 gdouble bse_db_from_factor      (gdouble        factor,
@@ -320,13 +334,14 @@ struct BseWaveChunkDsc
 };
 
 BseWaveFileInfo*      bse_wave_file_info_load   (const gchar     *file_name,
-                                                 BseErrorType    *error);
+                                                 Bse::Error      *error);
 BseWaveDsc*           bse_wave_dsc_load         (BseWaveFileInfo *wave_file_info,
                                                  guint            nth_wave,
                                                  gboolean         accept_empty,
-                                                 BseErrorType    *error);
+                                                 Bse::Error      *error);
 GslDataHandle*        bse_wave_handle_create    (BseWaveDsc      *wave_dsc,
                                                  guint            nth_chunk,
-                                                 BseErrorType    *error);
+                                                 Bse::Error      *error);
+#include "minipcg32.hh"
 
 #endif

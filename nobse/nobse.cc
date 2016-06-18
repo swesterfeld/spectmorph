@@ -45,12 +45,12 @@ malloc_aligned (gsize     total_size,
 }
 
 const gchar*
-bse_error_blurb (BseErrorType error_value)
+bse_error_blurb (Bse::Error error_value)
 {
   NO_BSE_NO_IMPL (bse_error_blurb);
 }
 
-BseErrorType
+Bse::Error
 gsl_data_handle_open (GslDataHandle *dhandle)
 {
   NO_BSE_NO_IMPL (gsl_data_handle_open);
@@ -112,6 +112,20 @@ gsl_data_handle_new_insert (GslDataHandle	  *src_handle,
   NO_BSE_NO_IMPL (gsl_data_handle_new_insert);
 }
 
+float
+gsl_data_handle_peek_value (GslDataHandle	*dhandle,
+			    int64		 position,
+			    GslDataPeekBuffer	*peekbuf)
+{
+  NO_BSE_NO_IMPL (gsl_data_handle_peek_value);
+}
+
+GslDataHandle*
+bse_data_handle_new_upsample2 (GslDataHandle  *src_handle,	// implemented in bsedatahandle-resample.cc
+			       int             precision_bits)
+{
+  NO_BSE_NO_IMPL (bse_data_handle_new_upsample2);
+}
 
 gdouble
 bse_db_to_factor (gdouble dB)
@@ -218,7 +232,7 @@ bse_init_inprocess (gint           *argc,
 
 BseWaveFileInfo*
 bse_wave_file_info_load (const gchar     *file_name,
-                         BseErrorType    *error)
+                         Bse::Error      *error)
 {
   NO_BSE_NO_IMPL (bse_wave_file_info_load);
 }
@@ -227,7 +241,7 @@ BseWaveDsc*
 bse_wave_dsc_load (BseWaveFileInfo *wave_file_info,
                    guint            nth_wave,
                    gboolean         accept_empty,
-                   BseErrorType    *error)
+                   Bse::Error      *error)
 {
   NO_BSE_NO_IMPL (bse_wave_dsc_load);
 }
@@ -235,7 +249,7 @@ bse_wave_dsc_load (BseWaveFileInfo *wave_file_info,
 GslDataHandle*
 bse_wave_handle_create (BseWaveDsc      *wave_dsc,
                         guint            nth_chunk,
-                        BseErrorType    *error)
+                        Bse::Error      *error)
 {
   NO_BSE_NO_IMPL (bse_wave_handle_create);
 }
