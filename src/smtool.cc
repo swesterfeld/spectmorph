@@ -994,6 +994,29 @@ public:
   }
 } auto_volume_from_loop_command;
 
+class StripCommand : public Command
+{
+public:
+  StripCommand() : Command ("strip")
+  {
+    set_need_save (true);
+  }
+  bool
+  exec (Audio& audio)
+  {
+    /* it would be nice if we could have options like --keep-samples || --strip-lpc
+     * but for now we just do the default thing
+     */
+    for (size_t i = 0; i < audio.contents.size(); i++)
+      {
+        audio.contents[i].debug_samples.clear();
+        audio.contents[i].original_fft.clear();
+      }
+    audio.original_samples.clear();
+    return true;
+  }
+} strip_command;
+
 int
 main (int argc, char **argv)
 {
