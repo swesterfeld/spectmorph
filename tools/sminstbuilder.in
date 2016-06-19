@@ -192,6 +192,8 @@ def parse_config (filename):
     die ("tune-all-frames command can be used at most once in config")
   if config.encoder_args_count > 1:
     die ("encoder_args_count command can be used at most once in config")
+  if config.tune_all_frames_count > 0 and config.auto_tune_count > 0:
+    die ("auto-tune/tune-all-frames command should not be used together")
   return config
 
 def parse_builder_config (filename):
