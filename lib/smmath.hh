@@ -331,24 +331,21 @@ zero_float_block (size_t n_values, float *values)
   memset (values, 0, n_values * sizeof (float));
 }
 
-inline void
-int_sincos (guint8 i, double *si, double *ci)
+inline float
+int_sinf (guint8 i)
 {
   extern float *int_sincos_table;
 
-  *si = int_sincos_table[i];
-  i += 64;
-  *ci = int_sincos_table[i];
+  return int_sincos_table[i];
 }
 
-inline void
-int_sincosf (guint8 i, float *si, float *ci)
+inline float
+int_cosf (guint8 i)
 {
   extern float *int_sincos_table;
 
-  *si = int_sincos_table[i];
   i += 64;
-  *ci = int_sincos_table[i];
+  return int_sincos_table[i];
 }
 
 inline void

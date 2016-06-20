@@ -101,10 +101,10 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const vector
       size_t end = start + band_count[b] * 2;
       for (size_t d = start; d < end; d += 2)
         {
-          float sinr, cosr;
-          int_sincosf (random_data_byte[d / 2], &sinr, &cosr);
-          spectrum[d] = sinr * value;
-          spectrum[d+1] = cosr * value;
+          const guint8 r = random_data_byte[d / 2];
+
+          spectrum[d]   = int_sinf (r) * value;
+          spectrum[d+1] = int_cosf (r) * value;
         }
     }
 }
