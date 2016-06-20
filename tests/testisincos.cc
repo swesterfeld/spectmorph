@@ -33,8 +33,9 @@ perf_test()
   static int CALLS = 1000 * 1000 * 1000;
   for (int i = 0; i < CALLS; i++)
     {
-      double is, ic;
-      int_sincos (i, &is, &ic);
+      const double is = int_sinf (i);
+      const double ic = int_cosf (i);
+
       acc[0] += is;
       acc[1] += ic;
     }
@@ -56,9 +57,11 @@ main (int argc, char **argv)
   double max_delta = 0;
   for (int i = 0; i < 256; i++)
     {
-      double s, c, is, ic;
+      double s, c;
       sincos (i / 256.0 * 2 * M_PI, &s, &c);
-      int_sincos (i, &is, &ic);
+
+      const double is = int_sinf (i);
+      const double ic = int_cosf (i);
 //      printf ("%d %f %f %f %f\n", i, s, c, is, ic);
       max_delta = max (max_delta, fabs (s - is));
       max_delta = max (max_delta, fabs (c - ic));
