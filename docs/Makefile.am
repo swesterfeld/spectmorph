@@ -9,8 +9,8 @@ DOCS_DIR = ~/spectmorph.org/docs-$(VERSION)
 
 rebuild-manpage:
 	for p in $(dist_man_MANS); do \
-          curl -sfS http://testbit.eu/$$p?action=render >$$p.web; \
-	  curl -sfS "http://testbit.eu/index.php?title=$$p&action=raw" > $$p.wiki; \
+          curl -sfS https://testbit.eu/wiki/$$p?action=render >$$p.web; \
+	  curl -sfS "https://testbit.eu/wiki.mw/index.php?title=$$p&action=raw" > $$p.wiki; \
 	  $(WIKIHTML2MAN) $$p.web >$$p; \
 	  groff -mandoc -Thtml < $$p >$$p.html; \
 	  rm $$p.web; \
