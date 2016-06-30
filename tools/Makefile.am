@@ -6,12 +6,12 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
-EXTRA_DIST += delta.py
+EXTRA_DIST += delta.py smeval.py
 
 bin_PROGRAMS = smsfimport
 bin_SCRIPTS  = sminstbuilder
 
-noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan smfileedit
+noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan smfileedit smevalplayer
 
 ascii2wav_SOURCES = ascii2wav.cc
 ascii2wav_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
@@ -44,6 +44,10 @@ smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(t
 smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
+
+smevalplayer_SOURCES = smevalplayer.cc
+smevalplayer_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS)
+smevalplayer_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/jack
 
 install-exec-hook:
 	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder
