@@ -59,6 +59,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   noise_enabled (true),
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
+  loop_enabled (true),
   noise_seed (-1),
   sse_samples (NULL)
 {
@@ -156,7 +157,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       zero_values_at_start_scaled = audio->zero_values_at_start * mix_freq / audio->mix_freq;
       loop_start_scaled = audio->loop_start * mix_freq / audio->mix_freq;
       loop_end_scaled = audio->loop_end * mix_freq / audio->mix_freq;
-      loop_point = (audio->loop_type == Audio::LOOP_NONE) ? -1 : audio->loop_start;
+      loop_point = (get_loop_type() == Audio::LOOP_NONE) ? -1 : audio->loop_start;
 
       block_size = NoiseDecoder::preferred_block_size (mix_freq);
 
@@ -281,7 +282,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           int ipos = original_sample_pos;
           float frac = original_sample_pos - ipos;
 
-          if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+          if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
               while (ipos >= (audio->loop_end - audio->zero_values_at_start))
                 ipos -= (audio->loop_end - audio->loop_start);
@@ -303,7 +304,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
           std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
           zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
 
-          if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
+          if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
               int xenv_pos = env_pos;
 
@@ -314,7 +315,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                 }
               frame_idx = xenv_pos / frame_step;
             }
-          else if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+          else if (get_loop_type() == Audio::LOOP_FRAME_FORWARD || get_loop_type() == Audio::LOOP_FRAME_PING_PONG)
             {
               frame_idx = compute_loop_frame_index (env_pos / frame_step, audio);
             }
@@ -513,6 +514,12 @@ LiveDecoder::enable_original_samples (bool eos)
 }
 
 void
+LiveDecoder::enable_loop (bool eloop)
+{
+  loop_enabled = eloop;
+}
+
+void
 LiveDecoder::precompute_tables (float mix_freq)
 {
   /* computing one sample (from the source) will ensure that tables (like
@@ -530,4 +537,19 @@ LiveDecoder::set_noise_seed (int seed)
 {
   assert (seed >= -1);
   noise_seed = seed;
+}
+
+Audio::LoopType
+LiveDecoder::get_loop_type()
+{
+  assert (audio);
+
+  if (loop_enabled)
+    {
+      return audio->loop_type;
+    }
+  else
+    {
+      return Audio::LOOP_NONE;
+    }
 }

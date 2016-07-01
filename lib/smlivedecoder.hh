@@ -33,6 +33,7 @@ class LiveDecoder
   bool                noise_enabled;
   bool                debug_fft_perf_enabled;
   bool                original_samples_enabled;
+  bool                loop_enabled;
 
   size_t              frame_size, frame_step;
   size_t              zero_values_at_start_scaled;
@@ -54,6 +55,9 @@ class LiveDecoder
   int                 noise_seed;
 
   Rapicorn::AlignedArray<float,16> *sse_samples;
+
+  Audio::LoopType     get_loop_type();
+
 public:
   LiveDecoder (WavSet *smset);
   LiveDecoder (LiveDecoderSource *source);
@@ -63,6 +67,7 @@ public:
   void enable_sines (bool se);
   void enable_debug_fft_perf (bool dfp);
   void enable_original_samples (bool eos);
+  void enable_loop (bool eloop);
   void set_noise_seed (int seed);
   void set_latency_ms (float latency_ms);
 
