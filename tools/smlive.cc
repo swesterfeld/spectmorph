@@ -23,6 +23,7 @@ struct Options
 {
   string      program_name; /* FIXME: what to do with that */
   string      export_wav;
+  float       freq;
   bool        enable_original_samples;
 
   Options ();
@@ -33,8 +34,15 @@ struct Options
 
 #include "stwutils.hh"
 
+static float
+freq_from_note (float note)
+{
+  return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
 Options::Options () :
   program_name ("smlive"),
+  freq (-1),
   enable_original_samples (false)
 {
 }
@@ -78,6 +86,14 @@ Options::parse (int   *argc_p,
         {
           enable_original_samples = true;
         }
+      else if (check_arg (argc, argv, &i, "--freq", &opt_arg) || check_arg (argc, argv, &i, "-f", &opt_arg))
+        {
+          freq = atof (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
+        {
+          freq = freq_from_note (atoi (opt_arg));
+        }
     }
 
   /* resort argc/argv */
@@ -98,8 +114,12 @@ Options::print_usage ()
   printf ("usage: %s [ <options> ] <smset_file>\n", options.program_name.c_str());
   printf ("\n");
   printf ("options:\n");
-  printf (" -h, --help                  help for %s\n", options.program_name.c_str());
-  printf (" -v, --version               print version\n");
+  printf (" -h, --help                    help for %s\n", options.program_name.c_str());
+  printf (" -v, --version                 print version\n");
+  printf (" -f, --freq <freq>             specify frequency in Hz\n");
+  printf (" -m, --midi-note <note>        specify midi note\n");
+  printf (" -x, --export <wav filename>   export to wav file\n");
+  printf (" --samples                     use original samples\n");
   printf ("\n");
 }
 
@@ -122,6 +142,11 @@ main (int argc, char **argv)
       fprintf (stderr, "can't load file %s\n", argv[1]);
       return 1;
     }
+  if (options.freq < 0)
+    {
+      fprintf (stderr, "%s: frequency is required (use -f or -m options)\n", options.program_name.c_str());
+      exit (1);
+    }
 
   LiveDecoder decoder (&smset);
 
@@ -129,10 +154,9 @@ main (int argc, char **argv)
   decoder.enable_loop (false);
 
   const int SR = 48000;
-  const float freq = 440;
 
   vector<float> audio_out (SR * 20);
-  decoder.retrigger (0, freq, 127, SR);
+  decoder.retrigger (0, options.freq, 127, SR);
   decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
   // hacky way to remove tail silence
