@@ -300,7 +300,10 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
       system_or_die ("smtool %s auto-tune" % final_smset);
 
   if (config.tune_all_frames_count > 0):
-    system_or_die ("smtool %s tune-all-frames" % final_smset);
+    if cmdline_args.untuned:
+      print "+++ skip smtool %s tune-all-frames (untuned version)" % final_smset
+    else:
+      system_or_die ("smtool %s tune-all-frames" % final_smset);
 
   if (config.auto_loop_count > 0):
     system_or_die ("smtool %s auto-loop %s" % (final_smset, config.auto_loop));
