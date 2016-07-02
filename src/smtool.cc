@@ -939,6 +939,10 @@ normalize_energy (double energy, Audio& audio)
       for (size_t i = 0; i < noise.size(); i++)
         noise[i] = qBound<int> (0, noise[i] + norm_delta_idb, 65535);
     }
+
+  // store normalization in order to replay original samples normalized
+  const double samples_factor = bse_db_to_factor (audio.original_samples_norm_db);
+  audio.original_samples_norm_db = bse_db_from_factor (samples_factor * norm, -200);
 }
 
 class AutoVolumeCommand : public Command
