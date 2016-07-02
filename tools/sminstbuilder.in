@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os, subprocess, re
+import sys, os, subprocess, re, argparse
 
 class Config:
   def __init__ (self):
@@ -238,7 +238,7 @@ def system_or_die (command):
   if return_code != 0:
     die ("executing command '%s' failed, return_code=%d" % (command, return_code))
 
-def build_instrument (inst_dir, builder_config):
+def build_instrument (inst_dir, builder_config, cmdline_args):
   old_path = os.getcwd()
   try:
     os.chdir (inst_dir)
@@ -294,7 +294,10 @@ def build_instrument (inst_dir, builder_config):
   system_or_die ("smwavset link %s" % final_smset);
   # missing: auto-tune & co
   if (config.auto_tune_count > 0):
-    system_or_die ("smtool %s auto-tune" % final_smset);
+    if cmdline_args.untuned:
+      print "+++ skip smtool %s auto-tune (untuned version)" % final_smset
+    else:
+      system_or_die ("smtool %s auto-tune" % final_smset);
 
   if (config.tune_all_frames_count > 0):
     system_or_die ("smtool %s tune-all-frames" % final_smset);
@@ -307,14 +310,25 @@ def build_instrument (inst_dir, builder_config):
 
   system_or_die ("smwavset set-names %s '%s' '%s'" % (final_smset, config.name, config.short_name))
   system_or_die ("ls -l %s" % final_smset);
-  system_or_die ("cp %s %s/%s.smset" % (final_smset, builder_config.output_dir, inst_dir));
+
+  out_instrument = inst_dir
+  if cmdline_args.untuned:
+    out_instrument += "-untuned"
+
+  system_or_die ("cp %s %s/%s.smset" % (final_smset, builder_config.output_dir, out_instrument));
 
   os.chdir (old_path)
 
 def main():
+  parser = argparse.ArgumentParser (prog='sminstbuilder')
+  parser.add_argument ('--untuned', action='store_true', help='build instruments without auto-tune')
+  parser.add_argument ('instruments', nargs='+', help='instrument directories to be processed')
+  cmdline_args = parser.parse_args()
+
   print "SpectMorph Instrument Builder, Version @VERSION@"
   builder_config = parse_builder_config ("sminstbuilder.cfg")
-  for inst_dir in sys.argv[1:]:
-    build_instrument (inst_dir, builder_config)
+
+  for inst_dir in cmdline_args.instruments:
+    build_instrument (inst_dir, builder_config, cmdline_args)
 
 main()
