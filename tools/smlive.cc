@@ -2,6 +2,7 @@
 
 #include "smwavset.hh"
 #include "smmain.hh"
+#include "smutils.hh"
 #include "smlivedecoder.hh"
 #include "config.h"
 
@@ -25,6 +26,8 @@ struct Options
   string      export_wav;
   float       freq;
   bool        enable_original_samples;
+  bool        text;
+  double      gain;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -43,7 +46,9 @@ freq_from_note (float note)
 Options::Options () :
   program_name ("smlive"),
   freq (-1),
-  enable_original_samples (false)
+  enable_original_samples (false),
+  text (false),
+  gain (1.0)
 {
 }
 
@@ -86,6 +91,10 @@ Options::parse (int   *argc_p,
         {
           enable_original_samples = true;
         }
+      else if (check_arg (argc, argv, &i, "--text"))
+        {
+          text = true;
+        }
       else if (check_arg (argc, argv, &i, "--freq", &opt_arg) || check_arg (argc, argv, &i, "-f", &opt_arg))
         {
           freq = atof (opt_arg);
@@ -93,6 +102,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           freq = freq_from_note (atoi (opt_arg));
+        }
+      else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
+        {
+          gain = atof (opt_arg);
         }
     }
 
@@ -120,6 +133,8 @@ Options::print_usage ()
   printf (" -m, --midi-note <note>        specify midi note\n");
   printf (" -x, --export <wav filename>   export to wav file\n");
   printf (" --samples                     use original samples\n");
+  printf (" --text                        print output samples as text\n");
+  printf (" -g, --gain <gain>             set replay gain\n");
   printf ("\n");
 }
 
@@ -163,13 +178,9 @@ main (int argc, char **argv)
   while (!audio_out.empty() && audio_out.back() == 0)
     audio_out.resize (audio_out.size() - 1);
 
-  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
-  Bse::Error error = gsl_data_handle_open (out_dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
-      exit (1);
-    }
+  // apply replay gain
+  for (size_t i = 0; i < audio_out.size(); i++)
+    audio_out[i] *= options.gain;
 
   ao_sample_format format = { 0, };
 
@@ -193,7 +204,14 @@ main (int argc, char **argv)
         }
     }
 
-  if (options.export_wav == "")     /* no export -> play */
+  if (options.text)
+    {
+      for (size_t i = 0; i < audio_out.size(); i++)
+        {
+          sm_printf ("%.17g\n", audio_out[i]);
+        }
+    }
+  else if (options.export_wav == "")     /* no export -> play */
     {
       bool   clip_err = false;
       size_t pos = 0;
@@ -224,6 +242,25 @@ main (int argc, char **argv)
     }
   else
     {
+      for (size_t i = 0; i < audio_out.size(); i++)
+        {
+          float f = audio_out[i];
+          float cf = CLAMP (f, -1.0, 1.0);
+          if (f != cf)
+            {
+              fprintf (stderr, "smlive: out of range\n");
+              break;
+            }
+        }
+
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
+      Bse::Error error = gsl_data_handle_open (out_dhandle);
+      if (error != 0)
+        {
+          fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
+          exit (1);
+        }
+
       int fd = open (options.export_wav.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
       if (fd < 0)
         {
