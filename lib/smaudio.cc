@@ -141,6 +141,8 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                 start_ms = ifile.event_float();
               else if (ifile.event_name() == "fundamental_freq")
                 fundamental_freq = ifile.event_float();
+              else if (ifile.event_name() == "original_samples_norm_db")
+                original_samples_norm_db = ifile.event_float();
               else
                 printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
             }
@@ -243,7 +245,8 @@ SpectMorph::Audio::Audio() :
   zeropad (0),
   loop_type (LOOP_NONE), /* no loop */
   loop_start (-1),
-  loop_end (-1)
+  loop_end (-1),
+  original_samples_norm_db (0)
 {
   leak_debugger.add (this);
 }
@@ -288,6 +291,7 @@ SpectMorph::Audio::save (GenericOut *file) const
   of.write_float ("attack_end_ms", attack_end_ms);
   of.write_float ("start_ms", start_ms);
   of.write_float ("fundamental_freq", fundamental_freq);
+  of.write_float ("original_samples_norm_db", original_samples_norm_db);
   of.write_int ("zeropad", zeropad);
   of.write_int ("loop_type", loop_type);
   of.write_int ("loop_start", loop_start);

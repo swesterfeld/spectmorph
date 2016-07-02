@@ -105,6 +105,7 @@ public:
   int      zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
   int      sample_count;                //!< number of samples encoded (including zero_values_at_start)
   std::vector<float> original_samples;  //!< original time domain signal as samples (debugging only)
+  float    original_samples_norm_db;    //!< normalization factor to be applied to original samples
   std::vector<AudioBlock> contents;     //!< the actual frame data
 
   Bse::Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
