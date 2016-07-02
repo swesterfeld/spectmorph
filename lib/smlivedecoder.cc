@@ -183,6 +183,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       frame_idx = 0;
       env_pos = 0;
       original_sample_pos = 0;
+      original_samples_norm_factor = bse_db_to_factor (audio->original_samples_norm_db);
 
       pstate[0].clear();
       pstate[1].clear();
@@ -287,7 +288,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               while (ipos >= (audio->loop_end - audio->zero_values_at_start))
                 ipos -= (audio->loop_end - audio->loop_start);
             }
-          audio_out[i] = pp_inter->get_sample (audio->original_samples, ipos + frac);
+          audio_out[i] = pp_inter->get_sample (audio->original_samples, ipos + frac) * original_samples_norm_factor;
 
           original_sample_pos += phase_inc;
         }

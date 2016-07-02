@@ -50,6 +50,7 @@ class LiveDecoder
   size_t              env_pos;
   size_t              frame_idx;
   double              original_sample_pos;
+  double              original_samples_norm_factor;
 
   size_t              latency_zero_samples;
   int                 noise_seed;
