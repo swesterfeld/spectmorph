@@ -292,7 +292,7 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
                  (builder_config.jobs, smencargs, config.dir, config.dir, pwd, config.dir, encoder_args));
   final_smset = config.dir + "/instrument.smset";
   system_or_die ("smwavset link %s" % final_smset);
-  # missing: auto-tune & co
+
   if (config.auto_tune_count > 0):
     if cmdline_args.untuned:
       print "+++ skip smtool %s auto-tune (untuned version)" % final_smset
@@ -310,6 +310,12 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 
   if (config.set_markers_count > 0):
     system_or_die ("smwavset set-markers %s %s" % (final_smset, config.set_markers))
+
+  if (config.auto_volume_count > 0):
+    system_or_die ("smtool %s auto-volume %s" % (final_smset, config.auto_volume))
+
+  if (config.auto_volume_from_loop_count > 0):
+    system_or_die ("smtool %s auto-volume-from-loop" % final_smset)
 
   system_or_die ("smwavset set-names %s '%s' '%s'" % (final_smset, config.name, config.short_name))
   system_or_die ("ls -l %s" % final_smset);
