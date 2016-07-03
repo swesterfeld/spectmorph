@@ -41,10 +41,15 @@ command_loop()
               audio.fundamental_freq = 440; /* doesn't matter */
               audio.original_samples = wav_loader->samples();
 
+              jack_player.fade_out_blocking();
               jack_player.play (&audio, true);
 
               delete wav_loader;
             }
+        }
+      if (strcmp (cmd, "stop") == 0 && !arg)
+        {
+          jack_player.fade_out_blocking();
         }
     }
 }

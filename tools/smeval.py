@@ -14,6 +14,9 @@ play_p = subprocess.Popen (command, stdin=subprocess.PIPE)
 def play (wavfile):
   play_p.stdin.write ("play %s\n" % wavfile)
 
+def stop():
+  play_p.stdin.write ("stop\n")
+
 def parse_config (filename):
   f = open (filename, "r")
 
@@ -115,6 +118,7 @@ class Example(QtWidgets.QMainWindow):
   def on_next_clicked (self):
     self.test_number += 1
     self.reinit_ui (self.test_number)
+    stop()
 
   def on_rating_changed (self, item, rating):
     print item.filename, rating
