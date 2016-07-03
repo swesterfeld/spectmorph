@@ -4,6 +4,7 @@
 
 import sys
 import subprocess
+import re
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
@@ -13,16 +14,42 @@ play_p = subprocess.Popen (command, stdin=subprocess.PIPE)
 def play (wavfile):
   play_p.stdin.write ("play %s\n" % wavfile)
 
+def parse_config (filename):
+  f = open (filename, "r")
+
+  in_block = False
+  block = []
+  config = []
+
+  for line in f:
+    line = re.sub ("#.*$", "", line)
+    cmd = line.split()
+    if not in_block:
+      if cmd == ["{"]:
+        in_block = 1
+    else: # in_block
+      if cmd == ["}"]:
+        config.append (block)
+        in_block = False
+        block = []
+      elif cmd == []: # empty line or comment
+        pass
+      else:
+        block.append (cmd)
+
+  return config
+
 class Example(QtWidgets.QMainWindow):
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
 
         self.initUI()
-        #self.wav1 = "/home/stefan/src/diplom/evaluation/grand-piano/clipped-note-24.wav"
-        #self.wav2 = "/home/stefan/src/diplom/evaluation/grand-piano/clipped-note-31.wav"
-        self.wav1 = "clipped-note-60.wav"
-        self.wav2 = "clipped-note-60.sm.wav"
+        self.wavs = []
+        config = parse_config ("x.cfg")
+        if len (config) > 0:
+          for x in config[0]:
+            self.wavs.append (x[1])
 
     def initUI(self):
         self.setGeometry(300,300,200,200)
@@ -35,14 +62,18 @@ class Example(QtWidgets.QMainWindow):
         self.b2.clicked.connect(self.Play2)
         self.b2.move(50, 120)
 
+        self.b2 = QtWidgets.QPushButton("Play3", self)
+        self.b2.clicked.connect(self.Play3)
+        self.b2.move(50, 160)
+
     def Play(self):
-        play (self.wav1)
+        play (self.wavs[0])
 
     def Play2(self):
-        play (self.wav2)
+        play (self.wavs[1])
 
-
-
+    def Play3(self):
+        play (self.wavs[2])
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
