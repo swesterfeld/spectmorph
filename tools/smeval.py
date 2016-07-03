@@ -53,29 +53,51 @@ class Example(QtWidgets.QMainWindow):
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
+          item.reference = True
           self.items.append (item)
         elif len (x) == 2 and x[0] == "rate":
           item = TestItem()
           item.filename = x[1]
+          item.reference = False
           self.items.append (item)
 
     self.initUI()
 
   def initUI (self):
     central_widget = QtWidgets.QWidget (self)
-    hbox_layout = QtWidgets.QHBoxLayout()
+    grid_layout = QtWidgets.QGridLayout()
 
+    col = 0
     for item in self.items:
       button = QtWidgets.QPushButton ("Play - " + item.filename, self)
       button.clicked.connect (lambda checked, item=item: self.on_play (item))
-      hbox_layout.addWidget (button)
+      grid_layout.addWidget (button, 2, col)
       item.play_button = button
 
-    central_widget.setLayout (hbox_layout)
+      if not item.reference:
+        rating_label = QtWidgets.QLabel()
+        item.rating_label = rating_label
+        grid_layout.addWidget (rating_label, 0, col)
+
+        slider = QtWidgets.QSlider (QtCore.Qt.Vertical)
+        slider.valueChanged.connect (lambda rating, item=item: self.on_rating_changed (item, rating))
+        slider.setRange (0, 100)
+        slider.setValue (100)
+        slider.setTickInterval (20);
+        slider.setTickPosition (QtWidgets.QSlider.TicksBothSides)
+        grid_layout.addWidget (slider, 1, col)
+
+      col += 1
+
+    central_widget.setLayout (grid_layout)
     self.setCentralWidget (central_widget)
 
   def on_play (self, item):
     play (item.filename)
+
+  def on_rating_changed (self, item, rating):
+    print item.filename, rating
+    item.rating_label.setText ("%d" % rating)
 
 def main():
   app = QtWidgets.QApplication(sys.argv)
