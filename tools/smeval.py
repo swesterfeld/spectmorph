@@ -1,6 +1,8 @@
 #!/usr/bin/python
-
+# -*- coding: utf-8 -*-
 # Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+
+# coding=utf-8
 
 import sys
 import subprocess
@@ -45,6 +47,33 @@ def parse_config (filename):
 class TestItem:
   pass
 
+class ReferenceScale(QtWidgets.QWidget):
+  def __init__(self):
+    super(ReferenceScale, self).__init__()
+
+  def paintEvent(self, event):
+    qp = QtGui.QPainter()
+    qp.begin(self)
+    #texts = [ "Excellent", "Good", "Fair", "Poor", "Bad" ]
+    texts = [ "ausgezeichnet", "gut", "ordentlich", "mäßig", "mangelhaft" ]
+
+    for i in range (len (texts)):
+      y0 = self.height() / len (texts) * i
+      y1 = self.height() / len (texts) * (i + 1)
+      qp.setPen(QtGui.QColor(168, 34, 3))
+      qp.setFont(QtGui.QFont('Decorative', 16))
+      qp.drawText(0, y0, self.width(), y1 - y0, QtCore.Qt.AlignCenter, texts[i])
+
+    DELTA = 10
+    TEXT_WIDTH = 30
+    for i in range (len (texts) + 1):
+      y = (self.height() - 2 * DELTA) / (len (texts)) * i + DELTA
+      qp.drawLine(0, y, self.width() / 2 - TEXT_WIDTH, y)
+      qp.drawLine(self.width() / 2 + TEXT_WIDTH, y, self.width(), y)
+      qp.drawText (0, y-DELTA, self.width(), 2 * DELTA, QtCore.Qt.AlignCenter, "%d" % (100 - i * 20))
+
+    qp.end()
+
 class Example(QtWidgets.QMainWindow):
   def __init__ (self):
     QtWidgets.QMainWindow.__init__(self)
@@ -84,6 +113,7 @@ class Example(QtWidgets.QMainWindow):
 
       if not item.reference:
         rating_label = QtWidgets.QLabel()
+        rating_label.setFont (QtGui.QFont("Times", 16, QtGui.QFont.Bold))
         item.rating_label = rating_label
         item.rating_label.setAlignment (QtCore.Qt.AlignCenter)
         grid_layout.addWidget (rating_label, 0, col)
@@ -106,6 +136,9 @@ class Example(QtWidgets.QMainWindow):
 
     central_widget.setLayout (grid_layout)
     self.setCentralWidget (central_widget)
+
+    reference_scale = ReferenceScale ()
+    grid_layout.addWidget (reference_scale, 1, 0)
 
   def on_play (self, item):
     play (item.filename)
