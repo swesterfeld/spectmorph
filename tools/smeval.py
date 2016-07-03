@@ -46,6 +46,7 @@ class Example(QtWidgets.QMainWindow):
   def __init__ (self):
     QtWidgets.QMainWindow.__init__(self)
 
+    self.resize (1024, 768)
     self.test_number = 0
     self.reinit_ui (self.test_number)
 
@@ -81,6 +82,7 @@ class Example(QtWidgets.QMainWindow):
       if not item.reference:
         rating_label = QtWidgets.QLabel()
         item.rating_label = rating_label
+        item.rating_label.setAlignment (QtCore.Qt.AlignCenter)
         grid_layout.addWidget (rating_label, 0, col)
 
         slider = QtWidgets.QSlider (QtCore.Qt.Vertical)
@@ -89,7 +91,9 @@ class Example(QtWidgets.QMainWindow):
         slider.setValue (100)
         slider.setTickInterval (20);
         slider.setTickPosition (QtWidgets.QSlider.TicksBothSides)
-        grid_layout.addWidget (slider, 1, col)
+        slider.setEnabled (False)
+        item.slider = slider
+        grid_layout.addWidget (slider, 1, col, 1, 1, QtCore.Qt.AlignHCenter)
 
       col += 1
 
@@ -102,6 +106,11 @@ class Example(QtWidgets.QMainWindow):
 
   def on_play (self, item):
     play (item.filename)
+
+    # only allow rating the item that we're currently playing
+    for other_item in self.items:
+      if not other_item.reference:
+        other_item.slider.setEnabled (item == other_item)
 
   def on_next_clicked (self):
     self.test_number += 1
