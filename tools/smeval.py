@@ -39,47 +39,49 @@ def parse_config (filename):
 
   return config
 
+class TestItem:
+  pass
+
 class Example(QtWidgets.QMainWindow):
+  def __init__ (self):
+    QtWidgets.QMainWindow.__init__(self)
 
-    def __init__(self):
-        QtWidgets.QMainWindow.__init__(self)
+    self.items = []
+    config = parse_config ("x.cfg")
+    if len (config) > 0:
+      for x in config[0]:
+        if len (x) == 2 and x[0] == "reference":
+          item = TestItem()
+          item.filename = x[1]
+          self.items.append (item)
+        elif len (x) == 2 and x[0] == "rate":
+          item = TestItem()
+          item.filename = x[1]
+          self.items.append (item)
 
-        self.initUI()
-        self.wavs = []
-        config = parse_config ("x.cfg")
-        if len (config) > 0:
-          for x in config[0]:
-            self.wavs.append (x[1])
+    self.initUI()
 
-    def initUI(self):
-        self.setGeometry(300,300,200,200)
+  def initUI (self):
+    central_widget = QtWidgets.QWidget (self)
+    hbox_layout = QtWidgets.QHBoxLayout()
 
-        self.b1 = QtWidgets.QPushButton("Play", self)
-        self.b1.clicked.connect(self.Play)
-        self.b1.move(50, 80)
+    for item in self.items:
+      button = QtWidgets.QPushButton ("Play - " + item.filename, self)
+      button.clicked.connect (lambda checked, item=item: self.on_play (item))
+      hbox_layout.addWidget (button)
+      item.play_button = button
 
-        self.b2 = QtWidgets.QPushButton("Play2", self)
-        self.b2.clicked.connect(self.Play2)
-        self.b2.move(50, 120)
+    central_widget.setLayout (hbox_layout)
+    self.setCentralWidget (central_widget)
 
-        self.b2 = QtWidgets.QPushButton("Play3", self)
-        self.b2.clicked.connect(self.Play3)
-        self.b2.move(50, 160)
-
-    def Play(self):
-        play (self.wavs[0])
-
-    def Play2(self):
-        play (self.wavs[1])
-
-    def Play3(self):
-        play (self.wavs[2])
+  def on_play (self, item):
+    play (item.filename)
 
 def main():
-    app = QtWidgets.QApplication(sys.argv)
-    ex = Example()
-    ex.show()
-    sys.exit(app.exec_())
+  app = QtWidgets.QApplication(sys.argv)
+  ex = Example()
+  ex.show()
+  sys.exit(app.exec_())
 
 if __name__ == "__main__":
-    main()
+  main()
