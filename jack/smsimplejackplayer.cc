@@ -2,10 +2,12 @@
 
 #include "smsimplejackplayer.hh"
 #include "smlivedecodersource.hh"
+#include <unistd.h>
 
 using namespace SpectMorph;
 
 using std::vector;
+using std::max;
 
 namespace {
 
@@ -58,7 +60,8 @@ SimpleJackPlayer::SimpleJackPlayer (const std::string& client_name) :
   decoder (NULL),
   decoder_audio (NULL),
   decoder_source (NULL),
-  decoder_volume (0) // must be initialized later on
+  decoder_volume (0), // must be initialized later on
+  decoder_fade_out (false)
 {
   jack_client = jack_client_open (client_name.c_str(), JackNullOption, NULL);
 
@@ -90,6 +93,18 @@ SimpleJackPlayer::process (jack_nframes_t nframes)
       for (size_t i = 0; i < nframes; i++)
         {
           audio_out[i] = 0;
+        }
+    }
+  // fade out needs to be done in any case, as the other thread will wait for completion
+  if (decoder_fade_out)
+    {
+      const double fade_out_samples = 0.03 * jack_mix_freq; // 30 ms fadeout time
+      const double delta = 1 / fade_out_samples;
+
+      for (size_t i = 0; i < nframes; i++)
+        {
+          decoder_fade_out_level = max (decoder_fade_out_level - delta, 0.0);
+          audio_out[i] *= decoder_fade_out_level;
         }
     }
   return 0;
@@ -140,6 +155,7 @@ SimpleJackPlayer::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_a
   decoder = new_decoder;
   decoder_source = new_decoder_source;
   decoder_audio = new_decoder_audio;
+  decoder_fade_out = false;
 
   decoder_mutex.unlock();
 
@@ -165,4 +181,28 @@ SimpleJackPlayer::~SimpleJackPlayer()
 
   // delete old decoder objects (if any)
   update_decoder (NULL, NULL, NULL);
+}
+
+void
+SimpleJackPlayer::fade_out_blocking()
+{
+  // start fadeout
+  decoder_mutex.lock();
+  if (!decoder_fade_out)
+    {
+      decoder_fade_out_level = 1;
+      decoder_fade_out = true;
+    }
+  decoder_mutex.unlock();
+
+  // wait for fade out level to reach zero
+  bool done = false;
+  while (!done)
+    {
+      usleep (10 * 1000);
+
+      decoder_mutex.lock();
+      done = (decoder_fade_out_level == 0);
+      decoder_mutex.unlock();
+    }
 }

@@ -18,10 +18,12 @@ class SimpleJackPlayer
   jack_client_t      *jack_client;
 
   QMutex              decoder_mutex;
-  LiveDecoder        *decoder;            // decoder_mutex!
-  Audio              *decoder_audio;      // decoder_mutex!
-  LiveDecoderSource  *decoder_source;     // decoder_mutex!
-  double              decoder_volume;     // decoder_mutex!
+  LiveDecoder        *decoder;                  // decoder_mutex!
+  Audio              *decoder_audio;            // decoder_mutex!
+  LiveDecoderSource  *decoder_source;           // decoder_mutex!
+  double              decoder_volume;           // decoder_mutex!
+  bool                decoder_fade_out;         // decoder_mutex!
+  double              decoder_fade_out_level;   // decoder_mutex!
 
   double              jack_mix_freq;
 
@@ -33,6 +35,8 @@ public:
   void play (Audio *audio, bool use_samples);
   int  process (jack_nframes_t nframes);
   void set_volume (double new_volume);
+
+  void fade_out_blocking();
 };
 
 }
