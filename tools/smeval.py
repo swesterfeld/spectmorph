@@ -46,10 +46,14 @@ class Example(QtWidgets.QMainWindow):
   def __init__ (self):
     QtWidgets.QMainWindow.__init__(self)
 
+    self.test_number = 0
+    self.reinit_ui (self.test_number)
+
+  def reinit_ui (self, n):
     self.items = []
     config = parse_config ("x.cfg")
-    if len (config) > 0:
-      for x in config[0]:
+    if len (config) > n:
+      for x in config[n]:
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
@@ -89,11 +93,19 @@ class Example(QtWidgets.QMainWindow):
 
       col += 1
 
+    next_button = QtWidgets.QPushButton ("Next >>")
+    next_button.clicked.connect (self.on_next_clicked)
+    grid_layout.addWidget (next_button, 2, col)
+
     central_widget.setLayout (grid_layout)
     self.setCentralWidget (central_widget)
 
   def on_play (self, item):
     play (item.filename)
+
+  def on_next_clicked (self):
+    self.test_number += 1
+    self.reinit_ui (self.test_number)
 
   def on_rating_changed (self, item, rating):
     print item.filename, rating
