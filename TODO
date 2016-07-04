@@ -78,8 +78,6 @@ qt5 port:
 - smmorphplot
 
 smeval.py:
-- randomization
 - title
-- save results
 - previous button
 - adjust scale with n-references > 1

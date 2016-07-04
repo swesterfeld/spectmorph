@@ -84,19 +84,13 @@ class Example (QtWidgets.QMainWindow):
     QtWidgets.QMainWindow.__init__(self)
 
     self.cmdline_args = args
-    self.config = parse_config (self.cmdline_args.config)
-    self.resize (1024, 768)
-    self.test_number = 0
-    self.reinit_ui (self.test_number)
 
-    if (self.cmdline_args.debug):
-      debug_play()
-
-  def reinit_ui (self, n):
-    reference_items = []
-    rate_items = []
-    if len (self.config) > n:
-      for x in self.config[n]:
+    config = parse_config (self.cmdline_args.config)
+    self.tests = []
+    for test in config:
+      reference_items = []
+      rate_items = []
+      for x in test:
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
@@ -106,11 +100,40 @@ class Example (QtWidgets.QMainWindow):
           item = TestItem()
           item.filename = x[1]
           item.reference = False
+          item.rating = 100
           rate_items.append (item)
 
-    # double blind test
-    random.shuffle (rate_items)
-    self.items = reference_items + rate_items
+      # double blind test
+      random.shuffle (rate_items)
+
+      self.tests.append (reference_items + rate_items)
+
+    self.resize (1024, 768)
+    self.test_number = 0
+    self.reinit_ui (self.test_number)
+
+    if (self.cmdline_args.debug):
+      debug_play()
+
+  def reinit_ui (self, n):
+    if len (self.tests) == n:
+      reply = QtWidgets.QMessageBox.question (self, 'Message', "Save Test Results and Quit?", QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+      if reply == QtWidgets.QMessageBox.Yes:
+        with open (self.cmdline_args.results, "w") as result_file:
+          for test in self.tests:
+            for item in test:
+              if not item.reference:
+                result_file.write ("%s %d\n" % (item.filename, item.rating))
+        self.close()
+      else:
+        # back to last test
+        n -= 1
+        self.test_number -= 1
+
+    if len (self.tests) > n:
+      self.items = self.tests[self.test_number]
+    else:
+      self.items = []
 
     self.initUI()
 
@@ -145,7 +168,7 @@ class Example (QtWidgets.QMainWindow):
         slider = QtWidgets.QSlider (QtCore.Qt.Vertical)
         slider.valueChanged.connect (lambda rating, item=item: self.on_rating_changed (item, rating))
         slider.setRange (0, 100)
-        slider.setValue (100)
+        slider.setValue (item.rating)
         slider.setTickInterval (20);
         slider.setTickPosition (QtWidgets.QSlider.TicksBothSides)
         slider.setEnabled (False)
@@ -179,11 +202,13 @@ class Example (QtWidgets.QMainWindow):
 
   def on_rating_changed (self, item, rating):
     item.rating_label.setText ("%d" % rating)
+    item.rating = rating
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--debug', action='store_true')
   parser.add_argument('config', action='store')
+  parser.add_argument('results', action='store')
   parsed_args, unparsed_args = parser.parse_known_args()
 
   app = QtWidgets.QApplication (sys.argv[:1] + unparsed_args)
