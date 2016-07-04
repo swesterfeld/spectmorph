@@ -78,5 +78,4 @@ qt5 port:
 - smmorphplot
 
 smeval.py:
-- title
 - adjust scale with n-references > 1

@@ -24,6 +24,65 @@ def stop():
 def debug_play():
   play_p.stdin.write ("debug\n")
 
+# vvv----------------- copypasted from sminstbuilder -------------------------
+def tokenize (input_str):
+  class TState:
+    BLANK = 1
+    STRING = 2
+    COMMENT = 3
+    QUOTED_STRING = 4
+    QUOTED_STRING_ESCAPED = 5
+
+  def string_chars (ch):
+    if ((ch >= 'a' and ch <= 'z') or
+        (ch >= 'A' and ch <= 'Z') or
+        (ch >= '0' and ch <= '9') or
+         ch in ".:=/-_%{}"):
+      return True
+    return False
+
+  def white_space (ch):
+    return (ch == ' ' or ch == '\n' or ch == '\t' or  ch == '\r');
+
+  input_str += "\n"
+  state = TState.BLANK
+
+  s = ""
+  tokens = []
+
+  for ch in input_str:
+    if state == TState.BLANK and string_chars (ch):
+      s += ch
+      state = TState.STRING
+    elif state == TState.BLANK and ch == '"':
+      state = TState.QUOTED_STRING
+    elif state == TState.BLANK and white_space (ch):
+      pass # ignore more whitespaces if we've already seen one
+    elif state == TState.STRING and string_chars (ch):
+      s += ch
+    elif ((state == TState.STRING and white_space (ch)) or
+          (state == TState.QUOTED_STRING and ch == '"')):
+      tokens += [ s ]
+      s = "";
+      state = TState.BLANK
+    elif state == TState.QUOTED_STRING and ch == '\\':
+      state = TState.QUOTED_STRING_ESCAPED
+    elif state == TState.QUOTED_STRING:
+      s += ch
+    elif state == TState.QUOTED_STRING_ESCAPED:
+      s += ch;
+      state = TState.QUOTED_STRING
+    elif ch == '#':
+      state = TState.COMMENT
+    elif state == TState.COMMENT:
+      pass # ignore comments
+    else:
+      raise Exception ("Tokenizer error in char '" + ch + "'")
+  if state != TState.BLANK and state != TState.COMMENT:
+    raise Exception ("Parse Error in String: \"" + input_str + "\"")
+  return tokens
+# ^^^----------------- copypasted from sminstbuilder -------------------------
+
 def parse_config (filename):
   f = open (filename, "r")
 
@@ -33,7 +92,7 @@ def parse_config (filename):
 
   for line in f:
     line = re.sub ("#.*$", "", line)
-    cmd = line.split()
+    cmd = tokenize (line)
     if not in_block:
       if cmd == ["{"]:
         in_block = 1
@@ -48,6 +107,9 @@ def parse_config (filename):
         block.append (cmd)
 
   return config
+
+class Test:
+  pass
 
 class TestItem:
   pass
@@ -87,10 +149,12 @@ class Example (QtWidgets.QMainWindow):
 
     config = parse_config (self.cmdline_args.config)
     self.tests = []
-    for test in config:
+    for test_config in config:
+      test = Test()
       reference_items = []
       rate_items = []
-      for x in test:
+      test.title = ""
+      for x in test_config:
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
@@ -102,11 +166,13 @@ class Example (QtWidgets.QMainWindow):
           item.reference = False
           item.rating = 100
           rate_items.append (item)
+        elif len (x) == 2 and x[0] == "title":
+          test.title = x[1]
 
       # double blind test
       random.shuffle (rate_items)
-
-      self.tests.append (reference_items + rate_items)
+      test.items = reference_items + rate_items
+      self.tests.append (test)
 
     self.resize (1024, 768)
     self.test_number = 0
@@ -121,7 +187,7 @@ class Example (QtWidgets.QMainWindow):
       if reply == QtWidgets.QMessageBox.Yes:
         with open (self.cmdline_args.results, "w") as result_file:
           for test in self.tests:
-            for item in test:
+            for item in test.items:
               if not item.reference:
                 result_file.write ("%s %d\n" % (item.filename, item.rating))
         self.close()
@@ -131,10 +197,12 @@ class Example (QtWidgets.QMainWindow):
         self.test_number -= 1
 
     if len (self.tests) > n:
-      self.items = self.tests[self.test_number]
+      self.items = self.tests[self.test_number].items
+      self.title = self.tests[self.test_number].title
       self.initUI()
     else:
       self.items = []
+      self.title = ""
 
   def initUI (self):
     central_widget = QtWidgets.QWidget (self)
@@ -186,7 +254,7 @@ class Example (QtWidgets.QMainWindow):
 
     test_label = QtWidgets.QLabel()
     test_label.setFont (QtGui.QFont("Times", 32, QtGui.QFont.Bold))
-    test_label.setText ("Test %d/%d" % (self.test_number + 1, len (self.tests)))
+    test_label.setText ("Test %d/%d: %s" % (self.test_number + 1, len (self.tests), self.title))
     grid_layout.addWidget (test_label, 1, 0, 1, col, QtCore.Qt.AlignHCenter)
 
     central_widget.setLayout (grid_layout)
