@@ -18,6 +18,7 @@ command_loop()
   jack_player.set_volume (1);
 
   char buffer[1024], *c;
+  bool debug = false;
 
   while (c = fgets (buffer, 1024, stdin))
     {
@@ -27,7 +28,12 @@ command_loop()
 
       char *arg = strtok (NULL, " \n");
 
-      printf ("<%s>|<%s>\n", cmd, arg);
+      // only print filenames in debug mode (for double-blind tests)
+      if (strcmp (cmd, "debug") == 0 && !arg)
+        debug = true;
+
+      if (debug)
+        printf ("<%s>|<%s>\n", cmd, arg);
 
       if (strcmp (cmd, "play") == 0 && arg != 0)
         {

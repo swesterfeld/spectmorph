@@ -7,6 +7,7 @@
 import sys
 import subprocess
 import re
+import argparse
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
@@ -18,6 +19,9 @@ def play (wavfile):
 
 def stop():
   play_p.stdin.write ("stop\n")
+
+def debug_play():
+  play_p.stdin.write ("debug\n")
 
 def parse_config (filename):
   f = open (filename, "r")
@@ -74,19 +78,23 @@ class ReferenceScale(QtWidgets.QWidget):
 
     qp.end()
 
-class Example(QtWidgets.QMainWindow):
-  def __init__ (self):
+class Example (QtWidgets.QMainWindow):
+  def __init__ (self, args):
     QtWidgets.QMainWindow.__init__(self)
 
+    self.cmdline_args = args
+    self.config = parse_config (self.cmdline_args.config)
     self.resize (1024, 768)
     self.test_number = 0
     self.reinit_ui (self.test_number)
 
+    if (self.cmdline_args.debug):
+      debug_play()
+
   def reinit_ui (self, n):
     self.items = []
-    config = parse_config ("x.cfg")
-    if len (config) > n:
-      for x in config[n]:
+    if len (self.config) > n:
+      for x in self.config[n]:
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
@@ -105,8 +113,18 @@ class Example(QtWidgets.QMainWindow):
     grid_layout = QtWidgets.QGridLayout()
 
     col = 0
+    rate_count = 0
     for item in self.items:
-      button = QtWidgets.QPushButton ("Play - " + item.filename, self)
+      if (self.cmdline_args.debug):
+        btn_text = "Play - " + item.filename
+      else:
+        if item.reference:
+          btn_text = "Reference %d" % (col + 1)
+        else:
+          btn_text = "%c" % (rate_count + 65)
+          rate_count += 1
+
+      button = QtWidgets.QPushButton (btn_text, self)
       button.clicked.connect (lambda checked, item=item: self.on_play (item))
       grid_layout.addWidget (button, 2, col)
       item.play_button = button
@@ -154,12 +172,16 @@ class Example(QtWidgets.QMainWindow):
     stop()
 
   def on_rating_changed (self, item, rating):
-    print item.filename, rating
     item.rating_label.setText ("%d" % rating)
 
 def main():
-  app = QtWidgets.QApplication(sys.argv)
-  ex = Example()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--debug', action='store_true')
+  parser.add_argument('config', action='store')
+  parsed_args, unparsed_args = parser.parse_known_args()
+
+  app = QtWidgets.QApplication (sys.argv[:1] + unparsed_args)
+  ex = Example (parsed_args)
   ex.show()
   sys.exit(app.exec_())
 
