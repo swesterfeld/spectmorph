@@ -250,7 +250,8 @@ class Example (QtWidgets.QMainWindow):
 
     prev_button = QtWidgets.QPushButton ("<< Prev")
     prev_button.clicked.connect (self.on_prev_clicked)
-    grid_layout.addWidget (prev_button, 0, col - 2)
+    prev_button.setEnabled (self.test_number > 0)
+    grid_layout.addWidget (prev_button, 0, 0)
 
     test_label = QtWidgets.QLabel()
     test_label.setFont (QtGui.QFont("Times", 32, QtGui.QFont.Bold))
@@ -272,15 +273,15 @@ class Example (QtWidgets.QMainWindow):
         other_item.slider.setEnabled (item == other_item)
 
   def on_next_clicked (self):
+    stop()
     self.test_number += 1
     self.reinit_ui (self.test_number)
-    stop()
 
   def on_prev_clicked (self):
+    stop()
     if (self.test_number > 0):
       self.test_number -= 1
     self.reinit_ui (self.test_number)
-    stop()
 
   def on_rating_changed (self, item, rating):
     item.rating_label.setText ("%d" % rating)
