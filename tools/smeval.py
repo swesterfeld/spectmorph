@@ -8,6 +8,7 @@ import sys
 import subprocess
 import re
 import argparse
+import random
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
@@ -92,19 +93,24 @@ class Example (QtWidgets.QMainWindow):
       debug_play()
 
   def reinit_ui (self, n):
-    self.items = []
+    reference_items = []
+    rate_items = []
     if len (self.config) > n:
       for x in self.config[n]:
         if len (x) == 2 and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
           item.reference = True
-          self.items.append (item)
+          reference_items.append (item)
         elif len (x) == 2 and x[0] == "rate":
           item = TestItem()
           item.filename = x[1]
           item.reference = False
-          self.items.append (item)
+          rate_items.append (item)
+
+    # double blind test
+    random.shuffle (rate_items)
+    self.items = reference_items + rate_items
 
     self.initUI()
 
