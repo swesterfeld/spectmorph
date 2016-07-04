@@ -79,5 +79,4 @@ qt5 port:
 
 smeval.py:
 - title
-- previous button
 - adjust scale with n-references > 1

@@ -132,10 +132,9 @@ class Example (QtWidgets.QMainWindow):
 
     if len (self.tests) > n:
       self.items = self.tests[self.test_number]
+      self.initUI()
     else:
       self.items = []
-
-    self.initUI()
 
   def initUI (self):
     central_widget = QtWidgets.QWidget (self)
@@ -155,7 +154,7 @@ class Example (QtWidgets.QMainWindow):
 
       button = QtWidgets.QPushButton (btn_text, self)
       button.clicked.connect (lambda checked, item=item: self.on_play (item))
-      grid_layout.addWidget (button, 2, col)
+      grid_layout.addWidget (button, 4, col)
       item.play_button = button
 
       if not item.reference:
@@ -163,7 +162,7 @@ class Example (QtWidgets.QMainWindow):
         rating_label.setFont (QtGui.QFont("Times", 16, QtGui.QFont.Bold))
         item.rating_label = rating_label
         item.rating_label.setAlignment (QtCore.Qt.AlignCenter)
-        grid_layout.addWidget (rating_label, 0, col)
+        grid_layout.addWidget (rating_label, 2, col)
 
         slider = QtWidgets.QSlider (QtCore.Qt.Vertical)
         slider.valueChanged.connect (lambda rating, item=item: self.on_rating_changed (item, rating))
@@ -173,19 +172,28 @@ class Example (QtWidgets.QMainWindow):
         slider.setTickPosition (QtWidgets.QSlider.TicksBothSides)
         slider.setEnabled (False)
         item.slider = slider
-        grid_layout.addWidget (slider, 1, col, 1, 1, QtCore.Qt.AlignHCenter)
+        grid_layout.addWidget (slider, 3, col, 1, 1, QtCore.Qt.AlignHCenter)
 
       col += 1
 
     next_button = QtWidgets.QPushButton ("Next >>")
     next_button.clicked.connect (self.on_next_clicked)
-    grid_layout.addWidget (next_button, 2, col)
+    grid_layout.addWidget (next_button, 0, col - 1)
+
+    prev_button = QtWidgets.QPushButton ("<< Prev")
+    prev_button.clicked.connect (self.on_prev_clicked)
+    grid_layout.addWidget (prev_button, 0, col - 2)
+
+    test_label = QtWidgets.QLabel()
+    test_label.setFont (QtGui.QFont("Times", 32, QtGui.QFont.Bold))
+    test_label.setText ("Test %d/%d" % (self.test_number + 1, len (self.tests)))
+    grid_layout.addWidget (test_label, 1, 0, 1, col, QtCore.Qt.AlignHCenter)
 
     central_widget.setLayout (grid_layout)
     self.setCentralWidget (central_widget)
 
     reference_scale = ReferenceScale ()
-    grid_layout.addWidget (reference_scale, 1, 0)
+    grid_layout.addWidget (reference_scale, 3, 0)
 
   def on_play (self, item):
     play (item.filename)
@@ -197,6 +205,12 @@ class Example (QtWidgets.QMainWindow):
 
   def on_next_clicked (self):
     self.test_number += 1
+    self.reinit_ui (self.test_number)
+    stop()
+
+  def on_prev_clicked (self):
+    if (self.test_number > 0):
+      self.test_number -= 1
     self.reinit_ui (self.test_number)
     stop()
 
