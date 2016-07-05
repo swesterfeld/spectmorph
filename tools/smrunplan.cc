@@ -30,6 +30,7 @@ struct Options
   bool                quiet;
   bool                perf;
   bool                normalize;
+  double              gain;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -45,7 +46,8 @@ Options::Options () :
   len (1),
   fade (false),
   quiet (false),
-  normalize (false)
+  normalize (false),
+  gain (1.0)
 {
 }
 
@@ -124,6 +126,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--perf") || check_arg (argc, argv, &i, "-p"))
         {
           perf = true;
+        }
+      else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
+        {
+          gain = atof (opt_arg);
         }
     }
 
@@ -327,6 +333,10 @@ main (int argc, char **argv)
     {
       player.compute_samples (samples);
     }
+
+  // apply gain
+  for (size_t i = 0; i < samples.size(); i++)
+    samples[i] *= options.gain;
 
   if (options.normalize)
     {
