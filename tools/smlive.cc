@@ -28,6 +28,7 @@ struct Options
   bool        enable_original_samples;
   bool        text;
   double      gain;
+  double      loop;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -48,7 +49,8 @@ Options::Options () :
   freq (-1),
   enable_original_samples (false),
   text (false),
-  gain (1.0)
+  gain (1.0),
+  loop (-1)
 {
 }
 
@@ -107,6 +109,10 @@ Options::parse (int   *argc_p,
         {
           gain = atof (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--loop", &opt_arg))
+        {
+          loop = atof (opt_arg);
+        }
     }
 
   /* resort argc/argv */
@@ -135,6 +141,7 @@ Options::print_usage ()
   printf (" --samples                     use original samples\n");
   printf (" --text                        print output samples as text\n");
   printf (" -g, --gain <gain>             set replay gain\n");
+  printf (" --loop <seconds>              enable loop\n");
   printf ("\n");
 }
 
@@ -166,11 +173,21 @@ main (int argc, char **argv)
   LiveDecoder decoder (&smset);
 
   decoder.enable_original_samples (options.enable_original_samples);
-  decoder.enable_loop (false);
 
   const int SR = 48000;
+  size_t len;
+  if (options.loop > 0)
+    {
+      decoder.enable_loop (true);
+      len = options.loop * SR;
+    }
+  else
+    {
+      decoder.enable_loop (false);
+      len = 20 * SR;                // FIXME: play until end
+    }
 
-  vector<float> audio_out (SR * 20);
+  vector<float> audio_out (len);
   decoder.retrigger (0, options.freq, 127, SR);
   decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
