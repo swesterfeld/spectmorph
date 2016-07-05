@@ -210,15 +210,15 @@ class Example (QtWidgets.QMainWindow):
 
     col = 0
     rate_count = 0
+    reference_count = 0
     for item in self.items:
       if (self.cmdline_args.debug):
         btn_text = "Play - " + item.filename
       else:
         if item.reference:
-          btn_text = "Reference %d" % (col + 1)
+          btn_text = "Reference %d" % (reference_count + 1)
         else:
           btn_text = "%c" % (rate_count + 65)
-          rate_count += 1
 
       button = QtWidgets.QPushButton (btn_text, self)
       button.clicked.connect (lambda checked, item=item: self.on_play (item))
@@ -242,6 +242,10 @@ class Example (QtWidgets.QMainWindow):
         item.slider = slider
         grid_layout.addWidget (slider, 3, col, 1, 1, QtCore.Qt.AlignHCenter)
 
+        rate_count += 1
+      else:
+        reference_count += 1
+
       col += 1
 
     next_button = QtWidgets.QPushButton ("Next >>")
@@ -262,7 +266,7 @@ class Example (QtWidgets.QMainWindow):
     self.setCentralWidget (central_widget)
 
     reference_scale = ReferenceScale ()
-    grid_layout.addWidget (reference_scale, 3, 0)
+    grid_layout.addWidget (reference_scale, 3, 0, 1, reference_count)
 
   def on_play (self, item):
     play (item.filename)

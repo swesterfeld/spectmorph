@@ -76,6 +76,3 @@ qt5 port:
 - cleanup old gtk code
 - smldplot
 - smmorphplot
-
-smeval.py:
-- adjust scale with n-references > 1
