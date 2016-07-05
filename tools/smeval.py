@@ -125,8 +125,8 @@ class ReferenceScale(QtWidgets.QWidget):
     texts = [ "ausgezeichnet", "gut", "ordentlich", "mäßig", "mangelhaft" ]
 
     for i in range (len (texts)):
-      y0 = self.height() / len (texts) * i
-      y1 = self.height() / len (texts) * (i + 1)
+      y0 = self.height() / float (len (texts)) * i
+      y1 = self.height() / float (len (texts)) * (i + 1)
       qp.setPen(QtGui.QColor(168, 34, 3))
       qp.setFont(QtGui.QFont('Decorative', 16))
       qp.drawText(0, y0, self.width(), y1 - y0, QtCore.Qt.AlignCenter, texts[i])
@@ -134,7 +134,7 @@ class ReferenceScale(QtWidgets.QWidget):
     DELTA = 10
     TEXT_WIDTH = 30
     for i in range (len (texts) + 1):
-      y = (self.height() - 2 * DELTA) / (len (texts)) * i + DELTA
+      y = (self.height() - 2 * DELTA) / float (len (texts)) * i + DELTA
       qp.drawLine(0, y, self.width() / 2 - TEXT_WIDTH, y)
       qp.drawLine(self.width() / 2 + TEXT_WIDTH, y, self.width(), y)
       qp.drawText (0, y-DELTA, self.width(), 2 * DELTA, QtCore.Qt.AlignCenter, "%d" % (100 - i * 20))
