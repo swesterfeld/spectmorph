@@ -206,3 +206,9 @@ SimpleJackPlayer::fade_out_blocking()
       decoder_mutex.unlock();
     }
 }
+
+double
+SimpleJackPlayer::mix_freq() const
+{
+  return jack_mix_freq;
+}

@@ -37,6 +37,7 @@ public:
   void set_volume (double new_volume);
 
   void fade_out_blocking();
+  double mix_freq() const;
 };
 
 }
