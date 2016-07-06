@@ -31,6 +31,7 @@ struct Options
   bool                perf;
   bool                normalize;
   double              gain;
+  int                 rate;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -47,7 +48,8 @@ Options::Options () :
   fade (false),
   quiet (false),
   normalize (false),
-  gain (1.0)
+  gain (1.0),
+  rate (44100)
 {
 }
 
@@ -131,6 +133,10 @@ Options::parse (int   *argc_p,
         {
           gain = atof (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
+        {
+          rate = atoi (opt_arg);
+        }
     }
 
   /* resort argc/argv */
@@ -178,8 +184,6 @@ gettime()
   return tv.tv_sec + tv.tv_usec / 1000000.0;
 }
 
-#define SAMPLE_RATE 44100
-
 class Player
 {
   MorphLinear    *linear_op;
@@ -201,7 +205,7 @@ Player::Player() :
   grid_op (0),
   voice (0),
   plan (new MorphPlan()),
-  synth (SAMPLE_RATE)
+  synth (options.rate)
 {
 }
 
@@ -304,7 +308,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  vector<float> samples (SAMPLE_RATE * options.len);
+  vector<float> samples (options.rate * options.len);
   Player        player;
 
   player.load_plan (argv[1]);
@@ -317,7 +321,7 @@ main (int argc, char **argv)
       double start = gettime();
 
       // at 100 bogo-voices, test should run 10 seconds
-      const size_t RUNS = max<int> (1, SAMPLE_RATE * 1000 / samples.size());
+      const size_t RUNS = max<int> (1, options.rate * 1000 / samples.size());
       for (size_t i = 0; i < RUNS; i++)
         player.compute_samples (samples);
 
@@ -325,7 +329,7 @@ main (int argc, char **argv)
 
       const double ns_per_sec = 1e9;
       sm_printf ("%6.2f ns/sample\n", (end - start) * ns_per_sec / (RUNS * samples.size()));
-      sm_printf ("%6.2f bogo-voices\n", (RUNS * samples.size()) / SAMPLE_RATE / (end - start));
+      sm_printf ("%6.2f bogo-voices\n", double (RUNS * samples.size()) / options.rate / (end - start));
 
       return 0;
     }
