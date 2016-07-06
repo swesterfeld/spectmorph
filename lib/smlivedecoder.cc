@@ -274,6 +274,19 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
   if (original_samples_enabled)
     {
+      /* we can skip the resampler if the phase increment is always 1.0
+       * this ensures that the original samples are reproduced exactly
+       * in this case
+       */
+      bool need_resample = true;
+      if (!freq_in)
+        {
+          const double phase_inc = (current_freq / audio->fundamental_freq) *
+                                   (audio->mix_freq / current_mix_freq);
+          if (fabs (phase_inc - 1.0) < 1e-6)
+            need_resample = false;
+        }
+
       for (unsigned int i = 0; i < n_values; i++)
         {
           double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
@@ -288,7 +301,18 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               while (ipos >= (audio->loop_end - audio->zero_values_at_start))
                 ipos -= (audio->loop_end - audio->loop_start);
             }
-          audio_out[i] = pp_inter->get_sample (audio->original_samples, ipos + frac) * original_samples_norm_factor;
+
+          if (need_resample)
+            {
+              audio_out[i] = pp_inter->get_sample (audio->original_samples, ipos + frac) * original_samples_norm_factor;
+            }
+          else
+            {
+              if (ipos >= 0 && size_t (ipos) < audio->original_samples.size())
+                audio_out[i] = audio->original_samples[ipos] * original_samples_norm_factor;
+              else
+                audio_out[i] = 0;
+            }
 
           original_sample_pos += phase_inc;
         }
