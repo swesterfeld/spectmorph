@@ -47,6 +47,11 @@ command_loop()
               audio.fundamental_freq = 440; /* doesn't matter */
               audio.original_samples = wav_loader->samples();
 
+              if (debug)
+                {
+                  bool need_resample = fabs (wav_loader->mix_freq() - jack_player.mix_freq()) > 1e-6;
+                  printf ("  -> resample = %s\n", need_resample ? "true" : "false");
+                }
               jack_player.fade_out_blocking();
               jack_player.play (&audio, true);
 
