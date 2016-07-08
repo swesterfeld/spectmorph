@@ -413,7 +413,7 @@ main (int argc, char **argv)
             }
         }
 
-      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 440, sample.size(), &sample[0], NULL);
       Bse::Error error = gsl_data_handle_open (out_dhandle);
       if (error != 0)
         {

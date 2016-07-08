@@ -119,7 +119,7 @@ Options::print_usage ()
 static void
 dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
 {
-  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048, sample.size(), &sample[0], NULL);
+  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 440, sample.size(), &sample[0], NULL);
   Bse::Error error = gsl_data_handle_open (out_dhandle);
   if (error != 0)
     {

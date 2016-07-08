@@ -144,7 +144,7 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
 
   original_samples = single_channel_signal;
 
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 44100 / 16 * 2048,
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 440,
                                                     single_channel_signal.size(),
                                                     &single_channel_signal[0], NULL);
 

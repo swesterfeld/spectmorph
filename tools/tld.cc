@@ -141,7 +141,7 @@ main (int argc, char **argv)
       decoder.retrigger (0, freq, 127, SR);
       decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
-      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, 440, audio_out.size(), &audio_out[0], NULL);
       Bse::Error error = gsl_data_handle_open (out_dhandle);
       if (error != 0)
         {
