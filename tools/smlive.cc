@@ -29,6 +29,7 @@ struct Options
   bool        text;
   double      gain;
   double      loop;
+  int         rate;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -50,7 +51,8 @@ Options::Options () :
   enable_original_samples (false),
   text (false),
   gain (1.0),
-  loop (-1)
+  loop (-1),
+  rate (44100)
 {
 }
 
@@ -88,6 +90,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--export", &opt_arg) || check_arg (argc, argv, &i, "-x", &opt_arg))
         {
           export_wav = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
+        {
+          rate = atoi (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--samples"))
         {
@@ -142,6 +148,7 @@ Options::print_usage ()
   printf (" --text                        print output samples as text\n");
   printf (" -g, --gain <gain>             set replay gain\n");
   printf (" --loop <seconds>              enable loop\n");
+  printf (" --rate <sampling rate>        set replay rate manually\n");
   printf ("\n");
 }
 
@@ -174,21 +181,20 @@ main (int argc, char **argv)
 
   decoder.enable_original_samples (options.enable_original_samples);
 
-  const int SR = 48000;
   size_t len;
   if (options.loop > 0)
     {
       decoder.enable_loop (true);
-      len = options.loop * SR;
+      len = options.loop * options.rate;
     }
   else
     {
       decoder.enable_loop (false);
-      len = 20 * SR;                // FIXME: play until end
+      len = 20 * options.rate;                // FIXME: play until end
     }
 
   vector<float> audio_out (len);
-  decoder.retrigger (0, options.freq, 127, SR);
+  decoder.retrigger (0, options.freq, 127, options.rate);
   decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
   // hacky way to remove tail silence
@@ -202,7 +208,7 @@ main (int argc, char **argv)
   ao_sample_format format = { 0, };
 
   format.bits = 16;
-  format.rate = SR; // options.rate;
+  format.rate = options.rate;
   format.channels = 1;
   format.byte_format = AO_FMT_NATIVE;
 
@@ -270,7 +276,7 @@ main (int argc, char **argv)
             }
         }
 
-      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, SR / 16 * 2048, audio_out.size(), &audio_out[0], NULL);
+      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, options.rate, 440, audio_out.size(), &audio_out[0], NULL);
       Bse::Error error = gsl_data_handle_open (out_dhandle);
       if (error != 0)
         {
