@@ -146,6 +146,7 @@ class Example (QtWidgets.QMainWindow):
     QtWidgets.QMainWindow.__init__(self)
 
     self.cmdline_args = args
+    self.shortcuts = []
 
     config = parse_config (self.cmdline_args.config)
     self.tests = []
@@ -246,16 +247,25 @@ class Example (QtWidgets.QMainWindow):
       else:
         reference_count += 1
 
+      shortcut = QtWidgets.QShortcut (QtGui.QKeySequence (QtCore.Qt.Key_1 + col), central_widget)
+      shortcut.activated.connect (lambda item=item: self.on_play_shortcut (item))
+
       col += 1
 
     next_button = QtWidgets.QPushButton ("Next >>")
     next_button.clicked.connect (self.on_next_clicked)
     grid_layout.addWidget (next_button, 0, col - 1)
 
+    next_shortcut = QtWidgets.QShortcut (QtGui.QKeySequence (QtCore.Qt.Key_Plus), central_widget)
+    next_shortcut.activated.connect (self.on_next_clicked)
+
     prev_button = QtWidgets.QPushButton ("<< Prev")
     prev_button.clicked.connect (self.on_prev_clicked)
     prev_button.setEnabled (self.test_number > 0)
     grid_layout.addWidget (prev_button, 0, 0)
+
+    prev_shortcut = QtWidgets.QShortcut (QtGui.QKeySequence (QtCore.Qt.Key_Minus), central_widget)
+    prev_shortcut.activated.connect (self.on_prev_clicked)
 
     test_label = QtWidgets.QLabel()
     test_label.setFont (QtGui.QFont("Times", 32, QtGui.QFont.Bold))
@@ -267,6 +277,10 @@ class Example (QtWidgets.QMainWindow):
 
     reference_scale = ReferenceScale ()
     grid_layout.addWidget (reference_scale, 3, 0, 1, reference_count)
+
+  def on_play_shortcut (self, item):
+    item.play_button.setFocus()
+    item.play_button.click()
 
   def on_play (self, item):
     play (item.filename)
