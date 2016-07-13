@@ -147,6 +147,9 @@ Navigator::Navigator (const string& filename)
   m_display_param_window = new DisplayParamWindow();
 
   player_window = new PlayerWindow (this);
+  connect (player_window, SIGNAL (next_sample()), this, SLOT (on_next_sample()));
+  connect (player_window, SIGNAL (prev_sample()), this, SLOT (on_prev_sample()));
+
   sample_window = new SampleWindow (this);
   connect (sample_window, SIGNAL (next_sample()), this, SLOT (on_next_sample()));
   connect (sample_window->sample_view(), SIGNAL (audio_edit()), this, SLOT (on_audio_edit()));
@@ -374,6 +377,20 @@ Navigator::on_next_sample()
 
   if (index.isValid())
     index = tree_model->index (index.row() + 1, 0);  // select next sample
+  else
+    index = tree_model->index (0, 0); // select first sample if nothing was selected
+
+  if (index.isValid())
+    tree_view->selectionModel()->setCurrentIndex (index, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+}
+
+void
+Navigator::on_prev_sample()
+{
+  QModelIndex index = tree_view->selectionModel()->currentIndex();
+
+  if (index.isValid())
+    index = tree_model->index (index.row() - 1, 0);  // select previous sample
   else
     index = tree_model->index (0, 0); // select first sample if nothing was selected
 

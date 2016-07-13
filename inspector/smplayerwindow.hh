@@ -30,7 +30,13 @@ public:
 public slots:
   void on_play_clicked();
   void on_stop_clicked();
+  void on_next_clicked();
+  void on_prev_clicked();
   void on_volume_changed (int new_volume);
+
+signals:
+  void next_sample();
+  void prev_sample();
 };
 
 }

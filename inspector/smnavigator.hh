@@ -77,6 +77,7 @@ public slots:
   void on_view_display_params();
   void on_view_lpc();
   void on_next_sample();
+  void on_prev_sample();
   void on_audio_edit();
   void on_save_clicked();
 

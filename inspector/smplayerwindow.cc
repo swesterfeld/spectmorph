@@ -9,6 +9,8 @@
 
 #include <QPushButton>
 #include <QHBoxLayout>
+#include <QShortcut>
+#include <QKeySequence>
 
 #include <iostream>
 #include <jack/jack.h>
@@ -24,11 +26,23 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   setWindowTitle ("Player");
   resize (300, 10); /* h = 10 is too small, but the window will use the minimum height instead */
 
-  QPushButton *play_button = new QPushButton ("Play");
+  QPushButton *prev_button = new QPushButton ("<< Prev (-)");
+  QPushButton *next_button = new QPushButton ("Next (+) >>");
+  QPushButton *play_button = new QPushButton ("Play (P) ");
   QPushButton *stop_button = new QPushButton ("Stop");
 
+  QShortcut *next_shortcut = new QShortcut (QKeySequence (Qt::Key_Plus), this);
+  QShortcut *prev_shortcut = new QShortcut (QKeySequence (Qt::Key_Minus), this);
+  QShortcut *play_shortcut = new QShortcut (QKeySequence (Qt::Key_P), this);
+
+  connect (prev_button, SIGNAL (clicked()), this, SLOT (on_prev_clicked()));
+  connect (next_button, SIGNAL (clicked()), this, SLOT (on_next_clicked()));
   connect (play_button, SIGNAL (clicked()), this, SLOT (on_play_clicked()));
   connect (stop_button, SIGNAL (clicked()), this, SLOT (on_stop_clicked()));
+
+  connect (prev_shortcut, SIGNAL (activated()), this, SLOT (on_prev_clicked()));
+  connect (next_shortcut, SIGNAL (activated()), this, SLOT (on_next_clicked()));
+  connect (play_shortcut, SIGNAL (activated()), this, SLOT (on_play_clicked()));
 
   QHBoxLayout *button_hbox = new QHBoxLayout();
   QHBoxLayout *volume_hbox = new QHBoxLayout();
@@ -44,8 +58,10 @@ PlayerWindow::PlayerWindow (Navigator *navigator) :
   volume_hbox->addWidget (volume_slider);
   volume_hbox->addWidget (volume_label);
 
+  button_hbox->addWidget (prev_button);
   button_hbox->addWidget (play_button);
   button_hbox->addWidget (stop_button);
+  button_hbox->addWidget (next_button);
 
   vbox->addLayout (button_hbox);
   vbox->addLayout (volume_hbox);
@@ -64,6 +80,18 @@ void
 PlayerWindow::on_stop_clicked()
 {
   jack_player.play (NULL, true);
+}
+
+void
+PlayerWindow::on_next_clicked()
+{
+  Q_EMIT next_sample();
+}
+
+void
+PlayerWindow::on_prev_clicked()
+{
+  Q_EMIT prev_sample();
 }
 
 void
