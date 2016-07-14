@@ -6,7 +6,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
-EXTRA_DIST += delta.py smeval.py
+EXTRA_DIST += delta.py smeval.py smutils.py
 
 bin_PROGRAMS = smsfimport
 bin_SCRIPTS  = sminstbuilder
