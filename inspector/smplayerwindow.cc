@@ -79,7 +79,7 @@ PlayerWindow::on_play_clicked()
 void
 PlayerWindow::on_stop_clicked()
 {
-  jack_player.play (NULL, true);
+  jack_player.stop();
 }
 
 void
