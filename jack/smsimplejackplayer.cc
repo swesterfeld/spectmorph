@@ -117,6 +117,9 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
   Audio             *new_decoder_audio  = NULL;
   LiveDecoderSource *new_decoder_source = NULL;
 
+  // fade out old decoder to avoid clicks
+  fade_out_blocking();
+
   if (audio)
     {
       // create a deep copy, so that JACK thread can access data in JACK thread
@@ -136,6 +139,12 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
     }
   update_decoder (new_decoder, new_decoder_audio, new_decoder_source);
+}
+
+void
+SimpleJackPlayer::stop()
+{
+  play (NULL, true);
 }
 
 void
@@ -197,9 +206,17 @@ SimpleJackPlayer::fade_out_blocking()
 
   // wait for fade out level to reach zero
   bool done = false;
+  int  wait_ms = 0;
   while (!done)
     {
       usleep (10 * 1000);
+      wait_ms += 10;
+
+      if (wait_ms > 500)
+        {
+          fprintf (stderr, "SimpleJackPlayer::fade_out_blocking(): timeout waiting for jack thread\n");
+          return;
+        }
 
       decoder_mutex.lock();
       done = (decoder_fade_out_level == 0);

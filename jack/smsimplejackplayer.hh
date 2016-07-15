@@ -27,16 +27,17 @@ class SimpleJackPlayer
 
   double              jack_mix_freq;
 
+  void fade_out_blocking();
   void update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source);
 public:
   SimpleJackPlayer (const std::string& client_name);
   ~SimpleJackPlayer();
 
   void play (Audio *audio, bool use_samples);
+  void stop();
   int  process (jack_nframes_t nframes);
   void set_volume (double new_volume);
 
-  void fade_out_blocking();
   double mix_freq() const;
 };
 
