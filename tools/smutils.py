@@ -1,3 +1,5 @@
+import sys, subprocess
+
 # vvv----------------- copypasted from sminstbuilder -------------------------
 def tokenize (input_str):
   class TState:
@@ -56,3 +58,14 @@ def tokenize (input_str):
     raise Exception ("Parse Error in String: \"" + input_str + "\"")
   return tokens
 # ^^^----------------- copypasted from sminstbuilder -------------------------
+
+def die (message):
+  print >> sys.stderr, "%s: %s" % (sys.argv[0], message)
+  exit (1)
+
+def system_or_die (command):
+  print "+++ %s" % command
+  sys.stdout.flush()
+  return_code = subprocess.call (command, shell=True)
+  if return_code != 0:
+    die ("executing command '%s' failed, return_code=%d" % (command, return_code))
