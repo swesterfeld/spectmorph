@@ -202,8 +202,15 @@ public:
   {
     if (tick_stamp > last_tick_stamp)
       {
-        double delta_time_ms = (tick_stamp - last_tick_stamp) / mix_freq * 1000;
-        m_morph_plan_synth->update_shared_state (delta_time_ms);
+        /* the problem with bsetool render2wav is that it produces lots of silence before
+         * the actual song - therefore we skip the first time update_shared_state() would
+         * be called with the duration of that silence
+         */
+        if (last_tick_stamp)
+          {
+            double delta_time_ms = (tick_stamp - last_tick_stamp) / mix_freq * 1000;
+            m_morph_plan_synth->update_shared_state (delta_time_ms);
+          }
         last_tick_stamp = tick_stamp;
       }
   }
