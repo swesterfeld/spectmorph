@@ -167,9 +167,11 @@ class Example (QtWidgets.QMainWindow):
         btn_text = "Play - " + item.filename
       else:
         if item.reference:
-          btn_text = "Reference %d" % (reference_count + 1)
+          btn_text = "Reference "
           if item.label:
-            btn_text += " - " + item.label
+            btn_text += item.label
+          else:
+            btn_text += "%d" % (reference_count + 1)
         else:
           if item.label:
             btn_text = item.label
