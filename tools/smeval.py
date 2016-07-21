@@ -97,19 +97,23 @@ class Example (QtWidgets.QMainWindow):
       rate_items = []
       test.title = ""
       for x in test_config:
-        if len (x) == 2 and x[0] == "reference":
+        if len (x) in [2, 3] and x[0] == "reference":
           item = TestItem()
           item.filename = x[1]
           item.reference = True
+          item.label = x[2] if len (x) == 3 else "" # label is optional
           reference_items.append (item)
-        elif len (x) == 2 and x[0] == "rate":
+        elif len (x) in [2, 3] and x[0] == "rate":
           item = TestItem()
           item.filename = x[1]
           item.reference = False
           item.rating = 100
+          item.label = x[2] if len (x) == 3 else "" # label is optional
           rate_items.append (item)
         elif len (x) == 2 and x[0] == "title":
           test.title = x[1]
+        else:
+          smutils.die ("config parse error line %s" % str (x))
 
       # double blind test
       random.shuffle (rate_items)
@@ -159,8 +163,13 @@ class Example (QtWidgets.QMainWindow):
       else:
         if item.reference:
           btn_text = "Reference %d" % (reference_count + 1)
+          if item.label:
+            btn_text += " - " + item.label
         else:
-          btn_text = "%c" % (rate_count + 65)
+          if item.label:
+            btn_text = item.label
+          else:
+            btn_text = "%c" % (rate_count + 65)
 
       button = QtWidgets.QPushButton (btn_text, self)
       button.clicked.connect (lambda checked, item=item: self.on_play (item))
