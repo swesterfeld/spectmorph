@@ -96,6 +96,7 @@ class Example (QtWidgets.QMainWindow):
       reference_items = []
       rate_items = []
       test.title = ""
+      shuffle = True
       for x in test_config:
         if len (x) in [2, 3] and x[0] == "reference":
           item = TestItem()
@@ -112,11 +113,15 @@ class Example (QtWidgets.QMainWindow):
           rate_items.append (item)
         elif len (x) == 2 and x[0] == "title":
           test.title = x[1]
+        elif len (x) == 1 and x[0] == "noshuffle":
+          shuffle = False
         else:
           smutils.die ("config parse error line %s" % str (x))
 
-      # double blind test
-      random.shuffle (rate_items)
+      if shuffle:
+        # double blind test
+        random.shuffle (rate_items)
+
       test.items = reference_items + rate_items
       self.tests.append (test)
 
