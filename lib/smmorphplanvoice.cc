@@ -21,6 +21,7 @@ MorphPlanVoice::MorphPlanVoice (float mix_freq, MorphPlanSynth *synth) :
   m_control_input (N_CONTROL_INPUTS),
   m_output (NULL),
   m_mix_freq (mix_freq),
+  m_latency_ms (0),
   m_morph_plan_synth (synth)
 {
   leak_debugger.add (this);
@@ -39,6 +40,7 @@ MorphPlanVoice::configure_modules()
     {
       modules[i].module->set_latency_ms (latency_ms);
     }
+  m_latency_ms = latency_ms;
 }
 
 void
@@ -151,6 +153,12 @@ float
 MorphPlanVoice::mix_freq() const
 {
   return m_mix_freq;
+}
+
+float
+MorphPlanVoice::latency_ms() const
+{
+  return m_latency_ms;
 }
 
 MorphPlanSynth *
