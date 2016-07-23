@@ -164,7 +164,9 @@ class Example (QtWidgets.QMainWindow):
     reference_count = 0
     for item in self.items:
       if (self.cmdline_args.debug):
-        btn_text = "Play - " + item.filename
+        # take only last component which is foo.wav if out.wav ("foo")
+        # was used during generation
+        btn_text = "Play - " + item.filename.split ("_")[-1]
       else:
         if item.reference:
           btn_text = "Reference "
