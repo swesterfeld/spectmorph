@@ -78,6 +78,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   noise_enabled (true),
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
+  loop_enabled (true),
   noise_seed (-1),
   sse_samples (NULL)
 {
