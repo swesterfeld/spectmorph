@@ -921,12 +921,8 @@ public:
 } tune_all_frames_command;
 
 static void
-normalize_energy (double energy, Audio& audio)
+normalize_factor (double norm, Audio& audio)
 {
-  const double target_energy = 0.05;
-  const double norm = sqrt (target_energy / energy);
-  sm_printf ("avg_energy: %.17g\n", energy);
-  sm_printf ("norm:       %.17g\n", norm);
   const int    norm_delta_idb   = sm_factor2delta_idb (norm);
 
   for (size_t f = 0; f < audio.contents.size(); f++)
@@ -943,6 +939,17 @@ normalize_energy (double energy, Audio& audio)
   // store normalization in order to replay original samples normalized
   const double samples_factor = bse_db_to_factor (audio.original_samples_norm_db);
   audio.original_samples_norm_db = bse_db_from_factor (samples_factor * norm, -200);
+}
+
+static void
+normalize_energy (double energy, Audio& audio)
+{
+  const double target_energy = 0.05;
+  const double norm = sqrt (target_energy / energy);
+  sm_printf ("avg_energy: %.17g\n", energy);
+  sm_printf ("norm:       %.17g\n", norm);
+
+  normalize_factor (norm, audio);
 }
 
 class AutoVolumeCommand : public Command
@@ -997,6 +1004,38 @@ public:
     return true;
   }
 } auto_volume_from_loop_command;
+
+class GlobalVolumeCommand : public Command
+{
+  double norm_db;
+public:
+  GlobalVolumeCommand() : Command ("global-volume")
+  {
+    set_need_save (true);
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        norm_db = atof (args[0].c_str());
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<db>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    normalize_factor (bse_db_to_factor (norm_db), audio);
+    return true;
+  }
+} global_volume_command;
+
 
 class StripCommand : public Command
 {
@@ -1124,6 +1163,7 @@ main (int argc, char **argv)
   if (!found_command)
     {
       g_printerr ("unknown mode: %s\n", mode.c_str());
+      return 1;
     }
   if (need_save)
     {
