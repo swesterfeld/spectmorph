@@ -23,6 +23,7 @@ class Config:
     self.auto_tune_count   = 0
     self.auto_volume_count = 0
     self.auto_volume_from_loop_count = 0
+    self.global_volume_count = 0
     self.cut_count         = 0
     self.cut               = []
     self.dir_count         = 0
@@ -134,6 +135,10 @@ def parse_config (filename):
         config.auto_volume = tokens[1]
         config.auto_volume_count += 1
         parse_ok = True
+      elif tokens[0] == 'global-volume':
+        config.global_volume = tokens[1]
+        config.global_volume_count += 1
+        parse_ok = True
       elif tokens[0] == 'dir':
         config.dir = tokens[1]
         config.dir_count += 1
@@ -180,6 +185,8 @@ def parse_config (filename):
     die ("auto-volume command can be used at most once in config")
   if config.auto_volume_from_loop_count > 1:
     die ("auto-volume-from-loop command can be used at most once in config")
+  if config.global_volume_count > 1:
+    die ("global-volume command can be used at most once in config")
   if config.dir_count != 1:
     die ("dir command must occur exactly once in config")
   if config.name_count != 1 or config.short_name_count != 1:
@@ -316,6 +323,9 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 
   if (config.auto_volume_from_loop_count > 0):
     system_or_die ("smtool %s auto-volume-from-loop" % final_smset)
+
+  if (config.global_volume_count > 0):
+    system_or_die ("smtool %s global-volume %s" % (final_smset, config.global_volume))
 
   system_or_die ("smwavset set-names %s '%s' '%s'" % (final_smset, config.name, config.short_name))
   system_or_die ("ls -l %s" % final_smset);
