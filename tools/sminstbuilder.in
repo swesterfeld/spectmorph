@@ -123,9 +123,6 @@ def parse_config (filename):
       elif tokens[0] == 'auto-volume-from-loop':
         config.auto_volume_from_loop_count += 1
         parse_ok = True
-      elif tokens[0] == 'tune-all-frames':
-        config.tune_all_frames_count += 1
-        parse_ok = True
     if len (tokens) == 2:
       if tokens[0] == 'auto-loop':
         config.auto_loop = tokens[1]
@@ -138,6 +135,10 @@ def parse_config (filename):
       elif tokens[0] == 'global-volume':
         config.global_volume = tokens[1]
         config.global_volume_count += 1
+        parse_ok = True
+      elif tokens[0] == 'tune-all-frames':
+        config.tune_all_frames = tokens[1]
+        config.tune_all_frames_count += 1
         parse_ok = True
       elif tokens[0] == 'dir':
         config.dir = tokens[1]
@@ -310,7 +311,7 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
     if cmdline_args.untuned:
       print "+++ skip smtool %s tune-all-frames (untuned version)" % final_smset
     else:
-      system_or_die ("smtool %s tune-all-frames" % final_smset);
+      system_or_die ("smtool %s tune-all-frames %s" % (final_smset, config.tune_all_frames));
 
   if (config.auto_loop_count > 0):
     system_or_die ("smtool %s auto-loop %s" % (final_smset, config.auto_loop));
