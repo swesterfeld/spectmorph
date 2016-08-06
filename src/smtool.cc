@@ -891,6 +891,7 @@ public:
     const double freq_min = 0.8;
     const double freq_max = 1.25;
 
+    double weighted_tune_factor = 0, mag_weight = 0; /* gather statistics to output average tuning */
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
         AudioBlock& block = audio.contents[f];
@@ -913,9 +914,21 @@ public:
                 const double freq = block.freqs_f (p) * tune_factor;
                 block.freqs[p] = sm_freq2ifreq (freq);
                 set_need_save (true);
+
+                /* assume orthogonal waves -> mags can be added */
+                weighted_tune_factor += block.mags_f (p) * tune_factor;
+                mag_weight += block.mags_f (p);
               }
           }
       }
+
+    /* we can't give the exact tuning for all frames, so we compute a crude approximation
+     * for the input frequency and "average" tuning factor, using a higher weight
+     * for louder frames
+     */
+    weighted_tune_factor /= mag_weight;
+    const double input_fundamental_freq = audio.fundamental_freq / weighted_tune_factor;
+    sm_printf ("%.17g  %.17g  %.3f cent\n", audio.fundamental_freq, input_fundamental_freq, freq_ratio_to_cent (weighted_tune_factor));
     return true;
   }
 } tune_all_frames_command;
