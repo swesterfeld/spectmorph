@@ -881,33 +881,64 @@ public:
 
 class TuneAllFramesCommand : public Command
 {
+  int fundamental_est_n; /* number of partials to use for fundamental estimation in range [1,3] */
 public:
   TuneAllFramesCommand() : Command ("tune-all-frames")
   {
   }
   bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 1)
+      {
+        fundamental_est_n = atoi (args[0].c_str());
+        assert (fundamental_est_n >= 1 && fundamental_est_n <= 3);
+        return true;
+      }
+    return false;
+  }
+  void
+  update_fundamental_estimate (int n, const AudioBlock& block, double freq_min, double freq_max, double& f_out, double& m_out)
+  {
+    if (n > fundamental_est_n) /* use this partial for fundamental estimation? */
+      return;
+
+    double freq = 0, mag = 0;
+
+    for (size_t p = 0; p < block.mags.size(); p++)
+      {
+        if (block.freqs_f (p) > freq_min && block.freqs_f (p) < freq_max && block.mags_f (p) > mag)
+          {
+            mag = block.mags_f (p);
+            freq = block.freqs_f (p) / n;
+          }
+      }
+    if (mag > 0)
+      {
+        m_out += mag;
+        f_out += freq * mag;
+      }
+  }
+  bool
   exec (Audio& audio)
   {
-    const double freq_min = 0.8;
-    const double freq_max = 1.25;
-
     double weighted_tune_factor = 0, mag_weight = 0; /* gather statistics to output average tuning */
     for (size_t f = 0; f < audio.contents.size(); f++)
       {
         AudioBlock& block = audio.contents[f];
-        double max_mag = -1;
-        size_t max_p = 0;
-        for (size_t p = 0; p < block.mags.size(); p++)
+
+        double est_freq = 0, est_mag = 0;
+
+        update_fundamental_estimate (1, block, 0.8, 1.25, est_freq, est_mag);
+        update_fundamental_estimate (2, block, 1.5, 2.5,  est_freq, est_mag);
+        update_fundamental_estimate (3, block, 2.5, 3.5,  est_freq, est_mag);
+
+        if (est_mag > 0)
           {
-            if (block.freqs_f (p) > freq_min && block.freqs_f (p) < freq_max && block.mags_f (p) > max_mag)
-              {
-                max_mag = block.mags_f (p);
-                max_p = p;
-              }
-          }
-        if (max_mag > 0)
-          {
-            const double tune_factor = 1 / block.freqs_f (max_p);
+            est_freq /= est_mag;
+            const double tune_factor = 1 / est_freq;
+
+            /* debug printf ("TAF %f %f\n", audio.fundamental_freq, freq_ratio_to_cent (tune_factor)); */
 
             for (size_t p = 0; p < block.freqs.size(); p++)
               {
