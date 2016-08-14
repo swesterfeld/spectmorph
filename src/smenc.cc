@@ -93,6 +93,7 @@ struct Options
   Audio::LoopType loop_type;
   bool          loop_unit_seconds;
   string        debug_decode_filename;
+  string        config_filename;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -233,6 +234,10 @@ Options::parse (int   *argc_p,
           text_input_file = true;
           text_input_rate = atoi (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--config", &opt_arg))
+        {
+          config_filename = opt_arg;
+        }
      }
 
   /* resort argc/argv */
@@ -265,6 +270,7 @@ Options::print_usage ()
   sm_printf (" --loop-end                  set timeloop end\n");
   sm_printf (" --debug-decode              debug decode sm file using unquantized values\n");
   sm_printf (" --text-input-file <rate>    set input file format to human readable text values\n");
+  sm_printf (" --config <config>           set additional parameters for analysis\n");
   sm_printf ("\n");
 }
 
@@ -436,6 +442,15 @@ main (int argc, char **argv)
   enc_params.frame_step = frame_step;
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
+
+  if (options.config_filename != "")
+    {
+      if (!enc_params.load_config (options.config_filename))
+        {
+          fprintf (stderr, "%s: can't open config file '%s'\n", options.program_name.c_str(), options.config_filename.c_str());
+          exit (1);
+        }
+    }
 
   int n_channels = gsl_data_handle_n_channels (dhandle);
 
