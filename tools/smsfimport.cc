@@ -505,6 +505,8 @@ struct Options
   bool                fast_import;
   bool                debug;
   int                 max_jobs;
+  string              config_filename;
+  string              smenc;
 
   Options();
   void parse (int *argc_p, char **argv_p[]);
@@ -521,6 +523,7 @@ Options::Options()
   fast_import = false;
   debug = false;
   max_jobs = 1;
+  smenc = "smenc";
 }
 
 void
@@ -562,6 +565,14 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--debug"))
         {
           debug = true;
+        }
+      else if (check_arg (argc, argv, &i, "--config", &opt_arg))
+        {
+          config_filename = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "--cache"))
+        {
+          smenc = "smenccache";
         }
     }
 
@@ -1072,9 +1083,11 @@ import_preset (const string& import_name)
                                   close (fd);
 
                                   string import_args = options.fast_import ? "--no-attack -O0" : "-O1";
+                                  if (options.config_filename != "")
+                                    import_args += " --config " + options.config_filename;
 
                                   enc_commands.push_back (
-                                    string_printf ("smenc -m %d %s %s %s %s",
+                                    string_printf ("%s -m %d %s %s %s %s", options.smenc.c_str(),
                                                    midi_note, import_args.c_str(),
                                                    filename.c_str(), smname.c_str(), loop_args.c_str()));
                                   if (!options.debug)
