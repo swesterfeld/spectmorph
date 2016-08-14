@@ -54,7 +54,7 @@ EncoderParams::EncoderParams() :
   frame_size (0),
   block_size (0),
   fundamental_freq (0),
-  param_name_d ({"peak-width"})
+  param_name_d ({"peak-width", "min-frame-periods"})
 {
 }
 
