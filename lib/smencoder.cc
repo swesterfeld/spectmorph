@@ -5,6 +5,7 @@
 #include "smfft.hh"
 #include "smlpc.hh"
 #include "smdebug.hh"
+#include "smmicroconf.hh"
 #include "smutils.hh"
 
 #include <bse/bsemathsignal.hh>
@@ -52,9 +53,88 @@ EncoderParams::EncoderParams() :
   frame_step (0),
   frame_size (0),
   block_size (0),
-  fundamental_freq (0)
+  fundamental_freq (0),
+  param_name_d ({"peak-width"})
 {
 }
+
+bool
+EncoderParams::load_config (const std::string& filename)
+{
+  MicroConf cfg (filename);
+
+  if (!cfg.open_ok())
+    {
+      return false;
+    }
+
+  string oneline = "";
+  while (cfg.next())
+    {
+      bool parsed = false;
+      for (auto name : param_name_d)
+        {
+          double d;
+          string str;
+
+          if (cfg.command (name, d))
+            {
+              param_value_d[name] = d;
+              if (oneline != "")
+                oneline += ";";
+              if (cfg.command (name, str))
+                oneline += name + "=" + str;
+              parsed = true;
+            }
+        }
+      if (!parsed)
+        {
+          cfg.die_if_unknown();
+        }
+    }
+
+#if 0
+  printf ("--- config ---\n");
+  printf ("ONELINE: %s\n", oneline.c_str());
+  for (auto name : param_name_d)
+    {
+      double d;
+      if (get_param (name, d))
+        {
+          printf ("%s=%f\n", name.c_str(), d);
+        }
+      else
+        {
+          printf ("%s=<undef>\n", name.c_str());
+        }
+    }
+  printf ("--- end config ---\n");
+#endif
+
+  return true;
+}
+
+bool
+EncoderParams::get_param (const string& param, double& value)
+{
+  if (find (param_name_d.begin(), param_name_d.end(), param) == param_name_d.end())
+    {
+      fprintf (stderr, "error: encoder parameter '%s' was not defined\n", param.c_str());
+      exit (1);
+    }
+
+  map<string,double>::const_iterator pi = param_value_d.find (param);
+  if (pi == param_value_d.end())
+    {
+      return false; /* not defined */
+    }
+  else
+    {
+      value = pi->second;
+      return true;
+    }
+}
+
 
 /**
  * Constructor which initializes the Encoders parameters.
@@ -324,7 +404,15 @@ Encoder::search_local_maxima (const vector<float>& window)
                   for (de = d / 2 + 1; de < (mag_values.size() - 1) && mag_values[de] > mag_values[de + 1]; de++);
 
                   const double normalized_peak_width = (de - ds) * frame_size / double (block_size * zeropad);
-                  if (normalized_peak_width > 2.9)
+
+                  bool peak_ok;
+                  double value;
+                  if (enc_params.get_param ("peak-width", value))
+                    peak_ok = normalized_peak_width > value;
+                  else
+                    peak_ok = normalized_peak_width > 2.9;
+
+                  if (peak_ok)
                     {
                       const double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
                       const double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
