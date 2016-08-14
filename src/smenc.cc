@@ -437,11 +437,13 @@ main (int argc, char **argv)
     }
   enc_params.fundamental_freq = options.fundamental_freq;
 
-  double min_frame_periods;
+  double min_frame_periods, min_frame_size;
   if (!enc_params.get_param ("min-frame-periods", min_frame_periods))
-    min_frame_periods = 4;
+    min_frame_periods = 4;  // default: at least 4 periods of the fundamental per frame
+  if (!enc_params.get_param ("min-frame-size", min_frame_size))
+    min_frame_size = 40;    // default: at least 40ms frames
 
-  enc_params.frame_size_ms = 40; // at least 40ms frames
+  enc_params.frame_size_ms = min_frame_size;
   enc_params.frame_size_ms = max<float> (enc_params.frame_size_ms, 1000 / options.fundamental_freq * min_frame_periods);
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
 
