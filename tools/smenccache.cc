@@ -13,6 +13,7 @@ using namespace SpectMorph;
 struct Options
 {
   string	 program_name; /* FIXME: what to do with that */
+  string         config_filename;
   vector<string> args;
 
   Options ();
@@ -106,6 +107,11 @@ Options::parse (int   *argc_p,
         {
           args.push_back (string_printf ("--loop-unit %s", opt_arg));
         }
+      else if (check_arg (argc, argv, &i, "--config", &opt_arg))
+        {
+          args.push_back (string_printf ("--config %s", opt_arg));
+          config_filename = opt_arg;
+        }
      }
 
   /* resort argc/argv */
@@ -163,16 +169,29 @@ main (int argc, char **argv)
         cmdargs += " " + *ai;
       cmdline += cmdargs;
 
-      FILE *infile = fopen (argv[1], "r");
-      if (!infile)
-        die ("no infile");
-
+      /* hash commandline args */
       vector<unsigned char> data;
       for (size_t i = 0; i < cmdargs.size(); i++)
         data.push_back (cmdargs[i]);
       data.push_back (0);
 
       int ch;
+      /* hash contents of config file */
+      if (options.config_filename != "")
+        {
+          FILE *config_file = fopen (options.config_filename.c_str(), "r");
+          if (!config_file)
+            die ("config file not found");
+          while ((ch = fgetc (config_file)) >= 0)
+            data.push_back (ch);
+        }
+      data.push_back (0);
+
+      /* hash contents of infile */
+      FILE *infile = fopen (argv[1], "r");
+      if (!infile)
+        die ("no infile");
+
       while ((ch = fgetc (infile)) >= 0)
         data.push_back (ch);
 
