@@ -371,6 +371,15 @@ main (int argc, char **argv)
       exit (1);
     }
 
+  if (options.config_filename != "")
+    {
+      if (!enc_params.load_config (options.config_filename))
+        {
+          fprintf (stderr, "%s: can't open config file '%s'\n", options.program_name.c_str(), options.config_filename.c_str());
+          exit (1);
+        }
+    }
+
   /* open input */
   Bse::Error error;
 
@@ -427,8 +436,13 @@ main (int argc, char **argv)
       exit (1);
     }
   enc_params.fundamental_freq = options.fundamental_freq;
+
+  double min_frame_periods;
+  if (!enc_params.get_param ("min-frame-periods", min_frame_periods))
+    min_frame_periods = 4;
+
   enc_params.frame_size_ms = 40; // at least 40ms frames
-  enc_params.frame_size_ms = max (enc_params.frame_size_ms, 1000 / options.fundamental_freq * 4);
+  enc_params.frame_size_ms = max<float> (enc_params.frame_size_ms, 1000 / options.fundamental_freq * min_frame_periods);
   enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
 
   const size_t  frame_size = make_odd (mix_freq * 0.001 * enc_params.frame_size_ms);
@@ -442,15 +456,6 @@ main (int argc, char **argv)
   enc_params.frame_step = frame_step;
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
-
-  if (options.config_filename != "")
-    {
-      if (!enc_params.load_config (options.config_filename))
-        {
-          fprintf (stderr, "%s: can't open config file '%s'\n", options.program_name.c_str(), options.config_filename.c_str());
-          exit (1);
-        }
-    }
 
   int n_channels = gsl_data_handle_n_channels (dhandle);
 
