@@ -211,8 +211,9 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
 
 class Command
 {
-  string m_mode;
-  bool   m_need_save;
+  string            m_mode;
+  bool              m_need_save;
+  const WavSetWave *m_wave;
 public:
   static vector<Command *> *registry();
   Command (const string& mode)
@@ -220,6 +221,7 @@ public:
     registry()->push_back (this);
     m_mode = mode;
     m_need_save = false;
+    m_wave = NULL;
   }
   virtual bool
   parse_args (vector<string>& args)
@@ -234,12 +236,12 @@ public:
   virtual ~Command()
   {
   }
-  string mode()
+  string mode() const
   {
     return m_mode;
   }
   bool
-  need_save()
+  need_save() const
   {
     return m_need_save;
   }
@@ -247,6 +249,16 @@ public:
   set_need_save (bool s)
   {
     m_need_save = s;
+  }
+  const WavSetWave *
+  wave() const
+  {
+    return m_wave;
+  }
+  void
+  set_wave (const WavSetWave *wave)
+  {
+    m_wave = wave;
   }
 };
 
@@ -317,6 +329,22 @@ public:
     return true;
   }
 } mix_freq_command;
+
+class StatsCommand : public Command
+{
+public:
+  StatsCommand() : Command ("stats")
+  {
+  }
+  bool
+  exec (Audio& audio)
+  {
+    const WavSetWave *w = wave();
+
+    sm_printf ("%d %d\n", w ? w->midi_note : -1, int (audio.mix_freq + 0.5));
+    return true;
+  }
+} stats_command;
 
 class SampleCountCommand : public Command
 {
@@ -1195,6 +1223,7 @@ main (int argc, char **argv)
                     }
                   else
                     {
+                      cmd->set_wave (&*wi);
                       cmd->exec (*wi->audio);
                       done.insert (wi->audio);
                     }
