@@ -34,6 +34,7 @@ class Config:
     self.name_count        = 0
     self.short_name_count  = 0
     self.encoder_args_count = 0
+    self.soundfont_count   = 0
 
 class BuilderConfig:
   def __init__ (self):
@@ -170,6 +171,11 @@ def parse_config (filename):
           config.samples += [ [ i, "note-%d.wav" % i ] ]
           config.sample_count += 1
         parse_ok = True
+      elif tokens[0] == 'soundfont':
+        config.soundfont = tokens[1]
+        config.soundfont_preset = tokens[2]
+        config.soundfont_count += 1
+        parse_ok = True
     if len (tokens) >= 4:
       if tokens[0] == 'cut':
         config.cut += [ tokens[1:] ]
@@ -192,16 +198,18 @@ def parse_config (filename):
     die ("dir command must occur exactly once in config")
   if config.name_count != 1 or config.short_name_count != 1:
     die ("name/short_name command must occur exactly once in config")
-  if config.sample_count < 1:
+  if config.sample_count < 1 and config.soundfont_count < 1:
     die ("sample/samples command must occur at least once in config")
   if config.set_markers_count > 1:
     die ("set-markers command must occur at most once in config")
   if config.tune_all_frames_count > 1:
     die ("tune-all-frames command can be used at most once in config")
   if config.encoder_args_count > 1:
-    die ("encoder_args_count command can be used at most once in config")
+    die ("encoder_args command can be used at most once in config")
   if config.tune_all_frames_count > 0 and config.auto_tune_count > 0:
     die ("auto-tune/tune-all-frames command should not be used together")
+  if config.soundfont_count > 1:
+    die ("sountfont command can be used at most once in config")
   return config
 
 def parse_builder_config (filename):
@@ -246,15 +254,16 @@ def system_or_die (command):
   if return_code != 0:
     die ("executing command '%s' failed, return_code=%d" % (command, return_code))
 
-def build_instrument (inst_dir, builder_config, cmdline_args):
-  old_path = os.getcwd()
-  try:
-    os.chdir (inst_dir)
-  except:
-    die ("directory '%s' not found" % inst_dir)
+def build_instrument_soundfont (inst_dir, builder_config, cmdline_args, config, final_smset):
 
-  config = parse_config ("config")
+  import_args = "--output instrument.smset"
+  import_args += " -j %d" % builder_config.jobs
+  if (builder_config.cache > 0):
+    import_args += " --cache"
 
+  system_or_die ("cd %s; smsfimport import '%s' '%s' %s" % (config.dir, config.soundfont, config.soundfont_preset, import_args))
+
+def build_instrument_samples (inst_dir, builder_config, cmdline_args, config, final_smset):
   ### Cut instrument using imiscutter (if necessary)
   if (config.cut_count > 0):
     for args in config.cut:
@@ -274,8 +283,6 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
         threshold_args += " --signal %s" % tmax;
       system_or_die ("imiscutter %s %s %s %s %s" % (src, regions, note_start, pattern, threshold_args))
 
-  system_or_die ("rm -rf %s" % config.dir)
-  system_or_die ("mkdir -p %s" % config.dir)
   system_or_die ("smwavset init %s/instrument.wset" % config.dir);
   system_or_die ("smwavset init %s/instrument-clipped.wset" % config.dir);
 
@@ -300,6 +307,25 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
                  (builder_config.jobs, smencargs, config.dir, config.dir, pwd, config.dir, encoder_args));
   final_smset = config.dir + "/instrument.smset";
   system_or_die ("smwavset link %s" % final_smset);
+
+def build_instrument (inst_dir, builder_config, cmdline_args):
+  old_path = os.getcwd()
+  try:
+    os.chdir (inst_dir)
+  except:
+    die ("directory '%s' not found" % inst_dir)
+
+  config = parse_config ("config")
+
+  # create data dir
+  system_or_die ("rm -rf %s" % config.dir)
+  system_or_die ("mkdir -p %s" % config.dir)
+
+  final_smset = config.dir + "/instrument.smset"
+  if (config.soundfont_count > 0):
+    build_instrument_soundfont (inst_dir, builder_config, cmdline_args, config, final_smset)
+  else:
+    build_instrument_samples (inst_dir, builder_config, cmdline_args, config, final_smset)
 
   if (config.auto_tune_count > 0):
     if cmdline_args.untuned:
