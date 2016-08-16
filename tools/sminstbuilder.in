@@ -264,6 +264,7 @@ def system_or_die (command):
 def build_instrument_soundfont (inst_dir, builder_config, cmdline_args, config, final_smset):
   import_args = "--output instrument.smset"
   import_args += " -j %d" % builder_config.jobs
+  import_args += " --mono-flat"
   if (builder_config.cache > 0):
     import_args += " --cache"
 

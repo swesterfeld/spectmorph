@@ -504,6 +504,7 @@ struct Options
   int                 midi_note;
   bool                fast_import;
   bool                debug;
+  bool                mono_flat;
   int                 max_jobs;
   string              config_filename;
   string              smenc;
@@ -525,6 +526,7 @@ Options::Options()
   debug = false;
   max_jobs = 1;
   smenc = "smenc";
+  mono_flat = false;
 }
 
 void
@@ -578,6 +580,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--output", &opt_arg))
         {
           output_filename = opt_arg;
+        }
+      else if (check_arg (argc, argv, &i, "--mono-flat"))
+        {
+          mono_flat = true;
         }
     }
 
@@ -935,6 +941,38 @@ run_all (vector<string>& commands, const string& name, size_t max_jobs)
     }
 }
 
+void
+make_mono_flat (WavSet& wav_set)
+{
+  vector<WavSetWave> flat_waves;
+
+  map<int, string> wmap;
+
+  for (auto wave: wav_set.waves)
+    {
+      if (wave.channel == 0)
+        {
+          string& path = wmap[wave.midi_note];
+          if (path.empty())
+            {
+              path = wave.path;
+
+              WavSetWave new_wave;
+              new_wave.midi_note = wave.midi_note;
+              new_wave.path = wave.path;
+              new_wave.channel = wave.channel;
+              new_wave.velocity_range_min = 0;
+              new_wave.velocity_range_max = 127;
+
+              flat_waves.push_back (new_wave);
+            }
+          else
+            assert (path == wave.path);
+        }
+    }
+  wav_set.waves = flat_waves;
+}
+
 int
 import_preset (const string& import_name)
 {
@@ -1121,6 +1159,9 @@ import_preset (const string& import_name)
             }
           run_all (enc_commands, "Encoder", options.max_jobs);
           run_all (strip_commands, "Strip", options.max_jobs);
+
+          if (options.mono_flat)
+            make_mono_flat (wav_set);
 
           wav_set.save (output_filename);
           xsystem (string_printf ("smwavset link %s", output_filename.c_str()));
