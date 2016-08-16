@@ -507,6 +507,7 @@ struct Options
   int                 max_jobs;
   string              config_filename;
   string              smenc;
+  string              output_filename;
 
   Options();
   void parse (int *argc_p, char **argv_p[]);
@@ -573,6 +574,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--cache"))
         {
           smenc = "smenccache";
+        }
+      else if (check_arg (argc, argv, &i, "--output", &opt_arg))
+        {
+          output_filename = opt_arg;
         }
     }
 
@@ -941,21 +946,26 @@ import_preset (const string& import_name)
         {
           printf ("importing preset %s\n", import_name.c_str());
 
-          string preset_xname;
-          for (string::const_iterator ni = import_name.begin(); ni != import_name.end(); ni++)
+          string output_filename = options.output_filename;
+          if (output_filename == "")
             {
-              char c = *ni;
-              if (isupper (c))
-                c = tolower (c);
-              else if (islower (c))
-                ;
-              else if (isdigit (c))
-                ;
-              else
-                c = '_';
-              preset_xname += c;
+              string preset_xname;
+              for (string::const_iterator ni = import_name.begin(); ni != import_name.end(); ni++)
+                {
+                  char c = *ni;
+                  if (isupper (c))
+                    c = tolower (c);
+                  else if (islower (c))
+                    ;
+                  else if (isdigit (c))
+                    ;
+                  else
+                    c = '_';
+                  preset_xname += c;
+                }
+              printf ("%s\n", preset_xname.c_str());
+              output_filename = preset_xname + ".smset";
             }
-          printf ("%s\n", preset_xname.c_str());
 
           WavSet wav_set;
 
@@ -1112,8 +1122,8 @@ import_preset (const string& import_name)
           run_all (enc_commands, "Encoder", options.max_jobs);
           run_all (strip_commands, "Strip", options.max_jobs);
 
-          wav_set.save (preset_xname + ".smset");
-          xsystem (string_printf ("smwavset link %s.smset", preset_xname.c_str()));
+          wav_set.save (output_filename);
+          xsystem (string_printf ("smwavset link %s", output_filename.c_str()));
         }
     }
   return 0;
