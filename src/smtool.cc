@@ -341,7 +341,21 @@ public:
   {
     const WavSetWave *w = wave();
 
-    sm_printf ("%d %d\n", w ? w->midi_note : -1, int (audio.mix_freq + 0.5));
+    double mag_weight = 0, mag_partials = 0;
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        const AudioBlock& block = audio.contents[f];
+
+        double mag = 0;
+        for (size_t i = 0; i < block.freqs.size(); i++)
+          mag += block.mags_f (i);
+
+        /* give higher weight to louder audio blocks */
+        mag_weight   += mag;
+        mag_partials += mag * block.freqs.size();
+      }
+    mag_partials /= mag_weight;
+    sm_printf ("%d %d %f\n", w ? w->midi_note : -1, int (audio.mix_freq + 0.5), mag_partials);
     return true;
   }
 } stats_command;
