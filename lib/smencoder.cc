@@ -54,7 +54,8 @@ EncoderParams::EncoderParams() :
   frame_size (0),
   block_size (0),
   fundamental_freq (0),
-  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"})
+  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"}),
+  param_name_s ({"window"})
 {
 }
 
@@ -72,7 +73,7 @@ EncoderParams::load_config (const std::string& filename)
   while (cfg.next())
     {
       bool parsed = false;
-      for (auto name : param_name_d)
+      for (auto name : param_name_d)    // parse double parameters
         {
           double d;
           string str;
@@ -84,6 +85,19 @@ EncoderParams::load_config (const std::string& filename)
                 oneline += ";";
               if (cfg.command (name, str))
                 oneline += name + "=" + str;
+              parsed = true;
+            }
+        }
+      for (auto name : param_name_s)    // parse string parameters
+        {
+          string str;
+
+          if (cfg.command (name, str))
+            {
+              param_value_s[name] = str;
+              if (oneline != "")
+                oneline += ";";
+              oneline += name + "=" + str;
               parsed = true;
             }
         }
@@ -135,6 +149,26 @@ EncoderParams::get_param (const string& param, double& value)
     }
 }
 
+bool
+EncoderParams::get_param (const string& param, string& value)
+{
+  if (find (param_name_s.begin(), param_name_s.end(), param) == param_name_s.end())
+    {
+      fprintf (stderr, "error: encoder parameter '%s' was not defined\n", param.c_str());
+      exit (1);
+    }
+
+  map<string,string>::const_iterator pi = param_value_s.find (param);
+  if (pi == param_value_s.end())
+    {
+      return false; /* not defined */
+    }
+  else
+    {
+      value = pi->second;
+      return true;
+    }
+}
 
 /**
  * Constructor which initializes the Encoders parameters.
