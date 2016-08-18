@@ -115,7 +115,7 @@ class MainWidget : public QWidget
   Audio               audio;
   Wave               *current_wave;
 
-  SimpleJackPlayer    jack_player;
+  SimpleJackPlayer   *jack_player;
 
   SampleView         *sample_view;
   QScrollArea        *scroll_area;
@@ -132,7 +132,7 @@ class MainWidget : public QWidget
 
   std::vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
 public:
-  MainWidget();
+  MainWidget (bool use_jack);
   ~MainWidget();
 
   void load (const std::string& filename, const std::string& clip_markers);
@@ -157,7 +157,7 @@ class MainWindow : public QMainWindow
   MainWidget *main_widget;
 
 public:
-  MainWindow();
+  MainWindow (bool use_jack);
 
   void load (const std::string& filename, const std::string& clip_markers);
   void clip (const std::string& export_pattern);

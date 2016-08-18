@@ -31,11 +31,15 @@ using std::vector;
 GslDataHandle* dhandle_from_file (const string& filename);
 
 
-MainWidget::MainWidget() :
-  jack_player ("smsampleedit")
+MainWidget::MainWidget (bool use_jack)
 {
   samples = NULL;
   current_wave = NULL;
+
+  if (use_jack)
+    jack_player = new SimpleJackPlayer ("smsampleedit");
+  else
+    jack_player = NULL;
 
   QGridLayout *grid = new QGridLayout();
 
@@ -102,6 +106,11 @@ MainWidget::~MainWidget()
       delete samples;
       samples = NULL;
     }
+  if (jack_player)
+    {
+      delete jack_player;
+      jack_player = NULL;
+    }
 }
 
 void
@@ -134,7 +143,8 @@ MainWidget::on_volume_changed (int new_volume_int)
   double new_decoder_volume = bse_db_to_factor (new_volume);
   volume_label->setText (string_locale_printf ("%.1f dB", new_volume).c_str());
 
-  jack_player.set_volume (new_decoder_volume);
+  if (jack_player)
+    jack_player->set_volume (new_decoder_volume);
 }
 
 void
@@ -373,7 +383,8 @@ MainWidget::on_play_clicked()
 {
   audio.original_samples = get_clipped_samples (current_wave, samples);
 
-  jack_player.play (&audio, true);
+  if (jack_player)
+    jack_player->play (&audio, true);
 }
 
 static string
@@ -406,9 +417,9 @@ MainWidget::on_save_clicked()
   fclose (file);
 }
 
-MainWindow::MainWindow()
+MainWindow::MainWindow (bool use_jack)
 {
-  main_widget = new MainWidget();
+  main_widget = new MainWidget (use_jack);
 
   /* actions ... */
   QAction *next_action = new QAction ("Next Sample", this);
@@ -497,7 +508,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MainWindow main_window;
+  MainWindow main_window (mode != CLIP);
 
   if (mode != CLIP)
     main_window.show();
