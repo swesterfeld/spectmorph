@@ -495,10 +495,35 @@ main (int argc, char **argv)
       vector<float> window (block_size);
       vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;
 
+      string window_type;
+      if (!enc_params.get_param ("window", window_type))
+        window_type = "hann";
+
       for (guint i = 0; i < window.size(); i++)
         {
           if (i < frame_size)
-            window[i] = bse_window_cos (2.0 * i / (frame_size - 1) - 1.0);
+            {
+              if (window_type == "hann")
+                {
+                  window[i] = bse_window_cos (2.0 * i / (frame_size - 1) - 1.0);
+                }
+              else if (window_type == "hamming")
+                {
+                  /* probably never a good idea, since the sidelobes of the spectrum
+                   * do not roll off fast (as with the hann window)
+                   */
+                  window[i] = bse_window_hamming (2.0 * i / (frame_size - 1) - 1.0);
+                }
+              else if (window_type == "blackman")
+                {
+                  window[i] = bse_window_blackman (2.0 * i / (frame_size - 1) - 1.0);
+                }
+              else
+                {
+                  fprintf (stderr, "%s: unsupported window type in config.\n", options.program_name.c_str());
+                  exit (1);
+                }
+            }
           else
             window[i] = 0;
         }
