@@ -43,6 +43,9 @@ class BuilderConfig:
     self.jobs_count = 0
     self.cache_count = 0
     self.output_dir_count = 0
+    self.pre_encoder_config = []
+    self.post_encoder_config = []
+    self.have_encoder_config = False
 
 def die (message):
   print >> sys.stderr, "sminstbuilder: " + message
@@ -244,6 +247,15 @@ def parse_builder_config (filename):
         builder_config.output_dir = tokens[1]
         builder_config.output_dir_count += 1
         parse_ok = True
+    if len (tokens) >= 3:
+      if tokens[0] == 'pre-encoder-config':
+        builder_config.pre_encoder_config += [ tokens[1:] ]
+        builder_config.have_encoder_config = True
+        parse_ok = True
+      elif tokens[0] == 'post-encoder-config':
+        builder_config.post_encoder_config += [ tokens[1:] ]
+        builder_config.have_encoder_config = True
+        parse_ok = True
     if not parse_ok:
       die ("parse error in line %d '%s'" % (line_number, line.strip()));
     line_number += 1
@@ -268,7 +280,7 @@ def build_instrument_soundfont (inst_dir, builder_config, cmdline_args, config, 
   if (builder_config.cache > 0):
     import_args += " --cache"
 
-  if config.encoder_config_count > 0:
+  if config.encoder_config_count > 0 or builder_config.have_encoder_config:
     import_args += " --config smenc.config"
 
   system_or_die ("cd %s; smsfimport import '%s' '%s' %s" % (config.dir, config.soundfont, config.soundfont_preset, import_args))
@@ -310,7 +322,7 @@ def build_instrument_samples (inst_dir, builder_config, cmdline_args, config, fi
   encoder_args = "-O1 -s --keep-samples"
   if (config.encoder_args_count > 0):
     encoder_args += " " + config.encoder_args
-  if config.encoder_config_count > 0:
+  if config.encoder_config_count > 0 or builder_config.have_encoder_config:
     encoder_args += " --config %s/smenc.config" % config.dir
 
   pwd = os.getcwd()
@@ -334,9 +346,10 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
   system_or_die ("mkdir -p %s" % config.dir)
 
   # build smenc.config (used by samples and soundfont)
-  if config.encoder_config_count > 0:
+  encoder_config = builder_config.pre_encoder_config + config.encoder_config + builder_config.post_encoder_config
+  if len (encoder_config) > 0:
     f = open ("%s/smenc.config" % config.dir, "w")
-    for cfg in config.encoder_config:
+    for cfg in encoder_config:
       print >>f, " ".join (cfg)
     f.close()
 
