@@ -940,6 +940,11 @@ public:
     return false;
   }
   void
+  usage (bool one_line)
+  {
+    printf ("<n_partials>\n");
+  }
+  void
   update_fundamental_estimate (int n, const AudioBlock& block, double freq_min, double freq_max, double& f_out, double& m_out)
   {
     if (n > fundamental_est_n) /* use this partial for fundamental estimation? */
