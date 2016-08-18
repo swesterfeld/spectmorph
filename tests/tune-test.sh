@@ -2,7 +2,7 @@
 
 source test-common.sh
 
-for mode in tune-all-frames auto-tune
+for mode in "tune-all-frames 1" "tune-all-frames 2" "tune-all-frames 3" auto-tune
 do
   $SMENC -f 420 --no-attack --no-lpc -O1 $(infile_location saw440.wav) tune-test.sm
   $SMTOOL tune-test.sm $mode > /dev/null
