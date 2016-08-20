@@ -129,7 +129,7 @@ EncoderParams::load_config (const std::string& filename)
 }
 
 bool
-EncoderParams::get_param (const string& param, double& value)
+EncoderParams::get_param (const string& param, double& value) const
 {
   if (find (param_name_d.begin(), param_name_d.end(), param) == param_name_d.end())
     {
@@ -150,7 +150,7 @@ EncoderParams::get_param (const string& param, double& value)
 }
 
 bool
-EncoderParams::get_param (const string& param, string& value)
+EncoderParams::get_param (const string& param, string& value) const
 {
   if (find (param_name_s.begin(), param_name_s.end(), param) == param_name_s.end())
     {

@@ -51,8 +51,8 @@ struct EncoderParams
   std::map<std::string, std::string>  param_value_s;  // values of string parameters from config file
 
   bool load_config (const std::string& filename);
-  bool get_param (const std::string& param, double& value);
-  bool get_param (const std::string& param, std::string& value);
+  bool get_param (const std::string& param, double& value) const;
+  bool get_param (const std::string& param, std::string& value) const;
 
   EncoderParams();
 };
