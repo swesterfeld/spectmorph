@@ -9,6 +9,10 @@ else
   SUBDIRS = nobse lib gui jack python docs
 endif
 
+if COND_WITH_LV2
+  SUBDIRS += lv2
+endif
+
 EXTRA_DIST += TODO
 
 # === Release auxillary rule configuration ===

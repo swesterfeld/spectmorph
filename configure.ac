@@ -106,6 +106,14 @@ AC_DEFUN([AC_JACK_REQUIREMENTS],
     AC_SUBST(JACK_LIBS)
 ])
 
+dnl
+dnl LV2
+dnl
+AC_DEFUN([AC_LV2_REQUIREMENTS],
+[
+  PKG_CHECK_MODULES([LV2], [[lv2 >= 1.2.0]], [with_lv2="yes"], [with_lv2="no"])
+])
+
 dnl FFTW3 (optional requirement)
 AC_DEFUN([AC_FFTW_CHECK],
 [
@@ -189,6 +197,15 @@ else
   AC_BSE_REQUIREMENTS
 fi
 dnl -------------------------------------------------------------------------
+
+dnl -------------------- lv2 support is optional ----------------------------
+AC_ARG_WITH([lv2], [AS_HELP_STRING([--with-lv2], [build support for LV2])])
+AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
+if test "$with_lv2" != "xno"; then
+  AC_LV2_REQUIREMENTS
+fi
+dnl -------------------------------------------------------------------------
+
 AC_AO_REQUIREMENTS
 AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
@@ -231,7 +248,8 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 AC_CONFIG_FILES([Makefile
 nobse/Makefile nobse/birnet/Makefile nobse/bse/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
-beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile tools/sminstbuilder spectmorph.pc
+beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile lv2/Makefile
+tools/sminstbuilder spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
