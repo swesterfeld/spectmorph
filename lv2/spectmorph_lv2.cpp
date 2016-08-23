@@ -18,6 +18,7 @@
 
 using namespace SpectMorph;
 using std::vector;
+using std::max;
 
 enum PortIndex {
   SPECTMORPH_MIDI_IN  = 0,
@@ -63,15 +64,17 @@ freq_from_note (float note)
 class MidiHandler
 {
   vector<Voice> voices;
+  double        mix_freq;
 public:
-  MidiHandler (MorphPlanSynth& synth, size_t n_voices);
+  MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
 
   void process_note_on (int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_audio (float *output, size_t n_values);
 };
 
-MidiHandler::MidiHandler (MorphPlanSynth& synth, size_t n_voices)
+MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices)
+  : mix_freq (mix_freq)
 {
   voices.clear();
   voices.resize (n_voices);
@@ -120,18 +123,40 @@ MidiHandler::process_audio (float *output, size_t n_values)
 {
   zero_float_block (n_values, output);
 
+  float samples[n_values];
+  float *values[1] = { samples };
+
   for (auto& v : voices)
     {
       if (v.state == Voice::STATE_ON)
         {
           MorphOutputModule *output_module = v.mp_voice->output();
 
-          float samples[n_values];
-          float *values[1] = { samples };
           output_module->process (n_values, values, 1);
-
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i];
+        }
+      else if (v.state == Voice::STATE_RELEASE)
+        {
+          const float release_ms = 150; /* FIXME: this should be set by the user */
+
+          double v_decrement = (1000.0 / mix_freq) / release_ms;
+          size_t envelope_len = qBound<int> (0, sm_round_positive (v.env / v_decrement), n_values);
+
+          if (envelope_len < n_values)
+            {
+              /* envelope reached zero -> voice can be reused later */
+              v.state = Voice::STATE_IDLE;
+              v.pedal = false;
+            }
+          MorphOutputModule *output_module = v.mp_voice->output();
+
+          output_module->process (envelope_len, values, 1);
+          for (size_t i = 0; i < envelope_len; i++)
+            {
+              v.env -= v_decrement;
+              output[i] += samples[i] * v.env;
+            }
         }
     }
 }
@@ -152,18 +177,20 @@ public:
     LV2_URID midi_MidiEvent;
   } uris;
 
-  SpectMorphLV2 (double rate);
+  SpectMorphLV2 (double mix_freq);
 
   // SpectMorph stuff
+  double          mix_freq;
   MorphPlanSynth  morph_plan_synth;
   MorphPlanPtr    plan;
   MidiHandler     midi_handler;
 };
 
-SpectMorphLV2::SpectMorphLV2 (double rate) :
-  morph_plan_synth (rate),
+SpectMorphLV2::SpectMorphLV2 (double mix_freq) :
+  mix_freq (mix_freq),
+  morph_plan_synth (mix_freq),
   plan (new MorphPlan()),
-  midi_handler (morph_plan_synth, 64)
+  midi_handler (morph_plan_synth, mix_freq, 64)
 {
   std::string filename = "/home/stefan/lv2.smplan";
   GenericIn *in = StdioIn::open (filename);
@@ -270,6 +297,7 @@ run (LV2_Handle instance, uint32_t n_samples)
     }
   // write_output(self, offset, sample_count - offset);
   self->midi_handler.process_audio (output, n_samples);
+  self->morph_plan_synth.update_shared_state (n_samples / self->mix_freq * 1000);
 }
 
 static void
