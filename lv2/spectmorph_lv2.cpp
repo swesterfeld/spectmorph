@@ -1,65 +1,144 @@
-/*
-  Copyright 2006-2011 David Robillard <d@drobilla.net>
-  Copyright 2006 Steve Harris <steve@plugin.org.uk>
+// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-  Permission to use, copy, modify, and/or distribute this software for any
-  purpose with or without fee is hereby granted, provided that the above
-  copyright notice and this permission notice appear in all copies.
-
-  THIS SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-  WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-  MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-  ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-  WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-  ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-  OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-*/
-
-/** Include standard C headers */
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-/**
-   LV2 headers are based on the URI of the specification they come from, so a
-   consistent convention can be used even for unofficial extensions.  The URI
-   of the core LV2 specification is <http://lv2plug.in/ns/lv2core>, by
-   replacing `http:/` with `lv2` any header in the specification bundle can be
-   included, in this case `lv2.h`.
-*/
+#include "smmorphplansynth.hh"
+#include "smmorphoutputmodule.hh"
+#include "smmain.hh"
+
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/atom/util.h"
 #include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
-/**
-   The URI is the identifier for a plugin, and how the host associates this
-   implementation in code with its description in data.  In this plugin it is
-   only used once in the code, but defining the plugin URI at the top of the
-   file is a good convention to follow.  If this URI does not match that used
-   in the data files, the host will fail to load the plugin.
-*/
 #define SPECTMORPH_URI "http://spectmorph.org/plugins/spectmorph"
 
-/**
-   In code, ports are referred to by index.  An enumeration of port indices
-   should be defined for readability.
-*/
-typedef enum {
-        SPECTMORPH_MIDI_IN  = 0,
-	SPECTMORPH_GAIN     = 1,
-	SPECTMORPH_INPUT    = 2,
-	SPECTMORPH_OUTPUT   = 3
-} PortIndex;
+using namespace SpectMorph;
+using std::vector;
 
-/**
-   Every plugin defines a private structure for the plugin instance.  All data
-   associated with a plugin instance is stored here, and is available to
-   every instance method.  In this simple plugin, only port buffers need to be
-   stored, since there is no additional instance data.
-*/
-typedef struct {
+enum PortIndex {
+  SPECTMORPH_MIDI_IN  = 0,
+  SPECTMORPH_GAIN     = 1,
+  SPECTMORPH_INPUT    = 2,
+  SPECTMORPH_OUTPUT   = 3
+};
+
+class Voice
+{
+public:
+  enum State {
+    STATE_IDLE,
+    STATE_ON,
+    STATE_RELEASE
+  };
+  MorphPlanVoice *mp_voice;
+
+  State        state;
+  bool         pedal;
+  int          midi_note;
+  double       env;
+  double       velocity;
+
+  Voice() :
+    mp_voice (NULL),
+    state (STATE_IDLE),
+    pedal (false)
+  {
+  }
+  ~Voice()
+  {
+    mp_voice = NULL;
+  }
+};
+
+static float
+freq_from_note (float note)
+{
+  return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
+class MidiHandler
+{
+  vector<Voice> voices;
+public:
+  MidiHandler (MorphPlanSynth& synth, size_t n_voices);
+
+  void process_note_on (int midi_note, int midi_velocity);
+  void process_note_off (int midi_note);
+  void process_audio (float *output, size_t n_values);
+};
+
+MidiHandler::MidiHandler (MorphPlanSynth& synth, size_t n_voices)
+{
+  voices.clear();
+  voices.resize (n_voices);
+
+  for (auto& v : voices)
+    {
+      v.mp_voice = synth.add_voice();
+    }
+}
+
+void
+MidiHandler::process_note_on (int midi_note, int midi_velocity)
+{
+  for (auto& v : voices)
+    {
+      if (v.state == Voice::STATE_IDLE)
+        {
+          MorphOutputModule *output = v.mp_voice->output();
+          output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
+
+          v.state     = Voice::STATE_ON;
+          v.midi_note = midi_note;
+          v.velocity  = midi_velocity;
+
+          return;
+        }
+    }
+}
+
+void
+MidiHandler::process_note_off (int midi_note)
+{
+  for (auto& v : voices)
+    {
+      if (v.state == Voice::STATE_ON && v.midi_note == midi_note)
+        {
+          /* FIXME: hande pedal */
+          v.state = Voice::STATE_RELEASE;
+          v.env = 1.0;
+        }
+    }
+}
+
+void
+MidiHandler::process_audio (float *output, size_t n_values)
+{
+  zero_float_block (n_values, output);
+
+  for (auto& v : voices)
+    {
+      if (v.state == Voice::STATE_ON)
+        {
+          MorphOutputModule *output_module = v.mp_voice->output();
+
+          float samples[n_values];
+          float *values[1] = { samples };
+          output_module->process (n_values, values, 1);
+
+          for (size_t i = 0; i < n_values; i++)
+            output[i] += samples[i];
+        }
+    }
+}
+
+class SpectMorphLV2
+{
+public:
   // Port buffers
   const LV2_Atom_Sequence* midi_in;
   const float* gain;
@@ -72,25 +151,44 @@ typedef struct {
   struct {
     LV2_URID midi_MidiEvent;
   } uris;
-} Amp;
 
-/**
-   The `instantiate()` function is called by the host to create a new plugin
-   instance.  The host passes the plugin descriptor, sample rate, and bundle
-   path for plugins that need to load additional resources (e.g. waveforms).
-   The features parameter contains host-provided features defined in LV2
-   extensions, but this simple plugin does not use any.
+  SpectMorphLV2 (double rate);
 
-   This function is in the ``instantiation'' threading class, so no other
-   methods on this instance will be called concurrently with it.
-*/
-static LV2_Handle
-instantiate(const LV2_Descriptor*     descriptor,
-            double                    rate,
-            const char*               bundle_path,
-            const LV2_Feature* const* features)
+  // SpectMorph stuff
+  MorphPlanSynth  morph_plan_synth;
+  MorphPlanPtr    plan;
+  MidiHandler     midi_handler;
+};
+
+SpectMorphLV2::SpectMorphLV2 (double rate) :
+  morph_plan_synth (rate),
+  plan (new MorphPlan()),
+  midi_handler (morph_plan_synth, 64)
 {
-  Amp* amp = (Amp*)calloc (1, sizeof(Amp));
+  std::string filename = "/home/stefan/lv2.smplan";
+  GenericIn *in = StdioIn::open (filename);
+  if (!in)
+    {
+      g_printerr ("Error opening '%s'.\n", filename.c_str());
+      exit (1);
+    }
+  plan->load (in);
+  delete in;
+
+  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
+  morph_plan_synth.update_plan (plan);
+}
+
+static LV2_Handle
+instantiate (const LV2_Descriptor*     descriptor,
+             double                    rate,
+             const char*               bundle_path,
+             const LV2_Feature* const* features)
+{
+  if (!sm_init_done())
+    sm_init_plugin();
+
+  SpectMorphLV2 *self = new SpectMorphLV2 (rate);
 
   LV2_URID_Map* map = NULL;
   for (int i = 0; features[i]; i++)
@@ -103,97 +201,65 @@ instantiate(const LV2_Descriptor*     descriptor,
     }
   if (!map)
     {
+      delete self;
       return NULL; // host bug, we need this feature
     }
 
-  amp->map = map;
-  amp->uris.midi_MidiEvent = map->map (map->handle, LV2_MIDI__MidiEvent);
+  self->map = map;
+  self->uris.midi_MidiEvent = map->map (map->handle, LV2_MIDI__MidiEvent);
 
-  return (LV2_Handle)amp;
+  return (LV2_Handle)self;
 }
 
-/**
-   The `connect_port()` method is called by the host to connect a particular
-   port to a buffer.  The plugin must store the data location, but data may not
-   be accessed except in run().
-
-   This method is in the ``audio'' threading class, and is called in the same
-   context as run().
-*/
 static void
 connect_port (LV2_Handle instance,
               uint32_t   port,
               void*      data)
 {
-  Amp* amp = (Amp*)instance;
+  SpectMorphLV2* self = (SpectMorphLV2*)instance;
 
   switch ((PortIndex)port)
     {
-      case SPECTMORPH_MIDI_IN:    amp->midi_in = (const LV2_Atom_Sequence*)data;
+      case SPECTMORPH_MIDI_IN:    self->midi_in = (const LV2_Atom_Sequence*)data;
                                   break;
-      case SPECTMORPH_GAIN:       amp->gain = (const float*)data;
+      case SPECTMORPH_GAIN:       self->gain = (const float*)data;
                                   break;
-      case SPECTMORPH_INPUT:      amp->input = (const float*)data;
+      case SPECTMORPH_INPUT:      self->input = (const float*)data;
                                   break;
-      case SPECTMORPH_OUTPUT:     amp->output = (float*)data;
+      case SPECTMORPH_OUTPUT:     self->output = (float*)data;
                                   break;
     }
 }
 
-/**
-   The `activate()` method is called by the host to initialise and prepare the
-   plugin instance for running.  The plugin must reset all internal state
-   except for buffer locations set by `connect_port()`.  Since this plugin has
-   no other internal state, this method does nothing.
-
-   This method is in the ``instantiation'' threading class, so no other
-   methods on this instance will be called concurrently with it.
-*/
 static void
-activate(LV2_Handle instance)
+activate (LV2_Handle instance)
 {
 }
 
-/** Define a macro for converting a gain in dB to a coefficient. */
-#define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
-
-/**
-   The `run()` method is the main process function of the plugin.  It processes
-   a block of audio in the audio context.  Since this plugin is
-   `lv2:hardRTCapable`, `run()` must be real-time safe, so blocking (e.g. with
-   a mutex) or memory allocation are not allowed.
-*/
 static void
-run(LV2_Handle instance, uint32_t n_samples)
+run (LV2_Handle instance, uint32_t n_samples)
 {
-	const Amp* amp = (const Amp*)instance;
+  SpectMorphLV2* self = (SpectMorphLV2*)instance;
 
-	const float        gain   = *(amp->gain);
-	const float* const input  = amp->input;
-	float* const       output = amp->output;
+  const float        gain   = *(self->gain);
+  const float* const input  = self->input;
+  float* const       output = self->output;
 
-	const float coef = DB_CO(gain);
-
-	for (uint32_t pos = 0; pos < n_samples; pos++) {
-		output[pos] = input[pos] * coef;
-	}
-
-// FIXME:
   uint32_t  offset = 0;
 
-  LV2_ATOM_SEQUENCE_FOREACH (amp->midi_in, ev)
+  LV2_ATOM_SEQUENCE_FOREACH (self->midi_in, ev)
     {
-      if (ev->body.type == amp->uris.midi_MidiEvent)
+      if (ev->body.type == self->uris.midi_MidiEvent)
         {
           const uint8_t* const msg = (const uint8_t*)(ev + 1);
           switch (lv2_midi_message_type (msg))
             {
               case LV2_MIDI_MSG_NOTE_ON:
-                      fprintf (stderr, "got note on\n");
-                      break;
+                self->midi_handler.process_note_on (msg[1], msg[2]);
+                break;
               case LV2_MIDI_MSG_NOTE_OFF:
-                      fprintf (stderr, "got note off\n");
-                      break;
+                self->midi_handler.process_note_off (msg[1]);
+                break;
               //case LV2_MIDI_MSG_PGM_CHANGE:
               default: break;
             }
@@ -203,84 +269,44 @@ run(LV2_Handle instance, uint32_t n_samples)
         }
     }
   // write_output(self, offset, sample_count - offset);
+  self->midi_handler.process_audio (output, n_samples);
 }
 
-/**
-   The `deactivate()` method is the counterpart to `activate()`, and is called by
-   the host after running the plugin.  It indicates that the host will not call
-   `run()` again until another call to `activate()` and is mainly useful for more
-   advanced plugins with ``live'' characteristics such as those with auxiliary
-   processing threads.  As with `activate()`, this plugin has no use for this
-   information so this method does nothing.
-
-   This method is in the ``instantiation'' threading class, so no other
-   methods on this instance will be called concurrently with it.
-*/
 static void
-deactivate(LV2_Handle instance)
+deactivate (LV2_Handle instance)
 {
 }
 
-/**
-   Destroy a plugin instance (counterpart to `instantiate()`).
-
-   This method is in the ``instantiation'' threading class, so no other
-   methods on this instance will be called concurrently with it.
-*/
 static void
-cleanup(LV2_Handle instance)
+cleanup (LV2_Handle instance)
 {
-	free(instance);
+  delete static_cast <SpectMorphLV2 *> (instance);
 }
 
-/**
-   The `extension_data()` function returns any extension data supported by the
-   plugin.  Note that this is not an instance method, but a function on the
-   plugin descriptor.  It is usually used by plugins to implement additional
-   interfaces.  This plugin does not have any extension data, so this function
-   returns NULL.
-
-   This method is in the ``discovery'' threading class, so no other functions
-   or methods in this plugin library will be called concurrently with it.
-*/
 static const void*
-extension_data(const char* uri)
+extension_data (const char* uri)
 {
-	return NULL;
+  return NULL;
 }
 
-/**
-   Every plugin must define an `LV2_Descriptor`.  It is best to define
-   descriptors statically to avoid leaking memory and non-portable shared
-   library constructors and destructors to clean up properly.
-*/
 static const LV2_Descriptor descriptor = {
-	SPECTMORPH_URI,
-	instantiate,
-	connect_port,
-	activate,
-	run,
-	deactivate,
-	cleanup,
-	extension_data
+  SPECTMORPH_URI,
+  instantiate,
+  connect_port,
+  activate,
+  run,
+  deactivate,
+  cleanup,
+  extension_data
 };
 
-/**
-   The `lv2_descriptor()` function is the entry point to the plugin library.  The
-   host will load the library and call this function repeatedly with increasing
-   indices to find all the plugins defined in the library.  The index is not an
-   indentifier, the URI of the returned descriptor is used to determine the
-   identify of the plugin.
-
-   This method is in the ``discovery'' threading class, so no other functions
-   or methods in this plugin library will be called concurrently with it.
-*/
 LV2_SYMBOL_EXPORT
 const LV2_Descriptor*
-lv2_descriptor(uint32_t index)
+lv2_descriptor (uint32_t index)
 {
-	switch (index) {
-	case 0:  return &descriptor;
-	default: return NULL;
-	}
+  switch (index)
+    {
+      case 0:  return &descriptor;
+      default: return NULL;
+    }
 }
