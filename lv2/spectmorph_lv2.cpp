@@ -18,6 +18,7 @@
 /** Include standard C headers */
 #include <math.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /**
    LV2 headers are based on the URI of the specification they come from, so a
@@ -27,6 +28,10 @@
    included, in this case `lv2.h`.
 */
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
+#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
+#include "lv2/lv2plug.in/ns/ext/atom/util.h"
+#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
+#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 
 /**
    The URI is the identifier for a plugin, and how the host associates this
@@ -42,9 +47,10 @@
    should be defined for readability.
 */
 typedef enum {
-	SPECTMORPH_GAIN   = 0,
-	SPECTMORPH_INPUT  = 1,
-	SPECTMORPH_OUTPUT = 2
+        SPECTMORPH_MIDI_IN  = 0,
+	SPECTMORPH_GAIN     = 1,
+	SPECTMORPH_INPUT    = 2,
+	SPECTMORPH_OUTPUT   = 3
 } PortIndex;
 
 /**
@@ -54,10 +60,18 @@ typedef enum {
    stored, since there is no additional instance data.
 */
 typedef struct {
-	// Port buffers
-	const float* gain;
-	const float* input;
-	float*       output;
+  // Port buffers
+  const LV2_Atom_Sequence* midi_in;
+  const float* gain;
+  const float* input;
+  float*       output;
+
+  // Features
+  LV2_URID_Map* map;
+
+  struct {
+    LV2_URID midi_MidiEvent;
+  } uris;
 } Amp;
 
 /**
@@ -76,9 +90,26 @@ instantiate(const LV2_Descriptor*     descriptor,
             const char*               bundle_path,
             const LV2_Feature* const* features)
 {
-	Amp* amp = (Amp*)malloc(sizeof(Amp));
+  Amp* amp = (Amp*)calloc (1, sizeof(Amp));
 
-	return (LV2_Handle)amp;
+  LV2_URID_Map* map = NULL;
+  for (int i = 0; features[i]; i++)
+    {
+      if (!strcmp (features[i]->URI, LV2_URID__map))
+        {
+          map = (LV2_URID_Map*)features[i]->data;
+          break;
+        }
+    }
+  if (!map)
+    {
+      return NULL; // host bug, we need this feature
+    }
+
+  amp->map = map;
+  amp->uris.midi_MidiEvent = map->map (map->handle, LV2_MIDI__MidiEvent);
+
+  return (LV2_Handle)amp;
 }
 
 /**
@@ -90,23 +121,23 @@ instantiate(const LV2_Descriptor*     descriptor,
    context as run().
 */
 static void
-connect_port(LV2_Handle instance,
-             uint32_t   port,
-             void*      data)
+connect_port (LV2_Handle instance,
+              uint32_t   port,
+              void*      data)
 {
-	Amp* amp = (Amp*)instance;
+  Amp* amp = (Amp*)instance;
 
-	switch ((PortIndex)port) {
-	case SPECTMORPH_GAIN:
-		amp->gain = (const float*)data;
-		break;
-	case SPECTMORPH_INPUT:
-		amp->input = (const float*)data;
-		break;
-	case SPECTMORPH_OUTPUT:
-		amp->output = (float*)data;
-		break;
-	}
+  switch ((PortIndex)port)
+    {
+      case SPECTMORPH_MIDI_IN:    amp->midi_in = (const LV2_Atom_Sequence*)data;
+                                  break;
+      case SPECTMORPH_GAIN:       amp->gain = (const float*)data;
+                                  break;
+      case SPECTMORPH_INPUT:      amp->input = (const float*)data;
+                                  break;
+      case SPECTMORPH_OUTPUT:     amp->output = (float*)data;
+                                  break;
+    }
 }
 
 /**
@@ -146,6 +177,32 @@ run(LV2_Handle instance, uint32_t n_samples)
 	for (uint32_t pos = 0; pos < n_samples; pos++) {
 		output[pos] = input[pos] * coef;
 	}
+
+// FIXME:
+  uint32_t  offset = 0;
+
+  LV2_ATOM_SEQUENCE_FOREACH (amp->midi_in, ev)
+    {
+      if (ev->body.type == amp->uris.midi_MidiEvent)
+        {
+          const uint8_t* const msg = (const uint8_t*)(ev + 1);
+          switch (lv2_midi_message_type (msg))
+            {
+              case LV2_MIDI_MSG_NOTE_ON:
+                      fprintf (stderr, "got note on\n");
+                      break;
+              case LV2_MIDI_MSG_NOTE_OFF:
+                      fprintf (stderr, "got note off\n");
+                      break;
+              //case LV2_MIDI_MSG_PGM_CHANGE:
+              default: break;
+            }
+
+          //write_output(self, offset, ev->time.frames - offset);
+          offset = (uint32_t)ev->time.frames;
+        }
+    }
+  // write_output(self, offset, sample_count - offset);
 }
 
 /**

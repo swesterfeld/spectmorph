@@ -7,6 +7,9 @@
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix units: <http://lv2plug.in/ns/extensions/units#> .
+@prefix midi:  <http://lv2plug.in/ns/ext/midi#> .
+@prefix atom:  <http://lv2plug.in/ns/ext/atom#> .
+@prefix urid:   <http://lv2plug.in/ns/ext/urid#> .
 
 # First the type of the plugin is described.  All plugins must explicitly list
 # `lv2:Plugin` as a type.  A more specific type should also be given, where
@@ -27,14 +30,24 @@
 # after strings as shown.
 	doap:name "SpectMorph";
 	doap:license <http://opensource.org/licenses/isc> ;
+        lv2:requiredFeature urid:map ;
 	lv2:optionalFeature lv2:hardRTCapable ;
-	lv2:port [
+    lv2:port [
+        a lv2:InputPort ,
+          atom:AtomPort ;
+        atom:bufferType atom:Sequence ;
+        atom:supports midi:MidiEvent ;
+        lv2:designation lv2:control ;
+        lv2:index 0 ;
+        lv2:symbol "midi_in" ;
+        lv2:name "Midi Input"
+      ] , [
 # Every port must have at least two types, one that specifies direction
 # (lv2:InputPort or lv2:OutputPort), and another to describe the data type.
 # This port is a lv2:ControlPort, which means it contains a single float.
 		a lv2:InputPort ,
 			lv2:ControlPort ;
-		lv2:index 0 ;
+		lv2:index 1 ;
 		lv2:symbol "gain" ;
 		lv2:name "Gain" ,
 			"收益"@ch ,
@@ -70,13 +83,13 @@
 	] , [
 		a lv2:AudioPort ,
 			lv2:InputPort ;
-		lv2:index 1 ;
+		lv2:index 2 ;
 		lv2:symbol "in" ;
 		lv2:name "In"
 	] , [
 		a lv2:AudioPort ,
 			lv2:OutputPort ;
-		lv2:index 2 ;
+		lv2:index 3 ;
 		lv2:symbol "out" ;
 		lv2:name "Out"
 	] .
