@@ -65,16 +65,19 @@ class MidiHandler
 {
   vector<Voice> voices;
   double        mix_freq;
+  bool          pedal_down;
 public:
   MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
 
   void process_note_on (int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
+  void process_midi_controller (int controller, int value);
   void process_audio (float *output, size_t n_values);
 };
 
-MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices)
-  : mix_freq (mix_freq)
+MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
+  mix_freq (mix_freq),
+  pedal_down (false)
 {
   voices.clear();
   voices.resize (n_voices);
@@ -111,9 +114,36 @@ MidiHandler::process_note_off (int midi_note)
     {
       if (v.state == Voice::STATE_ON && v.midi_note == midi_note)
         {
-          /* FIXME: hande pedal */
-          v.state = Voice::STATE_RELEASE;
-          v.env = 1.0;
+          if (pedal_down)
+            {
+              v.pedal = true;
+            }
+          else
+            {
+              v.state = Voice::STATE_RELEASE;
+              v.env = 1.0;
+            }
+        }
+    }
+}
+
+void
+MidiHandler::process_midi_controller (int controller, int value)
+{
+  if (controller == LV2_MIDI_CTL_SUSTAIN)
+    {
+      pedal_down = value > 0x40;
+      if (!pedal_down)
+        {
+          /* release voices which are sustained due to the pedal */
+          for (auto& v : voices)
+            {
+              if (v.pedal && v.state == Voice::STATE_ON)
+                {
+                  v.state = Voice::STATE_RELEASE;
+                  v.env = 1.0;
+                }
+            }
         }
     }
 }
@@ -286,6 +316,9 @@ run (LV2_Handle instance, uint32_t n_samples)
                 break;
               case LV2_MIDI_MSG_NOTE_OFF:
                 self->midi_handler.process_note_off (msg[1]);
+                break;
+              case LV2_MIDI_MSG_CONTROLLER:
+                self->midi_handler.process_midi_controller (msg[1], msg[2]);
                 break;
               //case LV2_MIDI_MSG_PGM_CHANGE:
               default: break;
