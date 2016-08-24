@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
@@ -63,9 +64,14 @@ freq_from_note (float note)
 
 class MidiHandler
 {
-  vector<Voice> voices;
-  double        mix_freq;
-  bool          pedal_down;
+  vector<Voice>   voices;
+  vector<Voice *> idle_voices;
+  vector<Voice *> active_voices;
+  double          mix_freq;
+  bool            pedal_down;
+
+  Voice  *alloc_voice();
+  void    free_voice (size_t pos);
 public:
   MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
 
@@ -81,47 +87,75 @@ MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voice
 {
   voices.clear();
   voices.resize (n_voices);
+  active_voices.reserve (n_voices);
 
   for (auto& v : voices)
     {
       v.mp_voice = synth.add_voice();
+      idle_voices.push_back (&v);
     }
+}
+
+Voice *
+MidiHandler::alloc_voice()
+{
+  if (idle_voices.empty()) // out of voices?
+    return NULL;
+
+  Voice *voice = idle_voices.back();
+  assert (voice->state == Voice::STATE_IDLE);   // every item in idle_voices should be idle
+
+  // move voice from idle to active list
+  idle_voices.pop_back();
+  active_voices.push_back (voice);
+
+  return voice;
+}
+
+void
+MidiHandler::free_voice (size_t pos)
+{
+  Voice *voice = active_voices[pos];
+  assert (voice->state == Voice::STATE_IDLE);   // voices should be marked idle before freeing
+
+  // replace this voice entry with the last entry of the list
+  active_voices[pos] = active_voices.back();
+
+  // move voice from active to idle list
+  active_voices.pop_back();
+  idle_voices.push_back (voice);
 }
 
 void
 MidiHandler::process_note_on (int midi_note, int midi_velocity)
 {
-  for (auto& v : voices)
+  Voice *voice = alloc_voice();
+  if (voice)
     {
-      if (v.state == Voice::STATE_IDLE)
-        {
-          MorphOutputModule *output = v.mp_voice->output();
-          output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
+      MorphOutputModule *output = voice->mp_voice->output();
+      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
 
-          v.state     = Voice::STATE_ON;
-          v.midi_note = midi_note;
-          v.velocity  = midi_velocity;
-
-          return;
-        }
+      voice->state     = Voice::STATE_ON;
+      voice->midi_note = midi_note;
+      voice->velocity  = midi_velocity;
     }
 }
 
 void
 MidiHandler::process_note_off (int midi_note)
 {
-  for (auto& v : voices)
+  for (auto voice : active_voices)
     {
-      if (v.state == Voice::STATE_ON && v.midi_note == midi_note)
+      if (voice->state == Voice::STATE_ON && voice->midi_note == midi_note)
         {
           if (pedal_down)
             {
-              v.pedal = true;
+              voice->pedal = true;
             }
           else
             {
-              v.state = Voice::STATE_RELEASE;
-              v.env = 1.0;
+              voice->state = Voice::STATE_RELEASE;
+              voice->env = 1.0;
             }
         }
     }
@@ -136,12 +170,12 @@ MidiHandler::process_midi_controller (int controller, int value)
       if (!pedal_down)
         {
           /* release voices which are sustained due to the pedal */
-          for (auto& v : voices)
+          for (auto voice : active_voices)
             {
-              if (v.pedal && v.state == Voice::STATE_ON)
+              if (voice->pedal && voice->state == Voice::STATE_ON)
                 {
-                  v.state = Voice::STATE_RELEASE;
-                  v.env = 1.0;
+                  voice->state = Voice::STATE_RELEASE;
+                  voice->env = 1.0;
                 }
             }
         }
@@ -156,37 +190,45 @@ MidiHandler::process_audio (float *output, size_t n_values)
   float samples[n_values];
   float *values[1] = { samples };
 
-  for (auto& v : voices)
+  for (size_t voice_pos = 0; voice_pos < active_voices.size(); voice_pos++)
     {
-      if (v.state == Voice::STATE_ON)
+      Voice *voice = active_voices[voice_pos];
+
+      if (voice->state == Voice::STATE_ON)
         {
-          MorphOutputModule *output_module = v.mp_voice->output();
+          MorphOutputModule *output_module = voice->mp_voice->output();
 
           output_module->process (n_values, values, 1);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i];
         }
-      else if (v.state == Voice::STATE_RELEASE)
+      else if (voice->state == Voice::STATE_RELEASE)
         {
           const float release_ms = 150; /* FIXME: this should be set by the user */
 
           double v_decrement = (1000.0 / mix_freq) / release_ms;
-          size_t envelope_len = qBound<int> (0, sm_round_positive (v.env / v_decrement), n_values);
+          size_t envelope_len = qBound<int> (0, sm_round_positive (voice->env / v_decrement), n_values);
 
           if (envelope_len < n_values)
             {
               /* envelope reached zero -> voice can be reused later */
-              v.state = Voice::STATE_IDLE;
-              v.pedal = false;
+              voice->state = Voice::STATE_IDLE;
+              voice->pedal = false;
+
+              free_voice (voice_pos);
             }
-          MorphOutputModule *output_module = v.mp_voice->output();
+          MorphOutputModule *output_module = voice->mp_voice->output();
 
           output_module->process (envelope_len, values, 1);
           for (size_t i = 0; i < envelope_len; i++)
             {
-              v.env -= v_decrement;
-              output[i] += samples[i] * v.env;
+              voice->env -= v_decrement;
+              output[i] += samples[i] * voice->env;
             }
+        }
+      else
+        {
+          g_assert_not_reached();
         }
     }
 }
