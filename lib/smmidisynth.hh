@@ -44,7 +44,7 @@ class MidiSynth
   bool                  pedal_down;
 
   Voice  *alloc_voice();
-  void    free_voice (size_t pos);
+  void    free_unused_voices();
   float   freq_from_note (float note);
 
 public:

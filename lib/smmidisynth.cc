@@ -41,17 +41,24 @@ MidiSynth::alloc_voice()
 }
 
 void
-MidiSynth::free_voice (size_t pos)
+MidiSynth::free_unused_voices()
 {
-  Voice *voice = active_voices[pos];
-  assert (voice->state == Voice::STATE_IDLE);   // voices should be marked idle before freeing
+  size_t new_voice_count = 0;
 
-  // replace this voice entry with the last entry of the list
-  active_voices[pos] = active_voices.back();
+  for (size_t i = 0; i < active_voices.size(); i++)
+    {
+      Voice *voice = active_voices[i];
 
-  // move voice from active to idle list
-  active_voices.pop_back();
-  idle_voices.push_back (voice);
+      if (voice->state == Voice::STATE_IDLE)    // voice used?
+        {
+          idle_voices.push_back (voice);
+        }
+      else
+        {
+          active_voices[new_voice_count++] = voice;
+        }
+    }
+  active_voices.resize (new_voice_count);
 }
 
 size_t
@@ -125,10 +132,11 @@ MidiSynth::process_midi_controller (int controller, int value)
 void
 MidiSynth::process_audio (float *output, size_t n_values)
 {
-  zero_float_block (n_values, output);
-
+  bool  need_free = false;
   float samples[n_values];
   float *values[1] = { samples };
+
+  zero_float_block (n_values, output);
 
   for (size_t voice_pos = 0; voice_pos < active_voices.size(); voice_pos++)
     {
@@ -155,7 +163,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
               voice->state = Voice::STATE_IDLE;
               voice->pedal = false;
 
-              free_voice (voice_pos);
+              need_free = true; // need to recompute active_voices and idle_voices vectors
             }
           MorphOutputModule *output_module = voice->mp_voice->output();
 
@@ -171,6 +179,8 @@ MidiSynth::process_audio (float *output, size_t n_values)
           g_assert_not_reached();
         }
     }
+  if (need_free)
+    free_unused_voices();
 }
 
 
