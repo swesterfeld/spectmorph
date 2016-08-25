@@ -2,10 +2,16 @@
 
 @prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix ui:   <http://lv2plug.in/ns/extensions/ui#> .
 
 # ==== Plugin Entry ====
 
 <http://spectmorph.org/plugins/spectmorph>
-	a lv2:Plugin ;
-	lv2:binary <spectmorph_lv2.so>  ;
-	rdfs:seeAlso <spectmorph.ttl> .
+  a lv2:Plugin ;
+  lv2:binary <spectmorph_lv2.so>;
+  rdfs:seeAlso <spectmorph.ttl> .
+
+<http://spectmorph.org/plugins/spectmorph#ui>
+  a ui:Qt5UI;
+  ui:binary <spectmorph_lv2_ui.so>;
+  rdfs:seeAlso <spectmorph_lv2_ui.ttl> .

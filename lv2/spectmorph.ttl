@@ -9,7 +9,8 @@
 @prefix units: <http://lv2plug.in/ns/extensions/units#> .
 @prefix midi:  <http://lv2plug.in/ns/ext/midi#> .
 @prefix atom:  <http://lv2plug.in/ns/ext/atom#> .
-@prefix urid:   <http://lv2plug.in/ns/ext/urid#> .
+@prefix urid:  <http://lv2plug.in/ns/ext/urid#> .
+@prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
 
 <http://spectmorph.org/plugins/spectmorph>
   a lv2:Plugin,
@@ -19,57 +20,69 @@
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
         lv2:requiredFeature urid:map;
   lv2:optionalFeature lv2:hardRTCapable;
-    lv2:port
-      [
-        a lv2:InputPort,
-          atom:AtomPort;
-        atom:bufferType atom:Sequence;
-        atom:supports midi:MidiEvent;
-        lv2:designation lv2:control;
-        lv2:index 0;
-        lv2:symbol "midi_in";
-        lv2:name "Midi Input"
-      ],
-      [
-        a lv2:InputPort,
-          lv2:ControlPort;
-        lv2:index 1;
-        lv2:symbol "gain";
-        lv2:name "Gain",
-          "Gewinn"@de;
-        lv2:default 0.0;
-        lv2:minimum -90.0;
-        lv2:maximum 24.0;
-        units:unit units:db;
-        lv2:scalePoint
-          [
-            rdfs:label "+5";
-            rdf:value 5.0
-          ],
-          [
-            rdfs:label "0";
-            rdf:value 0.0
-          ],
-          [
-            rdfs:label "-5";
-            rdf:value -5.0
-          ],
-          [
-            rdfs:label "-10";
-            rdf:value -10.0
-          ]
-      ],
-      [
-        a lv2:AudioPort,
-          lv2:InputPort;
-        lv2:index 2;
-        lv2:symbol "in";
-        lv2:name "In"
-      ],
-      [
-        a lv2:AudioPort,
-          lv2:OutputPort;
-        lv2:index 3;
-        lv2:symbol "out";
-        lv2:name "Out"
-      ].
+  ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
+  lv2:port
+    [
+      a lv2:InputPort,
+        atom:AtomPort;
+      atom:bufferType atom:Sequence;
+      atom:supports midi:MidiEvent;
+      lv2:designation lv2:control;
+      lv2:index 0;
+      lv2:symbol "midi_in";
+      lv2:name "Midi Input"
+    ],
+    [
+      a lv2:InputPort,
+        lv2:ControlPort;
+      lv2:index 1;
+      lv2:symbol "gain";
+      lv2:name "Gain",
+        "Gewinn"@de;
+      lv2:default 0.0;
+      lv2:minimum -90.0;
+      lv2:maximum 24.0;
+      units:unit units:db;
+      lv2:scalePoint
+        [
+          rdfs:label "+5";
+          rdf:value 5.0
+        ],
+        [
+          rdfs:label "0";
+          rdf:value 0.0
+        ],
+        [
+          rdfs:label "-5";
+          rdf:value -5.0
+        ],
+        [
+          rdfs:label "-10";
+          rdf:value -10.0
+        ]
+    ],
+    [
+      a lv2:AudioPort,
+        lv2:InputPort;
+      lv2:index 2;
+      lv2:symbol "in";
+      lv2:name "In"
+    ],
+    [
+      a lv2:AudioPort,
+        lv2:OutputPort;
+      lv2:index 3;
+      lv2:symbol "out";
+      lv2:name "Out"
+    ].
+
+<http://spectmorph.org/plugins/spectmorph#ui>
+  a ui:Qt5UI;
+  lv2:requiredFeature urid:map;
+  lv2:extensionData ui:showInterface;
+  ui:portNotification
+    [
+      ui:plugin <http://spectmorph.org/plugins/spectmorph>;
+      lv2:symbol "notify";
+      ui:notifyType atom:Blank
+    ].
