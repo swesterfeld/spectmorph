@@ -9,7 +9,7 @@ plugindir = $(spectmorph_lv2dir)
 plugin_libs = $(QT_LIBS) $(BSE_LIBS) $(top_builddir)/lib/libspectmorph.la
 plugin_LTLIBRARIES = spectmorph_lv2.la
 
-spectmorph_lv2_la_SOURCES = spectmorph_lv2.cpp
+spectmorph_lv2_la_SOURCES = spectmorph_lv2.cc
 spectmorph_lv2_la_LIBADD  = $(plugin_libs)
 spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
