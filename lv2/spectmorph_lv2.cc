@@ -28,42 +28,36 @@ enum PortIndex {
   SPECTMORPH_OUTPUT   = 3
 };
 
-class Voice
+class MidiSynth
 {
-public:
-  enum State {
-    STATE_IDLE,
-    STATE_ON,
-    STATE_RELEASE
+  class Voice
+  {
+  public:
+    enum State {
+      STATE_IDLE,
+      STATE_ON,
+      STATE_RELEASE
+    };
+    MorphPlanVoice *mp_voice;
+
+    State        state;
+    bool         pedal;
+    int          midi_note;
+    double       env;
+    double       velocity;
+
+    Voice() :
+      mp_voice (NULL),
+      state (STATE_IDLE),
+      pedal (false)
+    {
+    }
+    ~Voice()
+    {
+      mp_voice = NULL;
+    }
   };
-  MorphPlanVoice *mp_voice;
 
-  State        state;
-  bool         pedal;
-  int          midi_note;
-  double       env;
-  double       velocity;
-
-  Voice() :
-    mp_voice (NULL),
-    state (STATE_IDLE),
-    pedal (false)
-  {
-  }
-  ~Voice()
-  {
-    mp_voice = NULL;
-  }
-};
-
-static float
-freq_from_note (float note)
-{
-  return 440 * exp (log (2) * (note - 69) / 12.0);
-}
-
-class MidiHandler
-{
   vector<Voice>   voices;
   vector<Voice *> idle_voices;
   vector<Voice *> active_voices;
@@ -72,8 +66,10 @@ class MidiHandler
 
   Voice  *alloc_voice();
   void    free_voice (size_t pos);
+  float   freq_from_note (float note);
+
 public:
-  MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
+  MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
 
   void process_note_on (int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
@@ -81,7 +77,7 @@ public:
   void process_audio (float *output, size_t n_values);
 };
 
-MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
+MidiSynth::MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
   mix_freq (mix_freq),
   pedal_down (false)
 {
@@ -96,8 +92,8 @@ MidiHandler::MidiHandler (MorphPlanSynth& synth, double mix_freq, size_t n_voice
     }
 }
 
-Voice *
-MidiHandler::alloc_voice()
+MidiSynth::Voice *
+MidiSynth::alloc_voice()
 {
   if (idle_voices.empty()) // out of voices?
     return NULL;
@@ -113,7 +109,7 @@ MidiHandler::alloc_voice()
 }
 
 void
-MidiHandler::free_voice (size_t pos)
+MidiSynth::free_voice (size_t pos)
 {
   Voice *voice = active_voices[pos];
   assert (voice->state == Voice::STATE_IDLE);   // voices should be marked idle before freeing
@@ -126,8 +122,14 @@ MidiHandler::free_voice (size_t pos)
   idle_voices.push_back (voice);
 }
 
+float
+MidiSynth::freq_from_note (float note)
+{
+  return 440 * exp (log (2) * (note - 69) / 12.0);
+}
+
 void
-MidiHandler::process_note_on (int midi_note, int midi_velocity)
+MidiSynth::process_note_on (int midi_note, int midi_velocity)
 {
   Voice *voice = alloc_voice();
   if (voice)
@@ -142,7 +144,7 @@ MidiHandler::process_note_on (int midi_note, int midi_velocity)
 }
 
 void
-MidiHandler::process_note_off (int midi_note)
+MidiSynth::process_note_off (int midi_note)
 {
   for (auto voice : active_voices)
     {
@@ -162,7 +164,7 @@ MidiHandler::process_note_off (int midi_note)
 }
 
 void
-MidiHandler::process_midi_controller (int controller, int value)
+MidiSynth::process_midi_controller (int controller, int value)
 {
   if (controller == LV2_MIDI_CTL_SUSTAIN)
     {
@@ -183,7 +185,7 @@ MidiHandler::process_midi_controller (int controller, int value)
 }
 
 void
-MidiHandler::process_audio (float *output, size_t n_values)
+MidiSynth::process_audio (float *output, size_t n_values)
 {
   zero_float_block (n_values, output);
 
@@ -255,14 +257,14 @@ public:
   double          mix_freq;
   MorphPlanSynth  morph_plan_synth;
   MorphPlanPtr    plan;
-  MidiHandler     midi_handler;
+  MidiSynth       midi_synth;
 };
 
 SpectMorphLV2::SpectMorphLV2 (double mix_freq) :
   mix_freq (mix_freq),
   morph_plan_synth (mix_freq),
   plan (new MorphPlan()),
-  midi_handler (morph_plan_synth, mix_freq, 64)
+  midi_synth (morph_plan_synth, mix_freq, 64)
 {
   std::string filename = "/home/stefan/lv2.smplan";
   GenericIn *in = StdioIn::open (filename);
@@ -354,13 +356,13 @@ run (LV2_Handle instance, uint32_t n_samples)
           switch (lv2_midi_message_type (msg))
             {
               case LV2_MIDI_MSG_NOTE_ON:
-                self->midi_handler.process_note_on (msg[1], msg[2]);
+                self->midi_synth.process_note_on (msg[1], msg[2]);
                 break;
               case LV2_MIDI_MSG_NOTE_OFF:
-                self->midi_handler.process_note_off (msg[1]);
+                self->midi_synth.process_note_off (msg[1]);
                 break;
               case LV2_MIDI_MSG_CONTROLLER:
-                self->midi_handler.process_midi_controller (msg[1], msg[2]);
+                self->midi_synth.process_midi_controller (msg[1], msg[2]);
                 break;
               //case LV2_MIDI_MSG_PGM_CHANGE:
               default: break;
@@ -371,8 +373,13 @@ run (LV2_Handle instance, uint32_t n_samples)
         }
     }
   // write_output(self, offset, sample_count - offset);
-  self->midi_handler.process_audio (output, n_samples);
+  self->midi_synth.process_audio (output, n_samples);
   self->morph_plan_synth.update_shared_state (n_samples / self->mix_freq * 1000);
+
+  // apply post gain
+  const float v = (gain > -90) ? bse_db_to_factor (gain) : 0;
+  for (uint32_t i = 0; i < n_samples; i++)
+    output[i] *= v;
 }
 
 static void
