@@ -71,7 +71,7 @@ MidiSynth::process_note_on (int midi_note, int midi_velocity)
 
       voice->state     = Voice::STATE_ON;
       voice->midi_note = midi_note;
-      voice->velocity  = midi_velocity;
+      voice->velocity  = midi_velocity / 127.;
     }
 }
 
@@ -134,7 +134,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
           output_module->process (n_values, values, 1);
           for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i];
+            output[i] += samples[i] * voice->velocity;
         }
       else if (voice->state == Voice::STATE_RELEASE)
         {
@@ -157,7 +157,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
           for (size_t i = 0; i < envelope_len; i++)
             {
               voice->env -= v_decrement;
-              output[i] += samples[i] * voice->env;
+              output[i] += samples[i] * voice->env * voice->velocity;
             }
         }
       else
