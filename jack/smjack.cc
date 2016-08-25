@@ -64,27 +64,6 @@ is_note_off (const jack_midi_event_t& event)
   return false;
 }
 
-static float
-freq_from_note (float note)
-{
-  return 440 * exp (log (2) * (note - 69) / 12.0);
-}
-
-void
-JackSynth::reschedule()
-{
-  active_voices.clear();
-  release_voices.clear();
-
-  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    {
-      if (vi->state == Voice::STATE_ON)
-        active_voices.push_back (&*vi);
-      else if (vi->state == Voice::STATE_RELEASE)
-        release_voices.push_back (&*vi);
-    }
-}
-
 int
 JackSynth::process (jack_nframes_t nframes)
 {
@@ -98,15 +77,7 @@ JackSynth::process (jack_nframes_t nframes)
         }
       m_volume = m_new_volume;
 
-      bool new_voices_active = false;
-      for (size_t i = 0; i < voices.size(); i++)
-        {
-          if (voices[i].state != Voice::STATE_IDLE)
-            {
-              new_voices_active = true;
-              break;
-            }
-        }
+      bool new_voices_active = midi_synth->active_voice_count() > 0;
       if (m_voices_active != new_voices_active)
         {
           m_voices_active = new_voices_active;
@@ -117,8 +88,8 @@ JackSynth::process (jack_nframes_t nframes)
       m_new_plan_mutex.unlock();
     }
 
-  float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
-  float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
+  // float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes); FIXME
+  // float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   // zero output buffer, so voices can be added
@@ -140,66 +111,20 @@ JackSynth::process (jack_nframes_t nframes)
               const int midi_note = in_event.buffer[1];
               const int midi_velocity = in_event.buffer[2];
 
-              double velocity = midi_velocity / 127.0;
-              // find unused voice
-              vector<Voice>::iterator vi = voices.begin();
-              while (vi != voices.end() && vi->state != Voice::STATE_IDLE)
-                vi++;
-              if (vi != voices.end())
-                {
-                  MorphOutputModule *output = vi->mp_voice->output();
-                  if (output)
-                    {
-                      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
-                      vi->state = Voice::STATE_ON;
-                      vi->midi_note = midi_note;
-                      vi->velocity = velocity;
-                      need_reschedule = true;
-                    }
-                }
+              midi_synth->process_note_on (midi_note, midi_velocity);
             }
           else if (is_note_off (in_event))
             {
               int    midi_note = in_event.buffer[1];
 
-              for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-                {
-                  if (vi->state == Voice::STATE_ON && vi->midi_note == midi_note)
-                    {
-                      if (pedal_down)
-                        {
-                          vi->pedal = true;
-                        }
-                      else
-                        {
-                          vi->state = Voice::STATE_RELEASE;
-                          vi->env = 1.0;
-                          need_reschedule = true;
-                        }
-                    }
-                }
+              midi_synth->process_note_off (midi_note);
             }
           else if ((in_event.buffer[0] & 0xf0) == 0xb0)
             {
               //printf ("got midi controller event status=%x controller=%x value=%x\n",
               //        in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
-              if (in_event.buffer[1] == 0x40)
-                {
-                  pedal_down = in_event.buffer[2] > 0x40;
-                  if (!pedal_down)
-                    {
-                      /* release voices which are sustained due to the pedal */
-                      for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-                        {
-                          if (vi->pedal && vi->state == Voice::STATE_ON)
-                            {
-                              vi->state = Voice::STATE_RELEASE;
-                              vi->env = 1.0;
-                              need_reschedule = true;
-                            }
-                        }
-                    }
-                }
+
+              midi_synth->process_midi_controller (in_event.buffer[1], in_event.buffer[2]);
             }
 
 
@@ -207,11 +132,6 @@ JackSynth::process (jack_nframes_t nframes)
           event_index++;
           if (event_index < event_count)
             jack_midi_event_get (&in_event, port_buf, event_index);
-        }
-      if (need_reschedule)
-        {
-          reschedule();
-          need_reschedule = false;
         }
 
       // compute boundary for processing
@@ -221,61 +141,11 @@ JackSynth::process (jack_nframes_t nframes)
       else
         end = nframes;
 
+      // update control input values FIXME
+      // v->mp_voice->set_control_input (0, control_in_1[i]);
+      // v->mp_voice->set_control_input (1, control_in_2[i]);
 
-      // compute voices with state == STATE_ON
-      for (vector<Voice*>::iterator avi = active_voices.begin(); avi != active_voices.end(); avi++)
-        {
-          Voice *v = *avi;
-          MorphOutputModule *output = v->mp_voice->output();
-
-          // update control input values
-          v->mp_voice->set_control_input (0, control_in_1[i]);
-          v->mp_voice->set_control_input (1, control_in_2[i]);
-
-          if (output)
-            {
-              float samples[end - i];
-              float *values[1] = { samples };
-              output->process (end - i, values, 1);
-              for (size_t j = i; j < end; j++)
-                audio_out[j] += samples[j-i] * v->velocity;
-            }
-        }
-      // compute voices with state == STATE_RELEASE
-      for (vector<Voice*>::iterator rvi = release_voices.begin(); rvi != release_voices.end(); rvi++)
-        {
-          Voice *v = *rvi;
-
-          // update control input values
-          v->mp_voice->set_control_input (0, control_in_1[i]);
-          v->mp_voice->set_control_input (1, control_in_2[i]);
-
-          double v_decrement = (1000.0 / jack_mix_freq) / release_ms;
-          size_t envelope_len = max (sm_round_positive (v->env / v_decrement), 0);
-          size_t envelope_end = min (i + envelope_len, end);
-          if (envelope_end < end)
-            {
-              v->state = Voice::STATE_IDLE;
-              v->pedal = false;
-              need_reschedule = true;
-            }
-          float envelope[envelope_end - i];
-          for (size_t j = i; j < envelope_end; j++)
-            {
-              v->env -= v_decrement;
-              envelope[j-i] = v->env;
-            }
-          float samples[envelope_end - i];
-          MorphOutputModule *output = v->mp_voice->output();
-          if (output)
-            {
-              float *values[1] = { samples };
-              output->process (envelope_end - i, values, 1);
-
-              for (size_t j = i; j < envelope_end; j++)
-                audio_out[j] += samples[j - i] * envelope[j - i] * v->velocity;
-            }
-        }
+      midi_synth->process_audio (audio_out + i, end - i);
       i = end;
     }
   for (size_t i = 0; i < nframes; i++)
@@ -295,11 +165,10 @@ jack_process (jack_nframes_t nframes, void *arg)
 JackSynth::JackSynth (jack_client_t *client) :
   m_voices_active (false)
 {
-  need_reschedule = false;
-  pedal_down = false;
   m_volume = 1;
   m_new_volume = 1;
   morph_plan_synth = NULL;
+  midi_synth = NULL;
 
   int pipe_rc = pipe (main_thread_wakeup_pfds);
   g_assert (pipe_rc == 0);
@@ -313,10 +182,7 @@ JackSynth::JackSynth (jack_client_t *client) :
 
   assert (morph_plan_synth == NULL);
   morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
-
-  voices.resize (64);
-  for (vector<Voice>::iterator vi = voices.begin(); vi != voices.end(); vi++)
-    vi->mp_voice = morph_plan_synth->add_voice();
+  midi_synth = new MidiSynth (*morph_plan_synth, jack_mix_freq, 64);
 
   jack_set_process_callback (client, jack_process, this);
 
@@ -336,6 +202,11 @@ JackSynth::JackSynth (jack_client_t *client) :
 
 JackSynth::~JackSynth()
 {
+  if (midi_synth)
+    {
+      delete midi_synth;
+      midi_synth = NULL;
+    }
   if (morph_plan_synth)
     {
       delete morph_plan_synth;

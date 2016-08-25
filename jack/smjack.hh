@@ -6,6 +6,7 @@
 #include "smmorphplanwindow.hh"
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
+#include "smmidisynth.hh"
 #include "smled.hh"
 
 #include <QWidget>
@@ -19,34 +20,6 @@
 namespace SpectMorph
 {
 
-class Voice
-{
-public:
-  enum State {
-    STATE_IDLE,
-    STATE_ON,
-    STATE_RELEASE
-  };
-  MorphPlanVoice *mp_voice;
-
-  State        state;
-  bool         pedal;
-  int          midi_note;
-  double       env;
-  double       velocity;
-
-  Voice() :
-    mp_voice (NULL),
-    state (STATE_IDLE),
-    pedal (false)
-  {
-  }
-  ~Voice()
-  {
-    mp_voice = NULL;
-  }
-};
-
 class JackSynth : public QObject
 {
   Q_OBJECT
@@ -55,16 +28,12 @@ protected:
   jack_port_t                  *input_port;
   std::vector<jack_port_t *>    output_ports;
   std::vector<jack_port_t *>    control_ports;
-  bool                          need_reschedule;
-  bool                          pedal_down;
 
   double                        release_ms;
   double                        m_volume;
 
   MorphPlanSynth               *morph_plan_synth;
-  std::vector<Voice>            voices;
-  std::vector<Voice*>           active_voices;
-  std::vector<Voice*>           release_voices;
+  MidiSynth                    *midi_synth;
 
   QMutex                        m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
@@ -82,7 +51,6 @@ public:
   void change_volume (double new_volume);
   bool voices_active();
   int  process (jack_nframes_t nframes);
-  void reschedule();
 
 public slots:
   void on_voices_active_changed();
