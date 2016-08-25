@@ -54,6 +54,8 @@ public:
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
   void process_audio (float *output, size_t n_values);
+
+  size_t active_voice_count() const;
 };
 
 }

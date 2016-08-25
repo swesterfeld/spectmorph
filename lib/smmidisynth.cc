@@ -54,6 +54,12 @@ MidiSynth::free_voice (size_t pos)
   idle_voices.push_back (voice);
 }
 
+size_t
+MidiSynth::active_voice_count() const
+{
+  return active_voices.size();
+}
+
 float
 MidiSynth::freq_from_note (float note)
 {
