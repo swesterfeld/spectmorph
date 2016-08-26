@@ -81,7 +81,17 @@
       lv2:index 3;
       lv2:symbol "out";
       lv2:name "Out"
-    ].
+    ],
+    [
+      a lv2:OutputPort ,
+        atom:AtomPort ;
+      atom:bufferType atom:Sequence;
+      atom:supports patch:Message;
+      lv2:designation lv2:control;
+      lv2:index 4;
+      lv2:symbol "notify";
+      lv2:name "Notify"
+    ] .
 
 <http://spectmorph.org/plugins/spectmorph#ui>
   a ui:Qt5UI;

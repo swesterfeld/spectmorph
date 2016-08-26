@@ -19,7 +19,8 @@ enum PortIndex {
   SPECTMORPH_MIDI_IN  = 0,
   SPECTMORPH_GAIN     = 1,
   SPECTMORPH_INPUT    = 2,
-  SPECTMORPH_OUTPUT   = 3
+  SPECTMORPH_OUTPUT   = 3,
+  SPECTMORPH_NOTIFY   = 4
 };
 
 class SpectMorphLV2 : public LV2Common
@@ -30,8 +31,12 @@ public:
   const float* gain;
   const float* input;
   float*       output;
+  LV2_Atom_Sequence* notify_port;
 
   LV2_Atom_Forge forge;
+
+  // Forge frame for notify port
+  LV2_Atom_Forge_Frame notify_frame;
 
   SpectMorphLV2 (double mix_freq);
 
@@ -111,6 +116,8 @@ connect_port (LV2_Handle instance,
                                   break;
       case SPECTMORPH_OUTPUT:     self->output = (float*)data;
                                   break;
+      case SPECTMORPH_NOTIFY:     self->notify_port = (LV2_Atom_Sequence*)data;
+                                  break;
     }
 }
 
@@ -148,6 +155,16 @@ run (LV2_Handle instance, uint32_t n_samples)
   float* const       output = self->output;
 
   uint32_t  offset = 0;
+
+  // Set up forge to write directly to notify output port.
+  const uint32_t notify_capacity = self->notify_port->atom.size;
+  lv2_atom_forge_set_buffer(&self->forge,
+                            (uint8_t*)self->notify_port,
+                            notify_capacity);
+
+  // Start a sequence in the notify output port.
+  lv2_atom_forge_sequence_head(&self->forge, &self->notify_frame, 0);
+
 
   LV2_ATOM_SEQUENCE_FOREACH (self->midi_in, ev)
     {
