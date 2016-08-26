@@ -6,6 +6,7 @@
 #include <QWidget>
 #include <QLabel>
 
+#include "smmorphplanwindow.hh"
 #include "smlv2common.hh"
 
 using namespace SpectMorph;
@@ -15,16 +16,18 @@ class SpectMorphLV2UI : public SpectMorph::LV2Common
 public:
   SpectMorphLV2UI();
 
-  QWidget        *widget;
+  MorphPlanWindow      *window;
+  MorphPlanPtr          morph_plan;
 
   LV2_Atom_Forge        forge;
   LV2UI_Write_Function  write;
   LV2UI_Controller      controller;
 };
 
-SpectMorphLV2UI::SpectMorphLV2UI()
+SpectMorphLV2UI::SpectMorphLV2UI() :
+  morph_plan (new MorphPlan())
 {
-  widget = new QLabel("foo");
+  window = new MorphPlanWindow (morph_plan, "!title!");
 }
 
 static LV2UI_Handle
@@ -36,6 +39,9 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             LV2UI_Widget*             widget,
             const LV2_Feature* const* features)
 {
+  if (!sm_init_done())
+    sm_init_plugin();
+
   SpectMorphLV2UI *ui = new SpectMorphLV2UI();
 
   LV2_URID_Map* map = NULL;
@@ -71,7 +77,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             ui->uris.atom_eventTransfer,
             msg);
 
-  *widget = ui->widget;
+  *widget = ui->window;
   return ui;
 }
 
@@ -161,6 +167,7 @@ port_event(LV2UI_Handle handle,
 
           const char* uri = (const char*)LV2_ATOM_BODY_CONST(file_uri);
           printf ("ui: received uri: %s\n", uri);
+          ui->morph_plan->set_plan_str (uri);
         }
     }
 }

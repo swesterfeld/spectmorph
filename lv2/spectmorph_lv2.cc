@@ -9,9 +9,12 @@
 #include "smmorphoutputmodule.hh"
 #include "smmidisynth.hh"
 #include "smmain.hh"
+#include "smmemout.hh"
+#include "smhexstring.hh"
 #include "smlv2common.hh"
 
 using namespace SpectMorph;
+using std::string;
 using std::vector;
 using std::max;
 
@@ -45,6 +48,7 @@ public:
   MorphPlanSynth  morph_plan_synth;
   MorphPlanPtr    plan;
   MidiSynth       midi_synth;
+  string          plan_str;
 };
 
 SpectMorphLV2::SpectMorphLV2 (double mix_freq) :
@@ -62,6 +66,12 @@ SpectMorphLV2::SpectMorphLV2 (double mix_freq) :
     }
   plan->load (in);
   delete in;
+
+  // only needed as long as we load a default plan
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  plan->save (&mo);
+  plan_str = HexString::encode (data);
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   morph_plan_synth.update_plan (plan);
@@ -196,7 +206,7 @@ run (LV2_Handle instance, uint32_t n_samples)
           if (obj->body.otype == self->uris.patch_Get)
             {
               printf ("received get event\n");
-              const char *state = "!state!";
+              const char *state = self->plan_str.c_str();
               lv2_atom_forge_frame_time(&self->forge, offset);
 
               write_set_file (self, &self->forge, state, strlen (state));
