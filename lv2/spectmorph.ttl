@@ -11,6 +11,12 @@
 @prefix atom:  <http://lv2plug.in/ns/ext/atom#> .
 @prefix urid:  <http://lv2plug.in/ns/ext/urid#> .
 @prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
+@prefix patch: <http://lv2plug.in/ns/ext/patch#> .
+
+<http://spectmorph.org/plugins/spectmorph#plan>
+        a lv2:Parameter ;
+        rdfs:label "plan" ;
+        rdfs:range atom:Path .
 
 <http://spectmorph.org/plugins/spectmorph>
   a lv2:Plugin,
@@ -21,6 +27,7 @@
         lv2:requiredFeature urid:map;
   lv2:optionalFeature lv2:hardRTCapable;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
+  patch:writable <http://spectmorph.org/plugins/spectmorph#plan> ;
   lv2:port
     [
       a lv2:InputPort,

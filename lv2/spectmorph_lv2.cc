@@ -12,11 +12,14 @@
 
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
+#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
 #include "lv2/lv2plug.in/ns/ext/atom/util.h"
 #include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
+#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 
-#define SPECTMORPH_URI "http://spectmorph.org/plugins/spectmorph"
+#define SPECTMORPH_URI    "http://spectmorph.org/plugins/spectmorph"
+#define SPECTMORPH__plan  SPECTMORPH_URI "#plan"
 
 using namespace SpectMorph;
 using std::vector;
@@ -38,11 +41,18 @@ public:
   const float* input;
   float*       output;
 
+  LV2_Atom_Forge forge;
+
   // Features
   LV2_URID_Map* map;
 
   struct {
     LV2_URID midi_MidiEvent;
+    LV2_URID patch_Get;
+    LV2_URID patch_Set;
+    LV2_URID patch_property;
+    LV2_URID patch_value;
+    LV2_URID spectmorph_plan;
   } uris;
 
   SpectMorphLV2 (double mix_freq);
@@ -101,7 +111,14 @@ instantiate (const LV2_Descriptor*     descriptor,
     }
 
   self->map = map;
-  self->uris.midi_MidiEvent = map->map (map->handle, LV2_MIDI__MidiEvent);
+  self->uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
+  self->uris.patch_Get          = map->map (map->handle, LV2_PATCH__Get);
+  self->uris.patch_Set          = map->map (map->handle, LV2_PATCH__Set);
+  self->uris.patch_property     = map->map (map->handle, LV2_PATCH__property);
+  self->uris.patch_value        = map->map (map->handle, LV2_PATCH__value);
+  self->uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
+
+  lv2_atom_forge_init (&self->forge, self->map);
 
   return (LV2_Handle)self;
 }
@@ -129,6 +146,25 @@ connect_port (LV2_Handle instance,
 static void
 activate (LV2_Handle instance)
 {
+}
+
+static inline LV2_Atom*
+write_set_file(SpectMorphLV2     *self,
+               LV2_Atom_Forge*    forge,
+               const char*        filename,
+               const uint32_t     filename_len)
+{
+        LV2_Atom_Forge_Frame frame;
+        LV2_Atom* set = (LV2_Atom*)lv2_atom_forge_object (forge, &frame, 0, self->uris.patch_Set);
+
+        lv2_atom_forge_key (forge,  self->uris.patch_property);
+        lv2_atom_forge_urid (forge, self->uris.spectmorph_plan);
+        lv2_atom_forge_key (forge,  self->uris.patch_value);
+        lv2_atom_forge_path (forge, filename, filename_len);
+
+        lv2_atom_forge_pop(forge, &frame);
+
+        return set;
 }
 
 static void
@@ -164,6 +200,19 @@ run (LV2_Handle instance, uint32_t n_samples)
 
           //write_output(self, offset, ev->time.frames - offset);
           offset = (uint32_t)ev->time.frames;
+        }
+      else if (lv2_atom_forge_is_object_type (&self->forge, ev->body.type))
+        {
+          const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
+
+          if (obj->body.otype == self->uris.patch_Get)
+            {
+              printf ("received get event\n");
+              const char *state = "!state!";
+              lv2_atom_forge_frame_time(&self->forge, offset);
+
+              write_set_file (self, &self->forge, state, strlen (state));
+            }
         }
     }
   // write_output(self, offset, sample_count - offset);
