@@ -6,18 +6,11 @@
 #include <QWidget>
 #include <QLabel>
 
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
-#include "lv2/lv2plug.in/ns/ext/atom/util.h"
-#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+#include "smlv2common.hh"
 
-#define SPECTMORPH_URI    "http://spectmorph.org/plugins/spectmorph"
-#define SPECTMORPH__plan  SPECTMORPH_URI "#plan"
-#define SPECTMORPH_UI_URI SPECTMORPH_URI "#ui"
+using namespace SpectMorph;
 
-class SpectMorphLV2UI
+class SpectMorphLV2UI : public SpectMorph::LV2Common
 {
 public:
   SpectMorphLV2UI();
@@ -27,20 +20,6 @@ public:
   LV2_Atom_Forge        forge;
   LV2UI_Write_Function  write;
   LV2UI_Controller      controller;
-
-  // Features
-  LV2_URID_Map* map;
-
-  struct {
-    LV2_URID atom_eventTransfer;
-    LV2_URID atom_URID;
-    LV2_URID atom_Path;
-    LV2_URID patch_Get;
-    LV2_URID patch_Set;
-    LV2_URID patch_property;
-    LV2_URID patch_value;
-    LV2_URID spectmorph_plan;
-  } uris;
 };
 
 SpectMorphLV2UI::SpectMorphLV2UI()
@@ -73,15 +52,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
       delete ui;
       return NULL; // host bug, we need this feature
     }
-  ui->map = map;
-  ui->uris.atom_eventTransfer   = map->map (map->handle, LV2_ATOM__eventTransfer);
-  ui->uris.atom_URID            = map->map (map->handle, LV2_ATOM__URID);
-  ui->uris.atom_Path            = map->map (map->handle, LV2_ATOM__Path);
-  ui->uris.patch_Get            = map->map (map->handle, LV2_PATCH__Get);
-  ui->uris.patch_Set            = map->map (map->handle, LV2_PATCH__Set);
-  ui->uris.patch_property       = map->map (map->handle, LV2_PATCH__property);
-  ui->uris.patch_value          = map->map (map->handle, LV2_PATCH__value);
-  ui->uris.spectmorph_plan      = map->map (map->handle, SPECTMORPH__plan);
+  ui->init_map (map);
 
   ui->write = write_function;
   ui->controller = controller;

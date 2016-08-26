@@ -9,17 +9,7 @@
 #include "smmorphoutputmodule.hh"
 #include "smmidisynth.hh"
 #include "smmain.hh"
-
-#include "lv2/lv2plug.in/ns/lv2core/lv2.h"
-#include "lv2/lv2plug.in/ns/ext/atom/atom.h"
-#include "lv2/lv2plug.in/ns/ext/atom/forge.h"
-#include "lv2/lv2plug.in/ns/ext/atom/util.h"
-#include "lv2/lv2plug.in/ns/ext/midi/midi.h"
-#include "lv2/lv2plug.in/ns/ext/urid/urid.h"
-#include "lv2/lv2plug.in/ns/ext/patch/patch.h"
-
-#define SPECTMORPH_URI    "http://spectmorph.org/plugins/spectmorph"
-#define SPECTMORPH__plan  SPECTMORPH_URI "#plan"
+#include "smlv2common.hh"
 
 using namespace SpectMorph;
 using std::vector;
@@ -32,7 +22,7 @@ enum PortIndex {
   SPECTMORPH_OUTPUT   = 3
 };
 
-class SpectMorphLV2
+class SpectMorphLV2 : public LV2Common
 {
 public:
   // Port buffers
@@ -42,18 +32,6 @@ public:
   float*       output;
 
   LV2_Atom_Forge forge;
-
-  // Features
-  LV2_URID_Map* map;
-
-  struct {
-    LV2_URID midi_MidiEvent;
-    LV2_URID patch_Get;
-    LV2_URID patch_Set;
-    LV2_URID patch_property;
-    LV2_URID patch_value;
-    LV2_URID spectmorph_plan;
-  } uris;
 
   SpectMorphLV2 (double mix_freq);
 
@@ -110,14 +88,7 @@ instantiate (const LV2_Descriptor*     descriptor,
       return NULL; // host bug, we need this feature
     }
 
-  self->map = map;
-  self->uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
-  self->uris.patch_Get          = map->map (map->handle, LV2_PATCH__Get);
-  self->uris.patch_Set          = map->map (map->handle, LV2_PATCH__Set);
-  self->uris.patch_property     = map->map (map->handle, LV2_PATCH__property);
-  self->uris.patch_value        = map->map (map->handle, LV2_PATCH__value);
-  self->uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
-
+  self->init_map (map);
   lv2_atom_forge_init (&self->forge, self->map);
 
   return (LV2_Handle)self;
