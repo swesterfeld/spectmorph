@@ -3,31 +3,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <QWidget>
-#include <QLabel>
-
-#include "smmorphplanwindow.hh"
 #include "smlv2common.hh"
+#include "smlv2ui.hh"
+#include "smmemout.hh"
+#include "smhexstring.hh"
 
 using namespace SpectMorph;
 
-class SpectMorphLV2UI : public SpectMorph::LV2Common
-{
-public:
-  SpectMorphLV2UI();
-
-  MorphPlanWindow      *window;
-  MorphPlanPtr          morph_plan;
-
-  LV2_Atom_Forge        forge;
-  LV2UI_Write_Function  write;
-  LV2UI_Controller      controller;
-};
+using std::vector;
+using std::string;
 
 SpectMorphLV2UI::SpectMorphLV2UI() :
   morph_plan (new MorphPlan())
 {
   window = new MorphPlanWindow (morph_plan, "!title!");
+
+  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+}
+
+void
+SpectMorphLV2UI::on_plan_changed()
+{
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  morph_plan->save (&mo);
+
+  string plan_str = HexString::encode (data);
+  printf ("UI: plan changed -> %s\n", plan_str.c_str());
 }
 
 static LV2UI_Handle

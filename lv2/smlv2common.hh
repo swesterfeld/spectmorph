@@ -1,5 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#ifndef SPECTMORPH_LV2_COMMON_HH
+#define SPECTMORPH_LV2_COMMON_HH
+
 #include "lv2/lv2plug.in/ns/lv2core/lv2.h"
 #include "lv2/lv2plug.in/ns/ext/atom/atom.h"
 #include "lv2/lv2plug.in/ns/ext/atom/forge.h"
@@ -50,3 +53,5 @@ public:
 };
 
 }
+
+#endif /* SPECTMORPH_LV2_COMMON_HH */

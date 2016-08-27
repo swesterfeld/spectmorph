@@ -18,8 +18,11 @@ spectmorph_lv2_la_SOURCES = spectmorph_lv2.cc $(SMHDRS)
 spectmorph_lv2_la_LIBADD  = $(plugin_libs)
 spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
-spectmorph_lv2_ui_la_SOURCES = spectmorph_lv2_ui.cc $(SMHDRS)
+spectmorph_lv2_ui_la_SOURCES = spectmorph_lv2_ui.cc $(SMHDRS) smlv2ui.hh moc_smlv2ui.cc
 spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GUI_LIBS)
 spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
 dist_spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
+
+moc_smlv2ui.cc: smlv2ui.hh
+	moc smlv2ui.hh > moc_smlv2ui.cc
