@@ -50,6 +50,67 @@ public:
     uris.patch_value        = map->map (map->handle, LV2_PATCH__value);
     uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
   }
+  LV2_Atom*
+  write_set_file (LV2_Atom_Forge*    forge,
+                  const char*        filename,
+                  const uint32_t     filename_len)
+  {
+    LV2_Atom_Forge_Frame frame;
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
+
+    lv2_atom_forge_key (forge,  uris.patch_property);
+    lv2_atom_forge_urid (forge, uris.spectmorph_plan);
+    lv2_atom_forge_key (forge,  uris.patch_value);
+    lv2_atom_forge_path (forge, filename, filename_len);
+
+    lv2_atom_forge_pop (forge, &frame);
+
+    return set;
+  }
+
+  const LV2_Atom*
+  read_set_file (const LV2_Atom_Object* obj)
+  {
+    if (obj->body.otype != uris.patch_Set)
+      {
+        fprintf(stderr, "Ignoring unknown message type %d\n", obj->body.otype);
+        return NULL;
+      }
+
+    /* Get property URI. */
+    const LV2_Atom* property = NULL;
+    lv2_atom_object_get(obj, uris.patch_property, &property, 0);
+    if (!property)
+      {
+        fprintf(stderr, "Malformed set message has no body.\n");
+        return NULL;
+      }
+    else if (property->type != uris.atom_URID)
+      {
+        fprintf(stderr, "Malformed set message has non-URID property.\n");
+        return NULL;
+      }
+    else if (((const LV2_Atom_URID*)property)->body != uris.spectmorph_plan)
+      {
+        fprintf(stderr, "Set message for unknown property.\n");
+        return NULL;
+      }
+
+    /* Get value. */
+    const LV2_Atom* file_path = NULL;
+    lv2_atom_object_get(obj, uris.patch_value, &file_path, 0);
+    if (!file_path)
+      {
+        fprintf(stderr, "Malformed set message has no value.\n");
+        return NULL;
+      }
+    else if (file_path->type != uris.atom_Path)
+      {
+        fprintf(stderr, "Set message value is not a Path.\n");
+        return NULL;
+      }
+    return file_path;
+  }
 };
 
 }

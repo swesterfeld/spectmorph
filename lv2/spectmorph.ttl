@@ -12,6 +12,7 @@
 @prefix urid:  <http://lv2plug.in/ns/ext/urid#> .
 @prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
 @prefix patch: <http://lv2plug.in/ns/ext/patch#> .
+@prefix work:  <http://lv2plug.in/ns/ext/worker#> .
 
 <http://spectmorph.org/plugins/spectmorph#plan>
         a lv2:Parameter ;
@@ -24,8 +25,10 @@
   lv2:project <http://lv2plug.in/ns/lv2>;                 # FIXME: uri
   doap:name "SpectMorph";
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
-        lv2:requiredFeature urid:map;
+  lv2:requiredFeature urid:map,
+                      work:schedule;
   lv2:optionalFeature lv2:hardRTCapable;
+  lv2:extensionData work:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
   patch:writable <http://spectmorph.org/plugins/spectmorph#plan> ;
   lv2:port

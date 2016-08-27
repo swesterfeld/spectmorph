@@ -30,6 +30,17 @@ SpectMorphLV2UI::on_plan_changed()
 
   string plan_str = HexString::encode (data);
   printf ("UI: plan changed -> %s\n", plan_str.c_str());
+
+  const size_t OBJ_BUF_SIZE = plan_str.size() + 1024;
+
+  uint8_t obj_buf[OBJ_BUF_SIZE];
+  lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
+
+  const LV2_Atom* msg = write_set_file (&forge, plan_str.c_str(), plan_str.size());
+
+  write (controller, 0, lv2_atom_total_size (msg),
+         uris.atom_eventTransfer,
+         msg);
 }
 
 static LV2UI_Handle
@@ -90,58 +101,6 @@ cleanup (LV2UI_Handle handle)
   delete ui;
 }
 
-/**
- * Get the file path from a message like:
- * []
- *     a patch:Set ;
- *     patch:property eg:sample ;
- *     patch:value </home/me/foo.wav> .
- */
-static inline const LV2_Atom*
-read_set_file(const SpectMorphLV2UI* self,
-              const LV2_Atom_Object* obj)
-{
-  if (obj->body.otype != self->uris.patch_Set)
-    {
-      fprintf(stderr, "Ignoring unknown message type %d\n", obj->body.otype);
-      return NULL;
-    }
-
-  /* Get property URI. */
-  const LV2_Atom* property = NULL;
-  lv2_atom_object_get(obj, self->uris.patch_property, &property, 0);
-  if (!property)
-    {
-      fprintf(stderr, "Malformed set message has no body.\n");
-      return NULL;
-    }
-  else if (property->type != self->uris.atom_URID)
-    {
-      fprintf(stderr, "Malformed set message has non-URID property.\n");
-      return NULL;
-    }
-  else if (((const LV2_Atom_URID*)property)->body != self->uris.spectmorph_plan)
-    {
-      fprintf(stderr, "Set message for unknown property.\n");
-      return NULL;
-    }
-
-  /* Get value. */
-  const LV2_Atom* file_path = NULL;
-  lv2_atom_object_get(obj, self->uris.patch_value, &file_path, 0);
-  if (!file_path)
-    {
-      fprintf(stderr, "Malformed set message has no value.\n");
-      return NULL;
-    }
-  else if (file_path->type != self->uris.atom_Path)
-    {
-      fprintf(stderr, "Set message value is not a Path.\n");
-      return NULL;
-    }
-  return file_path;
-}
-
 static void
 port_event(LV2UI_Handle handle,
            uint32_t     port_index,
@@ -160,7 +119,7 @@ port_event(LV2UI_Handle handle,
         {
           printf ("is object type\n");
           const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
-          const LV2_Atom*        file_uri = read_set_file (ui, obj);
+          const LV2_Atom*        file_uri = ui->read_set_file (obj);
           if (!file_uri)
             {
               fprintf(stderr, "Unknown message sent to UI.\n");

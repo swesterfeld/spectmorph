@@ -13,6 +13,10 @@
 #include "smhexstring.hh"
 #include "smlv2common.hh"
 
+#include "lv2/lv2plug.in/ns/ext/log/log.h"
+#include "lv2/lv2plug.in/ns/ext/log/logger.h"
+#include "lv2/lv2plug.in/ns/ext/worker/worker.h"
+
 using namespace SpectMorph;
 using std::string;
 using std::vector;
@@ -36,7 +40,13 @@ public:
   float*       output;
   LV2_Atom_Sequence* notify_port;
 
-  LV2_Atom_Forge forge;
+  // Logger
+  LV2_Log_Log*          log;
+  LV2_Log_Logger        logger;
+
+  LV2_Worker_Schedule*  schedule;
+
+  LV2_Atom_Forge  forge;
 
   // Forge frame for notify port
   LV2_Atom_Forge_Frame notify_frame;
@@ -89,12 +99,20 @@ instantiate (const LV2_Descriptor*     descriptor,
   SpectMorphLV2 *self = new SpectMorphLV2 (rate);
 
   LV2_URID_Map* map = NULL;
+  self->schedule = NULL;
   for (int i = 0; features[i]; i++)
     {
       if (!strcmp (features[i]->URI, LV2_URID__map))
         {
           map = (LV2_URID_Map*)features[i]->data;
-          break;
+        }
+      else if (!strcmp(features[i]->URI, LV2_LOG__log))
+        {
+          self->log = (LV2_Log_Log*) features[i]->data;
+        }
+      else if (!strcmp(features[i]->URI, LV2_WORKER__schedule))
+        {
+          self->schedule = (LV2_Worker_Schedule*)features[i]->data;
         }
     }
   if (!map)
@@ -102,9 +120,17 @@ instantiate (const LV2_Descriptor*     descriptor,
       delete self;
       return NULL; // host bug, we need this feature
     }
+  else if (!self->schedule)
+    {
+      lv2_log_error (&self->logger, "Missing feature work:schedule\n");
+      delete self;
+      return NULL; // host bug, we need this feature
+    }
 
   self->init_map (map);
+
   lv2_atom_forge_init (&self->forge, self->map);
+  lv2_log_logger_init (&self->logger, self->map, self->log);
 
   return (LV2_Handle)self;
 }
@@ -136,23 +162,76 @@ activate (LV2_Handle instance)
 {
 }
 
-static inline LV2_Atom*
-write_set_file(SpectMorphLV2     *self,
-               LV2_Atom_Forge*    forge,
-               const char*        filename,
-               const uint32_t     filename_len)
+/**
+   Do work in a non-realtime thread.
+
+   This is called for every piece of work scheduled in the audio thread using
+   self->schedule->schedule_work().  A reply can be sent back to the audio
+   thread using the provided respond function.
+*/
+static LV2_Worker_Status
+work (LV2_Handle                  instance,
+      LV2_Worker_Respond_Function respond,
+      LV2_Worker_Respond_Handle   handle,
+      uint32_t                    size,
+      const void*                 data)
 {
-        LV2_Atom_Forge_Frame frame;
-        LV2_Atom* set = (LV2_Atom*)lv2_atom_forge_object (forge, &frame, 0, self->uris.patch_Set);
+  SpectMorphLV2* self = (SpectMorphLV2*)instance;
 
-        lv2_atom_forge_key (forge,  self->uris.patch_property);
-        lv2_atom_forge_urid (forge, self->uris.spectmorph_plan);
-        lv2_atom_forge_key (forge,  self->uris.patch_value);
-        lv2_atom_forge_path (forge, filename, filename_len);
+  const LV2_Atom* atom = (const LV2_Atom*)data;
 
-        lv2_atom_forge_pop(forge, &frame);
+  // Handle set message (change plan).
+  const LV2_Atom_Object* obj = (const LV2_Atom_Object*)data;
 
-        return set;
+  // Get file path from message
+  const LV2_Atom* file_path = self->read_set_file (obj);
+  if (!file_path)
+    return LV2_WORKER_ERR_UNKNOWN;
+
+  // Load sample.
+  const char *plan = static_cast<const char *> (LV2_ATOM_BODY_CONST (file_path));
+  printf ("PLUGIN:%s\n", plan);
+#if 0
+                if (sample) {
+                        // Loaded sample, send it to run() to be applied.
+                        respond(handle, sizeof(sample), &sample);
+                }
+#endif
+
+  return LV2_WORKER_SUCCESS;
+}
+
+/**
+   Handle a response from work() in the audio thread.
+
+   When running normally, this will be called by the host after run().  When
+   freewheeling, this will be called immediately at the point the work was
+   scheduled.
+*/
+static LV2_Worker_Status
+work_response(LV2_Handle  instance,
+              uint32_t    size,
+              const void* data)
+{
+#if 0
+        Sampler* self = (Sampler*)instance;
+
+        SampleMessage msg = { { sizeof(Sample*), self->uris.eg_freeSample },
+                              self->sample };
+
+        // Send a message to the worker to free the current sample
+        self->schedule->schedule_work(self->schedule->handle, sizeof(msg), &msg);
+
+        // Install the new sample
+        self->sample = *(Sample*const*)data;
+
+        // Send a notification that we're using a new sample.
+        lv2_atom_forge_frame_time(&self->forge, self->frame_offset);
+        write_set_file(&self->forge, &self->uris,
+                       self->sample->path,
+                       self->sample->path_len);
+#endif
+        return LV2_WORKER_SUCCESS;
 }
 
 static void
@@ -203,13 +282,51 @@ run (LV2_Handle instance, uint32_t n_samples)
         {
           const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
 
+          if (obj->body.otype == self->uris.patch_Set)
+            {
+              // Get the property and value of the set message
+              const LV2_Atom* property = NULL;
+              const LV2_Atom* value    = NULL;
+              lv2_atom_object_get  (obj,
+                                    self->uris.patch_property, &property,
+                                    self->uris.patch_value,    &value,
+                                    0);
+              if (!property)
+                {
+                  lv2_log_error (&self->logger, "patch:Set message with no property\n");
+                  continue;
+                }
+              else if (property->type != self->uris.atom_URID)
+                {
+                  lv2_log_error (&self->logger, "patch:Set property is not a URID\n");
+                  continue;
+                }
+
+              const uint32_t key = ((const LV2_Atom_URID*)property)->body;
+              if (key == self->uris.spectmorph_plan)
+                {
+                  // Sample change, send it to the worker.
+                  lv2_log_trace (&self->logger, "Queueing set message\n");
+                  printf ("plugin: qset\n");
+
+                  self->schedule->schedule_work (self->schedule->handle, lv2_atom_total_size (&ev->body), &ev->body);
+                }
+#if 0
+ else if (key == uris->param_gain) {
+                                        // Gain change
+                                        if (value->type == uris->atom_Float) {
+                                                self->gain = DB_CO(((LV2_Atom_Float*)value)->body);
+                                        }
+                                }
+#endif
+            }
           if (obj->body.otype == self->uris.patch_Get)
             {
               printf ("received get event\n");
               const char *state = self->plan_str.c_str();
               lv2_atom_forge_frame_time(&self->forge, offset);
 
-              write_set_file (self, &self->forge, state, strlen (state));
+              self->write_set_file (&self->forge, state, strlen (state));
             }
         }
     }
@@ -237,6 +354,12 @@ cleanup (LV2_Handle instance)
 static const void*
 extension_data (const char* uri)
 {
+  static const LV2_Worker_Interface worker = { work, work_response, NULL };
+
+  if (!strcmp(uri, LV2_WORKER__interface))
+    {
+      return &worker;
+    }
   return NULL;
 }
 
