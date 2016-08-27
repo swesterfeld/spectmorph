@@ -57,6 +57,8 @@ public:
   double          mix_freq;
   MorphPlanSynth  morph_plan_synth;
   MorphPlanPtr    plan;
+  QMutex          new_plan_mutex;
+  MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   string          plan_str;
 };
@@ -178,8 +180,6 @@ work (LV2_Handle                  instance,
 {
   SpectMorphLV2* self = (SpectMorphLV2*)instance;
 
-  const LV2_Atom* atom = (const LV2_Atom*)data;
-
   // Handle set message (change plan).
   const LV2_Atom_Object* obj = (const LV2_Atom_Object*)data;
 
@@ -189,9 +189,30 @@ work (LV2_Handle                  instance,
     return LV2_WORKER_ERR_UNKNOWN;
 
   // Load sample.
-  const char *plan = static_cast<const char *> (LV2_ATOM_BODY_CONST (file_path));
-  printf ("PLUGIN:%s\n", plan);
+  const char *plan_str = static_cast<const char *> (LV2_ATOM_BODY_CONST (file_path));
+
+  MorphPlanPtr new_plan = new MorphPlan();
+  new_plan->set_plan_str (plan_str);
+
+  // this might take a while, and cannot be used in audio thread
+  MorphPlanSynth mp_synth (self->mix_freq);
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (new_plan);
+
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1);
+      float s;
+      float *values[1] = { &s };
+      om->process (1, values, 1);
+    }
+
+  QMutexLocker locker (&self->new_plan_mutex);
+  self->new_plan = new_plan;
+
 #if 0
+  printf ("PLUGIN:%s\n", plan);
                 if (sample) {
                         // Loaded sample, send it to run() to be applied.
                         respond(handle, sizeof(sample), &sample);
@@ -238,6 +259,16 @@ static void
 run (LV2_Handle instance, uint32_t n_samples)
 {
   SpectMorphLV2* self = (SpectMorphLV2*)instance;
+
+  if (self->new_plan_mutex.tryLock())
+    {
+      if (self->new_plan)
+        {
+          self->morph_plan_synth.update_plan (self->new_plan);
+          self->new_plan = NULL;
+        }
+      self->new_plan_mutex.unlock();
+    }
 
   const float        gain   = *(self->gain);
   const float* const input  = self->input;

@@ -29,10 +29,8 @@ SpectMorphLV2UI::on_plan_changed()
   morph_plan->save (&mo);
 
   string plan_str = HexString::encode (data);
-  printf ("UI: plan changed -> %s\n", plan_str.c_str());
 
   const size_t OBJ_BUF_SIZE = plan_str.size() + 1024;
-
   uint8_t obj_buf[OBJ_BUF_SIZE];
   lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
 
@@ -110,14 +108,11 @@ port_event(LV2UI_Handle handle,
 {
   SpectMorphLV2UI *ui = static_cast <SpectMorphLV2UI *> (handle);
 
-  fprintf (stderr, "port_event\n");
   if (format == ui->uris.atom_eventTransfer)
     {
-      printf ("format is atom_eventTransfer\n");
       const LV2_Atom* atom = (const LV2_Atom*)buffer;
       if (lv2_atom_forge_is_object_type (&ui->forge, atom->type))
         {
-          printf ("is object type\n");
           const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
           const LV2_Atom*        file_uri = ui->read_set_file (obj);
           if (!file_uri)
@@ -127,7 +122,6 @@ port_event(LV2UI_Handle handle,
             }
 
           const char* uri = (const char*)LV2_ATOM_BODY_CONST(file_uri);
-          printf ("ui: received uri: %s\n", uri);
           ui->morph_plan->set_plan_str (uri);
         }
     }
