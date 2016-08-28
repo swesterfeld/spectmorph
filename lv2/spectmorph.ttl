@@ -21,7 +21,7 @@
 
 <http://spectmorph.org/plugins/spectmorph>
   a lv2:Plugin,
-    lv2:SpectMorphPlugin;
+    lv2:InstrumentPlugin;
   lv2:project <http://lv2plug.in/ns/lv2>;                 # FIXME: uri
   doap:name "SpectMorph";
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
