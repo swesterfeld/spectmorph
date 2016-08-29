@@ -76,3 +76,10 @@ qt5 port:
 - cleanup old gtk code
 - smldplot
 - smmorphplot
+
+lv2:
+- debug using qt4 and qt5 plugins via suil
+- do qt5 with one less layer of indirection
+- state saving
+- add control #1, control #2 ports
+- add gain to ui
