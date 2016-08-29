@@ -286,6 +286,10 @@ run (LV2_Handle instance, uint32_t n_samples)
     {
       if (ev->body.type == self->uris.midi_MidiEvent)
         {
+          // process any audio that is before the event
+          self->midi_synth.process_audio (output + offset, ev->time.frames - offset);
+          offset = (uint32_t)ev->time.frames;
+
           const uint8_t* const msg = (const uint8_t*)(ev + 1);
           switch (lv2_midi_message_type (msg))
             {
@@ -298,12 +302,8 @@ run (LV2_Handle instance, uint32_t n_samples)
               case LV2_MIDI_MSG_CONTROLLER:
                 self->midi_synth.process_midi_controller (msg[1], msg[2]);
                 break;
-              //case LV2_MIDI_MSG_PGM_CHANGE:
               default: break;
             }
-
-          //write_output(self, offset, ev->time.frames - offset);
-          offset = (uint32_t)ev->time.frames;
         }
       else if (lv2_atom_forge_is_object_type (&self->forge, ev->body.type))
         {
@@ -355,8 +355,7 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
         }
     }
-  // write_output(self, offset, sample_count - offset);
-  self->midi_synth.process_audio (output, n_samples);
+  self->midi_synth.process_audio (output + offset, n_samples - offset);
   self->morph_plan_synth.update_shared_state (n_samples / self->mix_freq * 1000);
 
   // apply post gain

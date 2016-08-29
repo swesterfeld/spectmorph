@@ -132,6 +132,9 @@ MidiSynth::process_midi_controller (int controller, int value)
 void
 MidiSynth::process_audio (float *output, size_t n_values)
 {
+  if (!n_values)    /* this can happen if multiple midi events occur at the same time */
+    return;
+
   bool  need_free = false;
   float samples[n_values];
   float *values[1] = { samples };
