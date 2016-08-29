@@ -15,7 +15,7 @@ smplay_SOURCES = smplay.cc $(SMHDRS)
 smplay_LDADD = $(BSE_LIBS) $(AO_LIBS) $(SPECTMORPH_LIBS)
 
 smvisualize_SOURCES = smvisualize.cc $(SMHDRS)
-smvisualize_LDADD = $(BSE_LIBS) $(GTK_LIBS) $(SPECTMORPH_LIBS)
+smvisualize_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smtool_SOURCES = smtool.cc $(SMHDRS)
 smtool_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)

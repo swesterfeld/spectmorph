@@ -42,16 +42,16 @@ smenccache_SOURCES = smenccache.cc
 smenccache_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
 smsampleedit_SOURCES = smsampleedit.cc moc_smsampleedit.cc smsampleedit.hh
-smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
-smsampleedit_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
+smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
+smsampleedit_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
 
 smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
-smrunplan_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
+smrunplan_CXXFLAGS = $(AM_CXXFLAGS)
 
 smevalplayer_SOURCES = smevalplayer.cc
 smevalplayer_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS)
-smevalplayer_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS) -I$(top_srcdir)/jack
+smevalplayer_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/jack
 
 install-exec-hook:
 	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder

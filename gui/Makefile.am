@@ -20,8 +20,8 @@ SMSRCS = smzoomcontroller.cc smcomboboxoperator.cc smmorphplanwindow.cc smrename
 lib_LTLIBRARIES = libspectmorphgui.la
 
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
-libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
-libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(GTKMM_LIBS)
+libspectmorphgui_la_CXXFLAGS = $(AM_CXXFLAGS)
+libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
 
 moc_smmorphplanwindow.cc: smmorphplanwindow.hh
 	moc smmorphplanwindow.hh > moc_smmorphplanwindow.cc
