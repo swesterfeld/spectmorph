@@ -25,9 +25,8 @@ using std::max;
 enum PortIndex {
   SPECTMORPH_MIDI_IN  = 0,
   SPECTMORPH_GAIN     = 1,
-  SPECTMORPH_INPUT    = 2,
-  SPECTMORPH_OUTPUT   = 3,
-  SPECTMORPH_NOTIFY   = 4
+  SPECTMORPH_OUTPUT   = 2,
+  SPECTMORPH_NOTIFY   = 3
 };
 
 class SpectMorphLV2 : public LV2Common
@@ -150,8 +149,6 @@ connect_port (LV2_Handle instance,
                                   break;
       case SPECTMORPH_GAIN:       self->gain = (const float*)data;
                                   break;
-      case SPECTMORPH_INPUT:      self->input = (const float*)data;
-                                  break;
       case SPECTMORPH_OUTPUT:     self->output = (float*)data;
                                   break;
       case SPECTMORPH_NOTIFY:     self->notify_port = (LV2_Atom_Sequence*)data;
@@ -271,7 +268,6 @@ run (LV2_Handle instance, uint32_t n_samples)
     }
 
   const float        gain   = *(self->gain);
-  const float* const input  = self->input;
   float* const       output = self->output;
 
   uint32_t  offset = 0;
@@ -338,7 +334,6 @@ run (LV2_Handle instance, uint32_t n_samples)
                 {
                   // Sample change, send it to the worker.
                   lv2_log_trace (&self->logger, "Queueing set message\n");
-                  printf ("plugin: qset\n");
 
                   self->schedule->schedule_work (self->schedule->handle, lv2_atom_total_size (&ev->body), &ev->body);
                 }
@@ -353,7 +348,6 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
           if (obj->body.otype == self->uris.patch_Get)
             {
-              printf ("received get event\n");
               const char *state = self->plan_str.c_str();
               lv2_atom_forge_frame_time(&self->forge, offset);
 

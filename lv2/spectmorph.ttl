@@ -73,15 +73,8 @@
     ],
     [
       a lv2:AudioPort,
-        lv2:InputPort;
-      lv2:index 2;
-      lv2:symbol "in";
-      lv2:name "In"
-    ],
-    [
-      a lv2:AudioPort,
         lv2:OutputPort;
-      lv2:index 3;
+      lv2:index 2;
       lv2:symbol "out";
       lv2:name "Out"
     ],
@@ -91,7 +84,7 @@
       atom:bufferType atom:Sequence;
       atom:supports patch:Message;
       lv2:designation lv2:control;
-      lv2:index 4;
+      lv2:index 3;
       lv2:symbol "notify";
       lv2:name "Notify"
     ] .
