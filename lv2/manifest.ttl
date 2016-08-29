@@ -14,4 +14,4 @@
 <http://spectmorph.org/plugins/spectmorph#ui>
   a ui:Qt5UI;
   ui:binary <spectmorph_lv2_ui.so>;
-  rdfs:seeAlso <spectmorph_lv2_ui.ttl> .
+  rdfs:seeAlso <spectmorph.ttl> .
