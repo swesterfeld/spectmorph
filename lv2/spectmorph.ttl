@@ -13,6 +13,7 @@
 @prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
 @prefix patch: <http://lv2plug.in/ns/ext/patch#> .
 @prefix work:  <http://lv2plug.in/ns/ext/worker#> .
+@prefix rsz:   <http://lv2plug.in/ns/ext/resize-port#> .
 
 <http://spectmorph.org/plugins/spectmorph#plan>
         a lv2:Parameter ;
@@ -40,7 +41,8 @@
       lv2:designation lv2:control;
       lv2:index 0;
       lv2:symbol "midi_in";
-      lv2:name "Midi Input"
+      lv2:name "Midi Input";
+      rsz:minimumSize 65536;
     ],
     [
       a lv2:InputPort,
@@ -86,7 +88,8 @@
       lv2:designation lv2:control;
       lv2:index 3;
       lv2:symbol "notify";
-      lv2:name "Notify"
+      lv2:name "Notify";
+      rsz:minimumSize 65536;
     ] .
 
 <http://spectmorph.org/plugins/spectmorph#ui>
