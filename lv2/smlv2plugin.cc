@@ -191,6 +191,32 @@ activate (LV2_Handle instance)
 {
 }
 
+class WorkMsg
+{
+  char *m_plan_str;
+public:
+  WorkMsg (const char *plan_str)
+  {
+    m_plan_str = g_strdup (plan_str);
+  }
+  WorkMsg (uint32_t size, const void *data)
+  {
+    assert (size == sizeof (WorkMsg));
+    memcpy (this, data, size);
+  }
+  void
+  free()
+  {
+    g_free (m_plan_str);
+
+    m_plan_str = NULL;
+  }
+  const char *
+  plan_str()
+  {
+    return m_plan_str;
+  }
+};
 /**
    Do work in a non-realtime thread.
 
@@ -207,19 +233,12 @@ work (LV2_Handle                  instance,
 {
   LV2Plugin* self = (LV2Plugin*)instance;
 
-  // Handle set message (change plan).
-  const LV2_Atom_Object* obj = (const LV2_Atom_Object*)data;
+  // Get new plan from message
+  MorphPlanPtr  new_plan = new MorphPlan();
+  WorkMsg       msg (size, data);
 
-  // Get file path from message
-  const LV2_Atom* file_path = self->read_set_file (obj);
-  if (!file_path)
-    return LV2_WORKER_ERR_UNKNOWN;
-
-  // Load sample.
-  const char *plan_str = static_cast<const char *> (LV2_ATOM_BODY_CONST (file_path));
-
-  MorphPlanPtr new_plan = new MorphPlan();
-  new_plan->set_plan_str (plan_str);
+  new_plan->set_plan_str (msg.plan_str());
+  msg.free();
 
   // this might take a while, and cannot be used in audio thread
   MorphPlanSynth mp_synth (self->mix_freq);
@@ -235,6 +254,7 @@ work (LV2_Handle                  instance,
       om->process (1, values, 1);
     }
 
+  // install new plan
   QMutexLocker locker (&self->new_plan_mutex);
   self->new_plan = new_plan;
 
@@ -362,10 +382,10 @@ run (LV2_Handle instance, uint32_t n_samples)
               const uint32_t key = ((const LV2_Atom_URID*)property)->body;
               if (key == self->uris.spectmorph_plan)
                 {
-                  // Sample change, send it to the worker.
-                  lv2_log_trace (&self->logger, "Queueing set message\n");
+                  // send plan change to worker
+                  WorkMsg msg ((const char *) LV2_ATOM_BODY_CONST (value));
 
-                  self->schedule->schedule_work (self->schedule->handle, lv2_atom_total_size (&ev->body), &ev->body);
+                  self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
                 }
 #if 0
  else if (key == uris->param_gain) {
