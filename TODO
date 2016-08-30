@@ -78,8 +78,12 @@ qt5 port:
 - smmorphplot
 
 lv2:
-- debug using qt4 and qt5 plugins via suil
-- do qt5 with one less layer of indirection
 - state saving
 - add control #1, control #2 ports
 - add gain to ui
+- output operator deletion leads to problems
+- control lfo deletion leads to problems
+- change the way instruments are opened and referenced
+- debug qtractor
+- debur reason|bitwig
+- use worker thread response for setting|freeing morph plans
