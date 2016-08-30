@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <vector>
 #include <string>
+#include <map>
 #include <bse/gsldatautils.hh>
 
 #include "smaudio.hh"
