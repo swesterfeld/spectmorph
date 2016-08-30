@@ -11,6 +11,7 @@
 #include "smmain.hh"
 #include "smmemout.hh"
 #include "smhexstring.hh"
+#include "smutils.hh"
 #include "smlv2common.hh"
 
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
@@ -21,6 +22,30 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::max;
+
+#define DEBUG 0
+
+static FILE *debug_file = NULL;
+QMutex       debug_mutex;
+
+static void
+debug (const char *fmt, ...)
+{
+  if (DEBUG)
+    {
+      QMutexLocker locker (&debug_mutex);
+
+      if (!debug_file)
+        debug_file = fopen ("/tmp/smlv2plugin.log", "w");
+
+      va_list ap;
+
+      va_start (ap, fmt);
+      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
+      va_end (ap);
+      fflush (debug_file);
+    }
+}
 
 enum PortIndex {
   SPECTMORPH_MIDI_IN  = 0,

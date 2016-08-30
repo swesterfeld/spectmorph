@@ -7,11 +7,36 @@
 #include "smlv2ui.hh"
 #include "smmemout.hh"
 #include "smhexstring.hh"
+#include "smutils.hh"
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+
+#define DEBUG 0
+
+static FILE *debug_file = NULL;
+QMutex       debug_mutex;
+
+static void
+debug (const char *fmt, ...)
+{
+  if (DEBUG)
+    {
+      QMutexLocker locker (&debug_mutex);
+
+      if (!debug_file)
+        debug_file = fopen ("/tmp/smlv2ui.log", "w");
+
+      va_list ap;
+
+      va_start (ap, fmt);
+      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
+      va_end (ap);
+      fflush (debug_file);
+    }
+}
 
 LV2UI::LV2UI() :
   morph_plan (new MorphPlan())
