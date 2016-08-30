@@ -9,13 +9,13 @@
 namespace SpectMorph
 {
 
-class SpectMorphLV2UI : public QObject,
-                        public SpectMorph::LV2Common
+class LV2UI : public QObject,
+              public LV2Common
 {
   Q_OBJECT
 
 public:
-  SpectMorphLV2UI();
+  LV2UI();
 
   MorphPlanWindow      *window;
   MorphPlanPtr          morph_plan;

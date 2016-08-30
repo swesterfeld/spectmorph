@@ -13,7 +13,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
-SpectMorphLV2UI::SpectMorphLV2UI() :
+LV2UI::LV2UI() :
   morph_plan (new MorphPlan())
 {
   window = new MorphPlanWindow (morph_plan, "!title!");
@@ -22,7 +22,7 @@ SpectMorphLV2UI::SpectMorphLV2UI() :
 }
 
 void
-SpectMorphLV2UI::on_plan_changed()
+LV2UI::on_plan_changed()
 {
   vector<unsigned char> data;
   MemOut mo (&data);
@@ -53,7 +53,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
   if (!sm_init_done())
     sm_init_plugin();
 
-  SpectMorphLV2UI *ui = new SpectMorphLV2UI();
+  LV2UI *ui = new LV2UI();
 
   LV2_URID_Map* map = NULL;
   for (int i = 0; features[i]; i++)
@@ -95,7 +95,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 static void
 cleanup (LV2UI_Handle handle)
 {
-  SpectMorphLV2UI *ui = static_cast <SpectMorphLV2UI *> (handle);
+  LV2UI *ui = static_cast <LV2UI *> (handle);
   delete ui;
 }
 
@@ -106,7 +106,7 @@ port_event(LV2UI_Handle handle,
            uint32_t     format,
            const void*  buffer)
 {
-  SpectMorphLV2UI *ui = static_cast <SpectMorphLV2UI *> (handle);
+  LV2UI *ui = static_cast <LV2UI *> (handle);
 
   if (format == ui->uris.atom_eventTransfer)
     {

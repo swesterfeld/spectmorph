@@ -29,7 +29,10 @@ enum PortIndex {
   SPECTMORPH_NOTIFY   = 3
 };
 
-class SpectMorphLV2 : public LV2Common
+namespace SpectMorph
+{
+
+class LV2Plugin : public LV2Common
 {
 public:
   // Port buffers
@@ -50,7 +53,7 @@ public:
   // Forge frame for notify port
   LV2_Atom_Forge_Frame notify_frame;
 
-  SpectMorphLV2 (double mix_freq);
+  LV2Plugin (double mix_freq);
 
   // SpectMorph stuff
   double          mix_freq;
@@ -62,7 +65,9 @@ public:
   string          plan_str;
 };
 
-SpectMorphLV2::SpectMorphLV2 (double mix_freq) :
+}
+
+LV2Plugin::LV2Plugin (double mix_freq) :
   mix_freq (mix_freq),
   morph_plan_synth (mix_freq),
   plan (new MorphPlan()),
@@ -97,7 +102,7 @@ instantiate (const LV2_Descriptor*     descriptor,
   if (!sm_init_done())
     sm_init_plugin();
 
-  SpectMorphLV2 *self = new SpectMorphLV2 (rate);
+  LV2Plugin *self = new LV2Plugin (rate);
 
   LV2_URID_Map* map = NULL;
   self->schedule = NULL;
@@ -141,7 +146,7 @@ connect_port (LV2_Handle instance,
               uint32_t   port,
               void*      data)
 {
-  SpectMorphLV2* self = (SpectMorphLV2*)instance;
+  LV2Plugin* self = (LV2Plugin*)instance;
 
   switch ((PortIndex)port)
     {
@@ -175,7 +180,7 @@ work (LV2_Handle                  instance,
       uint32_t                    size,
       const void*                 data)
 {
-  SpectMorphLV2* self = (SpectMorphLV2*)instance;
+  LV2Plugin* self = (LV2Plugin*)instance;
 
   // Handle set message (change plan).
   const LV2_Atom_Object* obj = (const LV2_Atom_Object*)data;
@@ -255,7 +260,7 @@ work_response(LV2_Handle  instance,
 static void
 run (LV2_Handle instance, uint32_t n_samples)
 {
-  SpectMorphLV2* self = (SpectMorphLV2*)instance;
+  LV2Plugin* self = (LV2Plugin*)instance;
 
   if (self->new_plan_mutex.tryLock())
     {
@@ -372,7 +377,7 @@ deactivate (LV2_Handle instance)
 static void
 cleanup (LV2_Handle instance)
 {
-  delete static_cast <SpectMorphLV2 *> (instance);
+  delete static_cast <LV2Plugin *> (instance);
 }
 
 static const void*
