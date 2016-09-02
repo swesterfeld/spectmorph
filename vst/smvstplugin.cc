@@ -20,11 +20,9 @@
 #include "smmorphplansynth.hh"
 #include "smmidisynth.hh"
 #include "smmain.hh"
-#include "smmorphplanwindow.hh"
+#include "smvstui.hh"
 
 #include <QMutex>
-#include <QWindow>
-#include <QPushButton>
 #include <QApplication>
 
 // from http://www.asseca.org/vst-24-specs/index.html
@@ -93,75 +91,7 @@ is_note_off (const VstMidiEvent *event)
   return false;
 }
 
-struct ERect
-{
-	short top;
-	short left;
-	short bottom;
-	short right;
-};
-
 static char hostProductString[64] = "";
-
-class VstUI //: public QObject
-{
-  //Q_OBJECT
-
-  ERect             rectangle;
-  MorphPlanWindow  *widget;
-  MorphPlanPtr      morph_plan;
-public:
-  VstUI (const string& filename) :
-    morph_plan (new MorphPlan())
-  {
-    GenericIn *in = StdioIn::open (filename);
-    if (!in)
-      {
-        g_printerr ("Error opening '%s'.\n", filename.c_str());
-        exit (1);
-      }
-    morph_plan->load (in);
-    delete in;
-  }
-
-  bool
-  open (WId win_id)
-  {
-    widget = new MorphPlanWindow (morph_plan, "!title!");
-#if 0
-    QObject::connect(widget, &QPushButton::clicked, [=](bool b) {
-      debug ("clicked\n");
-    });
-#endif
-    //connect (widget, SIGNAL(clicked()), this, SLOT (doit()));
-    widget->winId();
-    widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
-    widget->show();
-    rectangle.top = 0;
-    rectangle.left = 0;
-    rectangle.bottom = widget->height();
-    rectangle.right = widget->width();
-
-    return true;
-  }
-  bool
-  getRect (ERect** rect)
-  {
-    *rect = &rectangle;
-
-    return true;
-  }
-  void
-  close()
-  {
-    delete widget;
-  }
-  void
-  idle()
-  {
-    QApplication::processEvents();
-  }
-};
 
 struct Plugin
 {
