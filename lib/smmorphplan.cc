@@ -346,11 +346,11 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 }
 
 Bse::Error
-MorphPlan::save (GenericOut *file)
+MorphPlan::save (GenericOut *file) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
   of.write_string ("index", index_filename);
-  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+  for (vector<MorphOperator *>::const_iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
     {
       MorphOperator *op = *oi;
 
@@ -403,4 +403,21 @@ string
 MorphPlan::id_chars()
 {
   return G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_-.:,;/&%$*+@?!#|{}()[]<>=^";
+}
+
+MorphPlan *
+MorphPlan::clone() const
+{
+  // create a deep copy (by saving/loading)
+  vector<unsigned char> plan_data;
+  MemOut                plan_mo (&plan_data);
+
+  save (&plan_mo);
+
+  MorphPlan *plan_clone = new MorphPlan();
+  GenericIn *in = MMapIn::open_mem (&plan_data[0], &plan_data[plan_data.size()]);
+  plan_clone->load (in);
+  delete in;
+
+  return plan_clone;
 }

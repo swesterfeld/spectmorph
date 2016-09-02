@@ -42,9 +42,11 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  Bse::Error save (GenericOut *file);
+  Bse::Error save (GenericOut *file) const;
   Bse::Error load (GenericIn *in);
   void clear();
+
+  MorphPlan *clone() const; // create a deep copy
 
   int  structure_version();
 
