@@ -10,6 +10,8 @@
 namespace SpectMorph
 {
 
+class VstPlugin;
+
 class VstUI : public QObject
 {
   Q_OBJECT
@@ -17,13 +19,18 @@ class VstUI : public QObject
   ERect             rectangle;
   MorphPlanWindow  *widget;
   MorphPlanPtr      morph_plan;
+  VstPlugin        *plugin;
+  
 public:
-  VstUI (const std::string& filename);
+  VstUI (const std::string& filename, VstPlugin *plugin);
 
   bool open (WId win_id);
   bool getRect (ERect** rect);
   void close();
   void idle();
+
+public slots:
+  void on_plan_changed();
 };
 
 }

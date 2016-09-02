@@ -21,6 +21,8 @@
 #include "smmidisynth.hh"
 #include "smmain.hh"
 #include "smvstui.hh"
+#include "smvstplugin.hh"
+#include "smmorphoutputmodule.hh"
 
 #include <QMutex>
 #include <QApplication>
@@ -37,6 +39,7 @@
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
+#define FIXME_MIX_FREQ 48000
 #define DEBUG 1
 
 using namespace SpectMorph;
@@ -91,47 +94,38 @@ is_note_off (const VstMidiEvent *event)
   return false;
 }
 
-static char hostProductString[64] = "";
-
-struct Plugin
+void
+preinit_plan (MorphPlanPtr plan)
 {
-  Plugin(audioMasterCallback master) :
-    plan (new MorphPlan()),
-    morph_plan_synth (48000), // FIXME
-    midi_synth (morph_plan_synth, 48000, 64), // FIXME
-    ui (new VstUI ("/home/stefan/lv2.smplan"))
-  {
-    audioMaster = master;
+  // this might take a while, and cannot be used in RT callback
+  MorphPlanSynth mp_synth (FIXME_MIX_FREQ); // FIXME
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (plan);
 
-    std::string filename = "/home/stefan/lv2.smplan";
-    GenericIn *in = StdioIn::open (filename);
-    if (!in)
-      {
-        g_printerr ("Error opening '%s'.\n", filename.c_str());
-        exit (1);
-      }
-    plan->load (in);
-    delete in;
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1);
+      float s;
+      float *values[1] = { &s };
+      om->process (1, values, 1);
+    }
+}
 
-    morph_plan_synth.update_plan (plan);
-  }
+void
+VstPlugin::change_plan (MorphPlanPtr plan)
+{
+  preinit_plan (plan);
 
-  ~Plugin()
-  {
-    delete ui;
-    ui = nullptr;
-  }
+  QMutexLocker locker (&m_new_plan_mutex);
+  m_new_plan = plan;
+}
 
-  audioMasterCallback audioMaster;
-  MorphPlanPtr        plan;
-  MorphPlanSynth      morph_plan_synth;
-  MidiSynth           midi_synth;
-  VstUI              *ui;
-};
+static char hostProductString[64] = "";
 
 static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val, void *ptr, float f)
 {
-	Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
 	switch (opcode) {
 		case effOpen:
@@ -300,7 +294,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
 
 static void process(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
-  Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
   debug ("!missing process\n");
 #if 0 // FIXME
   std::vector<amsynth_midi_cc_t> midi_out;
@@ -311,7 +305,18 @@ static void process(AEffect *effect, float **inputs, float **outputs, int numSam
 
 static void processReplacing(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
-  Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
+
+  // update plan with new parameters / new modules if necessary
+  if (plugin->m_new_plan_mutex.tryLock())
+    {
+      if (plugin->m_new_plan)
+        {
+          plugin->morph_plan_synth.update_plan (plugin->m_new_plan);
+          plugin->m_new_plan = NULL;
+        }
+      plugin->m_new_plan_mutex.unlock();
+    }
 
   plugin->midi_synth.process_audio (outputs[0], numSampleFrames);
   std::copy_n (outputs[0], numSampleFrames, outputs[1]);
@@ -319,7 +324,7 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
 
 static void setParameter(AEffect *effect, int i, float f)
 {
-  Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
   debug ("!missing set parameter\n");
 
   // FIXME plugin->ynthesizer->setNormalizedParameterValue((Param) i, f);
@@ -327,7 +332,7 @@ static void setParameter(AEffect *effect, int i, float f)
 
 static float getParameter(AEffect *effect, int i)
 {
-  Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
   debug ("!missing get parameter\n");
 
   // FIXME return plugin->synthesizer->getNormalizedParameterValue((Param) i);
@@ -368,7 +373,7 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;
 
   // Do no use the ->user pointer because ardour clobbers it
-  effect->ptr3 = new Plugin(audioMaster);
+  effect->ptr3 = new VstPlugin(audioMaster);
   effect->uniqueID = CCONST ('s', 'm', 'r', 'p');
   effect->processReplacing = processReplacing;
 
