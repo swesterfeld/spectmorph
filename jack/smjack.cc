@@ -92,9 +92,6 @@ JackSynth::process (jack_nframes_t nframes)
   // float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
-  // zero output buffer, so voices can be added
-  zero_float_block (nframes, audio_out);
-
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
   jack_midi_event_t in_event;
@@ -144,7 +141,7 @@ JackSynth::process (jack_nframes_t nframes)
       // update control input values FIXME
       // v->mp_voice->set_control_input (0, control_in_1[i]);
       // v->mp_voice->set_control_input (1, control_in_2[i]);
-
+      g_assert (end >= i);
       midi_synth->process_audio (audio_out + i, end - i);
       i = end;
     }
@@ -314,17 +311,7 @@ JackControlWidget::on_volume_changed (int new_volume)
 void
 JackControlWidget::on_plan_changed()
 {
-  MorphPlanPtr plan_clone = new MorphPlan();
-
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  morph_plan->save (&mo);
-
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-  plan_clone->load (in);
-  delete in;
-
-  synth->change_plan (plan_clone);
+  synth->change_plan (morph_plan->clone());
 }
 
 void

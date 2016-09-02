@@ -68,18 +68,7 @@ VstUI::idle()
 void
 VstUI::on_plan_changed()
 {
-  // provide MorphPlan::clone() const function
-  MorphPlanPtr plan_clone = new MorphPlan();
-
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  morph_plan->save (&mo);
-
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-  plan_clone->load (in);
-  delete in;
-
-  plugin->change_plan (plan_clone);
+  plugin->change_plan (morph_plan->clone());
 
   QTimer::singleShot (20, this, SLOT (on_update_window_size()));
 }
