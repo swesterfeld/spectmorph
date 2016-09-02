@@ -31,6 +31,7 @@ public:
 
 public slots:
   void on_plan_changed();
+  void on_update_window_size();
 };
 
 }

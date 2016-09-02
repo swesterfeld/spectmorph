@@ -373,7 +373,7 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;
 
   // Do no use the ->user pointer because ardour clobbers it
-  effect->ptr3 = new VstPlugin(audioMaster);
+  effect->ptr3 = new VstPlugin (audioMaster, effect);
   effect->uniqueID = CCONST ('s', 'm', 'r', 'p');
   effect->processReplacing = processReplacing;
 

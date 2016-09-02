@@ -12,7 +12,9 @@ namespace SpectMorph
 
 struct VstPlugin
 {
-  VstPlugin (audioMasterCallback master) :
+  VstPlugin (audioMasterCallback master, AEffect *aeffect) :
+    audioMaster (master),
+    aeffect (aeffect),
     plan (new MorphPlan()),
     morph_plan_synth (48000), // FIXME
     midi_synth (morph_plan_synth, 48000, 64), // FIXME
@@ -42,6 +44,8 @@ struct VstPlugin
   void change_plan (MorphPlanPtr ptr);
 
   audioMasterCallback audioMaster;
+  AEffect*            aeffect;
+
   MorphPlanPtr        plan;
   MorphPlanSynth      morph_plan_synth;
   MidiSynth           midi_synth;

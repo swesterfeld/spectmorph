@@ -7,6 +7,7 @@
 #include <QWindow>
 #include <QPushButton>
 #include <QApplication>
+#include <QTimer>
 
 using namespace SpectMorph;
 
@@ -79,4 +80,22 @@ VstUI::on_plan_changed()
   delete in;
 
   plugin->change_plan (plan_clone);
+
+  QTimer::singleShot (20, this, SLOT (on_update_window_size()));
+}
+
+void
+VstUI::on_update_window_size()
+{
+  const int width = widget->minimumWidth();
+  const int height = widget->minimumHeight();
+
+  if (height != rectangle.bottom || height != rectangle.right)
+    {
+      rectangle.bottom = height;
+      rectangle.right  = width;
+
+      widget->resize (width, height);
+      plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
+    }
 }
