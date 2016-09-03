@@ -52,18 +52,22 @@ struct VstPlugin
   float get_parameter_value (Param param) const;
   void  set_parameter_value (Param param, float value);
 
+  void  set_mix_freq (double mix_freq);
+  void  preinit_plan (MorphPlanPtr plan);
+
   void  change_plan (MorphPlanPtr ptr);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
 
   MorphPlanPtr        plan;
-  MorphPlanSynth      morph_plan_synth;
-  MidiSynth           midi_synth;
+  MorphPlanSynth     *morph_plan_synth;
+  MidiSynth          *midi_synth;
   VstUI              *ui;
+  double              mix_freq;
 
-  QMutex                        m_new_plan_mutex;
-  MorphPlanPtr                  m_new_plan;
+  QMutex              m_new_plan_mutex;
+  MorphPlanPtr        m_new_plan;
 };
 
 }

@@ -39,7 +39,6 @@
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
-#define FIXME_MIX_FREQ 48000
 #define DEBUG 1
 
 using namespace SpectMorph;
@@ -95,10 +94,10 @@ is_note_off (const VstMidiEvent *event)
 }
 
 void
-preinit_plan (MorphPlanPtr plan)
+VstPlugin::preinit_plan (MorphPlanPtr plan)
 {
   // this might take a while, and cannot be used in RT callback
-  MorphPlanSynth mp_synth (FIXME_MIX_FREQ); // FIXME
+  MorphPlanSynth mp_synth (mix_freq);
   MorphPlanVoice *mp_voice = mp_synth.add_voice();
   mp_synth.update_plan (plan);
 
@@ -116,8 +115,8 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
   plan (new MorphPlan()),
-  morph_plan_synth (48000), // FIXME
-  midi_synth (morph_plan_synth, 48000, 64), // FIXME
+  morph_plan_synth (nullptr),
+  midi_synth (nullptr),
   ui (new VstUI ("/home/stefan/lv2.smplan", this))
 {
   audioMaster = master;
@@ -132,17 +131,29 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   plan->load (in);
   delete in;
 
-  morph_plan_synth.update_plan (plan);
-
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
   parameters.push_back (Parameter ("Volume", -6, -48, 12, "dB"));
+
+  // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
+  set_mix_freq (48000);
 }
 
 VstPlugin::~VstPlugin()
 {
   delete ui;
   ui = nullptr;
+
+  if (morph_plan_synth)
+    {
+      delete morph_plan_synth;
+      morph_plan_synth = nullptr;
+    }
+  if (midi_synth)
+    {
+      delete midi_synth;
+      midi_synth = nullptr;
+    }
 }
 
 void
@@ -207,6 +218,25 @@ VstPlugin::set_parameter_value (Param param, float value)
     parameters[param].value = value;
 }
 
+void
+VstPlugin::set_mix_freq (double new_mix_freq)
+{
+  /* this should only be called by the host if the plugin is suspended, so
+   * we can alter variables that are used by process|processReplacing in the real time thread
+   */
+  if (midi_synth)
+    delete midi_synth;
+  if (morph_plan_synth)
+    delete morph_plan_synth;
+
+  mix_freq = new_mix_freq;
+
+  morph_plan_synth = new MorphPlanSynth (mix_freq);
+  morph_plan_synth->update_plan (plan);
+
+  midi_synth = new MidiSynth (*morph_plan_synth, mix_freq, 64);
+}
+
 
 static char hostProductString[64] = "";
 
@@ -242,7 +272,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       return 0;
 
     case effSetSampleRate:
-      debug ("fake set sample rate %f\n", f); //// FIXME plugin->synthesizer->setSampleRate(f);
+      plugin->set_mix_freq (f);
       return 0;
 
     case effSetBlockSize:
@@ -289,11 +319,11 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
                             debug ("EV: %x %d %d\n", event->midiData[0], event->midiData[1], event->midiData[2]);
                             if (is_note_on (event))
                               {
-                                plugin->midi_synth.process_note_on (event->midiData[1], event->midiData[2]);
+                                plugin->midi_synth->process_note_on (event->midiData[1], event->midiData[2]);
                               }
                             else if (is_note_off (event))
                               {
-                                plugin->midi_synth.process_note_off (event->midiData[1]);
+                                plugin->midi_synth->process_note_off (event->midiData[1]);
                               }
 			  }
 
@@ -400,14 +430,14 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
     {
       if (plugin->m_new_plan)
         {
-          plugin->morph_plan_synth.update_plan (plugin->m_new_plan);
+          plugin->morph_plan_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
       plugin->m_new_plan_mutex.unlock();
     }
-  plugin->midi_synth.set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
-  plugin->midi_synth.set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
-  plugin->midi_synth.process_audio (outputs[0], numSampleFrames);
+  plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
+  plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
+  plugin->midi_synth->process_audio (outputs[0], numSampleFrames);
 
   // apply replay volume
   const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
