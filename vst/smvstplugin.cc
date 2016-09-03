@@ -121,48 +121,74 @@ VstPlugin::change_plan (MorphPlanPtr plan)
   m_new_plan = plan;
 }
 
+void
+VstPlugin::get_parameter_name (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, parameters[param].name.c_str(), len);
+}
+
+void
+VstPlugin::get_parameter_label (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, parameters[param].label.c_str(), len);
+}
+
+void
+VstPlugin::get_parameter_display (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, string_printf ("%.5f", parameters[param].value).c_str(), len);
+}
+
+void
+VstPlugin::set_parameter_scale (Param param, float value)
+{
+  if (param >= 0 && param < parameters.size())
+    parameters[param].value = parameters[param].min_value + (parameters[param].max_value - parameters[param].min_value) * value;
+}
+
 static char hostProductString[64] = "";
 
 static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val, void *ptr, float f)
 {
   VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
-	switch (opcode) {
-		case effOpen:
-			return 0;
+  switch (opcode) {
+    case effOpen:
+      return 0;
 
-		case effClose:
-			delete plugin;
-			memset(effect, 0, sizeof(AEffect));
-			free(effect);
-			return 0;
+    case effClose:
+      delete plugin;
+      memset(effect, 0, sizeof(AEffect));
+      free(effect);
+      return 0;
 
-		case effSetProgram:
-		case effGetProgram:
-		case effGetProgramName:
-			return 0;
+    case effSetProgram:
+    case effGetProgram:
+    case effGetProgramName:
+      return 0;
 
-#if 0 // FIXME
-		case effGetParamLabel:
-			// FIXME plugin->synthesizer->getParameterLabel((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamLabel:
+      plugin->get_parameter_label ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-		case effGetParamDisplay:
-			// FIXME plugin->synthesizer->getParameterDisplay((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamDisplay:
+      plugin->get_parameter_display ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-		case effGetParamName:
-			// FIXME plugin->synthesizer->getParameterName((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamName:
+      plugin->get_parameter_name ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-#endif
-		case effSetSampleRate:
-			debug ("fake set sample rate %f\n", f); //// FIXME plugin->synthesizer->setSampleRate(f);
-			return 0;
+    case effSetSampleRate:
+      debug ("fake set sample rate %f\n", f); //// FIXME plugin->synthesizer->setSampleRate(f);
+      return 0;
 
-		case effSetBlockSize:
-		case effMainsChanged:
-			return 0;
+    case effSetBlockSize:
+    case effMainsChanged:
+      return 0;
 
     case effEditGetRect:
       plugin->ui->getRect ((ERect **) ptr);
@@ -317,17 +343,24 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
         }
       plugin->m_new_plan_mutex.unlock();
     }
-
+  plugin->midi_synth.set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
+  plugin->midi_synth.set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
   plugin->midi_synth.process_audio (outputs[0], numSampleFrames);
+
+  // apply replay volume
+  const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
+  for (int i = 0; i < numSampleFrames; i++)
+    outputs[0][i] *= volume_factor;
+
+  // stereo -> left and right output are identical
   std::copy_n (outputs[0], numSampleFrames, outputs[1]);
 }
 
 static void setParameter(AEffect *effect, int i, float f)
 {
   VstPlugin *plugin = (VstPlugin *)effect->ptr3;
-  debug ("!missing set parameter\n");
 
-  // FIXME plugin->ynthesizer->setNormalizedParameterValue((Param) i, f);
+  plugin->set_parameter_scale ((VstPlugin::Param) i, f);
 }
 
 static float getParameter(AEffect *effect, int i)
@@ -367,7 +400,7 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
   effect->setParameter = setParameter;
   effect->getParameter = getParameter;
   effect->numPrograms = 0;
-  effect->numParams = 0; // FIXME kAmsynthParameterCount;
+  effect->numParams = VstPlugin::PARAM_COUNT;
   effect->numInputs = 0;
   effect->numOutputs = 2;
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;

@@ -12,6 +12,38 @@ namespace SpectMorph
 
 struct VstPlugin
 {
+  enum Param
+  {
+    PARAM_CONTROL_1 = 0,
+    PARAM_CONTROL_2 = 1,
+    PARAM_VOLUME    = 2,
+    PARAM_COUNT
+  };
+
+  struct Parameter
+  {
+    std::string name;
+    float       value;
+    float       min_value;
+    float       max_value;
+    std::string label;
+
+    Parameter (const char *name, float min_value = 0, float max_value = 1, std::string label = "") :
+      name (name),
+      value (0),
+      min_value (min_value),
+      max_value (max_value),
+      label (label)
+    {
+    }
+  };
+  std::vector<Parameter> parameters;
+
+  void get_parameter_name (Param param, char *out, size_t len) const;
+  void get_parameter_label (Param param, char *out, size_t len) const;
+  void get_parameter_display (Param param, char *out, size_t len) const;
+  void set_parameter_scale (Param param, float value);
+
   VstPlugin (audioMasterCallback master, AEffect *aeffect) :
     audioMaster (master),
     aeffect (aeffect),
@@ -33,6 +65,10 @@ struct VstPlugin
     delete in;
 
     morph_plan_synth.update_plan (plan);
+
+    parameters.push_back (Parameter ("Control #1", -1, 1));
+    parameters.push_back (Parameter ("Control #2", -1, 1));
+    parameters.push_back (Parameter ("Volume", -48, 12, "dB"));
   }
 
   ~VstPlugin()
