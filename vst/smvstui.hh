@@ -29,6 +29,9 @@ public:
   void close();
   void idle();
 
+  int   save_state (char **ptr);
+  void  load_state (char *ptr);
+
 public slots:
   void on_plan_changed();
   void on_update_window_size();

@@ -248,14 +248,17 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       plugin->ui->idle();
       return 0;
 
-#if 0 // FIXME
-		case effGetChunk:
-			// FIXME return plugin->synthesizer->saveState((char **)ptr);
+    case effGetChunk:
+      {
+        int result = plugin->ui->save_state((char **)ptr);
+        debug ("get chunk returned: %s\n", *(char **)ptr);
+        return result;
+      }
 
-		case effSetChunk:
-			// FIXME plugin->synthesizer->loadState((char *)ptr);
-			return 0;
-#endif
+    case effSetChunk:
+      debug ("set chunk: %s\n", (char *)ptr);
+      plugin->ui->load_state((char *)ptr);
+      return 0;
 
 		case effProcessEvents: {
 			VstEvents *events = (VstEvents *)ptr;

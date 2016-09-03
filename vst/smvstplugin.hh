@@ -49,7 +49,7 @@ struct VstPlugin
   float get_parameter_scale (Param param) const;
   void  set_parameter_scale (Param param, float value);
 
-  void change_plan (MorphPlanPtr ptr);
+  void  change_plan (MorphPlanPtr ptr);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;

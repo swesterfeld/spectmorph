@@ -3,6 +3,7 @@
 #include "smvstui.hh"
 #include "smvstplugin.hh"
 #include "smmemout.hh"
+#include "smhexstring.hh"
 
 #include <QWindow>
 #include <QPushButton>
@@ -26,6 +27,8 @@ VstUI::VstUI (const string& filename, VstPlugin *plugin) :
     }
   morph_plan->load (in);
   delete in;
+
+  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
 bool
@@ -39,8 +42,6 @@ VstUI::open (WId win_id)
   rectangle.left = 0;
   rectangle.bottom = widget->height();
   rectangle.right = widget->width();
-
-  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 
   return true;
 }
@@ -87,4 +88,23 @@ VstUI::on_update_window_size()
       widget->resize (width, height);
       plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
     }
+}
+
+int
+VstUI::save_state (char **buffer)
+{
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  morph_plan->save (&mo);
+
+  string s = HexString::encode (data);
+
+  *buffer = strdup (s.c_str()); // FIXME: leak
+  return s.size() + 1; // save trailing 0 byte
+}
+
+void
+VstUI::load_state (char *buffer)
+{
+  morph_plan->set_plan_str (buffer);
 }
