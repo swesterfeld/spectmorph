@@ -150,7 +150,7 @@ MorphPlan::set_plan_str (const string& str)
  * \returns BSE_ERROR_NONE if everything worked, an error otherwise
  */
 Bse::Error
-MorphPlan::load (GenericIn *in)
+MorphPlan::load (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
 
@@ -176,6 +176,11 @@ MorphPlan::load (GenericIn *in)
         {
           assert (section != "");
           section = "";
+        }
+      else if (params && section == params->section())
+        {
+          // if ExtraParameters is defined, forward all events that belong to the appropriate section
+          params->handle_event (ifile);
         }
       else if (ifile.event() == InFile::STRING)
         {
@@ -346,7 +351,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 }
 
 Bse::Error
-MorphPlan::save (GenericOut *file) const
+MorphPlan::save (GenericOut *file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
   of.write_string ("index", index_filename);
@@ -368,6 +373,12 @@ MorphPlan::save (GenericOut *file) const
       }
 
       of.write_blob ("data", &op_data[0], op_data.size());
+      of.end_section();
+    }
+  if (params)
+    {
+      of.begin_section (params->section());
+      params->save (of);
       of.end_section();
     }
   return Bse::Error::NONE;

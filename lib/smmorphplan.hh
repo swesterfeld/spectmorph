@@ -25,6 +25,14 @@ public:
   MorphPlan();
   ~MorphPlan();
 
+  class ExtraParameters
+  {
+  public:
+    virtual std::string   section() = 0;
+    virtual void          save (OutFile& out_file) = 0;
+    virtual void          handle_event (InFile& ifile) = 0;
+  };
+
   bool         load_index (const std::string& filename);
   const Index *index();
 
@@ -42,8 +50,8 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  Bse::Error save (GenericOut *file) const;
-  Bse::Error load (GenericIn *in);
+  Bse::Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
+  Bse::Error load (GenericIn *in, ExtraParameters *params = nullptr);
   void clear();
 
   MorphPlan *clone() const; // create a deep copy
