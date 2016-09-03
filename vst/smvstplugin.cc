@@ -191,6 +191,23 @@ VstPlugin::get_parameter_scale (Param param) const
   return 0;
 }
 
+float
+VstPlugin::get_parameter_value (Param param) const
+{
+  if (param >= 0 && param < parameters.size())
+    return parameters[param].value;
+
+  return 0;
+}
+
+void
+VstPlugin::set_parameter_value (Param param, float value)
+{
+  if (param >= 0 && param < parameters.size())
+    parameters[param].value = value;
+}
+
+
 static char hostProductString[64] = "";
 
 static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val, void *ptr, float f)

@@ -16,10 +16,10 @@ class VstUI : public QObject
 {
   Q_OBJECT
 
-  ERect             rectangle;
-  MorphPlanWindow  *widget;
-  MorphPlanPtr      morph_plan;
-  VstPlugin        *plugin;
+  ERect                 rectangle;
+  MorphPlanWindow      *widget;
+  MorphPlanPtr          morph_plan;
+  VstPlugin            *plugin;
   
 public:
   VstUI (const std::string& filename, VstPlugin *plugin);

@@ -90,12 +90,50 @@ VstUI::on_update_window_size()
     }
 }
 
+class VstExtraParameters : public MorphPlan::ExtraParameters
+{
+  VstPlugin *plugin;
+public:
+  VstExtraParameters (VstPlugin *plugin) :
+    plugin (plugin)
+  {
+  }
+
+  string section() { return "vst_parameters"; }
+
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
+    out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
+    out_file.write_float ("volume",    plugin->get_parameter_value (VstPlugin::PARAM_VOLUME));
+  }
+
+  void
+  handle_event (InFile& in_file)
+  {
+    if (in_file.event() == InFile::FLOAT)
+      {
+        if (in_file.event_name() == "control_1")
+          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_1, in_file.event_float());
+
+        if (in_file.event_name() == "control_2")
+          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
+
+        if (in_file.event_name() == "volume")
+          plugin->set_parameter_value (VstPlugin::PARAM_VOLUME, in_file.event_float());
+      }
+  }
+};
+
 int
 VstUI::save_state (char **buffer)
 {
+  VstExtraParameters params (plugin);
+
   vector<unsigned char> data;
   MemOut mo (&data);
-  morph_plan->save (&mo);
+  morph_plan->save (&mo, &params);
 
   string s = HexString::encode (data);
 
@@ -106,5 +144,13 @@ VstUI::save_state (char **buffer)
 void
 VstUI::load_state (char *buffer)
 {
-  morph_plan->set_plan_str (buffer);
+  VstExtraParameters params (plugin);
+
+  vector<unsigned char> data;
+  if (!HexString::decode (buffer, data))
+    return;
+
+  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  morph_plan->load (in, &params);
+  delete in;
 }
