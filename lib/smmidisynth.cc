@@ -11,7 +11,8 @@ using namespace SpectMorph;
 
 MidiSynth::MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
   mix_freq (mix_freq),
-  pedal_down (false)
+  pedal_down (false),
+  control {0, 0}
 {
   voices.clear();
   voices.resize (n_voices);
@@ -145,6 +146,9 @@ MidiSynth::process_audio (float *output, size_t n_values)
     {
       Voice *voice = active_voices[voice_pos];
 
+      voice->mp_voice->set_control_input (0, control[0]);
+      voice->mp_voice->set_control_input (1, control[1]);
+
       if (voice->state == Voice::STATE_ON)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
@@ -186,4 +190,10 @@ MidiSynth::process_audio (float *output, size_t n_values)
     free_unused_voices();
 }
 
+void
+MidiSynth::set_control_input (int i, float value)
+{
+  assert (i >= 0 && i < 2);
 
+  control[i] = value;
+}
