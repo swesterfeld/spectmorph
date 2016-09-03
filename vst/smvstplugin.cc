@@ -112,6 +112,39 @@ preinit_plan (MorphPlanPtr plan)
     }
 }
 
+VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
+  audioMaster (master),
+  aeffect (aeffect),
+  plan (new MorphPlan()),
+  morph_plan_synth (48000), // FIXME
+  midi_synth (morph_plan_synth, 48000, 64), // FIXME
+  ui (new VstUI ("/home/stefan/lv2.smplan", this))
+{
+  audioMaster = master;
+
+  string filename = "/home/stefan/lv2.smplan";
+  GenericIn *in = StdioIn::open (filename);
+  if (!in)
+    {
+      g_printerr ("Error opening '%s'.\n", filename.c_str());
+      exit (1);
+    }
+  plan->load (in);
+  delete in;
+
+  morph_plan_synth.update_plan (plan);
+
+  parameters.push_back (Parameter ("Control #1", 0, -1, 1));
+  parameters.push_back (Parameter ("Control #2", 0, -1, 1));
+  parameters.push_back (Parameter ("Volume", -6, -48, 12, "dB"));
+}
+
+VstPlugin::~VstPlugin()
+{
+  delete ui;
+  ui = nullptr;
+}
+
 void
 VstPlugin::change_plan (MorphPlanPtr plan)
 {
@@ -147,6 +180,15 @@ VstPlugin::set_parameter_scale (Param param, float value)
 {
   if (param >= 0 && param < parameters.size())
     parameters[param].value = parameters[param].min_value + (parameters[param].max_value - parameters[param].min_value) * value;
+}
+
+float
+VstPlugin::get_parameter_scale (Param param) const
+{
+  if (param >= 0 && param < parameters.size())
+    return (parameters[param].value - parameters[param].min_value) / (parameters[param].max_value - parameters[param].min_value);
+
+  return 0;
 }
 
 static char hostProductString[64] = "";
@@ -366,9 +408,8 @@ static void setParameter(AEffect *effect, int i, float f)
 static float getParameter(AEffect *effect, int i)
 {
   VstPlugin *plugin = (VstPlugin *)effect->ptr3;
-  debug ("!missing get parameter\n");
 
-  // FIXME return plugin->synthesizer->getNormalizedParameterValue((Param) i);
+  return plugin->get_parameter_scale((VstPlugin::Param) i);
 }
 
 extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)

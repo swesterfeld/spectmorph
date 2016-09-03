@@ -28,9 +28,9 @@ struct VstPlugin
     float       max_value;
     std::string label;
 
-    Parameter (const char *name, float min_value = 0, float max_value = 1, std::string label = "") :
+  Parameter (const char *name, float default_value, float min_value, float max_value, std::string label = "") :
       name (name),
-      value (0),
+      value (default_value),
       min_value (min_value),
       max_value (max_value),
       label (label)
@@ -39,43 +39,15 @@ struct VstPlugin
   };
   std::vector<Parameter> parameters;
 
-  void get_parameter_name (Param param, char *out, size_t len) const;
-  void get_parameter_label (Param param, char *out, size_t len) const;
-  void get_parameter_display (Param param, char *out, size_t len) const;
-  void set_parameter_scale (Param param, float value);
+  VstPlugin (audioMasterCallback master, AEffect *aeffect);
+  ~VstPlugin();
 
-  VstPlugin (audioMasterCallback master, AEffect *aeffect) :
-    audioMaster (master),
-    aeffect (aeffect),
-    plan (new MorphPlan()),
-    morph_plan_synth (48000), // FIXME
-    midi_synth (morph_plan_synth, 48000, 64), // FIXME
-    ui (new VstUI ("/home/stefan/lv2.smplan", this))
-  {
-    audioMaster = master;
+  void  get_parameter_name (Param param, char *out, size_t len) const;
+  void  get_parameter_label (Param param, char *out, size_t len) const;
+  void  get_parameter_display (Param param, char *out, size_t len) const;
 
-    std::string filename = "/home/stefan/lv2.smplan";
-    GenericIn *in = StdioIn::open (filename);
-    if (!in)
-      {
-        g_printerr ("Error opening '%s'.\n", filename.c_str());
-        exit (1);
-      }
-    plan->load (in);
-    delete in;
-
-    morph_plan_synth.update_plan (plan);
-
-    parameters.push_back (Parameter ("Control #1", -1, 1));
-    parameters.push_back (Parameter ("Control #2", -1, 1));
-    parameters.push_back (Parameter ("Volume", -48, 12, "dB"));
-  }
-
-  ~VstPlugin()
-  {
-    delete ui;
-    ui = nullptr;
-  }
+  float get_parameter_scale (Param param) const;
+  void  set_parameter_scale (Param param, float value);
 
   void change_plan (MorphPlanPtr ptr);
 
