@@ -83,7 +83,6 @@ public:
 
   // SpectMorph stuff
   double          mix_freq;
-  MorphPlanSynth  morph_plan_synth;
   MorphPlanPtr    plan;
   QMutex          new_plan_mutex;
   MorphPlanPtr    new_plan;
@@ -104,9 +103,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   log (NULL),
   schedule (NULL),
   mix_freq (mix_freq),
-  morph_plan_synth (mix_freq),
   plan (new MorphPlan()),
-  midi_synth (morph_plan_synth, mix_freq, 64)
+  midi_synth (mix_freq, 64)
 {
   std::string filename = "/home/stefan/lv2.smplan";
   GenericIn *in = StdioIn::open (filename);
@@ -125,7 +123,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan_str = HexString::encode (data);
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-  morph_plan_synth.update_plan (plan);
+  midi_synth.update_plan (plan);
 }
 
 void
@@ -291,7 +289,7 @@ run (LV2_Handle instance, uint32_t n_samples)
     {
       if (self->new_plan)
         {
-          self->morph_plan_synth.update_plan (self->new_plan);
+          self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
         }
       self->new_plan_mutex.unlock();
@@ -362,7 +360,6 @@ run (LV2_Handle instance, uint32_t n_samples)
         }
     }
   self->midi_synth.process (output, n_samples);
-  self->morph_plan_synth.update_shared_state (n_samples / self->mix_freq * 1000);
 
   // apply post gain
   const float v = (gain > -90) ? bse_db_to_factor (gain) : 0;
