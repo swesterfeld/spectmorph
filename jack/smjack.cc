@@ -81,7 +81,7 @@ JackSynth::process (jack_nframes_t nframes)
   midi_synth->set_control_input (0, control_in_1[0]);
   midi_synth->set_control_input (1, control_in_2[0]);
 
-  midi_synth->process_audio_midi (audio_out, nframes);
+  midi_synth->process (audio_out, nframes);
 
   for (size_t i = 0; i < nframes; i++)
     audio_out[i] *= m_volume;
