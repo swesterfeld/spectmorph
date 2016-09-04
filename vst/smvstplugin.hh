@@ -61,7 +61,6 @@ struct VstPlugin
   AEffect*            aeffect;
 
   MorphPlanPtr        plan;
-  MorphPlanSynth     *morph_plan_synth;
   MidiSynth          *midi_synth;
   VstUI              *ui;
   double              mix_freq;

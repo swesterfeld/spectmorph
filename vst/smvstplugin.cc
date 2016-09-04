@@ -89,7 +89,6 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
   plan (new MorphPlan()),
-  morph_plan_synth (nullptr),
   midi_synth (nullptr),
   ui (new VstUI ("/home/stefan/lv2.smplan", this))
 {
@@ -118,11 +117,6 @@ VstPlugin::~VstPlugin()
   delete ui;
   ui = nullptr;
 
-  if (morph_plan_synth)
-    {
-      delete morph_plan_synth;
-      morph_plan_synth = nullptr;
-    }
   if (midi_synth)
     {
       delete midi_synth;
@@ -200,15 +194,11 @@ VstPlugin::set_mix_freq (double new_mix_freq)
    */
   if (midi_synth)
     delete midi_synth;
-  if (morph_plan_synth)
-    delete morph_plan_synth;
 
   mix_freq = new_mix_freq;
 
-  morph_plan_synth = new MorphPlanSynth (mix_freq);
-  morph_plan_synth->update_plan (plan);
-
-  midi_synth = new MidiSynth (*morph_plan_synth, mix_freq, 64);
+  midi_synth = new MidiSynth (mix_freq, 64);
+  midi_synth->update_plan (plan);
 }
 
 
@@ -369,7 +359,7 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
     {
       if (plugin->m_new_plan)
         {
-          plugin->morph_plan_synth->update_plan (plugin->m_new_plan);
+          plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
       plugin->m_new_plan_mutex.unlock();
