@@ -67,32 +67,6 @@ debug (const char *fmt, ...)
     }
 }
 
-static bool
-is_note_on (const VstMidiEvent *event)
-{
-  if ((event->midiData[0] & 0xf0) == 0x90)
-    {
-      if (event->midiData[2] != 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  return false;
-}
-
-static bool
-is_note_off (const VstMidiEvent *event)
-{
-  if ((event->midiData[0] & 0xf0) == 0x90)
-    {
-      if (event->midiData[2] == 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  else if ((event->midiData[0] & 0xf0) == 0x80)
-    {
-      return true;
-    }
-  return false;
-}
-
 void
 VstPlugin::preinit_plan (MorphPlanPtr plan)
 {
@@ -307,75 +281,40 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       plugin->ui->load_state((char *)ptr);
       return 0;
 
-		case effProcessEvents: {
-			VstEvents *events = (VstEvents *)ptr;
+    case effProcessEvents:
+      {
+        VstEvents *events = (VstEvents *)ptr;
 
-			for (int32_t i=0; i<events->numEvents; i++)
-                          {
-                            VstMidiEvent *event = (VstMidiEvent *)events->events[i];
-                            if (event->type != kVstMidiType)
-                              continue;
+        for (int32_t i = 0; i < events->numEvents; i++)
+          {
+            VstMidiEvent *event = (VstMidiEvent *)events->events[i];
+            if (event->type != kVstMidiType)
+              continue;
 
-                            debug ("EV: %x %d %d\n", event->midiData[0], event->midiData[1], event->midiData[2]);
-                            if (is_note_on (event))
-                              {
-                                plugin->midi_synth->process_note_on (event->midiData[1], event->midiData[2]);
-                              }
-                            else if (is_note_off (event))
-                              {
-                                plugin->midi_synth->process_note_off (event->midiData[1]);
-                              }
-			  }
+            plugin->midi_synth->add_midi_event (event->deltaFrames, reinterpret_cast <unsigned char *> (&event->midiData[0]));
+          }
+        return 1;
+      }
 
-			return 1;
-#if 0 // FIXME
-			VstEvents *events = (VstEvents *)ptr;
+    case effCanBeAutomated:
+    case effGetOutputProperties:
+      return 0;
 
-			assert(plugin->midiEvents.empty());
-
-			memset(plugin->midiBuffer, 0, 4096);
-			unsigned char *buffer = plugin->midiBuffer;
-			
-			for (int32_t i=0; i<events->numEvents; i++) {
-				VstMidiEvent *event = (VstMidiEvent *)events->events[i];
-				if (event->type != kVstMidiType) {
-					continue;
-				}
-
-				memcpy(buffer, event->midiData, 4);
-
-				amsynth_midi_event_t midi_event;
-				memset(&midi_event, 0, sizeof(midi_event));
-				midi_event.offset_frames = event->deltaFrames;
-				midi_event.buffer = buffer;
-				midi_event.length = 4;
-				plugin->midiEvents.push_back(midi_event);
-
-				buffer += event->byteSize;
-
-				assert(buffer < plugin->midiBuffer + 4096);
-#endif
-		}
-
-		case effCanBeAutomated:
-		case effGetOutputProperties:
-			return 0;
-
-		case effGetPlugCategory:
-			return kPlugCategSynth;
-		case effGetEffectName:
-			strcpy((char *)ptr, "SpectMorph");
-			return 1;
-		case effGetVendorString:
-			strcpy((char *)ptr, "Stefan Westerfeld");
-			return 1;
+    case effGetPlugCategory:
+      return kPlugCategSynth;
+    case effGetEffectName:
+      strcpy((char *)ptr, "SpectMorph");
+      return 1;
+    case effGetVendorString:
+      strcpy((char *)ptr, "Stefan Westerfeld");
+      return 1;
 #if 0
 		case effGetProductString:
 			strcpy((char *)ptr, "amsynth");
 			return 1;
 #endif
-		case effGetVendorVersion:
-			return 0;
+     case effGetVendorVersion:
+       return 0;
 
 		case effCanDo:
 			if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
@@ -437,7 +376,7 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
     }
   plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
-  plugin->midi_synth->process_audio (outputs[0], numSampleFrames);
+  plugin->midi_synth->process_audio_midi (outputs[0], numSampleFrames);
 
   // apply replay volume
   const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
