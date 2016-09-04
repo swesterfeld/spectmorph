@@ -7,6 +7,8 @@
 
 using namespace SpectMorph;
 
+using std::min;
+
 #define SM_MIDI_CTL_SUSTAIN 0x40
 
 MidiSynth::MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
@@ -131,6 +133,22 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
+MidiSynth::add_midi_event (size_t offset, unsigned char *midi_data)
+{
+  unsigned char status = midi_data[0] & 0xf0;
+
+  if (status == 0x80 || status == 0x90 || status == 0xb0) // we don't support anything else
+    {
+      MidiEvent event;
+      event.offset = offset;
+      event.midi_data[0] = midi_data[0];
+      event.midi_data[1] = midi_data[1];
+      event.midi_data[2] = midi_data[2];
+      midi_events.push_back (event);
+    }
+}
+
+void
 MidiSynth::process_audio (float *output, size_t n_values)
 {
   if (!n_values)    /* this can happen if multiple midi events occur at the same time */
@@ -191,9 +209,80 @@ MidiSynth::process_audio (float *output, size_t n_values)
 }
 
 void
+MidiSynth::process_audio_midi (float *output, size_t n_values)
+{
+  uint32_t offset = 0;
+
+  for (const auto& midi_event : midi_events)
+    {
+      // ensure that new offset from midi event is not larger than n_values
+      uint32_t new_offset = min <uint32_t> (midi_event.offset, n_values);
+
+      // process any audio that is before the event
+      process_audio (output + offset, new_offset - offset);
+      offset = new_offset;
+
+      if (midi_event.is_note_on())
+        {
+          const int midi_note     = midi_event.midi_data[1];
+          const int midi_velocity = midi_event.midi_data[2];
+
+          process_note_on (midi_note, midi_velocity);
+        }
+      else if (midi_event.is_note_off())
+        {
+          const int midi_note     = midi_event.midi_data[1];
+
+          process_note_off (midi_note);
+        }
+      else if (midi_event.is_controller())
+        {
+          process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
+        }
+    }
+  // process frames after last event
+  process_audio (output + offset, n_values - offset);
+
+  midi_events.clear();
+}
+
+void
 MidiSynth::set_control_input (int i, float value)
 {
   assert (i >= 0 && i < 2);
 
   control[i] = value;
+}
+
+// midi event classification functions
+bool
+MidiSynth::MidiEvent::is_note_on() const
+{
+  if ((midi_data[0] & 0xf0) == 0x90)
+    {
+      if (midi_data[2] != 0) /* note on with velocity 0 => note off */
+        return true;
+    }
+  return false;
+}
+
+bool
+MidiSynth::MidiEvent::is_note_off() const
+{
+  if ((midi_data[0] & 0xf0) == 0x90)
+    {
+      if (midi_data[2] == 0) /* note on with velocity 0 => note off */
+        return true;
+    }
+  else if ((midi_data[0] & 0xf0) == 0x80)
+    {
+      return true;
+    }
+  return false;
+}
+
+bool
+MidiSynth::MidiEvent::is_controller() const
+{
+  return (midi_data[0] & 0xf0) == 0xb0;
 }

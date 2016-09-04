@@ -49,13 +49,26 @@ class MidiSynth
   void    free_unused_voices();
   float   freq_from_note (float note);
 
+  struct MidiEvent
+  {
+    unsigned int  offset;
+    char          midi_data[3];
+
+    bool is_note_on() const;
+    bool is_note_off() const;
+    bool is_controller() const;
+  };
+  std::vector<MidiEvent>  midi_events;
 public:
   MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
 
   void process_note_on (int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
+
+  void add_midi_event (size_t offset, unsigned char *midi_data);
   void process_audio (float *output, size_t n_values);
+  void process_audio_midi (float *output, size_t n_values);
 
   void set_control_input (int i, float value);
 
