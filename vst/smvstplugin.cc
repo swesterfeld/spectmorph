@@ -376,7 +376,7 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
     }
   plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
-  plugin->midi_synth->process_audio_midi (outputs[0], numSampleFrames);
+  plugin->midi_synth->process (outputs[0], numSampleFrames);
 
   // apply replay volume
   const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
