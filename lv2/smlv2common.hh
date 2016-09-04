@@ -12,6 +12,8 @@
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 
+#include <string>
+
 #define SPECTMORPH_URI    "http://spectmorph.org/plugins/spectmorph"
 #define SPECTMORPH__plan  SPECTMORPH_URI "#plan"
 #define SPECTMORPH_UI_URI SPECTMORPH_URI "#ui"
@@ -53,9 +55,7 @@ public:
     uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
   }
   LV2_Atom*
-  write_set_file (LV2_Atom_Forge*    forge,
-                  const char*        filename,
-                  const uint32_t     filename_len)
+  write_set_plan (LV2_Atom_Forge* forge, const std::string& plan)
   {
     LV2_Atom_Forge_Frame frame;
     LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
@@ -63,7 +63,7 @@ public:
     lv2_atom_forge_key (forge,  uris.patch_property);
     lv2_atom_forge_urid (forge, uris.spectmorph_plan);
     lv2_atom_forge_key (forge,  uris.patch_value);
-    lv2_atom_forge_path (forge, filename, filename_len);
+    lv2_atom_forge_path (forge, plan.c_str(), plan.size());
 
     lv2_atom_forge_pop (forge, &frame);
 

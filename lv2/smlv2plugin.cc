@@ -378,10 +378,9 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
           if (obj->body.otype == self->uris.patch_Get)
             {
-              const char *state = self->plan_str.c_str();
               lv2_atom_forge_frame_time(&self->forge, offset);
 
-              self->write_set_file (&self->forge, state, strlen (state));
+              self->write_set_plan (&self->forge, self->plan_str);
             }
         }
     }
