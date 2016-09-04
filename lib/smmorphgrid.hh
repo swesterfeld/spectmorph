@@ -90,6 +90,9 @@ public:
   void            set_input_node (int x, int y, const MorphGridNode& node);
   MorphGridNode   input_node (int x, int y);
   std::string     input_node_label (int x, int y);
+
+public slots:
+  void            on_operator_removed (MorphOperator *op);
 };
 
 }

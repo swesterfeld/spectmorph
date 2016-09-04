@@ -313,6 +313,9 @@ MorphPlan::structure_version()
 void
 MorphPlan::remove (MorphOperator *op)
 {
+  // accessing operator contents after remove was called is an error
+  delete op;
+
   vector<MorphOperator *>::iterator oi = m_operators.begin();
   while (oi != m_operators.end())
     {

@@ -22,6 +22,8 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 {
   leak_debugger.add (this);
 
+  connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
+
   m_width = 2;
   m_height = 1;
   m_zoom = 5;
@@ -389,6 +391,23 @@ MorphGrid::set_y_control_op (MorphOperator *op)
   m_y_control_op = op;
 
   m_morph_plan->emit_plan_changed();
+}
+
+void
+MorphGrid::on_operator_removed (MorphOperator *op)
+{
+  // plan changed will be emitted automatically after remove, so we don't emit it here
+
+  if (m_x_control_type == CONTROL_OP && op == m_x_control_op)
+    {
+      m_x_control_op = nullptr;
+      m_x_control_type = CONTROL_GUI;
+    }
+  if (m_y_control_type == CONTROL_OP && op == m_y_control_op)
+    {
+      m_y_control_op = nullptr;
+      m_y_control_type = CONTROL_GUI;
+    }
 }
 
 string

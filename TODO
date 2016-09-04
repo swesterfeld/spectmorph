@@ -81,7 +81,6 @@ lv2:
 - state saving
 - add gain to ui
 - output operator deletion leads to problems
-- control lfo deletion leads to problems
 - change the way instruments are opened and referenced
 - debug qtractor
 - debur reason|bitwig

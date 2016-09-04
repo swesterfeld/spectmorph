@@ -156,6 +156,13 @@ MorphLinear::output_type()
 void
 MorphLinear::on_operator_removed (MorphOperator *op)
 {
+  // plan changed will be emitted automatically after remove, so we don't emit it here
+
+  if (m_control_type == CONTROL_OP && op == m_control_op)
+    {
+      m_control_op = nullptr;
+      m_control_type = CONTROL_GUI;
+    }
 }
 
 MorphOperator *
