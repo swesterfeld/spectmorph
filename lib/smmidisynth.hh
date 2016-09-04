@@ -37,6 +37,8 @@ class MidiSynth
     }
   };
 
+  MorphPlanSynth        morph_plan_synth;
+
   std::vector<Voice>    voices;
   std::vector<Voice *>  idle_voices;
   std::vector<Voice *>  active_voices;
@@ -64,13 +66,15 @@ class MidiSynth
     bool is_controller() const;
   };
   std::vector<MidiEvent>  midi_events;
+
 public:
-  MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices);
+  MidiSynth (double mix_freq, size_t n_voices);
 
   void add_midi_event (size_t offset, const unsigned char *midi_data);
   void process (float *output, size_t n_values);
 
   void set_control_input (int i, float value);
+  void update_plan (MorphPlanPtr new_plan);
 
   size_t active_voice_count() const;
 };

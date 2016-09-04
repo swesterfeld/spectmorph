@@ -11,7 +11,8 @@ using std::min;
 
 #define SM_MIDI_CTL_SUSTAIN 0x40
 
-MidiSynth::MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
+MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
+  morph_plan_synth (mix_freq),
   mix_freq (mix_freq),
   pedal_down (false),
   control {0, 0}
@@ -22,7 +23,7 @@ MidiSynth::MidiSynth (MorphPlanSynth& synth, double mix_freq, size_t n_voices) :
 
   for (auto& v : voices)
     {
-      v.mp_voice = synth.add_voice();
+      v.mp_voice = morph_plan_synth.add_voice();
       idle_voices.push_back (&v);
     }
 }
@@ -244,6 +245,8 @@ MidiSynth::process (float *output, size_t n_values)
   process_audio (output + offset, n_values - offset);
 
   midi_events.clear();
+
+  morph_plan_synth.update_shared_state (n_values / mix_freq * 1000);
 }
 
 void
@@ -252,6 +255,12 @@ MidiSynth::set_control_input (int i, float value)
   assert (i >= 0 && i < 2);
 
   control[i] = value;
+}
+
+void
+MidiSynth::update_plan (MorphPlanPtr new_plan)
+{
+  morph_plan_synth.update_plan (new_plan);
 }
 
 // midi event classification functions
