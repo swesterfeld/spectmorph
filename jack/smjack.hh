@@ -29,10 +29,8 @@ protected:
   std::vector<jack_port_t *>    output_ports;
   std::vector<jack_port_t *>    control_ports;
 
-  double                        release_ms;
   double                        m_volume;
 
-  MorphPlanSynth               *morph_plan_synth;
   MidiSynth                    *midi_synth;
 
   QMutex                        m_new_plan_mutex;

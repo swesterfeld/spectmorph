@@ -46,7 +46,7 @@ JackSynth::process (jack_nframes_t nframes)
     {
       if (m_new_plan)
         {
-          morph_plan_synth->update_plan (m_new_plan);
+          midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
       m_volume = m_new_volume;
@@ -86,7 +86,6 @@ JackSynth::process (jack_nframes_t nframes)
   for (size_t i = 0; i < nframes; i++)
     audio_out[i] *= m_volume;
 
-  morph_plan_synth->update_shared_state (nframes / jack_mix_freq * 1000);
   return 0;
 }
 
@@ -102,8 +101,6 @@ JackSynth::JackSynth (jack_client_t *client) :
 {
   m_volume = 1;
   m_new_volume = 1;
-  morph_plan_synth = NULL;
-  midi_synth = NULL;
 
   int pipe_rc = pipe (main_thread_wakeup_pfds);
   g_assert (pipe_rc == 0);
@@ -113,11 +110,7 @@ JackSynth::JackSynth (jack_client_t *client) :
 
   jack_mix_freq = jack_get_sample_rate (client);
 
-  release_ms = 150;
-
-  assert (morph_plan_synth == NULL);
-  morph_plan_synth = new MorphPlanSynth (jack_mix_freq);
-  midi_synth = new MidiSynth (*morph_plan_synth, jack_mix_freq, 64);
+  midi_synth = new MidiSynth (jack_mix_freq, 64);
 
   jack_set_process_callback (client, jack_process, this);
 
@@ -141,11 +134,6 @@ JackSynth::~JackSynth()
     {
       delete midi_synth;
       midi_synth = NULL;
-    }
-  if (morph_plan_synth)
-    {
-      delete morph_plan_synth;
-      morph_plan_synth = NULL;
     }
 }
 
