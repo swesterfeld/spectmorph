@@ -133,7 +133,7 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
-MidiSynth::add_midi_event (size_t offset, unsigned char *midi_data)
+MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 {
   unsigned char status = midi_data[0] & 0xf0;
 
@@ -209,7 +209,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 }
 
 void
-MidiSynth::process_audio_midi (float *output, size_t n_values)
+MidiSynth::process (float *output, size_t n_values)
 {
   uint32_t offset = 0;
 
