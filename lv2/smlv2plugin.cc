@@ -49,10 +49,12 @@ debug (const char *fmt, ...)
 }
 
 enum PortIndex {
-  SPECTMORPH_MIDI_IN  = 0,
-  SPECTMORPH_GAIN     = 1,
-  SPECTMORPH_OUTPUT   = 2,
-  SPECTMORPH_NOTIFY   = 3
+  SPECTMORPH_MIDI_IN    = 0,
+  SPECTMORPH_CONTROL_1  = 1,
+  SPECTMORPH_CONTROL_2  = 2,
+  SPECTMORPH_GAIN       = 3,
+  SPECTMORPH_OUTPUT     = 4,
+  SPECTMORPH_NOTIFY     = 5
 };
 
 namespace SpectMorph
@@ -63,6 +65,8 @@ class LV2Plugin : public LV2Common
 public:
   // Port buffers
   const LV2_Atom_Sequence* midi_in;
+  const float* control_1;
+  const float* control_2;
   const float* gain;
   const float* input;
   float*       output;
@@ -96,6 +100,8 @@ public:
 
 LV2Plugin::LV2Plugin (double mix_freq) :
   midi_in (NULL),
+  control_1 (NULL),
+  control_2 (NULL),
   gain (NULL),
   input (NULL),
   output (NULL),
@@ -212,6 +218,10 @@ connect_port (LV2_Handle instance,
     {
       case SPECTMORPH_MIDI_IN:    self->midi_in = (const LV2_Atom_Sequence*)data;
                                   break;
+      case SPECTMORPH_CONTROL_1:  self->control_1 = (const float*)data;
+                                  break;
+      case SPECTMORPH_CONTROL_2:  self->control_2 = (const float*)data;
+                                  break;
       case SPECTMORPH_GAIN:       self->gain = (const float*)data;
                                   break;
       case SPECTMORPH_OUTPUT:     self->output = (float*)data;
@@ -295,8 +305,10 @@ run (LV2_Handle instance, uint32_t n_samples)
       self->new_plan_mutex.unlock();
     }
 
-  const float        gain   = *(self->gain);
-  float* const       output = self->output;
+  const float        control_1  = *(self->control_1);
+  const float        control_2  = *(self->control_2);
+  const float        gain       = *(self->gain);
+  float* const       output     = self->output;
 
   uint32_t  offset = 0;
 
@@ -359,6 +371,8 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
         }
     }
+  self->midi_synth.set_control_input (0, control_1);
+  self->midi_synth.set_control_input (1, control_2);
   self->midi_synth.process (output, n_samples);
 
   // apply post gain

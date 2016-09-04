@@ -79,7 +79,6 @@ qt5 port:
 
 lv2:
 - state saving
-- add control #1, control #2 ports
 - add gain to ui
 - output operator deletion leads to problems
 - control lfo deletion leads to problems
