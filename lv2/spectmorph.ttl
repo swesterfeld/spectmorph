@@ -14,6 +14,7 @@
 @prefix patch: <http://lv2plug.in/ns/ext/patch#> .
 @prefix work:  <http://lv2plug.in/ns/ext/worker#> .
 @prefix rsz:   <http://lv2plug.in/ns/ext/resize-port#> .
+@prefix state: <http://lv2plug.in/ns/ext/state#> .
 
 <http://spectmorph.org/plugins/spectmorph#plan>
         a lv2:Parameter ;
@@ -29,7 +30,8 @@
   lv2:requiredFeature urid:map,
                       work:schedule;
   lv2:optionalFeature lv2:hardRTCapable;
-  lv2:extensionData work:interface;
+  lv2:extensionData work:interface,
+	            state:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
   patch:writable <http://spectmorph.org/plugins/spectmorph#plan> ;
   lv2:port

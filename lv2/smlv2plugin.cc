@@ -17,13 +17,14 @@
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
+#include "lv2/lv2plug.in/ns/ext/state/state.h"
 
 using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::max;
 
-#define DEBUG 0
+#define DEBUG 1
 
 static FILE *debug_file = NULL;
 QMutex       debug_mutex;
@@ -88,11 +89,20 @@ public:
   MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   string          plan_str;
+
+  void update_plan (const string& new_plan_str);
 };
 
 }
 
 LV2Plugin::LV2Plugin (double mix_freq) :
+  midi_in (NULL),
+  gain (NULL),
+  input (NULL),
+  output (NULL),
+  notify_port (NULL),
+  log (NULL),
+  schedule (NULL),
   mix_freq (mix_freq),
   morph_plan_synth (mix_freq),
   plan (new MorphPlan()),
@@ -116,6 +126,33 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   morph_plan_synth.update_plan (plan);
+}
+
+void
+LV2Plugin::update_plan (const string& new_plan_str)
+{
+  plan_str = new_plan_str;
+
+  MorphPlanPtr new_plan = new MorphPlan();
+  new_plan->set_plan_str (plan_str);
+
+  // this might take a while, and cannot be used in audio thread
+  MorphPlanSynth mp_synth (mix_freq);
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (new_plan);
+
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1);
+      float s;
+      float *values[1] = { &s };
+      om->process (1, values, 1);
+    }
+
+  // install new plan
+  QMutexLocker locker (&new_plan_mutex);
+  this->new_plan = new_plan;
 }
 
 static LV2_Handle
@@ -217,13 +254,7 @@ public:
     return m_plan_str;
   }
 };
-/**
-   Do work in a non-realtime thread.
 
-   This is called for every piece of work scheduled in the audio thread using
-   self->schedule->schedule_work().  A reply can be sent back to the audio
-   thread using the provided respond function.
-*/
 static LV2_Worker_Status
 work (LV2_Handle                  instance,
       LV2_Worker_Respond_Function respond,
@@ -237,69 +268,18 @@ work (LV2_Handle                  instance,
   MorphPlanPtr  new_plan = new MorphPlan();
   WorkMsg       msg (size, data);
 
-  new_plan->set_plan_str (msg.plan_str());
+  self->update_plan (msg.plan_str());
+
   msg.free();
-
-  // this might take a while, and cannot be used in audio thread
-  MorphPlanSynth mp_synth (self->mix_freq);
-  MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (new_plan);
-
-  MorphOutputModule *om = mp_voice->output();
-  if (om)
-    {
-      om->retrigger (0, 440, 1);
-      float s;
-      float *values[1] = { &s };
-      om->process (1, values, 1);
-    }
-
-  // install new plan
-  QMutexLocker locker (&self->new_plan_mutex);
-  self->new_plan = new_plan;
-
-#if 0
-  printf ("PLUGIN:%s\n", plan);
-                if (sample) {
-                        // Loaded sample, send it to run() to be applied.
-                        respond(handle, sizeof(sample), &sample);
-                }
-#endif
-
   return LV2_WORKER_SUCCESS;
 }
 
-/**
-   Handle a response from work() in the audio thread.
-
-   When running normally, this will be called by the host after run().  When
-   freewheeling, this will be called immediately at the point the work was
-   scheduled.
-*/
 static LV2_Worker_Status
-work_response(LV2_Handle  instance,
-              uint32_t    size,
-              const void* data)
+work_response (LV2_Handle  instance,
+               uint32_t    size,
+               const void* data)
 {
-#if 0
-        Sampler* self = (Sampler*)instance;
-
-        SampleMessage msg = { { sizeof(Sample*), self->uris.eg_freeSample },
-                              self->sample };
-
-        // Send a message to the worker to free the current sample
-        self->schedule->schedule_work(self->schedule->handle, sizeof(msg), &msg);
-
-        // Install the new sample
-        self->sample = *(Sample*const*)data;
-
-        // Send a notification that we're using a new sample.
-        lv2_atom_forge_frame_time(&self->forge, self->frame_offset);
-        write_set_file(&self->forge, &self->uris,
-                       self->sample->path,
-                       self->sample->path_len);
-#endif
-        return LV2_WORKER_SUCCESS;
+  return LV2_WORKER_SUCCESS;
 }
 
 static void
@@ -425,12 +405,64 @@ cleanup (LV2_Handle instance)
   delete static_cast <LV2Plugin *> (instance);
 }
 
+static LV2_State_Status
+save(LV2_Handle                instance,
+     LV2_State_Store_Function  store,
+     LV2_State_Handle          handle,
+     uint32_t                  flags,
+     const LV2_Feature* const* features)
+{
+  LV2Plugin* self = static_cast <LV2Plugin *> (instance);
+
+  store (handle,
+         self->uris.spectmorph_plan,
+         self->plan_str.c_str(),
+         self->plan_str.size() + 1,
+         self->uris.atom_String,
+         LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
+
+  debug ("state save called: %s\n", self->plan_str.c_str());
+  return LV2_STATE_SUCCESS;
+}
+
+static LV2_State_Status
+restore(LV2_Handle                  instance,
+        LV2_State_Retrieve_Function retrieve,
+        LV2_State_Handle            handle,
+        uint32_t                    flags,
+        const LV2_Feature* const*   features)
+{
+  LV2Plugin* self = static_cast <LV2Plugin *> (instance);
+
+  debug ("state restore called\n");
+
+  size_t   size;
+  uint32_t type;
+  uint32_t valflags;
+
+  const void* value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
+  if (value)
+    {
+      const char* plan_str = (const char*)value;
+
+      debug ("state: %s\n", plan_str);
+      self->update_plan (plan_str);
+    }
+
+  return LV2_STATE_SUCCESS;
+}
+
 static const void*
 extension_data (const char* uri)
 {
+  static const LV2_State_Interface  state  = { save, restore };
   static const LV2_Worker_Interface worker = { work, work_response, NULL };
 
-  if (!strcmp(uri, LV2_WORKER__interface))
+  if (!strcmp(uri, LV2_STATE__interface))
+    {
+      return &state;
+    }
+  else if (!strcmp(uri, LV2_WORKER__interface))
     {
       return &worker;
     }

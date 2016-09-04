@@ -26,6 +26,7 @@ public:
     LV2_URID atom_eventTransfer;
     LV2_URID atom_URID;
     LV2_URID atom_Path;
+    LV2_URID atom_String;
     LV2_URID midi_MidiEvent;
     LV2_URID patch_Get;
     LV2_URID patch_Set;
@@ -43,6 +44,7 @@ public:
     uris.atom_eventTransfer = map->map (map->handle, LV2_ATOM__eventTransfer);
     uris.atom_URID          = map->map (map->handle, LV2_ATOM__URID);
     uris.atom_Path          = map->map (map->handle, LV2_ATOM__Path);
+    uris.atom_String        = map->map (map->handle, LV2_ATOM__String);
     uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
     uris.patch_Get          = map->map (map->handle, LV2_PATCH__Get);
     uris.patch_Set          = map->map (map->handle, LV2_PATCH__Set);
