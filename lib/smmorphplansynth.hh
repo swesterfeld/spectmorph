@@ -34,6 +34,7 @@ public:
   void free_shared_state();
 
   float mix_freq() const;
+  bool  have_output() const;
 };
 
 }

@@ -112,6 +112,16 @@ MorphPlanSynth::mix_freq() const
   return m_mix_freq;
 }
 
+bool
+MorphPlanSynth::have_output() const
+{
+  if (voices.empty())
+    return false;
+
+  // all voices are the same: either each of them contains an output module, or none of them
+  return voices[0]->output() != nullptr;
+}
+
 void
 MorphPlanSynth::free_shared_state()
 {

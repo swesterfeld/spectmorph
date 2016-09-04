@@ -80,6 +80,10 @@ MidiSynth::freq_from_note (float note)
 void
 MidiSynth::process_note_on (int midi_note, int midi_velocity)
 {
+  // prevent crash without output: ignore note on in this case
+  if (!morph_plan_synth.have_output())
+    return;
+
   Voice *voice = alloc_voice();
   if (voice)
     {
@@ -160,6 +164,10 @@ MidiSynth::process_audio (float *output, size_t n_values)
   float *values[1] = { samples };
 
   zero_float_block (n_values, output);
+
+  // prevent crash without output: just return zeros and don't do anything else
+  if (!morph_plan_synth.have_output())
+    return;
 
   for (size_t voice_pos = 0; voice_pos < active_voices.size(); voice_pos++)
     {
