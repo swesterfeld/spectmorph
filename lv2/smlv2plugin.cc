@@ -420,6 +420,8 @@ restore(LV2_Handle                  instance,
 
       debug ("state: %s\n", plan_str);
       self->update_plan (plan_str);
+
+      // FIXME: need notification message to ui
     }
 
   return LV2_STATE_SUCCESS;
