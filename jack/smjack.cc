@@ -38,32 +38,6 @@ using std::string;
 using std::max;
 using std::min;
 
-static bool
-is_note_on (const jack_midi_event_t& event)
-{
-  if ((event.buffer[0] & 0xf0) == 0x90)
-    {
-      if (event.buffer[2] != 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  return false;
-}
-
-static bool
-is_note_off (const jack_midi_event_t& event)
-{
-  if ((event.buffer[0] & 0xf0) == 0x90)
-    {
-      if (event.buffer[2] == 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  else if ((event.buffer[0] & 0xf0) == 0x80)
-    {
-      return true;
-    }
-  return false;
-}
-
 int
 JackSynth::process (jack_nframes_t nframes)
 {
@@ -88,63 +62,27 @@ JackSynth::process (jack_nframes_t nframes)
       m_new_plan_mutex.unlock();
     }
 
-  // float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes); FIXME
-  // float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
-  float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
+  const float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
+  const float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
+  float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
-  jack_midi_event_t in_event;
-  jack_nframes_t event_index = 0;
 
-  jack_midi_event_get (&in_event, port_buf, 0);
-  jack_nframes_t i = 0; 
-  while (i < nframes)
+  for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
     {
-      while ((in_event.time == i) && (event_index < event_count))
-        {
-          if (is_note_on (in_event))
-            {
-              const int midi_note = in_event.buffer[1];
-              const int midi_velocity = in_event.buffer[2];
+      jack_midi_event_t    in_event;
+      jack_midi_event_get (&in_event, port_buf, event_index);
 
-              midi_synth->process_note_on (midi_note, midi_velocity);
-            }
-          else if (is_note_off (in_event))
-            {
-              int    midi_note = in_event.buffer[1];
-
-              midi_synth->process_note_off (midi_note);
-            }
-          else if ((in_event.buffer[0] & 0xf0) == 0xb0)
-            {
-              //printf ("got midi controller event status=%x controller=%x value=%x\n",
-              //        in_event.buffer[0], in_event.buffer[1], in_event.buffer[2]);
-
-              midi_synth->process_midi_controller (in_event.buffer[1], in_event.buffer[2]);
-            }
-
-
-          // get next event
-          event_index++;
-          if (event_index < event_count)
-            jack_midi_event_get (&in_event, port_buf, event_index);
-        }
-
-      // compute boundary for processing
-      size_t end;
-      if (event_index < event_count)
-        end = min (nframes, in_event.time);
-      else
-        end = nframes;
-
-      // update control input values FIXME
-      // v->mp_voice->set_control_input (0, control_in_1[i]);
-      // v->mp_voice->set_control_input (1, control_in_2[i]);
-      g_assert (end >= i);
-      midi_synth->process_audio (audio_out + i, end - i);
-      i = end;
+      midi_synth->add_midi_event (in_event.time, in_event.buffer);
     }
+
+  // update control input values
+  midi_synth->set_control_input (0, control_in_1[0]);
+  midi_synth->set_control_input (1, control_in_2[0]);
+
+  midi_synth->process_audio_midi (audio_out, nframes);
+
   for (size_t i = 0; i < nframes; i++)
     audio_out[i] *= m_volume;
 
