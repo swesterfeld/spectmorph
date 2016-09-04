@@ -316,24 +316,9 @@ run (LV2_Handle instance, uint32_t n_samples)
     {
       if (ev->body.type == self->uris.midi_MidiEvent)
         {
-          // process any audio that is before the event
-          self->midi_synth.process_audio (output + offset, ev->time.frames - offset);
-          offset = (uint32_t)ev->time.frames;
+          const uint8_t* msg = (const uint8_t*)(ev + 1);
 
-          const uint8_t* const msg = (const uint8_t*)(ev + 1);
-          switch (lv2_midi_message_type (msg))
-            {
-              case LV2_MIDI_MSG_NOTE_ON:
-                self->midi_synth.process_note_on (msg[1], msg[2]);
-                break;
-              case LV2_MIDI_MSG_NOTE_OFF:
-                self->midi_synth.process_note_off (msg[1]);
-                break;
-              case LV2_MIDI_MSG_CONTROLLER:
-                self->midi_synth.process_midi_controller (msg[1], msg[2]);
-                break;
-              default: break;
-            }
+          self->midi_synth.add_midi_event (ev->time.frames, msg);
         }
       else if (lv2_atom_forge_is_object_type (&self->forge, ev->body.type))
         {
@@ -367,14 +352,6 @@ run (LV2_Handle instance, uint32_t n_samples)
 
                   self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
                 }
-#if 0
- else if (key == uris->param_gain) {
-                                        // Gain change
-                                        if (value->type == uris->atom_Float) {
-                                                self->gain = DB_CO(((LV2_Atom_Float*)value)->body);
-                                        }
-                                }
-#endif
             }
           if (obj->body.otype == self->uris.patch_Get)
             {
@@ -384,7 +361,7 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
         }
     }
-  self->midi_synth.process_audio (output + offset, n_samples - offset);
+  self->midi_synth.process (output, n_samples);
   self->morph_plan_synth.update_shared_state (n_samples / self->mix_freq * 1000);
 
   // apply post gain
