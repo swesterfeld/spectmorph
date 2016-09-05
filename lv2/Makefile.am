@@ -7,8 +7,7 @@ SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
 SMHDRS = smlv2common.hh
 
-LV2_LIBDIR=/usr/lib
-spectmorph_lv2dir = $(LV2_LIBDIR)/lv2/spectmorph.lv2
+spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 
 plugindir = $(spectmorph_lv2dir)
 plugin_libs = $(QT_LIBS) $(BSE_LIBS) $(SPECTMORPH_LIBS)
