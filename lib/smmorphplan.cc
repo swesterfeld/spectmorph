@@ -28,8 +28,6 @@ MorphPlan::MorphPlan()
 {
   in_restore = false;
 
-  m_structure_version = 0;
-
   leak_debugger.add (this);
 }
 
@@ -40,8 +38,6 @@ MorphPlan::MorphPlan()
 void
 MorphPlan::clear()
 {
-  m_structure_version = 0;
-
   for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
     delete (*oi);
   m_operators.clear();
@@ -127,8 +123,8 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
     {
       m_operators.push_back (op);
     }
-  m_structure_version++;
 
+  Q_EMIT need_view_rebuild();
   emit_plan_changed();
 }
 
@@ -153,6 +149,8 @@ Bse::Error
 MorphPlan::load (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
+
+  Q_EMIT need_view_rebuild();
 
   clear();
   InFile ifile (in);
@@ -304,15 +302,12 @@ MorphPlan::index()
   return &m_index;
 }
 
-int
-MorphPlan::structure_version()
-{
-  return m_structure_version;
-}
-
 void
 MorphPlan::remove (MorphOperator *op)
 {
+  Q_EMIT need_view_rebuild();
+  Q_EMIT operator_removed (op);
+
   // accessing operator contents after remove was called is an error
   delete op;
 
@@ -324,15 +319,15 @@ MorphPlan::remove (MorphOperator *op)
       else
         oi++;
     }
-  m_structure_version++;
 
-  Q_EMIT operator_removed (op);
   emit_plan_changed();
 }
 
 void
 MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 {
+  Q_EMIT need_view_rebuild();
+
   vector<MorphOperator *> new_operators;
 
   // change op position so that op is before op_next
@@ -347,7 +342,6 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   if (!op_next)
     new_operators.push_back (op);
 
-  m_structure_version++;
   m_operators = new_operators;
 
   emit_plan_changed();

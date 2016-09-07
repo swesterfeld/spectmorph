@@ -16,10 +16,11 @@ class MorphPlan : public Object
   Q_OBJECT
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
-  int                          m_structure_version;
 
   std::string                  index_filename;
   bool                         in_restore;
+
+  void clear();
 
 public:
   MorphPlan();
@@ -52,11 +53,8 @@ public:
 
   Bse::Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
   Bse::Error load (GenericIn *in, ExtraParameters *params = nullptr);
-  void clear();
 
   MorphPlan *clone() const; // create a deep copy
-
-  int  structure_version();
 
   static std::string id_chars();
   static std::string generate_id();
@@ -65,6 +63,7 @@ signals:
   void plan_changed();
   void index_changed();
   void operator_removed (MorphOperator *op);
+  void need_view_rebuild();
 };
 
 typedef RefPtr<MorphPlan> MorphPlanPtr;
