@@ -26,7 +26,8 @@ class MorphPlanView : public QWidget
   std::vector<MoveIndicator *>  move_indicators;
   std::vector<QWidget *>        control_widgets;
 
-  int                           old_structure_version;
+  bool                          need_view_rebuild;
+
 public:
   MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
@@ -36,6 +37,7 @@ public:
 public slots:
   void on_plan_changed();
   void on_move_indication (MorphOperator *op);
+  void on_need_view_rebuild();
 };
 
 }

@@ -13,27 +13,46 @@ using std::vector;
 
 MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
   morph_plan (morph_plan),
-  morph_plan_window (morph_plan_window)
+  morph_plan_window (morph_plan_window),
+  need_view_rebuild (true)
 {
   vbox = new QVBoxLayout();
   setLayout (vbox);
 
   connect (morph_plan, SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (morph_plan, SIGNAL (need_view_rebuild()), this, SLOT (on_need_view_rebuild()));
 
-  old_structure_version = morph_plan->structure_version() - 1;
   on_plan_changed();
+}
+
+/* the signals need_view_rebuild() and plan_changed() are always emitted in pairs:
+
+   - in on_need_view_rebuild() we know that we will need to rebuild our ui, so we
+     will free the old view widgets
+
+   - then the morph plan can delete operators that are no longer needed, as the
+     view widgets that point to them are gone
+
+   - finally in on_plan_changed() we can build new view widgets that point to the new
+     operators
+*/
+void
+MorphPlanView::on_need_view_rebuild()
+{
+  need_view_rebuild = true;
+
+  for (vector<MorphOperatorView *>::const_iterator ovi = m_op_views.begin(); ovi != m_op_views.end(); ovi++)
+    delete *ovi;
+  m_op_views.clear();
 }
 
 void
 MorphPlanView::on_plan_changed()
 {
-  if (morph_plan->structure_version() == old_structure_version)
+  if (!need_view_rebuild)
     return; // nothing to do, view widgets should be fine
-  old_structure_version = morph_plan->structure_version();
 
-  for (vector<MorphOperatorView *>::const_iterator ovi = m_op_views.begin(); ovi != m_op_views.end(); ovi++)
-    delete *ovi;
-  m_op_views.clear();
+  need_view_rebuild = false;
 
   for (vector<MoveIndicator *>::const_iterator mi = move_indicators.begin(); mi != move_indicators.end(); mi++)
     delete *mi;
@@ -100,6 +119,6 @@ MorphPlanView::add_control_widget (QWidget *widget)
 {
   control_widgets.push_back (widget);
 
-  old_structure_version = morph_plan->structure_version() - 1;
+  on_need_view_rebuild();
   on_plan_changed();
 }
