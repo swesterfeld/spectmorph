@@ -46,6 +46,12 @@ LV2UI::LV2UI() :
   connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
+LV2UI::~LV2UI()
+{
+  delete window;
+  window = nullptr;
+}
+
 void
 LV2UI::on_plan_changed()
 {

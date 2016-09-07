@@ -16,6 +16,7 @@ class LV2UI : public QObject,
 
 public:
   LV2UI();
+  ~LV2UI();
 
   MorphPlanWindow      *window;
   MorphPlanPtr          morph_plan;
