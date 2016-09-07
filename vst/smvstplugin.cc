@@ -298,45 +298,43 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetVendorString:
       strcpy((char *)ptr, "Stefan Westerfeld");
       return 1;
-#if 0
-		case effGetProductString:
-			strcpy((char *)ptr, "amsynth");
-			return 1;
-#endif
+    case effGetProductString:
+      strcpy((char *)ptr, "SpectMorph");
+      return 1;
      case effGetVendorVersion:
        return 0;
 
-		case effCanDo:
-			if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
-				false) return 1;
-			if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
-				strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
-				strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
-				strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
-				false) return 0;
-			debug("unhandled canDo: %s\n", (char *)ptr);
-			return 0;
+    case effCanDo:
+      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
+              false) return 1;
+      if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
+              strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
+              strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
+              strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
+              false) return 0;
+      debug("unhandled canDo: %s\n", (char *)ptr);
+      return 0;
 
-		case effGetTailSize:
-		case effIdle:
-		case effGetParameterProperties:
-			return 0;
+    case effGetTailSize:
+    case effIdle:
+    case effGetParameterProperties:
+      return 0;
 
-		case effGetVstVersion:
-			return 2400;
+    case effGetVstVersion:
+      return 2400;
 
-		case effGetMidiKeyName:
-		case effStartProcess:
-		case effStopProcess:
-		case effBeginSetProgram:
-		case effEndSetProgram:
-		case effBeginLoadBank:
-			return 0;
+    case effGetMidiKeyName:
+    case effStartProcess:
+    case effStopProcess:
+    case effBeginSetProgram:
+    case effEndSetProgram:
+    case effBeginLoadBank:
+      return 0;
 
-		default:
-			debug ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
-			return 0;
-	}
+    default:
+      debug ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
+      return 0;
+  }
 }
 
 static void process(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
