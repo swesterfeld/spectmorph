@@ -32,7 +32,9 @@ class MorphPlanWindow : public QMainWindow
   MorphPlanView *morph_plan_view;
 
   void add_op_action (QMenu *menu, const char *title, const char *type);
+  void fill_template_menu (QMenu *menu);
   void update_window_title();
+  bool load (const std::string& filename);
 
 public:
   MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
@@ -46,6 +48,7 @@ public slots:
   void on_file_export_clicked();
   void on_load_index_clicked();
   void on_add_operator();
+  void on_load_template();
 };
 
 }

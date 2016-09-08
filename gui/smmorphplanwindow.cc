@@ -23,6 +23,7 @@
 #include "smmemout.hh"
 #include "smhexstring.hh"
 #include "smutils.hh"
+#include "smmicroconf.hh"
 
 using namespace SpectMorph;
 
@@ -46,6 +47,8 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   QMenuBar *menu_bar = menuBar();
 
   QMenu *file_menu = menu_bar->addMenu ("&File");
+  QMenu *load_template_menu = file_menu->addMenu ("&Open Template");
+
   file_menu->addAction (import_action);
   file_menu->addAction (export_action);
   file_menu->addAction (load_index_action);
@@ -58,6 +61,8 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   add_op_action (add_op_menu, "Linear Morph", "SpectMorph::MorphLinear");
   add_op_action (add_op_menu, "Grid Morph", "SpectMorph::MorphGrid");
   add_op_action (add_op_menu, "LFO", "SpectMorph::MorphLFO");
+
+  fill_template_menu (load_template_menu);
 
   /* central widget */
   morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
@@ -95,21 +100,67 @@ MorphPlanWindow::add_op_action (QMenu *menu, const char *title, const char *type
 }
 
 void
+MorphPlanWindow::fill_template_menu (QMenu *menu)
+{
+  MicroConf cfg (sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/index.smpindex");
+
+  if (!cfg.open_ok())
+    {
+      return;
+    }
+
+  while (cfg.next())
+    {
+      string filename, title;
+
+      if (cfg.command ("plan", filename, title))
+        {
+          QAction *action = new QAction (title.c_str(), this);
+          action->setData (filename.c_str());
+          menu->addAction (action);
+          connect (action, SIGNAL (triggered()), this, SLOT (on_load_template()));
+        }
+    }
+}
+
+bool
+MorphPlanWindow::load (const string& filename)
+{
+  GenericIn *in = StdioIn::open (filename);
+  if (in)
+    {
+      m_morph_plan->load (in);
+      delete in; // close file
+
+      set_filename (filename);
+
+      return true;
+    }
+  return false;
+}
+
+void
+MorphPlanWindow::on_load_template()
+{
+
+  QAction *action = qobject_cast<QAction *>(sender());
+  string filename = sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/" + string (qvariant_cast<QString> (action->data()).toLatin1().data());
+
+  if (!load (filename))
+    {
+      QMessageBox::critical (this, "Error",
+                             string_locale_printf ("Loading template failed, unable to open file '%s'.", filename.c_str()).c_str());
+    }
+}
+
+void
 MorphPlanWindow::on_file_import_clicked()
 {
   QString file_name = QFileDialog::getOpenFileName (this, "Select SpectMorph plan to import", "", "SpectMorph plan files (*.smplan)");
   if (!file_name.isEmpty())
     {
       QByteArray file_name_local = QFile::encodeName (file_name);
-      GenericIn *in = StdioIn::open (file_name_local.data());
-      if (in)
-        {
-          m_morph_plan->load (in);
-          delete in; // close file
-
-          set_filename (file_name_local.data());
-        }
-      else
+      if (!load (file_name_local.data()))
         {
           QMessageBox::critical (this, "Error",
                                  string_locale_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
