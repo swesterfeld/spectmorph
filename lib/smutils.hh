@@ -18,6 +18,13 @@ std::string string_locale_printf (const char *format, ...) RAPICORN_PRINTF (1, 2
 
 void        sm_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
 
+enum InstallDir
+{
+  INSTALL_DIR_TEMPLATES
+};
+
+std::string sm_get_install_dir (InstallDir p);
+
 } // namespace SpectMorph
 
 #endif

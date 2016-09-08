@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smutils.hh"
+#include "config.h"
 
 #include <string>
 #include <assert.h>
@@ -152,6 +153,16 @@ sm_printf (const char *format, ...)
   va_end (args);
 
   printf ("%s", str.c_str());
+}
+
+std::string
+sm_get_install_dir (InstallDir p)
+{
+  switch (p)
+    {
+      case INSTALL_DIR_TEMPLATES: return CONFIGURE_INSTALLPATH_PKGDATADIR "/templates";
+      default:                    return "";
+    }
 }
 
 }
