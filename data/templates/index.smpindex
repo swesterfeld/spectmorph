@@ -1,0 +1,4 @@
+plan 2-instruments-linear-lfo.smplan     "2 Instruments Linear Morph with LFO"
+plan 2-instruments-linear-gui.smplan     "2 Instruments Linear Morph using GUI"
+plan 2x2-instruments-grid-gui.smplan     "2x2 Intruments Grid Morph using GUI"
+plan empty.smplan                        "Empty Plan"
