@@ -25,6 +25,13 @@ enum InstallDir
 
 std::string sm_get_install_dir (InstallDir p);
 
+enum UserDir
+{
+  USER_DIR_INSTRUMENTS
+};
+
+std::string sm_get_user_dir (UserDir p);
+
 } // namespace SpectMorph
 
 #endif

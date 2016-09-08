@@ -165,4 +165,18 @@ sm_get_install_dir (InstallDir p)
     }
 }
 
+std::string
+sm_get_user_dir (UserDir p)
+{
+  char *home = getenv ("HOME");
+  if (!home)
+    return "";
+
+  switch (p)
+    {
+      case USER_DIR_INSTRUMENTS: return string (home) + "/.spectmorph/instruments";
+      default:                   return "";
+    }
+}
+
 }
