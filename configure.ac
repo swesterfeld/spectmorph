@@ -177,6 +177,11 @@ fi
 rm -fr conftest*
 ])dnl
 
+# define pkgdatadir
+bak_datadir="$datadir"
+datadir=`eval echo "${datadir}"`
+AC_DEFINE_UNQUOTED(CONFIGURE_INSTALLPATH_PKGDATADIR, ["`eval echo ${datadir}/spectmorph`"], [Package data directory])
+datadir="$bak_datadir"
 
 # Less cluttered build output
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
@@ -249,7 +254,7 @@ AC_CONFIG_FILES([Makefile
 nobse/Makefile nobse/birnet/Makefile nobse/bse/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile lv2/Makefile vst/Makefile
-vst/vestige/Makefile
+vst/vestige/Makefile data/Makefile data/templates/Makefile
 tools/sminstbuilder spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/test-common.sh])

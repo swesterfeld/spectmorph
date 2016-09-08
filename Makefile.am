@@ -13,7 +13,7 @@ if COND_WITH_LV2
   SUBDIRS += lv2
 endif
 
-SUBDIRS += vst
+SUBDIRS += vst data
 
 EXTRA_DIST += TODO
 
