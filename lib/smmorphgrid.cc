@@ -6,6 +6,7 @@
 #include "smwavset.hh"
 #include "smwavsetrepo.hh"
 #include "smutils.hh"
+#include <assert.h>
 
 using namespace SpectMorph;
 
@@ -398,6 +399,18 @@ MorphGrid::on_operator_removed (MorphOperator *op)
 {
   // plan changed will be emitted automatically after remove, so we don't emit it here
 
+  for (int x = 0; x < m_width; x++)
+    {
+      for (int y = 0; y < m_height; y++)
+        {
+          if (m_input_node[x][y].op == op)
+            {
+              assert (m_input_node[x][y].smset.empty());
+
+              m_input_node[x][y].op = nullptr;
+            }
+        }
+    }
   if (m_x_control_type == CONTROL_OP && op == m_x_control_op)
     {
       m_x_control_op = nullptr;
