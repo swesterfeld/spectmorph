@@ -158,6 +158,12 @@ MorphLinear::on_operator_removed (MorphOperator *op)
 {
   // plan changed will be emitted automatically after remove, so we don't emit it here
 
+  if (op == m_left_op)
+    m_left_op = nullptr;
+
+  if (op == m_right_op)
+    m_right_op = nullptr;
+
   if (m_control_type == CONTROL_OP && op == m_control_op)
     {
       m_control_op = nullptr;
