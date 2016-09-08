@@ -57,7 +57,7 @@ static string
 expand_index_filename (const string& filename)
 {
   size_t pos = filename.find (":");
-  if (pos > 0)
+  if (pos != string::npos)
     {
       string category = filename.substr (0, pos);
 
