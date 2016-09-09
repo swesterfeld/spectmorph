@@ -65,7 +65,7 @@ LV2UI::on_plan_changed()
   uint8_t obj_buf[OBJ_BUF_SIZE];
   lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
 
-  const LV2_Atom* msg = write_set_plan (&forge, plan_str.c_str());
+  const LV2_Atom* msg = write_set_plan (&forge, plan_str);
 
   write (controller, 0, lv2_atom_total_size (msg),
          uris.atom_eventTransfer,
