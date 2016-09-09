@@ -41,16 +41,16 @@ spectmorphincludedir = $(includedir)/spectmorph
 spectmorphinclude_HEADERS = $(SMHDRS)
 
 moc_smmorphplan.cc: smmorphplan.hh
-	moc smmorphplan.hh > moc_smmorphplan.cc
+	$(MOC) smmorphplan.hh > moc_smmorphplan.cc
 
 moc_smmorphlinear.cc: smmorphlinear.hh
-	moc smmorphlinear.hh > moc_smmorphlinear.cc
+	$(MOC) smmorphlinear.hh > moc_smmorphlinear.cc
 
 moc_smmorphoperator.cc: smmorphoperator.hh
-	moc smmorphoperator.hh > moc_smmorphoperator.cc
+	$(MOC) smmorphoperator.hh > moc_smmorphoperator.cc
 
 moc_smmorphoutput.cc: smmorphoutput.hh
-	moc smmorphoutput.hh > moc_smmorphoutput.cc
+	$(MOC) smmorphoutput.hh > moc_smmorphoutput.cc
 
 moc_smmorphgrid.cc: smmorphgrid.hh
-	moc smmorphgrid.hh > moc_smmorphgrid.cc
+	$(MOC) smmorphgrid.hh > moc_smmorphgrid.cc

@@ -67,6 +67,8 @@ AC_DEFUN([AC_QT_REQUIREMENTS],
     QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
     AC_SUBST(QT_CFLAGS)
     AC_SUBST(QT_LIBS)
+    MOC=`pkg-config --variable host_bins Qt5Core`/moc
+    AC_SUBST(MOC)
 ])
 dnl
 dnl libao

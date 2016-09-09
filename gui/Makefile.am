@@ -24,43 +24,43 @@ libspectmorphgui_la_CXXFLAGS = $(AM_CXXFLAGS)
 libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
 
 moc_smmorphplanwindow.cc: smmorphplanwindow.hh
-	moc smmorphplanwindow.hh > moc_smmorphplanwindow.cc
+	$(MOC) smmorphplanwindow.hh > moc_smmorphplanwindow.cc
 
 moc_smmorphsourceview.cc: smmorphsourceview.hh
-	moc smmorphsourceview.hh > moc_smmorphsourceview.cc
+	$(MOC) smmorphsourceview.hh > moc_smmorphsourceview.cc
 
 moc_smmorphoutputview.cc: smmorphoutputview.hh
-	moc smmorphoutputview.hh > moc_smmorphoutputview.cc
+	$(MOC) smmorphoutputview.hh > moc_smmorphoutputview.cc
 
 moc_smcomboboxoperator.cc: smcomboboxoperator.hh
-	moc smcomboboxoperator.hh > moc_smcomboboxoperator.cc
+	$(MOC) smcomboboxoperator.hh > moc_smcomboboxoperator.cc
 
 moc_smmorphoperatorview.cc: smmorphoperatorview.hh
-	moc smmorphoperatorview.hh > moc_smmorphoperatorview.cc
+	$(MOC) smmorphoperatorview.hh > moc_smmorphoperatorview.cc
 
 moc_smrenameoperatordialog.cc: smrenameoperatordialog.hh
-	moc smrenameoperatordialog.hh > moc_smrenameoperatordialog.cc
+	$(MOC) smrenameoperatordialog.hh > moc_smrenameoperatordialog.cc
 
 moc_smmorphplanview.cc: smmorphplanview.hh
-	moc smmorphplanview.hh > moc_smmorphplanview.cc
+	$(MOC) smmorphplanview.hh > moc_smmorphplanview.cc
 
 moc_smmorphlinearview.cc: smmorphlinearview.hh
-	moc smmorphlinearview.hh > moc_smmorphlinearview.cc
+	$(MOC) smmorphlinearview.hh > moc_smmorphlinearview.cc
 
 moc_smmorphlfoview.cc: smmorphlfoview.hh
-	moc smmorphlfoview.hh > moc_smmorphlfoview.cc
+	$(MOC) smmorphlfoview.hh > moc_smmorphlfoview.cc
 
 moc_smsampleview.cc: smsampleview.hh
-	moc smsampleview.hh > moc_smsampleview.cc
+	$(MOC) smsampleview.hh > moc_smsampleview.cc
 
 moc_smzoomcontroller.cc: smzoomcontroller.hh
-	moc smzoomcontroller.hh > moc_smzoomcontroller.cc
+	$(MOC) smzoomcontroller.hh > moc_smzoomcontroller.cc
 
 moc_smmorphgridview.cc: smmorphgridview.hh
-	moc smmorphgridview.hh > moc_smmorphgridview.cc
+	$(MOC) smmorphgridview.hh > moc_smmorphgridview.cc
 
 moc_smmorphgridwidget.cc: smmorphgridwidget.hh
-	moc smmorphgridwidget.hh > moc_smmorphgridwidget.cc
+	$(MOC) smmorphgridwidget.hh > moc_smmorphgridwidget.cc
 
 moc_smled.cc: smled.hh
-	moc smled.hh > moc_smled.cc
+	$(MOC) smled.hh > moc_smled.cc

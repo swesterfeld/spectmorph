@@ -22,7 +22,7 @@ testlink: testlink.cc
 	$(CXX) -o /dev/null testlink.cc $(SMVSTSOURCES) $(AM_CFLAGS) $(AM_CXXFLAGS) $(QT_LIBS) $(BSE_LIBS) -fPIC -L../lib/.libs -lspectmorph -L../gui/.libs -lspectmorphgui
 
 moc_smvstui.cc: smvstui.hh
-	moc smvstui.hh > moc_smvstui.cc
+	$(MOC) smvstui.hh > moc_smvstui.cc
 
 # we only want to install the .so file; not the .la file
 install-exec-hook:

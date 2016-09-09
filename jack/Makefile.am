@@ -24,4 +24,4 @@ libspectmorphjack_la_CXXFLAGS = $(AM_CXXFLAGS)
 libspectmorphjack_la_LIBADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
 
 moc_smjack.cc: smjack.hh
-	moc smjack.hh > moc_smjack.cc
+	$(MOC) smjack.hh > moc_smjack.cc

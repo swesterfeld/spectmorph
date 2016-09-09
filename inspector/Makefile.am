@@ -40,49 +40,49 @@ testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LI
 testinspector_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_smnavigator.cc: smnavigator.hh
-	moc smnavigator.hh > moc_smnavigator.cc
+	$(MOC) smnavigator.hh > moc_smnavigator.cc
 
 moc_smsamplewinview.cc: smsamplewinview.hh
-	moc smsamplewinview.hh > moc_smsamplewinview.cc
+	$(MOC) smsamplewinview.hh > moc_smsamplewinview.cc
 
 moc_smsamplewindow.cc: smsamplewindow.hh
-	moc smsamplewindow.hh > moc_smsamplewindow.cc
+	$(MOC) smsamplewindow.hh > moc_smsamplewindow.cc
 
 moc_smplayerwindow.cc: smplayerwindow.hh
-	moc smplayerwindow.hh > moc_smplayerwindow.cc
+	$(MOC) smplayerwindow.hh > moc_smplayerwindow.cc
 
 moc_smtimefreqwindow.cc: smtimefreqwindow.hh
-	moc smtimefreqwindow.hh > moc_smtimefreqwindow.cc
+	$(MOC) smtimefreqwindow.hh > moc_smtimefreqwindow.cc
 
 moc_smfftparamwindow.cc: smfftparamwindow.hh
-	moc smfftparamwindow.hh > moc_smfftparamwindow.cc
+	$(MOC) smfftparamwindow.hh > moc_smfftparamwindow.cc
 
 moc_smfftthread.cc: smfftthread.hh
-	moc smfftthread.hh > moc_smfftthread.cc
+	$(MOC) smfftthread.hh > moc_smfftthread.cc
 
 moc_smcwt.cc: smcwt.hh
-	moc smcwt.hh > moc_smcwt.cc
+	$(MOC) smcwt.hh > moc_smcwt.cc
 
 moc_smtimefreqview.cc: smtimefreqview.hh
-	moc smtimefreqview.hh > moc_smtimefreqview.cc
+	$(MOC) smtimefreqview.hh > moc_smtimefreqview.cc
 
 moc_smspectrumwindow.cc: smspectrumwindow.hh
-	moc smspectrumwindow.hh > moc_smspectrumwindow.cc
+	$(MOC) smspectrumwindow.hh > moc_smspectrumwindow.cc
 
 moc_smspectrumview.cc: smspectrumview.hh
-	moc smspectrumview.hh > moc_smspectrumview.cc
+	$(MOC) smspectrumview.hh > moc_smspectrumview.cc
 
 moc_smdisplayparamwindow.cc: smdisplayparamwindow.hh
-	moc smdisplayparamwindow.hh > moc_smdisplayparamwindow.cc
+	$(MOC) smdisplayparamwindow.hh > moc_smdisplayparamwindow.cc
 
 moc_smlpcview.cc: smlpcview.hh
-	moc smlpcview.hh > moc_smlpcview.cc
+	$(MOC) smlpcview.hh > moc_smlpcview.cc
 
 moc_smlpcwindow.cc: smlpcwindow.hh
-	moc smlpcwindow.hh > moc_smlpcwindow.cc
+	$(MOC) smlpcwindow.hh > moc_smlpcwindow.cc
 
 moc_smnavigatorwindow.cc: smnavigatorwindow.hh
-	moc smnavigatorwindow.hh > moc_smnavigatorwindow.cc
+	$(MOC) smnavigatorwindow.hh > moc_smnavigatorwindow.cc
 
 moc_smtimefreqwinview.cc: smtimefreqwinview.hh
-	moc smtimefreqwinview.hh > moc_smtimefreqwinview.cc
+	$(MOC) smtimefreqwinview.hh > moc_smtimefreqwinview.cc

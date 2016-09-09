@@ -24,4 +24,4 @@ spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static -export-sy
 dist_spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
 moc_smlv2ui.cc: smlv2ui.hh
-	moc smlv2ui.hh > moc_smlv2ui.cc
+	$(MOC) smlv2ui.hh > moc_smlv2ui.cc
