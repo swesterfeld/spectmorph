@@ -273,7 +273,6 @@ work (LV2_Handle                  instance,
   LV2Plugin* self = (LV2Plugin*)instance;
 
   // Get new plan from message
-  MorphPlanPtr  new_plan = new MorphPlan();
   WorkMsg       msg (size, data);
 
   self->update_plan (msg.plan_str());
