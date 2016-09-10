@@ -57,6 +57,20 @@ AC_DEFUN([AC_NOBSE_REQUIREMENTS],
     AC_SUBST(BSE_LIBS)
 ])
 dnl
+dnl libqt4 is not supported in any way; things will break if you try to build against Qt4
+dnl
+AC_DEFUN([AC_QT4_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(QT, [QtCore >= 4.0.0 QtGui >= 4.0.0],[:],[
+      AC_MSG_ERROR([You need to install Qt4 to build this package.])
+    ])
+    QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
+    AC_SUBST(QT_CFLAGS)
+    AC_SUBST(QT_LIBS)
+    MOC=`pkg-config --variable moc_location QtCore`
+    AC_SUBST(MOC)
+])
+dnl
 dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
