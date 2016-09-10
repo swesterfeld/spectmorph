@@ -370,9 +370,6 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
   const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
   for (int i = 0; i < numSampleFrames; i++)
     outputs[0][i] *= volume_factor;
-
-  // stereo -> left and right output are identical
-  std::copy_n (outputs[0], numSampleFrames, outputs[1]);
 }
 
 static void setParameter(AEffect *effect, int i, float f)
@@ -420,7 +417,7 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
   effect->numPrograms = 0;
   effect->numParams = VstPlugin::PARAM_COUNT;
   effect->numInputs = 0;
-  effect->numOutputs = 2;
+  effect->numOutputs = 1;
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;
 
   // Do no use the ->user pointer because ardour clobbers it
