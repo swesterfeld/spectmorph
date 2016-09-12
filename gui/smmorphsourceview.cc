@@ -32,15 +32,25 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
 void
 MorphSourceView::on_index_changed()
 {
+  instrument_combobox->blockSignals (true);
   instrument_combobox->clear();
 
   vector<string> smsets = morph_source->morph_plan()->index()->smsets();
   for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
     instrument_combobox->addItem ((*si).c_str());
 
+  instrument_combobox->blockSignals (false);
+
   int index = instrument_combobox->findText (morph_source->smset().c_str());
   if (index >= 0)
-    instrument_combobox->setCurrentIndex (index);
+    {
+      instrument_combobox->setCurrentIndex (index);
+    }
+  else
+    {
+      // use first instrument as default (could be moved from gui code to model)
+      on_instrument_changed();
+    }
 }
 
 void
