@@ -52,9 +52,8 @@ enum PortIndex {
   SPECTMORPH_MIDI_IN    = 0,
   SPECTMORPH_CONTROL_1  = 1,
   SPECTMORPH_CONTROL_2  = 2,
-  SPECTMORPH_GAIN       = 3,
-  SPECTMORPH_OUTPUT     = 4,
-  SPECTMORPH_NOTIFY     = 5
+  SPECTMORPH_OUTPUT     = 3,
+  SPECTMORPH_NOTIFY     = 4
 };
 
 namespace SpectMorph
@@ -67,7 +66,6 @@ public:
   const LV2_Atom_Sequence* midi_in;
   const float* control_1;
   const float* control_2;
-  const float* gain;
   const float* input;
   float*       output;
   LV2_Atom_Sequence* notify_port;
@@ -87,6 +85,7 @@ public:
 
   // SpectMorph stuff
   double          mix_freq;
+  double          volume;
   MorphPlanPtr    plan;
   QMutex          new_plan_mutex;
   MorphPlanPtr    new_plan;
@@ -102,7 +101,6 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   midi_in (NULL),
   control_1 (NULL),
   control_2 (NULL),
-  gain (NULL),
   input (NULL),
   output (NULL),
   notify_port (NULL),
@@ -130,6 +128,9 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   midi_synth.update_plan (plan);
+
+  // default volume
+  volume = -6;
 }
 
 void
@@ -222,8 +223,6 @@ connect_port (LV2_Handle instance,
                                   break;
       case SPECTMORPH_CONTROL_2:  self->control_2 = (const float*)data;
                                   break;
-      case SPECTMORPH_GAIN:       self->gain = (const float*)data;
-                                  break;
       case SPECTMORPH_OUTPUT:     self->output = (float*)data;
                                   break;
       case SPECTMORPH_NOTIFY:     self->notify_port = (LV2_Atom_Sequence*)data;
@@ -306,7 +305,6 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   const float        control_1  = *(self->control_1);
   const float        control_2  = *(self->control_2);
-  const float        gain       = *(self->gain);
   float* const       output     = self->output;
 
   uint32_t  offset = 0;
@@ -361,6 +359,11 @@ run (LV2_Handle instance, uint32_t n_samples)
 
                   self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
                 }
+              else if (key == self->uris.spectmorph_volume)
+                {
+                  if (value->type == self->uris.atom_Float)
+                    self->volume = ((LV2_Atom_Float*)value)->body;
+                }
             }
           if (obj->body.otype == self->uris.patch_Get)
             {
@@ -374,8 +377,8 @@ run (LV2_Handle instance, uint32_t n_samples)
   self->midi_synth.set_control_input (1, control_2);
   self->midi_synth.process (output, n_samples);
 
-  // apply post gain
-  const float v = (gain > -90) ? bse_db_to_factor (gain) : 0;
+  // apply post volume
+  const float v = (self->volume > -90) ? bse_db_to_factor (self->volume) : 0;
   for (uint32_t i = 0; i < n_samples; i++)
     output[i] *= v;
 }

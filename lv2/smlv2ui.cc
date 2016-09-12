@@ -42,12 +42,19 @@ LV2UI::LV2UI() :
   morph_plan (new MorphPlan())
 {
   window = new MorphPlanWindow (morph_plan, "!title!");
+  control_widget = new MorphPlanControl (morph_plan);
+  connect (control_widget, SIGNAL (change_volume (double)), this, SLOT (on_volume_changed (double)));
+
+  window->add_control_widget (control_widget);
 
   connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 
 LV2UI::~LV2UI()
 {
+  delete control_widget;
+  control_widget = nullptr;
+
   delete window;
   window = nullptr;
 }
@@ -70,6 +77,18 @@ LV2UI::on_plan_changed()
   write (controller, 0, lv2_atom_total_size (msg),
          uris.atom_eventTransfer,
          msg);
+}
+
+void
+LV2UI::on_volume_changed (double new_volume)
+{
+  vector<uint8_t> obj_buf (512);
+
+  lv2_atom_forge_set_buffer (&forge, &obj_buf[0], obj_buf.size());
+
+  const LV2_Atom* msg = write_set_volume (&forge, new_volume);
+
+  write (controller, 0, lv2_atom_total_size (msg), uris.atom_eventTransfer, msg);
 }
 
 static LV2UI_Handle

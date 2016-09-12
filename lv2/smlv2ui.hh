@@ -4,6 +4,7 @@
 #define SPECTMORPH_LV2_UI_HH
 
 #include "smmorphplanwindow.hh"
+#include "smmorphplancontrol.hh"
 #include "smlv2common.hh"
 
 namespace SpectMorph
@@ -19,6 +20,7 @@ public:
   ~LV2UI();
 
   MorphPlanWindow      *window;
+  MorphPlanControl     *control_widget;
   MorphPlanPtr          morph_plan;
 
   LV2_Atom_Forge        forge;
@@ -27,6 +29,7 @@ public:
 
 public slots:
   void on_plan_changed();
+  void on_volume_changed (double new_volume);
 };
 
 }

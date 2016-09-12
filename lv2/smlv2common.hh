@@ -14,9 +14,10 @@
 
 #include <string>
 
-#define SPECTMORPH_URI    "http://spectmorph.org/plugins/spectmorph"
-#define SPECTMORPH__plan  SPECTMORPH_URI "#plan"
-#define SPECTMORPH_UI_URI SPECTMORPH_URI "#ui"
+#define SPECTMORPH_URI      "http://spectmorph.org/plugins/spectmorph"
+#define SPECTMORPH__plan    SPECTMORPH_URI "#plan"
+#define SPECTMORPH__volume  SPECTMORPH_URI "#volume"
+#define SPECTMORPH_UI_URI   SPECTMORPH_URI "#ui"
 
 namespace SpectMorph
 {
@@ -28,6 +29,7 @@ public:
     LV2_URID atom_eventTransfer;
     LV2_URID atom_URID;
     LV2_URID atom_Path;
+    LV2_URID atom_Float;
     LV2_URID atom_String;
     LV2_URID midi_MidiEvent;
     LV2_URID patch_Get;
@@ -35,6 +37,7 @@ public:
     LV2_URID patch_property;
     LV2_URID patch_value;
     LV2_URID spectmorph_plan;
+    LV2_URID spectmorph_volume;
   } uris;
   LV2_URID_Map* map;
 
@@ -46,6 +49,7 @@ public:
     uris.atom_eventTransfer = map->map (map->handle, LV2_ATOM__eventTransfer);
     uris.atom_URID          = map->map (map->handle, LV2_ATOM__URID);
     uris.atom_Path          = map->map (map->handle, LV2_ATOM__Path);
+    uris.atom_Float         = map->map (map->handle, LV2_ATOM__Float);
     uris.atom_String        = map->map (map->handle, LV2_ATOM__String);
     uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
     uris.patch_Get          = map->map (map->handle, LV2_PATCH__Get);
@@ -53,6 +57,7 @@ public:
     uris.patch_property     = map->map (map->handle, LV2_PATCH__property);
     uris.patch_value        = map->map (map->handle, LV2_PATCH__value);
     uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
+    uris.spectmorph_volume  = map->map (map->handle, SPECTMORPH__volume);
   }
   LV2_Atom*
   write_set_plan (LV2_Atom_Forge* forge, const std::string& plan)
@@ -69,7 +74,6 @@ public:
 
     return set;
   }
-
   const LV2_Atom*
   read_set_file (const LV2_Atom_Object* obj)
   {
@@ -112,6 +116,21 @@ public:
         return NULL;
       }
     return file_path;
+  }
+  LV2_Atom*
+  write_set_volume (LV2_Atom_Forge* forge, float volume)
+  {
+    LV2_Atom_Forge_Frame frame;
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
+
+    lv2_atom_forge_key (forge,  uris.patch_property);
+    lv2_atom_forge_urid (forge, uris.spectmorph_volume);
+    lv2_atom_forge_key (forge,  uris.patch_value);
+    lv2_atom_forge_float (forge, volume);
+
+    lv2_atom_forge_pop (forge, &frame);
+
+    return set;
   }
 };
 
