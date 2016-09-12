@@ -30,6 +30,9 @@ MorphPlanControl::MorphPlanControl (MorphPlanPtr plan) :
   grid->addWidget (volume_value_label, 0, 2);
   grid->addWidget (midi_led, 0, 3);
 
+  volume_value_label->setMinimumSize (volume_label->fontMetrics().boundingRect ("-XX.X dB").size());
+  volume_value_label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+
   inst_status = new QLabel();
   grid->addWidget (inst_status, 1, 0, 1, 4);
 
