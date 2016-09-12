@@ -108,6 +108,7 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
 
   set_volume (-6); // default volume
+  m_voices_active = false;
 
   // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
   set_mix_freq (48000);
@@ -146,6 +147,13 @@ VstPlugin::volume()
 {
   QMutexLocker locker (&m_new_plan_mutex);
   return m_volume;
+}
+
+bool
+VstPlugin::voices_active()
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  return m_voices_active;
 }
 
 void
@@ -366,6 +374,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->m_new_plan = NULL;
         }
       plugin->rt_volume = plugin->m_volume;
+      plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
       plugin->m_new_plan_mutex.unlock();
     }
   plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);

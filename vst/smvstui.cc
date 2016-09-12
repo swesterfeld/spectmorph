@@ -48,6 +48,7 @@ VstUI::open (WId win_id)
   widget->winId();
   widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
   widget->show();
+
   rectangle.top = 0;
   rectangle.left = 0;
   rectangle.bottom = widget->height();
@@ -74,6 +75,8 @@ VstUI::close()
 void
 VstUI::idle()
 {
+  control_widget->set_led (plugin->voices_active());
+
   QApplication::processEvents();
 }
 

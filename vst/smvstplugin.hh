@@ -54,6 +54,8 @@ struct VstPlugin
   void  set_volume (double new_volume);
   double volume();
 
+  bool  voices_active();
+
   void  set_mix_freq (double mix_freq);
   void  preinit_plan (MorphPlanPtr plan);
 
@@ -70,6 +72,7 @@ struct VstPlugin
   QMutex              m_new_plan_mutex;
   MorphPlanPtr        m_new_plan;
   double              m_volume;
+  bool                m_voices_active;
   double              rt_volume; // realtime thread only
 };
 
