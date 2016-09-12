@@ -4,6 +4,7 @@
 #include "smvstplugin.hh"
 #include "smmemout.hh"
 #include "smhexstring.hh"
+#include "smutils.hh"
 
 #include <QWindow>
 #include <QPushButton>
@@ -16,6 +17,8 @@ using std::string;
 using std::vector;
 
 VstUI::VstUI (const string& filename, VstPlugin *plugin) :
+  widget (nullptr),
+  control_widget (nullptr),
   morph_plan (new MorphPlan()),
   plugin (plugin)
 {
@@ -35,6 +38,13 @@ bool
 VstUI::open (WId win_id)
 {
   widget = new MorphPlanWindow (morph_plan, "!title!");
+
+  control_widget = new MorphPlanControl (morph_plan);
+  control_widget->set_volume (plugin->volume());
+  connect (control_widget, SIGNAL (change_volume (double)), this, SLOT (on_change_volume (double)));
+
+  widget->add_control_widget (control_widget);
+
   widget->winId();
   widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
   widget->show();
@@ -57,6 +67,7 @@ VstUI::getRect (ERect** rect)
 void
 VstUI::close()
 {
+  delete control_widget;
   delete widget;
 }
 
@@ -72,6 +83,12 @@ VstUI::on_plan_changed()
   plugin->change_plan (morph_plan->clone());
 
   QTimer::singleShot (20, this, SLOT (on_update_window_size()));
+}
+
+void
+VstUI::on_change_volume (double new_volume)
+{
+  plugin->set_volume (new_volume);
 }
 
 void
@@ -106,7 +123,7 @@ public:
   {
     out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
     out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
-    out_file.write_float ("volume",    plugin->get_parameter_value (VstPlugin::PARAM_VOLUME));
+    out_file.write_float ("volume",    plugin->volume());
   }
 
   void
@@ -121,7 +138,7 @@ public:
           plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
 
         if (in_file.event_name() == "volume")
-          plugin->set_parameter_value (VstPlugin::PARAM_VOLUME, in_file.event_float());
+          plugin->set_volume (in_file.event_float());
       }
   }
 };
@@ -153,4 +170,7 @@ VstUI::load_state (char *buffer)
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
   morph_plan->load (in, &params);
   delete in;
+
+  if (control_widget)
+    control_widget->set_volume (plugin->volume());
 }

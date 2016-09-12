@@ -106,7 +106,8 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
 
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
-  parameters.push_back (Parameter ("Volume", -6, -48, 12, "dB"));
+
+  set_volume (-6); // default volume
 
   // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
   set_mix_freq (48000);
@@ -131,6 +132,20 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 
   QMutexLocker locker (&m_new_plan_mutex);
   m_new_plan = plan;
+}
+
+void
+VstPlugin::set_volume (double new_volume)
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  m_volume = new_volume;
+}
+
+double
+VstPlugin::volume()
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  return m_volume;
 }
 
 void
@@ -350,6 +365,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
+      plugin->rt_volume = plugin->m_volume;
       plugin->m_new_plan_mutex.unlock();
     }
   plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
@@ -357,7 +373,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   plugin->midi_synth->process (outputs[0], numSampleFrames);
 
   // apply replay volume
-  const float volume_factor = bse_db_to_factor (plugin->parameters[VstPlugin::PARAM_VOLUME].value);
+  const float volume_factor = bse_db_to_factor (plugin->rt_volume);
   for (int i = 0; i < numSampleFrames; i++)
     outputs[0][i] *= volume_factor;
 }

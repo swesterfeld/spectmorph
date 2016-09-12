@@ -6,6 +6,7 @@
 #include "smvstcommon.hh"
 
 #include "smmorphplanwindow.hh"
+#include "smmorphplancontrol.hh"
 
 namespace SpectMorph
 {
@@ -18,6 +19,7 @@ class VstUI : public QObject
 
   ERect                 rectangle;
   MorphPlanWindow      *widget;
+  MorphPlanControl     *control_widget;
   MorphPlanPtr          morph_plan;
   VstPlugin            *plugin;
   
@@ -35,6 +37,7 @@ public:
 public slots:
   void on_plan_changed();
   void on_update_window_size();
+  void on_change_volume (double new_volume);
 };
 
 }

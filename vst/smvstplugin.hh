@@ -16,7 +16,6 @@ struct VstPlugin
   {
     PARAM_CONTROL_1 = 0,
     PARAM_CONTROL_2 = 1,
-    PARAM_VOLUME    = 2,
     PARAM_COUNT
   };
 
@@ -28,7 +27,7 @@ struct VstPlugin
     float       max_value;
     std::string label;
 
-  Parameter (const char *name, float default_value, float min_value, float max_value, std::string label = "") :
+    Parameter (const char *name, float default_value, float min_value, float max_value, std::string label = "") :
       name (name),
       value (default_value),
       min_value (min_value),
@@ -52,6 +51,9 @@ struct VstPlugin
   float get_parameter_value (Param param) const;
   void  set_parameter_value (Param param, float value);
 
+  void  set_volume (double new_volume);
+  double volume();
+
   void  set_mix_freq (double mix_freq);
   void  preinit_plan (MorphPlanPtr plan);
 
@@ -67,6 +69,8 @@ struct VstPlugin
 
   QMutex              m_new_plan_mutex;
   MorphPlanPtr        m_new_plan;
+  double              m_volume;
+  double              rt_volume; // realtime thread only
 };
 
 }
