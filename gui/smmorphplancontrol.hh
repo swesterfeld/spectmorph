@@ -27,6 +27,7 @@ public:
   MorphPlanControl (MorphPlanPtr plan);
 
   void set_volume (double volume);
+  void set_led (bool on);
 
 signals:
   void change_volume (double volume);

@@ -54,6 +54,12 @@ MorphPlanControl::set_volume (double v_db)
 }
 
 void
+MorphPlanControl::set_led (bool on)
+{
+  midi_led->setState (on ? Led::On : Led::Off);
+}
+
+void
 MorphPlanControl::on_plan_changed()
 {
 }
