@@ -65,12 +65,14 @@ class JackControlWidget : public QGroupBox
   MorphPlanPtr  morph_plan;
   QLabel       *volume_value_label;
   Led          *midi_led;
+  QLabel       *inst_status;
 
 public:
   JackControlWidget (MorphPlanPtr plan, JackSynth *synth);
 
 public slots:
   void on_plan_changed();
+  void on_index_changed();
   void on_volume_changed (int new_volume);
   void on_update_led();
 };

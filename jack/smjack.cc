@@ -210,18 +210,23 @@ JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
 
   midi_led = new Led();
   midi_led->off();
-  QHBoxLayout *hbox = new QHBoxLayout (this);
-  hbox->addWidget (volume_label);
-  hbox->addWidget (volume_slider);
-  hbox->addWidget (volume_value_label);
-  hbox->addWidget (midi_led);
+  QGridLayout *grid = new QGridLayout (this);
+  grid->addWidget (volume_label, 0, 0);
+  grid->addWidget (volume_slider, 0, 1);
+  grid->addWidget (volume_value_label, 0, 2);
+  grid->addWidget (midi_led, 0, 3);
 
-  setLayout (hbox);
+  inst_status = new QLabel();
+  grid->addWidget (inst_status, 1, 0, 1, 4);
+
+  setLayout (grid);
   setTitle ("Global Instrument Settings");
 
   connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (plan.c_ptr(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
 
+  on_index_changed();
   on_plan_changed();
 }
 
@@ -232,6 +237,48 @@ JackControlWidget::on_volume_changed (int new_volume)
   double new_decoder_volume = bse_db_to_factor (new_volume_f);
   volume_value_label->setText (string_locale_printf ("%.1f dB", new_volume_f).c_str());
   synth->change_volume (new_decoder_volume);
+}
+
+void
+JackControlWidget::on_index_changed()
+{
+  string text;
+  bool red = false;
+
+  if (morph_plan->index()->type() == INDEX_INSTRUMENTS_DIR)
+    {
+      if (morph_plan->index()->load_ok())
+        {
+          text = string_printf ("Loaded '%s' Instrument Set.", morph_plan->index()->dir().c_str());
+        }
+      else
+        {
+          red = true;
+          text = string_printf ("Instrument Set '%s' NOT FOUND.", morph_plan->index()->dir().c_str());
+        }
+    }
+  if (morph_plan->index()->type() == INDEX_FILENAME)
+    {
+      if (morph_plan->index()->load_ok())
+        {
+          text = string_printf ("Loaded Custom Instrument Set.");
+        }
+      else
+        {
+          red = true;
+          text = string_printf ("Custom Instrument Set NOT FOUND.");
+        }
+    }
+  if (morph_plan->index()->type() == INDEX_NOT_DEFINED)
+    {
+      red = true;
+      text = string_printf ("NEED TO LOAD Instrument Set.");
+    }
+  if (red)
+    {
+      text = "<font color='darkred'>" + text + "</font>";
+    }
+  inst_status->setText (text.c_str());
 }
 
 void
