@@ -53,25 +53,6 @@ MorphPlan::~MorphPlan()
   leak_debugger.del (this);
 }
 
-static string
-expand_index_filename (const string& filename)
-{
-  size_t pos = filename.find (":");
-  if (pos != string::npos)
-    {
-      string category = filename.substr (0, pos);
-
-      // special case filename starts with instruments: - typically instruments:standard
-      if (category == "instruments")
-        {
-          string name = filename.substr (pos + 1);
-
-          return sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
-        }
-    }
-  return filename;
-}
-
 /**
  * Sets and loads instrument index to be used.
  * \returns true if the instrument index was loaded successfully, false otherwise
@@ -82,7 +63,7 @@ MorphPlan::load_index (const string& filename)
   bool result = false;
   if (filename != "")
     {
-      result = m_index.load_file (expand_index_filename (filename));
+      result = m_index.load_file (filename);
     }
   index_filename = filename;
   emit_index_changed();
@@ -300,6 +281,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
 
   in_restore = false;
   emit_plan_changed();
+  emit_index_changed();
 
   return Bse::Error::NONE;
 }

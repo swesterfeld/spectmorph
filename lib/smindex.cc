@@ -2,6 +2,7 @@
 
 #include "smindex.hh"
 #include "smmicroconf.hh"
+#include "smutils.hh"
 
 #include <glib.h>
 
@@ -10,11 +11,20 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+Index::Index()
+{
+  clear();
+}
+
 void
 Index::clear()
 {
   m_smset_dir = "";
   m_smsets.clear();
+
+  m_filename = "";
+  m_dir = "";
+  m_load_ok = false;
 }
 
 bool
@@ -22,7 +32,26 @@ Index::load_file (const string& filename)
 {
   clear();
 
-  MicroConf cfg (filename);
+  string expanded_filename = filename;
+
+  size_t pos = filename.find (":"); // from instruments dir?
+  if (pos != string::npos)
+    {
+      string category = filename.substr (0, pos);
+
+      // special case filename starts with instruments: - typically instruments:standard
+      if (category == "instruments")
+        {
+          string name = filename.substr (pos + 1);
+
+          expanded_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
+          m_dir = name;
+        }
+    }
+  if (m_dir == "")
+    m_filename = filename;
+
+  MicroConf cfg (expanded_filename);
   if (!cfg.open_ok())
     {
       return false;
@@ -56,7 +85,31 @@ Index::load_file (const string& filename)
           cfg.die_if_unknown();
         }
     }
+  m_load_ok = true;
   return true;
+}
+
+IndexType
+Index::type() const
+{
+  if (m_dir != "")
+    return INDEX_INSTRUMENTS_DIR;
+  if (m_filename != "")
+    return INDEX_FILENAME;
+
+  return INDEX_NOT_DEFINED;
+}
+
+bool
+Index::load_ok() const
+{
+  return m_load_ok;
+}
+
+string
+Index::dir() const
+{
+  return m_dir;
 }
 
 const vector<string>&
