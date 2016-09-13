@@ -15,6 +15,8 @@ class LV2UI : public QObject,
 {
   Q_OBJECT
 
+  std::string           current_plan;
+
 public:
   LV2UI();
   ~LV2UI();
@@ -26,6 +28,8 @@ public:
   LV2_Atom_Forge        forge;
   LV2UI_Write_Function  write;
   LV2UI_Controller      controller;
+
+  void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
 
 public slots:
   void on_plan_changed();

@@ -68,6 +68,11 @@ LV2UI::on_plan_changed()
 
   string plan_str = HexString::encode (data);
 
+  // if we know that the plugin already has this plan, don't send it again
+  if (plan_str == current_plan)
+    return;
+  current_plan = plan_str;
+
   const size_t OBJ_BUF_SIZE = plan_str.size() + 1024;
   uint8_t obj_buf[OBJ_BUF_SIZE];
   lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
@@ -149,6 +154,32 @@ cleanup (LV2UI_Handle handle)
   delete ui;
 }
 
+void
+LV2UI::port_event (uint32_t     port_index,
+                   uint32_t     buffer_size,
+                   uint32_t     format,
+                   const void*  buffer)
+{
+  if (format == uris.atom_eventTransfer)
+    {
+      const LV2_Atom* atom = (const LV2_Atom*)buffer;
+      if (lv2_atom_forge_is_object_type (&forge, atom->type))
+        {
+          const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
+          const LV2_Atom*        file_uri = read_set_file (obj);
+          if (!file_uri)
+            {
+              fprintf(stderr, "Unknown message sent to UI.\n");
+              return;
+            }
+
+          // if we received a plan, don't send the same thing back
+          current_plan = (const char*) LV2_ATOM_BODY_CONST (file_uri);
+          morph_plan->set_plan_str (current_plan);
+        }
+    }
+}
+
 static void
 port_event(LV2UI_Handle handle,
            uint32_t     port_index,
@@ -157,24 +188,8 @@ port_event(LV2UI_Handle handle,
            const void*  buffer)
 {
   LV2UI *ui = static_cast <LV2UI *> (handle);
+  ui->port_event (port_index, buffer_size, format, buffer);
 
-  if (format == ui->uris.atom_eventTransfer)
-    {
-      const LV2_Atom* atom = (const LV2_Atom*)buffer;
-      if (lv2_atom_forge_is_object_type (&ui->forge, atom->type))
-        {
-          const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
-          const LV2_Atom*        file_uri = ui->read_set_file (obj);
-          if (!file_uri)
-            {
-              fprintf(stderr, "Unknown message sent to UI.\n");
-              return;
-            }
-
-          const char* uri = (const char*)LV2_ATOM_BODY_CONST(file_uri);
-          ui->morph_plan->set_plan_str (uri);
-        }
-    }
 }
 
 static const void*
