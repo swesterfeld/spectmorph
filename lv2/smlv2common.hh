@@ -117,6 +117,35 @@ public:
       }
     return file_path;
   }
+  bool
+  read_set (const LV2_Atom_Object* obj, const char **plan_str, float **volume)
+  {
+    const LV2_Atom* plan_property = NULL;
+    const LV2_Atom* volume_property = NULL;
+
+    *plan_str = NULL;
+    *volume   = NULL;
+
+    lv2_atom_object_get (obj, uris.spectmorph_plan,   &plan_property,
+                              uris.spectmorph_volume, &volume_property, 0);
+
+    if (!plan_property && !volume_property)
+      {
+        fprintf(stderr, "Malformed set message has no body.\n");
+        return false;
+      }
+    if (plan_property->type == uris.atom_String)
+      {
+        *plan_str = (const char*) LV2_ATOM_BODY_CONST (plan_property);
+      }
+    if (volume_property->type == uris.atom_Float)
+      {
+        *volume = &((LV2_Atom_Float*)volume_property)->body;
+      }
+    return true;
+  }
+
+
   LV2_Atom*
   write_set_volume (LV2_Atom_Forge* forge, float volume)
   {
@@ -127,6 +156,21 @@ public:
     lv2_atom_forge_urid (forge, uris.spectmorph_volume);
     lv2_atom_forge_key (forge,  uris.patch_value);
     lv2_atom_forge_float (forge, volume);
+
+    lv2_atom_forge_pop (forge, &frame);
+
+    return set;
+  }
+  LV2_Atom*
+  write_set_all (LV2_Atom_Forge* forge, const std::string& plan, float volume)
+  {
+    LV2_Atom_Forge_Frame frame;
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
+
+    lv2_atom_forge_key    (forge, uris.spectmorph_plan);
+    lv2_atom_forge_string (forge, plan.c_str(), plan.size());
+    lv2_atom_forge_key    (forge, uris.spectmorph_volume);
+    lv2_atom_forge_float  (forge, volume);
 
     lv2_atom_forge_pop (forge, &frame);
 

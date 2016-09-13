@@ -369,7 +369,7 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               lv2_atom_forge_frame_time(&self->forge, offset);
 
-              self->write_set_plan (&self->forge, self->plan_str);
+              self->write_set_all (&self->forge, self->plan_str, self->volume);
             }
         }
     }

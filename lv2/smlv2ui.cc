@@ -166,16 +166,27 @@ LV2UI::port_event (uint32_t     port_index,
       if (lv2_atom_forge_is_object_type (&forge, atom->type))
         {
           const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
-          const LV2_Atom*        file_uri = read_set_file (obj);
-          if (!file_uri)
+          if (obj->body.otype != uris.patch_Set)
             {
-              fprintf(stderr, "Unknown message sent to UI.\n");
-              return;
+              fprintf(stderr, "Ignoring unknown message type %d\n", obj->body.otype);
+              return; // NULL;
             }
 
-          // if we received a plan, don't send the same thing back
-          current_plan = (const char*) LV2_ATOM_BODY_CONST (file_uri);
-          morph_plan->set_plan_str (current_plan);
+          /* Get property URI. */
+          const char *plan_str;
+          float      *volume_ptr;
+          if (read_set (obj, &plan_str, &volume_ptr))
+            {
+              if (plan_str)
+                {
+                  current_plan = plan_str; // if we received a plan, don't send the same thing back
+                  morph_plan->set_plan_str (current_plan);
+                }
+              if (*volume_ptr)
+                {
+                  control_widget->set_volume (*volume_ptr);
+                }
+            }
         }
     }
 }
