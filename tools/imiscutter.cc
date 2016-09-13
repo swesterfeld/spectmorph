@@ -38,6 +38,7 @@ struct Options
 
   double signal_threshold;
   double silence_threshold;
+  int    step;
 } options;
 /// @endcond
 
@@ -46,7 +47,8 @@ struct Options
 Options::Options () :
   program_name ("imiscutter"),
   signal_threshold (-20),
-  silence_threshold (-60)
+  silence_threshold (-60),
+  step (1)
 {
 }
 
@@ -88,6 +90,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--signal", &opt_arg))
         {
           signal_threshold = atof (opt_arg);
+        }
+      else if (check_arg (argc, argv, &i, "--step", &opt_arg))
+        {
+          step = atoi (opt_arg);
         }
     }
 
@@ -306,7 +312,7 @@ main (int argc, char **argv)
 
   const size_t block_size = 256;
   int last_region_end = 0;
-  for (int region = first_region; region < first_region + region_count; region++)
+  for (int region = first_region; region != first_region + region_count * options.step; region += options.step)
     {
       int note_len = 0.5 + mix_freq / freq_from_note (region);
 

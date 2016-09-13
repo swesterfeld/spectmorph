@@ -295,15 +295,19 @@ def build_instrument_samples (inst_dir, builder_config, cmdline_args, config, fi
         args += [ ":" ]
       if len (args) < 5:
         args += [ "note-%d.wav" ]
-      src, regions, note_start, thresholds, pattern = args
+      if len (args) < 6:
+        args += [ "" ]
+      src, regions, note_start, thresholds, pattern, step = args
       # parse thresholds (for example -40:-20)
-      threshold_args = ""
+      extra_args = ""
       tmin, tmax = thresholds.split (":")
       if (tmin != ""):
-        threshold_args += " --silence %s" % tmin;
+        extra_args += " --silence %s" % tmin
       if (tmax != ""):
-        threshold_args += " --signal %s" % tmax;
-      system_or_die ("imiscutter %s %s %s %s %s" % (src, regions, note_start, pattern, threshold_args))
+        extra_args += " --signal %s" % tmax
+      if (step != ""):
+        extra_args += " --step %s" % step
+      system_or_die ("imiscutter %s %s %s %s %s" % (src, regions, note_start, pattern, extra_args))
 
   system_or_die ("smwavset init %s/instrument.wset" % config.dir);
   system_or_die ("smwavset init %s/instrument-clipped.wset" % config.dir);
