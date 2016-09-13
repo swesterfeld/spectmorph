@@ -131,12 +131,12 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
   lv2_atom_forge_init (&ui->forge, ui->map);
 
-  // Request state (filename) from plugin
+  // Request state (volume, plan) from plugin
   uint8_t get_buf[512];
   lv2_atom_forge_set_buffer(&ui->forge, get_buf, sizeof(get_buf));
 
   LV2_Atom_Forge_Frame frame;
-  LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&ui->forge, &frame, 0, ui->uris.patch_Get);
+  LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&ui->forge, &frame, 0, ui->uris.spectmorph_Get);
   lv2_atom_forge_pop (&ui->forge, &frame);
 
   ui->write(ui->controller, 0, lv2_atom_total_size(msg),
@@ -166,15 +166,14 @@ LV2UI::port_event (uint32_t     port_index,
       if (lv2_atom_forge_is_object_type (&forge, atom->type))
         {
           const LV2_Atom_Object* obj      = (const LV2_Atom_Object*)atom;
-          if (obj->body.otype != uris.patch_Set)
+          if (obj->body.otype != uris.spectmorph_Set)
             {
               fprintf(stderr, "Ignoring unknown message type %d\n", obj->body.otype);
               return; // NULL;
             }
 
-          /* Get property URI. */
-          const char *plan_str;
-          float      *volume_ptr;
+          const char  *plan_str;
+          const float *volume_ptr;
           if (read_set (obj, &plan_str, &volume_ptr))
             {
               if (plan_str)
@@ -182,7 +181,7 @@ LV2UI::port_event (uint32_t     port_index,
                   current_plan = plan_str; // if we received a plan, don't send the same thing back
                   morph_plan->set_plan_str (current_plan);
                 }
-              if (*volume_ptr)
+              if (volume_ptr)
                 {
                   control_widget->set_volume (*volume_ptr);
                 }

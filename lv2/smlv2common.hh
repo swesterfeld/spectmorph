@@ -15,9 +15,12 @@
 #include <string>
 
 #define SPECTMORPH_URI      "http://spectmorph.org/plugins/spectmorph"
+#define SPECTMORPH_UI_URI   SPECTMORPH_URI "#ui"
+
+#define SPECTMORPH__Get     SPECTMORPH_URI "#Get"
+#define SPECTMORPH__Set     SPECTMORPH_URI "#Set"
 #define SPECTMORPH__plan    SPECTMORPH_URI "#plan"
 #define SPECTMORPH__volume  SPECTMORPH_URI "#volume"
-#define SPECTMORPH_UI_URI   SPECTMORPH_URI "#ui"
 
 namespace SpectMorph
 {
@@ -32,10 +35,8 @@ public:
     LV2_URID atom_Float;
     LV2_URID atom_String;
     LV2_URID midi_MidiEvent;
-    LV2_URID patch_Get;
-    LV2_URID patch_Set;
-    LV2_URID patch_property;
-    LV2_URID patch_value;
+    LV2_URID spectmorph_Get;
+    LV2_URID spectmorph_Set;
     LV2_URID spectmorph_plan;
     LV2_URID spectmorph_volume;
   } uris;
@@ -52,79 +53,20 @@ public:
     uris.atom_Float         = map->map (map->handle, LV2_ATOM__Float);
     uris.atom_String        = map->map (map->handle, LV2_ATOM__String);
     uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
-    uris.patch_Get          = map->map (map->handle, LV2_PATCH__Get);
-    uris.patch_Set          = map->map (map->handle, LV2_PATCH__Set);
-    uris.patch_property     = map->map (map->handle, LV2_PATCH__property);
-    uris.patch_value        = map->map (map->handle, LV2_PATCH__value);
+    uris.spectmorph_Get     = map->map (map->handle, SPECTMORPH__Get);
+    uris.spectmorph_Set     = map->map (map->handle, SPECTMORPH__Set);
     uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
     uris.spectmorph_volume  = map->map (map->handle, SPECTMORPH__volume);
   }
-  LV2_Atom*
-  write_set_plan (LV2_Atom_Forge* forge, const std::string& plan)
-  {
-    LV2_Atom_Forge_Frame frame;
-    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
 
-    lv2_atom_forge_key (forge,  uris.patch_property);
-    lv2_atom_forge_urid (forge, uris.spectmorph_plan);
-    lv2_atom_forge_key (forge,  uris.patch_value);
-    lv2_atom_forge_path (forge, plan.c_str(), plan.size());
-
-    lv2_atom_forge_pop (forge, &frame);
-
-    return set;
-  }
-  const LV2_Atom*
-  read_set_file (const LV2_Atom_Object* obj)
-  {
-    if (obj->body.otype != uris.patch_Set)
-      {
-        fprintf(stderr, "Ignoring unknown message type %d\n", obj->body.otype);
-        return NULL;
-      }
-
-    /* Get property URI. */
-    const LV2_Atom* property = NULL;
-    lv2_atom_object_get(obj, uris.patch_property, &property, 0);
-    if (!property)
-      {
-        fprintf(stderr, "Malformed set message has no body.\n");
-        return NULL;
-      }
-    else if (property->type != uris.atom_URID)
-      {
-        fprintf(stderr, "Malformed set message has non-URID property.\n");
-        return NULL;
-      }
-    else if (((const LV2_Atom_URID*)property)->body != uris.spectmorph_plan)
-      {
-        fprintf(stderr, "Set message for unknown property.\n");
-        return NULL;
-      }
-
-    /* Get value. */
-    const LV2_Atom* file_path = NULL;
-    lv2_atom_object_get(obj, uris.patch_value, &file_path, 0);
-    if (!file_path)
-      {
-        fprintf(stderr, "Malformed set message has no value.\n");
-        return NULL;
-      }
-    else if (file_path->type != uris.atom_Path)
-      {
-        fprintf(stderr, "Set message value is not a Path.\n");
-        return NULL;
-      }
-    return file_path;
-  }
   bool
-  read_set (const LV2_Atom_Object* obj, const char **plan_str, float **volume)
+  read_set (const LV2_Atom_Object* obj, const char **plan_str, const float **volume)
   {
-    const LV2_Atom* plan_property = NULL;
-    const LV2_Atom* volume_property = NULL;
+    const LV2_Atom* plan_property   = nullptr;
+    const LV2_Atom* volume_property = nullptr;
 
-    *plan_str = NULL;
-    *volume   = NULL;
+    *plan_str = nullptr;
+    *volume   = nullptr;
 
     lv2_atom_object_get (obj, uris.spectmorph_plan,   &plan_property,
                               uris.spectmorph_volume, &volume_property, 0);
@@ -134,28 +76,39 @@ public:
         fprintf(stderr, "Malformed set message has no body.\n");
         return false;
       }
-    if (plan_property->type == uris.atom_String)
+    if (plan_property && plan_property->type == uris.atom_String)
       {
         *plan_str = (const char*) LV2_ATOM_BODY_CONST (plan_property);
       }
-    if (volume_property->type == uris.atom_Float)
+    if (volume_property && volume_property->type == uris.atom_Float)
       {
         *volume = &((LV2_Atom_Float*)volume_property)->body;
       }
     return true;
   }
 
+  LV2_Atom*
+  write_set_plan (LV2_Atom_Forge* forge, const std::string& plan)
+  {
+    LV2_Atom_Forge_Frame frame;
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.spectmorph_Set);
+
+    lv2_atom_forge_key    (forge, uris.spectmorph_plan);
+    lv2_atom_forge_string (forge, plan.c_str(), plan.size());
+
+    lv2_atom_forge_pop (forge, &frame);
+
+    return set;
+  }
 
   LV2_Atom*
   write_set_volume (LV2_Atom_Forge* forge, float volume)
   {
     LV2_Atom_Forge_Frame frame;
-    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.spectmorph_Set);
 
-    lv2_atom_forge_key (forge,  uris.patch_property);
-    lv2_atom_forge_urid (forge, uris.spectmorph_volume);
-    lv2_atom_forge_key (forge,  uris.patch_value);
-    lv2_atom_forge_float (forge, volume);
+    lv2_atom_forge_key    (forge, uris.spectmorph_volume);
+    lv2_atom_forge_float  (forge, volume);
 
     lv2_atom_forge_pop (forge, &frame);
 
@@ -165,7 +118,7 @@ public:
   write_set_all (LV2_Atom_Forge* forge, const std::string& plan, float volume)
   {
     LV2_Atom_Forge_Frame frame;
-    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.patch_Set);
+    LV2_Atom* set = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.spectmorph_Set);
 
     lv2_atom_forge_key    (forge, uris.spectmorph_plan);
     lv2_atom_forge_string (forge, plan.c_str(), plan.size());

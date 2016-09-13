@@ -331,41 +331,27 @@ run (LV2_Handle instance, uint32_t n_samples)
         {
           const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
 
-          if (obj->body.otype == self->uris.patch_Set)
+          if (obj->body.otype == self->uris.spectmorph_Set)
             {
-              // Get the property and value of the set message
-              const LV2_Atom* property = NULL;
-              const LV2_Atom* value    = NULL;
-              lv2_atom_object_get  (obj,
-                                    self->uris.patch_property, &property,
-                                    self->uris.patch_value,    &value,
-                                    0);
-              if (!property)
-                {
-                  lv2_log_error (&self->logger, "patch:Set message with no property\n");
-                  continue;
-                }
-              else if (property->type != self->uris.atom_URID)
-                {
-                  lv2_log_error (&self->logger, "patch:Set property is not a URID\n");
-                  continue;
-                }
+              const char  *plan_str;
+              const float *volume_ptr;
 
-              const uint32_t key = ((const LV2_Atom_URID*)property)->body;
-              if (key == self->uris.spectmorph_plan)
+              if (self->read_set (obj, &plan_str, &volume_ptr))
                 {
-                  // send plan change to worker
-                  WorkMsg msg ((const char *) LV2_ATOM_BODY_CONST (value));
+                  if (plan_str)
+                    {
+                      // send plan change to worker
+                      WorkMsg msg (plan_str);
 
-                  self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
-                }
-              else if (key == self->uris.spectmorph_volume)
-                {
-                  if (value->type == self->uris.atom_Float)
-                    self->volume = ((LV2_Atom_Float*)value)->body;
+                      self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
+                    }
+                  if (volume_ptr)
+                    {
+                      self->volume = *volume_ptr;
+                    }
                 }
             }
-          if (obj->body.otype == self->uris.patch_Get)
+          else if (obj->body.otype == self->uris.spectmorph_Get)
             {
               lv2_atom_forge_frame_time(&self->forge, offset);
 
