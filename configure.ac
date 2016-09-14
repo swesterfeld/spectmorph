@@ -221,10 +221,10 @@ dnl -------------------------------------------------------------------------
 
 dnl -------------------- lv2 support is optional ----------------------------
 AC_ARG_WITH([lv2], [AS_HELP_STRING([--with-lv2], [build support for LV2])])
-AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
 if test "$with_lv2" != "xno"; then
   AC_LV2_REQUIREMENTS
 fi
+AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
 dnl -------------------------------------------------------------------------
 
 AC_AO_REQUIREMENTS
