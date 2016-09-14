@@ -174,7 +174,8 @@ LV2UI::port_event (uint32_t     port_index,
 
           const char  *plan_str;
           const float *volume_ptr;
-          if (read_set (obj, &plan_str, &volume_ptr))
+          const int   *led_ptr;
+          if (read_set (obj, &plan_str, &volume_ptr, &led_ptr))
             {
               if (plan_str)
                 {
@@ -182,9 +183,9 @@ LV2UI::port_event (uint32_t     port_index,
                   morph_plan->set_plan_str (current_plan);
                 }
               if (volume_ptr)
-                {
-                  control_widget->set_volume (*volume_ptr);
-                }
+                control_widget->set_volume (*volume_ptr);
+              if (led_ptr)
+                control_widget->set_led (*led_ptr);
             }
         }
     }

@@ -91,6 +91,7 @@ public:
   MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   string          plan_str;
+  bool            voices_active;
 
   void update_plan (const string& new_plan_str);
 };
@@ -129,8 +130,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   midi_synth.update_plan (plan);
 
-  // default volume
-  volume = -6;
+  volume = -6;            // default volume (dB)
+  voices_active = false;  // no note being played right now
 }
 
 void
@@ -335,8 +336,9 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               const char  *plan_str;
               const float *volume_ptr;
+              const int   *led_ptr;
 
-              if (self->read_set (obj, &plan_str, &volume_ptr))
+              if (self->read_set (obj, &plan_str, &volume_ptr, &led_ptr))
                 {
                   if (plan_str)
                     {
@@ -353,9 +355,9 @@ run (LV2_Handle instance, uint32_t n_samples)
             }
           else if (obj->body.otype == self->uris.spectmorph_Get)
             {
-              lv2_atom_forge_frame_time(&self->forge, offset);
+              lv2_atom_forge_frame_time (&self->forge, offset);
 
-              self->write_set_all (&self->forge, self->plan_str, self->volume);
+              self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
             }
         }
     }
@@ -367,6 +369,16 @@ run (LV2_Handle instance, uint32_t n_samples)
   const float v = (self->volume > -90) ? bse_db_to_factor (self->volume) : 0;
   for (uint32_t i = 0; i < n_samples; i++)
     output[i] *= v;
+
+  // update led (all midi events processed by now)
+  bool new_voices_active = self->midi_synth.active_voice_count() > 0;
+  if (self->voices_active != new_voices_active)
+    {
+      lv2_atom_forge_frame_time (&self->forge, offset);
+
+      self->write_set_led (&self->forge, new_voices_active);
+      self->voices_active = new_voices_active;
+    }
 }
 
 static void
