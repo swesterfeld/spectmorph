@@ -17,6 +17,7 @@
 #include "smmemout.hh"
 #include "smhexstring.hh"
 #include "spectmorphoscgui.hh"
+#include "smmorphplancontrol.hh"
 
 using namespace SpectMorph;
 
@@ -28,6 +29,10 @@ OscGui::OscGui (MorphPlanPtr plan, const string& title) :
 {
   window = new MorphPlanWindow (morph_plan, title);
   connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+
+  MorphPlanControl *control_widget = new MorphPlanControl (morph_plan, MorphPlanControl::NO_VOLUME);
+  window->add_control_widget (control_widget);
+
   window->show();
 }
 
