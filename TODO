@@ -78,9 +78,6 @@ qt5 port:
 - smmorphplot
 
 lv2:
-- state saving
-- add gain to ui
-- change the way instruments are opened and referenced
 - debug qtractor
 - debur reason|bitwig
 - use worker thread response for setting|freeing morph plans
