@@ -21,6 +21,7 @@ class Index
   std::vector<std::string> m_smsets;
   std::string              m_smset_dir;
 
+  std::string              m_expanded_filename;
   std::string              m_filename;
   std::string              m_dir;
   bool                     m_load_ok;
@@ -33,6 +34,7 @@ public:
 
   IndexType   type() const;
   std::string filename() const;
+  std::string expanded_filename() const;
   std::string dir() const;
   bool        load_ok() const;
 

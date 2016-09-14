@@ -22,6 +22,7 @@ Index::clear()
   m_smset_dir = "";
   m_smsets.clear();
 
+  m_expanded_filename = "";
   m_filename = "";
   m_dir = "";
   m_load_ok = false;
@@ -32,7 +33,7 @@ Index::load_file (const string& filename)
 {
   clear();
 
-  string expanded_filename = filename;
+  m_expanded_filename = filename;
 
   size_t pos = filename.find (":"); // from instruments dir?
   if (pos != string::npos)
@@ -44,14 +45,14 @@ Index::load_file (const string& filename)
         {
           string name = filename.substr (pos + 1);
 
-          expanded_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
+          m_expanded_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
           m_dir = name;
         }
     }
   if (m_dir == "")
     m_filename = filename;
 
-  MicroConf cfg (expanded_filename);
+  MicroConf cfg (m_expanded_filename);
   if (!cfg.open_ok())
     {
       return false;
@@ -69,7 +70,7 @@ Index::load_file (const string& filename)
         {
           if (!g_path_is_absolute (str.c_str()))
             {
-              char *index_dirname = g_path_get_dirname (expanded_filename.c_str());
+              char *index_dirname = g_path_get_dirname (m_expanded_filename.c_str());
               char *absolute_path = g_build_filename (index_dirname, str.c_str(), NULL);
               m_smset_dir = absolute_path;
               g_free (absolute_path);
@@ -110,6 +111,18 @@ string
 Index::dir() const
 {
   return m_dir;
+}
+
+string
+Index::filename() const
+{
+  return m_filename;
+}
+
+string
+Index::expanded_filename() const
+{
+  return m_expanded_filename;
 }
 
 const vector<string>&
