@@ -111,6 +111,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan (new MorphPlan()),
   midi_synth (mix_freq, 64)
 {
+  // FIXME: avoid hard coded path using instruments dir
   std::string filename = "/home/stefan/lv2.smplan";
   GenericIn *in = StdioIn::open (filename);
   if (!in)
@@ -137,6 +138,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 void
 LV2Plugin::update_plan (const string& new_plan_str)
 {
+  // FIXME: not safe, because the audio thread could read the variable at the same time (spectmorph_Get)
   plan_str = new_plan_str;
 
   MorphPlanPtr new_plan = new MorphPlan();
