@@ -24,7 +24,11 @@ class MorphPlanControl : public QGroupBox
   QLabel       *inst_status;
 
 public:
-  MorphPlanControl (MorphPlanPtr plan);
+  enum Features {
+    ALL_WIDGETS,
+    NO_VOLUME
+  };
+  MorphPlanControl (MorphPlanPtr plan, Features f = ALL_WIDGETS);
 
   void set_volume (double volume);
   void set_led (bool on);
@@ -33,7 +37,6 @@ signals:
   void change_volume (double volume);
 
 public slots:
-  void on_plan_changed();
   void on_index_changed();
   void on_volume_changed (int new_volume);
 };

@@ -9,45 +9,50 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphPlanControl::MorphPlanControl (MorphPlanPtr plan) :
-  morph_plan (plan)
+MorphPlanControl::MorphPlanControl (MorphPlanPtr plan, Features f) :
+  morph_plan (plan),
+  volume_value_label (nullptr),
+  volume_slider (nullptr),
+  midi_led (nullptr),
+  inst_status (nullptr)
 {
-  QLabel *volume_label = new QLabel ("Volume", this);
-  volume_slider = new QSlider (Qt::Horizontal, this);
-  volume_slider->setRange (-480, 120);
-  volume_value_label = new QLabel (this);
-  connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
-
-  // start at -6 dB
-  set_volume (-6.0);
-
-  midi_led = new Led();
-  midi_led->off();
-
   QGridLayout *grid = new QGridLayout (this);
-  grid->addWidget (volume_label, 0, 0);
-  grid->addWidget (volume_slider, 0, 1);
-  grid->addWidget (volume_value_label, 0, 2);
-  grid->addWidget (midi_led, 0, 3);
+  if (f == ALL_WIDGETS)
+    {
+      QLabel *volume_label = new QLabel ("Volume", this);
+      volume_slider = new QSlider (Qt::Horizontal, this);
+      volume_slider->setRange (-480, 120);
+      volume_value_label = new QLabel (this);
+      connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
 
-  volume_value_label->setMinimumSize (volume_label->fontMetrics().boundingRect ("-XX.X dB").size());
-  volume_value_label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+      // start at -6 dB
+      set_volume (-6.0);
 
-  inst_status = new QLabel();
-  grid->addWidget (inst_status, 1, 0, 1, 4);
+      midi_led = new Led();
+      midi_led->off();
 
+      grid->addWidget (volume_label, 0, 0);
+      grid->addWidget (volume_slider, 0, 1);
+      grid->addWidget (volume_value_label, 0, 2);
+      grid->addWidget (midi_led, 0, 3);
+
+      volume_value_label->setMinimumSize (volume_label->fontMetrics().boundingRect ("-XX.X dB").size());
+      volume_value_label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
+
+      inst_status = new QLabel();
+      grid->addWidget (inst_status, 1, 0, 1, 4);
+    }
+  else
+    {
+      inst_status = new QLabel();
+      grid->addWidget (inst_status);
+    }
   setLayout (grid);
   setTitle ("Global Instrument Settings");
 
-#if 0
-  connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
-#endif
-
-  connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
   connect (plan.c_ptr(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
 
   on_index_changed();
-  on_plan_changed();
 }
 
 void
@@ -60,11 +65,6 @@ void
 MorphPlanControl::set_led (bool on)
 {
   midi_led->setState (on ? Led::On : Led::Off);
-}
-
-void
-MorphPlanControl::on_plan_changed()
-{
 }
 
 void
@@ -84,6 +84,9 @@ MorphPlanControl::on_index_changed()
           red = true;
           text = string_printf ("Instrument Set '%s' NOT FOUND.", morph_plan->index()->dir().c_str());
         }
+      inst_status->setToolTip (QString ("Instrument Set is \"%1\".\nThis Instrument Set filename is \"%2\".") .
+                                        arg (morph_plan->index()->dir().c_str()) .
+                                        arg (morph_plan->index()->expanded_filename().c_str()));
     }
   if (morph_plan->index()->type() == INDEX_FILENAME)
     {
@@ -96,11 +99,13 @@ MorphPlanControl::on_index_changed()
           red = true;
           text = string_printf ("Custom Instrument Set NOT FOUND.");
         }
+      inst_status->setToolTip (QString ("Custom Instrument Set is \"%1\".").arg (morph_plan->index()->filename().c_str()));
     }
   if (morph_plan->index()->type() == INDEX_NOT_DEFINED)
     {
       red = true;
       text = string_printf ("NEED TO LOAD Instrument Set.");
+      inst_status->setToolTip ("Instrument Set is empty.");
     }
   if (red)
     {
