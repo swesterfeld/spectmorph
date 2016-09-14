@@ -408,7 +408,13 @@ save(LV2_Handle                instance,
          self->uris.atom_String,
          LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-  debug ("state save called: %s\n", self->plan_str.c_str());
+  float f_volume = self->volume; // self->volume is double
+  store (handle, self->uris.spectmorph_volume,
+         (void*)&f_volume, sizeof (float),
+         self->uris.atom_Float,
+         LV2_STATE_IS_POD);
+
+  debug ("state save called: %s\nstate volume: %f\n", self->plan_str.c_str(), self->volume);
   return LV2_STATE_SUCCESS;
 }
 
@@ -423,19 +429,26 @@ restore(LV2_Handle                  instance,
 
   debug ("state restore called\n");
 
-  size_t   size;
-  uint32_t type;
-  uint32_t valflags;
+  size_t      size;
+  uint32_t    type;
+  uint32_t    valflags;
+  const void* value;
 
-  const void* value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
-  if (value)
+  value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
+  if (value && type == self->uris.atom_String)
     {
-      const char* plan_str = (const char*)value;
+      const char *plan_str = (const char *)value;
 
-      debug ("state: %s\n", plan_str);
+      debug (" -> plan_str: %s\n", plan_str);
       self->update_plan (plan_str);
 
       // FIXME: need notification message to ui
+    }
+  value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
+  if (value && size == sizeof (float) && type == self->uris.atom_Float)
+    {
+      self->volume = *((const float *) value);
+      debug (" -> volume: %f\n", self->volume);
     }
 
   return LV2_STATE_SUCCESS;
