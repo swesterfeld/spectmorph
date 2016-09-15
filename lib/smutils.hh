@@ -31,6 +31,7 @@ enum UserDir
 };
 
 std::string sm_get_user_dir (UserDir p);
+std::string sm_get_default_plan();
 
 } // namespace SpectMorph
 

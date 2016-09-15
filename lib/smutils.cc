@@ -179,4 +179,10 @@ sm_get_user_dir (UserDir p)
     }
 }
 
+std::string
+sm_get_default_plan()
+{
+  return sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/2-instruments-linear-lfo.smplan";
+}
+
 }
