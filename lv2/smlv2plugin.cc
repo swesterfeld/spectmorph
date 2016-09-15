@@ -111,24 +111,25 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan (new MorphPlan()),
   midi_synth (mix_freq, 64)
 {
-  // FIXME: avoid hard coded path using instruments dir
-  std::string filename = "/home/stefan/lv2.smplan";
+  std::string filename = sm_get_default_plan();
   GenericIn *in = StdioIn::open (filename);
-  if (!in)
+  if (in)
+    {
+      plan->load (in);
+      delete in;
+    }
+  else
     {
       g_printerr ("Error opening '%s'.\n", filename.c_str());
-      exit (1);
+      // in this case we fail gracefully and start with an empty plan
     }
-  plan->load (in);
-  delete in;
 
-  // only needed as long as we load a default plan
   vector<unsigned char> data;
   MemOut mo (&data);
   plan->save (&mo);
   plan_str = HexString::encode (data);
 
-  fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
+  debug ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   midi_synth.update_plan (plan);
 
   volume = -6;            // default volume (dB)
