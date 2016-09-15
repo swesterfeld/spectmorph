@@ -197,103 +197,44 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
-JackControlWidget::JackControlWidget (MorphPlanPtr plan, JackSynth *synth) :
+JackControl::JackControl (MorphPlanPtr plan, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
 {
-  QLabel *volume_label = new QLabel ("Volume", this);
-  QSlider *volume_slider = new QSlider (Qt::Horizontal, this);
-  volume_slider->setRange (-960, 240);
-  volume_value_label = new QLabel (this);
-  connect (volume_slider, SIGNAL (valueChanged(int)), this, SLOT (on_volume_changed(int)));
-  volume_slider->setValue (-60);
+  m_control_widget = new MorphPlanControl (plan);
+  m_control_widget->set_volume (-6); // default volume
+  on_volume_changed (-6);
 
-  midi_led = new Led();
-  midi_led->off();
-  QGridLayout *grid = new QGridLayout (this);
-  grid->addWidget (volume_label, 0, 0);
-  grid->addWidget (volume_slider, 0, 1);
-  grid->addWidget (volume_value_label, 0, 2);
-  grid->addWidget (midi_led, 0, 3);
-
-  inst_status = new QLabel();
-  grid->addWidget (inst_status, 1, 0, 1, 4);
-
-  setLayout (grid);
-  setTitle ("Global Instrument Settings");
-
+  connect (m_control_widget, SIGNAL (change_volume (double)), this, SLOT (on_volume_changed (double)));
   connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
-  connect (plan.c_ptr(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
 
-  on_index_changed();
   on_plan_changed();
 }
 
-void
-JackControlWidget::on_volume_changed (int new_volume)
+MorphPlanControl *
+JackControl::control_widget()
 {
-  double new_volume_f = new_volume * 0.1;
-  double new_decoder_volume = bse_db_to_factor (new_volume_f);
-  volume_value_label->setText (string_locale_printf ("%.1f dB", new_volume_f).c_str());
+  return m_control_widget;
+}
+
+void
+JackControl::on_volume_changed (double new_volume)
+{
+  double new_decoder_volume = bse_db_to_factor (new_volume);
   synth->change_volume (new_decoder_volume);
 }
 
 void
-JackControlWidget::on_index_changed()
-{
-  string text;
-  bool red = false;
-
-  if (morph_plan->index()->type() == INDEX_INSTRUMENTS_DIR)
-    {
-      if (morph_plan->index()->load_ok())
-        {
-          text = string_printf ("Loaded '%s' Instrument Set.", morph_plan->index()->dir().c_str());
-        }
-      else
-        {
-          red = true;
-          text = string_printf ("Instrument Set '%s' NOT FOUND.", morph_plan->index()->dir().c_str());
-        }
-    }
-  if (morph_plan->index()->type() == INDEX_FILENAME)
-    {
-      if (morph_plan->index()->load_ok())
-        {
-          text = string_printf ("Loaded Custom Instrument Set.");
-        }
-      else
-        {
-          red = true;
-          text = string_printf ("Custom Instrument Set NOT FOUND.");
-        }
-    }
-  if (morph_plan->index()->type() == INDEX_NOT_DEFINED)
-    {
-      red = true;
-      text = string_printf ("NEED TO LOAD Instrument Set.");
-    }
-  if (red)
-    {
-      text = "<font color='darkred'>" + text + "</font>";
-    }
-  inst_status->setText (text.c_str());
-}
-
-void
-JackControlWidget::on_plan_changed()
+JackControl::on_plan_changed()
 {
   synth->change_plan (morph_plan->clone());
 }
 
 void
-JackControlWidget::on_update_led()
+JackControl::on_update_led()
 {
-  if (synth->voices_active())
-    midi_led->on();
-  else
-    midi_led->off();
+  m_control_widget->set_led (synth->voices_active());
 }
 
 int
@@ -335,7 +276,7 @@ main (int argc, char **argv)
     }
   else
     {
-      string filename = sm_get_default_plan();
+      filename = sm_get_default_plan();
 
       GenericIn *in = StdioIn::open (filename);
       if (in)
@@ -357,14 +298,13 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  JackSynth synth (client);
-
-  JackControlWidget *control_widget = new JackControlWidget (morph_plan, &synth);
+  JackSynth   synth (client);
+  JackControl control (morph_plan, &synth);
 
   MorphPlanWindow window (morph_plan, "SpectMorph JACK Client");
   if (filename != "")
     window.set_filename (filename);
-  window.add_control_widget (control_widget);
+  window.add_control_widget (control.control_widget());
   window.show();
   int rc = app.exec();
   jack_deactivate (client);

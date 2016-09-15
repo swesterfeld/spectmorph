@@ -4,6 +4,7 @@
 #define SPECTMORPH_JACK_HH
 
 #include "smmorphplanwindow.hh"
+#include "smmorphplancontrol.hh"
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
 #include "smmidisynth.hh"
@@ -57,24 +58,23 @@ signals:
   void voices_active_changed();
 };
 
-class JackControlWidget : public QGroupBox
+class JackControl : public QObject
 {
   Q_OBJECT
 
-  JackSynth    *synth;
-  MorphPlanPtr  morph_plan;
-  QLabel       *volume_value_label;
-  Led          *midi_led;
-  QLabel       *inst_status;
+  MorphPlanControl  *m_control_widget;
+  JackSynth         *synth;
+  MorphPlanPtr       morph_plan;
 
 public:
-  JackControlWidget (MorphPlanPtr plan, JackSynth *synth);
+  JackControl (MorphPlanPtr plan, JackSynth *synth);
+
+  MorphPlanControl *control_widget();
 
 public slots:
   void on_plan_changed();
-  void on_index_changed();
-  void on_volume_changed (int new_volume);
   void on_update_led();
+  void on_volume_changed (double d);
 };
 
 }
