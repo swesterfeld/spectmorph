@@ -89,6 +89,8 @@ class Example (QtWidgets.QMainWindow):
     self.cmdline_args = args
     self.shortcuts = []
 
+    self.setWindowTitle ("SpectMorph Evaluation - %s" % self.cmdline_args.config)
+
     config = parse_config (self.cmdline_args.config)
     self.tests = []
     for test_config in config:
@@ -96,7 +98,11 @@ class Example (QtWidgets.QMainWindow):
       reference_items = []
       rate_items = []
       test.title = ""
+
       shuffle = True
+      if self.cmdline_args.noshuffle: # command line can disable shuffle
+        shuffle = False
+
       for x in test_config:
         if len (x) in [2, 3] and x[0] == "reference":
           item = TestItem()
@@ -266,6 +272,7 @@ class Example (QtWidgets.QMainWindow):
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument('--noshuffle', action='store_true')
   parser.add_argument('--debug', action='store_true')
   parser.add_argument('config', action='store')
   parser.add_argument('results', action='store')
