@@ -16,21 +16,12 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-VstUI::VstUI (const string& filename, VstPlugin *plugin) :
+VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   widget (nullptr),
   control_widget (nullptr),
-  morph_plan (new MorphPlan()),
+  morph_plan (plan),
   plugin (plugin)
 {
-  GenericIn *in = StdioIn::open (filename);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", filename.c_str());
-      exit (1);
-    }
-  morph_plan->load (in);
-  delete in;
-
   connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 }
 

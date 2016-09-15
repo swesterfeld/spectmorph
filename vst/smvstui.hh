@@ -24,7 +24,7 @@ class VstUI : public QObject
   VstPlugin            *plugin;
   
 public:
-  VstUI (const std::string& filename, VstPlugin *plugin);
+  VstUI (MorphPlanPtr plan, VstPlugin *plugin);
 
   bool open (WId win_id);
   bool getRect (ERect** rect);

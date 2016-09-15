@@ -89,20 +89,24 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
   plan (new MorphPlan()),
-  midi_synth (nullptr),
-  ui (new VstUI ("/home/stefan/lv2.smplan", this))
+  midi_synth (nullptr)
 {
   audioMaster = master;
 
-  string filename = "/home/stefan/lv2.smplan";
+  string filename = sm_get_default_plan();
+
   GenericIn *in = StdioIn::open (filename);
+  if (in)
+    {
+      plan->load (in);
+      delete in;
+    }
   if (!in)
     {
       g_printerr ("Error opening '%s'.\n", filename.c_str());
-      exit (1);
+      // in this case we fail gracefully and start with an empty plan
     }
-  plan->load (in);
-  delete in;
+  ui = new VstUI (plan->clone(), this);
 
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
