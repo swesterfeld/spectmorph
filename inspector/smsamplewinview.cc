@@ -28,15 +28,12 @@ SampleWinView::SampleWinView (Navigator *navigator)
   connect (m_sample_view, SIGNAL (mouse_time_changed (int)), this, SLOT (on_mouse_time_changed (int)));
   on_mouse_time_changed (0);
 
-  edit_start_marker = new QPushButton ("Edit Start Marker");
   edit_loop_start = new QPushButton ("Edit Loop Start");
   edit_loop_end = new QPushButton ("Edit Loop End");
 
-  connect (edit_start_marker, SIGNAL (clicked()), this, SLOT (on_edit_marker_changed()));
   connect (edit_loop_start, SIGNAL (clicked()), this, SLOT (on_edit_marker_changed()));
   connect (edit_loop_end, SIGNAL (clicked()), this, SLOT (on_edit_marker_changed()));
 
-  edit_start_marker->setCheckable (true);
   edit_loop_start->setCheckable (true);
   edit_loop_end->setCheckable (true);
 
@@ -64,7 +61,6 @@ SampleWinView::SampleWinView (Navigator *navigator)
 
   QHBoxLayout *button_hbox = new QHBoxLayout();
   button_hbox->addWidget (time_label);
-  button_hbox->addWidget (edit_start_marker);
   button_hbox->addWidget (edit_loop_start);
   button_hbox->addWidget (edit_loop_end);
   button_hbox->addWidget (loop_type_combo);
@@ -120,9 +116,7 @@ SampleWinView::on_edit_marker_changed()
   SampleView::EditMarkerType marker_type;
 
   QPushButton *btn = qobject_cast<QPushButton *> (sender());
-  if (btn == edit_start_marker)
-    marker_type = SampleView::MARKER_START;
-  else if (btn == edit_loop_start)
+  if (btn == edit_loop_start)
     marker_type = SampleView::MARKER_LOOP_START;
   else if (btn == edit_loop_end)
     marker_type = SampleView::MARKER_LOOP_END;
@@ -134,7 +128,6 @@ SampleWinView::on_edit_marker_changed()
 
   m_sample_view->set_edit_marker_type (marker_type);
 
-  edit_start_marker->setChecked (marker_type == SampleView::MARKER_START);
   edit_loop_start->setChecked (marker_type == SampleView::MARKER_LOOP_START);
   edit_loop_end->setChecked (marker_type == SampleView::MARKER_LOOP_END);
 }

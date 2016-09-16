@@ -23,7 +23,6 @@ class SampleWinView : public QWidget
   QScrollArea    *scroll_area;
 
   QLabel         *time_label;
-  QPushButton    *edit_start_marker;
   QPushButton    *edit_loop_start;
   QPushButton    *edit_loop_end;
   QComboBox      *loop_type_combo;
