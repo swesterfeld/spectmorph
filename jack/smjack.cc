@@ -205,7 +205,7 @@ JackControl::JackControl (MorphPlanPtr plan, JackSynth *synth) :
   m_control_widget->set_volume (-6); // default volume
   on_volume_changed (-6);
 
-  connect (m_control_widget, SIGNAL (change_volume (double)), this, SLOT (on_volume_changed (double)));
+  connect (m_control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
   connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
   connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
 
