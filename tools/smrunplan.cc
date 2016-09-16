@@ -30,7 +30,6 @@ struct Options
   bool                quiet;
   bool                perf;
   bool                normalize;
-  bool                get_latency;
   double              gain;
   int                 rate;
 
@@ -49,7 +48,6 @@ Options::Options () :
   fade (false),
   quiet (false),
   normalize (false),
-  get_latency (false),
   gain (1.0),
   rate (44100)
 {
@@ -139,10 +137,6 @@ Options::parse (int   *argc_p,
         {
           rate = atoi (opt_arg);
         }
-      else if (check_arg (argc, argv, &i, "--get-latency"))
-        {
-          get_latency = true;
-        }
     }
 
   /* resort argc/argv */
@@ -172,7 +166,6 @@ Options::print_usage ()
   printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
-  printf (" --get-latency               get latency (ms) and quit\n");
   printf ("\n");
 }
 
@@ -205,7 +198,6 @@ public:
   void load_plan (const string& filename);
   void retrigger();
   void compute_samples (vector<float>& samples);
-  float latency_ms();
 };
 
 Player::Player() :
@@ -256,12 +248,6 @@ Player::retrigger()
     freq = freq_from_note (options.midi_note);
 
   voice->output()->retrigger (0, freq, 100);
-}
-
-float
-Player::latency_ms()
-{
-  return voice->latency_ms();
 }
 
 void
@@ -326,13 +312,6 @@ main (int argc, char **argv)
   Player        player;
 
   player.load_plan (argv[1]);
-
-  if (options.get_latency)
-    {
-      sm_printf ("%.3f\n", player.latency_ms());
-      return 0;
-    }
-
   player.retrigger();
 
   if (options.perf)
