@@ -111,7 +111,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan (new MorphPlan()),
   midi_synth (mix_freq, 64)
 {
-  std::string filename = sm_get_default_plan();
+  string filename = sm_get_default_plan();
+
   GenericIn *in = StdioIn::open (filename);
   if (in)
     {

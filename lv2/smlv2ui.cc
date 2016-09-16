@@ -43,7 +43,7 @@ LV2UI::LV2UI() :
 {
   window = new MorphPlanWindow (morph_plan, "!title!");
   control_widget = new MorphPlanControl (morph_plan);
-  connect (control_widget, SIGNAL (change_volume (double)), this, SLOT (on_volume_changed (double)));
+  connect (control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
 
   window->add_control_widget (control_widget);
 
