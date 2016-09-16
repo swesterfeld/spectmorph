@@ -609,9 +609,6 @@ main (int argc, char **argv)
 
       for (vector<WavSetWave>::const_iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
         {
-          sm_printf ("set-marker start %d %d %d %d %.17g\n", wi->midi_note, wi->channel,
-            wi->velocity_range_min, wi->velocity_range_max, wi->audio->start_ms);
-
           string loop_type;
           if (!Audio::loop_type_to_string (wi->audio->loop_type, loop_type))
             {
@@ -655,7 +652,7 @@ main (int argc, char **argv)
                     {
                       if (marker_type == "start")
                         {
-                          wi->audio->start_ms = atof (arg.c_str());
+                          fprintf (stderr, "smwavset: ignoring no longer supported marker start\n");
                           match = true;
                         }
                       else if (marker_type == "loop-type")
