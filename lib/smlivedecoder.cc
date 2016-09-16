@@ -65,7 +65,6 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
 {
   init_aa_filter();
   leak_debugger.add (this);
-  latency_ms = 0;
 }
 
 LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
@@ -84,7 +83,6 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
 {
   init_aa_filter();
   leak_debugger.add (this);
-  latency_ms = 0;
 }
 
 LiveDecoder::~LiveDecoder()
@@ -105,12 +103,6 @@ LiveDecoder::~LiveDecoder()
       sse_samples = NULL;
     }
   leak_debugger.del (this);
-}
-
-void
-LiveDecoder::set_latency_ms (float new_latency_ms)
-{
-  latency_ms = new_latency_ms;
 }
 
 void
@@ -189,16 +181,6 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       pstate[0].clear();
       pstate[1].clear();
       last_pstate = &pstate[0];
-
-      int signed_latency_zero_samples = (latency_ms - best_audio->start_ms) / 1000 * mix_freq;
-      if (signed_latency_zero_samples >= 0)
-        latency_zero_samples = signed_latency_zero_samples;
-      else
-        {
-          g_warning ("SpectMorph::LiveDecoder: latency problem: latency_zero_samples = %d --> 0\n",
-                     signed_latency_zero_samples);
-          latency_zero_samples = 0;
-        }
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
@@ -249,28 +231,6 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
     {
       std::fill (audio_out, audio_out + n_values, 0);
       return;
-    }
-
-  /*
-   * delay audio signal to be able to play all samples with normalized latency
-   * (start markers should be played at the same time)
-   */
-  if (latency_zero_samples > 0)
-    {
-      size_t zero_samples = min (n_values, latency_zero_samples);
-      std::fill (audio_out, audio_out + zero_samples, 0);
-
-      // adapt parameters to be able to compute the rest of the block (if any)
-      latency_zero_samples -= zero_samples;
-      n_values -= zero_samples;
-
-      if (freq_in)
-        freq_in += zero_samples;
-
-      if (freq_mod_in)
-        freq_mod_in += zero_samples;
-
-      audio_out += zero_samples;
     }
 
   if (original_samples_enabled)

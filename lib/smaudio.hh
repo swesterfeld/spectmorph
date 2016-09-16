@@ -97,7 +97,6 @@ public:
   float    frame_step_ms;               //!< stepping of the audio frames in milliseconds
   float    attack_start_ms;             //!< start of attack in milliseconds
   float    attack_end_ms;               //!< end of attack in milliseconds
-  float    start_ms;                    //!< instrument start marker to align multiple instruments for morphing
   int      zeropad;                     //!< FFT zeropadding used during analysis
   LoopType loop_type;                   //!< type of loop to be used during sustain phase of playback
   int      loop_start;                  //!< loop point to be used during sustain phase of playback

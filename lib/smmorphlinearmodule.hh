@@ -25,9 +25,6 @@ class MorphLinearModule : public MorphOperatorModule
   Audio                audio;
   AudioBlock           audio_block;
 
-  int                  left_delay_blocks;
-  int                  right_delay_blocks;
-
   struct MySource : public LiveDecoderSource
   {
     MorphLinearModule *module;

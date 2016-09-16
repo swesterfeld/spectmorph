@@ -63,18 +63,6 @@ MorphOperatorModule::update_shared_state (double time_ms)
 {
 }
 
-float
-MorphOperatorModule::latency_ms()
-{
-  return 0; // default
-}
-
-void
-MorphOperatorModule::set_latency_ms (float latency_ms)
-{
-  // default
-}
-
 void
 MorphOperatorModule::clear_dependencies()
 {

@@ -39,10 +39,6 @@ MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   audio.loop_type            = Audio::LOOP_NONE;
   audio.zero_values_at_start = 0;
   audio.sample_count         = 2 << 31;
-  audio.start_ms             = 0;
-
-  left_delay_blocks = 0;
-  right_delay_blocks = 0;
 
   leak_debugger.add (this);
 }
@@ -89,37 +85,15 @@ MorphLinearModule::set_config (MorphOperator *op)
 void
 MorphLinearModule::MySource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  float new_start_ms = 0;
-  Audio *audio_left = NULL;
-  Audio *audio_right = NULL;
-
   if (module->left_mod && module->left_mod->source())
     {
       module->left_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
-      audio_left = module->left_mod->source()->audio();
-      if (audio_left)
-        new_start_ms = max (new_start_ms, audio_left->start_ms);
     }
 
   if (module->right_mod && module->right_mod->source())
     {
       module->right_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
-      audio_right = module->right_mod->source()->audio();
-      if (audio_right)
-        new_start_ms = max (new_start_ms, audio_right->start_ms);
     }
-
-  if (audio_left)
-    module->left_delay_blocks = max (sm_round_positive (new_start_ms - audio_left->start_ms), 0);
-  else
-    module->left_delay_blocks = 0;
-
-  if (audio_right)
-    module->right_delay_blocks = max (sm_round_positive (new_start_ms - audio_right->start_ms), 0);
-  else
-    module->right_delay_blocks = 0;
-
-  module->audio.start_ms = new_start_ms;
 }
 
 Audio*
@@ -129,21 +103,8 @@ MorphLinearModule::MySource::audio()
 }
 
 bool
-get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block, int delay_blocks)
+get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block)
 {
-  g_return_val_if_fail (delay_blocks >= 0, false);
-  if (index < delay_blocks)
-    {
-      out_audio_block.noise.resize (32);
-      return true;  // morph with empty block to ensure correct time alignment
-    }
-  else
-    {
-      // shift audio for time alignment
-      assert (index >= delay_blocks);
-      index -= delay_blocks;
-    }
-
   Audio *audio = source->audio();
   if (!audio)
     return false;
@@ -199,7 +160,7 @@ dump_block (size_t index, const char *what, const AudioBlock& block)
   if (DEBUG)
     {
       for (size_t i = 0; i < block.freqs.size(); i++)
-        sm_printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs[i], block.mags[i]);
+        sm_printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs_f (i), block.mags_f (i));
     }
 }
 
@@ -275,10 +236,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
   AudioBlock left_block, right_block;
 
   if (module->left_mod && module->left_mod->source())
-    have_left = get_normalized_block (module->left_mod->source(), index, left_block, module->left_delay_blocks);
+    have_left = get_normalized_block (module->left_mod->source(), index, left_block);
 
   if (module->right_mod && module->right_mod->source())
-    have_right = get_normalized_block (module->right_mod->source(), index, right_block, module->right_delay_blocks);
+    have_right = get_normalized_block (module->right_mod->source(), index, right_block);
 
   if (have_left && have_right) // true morph: both sources present
     {

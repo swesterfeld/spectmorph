@@ -19,7 +19,6 @@ public:
   SimpleWavSetSource();
 
   void        set_wav_set (const std::string& path);
-  float       latency_ms();
 
   void        retrigger (int channel, float freq, int midi_velocity, float mix_freq);
   Audio      *audio();
@@ -35,7 +34,6 @@ public:
   MorphSourceModule (MorphPlanVoice *voice);
   ~MorphSourceModule();
 
-  float latency_ms();
   void set_config (MorphOperator *op);
   LiveDecoderSource *source();
 };

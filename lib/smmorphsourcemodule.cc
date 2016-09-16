@@ -38,20 +38,6 @@ SimpleWavSetSource::set_wav_set (const string& path)
     }
 }
 
-float
-SimpleWavSetSource::latency_ms()
-{
-  float max_start_ms = 0;
-  if (wav_set)
-    {
-      for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
-        {
-          max_start_ms = max (wi->audio->start_ms, max_start_ms);
-        }
-    }
-  return max_start_ms;
-}
-
 void
 SimpleWavSetSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
@@ -121,10 +107,4 @@ MorphSourceModule::set_config (MorphOperator *op)
   string path = smset_dir + "/" + smset;
 
   my_source.set_wav_set (path);
-}
-
-float
-MorphSourceModule::latency_ms()
-{
-  return my_source.latency_ms();
 }

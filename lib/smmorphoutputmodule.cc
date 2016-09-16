@@ -83,16 +83,6 @@ MorphOutputModule::set_config (MorphOperator *op)
     }
 }
 
-void
-MorphOutputModule::set_latency_ms (float latency_ms)
-{
-  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
-    {
-      if (out_decoders[ch])
-        out_decoders[ch]->set_latency_ms (latency_ms);
-    }
-}
-
 static void
 recursive_reset_tag (MorphOperatorModule *module)
 {

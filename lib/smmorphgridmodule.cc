@@ -40,7 +40,6 @@ MorphGridModule::MorphGridModule (MorphPlanVoice *voice) :
   audio.loop_type            = Audio::LOOP_NONE;
   audio.zero_values_at_start = 0;
   audio.sample_count         = 2 << 31;
-  audio.start_ms             = 0;
 }
 
 MorphGridModule::~MorphGridModule()
@@ -158,21 +157,8 @@ my_assign_vector (const T& in, T& out)
 }
 
 static bool
-get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block, int delay_blocks)
+get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block)
 {
-  g_return_val_if_fail (delay_blocks >= 0, false);
-  if (index < (size_t) delay_blocks)
-    {
-      out_audio_block.noise.resize (32);
-      return true;  // morph with empty block to ensure correct time alignment
-    }
-  else
-    {
-      // shift audio for time alignment
-      assert (index >= (size_t) delay_blocks);
-      index -= delay_blocks;
-    }
-
   LiveDecoderSource *source = NULL;
 
   if (input_node.mod)
@@ -529,8 +515,8 @@ MorphGridModule::MySource::audio_block (size_t index)
       InputNode& node_a = module->input_node[x_morph_params.start][0];
       InputNode& node_b = module->input_node[x_morph_params.end  ][0];
 
-      bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
-      bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);
+      bool have_a = get_normalized_block (node_a, index, audio_block_a);
+      bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
       bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
 
@@ -553,8 +539,8 @@ MorphGridModule::MySource::audio_block (size_t index)
       InputNode& node_a = module->input_node[0][y_morph_params.start];
       InputNode& node_b = module->input_node[0][y_morph_params.end  ];
 
-      bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
-      bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);
+      bool have_a = get_normalized_block (node_a, index, audio_block_a);
+      bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
       bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing);
 
@@ -578,10 +564,10 @@ MorphGridModule::MySource::audio_block (size_t index)
       InputNode& node_c = module->input_node[x_morph_params.start][y_morph_params.end  ];
       InputNode& node_d = module->input_node[x_morph_params.end  ][y_morph_params.end  ];
 
-      bool have_a = get_normalized_block (node_a, index, audio_block_a, 0);
-      bool have_b = get_normalized_block (node_b, index, audio_block_b, 0);
-      bool have_c = get_normalized_block (node_c, index, audio_block_c, 0);
-      bool have_d = get_normalized_block (node_d, index, audio_block_d, 0);
+      bool have_a = get_normalized_block (node_a, index, audio_block_a);
+      bool have_b = get_normalized_block (node_b, index, audio_block_b);
+      bool have_c = get_normalized_block (node_c, index, audio_block_c);
+      bool have_d = get_normalized_block (node_d, index, audio_block_d);
 
       bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
       bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morph_params.morphing);

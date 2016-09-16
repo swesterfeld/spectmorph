@@ -137,8 +137,6 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                 attack_start_ms = ifile.event_float();
               else if (ifile.event_name() == "attack_end_ms")
                 attack_end_ms = ifile.event_float();
-              else if (ifile.event_name() == "start_ms")
-                start_ms = ifile.event_float();
               else if (ifile.event_name() == "fundamental_freq")
                 fundamental_freq = ifile.event_float();
               else if (ifile.event_name() == "original_samples_norm_db")
@@ -241,7 +239,6 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 
 
 SpectMorph::Audio::Audio() :
-  start_ms (0),
   zeropad (0),
   loop_type (LOOP_NONE), /* no loop */
   loop_start (-1),
@@ -289,7 +286,6 @@ SpectMorph::Audio::save (GenericOut *file) const
   of.write_float ("frame_step_ms", frame_step_ms);
   of.write_float ("attack_start_ms", attack_start_ms);
   of.write_float ("attack_end_ms", attack_end_ms);
-  of.write_float ("start_ms", start_ms);
   of.write_float ("fundamental_freq", fundamental_freq);
   of.write_float ("original_samples_norm_db", original_samples_norm_db);
   of.write_int ("zeropad", zeropad);

@@ -22,7 +22,6 @@ protected:
   std::vector<double>           m_control_input;
   MorphOutputModule            *m_output;
   float                         m_mix_freq;
-  float                         m_latency_ms;
   MorphPlanSynth               *m_morph_plan_synth;
 
   void clear_modules();
@@ -42,7 +41,6 @@ public:
   void   set_control_input (int i, double value);
 
   float mix_freq() const;
-  float latency_ms() const;
 
   MorphOutputModule *output();
   MorphPlanSynth *morph_plan_synth() const;
