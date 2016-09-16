@@ -34,7 +34,7 @@ public:
   void set_led (bool on);
 
 signals:
-  void change_volume (double volume);
+  void volume_changed (double volume);
 
 public slots:
   void on_index_changed();

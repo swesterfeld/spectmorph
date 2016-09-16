@@ -120,5 +120,5 @@ MorphPlanControl::on_volume_changed (int new_volume)
   double new_volume_f = new_volume * 0.1;
   volume_value_label->setText (string_locale_printf ("%.1f dB", new_volume_f).c_str());
 
-  Q_EMIT change_volume (new_volume_f); // emit dB value
+  Q_EMIT volume_changed (new_volume_f); // emit dB value
 }
