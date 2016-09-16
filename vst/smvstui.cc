@@ -32,7 +32,7 @@ VstUI::open (WId win_id)
 
   control_widget = new MorphPlanControl (morph_plan);
   control_widget->set_volume (plugin->volume());
-  connect (control_widget, SIGNAL (change_volume (double)), this, SLOT (on_change_volume (double)));
+  connect (control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
 
   widget->add_control_widget (control_widget);
 
@@ -80,7 +80,7 @@ VstUI::on_plan_changed()
 }
 
 void
-VstUI::on_change_volume (double new_volume)
+VstUI::on_volume_changed (double new_volume)
 {
   plugin->set_volume (new_volume);
 }
