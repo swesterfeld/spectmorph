@@ -17,7 +17,6 @@ class SampleView : public QWidget
 public:
   enum EditMarkerType {
     MARKER_NONE,
-    MARKER_START,
     MARKER_LOOP_START,
     MARKER_LOOP_END,
     MARKER_CLIP_START,

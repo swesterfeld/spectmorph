@@ -51,15 +51,6 @@ SampleView::paintEvent (QPaintEvent *event)
 
   if (audio)
     {
-      // start marker
-      int start = audio->start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
-
-      if (edit_marker_type() == MARKER_START)
-        painter.setPen (QColor (0, 0, 200));
-      else
-        painter.setPen (QColor (150, 150, 150));
-      painter.drawLine (hz * start, 0, hz * start, height);
-
       if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
         {
           // loop start marker
@@ -189,10 +180,6 @@ SampleView::move_marker (int x)
       double hz = HZOOM_SCALE * hzoom;
       int index = x / hz;
 
-      if (m_edit_marker_type == MARKER_START)
-        {
-          audio->start_ms = (index + audio->zero_values_at_start) / audio->mix_freq * 1000;
-        }
       if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
         {
           if (m_edit_marker_type == MARKER_LOOP_START)
