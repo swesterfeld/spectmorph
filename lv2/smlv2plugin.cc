@@ -92,6 +92,7 @@ public:
   MidiSynth       midi_synth;
   string          plan_str;
   bool            voices_active;
+  bool            send_settings_to_ui;
 
   void update_plan (const string& new_plan_str);
 };
@@ -135,6 +136,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 
   volume = -6;            // default volume (dB)
   voices_active = false;  // no note being played right now
+  send_settings_to_ui = false;
 }
 
 void
@@ -323,6 +325,14 @@ run (LV2_Handle instance, uint32_t n_samples)
   // Start a sequence in the notify output port.
   lv2_atom_forge_sequence_head(&self->forge, &self->notify_frame, 0);
 
+  // send new settings to ui after restore
+  if (self->send_settings_to_ui)
+    {
+      lv2_atom_forge_frame_time (&self->forge, offset);
+
+      self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
+      self->send_settings_to_ui = false;
+    }
 
   LV2_ATOM_SEQUENCE_FOREACH (self->midi_in, ev)
     {
@@ -445,8 +455,6 @@ restore(LV2_Handle                  instance,
 
       debug (" -> plan_str: %s\n", plan_str);
       self->update_plan (plan_str);
-
-      // FIXME: need notification message to ui
     }
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)
@@ -454,6 +462,7 @@ restore(LV2_Handle                  instance,
       self->volume = *((const float *) value);
       debug (" -> volume: %f\n", self->volume);
     }
+  self->send_settings_to_ui = true;
 
   return LV2_STATE_SUCCESS;
 }
