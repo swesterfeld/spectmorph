@@ -86,7 +86,6 @@ public:
   // SpectMorph stuff
   double          mix_freq;
   double          volume;
-  MorphPlanPtr    plan;
   QMutex          new_plan_mutex;
   MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
@@ -109,10 +108,11 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   log (NULL),
   schedule (NULL),
   mix_freq (mix_freq),
-  plan (new MorphPlan()),
   midi_synth (mix_freq, 64)
 {
   string filename = sm_get_default_plan();
+
+  MorphPlanPtr plan = new MorphPlan();
 
   GenericIn *in = StdioIn::open (filename);
   if (in)
@@ -142,11 +142,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 void
 LV2Plugin::update_plan (const string& new_plan_str)
 {
-  // FIXME: not safe, because the audio thread could read the variable at the same time (spectmorph_Get)
-  plan_str = new_plan_str;
-
   MorphPlanPtr new_plan = new MorphPlan();
-  new_plan->set_plan_str (plan_str);
+  new_plan->set_plan_str (new_plan_str);
 
   // this might take a while, and cannot be used in audio thread
   MorphPlanSynth mp_synth (mix_freq);
@@ -165,6 +162,7 @@ LV2Plugin::update_plan (const string& new_plan_str)
   // install new plan
   QMutexLocker locker (&new_plan_mutex);
   this->new_plan = new_plan;
+  plan_str = new_plan_str;
 }
 
 static LV2_Handle
@@ -328,6 +326,8 @@ run (LV2_Handle instance, uint32_t n_samples)
   // send new settings to ui after restore
   if (self->send_settings_to_ui)
     {
+      QMutexLocker locker (&self->new_plan_mutex); // need lock to access plan_str
+
       lv2_atom_forge_frame_time (&self->forge, offset);
 
       self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
@@ -371,6 +371,7 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               lv2_atom_forge_frame_time (&self->forge, offset);
 
+              QMutexLocker locker (&self->new_plan_mutex); // need lock to access plan_str
               self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
             }
         }
@@ -414,6 +415,8 @@ save(LV2_Handle                instance,
      const LV2_Feature* const* features)
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
+
+  QMutexLocker locker (&self->new_plan_mutex); // we read plan_str
 
   store (handle,
          self->uris.spectmorph_plan,
