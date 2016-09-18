@@ -34,6 +34,9 @@ public:
   const std::vector<MorphOperatorView *>& op_views();
   void add_control_widget (QWidget *widget);
 
+signals:
+  void view_widgets_changed();
+
 public slots:
   void on_plan_changed();
   void on_move_indication (MorphOperator *op);

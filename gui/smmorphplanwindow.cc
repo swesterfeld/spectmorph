@@ -9,6 +9,7 @@
 
 #include <QMenuBar>
 #include <QFileDialog>
+#include <QTimer>
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
@@ -68,6 +69,8 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
   setCentralWidget (morph_plan_view);
   update_window_title();
+
+  connect (morph_plan_view, SIGNAL (view_widgets_changed()), this, SLOT (on_view_widgets_changed()));
 }
 
 void
@@ -249,4 +252,16 @@ void
 MorphPlanWindow::add_control_widget (QWidget *widget)
 {
   morph_plan_view->add_control_widget (widget);
+}
+
+void
+MorphPlanWindow::on_view_widgets_changed()
+{
+  QTimer::singleShot (0, this, SLOT (on_update_window_size()));
+}
+
+void
+MorphPlanWindow::on_update_window_size()
+{
+  resize (minimumWidth(), minimumHeight());
 }

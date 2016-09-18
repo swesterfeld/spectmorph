@@ -86,6 +86,7 @@ MorphPlanView::on_plan_changed()
       vbox->removeWidget (*ci);
       vbox->addWidget (*ci);
     }
+  Q_EMIT view_widgets_changed();
 }
 
 const vector<MorphOperatorView *>&
