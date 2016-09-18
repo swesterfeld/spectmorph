@@ -25,3 +25,10 @@ dist_spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
 moc_smlv2ui.cc: smlv2ui.hh
 	$(MOC) smlv2ui.hh > moc_smlv2ui.cc
+
+# we only want to install the .so file; not the .la file
+install-data-hook:
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.la
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.a
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.la
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.a
