@@ -9,7 +9,8 @@ SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
 spectmorph_vstdir = $(libdir)/vst
 
-noinst_LTLIBRARIES = spectmorph_vst.la
+plugindir = $(spectmorph_vstdir)
+plugin_LTLIBRARIES = spectmorph_vst.la
 
 SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
 SMVSTSOURCES = smvstplugin.cc smvstui.cc moc_smvstui.cc
@@ -25,9 +26,6 @@ moc_smvstui.cc: smvstui.hh
 	$(MOC) smvstui.hh > moc_smvstui.cc
 
 # we only want to install the .so file; not the .la file
-install-exec-hook:
-	$(INSTALL_PROGRAM_ENV) $(INSTALL) -d $(DESTDIR)$(spectmorph_vstdir)
-	$(INSTALL_PROGRAM_ENV) $(LIBTOOL) --mode=install $(INSTALL) $(top_builddir)/vst/.libs/spectmorph_vst.so $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.so
-
-uninstall-hook:
-	rm  -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.so
+install-data-hook:
+	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.la
+	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.a
