@@ -1,6 +1,7 @@
 Overview of Changes in spectmorph-0.3.1:
 
 * Added plugins for LV2 and VST api.
+* New instruments: bassoon, cello, bass-trombone, reed-organ.
 * Added different templates to get standard morph plans quickly.
 * LV2|VST|JACK will start with default plan now (instead of empty plan).
 * Standard instrument set location (~/.spectmorph/instruments/standard):
