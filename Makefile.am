@@ -15,7 +15,7 @@ endif
 
 SUBDIRS += vst data
 
-EXTRA_DIST += TODO
+EXTRA_DIST += DESIGN README.md TODO Doxyfile
 
 # === Release auxillary rule configuration ===
 RELEASE_DESTHOST  = space.twc.de
