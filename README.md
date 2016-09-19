@@ -142,8 +142,3 @@ Control #1 and Control #2. To use these, for instance for linear morphing,
 the Control Input can be set to "Control Signal #1" (or #2) in the UI. After
 that the host can change the morphing from left source to right source and
 back.
-
-Outdated Documentation:
-=======================
-The old documentation for SpectMorph can be found in docs/spectmorph.odt and
-docs/spectmorph.pdf. However this is no longer up-to-date.
