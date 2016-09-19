@@ -1,3 +1,24 @@
+Overview of Changes in spectmorph-0.3.1:
+
+* Added plugins for LV2 and VST api.
+* Added different templates to get standard morph plans quickly.
+* LV2|VST|JACK will start with default plan now (instead of empty plan).
+* Standard instrument set location (~/.spectmorph/instruments/standard):
+  - plan templates can refer to instruments in that directory without
+    storing any absolute path (index will be instruments:standard)
+  - in almost any case, loading instruments isn't necessary anymore
+* Resize MorphPlanWindow automatically if operators are removed.
+* Changed time alignment during morphing:
+  - morphed sounds should starty at the beginning of the note (no extra latency)
+  - Start marker for instrument notes no longer necessary
+  - SpectMorphDelay plugin no longer necessary
+* Some improvements for building new instruments:
+  - make some smenc parameters configurable (--config option)
+  - improvements to soundfont import
+  - new fundamental frequency estimation for tune-all-frames
+  - support global volume adjustment (instead of auto-volume)
+* Various bugfixes.
+
 Overview of Changes in spectmorph-0.3.0:
 
 * Incompatible file format changes:
