@@ -9,3 +9,5 @@ templates_DATA = \
   index.smpindex
 
 templatesdir = $(pkgdatadir)/templates
+
+EXTRA_DIST += $(templates_DATA)

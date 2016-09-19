@@ -1,9 +1,9 @@
-AC_INIT([spectmorph], [0.3.0])
+AC_INIT([spectmorph], [0.3.1])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 AM_PATH_PYTHON
 AM_CHECK_PYTHON_HEADERS([:],[
   AC_MSG_ERROR([You need to install python development headers to build this package.

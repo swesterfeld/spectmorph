@@ -29,3 +29,6 @@ moc_smvstui.cc: smvstui.hh
 install-data-hook:
 	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.la
 	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.a
+
+uninstall-hook:
+	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.so

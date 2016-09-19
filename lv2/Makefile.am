@@ -32,3 +32,7 @@ install-data-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.a
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.la
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.a
+
+uninstall-hook:
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.so
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.so
