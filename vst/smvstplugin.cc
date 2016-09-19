@@ -39,7 +39,7 @@
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
-#define DEBUG 1
+#define DEBUG 0
 
 using namespace SpectMorph;
 
