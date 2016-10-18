@@ -23,6 +23,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   m_sines = true;
   m_noise = true;
+  m_chorus = false;
 
   leak_debugger.add (this);
 }
@@ -58,6 +59,7 @@ MorphOutput::save (OutFile& out_file)
     }
   out_file.write_bool ("sines", m_sines);
   out_file.write_bool ("noise", m_noise);
+  out_file.write_bool ("chorus", m_chorus);
   return true;
 }
 
@@ -89,6 +91,10 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "noise")
             {
               m_noise = ifile.event_bool();
+            }
+          else if (ifile.event_name() == "chorus")
+            {
+              m_chorus = ifile.event_bool();
             }
           else
             {
@@ -166,6 +172,20 @@ void
 MorphOutput::set_noise (bool en)
 {
   m_noise = en;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphOutput::chorus()
+{
+  return m_chorus;
+}
+
+void
+MorphOutput::set_chorus (bool ec)
+{
+  m_chorus = ec;
 
   m_morph_plan->emit_plan_changed();
 }

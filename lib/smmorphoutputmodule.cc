@@ -48,7 +48,7 @@ MorphOutputModule::set_config (MorphOperator *op)
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       MorphOperatorModule *mod = NULL;
-      LiveDecoder *dec = NULL;
+      EffectDecoder *dec = NULL;
 
       MorphOperator *op = out_op->channel_op (ch);
       if (op)
@@ -65,7 +65,7 @@ MorphOutputModule::set_config (MorphOperator *op)
             delete out_decoders[ch];
           if (mod)
             {
-              dec = new LiveDecoder (mod->source());
+              dec = new EffectDecoder (mod->source());
             }
         }
 
@@ -74,6 +74,7 @@ MorphOutputModule::set_config (MorphOperator *op)
         {
           dec->enable_sines (out_op->sines());
           dec->enable_noise (out_op->noise());
+          dec->enable_chorus (out_op->chorus());
         }
 
       out_ops[ch] = mod;
