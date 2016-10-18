@@ -29,6 +29,7 @@ public:
 public slots:
   void on_sines_changed (bool new_value);
   void on_noise_changed (bool new_value);
+  void on_chorus_changed (bool new_value);
   void on_operator_changed();
 };
 

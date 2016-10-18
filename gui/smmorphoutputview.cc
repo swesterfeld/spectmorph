@@ -52,8 +52,13 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   noise_check_box->setChecked (morph_output->noise());
   grid_layout->addWidget (noise_check_box, 5, 0, 1, 2);
 
+  QCheckBox *chorus_check_box = new QCheckBox ("Enable Chorus Effect");
+  chorus_check_box->setChecked (morph_output->chorus());
+  grid_layout->addWidget (chorus_check_box, 6, 0, 1, 2);
+
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
+  connect (chorus_check_box, SIGNAL (toggled (bool)), this, SLOT (on_chorus_changed (bool)));
   setLayout (grid_layout);
 }
 
@@ -67,6 +72,12 @@ void
 MorphOutputView::on_noise_changed (bool new_value)
 {
   morph_output->set_noise (new_value);
+}
+
+void
+MorphOutputView::on_chorus_changed (bool new_value)
+{
+  morph_output->set_chorus (new_value);
 }
 
 void
