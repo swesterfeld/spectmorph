@@ -12,6 +12,11 @@ namespace SpectMorph
 namespace LPC
 {
 
+/* always use the mix_freq for computing the LPC coefficients, in order to be
+ * able to morph LSF coefficients for different input sample rate
+ */
+const float MIX_FREQ = 44100;
+
 void compute_lpc (std::vector<double>& lpc, const float *begin, const float *end);
 void lpc2lsf (const std::vector<double>& lpc, std::vector<float>& lpc_lsf_p, std::vector<float>& lpc_lsf_q);
 void lsf2lpc (const std::vector<float>& lsf_p, const std::vector<float>& lsf_q, std::vector<double>& lpc);

@@ -355,10 +355,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
                   if (use_lpc)
                     {
                       double l_freq = left_block.freqs_f (i) * left_audio->fundamental_freq;
-                      l_freq *= 2 * M_PI / left_audio->mix_freq; /* frequency in original data */
+                      l_freq *= 2 * M_PI / LPC::MIX_FREQ; /* map frequency to [0..M_PI] */
 
                       double r_freq = right_block.freqs_f (j) * right_audio->fundamental_freq;
-                      r_freq *= 2 * M_PI / right_audio->mix_freq; /* frequency in original data */
+                      r_freq *= 2 * M_PI / LPC::MIX_FREQ; /* map frequency to [0..M_PI] */
 
                       l_env_mag_db = bse_db_from_factor (left_env.eval (l_freq), -100);
                       r_env_mag_db = bse_db_from_factor (right_env.eval (r_freq), -100);

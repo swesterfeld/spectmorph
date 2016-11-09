@@ -1329,28 +1329,31 @@ Encoder::sort_freqs()
 void
 Encoder::compute_lpc_lsf()
 {
-  const size_t frame_size = enc_params.frame_size;
+  const size_t frame_size_scaled = sm_round_positive (double (enc_params.frame_size) / enc_params.mix_freq * LPC::MIX_FREQ);
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      AlignedArray<float,16> signal (frame_size);
+      AlignedArray<float,16> signal (frame_size_scaled);
       for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
 	{
           const double freq = audio_blocks[frame].freqs[i];
 	  const double mag = audio_blocks[frame].mags[i];
 	  const double phase = audio_blocks[frame].phases[i];
 
-          VectorSinParams params;
-          params.mix_freq = enc_params.mix_freq;
-          params.freq = freq;
-          params.phase = phase;
-          params.mag = mag;
-          params.mode = VectorSinParams::ADD;
+          if (freq < LPC::MIX_FREQ / 2) // ignore freqs > nyquist
+            {
+              VectorSinParams params;
+              params.mix_freq = LPC::MIX_FREQ;
+              params.freq = freq;
+              params.phase = phase;
+              params.mag = mag;
+              params.mode = VectorSinParams::ADD;
 
-          fast_vector_sinf (params, &signal[0], &signal[frame_size]);
+              fast_vector_sinf (params, &signal[0], &signal[frame_size_scaled]);
+            }
 	}
       vector<double> lpc (50);
 
-      LPC::compute_lpc (lpc, &signal[0], &signal[frame_size]);
+      LPC::compute_lpc (lpc, &signal[0], &signal[frame_size_scaled]);
 
       // make LPC filter stable
       vector< complex<double> > roots;
