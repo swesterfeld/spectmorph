@@ -253,17 +253,22 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       // compute interpolated LPC envelope
       bool use_lpc = false;
-      vector<float> interp_lsf_p (26);
-      vector<float> interp_lsf_q (26);
+
+      const size_t lsf_order = left_block.lpc_lsf_p.size();
+
+      vector<float> interp_lsf_p (lsf_order);
+      vector<float> interp_lsf_q (lsf_order);
 
       LPC::LSFEnvelope left_env, right_env, interp_env;
 
-      if (left_block.lpc_lsf_p.size() == 26 &&
-          left_block.lpc_lsf_q.size() == 26 &&
-          right_block.lpc_lsf_p.size() == 26 &&
-          right_block.lpc_lsf_p.size() == 26 &&
+      if (left_block.lpc_lsf_p.size() == lsf_order &&
+          left_block.lpc_lsf_q.size() == lsf_order &&
+          right_block.lpc_lsf_p.size() == lsf_order &&
+          right_block.lpc_lsf_p.size() == lsf_order &&
           module->use_lpc)
         {
+          assert (lsf_order > 0);
+
           for (size_t i = 0; i < interp_lsf_p.size(); i++)
             {
               interp_lsf_p[i] = (1 - interp) * left_block.lpc_lsf_p[i] + interp * right_block.lpc_lsf_p[i];

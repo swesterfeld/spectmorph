@@ -54,7 +54,7 @@ EncoderParams::EncoderParams() :
   frame_size (0),
   block_size (0),
   fundamental_freq (0),
-  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"}),
+  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size", "lpc-order"}),
   param_name_s ({"window"})
 {
 }
@@ -1329,6 +1329,17 @@ Encoder::sort_freqs()
 void
 Encoder::compute_lpc_lsf()
 {
+  int lpc_order;
+
+  double value;
+  if (enc_params.get_param ("lpc-order", value))
+    lpc_order = sm_round_positive (value);
+  else
+    lpc_order = 50;
+
+  assert ((lpc_order & 1) == 0);  // lpc order must be even
+  assert (lpc_order >= 2);        // ... and at least 2
+
   const size_t frame_size_scaled = sm_round_positive (double (enc_params.frame_size) / enc_params.mix_freq * LPC::MIX_FREQ);
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
@@ -1351,7 +1362,7 @@ Encoder::compute_lpc_lsf()
               fast_vector_sinf (params, &signal[0], &signal[frame_size_scaled]);
             }
 	}
-      vector<double> lpc (50);
+      vector<double> lpc (lpc_order);
 
       LPC::compute_lpc (lpc, &signal[0], &signal[frame_size_scaled]);
 
