@@ -1,10 +1,13 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smaudio.hh"
+#include "smwavset.hh"
 #include "smmain.hh"
 #include "smlpc.hh"
 
 #include <assert.h>
+
+using std::vector;
 
 using namespace SpectMorph;
 
@@ -27,13 +30,33 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  assert (argc == 3);
+  assert (argc == 3 || argc == 4);
 
-  Audio audio;
+  Audio *audio_ptr = nullptr;
 
-  audio.load (argv[1]);
+  if (argc == 3)
+    {
+      static Audio audio;
 
-  const AudioBlock& block = audio.contents[atoi (argv[2])];
+      audio.load (argv[1]);
+
+      audio_ptr = &audio;
+    }
+  else
+    {
+      static WavSet wset;
+
+      wset.load (argv[1]);
+      for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
+        {
+          if (wi->midi_note == atoi (argv[2]))
+            audio_ptr = wi->audio;
+        }
+      assert (audio_ptr);
+    }
+  const Audio& audio = *audio_ptr;
+
+  const AudioBlock& block = audio.contents[atoi (argv[argc - 1])];
 
   LPC::LSFEnvelope env;
   env.init (block.lpc_lsf_p, block.lpc_lsf_q);
