@@ -8,6 +8,20 @@
 
 using namespace SpectMorph;
 
+double
+gain_error (double gain, const Audio& audio, const AudioBlock& block, LPC::LSFEnvelope& env)
+{
+  double error = 0;
+
+  for (size_t i = 0; i < block.freqs.size(); i++)
+    {
+      const double lsf_freq = block.freqs_f (i) * audio.fundamental_freq / LPC::MIX_FREQ * 2 * M_PI;
+      const double delta = block.mags_f (i) - env.eval (lsf_freq) * gain;
+      error += block.mags_f (i) * delta * delta;
+    }
+  return error;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -24,9 +38,21 @@ main (int argc, char **argv)
   LPC::LSFEnvelope env;
   env.init (block.lpc_lsf_p, block.lpc_lsf_q);
 
-  for (size_t i = 0; i < 1024; i++)
+  /* fit gain */
+  double gain = 1, gain_step = 1.01;
+  while (gain_error (gain / gain_step, audio, block, env) < gain_error (gain, audio, block, env))
+    gain /= gain_step;
+
+  const size_t grid = 22050;
+  for (size_t i = 0; i <= grid; i++)
     {
-      double f = i / 1024. * M_PI;
-      printf ("%f %.17g\n", f, env.eval (f));
+      double f = i * M_PI / grid;
+      printf ("L %f %.17g\n", f / (2 * M_PI) * LPC::MIX_FREQ, env.eval (f) * gain);
+    }
+
+  for (size_t i = 0; i < block.freqs.size(); i++)
+    {
+      const double lsf_freq = block.freqs_f (i) * audio.fundamental_freq / LPC::MIX_FREQ * 2 * M_PI;
+      printf ("F %f %.17g %.17g\n", block.freqs_f (i) * audio.fundamental_freq, block.mags_f (i), env.eval (lsf_freq) * gain);
     }
 }
