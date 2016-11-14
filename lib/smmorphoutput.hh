@@ -20,6 +20,7 @@ class MorphOutput : public MorphOperator
   bool                         m_sines;
   bool                         m_noise;
   bool                         m_chorus;
+  int                          m_unison_voices;
 
 public:
   MorphOutput (MorphPlan *morph_plan);
@@ -41,6 +42,9 @@ public:
 
   void           set_chorus (bool ec);
   bool           chorus();
+
+  void           set_unison_voices (int voices);
+  int            unison_voices();
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);

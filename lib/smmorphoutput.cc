@@ -24,6 +24,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_sines = true;
   m_noise = true;
   m_chorus = false;
+  m_unison_voices = 2;
 
   leak_debugger.add (this);
 }
@@ -60,6 +61,7 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_bool ("sines", m_sines);
   out_file.write_bool ("noise", m_noise);
   out_file.write_bool ("chorus", m_chorus);
+  out_file.write_int ("unison_voices", m_unison_voices);
   return true;
 }
 
@@ -99,6 +101,18 @@ MorphOutput::load (InFile& ifile)
           else
             {
               g_printerr ("bad bool\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::INT)
+        {
+          if (ifile.event_name() == "unison_voices")
+            {
+              m_unison_voices = ifile.event_int();
+            }
+          else
+            {
+              g_printerr ("bad int\n");
               return false;
             }
         }
@@ -186,6 +200,20 @@ void
 MorphOutput::set_chorus (bool ec)
 {
   m_chorus = ec;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphOutput::unison_voices()
+{
+  return m_unison_voices;
+}
+
+void
+MorphOutput::set_unison_voices (int voices)
+{
+  m_unison_voices = voices;
 
   m_morph_plan->emit_plan_changed();
 }

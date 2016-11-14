@@ -5,25 +5,22 @@
 
 #include "smlivedecoder.hh"
 #include "smlivedecodersource.hh"
+#include "smmorphoutput.hh"
 
 namespace SpectMorph
 {
 
 class EffectDecoder
 {
-  LiveDecoder *chain;
-  LiveDecoder *chain2;
-  LiveDecoder *chain3;
+  std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
 
-  bool chorus_active;
+  LiveDecoderSource *source;
 
 public:
   EffectDecoder (LiveDecoderSource *source);
   ~EffectDecoder();
 
-  void enable_noise (bool en);
-  void enable_sines (bool es);
-  void enable_chorus (bool ec);
+  void set_config (MorphOutput *output);
 
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
   void process (size_t       n_values,

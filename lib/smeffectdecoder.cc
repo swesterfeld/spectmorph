@@ -4,53 +4,51 @@
 
 using namespace SpectMorph;
 
-EffectDecoder::EffectDecoder (LiveDecoderSource *source)
+EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
+  source (source)
 {
-  chain = new LiveDecoder (source);
-  chain2 = new LiveDecoder (source);
-  chain3 = new LiveDecoder (source);
-
-  chorus_active = false; // shouldn't matter, as we expect enable_chorus() to be called anyway
 }
 
 EffectDecoder::~EffectDecoder()
 {
-  delete chain;
-  delete chain2;
-  delete chain3;
 }
 
 void
-EffectDecoder::enable_noise (bool en)
+EffectDecoder::set_config (MorphOutput *output)
 {
-  chain->enable_noise (en);
-  chain2->enable_noise (en);
-  chain3->enable_noise (en);
-}
+  int unison_voices = output->chorus() ? output->unison_voices() : 1;
 
-void
-EffectDecoder::enable_sines (bool es)
-{
-  chain->enable_sines (es);
-  chain2->enable_sines (es);
-  chain3->enable_sines (es);
-}
+  chain_decoders.resize (unison_voices);
 
-void
-EffectDecoder::enable_chorus (bool ec)
-{
-  chorus_active = ec;
+  for (auto& dec : chain_decoders)
+    {
+      dec.reset (new LiveDecoder (source));
+
+      dec->enable_noise (output->noise());
+      dec->enable_sines (output->sines());
+    }
 }
 
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  float fact2 = pow (2,(6/1200.));
-  float fact3 = pow (2,(-7/1200.));
+  if (chain_decoders.size() == 1)
+    {
+      chain_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
+      return;
+    }
 
-  chain->retrigger (channel, freq, midi_velocity, mix_freq);
-  chain2->retrigger (channel, freq * fact2, midi_velocity, mix_freq);
-  chain3->retrigger (channel, freq * fact3, midi_velocity, mix_freq);
+  float spread = 6;
+  float detune_factor = pow (2,(spread/1200.));
+  float freq_l = freq / detune_factor;
+  float freq_h = freq * detune_factor;
+
+  for (size_t i = 0; i < chain_decoders.size(); i++)
+    {
+      const float detune_freq = freq_l + (freq_h - freq_l) / (chain_decoders.size() - 1) * i;
+
+      chain_decoders[i]->retrigger (channel, detune_freq, midi_velocity, mix_freq);
+    }
 }
 
 void
@@ -59,20 +57,21 @@ EffectDecoder::process (size_t       n_values,
                         const float *freq_mod_in,
                         float       *audio_out)
 {
-  if (!chorus_active)
+  if (chain_decoders.size() == 1)
     {
-      chain->process (n_values, freq_in, freq_mod_in, audio_out);
+      chain_decoders[0]->process (n_values, freq_in, freq_mod_in, audio_out);
       return;
     }
 
-  float output[n_values];
-  float output2[n_values];
-  float output3[n_values];
+  zero_float_block (n_values, audio_out);
 
-  chain->process (n_values, freq_in, freq_mod_in, output);
-  chain2->process (n_values, freq_in, freq_mod_in, output2);
-  chain3->process (n_values, freq_in, freq_mod_in, output3);
+  for (auto& dec : chain_decoders)
+    {
+      float output[n_values];
 
-  for (size_t i = 0; i < n_values; i++)
-    audio_out[i] = output[i] + output2[i] + output3[i];
+      dec->process (n_values, freq_in, freq_mod_in, output);
+
+      for (size_t i = 0; i < n_values; i++)
+        audio_out[i] += output[i];
+    }
 }
