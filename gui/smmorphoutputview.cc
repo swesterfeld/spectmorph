@@ -56,6 +56,21 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   chorus_check_box->setChecked (morph_output->chorus());
   grid_layout->addWidget (chorus_check_box, 6, 0, 1, 2);
 
+  // Unison Voices
+  unison_voices_slider = new QSlider (Qt::Horizontal);
+  unison_voices_slider->setRange (2, 16);
+  connect (unison_voices_slider, SIGNAL (valueChanged (int)), this, SLOT (on_unison_voices_changed (int)));
+  unison_voices_label = new QLabel();
+  unison_voices_title = new QLabel ("Voices");
+
+  grid_layout->addWidget (unison_voices_title, 7, 0);
+  grid_layout->addWidget (unison_voices_slider, 7, 1);
+  grid_layout->addWidget (unison_voices_label, 7, 2);
+
+  int unison_voices_value = morph_output->unison_voices();
+  unison_voices_slider->setValue (unison_voices_value);
+  on_unison_voices_changed (unison_voices_value);
+
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
   connect (chorus_check_box, SIGNAL (toggled (bool)), this, SLOT (on_chorus_changed (bool)));
@@ -78,6 +93,16 @@ void
 MorphOutputView::on_chorus_changed (bool new_value)
 {
   morph_output->set_chorus (new_value);
+  unison_voices_title->setVisible (new_value);
+  unison_voices_label->setVisible (new_value);
+  unison_voices_slider->setVisible (new_value);
+}
+
+void
+MorphOutputView::on_unison_voices_changed (int voices)
+{
+  unison_voices_label->setText (string_locale_printf ("%d", voices).c_str());
+  morph_output->set_unison_voices (voices);
 }
 
 void
