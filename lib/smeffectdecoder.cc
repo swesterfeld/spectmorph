@@ -16,14 +16,18 @@ EffectDecoder::~EffectDecoder()
 void
 EffectDecoder::set_config (MorphOutput *output)
 {
-  int unison_voices = output->chorus() ? output->unison_voices() : 1;
+  size_t unison_voices = output->chorus() ? output->unison_voices() : 1;
 
-  chain_decoders.resize (unison_voices);
+  if (unison_voices != chain_decoders.size())
+    {
+      chain_decoders.resize (unison_voices);
+
+      for (auto& dec : chain_decoders)
+        dec.reset (new LiveDecoder (source));
+    }
 
   for (auto& dec : chain_decoders)
     {
-      dec.reset (new LiveDecoder (source));
-
       dec->enable_noise (output->noise());
       dec->enable_sines (output->sines());
     }
