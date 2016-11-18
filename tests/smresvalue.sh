@@ -2,7 +2,7 @@
 
 source test-common.sh
 
-SMENCFLAGS="--no-attack --no-lpc"
+SMENCFLAGS="--no-attack"
 
 WAV=$(infile_location "$1")
 START="$2"

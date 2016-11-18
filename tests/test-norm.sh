@@ -8,9 +8,9 @@ for MODE in noise saw
 do
   if [ "x$MODE" = "xnoise" ]; then
     $WHITENOISE > test-norm.txt
-    $SMENC -f 440 --text-input-file 48000 --no-lpc --no-sines --no-attack test-norm.txt
+    $SMENC -f 440 --text-input-file 48000 --no-sines --no-attack test-norm.txt
   elif [ "x$MODE" = "xsaw" ]; then
-    $SMENC -f 440 --no-attack --no-lpc -O1 $(infile_location saw440.wav) test-norm.sm
+    $SMENC -f 440 --no-attack -O1 $(infile_location saw440.wav) test-norm.sm
   else
     echo "bad MODE $mode"
     exit 1

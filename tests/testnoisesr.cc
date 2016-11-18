@@ -164,7 +164,7 @@ encode (vector<float>& audio_in, int sr, const string& win, float fundamental_fr
   assert (error == 0);
 
   const char *sm_file = "testnoisesr.tmp.sm";
-  encoder.encode (dhandle, 0, window, 1, /*attack*/ false, /*sines*/ false, /*lpc*/ false);
+  encoder.encode (dhandle, 0, window, 1, /*attack*/ false, /*sines*/ false);
   encoder.save (sm_file);
 
   WavSet wav_set;

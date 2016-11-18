@@ -61,7 +61,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   assert (error == 0);
 
   const char *sm_file = "testaafilter.tmp.sm";
-  encoder.encode (dhandle, 0, window, 1, false, true, true);
+  encoder.encode (dhandle, 0, window, 1, false, true);
   encoder.save (sm_file);
 
   WavSet wav_set;
