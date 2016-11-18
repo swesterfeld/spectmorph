@@ -85,7 +85,6 @@ struct Options
   bool          keep_samples;
   bool          attack;
   bool          track_sines;
-  bool          do_lpc;
   float         fundamental_freq;
   int           optimization_level;
   double        loop_start;
@@ -112,7 +111,6 @@ Options::Options ()
   keep_samples = false;
   track_sines = true;   // perform peak tracking to find sine components
   attack = true;        // perform attack time optimization
-  do_lpc = true;        // compute lpc (linear prediction) coefficients
   text_input_file = false;
   text_input_rate = 0;
   loop_start = -1;
@@ -195,10 +193,6 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--no-sines"))
         {
           track_sines = false;
-        }
-      else if (check_arg (argc, argv, &i, "--no-lpc"))
-        {
-          do_lpc = false;
         }
       else if (check_arg (argc, argv, &i, "--debug-decode", &opt_arg))
         {
@@ -528,7 +522,7 @@ main (int argc, char **argv)
             window[i] = 0;
         }
 
-      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack, options.track_sines, options.do_lpc);
+      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack, options.track_sines);
       if (options.strip_models)
         {
           for (size_t i = 0; i < audio_blocks.size(); i++)
