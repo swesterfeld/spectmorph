@@ -3,7 +3,6 @@
 #include "smencoder.hh"
 #include "smmath.hh"
 #include "smfft.hh"
-#include "smlpc.hh"
 #include "smdebug.hh"
 #include "smmicroconf.hh"
 #include "smutils.hh"
@@ -54,7 +53,7 @@ EncoderParams::EncoderParams() :
   frame_size (0),
   block_size (0),
   fundamental_freq (0),
-  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size", "lpc-order"}),
+  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"}),
   param_name_s ({"window"})
 {
 }
@@ -1326,57 +1325,6 @@ Encoder::sort_freqs()
     }
 }
 
-void
-Encoder::compute_lpc_lsf()
-{
-  int lpc_order;
-
-  double value;
-  if (enc_params.get_param ("lpc-order", value))
-    lpc_order = sm_round_positive (value);
-  else
-    lpc_order = 50;
-
-  assert ((lpc_order & 1) == 0);  // lpc order must be even
-  assert (lpc_order >= 2);        // ... and at least 2
-
-  const size_t frame_size_scaled = sm_round_positive (double (enc_params.frame_size) / enc_params.mix_freq * LPC::MIX_FREQ);
-  for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
-    {
-      AlignedArray<float,16> signal (frame_size_scaled);
-      for (size_t i = 0; i < audio_blocks[frame].freqs.size(); i++)
-	{
-          const double freq = audio_blocks[frame].freqs[i];
-	  const double mag = audio_blocks[frame].mags[i];
-	  const double phase = audio_blocks[frame].phases[i];
-
-          if (freq < LPC::MIX_FREQ / 2) // ignore freqs > nyquist
-            {
-              VectorSinParams params;
-              params.mix_freq = LPC::MIX_FREQ;
-              params.freq = freq;
-              params.phase = phase;
-              params.mag = mag;
-              params.mode = VectorSinParams::ADD;
-
-              fast_vector_sinf (params, &signal[0], &signal[frame_size_scaled]);
-            }
-	}
-      vector<double> lpc (lpc_order);
-
-      LPC::compute_lpc (lpc, &signal[0], &signal[frame_size_scaled]);
-
-      // make LPC filter stable
-      vector< complex<double> > roots;
-      bool good_roots = LPC::find_roots (lpc, roots);
-      assert (good_roots);
-      LPC::make_stable_roots (roots);
-      LPC::roots2lpc (roots, lpc);
-
-      LPC::lpc2lsf (lpc, audio_blocks[frame].lpc_lsf_p, audio_blocks[frame].lpc_lsf_q);
-    }
-}
-
 /**
  * This function calls all steps necessary for encoding in the right order.
  *
@@ -1387,7 +1335,7 @@ Encoder::compute_lpc_lsf()
  */
 void
 Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level,
-                 bool attack, bool track_sines, bool do_lpc)
+                 bool attack, bool track_sines)
 {
   compute_stft (dhandle, channel, window);
 
@@ -1402,9 +1350,6 @@ Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& windo
       spectral_subtract (window);
     }
   approx_noise (window);
-
-  if (do_lpc)
-    compute_lpc_lsf();
 
   if (attack)
     compute_attack_params (window);
@@ -1503,8 +1448,6 @@ Encoder::save (const string& filename)
       AudioBlock block;
       convert_freqs_mags_phases (*ai, block, enc_params);
       convert_noise (ai->noise, block.noise);
-      block.lpc_lsf_p = ai->lpc_lsf_p;
-      block.lpc_lsf_q = ai->lpc_lsf_q;
       block.original_fft = ai->original_fft;
       block.debug_samples = ai->debug_samples;
       audio.contents.push_back (block);

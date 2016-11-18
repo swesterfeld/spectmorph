@@ -76,8 +76,6 @@ public:
   std::vector<float> freqs;          //!< frequencies of the sine components of this frame
   std::vector<float> mags;           //!< magnitudes of the sine components
   std::vector<float> phases;         //!< phases of the sine components
-  std::vector<float> lpc_lsf_p;      //!< LPC line spectrum frequencies, P(z) roots
-  std::vector<float> lpc_lsf_q;      //!< LPC line spectrum frequencies, Q(z) roots
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };
@@ -126,13 +124,12 @@ public:
   void spectral_subtract (const std::vector<float>& window);
   void approx_noise (const std::vector<float>& window);
   void compute_attack_params (const std::vector<float>& window);
-  void compute_lpc_lsf();
   void sort_freqs();
   void debug_decode (const std::string& filename, const std::vector<float>& window);
 
   // all-in-one encoding function:
   void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
-               bool attack, bool track_sines, bool do_lpc);
+               bool attack, bool track_sines);
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);
   void set_loop_seconds (Audio::LoopType loop_type, double loop_start, double loop_end);
