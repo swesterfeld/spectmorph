@@ -43,6 +43,7 @@ class BuilderConfig:
     self.jobs_count = 0
     self.cache_count = 0
     self.output_dir_count = 0
+    self.lpc_order_count = 0
     self.pre_encoder_config = []
     self.post_encoder_config = []
     self.have_encoder_config = False
@@ -247,6 +248,10 @@ def parse_builder_config (filename):
         builder_config.output_dir = tokens[1]
         builder_config.output_dir_count += 1
         parse_ok = True
+      elif tokens[0] == 'lpc-order':
+        builder_config.lpc_order = int (tokens[1])
+        builder_config.lpc_order_count += 1
+        parse_ok = True
     if len (tokens) >= 3:
       if tokens[0] == 'pre-encoder-config':
         builder_config.pre_encoder_config += [ tokens[1:] ]
@@ -265,6 +270,8 @@ def parse_builder_config (filename):
     die ("output-dir command must occur exactly once in config")
   if builder_config.jobs_count != 1:
     die ("jobs command must occur exactly once in config")
+  if builder_config.lpc_order_count != 1:
+    die ("lpc-order command must occur exactly once in config")
   return builder_config
 
 def system_or_die (command):
@@ -389,6 +396,9 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 
   if (config.global_volume_count > 0):
     system_or_die ("smtool %s global-volume %s" % (final_smset, config.global_volume))
+
+  # lpc generation needs to be done after auto tuning
+  system_or_die ("smtool %s lpc %d" % (final_smset, builder_config.lpc_order))
 
   system_or_die ("smwavset set-names %s '%s' '%s'" % (final_smset, config.name, config.short_name))
   system_or_die ("ls -l %s" % final_smset);
