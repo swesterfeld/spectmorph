@@ -232,6 +232,9 @@ class Example (QtWidgets.QMainWindow):
     prev_shortcut = QtWidgets.QShortcut (QtGui.QKeySequence (QtCore.Qt.Key_Minus), central_widget)
     prev_shortcut.activated.connect (self.on_prev_clicked)
 
+    fullscreen_shortcut = QtWidgets.QShortcut (QtGui.QKeySequence (QtCore.Qt.Key_F), central_widget)
+    fullscreen_shortcut.activated.connect (self.on_toggle_fullscreen)
+
     test_label = QtWidgets.QLabel()
     test_label.setFont (QtGui.QFont("Times", 32, QtGui.QFont.Bold))
     test_label.setText ("Test %d/%d: %s" % (self.test_number + 1, len (self.tests), self.title))
@@ -269,6 +272,12 @@ class Example (QtWidgets.QMainWindow):
   def on_rating_changed (self, item, rating):
     item.rating_label.setText ("%d" % rating)
     item.rating = rating
+
+  def on_toggle_fullscreen (self):
+    if self.windowState() & QtCore.Qt.WindowFullScreen:
+      self.showNormal()
+    else:
+      self.showFullScreen()
 
 def main():
   parser = argparse.ArgumentParser()
