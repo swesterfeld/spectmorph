@@ -134,6 +134,7 @@ class Example (QtWidgets.QMainWindow):
     self.resize (1024, 768)
     self.test_number = 0
     self.reinit_ui (self.test_number)
+    self.save_ok = False
 
     if (self.cmdline_args.debug):
       debug_play()
@@ -147,6 +148,7 @@ class Example (QtWidgets.QMainWindow):
             for item in test.items:
               if not item.reference:
                 result_file.write ("%s %d\n" % (item.filename, item.rating))
+        self.save_ok = True
         self.close()
       else:
         # back to last test
@@ -278,6 +280,20 @@ class Example (QtWidgets.QMainWindow):
       self.showNormal()
     else:
       self.showFullScreen()
+
+  def closeEvent(self, event):
+    if self.save_ok:
+      event.accept()
+      return
+
+    reply = QtWidgets.QMessageBox.question (self, 'Message', "Are you sure you want to quit?",
+                                            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                                            QtWidgets.QMessageBox.No)
+
+    if reply == QtWidgets.QMessageBox.Yes:
+      event.accept()
+    else:
+      event.ignore()
 
 def main():
   parser = argparse.ArgumentParser()
