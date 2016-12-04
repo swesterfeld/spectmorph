@@ -92,6 +92,9 @@ class Example (QtWidgets.QMainWindow):
     self.setWindowTitle ("SpectMorph Evaluation - %s" % self.cmdline_args.config)
 
     config = parse_config (self.cmdline_args.config)
+    if not self.cmdline_args.noreorder:
+      random.shuffle (config)
+
     self.tests = []
     for test_config in config:
       test = Test()
@@ -297,6 +300,7 @@ class Example (QtWidgets.QMainWindow):
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument('--noreorder', action='store_true')
   parser.add_argument('--noshuffle', action='store_true')
   parser.add_argument('--debug', action='store_true')
   parser.add_argument('config', action='store')
