@@ -30,6 +30,7 @@ EffectDecoder::set_config (MorphOutput *output)
     {
       dec->enable_noise (output->noise());
       dec->enable_sines (output->sines());
+      dec->enable_phase_randomization (unison_voices > 1);
     }
 }
 
