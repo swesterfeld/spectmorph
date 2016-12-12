@@ -60,6 +60,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
   loop_enabled (true),
+  phase_randomization_enabled (false),
   noise_seed (-1),
   sse_samples (NULL)
 {
@@ -78,6 +79,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
   loop_enabled (true),
+  phase_randomization_enabled (false),
   noise_seed (-1),
   sse_samples (NULL)
 {
@@ -351,6 +353,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       // anti alias filter:
                       double mag         = audio_block.mags_f (partial);
                       double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
+                      bool   have_phase  = false;
+
                       if (freq > filter_min_freq)
                         {
                           double norm_freq = freq / current_mix_freq;
@@ -404,11 +408,20 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                               const double lphase = old_pstate[old_partial].phase;
 
                               phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
+                              have_phase = true;
 
                               if (DEBUG)
                                 printf ("%zd:L %.17g %.17g %.17g\n", env_pos, lfreq, freq, mag);
                             }
                         }
+
+                      if (phase_randomization_enabled)
+                        {
+                          // randomize initial phase instead of setting it to zero
+                          if (!have_phase)
+                            phase = phase_random_gen.random_double_range (0, 2 * M_PI);
+                        }
+
                       if (DEBUG)
                         printf ("%zd:F %.17g %.17g\n", env_pos, freq, mag);
 
@@ -503,6 +516,12 @@ void
 LiveDecoder::enable_loop (bool eloop)
 {
   loop_enabled = eloop;
+}
+
+void
+LiveDecoder::enable_phase_randomization (bool epr)
+{
+  phase_randomization_enabled = epr;
 }
 
 void

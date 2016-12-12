@@ -34,6 +34,8 @@ class LiveDecoder
   bool                debug_fft_perf_enabled;
   bool                original_samples_enabled;
   bool                loop_enabled;
+  bool                phase_randomization_enabled;
+  Random              phase_random_gen;
 
   size_t              frame_size, frame_step;
   size_t              zero_values_at_start_scaled;
@@ -67,6 +69,7 @@ public:
   void enable_debug_fft_perf (bool dfp);
   void enable_original_samples (bool eos);
   void enable_loop (bool eloop);
+  void enable_phase_randomization (bool epr);
   void set_noise_seed (int seed);
 
   void precompute_tables (float mix_freq);
