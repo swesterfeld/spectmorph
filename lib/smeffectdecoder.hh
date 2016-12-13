@@ -15,6 +15,7 @@ class EffectDecoder
   std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
 
   LiveDecoderSource *source;
+  float              unison_detune;
 
 public:
   EffectDecoder (LiveDecoderSource *source);

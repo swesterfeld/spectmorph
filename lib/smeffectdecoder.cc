@@ -32,6 +32,7 @@ EffectDecoder::set_config (MorphOutput *output)
       dec->enable_sines (output->sines());
       dec->enable_phase_randomization (unison_voices > 1);
     }
+  unison_detune = output->unison_detune();
 }
 
 void
@@ -43,7 +44,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
       return;
     }
 
-  float spread = 6;
+  float spread = unison_detune / 2;
   float detune_factor = pow (2,(spread/1200.));
   float freq_l = freq / detune_factor;
   float freq_h = freq * detune_factor;
