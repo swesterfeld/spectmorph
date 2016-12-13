@@ -26,6 +26,10 @@ class MorphOutputView : public MorphOperatorView
   QLabel                     *unison_voices_label;
   QSlider                    *unison_voices_slider;
 
+  QLabel                     *unison_detune_title;
+  QLabel                     *unison_detune_label;
+  QSlider                    *unison_detune_slider;
+
   MorphOutput                *morph_output;
 public:
   MorphOutputView (MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
@@ -35,6 +39,7 @@ public slots:
   void on_noise_changed (bool new_value);
   void on_chorus_changed (bool new_value);
   void on_unison_voices_changed (int voices);
+  void on_unison_detune_changed (int new_value);
   void on_operator_changed();
 };
 
