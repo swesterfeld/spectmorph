@@ -33,6 +33,17 @@ EffectDecoder::set_config (MorphOutput *output)
       dec->enable_phase_randomization (unison_voices > 1);
     }
   unison_detune = output->unison_detune();
+
+  /* compensate gain created by adding multiple copies
+   *
+   * we found that the gain caused by the unison effect can be approximated:
+   *   2 copies -> approximately 3 dB gain
+   *   4 copies -> approximately 6 dB gain
+   *   8 copies -> approximately 9 dB gain
+   * ...
+   */
+  const double unison_gain_db = (log (unison_voices)/log (2)) * 3;
+  unison_gain = 1 / bse_db_to_factor (unison_gain_db);
 }
 
 void
@@ -80,4 +91,8 @@ EffectDecoder::process (size_t       n_values,
       for (size_t i = 0; i < n_values; i++)
         audio_out[i] += output[i];
     }
+
+  // compensate gain created by adding multiple copies
+  for (size_t i = 0; i < n_values; i++)
+    audio_out[i] *= unison_gain;
 }

@@ -16,6 +16,7 @@ class EffectDecoder
 
   LiveDecoderSource *source;
   float              unison_detune;
+  float              unison_gain;
 
 public:
   EffectDecoder (LiveDecoderSource *source);
