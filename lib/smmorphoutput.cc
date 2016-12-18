@@ -23,9 +23,17 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   m_sines = true;
   m_noise = true;
+
   m_chorus = false;
   m_unison_voices = 2;
   m_unison_detune = 6.0;
+
+  m_adsr = false;
+  m_adsr_skip     = 500;
+  m_adsr_attack   = 5;
+  m_adsr_decay    = 20;
+  m_adsr_sustain  = 70;
+  m_adsr_release  = 70;
 
   leak_debugger.add (this);
 }
@@ -64,6 +72,13 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_bool ("chorus", m_chorus);
   out_file.write_int ("unison_voices", m_unison_voices);
   out_file.write_float ("unison_detune", m_unison_detune);
+
+  out_file.write_bool ("adsr", m_adsr);
+  out_file.write_float ("adsr_skip",    m_adsr_skip);
+  out_file.write_float ("adsr_attack",  m_adsr_attack);
+  out_file.write_float ("adsr_decay",   m_adsr_decay);
+  out_file.write_float ("adsr_sustain", m_adsr_sustain);
+  out_file.write_float ("adsr_release", m_adsr_release);
   return true;
 }
 
@@ -100,6 +115,10 @@ MorphOutput::load (InFile& ifile)
             {
               m_chorus = ifile.event_bool();
             }
+          else if (ifile.event_name() == "adsr")
+            {
+              m_adsr = ifile.event_bool();
+            }
           else
             {
               g_printerr ("bad bool\n");
@@ -123,6 +142,26 @@ MorphOutput::load (InFile& ifile)
           if (ifile.event_name() == "unison_detune")
             {
               m_unison_detune = ifile.event_float();
+            }
+          else if (ifile.event_name() == "adsr_skip")
+            {
+              m_adsr_skip = ifile.event_float();
+            }
+          else if (ifile.event_name() == "adsr_attack")
+            {
+              m_adsr_attack = ifile.event_float();
+            }
+          else if (ifile.event_name() == "adsr_decay")
+            {
+              m_adsr_decay = ifile.event_float();
+            }
+          else if (ifile.event_name() == "adsr_sustain")
+            {
+              m_adsr_sustain = ifile.event_float();
+            }
+          else if (ifile.event_name() == "adsr_release")
+            {
+              m_adsr_release = ifile.event_float();
             }
           else
             {
@@ -204,6 +243,8 @@ MorphOutput::set_noise (bool en)
   m_morph_plan->emit_plan_changed();
 }
 
+//---- unison effect ----
+
 bool
 MorphOutput::chorus()
 {
@@ -245,6 +286,93 @@ MorphOutput::set_unison_detune (float detune)
 
   m_morph_plan->emit_plan_changed();
 }
+
+//---- adsr ----
+
+bool
+MorphOutput::adsr() const
+{
+  return m_adsr;
+}
+
+void
+MorphOutput::set_adsr (bool ea)
+{
+  m_adsr = ea;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::adsr_skip() const
+{
+  return m_adsr_skip;
+}
+
+void
+MorphOutput::set_adsr_skip (float skip)
+{
+  m_adsr_skip = skip;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::adsr_attack() const
+{
+  return m_adsr_attack;
+}
+
+void
+MorphOutput::set_adsr_attack (float attack)
+{
+  m_adsr_attack = attack;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::adsr_decay() const
+{
+  return m_adsr_decay;
+}
+
+void
+MorphOutput::set_adsr_decay (float decay)
+{
+  m_adsr_decay = decay;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::adsr_sustain() const
+{
+  return m_adsr_sustain;
+}
+
+void
+MorphOutput::set_adsr_sustain (float sustain)
+{
+  m_adsr_sustain = sustain;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::adsr_release() const
+{
+  return m_adsr_release;
+}
+
+void
+MorphOutput::set_adsr_release (float release)
+{
+  m_adsr_release = release;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 
 void
 MorphOutput::on_operator_removed (MorphOperator *op)

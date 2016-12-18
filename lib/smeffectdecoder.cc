@@ -4,8 +4,78 @@
 
 using namespace SpectMorph;
 
+namespace SpectMorph
+{
+
+class EffectDecoderSource : public LiveDecoderSource
+{
+  LiveDecoderSource *source;
+  Audio              m_audio;
+  float              m_skip;
+public:
+  explicit EffectDecoderSource (LiveDecoderSource *source);
+
+  void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
+  Audio* audio() override;
+  AudioBlock* audio_block (size_t index) override;
+
+  void set_skip (float m_skip);
+};
+
+}
+
+void
+EffectDecoderSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+{
+  source->retrigger (channel, freq, midi_velocity, mix_freq);
+}
+
+Audio*
+EffectDecoderSource::audio()
+{
+  return &m_audio;
+}
+
+AudioBlock*
+EffectDecoderSource::audio_block (size_t index)
+{
+  Audio *audio = source->audio();
+
+  const double time_ms = index + m_skip; // 1ms frame step
+  int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
+
+  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
+    {
+      source_index = LiveDecoder::compute_loop_frame_index (source_index, audio);
+    }
+
+  return source->audio_block (source_index);
+}
+
+void
+EffectDecoderSource::set_skip (float skip)
+{
+  m_skip = skip;
+}
+
+EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
+  source (source),
+  m_skip (0)
+{
+  m_audio.fundamental_freq     = 440;
+  m_audio.mix_freq             = 48000;
+  m_audio.frame_size_ms        = 1;
+  m_audio.frame_step_ms        = 1;
+  m_audio.attack_start_ms      = 0;
+  m_audio.attack_end_ms        = 0;
+  m_audio.zeropad              = 4;
+  m_audio.loop_type            = Audio::LOOP_NONE;
+  m_audio.zero_values_at_start = 1500;              // FIXME everywhere
+  m_audio.sample_count         = 2 << 31;
+}
+
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
-  source (source)
+  source (new EffectDecoderSource (source))
 {
 }
 
@@ -44,6 +114,15 @@ EffectDecoder::set_config (MorphOutput *output)
    */
   const double unison_gain_db = (log (unison_voices)/log (2)) * 3;
   unison_gain = 1 / bse_db_to_factor (unison_gain_db);
+
+  if (output->adsr())
+    {
+      source->set_skip (output->adsr_skip());
+    }
+  else
+    {
+      source->set_skip (0);
+    }
 }
 
 void

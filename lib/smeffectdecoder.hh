@@ -10,11 +10,12 @@
 namespace SpectMorph
 {
 
+class EffectDecoderSource;
 class EffectDecoder
 {
   std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
 
-  LiveDecoderSource *source;
+  EffectDecoderSource *source;
   float              unison_detune;
   float              unison_gain;
 
