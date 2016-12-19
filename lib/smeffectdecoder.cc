@@ -3,6 +3,7 @@
 #include "smmorphoutputmodule.hh"
 
 using namespace SpectMorph;
+using std::max;
 
 namespace SpectMorph
 {
@@ -74,6 +75,84 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.sample_count         = 2 << 31;
 }
 
+namespace SpectMorph {
+
+class ADSREnvelope
+{
+  enum class State { ATTACK, DECAY, SUSTAIN };
+
+  State state;
+  float level;
+  float attack_delta;
+  float decay_delta;
+  float sustain_level;
+
+  float percent2delta (float p, float mix_freq) const;
+public:
+  void set_config (MorphOutput *output, float mix_freq);
+  void retrigger();
+  void process (size_t n_values, float *values);
+};
+
+}
+
+float
+ADSREnvelope::percent2delta (float p, float mix_freq) const
+{
+  const float time_range_ms = 500;
+  const float min_time_ms   = 3;
+
+  const float time_ms = max (p / 100 * time_range_ms, min_time_ms);
+  const float samples = mix_freq * time_ms / 1000;
+
+  return 1 / samples;
+}
+
+void
+ADSREnvelope::set_config (MorphOutput *output, float mix_freq)
+{
+  attack_delta = percent2delta (output->adsr_attack(), mix_freq);
+  decay_delta  = percent2delta (output->adsr_decay(), mix_freq);
+
+  sustain_level = output->adsr_sustain() / 100;
+}
+
+void
+ADSREnvelope::retrigger()
+{
+  level = 0;
+  state = State::ATTACK;
+}
+
+void
+ADSREnvelope::process (size_t n_values, float *values)
+{
+  for (size_t i = 0; i < n_values; i++)
+    {
+      if (state == State::ATTACK)
+        {
+          level += attack_delta;
+
+          if (level >= 1.0)
+            {
+              state = State::DECAY;
+              level = 1.0;
+            }
+        }
+      else if (state == State::DECAY)
+        {
+          level -= decay_delta;
+
+          if (level <= sustain_level)
+            {
+              state = State::SUSTAIN;
+              level = sustain_level;
+            }
+        }
+      values[i] *= level;
+    }
+}
+
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
   source (new EffectDecoderSource (source))
 {
@@ -84,7 +163,7 @@ EffectDecoder::~EffectDecoder()
 }
 
 void
-EffectDecoder::set_config (MorphOutput *output)
+EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 {
   size_t unison_voices = output->chorus() ? output->unison_voices() : 1;
 
@@ -118,16 +197,25 @@ EffectDecoder::set_config (MorphOutput *output)
   if (output->adsr())
     {
       source->set_skip (output->adsr_skip());
+
+      if (!adsr_envelope)
+        adsr_envelope.reset (new ADSREnvelope());
+
+      adsr_envelope->set_config (output, mix_freq);
     }
   else
     {
       source->set_skip (0);
+      adsr_envelope.reset();
     }
 }
 
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
+  if (adsr_envelope)
+    adsr_envelope->retrigger();
+
   if (chain_decoders.size() == 1)
     {
       chain_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
@@ -156,6 +244,10 @@ EffectDecoder::process (size_t       n_values,
   if (chain_decoders.size() == 1)
     {
       chain_decoders[0]->process (n_values, freq_in, freq_mod_in, audio_out);
+
+      if (adsr_envelope)
+        adsr_envelope->process (n_values, audio_out);
+
       return;
     }
 
@@ -174,4 +266,7 @@ EffectDecoder::process (size_t       n_values,
   // compensate gain created by adding multiple copies
   for (size_t i = 0; i < n_values; i++)
     audio_out[i] *= unison_gain;
+
+  if (adsr_envelope)
+    adsr_envelope->process (n_values, audio_out);
 }

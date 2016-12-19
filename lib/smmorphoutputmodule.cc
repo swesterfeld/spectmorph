@@ -72,7 +72,7 @@ MorphOutputModule::set_config (MorphOperator *op)
       // update dec sines & noise
       if (dec)
         {
-          dec->set_config (out_op);
+          dec->set_config (out_op, morph_plan_voice->mix_freq());
         }
 
       out_ops[ch] = mod;
