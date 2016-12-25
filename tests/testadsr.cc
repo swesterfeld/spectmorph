@@ -9,6 +9,15 @@
 using namespace SpectMorph;
 using std::vector;
 
+void
+run (ADSREnvelope& adsr_envelope, size_t samples)
+{
+  vector<float> input (samples, 1.0);
+  adsr_envelope.process (input.size(), &input[0]);
+  for (auto v : input)
+    printf ("%f\n", v);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -18,10 +27,9 @@ main (int argc, char **argv)
 
   ADSREnvelope adsr_envelope;
 
-  vector<float> input (sm_round_positive (rate), 1.0);
   adsr_envelope.set_config (atof (argv[1]), atof (argv[2]), atof (argv[3]), atof (argv[4]), rate);
   adsr_envelope.retrigger();
-  adsr_envelope.process (input.size(), &input[0]);
-  for (auto v : input)
-    printf ("%f\n", v);
+  run (adsr_envelope, sm_round_positive (rate / 2));
+  adsr_envelope.release();
+  run (adsr_envelope, sm_round_positive (rate / 2));
 }
