@@ -23,6 +23,7 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
 {
   attack_delta = percent2delta (attack, mix_freq);
   decay_delta  = percent2delta (decay, mix_freq);
+  release_delta  = percent2delta (release, mix_freq);
 
   sustain_level = sustain / 100;
 }
@@ -32,6 +33,12 @@ ADSREnvelope::retrigger()
 {
   level = 0;
   state = State::ATTACK;
+}
+
+void
+ADSREnvelope::release()
+{
+  state = State::RELEASE;
 }
 
 void
@@ -57,6 +64,16 @@ ADSREnvelope::process (size_t n_values, float *values)
             {
               state = State::SUSTAIN;
               level = sustain_level;
+            }
+        }
+      else if (state == State::RELEASE)
+        {
+          level -= release_delta;
+
+          if (level <= 0)
+            {
+              state = State::DONE;
+              level = 0;
             }
         }
       values[i] *= level;
