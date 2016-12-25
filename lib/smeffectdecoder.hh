@@ -6,12 +6,12 @@
 #include "smlivedecoder.hh"
 #include "smlivedecodersource.hh"
 #include "smmorphoutput.hh"
+#include "smadsrenvelope.hh"
 
 namespace SpectMorph
 {
 
 class EffectDecoderSource;
-class ADSREnvelope;
 class EffectDecoder
 {
   std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
