@@ -126,7 +126,7 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
                                  output->adsr_decay(),
                                  output->adsr_sustain(),
                                  output->adsr_release(),
-                                 mix_freq);
+                                 mix_freq, /* linear */ false);
     }
   else
     {
