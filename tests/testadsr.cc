@@ -27,7 +27,7 @@ main (int argc, char **argv)
 
   ADSREnvelope adsr_envelope;
 
-  adsr_envelope.set_config (atof (argv[1]), atof (argv[2]), atof (argv[3]), atof (argv[4]), rate);
+  adsr_envelope.set_config (atof (argv[1]), atof (argv[2]), atof (argv[3]), atof (argv[4]), rate, atoi (argv[5]) > 0);
   adsr_envelope.retrigger();
   run (adsr_envelope, sm_round_positive (rate / 2));
   adsr_envelope.release();
