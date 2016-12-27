@@ -40,6 +40,8 @@ AudioBlock*
 EffectDecoderSource::audio_block (size_t index)
 {
   Audio *audio = source->audio();
+  if (!audio)
+    return nullptr;
 
   const double time_ms = index + m_skip; // 1ms frame step
   int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
