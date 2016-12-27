@@ -2,18 +2,27 @@
 
 #include "smadsrenvelope.hh"
 #include "smmath.hh"
+#include <bse/bsemathsignal.hh>
 #include <algorithm>
 
 using namespace SpectMorph;
 using std::max;
 
+static float
+exp_percent (float p, float min_out, float max_out, float slope)
+{
+  /* exponential curve from 0 to 1 with configurable slope */
+  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
+
+  /* rescale to interval [min_out, max_out] */
+  return x * (max_out - min_out) + min_out;
+}
+
 int
 ADSREnvelope::percent_to_len (float p, float mix_freq) const
 {
-  const float time_range_ms = 500;
-  const float min_time_ms   = 3;
-
-  const float time_ms = max (p / 100 * time_range_ms, min_time_ms);
+  const float time_ms = exp_percent (p, 2, 5000, /* slope */ 5);
+  // printf ("%.3f ms\n", time_ms);
   const float samples = mix_freq * time_ms / 1000;
 
   return sm_round_positive (samples);
@@ -26,7 +35,8 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
   decay_len     = percent_to_len (decay, mix_freq);
   release_len   = percent_to_len (release, mix_freq);
 
-  sustain_level = sustain / 100;
+  sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
+  // printf ("%.3f dB\n", bse_db_from_factor (sustain_level, -96));
 
   this->linear = linear;
 }
@@ -50,6 +60,7 @@ void
 ADSREnvelope::compute_decay_params (int len, float start_x, float end_x)
 {
   params.len = len;
+  // params.len = len * (start_x - end_x); <- FIXME: maybe
 
   if (linear)
     {
