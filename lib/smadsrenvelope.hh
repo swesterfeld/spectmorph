@@ -13,22 +13,25 @@ class ADSREnvelope
 
   State state;
   double level;
-  float attack_delta;
-  float decay_len;
-  float release_len;
+  int attack_len;
+  int decay_len;
+  int release_len;
   float sustain_level;
-  bool linear;
 
-  struct DecayParams {
+  struct SlopeParams {
     int len;
 
     double factor;     // exponential slope only
     double delta;      // exponential slope & linear slope
+    double end;
+
+    bool linear;
   } params;
 
-  void compute_decay_params (int len, float start_x, float end_x);
+  size_t process_params (size_t len, float *values);
+  void compute_slope_params (int len, float start_x, float end_x, bool linear);
 public:
-  void set_config (float attack, float decay, float sustain, float release, float mix_freq, bool linear);
+  void set_config (float attack, float decay, float sustain, float release, float mix_freq);
   void retrigger();
   void release();
   void process (size_t n_values, float *values);

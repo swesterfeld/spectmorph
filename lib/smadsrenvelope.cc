@@ -7,6 +7,7 @@
 
 using namespace SpectMorph;
 using std::max;
+using std::min;
 
 static float
 exp_percent (float p, float min_out, float max_out, float slope)
@@ -19,11 +20,11 @@ exp_percent (float p, float min_out, float max_out, float slope)
 }
 
 void
-ADSREnvelope::set_config (float attack, float decay, float sustain, float release, float mix_freq, bool linear)
+ADSREnvelope::set_config (float attack, float decay, float sustain, float release, float mix_freq)
 {
   const float samples_per_ms = mix_freq / 1000;
 
-  attack_delta  = 1.0 / (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
+  attack_len    = sm_round_positive (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
 
   // FIXME: adapt max length
   decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
@@ -31,8 +32,6 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
 
   sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
   // printf ("%.3f dB\n", bse_db_from_factor (sustain_level, -96));
-
-  this->linear = linear;
 }
 
 void
@@ -40,19 +39,24 @@ ADSREnvelope::retrigger()
 {
   level = 0;
   state = State::ATTACK;
-  compute_decay_params (decay_len, 1, sustain_level);
+
+  compute_slope_params (attack_len, 0, 1, true);
 }
 
 void
 ADSREnvelope::release()
 {
   state = State::RELEASE;
-  compute_decay_params (release_len, level, 0);
+
+  compute_slope_params (release_len, level, 0, false);
 }
 
 void
-ADSREnvelope::compute_decay_params (int len, float start_x, float end_x)
+ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, bool linear)
 {
+  params.linear = linear;
+  params.end    = end_x;
+
   if (linear)
     {
       // linear
@@ -86,63 +90,80 @@ ADSREnvelope::compute_decay_params (int len, float start_x, float end_x)
     }
 }
 
+size_t
+ADSREnvelope::process_params (size_t n_values, float *values)
+{
+  n_values = min<int> (n_values, params.len);
+
+  if (params.linear)
+    {
+      for (size_t i = 0; i < n_values; i++)
+        {
+          // params.factor == 1 -> avoid multiplication for linear case
+          level     += params.delta;
+          values[i] *= level;
+        }
+    }
+  else
+    {
+      for (size_t i = 0; i < n_values; i++)
+        {
+          level = level * params.factor + params.delta;
+          values[i] *= level;
+        }
+    }
+  params.len -= n_values;
+
+  if (!params.len)
+    level = params.end;
+
+  return n_values;
+}
+
 void
 ADSREnvelope::process (size_t n_values, float *values)
 {
-  for (size_t i = 0; i < n_values; i++)
+  size_t i = 0;
+  while (i < n_values)
     {
       if (state == State::ATTACK)
         {
-          level += attack_delta;
+          i += process_params (n_values - i, values + i);
 
-          if (level >= 1.0)
+          if (!params.len)
             {
+              compute_slope_params (decay_len, 1, sustain_level, false);
+
               state = State::DECAY;
-              level = 1.0;
             }
         }
       else if (state == State::DECAY)
         {
-          if (linear)
-            {
-              level += params.delta;
-            }
-          else
-            {
-              level = level * params.factor + params.delta;
-            }
-          if (--params.len <= 0)
-            {
-              state = State::SUSTAIN;
-              level = sustain_level;
-            }
+          i += process_params (n_values - i, values + i);
+
+          if (!params.len)
+            state = State::SUSTAIN;
         }
       else if (state == State::RELEASE)
         {
-          if (linear)
-            {
-              level += params.delta;
-            }
-          else
-            {
-              level = level * params.factor + params.delta;
-            }
-          if (--params.len <= 0)
-            {
-              state = State::DONE;
-              level = 0;
-            }
+          i += process_params (n_values - i, values + i);
+
+          if (!params.len)
+            state = State::DONE;
         }
-      values[i] *= level;
+      else
+        {
+          // constant value (sustain or done)
+          while (i < n_values)
+            values[i++] *= level;
+        }
     }
 }
 
 void
 ADSREnvelope::test_decay (int len, float start_x, float end_x)
 {
-  linear = false;
-
-  compute_decay_params (len, start_x, end_x);
+  compute_slope_params (len, start_x, end_x, false);
 
   level = start_x;
   for (int i = 0; i < params.len + len * 5; i++)
