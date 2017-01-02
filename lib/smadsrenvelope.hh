@@ -22,16 +22,9 @@ class ADSREnvelope
   struct DecayParams {
     int len;
 
-    // exponential slope
-    float x;
-    float factor;
-    float offset;
-
-    // linear slope
-    float delta;
+    float factor;     // exponential slope only
+    float delta;      // exponential slope & linear slope
   } params;
-
-  int percent_to_len (float p, float mix_freq) const;
 
   void compute_decay_params (int len, float start_x, float end_x);
 public:
@@ -39,6 +32,9 @@ public:
   void retrigger();
   void release();
   void process (size_t n_values, float *values);
+
+  // test only
+  void test_decay (int len, float start_x, float end_x);
 };
 
 }

@@ -18,22 +18,16 @@ exp_percent (float p, float min_out, float max_out, float slope)
   return x * (max_out - min_out) + min_out;
 }
 
-int
-ADSREnvelope::percent_to_len (float p, float mix_freq) const
-{
-  const float time_ms = exp_percent (p, 2, 5000, /* slope */ 5);
-  // printf ("%.3f ms\n", time_ms);
-  const float samples = mix_freq * time_ms / 1000;
-
-  return sm_round_positive (samples);
-}
-
 void
 ADSREnvelope::set_config (float attack, float decay, float sustain, float release, float mix_freq, bool linear)
 {
-  attack_delta  = 1.0 / percent_to_len (attack, mix_freq);
-  decay_len     = percent_to_len (decay, mix_freq);
-  release_len   = percent_to_len (release, mix_freq);
+  const float samples_per_ms = mix_freq / 1000;
+
+  attack_delta  = 1.0 / (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
+
+  // FIXME: adapt max length
+  decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
+  release_len   = sm_round_positive (exp_percent (release, 2, 1000, 5) * samples_per_ms);
 
   sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
   // printf ("%.3f dB\n", bse_db_from_factor (sustain_level, -96));
@@ -59,24 +53,36 @@ ADSREnvelope::release()
 void
 ADSREnvelope::compute_decay_params (int len, float start_x, float end_x)
 {
-  params.len = len;
-  // params.len = len * (start_x - end_x); <- FIXME: maybe
-
   if (linear)
     {
       // linear
+      params.len   = len;
       params.delta = (end_x - start_x) / params.len;
+
+      params.factor = 0; // not used
     }
   else
     {
       // exponential
 
-      // compute ADSR envelope until only 1% of original height is left
-      const float DELTA = 0.01;
+      // reach zero approximately if 1% / -40dB of original height is left
+      const float RATIO = 0.01;
 
-      params.factor = exp (log (DELTA) / params.len);
-      params.x = (start_x - end_x) / (1 - DELTA);
-      params.offset = start_x - params.x;
+      /* compute iterative exponential decay parameters from inputs:
+       *
+       *   - len:           half life time
+       *   - RATIO:         target ratio (when should we reach zero)
+       *   - start_x/end_x: level at start/end of the decay slope
+       *
+       * iterative computation of next value (should be done params.len times):
+       *
+       *    value = value * params.factor + params.delta
+       */
+      const double f = -log ((RATIO + 1)/(RATIO + 0.5))/len;
+
+      params.len    = -log ((RATIO + 1) / RATIO)/f;
+      params.factor = exp (f);
+      params.delta  = (end_x - RATIO * (start_x - end_x)) * (1 - params.factor);
     }
 }
 
@@ -103,8 +109,7 @@ ADSREnvelope::process (size_t n_values, float *values)
             }
           else
             {
-              params.x *= params.factor;
-              level = params.offset + params.x;
+              level = level * params.factor + params.delta;
             }
           if (--params.len <= 0)
             {
@@ -120,8 +125,7 @@ ADSREnvelope::process (size_t n_values, float *values)
             }
           else
             {
-              params.x *= params.factor;
-              level = params.offset + params.x;
+              level = level * params.factor + params.delta;
             }
           if (--params.len <= 0)
             {
@@ -130,5 +134,20 @@ ADSREnvelope::process (size_t n_values, float *values)
             }
         }
       values[i] *= level;
+    }
+}
+
+void
+ADSREnvelope::test_decay (int len, float start_x, float end_x)
+{
+  linear = false;
+
+  compute_decay_params (len, start_x, end_x);
+
+  float x = start_x;
+  for (int i = 0; i < params.len + len * 5; i++)
+    {
+      x = x * params.factor + params.delta;
+      printf ("%d %f %f\n", i, x, i < params.len ? start_x : end_x);
     }
 }
