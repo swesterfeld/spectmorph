@@ -12,7 +12,7 @@ class ADSREnvelope
   enum class State { ATTACK, DECAY, SUSTAIN, RELEASE, DONE };
 
   State state;
-  float level;
+  double level;
   float attack_delta;
   float decay_len;
   float release_len;
@@ -22,8 +22,8 @@ class ADSREnvelope
   struct DecayParams {
     int len;
 
-    float factor;     // exponential slope only
-    float delta;      // exponential slope & linear slope
+    double factor;     // exponential slope only
+    double delta;      // exponential slope & linear slope
   } params;
 
   void compute_decay_params (int len, float start_x, float end_x);

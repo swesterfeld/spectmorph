@@ -144,10 +144,10 @@ ADSREnvelope::test_decay (int len, float start_x, float end_x)
 
   compute_decay_params (len, start_x, end_x);
 
-  float x = start_x;
+  level = start_x;
   for (int i = 0; i < params.len + len * 5; i++)
     {
-      x = x * params.factor + params.delta;
-      printf ("%d %f %f\n", i, x, i < params.len ? start_x : end_x);
+      level = level * params.factor + params.delta;
+      printf ("%d %f %f\n", i, level, i < params.len ? start_x : end_x);
     }
 }
