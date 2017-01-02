@@ -3,6 +3,8 @@
 #include "smadsrenvelope.hh"
 #include "smmain.hh"
 
+#include <stdlib.h>
+
 using namespace SpectMorph;
 
 int
