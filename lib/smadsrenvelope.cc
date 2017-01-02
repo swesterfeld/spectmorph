@@ -59,7 +59,7 @@ ADSREnvelope::compute_decay_params (int len, float start_x, float end_x)
       params.len   = len;
       params.delta = (end_x - start_x) / params.len;
 
-      params.factor = 0; // not used
+      params.factor = 1; // not used
     }
   else
     {
