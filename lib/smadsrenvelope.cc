@@ -25,8 +25,6 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
   const float samples_per_ms = mix_freq / 1000;
 
   attack_len    = sm_round_positive (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
-
-  // FIXME: adapt max length
   decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
   release_len   = sm_round_positive (exp_percent (release, 2, 1000, 5) * samples_per_ms);
 
@@ -69,8 +67,13 @@ ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, bool li
     {
       // exponential
 
-      // reach zero approximately if 1% / -40dB of original height is left
-      const float RATIO = 0.01;
+      /* reach zero approximately if 0.1% / -60dB of original height is left
+       * ----------------------------------------------------------------------
+       * setting ratio is a trade-off between sound quality (which is better if
+       * the ratio is lower, because we better approximate exponential decay)
+       * and cpu usage (which is lower if we fade out earlier/ratio is higher)
+       */
+      const double RATIO = 0.001;
 
       /* compute iterative exponential decay parameters from inputs:
        *
