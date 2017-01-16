@@ -10,6 +10,11 @@
 namespace SpectMorph
 {
 
+namespace VstUtils
+{
+  void debug (const char *fmt, ...);
+}
+
 struct VstPlugin
 {
   enum Param

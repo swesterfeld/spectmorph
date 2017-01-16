@@ -48,8 +48,8 @@ using std::string;
 static FILE *debug_file = NULL;
 QMutex       debug_mutex;
 
-static void
-debug (const char *fmt, ...)
+void
+VstUtils::debug (const char *fmt, ...)
 {
   if (DEBUG)
     {
@@ -66,6 +66,8 @@ debug (const char *fmt, ...)
       fflush (debug_file);
     }
 }
+
+using VstUtils::debug;
 
 void
 VstPlugin::preinit_plan (MorphPlanPtr plan)
