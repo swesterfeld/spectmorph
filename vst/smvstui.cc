@@ -13,6 +13,8 @@
 
 using namespace SpectMorph;
 
+using VstUtils::debug;
+
 using std::string;
 using std::vector;
 
@@ -60,7 +62,10 @@ void
 VstUI::close()
 {
   delete control_widget;
+  control_widget = nullptr;
+
   delete widget;
+  widget = nullptr;
 }
 
 void
@@ -88,6 +93,9 @@ VstUI::on_volume_changed (double new_volume)
 void
 VstUI::on_update_window_size()
 {
+  if (!widget)  // if editor window is not visible, ignore
+    return;
+
   const int width = widget->minimumWidth();
   const int height = widget->minimumHeight();
 
