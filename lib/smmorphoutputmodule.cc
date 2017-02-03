@@ -69,11 +69,16 @@ MorphOutputModule::set_config (MorphOperator *op)
             }
         }
 
-      // update dec sines & noise
+      // update dec sines & noise & unison
       if (dec)
         {
           dec->enable_sines (out_op->sines());
           dec->enable_noise (out_op->noise());
+
+          if (out_op->unison()) // unison?
+            dec->set_unison_voices (out_op->unison_voices(), out_op->unison_detune());
+          else
+            dec->set_unison_voices (1, 0);
         }
 
       out_ops[ch] = mod;
