@@ -37,7 +37,7 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
       chv->combobox = new ComboBoxOperator (morph_output->morph_plan(), &op_filter_instance);
 
       grid_layout->addWidget (chv->label, ch, 0);
-      grid_layout->addWidget (chv->combobox, ch, 1);
+      grid_layout->addWidget (chv->combobox, ch, 1, 1, 2);
       channels.push_back (chv);
 
       chv->combobox->set_active (morph_output->channel_op (ch));
