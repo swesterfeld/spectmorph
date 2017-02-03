@@ -55,6 +55,13 @@ class LiveDecoder
 
   Rapicorn::AlignedArray<float,16> *sse_samples;
 
+  // unison
+  int                 unison_voices;
+  std::vector<float>  unison_phases[2];
+  std::vector<float>  unison_freq_factor;
+  float               unison_gain;
+  Random              unison_phase_random_gen;
+
   Audio::LoopType     get_loop_type();
 
 public:
@@ -68,6 +75,7 @@ public:
   void enable_original_samples (bool eos);
   void enable_loop (bool eloop);
   void set_noise_seed (int seed);
+  void set_unison_voices (int voices, float detune);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);

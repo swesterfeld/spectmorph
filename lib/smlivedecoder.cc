@@ -64,6 +64,7 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   sse_samples (NULL)
 {
   init_aa_filter();
+  set_unison_voices (1, 0);
   leak_debugger.add (this);
 }
 
@@ -82,6 +83,7 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   sse_samples (NULL)
 {
   init_aa_filter();
+  set_unison_voices (1, 0);
   leak_debugger.add (this);
 }
 
@@ -334,8 +336,11 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               bool lps_zero = (last_pstate == &pstate[0]);
               vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
               const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
+              vector<float>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
+              const vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
 
-              new_pstate.clear();  // clear old partial state
+              new_pstate.clear();         // clear old partial state
+              unison_new_phases.clear();  // and old unison phase information
 
               if (sines_enabled)
                 {
@@ -380,6 +385,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                       /*
                        * increment old_partial as long as there is a better candidate (closer to freq)
                        */
+                      bool freq_match = false;
                       if (!old_pstate.empty())
                         {
                           double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
@@ -398,9 +404,17 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                                 }
                             }
                           const double lfreq = old_pstate[old_partial].freq;
-                          if (fmatch (lfreq, freq))
+                          freq_match = fmatch (lfreq, freq);
+                        }
+                      if (DEBUG)
+                        printf ("%zd:F %.17g %.17g\n", env_pos, freq, mag);
+
+                      if (unison_voices == 1)
+                        {
+                          if (freq_match)
                             {
                               // matching freq -> compute new phase
+                              const double lfreq = old_pstate[old_partial].freq;
                               const double lphase = old_pstate[old_partial].phase;
 
                               phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
@@ -408,11 +422,33 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
                               if (DEBUG)
                                 printf ("%zd:L %.17g %.17g %.17g\n", env_pos, lfreq, freq, mag);
                             }
+                          ifft_synth->render_partial (freq, mag, phase);
                         }
-                      if (DEBUG)
-                        printf ("%zd:F %.17g %.17g\n", env_pos, freq, mag);
+                      else
+                        {
+                          mag *= unison_gain;
 
-                      ifft_synth->render_partial (freq, mag, phase);
+                          for (int i = 0; i < unison_voices; i++)
+                            {
+                              if (freq_match)
+                                {
+                                  const double lfreq = old_pstate[old_partial].freq;
+                                  const double lphase = unison_old_phases[old_partial * unison_voices + i];
+
+                                  phase = fmod (lphase + lfreq * phase_factor * unison_freq_factor[i], 2 * M_PI);
+                                }
+                              else
+                                {
+                                  // randomize start phase for unison
+
+                                  phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
+                                }
+
+                              ifft_synth->render_partial (freq * unison_freq_factor[i], mag, phase);
+
+                              unison_new_phases.push_back (phase);
+                            }
+                        }
 
                       PartialState ps;
                       ps.freq = freq;
@@ -537,5 +573,53 @@ LiveDecoder::get_loop_type()
   else
     {
       return Audio::LOOP_NONE;
+    }
+}
+
+void
+LiveDecoder::set_unison_voices (int voices, float detune)
+{
+  assert (voices > 0);
+
+  unison_voices = voices;
+
+  if (voices == 1)
+    return;
+
+  /* setup unison frequency factors for unison voices */
+  unison_freq_factor.resize (voices);
+
+  for (size_t i = 0; i < unison_freq_factor.size(); i++)
+    {
+      const float detune_cent = -detune/2 + i / float (voices - 1) * detune;
+      unison_freq_factor[i] = pow (2, detune_cent / 1200);
+    }
+
+  /* compensate gain created by adding multiple copies
+   *
+   * we found that the gain caused by the unison effect can be approximated:
+   *   2 copies -> approximately 3 dB gain
+   *   4 copies -> approximately 6 dB gain
+   *   8 copies -> approximately 9 dB gain
+   * ...
+   */
+  const double unison_gain_db = (log (voices)/log (2)) * 3;
+  unison_gain = 1 / bse_db_to_factor (unison_gain_db);
+
+  /* resize unison phase array to match pstate */
+  const bool lps_zero = (last_pstate == &pstate[0]);
+  const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
+  vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
+
+  if (unison_old_phases.size() != old_pstate.size() * unison_voices)
+    {
+      unison_old_phases.resize (old_pstate.size() * unison_voices);
+
+      for (float& phase : unison_old_phases)
+        {
+          /* since the position of the partials changed, randomization is really
+           * the best we can do here */
+          phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
+        }
     }
 }
