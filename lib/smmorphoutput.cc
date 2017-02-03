@@ -24,6 +24,10 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_sines = true;
   m_noise = true;
 
+  m_unison = false;
+  m_unison_voices = 2;
+  m_unison_detune = 6.0;
+
   leak_debugger.add (this);
 }
 
@@ -58,6 +62,9 @@ MorphOutput::save (OutFile& out_file)
     }
   out_file.write_bool ("sines", m_sines);
   out_file.write_bool ("noise", m_noise);
+  out_file.write_bool ("unison", m_unison);
+  out_file.write_int ("unison_voices", m_unison_voices);
+  out_file.write_float ("unison_detune", m_unison_detune);
   return true;
 }
 
@@ -90,9 +97,37 @@ MorphOutput::load (InFile& ifile)
             {
               m_noise = ifile.event_bool();
             }
+          else if (ifile.event_name() == "unison")
+            {
+              m_unison = ifile.event_bool();
+            }
           else
             {
               g_printerr ("bad bool\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::INT)
+        {
+          if (ifile.event_name() == "unison_voices")
+            {
+              m_unison_voices = ifile.event_int();
+            }
+          else
+            {
+              g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::FLOAT)
+        {
+          if (ifile.event_name() == "unison_detune")
+            {
+              m_unison_detune = ifile.event_float();
+            }
+          else
+            {
+              g_printerr ("bad float\n");
               return false;
             }
         }
@@ -166,6 +201,50 @@ void
 MorphOutput::set_noise (bool en)
 {
   m_noise = en;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+//---- unison effect ----
+
+bool
+MorphOutput::unison()
+{
+  return m_unison;
+}
+
+void
+MorphOutput::set_unison (bool eu)
+{
+  m_unison = eu;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphOutput::unison_voices() const
+{
+  return m_unison_voices;
+}
+
+void
+MorphOutput::set_unison_voices (int voices)
+{
+  m_unison_voices = voices;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::unison_detune() const
+{
+  return m_unison_detune;
+}
+
+void
+MorphOutput::set_unison_detune (float detune)
+{
+  m_unison_detune = detune;
 
   m_morph_plan->emit_plan_changed();
 }
