@@ -180,9 +180,14 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       original_sample_pos = 0;
       original_samples_norm_factor = bse_db_to_factor (audio->original_samples_norm_db);
 
+      // reset partial state vectors
       pstate[0].clear();
       pstate[1].clear();
       last_pstate = &pstate[0];
+
+      // reset unison phases
+      unison_phases[0].clear();
+      unison_phases[1].clear();
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
@@ -339,6 +344,11 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
               vector<float>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
               const vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
 
+              if (unison_voices != 1)
+                {
+                  // check unison phases size corresponds to old partial state size
+                  assert (unison_voices * old_pstate.size() == unison_old_phases.size());
+                }
               new_pstate.clear();         // clear old partial state
               unison_new_phases.clear();  // and old unison phase information
 
