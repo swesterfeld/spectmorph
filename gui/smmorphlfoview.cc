@@ -100,7 +100,7 @@ MorphLFOView::MorphLFOView (MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_win
   grid_layout->addWidget (sync_voices_box, 5, 0, 1, 3);
   connect (sync_voices_box, SIGNAL (toggled (bool)), this, SLOT (on_sync_voices_changed (bool)));
 
-  setLayout (grid_layout);
+  set_body_layout (grid_layout);
 }
 
 void

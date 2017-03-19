@@ -22,7 +22,7 @@ MorphSourceView::MorphSourceView (MorphSource *morph_source, MorphPlanWindow *mo
   hbox->addWidget (instrument_label);
   hbox->addWidget (instrument_combobox, 1);
 
-  setLayout (hbox);
+  set_body_layout (hbox);
 
   on_index_changed();
   connect (morph_source->morph_plan(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));

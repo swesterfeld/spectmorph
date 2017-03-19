@@ -92,7 +92,7 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
   connect (unison_check_box, SIGNAL (toggled (bool)), this, SLOT (on_unison_changed (bool)));
-  setLayout (grid_layout);
+  set_body_layout (grid_layout);
 }
 
 void

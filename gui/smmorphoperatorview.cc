@@ -5,8 +5,10 @@
 #include "smrenameoperatordialog.hh"
 
 #include <QGroupBox>
+#include <QLabel>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QToolButton>
 
 using namespace SpectMorph;
 
@@ -17,6 +19,12 @@ MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_
   morph_plan_window (morph_plan_window),
   in_move (false)
 {
+  setObjectName ("operator-view");
+
+  head_label = new QLabel();
+  head_label->setAlignment (Qt::AlignCenter);
+  head_label->setStyleSheet ("font-weight: bold;");
+
   QAction *action;
   context_menu = new QMenu ("Operator Context Menu", this);
   action = context_menu->addAction ("Rename");
@@ -31,11 +39,48 @@ MorphOperatorView::MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_
 }
 
 void
+MorphOperatorView::set_body_layout (QLayout *body_layout)
+{
+  body_widget = new QWidget ();
+  body_widget->setLayout (body_layout);
+
+  QGridLayout *hb_layout = new QGridLayout();
+
+  fold_button = new QToolButton();
+  fold_button->setArrowType (Qt::RightArrow);
+  fold_button->setStyleSheet ("QToolButton { border: none; }");
+  fold_button->setToolButtonStyle (Qt::ToolButtonTextBesideIcon);
+  connect (fold_button, SIGNAL (clicked()), this, SLOT (on_fold_clicked()));
+
+  hb_layout->addWidget (head_label, 0, 0, 1, 2);
+  hb_layout->addWidget (fold_button, 0, 0);
+  hb_layout->addWidget (body_widget, 1, 0, 1, 2);
+  setLayout (hb_layout);
+
+  update_body_visible();
+}
+
+void
+MorphOperatorView::on_fold_clicked()
+{
+  m_op->set_folded (!m_op->folded());
+
+  update_body_visible();
+}
+
+void
+MorphOperatorView::update_body_visible()
+{
+  body_widget->setVisible (!m_op->folded());
+  fold_button->setArrowType (m_op->folded() ? Qt::RightArrow : Qt::DownArrow);
+}
+
+void
 MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
 
-  setTitle (title.c_str());
+  head_label->setText (title.c_str());
 }
 
 void

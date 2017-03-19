@@ -205,7 +205,7 @@ MorphGridView::MorphGridView (MorphGrid *morph_grid, MorphPlanWindow *morph_plan
   grid->addWidget (delta_db_slider, 8, 1);
   grid->addWidget (delta_db_label, 8, 2);
 
-  setLayout (grid);
+  set_body_layout (grid);
 
   connect (grid_widget, SIGNAL (selection_changed()), this, SLOT (on_selection_changed()));
   connect (width_spinbox, SIGNAL (valueChanged (int)), this, SLOT (on_size_changed()));

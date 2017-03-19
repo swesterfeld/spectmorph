@@ -16,6 +16,8 @@ MorphPlanView::MorphPlanView (MorphPlan *morph_plan, MorphPlanWindow *morph_plan
   morph_plan_window (morph_plan_window),
   need_view_rebuild (true)
 {
+  setStyleSheet ("QFrame#operator-view { border: 1px solid grey; border-radius: 5px;}");
+
   vbox = new QVBoxLayout();
   setLayout (vbox);
 

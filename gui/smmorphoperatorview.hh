@@ -6,16 +6,20 @@
 #include "smmorphplanwindow.hh"
 
 #include <QGroupBox>
+#include <QToolButton>
 
 namespace SpectMorph
 {
 
 class MorphOperator;
-class MorphOperatorView : public QGroupBox
+class MorphOperatorView : public QFrame
 {
   Q_OBJECT
 protected:
+  QLabel           *head_label;
+  QWidget          *body_widget;
   QMenu            *context_menu;
+  QToolButton      *fold_button;
   MorphOperator    *m_op;
   MorphPlanWindow  *morph_plan_window;
   bool              remove;
@@ -25,6 +29,9 @@ protected:
   void mousePressEvent (QMouseEvent *event);
   void mouseMoveEvent (QMouseEvent *event);
   void mouseReleaseEvent (QMouseEvent *event);
+
+  void set_body_layout (QLayout *layout);
+  void update_body_visible();
 
 public:
   MorphOperatorView (MorphOperator *op, MorphPlanWindow *morph_plan_window);
@@ -37,6 +44,7 @@ public slots:
   void on_operators_changed();
   void on_rename();
   void on_remove();
+  void on_fold_clicked();
 
 signals:
   void move_indication (MorphOperator *op);

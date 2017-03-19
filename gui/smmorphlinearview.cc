@@ -105,7 +105,7 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
 
   update_slider();
 
-  setLayout (grid_layout);
+  set_body_layout (grid_layout);
 }
 
 void
