@@ -31,6 +31,7 @@ bool
 VstUI::open (WId win_id)
 {
   widget = new MorphPlanWindow (morph_plan, "!title!");
+  connect (widget, SIGNAL (update_size()), this, SLOT (on_update_window_size()));
 
   control_widget = new MorphPlanControl (morph_plan);
   control_widget->set_volume (plugin->volume());
@@ -80,8 +81,6 @@ void
 VstUI::on_plan_changed()
 {
   plugin->change_plan (morph_plan->clone());
-
-  QTimer::singleShot (20, this, SLOT (on_update_window_size()));
 }
 
 void
