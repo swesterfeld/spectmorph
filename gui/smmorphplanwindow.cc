@@ -11,6 +11,8 @@
 #include <QFileDialog>
 #include <QTimer>
 #include <QScrollBar>
+#include <QScreen>
+#include <QGuiApplication>
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
@@ -31,6 +33,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::min;
 
 MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
   win_title (title),
@@ -269,5 +272,7 @@ void
 MorphPlanWindow::on_update_window_size()
 {
   /* FIXME: these add-on pixel sizes are not really computed */
-  resize (morph_plan_view->sizeHint().width() + 150, morph_plan_view->sizeHint().height() + 50);
+  QScreen *screen = QGuiApplication::primaryScreen();
+  int max_height = screen->size().height() * 0.7;
+  setMinimumSize (morph_plan_view->sizeHint().width() + 150, min (max_height, morph_plan_view->sizeHint().height() + 50));
 }
