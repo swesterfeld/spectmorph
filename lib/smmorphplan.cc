@@ -71,7 +71,8 @@ MorphPlan::load_index (const string& filename)
 }
 
 void
-MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_name, const string& load_id)
+MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_name, const string& load_id,
+                         bool load_folded)
 {
   if (load_name == "")
     {
@@ -107,6 +108,7 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
     {
       op->set_id (load_id);
     }
+  op->set_folded (load_folded);
 
   if (add_pos == ADD_POS_AUTO)
     {
@@ -162,6 +164,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   MorphOperator *load_op = NULL;
   string         load_name;
   string         load_id;
+  bool           load_folded = false;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
@@ -211,6 +214,16 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
                 }
             }
         }
+      else if (ifile.event() == InFile::BOOL)
+        {
+          if (section == "operator")
+            {
+              if (ifile.event_name() == "folded")
+                {
+                  load_folded = ifile.event_bool();
+                }
+            }
+        }
       else if (ifile.event() == InFile::BLOB)
         {
           if (section == "operator")
@@ -233,7 +246,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
 
                   delete in; // close memory file handle
 
-                  add_operator (load_op, ADD_POS_END, load_name, load_id);
+                  add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
                 }
             }
         }
@@ -253,7 +266,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
 
                   delete in; // close memory file handle
 
-                  add_operator (load_op, ADD_POS_END, load_name, load_id);
+                  add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
                 }
             }
         }
@@ -361,6 +374,7 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
       of.write_string ("type", op->type());
       of.write_string ("name", op->name());
       of.write_string ("id", op->id());
+      of.write_bool ("folded", op->folded());
 
       vector<unsigned char> op_data;
       MemOut                op_mo (&op_data);

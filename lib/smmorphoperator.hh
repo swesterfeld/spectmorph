@@ -23,6 +23,7 @@ protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;
   std::string m_id;
+  bool        m_folded;
 
   typedef std::map<std::string, MorphOperator *> OpNameMap;
 
@@ -55,6 +56,9 @@ public:
 
   std::string id();
   void set_id (const std::string& id);
+
+  bool folded() const;
+  void set_folded (bool folded);
 
   static MorphOperator *create (const std::string& type, MorphPlan *plan);
 };

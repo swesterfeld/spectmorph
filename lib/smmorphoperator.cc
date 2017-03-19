@@ -13,6 +13,7 @@ using std::map;
 MorphOperator::MorphOperator (MorphPlan *morph_plan) :
   m_morph_plan (morph_plan)
 {
+  m_folded = false;
 }
 
 MorphOperator::~MorphOperator()
@@ -52,6 +53,20 @@ void
 MorphOperator::set_id (const string& id)
 {
   m_id = id;
+}
+
+bool
+MorphOperator::folded() const
+{
+  return m_folded;
+}
+
+void
+MorphOperator::set_folded (bool folded)
+{
+  m_folded = folded;
+
+  m_morph_plan->emit_plan_changed();
 }
 
 void

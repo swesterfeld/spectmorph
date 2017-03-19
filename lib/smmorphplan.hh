@@ -42,7 +42,7 @@ public:
     ADD_POS_END
   };
 
-  void add_operator (MorphOperator *op, AddPos = ADD_POS_END, const std::string& name = "", const std::string& id = "");
+  void add_operator (MorphOperator *op, AddPos = ADD_POS_END, const std::string& name = "", const std::string& id = "", bool load_folded = false);
   const std::vector<MorphOperator *>& operators();
   void remove (MorphOperator *op);
   void move (MorphOperator *op, MorphOperator *op_next);
