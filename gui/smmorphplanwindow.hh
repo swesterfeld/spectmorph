@@ -18,6 +18,7 @@
 #include <QWidget>
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QScrollArea>
 
 namespace SpectMorph
 {
@@ -30,6 +31,7 @@ class MorphPlanWindow : public QMainWindow
   std::string    win_title;
   MorphPlanPtr   m_morph_plan;
   MorphPlanView *morph_plan_view;
+  QScrollArea   *scroll_area;
 
   void add_op_action (QMenu *menu, const char *title, const char *type);
   void fill_template_menu (QMenu *menu);

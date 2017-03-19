@@ -82,6 +82,8 @@ MorphPlanView::on_plan_changed()
       move_indicators.push_back (indicator);
     }
 
+  vbox->addStretch (1);
+
   // control widgets
   for (vector<QWidget *>::const_iterator ci = control_widgets.begin(); ci != control_widgets.end(); ci++)
     {

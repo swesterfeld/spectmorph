@@ -10,6 +10,7 @@
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QTimer>
+#include <QScrollBar>
 
 #include "smmain.hh"
 #include "smmorphplan.hh"
@@ -66,8 +67,12 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   fill_template_menu (load_template_menu);
 
   /* central widget */
+  scroll_area = new QScrollArea();
+
   morph_plan_view = new MorphPlanView (morph_plan.c_ptr(), this);
-  setCentralWidget (morph_plan_view);
+  scroll_area->setWidget (morph_plan_view);
+  scroll_area->setWidgetResizable (true);
+  setCentralWidget (scroll_area);
   update_window_title();
 
   connect (morph_plan_view, SIGNAL (view_widgets_changed()), this, SLOT (on_view_widgets_changed()));
@@ -263,5 +268,6 @@ MorphPlanWindow::on_view_widgets_changed()
 void
 MorphPlanWindow::on_update_window_size()
 {
-  resize (minimumWidth(), minimumHeight());
+  /* FIXME: these add-on pixel sizes are not really computed */
+  resize (morph_plan_view->sizeHint().width() + 150, morph_plan_view->sizeHint().height() + 50);
 }
