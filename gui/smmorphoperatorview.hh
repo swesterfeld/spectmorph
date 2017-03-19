@@ -48,6 +48,7 @@ public slots:
 
 signals:
   void move_indication (MorphOperator *op);
+  void need_resize();
 };
 
 }

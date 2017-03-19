@@ -75,6 +75,7 @@ MorphPlanView::on_plan_changed()
       m_op_views.push_back (op_view);
 
       connect (op_view, SIGNAL (move_indication (MorphOperator *)), this, SLOT (on_move_indication (MorphOperator *)));
+      connect (op_view, SIGNAL (need_resize()), morph_plan_window, SLOT (on_need_resize()));
 
       MoveIndicator *indicator = new MoveIndicator();
       vbox->addWidget (indicator);

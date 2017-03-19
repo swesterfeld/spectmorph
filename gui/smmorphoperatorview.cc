@@ -66,6 +66,8 @@ MorphOperatorView::on_fold_clicked()
   m_op->set_folded (!m_op->folded());
 
   update_body_visible();
+
+  Q_EMIT need_resize();
 }
 
 void

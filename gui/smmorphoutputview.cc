@@ -119,6 +119,8 @@ MorphOutputView::on_unison_changed (bool new_value)
   unison_detune_title->setVisible (new_value);
   unison_detune_label->setVisible (new_value);
   unison_detune_slider->setVisible (new_value);
+
+  Q_EMIT need_resize();
 }
 
 void

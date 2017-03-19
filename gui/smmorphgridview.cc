@@ -226,6 +226,8 @@ MorphGridView::on_size_changed()
 {
   morph_grid->set_width (width_spinbox->value());
   morph_grid->set_height (height_spinbox->value());
+
+  Q_EMIT need_resize();
 }
 
 void
@@ -322,4 +324,6 @@ void
 MorphGridView::on_zoom_changed()
 {
   morph_grid->set_zoom (zoom_spinbox->value());
+
+  Q_EMIT need_resize();
 }

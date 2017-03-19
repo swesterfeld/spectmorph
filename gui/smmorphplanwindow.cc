@@ -78,7 +78,7 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   setCentralWidget (scroll_area);
   update_window_title();
 
-  connect (morph_plan_view, SIGNAL (view_widgets_changed()), this, SLOT (on_view_widgets_changed()));
+  connect (morph_plan_view, SIGNAL (view_widgets_changed()), this, SLOT (on_need_resize()));
 }
 
 void
@@ -263,9 +263,10 @@ MorphPlanWindow::add_control_widget (QWidget *widget)
 }
 
 void
-MorphPlanWindow::on_view_widgets_changed()
+MorphPlanWindow::on_need_resize()
 {
-  QTimer::singleShot (0, this, SLOT (on_update_window_size()));
+  // we need to wait a bit, so Qt can figure out how big the morph_plan_view widget actually is
+  QTimer::singleShot (50, this, SLOT (on_update_window_size()));
 }
 
 void
@@ -273,6 +274,9 @@ MorphPlanWindow::on_update_window_size()
 {
   /* FIXME: these add-on pixel sizes are not really computed */
   QScreen *screen = QGuiApplication::primaryScreen();
-  int max_height = screen->size().height() * 0.7;
-  setMinimumSize (morph_plan_view->sizeHint().width() + 150, min (max_height, morph_plan_view->sizeHint().height() + 50));
+  int max_height = screen->size().height() * 0.8;
+  int max_width = screen->size().width() * 0.8;
+  setMinimumSize (min (max_width, morph_plan_view->sizeHint().width() + 150), min (max_height, morph_plan_view->sizeHint().height() + 50));
+  resize (minimumSize());
+  Q_EMIT update_size();
 }

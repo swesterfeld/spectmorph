@@ -51,8 +51,11 @@ public slots:
   void on_load_index_clicked();
   void on_add_operator();
   void on_load_template();
-  void on_view_widgets_changed();
+  void on_need_resize();
   void on_update_window_size();
+
+signals:
+  void update_size();
 };
 
 }
