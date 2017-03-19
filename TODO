@@ -1,14 +1,12 @@
 NEXT RELEASE:
 - remove LPC from UI | insts
 - add .desktop file for smjack
-- foldable operators
 - pan flute
 - homepage updates
 - vst fix (done)
 - ideally: screencast
 - maybe lv2 dirty
 - maybe subharmonic tagging
-- maybe scrolling view
 - why does white noise not sound like white noise?
 
 smenc:
