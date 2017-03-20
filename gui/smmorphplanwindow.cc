@@ -272,7 +272,7 @@ MorphPlanWindow::on_need_resize()
     }
   else
     {
-      // process events until no more events available, to allow Qt to recompute morph_plan_widget size
+      // process events until no more events available, to allow Qt to recompute morph_plan_view widget size
       QCoreApplication::processEvents (QEventLoop::AllEvents, 250);
 
       on_update_window_size();
