@@ -265,8 +265,18 @@ MorphPlanWindow::add_control_widget (QWidget *widget)
 void
 MorphPlanWindow::on_need_resize()
 {
-  // we need to wait a bit, so Qt can figure out how big the morph_plan_view widget actually is
-  QTimer::singleShot (50, this, SLOT (on_update_window_size()));
+  if (0)
+    {
+      // we need to wait a bit, so Qt can figure out how big the morph_plan_view widget actually is
+      QTimer::singleShot (50, this, SLOT (on_update_window_size()));
+    }
+  else
+    {
+      // process events until no more events available, to allow Qt to recompute morph_plan_widget size
+      QCoreApplication::processEvents (QEventLoop::AllEvents, 250);
+
+      on_update_window_size();
+    }
 }
 
 void
