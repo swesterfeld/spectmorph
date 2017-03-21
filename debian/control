@@ -1,0 +1,17 @@
+Source: spectmorph-nobse
+Section: sound
+Priority: optional
+Maintainer: Stefan Westerfeld <stefan@space.twc.de>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, build-essential, libglib2.0-dev
+Standards-Version: 3.9.2
+Homepage: http://www.spectmorph.org
+
+Package: spectmorph-nobse
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: synchronization for collections of big files
+ SpectMorph is designed to morph sounds of musical instruments.
+ .
+ This is a minimal self-contained build, containing only the JACK client,
+ the LV2 plugin and the VST plugin. Support for BEAST and tools required
+ to build new instruments are not included.

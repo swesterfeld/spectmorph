@@ -1,0 +1,5 @@
+spectmorph-nobse (0.3.2) xenial; urgency=low
+
+  * new package for spectmorph 0.3.2
+
+ -- Stefan Westerfeld <stefan@space.twc.de>  Thu, 16 Aug 2012 14:24:33 +0200
