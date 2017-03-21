@@ -1,4 +1,5 @@
 NEXT RELEASE:
+- configure check for boost
 - remove LPC from UI | insts
 - add .desktop file for smjack
 - pan flute
