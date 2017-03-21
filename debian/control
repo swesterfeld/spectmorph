@@ -4,7 +4,8 @@ Priority: optional
 Maintainer: Stefan Westerfeld <stefan@space.twc.de>
 Build-Depends: debhelper (>= 8.0.0), autotools-dev, build-essential,
   libglib2.0-dev, libao-dev, qtbase5-dev, qtbase5-dev-tools,
-  qttools5-dev-tools, libjack-dev, libfftw3-dev, libboost-dev
+  qttools5-dev-tools, libjack-dev, libfftw3-dev, libboost-dev,
+  lv2-dev
 Standards-Version: 3.9.2
 Homepage: http://www.spectmorph.org
 
