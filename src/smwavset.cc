@@ -382,10 +382,10 @@ delta (vector<float>& d0, vector<float>& d1)
 void
 load_or_die (WavSet& wset, string name)
 {
-  Bse::Error error = wset.load (name);
+  Error error = wset.load (name);
   if (error != 0)
     {
-      fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), name.c_str(), bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), name.c_str(), sm_error_blurb (error));
       exit (1);
     }
 }
@@ -510,7 +510,7 @@ main (int argc, char **argv)
       for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
         {
           Audio audio;
-          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != Bse::Error::NONE)
+          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != Error::NONE)
             {
               sm_printf ("can't load %s\n", si->path.c_str());
               exit (1);

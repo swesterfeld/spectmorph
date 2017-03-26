@@ -173,7 +173,7 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::Error error;
+  Error error;
 
   /* figure out file type (we support SpectMorph::WavSet and SpectMorph::Audio) */
   InFile *file = new InFile (argv[1]);
@@ -196,7 +196,7 @@ main (int argc, char **argv)
       error = wset.load (argv[1]);
       if (error != 0)
         {
-          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], sm_error_blurb (error));
           exit (1);
         }
       for (vector<WavSetWave>::iterator wi = wset.waves.begin(); wi != wset.waves.end(); wi++)
@@ -216,7 +216,7 @@ main (int argc, char **argv)
       error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
       if (error != 0)
         {
-          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], sm_error_blurb (error));
           exit (1);
         }
     }

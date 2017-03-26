@@ -48,10 +48,10 @@ main (int argc, char **argv)
     }
 
   SpectMorph::Audio audio;
-  Bse::Error file_error = audio.load (argv[1]);
+  SpectMorph::Error file_error = audio.load (argv[1]);
   if (file_error != 0)
     {
-      fprintf (stderr, "can't read input file: %s\n", bse_error_blurb (file_error));
+      fprintf (stderr, "can't read input file: %s\n", sm_error_blurb (file_error));
       exit (1);
     }
 

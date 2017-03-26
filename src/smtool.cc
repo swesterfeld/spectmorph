@@ -126,7 +126,7 @@ load_or_die (Audio& audio, const string& filename, const string& mode)
       mode == "zero-values-at-start" || mode == "mix-freq")
     load_options = AUDIO_SKIP_DEBUG;
 
-  Bse::Error error = audio.load (filename, load_options);
+  Error error = audio.load (filename, load_options);
   if (error != 0)
     {
       fprintf (stderr, "can't load file: %s\n",filename.c_str());
@@ -1263,7 +1263,7 @@ main (int argc, char **argv)
   else if (file_type == "SpectMorph::WavSet")
     {
       wav_set = new WavSet;
-      Bse::Error error = wav_set->load (argv[1]);
+      Error error = wav_set->load (argv[1]);
       if (error != 0)
         {
           fprintf (stderr, "smtool: can't load file: %s\n", argv[1]);
@@ -1330,12 +1330,12 @@ main (int argc, char **argv)
     }
   if (need_save)
     {
-      if (audio && audio->save (argv[1]) != Bse::Error::NONE)
+      if (audio && audio->save (argv[1]) != Error::NONE)
         {
           fprintf (stderr, "error saving audio file: %s\n", argv[1]);
           return 1;
         }
-      if (wav_set && wav_set->save (argv[1]) != Bse::Error::NONE)
+      if (wav_set && wav_set->save (argv[1]) != Error::NONE)
         {
           fprintf (stderr, "error saving wavset file: %s\n", argv[1]);
           return 1;
