@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=SpectMorph Jack Client
+GenericName=SpectMorph Instrument
+Comment=SpectMorph Sound Morphing standalone Jack Client
+Icon=smjack.png
+TryExec=smjack
+Exec=smjack %F
+Terminal=false
+Categories=Audio;AudioVideo;Music;Midi
+#MimeType=audio/x-bse;audio/x-bsewave;
