@@ -255,7 +255,7 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      Bse::Error error;
+      Error error;
 
       GenericIn *file = GenericIn::open (argv[1]);
       if (file)
@@ -265,11 +265,11 @@ main (int argc, char **argv)
         }
       else
         {
-          error = Bse::Error::FILE_NOT_FOUND;
+          error = Error::FILE_NOT_FOUND;
         }
       if (error != 0)
         {
-          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], bse_error_blurb (error));
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], sm_error_blurb (error));
           exit (1);
         }
       filename = argv[1];
