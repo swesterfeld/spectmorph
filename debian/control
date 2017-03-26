@@ -1,4 +1,4 @@
-Source: spectmorph-nobse
+Source: spectmorph-minimal
 Section: sound
 Priority: optional
 Maintainer: Stefan Westerfeld <stefan@space.twc.de>
@@ -9,7 +9,7 @@ Build-Depends: debhelper (>= 8.0.0), autotools-dev, build-essential,
 Standards-Version: 3.9.2
 Homepage: http://www.spectmorph.org
 
-Package: spectmorph-nobse
+Package: spectmorph-minimal
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: synchronization for collections of big files

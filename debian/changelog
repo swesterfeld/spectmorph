@@ -1,4 +1,4 @@
-spectmorph-nobse (0.3.2) xenial; urgency=low
+spectmorph-minimal (0.3.2) xenial; urgency=low
 
   * new package for spectmorph 0.3.2
 

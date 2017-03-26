@@ -14,7 +14,7 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-DSC=../../spectmorph-nobse_0.3.2.dsc
+DSC=../../spectmorph-minimal_0.3.2.dsc
 
 unset CC
 unset CXX
@@ -33,6 +33,12 @@ do
                --architecture $ARCH    \
                --basetgz $BASETGZ
     fi
+
+    echo "----------------------------------------------------------------"
+    echo "---- building from $DSC"
+    echo "---- dist $DIST, arch $ARCH"
+    echo "----------------------------------------------------------------"
+
     pbuilder --build                \
              --distribution $DIST   \
              --architecture $ARCH   \
