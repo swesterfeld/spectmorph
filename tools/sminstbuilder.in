@@ -270,8 +270,6 @@ def parse_builder_config (filename):
     die ("output-dir command must occur exactly once in config")
   if builder_config.jobs_count != 1:
     die ("jobs command must occur exactly once in config")
-  if builder_config.lpc_order_count != 1:
-    die ("lpc-order command must occur exactly once in config")
   return builder_config
 
 def system_or_die (command):
@@ -398,7 +396,8 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
     system_or_die ("smtool %s global-volume %s" % (final_smset, config.global_volume))
 
   # lpc generation needs to be done after auto tuning
-  system_or_die ("smtool %s lpc %d" % (final_smset, builder_config.lpc_order))
+  if (builder_config.lpc_order_count > 0):
+    system_or_die ("smtool %s lpc %d" % (final_smset, builder_config.lpc_order))
 
   system_or_die ("smwavset set-names %s '%s' '%s'" % (final_smset, config.name, config.short_name))
   system_or_die ("ls -l %s" % final_smset);
