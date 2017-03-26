@@ -220,6 +220,10 @@ fi
 AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
 dnl -------------------------------------------------------------------------
 
+# need boost basic linear algebra for LPC
+BOOST_REQUIRE
+BOOST_NUMERIC_UBLAS
+
 AC_AO_REQUIREMENTS
 AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
