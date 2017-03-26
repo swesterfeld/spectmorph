@@ -72,7 +72,8 @@ VstUI::close()
 void
 VstUI::idle()
 {
-  control_widget->set_led (plugin->voices_active());
+  if (control_widget)
+    control_widget->set_led (plugin->voices_active());
 
   QApplication::processEvents();
 }
