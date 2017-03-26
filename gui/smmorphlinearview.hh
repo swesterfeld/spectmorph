@@ -40,7 +40,9 @@ public slots:
   void on_control_changed();
   void on_operator_changed();
   void on_db_linear_changed (bool new_value);
+#if SPECTMORPH_SUPPORT_LPC
   void on_use_lpc_changed (bool new_value);
+#endif
 };
 
 }

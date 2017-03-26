@@ -97,11 +97,13 @@ MorphLinearView::MorphLinearView (MorphLinear *morph_linear, MorphPlanWindow *mo
   grid_layout->addWidget (db_linear_box, 4, 0, 1, 2);
   connect (db_linear_box, SIGNAL (toggled (bool)), this, SLOT (on_db_linear_changed (bool)));
 
+#if SPECTMORPH_SUPPORT_LPC
   // FLAG: USE LPC
   QCheckBox *use_lpc_box = new QCheckBox ("Use LPC Envelope");
   use_lpc_box->setChecked (morph_linear->use_lpc());
   grid_layout->addWidget (use_lpc_box, 5, 0, 1, 2);
   connect (use_lpc_box, SIGNAL (toggled (bool)), this, SLOT (on_use_lpc_changed (bool)));
+#endif
 
   update_slider();
 
@@ -169,8 +171,10 @@ MorphLinearView::on_db_linear_changed (bool new_value)
   morph_linear->set_db_linear (new_value);
 }
 
+#if SPECTMORPH_SUPPORT_LPC
 void
 MorphLinearView::on_use_lpc_changed (bool new_value)
 {
   morph_linear->set_use_lpc (new_value);
 }
+#endif
