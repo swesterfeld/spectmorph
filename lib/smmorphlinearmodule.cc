@@ -261,7 +261,9 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       LPC::LSFEnvelope left_env, right_env, interp_env;
 
-      if (left_block.lpc_lsf_p.size() == lsf_order &&
+      if (SPECTMORPH_SUPPORT_LPC &&
+          lsf_order > 0 &&
+          left_block.lpc_lsf_p.size() == lsf_order &&
           left_block.lpc_lsf_q.size() == lsf_order &&
           right_block.lpc_lsf_p.size() == lsf_order &&
           right_block.lpc_lsf_p.size() == lsf_order &&

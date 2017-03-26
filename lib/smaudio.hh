@@ -11,6 +11,7 @@
 #include "smmath.hh"
 
 #define SPECTMORPH_BINARY_FILE_VERSION 13
+#define SPECTMORPH_SUPPORT_LPC         0
 
 namespace SpectMorph
 {
