@@ -1,13 +1,13 @@
 NEXT RELEASE:
 - configure check for boost
 - remove LPC from UI | insts
-- add .desktop file for smjack
-- pan flute
 - homepage updates
-- vst fix (done)
 - ideally: screencast
-- maybe lv2 dirty
+- can error blurb nobse cause crash?
+
+NEXT NEXT RELEASE:
 - maybe subharmonic tagging
+- maybe lv2 dirty
 - why does white noise not sound like white noise?
 
 smenc:
