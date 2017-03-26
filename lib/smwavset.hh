@@ -37,8 +37,8 @@ public:
 
   void clear();
 
-  Bse::Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  Bse::Error save (const std::string& filename, bool embed_models = false);
+  Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error save (const std::string& filename, bool embed_models = false);
 };
 
 }

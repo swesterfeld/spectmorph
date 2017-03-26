@@ -9,6 +9,7 @@
 #include "smgenericin.hh"
 #include "smgenericout.hh"
 #include "smmath.hh"
+#include "smutils.hh"
 
 #define SPECTMORPH_BINARY_FILE_VERSION 13
 #define SPECTMORPH_SUPPORT_LPC         0
@@ -108,10 +109,10 @@ public:
   float    original_samples_norm_db;    //!< normalization factor to be applied to original samples
   std::vector<AudioBlock> contents;     //!< the actual frame data
 
-  Bse::Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  Bse::Error load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  Bse::Error save (const std::string& filename) const;
-  Bse::Error save (SpectMorph::GenericOut *file) const;
+  Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error save (const std::string& filename) const;
+  Error save (SpectMorph::GenericOut *file) const;
 
   Audio *clone() const; // create a deep copy
 

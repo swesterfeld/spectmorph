@@ -18,8 +18,9 @@ using std::set;
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
 using SpectMorph::MemOut;
+using SpectMorph::Error;
 
-Bse::Error
+Error
 WavSet::save (const string& filename, bool embed_models)
 {
   OutFile of (filename.c_str(), "SpectMorph::WavSet", SPECTMORPH_BINARY_FILE_VERSION);
@@ -82,10 +83,10 @@ WavSet::save (const string& filename, bool embed_models)
         }
       of.end_section();
     }
-  return Bse::Error::NONE;
+  return Error::NONE;
 }
 
-Bse::Error
+Error
 WavSet::load (const string& filename, AudioLoadOptions load_options)
 {
   clear();        // delete old contents (if any)
@@ -98,13 +99,13 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
   string section;
 
   if (!ifile.open_ok())
-    return Bse::Error::FILE_NOT_FOUND;
+    return Error::FILE_NOT_FOUND;
 
   if (ifile.file_type() != "SpectMorph::WavSet")
-    return Bse::Error::FORMAT_INVALID;
+    return Error::FORMAT_INVALID;
 
   if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
-    return Bse::Error::FORMAT_INVALID;
+    return Error::FORMAT_INVALID;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -236,7 +237,7 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
-          return Bse::Error::PARSE_ERROR;
+          return Error::PARSE_ERROR;
         }
       else
         {
@@ -244,7 +245,7 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
         }
       ifile.next_event();
     }
-  return Bse::Error::NONE;
+  return Error::NONE;
 }
 
 WavSetWave::WavSetWave()

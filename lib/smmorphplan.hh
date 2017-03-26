@@ -7,6 +7,7 @@
 #include "smmorphoperator.hh"
 #include "smobject.hh"
 #include "smaudio.hh"
+#include "smutils.hh"
 
 namespace SpectMorph
 {
@@ -51,8 +52,8 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  Bse::Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
-  Bse::Error load (GenericIn *in, ExtraParameters *params = nullptr);
+  Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
+  Error load (GenericIn *in, ExtraParameters *params = nullptr);
 
   MorphPlan *clone() const; // create a deep copy
 
