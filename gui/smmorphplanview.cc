@@ -60,6 +60,13 @@ MorphPlanView::on_plan_changed()
     delete *mi;
   move_indicators.clear();
 
+  // remove old layout items (should be only one stretch item):
+  while (vbox->count() != 0)
+    {
+      QLayoutItem *child = vbox->takeAt (0);
+      delete child;
+    }
+
   // first move indicator
   {
     MoveIndicator *indicator = new MoveIndicator();
