@@ -16,7 +16,14 @@ MorphPlanControl::MorphPlanControl (MorphPlanPtr plan, Features f) :
   midi_led (nullptr),
   inst_status (nullptr)
 {
+  setObjectName ("operator-view");
+
   QGridLayout *grid = new QGridLayout (this);
+
+  QLabel *head_label = new QLabel ("Global Instrument Settings");
+  head_label->setAlignment (Qt::AlignCenter);
+  head_label->setStyleSheet ("font-weight: bold;");
+
   if (f == ALL_WIDGETS)
     {
       QLabel *volume_label = new QLabel ("Volume", this);
@@ -31,24 +38,27 @@ MorphPlanControl::MorphPlanControl (MorphPlanPtr plan, Features f) :
       midi_led = new Led();
       midi_led->off();
 
-      grid->addWidget (volume_label, 0, 0);
-      grid->addWidget (volume_slider, 0, 1);
-      grid->addWidget (volume_value_label, 0, 2);
-      grid->addWidget (midi_led, 0, 3);
+      grid->addWidget (head_label, 0, 0, 1, 4);
+
+      grid->addWidget (volume_label, 1, 0);
+      grid->addWidget (volume_slider, 1, 1);
+      grid->addWidget (volume_value_label, 1, 2);
+      grid->addWidget (midi_led, 1, 3);
 
       volume_value_label->setMinimumSize (volume_label->fontMetrics().boundingRect ("-XX.X dB").size());
       volume_value_label->setAlignment (Qt::AlignRight | Qt::AlignVCenter);
 
       inst_status = new QLabel();
-      grid->addWidget (inst_status, 1, 0, 1, 4);
+      grid->addWidget (inst_status, 2, 0, 1, 4);
     }
   else
     {
       inst_status = new QLabel();
+
+      grid->addWidget (head_label);
       grid->addWidget (inst_status);
     }
   setLayout (grid);
-  setTitle ("Global Instrument Settings");
 
   connect (plan.c_ptr(), SIGNAL (index_changed()), this, SLOT (on_index_changed()));
 

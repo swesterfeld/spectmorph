@@ -13,7 +13,7 @@
 namespace SpectMorph
 {
 
-class MorphPlanControl : public QGroupBox
+class MorphPlanControl : public QFrame
 {
   Q_OBJECT
 
