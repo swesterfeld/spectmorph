@@ -43,6 +43,7 @@ MorphOperatorView::set_body_layout (QLayout *body_layout)
 {
   body_widget = new QWidget ();
   body_widget->setLayout (body_layout);
+  body_layout->setContentsMargins (0, 0, 0, 0);
 
   QGridLayout *hb_layout = new QGridLayout();
 
