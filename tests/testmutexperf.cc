@@ -39,6 +39,7 @@ main (int argc, char **argv)
     double end = gettime();
     printf ("%20s %.2f mlocks/sec\n", "QMutex", runs / (end - start) / (1000 * 1000));
   }
+#if 0
   {
     Bse::Mutex bmutex;
 
@@ -55,4 +56,5 @@ main (int argc, char **argv)
     double end = gettime();
     printf ("%20s %.2f mlocks/sec\n", "Bse::Mutex", runs / (end - start) / (1000 * 1000));
   }
+#endif
 }

@@ -7,6 +7,9 @@ NEXT NEXT RELEASE:
 - maybe lv2 dirty
 - why does white noise not sound like white noise?
 
+PORTING:
+- testmutexperf should also test std::mutex stuff
+
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
