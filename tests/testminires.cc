@@ -69,6 +69,12 @@ scan (int high_sr, int sr, bool use_ppi)
     }
 }
 
+double
+complex_abs (double re, double im)
+{
+  return sqrt (re * re + im * im);
+}
+
 void
 error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 {
@@ -94,7 +100,7 @@ error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 
   for (guint i = 0; i < FFT_SIZE/2; i++)
     {
-      const double normalized_error = bse_complex_abs (bse_complex (fft_out[i * 2], fft_out[i * 2 + 1])) / normalize;
+      const double normalized_error = complex_abs (fft_out[i * 2], fft_out[i * 2 + 1]) / normalize;
       const double normalized_error_db = 20 * log (normalized_error) / log (10);
 
       printf ("%f %f\n", i / double (FFT_SIZE) * 44100, normalized_error_db);
