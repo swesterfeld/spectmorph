@@ -51,6 +51,18 @@ bse_error_blurb (Bse::Error error_value)
 }
 
 Bse::Error
+bse_error_from_errno (gint v_errno, Bse::Error fallback)
+{
+  NO_BSE_NO_IMPL (bse_error_from_errno);
+}
+
+void
+sfi_error (const char *msg, ...)
+{
+  NO_BSE_NO_IMPL (sfi_error);
+}
+
+Bse::Error
 gsl_data_handle_open (GslDataHandle *dhandle)
 {
   NO_BSE_NO_IMPL (gsl_data_handle_open);
@@ -120,11 +132,41 @@ gsl_data_handle_peek_value (GslDataHandle	*dhandle,
   NO_BSE_NO_IMPL (gsl_data_handle_peek_value);
 }
 
+gint /* errno */
+gsl_data_handle_dump_wav	    (GslDataHandle		*dhandle,
+				     gint			 fd,
+				     guint			 n_bits,
+				     guint			 n_channels,
+				     guint			 sample_freq)
+{
+  NO_BSE_NO_IMPL (gsl_data_handle_peek_value);
+}
+
 GslDataHandle*
 bse_data_handle_new_upsample2 (GslDataHandle  *src_handle,	// implemented in bsedatahandle-resample.cc
 			       int             precision_bits)
 {
   NO_BSE_NO_IMPL (bse_data_handle_new_upsample2);
+}
+
+GslDataHandle*
+bse_data_handle_new_fir_highpass  (GslDataHandle *src_handle,		// implemented in bsedatahandle-fir.cc
+				   gdouble        cutoff_freq,
+				   guint          order)
+{
+  NO_BSE_NO_IMPL (bse_data_handle_new_fir_highpass);
+}
+
+GslDataHandle*
+gsl_data_handle_ref		    (GslDataHandle	  *dhandle)
+{
+  NO_BSE_NO_IMPL (gsl_data_handle_ref);
+}
+
+void
+gsl_data_handle_unref		    (GslDataHandle	  *dhandle)
+{
+  NO_BSE_NO_IMPL (gsl_data_handle_unref);
 }
 
 gdouble
@@ -160,7 +202,7 @@ bse_fpu_okround()
 }
 
 double
-bse_window_cos (double x)
+bse_window_cos (double x) /* von Hann window */
 {
   if (fabs (x) > 1)
     return 0;
@@ -173,6 +215,15 @@ bse_window_blackman (double x)
   if (fabs (x) > 1)
     return 0;
   return 0.42 + 0.5 * cos (M_PI * x) + 0.08 * cos (2.0 * M_PI * x);
+}
+
+double
+bse_window_hamming (double x) /* sharp (rectangle) cutoffs at boundaries */
+{
+  if (fabs (x) > 1)
+    return 0;
+
+  return 0.54 + 0.46 * cos (M_PI * x);
 }
 
 void

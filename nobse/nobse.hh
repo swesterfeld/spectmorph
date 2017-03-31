@@ -67,6 +67,10 @@ public:
   {
     return data[pos];
   }
+  size_t size () const
+  {
+    return n_elements;
+  }
 };
 
 }
@@ -150,6 +154,9 @@ RAPICORN_AIDA_ENUM_DEFINE_ARITHMETIC_EQ (Error);
 }
 
 const gchar* bse_error_blurb (Bse::Error error_value);
+Bse::Error   bse_error_from_errno (gint v_errno, Bse::Error fallback);
+
+void sfi_error (const char *msg, ...);
 
 namespace Bse
 {
@@ -198,6 +205,7 @@ struct GslDataHandle
 };
 struct GslDataPeekBuffer
 {
+  int dummy; /* for initialization with { 0, } */
 };
 
 Bse::Error   	  gsl_data_handle_open		    (GslDataHandle	  *dhandle);
@@ -224,12 +232,22 @@ GslDataHandle*	  gsl_data_handle_new_insert	    (GslDataHandle	  *src_handle,
 						     void                (*free) (gpointer values));
 GslDataHandle*	  bse_data_handle_new_upsample2	    (GslDataHandle  *src_handle,	// implemented in bsedatahandle-resample.cc
 						     int             precision_bits);
+GslDataHandle*	  bse_data_handle_new_fir_highpass  (GslDataHandle *src_handle,		// implemented in bsedatahandle-fir.cc
+						     gdouble        cutoff_freq,
+						     guint          order);
 int64		  gsl_data_handle_length	    (GslDataHandle	  *data_handle);
 #define	          gsl_data_handle_n_values(	     dh) \
 						     gsl_data_handle_length (dh)
 float             gsl_data_handle_peek_value        (GslDataHandle	*dhandle,
 						     int64		 position,
 						     GslDataPeekBuffer	*peekbuf);
+gint /* errno */  gsl_data_handle_dump_wav	    (GslDataHandle		*dhandle,
+						     gint			 fd,
+						     guint			 n_bits,
+						     guint			 n_channels,
+						     guint			 sample_freq);
+GslDataHandle*	  gsl_data_handle_ref		    (GslDataHandle	  *dhandle);
+void		  gsl_data_handle_unref		    (GslDataHandle	  *dhandle);
 
 /* --- decibel conversion --- */
 gdouble bse_db_to_factor        (gdouble        dB);
@@ -286,6 +304,7 @@ public:
 /* --- signal processing: windows --- */
 double  bse_window_cos (double x);
 double  bse_window_blackman (double x);
+double  bse_window_hamming (double x);
 
 /* --- macros for frequency valued signals --- */
 double BSE_SIGNAL_TO_FREQ (double sig);
