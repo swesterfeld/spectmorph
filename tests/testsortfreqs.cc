@@ -8,6 +8,8 @@
 #include "smmain.hh"
 #include "smmath.hh"
 
+#include <algorithm>
+
 using namespace SpectMorph;
 using std::vector;
 

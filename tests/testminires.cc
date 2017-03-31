@@ -7,6 +7,8 @@
 #include "smpolyphaseinter.hh"
 #include "smminiresampler.hh"
 #include <assert.h>
+#include <math.h>
+#include <string.h>
 
 #include <bse/bsemathsignal.hh>
 
