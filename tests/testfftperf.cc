@@ -84,8 +84,6 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  printf ("Block Utils Implementation: %s\n", bse_block_impl_name());
-
   for (block_size = 256; block_size < 8192; block_size *= 2)
     {
       in = FFT::new_array_float (block_size);
