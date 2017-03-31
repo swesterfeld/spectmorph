@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-SUBDIRS = birnet bse
+SUBDIRS = birnet bse sfi
 
 AM_CXXFLAGS=$(GLIB_CFLAGS) -O3 $(SSE_FLAGS)
 
