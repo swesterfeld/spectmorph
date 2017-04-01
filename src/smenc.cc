@@ -33,6 +33,7 @@ using SpectMorph::Tracksel;
 using SpectMorph::sm_init;
 using SpectMorph::string_printf;
 using SpectMorph::sm_printf;
+using SpectMorph::WavData;
 
 static float
 freqFromNote (float note)
@@ -379,6 +380,8 @@ main (int argc, char **argv)
 
   string input_file = argv[1];
 
+  WavData wav_data;
+
   GslDataHandle *dhandle;
   vector<float> text_input_signal;
 
@@ -387,39 +390,21 @@ main (int argc, char **argv)
       text_input_signal = parse_text_input_file (input_file);
 
       dhandle = gsl_data_handle_new_mem (1, 32, options.text_input_rate, 440, text_input_signal.size(), &text_input_signal[0], NULL);
+
+      // FIXME: wave_data.load_mem (...)
     }
   else
     {
-      BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (input_file.c_str(), &error);
-      if (!wave_file_info)
-        {
-          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-          exit (1);
-        }
+      SpectMorph::Error error = wav_data.load (input_file);
 
-      BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-      if (!waveDsc)
+      if (error != 0)
         {
-          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-          exit (1);
-        }
-
-      dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-      if (!dhandle)
-        {
-          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), sm_error_blurb (error));
           exit (1);
         }
     }
 
-  error = gsl_data_handle_open (dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-
-  const double mix_freq = gsl_data_handle_mix_freq (dhandle);
+  const double mix_freq = wav_data.mix_freq();
   const int    zeropad  = 4;
 
   enc_params.mix_freq = mix_freq;
@@ -453,7 +438,7 @@ main (int argc, char **argv)
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
 
-  int n_channels = gsl_data_handle_n_channels (dhandle);
+  int n_channels = wav_data.n_channels();
 
   for (int channel = 0; channel < n_channels; channel++)
     {
@@ -522,7 +507,7 @@ main (int argc, char **argv)
             window[i] = 0;
         }
 
-      encoder.encode (dhandle, channel, window, options.optimization_level, options.attack, options.track_sines);
+      encoder.encode (wav_data, channel, window, options.optimization_level, options.attack, options.track_sines);
       if (options.strip_models)
         {
           for (size_t i = 0; i < audio_blocks.size(); i++)
