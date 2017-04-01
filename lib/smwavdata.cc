@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smwavdata.hh"
+#include "smmath.hh"
 
 #include <sndfile.h>
 #include <assert.h>
@@ -42,6 +43,35 @@ WavData::load (const string& filename)
 
   m_mix_freq    = sfinfo.samplerate;
   m_n_channels  = sfinfo.channels;
+
+  int err = sf_close (sndfile);
+  if (err != 0)
+    {
+      return Error::FILE_NOT_FOUND; // FIXME
+    }
+
+  return Error::NONE;
+}
+
+Error
+WavData::save (const string& filename)
+{
+  SF_INFO sfinfo = {0,};
+
+  sfinfo.samplerate = sm_round_positive (m_mix_freq);
+  sfinfo.channels   = m_n_channels;
+  sfinfo.format     = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+  SNDFILE *sndfile = sf_open (filename.c_str(), SFM_WRITE, &sfinfo);
+  if (sf_error (sndfile) != 0)
+    {
+      return Error::FILE_NOT_FOUND; // FIXME
+    }
+
+  sf_count_t frames = m_samples.size() / m_n_channels;
+  sf_count_t count = sf_writef_float (sndfile, &m_samples[0], frames);
+  if (count != frames)
+    return Error::FILE_NOT_FOUND; // FIXME; leak sndfile here
 
   int err = sf_close (sndfile);
   if (err != 0)

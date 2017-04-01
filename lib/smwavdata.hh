@@ -21,6 +21,8 @@ public:
   Error load (const std::string& filename);
   void  load (const std::vector<float>& samples, int n_channels, float mix_freq);
 
+  Error save (const std::string& filename);
+
   void clear();
   void prepend (const std::vector<float>& samples);
 
