@@ -12,10 +12,13 @@
 #include <errno.h>
 #include <unistd.h>
 #include "smmain.hh"
+#include "smwavdata.hh"
 
 using std::string;
 using std::vector;
 using SpectMorph::sm_init;
+using SpectMorph::WavData;
+using SpectMorph::Error;
 
 int
 main (int argc, char **argv)
@@ -65,23 +68,12 @@ main (int argc, char **argv)
         }
       line++;
     }
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, srate, 440, signal.size(), &signal[0], NULL);
-  gsl_data_handle_open (dhandle);
+  WavData wav_data (signal, 1, srate);
 
-  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  if (fd < 0)
+  Error error = wav_data.save (filename);
+  if (error != 0)
     {
-      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
-      g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+      g_printerr ("export to file %s failed: %s", filename.c_str(), sm_error_blurb (error));
       exit (1);
     }
-
-  int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-  if (xerrno)
-    {
-      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
-      g_printerr ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-  close (fd);
 }
