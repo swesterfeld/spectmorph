@@ -8,12 +8,15 @@
 
 #include "smmain.hh"
 #include "smutils.hh"
+#include "smwavdata.hh"
 
 using std::string;
 using std::vector;
 
 using SpectMorph::sm_init;
 using SpectMorph::sm_printf;
+using SpectMorph::WavData;
+using SpectMorph::Error;
 
 /// @cond
 struct Options
@@ -36,54 +39,22 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::Error error;
-
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
-  if (!wave_file_info)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  error = gsl_data_handle_open (dhandle);
+  WavData wav_data;
+  Error error = wav_data.load (argv[1]);
   if (error != 0)
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], sm_error_blurb (error));
       exit (1);
     }
 
-  if (gsl_data_handle_n_channels (dhandle) != 1)
+  if (wav_data.n_channels() != 1)
     {
       fprintf (stderr, "Currently, only mono files are supported.\n");
       exit (1);
     }
 
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
+  for (size_t pos = 0; pos < wav_data.n_values(); pos++)
     {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      for (uint64 t = 0; t < r; t++)
-        sm_printf ("%.17g\n", block[t]);
-
-      pos += r;
+      sm_printf ("%.17g\n", wav_data[pos]);
     }
 }
