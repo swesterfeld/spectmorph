@@ -376,22 +376,15 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::Error error;
-
   string input_file = argv[1];
 
   WavData wav_data;
 
-  GslDataHandle *dhandle;
-  vector<float> text_input_signal;
-
   if (options.text_input_file)
     {
-      text_input_signal = parse_text_input_file (input_file);
+      vector<float> text_input_signal = parse_text_input_file (input_file);
 
-      dhandle = gsl_data_handle_new_mem (1, 32, options.text_input_rate, 440, text_input_signal.size(), &text_input_signal[0], NULL);
-
-      // FIXME: wave_data.load_mem (...)
+      wav_data.load (text_input_signal, 1, options.text_input_rate);
     }
   else
     {
