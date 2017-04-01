@@ -159,12 +159,10 @@ encode (vector<float>& audio_in, int sr, const string& win, float fundamental_fr
 
   Encoder encoder (enc_params);
 
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, enc_params.mix_freq, 440, audio_in.size(), &audio_in[0], NULL);
-  Bse::Error error = gsl_data_handle_open (dhandle);
-  assert (error == 0);
+  WavData wav_data (audio_in, 1, enc_params.mix_freq);
 
   const char *sm_file = "testnoisesr.tmp.sm";
-  encoder.encode (dhandle, 0, window, 1, /*attack*/ false, /*sines*/ false);
+  encoder.encode (wav_data, 0, window, 1, /*attack*/ false, /*sines*/ false);
   encoder.save (sm_file);
 
   WavSet wav_set;
