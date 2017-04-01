@@ -3,6 +3,7 @@
 #include "smwavdata.hh"
 
 #include <sndfile.h>
+#include <assert.h>
 
 using namespace SpectMorph;
 
@@ -51,6 +52,29 @@ WavData::load (const string& filename)
   return Error::NONE;
 }
 
+WavData::WavData (const vector<float>& samples, int n_channels, float mix_freq)
+{
+  m_samples     = samples;
+  m_n_channels  = n_channels;
+  m_mix_freq    = mix_freq;
+}
+
+void
+WavData::prepend (const vector<float>& samples)
+{
+  assert (samples.size() % m_n_channels == 0);
+
+  m_samples.insert (m_samples.begin(), samples.begin(), samples.end());
+}
+
+float
+WavData::operator[] (size_t pos) const
+{
+  assert (pos < m_samples.size());
+
+  return m_samples[pos];
+}
+
 float
 WavData::mix_freq() const
 {
@@ -67,4 +91,10 @@ const vector<float>&
 WavData::samples() const
 {
   return m_samples;
+}
+
+size_t
+WavData::n_values() const
+{
+  return m_samples.size();
 }

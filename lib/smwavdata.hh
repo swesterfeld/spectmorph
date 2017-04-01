@@ -16,13 +16,17 @@ class WavData
 
 public:
   WavData();
+  WavData (const std::vector<float>& samples, int n_channels, float mix_freq);
 
   Error load (const std::string& filename);
   void clear();
+  void prepend (const std::vector<float>& samples);
 
   float                       mix_freq() const;
   int                         n_channels() const;
+  size_t                      n_values() const;
   const std::vector<float>&   samples() const;
+  float operator[] (size_t pos) const;
 };
 
 }
