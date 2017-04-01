@@ -60,6 +60,16 @@ WavData::WavData (const vector<float>& samples, int n_channels, float mix_freq)
 }
 
 void
+WavData::load (const vector<float>& samples, int n_channels, float mix_freq)
+{
+  // same function: WavData::WavData(...)
+
+  m_samples     = samples;
+  m_n_channels  = n_channels;
+  m_mix_freq    = mix_freq;
+}
+
+void
 WavData::prepend (const vector<float>& samples)
 {
   assert (samples.size() % m_n_channels == 0);
