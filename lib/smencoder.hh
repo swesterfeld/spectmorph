@@ -10,6 +10,7 @@
 #include <bse/gsldatautils.hh>
 
 #include "smaudio.hh"
+#include "smwavdata.hh"
 
 namespace SpectMorph
 {
@@ -116,7 +117,7 @@ public:
   Encoder (const EncoderParams& enc_params);
 
   // single encoder steps:
-  void compute_stft (GslDataHandle *dhandle, int channel, const std::vector<float>& window);
+  void compute_stft (const WavData& wav_data, int channel, const std::vector<float>& window);
   void search_local_maxima (const std::vector<float>& window);
   void link_partials();
   void validate_partials();
@@ -128,7 +129,7 @@ public:
   void debug_decode (const std::string& filename, const std::vector<float>& window);
 
   // all-in-one encoding function:
-  void encode (GslDataHandle *dhandle, int channel, const std::vector<float>& window, int optimization_level,
+  void encode (const WavData& wav_data, int channel, const std::vector<float>& window, int optimization_level,
                bool attack, bool track_sines);
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);

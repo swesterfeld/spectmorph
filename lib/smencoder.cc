@@ -214,68 +214,37 @@ Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
   return false;
 }
 
-Bse::Error
-read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
-{
-  signal.clear();
-
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-      if (r > 0)
-        signal.insert (signal.end(), block.begin(), block.begin() + r);
-      else
-        return Bse::Error::FILE_READ_FAILED;
-      pos += r;
-    }
-  return Bse::Error::NONE;
-}
-
 /**
  * This function computes the short-time-fourier-transform (STFT) of the input
  * signal using a window to cut the individual frames out of the sample.
  */
 void
-Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const vector<float>& window)
+Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const vector<float>& window)
 {
   /* deinterleave multi channel signal */
-  vector<float> multi_channel_signal;
   vector<float> single_channel_signal;
 
-  Bse::Error error = read_dhandle (multi_channel_dhandle, multi_channel_signal);
-  assert (error == Bse::Error::NONE); // FIXME
-
-  const size_t n_channels = gsl_data_handle_n_channels (multi_channel_dhandle);
-  const int mix_freq = gsl_data_handle_mix_freq (multi_channel_dhandle);
-  for (size_t i = channel; i < multi_channel_signal.size(); i += n_channels)
-    single_channel_signal.push_back (multi_channel_signal[i]);
+  const size_t n_channels = multi_channel_wav_data.n_channels();
+  for (size_t i = channel; i < multi_channel_wav_data.n_values(); i += n_channels)
+    single_channel_signal.push_back (multi_channel_wav_data[i]);
 
   original_samples = single_channel_signal;
 
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 440,
-                                                    single_channel_signal.size(),
-                                                    &single_channel_signal[0], NULL);
+  WavData wav_data (single_channel_signal, 1, multi_channel_wav_data.mix_freq());
 
   /* encode single channel */
   zero_values_at_start = enc_params.frame_size - enc_params.frame_step / 2;
   vector<float> zero_values (zero_values_at_start);
 
-  dhandle = gsl_data_handle_new_insert (dhandle, 32, 0, zero_values_at_start, &zero_values[0], NULL);
-  gsl_data_handle_open (dhandle);
+  wav_data.prepend (zero_values);
 
-  const uint64 n_values = gsl_data_handle_length (dhandle);
+  const uint64 n_values = wav_data.n_values();
   const size_t frame_size = enc_params.frame_size;
   const size_t block_size = enc_params.block_size;
   const int    zeropad    = enc_params.zeropad;
 
   sample_count = n_values;
 
-  vector<float> block (block_size);
   vector<double> in (block_size * zeropad), out (block_size * zeropad + 2);
 
   float *fft_in = FFT::new_array_float (in.size());
@@ -285,26 +254,13 @@ Encoder::compute_stft (GslDataHandle *multi_channel_dhandle, int channel, const 
     {
       EncoderBlock audio_block;
 
-      /* read data from file, zeropad last blocks */
-      uint64 todo = block.size(), offset = 0;
-      while (todo)
+      /* start with zero block, so the incomplete blocks at end are zeropadded */
+      vector<float> block (block_size);
+
+      for (size_t offset = 0; offset < block.size(); offset++)
         {
-          uint64 r = 0;
-          if (pos + offset < n_values)
-            r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
-          if (r > 0)
-            {
-              offset += r;
-              todo -= r;
-            }
-          else  // last block
-            {
-              while (todo)
-                {
-                  block[offset++] = 0;
-                  todo--;
-                }
-            }
+          if (pos + offset < wav_data.n_values())
+            block[offset] = wav_data[pos + offset];
         }
       vector<float> debug_samples (block.begin(), block.end());
       Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
@@ -1334,10 +1290,10 @@ Encoder::sort_freqs()
  * \param attack whether to find the optimal attack parameters
  */
 void
-Encoder::encode (GslDataHandle *dhandle, int channel, const vector<float>& window, int optimization_level,
+Encoder::encode (const WavData& wav_data, int channel, const vector<float>& window, int optimization_level,
                  bool attack, bool track_sines)
 {
-  compute_stft (dhandle, channel, window);
+  compute_stft (wav_data, channel, window);
 
   if (track_sines)
     {
