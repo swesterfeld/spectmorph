@@ -8,6 +8,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "config.h"
+#include "smwavdata.hh"
 
 #include <assert.h>
 #include <stdio.h>
@@ -123,57 +124,10 @@ Options::print_usage ()
   printf ("\n");
 }
 
-static void
-dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
-{
-  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 440, sample.size(), &sample[0], NULL);
-  Bse::Error error = gsl_data_handle_open (out_dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
-      exit (1);
-    }
-
-  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  if (fd < 0)
-    {
-      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-    }
-  int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
-  if (xerrno)
-    {
-      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-    }
-}
-
 static float
 freq_from_note (float note)
 {
   return 440 * exp (log (2) * (note - 69) / 12.0);
-}
-
-Bse::Error
-read_dhandle (GslDataHandle *dhandle, vector<float>& signal)
-{
-  signal.clear();
-
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-      if (r > 0)
-        signal.insert (signal.end(), block.begin(), block.begin() + r);
-      else
-        return Bse::Error::FILE_READ_FAILED;
-      pos += r;
-    }
-  return Bse::Error::NONE;
 }
 
 static void
@@ -265,51 +219,20 @@ main (int argc, char **argv)
     }
 
   /* open input */
-  Bse::Error error;
-
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (argv[1], &error);
-  if (!wave_file_info)
+  WavData wav_data;
+  if (!wav_data.load (argv[1]))
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], wav_data.error_blurb());
       exit (1);
     }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  error = gsl_data_handle_open (dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], bse_error_blurb (error));
-      exit (1);
-    }
-
-  const int n_channels = gsl_data_handle_n_channels (dhandle);
-  const int mix_freq = gsl_data_handle_mix_freq (dhandle);
+  const int n_channels            = wav_data.n_channels();
+  const int mix_freq              = wav_data.mix_freq();
+  const vector<float>& input_data = wav_data.samples();
 
   const int region_count = atoi (argv[2]);
   const int first_region = atoi (argv[3]);
 
-  vector<float> input_data;
   vector<double> peaks;
-
-  error = read_dhandle (dhandle, input_data);
-  if (error != 0)
-    {
-      printf ("error reading input file %s: %s\n", argv[1], bse_error_blurb (error));
-      exit (1);
-    }
 
   const size_t block_size = 256;
   int last_region_end = 0;
@@ -346,9 +269,14 @@ main (int argc, char **argv)
       vector<float> sample (input_data.begin() + start_pi * block_size * n_channels,
                             input_data.begin() + end_pi * block_size * n_channels);
 
-      char buffer[64];
-      sprintf (buffer, argv[4], region);
-      dump_wav (buffer, sample, mix_freq, n_channels);
+      string out_filename = string_printf (argv[4], region);
+
+      WavData wav_out_data (sample, n_channels, mix_freq);
+      if (!wav_out_data.save (out_filename))
+        {
+          fprintf (stderr, "export to file %s failed: %s", out_filename.c_str(), wav_out_data.error_blurb());
+          exit (1);
+        }
       sample.clear();
     }
 }
