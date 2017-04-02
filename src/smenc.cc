@@ -388,11 +388,9 @@ main (int argc, char **argv)
     }
   else
     {
-      SpectMorph::Error error = wav_data.load (input_file);
-
-      if (error != 0)
+      if (!wav_data.load (input_file))
         {
-          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), sm_error_blurb (error));
+          fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), input_file.c_str(), wav_data.error_blurb());
           exit (1);
         }
     }

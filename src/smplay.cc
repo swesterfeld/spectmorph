@@ -415,10 +415,9 @@ main (int argc, char **argv)
         }
 
       WavData wav_data (sample, 1, options.rate);
-      Error error = wav_data.save (options.export_wav);
-      if (error != 0)
+      if (!wav_data.save (options.export_wav))
         {
-          sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), sm_error_blurb (error));
+          sfi_error ("export to file %s failed: %s", options.export_wav.c_str(), wav_data.error_blurb());
         }
     }
 }
