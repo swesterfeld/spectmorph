@@ -70,10 +70,9 @@ main (int argc, char **argv)
     }
   WavData wav_data (signal, 1, srate);
 
-  Error error = wav_data.save (filename);
-  if (error != 0)
+  if (!wav_data.save (filename))
     {
-      g_printerr ("export to file %s failed: %s", filename.c_str(), sm_error_blurb (error));
+      g_printerr ("export to file %s failed: %s", filename.c_str(), wav_data.error_blurb());
       exit (1);
     }
 }

@@ -40,10 +40,9 @@ main (int argc, char **argv)
 
   /* open input */
   WavData wav_data;
-  Error error = wav_data.load (argv[1]);
-  if (error != 0)
+  if (!wav_data.load (argv[1]))
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], sm_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], wav_data.error_blurb());
       exit (1);
     }
 
