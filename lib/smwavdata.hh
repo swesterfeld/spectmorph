@@ -13,15 +13,16 @@ class WavData
   std::vector<float> m_samples;
   float              m_mix_freq;
   int                m_n_channels;
+  std::string        m_error_blurb;
 
 public:
   WavData();
   WavData (const std::vector<float>& samples, int n_channels, float mix_freq);
 
-  Error load (const std::string& filename);
-  void  load (const std::vector<float>& samples, int n_channels, float mix_freq);
+  bool load (const std::string& filename);
+  void load (const std::vector<float>& samples, int n_channels, float mix_freq);
 
-  Error save (const std::string& filename);
+  bool save (const std::string& filename);
 
   void clear();
   void prepend (const std::vector<float>& samples);
@@ -30,6 +31,8 @@ public:
   int                         n_channels() const;
   size_t                      n_values() const;
   const std::vector<float>&   samples() const;
+  const char                 *error_blurb() const;
+
   float operator[] (size_t pos) const;
 };
 

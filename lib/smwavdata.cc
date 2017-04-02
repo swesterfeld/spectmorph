@@ -21,39 +21,61 @@ WavData::clear()
 {
   m_samples.clear();
 
-  m_n_channels = 0;
-  m_mix_freq   = 0;
+  m_n_channels  = 0;
+  m_mix_freq    = 0;
+  m_error_blurb = "";
 }
 
-Error
+bool
 WavData::load (const string& filename)
 {
   SF_INFO sfinfo = { 0, };
 
   SNDFILE *sndfile = sf_open (filename.c_str(), SFM_READ, &sfinfo);
-  if (sf_error (sndfile) != 0)
+
+  int error = sf_error (sndfile);
+  if (error)
     {
-      return Error::FILE_NOT_FOUND; // FIXME
+      m_error_blurb = sf_error_number (error);
+      if (sndfile)
+        sf_close (sndfile);
+
+      return false;
     }
 
   m_samples.resize (sfinfo.frames * sfinfo.channels);
   sf_count_t count = sf_readf_float (sndfile, &m_samples[0], sfinfo.frames);
+
+  error = sf_error (sndfile);
+  if (error)
+    {
+      m_error_blurb = sf_error_number (error);
+      sf_close (sndfile);
+
+      return false;
+    }
+
   if (count != sfinfo.frames)
-    return Error::FILE_NOT_FOUND; // FIXME; leak sndfile here
+    {
+      m_error_blurb = "reading sample data failed: short read";
+      sf_close (sndfile);
+
+      return false;
+    }
 
   m_mix_freq    = sfinfo.samplerate;
   m_n_channels  = sfinfo.channels;
 
-  int err = sf_close (sndfile);
-  if (err != 0)
+  error = sf_close (sndfile);
+  if (error)
     {
-      return Error::FILE_NOT_FOUND; // FIXME
+      m_error_blurb = sf_error_number (error);
+      return false;
     }
-
-  return Error::NONE;
+  return true;
 }
 
-Error
+bool
 WavData::save (const string& filename)
 {
   SF_INFO sfinfo = {0,};
@@ -63,23 +85,43 @@ WavData::save (const string& filename)
   sfinfo.format     = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
   SNDFILE *sndfile = sf_open (filename.c_str(), SFM_WRITE, &sfinfo);
-  if (sf_error (sndfile) != 0)
+  int error = sf_error (sndfile);
+  if (error)
     {
-      return Error::FILE_NOT_FOUND; // FIXME
+      m_error_blurb = sf_error_number (error);
+      if (sndfile)
+        sf_close (sndfile);
+
+      return false;
     }
 
   sf_count_t frames = m_samples.size() / m_n_channels;
   sf_count_t count = sf_writef_float (sndfile, &m_samples[0], frames);
-  if (count != frames)
-    return Error::FILE_NOT_FOUND; // FIXME; leak sndfile here
 
-  int err = sf_close (sndfile);
-  if (err != 0)
+  error = sf_error (sndfile);
+  if (error)
     {
-      return Error::FILE_NOT_FOUND; // FIXME
+      m_error_blurb = sf_error_number (error);
+      sf_close (sndfile);
+
+      return false;
     }
 
-  return Error::NONE;
+  if (count != frames)
+    {
+      m_error_blurb = "writing sample data failed: short write";
+      sf_close (sndfile);
+
+      return false;
+    }
+
+  error = sf_close (sndfile);
+  if (error)
+    {
+      m_error_blurb = sf_error_number (error);
+      return false;
+    }
+  return true;
 }
 
 WavData::WavData (const vector<float>& samples, int n_channels, float mix_freq)
@@ -137,4 +179,10 @@ size_t
 WavData::n_values() const
 {
   return m_samples.size();
+}
+
+const char *
+WavData::error_blurb() const
+{
+  return m_error_blurb.c_str();
 }
