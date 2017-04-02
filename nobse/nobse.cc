@@ -261,7 +261,25 @@ Block::range (guint           n_values,
               float&          min_value,
               float&          max_value)
 {
-  NO_BSE_NO_IMPL (Block::range);
+  float minv, maxv;
+  if (n_values)
+    {
+      minv = maxv = ivalues[0];
+
+      for (guint i = 1; i < n_values; i++)
+        {
+          if (G_UNLIKELY (ivalues[i] < minv))
+            minv = ivalues[i];
+          if (G_UNLIKELY (ivalues[i] > maxv))
+            maxv = ivalues[i];
+        }
+    }
+  else
+    {
+      minv = maxv = 0;
+    }
+  min_value = minv;
+  max_value = maxv;
 }
 
 } // namespace Bse
