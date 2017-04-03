@@ -97,51 +97,6 @@ SampleView::paintEvent (QPaintEvent *event)
 }
 
 void
-SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers) // FIXME: NOBSE: remove this, once no longer used
-{
-  this->audio = audio;
-  this->markers = markers;
-
-  signal.clear();
-  attack_start = 0;
-  attack_end = 0;
-
-  if (!dhandle) // no sample selected
-    {
-      update_size();
-      update();
-      return;
-    }
-
-  Bse::Error error = gsl_data_handle_open (dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "SampleView: can't open the input data handle: %s\n", bse_error_blurb (error));
-      exit (1);
-    }
-
-  vector<float> block (1024);
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      for (uint64 t = 0; t < r; t++)
-        signal.push_back (block[t]);
-      pos += r;
-    }
-  gsl_data_handle_close (dhandle);
-
-  attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
-  attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
-
-  update_size();
-  update();
-}
-
-void
 SampleView::load (const WavData *wav_data, Audio *audio, Markers *markers)
 {
   this->audio = audio;

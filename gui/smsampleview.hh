@@ -52,7 +52,6 @@ private:
 
 public:
   SampleView();
-  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio, Markers *markers = 0);
   void load (const WavData *wav_data, SpectMorph::Audio *audio, Markers *markers = 0);
   void set_zoom (double hzoom, double vzoom);
   void paintEvent (QPaintEvent *event);
