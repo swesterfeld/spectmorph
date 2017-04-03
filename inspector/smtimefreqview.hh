@@ -7,6 +7,7 @@
 #include "smpixelarray.hh"
 #include "smaudio.hh"
 #include "smfftthread.hh"
+#include "smwavdata.hh"
 
 #include <QWidget>
 
@@ -33,7 +34,7 @@ protected:
 public:
   TimeFreqView();
 
-  void load (GslDataHandle *dhandle, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
+  void load (const WavData *wav_data, const std::string& filename, Audio *audio, const AnalysisParams& analysis_params);
   void update_size();
   void paintEvent (QPaintEvent *event);
 

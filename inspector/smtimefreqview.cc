@@ -20,10 +20,10 @@ using std::vector;
 using std::max;
 
 void
-TimeFreqView::load (GslDataHandle *dhandle, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
+TimeFreqView::load (const WavData *wav_data, const string& filename, Audio *audio, const AnalysisParams& analysis_params)
 {
-  if (dhandle) // NULL dhandle means user opened a new instrument but did not select anything yet
-    FFTThread::the()->compute_image (dhandle, analysis_params);
+  if (wav_data) // NULL wav_data means user opened a new instrument but did not select anything yet
+    FFTThread::the()->compute_image (*wav_data, analysis_params);
 
   m_audio = audio;
 }
