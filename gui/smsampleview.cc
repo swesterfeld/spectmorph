@@ -97,7 +97,7 @@ SampleView::paintEvent (QPaintEvent *event)
 }
 
 void
-SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers)
+SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers) // FIXME: NOBSE: remove this, once no longer used
 {
   this->audio = audio;
   this->markers = markers;
@@ -133,6 +133,37 @@ SampleView::load (GslDataHandle *dhandle, Audio *audio, Markers *markers)
       pos += r;
     }
   gsl_data_handle_close (dhandle);
+
+  attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+  attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
+
+  update_size();
+  update();
+}
+
+void
+SampleView::load (const WavData *wav_data, Audio *audio, Markers *markers)
+{
+  this->audio = audio;
+  this->markers = markers;
+
+  signal.clear();
+  attack_start = 0;
+  attack_end = 0;
+
+  if (!wav_data) // no sample selected
+    {
+      update_size();
+      update();
+      return;
+    }
+
+  if (wav_data->n_channels() != 1)
+    {
+      fprintf (stderr, "SampleView: only mono samples supported\n");
+      exit (1);
+    }
+  signal = wav_data->samples();
 
   attack_start = audio->attack_start_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
   attack_end   = audio->attack_end_ms / 1000.0 * audio->mix_freq - audio->zero_values_at_start;
