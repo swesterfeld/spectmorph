@@ -28,9 +28,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-GslDataHandle* dhandle_from_file (const string& filename);
-
-
 MainWidget::MainWidget (bool use_jack)
 {
   samples = NULL;
@@ -239,32 +236,6 @@ MainWidget::load (const string& filename, const string& clip_markers)
   on_combo_changed();
 }
 
-static void
-dump_wav (string filename, const vector<float>& sample, double mix_freq, int n_channels)
-{
-  GslDataHandle *out_dhandle = gsl_data_handle_new_mem (n_channels, 32, mix_freq, 440, sample.size(), &sample[0], NULL);
-  Bse::Error error = gsl_data_handle_open (out_dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
-      exit (1);
-    }
-
-  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-  if (fd < 0)
-    {
-      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-    }
-  int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
-  if (xerrno)
-    {
-      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
-      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-    }
-}
-
-
 void
 MainWidget::clip (const string& export_pattern)
 {
@@ -274,8 +245,12 @@ MainWidget::clip (const string& export_pattern)
       vector<float> clipped_samples = get_clipped_samples (&*wi, samples);
 
       string export_wav = string_printf (export_pattern.c_str(), wi->midi_note);
-      dump_wav (export_wav, clipped_samples, samples->mix_freq(), 1);
 
+      WavData wav_data (clipped_samples, 1, samples->mix_freq());
+      if (!wav_data.save (export_wav))
+        {
+          sfi_error ("export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
+        }
       delete samples;
     }
 }
@@ -313,12 +288,18 @@ MainWidget::on_combo_changed()
 
   samples = WavLoader::load (filename);
 
-  GslDataHandle *dhandle = dhandle_from_file (filename);
-  gsl_data_handle_open (dhandle);
-  audio.mix_freq = gsl_data_handle_mix_freq (dhandle);
-  audio.fundamental_freq = 440; /* doesn't matter */
-  sample_view->load (dhandle, &audio, &wi->markers);
-  gsl_data_handle_close (dhandle);
+  WavData wav_data;
+  if (wav_data.load (filename))
+    {
+      audio.mix_freq = wav_data.mix_freq();
+      audio.fundamental_freq = 440; /* doesn't matter */
+      sample_view->load (&wav_data, &audio, &wi->markers);
+    }
+  else
+    {
+      fprintf (stderr, "Loading audio file %s failed: %s\n", filename.c_str(), wav_data.error_blurb());
+      sample_view->load ((WavData *) 0, nullptr, nullptr); // FIXME: NOBSE: remove cast
+    }
 
   current_wave = &(*wi);
 }
@@ -447,35 +428,6 @@ void
 MainWindow::clip (const string& export_pattern)
 {
   main_widget->clip (export_pattern);
-}
-
-GslDataHandle*
-dhandle_from_file (const string& filename)
-{
-  /* open input */
-  Bse::Error error;
-
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
-  if (!wave_file_info)
-    {
-      fprintf (stderr, "SpectMorph::WavLoader: can't open the input file %s: %s\n", filename.c_str(), bse_error_blurb (error));
-      return NULL;
-    }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "SpectMorph::WavLoader: can't open the input file %s: %s\n", filename.c_str(), bse_error_blurb (error));
-      return NULL;
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "SpectMorph::WavLoader: can't open the input file %s: %s\n", filename.c_str(), bse_error_blurb (error));
-      return NULL;
-    }
-  return dhandle;
 }
 
 int
