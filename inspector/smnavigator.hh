@@ -55,7 +55,6 @@ private:
 public:
   Navigator (const std::string& filename);
 
-  GslDataHandle        *get_dhandle();
   const WavData        *get_wav_data();
   Audio                *get_audio();
   bool                  get_show_position();
@@ -86,7 +85,6 @@ public slots:
   void on_save_clicked();
 
 signals:
-  void dhandle_changed();
   void wav_data_changed();
   void show_position_changed();
   void show_analysis_changed();

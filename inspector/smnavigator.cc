@@ -229,7 +229,6 @@ Navigator::on_combo_changed()
     tree_view->resizeColumnToContents (column);
 
   Q_EMIT title_changed();
-  Q_EMIT dhandle_changed();
   Q_EMIT wav_data_changed();
 }
 
@@ -260,7 +259,6 @@ Navigator::on_selection_changed()
     {
       wav_data->load (audio->original_samples, 1, audio->mix_freq);
     }
-  Q_EMIT dhandle_changed();
   Q_EMIT wav_data_changed();
 }
 
@@ -292,12 +290,6 @@ Audio *
 Navigator::get_audio()
 {
   return audio;
-}
-
-GslDataHandle *
-Navigator::get_dhandle()
-{
-  return NULL;
 }
 
 const WavData *
