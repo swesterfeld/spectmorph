@@ -20,6 +20,8 @@ public:
   WavData (const std::vector<float>& samples, int n_channels, float mix_freq);
 
   bool load (const std::string& filename);
+  bool load_mono (const std::string& filename);
+
   void load (const std::vector<float>& samples, int n_channels, float mix_freq);
 
   bool save (const std::string& filename);

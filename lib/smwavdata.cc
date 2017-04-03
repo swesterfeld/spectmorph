@@ -76,6 +76,21 @@ WavData::load (const string& filename)
 }
 
 bool
+WavData::load_mono (const string& filename)
+{
+  if (!load (filename))
+    return false;
+
+  if (m_n_channels != 1)
+    {
+      m_error_blurb = "only mono files supported";
+      return false;
+    }
+
+  return true;
+}
+
+bool
 WavData::save (const string& filename)
 {
   SF_INFO sfinfo = {0,};
