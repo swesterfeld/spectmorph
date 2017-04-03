@@ -9,7 +9,7 @@
 
 #include "smmain.hh"
 #include "smtimefreqwindow.hh"
-#include "smwavloader.hh"
+#include "smwavdata.hh"
 #include "smcwt.hh"
 #include "smsampleview.hh"
 
