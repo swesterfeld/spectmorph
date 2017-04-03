@@ -62,7 +62,6 @@ main (int argc, char **argv)
   const double ns_per_sec = 1e9;
 
   LiveDecoder decoder (&smset);
-  decoder.set_noise_seed (42);
   if (argc == 4 && (string (argv[3]) == "avg" || string (argv[3]) == "avg-all"))
     {
       float ns_per_sample[5] = { 0, };
