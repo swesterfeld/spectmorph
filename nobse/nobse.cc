@@ -298,27 +298,3 @@ bse_init_inprocess (gint           *argc,
 {
   // nothing
 }
-
-BseWaveFileInfo*
-bse_wave_file_info_load (const gchar     *file_name,
-                         Bse::Error      *error)
-{
-  NO_BSE_NO_IMPL (bse_wave_file_info_load);
-}
-
-BseWaveDsc*
-bse_wave_dsc_load (BseWaveFileInfo *wave_file_info,
-                   guint            nth_wave,
-                   gboolean         accept_empty,
-                   Bse::Error      *error)
-{
-  NO_BSE_NO_IMPL (bse_wave_dsc_load);
-}
-
-GslDataHandle*
-bse_wave_handle_create (BseWaveDsc      *wave_dsc,
-                        guint            nth_chunk,
-                        Bse::Error      *error)
-{
-  NO_BSE_NO_IMPL (bse_wave_handle_create);
-}

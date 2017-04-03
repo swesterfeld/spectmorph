@@ -337,53 +337,6 @@ void bse_init_inprocess      (gint           *argc,
                               const char     *app_name,
                               const std::vector<std::string>& args = std::vector<std::string>());
 
-/* --- bse loader --- */
-struct BseLoader;
-
-struct BseWaveFileInfo {
-  guint    n_waves;
-  struct Wave {
-    gchar *name;
-  }       *waves;
-  gchar  **comments;
-  /*< private >*/
-  gchar     *file_name;
-  BseLoader *loader;
-  guint      ref_count;
-};
-struct BseWaveChunkDsc;
-struct BseWaveDsc
-{
-  gchar           *name;
-  guint            n_chunks;
-  BseWaveChunkDsc *chunks;
-  guint            n_channels;
-  gchar          **xinfos;
-  /*< private >*/
-  BseWaveFileInfo *file_info;
-};
-struct BseWaveChunkDsc
-{
-  gfloat          osc_freq;
-  gfloat          mix_freq;
-  gchar         **xinfos;
-  /* loader-specific */
-  union {
-    guint         uint;
-    gpointer      ptr;
-    gfloat        vfloat;
-  }               loader_data[8];
-};
-
-BseWaveFileInfo*      bse_wave_file_info_load   (const gchar     *file_name,
-                                                 Bse::Error      *error);
-BseWaveDsc*           bse_wave_dsc_load         (BseWaveFileInfo *wave_file_info,
-                                                 guint            nth_wave,
-                                                 gboolean         accept_empty,
-                                                 Bse::Error      *error);
-GslDataHandle*        bse_wave_handle_create    (BseWaveDsc      *wave_dsc,
-                                                 guint            nth_chunk,
-                                                 Bse::Error      *error);
 #include "minipcg32.hh"
 
 #endif
