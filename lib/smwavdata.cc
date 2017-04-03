@@ -36,7 +36,7 @@ WavData::load (const string& filename)
   int error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = sf_strerror (sndfile);
       if (sndfile)
         sf_close (sndfile);
 
@@ -49,7 +49,7 @@ WavData::load (const string& filename)
   error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = sf_strerror (sndfile);
       sf_close (sndfile);
 
       return false;
@@ -103,7 +103,7 @@ WavData::save (const string& filename)
   int error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = sf_strerror (sndfile);
       if (sndfile)
         sf_close (sndfile);
 
@@ -116,7 +116,7 @@ WavData::save (const string& filename)
   error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = sf_strerror (sndfile);
       sf_close (sndfile);
 
       return false;
