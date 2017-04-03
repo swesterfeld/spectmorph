@@ -17,6 +17,7 @@
 #include "smjobqueue.hh"
 #include "smwavset.hh"
 #include "smutils.hh"
+#include "smwavdata.hh"
 #include <stdlib.h>
 #include <bse/gsldatahandle.hh>
 #include <bse/gsldatautils.hh>
@@ -1111,24 +1112,12 @@ import_preset (const string& import_name)
                                       padded_len = samples[id].end - samples[id].start;
                                       padded_sample.assign (&sample_data[samples[id].start], &sample_data[samples[id].end]);
                                     }
-                                  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, samples[id].srate, 440,
-                                                                                    padded_len, &padded_sample[0], NULL);
-                                  gsl_data_handle_open (dhandle);
-
-                                  int fd = open (filename.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-                                  if (fd < 0)
+                                  assert (padded_len == padded_sample.size());
+                                  WavData wav_data (padded_sample, 1, samples[id].srate);
+                                  if (!wav_data.save (filename))
                                     {
-                                      Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
-                                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
+                                      sfi_error ("export to file %s failed: %s", filename.c_str(), wav_data.error_blurb());
                                     }
-
-                                  int xerrno = gsl_data_handle_dump_wav (dhandle, fd, 16, dhandle->setup.n_channels, (guint) dhandle->setup.mix_freq);
-                                  if (xerrno)
-                                    {
-                                      Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
-                                      sfi_error ("export to file %s failed: %s", filename.c_str(), bse_error_blurb (error));
-                                    }
-                                  close (fd);
 
                                   string import_args = options.fast_import ? "--no-attack -O0" : "-O1";
                                   if (options.config_filename != "")
