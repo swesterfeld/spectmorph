@@ -30,6 +30,7 @@ struct Options
   double      gain;
   double      loop;
   int         rate;
+  bool        deterministic_random;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -52,7 +53,8 @@ Options::Options () :
   text (false),
   gain (1.0),
   loop (-1),
-  rate (44100)
+  rate (44100),
+  deterministic_random (false)
 {
 }
 
@@ -119,6 +121,10 @@ Options::parse (int   *argc_p,
         {
           loop = atof (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--det-random"))
+        {
+          deterministic_random = true;
+        }
     }
 
   /* resort argc/argv */
@@ -148,6 +154,7 @@ Options::print_usage ()
   printf (" --text                        print output samples as text\n");
   printf (" -g, --gain <gain>             set replay gain\n");
   printf (" --loop <seconds>              enable loop\n");
+  printf (" --det-random                  use deterministic/reproducable random generator\n");
   printf (" --rate <sampling rate>        set replay rate manually\n");
   printf ("\n");
 }
@@ -180,6 +187,9 @@ main (int argc, char **argv)
   LiveDecoder decoder (&smset);
 
   decoder.enable_original_samples (options.enable_original_samples);
+
+  if (options.deterministic_random)
+    decoder.set_noise_seed (0x123456);
 
   size_t len;
   if (options.loop > 0)
