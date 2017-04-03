@@ -7,6 +7,7 @@
 
 #include "smcommon.hh"
 #include "smpixelarray.hh"
+#include "smwavdata.hh"
 
 #include <QObject>
 #include <QMutex>
@@ -41,7 +42,7 @@ public:
   bool command_is_obsolete();
 
   void run();
-  void compute_image (GslDataHandle *dhandle, const AnalysisParams& params);
+  void compute_image (const WavData& wav_data, const AnalysisParams& params);
   bool get_result (PixelArray& image);
   double get_progress();
 
@@ -59,12 +60,12 @@ class AnalysisCommand : public FFTThread::Command
   Q_OBJECT
 public:
   FFTThread              *fft_thread;
-  GslDataHandle          *dhandle;
+  WavData                 wav_data;
   std::vector<FFTResult>  results;
   PixelArray              image;
   AnalysisParams          analysis_params;
 
-  AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread);
+  AnalysisCommand (const WavData& wav_data, const AnalysisParams& analysis_params, FFTThread *fft_thread);
   ~AnalysisCommand();
   void execute();
   void execute_cwt();

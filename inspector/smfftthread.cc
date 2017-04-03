@@ -126,17 +126,15 @@ value_scale (float value)
   return bse_db_from_factor (value, -200);
 }
 
-AnalysisCommand::AnalysisCommand (GslDataHandle *dhandle, const AnalysisParams& analysis_params, FFTThread *fft_thread) :
+AnalysisCommand::AnalysisCommand (const WavData& wav_data, const AnalysisParams& analysis_params, FFTThread *fft_thread) :
   fft_thread (fft_thread),
-  dhandle (dhandle),
+  wav_data (wav_data),                 /* make a deep copy here */
   analysis_params (analysis_params)
 {
-  gsl_data_handle_ref (dhandle);
 }
 
 AnalysisCommand::~AnalysisCommand()
 {
-  gsl_data_handle_unref (dhandle);
 }
 
 void
@@ -150,22 +148,7 @@ AnalysisCommand::execute_cwt()
 {
   CWT cwt;
 
-  vector<float> signal;
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      for (uint64 t = 0; t < r; t++)
-        signal.push_back (block[t]);
-      pos += r;
-    }
-
-  double mix_freq = gsl_data_handle_mix_freq (dhandle);
+  const vector<float>& signal = wav_data.samples();
 
   connect (&cwt, SIGNAL (signal_progress (double)), this, SLOT (set_progress (double)));
 
@@ -204,22 +187,9 @@ AnalysisCommand::execute_cwt()
 void
 AnalysisCommand::execute_lpc()
 {
-  vector<float> signal;
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  uint64 pos = 0;
-  while (pos < n_values)
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      for (uint64 t = 0; t < r; t++)
-        signal.push_back (block[t]);
-      pos += r;
-    }
-
-  double mix_freq = gsl_data_handle_mix_freq (dhandle);
+  const vector<float>& signal = wav_data.samples();
+  const uint64 n_values = wav_data.n_values();
+  const float mix_freq = wav_data.mix_freq();
 
   vector< vector<float> > results;
 
@@ -274,14 +244,7 @@ AnalysisCommand::execute_lpc()
 void
 AnalysisCommand::execute()
 {
-  Bse::Error error = gsl_data_handle_open (dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "FFTThread: can't open the input data handle: %s\n", bse_error_blurb (error));
-      exit (1);
-    }
-
-  if (gsl_data_handle_n_channels (dhandle) != 1)
+  if (wav_data.n_channels() != 1)
     {
       fprintf (stderr, "Currently, only mono files are supported.\n");
       exit (1);
@@ -297,12 +260,11 @@ AnalysisCommand::execute()
       execute_lpc();
       return;
     }
-  size_t frame_size = analysis_params.frame_size_ms * gsl_data_handle_mix_freq (dhandle) / 1000.0;
+  size_t frame_size = analysis_params.frame_size_ms * wav_data.mix_freq() / 1000.0;
   size_t block_size = 1;
   while (block_size < frame_size)
     block_size *= 2;
 
-  vector<float> block (block_size);
   vector<float> window (block_size);
 
   size_t zeropad = 4;
@@ -320,38 +282,19 @@ AnalysisCommand::execute()
     }
 
 
-  double len_ms = gsl_data_handle_length (dhandle) * 1000.0 / gsl_data_handle_mix_freq (dhandle);
+  double len_ms = wav_data.n_values() * 1000.0 / wav_data.mix_freq();
   for (double pos_ms = analysis_params.frame_step_ms * 0.5 - analysis_params.frame_size_ms; pos_ms < len_ms; pos_ms += analysis_params.frame_step_ms)
     {
-      int64 pos = pos_ms / 1000.0 * gsl_data_handle_mix_freq (dhandle);
-      int64 todo = block.size(), offset = 0;
-      const int64 n_values = gsl_data_handle_length (dhandle);
+      const int64 pos = pos_ms / 1000.0 * wav_data.mix_freq();
+      const int64 n_values = wav_data.n_values();
 
-      while (todo)
+      /* start with zero block, so the incomplete blocks at start|end are zeropadded */
+      vector<float> block (block_size);
+
+      for (int64 offset = 0; offset < (int64) block.size(); offset++)
         {
-          int64 r = 0;
-          if ((pos + offset) < 0)
-            {
-              r = 1;
-              block[offset] = 0;
-            }
-          else if (pos + offset < n_values)
-            {
-              r = gsl_data_handle_read (dhandle, pos + offset, todo, &block[offset]);
-            }
-          if (r > 0)
-            {
-              offset += r;
-              todo -= r;
-            }
-          else  // last block
-            {
-              while (todo)
-                {
-                  block[offset++] = 0;
-                  todo--;
-                }
-            }
+          if (pos + offset >= 0 && pos + offset < n_values)
+            block[offset] = wav_data[pos + offset];
         }
       Bse::Block::mul (block_size, &block[0], &window[0]);
       for (size_t i = 0; i < fft_size; i++)
@@ -409,10 +352,10 @@ AnalysisCommand::execute()
 }
 
 void
-FFTThread::compute_image (GslDataHandle *dhandle, const AnalysisParams& params)
+FFTThread::compute_image (const WavData& wav_data, const AnalysisParams& params)
 {
   QMutexLocker lock (&command_mutex);
-  commands.push_back (new AnalysisCommand (dhandle, params, this));
+  commands.push_back (new AnalysisCommand (wav_data, params, this));
 
   // wakeup FFT thread
   while (write (fft_thread_wakeup_pfds[1], "W", 1) != 1)
