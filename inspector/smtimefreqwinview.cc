@@ -64,18 +64,18 @@ TimeFreqWinView::TimeFreqWinView (Navigator *navigator) :
   grid->addWidget (boost_label, 5, 2);
   setLayout (grid);
 
-  connect (navigator, SIGNAL (dhandle_changed()), this, SLOT (on_dhandle_changed()));
+  connect (navigator, SIGNAL (wav_data_changed()), this, SLOT (on_wav_data_changed()));
   connect (navigator, SIGNAL (show_position_changed()), this, SLOT (on_position_changed()));
   connect (navigator, SIGNAL (show_analysis_changed()), this, SLOT (on_analysis_changed()));
   connect (navigator, SIGNAL (show_frequency_grid_changed()), this, SLOT (on_frequency_grid_changed()));
-  connect (navigator->fft_param_window(), SIGNAL (params_changed()), this, SLOT (on_dhandle_changed()));
+  connect (navigator->fft_param_window(), SIGNAL (params_changed()), this, SLOT (on_wav_data_changed()));
   connect (m_time_freq_view, SIGNAL (progress_changed()), this, SLOT (on_progress_changed()));
 }
 
 void
-TimeFreqWinView::on_dhandle_changed()
+TimeFreqWinView::on_wav_data_changed()
 {
-  m_time_freq_view->load (navigator->get_dhandle(), "fn", navigator->get_audio(),
+  m_time_freq_view->load (navigator->get_wav_data(), "fn", navigator->get_audio(),
                           navigator->fft_param_window()->get_analysis_params());
 }
 

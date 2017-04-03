@@ -36,7 +36,7 @@ public:
   TimeFreqView *time_freq_view();
 
 public slots:
-  void on_dhandle_changed();
+  void on_wav_data_changed();
   void on_zoom_changed();
   void on_position_changed();
   void on_display_params_changed();
