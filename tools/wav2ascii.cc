@@ -40,15 +40,9 @@ main (int argc, char **argv)
 
   /* open input */
   WavData wav_data;
-  if (!wav_data.load (argv[1]))
+  if (!wav_data.load_mono (argv[1]))
     {
       fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), argv[1], wav_data.error_blurb());
-      exit (1);
-    }
-
-  if (wav_data.n_channels() != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
       exit (1);
     }
 
