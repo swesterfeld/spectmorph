@@ -28,7 +28,7 @@ public:
   SampleView *sample_view();
 
 public slots:
-  void on_dhandle_changed();
+  void on_wav_data_changed();
   void on_next_sample();
 
 signals:

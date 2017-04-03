@@ -71,9 +71,9 @@ SampleWinView::SampleWinView (Navigator *navigator)
 }
 
 void
-SampleWinView::load (GslDataHandle *dhandle, Audio *audio)
+SampleWinView::load (const WavData *wav_data, Audio *audio)
 {
-  m_sample_view->load (dhandle, audio);
+  m_sample_view->load (wav_data, audio);
   if (audio)
     {
       if (audio->loop_type == Audio::LOOP_NONE)

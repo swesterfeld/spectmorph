@@ -16,6 +16,8 @@
 #include <QTreeView>
 #include <QPushButton>
 
+#include <memory>
+
 namespace SpectMorph {
 
 class TreeModel;
@@ -32,8 +34,9 @@ private:
   bool                  wset_edit;
   std::vector<float>    decoded_samples;
 
+  std::unique_ptr<WavData> wav_data;
+
   Audio                *audio;
-  GslDataHandle        *dhandle;
   TreeModel            *tree_model;
   QTreeView            *tree_view;
   QPushButton          *source_button;
@@ -53,6 +56,7 @@ public:
   Navigator (const std::string& filename);
 
   GslDataHandle        *get_dhandle();
+  const WavData        *get_wav_data();
   Audio                *get_audio();
   bool                  get_show_position();
   bool                  get_show_analysis();
@@ -83,6 +87,7 @@ public slots:
 
 signals:
   void dhandle_changed();
+  void wav_data_changed();
   void show_position_changed();
   void show_analysis_changed();
   void show_frequency_grid_changed();

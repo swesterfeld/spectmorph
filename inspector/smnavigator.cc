@@ -90,7 +90,6 @@ TreeModel::TreeModel (QWidget *parent, WavSet *wset) :
 
 Navigator::Navigator (const string& filename)
 {
-  dhandle = NULL;
   audio = NULL;
   wset_edit = false;
 
@@ -161,7 +160,7 @@ Navigator::Navigator (const string& filename)
   spectrum_window->set_spectrum_model (time_freq_window->time_freq_view());
   lpc_window->set_lpc_model (time_freq_window->time_freq_view());
 
-  connect (this, SIGNAL (dhandle_changed()), sample_window, SLOT (on_dhandle_changed()));
+  connect (this, SIGNAL (wav_data_changed()), sample_window, SLOT (on_wav_data_changed()));
 }
 
 bool
@@ -223,7 +222,7 @@ Navigator::on_combo_changed()
     }
 
   audio = NULL;
-  dhandle = NULL;
+  wav_data.reset();
 
   tree_model->update_wset();
   for (int column = 0; column < 4; column++)
@@ -231,6 +230,7 @@ Navigator::on_combo_changed()
 
   Q_EMIT title_changed();
   Q_EMIT dhandle_changed();
+  Q_EMIT wav_data_changed();
 }
 
 void
@@ -247,19 +247,21 @@ Navigator::on_selection_changed()
   audio = wset.waves[i].audio;
   assert (wset.waves[i].audio);
 
+  wav_data.reset (new WavData());
   if (spectmorph_signal_active())
     {
       LiveDecoder decoder (&wset);
       decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
       decoded_samples.resize (audio->sample_count);
       decoder.process (decoded_samples.size(), 0, 0, &decoded_samples[0]);
-      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, decoded_samples.size(), &decoded_samples[0], NULL);
+      wav_data->load (decoded_samples, 1, audio->mix_freq);
     }
   else
     {
-      dhandle = gsl_data_handle_new_mem (1, 32, audio->mix_freq, 440, audio->original_samples.size(), &audio->original_samples[0], NULL);
+      wav_data->load (audio->original_samples, 1, audio->mix_freq);
     }
   Q_EMIT dhandle_changed();
+  Q_EMIT wav_data_changed();
 }
 
 void
@@ -295,7 +297,13 @@ Navigator::get_audio()
 GslDataHandle *
 Navigator::get_dhandle()
 {
-  return dhandle;
+  return NULL;
+}
+
+const WavData *
+Navigator::get_wav_data()
+{
+  return wav_data.get();
 }
 
 bool

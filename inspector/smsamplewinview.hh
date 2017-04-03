@@ -31,7 +31,7 @@ class SampleWinView : public QWidget
 public:
   SampleWinView (Navigator *navigator);
 
-  void load (GslDataHandle *dhandle, SpectMorph::Audio *audio);
+  void load (const WavData *wav_data, SpectMorph::Audio *audio);
   SampleView *sample_view();
 
 public slots:

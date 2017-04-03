@@ -35,9 +35,9 @@ SampleWindow::SampleWindow (Navigator *navigator)
 }
 
 void
-SampleWindow::on_dhandle_changed()
+SampleWindow::on_wav_data_changed()
 {
-  sample_win_view->load (navigator->get_dhandle(), navigator->get_audio());
+  sample_win_view->load (navigator->get_wav_data(), navigator->get_audio());
 }
 
 SampleView *
