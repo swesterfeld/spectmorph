@@ -5,6 +5,7 @@
 #include "smfft.hh"
 #include "smmain.hh"
 #include "smutils.hh"
+#include "smwavdata.hh"
 
 #include <bse/gsldatahandle.hh>
 #include <bse/gsldatautils.hh>
@@ -141,26 +142,12 @@ main (int argc, char **argv)
       decoder.retrigger (0, freq, 127, SR);
       decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
 
-      GslDataHandle *out_dhandle = gsl_data_handle_new_mem (1, 32, SR, 440, audio_out.size(), &audio_out[0], NULL);
-      Bse::Error error = gsl_data_handle_open (out_dhandle);
-      if (error != 0)
-        {
-          fprintf (stderr, "can not open mem dhandle for exporting wave file\n");
-          exit (1);
-        }
-
       std::string export_wav = "tld.wav";
-      int fd = open (export_wav.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-      if (fd < 0)
+
+      WavData wav_data (audio_out, 1, SR);
+      if (!wav_data.save (export_wav))
         {
-          Bse::Error error = bse_error_from_errno (errno, Bse::Error::FILE_OPEN_FAILED);
-          sfi_error ("export to file %s failed: %s", export_wav.c_str(), bse_error_blurb (error));
-        }
-      int xerrno = gsl_data_handle_dump_wav (out_dhandle, fd, 16, out_dhandle->setup.n_channels, (guint) out_dhandle->setup.mix_freq);
-      if (xerrno)
-        {
-          Bse::Error error = bse_error_from_errno (xerrno, Bse::Error::FILE_WRITE_FAILED);
-          sfi_error ("export to file %s failed: %s", export_wav.c_str(), bse_error_blurb (error));
+          sfi_error ("export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
         }
     }
   else
