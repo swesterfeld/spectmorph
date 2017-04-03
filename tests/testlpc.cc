@@ -2,7 +2,7 @@
 
 #include "smlpc.hh"
 #include "smmain.hh"
-#include "smwavloader.hh"
+#include "smwavdata.hh"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
@@ -18,10 +18,14 @@ main (int argc, char **argv)
 
   assert (argc == 2);
 
-  WavLoader *wav_loader = WavLoader::load (argv[1]);
-  assert (wav_loader);
+  WavData wav_data;
+  if (!wav_data.load (argv[1]))
+    {
+      fprintf (stderr, "load file %s failed: %s\n", argv[1], wav_data.error_blurb());
+      return 1;
+    }
 
-  const vector<float>& samples = wav_loader->samples();
+  const vector<float>& samples = wav_data.samples();
 
   vector<double> lpc (50);
   vector<float> lsf_p, lsf_q;
@@ -38,5 +42,4 @@ main (int argc, char **argv)
       double value = env.eval (freq);
       printf ("%f %.17g %.17g\n", freq / (2 * M_PI) * 44100, value, lpc_value);
     }
-  delete wav_loader;
 }
