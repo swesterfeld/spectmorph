@@ -24,7 +24,6 @@ private:
 public:
   SampleWindow (Navigator *navigator);
 
-  void        load (GslDataHandle *dhandle, Audio *audio);
   SampleView *sample_view();
 
 public slots:
