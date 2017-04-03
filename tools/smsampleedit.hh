@@ -5,7 +5,6 @@
 
 #include "smsimplejackplayer.hh"
 #include "smsampleview.hh"
-#include "smwavloader.hh"
 #include "smzoomcontroller.hh"
 
 #include <QWidget>
@@ -16,6 +15,8 @@
 #include <QPushButton>
 #include <QScrollArea>
 #include <QMainWindow>
+
+#include <memory>
 
 namespace SpectMorph
 {
@@ -127,10 +128,11 @@ class MainWidget : public QWidget
   QPushButton        *edit_clip_start;
   QPushButton        *edit_clip_end;
   std::string         marker_filename;
-  WavLoader          *samples;
   std::vector<Wave>   waves;
 
-  std::vector<float> get_clipped_samples (Wave *wave, WavLoader *samples);
+  std::unique_ptr<WavData> samples;
+
+  static std::vector<float> get_clipped_samples (Wave *wave, WavData *samples);
 public:
   MainWidget (bool use_jack);
   ~MainWidget();

@@ -98,11 +98,6 @@ MainWidget::MainWidget (bool use_jack)
 
 MainWidget::~MainWidget()
 {
-  if (samples)
-    {
-      delete samples;
-      samples = NULL;
-    }
   if (jack_player)
     {
       delete jack_player;
@@ -241,8 +236,12 @@ MainWidget::clip (const string& export_pattern)
 {
   for (vector<Wave>::iterator wi = waves.begin(); wi != waves.end(); wi++)
     {
-      WavLoader *samples = WavLoader::load (wi->path.c_str());
-      vector<float> clipped_samples = get_clipped_samples (&*wi, samples);
+      WavData wav_in;
+      if (!wav_in.load_mono (wi->path))
+        {
+          sfi_error ("loading file %s failed: %s", wi->path.c_str(), wav_in.error_blurb());
+        }
+      vector<float> clipped_samples = get_clipped_samples (&*wi, &wav_in);
 
       string export_wav = string_printf (export_pattern.c_str(), wi->midi_note);
 
@@ -251,18 +250,14 @@ MainWidget::clip (const string& export_pattern)
         {
           sfi_error ("export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
         }
-      delete samples;
     }
 }
 
 void
 MainWidget::on_combo_changed()
 {
-  if (samples)
-    {
-      delete samples;
-      samples = NULL;
-    }
+  samples.reset();
+
   string label = sample_combobox->currentText().toLatin1().data();
   vector<Wave>::iterator wi = waves.begin();
   while (wi != waves.end())
@@ -286,18 +281,18 @@ MainWidget::on_combo_changed()
   if (!path.empty() && path[0] == '/') // absolute path
     filename = path;
 
-  samples = WavLoader::load (filename);
-
-  WavData wav_data;
-  if (wav_data.load (filename))
+  samples.reset (new WavData());
+  if (samples->load_mono (filename))
     {
-      audio.mix_freq = wav_data.mix_freq();
+      audio.mix_freq = samples->mix_freq();
       audio.fundamental_freq = 440; /* doesn't matter */
-      sample_view->load (&wav_data, &audio, &wi->markers);
+      sample_view->load (samples.get(), &audio, &wi->markers);
     }
   else
     {
-      fprintf (stderr, "Loading audio file %s failed: %s\n", filename.c_str(), wav_data.error_blurb());
+      fprintf (stderr, "Loading audio file %s failed: %s\n", filename.c_str(), samples->error_blurb());
+      samples.reset();
+
       sample_view->load ((WavData *) 0, nullptr, nullptr); // FIXME: NOBSE: remove cast
     }
 
@@ -322,7 +317,7 @@ MainWidget::on_mouse_time_changed (int time)
 }
 
 vector<float>
-MainWidget::get_clipped_samples (Wave *wave, WavLoader *samples)
+MainWidget::get_clipped_samples (Wave *wave, WavData *samples)
 {
   vector<float> result;
 
@@ -362,7 +357,7 @@ MainWidget::get_clipped_samples (Wave *wave, WavLoader *samples)
 void
 MainWidget::on_play_clicked()
 {
-  audio.original_samples = get_clipped_samples (current_wave, samples);
+  audio.original_samples = get_clipped_samples (current_wave, samples.get());
 
   if (jack_player)
     jack_player->play (&audio, true);
