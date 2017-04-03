@@ -15,6 +15,7 @@
 #include <bse/bseloader.hh>
 #include "smjobqueue.hh"
 #include "smutils.hh"
+#include "smwavdata.hh"
 
 #include <string>
 #include <map>
@@ -311,55 +312,13 @@ bool
 load_wav_file (const string& filename, vector<float>& data_out)
 {
   /* open input */
-  Bse::Error error;
-
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
-  if (!wave_file_info)
+  WavData wav_data;
+  if (!wav_data.load_mono (filename))
     {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
+      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), wav_data.error_blurb());
       return false;
     }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      return false;
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      return false;
-    }
-
-  error = gsl_data_handle_open (dhandle);
-  if (error != 0)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      return false;
-    }
-
-  if (gsl_data_handle_n_channels (dhandle) != 1)
-    {
-      fprintf (stderr, "Currently, only mono files are supported.\n");
-      return false;
-    }
-
-  data_out.clear();
-
-  vector<float> block (1024);
-
-  const uint64 n_values = gsl_data_handle_length (dhandle);
-  for (uint64 pos = 0; pos < n_values; pos += block.size())
-    {
-      /* read data from file */
-      uint64 r = gsl_data_handle_read (dhandle, pos, block.size(), &block[0]);
-
-      for (uint64 t = 0; t < r; t++)
-        data_out.push_back (block[t]);
-    }
+  data_out = wav_data.samples();
   return true;
 }
 
