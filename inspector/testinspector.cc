@@ -111,11 +111,14 @@ main (int argc, char **argv)
   else if (argc == 3 && string (argv[1]) == "cwt")
     {
       CWT cwt;
-      WavLoader *loader = WavLoader::load (argv[2]);
-      if (!loader)
-        return 1;
+      WavData wav_data;
+      if (!wav_data.load (argv[2]))
+        {
+          fprintf (stderr, "load file %s failed: %s\n", argv[2], wav_data.error_blurb());
+          return 1;
+        }
 
-      vector<float> signal = loader->samples();
+      vector<float> signal = wav_data.samples();
       vector< vector<float> > results;
 
       AnalysisParams params;
