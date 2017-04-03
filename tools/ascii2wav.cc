@@ -72,7 +72,7 @@ main (int argc, char **argv)
 
   if (!wav_data.save (filename))
     {
-      g_printerr ("export to file %s failed: %s", filename.c_str(), wav_data.error_blurb());
+      g_printerr ("export to file %s failed: %s\n", filename.c_str(), wav_data.error_blurb());
       exit (1);
     }
 }
