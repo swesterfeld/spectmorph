@@ -334,7 +334,7 @@ MainWidget::get_clipped_samples (Wave *wave, WavLoader *samples)
       float clip_end = wave->markers.clip_end (clip_end_valid);
       if (clip_end_valid && clip_end >= 0)
         {
-          int iclipend = clip_end * samples->mix_freq() / 1000.0;
+          int iclipend = sm_round_positive (clip_end * samples->mix_freq() / 1000.0);
           if (iclipend >= 0 && iclipend < int (result.size()))
             {
               vector<float>::iterator si = result.begin();
@@ -347,7 +347,7 @@ MainWidget::get_clipped_samples (Wave *wave, WavLoader *samples)
       float clip_start = wave->markers.clip_start (clip_start_valid);
       if (clip_start_valid && clip_start >= 0)
         {
-          int iclipstart = clip_start * samples->mix_freq() / 1000.0;
+          int iclipstart = sm_round_positive (clip_start * samples->mix_freq() / 1000.0);
           if (iclipstart >= 0 && iclipstart < int (result.size()))
             {
               vector<float>::iterator si = result.begin();
