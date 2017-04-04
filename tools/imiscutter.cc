@@ -26,6 +26,7 @@
 using std::string;
 using std::vector;
 using std::max;
+using std::min;
 
 using namespace SpectMorph;
 
@@ -266,8 +267,9 @@ main (int argc, char **argv)
 
       last_region_end = end_pi;
       //printf ("%d %d %d\n", region, start_pi, end_pi);
-      vector<float> sample (input_data.begin() + start_pi * block_size * n_channels,
-                            input_data.begin() + end_pi * block_size * n_channels);
+      const size_t start_pos = start_pi * block_size * n_channels;
+      const size_t end_pos   = min (end_pi * block_size * n_channels, input_data.size());
+      vector<float> sample (input_data.begin() + start_pos, input_data.begin() + end_pos);
 
       string out_filename = string_printf (argv[4], region);
 
