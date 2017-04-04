@@ -369,6 +369,15 @@ window_cos (double x) /* von Hann window */
 }
 
 inline double
+window_hamming (double x) /* sharp (rectangle) cutoffs at boundaries */
+{
+  if (fabs (x) > 1)
+    return 0;
+
+  return 0.54 + 0.46 * cos (M_PI * x);
+}
+
+inline double
 window_blackman_harris_92 (double x)
 {
   if (fabs (x) > 1)
