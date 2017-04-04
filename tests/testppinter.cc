@@ -58,7 +58,7 @@ sin_test (double freq, double db_bound)
           error = max (error, fabs (output[p] - expect[p]));
         }
     }
-  printf ("%.17g %.17g %.17g\n", freq, error, bse_db_from_factor (error, -200));
+  printf ("%.17g %.17g %.17g\n", freq, error, db_from_factor (error, -200));
   assert (error < db_to_factor (db_bound));
 }
 

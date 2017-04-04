@@ -35,7 +35,7 @@ main (int argc, char **argv)
       emin = min (error, emin);
       emax = max (error, emax);
 
-      // printf ("%f %f %d %f %f\n", factor, bse_db_from_factor (factor, -500), idb, xfactor, error);
+      // printf ("%f %f %d %f %f\n", factor, db_from_factor (factor, -500), idb, xfactor, error);
     }
   const double bound = 0.0009;
   printf ("representation error%%: [%.6f, %.6f] bound %.6f\n", emin * 100, emax * 100, bound * 100);
