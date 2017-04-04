@@ -75,8 +75,6 @@ public:
 
 }
 
-void sfi_error (const char *msg, ...);
-
 #define SPECTMORPH_NOBSE 1
 
 /* --- decibel conversion --- */

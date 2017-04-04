@@ -44,12 +44,6 @@ malloc_aligned (gsize     total_size,
 
 }
 
-void
-sfi_error (const char *msg, ...)
-{
-  NO_BSE_NO_IMPL (sfi_error);
-}
-
 gdouble
 bse_db_to_factor (gdouble dB)
 {
@@ -105,14 +99,6 @@ bse_window_hamming (double x) /* sharp (rectangle) cutoffs at boundaries */
     return 0;
 
   return 0.54 + 0.46 * cos (M_PI * x);
-}
-
-void
-gsl_power2_fftar (const uint         n_values,
-                  const double      *r_values_in,
-                  double            *ri_values_out)
-{
-  NO_BSE_NO_IMPL (gsl_power2_fftar);
 }
 
 namespace Bse
