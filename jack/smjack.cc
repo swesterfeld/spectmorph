@@ -221,7 +221,7 @@ JackControl::control_widget()
 void
 JackControl::on_volume_changed (double new_volume)
 {
-  double new_decoder_volume = bse_db_to_factor (new_volume);
+  double new_decoder_volume = db_to_factor (new_volume);
   synth->change_volume (new_decoder_volume);
 }
 
