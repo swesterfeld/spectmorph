@@ -127,14 +127,6 @@ public:
 /* --- macros for frequency valued signals --- */
 double BSE_SIGNAL_TO_FREQ (double sig);
 
-/* --- sfi/bse init --- */
-typedef struct
-{
-  const char *value_name;       /* value list ends with value_name == NULL */
-  const char *value_string;
-  long double value_num;        /* valid if value_string == NULL */
-} SfiInitValue;
-
 void bse_init_inprocess      (gint           *argc,
                               gchar         **argv,
                               const char     *app_name,
