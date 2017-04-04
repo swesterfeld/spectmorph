@@ -378,6 +378,14 @@ window_hamming (double x) /* sharp (rectangle) cutoffs at boundaries */
 }
 
 inline double
+window_blackman (double x)
+{
+  if (fabs (x) > 1)
+    return 0;
+  return 0.42 + 0.5 * cos (M_PI * x) + 0.08 * cos (2.0 * M_PI * x);
+}
+
+inline double
 window_blackman_harris_92 (double x)
 {
   if (fabs (x) > 1)

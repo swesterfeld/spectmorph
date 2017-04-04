@@ -1,8 +1,8 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smpolyphaseinter.hh"
+#include "smmath.hh"
 
-#include <bse/bsemathsignal.hh>
 #include <math.h>
 
 using namespace SpectMorph;
@@ -106,7 +106,7 @@ PolyPhaseInter::PolyPhaseInter()
       int pos = i - filter_center;
 
       double c = sinc (double (pos) / OVERSAMPLE / (SR / 2) * LP_FREQ);
-      double w = bse_window_blackman (double (pos) / filter_center) / (SR / 2) * LP_FREQ;
+      double w = window_blackman (double (pos) / filter_center) / (SR / 2) * LP_FREQ;
       x[i] = c * w;
     }
 }
