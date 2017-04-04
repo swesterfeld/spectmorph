@@ -484,7 +484,7 @@ main (int argc, char **argv)
                   /* probably never a good idea, since the sidelobes of the spectrum
                    * do not roll off fast (as with the hann window)
                    */
-                  window[i] = bse_window_hamming (2.0 * i / (frame_size - 1) - 1.0);
+                  window[i] = window_hamming (2.0 * i / (frame_size - 1) - 1.0);
                 }
               else if (window_type == "blackman")
                 {
