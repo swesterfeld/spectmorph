@@ -200,7 +200,7 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
 
   for (size_t i = 0; i < peaks.size(); i++)
     {
-      peaks[i] = bse_db_from_factor (peaks[i] / max_peak, -500);
+      peaks[i] = db_from_factor (peaks[i] / max_peak, -500);
       //printf ("%.17g\n", peaks[i]);
     }
   FFT::free_array_float (fft_in);
