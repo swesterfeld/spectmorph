@@ -388,7 +388,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   plugin->midi_synth->process (outputs[0], numSampleFrames);
 
   // apply replay volume
-  const float volume_factor = bse_db_to_factor (plugin->rt_volume);
+  const float volume_factor = db_to_factor (plugin->rt_volume);
   for (int i = 0; i < numSampleFrames; i++)
     outputs[0][i] *= volume_factor;
 }
