@@ -3,6 +3,7 @@
 #include "smmath.hh"
 #include <bse/bsemathsignal.hh>
 #include <QtGlobal>
+#include <assert.h>
 
 namespace SpectMorph {
 
@@ -78,6 +79,26 @@ sm_math_init()
       MathTables::ifreq2f_high[i] = sm_ifreq2freq_slow (i * 256);
       MathTables::ifreq2f_low[i]  = sm_ifreq2freq_slow (ADD + i);
     }
+
+  // ensure proper rounding mode
+  assert (sm_fpu_okround());
+
+  assert (sm_round_positive (42.51) == 43);
+  assert (sm_round_positive (3.14) == 3);
+  assert (sm_round_positive (2.1) == 2);
+  assert (sm_round_positive (0.7) == 1);
+  assert (sm_round_positive (0.2) == 0);
+}
+
+int
+sm_fpu_okround()
+{
+  typedef unsigned short int BseFpuState;
+
+  BseFpuState cv;
+  __asm__ ("fnstcw %0"
+           : "=m" (*&cv));
+  return !(cv & 0x0c00);
 }
 
 }

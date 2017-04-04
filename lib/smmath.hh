@@ -401,16 +401,36 @@ double db_to_factor (double dB);
 double db_from_factor (double factor, double min_dB);
 
 #if defined (__i386__) && defined (__GNUC__)
+static inline int G_GNUC_CONST
+sm_ftoi (register float f)
+{
+  int r;
+
+  __asm__ ("fistl %0"
+           : "=m" (r)
+           : "t" (f));
+  return r;
+}
+static inline int G_GNUC_CONST
+sm_dtoi (register double f)
+{
+  int r;
+
+  __asm__ ("fistl %0"
+           : "=m" (r)
+           : "t" (f));
+  return r;
+}
 inline int
 sm_round_positive (double d)
 {
-  return bse_dtoi (d);
+  return sm_dtoi (d);
 }
 
 inline int
 sm_round_positive (float f)
 {
-  return bse_ftoi (f);
+  return sm_ftoi (f);
 }
 #else
 inline int
@@ -425,6 +445,8 @@ sm_round_positive (float f)
   return int (f + 0.5);
 }
 #endif
+
+int sm_fpu_okround();
 
 struct MathTables
 {
