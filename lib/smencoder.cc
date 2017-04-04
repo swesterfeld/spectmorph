@@ -381,7 +381,7 @@ Encoder::search_local_maxima (const vector<float>& window)
                 }
             }
 
-          const double mag2 = bse_db_from_factor (mag_values[d / 2] / max_mag, -100);
+          const double mag2 = db_from_factor (mag_values[d / 2] / max_mag, -100);
           debug ("dbspectrum:%zd %f\n", n, mag2);
 
           if (peak_type != PEAK_NONE)
@@ -403,8 +403,8 @@ Encoder::search_local_maxima (const vector<float>& window)
 
                   if (peak_ok)
                     {
-                      const double mag1 = bse_db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
-                      const double mag3 = bse_db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
+                      const double mag1 = db_from_factor (mag_values[d / 2 - 1] / max_mag, -100);
+                      const double mag3 = db_from_factor (mag_values[d / 2 + 1] / max_mag, -100);
                       //double freq = d / 2 * mix_freq / (block_size * zeropad); /* bin frequency */
 
                       QInterpolator mag_interp (mag1, mag2, mag3);
@@ -832,7 +832,7 @@ remove_small_partials (EncoderBlock& audio_block)
    */
   vector<double> dbmags;
   for (vector<float>::iterator mi = audio_block.mags.begin(); mi != audio_block.mags.end(); mi++)
-    dbmags.push_back (bse_db_from_factor (*mi, -200));
+    dbmags.push_back (db_from_factor (*mi, -200));
 
   vector<bool> remove (dbmags.size());
 

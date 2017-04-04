@@ -13,6 +13,19 @@ db_to_factor (double dB)
   return pow (10, factor);
 }
 
+double
+db_from_factor (double factor, double min_dB)
+{
+  if (factor > 0)
+    {
+      double dB = log10 (factor); /* Bell */
+      dB *= 20;
+      return dB;
+    }
+  else
+    return min_dB;
+}
+
 int
 sm_factor2delta_idb (double factor)
 {

@@ -351,8 +351,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
               double mag;
               if (module->db_linear)
                 {
-                  double lmag_db = bse_db_from_factor (left_block.mags_f (i), -100);
-                  double rmag_db = bse_db_from_factor (right_block.mags_f (j), -100);
+                  double lmag_db = db_from_factor (left_block.mags_f (i), -100);
+                  double rmag_db = db_from_factor (right_block.mags_f (j), -100);
 
                   //--------------------------- LPC stuff ---------------------------
                   double l_env_mag_db = 0;
@@ -367,11 +367,11 @@ MorphLinearModule::MySource::audio_block (size_t index)
                       double r_freq = right_block.freqs_f (j) * right_audio->fundamental_freq;
                       r_freq *= 2 * M_PI / LPC::MIX_FREQ; /* map frequency to [0..M_PI] */
 
-                      l_env_mag_db = bse_db_from_factor (left_env.eval (l_freq), -100);
-                      r_env_mag_db = bse_db_from_factor (right_env.eval (r_freq), -100);
+                      l_env_mag_db = db_from_factor (left_env.eval (l_freq), -100);
+                      r_env_mag_db = db_from_factor (right_env.eval (r_freq), -100);
 
                       double interp_freq = (1 - interp) * l_freq + interp * r_freq;
-                      interp_env_mag_db = bse_db_from_factor (interp_env.eval (interp_freq), -100);
+                      interp_env_mag_db = db_from_factor (interp_env.eval (interp_freq), -100);
                     }
                   //--------------------------- LPC stuff ---------------------------
 

@@ -398,6 +398,7 @@ window_blackman_harris_92 (double x)
 
 /* --- decibel conversion --- */
 double db_to_factor (double dB);
+double db_from_factor (double factor, double min_dB);
 
 #if defined (__i386__) && defined (__GNUC__)
 inline int
