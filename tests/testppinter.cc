@@ -124,7 +124,7 @@ impulse_test()
   for (double p = -20; p < 20; p += STEP)
     {
       double c = sinc (double (p) / (SR / 2) * LP_FREQ);
-      double w = bse_window_blackman (double (p) / 12) / (SR / 2) * LP_FREQ;
+      double w = window_blackman (double (p) / 12) / (SR / 2) * LP_FREQ;
       double x = c * w;
 
       x = ppi->get_sample (one_signal, p);
@@ -158,7 +158,7 @@ print_spectrum (const string& label, const vector<float>& signal, double SR)
   double normalize = 0;
   for (size_t i = 0; i < input_size; i++)
     {
-      double w = bse_window_blackman (2.0 * i / input_size - 1.0);
+      double w = window_blackman (2.0 * i / input_size - 1.0);
       fft_in[i] = w * signal[i];
       normalize += w;
     }

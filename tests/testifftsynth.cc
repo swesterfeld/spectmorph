@@ -270,7 +270,7 @@ test_spect()
     power2 *= 2;
   vector<float> wsig;
   for (size_t i = 0; i < power2; i++)
-    wsig.push_back (bse_window_blackman (2.0 * i / power2 - 1.0) * samples[block_size + i]);
+    wsig.push_back (window_blackman (2.0 * i / power2 - 1.0) * samples[block_size + i]);
 
   //for (size_t i = 0; i < power2; i++)
   //  printf ("%d %f\n", i, wsig[i]);

@@ -6,11 +6,10 @@
 #include "smmain.hh"
 #include "smpolyphaseinter.hh"
 #include "smminiresampler.hh"
+#include "smmath.hh"
 #include <assert.h>
 #include <math.h>
 #include <string.h>
-
-#include <bse/bsemathsignal.hh>
 
 using std::string;
 using std::vector;
@@ -89,7 +88,7 @@ error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 
   for (guint i = 0; i < FFT_SIZE; i++)
     {
-      const double w = bse_window_blackman ((2.0 * i - FFT_SIZE) / FFT_SIZE);
+      const double w = window_blackman ((2.0 * i - FFT_SIZE) / FFT_SIZE);
 
       normalize += w;
       fft_in[i] = out[i] * w;
