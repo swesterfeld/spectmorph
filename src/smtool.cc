@@ -10,6 +10,7 @@
 #include "sminfile.hh"
 #include "smutils.hh"
 #include "smlpc.hh"
+#include "smfft.hh"
 #include <assert.h>
 #include <bse/bsemathsignal.hh>
 #include <bse/gslfft.hh>
@@ -756,7 +757,15 @@ public:
     sines.resize (block_size * zeropad);
     vector<double> out (block_size * zeropad);
 
-    gsl_power2_fftar (block_size * zeropad, &sines[0], &out[0]);
+    float *fft_in = FFT::new_array_float (sines.size());
+    float *fft_out = FFT::new_array_float (sines.size());
+
+    std::copy (sines.begin(), sines.end(), fft_in);
+    FFT::fftar_float (sines.size(), fft_in, fft_out);
+    std::copy (fft_out, fft_out + sines.size(), out.begin());
+
+    FFT::free_array_float (fft_out);
+    FFT::free_array_float (fft_in);
 
     vector<double> sines_spectrum;
     for (size_t n = 0; n < audio.contents[i].original_fft.size(); n += 2)
