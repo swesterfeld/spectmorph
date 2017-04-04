@@ -37,8 +37,8 @@ get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>&
     }
   else
     {
-      GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, high_sr, 440, audio_in.size(), &audio_in[0], NULL);
-      MiniResampler mini_resampler (dhandle, double (high_sr) / sr);
+      WavData wav_data (audio_in, 1, high_sr);
+      MiniResampler mini_resampler (wav_data, double (high_sr) / sr);
       mini_resampler.read (0, out.size(), &out[0]);
     }
   assert (xout.size() == 0);

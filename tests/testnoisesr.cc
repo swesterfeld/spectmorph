@@ -65,8 +65,8 @@ NoiseGenerator::gen_noise (int sr)
     }
 
   vector<float> out (5 * sr);
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 96000, 440, noise_96000.size(), &noise_96000[0], NULL);
-  MiniResampler mini_resampler (dhandle, 96000 / double (sr));
+  WavData wav_data (noise_96000, 1, 96000);
+  MiniResampler mini_resampler (wav_data, 96000 / double (sr));
   mini_resampler.read (0, out.size(), &out[0]);
   return out;
 }
@@ -197,8 +197,8 @@ decode_resample (vector<float>& audio_out, int sr)
 
   decode (audio_high, sr);
 
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, sr, 440, audio_high.size(), &audio_high[0], NULL);
-  MiniResampler mini_resampler (dhandle, double (sr) / 48000.);
+  WavData wav_data (audio_high, 1, sr);
+  MiniResampler mini_resampler (wav_data, double (sr) / 48000.);
   mini_resampler.read (0, audio_out.size(), &audio_out[0]);
 }
 
