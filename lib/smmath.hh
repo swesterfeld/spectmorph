@@ -358,6 +358,16 @@ int_sincos_init()
     int_sincos_table[i] = sin (double (i / 256.0) * 2 * M_PI);
 }
 
+/* --- signal processing: windows --- */
+
+inline double
+window_cos (double x) /* von Hann window */
+{
+  if (fabs (x) > 1)
+    return 0;
+  return 0.5 * cos (x * M_PI) + 0.5;
+}
+
 inline double
 window_blackman_harris_92 (double x)
 {

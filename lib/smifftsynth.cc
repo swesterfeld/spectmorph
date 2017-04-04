@@ -64,7 +64,7 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
 
       table->win_scale = FFT::new_array_float (block_size); // SSE
       for (size_t i = 0; i < block_size; i++)
-        table->win_scale[(i + block_size / 2) % block_size] = bse_window_cos (2.0 * i / block_size - 1.0) / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+        table->win_scale[(i + block_size / 2) % block_size] = window_cos (2.0 * i / block_size - 1.0) / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
       // we only need to do this once per block size (FIXME: not thread safe yet)
       table_for_block_size[block_size] = table;

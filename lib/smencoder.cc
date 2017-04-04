@@ -1437,7 +1437,7 @@ Encoder::debug_decode (const string& filename, const vector<float>& enc_window)
 
   vector<double> dec_window (frame_size);
   for (size_t i = 0; i < dec_window.size(); i++)
-    dec_window[i] = bse_window_cos (2.0 * i / (frame_size - 1) - 1.0);
+    dec_window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
 
   assert (dec_window.size() >= frame_size);
 

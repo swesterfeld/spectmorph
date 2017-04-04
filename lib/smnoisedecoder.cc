@@ -45,7 +45,7 @@ NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq, size_t block_
     {
       win = FFT::new_array_float (block_size);
       for (size_t i = 0; i < block_size; i++)
-        win[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+        win[i] = window_cos (2.0 * i / block_size - 1.0);
     }
 
   cos_window = win;
