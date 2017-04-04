@@ -185,7 +185,7 @@ MorphView::on_expose_event (GdkEventExpose* ev)
             {
               const LineData& line_data = frame_data[i].lines[j];
 
-              double db_mag = bse_db_from_factor (line_data.mag, -200);
+              double db_mag = db_from_factor (line_data.mag, -200);
               double color = 1.0 - CLAMP ((100 + db_mag) / 100, 0.0, 1.0);
               cr->set_source_rgb (color, color, color);
 
@@ -202,7 +202,7 @@ MorphView::on_expose_event (GdkEventExpose* ev)
             {
               const FreqData& freq_data = frame_data[i].freqs[j];
 
-              double db_mag = bse_db_from_factor (freq_data.mag, -200);
+              double db_mag = db_from_factor (freq_data.mag, -200);
               double color = 1.0 - CLAMP ((100 + db_mag) / 100, 0.0, 1.0);
               cr->set_source_rgb (1, color, color);
 
