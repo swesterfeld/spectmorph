@@ -10,6 +10,10 @@ using namespace SpectMorph;
 
 MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
 {
+#if SPECTMORPH_NOBSE
+  g_printerr ("[libnobse] no support for MiniResampler\n");
+  g_assert_not_reached();
+#else
   const vector<float>& samples = wav_data.samples();
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, wav_data.mix_freq(), 440, samples.size(), &samples[0], NULL);
 
@@ -40,10 +44,11 @@ MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
       m_samples.push_back ((1 - fade) * gsl_data_handle_peek_value (dhandle, left_pos, &peek_buffer)
                          + fade * gsl_data_handle_peek_value (dhandle, right_pos, &peek_buffer));
     }
+#endif
 }
 
 int
-MiniResampler::read (uint64 pos, size_t block_size, float *out)
+MiniResampler::read (size_t pos, size_t block_size, float *out)
 {
   const size_t start = min (m_samples.size(), pos);
   const size_t end   = min (m_samples.size(), pos + block_size);

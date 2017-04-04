@@ -17,7 +17,7 @@ class MiniResampler
 public:
   MiniResampler (const WavData& wav_data, double speedup_factor);
 
-  int read (uint64 pos, size_t block_size, float *out);
+  int read (size_t pos, size_t block_size, float *out);
   uint64 length();
 };
 
