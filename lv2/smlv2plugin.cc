@@ -381,7 +381,7 @@ run (LV2_Handle instance, uint32_t n_samples)
   self->midi_synth.process (output, n_samples);
 
   // apply post volume
-  const float v = (self->volume > -90) ? bse_db_to_factor (self->volume) : 0;
+  const float v = (self->volume > -90) ? db_to_factor (self->volume) : 0;
   for (uint32_t i = 0; i < n_samples; i++)
     output[i] *= v;
 
