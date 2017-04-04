@@ -45,13 +45,6 @@ malloc_aligned (gsize     total_size,
 }
 
 gdouble
-bse_db_to_factor (gdouble dB)
-{
-  double factor = dB / 20; /* Bell */
-  return pow (10, factor);
-}
-
-gdouble
 bse_db_from_factor (gdouble        factor,
                     gdouble        min_dB)
 {

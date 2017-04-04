@@ -73,7 +73,6 @@ public:
 #define SPECTMORPH_NOBSE 1
 
 /* --- decibel conversion --- */
-gdouble bse_db_to_factor        (gdouble        dB);
 gdouble bse_db_from_factor      (gdouble        factor,
                                  gdouble        min_dB);
 /* --- Bse IEEE754 --- */
