@@ -29,7 +29,7 @@ SpectMorph::lpc_z_transform (const LPCZFunction& zfunc, const vector< complex<do
 
           complex<double> z (re, im);
           double value = zfunc.eval (z);
-          double db = bse_db_from_factor (value, -200);
+          double db = db_from_factor (value, -200);
           db += 150;
 
           int idb = CLAMP (db, 0, 255);
