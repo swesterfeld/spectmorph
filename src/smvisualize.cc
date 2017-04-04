@@ -10,7 +10,7 @@
 
 using std::vector;
 
-using SpectMorph::sm_init;
+using namespace SpectMorph;
 
 bool db_mode = false;
 const size_t BORDER_PIXELS = 10;
