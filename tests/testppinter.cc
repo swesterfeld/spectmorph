@@ -59,7 +59,7 @@ sin_test (double freq, double db_bound)
         }
     }
   printf ("%.17g %.17g %.17g\n", freq, error, bse_db_from_factor (error, -200));
-  assert (error < bse_db_to_factor (db_bound));
+  assert (error < db_to_factor (db_bound));
 }
 
 void
