@@ -16,6 +16,7 @@
 #include "smmain.hh"
 #include "smdebug.hh"
 #include "smutils.hh"
+#include "smfft.hh"
 
 #include "config.h"
 
@@ -25,15 +26,7 @@ using std::list;
 using std::min;
 using std::max;
 
-using SpectMorph::Audio;
-using SpectMorph::EncoderBlock;
-using SpectMorph::EncoderParams;
-using SpectMorph::Encoder;
-using SpectMorph::Tracksel;
-using SpectMorph::sm_init;
-using SpectMorph::string_printf;
-using SpectMorph::sm_printf;
-using SpectMorph::WavData;
+using namespace SpectMorph;
 
 static float
 freqFromNote (float note)
@@ -285,7 +278,16 @@ wintrans (const vector<float>& window)
   for (size_t i = 0; i < in.size(); i++)
     in[i] /= amp;
 
-  gsl_power2_fftar (in.size(), &in[0], &out[0]);
+  float *fft_in = FFT::new_array_float (in.size());
+  float *fft_out = FFT::new_array_float (in.size());
+
+  std::copy (in.begin(), in.end(), fft_in);
+  FFT::fftar_float (in.size(), fft_in, fft_out);
+  std::copy (fft_out, fft_out + in.size(), out.begin());
+
+  FFT::free_array_float (fft_out);
+  FFT::free_array_float (fft_in);
+
   for (size_t i = 0; i < out.size(); i += 2)
     {
       double re = out[i];
