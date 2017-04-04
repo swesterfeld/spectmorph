@@ -742,7 +742,7 @@ public:
     for (guint i = 0; i < window.size(); i++)
       {
         if (i < frame_size)
-          window[i] = bse_window_cos (2.0 * i / frame_size - 1.0);
+          window[i] = window_cos (2.0 * i / frame_size - 1.0);
         else
           window[i] = 0;
       }

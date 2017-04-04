@@ -477,7 +477,7 @@ main (int argc, char **argv)
             {
               if (window_type == "hann")
                 {
-                  window[i] = bse_window_cos (2.0 * i / (frame_size - 1) - 1.0);
+                  window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
                 }
               else if (window_type == "hamming")
                 {
