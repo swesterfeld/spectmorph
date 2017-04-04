@@ -72,9 +72,6 @@ public:
 
 #define SPECTMORPH_NOBSE 1
 
-/* --- decibel conversion --- */
-gdouble bse_db_from_factor      (gdouble        factor,
-                                 gdouble        min_dB);
 /* --- Bse IEEE754 --- */
 #if defined (__i386__) && defined (__GNUC__)
 static inline int G_GNUC_CONST

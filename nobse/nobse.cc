@@ -44,20 +44,6 @@ malloc_aligned (gsize     total_size,
 
 }
 
-gdouble
-bse_db_from_factor (gdouble        factor,
-                    gdouble        min_dB)
-{
-  if (factor > 0)
-    {
-      double dB = log10 (factor); /* Bell */
-      dB *= 20;
-      return dB;
-    }
-  else
-    return min_dB;
-}
-
 int
 bse_fpu_okround()
 {
