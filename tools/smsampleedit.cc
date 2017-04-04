@@ -239,7 +239,8 @@ MainWidget::clip (const string& export_pattern)
       WavData wav_in;
       if (!wav_in.load_mono (wi->path))
         {
-          sfi_error ("loading file %s failed: %s", wi->path.c_str(), wav_in.error_blurb());
+          fprintf (stderr, "loading file %s failed: %s", wi->path.c_str(), wav_in.error_blurb());
+          exit (1);
         }
       vector<float> clipped_samples = get_clipped_samples (&*wi, &wav_in);
 
@@ -248,7 +249,8 @@ MainWidget::clip (const string& export_pattern)
       WavData wav_data (clipped_samples, 1, samples->mix_freq());
       if (!wav_data.save (export_wav))
         {
-          sfi_error ("export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
+          fprintf (stderr, "export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
+          exit (1);
         }
     }
 }

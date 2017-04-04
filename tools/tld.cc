@@ -147,7 +147,8 @@ main (int argc, char **argv)
       WavData wav_data (audio_out, 1, SR);
       if (!wav_data.save (export_wav))
         {
-          sfi_error ("export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
+          fprintf (stderr, "export to file %s failed: %s", export_wav.c_str(), wav_data.error_blurb());
+          exit (1);
         }
     }
   else
