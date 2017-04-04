@@ -28,7 +28,7 @@ using namespace SpectMorph;
 float
 value_scale (float value)
 {
-  return bse_db_from_factor (value, -200);
+  return db_from_factor (value, -200);
 }
 
 void

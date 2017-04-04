@@ -123,7 +123,7 @@ FFTThread::the()
 static float
 value_scale (float value)
 {
-  return bse_db_from_factor (value, -200);
+  return db_from_factor (value, -200);
 }
 
 AnalysisCommand::AnalysisCommand (const WavData& wav_data, const AnalysisParams& analysis_params, FFTThread *fft_thread) :

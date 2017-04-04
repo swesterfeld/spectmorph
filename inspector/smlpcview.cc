@@ -71,13 +71,13 @@ LPCView::paintEvent (QPaintEvent *event)
         for (float freq = 0; freq < M_PI; freq += 0.001)
           {
             double value = env.eval (freq);
-            double value_db = bse_db_from_factor (value, -200);
+            double value_db = db_from_factor (value, -200);
             max_lpc_value = max (max_lpc_value, value_db);
           }
         for (float freq = 0; freq < M_PI; freq += 0.001)
           {
             double value = env.eval (freq);
-            double value_db = bse_db_from_factor (value, -200) - max_lpc_value + max_value;
+            double value_db = db_from_factor (value, -200) - max_lpc_value + max_value;
             cr->line_to (freq / M_PI * width, height - value_db / max_value * height);
           }
 #endif
