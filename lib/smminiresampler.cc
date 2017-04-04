@@ -4,6 +4,7 @@
 #include <string.h>
 
 using std::vector;
+using std::min;
 
 using namespace SpectMorph;
 
@@ -12,45 +13,50 @@ MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
   const vector<float>& samples = wav_data.samples();
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, wav_data.mix_freq(), 440, samples.size(), &samples[0], NULL);
 
-  m_speedup_factor = speedup_factor;
-  m_dhandle = dhandle;
-  memset (&m_peek_buffer, 0, sizeof (m_peek_buffer));
-  while (m_speedup_factor < 6)
+  while (speedup_factor < 6)
     {
-      m_dhandle = bse_data_handle_new_upsample2 (m_dhandle, 24);
-      m_speedup_factor *= 2;
-      Bse::Error error = gsl_data_handle_open (m_dhandle);
+      dhandle = bse_data_handle_new_upsample2 (dhandle, 24);
+      speedup_factor *= 2;
+      Bse::Error error = gsl_data_handle_open (dhandle);
       if (error != 0)
-	{
-	  fprintf (stderr, "foo\n");
-	  exit (1);
-	}
+        {
+          fprintf (stderr, "foo\n");
+          exit (1);
+        }
+    }
+
+  GslDataPeekBuffer peek_buffer = { 0, };
+
+  uint64 n_values = gsl_data_handle_n_values (dhandle);
+  for (size_t pos = 0; ; pos++)
+    {
+      // linear interpolation
+      double dpos = pos * speedup_factor;
+      uint64 left_pos = dpos;
+      uint64 right_pos = left_pos + 1;
+      if (right_pos >= n_values)  // read past eof
+        break;
+      double fade = dpos - left_pos;     // 0 => left sample 0.5 => mix both 1.0 => right sample
+      m_samples.push_back ((1 - fade) * gsl_data_handle_peek_value (dhandle, left_pos, &peek_buffer)
+                         + fade * gsl_data_handle_peek_value (dhandle, right_pos, &peek_buffer));
     }
 }
 
 int
 MiniResampler::read (uint64 pos, size_t block_size, float *out)
 {
-  uint64 n_values = gsl_data_handle_n_values (m_dhandle);
-  for (size_t i = 0; i < block_size; i++)
-    {
-      // linear interpolation
-      double dpos = (pos + i) * m_speedup_factor;
-      uint64 left_pos = dpos;
-      uint64 right_pos = left_pos + 1;
-      if (right_pos >= n_values)
-	return (i - 1);                  // partial read
-      double fade = dpos - left_pos;     // 0 => left sample 0.5 => mix both 1.0 => right sample
-      out[i] = (1 - fade) * gsl_data_handle_peek_value (m_dhandle, left_pos, &m_peek_buffer)
-	     + fade * gsl_data_handle_peek_value (m_dhandle, right_pos, &m_peek_buffer);
-    }
-  return block_size;
+  const size_t start = min (m_samples.size(), pos);
+  const size_t end   = min (m_samples.size(), pos + block_size);
+
+  std::copy (&m_samples[start], &m_samples[end], out);
+
+  return end - start;
 }
 
 uint64
 MiniResampler::length()
 {
-  return gsl_data_handle_n_values (m_dhandle) / m_speedup_factor;
+  return m_samples.size();
 }
 
 

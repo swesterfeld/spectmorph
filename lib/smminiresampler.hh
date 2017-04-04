@@ -13,9 +13,7 @@ namespace SpectMorph
 
 class MiniResampler
 {
-  GslDataHandle    *m_dhandle;
-  GslDataPeekBuffer m_peek_buffer;
-  double            m_speedup_factor;
+  std::vector<float> m_samples;
 public:
   MiniResampler (const WavData& wav_data, double speedup_factor);
 
