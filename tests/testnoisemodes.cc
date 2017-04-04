@@ -49,7 +49,7 @@ main (int argc, char **argv)
     }
   for (size_t i = 0; i < block_size; i++)
     {
-      cos_win_samples[i] = bse_window_cos (2.0 * i / block_size - 1.0) * win_samples[i];
+      cos_win_samples[i] = window_cos (2.0 * i / block_size - 1.0) * win_samples[i];
       win_samples[i] *= window_blackman_harris_92 (2.0 * i / block_size - 1.0);
     }
   for (size_t i = 0; i < block_size / 2; i++)

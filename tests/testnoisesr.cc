@@ -81,7 +81,7 @@ avg_spectrum (const char *label, vector<float>& signal, int sr)
   vector<float> window (block_size);
 
   for (guint i = 0; i < window.size(); i++)
-    window[i] = bse_window_cos (2.0 * i / block_size - 1.0);
+    window[i] = window_cos (2.0 * i / block_size - 1.0);
 
   float *in = FFT::new_array_float (block_size);
   float *out = FFT::new_array_float (block_size + 2);
@@ -146,7 +146,7 @@ encode (vector<float>& audio_in, int sr, const string& win, float fundamental_fr
             }
           else if (win == "cos")
             {
-              window[i] = bse_window_cos (2.0 * i / enc_params.frame_size - 1.0);
+              window[i] = window_cos (2.0 * i / enc_params.frame_size - 1.0);
             }
           else
             {

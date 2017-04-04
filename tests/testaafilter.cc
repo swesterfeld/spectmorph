@@ -49,7 +49,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   for (guint i = 0; i < window.size(); i++)
     {
       if (i < enc_params.frame_size)
-        window[i] = bse_window_cos (2.0 * i / enc_params.frame_size - 1.0);
+        window[i] = window_cos (2.0 * i / enc_params.frame_size - 1.0);
       else
         window[i] = 0;
     }
