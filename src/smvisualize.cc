@@ -22,7 +22,7 @@ value_scale (float rvalue, float ivalue = 0)
 
   if (db_mode)
     {
-      double db = bse_db_from_factor (value, -200);
+      double db = db_from_factor (value, -200);
       if (db > -90)
 	return db + 90;
       else

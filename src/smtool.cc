@@ -575,7 +575,7 @@ public:
           {
             const double freq = audio.contents[i].freqs_f (maxp) * audio.fundamental_freq;
             const double mag_factor = audio.contents[i].mags_f (maxp);
-            const double mag_db = bse_db_from_factor (mag_factor, -200);
+            const double mag_db = db_from_factor (mag_factor, -200);
 
             sm_printf ("%f Hz: %f\n", freq, mag_db);
             audio.contents[i].mags[maxp] = 0;
@@ -1040,7 +1040,7 @@ normalize_factor (double norm, Audio& audio)
 
   // store normalization in order to replay original samples normalized
   const double samples_factor = db_to_factor (audio.original_samples_norm_db);
-  audio.original_samples_norm_db = bse_db_from_factor (samples_factor * norm, -200);
+  audio.original_samples_norm_db = db_from_factor (samples_factor * norm, -200);
 }
 
 static void
