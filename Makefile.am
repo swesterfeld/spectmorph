@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 if COND_WITH_BEAST
   SUBDIRS = lib gui jack src tools beast inspector python tests docs
 else
-  SUBDIRS = nobse lib gui jack python docs
+  SUBDIRS = nobse lib gui jack src tools inspector python tests docs
 endif
 
 if COND_WITH_LV2
