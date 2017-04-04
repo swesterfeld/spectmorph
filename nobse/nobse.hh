@@ -139,21 +139,6 @@ double  bse_window_hamming (double x);
 /* --- macros for frequency valued signals --- */
 double BSE_SIGNAL_TO_FREQ (double sig);
 
-/* --- gsl ffts --- */
-
-void    gsl_power2_fftac (const uint         n_values,
-                          const double      *ri_values_in,
-                          double            *ri_values_out);
-void    gsl_power2_fftsc (const uint         n_values,
-                          const double      *ri_values_in,
-                          double            *ri_values_out);
-void    gsl_power2_fftar (const uint         n_values,
-                          const double      *r_values_in,
-                          double            *ri_values_out);
-void    gsl_power2_fftsr (const unsigned int n_values,
-                          const double      *ri_values_in,
-                          double            *r_values_out);
-
 /* --- sfi/bse init --- */
 typedef struct
 {
