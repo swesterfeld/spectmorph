@@ -72,32 +72,6 @@ public:
 
 #define SPECTMORPH_NOBSE 1
 
-/* --- Bse IEEE754 --- */
-#if defined (__i386__) && defined (__GNUC__)
-static inline int G_GNUC_CONST
-bse_ftoi (register float f)
-{
-  int r;
-
-  __asm__ ("fistl %0"
-           : "=m" (r)
-           : "t" (f));
-  return r;
-}
-static inline int G_GNUC_CONST
-bse_dtoi (register double f)
-{
-  int r;
-
-  __asm__ ("fistl %0"
-           : "=m" (r)
-           : "t" (f));
-  return r;
-}
-#endif
-
-int bse_fpu_okround();
-
 /* Bse Block utils */
 
 namespace Bse

@@ -44,17 +44,6 @@ malloc_aligned (gsize     total_size,
 
 }
 
-int
-bse_fpu_okround()
-{
-  typedef unsigned short int BseFpuState;
-
-  BseFpuState cv;
-  __asm__ ("fnstcw %0"
-           : "=m" (*&cv));
-  return !(cv & 0x0c00);
-}
-
 namespace Bse
 {
 
