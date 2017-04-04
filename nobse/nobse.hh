@@ -17,11 +17,6 @@ typedef guint8              uint8;
 
 #define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 #define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
-#define RAPICORN_AIDA_ENUM_DEFINE_ARITHMETIC_EQ(Enum)   \
-  bool constexpr operator== (Enum v, int64_t n) { return int64_t (v) == n; } \
-  bool constexpr operator== (int64_t n, Enum v) { return n == int64_t (v); } \
-  bool constexpr operator!= (Enum v, int64_t n) { return int64_t (v) != n; } \
-  bool constexpr operator!= (int64_t n, Enum v) { return n != int64_t (v); }
 
 namespace Rapicorn
 {
@@ -128,11 +123,6 @@ public:
 };
 
 }
-
-/* --- signal processing: windows --- */
-double  bse_window_cos (double x);
-double  bse_window_blackman (double x);
-double  bse_window_hamming (double x);
 
 /* --- macros for frequency valued signals --- */
 double BSE_SIGNAL_TO_FREQ (double sig);

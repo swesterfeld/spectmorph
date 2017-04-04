@@ -76,31 +76,6 @@ bse_fpu_okround()
   return !(cv & 0x0c00);
 }
 
-double
-bse_window_cos (double x) /* von Hann window */
-{
-  if (fabs (x) > 1)
-    return 0;
-  return 0.5 * cos (x * M_PI) + 0.5;
-}
-
-double
-bse_window_blackman (double x)
-{
-  if (fabs (x) > 1)
-    return 0;
-  return 0.42 + 0.5 * cos (M_PI * x) + 0.08 * cos (2.0 * M_PI * x);
-}
-
-double
-bse_window_hamming (double x) /* sharp (rectangle) cutoffs at boundaries */
-{
-  if (fabs (x) > 1)
-    return 0;
-
-  return 0.54 + 0.46 * cos (M_PI * x);
-}
-
 namespace Bse
 {
 
