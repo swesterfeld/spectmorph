@@ -290,7 +290,7 @@ main (int argc, char **argv)
       WavData wav_data (audio_out, 1, options.rate);
       if (!wav_data.save (options.export_wav))
         {
-          fprintf (stderr, "%s: export to file %s failed: %s", options.program_name.c_str(), options.export_wav.c_str(), wav_data.error_blurb());
+          fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), options.export_wav.c_str(), wav_data.error_blurb());
           exit (1);
         }
     }

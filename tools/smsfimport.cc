@@ -1116,7 +1116,7 @@ import_preset (const string& import_name)
                                   WavData wav_data (padded_sample, 1, samples[id].srate);
                                   if (!wav_data.save (filename))
                                     {
-                                      fprintf (stderr, "%s: export to file %s failed: %s", options.program_name.c_str(), filename.c_str(), wav_data.error_blurb());
+                                      fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), filename.c_str(), wav_data.error_blurb());
                                       exit (1);
                                     }
 
