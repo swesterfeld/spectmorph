@@ -396,6 +396,9 @@ window_blackman_harris_92 (double x)
   return a0 + a1 * cos (M_PI * x) + a2 * cos (2.0 * M_PI * x) + a3 * cos (3.0 * M_PI * x);
 }
 
+/* --- decibel conversion --- */
+double db_to_factor (double dB);
+
 #if defined (__i386__) && defined (__GNUC__)
 inline int
 sm_round_positive (double d)

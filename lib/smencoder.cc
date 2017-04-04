@@ -412,7 +412,7 @@ Encoder::search_local_maxima (const vector<float>& window)
                       double tfreq = (d / 2 + x_max) * mix_freq / (block_size * zeropad);
 
                       double peak_mag_db = mag_interp.eval (x_max);
-                      double peak_mag = bse_db_to_factor (peak_mag_db) * max_mag;
+                      double peak_mag = db_to_factor (peak_mag_db) * max_mag;
 
                       // use the interpolation formula for the complex values to find the phase
                       QInterpolator re_interp (audio_blocks[n].noise[d-2], audio_blocks[n].noise[d], audio_blocks[n].noise[d+2]);

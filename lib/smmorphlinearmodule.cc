@@ -384,7 +384,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
                   // recolorize
                   mag_db += interp_env_mag_db;
 
-                  mag = bse_db_to_factor (mag_db);
+                  mag = db_to_factor (mag_db);
                 }
               else
                 {

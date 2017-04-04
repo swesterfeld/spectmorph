@@ -459,7 +459,7 @@ morph_delta_db (double left_db, double right_db, double morphing)
 static void
 apply_delta_db (AudioBlock& block, double delta_db)
 {
-  const double factor = bse_db_to_factor (delta_db);
+  const double factor = db_to_factor (delta_db);
   const int    ddb    = sm_factor2delta_idb (factor);
 
   // apply delta db volume to partials & noise

@@ -34,7 +34,7 @@ init_aa_filter()
       const double db_at_nyquist = -60;
 
       for (size_t i = 0; i < antialias_filter_table.size(); i++)
-        antialias_filter_table[i] = bse_db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
+        antialias_filter_table[i] = db_to_factor (double (i) / ANTIALIAS_FILTER_TABLE_SIZE * db_at_nyquist);
     }
 }
 
@@ -178,7 +178,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       frame_idx = 0;
       env_pos = 0;
       original_sample_pos = 0;
-      original_samples_norm_factor = bse_db_to_factor (audio->original_samples_norm_db);
+      original_samples_norm_factor = db_to_factor (audio->original_samples_norm_db);
 
       // reset partial state vectors
       pstate[0].clear();
@@ -614,7 +614,7 @@ LiveDecoder::set_unison_voices (int voices, float detune)
    * ...
    */
   const double unison_gain_db = (log (voices)/log (2)) * 3;
-  unison_gain = 1 / bse_db_to_factor (unison_gain_db);
+  unison_gain = 1 / db_to_factor (unison_gain_db);
 
   /* resize unison phase array to match pstate */
   const bool lps_zero = (last_pstate == &pstate[0]);

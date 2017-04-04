@@ -6,6 +6,13 @@
 
 namespace SpectMorph {
 
+double
+db_to_factor (double dB)
+{
+  double factor = dB / 20; /* Bell */
+  return pow (10, factor);
+}
+
 int
 sm_factor2delta_idb (double factor)
 {
@@ -16,7 +23,7 @@ double
 sm_idb2factor_slow (uint16_t idb)
 {
   double db = idb / 64.0 - 512;
-  return bse_db_to_factor (db);
+  return db_to_factor (db);
 }
 
 #define FAC 6000.0
