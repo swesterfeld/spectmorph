@@ -9,6 +9,7 @@
 #include "smfft.hh"
 #include "config.h"
 #include "smwavdata.hh"
+#include "smmath.hh"
 
 #include <assert.h>
 #include <stdio.h>
