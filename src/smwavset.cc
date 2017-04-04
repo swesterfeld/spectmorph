@@ -406,7 +406,7 @@ main (int argc, char **argv)
                 sm_printf ("%d", wi->velocity_range_max);
               else
                 {
-                  sfi_error ("list command: invalid field for format: %s", fi->c_str());
+                  fprintf (stderr, "list command: invalid field for format: %s", fi->c_str());
                   exit (1);
                 }
             }
