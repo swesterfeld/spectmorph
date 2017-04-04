@@ -1039,7 +1039,7 @@ normalize_factor (double norm, Audio& audio)
     }
 
   // store normalization in order to replay original samples normalized
-  const double samples_factor = bse_db_to_factor (audio.original_samples_norm_db);
+  const double samples_factor = db_to_factor (audio.original_samples_norm_db);
   audio.original_samples_norm_db = bse_db_from_factor (samples_factor * norm, -200);
 }
 
@@ -1133,7 +1133,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    normalize_factor (bse_db_to_factor (norm_db), audio);
+    normalize_factor (db_to_factor (norm_db), audio);
     return true;
   }
 } global_volume_command;
