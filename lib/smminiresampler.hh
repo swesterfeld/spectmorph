@@ -4,6 +4,7 @@
 #define SPECTMORPH_MINI_RESAMPLER_HH
 
 #include <bse/gsldatautils.hh>
+#include "smwavdata.hh"
 
 #include <vector>
 
@@ -16,7 +17,7 @@ class MiniResampler
   GslDataPeekBuffer m_peek_buffer;
   double            m_speedup_factor;
 public:
-  MiniResampler (GslDataHandle *dhandle, double speedup_factor);
+  MiniResampler (const WavData& wav_data, double speedup_factor);
 
   int read (uint64 pos, size_t block_size, float *out);
   uint64 length();

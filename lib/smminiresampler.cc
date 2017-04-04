@@ -3,10 +3,15 @@
 #include "smminiresampler.hh"
 #include <string.h>
 
+using std::vector;
+
 using namespace SpectMorph;
 
-MiniResampler::MiniResampler (GslDataHandle *dhandle, double speedup_factor)
+MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
 {
+  const vector<float>& samples = wav_data.samples();
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, wav_data.mix_freq(), 440, samples.size(), &samples[0], NULL);
+
   m_speedup_factor = speedup_factor;
   m_dhandle = dhandle;
   memset (&m_peek_buffer, 0, sizeof (m_peek_buffer));
