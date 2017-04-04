@@ -132,7 +132,7 @@ void
 MainWidget::on_volume_changed (int new_volume_int)
 {
   double new_volume = new_volume_int / 1000.0;
-  double new_decoder_volume = bse_db_to_factor (new_volume);
+  double new_decoder_volume = db_to_factor (new_volume);
   volume_label->setText (string_locale_printf ("%.1f dB", new_volume).c_str());
 
   if (jack_player)
