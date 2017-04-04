@@ -488,7 +488,7 @@ main (int argc, char **argv)
                 }
               else if (window_type == "blackman")
                 {
-                  window[i] = bse_window_blackman (2.0 * i / (frame_size - 1) - 1.0);
+                  window[i] = window_blackman (2.0 * i / (frame_size - 1) - 1.0);
                 }
               else
                 {
