@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include <glib.h>
-#include <bse/gslfft.hh>
 #include <bse/bseblockutils.hh>
 #include <string.h>
 #include <unistd.h>
@@ -29,52 +28,6 @@ void
 FFT::debug_randomize_new_arrays (bool b)
 {
   randomize_new_fft_arrays = b;
-}
-
-static inline void
-gsl_fftar_float (size_t N, float* in, float* out)
-{
-  double ind[N];
-  double outd[N];
-
-  std::copy (in, in + N, ind);
-  gsl_power2_fftar (N, ind, outd);
-  std::copy (outd, outd + N, out);
-}
-
-static inline void
-gsl_fftac_float (size_t N, float* in, float* out)
-{
-  const int ARRAY_SIZE = N * 2;
-  double ind[ARRAY_SIZE];
-  double outd[ARRAY_SIZE];
-
-  std::copy (in, in + ARRAY_SIZE, ind);
-  gsl_power2_fftac (N, ind, outd);
-  std::copy (outd, outd + ARRAY_SIZE, out);
-}
-
-static inline void
-gsl_fftsr_float (size_t N, float* in, float* out)
-{
-  double ind[N];
-  double outd[N];
-
-  std::copy (in, in + N, ind);
-  gsl_power2_fftsr (N, ind, outd);
-  std::copy (outd, outd + N, out);
-}
-
-static inline void
-gsl_fftsc_float (size_t N, float* in, float* out)
-{
-  const int ARRAY_SIZE = N * 2;
-  double ind[ARRAY_SIZE];
-  double outd[ARRAY_SIZE];
-
-  std::copy (in, in + ARRAY_SIZE, ind);
-  gsl_power2_fftsc (N, ind, outd);
-  std::copy (outd, outd + ARRAY_SIZE, out);
 }
 
 #if SPECTMORPH_HAVE_FFTW
@@ -297,47 +250,5 @@ FFT::load_wisdom()
 #else
 
 #error "building without FFTW is not supported currently"
-
-float *
-FFT::new_array_float (size_t N)
-{
-  return (float *) g_malloc (N * sizeof (float));
-}
-
-void
-FFT::free_array_float (float *f)
-{
-  g_free (f);
-}
-
-void
-FFT::fftar_float (size_t N, float* in, float* out)
-{
-  gsl_fftar_float (N, in, out);
-}
-
-void
-FFT::fftsr_float (size_t N, float* in, float* out)
-{
-  gsl_fftsr_float (N, in, out);
-}
-
-void
-FFT::fftac_float (size_t N, float *in, float *out)
-{
-  gsl_fftac_float (N, in, out);
-}
-
-void
-FFT::fftsc_float (size_t N, float *in, float *out)
-{
-  gsl_fftsc_float (N, in, out);
-}
-
-void
-FFT::load_wisdom()
-{
-  /* no FFTW */
-}
 
 #endif
