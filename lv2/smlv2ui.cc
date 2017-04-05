@@ -105,6 +105,8 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             LV2UI_Widget*             widget,
             const LV2_Feature* const* features)
 {
+  debug ("instantiate called for ui\n");
+
   if (!sm_init_done())
     sm_init_plugin();
 
@@ -150,6 +152,8 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 static void
 cleanup (LV2UI_Handle handle)
 {
+  debug ("cleanup called for ui\n");
+
   LV2UI *ui = static_cast <LV2UI *> (handle);
   delete ui;
 }
