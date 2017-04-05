@@ -11,6 +11,7 @@
 #include <bse/gsldatautils.hh>
 #include <errno.h>
 #include <unistd.h>
+#include <glib.h>
 #include "smmain.hh"
 #include "smwavdata.hh"
 
