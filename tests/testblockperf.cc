@@ -3,6 +3,7 @@
 #include "smmain.hh"
 #include "smrandom.hh"
 #include "smfft.hh"
+#include "smblockutils.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
@@ -54,9 +55,9 @@ block_perf (bool add, bool aligned)
       for (int r = 0; r < RUNS; r++)
         {
           if (add)
-            Bse::Block::add (block_size, &a[aligned ? 0 : 1], &b[0]);
+            Block::add (block_size, &a[aligned ? 0 : 1], &b[0]);
           else
-            Bse::Block::mul (block_size, &a[aligned ? 0 : 1], &b[0]);
+            Block::mul (block_size, &a[aligned ? 0 : 1], &b[0]);
         }
       double end = gettime();
       min_time = min (min_time, end - start);
