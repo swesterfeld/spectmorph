@@ -15,7 +15,6 @@
 using namespace SpectMorph;
 using std::max;
 using std::min;
-using std::vector;
 
 static double
 gettime()
