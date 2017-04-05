@@ -290,7 +290,6 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 ])
 
 AC_CONFIG_FILES([Makefile
-nobse/Makefile nobse/birnet/Makefile nobse/bse/Makefile nobse/sfi/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile
