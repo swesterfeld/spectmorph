@@ -4,6 +4,10 @@
 #include <string.h>
 #include <glib.h>
 
+#if SPECTMORPH_HAVE_BSE
+#include <bse/gsldatautils.hh>
+#endif
+
 using std::vector;
 using std::min;
 
