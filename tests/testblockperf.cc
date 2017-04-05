@@ -4,6 +4,7 @@
 #include "smrandom.hh"
 #include "smfft.hh"
 #include "smblockutils.hh"
+#include "smalignedarray.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <bse/bseblockutils.hh>
@@ -12,7 +13,6 @@
 #include <sys/time.h>
 
 using namespace SpectMorph;
-using Rapicorn::AlignedArray;
 using std::max;
 using std::min;
 using std::vector;

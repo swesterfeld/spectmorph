@@ -21,7 +21,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testlpca testblockperf
 
 testfastsin_SOURCES = testfastsin.cc
-testfastsin_LDADD = $(BSE_LIBS)
+testfastsin_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
 testblob_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
