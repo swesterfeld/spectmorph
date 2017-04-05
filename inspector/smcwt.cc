@@ -18,6 +18,7 @@
 #include "smcwt.hh"
 #include "smfftthread.hh"
 #include "smutils.hh"
+#include "smalignedarray.hh"
 #include <math.h>
 
 using std::vector;
