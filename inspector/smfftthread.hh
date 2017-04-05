@@ -3,8 +3,6 @@
 #ifndef SPECTMORPH_FFTTHREAD_HH
 #define SPECTMORPH_FFTTHREAD_HH
 
-#include <bse/bseloader.hh>
-
 #include "smcommon.hh"
 #include "smpixelarray.hh"
 #include "smwavdata.hh"

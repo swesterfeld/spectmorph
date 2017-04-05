@@ -7,10 +7,6 @@
 #include "smlpc.hh"
 #include "smblockutils.hh"
 
-#include <bse/bseblockutils.hh>
-#include <bse/bseglobals.hh>
-#include <bse/bsemathsignal.hh>
-
 #include <QSocketNotifier>
 
 #include <sys/poll.h>
