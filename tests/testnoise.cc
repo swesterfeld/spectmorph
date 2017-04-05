@@ -6,7 +6,9 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 
+#if SPECTMORPH_HAVE_BSE
 #include <bse/bsemathsignal.hh>
+#endif
 
 #include <vector>
 #include <assert.h>

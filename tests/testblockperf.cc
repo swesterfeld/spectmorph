@@ -6,9 +6,6 @@
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
 
-#include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
-
 #include <assert.h>
 #include <sys/time.h>
 

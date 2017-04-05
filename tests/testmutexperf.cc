@@ -3,7 +3,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 
-#include <bse/bsecxxplugin.hh>
 #include <QMutex>
 
 #include "smmain.hh"
