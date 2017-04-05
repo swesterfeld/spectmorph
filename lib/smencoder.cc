@@ -6,9 +6,9 @@
 #include "smdebug.hh"
 #include "smmicroconf.hh"
 #include "smutils.hh"
+#include "smblockutils.hh"
 
 #include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
@@ -263,7 +263,7 @@ Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const
             block[offset] = wav_data[pos + offset];
         }
       vector<float> debug_samples (block.begin(), block.end());
-      Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
+      Block::mul (enc_params.block_size, &block[0], &window[0]);
 
       int j = in.size() - enc_params.frame_size / 2;
       for (vector<float>::const_iterator i = block.begin(); i != block.end(); i++)

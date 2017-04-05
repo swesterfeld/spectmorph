@@ -3,9 +3,9 @@
 #include "smifftsynth.hh"
 #include "smmath.hh"
 #include "smfft.hh"
+#include "smblockutils.hh"
 #include <bse/gslfft.hh>
 #include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
 #include <assert.h>
 #include <stdio.h>
 
@@ -101,7 +101,7 @@ IFFTSynth::get_samples (float      *samples,
   FFT::fftsr_destructive_float (block_size, fft_in, fft_out);
 
   if (win_scale)
-    Bse::Block::mul (block_size, fft_out, win_scale);
+    Block::mul (block_size, fft_out, win_scale);
 
   if (output_mode == REPLACE)
     {
@@ -110,8 +110,8 @@ IFFTSynth::get_samples (float      *samples,
     }
   else if (output_mode == ADD)
     {
-      Bse::Block::add (block_size / 2, samples, fft_out + block_size / 2);
-      Bse::Block::add (block_size / 2, samples + block_size / 2, fft_out);
+      Block::add (block_size / 2, samples, fft_out + block_size / 2);
+      Block::add (block_size / 2, samples + block_size / 2, fft_out);
     }
   else
     {

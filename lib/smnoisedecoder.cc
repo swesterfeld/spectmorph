@@ -4,6 +4,7 @@
 #include "smmath.hh"
 #include "smmain.hh"
 #include "smfft.hh"
+#include "smblockutils.hh"
 #include <bse/bseblockutils.hh>
 #include <bse/bsemathsignal.hh>
 #include <stdio.h>
@@ -113,12 +114,12 @@ NoiseDecoder::process (const AudioBlock& audio_block,
       float *in = FFT::new_array_float (block_size);
       FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
 
-      Bse::Block::mul (block_size, in, cos_window);
+      Block::mul (block_size, in, cos_window);
 
       if (output_mode == REPLACE)
         memcpy (samples, in, block_size * sizeof (float));
       else if (output_mode == ADD)
-        Bse::Block::add (block_size, samples, in);
+        Block::add (block_size, samples, in);
       else
         assert (false);
 
@@ -325,6 +326,6 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
           spectrum[i-7] = out_im;
         }
       spectrum[1] = spectrum[block_size];
-      Bse::Block::add (block_size, fft_buffer, spectrum);
+      Block::add (block_size, fft_buffer, spectrum);
     }
 }
