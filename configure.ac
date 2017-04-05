@@ -262,13 +262,13 @@ MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
   AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
 ])
-MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x],    [ AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x" ])
+MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x],        [ AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x" ])
 
-gc_target_sse="-msse -msse2 -msse3 -mmmx"
-MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse], [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
+gcc_target_sse="-msse -msse2 -msse3 -mmmx"
+MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
 
 gcc_optimize_extra="-funroll-loops -ftree-vectorize -finline-functions -ftracer -ftree-loop-distribution -ftree-loop-ivcanon -ftree-loop-im -minline-all-stringops"
-MC_PROG_CC_SUPPORTS_OPTION([$gcc_opts],       [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_optimize_extra" ])
+MC_PROG_CC_SUPPORTS_OPTION([$gcc_optimize_extra], [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_optimize_extra" ])
 
 AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CXXFLAGS)
