@@ -72,28 +72,6 @@ public:
 
 #define SPECTMORPH_NOBSE 1
 
-/* Bse Block utils */
-
-namespace Bse
-{
-
-class Block
-{
-public:
-  static void  mul    (guint           n_values,
-                       float          *ovalues,
-                       const float    *ivalues);
-  static void  add    (guint           n_values,
-                       float          *ovalues,
-                       const float    *ivalues);
-  static void  range  (guint           n_values,
-                       const float    *ivalues,
-                       float&          min_value,
-                       float&          max_value);
-};
-
-}
-
 /* --- macros for frequency valued signals --- */
 double BSE_SIGNAL_TO_FREQ (double sig);
 
