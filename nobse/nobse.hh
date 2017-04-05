@@ -10,8 +10,6 @@
 
 /* Rapicorn fake */
 
-#define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
-#define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
 
 #define SPECTMORPH_NOBSE 1
 
