@@ -2,6 +2,7 @@
 
 #include "smminiresampler.hh"
 #include <string.h>
+#include <glib.h>
 
 using std::vector;
 using std::min;
@@ -10,8 +11,8 @@ using namespace SpectMorph;
 
 MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
 {
-#if SPECTMORPH_NOBSE
-  g_printerr ("[libnobse] no support for MiniResampler\n");
+#if !SPECTMORPH_HAVE_BSE
+  g_printerr ("SpectMorph::MiniResampler: not supported without libbse\n");
   g_assert_not_reached();
 #else
   const vector<float>& samples = wav_data.samples();
