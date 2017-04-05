@@ -8,6 +8,7 @@
 
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsemathsignal.hh>
+#include <bse/gsldatautils.hh>
 #endif
 
 #include <vector>
