@@ -6,6 +6,11 @@
 #include <QMutex>
 
 #include "smmain.hh"
+#include "smutils.hh"
+
+#if SPECTMORPH_HAVE_BSE
+#include <bse/bsecxxplugin.hh>
+#endif
 
 static double
 gettime()
@@ -18,42 +23,38 @@ gettime()
 
 using namespace SpectMorph;
 
+template<class MTest>
+void run_test (const char *label)
+{
+  MTest mtest;
+
+  // FIRST:
+  mtest.do_lock();
+
+  const unsigned int runs = 1000000;
+  double start = gettime();
+  for (unsigned int i = 0; i < runs; i++)
+    mtest.do_lock();
+  double end = gettime();
+
+  printf ("%20s %.2f mlocks/sec\n", label, runs / (end - start) / (1000 * 1000));
+}
+
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
-  {
-    QMutex qmutex;
+  struct QMTest {
+    QMutex mutex;
+    void do_lock() { QMutexLocker qlock (&mutex); }
+  };
+  run_test<QMTest> ("QMutex");
 
-    // FIRST:
-    qmutex.lock();
-    qmutex.unlock();
-
-    const unsigned int runs = 1000000;
-    double start = gettime();
-    for (unsigned int i = 0; i < runs; i++)
-      {
-        QMutexLocker qlock (&qmutex);
-      }
-    double end = gettime();
-    printf ("%20s %.2f mlocks/sec\n", "QMutex", runs / (end - start) / (1000 * 1000));
-  }
-#if 0
-  {
-    Bse::Mutex bmutex;
-
-    // FIRST:
-    bmutex.lock();
-    bmutex.unlock();
-
-    const unsigned int runs = 1000000;
-    double start = gettime();
-    for (unsigned int i = 0; i < runs; i++)
-      {
-        Bse::ScopedLock<Bse::Mutex> block (bmutex);
-      }
-    double end = gettime();
-    printf ("%20s %.2f mlocks/sec\n", "Bse::Mutex", runs / (end - start) / (1000 * 1000));
-  }
+#if SPECTMORPH_HAVE_BSE
+  struct BMTest {
+    Bse::Mutex mutex;
+    void do_lock() { Bse::ScopedLock<Bse::Mutex> block (mutex); }
+  };
+  run_test<BMTest> ("Bse::Mutex");
 #endif
 }
