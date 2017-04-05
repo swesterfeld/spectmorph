@@ -5,6 +5,7 @@
 
 #include <string>
 #include <assert.h>
+#include <stdarg.h>
 
 /********************************************************************************
 * START: Code from Rapicorn

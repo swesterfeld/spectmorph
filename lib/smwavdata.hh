@@ -5,6 +5,8 @@
 
 #include "smutils.hh"
 
+#include <vector>
+
 namespace SpectMorph
 {
 
