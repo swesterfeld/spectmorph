@@ -4,7 +4,7 @@ SUBDIRS = birnet bse sfi
 
 AM_CXXFLAGS += $(GLIB_CFLAGS)
 
-SMHDRS = nobse.hh minipcg32.hh rapicorn.hh
+SMHDRS = nobse.hh rapicorn.hh
 
 lib_LTLIBRARIES = libspectmorph_nobse.la
 libspectmorph_nobse_la_SOURCES = nobse.cc $(SMHDRS)

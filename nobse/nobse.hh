@@ -28,6 +28,4 @@ void bse_init_inprocess      (gint           *argc,
                               const char     *app_name,
                               const std::vector<std::string>& args = std::vector<std::string>());
 
-#include "minipcg32.hh"
-
 #endif
