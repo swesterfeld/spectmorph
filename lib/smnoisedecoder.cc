@@ -5,8 +5,6 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smblockutils.hh"
-#include <bse/bseblockutils.hh>
-#include <bse/bsemathsignal.hh>
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>

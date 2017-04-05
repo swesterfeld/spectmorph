@@ -9,7 +9,6 @@
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
 
-#include <bse/bsemathsignal.hh>
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>

@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <bse/bseieee754.hh>
 #include <algorithm>
 #ifdef __SSE__
 #include <xmmintrin.h>

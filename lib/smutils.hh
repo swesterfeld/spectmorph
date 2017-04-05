@@ -4,7 +4,6 @@
 #define SPECTMORPH_UTIL_HH
 
 #include <string>
-#include <rapicorn.hh>
 #include "config.h"
 
 namespace SpectMorph

@@ -5,8 +5,16 @@
 #include "smleakdebugger.hh"
 #include "smutils.hh"
 
+#if SPECTMORPH_HAVE_BSE
 #include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
+#else
+static inline float
+BSE_SIGNAL_TO_FREQ (float f)
+{
+  g_printerr ("SpectMorph::LiveDecoder: freq_in array only implemented for bse plugin\n");
+  g_assert_not_reached();
+}
+#endif
 
 #include <stdio.h>
 #include <assert.h>
@@ -230,15 +238,6 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
     }
   return frame_idx;
 }
-
-#if !SPECTMORPH_HAVE_BSE
-static inline float
-BSE_SIGNAL_TO_FREQ (float f)
-{
-  g_printerr ("SpectMorph::LiveDecoder: freq_in array only implemented for bse plugin\n");
-  g_assert_not_reached();
-}
-#endif
 
 void
 LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_mod_in, float *audio_out)

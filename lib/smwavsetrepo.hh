@@ -5,8 +5,6 @@
 
 #include "smwavset.hh"
 
-#include <bse/bsecxxplugin.hh>
-
 #include <QMutex>
 
 #include <map>

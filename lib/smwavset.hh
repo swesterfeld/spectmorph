@@ -5,7 +5,6 @@
 
 #include <vector>
 #include <string>
-#include <bse/bsecxxplugin.hh>
 
 #include "smaudio.hh"
 

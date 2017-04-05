@@ -4,8 +4,6 @@
 #include "smmath.hh"
 #include "smfft.hh"
 #include "smblockutils.hh"
-#include <bse/gslfft.hh>
-#include <bse/bsemathsignal.hh>
 #include <assert.h>
 #include <stdio.h>
 

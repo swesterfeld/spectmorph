@@ -3,7 +3,6 @@
 #include <math.h>
 #include <assert.h>
 #include <stdio.h>
-#include <bse/bseblockutils.hh>
 
 #include "smnoisebandpartition.hh"
 #include "smmath.hh"

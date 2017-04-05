@@ -3,8 +3,6 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smmath.hh"
-#include <bse/bsemain.hh>
-#include <bse/bseieee754.hh>
 #include <stdio.h>
 #include <assert.h>
 

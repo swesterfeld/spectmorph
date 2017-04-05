@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_AUDIO_HH
 #define SPECTMORPH_AUDIO_HH
 
-#include <bse/bsecxxplugin.hh>
 #include <vector>
 
 #include "smgenericin.hh"
