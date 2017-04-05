@@ -10,7 +10,9 @@ namespace SpectMorph
 {
 
 /* integer types */
-typedef uint8_t uint8;
+typedef uint8_t  uint8;
+typedef int64_t  int64;
+typedef uint64_t uint64;
 
 std::string string_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
