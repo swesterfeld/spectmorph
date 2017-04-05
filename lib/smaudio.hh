@@ -80,7 +80,7 @@ enum AudioLoadOptions
  */
 class Audio
 {
-  RAPICORN_CLASS_NON_COPYABLE (Audio);
+  SPECTMORPH_CLASS_NON_COPYABLE (Audio);
 public:
   Audio();
   ~Audio();

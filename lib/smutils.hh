@@ -14,12 +14,15 @@ typedef uint8_t  uint8;
 typedef int64_t  int64;
 typedef uint64_t uint64;
 
-std::string string_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
+#define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
+#define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+
+std::string string_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
 
-std::string string_locale_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
+std::string string_locale_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 
-void        sm_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
+void        sm_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 
 enum InstallDir
 {
