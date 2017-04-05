@@ -4,6 +4,7 @@
 #include <stdio.h>
 
 #include <QMutex>
+#include <mutex>
 
 #include "smmain.hh"
 #include "smutils.hh"
