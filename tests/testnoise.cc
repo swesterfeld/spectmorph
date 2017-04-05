@@ -119,8 +119,8 @@ avg_spectrum (const char *label, vector<float>& signal)
 void
 highpass (vector<float>& audio_in, vector<float>& audio_out, double cutoff_freq)
 {
-#if SPECTMORPH_NOBSE
-  g_printerr ("[libnobse] no support for highpass data handle\n");
+#if !SPECTMORPH_HAVE_BSE
+  g_printerr ("testnoise: highpass: not supported, need libbse to do this\n");
   g_assert_not_reached();
 #else
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), &audio_in[0], NULL);
