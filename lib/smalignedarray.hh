@@ -3,6 +3,7 @@
 #ifndef SPECTMORPH_ALIGNED_ARRAY_HH
 #define SPECTMORPH_ALIGNED_ARRAY_HH
 
+#include <glib.h>
 #include "smutils.hh"
 
 namespace SpectMorph
