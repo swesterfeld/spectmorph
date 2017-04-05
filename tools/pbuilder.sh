@@ -14,7 +14,7 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-DSC=../../spectmorph-minimal_0.3.2.dsc
+DSC=../../spectmorph_0.3.2.dsc
 
 unset CC
 unset CXX

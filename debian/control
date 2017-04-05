@@ -1,20 +1,18 @@
-Source: spectmorph-minimal
+Source: spectmorph
 Section: sound
 Priority: optional
 Maintainer: Stefan Westerfeld <stefan@space.twc.de>
 Build-Depends: debhelper (>= 8.0.0), autotools-dev, build-essential,
   libglib2.0-dev, libao-dev, qtbase5-dev, qtbase5-dev-tools,
   qttools5-dev-tools, libjack-dev, libfftw3-dev, libboost-dev,
-  lv2-dev
+  lv2-dev, libsndfile1-dev
 Standards-Version: 3.9.2
 Homepage: http://www.spectmorph.org
 
-Package: spectmorph-minimal
+Package: spectmorph
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: synchronization for collections of big files
  SpectMorph is designed to morph sounds of musical instruments.
  .
- This is a minimal self-contained build, containing only the JACK client,
- the LV2 plugin and the VST plugin. Support for BEAST and tools required
- to build new instruments are not included.
+ This package doesn't include support for BEAST.
