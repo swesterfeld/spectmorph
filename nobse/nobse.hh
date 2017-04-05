@@ -18,58 +18,6 @@ typedef guint8              uint8;
 #define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 #define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
 
-namespace Rapicorn
-{
-
-/* --- memory utils --- */
-void* malloc_aligned            (size_t                total_size,
-                                 size_t                alignment,
-                                 uint8               **free_pointer);
-
-template<class T, int ALIGN>
-class AlignedArray {
-  unsigned char *unaligned_mem;
-  T *data;
-  size_t n_elements;
-  void
-  allocate_aligned_data()
-  {
-    g_assert ((ALIGN % sizeof (T)) == 0);
-    data = reinterpret_cast<T *> (malloc_aligned (n_elements * sizeof (T), ALIGN, &unaligned_mem));
-  }
-public:
-  AlignedArray (size_t n_elements) :
-    n_elements (n_elements)
-  {
-    allocate_aligned_data();
-    for (size_t i = 0; i < n_elements; i++)
-      new (data + i) T();
-  }
-  ~AlignedArray()
-  {
-    /* C++ destruction order: last allocated element is deleted first */
-    while (n_elements)
-      data[--n_elements].~T();
-    g_free (unaligned_mem);
-  }
-  T&
-  operator[] (size_t pos)
-  {
-    return data[pos];
-  }
-  const T&
-  operator[] (size_t pos) const
-  {
-    return data[pos];
-  }
-  size_t size () const
-  {
-    return n_elements;
-  }
-};
-
-}
-
 #define SPECTMORPH_NOBSE 1
 
 /* --- macros for frequency valued signals --- */
