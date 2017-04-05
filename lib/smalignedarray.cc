@@ -4,7 +4,8 @@
 
 #include <glib.h>
 
-using namespace SpectMorph;
+namespace SpectMorph
+{
 
 /* --- memory utils --- */
 void*
@@ -34,4 +35,6 @@ malloc_aligned (gsize     total_size,
         aligned_mem += alignment - (ptrdiff_t) aligned_mem % alignment;
       return aligned_mem;
     }
+}
+
 }

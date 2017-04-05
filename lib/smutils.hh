@@ -9,8 +9,6 @@
 namespace SpectMorph
 {
 
-using Rapicorn::AlignedArray;
-
 std::string string_printf (const char *format, ...) RAPICORN_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
 

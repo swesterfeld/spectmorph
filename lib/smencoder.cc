@@ -7,6 +7,7 @@
 #include "smmicroconf.hh"
 #include "smutils.hh"
 #include "smblockutils.hh"
+#include "smalignedarray.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <math.h>

@@ -8,6 +8,7 @@
 #include "smnoisedecoder.hh"
 #include "smlivedecodersource.hh"
 #include "smpolyphaseinter.hh"
+#include "smalignedarray.hh"
 #include <vector>
 
 namespace SpectMorph {
@@ -53,7 +54,7 @@ class LiveDecoder
 
   int                 noise_seed;
 
-  Rapicorn::AlignedArray<float,16> *sse_samples;
+  AlignedArray<float,16> *sse_samples;
 
   // unison
   int                 unison_voices;
