@@ -10,11 +10,6 @@
 
 /* Rapicorn fake */
 
-typedef long long           int64;
-typedef unsigned long long  uint64;
-typedef guint               uint;
-typedef guint8              uint8;
-
 #define RAPICORN_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 #define RAPICORN_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
 
