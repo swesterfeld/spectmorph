@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_COMMON_HH
 #define SPECTMORPH_COMMON_HH
 
+#include <vector>
+
 namespace SpectMorph
 {
 
