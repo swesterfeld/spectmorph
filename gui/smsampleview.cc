@@ -2,7 +2,6 @@
 
 #include "smsampleview.hh"
 #include "smblockutils.hh"
-#include <bse/bseloader.hh>
 #include <stdio.h>
 
 #include <QPainter>
