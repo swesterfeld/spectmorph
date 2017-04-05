@@ -50,6 +50,12 @@ main (int argc, char **argv)
   };
   run_test<QMTest> ("QMutex");
 
+  struct SMTest {
+    std::mutex mutex;
+    void do_lock() { std::lock_guard<std::mutex> guard (mutex); }
+  };
+  run_test<SMTest> ("std::mutex");
+
 #if SPECTMORPH_HAVE_BSE
   struct BMTest {
     Bse::Mutex mutex;
