@@ -4,7 +4,9 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE([foreign])
+saved_CFLAGS="$CFLAGS" ; saved_CXXFLAGS="$CFLAGS" # the AC_PROG_C* macros mess up CFLAGS and CXXFLAGS
 AC_PROG_CXX
+CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 AC_PROG_LIBTOOL
 
 dnl
@@ -44,9 +46,9 @@ dnl libnobse (used in case libbse is not present/wanted)
 dnl
 AC_DEFUN([AC_NOBSE_REQUIREMENTS],
 [
-    BSE_CFLAGS='-I$(top_srcdir)/nobse '$GLIB_CFLAGS
+    BSE_CFLAGS=$GLIB_CFLAGS
     AC_SUBST(BSE_CFLAGS)
-    BSE_LIBS='$(top_srcdir)/nobse/libspectmorph_nobse.la '$GLIB_LIBS
+    BSE_LIBS=$GLIB_LIBS
     AC_SUBST(BSE_LIBS)
 ])
 dnl
@@ -144,8 +146,10 @@ AC_DEFUN([AC_FFTW_CHECK],
     CFLAGS="$CFLAGS $FFTW_CFLAGS"
     AC_MSG_CHECKING([whether FFTW is recent enough])
       AC_COMPILE_IFELSE([
-        #include "fftw3.h"
-        int x = FFTW_WISDOM_ONLY;
+        AC_LANG_SOURCE([
+          #include "fftw3.h"
+          int x = FFTW_WISDOM_ONLY;
+        ])
       ],[
         AC_MSG_RESULT([yes])
       ],[
@@ -215,9 +219,13 @@ AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
 
 if test "x$with_beast" = "xno"; then
   AC_NOBSE_REQUIREMENTS
+  SPECTMORPH_HAVE_BSE=0
 else
   AC_BSE_REQUIREMENTS
+  SPECTMORPH_HAVE_BSE=1
 fi
+AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_BSE, $SPECTMORPH_HAVE_BSE, [Whether libbse is available])
+
 dnl -------------------------------------------------------------------------
 
 dnl -------------------- lv2 support is optional ----------------------------
@@ -238,38 +246,47 @@ AC_JACK_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
+
+AM_CFLAGS=""
+AM_CXXFLAGS=""
+
+MC_PROG_CC_SUPPORTS_OPTION([-O3], [
+  AM_CFLAGS="$AM_CFLAGS -O3"
+  AM_CXXFLAGS="$AM_CXXFLAGS -O3"
+])
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
-  CFLAGS="$CFLAGS -Wall"
-  CXXFLAGS="$CXXFLAGS -Wall"
+  AM_CFLAGS="$AM_CFLAGS -Wall"
+  AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
 ])
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
-  CFLAGS="$CFLAGS -fPIC"
-  CXXFLAGS="$CXXFLAGS -fPIC"
+  AM_CFLAGS="$AM_CFLAGS -fPIC"
+  AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
 ])
-MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x], [
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
-])
+MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x],        [ AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x" ])
 
+gcc_target_sse="-msse -msse2 -msse3 -mmmx"
+MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
 
-MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
-  SSE_FLAGS="-msse -mmmx -ftree-vectorize"
-],[
-  SSE_FLAGS=""
-])
-AC_SUBST(SSE_FLAGS)
+gcc_optimize_extra="-funroll-loops -ftree-vectorize -finline-functions -ftracer -ftree-loop-distribution -ftree-loop-ivcanon -ftree-loop-im -minline-all-stringops"
+MC_PROG_CC_SUPPORTS_OPTION([$gcc_optimize_extra], [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_optimize_extra" ])
+
+AC_SUBST(AM_CFLAGS)
+AC_SUBST(AM_CXXFLAGS)
+# --- AC_SUBST(AM_CPPFLAGS) ---
+
 
 AC_ARG_ENABLE(oprofile,AS_HELP_STRING([--enable-oprofile], [setup compiler flags to allow oprofile usage]),
 [
 MC_PROG_CC_SUPPORTS_OPTION([-fno-omit-frame-pointer], [
-  CFLAGS="$CFLAGS -fno-omit-frame-pointer"
-  CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
+  # CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+  # CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
 ])
 ])
 
 AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler flags to do C++ STL debug checks]),
 [
-  CFLAGS="$CFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
-  CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+  # CFLAGS="$CFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+  # CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
 ])
 
 AC_CONFIG_FILES([Makefile

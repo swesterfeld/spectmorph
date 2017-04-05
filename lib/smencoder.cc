@@ -6,9 +6,9 @@
 #include "smdebug.hh"
 #include "smmicroconf.hh"
 #include "smutils.hh"
+#include "smblockutils.hh"
+#include "smalignedarray.hh"
 
-#include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
 #include <math.h>
 #include <stdio.h>
 #include <assert.h>
@@ -18,6 +18,7 @@
 #include <complex>
 #include <map>
 #include <algorithm>
+#include <cinttypes>
 
 using namespace SpectMorph;
 using std::vector;
@@ -263,7 +264,7 @@ Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const
             block[offset] = wav_data[pos + offset];
         }
       vector<float> debug_samples (block.begin(), block.end());
-      Bse::Block::mul (enc_params.block_size, &block[0], &window[0]);
+      Block::mul (enc_params.block_size, &block[0], &window[0]);
 
       int j = in.size() - enc_params.frame_size / 2;
       for (vector<float>::const_iterator i = block.begin(); i != block.end(); i++)
@@ -654,10 +655,10 @@ Encoder::spectral_subtract (const vector<float>& window)
 	{
 	  double re = out[d], im = out[d + 1];
 	  double sub_mag = sqrt (re * re + im * im);
-	  debug ("subspectrum:%lld %g\n", frame, sub_mag);
+	  debug ("subspectrum:%" PRId64 " %g\n", frame, sub_mag);
 
 	  double mag = magnitude (audio_blocks[frame].noise.begin() + d);
-	  debug ("spectrum:%lld %g\n", frame, mag);
+	  debug ("spectrum:%" PRId64 " %g\n", frame, mag);
 	  if (mag > 0)
 	    {
 	      audio_blocks[frame].noise[d] /= mag;
@@ -668,7 +669,7 @@ Encoder::spectral_subtract (const vector<float>& window)
 	      audio_blocks[frame].noise[d] *= mag;
 	      audio_blocks[frame].noise[d + 1] *= mag;
 	    }
-	  debug ("finalspectrum:%lld %g\n", frame, mag);
+	  debug ("finalspectrum:%" PRId64 " %g\n", frame, mag);
 	}
     }
   FFT::free_array_float (fft_in);
@@ -1056,7 +1057,7 @@ Encoder::approx_noise (const vector<float>& window)
       vector<double> approx_spectrum (fft_size);
       xnoise_envelope_to_spectrum (frame, enc_params.mix_freq, noise_envelope, approx_spectrum, norm);
       for (int i = 0; i < approx_spectrum.size(); i += 2)
-        debug ("spect_approx:%lld %g\n", frame, approx_spectrum[i]);
+        debug ("spect_approx:%" PRId64 " %g\n", frame, approx_spectrum[i]);
 
       double spect_energy = 0;
       for (vector<double>::iterator si = approx_spectrum.begin(); si != approx_spectrum.end(); si++)
@@ -1070,7 +1071,7 @@ Encoder::approx_noise (const vector<float>& window)
       for (vector<float>::iterator ri = audio_blocks[frame].debug_samples.begin(); ri != audio_blocks[frame].debug_samples.end(); ri++)
         r_energy += *ri * *ri / audio_blocks[frame].debug_samples.size();
 
-      debug ("noiseenergy:%lld %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
+      debug ("noiseenergy:%" PRId64 " %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
       /// } DEBUG_CODE
       audio_blocks[frame].noise.assign (noise_envelope.begin(), noise_envelope.end());
     }

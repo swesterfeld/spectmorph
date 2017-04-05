@@ -7,7 +7,6 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <bse/gsldatautils.hh>
 
 #include "smaudio.hh"
 #include "smwavdata.hh"

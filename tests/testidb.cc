@@ -2,7 +2,6 @@
 
 #include "smmain.hh"
 #include "smmath.hh"
-#include <bse/bsemathsignal.hh>
 
 #include <assert.h>
 #include <stdio.h>

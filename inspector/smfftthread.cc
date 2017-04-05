@@ -5,10 +5,7 @@
 #include "smfft.hh"
 #include "smcwt.hh"
 #include "smlpc.hh"
-
-#include <bse/bseblockutils.hh>
-#include <bse/bseglobals.hh>
-#include <bse/bsemathsignal.hh>
+#include "smblockutils.hh"
 
 #include <QSocketNotifier>
 
@@ -296,7 +293,7 @@ AnalysisCommand::execute()
           if (pos + offset >= 0 && pos + offset < n_values)
             block[offset] = wav_data[pos + offset];
         }
-      Bse::Block::mul (block_size, &block[0], &window[0]);
+      Block::mul (block_size, &block[0], &window[0]);
       for (size_t i = 0; i < fft_size; i++)
         {
           if (i < block_size)

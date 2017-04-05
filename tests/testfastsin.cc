@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <assert.h>
 #include "smutils.hh"
+#include "smalignedarray.hh"
 #include <string>
 
 using namespace SpectMorph;

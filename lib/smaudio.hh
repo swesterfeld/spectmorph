@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_AUDIO_HH
 #define SPECTMORPH_AUDIO_HH
 
-#include <bse/bsecxxplugin.hh>
 #include <vector>
 
 #include "smgenericin.hh"
@@ -80,7 +79,7 @@ enum AudioLoadOptions
  */
 class Audio
 {
-  RAPICORN_CLASS_NON_COPYABLE (Audio);
+  SPECTMORPH_CLASS_NON_COPYABLE (Audio);
 public:
   Audio();
   ~Audio();

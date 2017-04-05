@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -O3 $(SSE_FLAGS) $(QT_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src $(QT_CFLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
@@ -18,10 +18,10 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testjobqueue testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
         testlsfperf testmutexperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
-        testlpca
+        testlpca testblockperf
 
 testfastsin_SOURCES = testfastsin.cc
-testfastsin_LDADD = $(BSE_LIBS)
+testfastsin_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testblob_SOURCES = testblob.cc
 testblob_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
@@ -52,6 +52,9 @@ testrandperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testnoiseperf_SOURCES = testnoiseperf.cc
 testnoiseperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testblockperf_SOURCES = testblockperf.cc
+testblockperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testisincos_SOURCES = testisincos.cc
 testisincos_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)

@@ -2,8 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <bse/bse.hh>
-#include <bse/bsemathsignal.hh>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -18,6 +16,7 @@
 #include "smcwt.hh"
 #include "smfftthread.hh"
 #include "smutils.hh"
+#include "smalignedarray.hh"
 #include <math.h>
 
 using std::vector;

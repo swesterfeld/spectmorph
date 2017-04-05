@@ -3,8 +3,6 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smmath.hh"
-#include <bse/bsemain.hh>
-#include <bse/bseieee754.hh>
 #include <stdio.h>
 #include <assert.h>
 
@@ -50,7 +48,9 @@ sm_init_plugin()
 void
 sm_init (int *argc_p, char ***argv_p)
 {
+#if SPECTMORPH_HAVE_BSE
   bse_init_inprocess (argc_p, *argv_p, NULL);
+#endif
   sm_init_plugin();
 }
 

@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_MINI_RESAMPLER_HH
 #define SPECTMORPH_MINI_RESAMPLER_HH
 
-#include <bse/gsldatautils.hh>
 #include "smwavdata.hh"
 
 #include <vector>

@@ -2,7 +2,9 @@
 
 #include <vector>
 #include <stdio.h>
+#include <assert.h>
 #include <QtGlobal>
+
 #include "smaudio.hh"
 #include "smwavset.hh"
 #include "smlivedecoder.hh"
@@ -11,9 +13,6 @@
 #include "smutils.hh"
 #include "smlpc.hh"
 #include "smfft.hh"
-#include <assert.h>
-#include <bse/bsemathsignal.hh>
-#include <bse/gslfft.hh>
 
 using namespace SpectMorph;
 using std::vector;

@@ -6,6 +6,7 @@
 #include "smifftsynth.hh"
 #include "smaudio.hh"
 #include "smutils.hh"
+#include "smalignedarray.hh"
 #include <assert.h>
 #include <stdio.h>
 #include <math.h>

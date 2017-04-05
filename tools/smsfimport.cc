@@ -19,8 +19,6 @@
 #include "smutils.hh"
 #include "smwavdata.hh"
 #include <stdlib.h>
-#include <bse/gsldatahandle.hh>
-#include <bse/gsldatautils.hh>
 
 #if 1
 static inline void

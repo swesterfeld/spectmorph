@@ -8,8 +8,6 @@
 #include "smfft.hh"
 #include "smutils.hh"
 
-#include <bse/bsemathsignal.hh>
-
 #include <vector>
 #include <stdio.h>
 #include <assert.h>

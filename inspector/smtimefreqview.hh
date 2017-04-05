@@ -3,7 +3,6 @@
 #ifndef SPECTMORPH_TIMEFREQVIEW_HH
 #define SPECTMORPH_TIMEFREQVIEW_HH
 
-#include <bse/bseloader.hh>
 #include "smpixelarray.hh"
 #include "smaudio.hh"
 #include "smfftthread.hh"

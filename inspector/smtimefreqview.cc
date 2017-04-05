@@ -6,9 +6,6 @@
 
 #include <stdio.h>
 
-#include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
-
 #include <QPainter>
 #include <QPaintEvent>
 #include <QFileDialog>

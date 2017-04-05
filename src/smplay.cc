@@ -1,22 +1,18 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/gslfft.hh>
-#include <bse/bsemathsignal.hh>
-#include <bse/gsldatahandle.hh>
-#include <bse/bseblockutils.hh>
-#include <sfi/sfiparams.hh>
-#include "smaudio.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <ao/ao.h>
 #include <assert.h>
 #include <math.h>
+
 #include "smnoisedecoder.hh"
 #include "smsinedecoder.hh"
 #include "sminfile.hh"
 #include "smwavset.hh"
 #include "smmain.hh"
 #include "smwavdata.hh"
+#include "smaudio.hh"
 #include "config.h"
 
 #include <list>

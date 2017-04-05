@@ -5,8 +5,16 @@
 #include "smleakdebugger.hh"
 #include "smutils.hh"
 
+#if SPECTMORPH_HAVE_BSE
 #include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
+#else
+static inline float
+BSE_SIGNAL_TO_FREQ (float f)
+{
+  g_printerr ("SpectMorph::LiveDecoder: freq_in array only implemented for bse plugin\n");
+  g_assert_not_reached();
+}
+#endif
 
 #include <stdio.h>
 #include <assert.h>

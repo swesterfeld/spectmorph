@@ -7,10 +7,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <bse/gsldatahandle.hh>
-#include <bse/gsldatautils.hh>
 #include <errno.h>
 #include <unistd.h>
+#include <glib.h>
 #include "smmain.hh"
 #include "smwavdata.hh"
 

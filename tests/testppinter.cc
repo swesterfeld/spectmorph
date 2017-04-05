@@ -6,7 +6,6 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 
-#include <bse/bsemathsignal.hh>
 #include <sys/time.h>
 
 #include <vector>

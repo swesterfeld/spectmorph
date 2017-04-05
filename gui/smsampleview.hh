@@ -5,7 +5,7 @@
 
 #include "smaudio.hh"
 #include "smwavdata.hh"
-#include <bse/bseblockutils.hh>
+#include "smblockutils.hh"
 
 #include <QWidget>
 
@@ -78,7 +78,7 @@ public:
                 painter.drawLine (last_x, (height / 2) + last_value * vz, x, (height / 2) + signal[i0] * vz);
 
                 float min_value, max_value;
-                Bse::Block::range (i1 - i0, &signal[i0], min_value, max_value);
+                Block::range (i1 - i0, &signal[i0], min_value, max_value);
 
                 painter.drawLine (x, (height / 2) + min_value * vz, x, (height / 2) + max_value * vz);
 

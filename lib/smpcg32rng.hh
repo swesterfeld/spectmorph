@@ -1,7 +1,10 @@
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 // Author: 2014, Tim Janik, see http://testbit.org/keccak
 
-namespace Rapicorn
+#include <glib.h>
+#include <stdint.h>
+
+namespace SpectMorph
 {
 
 /** Pcg32Rng is a permutating linear congruential PRNG.

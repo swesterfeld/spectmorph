@@ -3,17 +3,15 @@ include $(top_srcdir)/Makefile.decl
 AUTOMAKE_OPTIONS = 1.9 dist-bzip2 no-dist-gzip
 ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 
+SUBDIRS = lib gui jack src tools inspector python tests docs data vst
+
 if COND_WITH_BEAST
-  SUBDIRS = lib gui jack src tools beast inspector python tests docs
-else
-  SUBDIRS = nobse lib gui jack src tools inspector python tests docs
+  SUBDIRS += beast
 endif
 
 if COND_WITH_LV2
   SUBDIRS += lv2
 endif
-
-SUBDIRS += vst data
 
 EXTRA_DIST += DESIGN README.md TODO Doxyfile
 

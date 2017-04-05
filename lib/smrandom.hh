@@ -5,14 +5,15 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <rapicorn.hh>
+
+#include "smpcg32rng.hh"
 
 namespace SpectMorph
 {
 
 class Random
 {
-  Rapicorn::Pcg32Rng rand_gen;
+  Pcg32Rng rand_gen;
 public:
   Random();
 

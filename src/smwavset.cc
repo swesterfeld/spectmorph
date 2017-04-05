@@ -12,7 +12,6 @@
 #include <smaudio.hh>
 #include <smmain.hh>
 #include <smmicroconf.hh>
-#include <bse/bseloader.hh>
 #include "smjobqueue.hh"
 #include "smutils.hh"
 #include "smwavdata.hh"

@@ -6,7 +6,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <string>
-#include <bse/bseblockutils.hh>
 
 using namespace SpectMorph;
 using std::string;

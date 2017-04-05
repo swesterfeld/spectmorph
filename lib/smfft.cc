@@ -7,7 +7,6 @@
 #include "config.h"
 
 #include <glib.h>
-#include <bse/bseblockutils.hh>
 #include <string.h>
 #include <unistd.h>
 

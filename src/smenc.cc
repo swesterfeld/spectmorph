@@ -1,13 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <sfi/sfistore.hh>
-#include <bse/bseloader.hh>
-#include <bse/gslfft.hh>
-#include <bse/bsemathsignal.hh>
-#include <bse/bseblockutils.hh>
-#include <list>
 #include <unistd.h>
-#include <bse/gsldatautils.hh>
 #include <assert.h>
 #include <complex>
 
@@ -22,7 +15,6 @@
 
 using std::string;
 using std::vector;
-using std::list;
 using std::min;
 using std::max;
 

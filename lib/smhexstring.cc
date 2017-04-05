@@ -3,7 +3,6 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 
-#include <rapicorn.hh>
 #include <glib.h>
 
 using namespace SpectMorph;
