@@ -217,9 +217,13 @@ AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
 
 if test "x$with_beast" = "xno"; then
   AC_NOBSE_REQUIREMENTS
+  SPECTMORPH_HAVE_BSE=0
 else
   AC_BSE_REQUIREMENTS
+  SPECTMORPH_HAVE_BSE=1
 fi
+AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_BSE, $SPECTMORPH_HAVE_BSE, [Whether libbse is available])
+
 dnl -------------------------------------------------------------------------
 
 dnl -------------------- lv2 support is optional ----------------------------
