@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -O3 $(SSE_FLAGS) $(QT_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src $(QT_CFLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py

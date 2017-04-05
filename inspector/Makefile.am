@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS=$(BSE_CFLAGS) -O3 $(SSE_FLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui \
+AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui \
              -I$(top_srcdir)/jack
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la

@@ -4,7 +4,9 @@ AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADER([config.h])
 AM_INIT_AUTOMAKE([foreign])
+saved_CFLAGS="$CFLAGS" ; saved_CXXFLAGS="$CFLAGS" # the AC_PROG_C* macros mess up CFLAGS and CXXFLAGS
 AC_PROG_CXX
+CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 AC_PROG_LIBTOOL
 
 dnl
@@ -238,38 +240,46 @@ AC_JACK_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
+
+AM_CFLAGS=""
+AM_CXXFLAGS=""
+
+MC_PROG_CC_SUPPORTS_OPTION([-O3], [
+  AM_CFLAGS="$AM_CFLAGS -O3"
+  AM_CXXFLAGS="$AM_CXXFLAGS -O3"
+])
 MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
-  CFLAGS="$CFLAGS -Wall"
-  CXXFLAGS="$CXXFLAGS -Wall"
+  AM_CFLAGS="$AM_CFLAGS -Wall"
+  AM_CXXFLAGS="$AM_CXXFLAGS -Wall"
 ])
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
-  CFLAGS="$CFLAGS -fPIC"
-  CXXFLAGS="$CXXFLAGS -fPIC"
+  AM_CFLAGS="$AM_CFLAGS -fPIC"
+  AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
 ])
 MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x], [
-  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x"
+])
+MC_PROG_CC_SUPPORTS_OPTION([-msse -msse2 -msse3 -mmmx -ftree-vectorize], [
+  AM_CXXFLAGS="$AM_CXXFLAGS -msse -msse2 -msse3 -mmmx -ftree-vectorize"
 ])
 
+AC_SUBST(AM_CFLAGS)
+AC_SUBST(AM_CXXFLAGS)
+# --- AC_SUBST(AM_CPPFLAGS) ---
 
-MC_PROG_CC_SUPPORTS_OPTION([-msse -mmmx -ftree-vectorize], [
-  SSE_FLAGS="-msse -mmmx -ftree-vectorize"
-],[
-  SSE_FLAGS=""
-])
-AC_SUBST(SSE_FLAGS)
 
 AC_ARG_ENABLE(oprofile,AS_HELP_STRING([--enable-oprofile], [setup compiler flags to allow oprofile usage]),
 [
 MC_PROG_CC_SUPPORTS_OPTION([-fno-omit-frame-pointer], [
-  CFLAGS="$CFLAGS -fno-omit-frame-pointer"
-  CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
+  # CFLAGS="$CFLAGS -fno-omit-frame-pointer"
+  # CXXFLAGS="$CXXFLAGS -fno-omit-frame-pointer"
 ])
 ])
 
 AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler flags to do C++ STL debug checks]),
 [
-  CFLAGS="$CFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
-  CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+  # CFLAGS="$CFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+  # CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
 ])
 
 AC_CONFIG_FILES([Makefile

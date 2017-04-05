@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 SUBDIRS = birnet bse sfi
 
-AM_CXXFLAGS=$(GLIB_CFLAGS) -O3 $(SSE_FLAGS)
+AM_CXXFLAGS += $(GLIB_CFLAGS)
 
 SMHDRS = nobse.hh minipcg32.hh rapicorn.hh
 
