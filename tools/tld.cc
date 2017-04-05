@@ -7,9 +7,6 @@
 #include "smutils.hh"
 #include "smwavdata.hh"
 
-#include <bse/gsldatahandle.hh>
-#include <bse/gsldatautils.hh>
-
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>

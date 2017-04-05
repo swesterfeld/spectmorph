@@ -1,10 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <bse/bseloader.hh>
-#include <bse/gslfft.hh>
-#include <bse/bsemathsignal.hh>
-#include <bse/gsldatautils.hh>
-
 #include "smmain.hh"
 #include "smfft.hh"
 #include "config.h"
