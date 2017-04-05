@@ -46,9 +46,9 @@ dnl libnobse (used in case libbse is not present/wanted)
 dnl
 AC_DEFUN([AC_NOBSE_REQUIREMENTS],
 [
-    BSE_CFLAGS='-I$(top_srcdir)/nobse '$GLIB_CFLAGS
+    BSE_CFLAGS=$GLIB_CFLAGS
     AC_SUBST(BSE_CFLAGS)
-    BSE_LIBS='$(top_srcdir)/nobse/libspectmorph_nobse.la '$GLIB_LIBS
+    BSE_LIBS=$GLIB_LIBS
     AC_SUBST(BSE_LIBS)
 ])
 dnl
