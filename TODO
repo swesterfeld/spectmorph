@@ -9,6 +9,7 @@ NEXT NEXT RELEASE:
 
 PORTING:
 - testmutexperf should also test std::mutex stuff
+- merge 2sse branch
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
