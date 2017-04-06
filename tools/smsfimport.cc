@@ -489,7 +489,7 @@ xsystem (const string& cmd)
   int rc = system (cmd.c_str());
   if (rc != 0)
     {
-      printf ("command execution failed: %d\n", rc);
+      printf ("command execution failed: %d\n", WEXITSTATUS (rc));
       exit (1);
     }
 }
