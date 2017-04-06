@@ -310,7 +310,7 @@ main (int argc, char **argv)
   // decode noise part of the data
   vector<float> decoded_residue (noise_block_size);
 
-  int idx = 0;
+  size_t idx = 0;
   for (pos = 0; pos < sample.size() - noise_block_size; pos += noise_block_size / 2)
     {
       /* since the noise block size is not the frame size, we need to find the
@@ -399,7 +399,7 @@ main (int argc, char **argv)
     }
   else /* export wav */
     {
-      for (int i = 0; i < sample.size(); i++)
+      for (size_t i = 0; i < sample.size(); i++)
         {
           float f = sample[i];
           float cf = CLAMP (f, -1.0, 1.0);
