@@ -162,10 +162,7 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
           int ipos = pos;
           double dpos = pos - ipos;
 
-          if (ipos + 1 < block.size())
-            fft_in[in_pos] = block[ipos] * (1.0 - dpos) + block[ipos + 1] * dpos;
-          else
-            fft_in[in_pos] = block[ipos % block.size()] * (1.0 - dpos) + block[(ipos + 1) % block.size()] * dpos;
+          fft_in[in_pos] = block[ipos % block.size()] * (1.0 - dpos) + block[(ipos + 1) % block.size()] * dpos;
           pos += pos_inc;
         }
 
