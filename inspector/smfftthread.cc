@@ -31,8 +31,13 @@ FFTThread::run()
     {
       if (poll (poll_fds, 1, -1) > 0)
         {
-          char c;
-          read (fft_thread_wakeup_pfds[0], &c, 1);
+          int ret;
+          do
+            {
+              char c;
+              ret = read (fft_thread_wakeup_pfds[0], &c, 1);
+            }
+          while (ret < 0 && errno == EINTR);
         }
 
       command_mutex.lock();
@@ -375,8 +380,13 @@ FFTThread::get_result (PixelArray& image)
 
   if (poll (poll_fds, 1, 0) > 0)
     {
-      char c;
-      read (main_thread_wakeup_pfds[0], &c, 1);
+      int ret;
+      do
+        {
+          char c;
+          ret = read (main_thread_wakeup_pfds[0], &c, 1);
+        }
+      while (ret < 0 && errno == EINTR);
     }
 
   if (!command_results.empty())
