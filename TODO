@@ -13,12 +13,10 @@ smenc:
 - implement phase-correct "nearest frame" decoding instead of overlap-adding frames
 - compute peak over nearest minimum in dB
 - compute peak over local (frame) maximum in dB
-- make window function configurable
 - debug performance problems
   => implement downsampling for really low notes
   => use symmetry to speed up optimize_partials
   => make a squared window table (optimize_partials)
-- move smmath.hh code to libbse
 - implement sinc interpolation for spectrum phase
 - make load() function of SpectMorph::Audio and SpectMorph::WavSet reset state
 - optimize memory usage of encoder
@@ -26,19 +24,8 @@ smenc:
 - increase time resolution for residual for low notes
 - use NoiseBandPartition class to get faster noise band splitting
 - adjust noise bands according to frequency specs
-- should we normalize all samples before encoding?
-
-refactoring:
-- possibly rename SpectMorph::Audio to SpectMorph::Model
-- simplify Encoder API
-
-python:
-- add api which is good enough to implement smabc in python
-- http://docs.python.org/c-api/typeobj.html
-- http://docs.python.org/c-api/typeobj.html#sequence-object-structures
 
 smlive:
-- noise masking (no noise resynthesis if its inaudible anyway)
 - make FFTW integration thread safe
 - maybe use integer phase representation (-> less floor()/float->int/int->float cycles)
 - SSEified noise generation:
@@ -50,19 +37,10 @@ smlive:
 
 lag diagrams of note start
 
-adventure:
-- implement wav->midi
-  * trumpet (silent brass)
-  * piano
-
 documentation:
 - update API documentation with new classes (LiveDecoder, GenericIn*)
 
-BEAST:
-- midi export
-
 sminspector:
-- reconstruct sines only button
 - figure out why mix_freq is 0 for inspect1 foo.wav
 
 gui:
@@ -71,19 +49,8 @@ gui:
 - support unsetting operators
 
 morphing:
-- model: explain observation of the peaks using a gaussian-mixture-model which
-  predicts them; that way, peaks of the same gaussian distribution are "one
-  consistent partial" - for morphing, the remaining problem reduces to finding
-  out which gaussian distribution should be morphed with which gaussian distribution
 - performance: use O(n) loop to associate each freq with the nearest freq of the
   other input -> less search cycles, since we already have the best match freq
 
-qt5 port:
-- cleanup old gtk code
-- smldplot
-- smmorphplot
-
 lv2:
-- debug qtractor
-- debur reason|bitwig
 - use worker thread response for setting|freeing morph plans
