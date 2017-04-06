@@ -1056,7 +1056,7 @@ Encoder::approx_noise (const vector<float>& window)
 
       vector<double> approx_spectrum (fft_size);
       xnoise_envelope_to_spectrum (frame, enc_params.mix_freq, noise_envelope, approx_spectrum, norm);
-      for (int i = 0; i < approx_spectrum.size(); i += 2)
+      for (size_t i = 0; i < approx_spectrum.size(); i += 2)
         debug ("spect_approx:%" PRId64 " %g\n", frame, approx_spectrum[i]);
 
       double spect_energy = 0;
