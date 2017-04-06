@@ -121,7 +121,6 @@ main (int argc, char **argv)
   for (size_t reps = 0; reps < 10; reps++)
     {
       double start = gettime();
-      double x = 0;
       for (size_t i = 0; i < runs; i++)
         {
           LPC::LSFEnvelope env;
