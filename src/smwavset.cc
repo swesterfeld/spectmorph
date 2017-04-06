@@ -477,7 +477,12 @@ main (int argc, char **argv)
           string wavpath = options.data_dir + "/" + int2str (si->midi_note) + ".wav";
           string cmd = "smplay --rate=" + int2str (audio.mix_freq) + " " +si->path.c_str() + " --export " + wavpath + " " + options.args;
           sm_printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
-          system (cmd.c_str());
+          int rc = system (cmd.c_str());
+          if (rc != 0)
+            {
+              printf ("command execution failed: %d\n", WEXITSTATUS (rc));
+              exit (1);
+            }
 
           WavSetWave new_wave = *si;
           new_wave.path = wavpath;
