@@ -20,7 +20,7 @@ command_loop()
   char buffer[1024], *c;
   bool debug = false;
 
-  while (c = fgets (buffer, 1024, stdin))
+  while ((c = fgets (buffer, 1024, stdin)) != NULL)
     {
       char *cmd = strtok (buffer, " \n");
       if (!cmd)
