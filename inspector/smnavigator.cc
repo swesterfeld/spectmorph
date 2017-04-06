@@ -235,7 +235,6 @@ void
 Navigator::on_selection_changed()
 {
   int row = tree_view->selectionModel()->currentIndex().row();
-  int column = tree_view->selectionModel()->currentIndex().column();
 
   size_t i = row;
   assert (i < wset.waves.size());
