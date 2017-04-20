@@ -9,29 +9,19 @@ To compile SpectMorph, the usual
 
 needs to be used.
 
-BEAST Dependency:
------------------
-
-To build SpectMorph completely, BEAST and Rapicorn need to be installed, from
-
-    https://testbit.eu/wiki/Beast_Home
-
-Since this is a heavy dependency, there is a configure option to disable BEAST
-entierly
-
-    ./configure --without-beast
-
-However, since SpectMorph uses BEAST for a number of tasks, only a minimal
-version of SpectMorph gets built. It should be enough to use JACK and the LV2
-and VST plugins. However, advanced features like building your own instruments
-will not be possible with this limited build.
-
 LV2 Support:
 ------------
 
 Configure should automatically determine via pkg-config wether the lv2
 development headers are available. When the LV2 plugin doesn't get built,
 install them.
+
+BEAST Support:
+--------------
+
+SpectMorph can be used together with BEAST (see
+https://testbit.eu/wiki/Beast_Home).  Configure should automatically detect
+whether to build the plugin or not.
 
 Installing Instruments:
 =======================
@@ -52,10 +42,7 @@ of the instrument set that is missing. It would be searched in
     ~/.spectmorph/instruments/standard
 
 The tarball containing the standard instruments can be downloaded from
-
-    http://spectmorph.org/downloads
-
-And should be extracted with these three steps:
+http://spectmorph.org/downloads and should be extracted with these three steps:
 
     $ mkdir ~/.spectmorph
     $ cd ~/.spectmorph
@@ -82,21 +69,18 @@ to connect midi input and audio output (for instance with using QJackCtl).
 LV2 Plugin:
 ===========
 
-Starting with SpectMorph 0.3.1, there is an LV2 Plugin for SpectMorph. Since this is new,
-it should be considered experimental.
+SpectMorph provides a LV2 Plugin, which can be used together with DAWs that
+support LV2, such as Ardour, Qtractor and others.
 
 Ardour and other Hosts using SUIL:
 ----------------------------------
 
 SUIL is a library that is used by Ardour (and probably others) to display the
 plugin UI.  SpectMorph is using the Qt5 library for implementing its plugin UI.
-SUIL does not (at the time of writing this) come with support for for Qt5. The
-issue and a patch that fixes the problem has been reported here:
-
-    http://dev.drobilla.net/ticket/1143
-
-So currently in order to use SpectMorph in Ardour, a patched version of the
-SUIL library needs to be compiled and used in Ardour.
+The latest stable release of SUIL does not (at the time of writing this) come
+with support for for Qt5. However the development version has support for Qt5,
+(it was added on 2017-03-18). So you need a SUIL library version that is newer
+than this, to be able to use SpectMorph in Ardour.
 
 Crashes with Hosts using Qt4:
 -----------------------------
