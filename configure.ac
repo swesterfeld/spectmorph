@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.3.1])
+AC_INIT([spectmorph], [0.3.2])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -297,3 +297,16 @@ tools/sminstbuilder spectmorph.pc
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
+
+# Output summary message
+
+echo
+echo "---------------------------------------------------------------------------"
+echo "$PACKAGE_NAME $PACKAGE_VERSION"
+echo "---------------------------------------------------------------------------"
+echo "  LV2 plug-in support  . .: $with_lv2"
+echo "  BEAST plug-in support  .: $with_beast"
+echo "  Install prefix . . . . .: $prefix"
+echo
+echo "Now type 'make', followed by 'make install' as root."
+echo
