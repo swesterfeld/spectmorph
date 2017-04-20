@@ -1,3 +1,19 @@
+Overview of Changes in spectmorph-0.3.2:
+
+* Added new unison effect.
+* New instruments: pan-flute, synth-saw.
+* UI improvements:
+  - support operator folding (to preserve screen space)
+  - provide scrollbar if morph plan window height is large
+  - repair operator move
+* VST plugin crash fixed.
+* No longer depend on BEAST/Rapicorn
+  - use libsndfile for sound file I/O, added WavData API
+  - refactoring, move libnobse code into SpectMorph
+* Add icon/.desktop file for smjack
+* Added debian package support.
+* LPC/LSF morphing code updates - but now disabled by default
+
 Overview of Changes in spectmorph-0.3.1:
 
 * Added plugins for LV2 and VST api.
