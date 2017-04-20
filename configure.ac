@@ -33,23 +33,27 @@ dnl libbse
 dnl
 AC_DEFUN([AC_BSE_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(BSE, bse >= 0.9)
+    dnl check for libbse unless --without-beast was used
+    if test "x$with_beast" != "xno"; then
+        PKG_CHECK_MODULES(BSE, [[bse >= 0.9]], [with_beast="yes"], [with_beast="no"])
+    fi
+    if test "x$with_beast" = "xno"; then
+        SPECTMORPH_HAVE_BSE=0
+
+        BSE_CFLAGS="$GLIB_CFLAGS"
+        BSE_LIBS="$GLIB_LIBS"
+    else
+        SPECTMORPH_HAVE_BSE=1
+
+        BSE_VERSION=`pkg-config --modversion bse`
+        AC_SUBST(BSE_VERSION)
+        bseplugindir=`pkg-config --variable=plugindir bse`
+        AC_SUBST(bseplugindir)
+    fi
     AC_SUBST(BSE_CFLAGS)
     AC_SUBST(BSE_LIBS)
-    BSE_VERSION=`pkg-config --modversion bse`
-    AC_SUBST(BSE_VERSION)
-    bseplugindir=`pkg-config --variable=plugindir bse`
-    AC_SUBST(bseplugindir)
-])
-dnl
-dnl libnobse (used in case libbse is not present/wanted)
-dnl
-AC_DEFUN([AC_NOBSE_REQUIREMENTS],
-[
-    BSE_CFLAGS=$GLIB_CFLAGS
-    AC_SUBST(BSE_CFLAGS)
-    BSE_LIBS=$GLIB_LIBS
-    AC_SUBST(BSE_LIBS)
+    AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_BSE, $SPECTMORPH_HAVE_BSE, [Whether libbse is available])
+    AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
 ])
 dnl
 dnl libqt4 is not supported in any way; things will break if you try to build against Qt4
@@ -211,20 +215,9 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_GLIB_REQUIREMENTS
 
 dnl -------------------- libbse dependency can be disabled -------------------
-AC_ARG_WITH([beast],
-    AS_HELP_STRING([--without-beast], [Build SpectMorph without depending on BEAST]))
+AC_ARG_WITH([beast], AS_HELP_STRING([--with-beast], [Build SpectMorph without depending on BEAST]))
 
-# build with beast dependency unless explicitely disabled
-AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
-
-if test "x$with_beast" = "xno"; then
-  AC_NOBSE_REQUIREMENTS
-  SPECTMORPH_HAVE_BSE=0
-else
-  AC_BSE_REQUIREMENTS
-  SPECTMORPH_HAVE_BSE=1
-fi
-AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_BSE, $SPECTMORPH_HAVE_BSE, [Whether libbse is available])
+AC_BSE_REQUIREMENTS
 
 dnl -------------------------------------------------------------------------
 

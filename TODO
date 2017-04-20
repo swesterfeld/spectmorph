@@ -5,7 +5,6 @@ NEXT RELEASE:
   * Morphing Motion upload
   * contact (+ google group)
 - evaluation 8
-- configure: auto-detect beast
 - add template with unison
 - final steps:
   - build tgz
