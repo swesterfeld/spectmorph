@@ -2,7 +2,6 @@ NEXT RELEASE:
 - homepage updates
   * documentation
   * contact (+ google group)
-- add template with unison
 - final steps:
   - build tgz
   - build debs
