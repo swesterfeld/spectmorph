@@ -12,7 +12,7 @@ needs to be used.
 LV2 Support:
 ------------
 
-Configure should automatically determine via pkg-config wether the lv2
+Configure should automatically determine via pkg-config whether the lv2
 development headers are available. When the LV2 plugin doesn't get built,
 install them.
 
