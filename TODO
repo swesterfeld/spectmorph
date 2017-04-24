@@ -1,11 +1,4 @@
 NEXT RELEASE:
-- homepage updates
-- final steps:
-  - build tgz
-  - build debs
-  - build instrument tgz
-
-NEXT NEXT RELEASE:
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
