@@ -29,5 +29,8 @@ testmutexperf
 testsortfreqs
 testminires
 testnoisesr
+testblockperf
+testlpca
+testlsfplot
 .libs
 .deps

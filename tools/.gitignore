@@ -12,6 +12,7 @@ smsampleedit
 smfileedit
 sminstbuilder
 tld
+smlive
 *.o
 moc_*.cc
 .deps
