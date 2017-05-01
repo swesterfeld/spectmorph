@@ -124,7 +124,20 @@ class Osc : public OscBase {
               if (ostream (channels[port]).connected)
                 audio_out[port] = ostream (channels[port]).values;
             }
-          morph_plan_voice->output()->process (n_values, audio_out, 4);
+          if (istream (ICHANNEL_FREQ_IN).connected)
+            {
+              const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
+              float freq_in_converted[n_values];
+
+              for (unsigned int i = 0; i < n_values; i++)
+                freq_in_converted[i] = BSE_SIGNAL_TO_FREQ (freq_in[i]);
+
+              morph_plan_voice->output()->process (n_values, audio_out, 4, freq_in_converted);
+            }
+          else
+            {
+              morph_plan_voice->output()->process (n_values, audio_out, 4);
+            }
         }
       osc->update_shared_state (tick_stamp(), mix_freq());
     }
