@@ -19,7 +19,7 @@ public:
   ~MorphOutputModule();
 
   void set_config (MorphOperator *op);
-  void process (size_t n_samples, float **values, size_t n_ports);
+  void process (size_t n_samples, float **values, size_t n_ports, float *freq_in = nullptr);
   void retrigger (int channel, float freq, int midi_velocity);
 };
 
