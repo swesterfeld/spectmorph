@@ -26,6 +26,7 @@ struct Options
   string      program_name; /* FIXME: what to do with that */
   string      export_wav;
   float       freq;
+  string      freq_in;
   bool        enable_original_samples;
   bool        text;
   double      gain;
@@ -110,6 +111,10 @@ Options::parse (int   *argc_p,
         {
           freq = atof (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--freq-in", &opt_arg))
+        {
+          freq_in = opt_arg;
+        }
       else if (check_arg (argc, argv, &i, "--midi-note", &opt_arg) || check_arg (argc, argv, &i, "-m", &opt_arg))
         {
           freq = freq_from_note (atoi (opt_arg));
@@ -160,6 +165,58 @@ Options::print_usage ()
   printf ("\n");
 }
 
+bool
+parse_freq_in (vector<float>& freq_vector)
+{
+  FILE *freq_file = fopen (options.freq_in.c_str(), "r");
+  if (!freq_file)
+    {
+      fprintf (stderr, "smlive: can't load frequency file %s\n", options.freq_in.c_str());
+      return false;
+    }
+
+  vector<float> time;
+  vector<float> value;
+
+  char buffer[1024];
+  while (fgets (buffer, 1024, freq_file) != NULL)
+    {
+      if (buffer[0] == '#')
+        {
+          // skip comments
+        }
+      else
+        {
+          char *time_str = strtok (buffer, " \n");
+          if (!time_str)
+            continue;
+
+          char *value_str = strtok (NULL, " \n");
+          if (!value_str)
+            continue;
+          time.push_back (atof (time_str));
+          value.push_back (atof (value_str));
+        }
+    }
+  size_t t = 0;
+  for (size_t samples = 0; samples < freq_vector.size(); samples++)
+    {
+      float xtime = float (samples) / options.rate;
+      while (t + 1 < time.size() && time[t + 1] < xtime)
+        t++;
+      double freq = value[t];
+      if (t + 1 < time.size())
+        {
+          const double frac = (xtime - time[t]) / (time[t + 1] - time[t]);
+          freq = (1 - frac) * value[t] + frac * value[t + 1];
+        }
+      freq_vector[samples] = freq;
+      // printf ("%zd %f\n", samples, freq);
+    }
+  fclose (freq_file);
+
+  return true;
+}
 
 int
 main (int argc, char **argv)
@@ -204,9 +261,17 @@ main (int argc, char **argv)
       len = 20 * options.rate;                // FIXME: play until end
     }
 
+  vector<float> freq_in;
+  if (options.freq_in != "")
+    {
+      freq_in.resize (len);
+      if (!parse_freq_in (freq_in))
+        return 1;
+    }
+
   vector<float> audio_out (len);
   decoder.retrigger (0, options.freq, 127, options.rate);
-  decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+  decoder.process (audio_out.size(), freq_in.size() ? &freq_in[0] : nullptr, 0, &audio_out[0]);
 
   // hacky way to remove tail silence
   while (!audio_out.empty() && audio_out.back() == 0)
