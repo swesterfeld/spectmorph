@@ -5,17 +5,6 @@
 #include "smleakdebugger.hh"
 #include "smutils.hh"
 
-#if SPECTMORPH_HAVE_BSE
-#include <bse/bsemathsignal.hh>
-#else
-static inline float
-BSE_SIGNAL_TO_FREQ (float f)
-{
-  g_printerr ("SpectMorph::LiveDecoder: freq_in array only implemented for bse plugin\n");
-  g_assert_not_reached();
-}
-#endif
-
 #include <stdio.h>
 #include <assert.h>
 
@@ -265,7 +254,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
 
       for (unsigned int i = 0; i < n_values; i++)
         {
-          double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
+          double want_freq = freq_in ? freq_in[i] : current_freq;
           double phase_inc = (want_freq / audio->fundamental_freq) *
                              (audio->mix_freq / current_mix_freq);
 
@@ -300,7 +289,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_m
     {
       if (have_samples == 0)
         {
-          double want_freq = freq_in ? BSE_SIGNAL_TO_FREQ (freq_in[i]) : current_freq;
+          double want_freq = freq_in ? freq_in[i] : current_freq;
 
           std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
           zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
