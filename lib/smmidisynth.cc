@@ -9,6 +9,32 @@ using namespace SpectMorph;
 
 using std::min;
 
+using std::string;
+
+#define DEBUG 0
+
+static FILE *debug_file = NULL;
+QMutex       debug_mutex;
+
+static void
+debug (const char *fmt, ...)
+{
+  if (DEBUG)
+    {
+      QMutexLocker locker (&debug_mutex);
+
+      if (!debug_file)
+        debug_file = fopen ("/tmp/smmidi.log", "w");
+
+      va_list ap;
+
+      va_start (ap, fmt);
+      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
+      va_end (ap);
+      fflush (debug_file);
+    }
+}
+
 #define SM_MIDI_CTL_SUSTAIN 0x40
 
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
@@ -88,11 +114,14 @@ MidiSynth::process_note_on (int midi_note, int midi_velocity)
   if (voice)
     {
       MorphOutputModule *output = voice->mp_voice->output();
-      output->retrigger (0 /* channel */, freq_from_note (midi_note), midi_velocity);
 
-      voice->state     = Voice::STATE_ON;
-      voice->midi_note = midi_note;
-      voice->velocity  = midi_velocity / 127.;
+      voice->freq            = freq_from_note (midi_note);
+      voice->pitch_bend_cent = 0;
+      voice->state           = Voice::STATE_ON;
+      voice->midi_note       = midi_note;
+      voice->velocity        = midi_velocity / 127.;
+
+      output->retrigger (0 /* channel */, voice->freq, midi_velocity);
     }
 }
 
@@ -138,11 +167,23 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
+MidiSynth::process_pitch_bend (double value)
+{
+  for (auto voice : active_voices)
+    {
+      if (voice->state == Voice::STATE_ON) // FIXME: channel && voice->midi_note == midi_note)
+        {
+          voice->pitch_bend_cent = value;
+        }
+    }
+}
+
+void
 MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 {
   unsigned char status = midi_data[0] & 0xf0;
 
-  if (status == 0x80 || status == 0x90 || status == 0xb0) // we don't support anything else
+  if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
     {
       MidiEvent event;
       event.offset = offset;
@@ -176,11 +217,20 @@ MidiSynth::process_audio (float *output, size_t n_values)
       voice->mp_voice->set_control_input (0, control[0]);
       voice->mp_voice->set_control_input (1, control[1]);
 
+      const float *freq_in = nullptr;
+      float frequencies[n_values];
+      if (fabs (voice->pitch_bend_cent) > 1e-3)
+        {
+          double freq = voice->freq * pow (2, voice->pitch_bend_cent / 12);
+          for (unsigned int i = 0; i < n_values; i++)
+            frequencies[i] = freq;
+          freq_in = frequencies;
+        }
       if (voice->state == Voice::STATE_ON)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
-          output_module->process (n_values, values, 1);
+          output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i] * voice->velocity;
         }
@@ -201,7 +251,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
             }
           MorphOutputModule *output_module = voice->mp_voice->output();
 
-          output_module->process (envelope_len, values, 1);
+          output_module->process (envelope_len, values, 1, freq_in);
           for (size_t i = 0; i < envelope_len; i++)
             {
               voice->env -= v_decrement;
@@ -231,6 +281,15 @@ MidiSynth::process (float *output, size_t n_values)
       process_audio (output + offset, new_offset - offset);
       offset = new_offset;
 
+      if (midi_event.is_pitch_bend())
+        {
+          const unsigned int lsb = midi_event.midi_data[1];
+          const unsigned int msb = midi_event.midi_data[2];
+          const unsigned int value = lsb + msb * 128;
+          const float cent = (value * (1./0x2000) - 1.0) * 48;
+          debug ("got pitch bend event %d => %.2f cent\n", value, cent);
+          process_pitch_bend (cent);
+        }
       if (midi_event.is_note_on())
         {
           const int midi_note     = midi_event.midi_data[1];
@@ -302,4 +361,10 @@ bool
 MidiSynth::MidiEvent::is_controller() const
 {
   return (midi_data[0] & 0xf0) == 0xb0;
+}
+
+bool
+MidiSynth::MidiEvent::is_pitch_bend() const
+{
+  return (midi_data[0] & 0xf0) == 0xe0;
 }

@@ -24,6 +24,8 @@ class MidiSynth
     int          midi_note;
     double       env;
     double       velocity;
+    double       freq;
+    double       pitch_bend_cent;
 
     Voice() :
       mp_voice (NULL),
@@ -55,6 +57,7 @@ class MidiSynth
   void process_note_on (int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
+  void process_pitch_bend (double value);
 
   struct MidiEvent
   {
@@ -64,6 +67,7 @@ class MidiSynth
     bool is_note_on() const;
     bool is_note_off() const;
     bool is_controller() const;
+    bool is_pitch_bend() const;
   };
   std::vector<MidiEvent>  midi_events;
 
