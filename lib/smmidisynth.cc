@@ -186,12 +186,17 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 
   if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
     {
+      debug ("raw event: status %02x, %02x, %02x\n", status, midi_data[1], midi_data[2]);
       MidiEvent event;
       event.offset = offset;
       event.midi_data[0] = midi_data[0];
       event.midi_data[1] = midi_data[1];
       event.midi_data[2] = midi_data[2];
       midi_events.push_back (event);
+    }
+  else
+    {
+      debug ("unhandled event: status %02x, %02x, %02x\n", status, midi_data[1], midi_data[2]);
     }
 }
 
@@ -288,7 +293,7 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
           const float cent = (value * (1./0x2000) - 1.0) * 48;
-          debug ("got pitch bend event %d => %.2f cent\n", value, cent);
+          debug ("pitch bend event %d => %.2f cent\n", value, cent);
           process_pitch_bend (midi_event.channel(), cent);
         }
       if (midi_event.is_note_on())
@@ -296,16 +301,19 @@ MidiSynth::process (float *output, size_t n_values)
           const int midi_note     = midi_event.midi_data[1];
           const int midi_velocity = midi_event.midi_data[2];
 
+          debug ("note on event, note %d, velocity %d\n", midi_note, midi_velocity);
           process_note_on (midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
           const int midi_note     = midi_event.midi_data[1];
 
+          debug ("note off event, note %d\n", midi_note);
           process_note_off (midi_note);
         }
       else if (midi_event.is_controller())
         {
+          debug ("controller event, %d %d\n", midi_event.midi_data[1], midi_event.midi_data[2]);
           process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
         }
     }
