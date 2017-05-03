@@ -22,6 +22,7 @@ class MidiSynth
     State        state;
     bool         pedal;
     int          midi_note;
+    int          channel;
     double       env;
     double       velocity;
     double       freq;
@@ -54,10 +55,10 @@ class MidiSynth
   float   freq_from_note (float note);
 
   void process_audio (float *output, size_t n_values);
-  void process_note_on (int midi_note, int midi_velocity);
+  void process_note_on (int channel, int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
-  void process_pitch_bend (double value);
+  void process_pitch_bend (int channel, double value);
 
   struct MidiEvent
   {
@@ -68,6 +69,7 @@ class MidiSynth
     bool is_note_off() const;
     bool is_controller() const;
     bool is_pitch_bend() const;
+    int  channel() const;
   };
   std::vector<MidiEvent>  midi_events;
 

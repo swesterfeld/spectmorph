@@ -104,7 +104,7 @@ MidiSynth::freq_from_note (float note)
 }
 
 void
-MidiSynth::process_note_on (int midi_note, int midi_velocity)
+MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
 {
   // prevent crash without output: ignore note on in this case
   if (!morph_plan_synth.have_output())
@@ -120,6 +120,7 @@ MidiSynth::process_note_on (int midi_note, int midi_velocity)
       voice->state           = Voice::STATE_ON;
       voice->midi_note       = midi_note;
       voice->velocity        = midi_velocity / 127.;
+      voice->channel         = channel;
 
       output->retrigger (0 /* channel */, voice->freq, midi_velocity);
     }
@@ -167,11 +168,11 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
-MidiSynth::process_pitch_bend (double value)
+MidiSynth::process_pitch_bend (int channel, double value)
 {
   for (auto voice : active_voices)
     {
-      if (voice->state == Voice::STATE_ON) // FIXME: channel && voice->midi_note == midi_note)
+      if (voice->state == Voice::STATE_ON && voice->channel == channel)
         {
           voice->pitch_bend_cent = value;
         }
@@ -288,14 +289,14 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int value = lsb + msb * 128;
           const float cent = (value * (1./0x2000) - 1.0) * 48;
           debug ("got pitch bend event %d => %.2f cent\n", value, cent);
-          process_pitch_bend (cent);
+          process_pitch_bend (midi_event.channel(), cent);
         }
       if (midi_event.is_note_on())
         {
           const int midi_note     = midi_event.midi_data[1];
           const int midi_velocity = midi_event.midi_data[2];
 
-          process_note_on (midi_note, midi_velocity);
+          process_note_on (midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
@@ -367,4 +368,10 @@ bool
 MidiSynth::MidiEvent::is_pitch_bend() const
 {
   return (midi_data[0] & 0xf0) == 0xe0;
+}
+
+int
+MidiSynth::MidiEvent::channel() const
+{
+  return midi_data[0] & 0xf;
 }
