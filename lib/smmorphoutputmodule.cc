@@ -136,7 +136,7 @@ recursive_reset_value (MorphOperatorModule *module)
 }
 
 void
-MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, float *freq_in)
+MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
