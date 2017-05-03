@@ -34,6 +34,7 @@
 #define effSetChunk             24
 #define effCanBeAutomated       26
 #define effGetOutputProperties  34
+#define effVendorSpecific       50
 #define effGetTailSize          52
 #define effGetMidiKeyName       66
 #define effBeginLoadBank        75
@@ -330,15 +331,13 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetProductString:
       strcpy((char *)ptr, "SpectMorph");
       return 1;
-     case effGetVendorVersion:
+    case effGetVendorVersion:
        return 0;
-
     case effCanDo:
-      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
-              false) return 1;
+      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 || strcmp("MPE", (char *)ptr) == 0) return 1;
       if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
-              strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
               strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
+              strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
               strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
               false) return 0;
       debug("unhandled canDo: %s\n", (char *)ptr);
