@@ -1,4 +1,7 @@
 NEXT RELEASE:
+- support data in system wide location (packaging)
+- proper ADSR release
+- portamento
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
