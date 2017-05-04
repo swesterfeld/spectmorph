@@ -88,20 +88,15 @@ EffectDecoder::~EffectDecoder()
 void
 EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 {
-  chain_decoders.resize (1);
+  chain_decoder.reset (new LiveDecoder (source));
 
-  chain_decoders[0].reset (new LiveDecoder (source));
+  chain_decoder->enable_noise (output->noise());
+  chain_decoder->enable_sines (output->sines());
 
-  for (auto& dec : chain_decoders)
-    {
-      dec->enable_noise (output->noise());
-      dec->enable_sines (output->sines());
-
-      if (output->unison()) // unison?
-        dec->set_unison_voices (output->unison_voices(), output->unison_detune());
-      else
-        dec->set_unison_voices (1, 0);
-    }
+  if (output->unison()) // unison?
+    chain_decoder->set_unison_voices (output->unison_voices(), output->unison_detune());
+  else
+    chain_decoder->set_unison_voices (1, 0);
 
   if (output->adsr())
     {
@@ -126,12 +121,12 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  g_return_if_fail (chain_decoders.size() == 1);
+  g_assert (chain_decoder);
 
   if (adsr_envelope)
     adsr_envelope->retrigger();
 
-  chain_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
+  chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 }
 
 void
@@ -140,9 +135,9 @@ EffectDecoder::process (size_t       n_values,
                         const float *freq_mod_in,
                         float       *audio_out)
 {
-  g_assert (chain_decoders.size() == 1);
+  g_assert (chain_decoder);
 
-  chain_decoders[0]->process (n_values, freq_in, freq_mod_in, audio_out);
+  chain_decoder->process (n_values, freq_in, freq_mod_in, audio_out);
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);

@@ -16,10 +16,9 @@ namespace SpectMorph
 class EffectDecoderSource;
 class EffectDecoder
 {
-  std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
-
   EffectDecoderSource *source;
 
+  std::unique_ptr<LiveDecoder>  chain_decoder;
   std::unique_ptr<ADSREnvelope> adsr_envelope;
 
 public:
