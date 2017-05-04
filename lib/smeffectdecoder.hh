@@ -19,8 +19,6 @@ class EffectDecoder
   std::vector<std::unique_ptr<LiveDecoder>> chain_decoders;
 
   EffectDecoderSource *source;
-  float              unison_detune;
-  float              unison_gain;
 
   std::unique_ptr<ADSREnvelope> adsr_envelope;
 

@@ -126,26 +126,12 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
+  g_return_if_fail (chain_decoders.size() == 1);
+
   if (adsr_envelope)
     adsr_envelope->retrigger();
 
-  if (chain_decoders.size() == 1)
-    {
-      chain_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
-      return;
-    }
-
-  float spread = unison_detune / 2;
-  float detune_factor = pow (2,(spread/1200.));
-  float freq_l = freq / detune_factor;
-  float freq_h = freq * detune_factor;
-
-  for (size_t i = 0; i < chain_decoders.size(); i++)
-    {
-      const float detune_freq = freq_l + (freq_h - freq_l) / (chain_decoders.size() - 1) * i;
-
-      chain_decoders[i]->retrigger (channel, detune_freq, midi_velocity, mix_freq);
-    }
+  chain_decoders[0]->retrigger (channel, freq, midi_velocity, mix_freq);
 }
 
 void
@@ -154,31 +140,9 @@ EffectDecoder::process (size_t       n_values,
                         const float *freq_mod_in,
                         float       *audio_out)
 {
-  if (chain_decoders.size() == 1)
-    {
-      chain_decoders[0]->process (n_values, freq_in, freq_mod_in, audio_out);
+  g_assert (chain_decoders.size() == 1);
 
-      if (adsr_envelope)
-        adsr_envelope->process (n_values, audio_out);
-
-      return;
-    }
-
-  zero_float_block (n_values, audio_out);
-
-  for (auto& dec : chain_decoders)
-    {
-      float output[n_values];
-
-      dec->process (n_values, freq_in, freq_mod_in, output);
-
-      for (size_t i = 0; i < n_values; i++)
-        audio_out[i] += output[i];
-    }
-
-  // compensate gain created by adding multiple copies
-  for (size_t i = 0; i < n_values; i++)
-    audio_out[i] *= unison_gain;
+  chain_decoders[0]->process (n_values, freq_in, freq_mod_in, audio_out);
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);
