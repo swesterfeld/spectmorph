@@ -13,6 +13,15 @@
 namespace SpectMorph
 {
 
+struct PropView
+{
+  QLabel *title;
+  QSlider *slider;
+  QLabel *label;
+
+  void setVisible (bool visible);
+};
+
 class MorphOutputView : public MorphOperatorView
 {
   Q_OBJECT
@@ -31,8 +40,16 @@ class MorphOutputView : public MorphOperatorView
   QSlider                    *unison_detune_slider;
 
   MorphOutput                *morph_output;
+
+  PropView pv_adsr_skip;
+  PropView pv_adsr_attack;
+  PropView pv_adsr_decay;
+  PropView pv_adsr_sustain;
+  PropView pv_adsr_release;
 public:
   MorphOutputView (MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
+
+  void update_visibility();
 
 public slots:
   void on_sines_changed (bool new_value);
@@ -40,6 +57,7 @@ public slots:
   void on_unison_changed (bool new_value);
   void on_unison_voices_changed (int voices);
   void on_unison_detune_changed (int new_value);
+  void on_adsr_changed (bool new_value);
   void on_operator_changed();
 };
 

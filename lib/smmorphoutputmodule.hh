@@ -5,14 +5,14 @@
 
 #include "smmorphoperatormodule.hh"
 #include "smmorphplanvoice.hh"
-#include "smlivedecoder.hh"
+#include "smeffectdecoder.hh"
 
 namespace SpectMorph {
 
 class MorphOutputModule : public MorphOperatorModule
 {
   std::vector<MorphOperatorModule *> out_ops;
-  std::vector<LiveDecoder *>         out_decoders;
+  std::vector<EffectDecoder *>       out_decoders;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
