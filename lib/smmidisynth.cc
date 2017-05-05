@@ -41,6 +41,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq),
   mix_freq (mix_freq),
   pedal_down (false),
+  audio_time_stamp (0),
   control {0, 0}
 {
   voices.clear();
@@ -186,7 +187,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 
   if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
     {
-      debug ("raw event: status %02x, %02x, %02x\n", status, midi_data[1], midi_data[2]);
+      debug ("%zd | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
       event.offset = offset;
       event.midi_data[0] = midi_data[0];
@@ -196,7 +197,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
     }
   else
     {
-      debug ("unhandled event: status %02x, %02x, %02x\n", status, midi_data[1], midi_data[2]);
+      debug ("%zd | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
     }
 }
 
@@ -271,6 +272,8 @@ MidiSynth::process_audio (float *output, size_t n_values)
     }
   if (need_free)
     free_unused_voices();
+
+  audio_time_stamp += n_values;
 }
 
 void
@@ -293,7 +296,7 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
           const float cent = (value * (1./0x2000) - 1.0) * 48;
-          debug ("pitch bend event %d => %.2f cent\n", value, cent);
+          debug ("%zd | pitch bend event %d => %.2f cent\n", audio_time_stamp, value, cent);
           process_pitch_bend (midi_event.channel(), cent);
         }
       if (midi_event.is_note_on())
@@ -301,19 +304,19 @@ MidiSynth::process (float *output, size_t n_values)
           const int midi_note     = midi_event.midi_data[1];
           const int midi_velocity = midi_event.midi_data[2];
 
-          debug ("note on event, note %d, velocity %d\n", midi_note, midi_velocity);
+          debug ("%zd | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
           process_note_on (midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
           const int midi_note     = midi_event.midi_data[1];
 
-          debug ("note off event, note %d\n", midi_note);
+          debug ("%zd | note off event, note %d\n", audio_time_stamp, midi_note);
           process_note_off (midi_note);
         }
       else if (midi_event.is_controller())
         {
-          debug ("controller event, %d %d\n", midi_event.midi_data[1], midi_event.midi_data[2]);
+          debug ("%zd | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
           process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
         }
     }

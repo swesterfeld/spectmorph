@@ -47,6 +47,7 @@ class MidiSynth
   std::vector<Voice *>  active_voices;
   double                mix_freq;
   bool                  pedal_down;
+  size_t                audio_time_stamp;
 
   float                 control[2];
 
