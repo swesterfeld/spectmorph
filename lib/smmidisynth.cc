@@ -117,7 +117,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
       MorphOutputModule *output = voice->mp_voice->output();
 
       voice->freq            = freq_from_note (midi_note);
-      voice->pitch_bend_cent = 0;
+      voice->pitch_bend      = 0;
       voice->state           = Voice::STATE_ON;
       voice->midi_note       = midi_note;
       voice->velocity        = midi_velocity / 127.;
@@ -169,13 +169,13 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
-MidiSynth::process_pitch_bend (int channel, double value)
+MidiSynth::process_pitch_bend (int channel, double semi_tones)
 {
   for (auto voice : active_voices)
     {
       if (voice->state == Voice::STATE_ON && voice->channel == channel)
         {
-          voice->pitch_bend_cent = value;
+          voice->pitch_bend = semi_tones;
         }
     }
 }
@@ -226,9 +226,9 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
       const float *freq_in = nullptr;
       float frequencies[n_values];
-      if (fabs (voice->pitch_bend_cent) > 1e-3)
+      if (fabs (voice->pitch_bend) > 1e-3)
         {
-          double freq = voice->freq * pow (2, voice->pitch_bend_cent / 12);
+          double freq = voice->freq * pow (2, voice->pitch_bend / 12);
           for (unsigned int i = 0; i < n_values; i++)
             frequencies[i] = freq;
           freq_in = frequencies;
@@ -295,9 +295,9 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int lsb = midi_event.midi_data[1];
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
-          const float cent = (value * (1./0x2000) - 1.0) * 48;
-          debug ("%zd | pitch bend event %d => %.2f cent\n", audio_time_stamp, value, cent);
-          process_pitch_bend (midi_event.channel(), cent);
+          const float semi_tones = (value * (1./0x2000) - 1.0) * 48;
+          debug ("%zd | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
+          process_pitch_bend (midi_event.channel(), semi_tones);
         }
       if (midi_event.is_note_on())
         {

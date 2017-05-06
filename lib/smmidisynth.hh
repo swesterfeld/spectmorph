@@ -26,7 +26,7 @@ class MidiSynth
     double       env;
     double       velocity;
     double       freq;
-    double       pitch_bend_cent;
+    double       pitch_bend; /* in semitones */
 
     Voice() :
       mp_voice (NULL),
@@ -59,7 +59,7 @@ class MidiSynth
   void process_note_on (int channel, int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
-  void process_pitch_bend (int channel, double value);
+  void process_pitch_bend (int channel, double semi_tones);
 
   struct MidiEvent
   {
