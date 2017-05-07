@@ -21,6 +21,7 @@ MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
+  m_portamento = false;
 
   leak_debugger.add (this);
 }
@@ -80,12 +81,19 @@ MorphOutputModule::set_config (MorphOperator *op)
           else
             dec->set_unison_voices (1, 0);
         }
+      m_portamento = out_op->portamento();
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
 
       add_dependency (mod);
     }
+}
+
+bool
+MorphOutputModule::portamento() const
+{
+  return m_portamento;
 }
 
 static void
