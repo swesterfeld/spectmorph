@@ -56,6 +56,7 @@ class MidiSynth
   double                mix_freq;
   bool                  pedal_down;
   size_t                audio_time_stamp;
+  bool                  mono_enabled;
 
   float                 control[2];
 
@@ -64,6 +65,7 @@ class MidiSynth
   bool    update_mono_voice();
   float   freq_from_note (float note);
 
+  void set_mono_enabled (bool new_value);
   void process_audio (float *output, size_t n_values);
   void process_note_on (int channel, int midi_note, int midi_velocity);
   void process_note_off (int midi_note);

@@ -11,8 +11,7 @@ using std::min;
 
 using std::string;
 
-#define DEBUG        0
-#define MONO_ENABLED 0
+#define DEBUG 0
 
 static FILE *debug_file = NULL;
 QMutex       debug_mutex;
@@ -43,6 +42,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   mix_freq (mix_freq),
   pedal_down (false),
   audio_time_stamp (0),
+  mono_enabled (false),
   control {0, 0}
 {
   voices.clear();
@@ -112,6 +112,8 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
   if (!morph_plan_synth.have_output())
     return;
 
+  set_mono_enabled (voices[0].mp_voice->output()->portamento());
+
   Voice *voice = alloc_voice();
   if (voice)
     {
@@ -124,7 +126,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
       voice->velocity         = midi_velocity / 127.;
       voice->channel          = channel;
 
-      if (!MONO_ENABLED)
+      if (!mono_enabled)
         {
           MorphOutputModule *output = voice->mp_voice->output();
 
@@ -205,7 +207,7 @@ MidiSynth::update_mono_voice()
 void
 MidiSynth::process_note_off (int midi_note)
 {
-  if (MONO_ENABLED)
+  if (mono_enabled)
     {
       bool need_free = false;
 
@@ -441,6 +443,31 @@ MidiSynth::set_control_input (int i, float value)
   assert (i >= 0 && i < 2);
 
   control[i] = value;
+}
+
+void
+MidiSynth::set_mono_enabled (bool new_value)
+{
+  if (mono_enabled != new_value)
+    {
+      mono_enabled = new_value;
+
+      /* remove all active voices */
+      bool need_free = false;
+
+      for (auto voice : active_voices)
+        {
+          if (voice->state != Voice::STATE_IDLE)
+            {
+              voice->state = Voice::STATE_IDLE;
+              voice->pedal = false;
+
+              need_free = true;
+            }
+        }
+      if (need_free)
+        free_unused_voices();
+    }
 }
 
 void

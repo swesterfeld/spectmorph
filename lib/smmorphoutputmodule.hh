@@ -14,6 +14,8 @@ class MorphOutputModule : public MorphOperatorModule
   std::vector<MorphOperatorModule *> out_ops;
   std::vector<LiveDecoder *>         out_decoders;
 
+  bool m_portamento;
+
 public:
   MorphOutputModule (MorphPlanVoice *voice);
   ~MorphOutputModule();
@@ -21,6 +23,8 @@ public:
   void set_config (MorphOperator *op);
   void process (size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
   void retrigger (int channel, float freq, int midi_velocity);
+
+  bool portamento() const;
 };
 
 }
