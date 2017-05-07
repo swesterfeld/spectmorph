@@ -94,6 +94,18 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   portamento_check_box->setChecked (morph_output->portamento());
   grid_layout->addWidget (portamento_check_box, 9, 0, 1, 2);
 
+  Property *p = morph_output->portamento_glide_property();
+  portamento_glide_slider = new QSlider (Qt::Horizontal);
+  portamento_glide_slider->setRange (p->min(), p->max());
+  portamento_glide_label = new QLabel(p->value_label().c_str());
+  portamento_glide_title = new QLabel(p->label().c_str());
+  portamento_glide_slider->setValue (p->get());
+  connect (portamento_glide_slider, SIGNAL (valueChanged (int)), this, SLOT (on_portamento_glide_changed (int)));
+
+  grid_layout->addWidget (portamento_glide_title, 10, 0);
+  grid_layout->addWidget (portamento_glide_slider, 10, 1);
+  grid_layout->addWidget (portamento_glide_label, 10, 2);
+
   // Portamento: initial widget visibility
   on_portamento_changed (morph_output->portamento());
 
@@ -152,7 +164,19 @@ MorphOutputView::on_portamento_changed (bool new_value)
 {
   morph_output->set_portamento (new_value);
 
+  portamento_glide_title->setVisible (new_value);
+  portamento_glide_label->setVisible (new_value);
+  portamento_glide_slider->setVisible (new_value);
+
   Q_EMIT need_resize();
+}
+
+void
+MorphOutputView::on_portamento_glide_changed (int new_value)
+{
+  morph_output->portamento_glide_property()->set (new_value);
+
+  portamento_glide_label->setText (morph_output->portamento_glide_property()->value_label().c_str());
 }
 
 void
