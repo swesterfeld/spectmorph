@@ -33,6 +33,8 @@ class MidiSynth
     double       velocity;
     double       freq;
     double       pitch_bend; /* in semitones */
+    double       pitch_bend_delta;
+    int          pitch_bend_steps;
 
     Voice() :
       mp_voice (NULL),
