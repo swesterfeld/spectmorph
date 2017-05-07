@@ -4,11 +4,42 @@
 #define SPECTMORPH_MORPH_OUTPUT_HH
 
 #include "smmorphoperator.hh"
+#include "smutils.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
+
+class Property
+{
+public:
+  virtual int         min() = 0;
+  virtual int         max() = 0;
+  virtual int         get() = 0;
+  virtual void        set (int v) = 0;
+
+  virtual std::string label() = 0;
+  virtual std::string value_label() = 0;
+};
+
+class MorphOutput;
+class IProperty : public Property
+{
+  MorphOutput *output;
+public:
+  IProperty (MorphOutput *output) :
+    output (output)
+  {
+  }
+  int min() { return 0; }
+  int max() { return 1000; }
+  int get();
+  void set (int v);
+
+  std::string label() { return "Glide"; }
+  std::string value_label() { return string_printf ("%.2f%%\n", get() / 1000. * 100); }
+};
 
 class MorphOutput : public MorphOperator
 {
@@ -25,6 +56,8 @@ class MorphOutput : public MorphOperator
   float                        m_unison_detune;
 
   bool                         m_portamento;
+  float                        m_portamento_glide;
+  IProperty                    m_portamento_glide_property;
 
 public:
   MorphOutput (MorphPlan *morph_plan);
@@ -56,12 +89,29 @@ public:
   void           set_portamento (bool ep);
   bool           portamento() const;
 
+  void           set_portamento_glide (float glide);
+  float          portamento_glide() const;
+
+  Property*      portamento_glide_property();
+
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
 
 public slots:
   void on_operator_removed (MorphOperator *op);
 };
+
+inline int
+IProperty::get()
+{
+  return lrint (output->portamento_glide() * 1000);
+}
+
+inline void
+IProperty::set (int v)
+{
+  output->set_portamento_glide (v / 1000.);
+}
 
 }
 

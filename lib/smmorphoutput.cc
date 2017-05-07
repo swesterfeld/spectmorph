@@ -17,7 +17,8 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
-  channel_ops (CHANNEL_OP_COUNT)
+  channel_ops (CHANNEL_OP_COUNT),
+  m_portamento_glide_property (this)
 {
   connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
 
@@ -29,6 +30,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_unison_detune = 6.0;
 
   m_portamento = false;
+  m_portamento_glide = 0.2; /* seconds */
 
   leak_debugger.add (this);
 }
@@ -68,6 +70,7 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_int ("unison_voices", m_unison_voices);
   out_file.write_float ("unison_detune", m_unison_detune);
   out_file.write_bool ("portamento", m_portamento);
+  out_file.write_float ("portamento_glide", m_portamento_glide);
   return true;
 }
 
@@ -131,6 +134,10 @@ MorphOutput::load (InFile& ifile)
           if (ifile.event_name() == "unison_detune")
             {
               m_unison_detune = ifile.event_float();
+            }
+          else if (ifile.event_name() == "portamento_glide")
+            {
+              m_portamento_glide = ifile.event_float();
             }
           else
             {
@@ -270,6 +277,27 @@ MorphOutput::set_portamento (bool ep)
   m_portamento = ep;
 
   m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::portamento_glide() const
+{
+  return m_portamento_glide;
+}
+
+void
+MorphOutput::set_portamento_glide (float glide)
+{
+  m_portamento_glide = glide;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+
+Property *
+MorphOutput::portamento_glide_property()
+{
+  return &m_portamento_glide_property;
 }
 
 void
