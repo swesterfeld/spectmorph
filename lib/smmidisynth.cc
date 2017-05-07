@@ -113,6 +113,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
     return;
 
   set_mono_enabled (voices[0].mp_voice->output()->portamento());
+  portamento_glide = voices[0].mp_voice->output()->portamento_glide();
 
   Voice *voice = alloc_voice();
   if (voice)
@@ -195,7 +196,7 @@ MidiSynth::update_mono_voice()
             }
           else
             {
-              mvoice->pitch_bend_steps = sm_round_positive (0.100 * mix_freq);
+              mvoice->pitch_bend_steps = sm_round_positive (portamento_glide * mix_freq);
               mvoice->pitch_bend_delta = (shadow_midi_note - mvoice->midi_note) - mvoice->pitch_bend;
               mvoice->pitch_bend_delta /= mvoice->pitch_bend_steps;
             }

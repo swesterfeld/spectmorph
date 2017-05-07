@@ -57,6 +57,7 @@ class MidiSynth
   bool                  pedal_down;
   size_t                audio_time_stamp;
   bool                  mono_enabled;
+  float                 portamento_glide;
 
   float                 control[2];
 
