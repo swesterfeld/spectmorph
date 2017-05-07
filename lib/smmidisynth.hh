@@ -17,9 +17,15 @@ class MidiSynth
       STATE_ON,
       STATE_RELEASE
     };
+    enum class MonoType {
+      POLY,
+      MONO,
+      SHADOW
+    };
     MorphPlanVoice *mp_voice;
 
     State        state;
+    MonoType     mono_type;
     bool         pedal;
     int          midi_note;
     int          channel;
@@ -53,6 +59,7 @@ class MidiSynth
 
   Voice  *alloc_voice();
   void    free_unused_voices();
+  bool    update_mono_voice();
   float   freq_from_note (float note);
 
   void process_audio (float *output, size_t n_values);

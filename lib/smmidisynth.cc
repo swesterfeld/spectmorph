@@ -11,7 +11,8 @@ using std::min;
 
 using std::string;
 
-#define DEBUG 0
+#define DEBUG        0
+#define MONO_ENABLED 0
 
 static FILE *debug_file = NULL;
 QMutex       debug_mutex;
@@ -114,8 +115,6 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
   Voice *voice = alloc_voice();
   if (voice)
     {
-      MorphOutputModule *output = voice->mp_voice->output();
-
       voice->freq            = freq_from_note (midi_note);
       voice->pitch_bend      = 0;
       voice->state           = Voice::STATE_ON;
@@ -123,13 +122,103 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
       voice->velocity        = midi_velocity / 127.;
       voice->channel         = channel;
 
-      output->retrigger (0 /* channel */, voice->freq, midi_velocity);
+      if (!MONO_ENABLED)
+        {
+          MorphOutputModule *output = voice->mp_voice->output();
+
+          voice->mono_type = Voice::MonoType::POLY;
+
+          output->retrigger (0 /* channel */, voice->freq, midi_velocity);
+        }
+      else
+        {
+          voice->mono_type = Voice::MonoType::SHADOW;
+
+          if (!update_mono_voice())
+            {
+              Voice *mono_voice = alloc_voice();
+
+              if (mono_voice)
+                {
+                  MorphOutputModule *output = mono_voice->mp_voice->output();
+
+                  mono_voice->freq       = voice->freq;
+                  mono_voice->pitch_bend = voice->pitch_bend;
+                  mono_voice->state      = voice->state;
+                  mono_voice->midi_note  = voice->midi_note;
+                  mono_voice->velocity   = voice->velocity;
+                  mono_voice->channel    = voice->channel;
+
+                  mono_voice->mono_type = Voice::MonoType::MONO;
+
+                  output->retrigger (0 /* channel */, voice->freq, midi_velocity);
+                }
+            }
+        }
     }
+}
+
+bool
+MidiSynth::update_mono_voice()
+{
+  bool found_mono_voice = false;
+
+  /* find active shadow voice */
+  int shadow_midi_note = -1;
+  for (auto svoice : active_voices)
+    {
+      if (svoice->state == Voice::STATE_ON && svoice->mono_type == Voice::MonoType::SHADOW)
+        {
+          /* FIXME: priorization (new shadow voices are more important than old */
+          shadow_midi_note = svoice->midi_note;
+        }
+    }
+  /* find main voice */
+  for (auto mvoice : active_voices)
+    {
+      if (mvoice->state == Voice::STATE_ON && mvoice->mono_type == Voice::MonoType::MONO)
+        {
+          found_mono_voice = true;
+
+          if (shadow_midi_note == -1) /* no more shadow notes point to this note */
+            {
+              /* pedal not supported in mono mode */
+              mvoice->state = Voice::STATE_RELEASE;
+              mvoice->env = 1.0;
+            }
+          else
+            {
+              mvoice->pitch_bend = shadow_midi_note - mvoice->midi_note;
+            }
+        }
+    }
+  return found_mono_voice;
 }
 
 void
 MidiSynth::process_note_off (int midi_note)
 {
+  if (MONO_ENABLED)
+    {
+      bool need_free = false;
+
+      for (auto voice : active_voices)
+        {
+          if (voice->state == Voice::STATE_ON && voice->midi_note == midi_note && voice->mono_type == Voice::MonoType::SHADOW)
+            {
+              voice->state = Voice::STATE_IDLE;
+              voice->pedal = false; /* pedal not supported in mono mode */
+
+              need_free = true;
+            }
+        }
+      if (need_free)
+        free_unused_voices();
+
+      update_mono_voice();
+      return;
+    }
+
   for (auto voice : active_voices)
     {
       if (voice->state == Voice::STATE_ON && voice->midi_note == midi_note)
@@ -233,7 +322,11 @@ MidiSynth::process_audio (float *output, size_t n_values)
             frequencies[i] = freq;
           freq_in = frequencies;
         }
-      if (voice->state == Voice::STATE_ON)
+      if (voice->mono_type == Voice::MonoType::SHADOW)
+        {
+          /* skip: shadow voices are not rendered */
+        }
+      else if (voice->state == Voice::STATE_ON)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
