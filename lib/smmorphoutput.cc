@@ -28,6 +28,8 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_unison_voices = 2;
   m_unison_detune = 6.0;
 
+  m_portamento = false;
+
   leak_debugger.add (this);
 }
 
@@ -65,6 +67,7 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_bool ("unison", m_unison);
   out_file.write_int ("unison_voices", m_unison_voices);
   out_file.write_float ("unison_detune", m_unison_detune);
+  out_file.write_bool ("portamento", m_portamento);
   return true;
 }
 
@@ -100,6 +103,10 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "unison")
             {
               m_unison = ifile.event_bool();
+            }
+          else if (ifile.event_name() == "portamento")
+            {
+              m_portamento = ifile.event_bool();
             }
           else
             {
@@ -178,7 +185,7 @@ MorphOutput::channel_op (int ch)
 }
 
 bool
-MorphOutput::sines()
+MorphOutput::sines() const
 {
   return m_sines;
 }
@@ -192,7 +199,7 @@ MorphOutput::set_sines (bool es)
 }
 
 bool
-MorphOutput::noise()
+MorphOutput::noise() const
 {
   return m_noise;
 }
@@ -208,7 +215,7 @@ MorphOutput::set_noise (bool en)
 //---- unison effect ----
 
 bool
-MorphOutput::unison()
+MorphOutput::unison() const
 {
   return m_unison;
 }
@@ -245,6 +252,22 @@ void
 MorphOutput::set_unison_detune (float detune)
 {
   m_unison_detune = detune;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+//---- portamento/mono mode ----
+
+bool
+MorphOutput::portamento() const
+{
+  return m_portamento;
+}
+
+void
+MorphOutput::set_portamento (bool ep)
+{
+  m_portamento = ep;
 
   m_morph_plan->emit_plan_changed();
 }
