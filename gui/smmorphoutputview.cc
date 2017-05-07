@@ -89,9 +89,18 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   // Unison: initial widget visibility
   on_unison_changed (morph_output->unison());
 
+  // Portamento (Mono): on/off
+  QCheckBox *portamento_check_box = new QCheckBox ("Enable Portamento (Mono)");
+  portamento_check_box->setChecked (morph_output->portamento());
+  grid_layout->addWidget (portamento_check_box, 9, 0, 1, 2);
+
+  // Portamento: initial widget visibility
+  on_portamento_changed (morph_output->portamento());
+
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
   connect (unison_check_box, SIGNAL (toggled (bool)), this, SLOT (on_unison_changed (bool)));
+  connect (portamento_check_box, SIGNAL (toggled (bool)), this, SLOT (on_portamento_changed (bool)));
   set_body_layout (grid_layout);
 }
 
@@ -136,6 +145,14 @@ MorphOutputView::on_unison_detune_changed (int new_value)
   const double detune = new_value / 10.0;
   unison_detune_label->setText (string_locale_printf ("%.1f Cent", detune).c_str());
   morph_output->set_unison_detune (detune);
+}
+
+void
+MorphOutputView::on_portamento_changed (bool new_value)
+{
+  morph_output->set_portamento (new_value);
+
+  Q_EMIT need_resize();
 }
 
 void

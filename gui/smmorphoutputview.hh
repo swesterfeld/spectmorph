@@ -40,6 +40,7 @@ public slots:
   void on_unison_changed (bool new_value);
   void on_unison_voices_changed (int voices);
   void on_unison_detune_changed (int new_value);
+  void on_portamento_changed (bool new_value);
   void on_operator_changed();
 };
 
