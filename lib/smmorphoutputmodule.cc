@@ -81,7 +81,8 @@ MorphOutputModule::set_config (MorphOperator *op)
           else
             dec->set_unison_voices (1, 0);
         }
-      m_portamento = out_op->portamento();
+      m_portamento       = out_op->portamento();
+      m_portamento_glide = out_op->portamento_glide();
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
@@ -94,6 +95,12 @@ bool
 MorphOutputModule::portamento() const
 {
   return m_portamento;
+}
+
+float
+MorphOutputModule::portamento_glide() const
+{
+  return m_portamento_glide;
 }
 
 static void
