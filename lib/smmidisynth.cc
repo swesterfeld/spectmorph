@@ -197,8 +197,16 @@ MidiSynth::update_mono_voice()
           else
             {
               mvoice->pitch_bend_steps = sm_round_positive (portamento_glide * mix_freq);
-              mvoice->pitch_bend_delta = (shadow_midi_note - mvoice->midi_note) - mvoice->pitch_bend;
-              mvoice->pitch_bend_delta /= mvoice->pitch_bend_steps;
+              if (mvoice->pitch_bend_steps > 0)
+                {
+                  mvoice->pitch_bend_delta = (shadow_midi_note - mvoice->midi_note) - mvoice->pitch_bend;
+                  mvoice->pitch_bend_delta /= mvoice->pitch_bend_steps;
+                }
+              else
+                {
+                  /* jump if time is 0 */
+                  mvoice->pitch_bend = shadow_midi_note - mvoice->midi_note;
+                }
             }
         }
     }
