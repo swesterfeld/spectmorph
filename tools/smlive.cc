@@ -221,11 +221,11 @@ parse_freq_in (vector<float>& freq_vector)
 void
 portamento_process (LiveDecoder& decoder, float freq, size_t len, float *freq_in, float *audio_out)
 {
-  vector<float> ld_out;
-  double pos = 0;
+  const int DELTA = 32;
+  vector<float> ld_out (DELTA);
+  double pos = DELTA;
   for (size_t i = 0; i < len; i++)
     {
-      const int DELTA = 32;
       while (ld_out.size() < pos + DELTA)
         {
           const size_t START = ld_out.size();
@@ -237,6 +237,13 @@ portamento_process (LiveDecoder& decoder, float freq, size_t len, float *freq_in
       float frac = pos - ipos;
       audio_out[i] = ld_out[ipos] * (1 - frac) + ld_out[ipos + 1] * frac;
       pos += freq_in[i] / freq;
+
+      // avoid infinite state
+      if (ld_out.size() > 256)
+        {
+          ld_out.erase (ld_out.begin(), ld_out.begin() + 128);
+          pos -= 128;
+        }
     }
 }
 
