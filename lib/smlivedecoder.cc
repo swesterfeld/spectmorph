@@ -229,7 +229,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process (size_t n_values, const float *freq_in, const float *freq_mod_in, float *audio_out)
+LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
   if (!audio)   // nothing loaded
     {
@@ -558,7 +558,7 @@ LiveDecoder::precompute_tables (float mix_freq)
   float out;
 
   retrigger (0, 440, 127, mix_freq);
-  process (1, NULL, NULL, &out);
+  process (1, nullptr, &out);
 }
 
 void

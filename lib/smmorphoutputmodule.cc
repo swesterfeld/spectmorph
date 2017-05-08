@@ -161,7 +161,7 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, co
         {
           if (out_decoders[port])
             {
-              out_decoders[port]->process (n_samples, freq_in, 0, values[port]);
+              out_decoders[port]->process (n_samples, freq_in, values[port]);
             }
           else
             {
