@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ "$#" -ne 4 ]; then
-  echo "usage: porta.sh <inst> <from> <to> <delta>"
+  echo "usage: testporta.sh <inst> <from> <to> <delta>"
   exit 1
 fi
 
@@ -20,5 +20,5 @@ echo "$END_SLIDE $TO"
 echo "$END_TIME $TO"
 ) > /tmp/porta
 
-smlive $INST -f $FROM --loop $END_TIME --freq-in /tmp/porta -x /tmp/porta.wav
+smlive ~/.spectmorph/instruments/standard/${INST}.smset -f $FROM --loop $END_TIME --freq-in /tmp/porta -x /tmp/porta.wav
 gst123 -a jack /tmp/porta.wav
