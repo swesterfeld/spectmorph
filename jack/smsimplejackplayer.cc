@@ -84,7 +84,7 @@ SimpleJackPlayer::process (jack_nframes_t nframes)
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out_port, nframes);
   if (decoder)
     {
-      decoder->process (nframes, 0, 0, audio_out);
+      decoder->process (nframes, nullptr, audio_out);
       for (size_t i = 0; i < nframes; i++)
         audio_out[i] *= decoder_volume;
     }
@@ -133,7 +133,7 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
 
       // touch decoder in non-RT-thread to precompute tables & co
       vector<float> samples (10000);
-      new_decoder->process (samples.size(), 0, 0, &samples[0]);
+      new_decoder->process (samples.size(), nullptr, &samples[0]);
 
       // finally setup decoder for JACK thread
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
