@@ -229,7 +229,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out)
 {
   if (!audio)   // nothing loaded
     {
@@ -514,6 +514,35 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
           pos++;
           env_pos++;
           have_samples--;
+        }
+    }
+}
+
+void
+LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
+{
+  const int DELTA = 32;
+  vector<float> ld_out (DELTA);
+  double pos = DELTA;
+  for (size_t i = 0; i < n_values; i++)
+    {
+      while (ld_out.size() < pos + DELTA)
+        {
+          const size_t START = ld_out.size();
+
+          ld_out.resize (ld_out.size() + DELTA);
+          process_internal (DELTA, nullptr, &ld_out[START]);
+        }
+      int ipos = pos;
+      float frac = pos - ipos;
+      audio_out[i] = ld_out[ipos] * (1 - frac) + ld_out[ipos + 1] * frac;
+      pos += freq_in ? freq_in[i] / current_freq : 1;
+
+      // avoid infinite state
+      if (ld_out.size() > 256)
+        {
+          ld_out.erase (ld_out.begin(), ld_out.begin() + 128);
+          pos -= 128;
         }
     }
 }
