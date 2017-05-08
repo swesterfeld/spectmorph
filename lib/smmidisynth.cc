@@ -331,20 +331,22 @@ MidiSynth::process_audio (float *output, size_t n_values)
       voice->mp_voice->set_control_input (0, control[0]);
       voice->mp_voice->set_control_input (1, control[1]);
 
-      const int steps = min<int> (voice->pitch_bend_steps, n_values);
-      if (steps > 0)
-        {
-          voice->pitch_bend += steps * voice->pitch_bend_delta;
-          voice->pitch_bend_steps -= steps;
-        }
-
       const float *freq_in = nullptr;
       float frequencies[n_values];
-      if (fabs (voice->pitch_bend) > 1e-3)
+      if (fabs (voice->pitch_bend) > 1e-3 || voice->pitch_bend_steps > 0)
         {
           double freq = voice->freq * pow (2, voice->pitch_bend / 12);
           for (unsigned int i = 0; i < n_values; i++)
-            frequencies[i] = freq;
+            {
+              frequencies[i] = freq;
+              if (voice->pitch_bend_steps > 0)
+                {
+                  voice->pitch_bend += voice->pitch_bend_delta;
+                  voice->pitch_bend_steps--;
+
+                  freq = voice->freq * pow (2, voice->pitch_bend / 12);
+                }
+            }
           freq_in = frequencies;
         }
       if (voice->mono_type == Voice::MonoType::SHADOW)
