@@ -21,5 +21,5 @@ echo "$END_TIME $TO"
 ) > /tmp/porta
 
 set -x
-smlive ~/.spectmorph/instruments/standard/${INST}.smset -f $FROM --loop $END_TIME --freq-in /tmp/porta -x /tmp/porta.wav
+./smlive ~/.spectmorph/instruments/standard/${INST}.smset -f $FROM --loop $END_TIME --freq-in /tmp/porta -x /tmp/porta.wav
 gst123 -a jack /tmp/porta.wav
