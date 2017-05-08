@@ -218,35 +218,6 @@ parse_freq_in (vector<float>& freq_vector)
   return true;
 }
 
-void
-portamento_process (LiveDecoder& decoder, float freq, size_t len, float *freq_in, float *audio_out)
-{
-  const int DELTA = 32;
-  vector<float> ld_out (DELTA);
-  double pos = DELTA;
-  for (size_t i = 0; i < len; i++)
-    {
-      while (ld_out.size() < pos + DELTA)
-        {
-          const size_t START = ld_out.size();
-
-          ld_out.resize (ld_out.size() + DELTA);
-          decoder.process (DELTA, nullptr, &ld_out[START]);
-        }
-      int ipos = pos;
-      float frac = pos - ipos;
-      audio_out[i] = ld_out[ipos] * (1 - frac) + ld_out[ipos + 1] * frac;
-      pos += freq_in[i] / freq;
-
-      // avoid infinite state
-      if (ld_out.size() > 256)
-        {
-          ld_out.erase (ld_out.begin(), ld_out.begin() + 128);
-          pos -= 128;
-        }
-    }
-}
-
 int
 main (int argc, char **argv)
 {
@@ -300,10 +271,7 @@ main (int argc, char **argv)
 
   vector<float> audio_out (len);
   decoder.retrigger (0, options.freq, 127, options.rate);
-  if (freq_in.size())
-    portamento_process (decoder, options.freq, audio_out.size(), &freq_in[0], &audio_out[0]);
-  else
-    decoder.process (audio_out.size(), nullptr, &audio_out[0]);
+  decoder.process (audio_out.size(), freq_in.size() ? &freq_in[0] : nullptr, &audio_out[0]);
 
   // hacky way to remove tail silence
   while (!audio_out.empty() && audio_out.back() == 0)
