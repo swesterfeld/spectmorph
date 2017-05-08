@@ -186,6 +186,9 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       unison_phases[0].clear();
       unison_phases[1].clear();
     }
+  const int DELTA = 32;
+  portamento_state.pos = DELTA;
+  portamento_state.buffer.resize (DELTA);
   current_freq = freq;
   current_mix_freq = mix_freq;
 }
@@ -522,29 +525,30 @@ void
 LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
   const int DELTA = 32;
-  vector<float> ld_out (DELTA);
-  double pos = DELTA;
+  vector<float>& buffer = portamento_state.buffer;
+  double pos = portamento_state.pos;
   for (size_t i = 0; i < n_values; i++)
     {
-      while (ld_out.size() < pos + DELTA)
+      while (portamento_state.buffer.size() < pos + DELTA)
         {
-          const size_t START = ld_out.size();
+          const size_t START = portamento_state.buffer.size();
 
-          ld_out.resize (ld_out.size() + DELTA);
-          process_internal (DELTA, nullptr, &ld_out[START]);
+          portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
+          process_internal (DELTA, nullptr, &portamento_state.buffer[START]);
         }
       int ipos = pos;
       float frac = pos - ipos;
-      audio_out[i] = ld_out[ipos] * (1 - frac) + ld_out[ipos + 1] * frac;
+      audio_out[i] = buffer[ipos] * (1 - frac) + buffer[ipos + 1] * frac;
       pos += freq_in ? freq_in[i] / current_freq : 1;
 
       // avoid infinite state
-      if (ld_out.size() > 256)
+      if (buffer.size() > 256)
         {
-          ld_out.erase (ld_out.begin(), ld_out.begin() + 128);
+          buffer.erase (buffer.begin(), buffer.begin() + 128);
           pos -= 128;
         }
     }
+  portamento_state.pos = pos;
 }
 
 void

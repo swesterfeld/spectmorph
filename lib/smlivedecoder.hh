@@ -22,6 +22,10 @@ class LiveDecoder
   };
   std::vector<PartialState> pstate[2], *last_pstate;
 
+  struct PortamentoState {
+    std::vector<float> buffer;
+    double             pos;
+  } portamento_state;
   WavSet             *smset;
   Audio              *audio;
 
