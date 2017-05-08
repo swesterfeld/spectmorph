@@ -77,7 +77,7 @@ main (int argc, char **argv)
               vector<float> audio_out (n);
 
               // avoid measuring setup time
-              decoder.process (n, 0, 0, &audio_out[0]);
+              decoder.process (n, nullptr, &audio_out[0]);
               decoder.retrigger (0, freq, 127, 48000);
 
               double best_time = 1e7;
@@ -87,7 +87,7 @@ main (int argc, char **argv)
                   for (int l = 0; l < runs; l++)
                     {
                       decoder.retrigger (0, freq, 127, 48000);
-                      decoder.process (n, 0, 0, &audio_out[0]);
+                      decoder.process (n, nullptr, &audio_out[0]);
                     }
                   double end_t = gettime();
                   best_time = min (best_time, (end_t - start_t));
@@ -112,7 +112,7 @@ main (int argc, char **argv)
       float audio_out[n];
 
       // avoid measuring setup time
-      decoder.process (n, 0, 0, audio_out);
+      decoder.process (n, nullptr, audio_out);
       decoder.retrigger (0, freq, 127, 48000);
 
       double best_time = 1e7;
@@ -122,7 +122,7 @@ main (int argc, char **argv)
           for (int l = 0; l < runs; l++)
             {
               decoder.retrigger (0, freq, 127, 48000);
-              decoder.process (n, 0, 0, audio_out);
+              decoder.process (n, nullptr, audio_out);
             }
           double end_t = gettime();
           best_time = min (best_time, (end_t - start_t));
@@ -137,7 +137,7 @@ main (int argc, char **argv)
 
       vector<float> audio_out (SR * 20);
       decoder.retrigger (0, freq, 127, SR);
-      decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+      decoder.process (audio_out.size(), nullptr, &audio_out[0]);
 
       std::string export_wav = "tld.wav";
 
@@ -158,7 +158,7 @@ main (int argc, char **argv)
           for (int l = 0; l < runs; l++)
             {
               decoder.retrigger (0, freq, 127, 48000);
-              decoder.process (n, 0, 0, &audio_out[0]);
+              decoder.process (n, nullptr, &audio_out[0]);
             }
           double end_t = gettime();
           sm_printf ("%d %.17g\n", n, (end_t - start_t) * ns_per_sec / n / runs);
