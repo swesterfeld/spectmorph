@@ -70,8 +70,8 @@ class LiveDecoder
   Audio::LoopType     get_loop_type();
 
   void process_internal (size_t       n_values,
-                         const float *freq_in,
-                         float       *audio_out);
+                         float       *audio_out,
+                         float        portamento_stretch);
 
 public:
   LiveDecoder (WavSet *smset);

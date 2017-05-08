@@ -12,6 +12,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::min;
+using std::max;
 
 static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");
 
@@ -232,7 +233,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamento_stretch)
 {
   if (!audio)   // nothing loaded
     {
@@ -247,17 +248,14 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
        * in this case
        */
       bool need_resample = true;
-      if (!freq_in)
-        {
-          const double phase_inc = (current_freq / audio->fundamental_freq) *
-                                   (audio->mix_freq / current_mix_freq);
-          if (fabs (phase_inc - 1.0) < 1e-6)
-            need_resample = false;
-        }
+      const double phase_inc = (current_freq / audio->fundamental_freq) *
+                               (audio->mix_freq / current_mix_freq);
+      if (fabs (phase_inc - 1.0) < 1e-6)
+        need_resample = false;
 
       for (unsigned int i = 0; i < n_values; i++)
         {
-          double want_freq = freq_in ? freq_in[i] : current_freq;
+          double want_freq = current_freq;
           double phase_inc = (want_freq / audio->fundamental_freq) *
                              (audio->mix_freq / current_mix_freq);
 
@@ -292,7 +290,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
     {
       if (have_samples == 0)
         {
-          double want_freq = freq_in ? freq_in[i] : current_freq;
+          double want_freq = current_freq;
 
           std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
           zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
@@ -366,9 +364,14 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       // anti alias filter:
                       double mag         = audio_block.mags_f (partial);
                       double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
-                      if (freq > filter_min_freq)
+
+                      // portamento:
+                      //  - portamento_stretch > 1 means we read out faster
+                      //  => this means the aliasing starts at lower frequencies
+                      const double portamento_freq = freq * max (portamento_stretch, 1.0f);
+                      if (portamento_freq > filter_min_freq)
                         {
-                          double norm_freq = freq / current_mix_freq;
+                          double norm_freq = portamento_freq / current_mix_freq;
                           if (norm_freq > 0.5)
                             {
                               // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
@@ -529,17 +532,18 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   double pos = portamento_state.pos;
   for (size_t i = 0; i < n_values; i++)
     {
+      const float step = freq_in ? freq_in[i] / current_freq : 1;
       while (portamento_state.buffer.size() < pos + DELTA)
         {
           const size_t START = portamento_state.buffer.size();
 
           portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
-          process_internal (DELTA, nullptr, &portamento_state.buffer[START]);
+          process_internal (DELTA, &portamento_state.buffer[START], step);
         }
       int ipos = pos;
       float frac = pos - ipos;
       audio_out[i] = buffer[ipos] * (1 - frac) + buffer[ipos + 1] * frac;
-      pos += freq_in ? freq_in[i] / current_freq : 1;
+      pos += step;
 
       // avoid infinite state
       if (buffer.size() > 256)
