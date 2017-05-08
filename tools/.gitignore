@@ -15,6 +15,7 @@ smevalplayer
 tld
 smlive
 *.o
+*.pyc
 moc_*.cc
 .deps
 .libs
