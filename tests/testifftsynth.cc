@@ -261,7 +261,7 @@ test_spect()
   live_decoder.retrigger (0, freq, 127, mix_freq);
 
   vector<float> samples (block_size * 100);
-  live_decoder.process (samples.size(), 0, 0, &samples[0]);
+  live_decoder.process (samples.size(), nullptr, &samples[0]);
 
   size_t power2 = 1;
   while (power2 * 2 < (samples.size() - block_size * 2))
@@ -313,7 +313,7 @@ test_phase()
   live_decoder.retrigger (0, freq, 127, mix_freq);
   for (size_t block = 0; block < 10000000; block++)
     {
-      live_decoder.process (samples.size(), 0, 0, &samples[0]);
+      live_decoder.process (samples.size(), nullptr, &samples[0]);
 
       float maxv = 0;
       for (size_t i = 0; i < samples.size(); i++)
@@ -363,7 +363,7 @@ test_saw_perf()
         {
           start = gettime();
           for (int r = 0; r < RUNS; r++)
-            live_decoder.process (samples.size(), 0, 0, &samples[0]);
+            live_decoder.process (samples.size(), nullptr, &samples[0]);
           end = gettime();
           t[i] = min (t[i], end - start);
         }

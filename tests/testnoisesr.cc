@@ -187,7 +187,7 @@ decode (vector<float>& audio_out, int sr)
 
   float freq = 440;
   decoder.retrigger (0, freq, 127, sr);
-  decoder.process (audio_out.size(), 0, 0, &audio_out[0]);
+  decoder.process (audio_out.size(), nullptr, &audio_out[0]);
 }
 
 void
