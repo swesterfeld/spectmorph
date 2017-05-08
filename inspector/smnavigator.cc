@@ -250,7 +250,7 @@ Navigator::on_selection_changed()
       LiveDecoder decoder (&wset);
       decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
       decoded_samples.resize (audio->sample_count);
-      decoder.process (decoded_samples.size(), 0, 0, &decoded_samples[0]);
+      decoder.process (decoded_samples.size(), nullptr, &decoded_samples[0]);
       wav_data->load (decoded_samples, 1, audio->mix_freq);
     }
   else
