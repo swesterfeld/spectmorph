@@ -29,11 +29,9 @@ next_power2 (size_t i)
 /**
  * Creates a noise decoder object.
  *
- * \param orig_mix_freq   original mix freq (sample rate) of the audio file that was encoded
  * \param mix_freq        mix freq (sample rate) of the output sample data
  */
-NoiseDecoder::NoiseDecoder (double orig_mix_freq, double mix_freq, size_t block_size) :
-  orig_mix_freq (orig_mix_freq),
+NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
   mix_freq (mix_freq),
   block_size (block_size)
 {

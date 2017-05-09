@@ -156,7 +156,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
 
       if (noise_decoder)
         delete noise_decoder;
-      noise_decoder = new NoiseDecoder (audio->mix_freq, mix_freq, block_size);
+      noise_decoder = new NoiseDecoder (mix_freq, block_size);
 
       if (noise_seed != -1)
         noise_decoder->set_seed (noise_seed);

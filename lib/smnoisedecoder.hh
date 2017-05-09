@@ -15,7 +15,6 @@ namespace SpectMorph
  */
 class NoiseDecoder
 {
-  double orig_mix_freq;
   double mix_freq;
   size_t block_size;
 
@@ -27,8 +26,7 @@ class NoiseDecoder
   void apply_window (float *spectrum, float *fft_buffer);
 
 public:
-  NoiseDecoder (double orig_mix_freq,
-                double mix_freq,
+  NoiseDecoder (double mix_freq,
                 size_t block_size);
   ~NoiseDecoder();
 
