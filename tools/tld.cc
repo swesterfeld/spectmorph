@@ -77,8 +77,8 @@ main (int argc, char **argv)
               vector<float> audio_out (n);
 
               // avoid measuring setup time
-              decoder.process (n, nullptr, &audio_out[0]);
               decoder.retrigger (0, freq, 127, 48000);
+              decoder.process (n, nullptr, &audio_out[0]);
 
               double best_time = 1e7;
               for (int rep = 0; rep < 25; rep++)
@@ -112,8 +112,8 @@ main (int argc, char **argv)
       float audio_out[n];
 
       // avoid measuring setup time
-      decoder.process (n, nullptr, audio_out);
       decoder.retrigger (0, freq, 127, 48000);
+      decoder.process (n, nullptr, audio_out);
 
       double best_time = 1e7;
       for (int rep = 0; rep < 25; rep++)
