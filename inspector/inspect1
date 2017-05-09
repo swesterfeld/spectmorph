@@ -8,7 +8,8 @@ smwavset init $DIR/inst.smset
 NOTE=60
 for FILE in "$@"
 do
-  smwavset add $DIR/inst.smset $NOTE "$FILE"
+  sox "$FILE" -c 1 $DIR/mono.wav
+  smwavset add $DIR/inst.smset $NOTE "$DIR/mono.wav"
   NOTE=$((NOTE + 1))
 done
 smwavset -d $DIR encode $DIR/inst.smset $DIR/inst_e.smset --smenc smenccache
