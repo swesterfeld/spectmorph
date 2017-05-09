@@ -32,7 +32,7 @@ main (int argc, char **argv)
   const size_t block_size = 1024;
 
   AudioBlock audio_block;
-  NoiseDecoder noise_dec (mix_freq, mix_freq, block_size);
+  NoiseDecoder noise_dec (mix_freq, block_size);
   IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   Random    random;
 
