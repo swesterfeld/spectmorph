@@ -494,6 +494,7 @@ sm_factor2idb (double factor)
   return sm_round_positive (db * 64 + 512 * 64);
 }
 
+double sm_lowpass1_factor (double mix_freq, double freq);
 
 } // namespace SpectMorph
 

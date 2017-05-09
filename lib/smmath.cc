@@ -100,4 +100,12 @@ sm_fpu_okround()
   return !(cv & 0x0c00);
 }
 
+double
+sm_lowpass1_factor (double mix_freq, double freq)
+{
+  const double delta_t = (1 / mix_freq);
+
+  return 2 * M_PI * delta_t * freq / (2 * M_PI * delta_t * freq + 1);
+}
+
 }
