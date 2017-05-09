@@ -74,7 +74,8 @@ NoiseDecoder::set_seed (int seed)
 void
 NoiseDecoder::process (const AudioBlock& audio_block,
                        float            *samples,
-                       OutputMode        output_mode)
+                       OutputMode        output_mode,
+                       float             portamento_stretch)
 {
   if (!noise_band_partition)
     noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);
@@ -89,6 +90,13 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   const double norm = mix_freq / (Eww * block_size);
 
   noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
+
+  if (portamento_stretch > 1.01) // avoid aliasing during portamento
+    {
+      size_t boundary = 2 * size_t ((block_size / 2) / portamento_stretch);
+
+      zero_float_block (block_size + 2 - boundary, interpolated_spectrum + boundary);
+    }
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
   if (output_mode == FFT_SPECTRUM)

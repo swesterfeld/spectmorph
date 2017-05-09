@@ -35,7 +35,8 @@ public:
   void set_seed (int seed);
   void process (const AudioBlock& audio_block,
                 float *samples,
-                OutputMode output_mode = REPLACE);
+                OutputMode output_mode = REPLACE,
+                float portamento_stretch = 1.0);
 
   static size_t preferred_block_size (double mix_freq);
 };

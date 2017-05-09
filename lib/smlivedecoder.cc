@@ -472,7 +472,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               last_pstate = &new_pstate;
 
               if (noise_enabled)
-                noise_decoder->process (audio_block, ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+                noise_decoder->process (audio_block, ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
