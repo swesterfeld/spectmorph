@@ -262,7 +262,7 @@ main (int argc, char **argv)
   SineDecoder::Mode mode = options.decoder_mode;
 
   size_t noise_block_size = NoiseDecoder::preferred_block_size (format.rate);
-  NoiseDecoder noise_decoder (audio.mix_freq, format.rate, noise_block_size);
+  NoiseDecoder noise_decoder (format.rate, noise_block_size);
   SineDecoder  sine_decoder (audio.fundamental_freq, format.rate, frame_size, frame_step, mode);
 
   if (options.deterministic_random)
