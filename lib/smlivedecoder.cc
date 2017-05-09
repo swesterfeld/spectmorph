@@ -540,9 +540,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
           portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
           process_internal (DELTA, &portamento_state.buffer[START], step);
         }
-      int ipos = pos;
-      float frac = pos - ipos;
-      audio_out[i] = buffer[ipos] * (1 - frac) + buffer[ipos + 1] * frac;
+      audio_out[i] = pp_inter->get_sample (buffer, pos);
       pos += step;
 
       // avoid infinite state
