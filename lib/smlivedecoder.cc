@@ -527,6 +527,12 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 void
 LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
+  if (!audio)   // nothing loaded
+    {
+      std::fill (audio_out, audio_out + n_values, 0);
+      return;
+    }
+
   const int DELTA = 32;
   vector<float>& buffer = portamento_state.buffer;
   double pos = portamento_state.pos;
