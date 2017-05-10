@@ -10,6 +10,7 @@ portamento:
 - we may want time stretching
 - cleanup property code
 - parameter smoothing for steps from pitch-bend
+- shadow voices need priority
 
 adsr:
 - proper ADSR release
