@@ -1,11 +1,18 @@
 NEXT RELEASE:
 - support data in system wide location (packaging)
-- proper ADSR release
-- portamento
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
 - why does white noise not sound like white noise?
+
+portamento:
+- when portamento is not used, we should copy samples to output (perf), needs xfade
+- we may want time stretching
+- cleanup property code
+- parameter smoothing for steps from pitch-bend
+
+adsr:
+- proper ADSR release
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
