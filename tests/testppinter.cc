@@ -242,10 +242,10 @@ speed_test()
     for (size_t i = 0; i < result.size(); i++)
       result[i] = ppi->get_sample (signal, i * 1.3);
   double end = gettime();
-  double clocks_per_sec = 2500.0 * 1000 * 1000;
-  double clocks_per_sample = (end - start) * clocks_per_sec / (RUNS * result.size());
-  printf ("interp: %f clocks/sample\n", clocks_per_sample);
-  printf ("bogopolyphony = %f\n", clocks_per_sec / (clocks_per_sample * 48000));
+  double ns_per_sec = 1e9;
+  double ns_per_sample = (end - start) * ns_per_sec / (RUNS * result.size());
+  printf ("interp: %f ns/sample\n", ns_per_sample);
+  printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample * 48000));
 }
 
 int
