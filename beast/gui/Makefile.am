@@ -13,19 +13,10 @@ libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
 
 bin_PROGRAMS = spectmorphoscgui
-noinst_PROGRAMS = smmorphplot smldplot
 
 spectmorphoscgui_SOURCES = spectmorphoscgui.cc moc_spectmorphoscgui.cc spectmorphoscgui.hh
 spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS) libspectmorphgui.la
-spectmorphoscgui_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
-
-smmorphplot_SOURCES = smmorphplot.cc
-smmorphplot_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
-smmorphplot_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
-
-smldplot_SOURCES = smldplot.cc
-smldplot_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
-smldplot_CXXFLAGS = $(GTKMM_CFLAGS)  $(AM_CXXFLAGS)
+spectmorphoscgui_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_spectmorphoscgui.cc: spectmorphoscgui.hh
 	moc spectmorphoscgui.hh > moc_spectmorphoscgui.cc
