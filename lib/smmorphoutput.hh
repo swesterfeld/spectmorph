@@ -5,6 +5,7 @@
 
 #include "smmorphoperator.hh"
 #include "smutils.hh"
+#include "smmath.hh"
 
 #include <string>
 
@@ -38,7 +39,7 @@ public:
   void set (int v);
 
   std::string label() { return "Glide"; }
-  std::string value_label() { return string_printf ("%.2f%%\n", get() / 1000. * 100); }
+  std::string value_label() { return string_printf ("%.2f ms", sm_xparam (get() / 1000., 3) * 1000); }
 };
 
 class MorphOutput : public MorphOperator
@@ -104,13 +105,13 @@ public slots:
 inline int
 IProperty::get()
 {
-  return lrint (output->portamento_glide() * 1000);
+  return lrint (sm_xparam_inv (output->portamento_glide(), 3) * 1000);
 }
 
 inline void
 IProperty::set (int v)
 {
-  output->set_portamento_glide (v / 1000.);
+  output->set_portamento_glide (sm_xparam (v / 1000., 3));
 }
 
 }
