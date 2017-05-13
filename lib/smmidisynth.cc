@@ -43,6 +43,8 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   pedal_down (false),
   audio_time_stamp (0),
   mono_enabled (false),
+  portamento_note_id (0),
+  next_note_id (1),
   control {0, 0}
 {
   voices.clear();
@@ -64,6 +66,8 @@ MidiSynth::alloc_voice()
 
   Voice *voice = idle_voices.back();
   assert (voice->state == Voice::STATE_IDLE);   // every item in idle_voices should be idle
+
+  voice->note_id = next_note_id++;
 
   // move voice from idle to active list
   idle_voices.pop_back();
@@ -173,12 +177,17 @@ MidiSynth::update_mono_voice()
 
   /* find active shadow voice */
   int shadow_midi_note = -1;
+  int shadow_midi_note_id = 0;
   for (auto svoice : active_voices)
     {
       if (svoice->state == Voice::STATE_ON && svoice->mono_type == Voice::MonoType::SHADOW)
         {
-          /* FIXME: priorization (new shadow voices are more important than old */
-          shadow_midi_note = svoice->midi_note;
+          /* priorization: new shadow voices are more important than old */
+          if (svoice->note_id > shadow_midi_note_id)
+            {
+              shadow_midi_note = svoice->midi_note;
+              shadow_midi_note_id = svoice->note_id;
+            }
         }
     }
   /* find main voice */
@@ -194,8 +203,9 @@ MidiSynth::update_mono_voice()
               mvoice->state = Voice::STATE_RELEASE;
               mvoice->env = 1.0;
             }
-          else
+          else if (shadow_midi_note_id != portamento_note_id)
             {
+              portamento_note_id = shadow_midi_note_id;
               mvoice->pitch_bend_steps = sm_round_positive (portamento_glide * mix_freq);
               if (mvoice->pitch_bend_steps > 0)
                 {

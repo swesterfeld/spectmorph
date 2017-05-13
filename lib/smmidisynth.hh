@@ -35,6 +35,7 @@ class MidiSynth
     double       pitch_bend; /* in semitones */
     double       pitch_bend_delta;
     int          pitch_bend_steps;
+    int          note_id;
 
     Voice() :
       mp_voice (NULL),
@@ -58,6 +59,8 @@ class MidiSynth
   size_t                audio_time_stamp;
   bool                  mono_enabled;
   float                 portamento_glide;
+  int                   portamento_note_id;
+  int                   next_note_id;
 
   float                 control[2];
 
