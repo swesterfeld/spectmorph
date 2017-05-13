@@ -109,7 +109,7 @@ sm_lowpass1_factor (double mix_freq, double freq)
 }
 
 double
-sm_param (double x, double slope)
+sm_xparam (double x, double slope)
 {
   return (exp (x * slope) - x * slope - 1) / (exp (slope) - slope - 1);
 }
