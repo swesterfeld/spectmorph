@@ -108,4 +108,33 @@ sm_lowpass1_factor (double mix_freq, double freq)
   return 2 * M_PI * delta_t * freq / (2 * M_PI * delta_t * freq + 1);
 }
 
+double
+sm_param (double x, double slope)
+{
+  return (exp (x * slope) - x * slope - 1) / (exp (slope) - slope - 1);
+}
+
+double
+sm_xparam_inv (double x, double slope)
+{
+  double xlow = 0.0;
+  double xhigh = 1.0;
+
+  for (int i = 0; i < 20; i++)
+    {
+      const double xnew = (xlow + xhigh) / 2;
+      const double vnew = sm_xparam (xnew, slope);
+      if (vnew < x)
+        {
+          xlow = xnew;
+        }
+      else
+        {
+          xhigh = xnew;
+        }
+    }
+  return (xlow + xhigh) / 2;
+}
+
+
 }

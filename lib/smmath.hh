@@ -495,7 +495,8 @@ sm_factor2idb (double factor)
 }
 
 double sm_lowpass1_factor (double mix_freq, double freq);
-
+double sm_xparam (double x, double slope);
+double sm_xparam_inv (double x, double slope);
 } // namespace SpectMorph
 
 #endif
