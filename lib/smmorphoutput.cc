@@ -18,7 +18,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT),
-  m_portamento_glide_property (this)
+  m_portamento_glide_property (this, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide)
 {
   connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
 

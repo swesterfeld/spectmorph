@@ -8,6 +8,7 @@
 #include "smmath.hh"
 
 #include <string>
+#include <functional>
 
 namespace SpectMorph
 {
@@ -24,22 +25,28 @@ public:
   virtual std::string value_label() = 0;
 };
 
-class MorphOutput;
+template<class MorphOp>
 class IProperty : public Property
 {
-  MorphOutput *output;
+  MorphOp& morph_op;
+  std::function<float(const MorphOp&)> get_value;
+  std::function<void (MorphOp&, float)> set_value;
 public:
-  IProperty (MorphOutput *output) :
-    output (output)
+  IProperty (MorphOp *morph_op,
+             std::function<float(const MorphOp&)> get_value,
+             std::function<void (MorphOp&, float)> set_value) :
+    morph_op (*morph_op),
+    get_value (get_value),
+    set_value (set_value)
   {
   }
-  int min() { return 0; }
-  int max() { return 1000; }
-  int get();
-  void set (int v);
+  int min()         { return 0; }
+  int max()         { return 1000; }
+  int get()         { return lrint (sm_xparam_inv (get_value (morph_op), 3) * 1000); }
+  void set (int v)  { set_value (morph_op, sm_xparam (v / 1000., 3)); }
 
   std::string label() { return "Glide"; }
-  std::string value_label() { return string_printf ("%.2f ms", sm_xparam (get() / 1000., 3) * 1000); }
+  std::string value_label() { return string_printf ("%.2f ms", get_value (morph_op) * 1000); }
 };
 
 class MorphOutput : public MorphOperator
@@ -58,7 +65,7 @@ class MorphOutput : public MorphOperator
 
   bool                         m_portamento;
   float                        m_portamento_glide;
-  IProperty                    m_portamento_glide_property;
+  IProperty<MorphOutput>       m_portamento_glide_property;
 
 public:
   MorphOutput (MorphPlan *morph_plan);
@@ -101,18 +108,6 @@ public:
 public slots:
   void on_operator_removed (MorphOperator *op);
 };
-
-inline int
-IProperty::get()
-{
-  return lrint (sm_xparam_inv (output->portamento_glide(), 3) * 1000);
-}
-
-inline void
-IProperty::set (int v)
-{
-  output->set_portamento_glide (sm_xparam (v / 1000., 3));
-}
 
 }
 
