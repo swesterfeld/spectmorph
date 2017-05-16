@@ -130,13 +130,15 @@ impulse_test()
 
       fft_in[k++] = x * STEP;
     }
-  FFT::fftar_float (FFT_SIZE, fft_in, fft_out);
+  FFT::fftar_float (FFT_SIZE, fft_in, fft_out, FFT::PLAN_ESTIMATE);
   fft_out[1] = 0;
   for (int i = 0; i < FFT_SIZE; i += 2)
     {
       double re = fft_out[i];
       double im = fft_out[i + 1];
-      printf ("%d %.17g\n", i, sqrt (re * re + im * im));
+      const double freq = double (i / 2) / FFT_SIZE / STEP * 48000;
+
+      printf ("%.3f %.17g\n", freq, sqrt (re * re + im * im));
     }
 }
 
