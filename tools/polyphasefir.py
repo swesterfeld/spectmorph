@@ -37,7 +37,7 @@ def design (WIDTH):
 
 def dump_coefficients():
  for WIDTH in range (1, 10):
-   print "const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE + 1)
+   print "static const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE + 1)
    for d in design (WIDTH):
      print "  %.17g," % (d * OVERSAMPLE)
    print "};"
