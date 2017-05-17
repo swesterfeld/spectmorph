@@ -36,11 +36,12 @@ SpectrumView::paintEvent (QPaintEvent *event)
   QPainter painter (this);
   painter.fillRect (rect(), QColor (255, 255, 255));
 
-  float max_value = 0;
+  float max_mag = -100;
   for (vector<float>::const_iterator mi = spectrum.mags.begin(); mi != spectrum.mags.end(); mi++)
     {
-      max_value = max (max_value, value_scale (*mi));
+      max_mag   = max (*mi, max_mag);
     }
+  const float max_value = value_scale (max_mag);
 
   const int width =  800 * hzoom;
   const int height = 600 * vzoom;
@@ -61,6 +62,14 @@ SpectrumView::paintEvent (QPaintEvent *event)
           painter.drawLine (pos * width, 0, pos * width, height);
         }
       while (pos < 1);
+    }
+
+  // draw helper lines @ 24, 48, 72
+  painter.setPen (QPen (QColor (210, 210, 210), 2));
+  for (int db = 24; db < 100; db += 24)
+    {
+      const int hy = height - value_scale (max_mag - db) / max_value * height;
+      painter.drawLine (0, hy, width, hy);
     }
 
   // draw spectrum
