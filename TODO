@@ -10,7 +10,11 @@ portamento:
 - we may want time stretching
 - cleanup property code
 - parameter smoothing for steps from pitch-bend
-- shadow voices need priority
+- optimize ppinter filter
+  - use shorter filter (change passband spec)
+  - possibly avoid linear interpolation altogether
+  - reorder coefficients
+  - make code as SSE friendly as possible
 
 adsr:
 - proper ADSR release
