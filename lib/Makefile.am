@@ -42,6 +42,8 @@ libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS) $(BSE_LIBS) $(S
 spectmorphincludedir = $(includedir)/spectmorph
 spectmorphinclude_HEADERS = $(SMHDRS)
 
+EXTRA_DIST += smpolyphasecoeffs.cc
+
 moc_smmorphplan.cc: smmorphplan.hh
 	$(MOC) smmorphplan.hh > moc_smmorphplan.cc
 
