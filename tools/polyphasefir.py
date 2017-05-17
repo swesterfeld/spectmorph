@@ -20,11 +20,11 @@ def find_beta (WIDTH):
 
     max_h = 0
     for p in range (len (h)):
-      freq = (24000.0 * p) / len (h)
+      freq = (OVERSAMPLE * 24000.0 * p) / len (h)
 
-      if freq > 32000. / OVERSAMPLE:
+      if freq > 32000.:
         max_h = max (max_h, abs (h[p]))
-    print >> sys.stderr, beta, max_h
+
     if (max_h < best_max_h):
       best_beta = beta
       best_max_h = max_h
@@ -46,7 +46,7 @@ def dump_plot (WIDTH):
   w, h = signal.freqz (design (WIDTH), worN=2**14)
 
   for p in range (len (h)):
-    print (24000.0 * p) / len (h), abs (h[p])
+    print (OVERSAMPLE * 24000.0 * p) / len (h), abs (h[p])
 
 dump_plot (int (sys.argv[1]))
 # dump_coefficients()
