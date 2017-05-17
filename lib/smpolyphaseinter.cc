@@ -10,7 +10,9 @@ using namespace SpectMorph;
 using std::vector;
 
 #define OVERSAMPLE 64
-#define WIDTH      12
+#define WIDTH      7
+
+#include "smpolyphasecoeffs.cc"
 
 PolyPhaseInter*
 PolyPhaseInter::the()
@@ -85,28 +87,9 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
   return result;
 }
 
-static double
-sinc (double x)
-{
-  if (fabs (x) < 1e-6)
-    return 1;
-  else
-    return sin (M_PI * x) / (M_PI * x);
-}
-
 PolyPhaseInter::PolyPhaseInter()
 {
-  x.resize (WIDTH * 2 * OVERSAMPLE + 1);
+  vector<const double *> c ({ nullptr, c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9 });
+  x.assign (c[WIDTH], c[WIDTH] + WIDTH * 2 * OVERSAMPLE + 1);
   filter_center = x.size() / 2;
-
-  const double SR = 48000;
-  const double LP_FREQ = 20000;
-  for (int i = 0; i < (int)x.size(); i++)
-    {
-      int pos = i - filter_center;
-
-      double c = sinc (double (pos) / OVERSAMPLE / (SR / 2) * LP_FREQ);
-      double w = window_blackman (double (pos) / filter_center) / (SR / 2) * LP_FREQ;
-      x[i] = c * w;
-    }
 }
