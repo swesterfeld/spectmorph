@@ -163,7 +163,7 @@ print_spectrum (const string& label, const vector<float>& signal, double SR)
       fft_in[i] = w * signal[i];
       normalize += w;
     }
-  FFT::fftar_float (fft_size, fft_in, fft_out);
+  FFT::fftar_float (fft_size, fft_in, fft_out, FFT::PLAN_ESTIMATE);
 
   normalize *= 0.5;
 
@@ -185,11 +185,11 @@ resample_test (const double SR, const double FREQ, const double SPEED)
   vector<float> input_signal (5 * SR);   // 5 seconds
   vector<float> expect_signal (5 * SR);  // 5 seconds
 
-  // generate input signal
+  // generate input signal, which should be band limited after resampling
   for (size_t i = 0; i < input_signal.size(); i++)
     {
       int partial = 1;
-      while (partial * FREQ < (SR / 2))
+      while (partial * FREQ * SPEED < (SR / 2))
         {
           input_signal[i] += sin (partial * i / 48000.0 * FREQ * 2 * M_PI) / partial;
           partial++;
