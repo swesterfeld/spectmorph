@@ -67,32 +67,25 @@ sweep_test()
   PolyPhaseInter *ppi = PolyPhaseInter::the();
   const double SR = 48000;
 
-  double freq = 5;
-  double phase = 0;
-
-  vector<float> sin_signal, cos_signal, freq_signal;
-
-  while (freq < 24000)
+  for (double freq = 5; freq < 24000; freq += 5)
     {
-      sin_signal.push_back (sin (phase));
-      cos_signal.push_back (cos (phase));
-      freq_signal.push_back (freq);
+      size_t T = SR * 0.1; /* 100 ms */
+      vector<float> signal (T);
 
-      phase += 2 * M_PI * freq / SR;
-      if (phase > 2 * M_PI)
-        phase -= 2 * M_PI;
-      freq += 0.1;
-    }
+      for (size_t i = 0; i < signal.size(); i++)
+        signal[i] = sin (i * 2 * M_PI * freq / SR);
 
-  const double SPEED = 4.71;
-  double pos = 100;
-  while (pos < (sin_signal.size() - 100))
-    {
-      double si = ppi->get_sample (sin_signal, pos);
-      double ci = ppi->get_sample (cos_signal, pos);
-      double fi = ppi->get_sample (freq_signal, pos);
-      printf ("%.17g %.17g\n", fi, sqrt (si * si + ci * ci));
-      pos += SPEED;
+      const double SPEED = 4.71;
+
+      double error = 0;
+      for (double pos = 100; pos < signal.size() - 100; pos += SPEED)
+        {
+          double interp = ppi->get_sample (signal, pos);
+          double expect = sin (pos * 2 * M_PI * freq / SR);
+
+          error = max (error, fabs (interp - expect));
+        }
+      printf ("%.2f %.17g\n", freq, db_from_factor (error, -200));
     }
 }
 
