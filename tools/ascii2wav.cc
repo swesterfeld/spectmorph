@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <glib.h>
+#include <math.h>
 #include "smmain.hh"
 #include "smwavdata.hh"
 
@@ -36,6 +37,7 @@ main (int argc, char **argv)
 
   string filename = argv[1];
   int    srate    = atoi (argv[2]);
+  bool   level_warning = false;
 
   int line = 1;
   while (fgets (buffer, 1024, stdin) != NULL)
@@ -63,6 +65,12 @@ main (int argc, char **argv)
             {
               g_printerr ("ascii2wav: parse error on line %d\n", line);
               exit (1);
+            }
+
+          if (fabs (signal.back()) > 1.0 && !level_warning)
+            {
+              g_printerr ("ascii2wav: warning: input signal level is more than 1.0\n");
+              level_warning = true;
             }
         }
       line++;
