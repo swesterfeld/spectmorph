@@ -3,7 +3,9 @@
 # FIR design for polyphase filter
 
 from scipy import signal
+from numpy.fft import rfft
 import numpy
+import math
 import sys
 
 OVERSAMPLE = 64
@@ -48,5 +50,28 @@ def dump_plot (WIDTH):
   for p in range (len (h)):
     print (OVERSAMPLE * 24000.0 * p) / len (h), abs (h[p])
 
+def test_filter (WIDTH, FREQ):
+  # use filter for upsampling a sine signal, compute fft
+  x = []
+  for i in range (int (SR * 0.1)):
+    x.append (math.sin (i * FREQ / SR * 2 * math.pi))
+    for j in range (OVERSAMPLE - 1):
+      x.append (0)
+
+  window = numpy.kaiser (65536, 12.0)
+
+  fft_in = []
+  y = signal.convolve (x, design (WIDTH))
+  for i in range (10 * OVERSAMPLE, len (x) - 10 * OVERSAMPLE):
+    #print "%d %.4f %.4f" % (i, x[i], y[i + WIDTH * OVERSAMPLE])
+    if len (fft_in) < len (window):
+      fft_in.append (y[i + WIDTH * OVERSAMPLE] * window[len (fft_in)])
+
+  fft_out = rfft (fft_in)
+
+  for i in range (len (fft_out)):
+    print (i * SR * OVERSAMPLE) / len (fft_in), abs (fft_out[i])
+
 dump_plot (int (sys.argv[1]))
 # dump_coefficients()
+# test_filter (int (sys.argv[1]), float (sys.argv[2]))
