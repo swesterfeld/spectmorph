@@ -250,6 +250,32 @@ speed_test()
   printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample * 48000));
 }
 
+void
+rspectrum (double freq, double speed)
+{
+  PolyPhaseInter *ppi = PolyPhaseInter::the();
+  const double SR = 48000;
+
+  // generate source signal: sine wave
+  vector<float> source (SR * speed + 100);
+  for (size_t i = 0; i < source.size(); i++)
+    source[i] = sin (i * freq / SR * 2 * M_PI);
+
+  // generate output signal & expected output
+  vector<float> dest;
+  vector<float> expect;
+  for (double pos = 0; pos < SR * speed; pos += speed)
+    {
+      dest.push_back (ppi->get_sample (source, pos + 50));
+      expect.push_back (sin ((pos + 50) * freq / SR * 2 * M_PI));
+
+      //printf ("%.2f %.17g %.17g\n", pos, dest.back(), expect.back());
+    }
+  print_spectrum ("I", source, SR);
+  print_spectrum ("E", expect, SR / speed);
+  print_spectrum ("R", dest, SR / speed);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -270,6 +296,10 @@ main (int argc, char **argv)
   else if (argc == 2 && string (argv[1]) == "resample")
     {
       resample_test (48000, 440, 1.3);
+    }
+  else if (argc == 4 && string (argv[1]) == "rspectrum")
+    {
+      rspectrum (atof (argv[2]), atof (argv[3]));
     }
   else
     {
