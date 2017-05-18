@@ -262,18 +262,22 @@ rspectrum (double freq, double speed)
     source[i] = sin (i * freq / SR * 2 * M_PI);
 
   // generate output signal & expected output
-  vector<float> dest;
-  vector<float> expect;
+  vector<float> dest, expect, delta;
   for (double pos = 0; pos < SR * speed; pos += speed)
     {
-      dest.push_back (ppi->get_sample (source, pos + 50));
-      expect.push_back (sin ((pos + 50) * freq / SR * 2 * M_PI));
+      const double dest_value = ppi->get_sample (source, pos + 50);
+      const double expect_value = sin ((pos + 50) * freq / SR * 2 * M_PI);
+
+      dest.push_back (dest_value);
+      expect.push_back (expect_value);
+      delta.push_back (dest_value - expect_value);
 
       //printf ("%.2f %.17g %.17g\n", pos, dest.back(), expect.back());
     }
   print_spectrum ("I", source, SR);
   print_spectrum ("E", expect, SR / speed);
   print_spectrum ("R", dest, SR / speed);
+  print_spectrum ("D", delta, SR / speed);
 }
 
 int
