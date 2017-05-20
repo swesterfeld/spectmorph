@@ -534,6 +534,9 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     }
 
   const int DELTA = 32;
+
+  assert (DELTA >= pp_inter->get_min_padding());
+
   vector<float>& buffer = portamento_state.buffer;
   double pos = portamento_state.pos;
   for (size_t i = 0; i < n_values; i++)
@@ -546,7 +549,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
           portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
           process_internal (DELTA, &portamento_state.buffer[START], step);
         }
-      audio_out[i] = pp_inter->get_sample (buffer, pos);
+      audio_out[i] = pp_inter->get_sample_no_check (buffer, pos);
       pos += step;
 
       // avoid infinite state

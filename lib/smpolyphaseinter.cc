@@ -62,7 +62,7 @@ PolyPhaseInter::get_sample_no_check (const vector<float>& signal, double pos)
 {
   const int ipos = pos;
 
-  int frac64 = (pos - ipos) * OVERSAMPLE;
+  const int frac64 = (pos - ipos) * OVERSAMPLE;
   const float frac = (pos - ipos) * OVERSAMPLE - frac64;
 
   const float *x_a = &x[(WIDTH * 2 + 1) * (OVERSAMPLE - frac64)];
