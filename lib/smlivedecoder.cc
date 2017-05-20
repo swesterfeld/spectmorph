@@ -548,12 +548,13 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     }
 
   /* produce input samples until current_pos */
-  while (portamento_state.buffer.size() < current_pos + DELTA)
+  const int TODO = int (current_pos) + DELTA - int (portamento_state.buffer.size());
+  if (TODO > 0)
     {
       const size_t START = portamento_state.buffer.size();
 
-      portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
-      process_internal (DELTA, &portamento_state.buffer[START], current_step);
+      portamento_state.buffer.resize (portamento_state.buffer.size() + TODO);
+      process_internal (TODO, &portamento_state.buffer[START], current_step);
     }
 
   /* interpolate from buffer (portamento) */
