@@ -11,10 +11,8 @@ portamento:
 - cleanup property code
 - parameter smoothing for steps from pitch-bend
 - optimize ppinter filter
-  - use shorter filter (change passband spec)
-  - possibly avoid linear interpolation altogether
-  - reorder coefficients
-  - make code as SSE friendly as possible
+  - order should be 2*WIDTH-1
+  - provide inlining
 
 adsr:
 - proper ADSR release
