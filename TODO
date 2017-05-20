@@ -12,7 +12,6 @@ portamento:
 - parameter smoothing for steps from pitch-bend
 - optimize ppinter filter
   - order should be 2*WIDTH-1
-  - provide inlining
 
 adsr:
 - proper ADSR release
