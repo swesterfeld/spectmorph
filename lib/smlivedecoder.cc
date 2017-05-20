@@ -537,29 +537,37 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 
   assert (DELTA >= pp_inter->get_min_padding());
 
-  vector<float>& buffer = portamento_state.buffer;
-  double pos = portamento_state.pos;
+  /* compute positions */
+  double pos[n_values], current_pos = portamento_state.pos, current_step = 1;
   for (size_t i = 0; i < n_values; i++)
     {
-      const float step = freq_in ? freq_in[i] / current_freq : 1;
-      while (portamento_state.buffer.size() < pos + DELTA)
-        {
-          const size_t START = portamento_state.buffer.size();
+      current_step = freq_in ? freq_in[i] / current_freq : 1;
 
-          portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
-          process_internal (DELTA, &portamento_state.buffer[START], step);
-        }
-      audio_out[i] = pp_inter->get_sample_no_check (buffer, pos);
-      pos += step;
-
-      // avoid infinite state
-      if (buffer.size() > 256)
-        {
-          buffer.erase (buffer.begin(), buffer.begin() + 128);
-          pos -= 128;
-        }
+      pos[i] = current_pos;
+      current_pos += current_step;
     }
-  portamento_state.pos = pos;
+
+  /* produce input samples until current_pos */
+  while (portamento_state.buffer.size() < current_pos + DELTA)
+    {
+      const size_t START = portamento_state.buffer.size();
+
+      portamento_state.buffer.resize (portamento_state.buffer.size() + DELTA);
+      process_internal (DELTA, &portamento_state.buffer[START], current_step);
+    }
+
+  /* interpolate from buffer (portamento) */
+  vector<float>& buffer = portamento_state.buffer;
+  for (size_t i = 0; i < n_values; i++)
+    audio_out[i] = pp_inter->get_sample_no_check (buffer, pos[i]);
+
+  /* avoid infinite state */
+  if (buffer.size() > 256)
+    {
+      buffer.erase (buffer.begin(), buffer.begin() + 128);
+      current_pos -= 128;
+    }
+  portamento_state.pos = current_pos;
 }
 
 void
