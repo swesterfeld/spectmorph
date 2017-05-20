@@ -46,8 +46,19 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
             shift_signal[i] = signal[s];
         }
 
-      return get_sample (shift_signal, pos + shift);
+      return get_sample_no_check (shift_signal, pos + shift);
     }
+  else
+    {
+      return get_sample_no_check (signal, pos);
+    }
+}
+
+double
+PolyPhaseInter::get_sample_no_check (const vector<float>& signal, double pos)
+{
+  const int ipos = pos;
+
   int frac64 = (pos - ipos) * OVERSAMPLE;
   const float frac = (pos - ipos) * OVERSAMPLE - frac64;
 
