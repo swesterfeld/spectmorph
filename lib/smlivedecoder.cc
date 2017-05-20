@@ -577,8 +577,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   else
     {
       /* essentially copy samples from buffer (no portamento) */
-      for (size_t i = 0; i < n_values; i++)
-        audio_out[i] = buffer[pos[i]];
+      const float *start = &buffer[pos[0]];
+      std::copy (start, start + n_values, audio_out);
     }
 
   /* avoid infinite state */
