@@ -13,9 +13,7 @@ class PolyPhaseInter
   PolyPhaseInter();
   ~PolyPhaseInter() {}
 
-  int filter_center;
-
-  std::vector<double> x;
+  std::vector<float> x;
 
 public:
   static PolyPhaseInter *the();
