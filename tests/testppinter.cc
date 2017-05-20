@@ -229,18 +229,36 @@ speed_test()
       signal[i] = g_random_double_range (-1, 1);
     }
 
+  double t[2];
+
   vector<float> result (SR);
 
-  double start = gettime();
-  const size_t RUNS = 300;
+  double start, end;
+
+  start = gettime();
+  const size_t RUNS = 300, PADDING = 16;
   for (size_t k = 0; k < RUNS; k++)
-    for (size_t i = 0; i < result.size(); i++)
-      result[i] = ppi->get_sample (signal, i * 1.3);
-  double end = gettime();
-  double ns_per_sec = 1e9;
-  double ns_per_sample = (end - start) * ns_per_sec / (RUNS * result.size());
-  printf ("interp: %f ns/sample\n", ns_per_sample);
-  printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample * 48000));
+    for (size_t i = PADDING; i < result.size(); i++)
+      result[i] = ppi->get_sample (signal, i * 0.987);
+  end = gettime();
+  t[1] = end - start;
+
+  start = gettime();
+  for (size_t k = 0; k < RUNS; k++)
+    for (size_t i = PADDING; i < result.size(); i++)
+      result[i] = ppi->get_sample_no_check (signal, i * 0.987);
+  end = gettime();
+  t[0] = end - start;
+
+  for (int checks = 0; checks < 2; checks++)
+    {
+      double ns_per_sec = 1e9;
+      double ns_per_sample = t[checks] * ns_per_sec / (RUNS * (result.size() - PADDING));
+      printf (" ** checks = %d\n", checks);
+      printf ("interp: %f ns/sample\n", ns_per_sample);
+      printf ("bogopolyphony = %f\n", ns_per_sec / (ns_per_sample * 48000));
+      printf ("\n");
+    }
 }
 
 void
