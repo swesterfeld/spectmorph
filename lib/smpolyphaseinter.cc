@@ -38,7 +38,7 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
       // shift signal: ipos should be in the center of the generated input signal
       const int shift = shift_signal.size() / 2 - ipos;
 
-      for (int i = 0; i < shift_signal.size(); i++)
+      for (int i = 0; i < int (shift_signal.size()); i++)
         {
           const int s = i - shift;
 
@@ -49,18 +49,19 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
       return get_sample (shift_signal, pos + shift);
     }
   int frac64 = (pos - ipos) * OVERSAMPLE;
-  const float b_frac = (pos - ipos) * OVERSAMPLE - frac64;
-  const float a_frac = 1 - b_frac;
+  const float frac = (pos - ipos) * OVERSAMPLE - frac64;
 
   const float *x_a = &x[(WIDTH * 2 + 1) * (OVERSAMPLE - frac64)];
   const float *x_b = &x[(WIDTH * 2 + 1) * ((OVERSAMPLE * 2 - frac64 - 1) & (OVERSAMPLE - 1))];
   const float *s_ptr = &signal[ipos - WIDTH];
 
-  float result = 0;
+  float result_a = 0, result_b = 0;
   for (int j = 1; j < 2 * WIDTH + 1; j++)
-    result += s_ptr[j] * (x_a[j] * a_frac + x_b[j] * b_frac);
-
-  return result;
+    {
+      result_a += s_ptr[j] * x_a[j];
+      result_b += s_ptr[j] * x_b[j];
+    }
+  return result_a * (1 - frac) + result_b * frac;
 }
 
 PolyPhaseInter::PolyPhaseInter()
