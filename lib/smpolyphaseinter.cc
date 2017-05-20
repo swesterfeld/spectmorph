@@ -25,71 +25,71 @@ PolyPhaseInter::the()
   return instance;
 }
 
-static double
-sig (const vector<float>& signal, int pos)
-{
-  if (pos >= 0 && pos < (int)signal.size())
-    return signal[pos];
-  return 0;
-}
 
 double
 PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
 {
-/* linear interpolation
-  int ipos = pos;
-  double frac = pos - ipos;
-  return sig (signal, ipos) * (1 - frac) + sig (signal, ipos + 1) * frac;
-*/
-  // we need the biggest integer smaller than pos, so we need to handle
-  // negative positions seperately
-  int ipos;
-  if (pos < 0)
-    ipos = pos - 1.0;
-  else
-    ipos = pos;
+  const int ipos = pos;
+
+  if (ipos < WIDTH + 2 || ipos + WIDTH + 2 > int (signal.size()))
+    {
+      vector<float> shift_signal (WIDTH * 2 + 8);
+
+      // shift signal: ipos should be in the center of the generated input signal
+      const int shift = shift_signal.size() / 2 - ipos;
+
+      for (int i = 0; i < int (shift_signal.size()); i++)
+        {
+          const int s = i - shift;
+
+          if (s >= 0 && s < (int)signal.size())
+            shift_signal[i] = signal[s];
+        }
+
+      return get_sample (shift_signal, pos + shift);
+    }
   int frac64 = (pos - ipos) * OVERSAMPLE;
-  double x_frac = (pos - ipos) * OVERSAMPLE - frac64;
-  double result = 0;
-  int j = -WIDTH;
-  int p = filter_center + j * OVERSAMPLE - frac64;
-  while (p < 0)
+  const float frac = (pos - ipos) * OVERSAMPLE - frac64;
+
+  const float *x_a = &x[(WIDTH * 2 + 1) * (OVERSAMPLE - frac64)];
+  const float *x_b = &x[(WIDTH * 2 + 1) * ((OVERSAMPLE * 2 - frac64 - 1) & (OVERSAMPLE - 1))];
+  const float *s_ptr = &signal[ipos - WIDTH];
+
+  float result_a = 0, result_b = 0;
+  for (int j = 1; j < 2 * WIDTH + 1; j++)
     {
-      p += OVERSAMPLE;
-      j++;
+      result_a += s_ptr[j] * x_a[j];
+      result_b += s_ptr[j] * x_b[j];
     }
-  if (p == 0)
-    {
-      result += sig (signal, ipos + j) * x[p] * (1 - x_frac);
-      p += OVERSAMPLE;
-      j++;
-    }
-  if (ipos > WIDTH && ipos + WIDTH < (int)signal.size())  // no need to check signal boundaries for each sample
-    {
-      while (p < (int)x.size())
-        {
-          double inter_x = x[p] * (1 - x_frac) + x[p - 1] * x_frac;
-          result += signal[ipos + j] * inter_x;
-          p += OVERSAMPLE;
-          j++;
-        }
-    }
-  else
-    {
-      while (p < (int)x.size())
-        {
-          double inter_x = x[p] * (1 - x_frac) + x[p - 1] * x_frac;
-          result += sig (signal, ipos + j) * inter_x;
-          p += OVERSAMPLE;
-          j++;
-        }
-    }
-  return result;
+  return result_a * (1 - frac) + result_b * frac;
 }
 
 PolyPhaseInter::PolyPhaseInter()
 {
   vector<const double *> c ({ nullptr, c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9 });
-  x.assign (c[WIDTH], c[WIDTH] + WIDTH * 2 * OVERSAMPLE + 1);
-  filter_center = x.size() / 2;
+
+  /*
+   * reorder coefficients, first all coeffs with oversample 0, then oversample 1, ...
+   */
+  for (int o = 0; o <= OVERSAMPLE; o++)
+    {
+      int p = o & (OVERSAMPLE - 1);
+      if (o != OVERSAMPLE)
+        {
+          x.push_back (0);
+          for (int n = 0; n < WIDTH * 2; n++)
+            {
+              x.push_back (c_7[p]);
+              p += OVERSAMPLE;
+            }
+        }
+      else
+        {
+          for (int n = 0; n < WIDTH * 2 + 1; n++)
+            {
+              x.push_back (c_7[p]);
+              p += OVERSAMPLE;
+            }
+        }
+    }
 }
