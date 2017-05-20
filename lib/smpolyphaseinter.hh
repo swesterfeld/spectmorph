@@ -4,6 +4,7 @@
 #define SPECTMORPH_POLY_PHASE_INTER_HH
 
 #include <vector>
+#include <sys/types.h>
 
 namespace SpectMorph
 {
@@ -20,6 +21,8 @@ public:
 
   double get_sample (const std::vector<float>& signal, double pos);
   double get_sample_no_check (const std::vector<float>& signal, double pos);
+
+  size_t get_min_padding();
 };
 
 };

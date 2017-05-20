@@ -9,8 +9,11 @@ using namespace SpectMorph;
 
 using std::vector;
 
-#define OVERSAMPLE 64
-#define WIDTH      7
+#define OVERSAMPLE  64
+#define WIDTH       7
+
+/* set this to at least WIDTH + 2, no problem if it is a little too high */
+#define MIN_PADDING 16
 
 #include "smpolyphasecoeffs.cc"
 
@@ -31,9 +34,9 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
 {
   const int ipos = pos;
 
-  if (ipos < WIDTH + 2 || ipos + WIDTH + 2 > int (signal.size()))
+  if (ipos < MIN_PADDING || ipos + MIN_PADDING > int (signal.size()))
     {
-      vector<float> shift_signal (WIDTH * 2 + 8);
+      vector<float> shift_signal (MIN_PADDING * 2);
 
       // shift signal: ipos should be in the center of the generated input signal
       const int shift = shift_signal.size() / 2 - ipos;
@@ -73,6 +76,13 @@ PolyPhaseInter::get_sample_no_check (const vector<float>& signal, double pos)
       result_b += s_ptr[j] * x_b[j];
     }
   return result_a * (1 - frac) + result_b * frac;
+}
+
+size_t
+PolyPhaseInter::get_min_padding()
+{
+  /* Minimum padding before and after the pos sample should be at least MIN_PADDING to use get_sample_no_check() */
+  return MIN_PADDING;
 }
 
 PolyPhaseInter::PolyPhaseInter()
