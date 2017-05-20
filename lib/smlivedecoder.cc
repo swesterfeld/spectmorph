@@ -565,8 +565,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   /* avoid infinite state */
   if (buffer.size() > 256)
     {
-      buffer.erase (buffer.begin(), buffer.begin() + 128);
-      current_pos -= 128;
+      const int shrink_buffer = buffer.size() - DELTA; // only keep DELTA samples
+
+      buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
+      current_pos -= shrink_buffer;
     }
   portamento_state.pos = current_pos;
 }
