@@ -525,7 +525,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 }
 
 void
-LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *audio_out)
 {
   if (!audio)   // nothing loaded
     {
@@ -591,6 +591,30 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     }
   portamento_state.pos = current_pos;
 }
+
+void
+LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
+{
+  /*
+   * split processing into small blocks, max 10 ms
+   *  -> limit n_values to keep portamento stretch settings up-to-date
+   */
+  const size_t max_n_values = current_mix_freq * 0.010;
+
+  while (n_values > 0)
+    {
+      size_t todo_values = min (n_values, max_n_values);
+
+      process_portamento (todo_values, freq_in, audio_out);
+
+      if (freq_in)
+        freq_in += todo_values;
+
+      audio_out += todo_values;
+      n_values -= todo_values;
+    }
+}
+
 
 void
 LiveDecoder::enable_noise (bool en)

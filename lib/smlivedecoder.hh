@@ -73,6 +73,9 @@ class LiveDecoder
                          float       *audio_out,
                          float        portamento_stretch);
 
+  void process_portamento (size_t       n_values,
+                           const float *freq_in,
+                           float       *audio_out);
 public:
   LiveDecoder (WavSet *smset);
   LiveDecoder (LiveDecoderSource *source);
