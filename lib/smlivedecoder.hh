@@ -51,7 +51,7 @@ class LiveDecoder
   size_t              have_samples;
   size_t              block_size;
   size_t              pos;
-  size_t              env_pos;
+  double              env_pos;
   size_t              frame_idx;
   double              original_sample_pos;
   double              original_samples_norm_factor;

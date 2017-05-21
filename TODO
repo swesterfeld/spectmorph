@@ -7,7 +7,6 @@ NEXT RELEASE:
 
 portamento:
 - when portamento is not used, we should copy samples to output (perf), needs xfade
-- we may want time stretching
 - cleanup property code
 - parameter smoothing for steps from pitch-bend
 - optimize ppinter filter

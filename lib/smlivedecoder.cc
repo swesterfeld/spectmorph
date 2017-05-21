@@ -285,6 +285,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
       return;
     }
 
+  const double portamento_env_step = 1 / portamento_stretch;
   unsigned int i = 0;
   while (i < n_values)
     {
@@ -297,11 +298,11 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 
           if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
-              int xenv_pos = env_pos;
+              size_t xenv_pos = env_pos;
 
-              if (env_pos > loop_start_scaled)
+              if (xenv_pos > loop_start_scaled)
                 {
-                  xenv_pos = (env_pos - loop_start_scaled) % (loop_end_scaled - loop_start_scaled);
+                  xenv_pos = (xenv_pos - loop_start_scaled) % (loop_end_scaled - loop_start_scaled);
                   xenv_pos += loop_start_scaled;
                 }
               frame_idx = xenv_pos / frame_step;
@@ -420,7 +421,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                           freq_match = fmatch (lfreq, freq);
                         }
                       if (DEBUG)
-                        printf ("%zd:F %.17g %.17g\n", env_pos, freq, mag);
+                        printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
 
                       if (unison_voices == 1)
                         {
@@ -433,7 +434,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                               phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
 
                               if (DEBUG)
-                                printf ("%zd:L %.17g %.17g %.17g\n", env_pos, lfreq, freq, mag);
+                                printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
                             }
                           ifft_synth->render_partial (freq, mag, phase);
                         }
@@ -493,14 +494,14 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             {
               audio_out[i++] = 0;
               pos++;
-              env_pos++;
+              env_pos += portamento_env_step;
               have_samples--;
             }
           else if (time_ms < audio->attack_end_ms)
             {
               audio_out[i++] = (*sse_samples)[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
               pos++;
-              env_pos++;
+              env_pos += portamento_env_step;
               have_samples--;
             }
           else // envelope is 1 -> copy data efficiently
@@ -510,7 +511,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               memcpy (audio_out + i, &(*sse_samples)[pos], sizeof (float) * can_copy);
               i += can_copy;
               pos += can_copy;
-              env_pos += can_copy;
+              env_pos += can_copy * portamento_env_step;
               have_samples -= can_copy;
             }
         }
@@ -518,7 +519,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
         {
           // skip sample
           pos++;
-          env_pos++;
+          env_pos += portamento_env_step;
           have_samples--;
         }
     }
