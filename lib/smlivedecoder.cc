@@ -584,7 +584,7 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
   /* avoid infinite state */
   if (buffer.size() > 256)
     {
-      const int shrink_buffer = buffer.size() - DELTA; // only keep DELTA samples
+      const int shrink_buffer = buffer.size() - 2 * DELTA; // only keep 2 * DELTA samples
 
       buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
       current_pos -= shrink_buffer;
