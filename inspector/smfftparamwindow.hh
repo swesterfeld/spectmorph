@@ -23,6 +23,8 @@ class FFTParamWindow : public QWidget
   QSlider   *fft_frame_overlap_slider;
   QLabel    *fft_frame_overlap_label;
 
+  QComboBox *fft_window_combobox;
+
   QComboBox *cwt_mode_combobox;
 
   QSlider   *cwt_freq_res_slider;

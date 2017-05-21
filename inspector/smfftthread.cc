@@ -281,7 +281,18 @@ AnalysisCommand::execute()
   for (guint i = 0; i < window.size(); i++)
     {
       if (i < frame_size)
-        window[i] = window_cos (2.0 * i / frame_size - 1.0);
+        {
+          if (analysis_params.fft_window == FFTWindow::HANNING)
+            window[i] = window_cos (2.0 * i / frame_size - 1.0);
+          else if (analysis_params.fft_window == FFTWindow::HAMMING)
+            window[i] = window_hamming (2.0 * i / frame_size - 1.0);
+          else if (analysis_params.fft_window == FFTWindow::BLACKMAN)
+            window[i] = window_blackman (2.0 * i / frame_size - 1.0);
+          else if (analysis_params.fft_window == FFTWindow::BLACKMAN_HARRIS_92)
+            window[i] = window_blackman_harris_92 (2.0 * i / frame_size - 1.0);
+          else
+            assert (false);
+        }
       else
         window[i] = 0;
     }

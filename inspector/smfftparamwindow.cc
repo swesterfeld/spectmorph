@@ -19,6 +19,11 @@ using std::string;
 #define TEXT_VTIME "Frequency dependant time scale"
 #define TEXT_CTIME "Constant time scale"
 
+#define TEXT_WIN_HANNING "Hanning"
+#define TEXT_WIN_HAMMING "Hamming"
+#define TEXT_WIN_BLACKMAN "Blackman"
+#define TEXT_WIN_BLACKMAN_HARRIS_92 "Blackman-Harris-92"
+
 FFTParamWindow::FFTParamWindow()
 {
   setWindowTitle ("Transform Parameters");
@@ -51,6 +56,16 @@ FFTParamWindow::FFTParamWindow()
   fft_grid->addWidget (fft_frame_overlap_slider, 1, 1);
   fft_grid->addWidget (fft_frame_overlap_label, 1, 2);
   connect (fft_frame_overlap_slider, SIGNAL (valueChanged (int)), this, SLOT (on_value_changed()));
+
+  // FFT Window
+  fft_window_combobox = new QComboBox();
+  fft_window_combobox->addItem (TEXT_WIN_HANNING);
+  fft_window_combobox->addItem (TEXT_WIN_HAMMING);
+  fft_window_combobox->addItem (TEXT_WIN_BLACKMAN);
+  fft_window_combobox->addItem (TEXT_WIN_BLACKMAN_HARRIS_92);
+  fft_grid->addWidget (new QLabel ("FFT Window"), 2, 0);
+  fft_grid->addWidget (fft_window_combobox, 2, 1, 1, 2);
+  connect (fft_window_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_value_changed()));
 
   fft_groupbox->setLayout (fft_grid);
 
@@ -127,6 +142,18 @@ FFTParamWindow::get_analysis_params()
 
   params.frame_size_ms = get_frame_size();
   params.frame_step_ms = get_frame_step();
+
+  string fft_window_text = fft_window_combobox->currentText().toLatin1().data();
+  if (fft_window_text == TEXT_WIN_HANNING)
+    params.fft_window = FFTWindow::HANNING;
+  else if (fft_window_text == TEXT_WIN_HAMMING)
+    params.fft_window = FFTWindow::HAMMING;
+  else if (fft_window_text == TEXT_WIN_BLACKMAN)
+    params.fft_window = FFTWindow::BLACKMAN;
+  else if (fft_window_text == TEXT_WIN_BLACKMAN_HARRIS_92)
+    params.fft_window = FFTWindow::BLACKMAN_HARRIS_92;
+  else
+    assert (false);
 
   params.cwt_freq_resolution = cwt_freq_res_slider->value() / 1000.0;
   params.cwt_time_resolution = get_cwt_time_resolution();

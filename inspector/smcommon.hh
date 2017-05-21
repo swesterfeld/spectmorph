@@ -23,12 +23,21 @@ enum CWTMode
   SM_CWT_MODE_CTIME = 2
 };
 
+enum class FFTWindow
+{
+  HANNING,
+  HAMMING,
+  BLACKMAN,
+  BLACKMAN_HARRIS_92
+};
+
 struct AnalysisParams
 {
   TransformType transform_type;
 
   double        frame_size_ms; /* FFT */
   double        frame_step_ms; /* FFT */
+  FFTWindow     fft_window;    /* FFT */
 
   CWTMode       cwt_mode;
   double        cwt_freq_resolution;  /* CWT */
