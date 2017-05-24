@@ -120,5 +120,28 @@ sm_xparam_inv (double x, double slope)
   return pow (x, 1 / slope);
 }
 
+double
+sm_bessel_i0 (double x)
+{
+  /* http://www.vibrationdata.com/Bessel.htm */
+
+  /* 1 + (x/2)^2/(1!^2)
+   *   + (x/2)^4/(2!^2)
+   *   + (x/2)^6/(3!^2)   ... */
+
+  double delta = 1;
+  double result = 1;
+  const double sqr_x_2 = (x/2)*(x/2);
+
+  for (int i = 1; i < 500; i++)
+    {
+      delta *= sqr_x_2 / (i * i);
+      result += delta;
+
+      if (delta < 1e-14 * result)
+        break;
+    }
+  return result;
+}
 
 }
