@@ -13,7 +13,7 @@ EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq
+        testidb testifreq testbesseli0
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testjobqueue testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
@@ -121,6 +121,9 @@ testlpca_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlowpass1_SOURCES = testlowpass1.cc
 testlowpass1_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testbesseli0_SOURCES = testbesseli0.cc
+testbesseli0_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm
