@@ -187,9 +187,10 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       unison_phases[0].clear();
       unison_phases[1].clear();
     }
-  const int DELTA = 32;
-  portamento_state.pos = DELTA;
-  portamento_state.buffer.resize (DELTA);
+  assert (PortamentoState::DELTA >= pp_inter->get_min_padding());
+
+  portamento_state.pos = PortamentoState::DELTA;
+  portamento_state.buffer.resize (PortamentoState::DELTA);
   current_freq = freq;
   current_mix_freq = mix_freq;
 }
@@ -525,6 +526,50 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
     }
 }
 
+static bool
+portamento_check (size_t n_values, const float *freq_in, float current_freq)
+{
+  /* if any value in freq_in differs from current_freq => need portamento */
+  for (size_t i = 0; i < n_values; i++)
+    {
+      if (fabs (freq_in[i] / current_freq - 1) > 0.0001) // very small frequency difference (less than one cent)
+        return true;
+    }
+
+  /* all freq_in[i] are (approximately) current_freq => no portamento */
+  return false;
+}
+
+void
+LiveDecoder::portamento_grow (double end_pos, float portamento_stretch)
+{
+  /* produce input samples until current_pos */
+  const int TODO = int (end_pos) + PortamentoState::DELTA - int (portamento_state.buffer.size());
+  if (TODO > 0)
+    {
+      const size_t START = portamento_state.buffer.size();
+
+      portamento_state.buffer.resize (portamento_state.buffer.size() + TODO);
+      process_internal (TODO, &portamento_state.buffer[START], portamento_stretch);
+    }
+  portamento_state.pos = end_pos;
+}
+
+void
+LiveDecoder::portamento_shrink()
+{
+  vector<float>& buffer = portamento_state.buffer;
+
+  /* avoid infinite state */
+  if (buffer.size() > 256)
+    {
+      const int shrink_buffer = buffer.size() - 2 * PortamentoState::DELTA; // only keep 2 * DELTA samples
+
+      buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
+      portamento_state.pos -= shrink_buffer;
+    }
+}
+
 void
 LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *audio_out)
 {
@@ -534,63 +579,35 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
       return;
     }
 
-  const int DELTA = 32;
-
-  assert (DELTA >= pp_inter->get_min_padding());
-
-  /* compute positions */
-  bool need_true_portamento = false;
-  double pos[n_values], current_pos = portamento_state.pos, current_step = 1;
-  for (size_t i = 0; i < n_values; i++)
-    {
-      current_step = freq_in ? freq_in[i] / current_freq : 1;
-
-      if (fabs (current_step - 1) < 0.0001) // very small frequency difference (less than one cent)
-        {
-          current_step = 1;
-        }
-      else
-        {
-          need_true_portamento = true;
-        }
-
-      pos[i] = current_pos;
-      current_pos += current_step;
-    }
-
-  /* produce input samples until current_pos */
-  const int TODO = int (current_pos) + DELTA - int (portamento_state.buffer.size());
-  if (TODO > 0)
-    {
-      const size_t START = portamento_state.buffer.size();
-
-      portamento_state.buffer.resize (portamento_state.buffer.size() + TODO);
-      process_internal (TODO, &portamento_state.buffer[START], current_step);
-    }
-
+  const double start_pos = portamento_state.pos;
   vector<float>& buffer = portamento_state.buffer;
-  if (need_true_portamento)
+
+  if (freq_in && portamento_check (n_values, freq_in, current_freq))
     {
+      double pos[n_values], end_pos = start_pos, current_step;
+
+      for (size_t i = 0; i < n_values; i++)
+        {
+          pos[i] = end_pos;
+
+          current_step = freq_in[i] / current_freq;
+          end_pos += current_step;
+        }
+      portamento_grow (end_pos, current_step);
+
       /* interpolate from buffer (portamento) */
       for (size_t i = 0; i < n_values; i++)
         audio_out[i] = pp_inter->get_sample_no_check (buffer, pos[i]);
     }
   else
     {
-      /* essentially copy samples from buffer (no portamento) */
-      const float *start = &buffer[pos[0]];
+      /* no portamento: just compute & copy values */
+      portamento_grow (start_pos + n_values, 1);
+
+      const float *start = &buffer[sm_round_positive (start_pos)];
       std::copy (start, start + n_values, audio_out);
     }
-
-  /* avoid infinite state */
-  if (buffer.size() > 256)
-    {
-      const int shrink_buffer = buffer.size() - 2 * DELTA; // only keep 2 * DELTA samples
-
-      buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
-      current_pos -= shrink_buffer;
-    }
-  portamento_state.pos = current_pos;
+  portamento_shrink();
 }
 
 void

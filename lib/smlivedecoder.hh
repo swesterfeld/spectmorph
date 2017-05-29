@@ -25,6 +25,8 @@ class LiveDecoder
   struct PortamentoState {
     std::vector<float> buffer;
     double             pos;
+
+    enum { DELTA = 32 };
   } portamento_state;
   WavSet             *smset;
   Audio              *audio;
@@ -72,6 +74,9 @@ class LiveDecoder
   void process_internal (size_t       n_values,
                          float       *audio_out,
                          float        portamento_stretch);
+
+  void portamento_grow (double end_pos, float portamento_stretch);
+  void portamento_shrink();
 
   void process_portamento (size_t       n_values,
                            const float *freq_in,
