@@ -8,6 +8,7 @@
 
 #include "smmain.hh"
 #include "smutils.hh"
+#include "config.h"
 
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsecxxplugin.hh>

@@ -5,6 +5,7 @@
 #include "smencoder.hh"
 #include "smlivedecoder.hh"
 #include "smfft.hh"
+#include "config.h"
 
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsemathsignal.hh>
