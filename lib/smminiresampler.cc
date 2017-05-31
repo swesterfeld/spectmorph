@@ -4,6 +4,8 @@
 #include <string.h>
 #include <glib.h>
 
+#include "config.h"
+
 #if SPECTMORPH_HAVE_BSE
 #include <bse/gsldatautils.hh>
 #endif

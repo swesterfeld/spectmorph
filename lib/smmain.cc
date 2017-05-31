@@ -3,8 +3,13 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smmath.hh"
+#include "config.h"
 #include <stdio.h>
 #include <assert.h>
+
+#if SPECTMORPH_HAVE_BSE
+#include <bse/bsemain.hh>
+#endif
 
 namespace SpectMorph
 {
