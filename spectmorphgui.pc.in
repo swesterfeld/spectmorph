@@ -6,7 +6,7 @@ includedir=@includedir@
 
 Name: SpectMorph
 Description: SpectMorph sound morphing library: GUI
-Requires: spectmorph
+Requires: spectmorph Qt5Widgets
 Version: @VERSION@
 Libs: -L${libdir} -lspectmorphgui
 Cflags: -I${includedir}/spectmorph/smgui
