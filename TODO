@@ -16,6 +16,9 @@ portamento:
 vibrato:
 - add vibrato support (depth[cent], freq[hz], attack[ms])
 
+beast:
+- move spectmorph osc plugin from spectmorph to beast
+
 adsr:
 - proper ADSR release
 
