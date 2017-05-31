@@ -9,4 +9,4 @@ Description: SpectMorph sound morphing library
 Requires: bse
 Version: @VERSION@
 Libs: -L${libdir} -lspectmorph
-Cflags: -I${includedir}
+Cflags: -I${includedir}/spectmorph/smcore
