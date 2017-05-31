@@ -39,7 +39,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
 
-spectmorphincludedir = $(includedir)/spectmorph
+spectmorphincludedir = $(includedir)/spectmorph/smcore
 spectmorphinclude_HEADERS = $(SMHDRS)
 
 EXTRA_DIST += smpolyphasecoeffs.cc
