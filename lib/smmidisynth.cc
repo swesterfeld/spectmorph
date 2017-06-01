@@ -334,10 +334,8 @@ MidiSynth::process_audio (float *output, size_t n_values)
   if (!morph_plan_synth.have_output())
     return;
 
-  for (size_t voice_pos = 0; voice_pos < active_voices.size(); voice_pos++)
+  for (Voice *voice : active_voices)
     {
-      Voice *voice = active_voices[voice_pos];
-
       voice->mp_voice->set_control_input (0, control[0]);
       voice->mp_voice->set_control_input (1, control[1]);
 
