@@ -7,8 +7,6 @@ NEXT RELEASE:
 
 portamento:
 - cleanup property code
-- parameter smoothing for steps from pitch-bend
-- get rid of pow() in portamento code
 - optimize ppinter filter
   - order should be 2*WIDTH-1
 - if portamento glide is displayed as ms, it should be stored as ms

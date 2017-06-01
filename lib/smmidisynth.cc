@@ -8,6 +8,7 @@
 using namespace SpectMorph;
 
 using std::min;
+using std::max;
 
 using std::string;
 
@@ -122,14 +123,14 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
   Voice *voice = alloc_voice();
   if (voice)
     {
-      voice->freq             = freq_from_note (midi_note);
-      voice->pitch_bend       = 0;
-      voice->pitch_bend_delta = 0;
-      voice->pitch_bend_steps = 0;
-      voice->state            = Voice::STATE_ON;
-      voice->midi_note        = midi_note;
-      voice->velocity         = midi_velocity / 127.;
-      voice->channel          = channel;
+      voice->freq              = freq_from_note (midi_note);
+      voice->pitch_bend_freq   = voice->freq;
+      voice->pitch_bend_factor = 0;
+      voice->pitch_bend_steps  = 0;
+      voice->state             = Voice::STATE_ON;
+      voice->midi_note         = midi_note;
+      voice->velocity          = midi_velocity / 127.;
+      voice->channel           = channel;
 
       if (!mono_enabled)
         {
@@ -151,14 +152,14 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
                 {
                   MorphOutputModule *output = mono_voice->mp_voice->output();
 
-                  mono_voice->freq             = voice->freq;
-                  mono_voice->pitch_bend       = voice->pitch_bend;
-                  mono_voice->pitch_bend_delta = voice->pitch_bend_delta;
-                  mono_voice->pitch_bend_steps = voice->pitch_bend_steps;
-                  mono_voice->state            = voice->state;
-                  mono_voice->midi_note        = voice->midi_note;
-                  mono_voice->velocity         = voice->velocity;
-                  mono_voice->channel          = voice->channel;
+                  mono_voice->freq              = voice->freq;
+                  mono_voice->pitch_bend_freq   = voice->pitch_bend_freq;
+                  mono_voice->pitch_bend_factor = voice->pitch_bend_factor;
+                  mono_voice->pitch_bend_steps  = voice->pitch_bend_steps;
+                  mono_voice->state             = voice->state;
+                  mono_voice->midi_note         = voice->midi_note;
+                  mono_voice->velocity          = voice->velocity;
+                  mono_voice->channel           = voice->channel;
 
 
                   mono_voice->mono_type = Voice::MonoType::MONO;
@@ -206,21 +207,22 @@ MidiSynth::update_mono_voice()
           else if (shadow_midi_note_id != portamento_note_id)
             {
               portamento_note_id = shadow_midi_note_id;
-              mvoice->pitch_bend_steps = sm_round_positive (portamento_glide * mix_freq);
-              if (mvoice->pitch_bend_steps > 0)
-                {
-                  mvoice->pitch_bend_delta = (shadow_midi_note - mvoice->midi_note) - mvoice->pitch_bend;
-                  mvoice->pitch_bend_delta /= mvoice->pitch_bend_steps;
-                }
-              else
-                {
-                  /* jump if time is 0 */
-                  mvoice->pitch_bend = shadow_midi_note - mvoice->midi_note;
-                }
+
+              start_pitch_bend (mvoice, freq_from_note (shadow_midi_note), portamento_glide);
             }
         }
     }
   return found_mono_voice;
+}
+
+void
+MidiSynth::start_pitch_bend (Voice *voice, double dest_freq, double time_sec)
+{
+  // require at least one step
+  voice->pitch_bend_steps = max (sm_round_positive (time_sec * mix_freq), 1);
+
+  // "steps" multiplications with factor will produce voice->pitch_bend_freq == dest_freq
+  voice->pitch_bend_factor = exp (log (dest_freq / voice->pitch_bend_freq) / voice->pitch_bend_steps);
 }
 
 void
@@ -292,7 +294,9 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
     {
       if (voice->state == Voice::STATE_ON && voice->channel == channel)
         {
-          voice->pitch_bend = semi_tones;
+          const double glide = 0.020; /* 20ms smoothing (avoid frequency jumps) */
+
+          start_pitch_bend (voice, voice->freq * pow (2, semi_tones / 12), glide);
         }
     }
 }
@@ -341,18 +345,15 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
       const float *freq_in = nullptr;
       float frequencies[n_values];
-      if (fabs (voice->pitch_bend) > 1e-3 || voice->pitch_bend_steps > 0)
+      if (fabs (voice->pitch_bend_freq - voice->freq) > 1e-3 || voice->pitch_bend_steps > 0)
         {
-          double freq = voice->freq * pow (2, voice->pitch_bend / 12);
           for (unsigned int i = 0; i < n_values; i++)
             {
-              frequencies[i] = freq;
+              frequencies[i] = voice->pitch_bend_freq;
               if (voice->pitch_bend_steps > 0)
                 {
-                  voice->pitch_bend += voice->pitch_bend_delta;
+                  voice->pitch_bend_freq *= voice->pitch_bend_factor;
                   voice->pitch_bend_steps--;
-
-                  freq = voice->freq * pow (2, voice->pitch_bend / 12);
                 }
             }
           freq_in = frequencies;
