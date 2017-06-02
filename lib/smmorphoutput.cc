@@ -18,7 +18,10 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT),
-  m_portamento_glide_property (this, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide)
+  m_portamento_glide_property (this, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
+  m_vibrato_depth_property (this, "Depth", "%.2f Cent", 0, 100, 1, &MorphOutput::vibrato_depth, &MorphOutput::set_vibrato_depth),
+  m_vibrato_frequency_property (this, "Frequency", "%.3f Hz", 0.01, 10, 1, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
+  m_vibrato_attack_property (this, "Attack", "%.2f ms", 0, 1000, 1, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack)
 {
   connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
 
@@ -30,7 +33,12 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_unison_detune = 6.0;
 
   m_portamento = false;
-  m_portamento_glide = 0.2; /* seconds */
+  m_portamento_glide = 200; /* ms */
+
+  m_vibrato = false;
+  m_vibrato_depth = 10;    /* cent */
+  m_vibrato_frequency = 4; /* Hz */
+  m_vibrato_attack = 0;    /* ms */
 
   leak_debugger.add (this);
 }
@@ -298,6 +306,82 @@ Property *
 MorphOutput::portamento_glide_property()
 {
   return &m_portamento_glide_property;
+}
+
+//---- vibrato ----
+
+bool
+MorphOutput::vibrato() const
+{
+  return m_vibrato;
+}
+
+void
+MorphOutput::set_vibrato (bool ev)
+{
+  m_vibrato = ev;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::vibrato_depth() const
+{
+  return m_vibrato_depth;
+}
+
+void
+MorphOutput::set_vibrato_depth (float depth)
+{
+  m_vibrato_depth = depth;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+Property *
+MorphOutput::vibrato_depth_property()
+{
+  return &m_vibrato_depth_property;
+}
+
+float
+MorphOutput::vibrato_frequency() const
+{
+  return m_vibrato_frequency;
+}
+
+void
+MorphOutput::set_vibrato_frequency (float frequency)
+{
+  m_vibrato_frequency = frequency;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+Property *
+MorphOutput::vibrato_frequency_property()
+{
+  return &m_vibrato_frequency_property;
+}
+
+float
+MorphOutput::vibrato_attack() const
+{
+  return m_vibrato_attack;
+}
+
+void
+MorphOutput::set_vibrato_attack (float attack)
+{
+  m_vibrato_attack = attack;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+Property *
+MorphOutput::vibrato_attack_property()
+{
+  return &m_vibrato_attack_property;
 }
 
 void

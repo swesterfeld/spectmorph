@@ -28,25 +28,67 @@ public:
 template<class MorphOp>
 class IProperty : public Property
 {
-  MorphOp& morph_op;
+  MorphOp&      morph_op;
+  std::string   m_label;
+  std::string   m_format;
   std::function<float(const MorphOp&)> get_value;
   std::function<void (MorphOp&, float)> set_value;
 public:
   IProperty (MorphOp *morph_op,
+             const std::string& label,
+             const std::string& format,
              std::function<float(const MorphOp&)> get_value,
              std::function<void (MorphOp&, float)> set_value) :
     morph_op (*morph_op),
+    m_label (label),
+    m_format (format),
     get_value (get_value),
     set_value (set_value)
   {
   }
   int min()         { return 0; }
   int max()         { return 1000; }
-  int get()         { return lrint (sm_xparam_inv (get_value (morph_op), 3) * 1000); }
-  void set (int v)  { set_value (morph_op, sm_xparam (v / 1000., 3)); }
+  int get()         { return lrint (value2ui (get_value (morph_op)) * 1000); }
+  void set (int v)  { set_value (morph_op, ui2value (v / 1000.)); }
 
-  std::string label() { return "Glide"; }
-  std::string value_label() { return string_printf ("%.2f ms", get_value (morph_op) * 1000); }
+  virtual double value2ui (double value) = 0;
+  virtual double ui2value (double ui) = 0;
+
+  std::string label() { return m_label; }
+  std::string value_label() { return string_locale_printf (m_format.c_str(), get_value (morph_op)); }
+};
+
+template<class MorphOp>
+class XParamProperty : public IProperty<MorphOp>
+{
+  double m_min_value;
+  double m_max_value;
+  double m_slope;
+public:
+  XParamProperty (MorphOp *morph_op,
+                  const std::string& label,
+                  const std::string& format,
+                  double min_value,
+                  double max_value,
+                  double slope,
+                  std::function<float(const MorphOp&)> get_value,
+                  std::function<void (MorphOp&, float)> set_value) :
+    IProperty<MorphOp> (morph_op, label, format, get_value, set_value),
+    m_min_value (min_value),
+    m_max_value (max_value),
+    m_slope (slope)
+  {
+  }
+  double
+  value2ui (double v)
+  {
+    return sm_xparam_inv ((v - m_min_value) / (m_max_value - m_min_value), m_slope);
+  }
+  double
+  ui2value (double ui)
+  {
+    return sm_xparam (ui, m_slope) * (m_max_value - m_min_value) + m_min_value;
+  }
 };
 
 class MorphOutput : public MorphOperator
@@ -65,7 +107,17 @@ class MorphOutput : public MorphOperator
 
   bool                         m_portamento;
   float                        m_portamento_glide;
-  IProperty<MorphOutput>       m_portamento_glide_property;
+  XParamProperty<MorphOutput>  m_portamento_glide_property;
+
+  bool                         m_vibrato;
+  float                        m_vibrato_depth;
+  XParamProperty<MorphOutput>  m_vibrato_depth_property;
+
+  float                        m_vibrato_frequency;
+  XParamProperty<MorphOutput>  m_vibrato_frequency_property;
+
+  float                        m_vibrato_attack;
+  XParamProperty<MorphOutput>  m_vibrato_attack_property;
 
 public:
   MorphOutput (MorphPlan *morph_plan);
@@ -101,6 +153,24 @@ public:
   float          portamento_glide() const;
 
   Property*      portamento_glide_property();
+
+  void           set_vibrato (bool ev);
+  bool           vibrato() const;
+
+  void           set_vibrato_depth (float depth);
+  float          vibrato_depth() const;
+
+  Property*      vibrato_depth_property();
+
+  void           set_vibrato_frequency (float frequency);
+  float          vibrato_frequency() const;
+
+  Property*      vibrato_frequency_property();
+
+  void           set_vibrato_attack (float attack);
+  float          vibrato_attack() const;
+
+  Property*      vibrato_attack_property();
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
