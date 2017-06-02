@@ -26,7 +26,10 @@ struct MyOperatorFilter : public OperatorFilter
 MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output),
-  pv_portamento_glide (*morph_output->portamento_glide_property())
+  pv_portamento_glide (*morph_output->portamento_glide_property()),
+  pv_vibrato_depth (*morph_output->vibrato_depth_property()),
+  pv_vibrato_frequency (*morph_output->vibrato_frequency_property()),
+  pv_vibrato_attack (*morph_output->vibrato_attack_property())
 {
   QGridLayout *grid_layout = new QGridLayout();
   grid_layout->setColumnStretch (1, 1);
@@ -100,10 +103,23 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   // Portamento: initial widget visibility
   on_portamento_changed (morph_output->portamento());
 
+  // Vibrato
+  QCheckBox *vibrato_check_box = new QCheckBox ("Enable Vibrato");
+  vibrato_check_box->setChecked (morph_output->portamento());
+  grid_layout->addWidget (vibrato_check_box, 11, 0, 1, 2);
+
+  pv_vibrato_depth.init_ui (grid_layout, 12);
+  pv_vibrato_frequency.init_ui (grid_layout, 13);
+  pv_vibrato_attack.init_ui (grid_layout, 14);
+
+  // Vibrato: initial widget visibility
+  on_vibrato_changed (morph_output->vibrato());
+
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
   connect (unison_check_box, SIGNAL (toggled (bool)), this, SLOT (on_unison_changed (bool)));
   connect (portamento_check_box, SIGNAL (toggled (bool)), this, SLOT (on_portamento_changed (bool)));
+  connect (vibrato_check_box, SIGNAL (toggled (bool)), this, SLOT (on_vibrato_changed (bool)));
   set_body_layout (grid_layout);
 }
 
@@ -156,6 +172,18 @@ MorphOutputView::on_portamento_changed (bool new_value)
   morph_output->set_portamento (new_value);
 
   pv_portamento_glide.set_visible (new_value);
+
+  Q_EMIT need_resize();
+}
+
+void
+MorphOutputView::on_vibrato_changed (bool new_value)
+{
+  morph_output->set_vibrato (new_value);
+
+  pv_vibrato_depth.set_visible (new_value);
+  pv_vibrato_frequency.set_visible (new_value);
+  pv_vibrato_attack.set_visible (new_value);
 
   Q_EMIT need_resize();
 }

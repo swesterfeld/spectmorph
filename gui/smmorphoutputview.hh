@@ -34,6 +34,9 @@ class MorphOutputView : public MorphOperatorView
   MorphOutput                *morph_output;
 
   PropertyView                pv_portamento_glide;
+  PropertyView                pv_vibrato_depth;
+  PropertyView                pv_vibrato_frequency;
+  PropertyView                pv_vibrato_attack;
 public:
   MorphOutputView (MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
 
@@ -44,6 +47,7 @@ public slots:
   void on_unison_voices_changed (int voices);
   void on_unison_detune_changed (int new_value);
   void on_portamento_changed (bool new_value);
+  void on_vibrato_changed (bool new_value);
   void on_operator_changed();
 };
 
