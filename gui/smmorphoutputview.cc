@@ -26,10 +26,11 @@ struct MyOperatorFilter : public OperatorFilter
 MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output),
-  pv_portamento_glide (*morph_output->portamento_glide_property()),
-  pv_vibrato_depth (*morph_output->vibrato_depth_property()),
-  pv_vibrato_frequency (*morph_output->vibrato_frequency_property()),
-  pv_vibrato_attack (*morph_output->vibrato_attack_property())
+  morph_output_properties (morph_output),
+  pv_portamento_glide (morph_output_properties.portamento_glide),
+  pv_vibrato_depth (morph_output_properties.vibrato_depth),
+  pv_vibrato_frequency (morph_output_properties.vibrato_frequency),
+  pv_vibrato_attack (morph_output_properties.vibrato_attack)
 {
   QGridLayout *grid_layout = new QGridLayout();
   grid_layout->setColumnStretch (1, 1);

@@ -33,6 +33,8 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
+  MorphOutputProperties       morph_output_properties;
+
   PropertyView                pv_portamento_glide;
   PropertyView                pv_vibrato_depth;
   PropertyView                pv_vibrato_frequency;
