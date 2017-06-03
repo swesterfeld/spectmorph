@@ -42,7 +42,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
   portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
   vibrato_depth (output, "Depth", "%.2f Cent", 0, 100, 1, &MorphOutput::vibrato_depth, &MorphOutput::set_vibrato_depth),
-  vibrato_frequency (output, "Frequency", "%.3f Hz", 0.01, 10, 1, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
+  vibrato_frequency (output, "Frequency", "%.3f Hz", 0.01, 10, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
   vibrato_attack (output, "Attack", "%.2f ms", 0, 1000, 1, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack)
 {
 }

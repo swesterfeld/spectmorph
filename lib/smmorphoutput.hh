@@ -91,17 +91,47 @@ public:
   }
 };
 
+template<class MorphOp>
+class LogParamProperty : public IProperty<MorphOp>
+{
+  double m_min_value;
+  double m_max_value;
+public:
+  LogParamProperty (MorphOp *morph_op,
+                    const std::string& label,
+                    const std::string& format,
+                    double min_value,
+                    double max_value,
+                    std::function<float(const MorphOp&)> get_value,
+                    std::function<void (MorphOp&, float)> set_value) :
+    IProperty<MorphOp> (morph_op, label, format, get_value, set_value),
+    m_min_value (min_value),
+    m_max_value (max_value)
+  {
+  }
+  double
+  value2ui (double v)
+  {
+    return (log (v) - log (m_min_value)) / (log (m_max_value) - log (m_min_value));
+  }
+  double
+  ui2value (double ui)
+  {
+    return exp (ui * (log (m_max_value) - log (m_min_value)) + log (m_min_value));
+  }
+};
+
 class MorphOutput;
 
 struct MorphOutputProperties
 {
   MorphOutputProperties (MorphOutput *output);
 
-  XParamProperty<MorphOutput>  portamento_glide;
+  XParamProperty<MorphOutput>   portamento_glide;
 
-  XParamProperty<MorphOutput>  vibrato_depth;
-  XParamProperty<MorphOutput>  vibrato_frequency;
-  XParamProperty<MorphOutput>  vibrato_attack;
+  XParamProperty<MorphOutput>   vibrato_depth;
+  LogParamProperty<MorphOutput> vibrato_frequency;
+  XParamProperty<MorphOutput>   vibrato_attack;
 };
 
 class MorphOutput : public MorphOperator
