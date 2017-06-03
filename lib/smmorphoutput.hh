@@ -91,6 +91,19 @@ public:
   }
 };
 
+class MorphOutput;
+
+struct MorphOutputProperties
+{
+  MorphOutputProperties (MorphOutput *output);
+
+  XParamProperty<MorphOutput>  portamento_glide;
+
+  XParamProperty<MorphOutput>  vibrato_depth;
+  XParamProperty<MorphOutput>  vibrato_frequency;
+  XParamProperty<MorphOutput>  vibrato_attack;
+};
+
 class MorphOutput : public MorphOperator
 {
   Q_OBJECT
@@ -107,17 +120,11 @@ class MorphOutput : public MorphOperator
 
   bool                         m_portamento;
   float                        m_portamento_glide;
-  XParamProperty<MorphOutput>  m_portamento_glide_property;
 
   bool                         m_vibrato;
   float                        m_vibrato_depth;
-  XParamProperty<MorphOutput>  m_vibrato_depth_property;
-
   float                        m_vibrato_frequency;
-  XParamProperty<MorphOutput>  m_vibrato_frequency_property;
-
   float                        m_vibrato_attack;
-  XParamProperty<MorphOutput>  m_vibrato_attack_property;
 
 public:
   MorphOutput (MorphPlan *morph_plan);
@@ -152,25 +159,17 @@ public:
   void           set_portamento_glide (float glide);
   float          portamento_glide() const;
 
-  Property*      portamento_glide_property();
-
   void           set_vibrato (bool ev);
   bool           vibrato() const;
 
   void           set_vibrato_depth (float depth);
   float          vibrato_depth() const;
 
-  Property*      vibrato_depth_property();
-
   void           set_vibrato_frequency (float frequency);
   float          vibrato_frequency() const;
 
-  Property*      vibrato_frequency_property();
-
   void           set_vibrato_attack (float attack);
   float          vibrato_attack() const;
-
-  Property*      vibrato_attack_property();
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
