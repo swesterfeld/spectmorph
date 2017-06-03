@@ -83,6 +83,10 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("unison_detune", m_unison_detune);
   out_file.write_bool ("portamento", m_portamento);
   out_file.write_float ("portamento_glide", m_portamento_glide);
+  out_file.write_bool ("vibrato", m_vibrato);
+  out_file.write_float ("vibrato_depth", m_vibrato_depth);
+  out_file.write_float ("vibrato_frequency", m_vibrato_frequency);
+  out_file.write_float ("vibrato_attack", m_vibrato_attack);
   return true;
 }
 
@@ -123,6 +127,10 @@ MorphOutput::load (InFile& ifile)
             {
               m_portamento = ifile.event_bool();
             }
+          else if (ifile.event_name() == "vibrato")
+            {
+              m_vibrato = ifile.event_bool();
+            }
           else
             {
               g_printerr ("bad bool\n");
@@ -150,6 +158,18 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "portamento_glide")
             {
               m_portamento_glide = ifile.event_float();
+            }
+          else if (ifile.event_name() == "vibrato_depth")
+            {
+              m_vibrato_depth = ifile.event_float();
+            }
+          else if (ifile.event_name() == "vibrato_frequency")
+            {
+              m_vibrato_frequency = ifile.event_float();
+            }
+          else if (ifile.event_name() == "vibrato_attack")
+            {
+              m_vibrato_attack = ifile.event_float();
             }
           else
             {
