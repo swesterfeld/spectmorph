@@ -106,7 +106,7 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
 
   // Vibrato
   QCheckBox *vibrato_check_box = new QCheckBox ("Enable Vibrato");
-  vibrato_check_box->setChecked (morph_output->portamento());
+  vibrato_check_box->setChecked (morph_output->vibrato());
   grid_layout->addWidget (vibrato_check_box, 11, 0, 1, 2);
 
   pv_vibrato_depth.init_ui (grid_layout, 12);
