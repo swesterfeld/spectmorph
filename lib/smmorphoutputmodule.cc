@@ -80,6 +80,8 @@ MorphOutputModule::set_config (MorphOperator *op)
             dec->set_unison_voices (out_op->unison_voices(), out_op->unison_detune());
           else
             dec->set_unison_voices (1, 0);
+
+          dec->set_vibrato (out_op->vibrato(), out_op->vibrato_depth(), out_op->vibrato_frequency(), out_op->vibrato_attack());
         }
       m_portamento       = out_op->portamento();
       m_portamento_glide = out_op->portamento_glide();
