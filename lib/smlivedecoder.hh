@@ -75,6 +75,7 @@ class LiveDecoder
   float               vibrato_depth;
   float               vibrato_frequency;
   float               vibrato_attack;
+  float               vibrato_phase;
 
   Audio::LoopType     get_loop_type();
 

@@ -188,11 +188,16 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       // reset unison phases
       unison_phases[0].clear();
       unison_phases[1].clear();
-    }
-  assert (PortamentoState::DELTA >= pp_inter->get_min_padding());
 
-  portamento_state.pos = PortamentoState::DELTA;
-  portamento_state.buffer.resize (PortamentoState::DELTA);
+      // setup portamento state
+      assert (PortamentoState::DELTA >= pp_inter->get_min_padding());
+
+      portamento_state.pos = PortamentoState::DELTA;
+      portamento_state.buffer.resize (PortamentoState::DELTA);
+
+      // setup vibrato state
+      vibrato_phase = 0;
+    }
   current_freq = freq;
   current_mix_freq = mix_freq;
 }
@@ -626,16 +631,26 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
       size_t todo_values = min (n_values, max_n_values);
 
       float my_freq_in[todo_values];
-
-      static int vibrato_pos = 0;
-      for (size_t i = 0; i < todo_values; i++)
+      if (vibrato_enabled)
         {
-          my_freq_in[i] = freq_in ? freq_in[i] : current_freq;
-          double d = 1 + sin (vibrato_pos++ / current_mix_freq * 2 * M_PI * vibrato_frequency) * (pow (2, vibrato_depth / 1200.0) - 1);
-          my_freq_in[i] *= d;
+          const float vibrato_phase_inc = vibrato_frequency / current_mix_freq * 2 * M_PI;
+
+          for (size_t i = 0; i < todo_values; i++)
+            {
+              my_freq_in[i] = freq_in ? freq_in[i] : current_freq;
+              my_freq_in[i] *= 1 + sin (vibrato_phase) * (pow (2, vibrato_depth / 1200.0) - 1);
+
+              vibrato_phase += vibrato_phase_inc;
+            }
+          vibrato_phase = fmod (vibrato_phase, 2 * M_PI);
+
+          process_portamento (todo_values, my_freq_in, audio_out);
+        }
+      else
+        {
+          process_portamento (todo_values, freq_in, audio_out);
         }
 
-      process_portamento (todo_values, my_freq_in, audio_out);
 
       if (freq_in)
         freq_in += todo_values;
