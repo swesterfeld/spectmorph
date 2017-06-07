@@ -59,7 +59,8 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   original_samples_enabled (false),
   loop_enabled (true),
   noise_seed (-1),
-  sse_samples (NULL)
+  sse_samples (NULL),
+  vibrato_enabled (false)
 {
   init_aa_filter();
   set_unison_voices (1, 0);
@@ -78,7 +79,8 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
   original_samples_enabled (false),
   loop_enabled (true),
   noise_seed (-1),
-  sse_samples (NULL)
+  sse_samples (NULL),
+  vibrato_enabled (false)
 {
   init_aa_filter();
   set_unison_voices (1, 0);
@@ -623,7 +625,17 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     {
       size_t todo_values = min (n_values, max_n_values);
 
-      process_portamento (todo_values, freq_in, audio_out);
+      float my_freq_in[todo_values];
+
+      static int vibrato_pos = 0;
+      for (size_t i = 0; i < todo_values; i++)
+        {
+          my_freq_in[i] = freq_in ? freq_in[i] : current_freq;
+          double d = 1 + sin (vibrato_pos++ / current_mix_freq * 2 * M_PI * vibrato_frequency) * (pow (2, vibrato_depth / 1200.0) - 1);
+          my_freq_in[i] *= d;
+        }
+
+      process_portamento (todo_values, my_freq_in, audio_out);
 
       if (freq_in)
         freq_in += todo_values;
@@ -745,4 +757,13 @@ LiveDecoder::set_unison_voices (int voices, float detune)
           phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
         }
     }
+}
+
+void
+LiveDecoder::set_vibrato (bool enabled, float depth, float frequency, float attack)
+{
+  vibrato_enabled     = enabled;
+  vibrato_depth       = depth;
+  vibrato_frequency   = frequency;
+  vibrato_attack      = attack;
 }

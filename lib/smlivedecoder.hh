@@ -28,6 +28,7 @@ class LiveDecoder
 
     enum { DELTA = 32 };
   } portamento_state;
+
   WavSet             *smset;
   Audio              *audio;
 
@@ -69,6 +70,12 @@ class LiveDecoder
   float               unison_gain;
   Random              unison_phase_random_gen;
 
+  // vibrato
+  bool                vibrato_enabled;
+  float               vibrato_depth;
+  float               vibrato_frequency;
+  float               vibrato_attack;
+
   Audio::LoopType     get_loop_type();
 
   void process_internal (size_t       n_values,
@@ -93,6 +100,7 @@ public:
   void enable_loop (bool eloop);
   void set_noise_seed (int seed);
   void set_unison_voices (int voices, float detune);
+  void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
