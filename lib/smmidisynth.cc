@@ -216,10 +216,10 @@ MidiSynth::update_mono_voice()
 }
 
 void
-MidiSynth::start_pitch_bend (Voice *voice, double dest_freq, double time_sec)
+MidiSynth::start_pitch_bend (Voice *voice, double dest_freq, double time_ms)
 {
   // require at least one step
-  voice->pitch_bend_steps = max (sm_round_positive (time_sec * mix_freq), 1);
+  voice->pitch_bend_steps = max (sm_round_positive (time_ms / 1000.0 * mix_freq), 1);
 
   // "steps" multiplications with factor will produce voice->pitch_bend_freq == dest_freq
   voice->pitch_bend_factor = exp (log (dest_freq / voice->pitch_bend_freq) / voice->pitch_bend_steps);
@@ -294,9 +294,9 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
     {
       if (voice->state == Voice::STATE_ON && voice->channel == channel)
         {
-          const double glide = 0.020; /* 20ms smoothing (avoid frequency jumps) */
+          const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
 
-          start_pitch_bend (voice, voice->freq * pow (2, semi_tones / 12), glide);
+          start_pitch_bend (voice, voice->freq * pow (2, semi_tones / 12), glide_ms);
         }
     }
 }
