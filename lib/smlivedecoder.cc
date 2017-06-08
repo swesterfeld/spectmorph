@@ -197,6 +197,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
 
       // setup vibrato state
       vibrato_phase = 0;
+      vibrato_env = 0;
     }
   current_freq = freq;
   current_mix_freq = mix_freq;
@@ -618,6 +619,42 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
 }
 
 void
+LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audio_out)
+{
+  float vib_freq_in[n_values];
+
+  /* how many samples has the attack phase? */
+  const float attack_samples  = vibrato_attack / 1000.0 * current_mix_freq;
+
+  /* compute per sample envelope increment */
+  const float vibrato_env_inc   = attack_samples > 1.0 ? 1.0 / attack_samples : 1.0;
+
+  const float vibrato_phase_inc = vibrato_frequency / current_mix_freq * 2 * M_PI;
+  const float vibrato_depth_factor = pow (2, vibrato_depth / 1200.0) - 1;
+
+  for (size_t i = 0; i < n_values; i++)
+    {
+      vib_freq_in[i] = freq_in ? freq_in[i] : current_freq;
+
+      if (vibrato_env > 1.0) // attack phase done?
+        {
+          vib_freq_in[i] *= 1 + sin (vibrato_phase) * vibrato_depth_factor;
+        }
+      else
+        {
+          vibrato_env += vibrato_env_inc;
+
+          vib_freq_in[i] *= 1 + sin (vibrato_phase) * vibrato_depth_factor * vibrato_env;
+        }
+
+      vibrato_phase += vibrato_phase_inc;
+    }
+  vibrato_phase = fmod (vibrato_phase, 2 * M_PI);
+
+  process_portamento (n_values, vib_freq_in, audio_out);
+}
+
+void
 LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
   /*
@@ -630,21 +667,9 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     {
       size_t todo_values = min (n_values, max_n_values);
 
-      float my_freq_in[todo_values];
       if (vibrato_enabled)
         {
-          const float vibrato_phase_inc = vibrato_frequency / current_mix_freq * 2 * M_PI;
-
-          for (size_t i = 0; i < todo_values; i++)
-            {
-              my_freq_in[i] = freq_in ? freq_in[i] : current_freq;
-              my_freq_in[i] *= 1 + sin (vibrato_phase) * (pow (2, vibrato_depth / 1200.0) - 1);
-
-              vibrato_phase += vibrato_phase_inc;
-            }
-          vibrato_phase = fmod (vibrato_phase, 2 * M_PI);
-
-          process_portamento (todo_values, my_freq_in, audio_out);
+          process_vibrato (todo_values, freq_in, audio_out);
         }
       else
         {

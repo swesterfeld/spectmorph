@@ -75,7 +75,8 @@ class LiveDecoder
   float               vibrato_depth;
   float               vibrato_frequency;
   float               vibrato_attack;
-  float               vibrato_phase;
+  float               vibrato_phase;   // state
+  float               vibrato_env;     // state
 
   Audio::LoopType     get_loop_type();
 
@@ -89,6 +90,9 @@ class LiveDecoder
   void process_portamento (size_t       n_values,
                            const float *freq_in,
                            float       *audio_out);
+  void process_vibrato (size_t       n_values,
+                        const float *freq_in,
+                        float       *audio_out);
 public:
   LiveDecoder (WavSet *smset);
   LiveDecoder (LiveDecoderSource *source);
