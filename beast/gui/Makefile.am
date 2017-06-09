@@ -5,17 +5,10 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/sr
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 
-SMHDRS =
-SMSRCS =
-
-noinst_LTLIBRARIES = libspectmorphgui.la
-libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
-libspectmorphgui_la_CXXFLAGS = $(GTKMM_CFLAGS) $(AM_CXXFLAGS)
-
 bin_PROGRAMS = spectmorphoscgui
 
 spectmorphoscgui_SOURCES = spectmorphoscgui.cc moc_spectmorphoscgui.cc spectmorphoscgui.hh
-spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS) libspectmorphgui.la
+spectmorphoscgui_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(GTKMM_LIBS) $(QT_LIBS)
 spectmorphoscgui_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_spectmorphoscgui.cc: spectmorphoscgui.hh
