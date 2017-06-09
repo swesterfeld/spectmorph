@@ -35,9 +35,6 @@ interface Osc : Effect {
   IStream ctrl_in2   = Stream (_("Ctrl In2"), _("Second control input"));
 
   OStream audio_out1  = Stream (_("Audio Out1"), _("Audio output 1"));
-  OStream audio_out2  = Stream (_("Audio Out2"), _("Audio output 2"));
-  OStream audio_out3  = Stream (_("Audio Out3"), _("Audio output 3"));
-  OStream audio_out4  = Stream (_("Audio Out4"), _("Audio output 4"));
 
   group _("Source") {
     Bool      edit_settings  = Bool (_("Edit Settings"), _("Edit settings for SpectMorph OSC"), FALSE, STANDARD ":trigger:skip-undo");

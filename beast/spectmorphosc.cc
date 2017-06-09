@@ -103,20 +103,18 @@ class Osc : public OscBase {
       if (!morph_plan_voice->output())
         {
           ostream_set (OCHANNEL_AUDIO_OUT1, const_values (0));
-          ostream_set (OCHANNEL_AUDIO_OUT2, const_values (0));
-          ostream_set (OCHANNEL_AUDIO_OUT3, const_values (0));
-          ostream_set (OCHANNEL_AUDIO_OUT4, const_values (0));
         }
       else
         {
-          int channels[4] = { OCHANNEL_AUDIO_OUT1, OCHANNEL_AUDIO_OUT2, OCHANNEL_AUDIO_OUT3, OCHANNEL_AUDIO_OUT4 };
+          /* we only allow one output channel (although we could do more),
+           * but we want to match the behaviour of the VST|LV2 plugins
+           * (which currently are mono)
+           */
           float *audio_out[4] = { NULL, NULL, NULL, NULL };
 
-          for (int port = 0; port < 4; port++)
-            {
-              if (ostream (channels[port]).connected)
-                audio_out[port] = ostream (channels[port]).values;
-            }
+          if (ostream (OCHANNEL_AUDIO_OUT1).connected)
+            audio_out[port] = ostream (OCHANNEL_AUDIO_OUT1).values;
+
           if (istream (ICHANNEL_FREQ_IN).connected)
             {
               const gfloat *freq_in = istream (ICHANNEL_FREQ_IN).values;
