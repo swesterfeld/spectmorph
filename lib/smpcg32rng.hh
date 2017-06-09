@@ -1,6 +1,9 @@
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 // Author: 2014, Tim Janik, see http://testbit.org/keccak
 
+#ifndef SPECTMORPH_PCG32_RNG_HH
+#define SPECTMORPH_PCG32_RNG_HH
+
 #include <glib.h>
 #include <stdint.h>
 
@@ -86,3 +89,5 @@ public:
 };
 
 }
+
+#endif
