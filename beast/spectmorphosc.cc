@@ -113,7 +113,7 @@ class Osc : public OscBase {
           float *audio_out[4] = { NULL, NULL, NULL, NULL };
 
           if (ostream (OCHANNEL_AUDIO_OUT1).connected)
-            audio_out[port] = ostream (OCHANNEL_AUDIO_OUT1).values;
+            audio_out[0] = ostream (OCHANNEL_AUDIO_OUT1).values;
 
           if (istream (ICHANNEL_FREQ_IN).connected)
             {
