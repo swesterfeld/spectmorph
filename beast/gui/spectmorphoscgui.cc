@@ -9,15 +9,7 @@
 
 #include <QApplication>
 
-#include "smmain.hh"
-#include "smmorphplan.hh"
-#include "smmorphsource.hh"
-#include "smmorphplanview.hh"
-#include "smmorphplanwindow.hh"
-#include "smmemout.hh"
-#include "smhexstring.hh"
 #include "spectmorphoscgui.hh"
-#include "smmorphplancontrol.hh"
 
 using namespace SpectMorph;
 

@@ -16,14 +16,7 @@
  */
 
 #include "spectmorphosc.genidl.hh"
-#include "smaudio.hh"
-#include "smlivedecoder.hh"
-#include "smwavset.hh"
-#include "smmain.hh"
-#include "smmorphplan.hh"
-#include "smmorphplanvoice.hh"
-#include "smmorphplansynth.hh"
-#include "smmorphoutputmodule.hh"
+#include "spectmorph.hh"
 
 #include <bse/bsemathsignal.hh>
 #include <bse/bseengine.hh>

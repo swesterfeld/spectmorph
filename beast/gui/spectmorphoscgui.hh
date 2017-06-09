@@ -3,7 +3,7 @@
 #ifndef SPECTMORPH_OSC_GUI_HH
 #define SPECTMORPH_OSC_GUI_HH
 
-#include "smmorphplanwindow.hh"
+#include "spectmorphgui.hh"
 
 namespace SpectMorph
 {
