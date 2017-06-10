@@ -243,6 +243,9 @@ AC_FFTW_CHECK
 AM_CFLAGS=""
 AM_CXXFLAGS=""
 
+# need c++11 mode
+AX_CXX_COMPILE_STDCXX_11(ext)
+
 MC_PROG_CC_SUPPORTS_OPTION([-O3], [
   AM_CFLAGS="$AM_CFLAGS -O3"
   AM_CXXFLAGS="$AM_CXXFLAGS -O3"
@@ -255,7 +258,6 @@ MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
   AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
 ])
-MC_PROG_CC_SUPPORTS_OPTION([-std=gnu++0x],        [ AM_CXXFLAGS="$AM_CXXFLAGS -std=gnu++0x" ])
 
 gcc_target_sse="-msse -msse2 -msse3 -mmmx"
 MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
