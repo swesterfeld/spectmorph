@@ -1,5 +1,6 @@
 NEXT RELEASE:
 - support data in system wide location (packaging)
+- catch missing fftw in configure not at compile time
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
