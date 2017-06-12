@@ -244,11 +244,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 void
 LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamento_stretch)
 {
-  if (!audio)   // nothing loaded
-    {
-      std::fill (audio_out, audio_out + n_values, 0);
-      return;
-    }
+  assert (audio); // need selected (triggered) audio to use this function
 
   if (original_samples_enabled)
     {
@@ -581,11 +577,7 @@ LiveDecoder::portamento_shrink()
 void
 LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *audio_out)
 {
-  if (!audio)   // nothing loaded
-    {
-      std::fill (audio_out, audio_out + n_values, 0);
-      return;
-    }
+  assert (audio); // need selected (triggered) audio to use this function
 
   const double start_pos = portamento_state.pos;
   vector<float>& buffer = portamento_state.buffer;
@@ -657,6 +649,11 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
 void
 LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
+  if (!audio)   // nothing loaded
+    {
+      std::fill (audio_out, audio_out + n_values, 0);
+      return;
+    }
   /*
    * split processing into small blocks, max 10 ms
    *  -> limit n_values to keep portamento stretch settings up-to-date
