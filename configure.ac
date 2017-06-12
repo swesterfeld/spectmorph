@@ -246,6 +246,20 @@ AM_CXXFLAGS=""
 # need c++11 mode
 AX_CXX_COMPILE_STDCXX_11(ext)
 
+# == Debug flags ==
+AC_ARG_ENABLE(debug, [  --enable-debug=[no/min/yes] turn on debugging, default=minimum],,enable_debug=min)
+case "_$enable_debug" in
+  _yes)
+    debug_flags="-DG_ENABLE_DEBUG -ggdb3 -fverbose-asm -fno-omit-frame-pointer" ;;
+  _min*)
+    debug_flags="-DG_ENABLE_DEBUG -g1" ;;
+  _*)
+    debug_flags="-DG_DISABLE_CHECKS -DG_DISABLE_CAST_CHECKS" ;; # -DG_DISABLE_ASSERT
+esac
+MC_PROG_CC_SUPPORTS_OPTION([$debug_flags], [
+  AM_CFLAGS="$AM_CFLAGS $debug_flags"
+  AM_CXXFLAGS="$AM_CXXFLAGS $debug_flags"
+])
 MC_PROG_CC_SUPPORTS_OPTION([-O3], [
   AM_CFLAGS="$AM_CFLAGS -O3"
   AM_CXXFLAGS="$AM_CXXFLAGS -O3"
