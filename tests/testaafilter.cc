@@ -16,6 +16,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 using std::min;
+using std::fabs;
 
 size_t
 make_odd (size_t n)
@@ -80,7 +81,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
     {
       decoder.retrigger (0, freq, 127, enc_params.mix_freq);
       decoder.process (audio_out.size(), nullptr, &audio_out[0]);
-      double peak = 0;
+      float peak = 0;
       for (size_t i = 0; i < audio_out.size(); i++)
         {
           peak = max (peak, fabs (audio_out[i]));

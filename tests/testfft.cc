@@ -14,13 +14,14 @@ using namespace SpectMorph;
 
 using std::max;
 using std::min;
+using std::fabs;
 
 static double
 compare (int block_size, float *a, float *b)
 {
-  double delta = 0;
-  double a_max = 0;
-  double b_max = 0;
+  float delta = 0;
+  float a_max = 0;
+  float b_max = 0;
 
   for (int i = 0; i < block_size; i++)
     {
@@ -29,7 +30,7 @@ compare (int block_size, float *a, float *b)
     }
   assert (a_max > 0);
   assert (b_max > 0);
-  double max_abs_value = max (a_max, b_max);
+  float max_abs_value = max (a_max, b_max);
 
   // ensure that a_max and b_max do not differ too much
   delta = max (delta, fabs (a_max - b_max) / min (a_max, b_max));

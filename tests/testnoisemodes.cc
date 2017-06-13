@@ -11,6 +11,7 @@
 using namespace SpectMorph;
 using std::max;
 using std::vector;
+using std::fabs;
 
 int
 main (int argc, char **argv)
@@ -77,10 +78,10 @@ main (int argc, char **argv)
       for (int i = 0; i < block_size; i++)
         printf ("F %d %.17g %.17g\n", i, ifft_synth.fft_buffer()[i], dbg_spectrum[i] / block_size);
 #endif
-      double t_diff_max = 0;
+      float t_diff_max = 0;
       for (size_t i = 0; i < block_size; i++)
         t_diff_max = max (t_diff_max, fabs (cos_win_samples[i] - fft_samples[i]));
-      double s_diff_max = 0;
+      float s_diff_max = 0;
       for (size_t i = 0; i < block_size; i++)
         s_diff_max = max (s_diff_max, fabs (spectrum[i] - dbg_spectrum[i] / block_size));
       printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);

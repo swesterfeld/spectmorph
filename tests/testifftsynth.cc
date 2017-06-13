@@ -18,6 +18,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 using std::min;
+using std::fabs;
 
 double
 gettime()
@@ -194,7 +195,7 @@ test_accs()
   SineDecoder sdo (440, mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
   sdo.process (b, next_b, dwindow, osamples);
 
-  double max_diff = 0;
+  float max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
       printf ("%zd %.17g %.17g\n", i, samples[i], osamples[i]);

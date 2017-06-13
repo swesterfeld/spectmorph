@@ -18,6 +18,7 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
+using std::fabs;
 
 double
 gettime()
@@ -34,7 +35,7 @@ sin_test (double freq, double db_bound)
   PolyPhaseInter *ppi = PolyPhaseInter::the();
 
   double step[] = { 0.456, 0.567, 0.888, 0.901, 1.01, 1.2, 1.3, -1 };
-  double error = 0;
+  float error = 0;
 
   for (int s = 0; step[s] > 0; s++)
     {
