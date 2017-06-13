@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include <vector>
+
 #include "smmath.hh"
 #include "smmain.hh"
 
