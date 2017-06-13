@@ -3,7 +3,6 @@
 #include <vector>
 #include <stdio.h>
 #include <assert.h>
-#include <QtGlobal>
 
 #include "smaudio.hh"
 #include "smwavset.hh"
@@ -1030,11 +1029,11 @@ normalize_factor (double norm, Audio& audio)
     {
       vector<uint16_t>& mags = audio.contents[f].mags;
       for (size_t i = 0; i < mags.size(); i++)
-        mags[i] = qBound<int> (0, mags[i] + norm_delta_idb, 65535);
+        mags[i] = sm_bound<int> (0, mags[i] + norm_delta_idb, 65535);
 
       vector<uint16_t>& noise = audio.contents[f].noise;
       for (size_t i = 0; i < noise.size(); i++)
-        noise[i] = qBound<int> (0, noise[i] + norm_delta_idb, 65535);
+        noise[i] = sm_bound<int> (0, noise[i] + norm_delta_idb, 65535);
     }
 
   // store normalization in order to replay original samples normalized
