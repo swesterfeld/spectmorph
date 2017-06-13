@@ -227,8 +227,8 @@ MorphGridWidget::mouseMoveEvent (QMouseEvent *event)
       int end_y = height() - 20;
       double dx = (event->pos().x() - start_x) / double (end_x - start_x) * 2.0 - 1.0;
       double dy = (event->pos().y() - start_y) / double (end_y - start_y) * 2.0 - 1.0;
-      morph_grid->set_x_morphing (qBound (-1.0, dx, 1.0));
-      morph_grid->set_y_morphing (qBound (-1.0, dy, 1.0));
+      morph_grid->set_x_morphing (sm_bound (-1.0, dx, 1.0));
+      morph_grid->set_y_morphing (sm_bound (-1.0, dy, 1.0));
     }
 }
 
