@@ -500,6 +500,13 @@ double sm_xparam_inv (double x, double slope);
 
 double sm_bessel_i0 (double x);
 
+template<typename T>
+inline const T&
+sm_bound (const T& min_value, const T& value, const T& max_value)
+{
+  return std::min (std::max (value, min_value), max_value);
+}
+
 } // namespace SpectMorph
 
 #endif
