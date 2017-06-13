@@ -18,6 +18,7 @@ using std::vector;
 using std::string;
 using std::min;
 using std::max;
+using std::fabs;
 
 /// @cond
 struct Options
@@ -344,7 +345,7 @@ main (int argc, char **argv)
 
   if (options.normalize)
     {
-      double max_peak = 0.0001;
+      float max_peak = 0.0001;
       for (size_t i = 0; i < samples.size(); i++)
         max_peak = max (max_peak, fabs (samples[i]));
 
