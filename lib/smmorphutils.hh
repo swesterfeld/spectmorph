@@ -4,6 +4,8 @@
 #define SPECTMORPH_MORPH_UTILS_HH
 
 #include <algorithm>
+#include <vector>
+#include <stdint.h>
 
 namespace SpectMorph
 {
