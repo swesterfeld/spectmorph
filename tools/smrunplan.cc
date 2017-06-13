@@ -264,8 +264,8 @@ Player::compute_samples (vector<float>& samples)
           if (env_len)
             {
               const double fpos = double (i) / samples.size() * (env_len - 1);
-              const int    left = qBound<int> (0, fpos, env_len - 1);
-              const int    right = qBound (0, left + 1, env_len - 1);
+              const int    left = sm_bound<int> (0, fpos, env_len - 1);
+              const int    right = sm_bound (0, left + 1, env_len - 1);
               const double interp = fpos - left;
               morphing = 2 * (options.fade_env[left] * (1 - interp) + options.fade_env[right] * interp) - 1;
             }
