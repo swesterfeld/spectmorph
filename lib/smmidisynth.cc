@@ -375,7 +375,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
           const float release_ms = 150; /* FIXME: this should be set by the user */
 
           double v_decrement = (1000.0 / mix_freq) / release_ms;
-          size_t envelope_len = qBound<int> (0, sm_round_positive (voice->env / v_decrement), n_values);
+          size_t envelope_len = sm_bound<int> (0, sm_round_positive (voice->env / v_decrement), n_values);
 
           if (envelope_len < n_values)
             {

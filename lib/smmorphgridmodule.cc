@@ -261,7 +261,7 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
 
   out_block = in_block;
   for (size_t i = 0; i < out_block.noise.size(); i++)
-    out_block.noise[i] = qBound<int> (0, out_block.noise[i] + ddb, 65535);
+    out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
 
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i]);
@@ -441,10 +441,10 @@ global_to_local_params (double global_morphing, int node_count)
   const double interp = (global_morphing + 1) / 2 * (node_count - 1);
 
   // find the two adjecant nodes (double -> integer position)
-  result.start = qBound<int> (0, interp, (node_count - 1));
-  result.end   = qBound<int> (0, result.start + 1, (node_count - 1));
+  result.start = sm_bound<int> (0, interp, (node_count - 1));
+  result.end   = sm_bound<int> (0, result.start + 1, (node_count - 1));
 
-  const double interp_frac = qBound (0.0, interp - result.start, 1.0); /* position between adjecant nodes */
+  const double interp_frac = sm_bound (0.0, interp - result.start, 1.0); /* position between adjecant nodes */
   result.morphing = interp_frac * 2 - 1; /* normalize fractional part to range -1.0 ... 1.0 */
   return result;
 }
@@ -464,10 +464,10 @@ apply_delta_db (AudioBlock& block, double delta_db)
 
   // apply delta db volume to partials & noise
   for (size_t i = 0; i < block.mags.size(); i++)
-    block.mags[i] = qBound<int> (0, block.mags[i] + ddb, 65535);
+    block.mags[i] = sm_bound<int> (0, block.mags[i] + ddb, 65535);
 
   for (size_t i = 0; i < block.noise.size(); i++)
-    block.noise[i] = qBound<int> (0, block.noise[i] + ddb, 65535);
+    block.noise[i] = sm_bound<int> (0, block.noise[i] + ddb, 65535);
 }
 
 }

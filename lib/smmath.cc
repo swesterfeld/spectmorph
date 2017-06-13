@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmath.hh"
-#include <QtGlobal>
 #include <assert.h>
 
 namespace SpectMorph {
@@ -45,7 +44,7 @@ sm_idb2factor_slow (uint16_t idb)
 uint16_t
 sm_freq2ifreq (double freq)
 {
-  return qBound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
+  return sm_bound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
 }
 
 double
