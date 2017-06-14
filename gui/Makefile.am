@@ -27,6 +27,9 @@ libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
 smguiincludedir = $(includedir)/spectmorph/smgui
 smguiinclude_HEADERS = $(SMHDRS) spectmorphgui.hh
 
+install-exec-hook: # libtool doesn't always set rpath, requiring ldconfig
+	test ! -x /sbin/ldconfig -o ! -w /etc/ld.so.cache || /sbin/ldconfig $(DESTDIR)$(libdir)
+
 moc_smmorphplanwindow.cc: smmorphplanwindow.hh
 	$(MOC) smmorphplanwindow.hh > moc_smmorphplanwindow.cc
 

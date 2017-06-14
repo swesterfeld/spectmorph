@@ -44,6 +44,9 @@ spectmorphinclude_HEADERS = $(SMHDRS) spectmorph.hh
 
 EXTRA_DIST += smpolyphasecoeffs.cc
 
+install-exec-hook: # libtool doesn't always set rpath, requiring ldconfig
+	test ! -x /sbin/ldconfig -o ! -w /etc/ld.so.cache || /sbin/ldconfig $(DESTDIR)$(libdir)
+
 moc_smmorphplan.cc: smmorphplan.hh
 	$(MOC) smmorphplan.hh > moc_smmorphplan.cc
 
