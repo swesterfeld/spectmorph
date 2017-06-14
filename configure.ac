@@ -203,10 +203,20 @@ rm -fr conftest*
 ])dnl
 
 # define pkgdatadir
+# backup old vars
 bak_datadir="$datadir"
+bak_prefix="$prefix"
+bak_exec_prefix="$exec_prefix"
+# no prefix given to configure -> use default prefix
+test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+test "x$exec_prefix" = xNONE && exec_prefix="$prefix"
+# define data directory in config.h
 datadir=`eval echo "${datadir}"`
 AC_DEFINE_UNQUOTED(CONFIGURE_INSTALLPATH_PKGDATADIR, ["`eval echo ${datadir}/spectmorph`"], [Package data directory])
+# restore old vars
 datadir="$bak_datadir"
+prefix="$bak_prefix"
+exec_prefix="$bak_exec_prefix"
 
 # Less cluttered build output
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
