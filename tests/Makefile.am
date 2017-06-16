@@ -1,12 +1,12 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src $(QT_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src $(QTCORE_CFLAGS)
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
 SMRESVALUE = $(top_srcdir)/tests/smresvalue.sh
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QT_LIBS)
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
         smresvalue.sh tune-test.sh test-norm.sh
