@@ -6,6 +6,10 @@
 
 #include <glib.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -28,6 +32,18 @@ Index::clear()
   m_load_ok = false;
 }
 
+static bool
+file_exists (const string& filename)
+{
+  struct stat st;
+
+  if (stat (filename.c_str(), &st) == 0)
+    {
+      return S_ISREG (st.st_mode);
+    }
+  return false;
+}
+
 bool
 Index::load_file (const string& filename)
 {
@@ -45,7 +61,25 @@ Index::load_file (const string& filename)
         {
           string name = filename.substr (pos + 1);
 
-          m_expanded_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
+          string user_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
+          string inst_filename = sm_get_install_dir (INSTALL_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
+
+          if (file_exists (user_filename))
+            {
+              // if user has instruments, they will be used
+              m_expanded_filename = user_filename;
+            }
+          else if (file_exists (inst_filename))
+            {
+              // if user doesn't have instruments, but system wide instruments are installed, they will be used
+              m_expanded_filename = inst_filename;
+            }
+          else
+            {
+              // if no instruments were found, we show the user dir in error messages
+              // as the user should have write access to that location
+              m_expanded_filename = user_filename;
+            }
           m_dir = name;
         }
     }
