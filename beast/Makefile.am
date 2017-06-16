@@ -2,12 +2,12 @@ include $(top_srcdir)/Makefile.decl
 
 plugindir=$(bseplugindir)
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib
+AM_CXXFLAGS += $(BSE_CFLAGS) $(QTCORE_CFLAGS) -I$(top_srcdir)/lib
 
 SUBDIRS = gui
 
 plugin_cxxflags = $(BSE_CFLAGS)
-plugin_libs = $(QT_LIBS) $(BSE_LIBS) $(top_builddir)/lib/libspectmorph.la
+plugin_libs = $(QTCORE_LIBS) $(BSE_LIBS) $(top_builddir)/lib/libspectmorph.la
 plugin_ldflags = $(BSE_LDFLAGS) -avoid-version
 plugin_LTLIBRARIES =
 
