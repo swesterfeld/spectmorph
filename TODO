@@ -1,5 +1,4 @@
 NEXT RELEASE:
-- catch missing fftw in configure not at compile time
 - split qt libs into core and ui
 - screencast
 - maybe subharmonic tagging

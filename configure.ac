@@ -137,14 +137,13 @@ AC_DEFUN([AC_LV2_REQUIREMENTS],
   PKG_CHECK_MODULES([LV2], [[lv2 >= 1.2.0]], [with_lv2="yes"], [with_lv2="no"])
 ])
 
-dnl FFTW3 (optional requirement)
+dnl FFTW3
 AC_DEFUN([AC_FFTW_CHECK],
 [
-    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f],[
-       SPECTMORPH_HAVE_FFTW=1
-    ],[
-       SPECTMORPH_HAVE_FFTW=0
-    ])
+    dnl this used to be optional, but is currently required
+    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
+
+    SPECTMORPH_HAVE_FFTW=1
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
     fftw_save_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $FFTW_CFLAGS"
