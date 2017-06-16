@@ -74,10 +74,16 @@ dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
 [
+    PKG_CHECK_MODULES(QTCORE, [Qt5Core >= 5.0.0],[:],[
+      AC_MSG_ERROR([You need to install Qt5 to build this package.])
+    ])
     PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
       AC_MSG_ERROR([You need to install Qt5 to build this package.])
     ])
+    QTCORE_CFLAGS="-DQT_NO_EMIT $QTCORE_CFLAGS"
     QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
+    AC_SUBST(QTCORE_CFLAGS)
+    AC_SUBST(QTCORE_LIBS)
     AC_SUBST(QT_CFLAGS)
     AC_SUBST(QT_LIBS)
     MOC=`pkg-config --variable host_bins Qt5Core`/moc
