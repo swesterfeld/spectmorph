@@ -161,9 +161,10 @@ sm_get_install_dir (InstallDir p)
 {
   switch (p)
     {
-      case INSTALL_DIR_TEMPLATES: return CONFIGURE_INSTALLPATH_PKGDATADIR "/templates";
-      default:                    return "";
+      case INSTALL_DIR_TEMPLATES:   return CONFIGURE_INSTALLPATH_PKGDATADIR "/templates";
+      case INSTALL_DIR_INSTRUMENTS: return CONFIGURE_INSTALLPATH_PKGDATADIR "/instruments";
     }
+  return "";
 }
 
 std::string
@@ -176,8 +177,8 @@ sm_get_user_dir (UserDir p)
   switch (p)
     {
       case USER_DIR_INSTRUMENTS: return string (home) + "/.spectmorph/instruments";
-      default:                   return "";
     }
+  return "";
 }
 
 std::string

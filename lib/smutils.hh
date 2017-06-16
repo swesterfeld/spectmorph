@@ -25,7 +25,8 @@ void        sm_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 
 enum InstallDir
 {
-  INSTALL_DIR_TEMPLATES
+  INSTALL_DIR_TEMPLATES,
+  INSTALL_DIR_INSTRUMENTS
 };
 
 std::string sm_get_install_dir (InstallDir p);
