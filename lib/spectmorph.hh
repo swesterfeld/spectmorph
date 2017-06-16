@@ -45,6 +45,7 @@
 #include "smoutfile.hh"
 #include "smpcg32rng.hh"
 #include "smpolyphaseinter.hh"
+#include "smproperty.hh"
 #include "smrandom.hh"
 #include "smsinedecoder.hh"
 #include "smstdioin.hh"

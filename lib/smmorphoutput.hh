@@ -19,11 +19,11 @@ struct MorphOutputProperties
 {
   MorphOutputProperties (MorphOutput *output);
 
-  XParamProperty<MorphOutput>   portamento_glide;
+  XParamProperty<MorphOutput>      portamento_glide;
 
-  XParamProperty<MorphOutput>   vibrato_depth;
-  LogParamProperty<MorphOutput> vibrato_frequency;
-  XParamProperty<MorphOutput>   vibrato_attack;
+  LinearParamProperty<MorphOutput> vibrato_depth;
+  LogParamProperty<MorphOutput>    vibrato_frequency;
+  LinearParamProperty<MorphOutput> vibrato_attack;
 };
 
 class MorphOutput : public MorphOperator
