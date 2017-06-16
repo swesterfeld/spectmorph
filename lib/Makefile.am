@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(FFTW_CFLAGS) $(QT_CFLAGS) $(SNDFILE_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS) $(FFTW_CFLAGS) $(QTCORE_CFLAGS) $(SNDFILE_CFLAGS)
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
@@ -37,7 +37,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
                            smalignedarray.cc
 
-libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QT_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
+libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
 
 spectmorphincludedir = $(includedir)/spectmorph/smcore
 spectmorphinclude_HEADERS = $(SMHDRS) spectmorph.hh
