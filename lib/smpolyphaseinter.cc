@@ -65,12 +65,12 @@ PolyPhaseInter::get_sample_no_check (const vector<float>& signal, double pos)
   const int frac64 = (pos - ipos) * OVERSAMPLE;
   const float frac = (pos - ipos) * OVERSAMPLE - frac64;
 
-  const float *x_a = &x[(WIDTH * 2 + 1) * (OVERSAMPLE - frac64)];
-  const float *x_b = &x[(WIDTH * 2 + 1) * ((OVERSAMPLE * 2 - frac64 - 1) & (OVERSAMPLE - 1))];
-  const float *s_ptr = &signal[ipos - WIDTH];
+  const float *x_a = &x[(WIDTH * 2) * (OVERSAMPLE - frac64)];
+  const float *x_b = &x[(WIDTH * 2) * ((OVERSAMPLE * 2 - frac64 - 1) & (OVERSAMPLE - 1))];
+  const float *s_ptr = &signal[ipos - WIDTH + 1];
 
   float result_a = 0, result_b = 0;
-  for (int j = 1; j < 2 * WIDTH + 1; j++)
+  for (int j = 0; j < 2 * WIDTH; j++)
     {
       result_a += s_ptr[j] * x_a[j];
       result_b += s_ptr[j] * x_b[j];
@@ -85,32 +85,28 @@ PolyPhaseInter::get_min_padding()
   return MIN_PADDING;
 }
 
+static double
+c_get (int p)
+{
+  if (p >= 0 && p < WIDTH * OVERSAMPLE * 2 - 1)
+    return c_7[p];
+  else
+    return 0;
+}
+
 PolyPhaseInter::PolyPhaseInter()
 {
-  vector<const double *> c ({ nullptr, c_1, c_2, c_3, c_4, c_5, c_6, c_7, c_8, c_9 });
-
   /*
    * reorder coefficients, first all coeffs with oversample 0, then oversample 1, ...
    */
   for (int o = 0; o <= OVERSAMPLE; o++)
     {
-      int p = o & (OVERSAMPLE - 1);
-      if (o != OVERSAMPLE)
+      int p = o - 1;
+
+      for (int n = 0; n < WIDTH * 2; n++)
         {
-          x.push_back (0);
-          for (int n = 0; n < WIDTH * 2; n++)
-            {
-              x.push_back (c_7[p]);
-              p += OVERSAMPLE;
-            }
-        }
-      else
-        {
-          for (int n = 0; n < WIDTH * 2 + 1; n++)
-            {
-              x.push_back (c_7[p]);
-              p += OVERSAMPLE;
-            }
+          x.push_back (c_get (p));
+          p += OVERSAMPLE;
         }
     }
 }
