@@ -17,7 +17,7 @@ def find_beta (WIDTH):
   best_beta = 0
   best_max_h = 1
   for beta in numpy.arange (0, 10, 0.1):
-    b = signal.firwin (WIDTH * 2 * OVERSAMPLE + 1, 1. / OVERSAMPLE, window=('kaiser', beta))
+    b = signal.firwin (WIDTH * 2 * OVERSAMPLE - 1, 1. / OVERSAMPLE, window=('kaiser', beta))
     w, h = signal.freqz (b, worN=2**14)
 
     max_h = 0
@@ -34,12 +34,12 @@ def find_beta (WIDTH):
 
 def design (WIDTH):
   beta = find_beta (WIDTH)
-  return signal.firwin (WIDTH * 2 * OVERSAMPLE + 1, 1. / OVERSAMPLE, window=('kaiser', beta))
-  #return signal.remez (WIDTH * 2 * OVERSAMPLE + 1, [0, (LP_START / SR) / OVERSAMPLE, (LP_END / SR) / OVERSAMPLE, 0.5], [1, 0])
+  return signal.firwin (WIDTH * 2 * OVERSAMPLE - 1, 1. / OVERSAMPLE, window=('kaiser', beta))
+  #return signal.remez (WIDTH * 2 * OVERSAMPLE - 1, [0, (LP_START / SR) / OVERSAMPLE, (LP_END / SR) / OVERSAMPLE, 0.5], [1, 0])
 
 def dump_coefficients():
  for WIDTH in range (1, 10):
-   print "static const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE + 1)
+   print "static const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE - 1)
    for d in design (WIDTH):
      print "  %.17g," % (d * OVERSAMPLE)
    print "};"
