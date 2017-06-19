@@ -194,6 +194,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
 
       portamento_state.pos = PortamentoState::DELTA;
       portamento_state.buffer.resize (PortamentoState::DELTA);
+      portamento_state.active = false;
 
       // setup vibrato state
       vibrato_phase = 0;
@@ -580,11 +581,23 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
   assert (audio); // need selected (triggered) audio to use this function
 
   const double start_pos = portamento_state.pos;
-  vector<float>& buffer = portamento_state.buffer;
+  const vector<float>& buffer = portamento_state.buffer;
 
-  if (freq_in && portamento_check (n_values, freq_in, current_freq))
+  if (!portamento_state.active)
     {
-      double pos[n_values], end_pos = start_pos, current_step;
+      if (freq_in && portamento_check (n_values, freq_in, current_freq))
+        portamento_state.active = true;
+    }
+  if (portamento_state.active)
+    {
+      float fake_freq_in[n_values];
+      if (!freq_in)
+        {
+          std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
+          freq_in = fake_freq_in;
+        }
+
+      double pos[n_values], end_pos = start_pos, current_step = 1;
 
       for (size_t i = 0; i < n_values; i++)
         {

@@ -25,6 +25,7 @@ class LiveDecoder
   struct PortamentoState {
     std::vector<float> buffer;
     double             pos;
+    bool               active;
 
     enum { DELTA = 32 };
   } portamento_state;
