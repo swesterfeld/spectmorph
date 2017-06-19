@@ -35,7 +35,8 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   QGridLayout *grid_layout = new QGridLayout();
   grid_layout->setColumnStretch (1, 1);
 
-  for (int ch = 0; ch < 4; ch++)
+  const int channel_count = SPECTMORPH_SUPPORT_MULTI_CHANNEL ? 4 : 1;
+  for (int ch = 0; ch < channel_count; ch++)
     {
       ChannelView *chv = new ChannelView();
       chv->label = new QLabel (string_locale_printf ("Channel #%d", ch + 1).c_str());
