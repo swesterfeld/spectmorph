@@ -1,3 +1,16 @@
+Overview of Changes in spectmorph-0.3.3:
+
+* Added portamento:
+  - VST: support MPE to perform per-voice pitch bend (can be used in Bitwig)
+  - new portamento mono mode (all hosts)
+* Added vibrato.
+* Internal improvements:
+  - better property abstraction for (non-linear) UI properties
+  - updated polyphase interpolator (used for vibrato|portamento)
+  - fixed a few problems when developing against spectmorph(ui) libs
+  - don't link against Qt UI library when only QtCore is necessary
+* Compile fixes for g++-6.3
+
 Overview of Changes in spectmorph-0.3.2:
 
 * Added new unison effect.
