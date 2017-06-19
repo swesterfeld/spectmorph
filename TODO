@@ -1,13 +1,11 @@
+RELEASE:
+- make output only show 1 channel
+
 NEXT RELEASE:
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
 - why does white noise not sound like white noise?
-
-portamento:
-- cleanup property code
-- optimize ppinter filter
-  - order should be 2*WIDTH-1
 
 beast:
 - move spectmorph osc plugin from spectmorph to beast
