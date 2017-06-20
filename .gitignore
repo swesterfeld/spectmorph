@@ -13,5 +13,6 @@ config.h.in
 stamp-h1
 ChangeLog
 spectmorph.pc
+spectmorphgui.pc
 html
 latex
