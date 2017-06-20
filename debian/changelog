@@ -1,3 +1,9 @@
+spectmorph (0.3.3) xenial; urgency=medium
+
+  * new package for spectmorph 0.3.3
+
+ -- Stefan Westerfeld <stefan@space.twc.de>  Mon, 19 Jun 2017 16:58:04 +0200
+
 spectmorph (0.3.2) xenial; urgency=low
 
   * new package for spectmorph 0.3.2
