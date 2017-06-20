@@ -1,4 +1,4 @@
-AC_INIT([spectmorph], [0.3.2])
+AC_INIT([spectmorph], [0.3.3])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
