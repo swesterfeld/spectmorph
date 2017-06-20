@@ -52,6 +52,19 @@ This should put the instruments into the correct directory. After this, all
 templates that can be loaded from the UI (and the default template) should
 produce sound out of the box.
 
+Packaging Instruments:
+======================
+
+If you are a packager, packages can install the instruments to a system-wide
+location. That way users don't need to download the instruments seperately.
+The instrument location is prefix dependant. If SpectMorph is installed in
+
+    /usr
+
+then the instruments should go to
+
+    /usr/share/spectmorph/instruments
+
 BEAST Plugin:
 =============
 
