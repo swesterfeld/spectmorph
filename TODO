@@ -12,6 +12,10 @@ beast:
 
 adsr:
 - proper ADSR release
+- skip should ideally be in LiveDecoder
+- release should be done by LiveDecoder
+- done should be done by LiveDecoder
+- changing properties should not abort audio output
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
