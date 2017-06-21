@@ -49,7 +49,7 @@ MorphOutputModule::set_config (MorphOperator *op)
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       MorphOperatorModule *mod = NULL;
-      LiveDecoder *dec = NULL;
+      EffectDecoder *dec = NULL;
 
       MorphOperator *op = out_op->channel_op (ch);
       if (op)
@@ -66,23 +66,13 @@ MorphOutputModule::set_config (MorphOperator *op)
             delete out_decoders[ch];
           if (mod)
             {
-              dec = new LiveDecoder (mod->source());
+              dec = new EffectDecoder (mod->source());
             }
         }
 
-      // update dec sines & noise & unison
       if (dec)
-        {
-          dec->enable_sines (out_op->sines());
-          dec->enable_noise (out_op->noise());
+        dec->set_config (out_op, morph_plan_voice->mix_freq());
 
-          if (out_op->unison()) // unison?
-            dec->set_unison_voices (out_op->unison_voices(), out_op->unison_detune());
-          else
-            dec->set_unison_voices (1, 0);
-
-          dec->set_vibrato (out_op->vibrato(), out_op->vibrato_depth(), out_op->vibrato_frequency(), out_op->vibrato_attack());
-        }
       m_portamento       = out_op->portamento();
       m_portamento_glide = out_op->portamento_glide();
 

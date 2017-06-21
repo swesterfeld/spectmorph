@@ -27,6 +27,11 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   MorphOperatorView (morph_output, morph_plan_window),
   morph_output (morph_output),
   morph_output_properties (morph_output),
+  pv_adsr_skip (morph_output_properties.adsr_skip),
+  pv_adsr_attack (morph_output_properties.adsr_attack),
+  pv_adsr_decay (morph_output_properties.adsr_decay),
+  pv_adsr_sustain (morph_output_properties.adsr_sustain),
+  pv_adsr_release (morph_output_properties.adsr_release),
   pv_portamento_glide (morph_output_properties.portamento_glide),
   pv_vibrato_depth (morph_output_properties.vibrato_depth),
   pv_vibrato_frequency (morph_output_properties.vibrato_frequency),
@@ -92,36 +97,43 @@ MorphOutputView::MorphOutputView (MorphOutput *morph_output, MorphPlanWindow *mo
   unison_detune_slider->setValue (unison_detune_value);
   on_unison_detune_changed (unison_detune_value);
 
-  // Unison: initial widget visibility
-  on_unison_changed (morph_output->unison());
+  // ADSR
+  QCheckBox *adsr_check_box = new QCheckBox ("Enable custom ADSR Envelope");
+  adsr_check_box->setChecked (morph_output->adsr());
+  grid_layout->addWidget (adsr_check_box, 9, 0, 1, 2);
+
+  pv_adsr_skip.init_ui (grid_layout, 10);
+  pv_adsr_attack.init_ui (grid_layout, 11);
+  pv_adsr_decay.init_ui (grid_layout, 12);
+  pv_adsr_sustain.init_ui (grid_layout, 13);
+  pv_adsr_release.init_ui (grid_layout, 14);
 
   // Portamento (Mono): on/off
   QCheckBox *portamento_check_box = new QCheckBox ("Enable Portamento (Mono)");
   portamento_check_box->setChecked (morph_output->portamento());
-  grid_layout->addWidget (portamento_check_box, 9, 0, 1, 2);
+  grid_layout->addWidget (portamento_check_box, 15, 0, 1, 2);
 
-  pv_portamento_glide.init_ui (grid_layout, 10);
-
-  // Portamento: initial widget visibility
-  on_portamento_changed (morph_output->portamento());
+  pv_portamento_glide.init_ui (grid_layout, 16);
 
   // Vibrato
   QCheckBox *vibrato_check_box = new QCheckBox ("Enable Vibrato");
   vibrato_check_box->setChecked (morph_output->vibrato());
-  grid_layout->addWidget (vibrato_check_box, 11, 0, 1, 2);
+  grid_layout->addWidget (vibrato_check_box, 17, 0, 1, 2);
 
-  pv_vibrato_depth.init_ui (grid_layout, 12);
-  pv_vibrato_frequency.init_ui (grid_layout, 13);
-  pv_vibrato_attack.init_ui (grid_layout, 14);
+  pv_vibrato_depth.init_ui (grid_layout, 18);
+  pv_vibrato_frequency.init_ui (grid_layout, 19);
+  pv_vibrato_attack.init_ui (grid_layout, 20);
 
-  // Vibrato: initial widget visibility
-  on_vibrato_changed (morph_output->vibrato());
+  // Unison, ADSR, Portamento, Vibrato: initial widget visibility
+  update_visibility();
 
   connect (sines_check_box, SIGNAL (toggled (bool)), this, SLOT (on_sines_changed (bool)));
   connect (noise_check_box, SIGNAL (toggled (bool)), this, SLOT (on_noise_changed (bool)));
   connect (unison_check_box, SIGNAL (toggled (bool)), this, SLOT (on_unison_changed (bool)));
+  connect (adsr_check_box, SIGNAL (toggled (bool)), this, SLOT (on_adsr_changed (bool)));
   connect (portamento_check_box, SIGNAL (toggled (bool)), this, SLOT (on_portamento_changed (bool)));
   connect (vibrato_check_box, SIGNAL (toggled (bool)), this, SLOT (on_vibrato_changed (bool)));
+
   set_body_layout (grid_layout);
 }
 
@@ -142,13 +154,7 @@ MorphOutputView::on_unison_changed (bool new_value)
 {
   morph_output->set_unison (new_value);
 
-  unison_voices_title->setVisible (new_value);
-  unison_voices_label->setVisible (new_value);
-  unison_voices_slider->setVisible (new_value);
-
-  unison_detune_title->setVisible (new_value);
-  unison_detune_label->setVisible (new_value);
-  unison_detune_slider->setVisible (new_value);
+  update_visibility();
 
   Q_EMIT need_resize();
 }
@@ -169,11 +175,21 @@ MorphOutputView::on_unison_detune_changed (int new_value)
 }
 
 void
+MorphOutputView::on_adsr_changed (bool new_value)
+{
+  morph_output->set_adsr (new_value);
+
+  update_visibility();
+
+  Q_EMIT need_resize();
+}
+
+void
 MorphOutputView::on_portamento_changed (bool new_value)
 {
   morph_output->set_portamento (new_value);
 
-  pv_portamento_glide.set_visible (new_value);
+  update_visibility();
 
   Q_EMIT need_resize();
 }
@@ -183,11 +199,33 @@ MorphOutputView::on_vibrato_changed (bool new_value)
 {
   morph_output->set_vibrato (new_value);
 
-  pv_vibrato_depth.set_visible (new_value);
-  pv_vibrato_frequency.set_visible (new_value);
-  pv_vibrato_attack.set_visible (new_value);
+  update_visibility();
 
   Q_EMIT need_resize();
+}
+
+void
+MorphOutputView::update_visibility()
+{
+  unison_voices_title->setVisible (morph_output->unison());
+  unison_voices_label->setVisible (morph_output->unison());
+  unison_voices_slider->setVisible (morph_output->unison());
+
+  unison_detune_title->setVisible (morph_output->unison());
+  unison_detune_label->setVisible (morph_output->unison());
+  unison_detune_slider->setVisible (morph_output->unison());
+
+  pv_adsr_skip.set_visible (morph_output->adsr());
+  pv_adsr_attack.set_visible (morph_output->adsr());
+  pv_adsr_decay.set_visible (morph_output->adsr());
+  pv_adsr_sustain.set_visible (morph_output->adsr());
+  pv_adsr_release.set_visible (morph_output->adsr());
+
+  pv_portamento_glide.set_visible (morph_output->portamento());
+
+  pv_vibrato_depth.set_visible (morph_output->vibrato());
+  pv_vibrato_frequency.set_visible (morph_output->vibrato());
+  pv_vibrato_attack.set_visible (morph_output->vibrato());
 }
 
 void
