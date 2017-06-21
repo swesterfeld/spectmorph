@@ -79,6 +79,7 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
   source (new EffectDecoderSource (source))
 {
+  chain_decoder.reset (new LiveDecoder (source));
 }
 
 EffectDecoder::~EffectDecoder()
@@ -88,8 +89,6 @@ EffectDecoder::~EffectDecoder()
 void
 EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 {
-  chain_decoder.reset (new LiveDecoder (source));
-
   chain_decoder->enable_noise (output->noise());
   chain_decoder->enable_sines (output->sines());
 
