@@ -79,7 +79,7 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
   source (new EffectDecoderSource (source))
 {
-  chain_decoder.reset (new LiveDecoder (source));
+  chain_decoder.reset (new LiveDecoder (this->source));
 }
 
 EffectDecoder::~EffectDecoder()
