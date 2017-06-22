@@ -60,3 +60,4 @@ morphing:
 
 lv2:
 - use worker thread response for setting|freeing morph plans
+- could implement ui:showInterface for hosts that don't support Qt5

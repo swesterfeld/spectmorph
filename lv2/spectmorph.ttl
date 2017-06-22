@@ -80,7 +80,6 @@
 <http://spectmorph.org/plugins/spectmorph#ui>
   a ui:Qt5UI;
   lv2:requiredFeature urid:map;
-  lv2:extensionData ui:showInterface;
   ui:portNotification
     [
       ui:plugin <http://spectmorph.org/plugins/spectmorph>;
