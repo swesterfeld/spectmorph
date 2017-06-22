@@ -23,7 +23,6 @@
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
   lv2:requiredFeature urid:map,
                       work:schedule;
-  lv2:optionalFeature lv2:hardRTCapable;
   lv2:extensionData work:interface,
 	            state:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
