@@ -87,5 +87,5 @@
     [
       ui:plugin <http://spectmorph.org/plugins/spectmorph>;
       lv2:symbol "notify";
-      ui:notifyType atom:Blank
+      ui:notifyType atom:Object
     ].
