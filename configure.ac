@@ -9,6 +9,16 @@ AC_PROG_CXX
 CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 AC_PROG_LIBTOOL
 
+dnl Version splitted
+
+[MAJOR_VERSION=`echo $PACKAGE_VERSION | sed 's/\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\(.*\)/\1/'`]
+[MINOR_VERSION=`echo $PACKAGE_VERSION | sed 's/\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\(.*\)/\2/'`]
+[MICRO_VERSION=`echo $PACKAGE_VERSION | sed 's/\([0-9]\+\)\.\([0-9]\+\)\.\([0-9]\+\)\(.*\)/\3/'`]
+
+AC_SUBST(MAJOR_VERSION)
+AC_SUBST(MINOR_VERSION)
+AC_SUBST(MICRO_VERSION)
+
 dnl
 dnl Define package requirements.
 dnl
@@ -317,7 +327,7 @@ AC_CONFIG_FILES([Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 beast/Makefile jack/Makefile inspector/Makefile beast/gui/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile
-tools/sminstbuilder spectmorph.pc spectmorphgui.pc
+tools/sminstbuilder spectmorph.pc spectmorphgui.pc lv2/spectmorph.ttl
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT

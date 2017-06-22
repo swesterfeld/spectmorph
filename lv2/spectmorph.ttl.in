@@ -21,6 +21,10 @@
   lv2:project <http://lv2plug.in/ns/lv2>;                 # FIXME: uri
   doap:name "SpectMorph";
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
+
+  lv2:microVersion @MICRO_VERSION@;
+  lv2:minorVersion @MINOR_VERSION@;
+
   lv2:requiredFeature urid:map,
                       work:schedule;
   lv2:extensionData work:interface,
