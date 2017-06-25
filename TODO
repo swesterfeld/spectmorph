@@ -64,4 +64,15 @@ lv2:
 - git tag
 - debian updates
 - pbuilder
+- make distcheck
+- instruments.tar.xz
+- update spectmorph.org
+  - rebuild docs
+  - release tarball
+  - debs
+- freshcode
+- blog
+- google+
+- facebook
+- release announcement mailing lists
 - mail arch linux maintainer (AUR)
