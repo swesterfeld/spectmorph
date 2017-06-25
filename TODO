@@ -1,6 +1,3 @@
-RELEASE:
-- make output only show 1 channel
-
 NEXT RELEASE:
 - screencast
 - maybe subharmonic tagging
@@ -61,3 +58,10 @@ morphing:
 lv2:
 - use worker thread response for setting|freeing morph plans
 - could implement ui:showInterface for hosts that don't support Qt5
+
+------------ NEW RELEASE ------------
+
+- git tag
+- debian updates
+- pbuilder
+- mail arch linux maintainer (AUR)
