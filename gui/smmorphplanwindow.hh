@@ -49,6 +49,8 @@ public slots:
   void on_file_import_clicked();
   void on_file_export_clicked();
   void on_load_index_clicked();
+  void on_help_about_clicked();
+  void on_help_about_qt_clicked();
   void on_add_operator();
   void on_load_template();
   void on_need_resize();

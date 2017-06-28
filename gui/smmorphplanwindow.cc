@@ -29,6 +29,8 @@
 #include "smutils.hh"
 #include "smmicroconf.hh"
 
+#include "config.h"
+
 using namespace SpectMorph;
 
 using std::string;
@@ -43,10 +45,15 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   QAction *import_action = new QAction ("&Import...", this);
   QAction *export_action = new QAction ("&Export...", this);
   QAction *load_index_action = new QAction ("&Load Index...", this);
+  QAction *help_about_action = new QAction ("&About...", this);
+  QAction *help_about_qt_action = new QAction ("About &Qt...", this);
 
   connect (import_action, SIGNAL (triggered()), this, SLOT (on_file_import_clicked()));
   connect (export_action, SIGNAL (triggered()), this, SLOT (on_file_export_clicked()));
   connect (load_index_action, SIGNAL (triggered()), this, SLOT (on_load_index_clicked()));
+
+  connect (help_about_action, SIGNAL (triggered()), this, SLOT (on_help_about_clicked()));
+  connect (help_about_qt_action, SIGNAL (triggered()), this, SLOT (on_help_about_qt_clicked()));
 
   /* menus... */
   QMenuBar *menu_bar = menuBar();
@@ -68,6 +75,10 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   add_op_action (add_op_menu, "LFO", "SpectMorph::MorphLFO");
 
   fill_template_menu (load_template_menu);
+
+  QMenu *help_menu = menu_bar->addMenu ("&Help");
+  help_menu->addAction (help_about_action);
+  help_menu->addAction (help_about_qt_action);
 
   /* central widget */
   scroll_area = new QScrollArea();
@@ -212,6 +223,25 @@ MorphPlanWindow::on_load_index_clicked()
       QByteArray file_name_local = QFile::encodeName (file_name);
       m_morph_plan->load_index (file_name_local.data());
     }
+}
+
+void
+MorphPlanWindow::on_help_about_clicked()
+{
+  QMessageBox::about (this, "About SpectMorph",
+  "<p align=\"center\">"
+  "<b>SpectMorph " PACKAGE_VERSION "</b><br/>"
+  "<br/>"
+  "Website: <a href=\"http://www.spectmorph.org\">www.spectmorph.org</a><br/>"
+  "<br/>"
+  "License: <a href=\"https://www.gnu.org/licenses/lgpl-3.0.html\">GNU LGPL version 3</a>"
+  "</p>");
+}
+
+void
+MorphPlanWindow::on_help_about_qt_clicked()
+{
+  QMessageBox::aboutQt (this, "About Qt");
 }
 
 void

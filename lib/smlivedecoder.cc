@@ -47,8 +47,8 @@ fmatch (double f1, double f2)
   return f2 < (f1 * 1.05) && f2 > (f1 * 0.95);
 }
 
-LiveDecoder::LiveDecoder (WavSet *smset) :
-  smset (smset),
+LiveDecoder::LiveDecoder() :
+  smset (NULL),
   audio (NULL),
   ifft_synth (NULL),
   noise_decoder (NULL),
@@ -67,24 +67,16 @@ LiveDecoder::LiveDecoder (WavSet *smset) :
   leak_debugger.add (this);
 }
 
-LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
-  smset (NULL),
-  audio (NULL),
-  ifft_synth (NULL),
-  noise_decoder (NULL),
-  source (source),
-  sines_enabled (true),
-  noise_enabled (true),
-  debug_fft_perf_enabled (false),
-  original_samples_enabled (false),
-  loop_enabled (true),
-  noise_seed (-1),
-  sse_samples (NULL),
-  vibrato_enabled (false)
+LiveDecoder::LiveDecoder (WavSet *smset) :
+  LiveDecoder()
 {
-  init_aa_filter();
-  set_unison_voices (1, 0);
-  leak_debugger.add (this);
+  this->smset = smset;
+}
+
+LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
+  LiveDecoder()
+{
+  this->source = source;
 }
 
 LiveDecoder::~LiveDecoder()

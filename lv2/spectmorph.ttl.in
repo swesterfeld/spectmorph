@@ -21,9 +21,12 @@
   lv2:project <http://lv2plug.in/ns/lv2>;                 # FIXME: uri
   doap:name "SpectMorph";
   doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
+
+  lv2:microVersion @MICRO_VERSION@;
+  lv2:minorVersion @MINOR_VERSION@;
+
   lv2:requiredFeature urid:map,
                       work:schedule;
-  lv2:optionalFeature lv2:hardRTCapable;
   lv2:extensionData work:interface,
 	            state:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
@@ -80,10 +83,9 @@
 <http://spectmorph.org/plugins/spectmorph#ui>
   a ui:Qt5UI;
   lv2:requiredFeature urid:map;
-  lv2:extensionData ui:showInterface;
   ui:portNotification
     [
       ui:plugin <http://spectmorph.org/plugins/spectmorph>;
       lv2:symbol "notify";
-      ui:notifyType atom:Blank
+      ui:notifyType atom:Object
     ].

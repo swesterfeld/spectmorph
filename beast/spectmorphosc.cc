@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <bse/bseengine.hh>
+using Bse::_;
+
 #include "spectmorphosc.genidl.hh"
 #include "spectmorph.hh"
 
