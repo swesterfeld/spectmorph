@@ -12,6 +12,8 @@
 #include <sys/time.h>
 #include <assert.h>
 
+#include <cmath>
+
 using namespace SpectMorph;
 
 using std::vector;
