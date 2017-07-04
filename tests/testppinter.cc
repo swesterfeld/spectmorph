@@ -6,9 +6,10 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 
-#include <sys/time.h>
-
 #include <vector>
+#include <cmath>
+
+#include <sys/time.h>
 #include <assert.h>
 #include <stdio.h>
 

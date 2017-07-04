@@ -8,6 +8,8 @@
 
 #include <assert.h>
 
+#include <cmath>
+
 using namespace SpectMorph;
 using std::max;
 using std::vector;

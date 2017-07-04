@@ -8,10 +8,12 @@
 #include "smfft.hh"
 #include "smutils.hh"
 
-#include <vector>
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+
+#include <vector>
+#include <cmath>
 
 using namespace SpectMorph;
 

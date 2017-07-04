@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include <algorithm>
+#include <cmath>
 
 using namespace SpectMorph;
 

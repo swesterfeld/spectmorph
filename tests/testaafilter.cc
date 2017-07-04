@@ -7,6 +7,8 @@
 #include "smfft.hh"
 
 #include <vector>
+#include <cmath>
+
 #include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
