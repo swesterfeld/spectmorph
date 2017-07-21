@@ -8,10 +8,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <algorithm>
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
+
+#include <algorithm>
+#include <cmath>
 
 namespace SpectMorph
 {
