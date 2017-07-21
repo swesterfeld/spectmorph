@@ -3,19 +3,18 @@
 #include "smfft.hh"
 #include "smrandom.hh"
 #include "smmain.hh"
+#include "smmath.hh"
 
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
 
 #include <algorithm>
-#include <cmath>
 
 using namespace SpectMorph;
 
 using std::max;
 using std::min;
-using std::fabs;
 
 static double
 compare (int block_size, float *a, float *b)

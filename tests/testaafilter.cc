@@ -7,7 +7,6 @@
 #include "smfft.hh"
 
 #include <vector>
-#include <cmath>
 
 #include <assert.h>
 #include <stdio.h>
@@ -18,7 +17,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 using std::min;
-using std::fabs;
 
 size_t
 make_odd (size_t n)

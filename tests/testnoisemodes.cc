@@ -8,12 +8,9 @@
 
 #include <assert.h>
 
-#include <cmath>
-
 using namespace SpectMorph;
 using std::max;
 using std::vector;
-using std::fabs;
 
 int
 main (int argc, char **argv)

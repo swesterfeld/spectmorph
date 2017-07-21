@@ -7,7 +7,6 @@
 #include "smfft.hh"
 
 #include <vector>
-#include <cmath>
 
 #include <sys/time.h>
 #include <assert.h>
@@ -19,7 +18,6 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
-using std::fabs;
 
 double
 gettime()

@@ -13,14 +13,12 @@
 #include <sys/time.h>
 
 #include <vector>
-#include <cmath>
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::max;
 using std::min;
-using std::fabs;
 
 double
 gettime()
