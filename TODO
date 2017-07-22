@@ -13,6 +13,9 @@ adsr:
 - release should be done by LiveDecoder
 - done should be done by LiveDecoder
 - changing properties should not abort audio output
+- time loops currently broken
+- skip-0 offset not correct
+- low notes should have more zeros
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
