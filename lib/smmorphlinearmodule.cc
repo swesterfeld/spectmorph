@@ -105,41 +105,9 @@ MorphLinearModule::MySource::audio()
 bool
 get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block)
 {
-  Audio *audio = source->audio();
-  if (!audio)
-    return false;
+  const double time_ms = index; // 1ms frame step
 
-  if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
-    {
-      size_t loop_start_index = sm_round_positive (audio->loop_start * 1000.0 / audio->mix_freq);
-      size_t loop_end_index   = sm_round_positive (audio->loop_end   * 1000.0 / audio->mix_freq);
-
-      if (loop_start_index >= loop_end_index)
-        {
-          /* loop_start_index usually should be less than loop_end_index, this is just
-           * to handle corner cases and pathological cases
-           */
-          index = min (index, loop_start_index);
-        }
-      else
-        {
-          while (index >= loop_end_index)
-            {
-              index -= (loop_end_index - loop_start_index);
-            }
-        }
-    }
-
-  double time_ms = index; // 1ms frame step
-  int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
-
-  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
-    {
-      source_index = LiveDecoder::compute_loop_frame_index (source_index, audio);
-    }
-
-  AudioBlock *block_ptr = source->audio_block (source_index);
-
+  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
   if (!block_ptr)
     return false;
 
