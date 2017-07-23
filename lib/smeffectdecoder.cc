@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphoutputmodule.hh"
+#include "smmorphutils.hh"
 
 using namespace SpectMorph;
 
@@ -39,19 +40,9 @@ EffectDecoderSource::audio()
 AudioBlock*
 EffectDecoderSource::audio_block (size_t index)
 {
-  Audio *audio = source->audio();
-  if (!audio)
-    return nullptr;
-
   const double time_ms = index + m_skip; // 1ms frame step
-  int source_index = sm_round_positive (time_ms / audio->frame_step_ms);
 
-  if (audio->loop_type == Audio::LOOP_FRAME_FORWARD || audio->loop_type == Audio::LOOP_FRAME_PING_PONG)
-    {
-      source_index = LiveDecoder::compute_loop_frame_index (source_index, audio);
-    }
-
-  return source->audio_block (source_index);
+  return MorphUtils::get_normalized_block_ptr (source, time_ms);
 }
 
 void
