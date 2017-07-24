@@ -102,6 +102,27 @@ get_normalized_block_ptr (LiveDecoderSource *source, double time_ms)
   return source->audio_block (source_index);
 }
 
+bool
+get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out_audio_block)
+{
+  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
+  if (!block_ptr)
+    return false;
+
+  out_audio_block.noise  = block_ptr->noise;
+  out_audio_block.mags   = block_ptr->mags;
+  out_audio_block.phases = block_ptr->phases;  // usually not used
+  out_audio_block.freqs  = block_ptr->freqs;
+
+  if (SPECTMORPH_SUPPORT_LPC) // not necessary to copy data if lpc support is disabled
+    {
+      out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
+      out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
+    }
+
+  return true;
+}
+
 }
 
 }

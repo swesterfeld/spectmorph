@@ -145,17 +145,6 @@ MorphGridModule::MySource::audio()
   return &module->audio;
 }
 
-template<class T>
-static void
-my_assign_vector (const T& in, T& out)
-{
-  out.assign (in.begin(), in.end());
-
-// this causes malloc() to be called in some cases:
-//
-// out = in;
-}
-
 static bool
 get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block)
 {
@@ -169,22 +158,9 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, Audi
     {
       source = &input_node.source;
     }
+  const double time_ms = index; // 1ms frame step
 
-  const double time_ms = index;  // 1ms frame step
-
-  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
-  if (!block_ptr)
-    return false;
-
-  my_assign_vector (block_ptr->noise,  out_audio_block.noise);
-  my_assign_vector (block_ptr->mags,   out_audio_block.mags);
-  my_assign_vector (block_ptr->phases, out_audio_block.phases);
-  my_assign_vector (block_ptr->freqs,  out_audio_block.freqs);
-
-  // out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
-  // out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
-
-  return true;
+  return MorphUtils::get_normalized_block (source, time_ms, out_audio_block);
 }
 
 namespace

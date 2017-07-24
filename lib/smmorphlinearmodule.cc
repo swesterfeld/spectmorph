@@ -102,26 +102,6 @@ MorphLinearModule::MySource::audio()
   return &module->audio;
 }
 
-bool
-get_normalized_block (LiveDecoderSource *source, size_t index, AudioBlock& out_audio_block)
-{
-  const double time_ms = index; // 1ms frame step
-
-  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
-  if (!block_ptr)
-    return false;
-
-  out_audio_block.noise  = block_ptr->noise;
-  out_audio_block.mags   = block_ptr->mags;
-  out_audio_block.phases = block_ptr->phases;  // usually not used
-  out_audio_block.freqs  = block_ptr->freqs;
-
-  out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
-  out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
-
-  return true;
-}
-
 void
 dump_block (size_t index, const char *what, const AudioBlock& block)
 {
@@ -203,11 +183,13 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
   AudioBlock left_block, right_block;
 
+  const double time_ms = index; // 1ms frame step
+
   if (module->left_mod && module->left_mod->source())
-    have_left = get_normalized_block (module->left_mod->source(), index, left_block);
+    have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
 
   if (module->right_mod && module->right_mod->source())
-    have_right = get_normalized_block (module->right_mod->source(), index, right_block);
+    have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
 
   if (have_left && have_right) // true morph: both sources present
     {
