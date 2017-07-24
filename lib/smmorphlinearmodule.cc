@@ -19,6 +19,7 @@ using std::string;
 using std::vector;
 using std::min;
 using std::max;
+using std::sort;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
 
@@ -180,9 +181,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
     g_assert_not_reached();
 
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
-
-  AudioBlock left_block, right_block;
-
   const double time_ms = index; // 1ms frame step
 
   if (module->left_mod && module->left_mod->source())
@@ -206,9 +204,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       const size_t lsf_order = left_block.lpc_lsf_p.size();
 
-      vector<float> interp_lsf_p (lsf_order);
-      vector<float> interp_lsf_q (lsf_order);
-
       LPC::LSFEnvelope left_env, right_env, interp_env;
 
       if (SPECTMORPH_SUPPORT_LPC &&
@@ -220,6 +215,9 @@ MorphLinearModule::MySource::audio_block (size_t index)
           module->use_lpc)
         {
           assert (lsf_order > 0);
+
+          vector<float> interp_lsf_p (lsf_order);
+          vector<float> interp_lsf_q (lsf_order);
 
           for (size_t i = 0; i < interp_lsf_p.size(); i++)
             {
@@ -236,18 +234,27 @@ MorphLinearModule::MySource::audio_block (size_t index)
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
 
-      vector<MagData> mds;
+      MagData mds[left_block.freqs.size() + right_block.freqs.size()];
+      size_t  mds_size = 0;
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
-          MagData md = { MagData::BLOCK_LEFT, i, left_block.mags[i] };
-          mds.push_back (md);
+          MagData& md = mds[mds_size];
+
+          md.block = MagData::BLOCK_LEFT;
+          md.index = i;
+          md.mag   = left_block.mags[i];
+          mds_size++;
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
         {
-          MagData md = { MagData::BLOCK_RIGHT, i, right_block.mags[i] };
-          mds.push_back (md);
+          MagData& md = mds[mds_size];
+
+          md.block = MagData::BLOCK_RIGHT;
+          md.index = i;
+          md.mag   = right_block.mags[i];
+          mds_size++;
         }
-      sort (mds.begin(), mds.end(), md_cmp);
+      sort (mds, mds + mds_size, md_cmp);
 
       size_t    left_freqs_size = left_block.freqs.size();
       size_t    right_freqs_size = right_block.freqs.size();
@@ -258,7 +265,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
       init_freq_state (left_block.freqs, left_freqs);
       init_freq_state (right_block.freqs, right_freqs);
 
-      for (size_t m = 0; m < mds.size(); m++)
+      for (size_t m = 0; m < mds_size; m++)
         {
           size_t i, j;
           bool match = false;
