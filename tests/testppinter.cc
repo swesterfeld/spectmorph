@@ -6,9 +6,9 @@
 #include "smlivedecoder.hh"
 #include "smfft.hh"
 
-#include <sys/time.h>
-
 #include <vector>
+
+#include <sys/time.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -18,7 +18,6 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
-using std::fabs;
 
 double
 gettime()

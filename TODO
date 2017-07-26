@@ -1,4 +1,5 @@
 NEXT RELEASE:
+- deal with std::fabs, std::sin, std::cos, cmath vs. math.h
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty

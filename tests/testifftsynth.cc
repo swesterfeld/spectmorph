@@ -8,17 +8,17 @@
 #include "smfft.hh"
 #include "smutils.hh"
 
-#include <vector>
 #include <stdio.h>
 #include <assert.h>
 #include <sys/time.h>
+
+#include <vector>
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::max;
 using std::min;
-using std::fabs;
 
 double
 gettime()

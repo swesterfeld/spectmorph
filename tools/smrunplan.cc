@@ -18,7 +18,6 @@ using std::vector;
 using std::string;
 using std::min;
 using std::max;
-using std::fabs;
 
 /// @cond
 struct Options

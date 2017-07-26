@@ -8,13 +8,27 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <algorithm>
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
 
+#include <algorithm>
+#include <cmath>
+
 namespace SpectMorph
 {
+
+/* Unfortunately, if we just write fabs(x) in our code, the return value type
+ * appears to be compiler/version dependant:
+ *  - if x is a double, the result is a double (just as in plain C)
+ *  - if x is a float
+ *    - some compilers return double (C style)
+ *    - some compilers return float (C++ style)
+ *
+ * This "using" should enforce C++ style behaviour for fabs(x) for all compilers,
+ * as long as we do using namespace SpectMorph (which we should always do).
+ */
+using std::fabs;
 
 /**
  * \brief parameter structure for the various optimized vector sine functions
