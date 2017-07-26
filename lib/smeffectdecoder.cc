@@ -68,9 +68,11 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
 }
 
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
-  source (new EffectDecoderSource (source))
+  original_source (source),
+  skip_source (new EffectDecoderSource (source))
 {
-  chain_decoder.reset (new LiveDecoder (this->source));
+  chain_decoder.reset (new LiveDecoder (original_source));
+  use_skip_source = false;
 }
 
 EffectDecoder::~EffectDecoder()
@@ -90,7 +92,12 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 
   if (output->adsr())
     {
-      source->set_skip (output->adsr_skip());
+      if (!use_skip_source) // enable skip source
+        {
+          chain_decoder.reset (new LiveDecoder (skip_source));
+          use_skip_source = true;
+        }
+      skip_source->set_skip (output->adsr_skip());
 
       if (!adsr_envelope)
         adsr_envelope.reset (new ADSREnvelope());
@@ -103,7 +110,11 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
     }
   else
     {
-      source->set_skip (0);
+      if (use_skip_source) // use original source (no skip)
+        {
+          chain_decoder.reset (new LiveDecoder (original_source));
+          use_skip_source = false;
+        }
       adsr_envelope.reset();
     }
 
