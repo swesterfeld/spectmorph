@@ -58,6 +58,7 @@ LiveDecoder::LiveDecoder() :
   debug_fft_perf_enabled (false),
   original_samples_enabled (false),
   loop_enabled (true),
+  start_skip_enabled (false),
   noise_seed (-1),
   sse_samples (NULL),
   vibrato_enabled (false)
@@ -147,6 +148,12 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       loop_point = (get_loop_type() == Audio::LOOP_NONE) ? -1 : audio->loop_start;
 
       block_size = NoiseDecoder::preferred_block_size (mix_freq);
+
+      /* start skip: skip the first half block to avoid fade-in at start
+       * this will produce clicks unless an external envelope is applied
+       */
+      if (start_skip_enabled)
+        zero_values_at_start_scaled += block_size / 2;
 
       if (noise_decoder)
         delete noise_decoder;
@@ -716,6 +723,12 @@ void
 LiveDecoder::enable_loop (bool eloop)
 {
   loop_enabled = eloop;
+}
+
+void
+LiveDecoder::enable_start_skip (bool ess)
+{
+  start_skip_enabled = ess;
 }
 
 void
