@@ -202,7 +202,9 @@ MidiSynth::update_mono_voice()
             {
               /* pedal not supported in mono mode */
               mvoice->state = Voice::STATE_RELEASE;
-              mvoice->env = 1.0;
+
+              MorphOutputModule *output_module = mvoice->mp_voice->output();
+              output_module->release();
             }
           else if (shadow_midi_note_id != portamento_note_id)
             {
@@ -260,7 +262,6 @@ MidiSynth::process_note_off (int midi_note)
           else
             {
               voice->state = Voice::STATE_RELEASE;
-              voice->env = 1.0;
 
               MorphOutputModule *output_module = voice->mp_voice->output();
               output_module->release();
@@ -283,7 +284,9 @@ MidiSynth::process_midi_controller (int controller, int value)
               if (voice->pedal && voice->state == Voice::STATE_ON)
                 {
                   voice->state = Voice::STATE_RELEASE;
-                  voice->env = 1.0;
+
+                  MorphOutputModule *output_module = voice->mp_voice->output();
+                  output_module->release();
                 }
             }
         }
