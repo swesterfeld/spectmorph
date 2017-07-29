@@ -34,6 +34,7 @@ public:
   void set_config (float attack, float decay, float sustain, float release, float mix_freq);
   void retrigger();
   void release();
+  bool done() const;
   void process (size_t n_values, float *values);
 
   // test only

@@ -48,6 +48,12 @@ ADSREnvelope::release()
   compute_slope_params (release_len, level, 0, false);
 }
 
+bool
+ADSREnvelope::done() const
+{
+  return (state == State::DONE);
+}
+
 void
 ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, bool linear)
 {
