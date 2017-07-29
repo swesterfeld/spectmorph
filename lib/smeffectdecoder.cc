@@ -116,7 +116,7 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.attack_end_ms        = 0;
   m_audio.zeropad              = 4;
   m_audio.loop_type            = Audio::LOOP_NONE;
-  m_audio.zero_values_at_start = 1500;              // FIXME everywhere
+  m_audio.zero_values_at_start = 0;
   m_audio.sample_count         = 2 << 31;
 }
 
@@ -135,19 +135,12 @@ EffectDecoder::~EffectDecoder()
 void
 EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 {
-  chain_decoder->enable_noise (output->noise());
-  chain_decoder->enable_sines (output->sines());
-
-  if (output->unison()) // unison?
-    chain_decoder->set_unison_voices (output->unison_voices(), output->unison_detune());
-  else
-    chain_decoder->set_unison_voices (1, 0);
-
   if (output->adsr())
     {
       if (!use_skip_source) // enable skip source
         {
           chain_decoder.reset (new LiveDecoder (skip_source));
+          chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
       skip_source->set_skip (output->adsr_skip());
@@ -173,6 +166,14 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
       if (!simple_envelope)
         simple_envelope.reset (new SimpleEnvelope (mix_freq));
     }
+
+  chain_decoder->enable_noise (output->noise());
+  chain_decoder->enable_sines (output->sines());
+
+  if (output->unison()) // unison?
+    chain_decoder->set_unison_voices (output->unison_voices(), output->unison_detune());
+  else
+    chain_decoder->set_unison_voices (1, 0);
 
   chain_decoder->set_vibrato (output->vibrato(), output->vibrato_depth(), output->vibrato_frequency(), output->vibrato_attack());
 }
