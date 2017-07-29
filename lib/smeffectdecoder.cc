@@ -8,6 +8,59 @@ using namespace SpectMorph;
 namespace SpectMorph
 {
 
+class SimpleEnvelope
+{
+  double decrement;
+  double level;
+  enum class State {
+    ON,
+    RELEASE,
+    DONE
+  } state;
+
+public:
+  SimpleEnvelope (float mix_freq)
+  {
+    const float release_ms = 150; /* FIXME: this should be set by the user */
+    decrement = (1000.0 / mix_freq) / release_ms;
+  }
+  void
+  retrigger()
+  {
+    state = State::ON;
+    level = 1.0;
+  }
+  void
+  release()
+  {
+    state = State::RELEASE;
+  }
+  bool
+  done() const
+  {
+    return state == State::DONE;
+  }
+  void
+  process (size_t n_values, float *values)
+  {
+    if (state == State::ON)
+      return; // nothing
+    if (state == State::RELEASE)
+      {
+        for (size_t i = 0; i < n_values; i++)
+          {
+            level -= decrement;
+            if (level > 0)
+              values[i] *= level;
+            else
+              values[i] = 0;
+          }
+        if (level < 0)
+          state = State::DONE;
+      }
+  }
+};
+
 class EffectDecoderSource : public LiveDecoderSource
 {
   LiveDecoderSource *source;
@@ -116,6 +169,9 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
           use_skip_source = false;
         }
       adsr_envelope.reset();
+
+      if (!simple_envelope)
+        simple_envelope.reset (new SimpleEnvelope (mix_freq));
     }
 
   chain_decoder->set_vibrato (output->vibrato(), output->vibrato_depth(), output->vibrato_frequency(), output->vibrato_attack());
@@ -128,6 +184,8 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
 
   if (adsr_envelope)
     adsr_envelope->retrigger();
+  else
+    simple_envelope->retrigger();
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 }
@@ -143,4 +201,24 @@ EffectDecoder::process (size_t       n_values,
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);
+  else
+    simple_envelope->process (n_values, audio_out);
+}
+
+void
+EffectDecoder::release()
+{
+  if (adsr_envelope)
+    adsr_envelope->release();
+  else
+    simple_envelope->release();
+}
+
+bool
+EffectDecoder::done()
+{
+  if (adsr_envelope)
+    return adsr_envelope->done();
+  else
+    return simple_envelope->done();
 }

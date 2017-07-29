@@ -13,6 +13,7 @@
 namespace SpectMorph
 {
 
+class SimpleEnvelope;
 class EffectDecoderSource;
 class EffectDecoder
 {
@@ -21,8 +22,9 @@ class EffectDecoder
 
   bool use_skip_source;
 
-  std::unique_ptr<LiveDecoder>  chain_decoder;
-  std::unique_ptr<ADSREnvelope> adsr_envelope;
+  std::unique_ptr<LiveDecoder>    chain_decoder;
+  std::unique_ptr<ADSREnvelope>   adsr_envelope;
+  std::unique_ptr<SimpleEnvelope> simple_envelope;
 
 public:
   EffectDecoder (LiveDecoderSource *source);
@@ -34,6 +36,8 @@ public:
   void process (size_t       n_values,
                 const float *freq_in,
                 float       *audio_out);
+  void release();
+  bool done();
 };
 
 }
