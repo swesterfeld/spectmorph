@@ -178,3 +178,28 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
   recursive_reset_tag (this);
   recursive_reset_value (this);
 }
+
+void
+MorphOutputModule::release()
+{
+  for (auto dec : out_decoders)
+    {
+      if (dec)
+        dec->release();
+    }
+}
+
+bool
+MorphOutputModule::done()
+{
+  // done means: the signal will be only zeros from here
+  bool done = true;
+
+  for (auto dec : out_decoders)
+    {
+      // we're done if all decoders are done
+      if (dec)
+        done = done && dec->done();
+    }
+  return done;
+}
