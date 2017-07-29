@@ -9,9 +9,6 @@ beast:
 - move spectmorph osc plugin from spectmorph to beast
 
 adsr:
-- proper ADSR release
-- release should be done by LiveDecoder
-- done should be done by LiveDecoder
 - skip-0 offset not correct
 - low notes should have more zeros
 
