@@ -8,10 +8,6 @@ NEXT RELEASE:
 beast:
 - move spectmorph osc plugin from spectmorph to beast
 
-adsr:
-- skip-0 offset not correct
-- low notes should have more zeros
-
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
