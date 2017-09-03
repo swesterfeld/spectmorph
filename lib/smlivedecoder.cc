@@ -772,16 +772,13 @@ LiveDecoder::set_unison_voices (int voices, float detune)
       unison_freq_factor[i] = pow (2, detune_cent / 1200);
     }
 
-  /* compensate gain created by adding multiple copies
+  /* take into account the more unison voices we add up, the louder the result
+   * will be, so compensate for this:
    *
-   * we found that the gain caused by the unison effect can be approximated:
-   *   2 copies -> approximately 3 dB gain
-   *   4 copies -> approximately 6 dB gain
-   *   8 copies -> approximately 9 dB gain
-   * ...
+   *   -> each time the number of voices is doubled, the signal level is increased by
+   *      a factor of sqrt (2)
    */
-  const double unison_gain_db = (log (voices)/log (2)) * 3;
-  unison_gain = 1 / db_to_factor (unison_gain_db);
+  unison_gain = 1 / sqrt (voices);
 
   /* resize unison phase array to match pstate */
   const bool lps_zero = (last_pstate == &pstate[0]);
