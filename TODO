@@ -1,5 +1,6 @@
 NEXT RELEASE:
 - deal with std::fabs, std::sin, std::cos, cmath vs. math.h
+- should we link package against version 2 jack
 - screencast
 - maybe subharmonic tagging
 - maybe lv2 dirty
