@@ -18,7 +18,7 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testjobqueue testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
         testlsfperf testmutexperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
-        testlpca testblockperf testlowpass1 testxparam testmidisynth
+        testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
@@ -124,6 +124,12 @@ testlowpass1_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testbesseli0_SOURCES = testbesseli0.cc
 testbesseli0_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testadsr_SOURCES = testadsr.cc
+testadsr_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testadsrdecay_SOURCES = testadsrdecay.cc
+testadsrdecay_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testmidisynth_SOURCES = testmidisynth.cc
 testmidisynth_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)

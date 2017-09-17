@@ -9,9 +9,6 @@ NEXT RELEASE:
 beast:
 - move spectmorph osc plugin from spectmorph to beast
 
-adsr:
-- proper ADSR release
-
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow

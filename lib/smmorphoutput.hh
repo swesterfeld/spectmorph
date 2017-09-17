@@ -19,6 +19,12 @@ struct MorphOutputProperties
 {
   MorphOutputProperties (MorphOutput *output);
 
+  LinearParamProperty<MorphOutput> adsr_skip;
+  LinearParamProperty<MorphOutput> adsr_attack;
+  LinearParamProperty<MorphOutput> adsr_decay;
+  LinearParamProperty<MorphOutput> adsr_sustain;
+  LinearParamProperty<MorphOutput> adsr_release;
+
   XParamProperty<MorphOutput>      portamento_glide;
 
   LinearParamProperty<MorphOutput> vibrato_depth;
@@ -39,6 +45,13 @@ class MorphOutput : public MorphOperator
   bool                         m_unison;
   int                          m_unison_voices;
   float                        m_unison_detune;
+
+  bool                         m_adsr;
+  float                        m_adsr_skip;
+  float                        m_adsr_attack;
+  float                        m_adsr_decay;
+  float                        m_adsr_sustain;
+  float                        m_adsr_release;
 
   bool                         m_portamento;
   float                        m_portamento_glide;
@@ -74,6 +87,24 @@ public:
 
   void           set_unison_detune (float voices);
   float          unison_detune() const;
+
+  void           set_adsr (bool eadsr);
+  bool           adsr() const;
+
+  void           set_adsr_skip (float skip);
+  float          adsr_skip() const;
+
+  void           set_adsr_attack (float attack);
+  float          adsr_attack() const;
+
+  void           set_adsr_decay (float decay);
+  float          adsr_decay() const;
+
+  void           set_adsr_sustain (float sustain);
+  float          adsr_sustain() const;
+
+  void           set_adsr_release (float release);
+  float          adsr_release() const;
 
   void           set_portamento (bool ep);
   bool           portamento() const;

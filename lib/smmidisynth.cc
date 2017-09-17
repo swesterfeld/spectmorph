@@ -202,7 +202,9 @@ MidiSynth::update_mono_voice()
             {
               /* pedal not supported in mono mode */
               mvoice->state = Voice::STATE_RELEASE;
-              mvoice->env = 1.0;
+
+              MorphOutputModule *output_module = mvoice->mp_voice->output();
+              output_module->release();
             }
           else if (shadow_midi_note_id != portamento_note_id)
             {
@@ -260,7 +262,9 @@ MidiSynth::process_note_off (int midi_note)
           else
             {
               voice->state = Voice::STATE_RELEASE;
-              voice->env = 1.0;
+
+              MorphOutputModule *output_module = voice->mp_voice->output();
+              output_module->release();
             }
         }
     }
@@ -280,7 +284,9 @@ MidiSynth::process_midi_controller (int controller, int value)
               if (voice->pedal && voice->state == Voice::STATE_ON)
                 {
                   voice->state = Voice::STATE_RELEASE;
-                  voice->env = 1.0;
+
+                  MorphOutputModule *output_module = voice->mp_voice->output();
+                  output_module->release();
                 }
             }
         }
@@ -372,26 +378,19 @@ MidiSynth::process_audio (float *output, size_t n_values)
         }
       else if (voice->state == Voice::STATE_RELEASE)
         {
-          const float release_ms = 150; /* FIXME: this should be set by the user */
+          MorphOutputModule *output_module = voice->mp_voice->output();
 
-          double v_decrement = (1000.0 / mix_freq) / release_ms;
-          size_t envelope_len = sm_bound<int> (0, sm_round_positive (voice->env / v_decrement), n_values);
+          output_module->process (n_values, values, 1, freq_in);
+          for (size_t i = 0; i < n_values; i++)
+            output[i] += samples[i] * voice->velocity;
 
-          if (envelope_len < n_values)
+          if (output_module->done())
             {
               /* envelope reached zero -> voice can be reused later */
               voice->state = Voice::STATE_IDLE;
               voice->pedal = false;
 
               need_free = true; // need to recompute active_voices and idle_voices vectors
-            }
-          MorphOutputModule *output_module = voice->mp_voice->output();
-
-          output_module->process (envelope_len, values, 1, freq_in);
-          for (size_t i = 0; i < envelope_len; i++)
-            {
-              voice->env -= v_decrement;
-              output[i] += samples[i] * voice->env * voice->velocity;
             }
         }
       else
