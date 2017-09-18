@@ -35,5 +35,8 @@ testlsfplot
 testlowpass1
 testxparam
 testbesseli0
+testadsr
+testadsrdecay
+testmidisynth
 .libs
 .deps
