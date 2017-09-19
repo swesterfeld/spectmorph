@@ -31,5 +31,8 @@ main (int argc, char **argv)
   adsr_envelope.retrigger();
   run (adsr_envelope, sm_round_positive (rate / 2));
   adsr_envelope.release();
-  run (adsr_envelope, sm_round_positive (rate / 2) * 5);
+  while (!adsr_envelope.done())
+    {
+      run (adsr_envelope, sm_round_positive (rate / 2));
+    }
 }
