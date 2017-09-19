@@ -29,7 +29,7 @@ class ADSREnvelope
   } params;
 
   size_t process_params (size_t len, float *values);
-  void compute_slope_params (int len, float start_x, float end_x, bool linear);
+  void compute_slope_params (int len, float start_x, float end_x, State param_state);
 public:
   void set_config (float attack, float decay, float sustain, float release, float mix_freq);
   void retrigger();

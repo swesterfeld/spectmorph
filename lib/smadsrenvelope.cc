@@ -2,6 +2,7 @@
 
 #include "smadsrenvelope.hh"
 #include "smmath.hh"
+#include <assert.h>
 #include <algorithm>
 
 using namespace SpectMorph;
@@ -25,10 +26,10 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
 
   attack_len    = sm_round_positive (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
   decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
-  release_len   = sm_round_positive (exp_percent (release, 2, 1000, 5) * samples_per_ms);
+  release_len   = sm_round_positive (exp_percent (release, 2, 200, 5) * samples_per_ms);
 
   sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
-  // printf ("%.3f dB\n", bse_db_from_factor (sustain_level, -96));
+  // printf ("%.3f dB\n", db_from_factor (sustain_level, -96));
 }
 
 void
@@ -37,7 +38,7 @@ ADSREnvelope::retrigger()
   level = 0;
   state = State::ATTACK;
 
-  compute_slope_params (attack_len, 0, 1, true);
+  compute_slope_params (attack_len, 0, 1, State::ATTACK);
 }
 
 void
@@ -45,7 +46,7 @@ ADSREnvelope::release()
 {
   state = State::RELEASE;
 
-  compute_slope_params (release_len, level, 0, false);
+  compute_slope_params (release_len, level, 0, State::RELEASE);
 }
 
 bool
@@ -55,30 +56,38 @@ ADSREnvelope::done() const
 }
 
 void
-ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, bool linear)
+ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, State param_state)
 {
-  params.linear = linear;
   params.end    = end_x;
 
-  if (linear)
+  if (param_state == State::ATTACK)
     {
       // linear
-      params.len   = len;
-      params.delta = (end_x - start_x) / params.len;
+      params.len    = len;
+      params.delta  = (end_x - start_x) / params.len;
+      params.linear = true;
 
       params.factor = 1; // not used
     }
   else
     {
+      assert (param_state == State::DECAY || param_state == State::RELEASE);
+
       // exponential
 
-      /* reach zero approximately if 0.1% / -60dB of original height is left
-       * ----------------------------------------------------------------------
-       * setting ratio is a trade-off between sound quality (which is better if
-       * the ratio is lower, because we better approximate exponential decay)
-       * and cpu usage (which is lower if we fade out earlier/ratio is higher)
+      /* true exponential decay doesn't ever reach zero; therefore we need to
+       * fade out early
+       *
+       * during RELEASE, it is very important that this process terminates
+       * quickly, because after the note has ended, we don't want to waste
+       * cpu cycles for barely audible tail; so we choose a very crude
+       * approximation in this case (and a good approximation for DECAY)
        */
-      const double RATIO = 0.001;
+      double RATIO;
+      if (param_state == State::DECAY)
+        RATIO = 0.0001; // -80dB  or   0.01% of the original height
+      else
+        RATIO = 0.1;    // -20dB  or  10.00% of the original height
 
       /* compute iterative exponential decay parameters from inputs:
        *
@@ -95,6 +104,7 @@ ADSREnvelope::compute_slope_params (int len, float start_x, float end_x, bool li
       params.len    = -log ((RATIO + 1) / RATIO)/f;
       params.factor = exp (f);
       params.delta  = (end_x - RATIO * (start_x - end_x)) * (1 - params.factor);
+      params.linear = false;
     }
 }
 
@@ -140,7 +150,7 @@ ADSREnvelope::process (size_t n_values, float *values)
 
           if (!params.len)
             {
-              compute_slope_params (decay_len, 1, sustain_level, false);
+              compute_slope_params (decay_len, 1, sustain_level, State::DECAY);
 
               state = State::DECAY;
             }
@@ -171,7 +181,7 @@ ADSREnvelope::process (size_t n_values, float *values)
 void
 ADSREnvelope::test_decay (int len, float start_x, float end_x)
 {
-  compute_slope_params (len, start_x, end_x, false);
+  compute_slope_params (len, start_x, end_x, State::DECAY);
 
   level = start_x;
   for (int i = 0; i < params.len + len * 5; i++)
