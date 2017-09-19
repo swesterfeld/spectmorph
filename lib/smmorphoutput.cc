@@ -33,7 +33,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_adsr_attack   = 5;
   m_adsr_decay    = 20;
   m_adsr_sustain  = 70;
-  m_adsr_release  = 25;
+  m_adsr_release  = 60;
 
   m_portamento = false;
   m_portamento_glide = 200; /* ms */
