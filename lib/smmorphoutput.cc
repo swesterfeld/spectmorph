@@ -30,7 +30,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   m_adsr = false;
   m_adsr_skip     = 500;
-  m_adsr_attack   = 5;
+  m_adsr_attack   = 15;
   m_adsr_decay    = 20;
   m_adsr_sustain  = 70;
   m_adsr_release  = 60;

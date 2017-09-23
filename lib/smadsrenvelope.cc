@@ -19,17 +19,31 @@ exp_percent (float p, float min_out, float max_out, float slope)
   return x * (max_out - min_out) + min_out;
 }
 
+static float
+xparam_percent (float p, float min_out, float max_out, float slope)
+{
+  /* rescale xparam function to interval [min_out, max_out] */
+  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
+}
+
 void
 ADSREnvelope::set_config (float attack, float decay, float sustain, float release, float mix_freq)
 {
   const float samples_per_ms = mix_freq / 1000;
 
-  attack_len    = sm_round_positive (exp_percent (attack, 2, 5000, 5) * samples_per_ms);
+  attack_len    = sm_round_positive (xparam_percent (attack, 2, 5000, 3) * samples_per_ms);
   decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
   release_len   = sm_round_positive (exp_percent (release, 2, 200, 5) * samples_per_ms);
 
   sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
-  // printf ("%.3f dB\n", db_from_factor (sustain_level, -96));
+  if (0)
+    {
+      printf ("%.2f ms -  %.2f ms  -  %.3f dB  -  %.2f ms\n",
+          attack_len / samples_per_ms,
+          decay_len / samples_per_ms,
+          db_from_factor (sustain_level, -96),
+          release_len / samples_per_ms );
+    }
 }
 
 void
