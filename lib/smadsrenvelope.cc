@@ -33,7 +33,7 @@ ADSREnvelope::set_config (float attack, float decay, float sustain, float releas
 
   attack_len    = sm_round_positive (xparam_percent (attack, 2, 5000, 3) * samples_per_ms);
   decay_len     = sm_round_positive (exp_percent (decay, 2, 1000, 5) * samples_per_ms);
-  release_len   = sm_round_positive (exp_percent (release, 2, 200, 5) * samples_per_ms);
+  release_len   = sm_round_positive (exp_percent (release, 2, 200, 3) * samples_per_ms);
 
   sustain_level = exp_percent (sustain, 0, 1, /* slope */ 5);
   if (0)
