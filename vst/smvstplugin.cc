@@ -390,6 +390,8 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   const float volume_factor = db_to_factor (plugin->rt_volume);
   for (int i = 0; i < numSampleFrames; i++)
     outputs[0][i] *= volume_factor;
+
+  std::copy (outputs[0], outputs[0] + numSampleFrames, outputs[1]);
 }
 
 static void
@@ -398,13 +400,17 @@ process (AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
   // this is not as efficient as it could be
   // however, most likely the actual morphing is a lot more expensive
 
-  float  tmp_output[numSampleFrames];
-  float *tmp_outputs[1] = { tmp_output };
+  float  tmp_output_l[numSampleFrames];
+  float  tmp_output_r[numSampleFrames];
+  float *tmp_outputs[2] = { tmp_output_l, tmp_output_r };
 
   processReplacing (effect, inputs, tmp_outputs, numSampleFrames);
 
   for (int i = 0; i < numSampleFrames; i++)
-    outputs[0][i] += tmp_output[i];
+    {
+      outputs[0][i] += tmp_output_l[i];
+      outputs[1][i] += tmp_output_r[i];
+    }
 }
 
 static void setParameter(AEffect *effect, int i, float f)
@@ -452,7 +458,7 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
   effect->numPrograms = 0;
   effect->numParams = VstPlugin::PARAM_COUNT;
   effect->numInputs = 0;
-  effect->numOutputs = 1;
+  effect->numOutputs = 2;
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;
 
   // Do no use the ->user pointer because ardour clobbers it
