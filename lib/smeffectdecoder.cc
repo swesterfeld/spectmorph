@@ -44,8 +44,10 @@ public:
   process (size_t n_values, float *values)
   {
     if (state == State::ON)
-      return; // nothing
-    if (state == State::RELEASE)
+      {
+        return; // nothing
+      }
+    else if (state == State::RELEASE)
       {
         for (size_t i = 0; i < n_values; i++)
           {
@@ -57,6 +59,10 @@ public:
           }
         if (level < 0)
           state = State::DONE;
+      }
+    else // state == State::DONE
+      {
+        zero_float_block (n_values, values);
       }
   }
 };
