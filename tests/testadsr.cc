@@ -6,6 +6,8 @@
 
 #include <vector>
 
+#include <stdio.h>
+
 using namespace SpectMorph;
 using std::vector;
 
