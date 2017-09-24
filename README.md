@@ -106,15 +106,7 @@ for this issue other than building the Host against Qt5, too.
 Qtractor:
 ---------
 
-Qtractor (when compiled against Qt5) works fine with SpectMorph. However you
-need to be aware that the SpectMorph plugin only generates mono output. For
-Qtractor, by default the SpectMorph audio will only be played on the left
-speaker. To fix this, you can add the Stereo Balance Control LV2 plugin right
-after the mono instrument and then set channel assignemnt = 1 (L->L, L->R) ...
-
-The plugin is available here:
-
-    http://gareus.org/oss/lv2/balance
+Qtractor (when compiled against Qt5) works fine with SpectMorph.
 
 Controlling Morphing with Automation:
 -------------------------------------
