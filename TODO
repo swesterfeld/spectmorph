@@ -1,5 +1,8 @@
 NEXT RELEASE:
-- deal with std::fabs, std::sin, std::cos, cmath vs. math.h
+- test builds on gentoo and ubuntu 17.04
+- rebuild instruments without bad notes
+- debian packages
+- maybe treat std::sin, std::cos like std::fabs
 - should we link package against version 2 jack
 - screencast
 - maybe subharmonic tagging
