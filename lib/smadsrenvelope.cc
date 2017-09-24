@@ -3,6 +3,7 @@
 #include "smadsrenvelope.hh"
 #include "smmath.hh"
 #include <assert.h>
+#include <stdio.h>
 #include <algorithm>
 
 using namespace SpectMorph;
