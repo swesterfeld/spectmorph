@@ -52,8 +52,9 @@ enum PortIndex {
   SPECTMORPH_MIDI_IN    = 0,
   SPECTMORPH_CONTROL_1  = 1,
   SPECTMORPH_CONTROL_2  = 2,
-  SPECTMORPH_OUTPUT     = 3,
-  SPECTMORPH_NOTIFY     = 4
+  SPECTMORPH_LEFT_OUT   = 3,
+  SPECTMORPH_RIGHT_OUT  = 4,
+  SPECTMORPH_NOTIFY     = 5
 };
 
 namespace SpectMorph
@@ -66,8 +67,8 @@ public:
   const LV2_Atom_Sequence* midi_in;
   const float* control_1;
   const float* control_2;
-  const float* input;
-  float*       output;
+  float*       left_out;
+  float*       right_out;
   LV2_Atom_Sequence* notify_port;
 
   // Logger
@@ -102,8 +103,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   midi_in (NULL),
   control_1 (NULL),
   control_2 (NULL),
-  input (NULL),
-  output (NULL),
+  left_out (NULL),
+  right_out (NULL),
   notify_port (NULL),
   log (NULL),
   schedule (NULL),
@@ -228,7 +229,9 @@ connect_port (LV2_Handle instance,
                                   break;
       case SPECTMORPH_CONTROL_2:  self->control_2 = (const float*)data;
                                   break;
-      case SPECTMORPH_OUTPUT:     self->output = (float*)data;
+      case SPECTMORPH_LEFT_OUT:   self->left_out = (float*)data;
+                                  break;
+      case SPECTMORPH_RIGHT_OUT:  self->right_out = (float*)data;
                                   break;
       case SPECTMORPH_NOTIFY:     self->notify_port = (LV2_Atom_Sequence*)data;
                                   break;
@@ -310,7 +313,8 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   const float        control_1  = *(self->control_1);
   const float        control_2  = *(self->control_2);
-  float* const       output     = self->output;
+  float* const       left_out   = self->left_out;
+  float* const       right_out  = self->right_out;
 
   uint32_t  offset = 0;
 
@@ -378,12 +382,15 @@ run (LV2_Handle instance, uint32_t n_samples)
     }
   self->midi_synth.set_control_input (0, control_1);
   self->midi_synth.set_control_input (1, control_2);
-  self->midi_synth.process (output, n_samples);
+  self->midi_synth.process (left_out, n_samples);
 
   // apply post volume
   const float v = (self->volume > -90) ? db_to_factor (self->volume) : 0;
   for (uint32_t i = 0; i < n_samples; i++)
-    output[i] *= v;
+    left_out[i] *= v;
+
+  // proper stereo support will be added later
+  std::copy (left_out, left_out + n_samples, right_out);
 
   // update led (all midi events processed by now)
   bool new_voices_active = self->midi_synth.active_voice_count() > 0;
