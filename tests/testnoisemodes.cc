@@ -85,7 +85,7 @@ main (int argc, char **argv)
         s_diff_max = max (s_diff_max, fabs (spectrum[i] - dbg_spectrum[i] / block_size));
       printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);
       printf ("noise test: sse=%d s_diff_max=%.17g\n", sse, s_diff_max);
-      assert (t_diff_max < 1e-6);
+      assert (t_diff_max < 2e-6);
       assert (s_diff_max < 3e-9);
     }
 }
