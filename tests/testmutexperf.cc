@@ -10,10 +10,6 @@
 #include "smutils.hh"
 #include "config.h"
 
-#if SPECTMORPH_HAVE_BSE
-#include <bse/bsecxxplugin.hh>
-#endif
-
 static double
 gettime()
 {
@@ -57,12 +53,4 @@ main (int argc, char **argv)
     void do_lock() { std::lock_guard<std::mutex> guard (mutex); }
   };
   run_test<SMTest> ("std::mutex");
-
-#if SPECTMORPH_HAVE_BSE
-  struct BMTest {
-    Bse::Mutex mutex;
-    void do_lock() { Bse::ScopedLock<Bse::Mutex> block (mutex); }
-  };
-  run_test<BMTest> ("Bse::Mutex");
-#endif
 }
