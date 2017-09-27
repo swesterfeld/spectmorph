@@ -1,5 +1,7 @@
 test-common.sh
 *.o
+test*.log
+test*.trs
 testfastsin
 testblob
 testrandom
