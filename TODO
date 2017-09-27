@@ -68,6 +68,7 @@ lv2:
 - pbuilder
 - make distcheck
 - instruments.tar.xz
+- update NEWS
 - update spectmorph.org
   - rebuild docs
   - release tarball
