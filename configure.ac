@@ -43,9 +43,11 @@ dnl libbse
 dnl
 AC_DEFUN([AC_BSE_REQUIREMENTS],
 [
-    dnl check for libbse unless --without-beast was used
-    if test "x$with_beast" != "xno"; then
-        PKG_CHECK_MODULES(BSE, [[bse >= 0.9]], [with_beast="yes"], [with_beast="no"])
+    dnl check for libbse only if --with-beast was used
+    if test "x$with_beast" = "xyes"; then
+        PKG_CHECK_MODULES(BSE, [[bse >= 0.9]])
+    else
+        with_beast=no
     fi
     if test "x$with_beast" = "xno"; then
         SPECTMORPH_HAVE_BSE=0
@@ -240,7 +242,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 AC_GLIB_REQUIREMENTS
 
 dnl -------------------- libbse dependency can be disabled -------------------
-AC_ARG_WITH([beast], AS_HELP_STRING([--with-beast], [Build SpectMorph without depending on BEAST]))
+AC_ARG_WITH([beast], AS_HELP_STRING([--with-beast], [developer only: build against libbse]))
 
 AC_BSE_REQUIREMENTS
 
@@ -339,8 +341,11 @@ echo "--------------------------------------------------------------------------
 echo "$PACKAGE_NAME $PACKAGE_VERSION"
 echo "---------------------------------------------------------------------------"
 echo "  LV2 plug-in support  . .: $with_lv2"
-echo "  BEAST plug-in support  .: $with_beast"
 echo "  Install prefix . . . . .: $prefix"
+if test "x$with_beast" = "xyes"; then
+  echo
+  echo "  * building against libbse (this is a developer only option, not recommended)"
+fi
 echo
 echo "Now type 'make', followed by 'make install' as root."
 echo
