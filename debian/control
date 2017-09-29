@@ -5,14 +5,12 @@ Maintainer: Stefan Westerfeld <stefan@space.twc.de>
 Build-Depends: debhelper (>= 8.0.0), autotools-dev, build-essential,
   libglib2.0-dev, libao-dev, qtbase5-dev, qtbase5-dev-tools,
   qttools5-dev-tools, libjack-jackd2-dev, libfftw3-dev, libboost-dev,
-  lv2-dev, libsndfile1-dev
+  lv2-dev, libsndfile1-dev, python
 Standards-Version: 3.9.2
 Homepage: http://www.spectmorph.org
 
 Package: spectmorph
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: synchronization for collections of big files
+Description: sound morphing between musical instruments
  SpectMorph is designed to morph sounds of musical instruments.
- .
- This package doesn't include support for BEAST.
