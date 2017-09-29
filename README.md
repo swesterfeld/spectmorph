@@ -16,13 +16,6 @@ Configure should automatically determine via pkg-config whether the lv2
 development headers are available. When the LV2 plugin doesn't get built,
 install them.
 
-BEAST Support:
---------------
-
-SpectMorph can be used together with BEAST (see
-https://testbit.eu/wiki/Beast_Home).  Configure should automatically detect
-whether to build the plugin or not.
-
 Installing Instruments:
 =======================
 
@@ -68,10 +61,17 @@ then the instruments should go to
 BEAST Plugin:
 =============
 
-When built with BEAST support, SpectMorph has its own BEAST plugin. Since BEAST
-is modular, it comes as an oscillator. So you can build your own instrument
-network with SpectMorph generating the sound, and use the other components
-from BEAST, like the amplifier and ADSR envelope.
+Previous versions of SpectMorph included a BEAST plugin. Starting with
+SpectMorph 0.3.4, the plugin code has been removed from SpectMorph. Instead,
+new versions of BEAST will include the SpectMorph plugin, and new binary
+releases of BEAST should include SpectMorph, so as user once this integration
+is completed, SpectMorph should work out of the box in BEAST. See
+
+    https://github.com/tim-janik/beast/issues/12
+
+Since BEAST is modular, the SpectMorph plugin comes as an oscillator. So you
+can build your own instrument network with SpectMorph generating the sound, and
+combine SpectMorph with the other components from BEAST.
 
 JACK:
 =====
