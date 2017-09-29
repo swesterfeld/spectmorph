@@ -4,6 +4,7 @@ Overview of Changes in spectmorph-0.3.4:
 * Make LV2 and VST plugin stereo to allow supporting stereo in the future
 * LV2 plugin description fixes
 * Added about dialog to plugin/smjack UI
+* Remove BEAST plugin (plugin code will be moved to BEAST)
 * Fixed compilation for newer g++ >= 6 (std::fabs)
 * Get rid of some malloc() calls in linear morphing
 
