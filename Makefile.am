@@ -5,10 +5,6 @@ ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 
 SUBDIRS = lib gui jack vst src tools inspector python tests docs data
 
-if COND_WITH_BEAST
-  SUBDIRS += beast
-endif
-
 if COND_WITH_LV2
   SUBDIRS += lv2
 endif
