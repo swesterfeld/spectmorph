@@ -1,10 +1,8 @@
 NEXT RELEASE:
-- test builds on gentoo and ubuntu 17.04
-- rebuild instruments without bad notes
-- debian packages
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
 - maybe lv2 dirty
+- we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 
 beast:
@@ -77,3 +75,4 @@ lv2:
 - facebook
 - release announcement mailing lists
 - mail arch linux maintainer (AUR)
+- test builds on gentoo and ubuntu 17.04
