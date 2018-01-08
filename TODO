@@ -2,6 +2,7 @@ insts:
  - horn
  - tuba
  - double bass
+ - flute
 
 NEXT RELEASE:
 - maybe treat std::sin, std::cos like std::fabs
