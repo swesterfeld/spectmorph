@@ -16,6 +16,8 @@ fi
 
 if libtoolize --version >/dev/null 2>&1; then
   :
+elif glibtoolize --version >/dev/null 2>&1; then # macOS
+  :
 else
   echo "You need to have libtool installed to build this package"
   DIE=1
