@@ -11,7 +11,7 @@
 namespace SpectMorph
 {
 
-class VstPlugin;
+struct VstPlugin;
 
 class VstUI : public QObject
 {
