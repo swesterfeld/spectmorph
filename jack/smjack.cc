@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <poll.h>
+#include <errno.h>
 
 using namespace SpectMorph;
 
