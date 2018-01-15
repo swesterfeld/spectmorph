@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
 SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
@@ -46,11 +46,11 @@ smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(S
 smsampleedit_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
 
 smrunplan_SOURCES = smrunplan.cc
-smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QTCORE_LIBS)
+smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(AM_CXXFLAGS)
 
 smevalplayer_SOURCES = smevalplayer.cc
-smevalplayer_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QTCORE_LIBS)
+smevalplayer_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS)
 smevalplayer_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/jack
 
 install-exec-hook:
