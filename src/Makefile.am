@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 AM_CXXFLAGS += $(BSE_CFLAGS) $(AO_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib $(BOOST_CPPFLAGS) $(BOOST_NUMERIC_BINDINGS_CPPFLAGS)
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
 bin_PROGRAMS = smenc smplay smtool smstrip smwavset
 
