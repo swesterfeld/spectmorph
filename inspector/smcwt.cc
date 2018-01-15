@@ -78,7 +78,7 @@ get_morlet (double x, double freq, T *re, T *im)
   double amp = exp (-x*x / 2.0 * beta);
   double s, c;
   double norm = sqrt (freq);
-  sincos (2 * x * M_PI * freq, &s, &c);
+  sm_sincos (2 * x * M_PI * freq, &s, &c);
   *re = amp * c * norm;
   *im = amp * s * norm;
 }
