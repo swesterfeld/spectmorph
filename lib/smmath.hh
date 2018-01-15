@@ -30,6 +30,18 @@ namespace SpectMorph
  */
 using std::fabs;
 
+inline void
+sm_sincos (double x, double *s, double *c)
+{
+#if __APPLE__
+  *s = sin (x); // sincos is a gnu extension
+  *c = cos (x);
+#else
+  sincos (x, s, c);
+#endif
+}
+
+
 /**
  * \brief parameter structure for the various optimized vector sine functions
  */
@@ -71,7 +83,7 @@ internal_fast_vector_sin (const VectorSinParams& params, Iterator begin, Iterato
   double state_re;
   double state_im;
 
-  sincos (params.phase, &state_im, &state_re);
+  sm_sincos (params.phase, &state_im, &state_re);
   state_re *= params.mag;
   state_im *= params.mag;
 
@@ -83,7 +95,7 @@ internal_fast_vector_sin (const VectorSinParams& params, Iterator begin, Iterato
         *x += state_im;
       if ((n++ & 255) == 255)
         {
-          sincos (phase_inc * n + params.phase, &state_im, &state_re);
+          sm_sincos (phase_inc * n + params.phase, &state_im, &state_re);
           state_re *= params.mag;
           state_im *= params.mag;
         }
@@ -115,7 +127,7 @@ internal_fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, 
   double state_re;
   double state_im;
 
-  sincos (params.phase, &state_im, &state_re);
+  sm_sincos (params.phase, &state_im, &state_re);
   state_re *= params.mag;
   state_im *= params.mag;
 
@@ -133,7 +145,7 @@ internal_fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, 
         }
       if ((n++ & 255) == 255)
         {
-          sincos (phase_inc * n + params.phase, &state_im, &state_re);
+          sm_sincos (phase_inc * n + params.phase, &state_im, &state_re);
           state_re *= params.mag;
           state_im *= params.mag;
         }
@@ -216,7 +228,7 @@ internal_fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, f
   double state_re;
   double state_im;
 
-  sincos (params.phase, &state_im, &state_re);
+  sm_sincos (params.phase, &state_im, &state_re);
   state_re *= params.mag;
   state_im *= params.mag;
 
