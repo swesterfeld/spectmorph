@@ -10,7 +10,7 @@
 
 namespace SpectMorph {
 
-class IFFTSynthTable;
+struct IFFTSynthTable;
 
 class IFFTSynth
 {
