@@ -58,7 +58,7 @@ main (int argc, char **argv)
   for (int i = 0; i < 256; i++)
     {
       double s, c;
-      sincos (i / 256.0 * 2 * M_PI, &s, &c);
+      sm_sincos (i / 256.0 * 2 * M_PI, &s, &c);
 
       const double is = int_sinf (i);
       const double ic = int_cosf (i);

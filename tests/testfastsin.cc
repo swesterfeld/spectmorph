@@ -48,7 +48,7 @@ perftest()
         {
           const double phase = params.freq / params.mix_freq * 2.0 * M_PI * i + params.phase;
           double s, c;
-          sincos (phase, &s, &c);
+          sm_sincos (phase, &s, &c);
           sin_vec[i] = s * params.mag;
           cos_vec[i] = c * params.mag;
         }
@@ -146,7 +146,7 @@ main (int argc, char **argv)
                     {
                       const double phase = params.freq / params.mix_freq * 2.0 * M_PI * i + params.phase;
                       double s, c;
-                      sincos (phase, &s, &c);
+                      sm_sincos (phase, &s, &c);
                       libm_sin_vec[i] = s * params.mag;
                       libm_cos_vec[i] = c * params.mag;
                     }
