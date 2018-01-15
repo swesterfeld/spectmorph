@@ -4,6 +4,7 @@
 #define SPECTMORPH_LEAK_DEBUGGER_HH
 
 #include <map>
+#include <string>
 
 #include <QMutex>
 
