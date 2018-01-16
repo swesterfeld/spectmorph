@@ -23,6 +23,11 @@
 namespace SpectMorph
 {
 
+enum class WindowSize {
+  FIXED,
+  DYNAMIC
+};
+
 class MorphPlanWindow : public QMainWindow
 {
   Q_OBJECT
@@ -32,6 +37,7 @@ class MorphPlanWindow : public QMainWindow
   MorphPlanPtr   m_morph_plan;
   MorphPlanView *morph_plan_view;
   QScrollArea   *scroll_area;
+  WindowSize     window_size;
 
   void add_op_action (QMenu *menu, const char *title, const char *type);
   void fill_template_menu (QMenu *menu);
@@ -39,7 +45,7 @@ class MorphPlanWindow : public QMainWindow
   bool load (const std::string& filename);
 
 public:
-  MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title);
+  MorphPlanWindow (MorphPlanPtr morph_plan, const std::string& title, WindowSize window_size = WindowSize::DYNAMIC);
 
   MorphOperator *where (MorphOperator *op, const QPoint& pos);
   void add_control_widget (QWidget *widget);

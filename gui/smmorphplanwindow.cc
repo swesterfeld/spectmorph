@@ -37,9 +37,10 @@ using std::string;
 using std::vector;
 using std::min;
 
-MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) :
+MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title, WindowSize window_size) :
   win_title (title),
-  m_morph_plan (morph_plan)
+  m_morph_plan (morph_plan),
+  window_size (window_size)
 {
   /* actions ... */
   QAction *import_action = new QAction ("&Import...", this);
@@ -90,6 +91,14 @@ MorphPlanWindow::MorphPlanWindow (MorphPlanPtr morph_plan, const string& title) 
   update_window_title();
 
   connect (morph_plan_view, SIGNAL (view_widgets_changed()), this, SLOT (on_need_resize()));
+
+  /* fixed size */
+  if (window_size == WindowSize::FIXED)
+    {
+      QScreen *screen = QGuiApplication::primaryScreen();
+      int max_height = screen->size().height() * 0.8;
+      setFixedSize (450, max_height); /* FIXME: true size */
+    }
 }
 
 void
@@ -312,11 +321,14 @@ MorphPlanWindow::on_need_resize()
 void
 MorphPlanWindow::on_update_window_size()
 {
-  /* FIXME: these add-on pixel sizes are not really computed */
-  QScreen *screen = QGuiApplication::primaryScreen();
-  int max_height = screen->size().height() * 0.8;
-  int max_width = screen->size().width() * 0.8;
-  setMinimumSize (min (max_width, morph_plan_view->sizeHint().width() + 150), min (max_height, morph_plan_view->sizeHint().height() + 50));
-  resize (minimumSize());
-  Q_EMIT update_size();
+  if (window_size == WindowSize::DYNAMIC)
+    {
+      /* FIXME: these add-on pixel sizes are not really computed */
+      QScreen *screen = QGuiApplication::primaryScreen();
+      int max_height = screen->size().height() * 0.8;
+      int max_width = screen->size().width() * 0.8;
+      setMinimumSize (min (max_width, morph_plan_view->sizeHint().width() + 150), min (max_height, morph_plan_view->sizeHint().height() + 50));
+      resize (minimumSize());
+      Q_EMIT update_size();
+    }
 }
