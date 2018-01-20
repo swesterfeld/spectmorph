@@ -10,6 +10,8 @@ NEXT RELEASE:
 - maybe lv2 dirty
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
+- panning per note
+- velocity should map to "Velocity Sensitivity (dB)"
 
 beast:
 - move spectmorph osc plugin from spectmorph to beast
