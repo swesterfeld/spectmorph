@@ -8,10 +8,10 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
 EXTRA_DIST += delta.py smeval.py smutils.py
 
-bin_PROGRAMS = smsfimport
+bin_PROGRAMS = smsfimport smsampleedit smenccache
 bin_SCRIPTS  = sminstbuilder
 
-noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smsampleedit smenccache smrunplan smfileedit smevalplayer smlive
+noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smrunplan smfileedit smevalplayer smlive
 
 ascii2wav_SOURCES = ascii2wav.cc
 ascii2wav_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
