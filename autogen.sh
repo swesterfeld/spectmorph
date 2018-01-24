@@ -23,6 +23,13 @@ else
   DIE=1
 fi
 
+if pkg-config --version >/dev/null 2>&1; then
+  :
+else
+  echo "You need to have pkg-config installed to build this package"
+  DIE=1
+fi
+
 # bail out as scheduled
 test "0$DIE" -gt 0 && exit 1
 
