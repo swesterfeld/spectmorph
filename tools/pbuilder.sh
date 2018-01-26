@@ -23,7 +23,11 @@ for DIST in xenial
 do
   for ARCH in i386 amd64
   do
-    BASETGZ=/var/cache/pbuilder/$DIST-$ARCH-base.tgz
+    NAME="$DIST-$ARCH"
+    BASETGZ="/var/cache/pbuilder/$NAME/base.tgz"
+    BUILDRESULT="/var/cache/pbuilder/$NAME/result/"
+    APTCACHE="/var/cache/pbuilder/$NAME/aptcache/"
+    mkdir -p "$BUILDRESULT" "$APTCACHE"
 
     if test -f $BASETGZ; then
       echo using existing basetgz $BASETGZ
@@ -43,6 +47,8 @@ do
              --distribution $DIST   \
              --architecture $ARCH   \
              --basetgz $BASETGZ     \
+             --buildresult $BUILDRESULT  \
+             --aptcache $APTCACHE   \
              $DSC
   done
 done
