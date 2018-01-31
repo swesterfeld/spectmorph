@@ -8,6 +8,7 @@ saved_CFLAGS="$CFLAGS" ; saved_CXXFLAGS="$CFLAGS" # the AC_PROG_C* macros mess u
 AC_PROG_CXX
 CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 AC_PROG_LIBTOOL
+AC_PROG_OBJC
 
 dnl Version splitted
 
@@ -275,7 +276,7 @@ AC_CANONICAL_HOST
 
 build_linux=no
 build_windows=no
-build_mac=no
+build_macos=no
 
 # Detect the target system
 case "${host_os}" in
@@ -286,7 +287,7 @@ case "${host_os}" in
         build_windows=yes
         ;;
     darwin*)
-        build_mac=yes
+        build_macos=yes
         ;;
     *)
         AC_MSG_ERROR(["OS $host_os is not supported"])
@@ -296,7 +297,7 @@ esac
 # Pass the conditionals to automake
 AM_CONDITIONAL([COND_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
-AM_CONDITIONAL([COND_MACOS], [test "$build_mac" = "yes"])
+AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 
 # need boost basic linear algebra for LPC
 BOOST_REQUIRE
