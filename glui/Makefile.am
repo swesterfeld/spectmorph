@@ -11,10 +11,19 @@ if COND_MACOS
   PUGL_LDFLAGS = -framework Cocoa -framework OpenGL
 endif
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO
+AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I../vst
 
 smuitest_SOURCES = smuitest.cc
 smuitest_LDADD = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest
+
+plugindir = /tmp/VST_TEST_DIR
+plugin_LTLIBRARIES = smvstplugin.la
+
+SMVSTSOURCES = smvstplugin.cc
+
+smvstplugin_la_SOURCES = $(SMVSTSOURCES)
+smvstplugin_la_LIBADD  = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
