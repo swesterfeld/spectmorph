@@ -18,6 +18,7 @@
 
 #include <cairo/cairo.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #include "pugl/gl.h"
 
