@@ -116,6 +116,20 @@ Debian users: aptitude install libao-dev
     AC_SUBST(AO_LIBS)
 ])
 dnl
+dnl libcairo
+dnl
+AC_DEFUN([AC_CAIRO_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(CAIRO, cairo,[:],[
+      AC_MSG_ERROR([You need to install libcairo to build this package.
+
+Debian users: aptitude install libcairo-dev
+])
+    ])
+    AC_SUBST(CAIRO_CFLAGS)
+    AC_SUBST(CAIRO_LIBS)
+])
+dnl
 dnl pkg-config
 dnl
 AC_DEFUN([AC_PKG_CONFIG_REQUIREMENTS],
@@ -256,11 +270,40 @@ fi
 AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
 dnl -------------------------------------------------------------------------
 
+dnl detect host os
+AC_CANONICAL_HOST
+
+build_linux=no
+build_windows=no
+build_mac=no
+
+# Detect the target system
+case "${host_os}" in
+    linux*)
+        build_linux=yes
+        ;;
+    cygwin*|mingw*)
+        build_windows=yes
+        ;;
+    darwin*)
+        build_mac=yes
+        ;;
+    *)
+        AC_MSG_ERROR(["OS $host_os is not supported"])
+        ;;
+esac
+
+# Pass the conditionals to automake
+AM_CONDITIONAL([COND_LINUX], [test "$build_linux" = "yes"])
+AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
+AM_CONDITIONAL([COND_MACOS], [test "$build_mac" = "yes"])
+
 # need boost basic linear algebra for LPC
 BOOST_REQUIRE
 BOOST_NUMERIC_UBLAS
 
 AC_AO_REQUIREMENTS
+AC_CAIRO_REQUIREMENTS
 AC_QT_REQUIREMENTS
 AC_JACK_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
@@ -327,7 +370,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 
 AC_CONFIG_FILES([Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
-jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
+glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc lv2/spectmorph.ttl
 ])
