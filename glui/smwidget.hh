@@ -8,7 +8,10 @@ namespace SpectMorph
 
 struct Widget
 {
+  Widget *parent;
   double x, y, width, height;
+
+  std::vector<Widget *> children;
 
   void debug_fill (cairo_t *cr)
   {
@@ -17,9 +20,11 @@ struct Widget
     cairo_fill (cr);
   }
 
-  Widget (double x, double y, double width, double height) :
-    x (x), y (y), width (width), height (height)
+  Widget (Widget *parent, double x, double y, double width, double height) :
+    parent (parent), x (x), y (y), width (width), height (height)
   {
+    if (parent)
+      parent->children.push_back (this);
   }
   virtual void
   draw (cairo_t *cr)

@@ -20,11 +20,32 @@ static PuglCairoGL cairo_gl = { 0, };
 
 using namespace SpectMorph;
 
-static std::vector<Widget *> widgets; // should be a tree
+static Widget *static_main_window;
+using std::vector;
 
 static cairo_t *cr = 0;
 static Widget  *mouse_widget = 0;
 static Widget  *enter_widget = 0;
+
+static vector<Widget *>
+crawl_widgets (const vector<Widget *>& widgets)
+{
+  vector<Widget *> all_widgets;
+
+  for (auto w : widgets)
+    {
+      all_widgets.push_back (w);
+      auto c_result = crawl_widgets (w->children);
+      all_widgets.insert (all_widgets.end(), c_result.begin(), c_result.end());
+    }
+  return all_widgets;
+}
+
+static vector<Widget *>
+crawl_widgets()
+{
+  return crawl_widgets ({ static_main_window });
+}
 
 static void
 onDisplay(PuglView* view)
@@ -34,7 +55,7 @@ onDisplay(PuglView* view)
 
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (auto w : widgets)
+  for (auto w : crawl_widgets())
     {
       cairo_save (cr);
 
@@ -56,7 +77,7 @@ onEvent (PuglView* view, const PuglEvent* event)
   switch (event->type)
     {
       case PUGL_BUTTON_PRESS:
-        for (auto w : widgets)
+        for (auto w : crawl_widgets())
           {
             if (event->button.x >= w->x &&
                 event->button.y >= w->y &&
@@ -86,7 +107,7 @@ onEvent (PuglView* view, const PuglEvent* event)
           }
         else
           {
-            for (auto w : widgets) /* no specific widget, search for match */
+            for (auto w : crawl_widgets()) /* no specific widget, search for match */
               {
                 if (event->motion.x >= w->x &&
                     event->motion.y >= w->y &&
@@ -113,6 +134,29 @@ onEvent (PuglView* view, const PuglEvent* event)
         break;
     }
 }
+
+class MainWindow : public Widget
+{
+public:
+  MainWindow (int width, int height) :
+    Widget (nullptr, 0, 0, width, height)
+  {
+    Label  *l_attack = new Label (this, 20, 100, 150, 40, "Attack");
+    Slider *s_attack = new Slider (this, 200, 100, 170, 40, 0.0);
+    Label  *l_attack_value = new Label (this, 400, 100, 80, 40, "50%");
+
+    Label  *l_sustain = new Label (this, 20, 150, 150, 40, "Sustain");
+    Slider *s_sustain = new Slider (this, 200, 150, 170, 40, 1.0);
+    Label  *l_sustain_value = new Label (this, 400, 150, 80, 40, "50%");
+
+    new Label (this, 0, 200, 512, 300, " --- main window --- ");
+
+    s_attack->set_callback ([=](float value) { l_attack_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
+    s_sustain->set_callback ([=](float value) { l_sustain_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
+
+    static_main_window = this;
+  }
+};
 
 #if VST_PLUGIN
 static PuglView* global_vst_view;
@@ -152,26 +196,7 @@ plugin_open (uintptr_t win_id)
   puglPostRedisplay (view);
   puglShowWindow (view);
 
-  Widget *background = new Widget (0, 0, 512, 512);
-
-  Label *l_attack = new Label (20, 100, 150, 40, "Attack");
-  Slider *s_attack = new Slider (200, 100, 170, 40, 0.0);
-  Label *l_attack_value = new Label (400, 100, 80, 40, "50%");
-
-  Label *l_sustain = new Label (20, 150, 150, 40, "Sustain");
-  Slider *s_sustain = new Slider (200, 150, 170, 40, 1.0);
-  Label *l_sustain_value = new Label (400, 150, 80, 40, "50%");
-
-  s_attack->set_callback ([=](float value) { l_attack_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
-  s_sustain->set_callback ([=](float value) { l_sustain_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
-
-  widgets.push_back (background);
-  widgets.push_back (s_attack);
-  widgets.push_back (s_sustain);
-  widgets.push_back (l_attack);
-  widgets.push_back (l_sustain);
-  widgets.push_back (l_attack_value);
-  widgets.push_back (l_sustain_value);
+  Widget *main_window = new MainWindow (512, 512);
 }
 #else
 int
@@ -206,32 +231,14 @@ main()
   puglPostRedisplay (view);
   puglShowWindow (view);
 
-  Widget background (0, 0, 512, 512);
-
-  Label l_attack (20, 100, 150, 40, "Attack");
-  Slider s_attack (200, 100, 170, 40, 0.0);
-  Label l_attack_value (400, 100, 80, 40, "50%");
-
-  Label l_sustain (20, 150, 150, 40, "Sustain");
-  Slider s_sustain (200, 150, 170, 40, 1.0);
-  Label l_sustain_value (400, 150, 80, 40, "50%");
-
-  s_attack.set_callback ([&](float value) { l_attack_value.text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
-  s_sustain.set_callback ([&](float value) { l_sustain_value.text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
-
-  widgets.push_back (&background);
-  widgets.push_back (&s_attack);
-  widgets.push_back (&s_sustain);
-  widgets.push_back (&l_attack);
-  widgets.push_back (&l_sustain);
-  widgets.push_back (&l_attack_value);
-  widgets.push_back (&l_sustain_value);
+  MainWindow *window = new MainWindow (512, 512);
 
   while (!quit) {
     puglWaitForEvent (view);
     puglProcessEvents (view);
   }
 
+  delete window;
   pugl_cairo_gl_free (&cairo_gl);
   puglDestroy(view);
 }

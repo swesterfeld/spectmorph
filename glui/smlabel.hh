@@ -10,8 +10,8 @@ struct Label : public Widget
 {
   std::string text;
 
-  Label (double x, double y, double w, double h, const std::string& text) :
-    Widget (x, y, w, h),
+  Label (Widget *parent, double x, double y, double w, double h, const std::string& text) :
+    Widget (parent, x, y, w, h),
     text (text)
   {
   }
