@@ -15,10 +15,17 @@ if COND_WINDOWS
   PUGL_LIBS = pugl/libspectmorphpugl.la -lopengl32 -lgdi32 -luser32
 endif
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+
+noinst_LTLIBRARIES = libspectmorphglui.la
+
+libspectmorphglui_la_SOURCES = smwidget.cc
+libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
+
+AM_CXXFLAGS += $(QTCORE_CFLAGS) $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
 smuitest_SOURCES = smuitest.cc
-smuitest_LDADD = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest
@@ -29,7 +36,7 @@ plugin_LTLIBRARIES = smvstplugin.la
 SMVSTSOURCES = smvstplugin.cc
 
 smvstplugin_la_SOURCES = $(SMVSTSOURCES)
-smvstplugin_la_LIBADD  = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smvstplugin_la_LIBADD  = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
 
 dll:

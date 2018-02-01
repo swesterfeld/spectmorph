@@ -3,6 +3,9 @@
 #ifndef SPECTMORPH_WIDGET_HH
 #define SPECTMORPH_WIDGET_HH
 
+#include <vector>
+#include <cairo.h>
+
 namespace SpectMorph
 {
 
@@ -20,12 +23,9 @@ struct Widget
     cairo_fill (cr);
   }
 
-  Widget (Widget *parent, double x, double y, double width, double height) :
-    parent (parent), x (x), y (y), width (width), height (height)
-  {
-    if (parent)
-      parent->children.push_back (this);
-  }
+  Widget (Widget *parent, double x, double y, double width, double height);
+  ~Widget();
+
   virtual void
   draw (cairo_t *cr)
   {

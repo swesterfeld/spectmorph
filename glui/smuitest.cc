@@ -14,6 +14,7 @@
 #include "smwidget.hh"
 #include "smlabel.hh"
 #include "smslider.hh"
+#include "smmain.hh"
 
 static bool quit = false;
 static PuglCairoGL cairo_gl = { 0, };
@@ -200,8 +201,10 @@ plugin_open (uintptr_t win_id)
 }
 #else
 int
-main()
+main (int argc, char **argv)
 {
+  sm_init (&argc, &argv);
+
   PuglView* view = puglInit (NULL, NULL);
 
   puglInitWindowClass(view, "PuglTest");
