@@ -20,7 +20,8 @@ Widget::Widget (Widget *parent, double x, double y, double width, double height)
 
 Widget::~Widget()
 {
+  for (auto w : children)
+    delete w;
+
   leak_debugger.del (this);
 }
-
-
