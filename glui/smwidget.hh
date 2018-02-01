@@ -24,7 +24,7 @@ struct Widget
   }
 
   Widget (Widget *parent, double x, double y, double width, double height);
-  ~Widget();
+  virtual ~Widget();
 
   virtual void
   draw (cairo_t *cr)
