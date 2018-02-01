@@ -137,7 +137,13 @@ puglCreateWindow(PuglView* view, const char* title)
 		return NULL;
 	}
 
-	int winFlags = WS_POPUPWINDOW | WS_CAPTION;
+	int winFlags;
+	if (view->parent) {
+		winFlags = WS_CHILD;
+	}
+	else {
+		winFlags = WS_POPUPWINDOW | WS_CAPTION;
+	}
 	if (view->resizable) {
 		winFlags |= WS_SIZEBOX;
 		if (view->min_width || view->min_height) {
@@ -155,8 +161,7 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	impl->hwnd = CreateWindowEx(
 		WS_EX_TOPMOST,
-		wc.lpszClassName, title,
-		(view->parent ? WS_CHILD : winFlags),
+		wc.lpszClassName, title, winFlags,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right-wr.left, wr.bottom-wr.top,
 		(HWND)view->parent, NULL, NULL, NULL);
 
