@@ -11,6 +11,10 @@ namespace SpectMorph
 
 struct Widget
 {
+protected:
+  void remove_child (Widget *child);
+
+public:
   Widget *parent;
   double x, y, width, height;
 

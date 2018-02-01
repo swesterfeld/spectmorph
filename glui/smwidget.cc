@@ -2,6 +2,7 @@
 
 #include "smwidget.hh"
 #include "smleakdebugger.hh"
+#include <glib.h>
 
 using namespace SpectMorph;
 
@@ -20,8 +21,23 @@ Widget::Widget (Widget *parent, double x, double y, double width, double height)
 
 Widget::~Widget()
 {
-  for (auto w : children)
-    delete w;
-
+  while (!children.empty())
+    {
+      delete children.front();
+    }
+  if (parent)
+    parent->remove_child (this);
   leak_debugger.del (this);
+}
+
+void
+Widget::remove_child (Widget *child)
+{
+  for (std::vector<Widget *>::iterator ci = children.begin(); ci != children.end(); ci++)
+    if (*ci == child)
+      {
+        children.erase (ci);
+        return;
+      }
+  g_assert_not_reached();
 }
