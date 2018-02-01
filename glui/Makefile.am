@@ -11,7 +11,11 @@ if COND_MACOS
   PUGL_LDFLAGS = -framework Cocoa -framework OpenGL
 endif
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I../vst
+if COND_WINDOWS
+  PUGL_LIBS = pugl/libspectmorphpugl.la -lopengl32 -lgdi32 -luser32
+endif
+
+AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
 smuitest_SOURCES = smuitest.cc
 smuitest_LDADD = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
@@ -27,3 +31,6 @@ SMVSTSOURCES = smvstplugin.cc
 smvstplugin_la_SOURCES = $(SMVSTSOURCES)
 smvstplugin_la_LIBADD  = $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
+
+dll:
+	$(CXX) -shared -o smvstplugin.dll smvstplugin.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(BSE_LIBS) $(FFTW_LIBS) pugl/.libs/libspectmorphpugl.a $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -liconv
