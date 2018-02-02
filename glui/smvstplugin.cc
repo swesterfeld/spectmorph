@@ -97,6 +97,7 @@ debug (const char *fmt, ...)
     }
 }
 
+#if 0
 static bool
 is_note_on (const VstMidiEvent *event)
 {
@@ -122,6 +123,7 @@ is_note_off (const VstMidiEvent *event)
     }
   return false;
 }
+#endif
 
 struct ERect
 {
@@ -132,10 +134,6 @@ struct ERect
 };
 
 static char hostProductString[64] = "";
-
-#if DEBUG
-static FILE *logFile;
-#endif
 
 class VstUI
 {
@@ -396,9 +394,9 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
 
 static void process(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
+#if 0 // FIXME
   Plugin *plugin = (Plugin *)effect->ptr3;
   debug ("!missing process\n");
-#if 0 // FIXME
   std::vector<amsynth_midi_cc_t> midi_out;
   plugin->synthesizer->process(numSampleFrames, plugin->midiEvents, midi_out, outputs[0], outputs[1]);
   plugin->midiEvents.clear();
@@ -407,9 +405,9 @@ static void process(AEffect *effect, float **inputs, float **outputs, int numSam
 
 static void processReplacing(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
+#if 0 // WIN32
   Plugin *plugin = (Plugin *)effect->ptr3;
 
-#if 0 // WIN32
   plugin->midi_synth.process_audio (outputs[0], numSampleFrames);
   std::copy_n (outputs[0], numSampleFrames, outputs[1]);
 #else
@@ -420,18 +418,24 @@ static void processReplacing(AEffect *effect, float **inputs, float **outputs, i
 
 static void setParameter(AEffect *effect, int i, float f)
 {
+#if 0
   Plugin *plugin = (Plugin *)effect->ptr3;
   debug ("!missing set parameter\n");
 
   // FIXME plugin->ynthesizer->setNormalizedParameterValue((Param) i, f);
+#endif
 }
 
 static float getParameter(AEffect *effect, int i)
 {
+#if 0
   Plugin *plugin = (Plugin *)effect->ptr3;
   debug ("!missing get parameter\n");
 
   // FIXME return plugin->synthesizer->getNormalizedParameterValue((Param) i);
+#else
+  return 0;
+#endif
 }
 
 extern "C" {
