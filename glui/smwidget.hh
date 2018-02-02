@@ -6,7 +6,6 @@
 #include <vector>
 #include <cairo.h>
 #include <stdio.h>
-#include "pugl/cairo_gl.h"
 
 namespace SpectMorph
 {

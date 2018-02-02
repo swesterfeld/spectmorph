@@ -1,11 +1,39 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smwindow.hh"
+#include "pugl/cairo_gl.h"
 #include <string.h>
 
 using namespace SpectMorph;
 
 using std::vector;
+
+struct SpectMorph::CairoGL
+{
+  PuglCairoGL pugl_cairo_gl;
+  cairo_surface_t *surface;
+
+  CairoGL (int width, int height)
+  {
+    memset (&pugl_cairo_gl, 0, sizeof (pugl_cairo_gl));
+
+    surface = pugl_cairo_gl_create (&pugl_cairo_gl, width, height, 4);
+  }
+  ~CairoGL()
+  {
+    pugl_cairo_gl_free (&pugl_cairo_gl);
+  }
+  void
+  configure (int width, int height)
+  {
+    pugl_cairo_gl_configure (&pugl_cairo_gl, width, height);
+  }
+  void
+  draw (int width, int height)
+  {
+    pugl_cairo_gl_draw (&pugl_cairo_gl, width, height);
+  }
+};
 
 Window::Window (int width, int height, PuglNativeWindow win_id) :
   Widget (nullptr, 0, 0, width, height)
@@ -21,15 +49,14 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
     puglInitWindowParent (view, win_id);
   puglCreateWindow (view, "Pugl Test");
 
-  memset (&cairo_gl, 0, sizeof (cairo_gl));
-  cairo_surface_t* surface = pugl_cairo_gl_create (&cairo_gl, width, height, 4);
-  cr = cairo_create (surface);
+  cairo_gl.reset (new CairoGL (width, height));
+  cr = cairo_create (cairo_gl->surface);
 
   puglEnterContext (view);
   glEnable (GL_DEPTH_TEST);
   glDepthFunc (GL_LESS);
   glClearColor (0.4f, 0.4f, 0.4f, 1.0f);
-  pugl_cairo_gl_configure (&cairo_gl, width, height);
+  cairo_gl->configure (width, height);
   printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   fflush (stdout);
   puglLeaveContext(view, false);
@@ -37,7 +64,6 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
 
 Window::~Window()
 {
-  pugl_cairo_gl_free (&cairo_gl);
   puglDestroy (view);
 }
 
@@ -82,5 +108,5 @@ Window::on_display()
       cairo_restore (cr);
     }
 
-  pugl_cairo_gl_draw (&cairo_gl, view_width, view_height);
+  cairo_gl->draw (view_width, view_height);
 }

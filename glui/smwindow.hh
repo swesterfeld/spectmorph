@@ -5,16 +5,18 @@
 
 #include "smwidget.hh"
 #include "pugl/pugl.h"
-#include <stdio.h>
+#include <memory>
 
 namespace SpectMorph
 {
 
+struct CairoGL;
+
 struct Window : public Widget
 {
-  PuglView     *view;
-  PuglCairoGL   cairo_gl;
-  cairo_t      *cr;
+  PuglView                 *view;
+  cairo_t                  *cr;
+  std::unique_ptr<CairoGL>  cairo_gl;
 
   Window (int width, int height, PuglNativeWindow parent = 0);
   virtual ~Window();
