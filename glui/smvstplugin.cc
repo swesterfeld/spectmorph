@@ -456,21 +456,8 @@ VST_EXPORT AEffect* VSTPluginMain (audioMasterCallback audioMaster)
       audioMaster (NULL, audioMasterGetProductString, 0, 0, hostProductString, 0.0f);
     }
 
-#if 0 // WIN32
   if (!sm_init_done())
     sm_init_plugin();
-
-  if (qApp)
-    {
-      debug ("... (have qapp) ...\n");
-    }
-  else
-    {
-      printf ("...  (creating qapp) ...\n");
-      static int argc = 0;
-      new QApplication(argc, NULL, true);
-    }
-#endif
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
   effect->magic = kEffectMagic;
