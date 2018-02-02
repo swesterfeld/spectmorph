@@ -22,7 +22,7 @@ class MainWindow : public Window
 {
 public:
   MainWindow (int width, int height, PuglNativeWindow win_id = 0) :
-    Window (width, height, win_id)
+    Window (width, height, win_id, true)
   {
     new Label (this, 20, 100, 150, 40, "Attack");
     Slider *s_attack = new Slider (this, 200, 100, 170, 40, 0.0);

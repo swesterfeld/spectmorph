@@ -19,6 +19,7 @@ struct Window : public Widget
   bool                      quit;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
+  double                    global_scale;
 
   Window (int width, int height, PuglNativeWindow parent = 0, bool resize = false);
   virtual ~Window();

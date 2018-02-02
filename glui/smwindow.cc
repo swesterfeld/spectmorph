@@ -7,6 +7,7 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::min;
 
 struct SpectMorph::CairoGL
 {
@@ -58,7 +59,8 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   quit (false),
   mouse_widget (nullptr),
-  enter_widget (nullptr)
+  enter_widget (nullptr),
+  global_scale (1.0)
 {
   view = puglInit (nullptr, nullptr);
 
@@ -122,6 +124,7 @@ Window::on_display()
 
       cairo_save (cr);
 
+      cairo_scale (cr, global_scale, global_scale);
       // local coordinates
       cairo_translate (cr, w->x, w->y);
       cairo_rectangle (cr, 0, 0, w->width, w->height);
@@ -179,51 +182,58 @@ dump_event (const PuglEvent *event)
 void
 Window::on_event (const PuglEvent* event)
 {
+  double ex, ey; /* global scale translated */
   switch (event->type)
     {
       case PUGL_BUTTON_PRESS:
+        ex = event->button.x / global_scale;
+        ey = event->button.y / global_scale;
         for (auto w : crawl_widgets())
           {
-            if (event->button.x >= w->x &&
-                event->button.y >= w->y &&
-                event->button.x < w->x + w->width &&
-                event->button.y < w->y + w->height)
+            if (ex >= w->x &&
+                ey >= w->y &&
+                ex < w->x + w->width &&
+                ey < w->y + w->height)
               {
-                w->mouse_press (event->button.x - w->x, event->button.y - w->y);
+                w->mouse_press (ex - w->x, ey - w->y);
                 mouse_widget = w;
               }
           }
         puglPostRedisplay (view);
         break;
       case PUGL_BUTTON_RELEASE:
+        ex = event->button.x / global_scale;
+        ey = event->button.y / global_scale;
         if (mouse_widget)
           {
             Widget *w = mouse_widget;
-            w->mouse_release (event->button.x - w->x, event->button.y - w->y);
+            w->mouse_release (ex - w->x, ey - w->y);
             mouse_widget = nullptr;
           }
         puglPostRedisplay (view);
         break;
       case PUGL_MOTION_NOTIFY:
+        ex = event->motion.x / global_scale;
+        ey = event->motion.y / global_scale;
         if (mouse_widget) /* user interaction with one widget */
           {
             Widget *w = mouse_widget;
-            w->motion (event->motion.x - w->x, event->motion.y - w->y);
+            w->motion (ex - w->x, ey - w->y);
           }
         else
           {
             for (auto w : crawl_widgets()) /* no specific widget, search for match */
               {
-                if (event->motion.x >= w->x &&
-                    event->motion.y >= w->y &&
-                    event->motion.x < w->x + w->width &&
-                    event->motion.y < w->y + w->height)
+                if (ex >= w->x &&
+                    ey >= w->y &&
+                    ex < w->x + w->width &&
+                    ey < w->y + w->height)
                   {
                     if (enter_widget)
                       enter_widget->leave_event();
                     enter_widget = w;
                     w->enter_event();
-                    w->motion (event->motion.x - w->x, event->motion.y - w->y);
+                    w->motion (ex - w->x, ey - w->y);
                   }
               }
           }
@@ -236,9 +246,7 @@ Window::on_event (const PuglEvent* event)
         on_display();
         break;
       case PUGL_CONFIGURE:
-        width = event->configure.width;
-        height = event->configure.height;
-
+        global_scale = min (event->configure.width, event->configure.height) / 512.;
         cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
         puglEnterContext (view);
         cairo_gl->configure();
