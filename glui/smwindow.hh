@@ -17,12 +17,14 @@ struct Window : public Widget
   PuglView                 *view;
   cairo_t                  *cr;
   std::unique_ptr<CairoGL>  cairo_gl;
+  bool                      quit;
 
   Window (int width, int height, PuglNativeWindow parent = 0);
   virtual ~Window();
 
   std::vector<Widget *> crawl_widgets();
   void on_display();
+  void on_event (const PuglEvent *event);
   void process_events();
 };
 

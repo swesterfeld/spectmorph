@@ -35,8 +35,20 @@ struct SpectMorph::CairoGL
   }
 };
 
+static Window *static_window;
+static Widget *mouse_widget = 0;
+static Widget *enter_widget = 0;
+
+
+static void
+on_event (PuglView* view, const PuglEvent* event)
+{
+  static_window->on_event (event);
+}
+
 Window::Window (int width, int height, PuglNativeWindow win_id) :
-  Widget (nullptr, 0, 0, width, height)
+  Widget (nullptr, 0, 0, width, height),
+  quit (false)
 {
   view = puglInit (nullptr, nullptr);
 
@@ -49,6 +61,8 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
     puglInitWindowParent (view, win_id);
   puglCreateWindow (view, "Pugl Test");
 
+  puglSetEventFunc (view, ::on_event);
+
   cairo_gl.reset (new CairoGL (width, height));
   cr = cairo_create (cairo_gl->surface);
 
@@ -60,6 +74,8 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
   printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   fflush (stdout);
   puglLeaveContext(view, false);
+
+  static_window = this;
 }
 
 Window::~Window()
@@ -115,4 +131,68 @@ void
 Window::process_events()
 {
   puglProcessEvents (view);
+}
+
+void
+Window::on_event (const PuglEvent* event)
+{
+  switch (event->type)
+    {
+      case PUGL_BUTTON_PRESS:
+        for (auto w : crawl_widgets())
+          {
+            if (event->button.x >= w->x &&
+                event->button.y >= w->y &&
+                event->button.x < w->x + w->width &&
+                event->button.y < w->y + w->height)
+              {
+                w->mouse_press (event->button.x - w->x, event->button.y - w->y);
+                mouse_widget = w;
+              }
+          }
+        puglPostRedisplay (view);
+        break;
+      case PUGL_BUTTON_RELEASE:
+        if (mouse_widget)
+          {
+            Widget *w = mouse_widget;
+            w->mouse_release (event->button.x - w->x, event->button.y - w->y);
+            mouse_widget = nullptr;
+          }
+        puglPostRedisplay (view);
+        break;
+      case PUGL_MOTION_NOTIFY:
+        if (mouse_widget) /* user interaction with one widget */
+          {
+            Widget *w = mouse_widget;
+            w->motion (event->motion.x - w->x, event->motion.y - w->y);
+          }
+        else
+          {
+            for (auto w : crawl_widgets()) /* no specific widget, search for match */
+              {
+                if (event->motion.x >= w->x &&
+                    event->motion.y >= w->y &&
+                    event->motion.x < w->x + w->width &&
+                    event->motion.y < w->y + w->height)
+                  {
+                    if (enter_widget)
+                      enter_widget->leave_event();
+                    enter_widget = w;
+                    w->enter_event();
+                    w->motion (event->motion.x - w->x, event->motion.y - w->y);
+                  }
+              }
+          }
+        puglPostRedisplay (view);
+        break;
+      case PUGL_CLOSE:
+        quit = true;
+        break;
+      case PUGL_EXPOSE:
+        on_display();
+        break;
+      default:
+        break;
+    }
 }
