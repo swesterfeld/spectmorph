@@ -140,6 +140,42 @@ Window::process_events()
   puglProcessEvents (view);
 }
 
+static void
+dump_event (const PuglEvent *event)
+{
+  switch (event->type)
+    {
+      case PUGL_NOTHING:            printf ("Event: nothing\n");
+        break;
+      case PUGL_BUTTON_PRESS:       printf ("Event: button press\n");
+        break;
+      case PUGL_BUTTON_RELEASE:     printf ("Event: button release\n");
+        break;
+      case PUGL_CONFIGURE:          printf ("Event: configure w%f h%f\n", event->configure.width, event->configure.height);
+        break;
+      case PUGL_EXPOSE:             printf ("Event: expose x%f y%f w%f h%f\n", event->expose.x, event->expose.y, event->expose.width, event->expose.height);
+        break;
+      case PUGL_CLOSE:              printf ("Event: close\n");
+        break;
+      case PUGL_KEY_PRESS:          printf ("Event: key press\n");
+        break;
+      case PUGL_KEY_RELEASE:        printf ("Event: key release\n");
+        break;
+      case PUGL_ENTER_NOTIFY:       printf ("Event: enter\n");
+        break;
+      case PUGL_LEAVE_NOTIFY:       printf ("Event: leave\n");
+        break;
+      case PUGL_MOTION_NOTIFY:      printf ("Event: motion\n");
+        break;
+      case PUGL_SCROLL:             printf ("Event: scroll\n");
+        break;
+      case PUGL_FOCUS_IN:           printf ("Event: focus in\n");
+        break;
+      case PUGL_FOCUS_OUT:          printf ("Event: focus out\n");
+        break;
+    }
+}
+
 void
 Window::on_event (const PuglEvent* event)
 {
