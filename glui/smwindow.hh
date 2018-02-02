@@ -15,13 +15,12 @@ struct CairoGL;
 struct Window : public Widget
 {
   PuglView                 *view;
-  cairo_t                  *cr;
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      quit;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
 
-  Window (int width, int height, PuglNativeWindow parent = 0);
+  Window (int width, int height, PuglNativeWindow parent = 0, bool resize = false);
   virtual ~Window();
 
   std::vector<Widget *> crawl_widgets();

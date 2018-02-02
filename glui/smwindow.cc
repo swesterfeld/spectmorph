@@ -10,26 +10,37 @@ using std::vector;
 
 struct SpectMorph::CairoGL
 {
+private:
   PuglCairoGL pugl_cairo_gl;
   cairo_surface_t *surface;
+  int width;
+  int height;
 
-  CairoGL (int width, int height)
+public:
+  cairo_t *cr;
+
+  CairoGL (int width, int height) :
+    width (width), height (height)
   {
     memset (&pugl_cairo_gl, 0, sizeof (pugl_cairo_gl));
 
     surface = pugl_cairo_gl_create (&pugl_cairo_gl, width, height, 4);
+    cr = cairo_create (surface);
   }
   ~CairoGL()
   {
+    cairo_destroy (cr);
+    cairo_surface_destroy (surface);
+
     pugl_cairo_gl_free (&pugl_cairo_gl);
   }
   void
-  configure (int width, int height)
+  configure()
   {
     pugl_cairo_gl_configure (&pugl_cairo_gl, width, height);
   }
   void
-  draw (int width, int height)
+  draw()
   {
     pugl_cairo_gl_draw (&pugl_cairo_gl, width, height);
   }
@@ -43,7 +54,7 @@ on_event (PuglView* view, const PuglEvent* event)
   window->on_event (event);
 }
 
-Window::Window (int width, int height, PuglNativeWindow win_id) :
+Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   quit (false),
   mouse_widget (nullptr),
@@ -51,11 +62,11 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
 {
   view = puglInit (nullptr, nullptr);
 
-  puglInitWindowClass(view, "PuglTest");
-  puglInitWindowSize(view, width, height);
-  //puglInitWindowMinSize(view, 256, 256);
-  puglInitResizable(view, false);
-  puglIgnoreKeyRepeat(view, false);
+  puglInitWindowClass (view, "PuglTest");
+  puglInitWindowSize (view, width, height);
+  //puglInitWindowMinSize (view, 256, 256);
+  puglInitResizable (view, resize);
+  puglIgnoreKeyRepeat (view, false);
   if (win_id)
     puglInitWindowParent (view, win_id);
   puglCreateWindow (view, "Pugl Test");
@@ -64,13 +75,12 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
   puglSetEventFunc (view, ::on_event);
 
   cairo_gl.reset (new CairoGL (width, height));
-  cr = cairo_create (cairo_gl->surface);
 
   puglEnterContext (view);
   glEnable (GL_DEPTH_TEST);
   glDepthFunc (GL_LESS);
   glClearColor (0.4f, 0.4f, 0.4f, 1.0f);
-  cairo_gl->configure (width, height);
+  cairo_gl->configure();
   printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   fflush (stdout);
   puglLeaveContext(view, false);
@@ -104,13 +114,12 @@ Window::crawl_widgets()
 void
 Window::on_display()
 {
-  const int view_width = 512;
-  const int view_height = 512;
-
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   for (auto w : crawl_widgets())
     {
+      cairo_t *cr = cairo_gl->cr;
+
       cairo_save (cr);
 
       // local coordinates
@@ -122,7 +131,7 @@ Window::on_display()
       cairo_restore (cr);
     }
 
-  cairo_gl->draw (view_width, view_height);
+  cairo_gl->draw();
 }
 
 void
@@ -189,6 +198,15 @@ Window::on_event (const PuglEvent* event)
         break;
       case PUGL_EXPOSE:
         on_display();
+        break;
+      case PUGL_CONFIGURE:
+        width = event->configure.width;
+        height = event->configure.height;
+
+        cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
+        puglEnterContext (view);
+        cairo_gl->configure();
+        puglLeaveContext (view, false);
         break;
       default:
         break;
