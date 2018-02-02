@@ -35,20 +35,19 @@ struct SpectMorph::CairoGL
   }
 };
 
-static Window *static_window;
-static Widget *mouse_widget = 0;
-static Widget *enter_widget = 0;
-
-
 static void
 on_event (PuglView* view, const PuglEvent* event)
 {
-  static_window->on_event (event);
+  Window *window = reinterpret_cast<Window *> (puglGetHandle (view));
+
+  window->on_event (event);
 }
 
 Window::Window (int width, int height, PuglNativeWindow win_id) :
   Widget (nullptr, 0, 0, width, height),
-  quit (false)
+  quit (false),
+  mouse_widget (nullptr),
+  enter_widget (nullptr)
 {
   view = puglInit (nullptr, nullptr);
 
@@ -61,6 +60,7 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
     puglInitWindowParent (view, win_id);
   puglCreateWindow (view, "Pugl Test");
 
+  puglSetHandle (view, this);
   puglSetEventFunc (view, ::on_event);
 
   cairo_gl.reset (new CairoGL (width, height));
@@ -74,8 +74,6 @@ Window::Window (int width, int height, PuglNativeWindow win_id) :
   printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   fflush (stdout);
   puglLeaveContext(view, false);
-
-  static_window = this;
 }
 
 Window::~Window()

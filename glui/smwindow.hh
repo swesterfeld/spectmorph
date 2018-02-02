@@ -18,6 +18,8 @@ struct Window : public Widget
   cairo_t                  *cr;
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      quit;
+  Widget                   *mouse_widget;
+  Widget                   *enter_widget;
 
   Window (int width, int height, PuglNativeWindow parent = 0);
   virtual ~Window();
