@@ -33,7 +33,7 @@ smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest
 
-plugindir = /tmp/VST_TEST_DIR
+plugindir = $(abs_builddir)/VST_TEST_DIR
 plugin_LTLIBRARIES = smvstplugin.la
 
 SMVSTSOURCES = smvstplugin.cc
