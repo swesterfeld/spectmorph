@@ -194,3 +194,16 @@ Window::on_event (const PuglEvent* event)
         break;
     }
 }
+
+void
+Window::show()
+{
+  // puglPostRedisplay (view);
+  puglShowWindow (view);
+}
+
+void
+Window::wait_for_event()
+{
+  puglWaitForEvent (view);
+}

@@ -41,37 +41,19 @@ public:
 
 using std::vector;
 
-#if VST_PLUGIN
-MainWindow *
-plugin_open (uintptr_t win_id)
-{
-  MainWindow *window = new MainWindow (512, 512, win_id);
-
-  PuglView* view = window->view;
-
-  puglPostRedisplay (view);
-  puglShowWindow (view);
-
-  return window;
-}
-#else
+#if !VST_PLUGIN
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  MainWindow *window = new MainWindow (512, 512);
+  MainWindow window (512, 512);
 
-  PuglView* view = window->view;
+  window.show();
 
-  puglPostRedisplay (view);
-  puglShowWindow (view);
-
-  while (!window->quit) {
-    puglWaitForEvent (view);
-    window->process_events();
+  while (!window.quit) {
+    window.wait_for_event();
+    window.process_events();
   }
-
-  delete window;
 }
 #endif

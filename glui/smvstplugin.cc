@@ -150,9 +150,11 @@ public:
   bool
   open (WId win_id)
   {
-    debug ("... plugin_open\n");
-    main_window = plugin_open (win_id);
-    debug ("... plugin_open done\n");
+    debug ("... create MainWindow\n");
+    main_window = new MainWindow (512, 512, win_id);
+    debug ("... done\n");
+
+    main_window->show();
 
     return true;
   }

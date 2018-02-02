@@ -27,7 +27,9 @@ struct Window : public Widget
   std::vector<Widget *> crawl_widgets();
   void on_display();
   void on_event (const PuglEvent *event);
+  void wait_for_event();
   void process_events();
+  void show();
 };
 
 }
