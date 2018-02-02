@@ -115,21 +115,19 @@ onEvent (PuglView* view, const PuglEvent* event)
 }
 
 #if VST_PLUGIN
-static PuglView* global_vst_view;
-
-void
+MainWindow *
 plugin_open (uintptr_t win_id)
 {
   MainWindow *window = new MainWindow (512, 512, win_id);
 
   PuglView* view = window->view;
-  global_vst_view = view;
 
   puglSetEventFunc(view, onEvent);
 
   puglPostRedisplay (view);
   puglShowWindow (view);
 
+  return window;
 }
 #else
 int
@@ -148,7 +146,7 @@ main (int argc, char **argv)
 
   while (!quit) {
     puglWaitForEvent (view);
-    puglProcessEvents (view);
+    window->process_events();
   }
 
   delete window;

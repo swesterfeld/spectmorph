@@ -23,6 +23,7 @@ struct Window : public Widget
 
   std::vector<Widget *> crawl_widgets();
   void on_display();
+  void process_events();
 };
 
 }

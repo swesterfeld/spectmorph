@@ -110,3 +110,9 @@ Window::on_display()
 
   cairo_gl->draw (view_width, view_height);
 }
+
+void
+Window::process_events()
+{
+  puglProcessEvents (view);
+}

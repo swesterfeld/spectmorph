@@ -138,6 +138,7 @@ static char hostProductString[64] = "";
 class VstUI
 {
   ERect rectangle;
+  MainWindow *main_window;
 public:
   VstUI()
   {
@@ -150,7 +151,7 @@ public:
   open (WId win_id)
   {
     debug ("... plugin_open\n");
-    plugin_open (win_id);
+    main_window = plugin_open (win_id);
     debug ("... plugin_open done\n");
 
     return true;
@@ -166,15 +167,12 @@ public:
   void
   close()
   {
-#if 0
-    delete widget;
-#endif
+    delete main_window;
   }
   void
   idle()
   {
-    if (global_vst_view)
-      puglProcessEvents (global_vst_view);
+    main_window->process_events();
   }
 };
 
