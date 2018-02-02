@@ -19,7 +19,10 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 noinst_LTLIBRARIES = libspectmorphglui.la
 
-libspectmorphglui_la_SOURCES = smwidget.cc smwindow.cc
+SMSRCS = smwidget.cc smwindow.cc
+SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh
+
+libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
 
 AM_CXXFLAGS += $(QTCORE_CFLAGS) $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
