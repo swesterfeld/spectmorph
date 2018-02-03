@@ -17,6 +17,7 @@
 #include "smmain.hh"
 #include "smframe.hh"
 #include "smcombobox.hh"
+#include "smrandom.hh"
 
 using namespace SpectMorph;
 
@@ -52,15 +53,24 @@ public:
     op_title->align = Label::Align::CENTER;
     grid.add_widget (op_title, 1, 1, 43, 4);
 
+    ComboBox *cb1 = new ComboBox (this);
+    ComboBox *cb2 = new ComboBox (this);
+
     grid.add_widget (new Label (this, 0, 0, 0, 0, "LSource"), 3, 5, 7, 3);
-    grid.add_widget (new ComboBox (this), 10, 5, 32, 3);
+    grid.add_widget (cb1, 10, 5, 32, 3);
     grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
-    grid.add_widget (new ComboBox (this), 10, 8, 32, 3);
+    grid.add_widget (cb2, 10, 8, 32, 3);
+
+    cb1->items = { "Trumpet", "Bass Trombone", "French Horn", "Violin", "Cello" };
+    for (size_t i = 0; i < 16; i++)
+      cb2->items.push_back ("Some Instrument #" + std::to_string (i));
+
     int yoffset = 11;
+    Random rng;
     for (auto s : sl_params)
       {
         Label *label = new Label (this, 0, 0, 0, 0, s);
-        Slider *slider = new Slider (this, 0, 0, 0, 0, 0.0);
+        Slider *slider = new Slider (this, 0, 0, 0, 0, rng.random_double_range (0.0, 1.0));
         Label *value_label = new Label (this, 0, 0, 0, 0, "50%");
 
         grid.add_widget (label, 3, yoffset, 7, 2);
@@ -68,7 +78,9 @@ public:
         grid.add_widget (value_label, 38, yoffset, 5, 2);
         yoffset += 2;
 
-        slider->set_callback ([=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
+        auto call_back = [=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; };
+        slider->set_callback (call_back);
+        call_back (slider->value);
       }
 
     if (0) // TEXT ALIGN

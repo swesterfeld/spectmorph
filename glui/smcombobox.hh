@@ -16,8 +16,9 @@ struct ComboBoxMenu : public Widget
 
   std::vector<std::string> items;
 
-  ComboBoxMenu (Widget *parent, double x, double y, double weight, double height) :
-    Widget (parent, x, y, weight, height)
+  ComboBoxMenu (Widget *parent, double x, double y, double weight, double height, const std::vector<std::string>& items) :
+    Widget (parent, x, y, weight, height),
+    items (items)
   {
   }
   void
@@ -35,7 +36,6 @@ struct ComboBoxMenu : public Widget
     du.round_box (0, space, width, height - 2 * space, 1, 5, true);
 
     double starty = 10;
-    items = { "Trumpet", "Violin", "Cello", "Mirko Ah", "Mirko Oh" };
     for (size_t i = 0; i < items.size(); i++)
       {
         if (selected_item == i)
@@ -67,6 +67,7 @@ struct ComboBox : public Widget
   bool mouse_down = false;
   std::unique_ptr<ComboBoxMenu> menu;
   std::string text;
+  std::vector<std::string> items;
 
   ComboBox (Widget *parent)
     : Widget (parent, 0, 0, 100, 100)
@@ -94,7 +95,7 @@ struct ComboBox : public Widget
     if (mouse_down)
       {
         /* click */
-        menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100));
+        menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items));
         menu->set_box (this);
       }
     mouse_down = false;
