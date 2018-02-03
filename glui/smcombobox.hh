@@ -21,7 +21,7 @@ struct ComboBox : public Widget
 
     double space = 2;
     cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
-    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 5);
+    du.round_box (0, space, width, height - 2 * space, 1, 5);
     du.text ("Trumpet", 10, 0, width - 10, height);
   }
 };
