@@ -37,6 +37,7 @@ Widget::remove_child (Widget *child)
     if (*ci == child)
       {
         children.erase (ci);
+        on_dead_child (child);
         return;
       }
   g_assert_not_reached();

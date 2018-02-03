@@ -15,7 +15,8 @@ struct DrawUtils
   {
   }
   void
-  round_box (double x, double y, double width, double height, double line_width, double radius)
+  round_box (double x, double y, double width, double height, double line_width, double radius,
+             bool fill = false)
   {
     static const double degrees = 3.14159265 / 180.0;
     static const double lw_2 = line_width / 2;
@@ -39,6 +40,8 @@ struct DrawUtils
                radius, 180 * degrees, 270 * degrees);
     cairo_close_path (cr);
 
+    if (fill)
+      cairo_fill_preserve (cr);
     // Draw border
     cairo_set_line_width (cr, line_width);
     cairo_stroke (cr);
@@ -62,7 +65,6 @@ struct DrawUtils
       //cairo_move_to (cr, (width / 2) - extents.x_bearing - extents.width / 2, fy);
     //else
       //cairo_move_to (cr, width - extents.x_bearing - extents.width, fy);
-    cairo_set_source_rgba (cr, 1, 1, 1, 1);
     cairo_show_text (cr, text.c_str());
   }
 };

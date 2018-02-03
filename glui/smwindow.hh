@@ -33,6 +33,7 @@ struct Window : public Widget
   void show();
   void draw (cairo_t *cr) override;
   void update() override;
+  void on_dead_child (Widget *widget) override;
 };
 
 }

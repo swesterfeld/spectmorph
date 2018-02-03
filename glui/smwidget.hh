@@ -64,6 +64,10 @@ public:
     if (parent)
       parent->update();
   }
+  virtual void
+  on_dead_child (Widget *widget)
+  {
+  }
 };
 
 }

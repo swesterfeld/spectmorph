@@ -94,6 +94,16 @@ Window::~Window()
   puglDestroy (view);
 }
 
+void
+Window::on_dead_child (Widget *child)
+{
+  /* cheap weak pointer emulation */
+  if (mouse_widget == child)
+    mouse_widget = nullptr;
+  if (enter_widget == child)
+    enter_widget = nullptr;
+}
+
 static vector<Widget *>
 crawl_widgets (const vector<Widget *>& widgets)
 {
