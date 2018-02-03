@@ -16,6 +16,7 @@
 #include "smwindow.hh"
 #include "smmain.hh"
 #include "smframe.hh"
+#include "smcombobox.hh"
 
 using namespace SpectMorph;
 
@@ -45,12 +46,17 @@ public:
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
 
-    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 5);
+    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
 
     Label *op_title = new Label (this, 0, 0, 0, 0, "Output: Output #1");
     op_title->align = Label::Align::CENTER;
     grid.add_widget (op_title, 1, 1, 43, 4);
-    int yoffset = 5;
+
+    grid.add_widget (new Label (this, 0, 0, 0, 0, "LSource"), 3, 5, 7, 3);
+    grid.add_widget (new ComboBox (this), 10, 5, 32, 3);
+    grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
+    grid.add_widget (new ComboBox (this), 10, 8, 32, 3);
+    int yoffset = 11;
     for (auto s : sl_params)
       {
         Label *label = new Label (this, 0, 0, 0, 0, s);
