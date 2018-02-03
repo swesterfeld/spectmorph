@@ -131,6 +131,9 @@ Window::on_display()
       cairo_rectangle (cr, 0, 0, w->width, w->height);
       cairo_clip (cr);
 
+      if (draw_grid && w == enter_widget)
+        w->debug_fill (cr);
+
       w->draw (cr);
       cairo_restore (cr);
     }

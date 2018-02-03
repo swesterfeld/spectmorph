@@ -57,7 +57,7 @@ public:
         Slider *slider = new Slider (this, 0, 0, 0, 0, 0.0);
         Label *value_label = new Label (this, 0, 0, 0, 0, "50%");
 
-        grid.add_widget (label, 3, yoffset, 8, 2);
+        grid.add_widget (label, 3, yoffset, 7, 2);
         grid.add_widget (slider,  10, yoffset, 27, 2);
         grid.add_widget (value_label, 38, yoffset, 8, 2);
         yoffset += 2;
