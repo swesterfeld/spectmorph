@@ -17,6 +17,7 @@ struct Window : public Widget
   PuglView                 *view;
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      quit;
+  bool                      draw_grid;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   double                    global_scale;
@@ -30,6 +31,8 @@ struct Window : public Widget
   void wait_for_event();
   void process_events();
   void show();
+  void draw (cairo_t *cr) override;
+  void update() override;
 };
 
 }

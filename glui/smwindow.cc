@@ -58,6 +58,7 @@ on_event (PuglView* view, const PuglEvent* event)
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   quit (false),
+  draw_grid (false),
   mouse_widget (nullptr),
   enter_widget (nullptr),
   global_scale (1.0)
@@ -138,6 +139,30 @@ Window::on_display()
 }
 
 void
+Window::draw (cairo_t *cr)
+{
+  Widget::draw (cr);
+
+  if (draw_grid)
+    {
+      cairo_set_source_rgb (cr, 0, 0, 0);
+      cairo_set_line_width (cr, 0.5);
+
+      for (double x = 8; x < width; x += 8)
+        {
+          for (double y = 8; y < height; y += 8)
+            {
+              cairo_move_to (cr, x - 2, y);
+              cairo_line_to (cr, x + 2, y);
+              cairo_move_to (cr, x, y - 2);
+              cairo_line_to (cr, x, y + 2);
+            }
+        }
+      cairo_stroke (cr);
+    }
+}
+
+void
 Window::process_events()
 {
   puglProcessEvents (view);
@@ -160,7 +185,7 @@ dump_event (const PuglEvent *event)
         break;
       case PUGL_CLOSE:              printf ("Event: close\n");
         break;
-      case PUGL_KEY_PRESS:          printf ("Event: key press\n");
+      case PUGL_KEY_PRESS:          printf ("Event: key press %c\n", event->key.character);
         break;
       case PUGL_KEY_RELEASE:        printf ("Event: key release\n");
         break;
@@ -182,6 +207,9 @@ dump_event (const PuglEvent *event)
 void
 Window::on_event (const PuglEvent* event)
 {
+  if (0)
+    dump_event (event);
+
   double ex, ey; /* global scale translated */
   switch (event->type)
     {
@@ -239,6 +267,11 @@ Window::on_event (const PuglEvent* event)
           }
         puglPostRedisplay (view);
         break;
+      case PUGL_KEY_PRESS:
+        if (event->key.character == 'g')
+          draw_grid = !draw_grid;
+        update();
+        break;
       case PUGL_CLOSE:
         quit = true;
         break;
@@ -262,6 +295,12 @@ Window::show()
 {
   // puglPostRedisplay (view);
   puglShowWindow (view);
+}
+
+void
+Window::update()
+{
+  puglPostRedisplay (view);
 }
 
 void

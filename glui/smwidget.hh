@@ -58,6 +58,12 @@ public:
   leave_event()
   {
   }
+  virtual void
+  update()
+  {
+    if (parent)
+      parent->update();
+  }
 };
 
 }
