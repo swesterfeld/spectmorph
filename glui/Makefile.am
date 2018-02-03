@@ -20,7 +20,7 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 noinst_LTLIBRARIES = libspectmorphglui.la
 
 SMSRCS = smwidget.cc smwindow.cc
-SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh
+SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)

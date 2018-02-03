@@ -15,6 +15,7 @@
 #include "smslider.hh"
 #include "smwindow.hh"
 #include "smmain.hh"
+#include "smframe.hh"
 
 using namespace SpectMorph;
 
@@ -43,6 +44,7 @@ public:
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
 
+    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 48, 16);
     int yoffset = 0;
     for (auto s : sl_params)
       {
