@@ -39,22 +39,27 @@ public:
   MainWindow (int width, int height, PuglNativeWindow win_id = 0) :
     Window (width, height, win_id, true)
   {
-    new Label (this, 0, 200, 400, 300, " --- main window --- ");
+    Label *mw_label = new Label (this, 0, 200, 400, 300, " --- main window --- ");
+    mw_label->align = Label::Align::CENTER;
 
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
 
-    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 48, 16);
-    int yoffset = 0;
+    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, 16);
+
+    Label *op_title = new Label (this, 0, 0, 0, 0, "Output: Output #1");
+    op_title->align = Label::Align::CENTER;
+    grid.add_widget (op_title, 1, 1, 43, 4);
+    int yoffset = 5;
     for (auto s : sl_params)
       {
         Label *label = new Label (this, 0, 0, 0, 0, s);
         Slider *slider = new Slider (this, 0, 0, 0, 0, 0.0);
         Label *value_label = new Label (this, 0, 0, 0, 0, "50%");
 
-        grid.add_widget (label, 3, yoffset + 3, 10, 2);
-        grid.add_widget (slider,  13, yoffset + 3, 25, 2);
-        grid.add_widget (value_label, 38, yoffset + 3, 10, 2);
+        grid.add_widget (label, 3, yoffset, 8, 2);
+        grid.add_widget (slider,  10, yoffset, 27, 2);
+        grid.add_widget (value_label, 38, yoffset, 8, 2);
         yoffset += 2;
 
         slider->set_callback ([=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
