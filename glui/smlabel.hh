@@ -21,7 +21,7 @@ struct Label : public Widget
     //debug_fill (cr);
 
     // draw label
-    cairo_set_font_size (cr, 24.0);
+    cairo_set_font_size (cr, 12.0);
 
     cairo_text_extents_t extents;
     cairo_text_extents (cr, text.c_str(), &extents);

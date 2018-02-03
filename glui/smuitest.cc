@@ -18,24 +18,45 @@
 
 using namespace SpectMorph;
 
+using std::vector;
+using std::string;
+
+struct FixedGrid
+{
+  void add_widget (Widget *w, double x, double y, double width, double height)
+  {
+    w->x = x * 8;
+    w->y = y * 8;
+    w->width = width * 8;
+    w->height = height * 8;
+  }
+};
+
 class MainWindow : public Window
 {
 public:
   MainWindow (int width, int height, PuglNativeWindow win_id = 0) :
     Window (width, height, win_id, true)
   {
-    new Label (this, 20, 100, 150, 40, "Attack");
-    Slider *s_attack = new Slider (this, 200, 100, 170, 40, 0.0);
-    Label  *l_attack_value = new Label (this, 400, 100, 80, 40, "50%");
+    new Label (this, 0, 200, 400, 300, " --- main window --- ");
 
-    new Label (this, 20, 150, 150, 40, "Sustain");
-    Slider *s_sustain = new Slider (this, 200, 150, 170, 40, 1.0);
-    Label  *l_sustain_value = new Label (this, 400, 150, 80, 40, "50%");
+    vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
+    FixedGrid grid;
 
-    new Label (this, 0, 200, 512, 300, " --- main window --- ");
+    int yoffset = 0;
+    for (auto s : sl_params)
+      {
+        Label *label = new Label (this, 0, 0, 0, 0, s);
+        Slider *slider = new Slider (this, 0, 0, 0, 0, 0.0);
+        Label *value_label = new Label (this, 0, 0, 0, 0, "50%");
 
-    s_attack->set_callback ([=](float value) { l_attack_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
-    s_sustain->set_callback ([=](float value) { l_sustain_value->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
+        grid.add_widget (label, 3, yoffset + 3, 10, 2);
+        grid.add_widget (slider,  13, yoffset + 3, 25, 2);
+        grid.add_widget (value_label, 38, yoffset + 3, 10, 2);
+        yoffset += 2;
+
+        slider->set_callback ([=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; });
+      }
   }
 };
 
@@ -47,7 +68,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  MainWindow window (512, 512);
+  MainWindow window (400, 400);
 
   window.show();
 

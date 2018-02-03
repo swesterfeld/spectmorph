@@ -25,8 +25,8 @@ struct Slider : public Widget
     /*if (enter)
       debug_fill (cr); */
 
-    double H = 8; // height of slider thing
-    double C = 12;
+    double H = 4; // height of slider thing
+    double C = 6;
     double value_pos = C + (width - C * 2) * value;
 
     cairo_rectangle (cr, C, height / 2 - H / 2, value_pos, H);
@@ -47,7 +47,7 @@ struct Slider : public Widget
   bool
   in_circle (double x, double y)
   {
-    double C = 12;
+    double C = 6;
     double value_pos = C + (width - C * 2) * value;
 
     double dx = value_pos - x;
@@ -62,7 +62,7 @@ struct Slider : public Widget
     highlight = in_circle (x, y);
     if (mouse_down)
       {
-        double C = 12;
+        double C = 6;
         value = (x - C) / (width - C * 2);
         if (value < 0)
           value = 0;

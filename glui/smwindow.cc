@@ -279,7 +279,7 @@ Window::on_event (const PuglEvent* event)
         on_display();
         break;
       case PUGL_CONFIGURE:
-        global_scale = min (event->configure.width, event->configure.height) / 512.;
+        global_scale = min (event->configure.width, event->configure.height) / 400.;
         cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
         puglEnterContext (view);
         cairo_gl->configure();
