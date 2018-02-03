@@ -34,7 +34,7 @@ public:
   virtual void
   draw (cairo_t *cr)
   {
-    cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
+    cairo_set_source_rgb (cr, 0.2, 0.2, 0.2);
     cairo_rectangle (cr, 0, 0, width, height);
     cairo_fill (cr);
   }
