@@ -15,6 +15,7 @@ struct ScrollBar : public Widget
   double old_pos;
   double mouse_y;
   bool mouse_down = false;
+  std::function<void(float)> m_callback;
 
   ScrollBar (Widget *parent, double page_size) :
     Widget (parent, 0, 0, 100, 100),
@@ -52,11 +53,19 @@ struct ScrollBar : public Widget
           pos = 1 - page_size;
         if (pos < 0)
           pos = 0;
+        if (m_callback)
+          m_callback (pos);
       }
   }
   void
   mouse_release (double mx, double my) override
   {
+    mouse_down = false;
+  }
+  void
+  set_callback (const std::function<void(float)>& callback)
+  {
+    m_callback = callback;
   }
 };
 

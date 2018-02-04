@@ -73,7 +73,7 @@ struct Slider : public Widget
       }
   }
   void
-  set_callback (const std::function<void(float)> &callback)
+  set_callback (const std::function<void(float)>& callback)
   {
     m_callback = callback;
   }

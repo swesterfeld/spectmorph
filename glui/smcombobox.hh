@@ -4,6 +4,7 @@
 #define SPECTMORPH_COMBOBOX_HH
 
 #include "smdrawutils.hh"
+#include "smscrollbar.hh"
 
 namespace SpectMorph
 {
@@ -15,14 +16,47 @@ struct ComboBoxMenu : public Widget
 
   int selected_item = 0;
   ComboBox *box;
+  ScrollBar *scroll_bar;
+
+  int items_per_page;
+  int first_item;
 
   std::vector<std::string> items;
 
-  ComboBoxMenu (Widget *parent, double x, double y, double weight, double height, const std::vector<std::string>& items) :
-    Widget (parent, x, y, weight, height),
+  ComboBoxMenu (Widget *parent, double x, double y, double width, double height, const std::vector<std::string>& items, const std::string& text) :
+    Widget (parent, x, y, width, height),
     items (items)
   {
-    this->height = items.size() * 16 + 16;
+    if (items.size() > 10)
+      items_per_page = 10;
+    else
+      items_per_page = items.size();
+
+    first_item = 0;
+    for (size_t i = 0; i < items.size(); i++)
+      if (items[i] == text)
+        {
+          selected_item = i;
+          first_item = std::min (selected_item - items_per_page / 2, int (items.size()) - items_per_page);
+          first_item = std::max (0, first_item);
+        }
+
+    this->height = items_per_page * 16 + 16;
+    scroll_bar = new ScrollBar (this, double (items_per_page) / items.size());
+    scroll_bar->x = x + width - 20;
+    scroll_bar->y = y + 8;
+    scroll_bar->width = 16;
+    scroll_bar->height = items_per_page * 16;
+    scroll_bar->pos = double (first_item) / items.size();
+
+    scroll_bar->set_callback ([=] (double pos)
+      {
+        first_item = pos * items.size();
+        if (first_item < 0)
+          first_item = 0;
+        if (first_item > items.size() - items_per_page)
+          first_item = items.size() - items_per_page;
+      });
   }
   void
   set_box (ComboBox *box)
@@ -39,12 +73,12 @@ struct ComboBoxMenu : public Widget
     du.round_box (0, space, width, height - 2 * space, 1, 5, true);
 
     double starty = px_starty;
-    for (size_t i = 0; i < items.size(); i++)
+    for (size_t i = first_item; i < first_item + items_per_page; i++)
       {
         if (selected_item == i)
           {
             cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
-            du.round_box (4, starty, width - 8, 16, 1, 5, true);
+            du.round_box (4, starty, width - 28, 16, 1, 5, true);
 
             cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
           }
@@ -59,7 +93,7 @@ struct ComboBoxMenu : public Widget
   motion (double x, double y) override
   {
     y -= px_starty;
-    selected_item = y / 16;
+    selected_item = first_item + y / 16;
     if (selected_item < 0)
       selected_item = 0;
     if (selected_item > items.size() - 1)
@@ -102,7 +136,7 @@ struct ComboBox : public Widget
     if (mouse_down)
       {
         /* click */
-        menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items));
+        menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
         menu->set_box (this);
       }
     mouse_down = false;
