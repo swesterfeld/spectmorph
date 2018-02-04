@@ -62,7 +62,7 @@ public:
     grid.add_widget (cb2, 10, 8, 32, 3);
 
     cb1->items = { "Trumpet", "Bass Trombone", "French Horn", "Violin", "Cello" };
-    for (size_t i = 0; i < 16; i++)
+    for (size_t i = 0; i < 32; i++)
       cb2->items.push_back ("Some Instrument #" + std::to_string (i));
 
     int yoffset = 11;

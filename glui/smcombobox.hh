@@ -11,6 +11,8 @@ namespace SpectMorph
 struct ComboBox;
 struct ComboBoxMenu : public Widget
 {
+  const double px_starty = 8;
+
   int selected_item = 0;
   ComboBox *box;
 
@@ -20,6 +22,7 @@ struct ComboBoxMenu : public Widget
     Widget (parent, x, y, weight, height),
     items (items)
   {
+    this->height = items.size() * 16 + 16;
   }
   void
   set_box (ComboBox *box)
@@ -35,11 +38,16 @@ struct ComboBoxMenu : public Widget
     cairo_set_source_rgba (cr, 0.6, 0.6, 0.6, 1);
     du.round_box (0, space, width, height - 2 * space, 1, 5, true);
 
-    double starty = 10;
+    double starty = px_starty;
     for (size_t i = 0; i < items.size(); i++)
       {
         if (selected_item == i)
-          cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+          {
+            cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
+            du.round_box (4, starty, width - 8, 16, 1, 5, true);
+
+            cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
+          }
         else
           cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
 
@@ -50,8 +58,7 @@ struct ComboBoxMenu : public Widget
   void
   motion (double x, double y) override
   {
-    double starty = 10;
-    y -= starty;
+    y -= px_starty;
     selected_item = y / 16;
     if (selected_item < 0)
       selected_item = 0;
