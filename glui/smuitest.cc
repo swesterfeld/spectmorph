@@ -17,6 +17,7 @@
 #include "smmain.hh"
 #include "smframe.hh"
 #include "smcombobox.hh"
+#include "smscrollbar.hh"
 #include "smrandom.hh"
 
 using namespace SpectMorph;
@@ -61,6 +62,8 @@ public:
     grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
     grid.add_widget (cb2, 10, 8, 32, 3);
 
+    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 30);
+
     cb1->items = { "Trumpet", "Bass Trombone", "French Horn", "Violin", "Cello" };
     for (size_t i = 0; i < 32; i++)
       cb2->items.push_back ("Some Instrument #" + std::to_string (i));
@@ -100,7 +103,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  MainWindow window (360, 360);
+  MainWindow window (384, 384);
 
   window.show();
 
