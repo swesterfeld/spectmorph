@@ -60,6 +60,7 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   draw_grid (false),
   mouse_widget (nullptr),
   enter_widget (nullptr),
+  menu_widget (nullptr),
   global_scale (1.0)
 {
   view = puglInit (nullptr, nullptr);
@@ -338,6 +339,7 @@ void
 Window::set_menu_widget (Widget *widget)
 {
   menu_widget = widget;
+  mouse_widget = widget;
 }
 
 void

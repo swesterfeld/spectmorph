@@ -32,6 +32,7 @@ struct ComboBoxMenu : public Widget
 
   int items_per_page;
   int first_item;
+  int release_count = 0;
 
   std::vector<ComboBoxItem> items;
 
@@ -129,7 +130,6 @@ struct ComboBoxMenu : public Widget
 
 struct ComboBox : public Widget
 {
-  bool mouse_down = false;
   std::unique_ptr<ComboBoxMenu> menu;
   std::string text;
   std::vector<ComboBoxItem> items;
@@ -150,24 +150,14 @@ struct ComboBox : public Widget
     du.text (text, 10, 0, width - 10, height);
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (double mx, double my) override
   {
-    mouse_down = true;
-  }
-  void
-  mouse_release (double mx, double my) override
-  {
-    if (mouse_down)
-      {
-        /* click */
-        menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
-        menu->set_box (this);
+    menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
+    menu->set_box (this);
 
-        Window *win = window();
-        if (win)
-          win->set_menu_widget (menu.get());
-      }
-    mouse_down = false;
+    Window *win = window();
+    if (win)
+      win->set_menu_widget (menu.get());
   }
   void
   close_menu (const std::string& new_text)
@@ -181,10 +171,20 @@ struct ComboBox : public Widget
 void
 ComboBoxMenu::mouse_release (double mx, double my)
 {
+  release_count++;
+
   if (mx >= 0 && mx < width && my >= px_starty && my < height - px_starty)
-    box->close_menu (items[selected_item].text);
+    {
+      box->close_menu (items[selected_item].text);
+    }
+  else if (release_count == 1)
+    {
+      /* swallow release: this is for combobox mousedown */
+    }
   else
-    box->close_menu ("");  /* abort */
+    {
+      box->close_menu ("");  /* abort */
+    }
 }
 
 }
