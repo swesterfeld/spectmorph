@@ -39,7 +39,7 @@ public:
   void show();
   void draw (cairo_t *cr) override;
   void update() override;
-  void on_dead_child (Widget *widget) override;
+  void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   Window *window() override;

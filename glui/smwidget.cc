@@ -2,6 +2,7 @@
 
 #include "smwidget.hh"
 #include "smleakdebugger.hh"
+#include "smwindow.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -25,6 +26,11 @@ Widget::~Widget()
     {
       delete children.front();
     }
+
+  Window *win = window();
+  if (win)
+    win->on_widget_deleted (this);
+
   if (parent)
     parent->remove_child (this);
   leak_debugger.del (this);
@@ -37,7 +43,6 @@ Widget::remove_child (Widget *child)
     if (*ci == child)
       {
         children.erase (ci);
-        on_dead_child (child);
         return;
       }
   g_assert_not_reached();

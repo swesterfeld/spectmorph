@@ -157,7 +157,7 @@ struct ComboBox : public Widget
   void
   mouse_press (double mx, double my) override
   {
-    menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
+    menu.reset (new ComboBoxMenu (this, x, y + height, width, 100, items, text));
     menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
     window()->set_menu_widget (menu.get());

@@ -95,7 +95,7 @@ Window::~Window()
 }
 
 void
-Window::on_dead_child (Widget *child)
+Window::on_widget_deleted (Widget *child)
 {
   /* cheap weak pointer emulation */
   if (mouse_widget == child)
@@ -126,28 +126,46 @@ Window::crawl_widgets()
   return ::crawl_widgets ({ this });
 }
 
+static int
+get_layer (Widget *w, Widget *menu_widget)
+{
+  if (w == menu_widget)
+    return 1;
+
+  if (w->parent)
+    return get_layer (w->parent, menu_widget);
+  else
+    return 0; // no parent
+}
+
 void
 Window::on_display()
 {
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (auto w : crawl_widgets())
+  for (int layer = 0; layer < 2; layer++)
     {
-      cairo_t *cr = cairo_gl->cr;
+      for (auto w : crawl_widgets())
+        {
+          if (get_layer (w, menu_widget) == layer)
+            {
+              cairo_t *cr = cairo_gl->cr;
 
-      cairo_save (cr);
+              cairo_save (cr);
 
-      cairo_scale (cr, global_scale, global_scale);
-      // local coordinates
-      cairo_translate (cr, w->x, w->y);
-      cairo_rectangle (cr, 0, 0, w->width, w->height);
-      cairo_clip (cr);
+              cairo_scale (cr, global_scale, global_scale);
+              // local coordinates
+              cairo_translate (cr, w->x, w->y);
+              cairo_rectangle (cr, 0, 0, w->width, w->height);
+              cairo_clip (cr);
 
-      if (draw_grid && w == enter_widget)
-        w->debug_fill (cr);
+              if (draw_grid && w == enter_widget)
+                w->debug_fill (cr);
 
-      w->draw (cr);
-      cairo_restore (cr);
+              w->draw (cr);
+              cairo_restore (cr);
+            }
+        }
     }
 
   cairo_gl->draw();

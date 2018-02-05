@@ -81,10 +81,6 @@ public:
   {
     return parent ? parent->window() : nullptr;
   }
-  virtual void
-  on_dead_child (Widget *widget)
-  {
-  }
 };
 
 }
