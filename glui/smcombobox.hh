@@ -27,8 +27,8 @@ struct ComboBoxMenu : public Widget
   const double px_starty = 8;
 
   int selected_item = 0;
-  ComboBox *box;
   ScrollBar *scroll_bar;
+  std::function<void(const std::string&)> m_done_callback;
 
   int items_per_page;
   int first_item;
@@ -72,9 +72,9 @@ struct ComboBoxMenu : public Widget
       });
   }
   void
-  set_box (ComboBox *box)
+  set_done_callback (const std::function<void(const std::string&)>& callback)
   {
-    this->box = box;
+    m_done_callback = callback;
   }
   void
   draw (cairo_t *cr) override
@@ -158,11 +158,9 @@ struct ComboBox : public Widget
   mouse_press (double mx, double my) override
   {
     menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
-    menu->set_box (this);
+    menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
-    Window *win = window();
-    if (win)
-      win->set_menu_widget (menu.get());
+    window()->set_menu_widget (menu.get());
   }
   void
   close_menu (const std::string& new_text)
@@ -180,7 +178,8 @@ ComboBoxMenu::mouse_release (double mx, double my)
 
   if (mx >= 0 && mx < width && my >= px_starty && my < height - px_starty)
     {
-      box->close_menu (items[selected_item].text);
+      if (m_done_callback)
+        m_done_callback (items[selected_item].text);
     }
   else if (release_count == 1)
     {
@@ -188,7 +187,7 @@ ComboBoxMenu::mouse_release (double mx, double my)
     }
   else
     {
-      box->close_menu ("");  /* abort */
+      m_done_callback ("");  /* abort */
     }
 }
 

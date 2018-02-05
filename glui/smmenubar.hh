@@ -19,6 +19,7 @@ struct MenuBar : public Widget
 {
   std::vector<std::unique_ptr<Menu>> menus;
   int selected_item = -1;
+  std::unique_ptr<ComboBoxMenu> current_menu;
 
   MenuBar (Widget *parent)
     : Widget (parent, 0, 0, 100, 100)
@@ -81,6 +82,19 @@ struct MenuBar : public Widget
         if (x >= menus[i]->sx && x < menus[i]->ex)
           selected_item = i;
       }
+  }
+  void
+  mouse_press (double x, double y) override
+  {
+    std::vector<ComboBoxItem> items;
+    items.push_back (ComboBoxItem ("Foo"));
+    items.push_back (ComboBoxItem ("Bar"));
+    items.push_back (ComboBoxItem ("Bazz"));
+
+    current_menu.reset (new ComboBoxMenu (parent, x, y + height, width / 2, 100, items, ""));
+    current_menu->set_done_callback ([=](const std::string& text) {
+      current_menu.reset();
+    });
   }
   void
   leave_event() override
