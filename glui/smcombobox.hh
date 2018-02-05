@@ -82,7 +82,7 @@ struct ComboBoxMenu : public Widget
     DrawUtils du (cr);
 
     double space = 2;
-    cairo_set_source_rgba (cr, 0.6, 0.6, 0.6, 1);
+    cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
     du.round_box (0, space, width, height - 2 * space, 1, 5, true);
 
     double starty = px_starty;

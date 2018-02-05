@@ -72,6 +72,17 @@ struct DrawUtils
       }
     cairo_show_text (cr, text.c_str());
   }
+  double
+  text_width (const std::string& text)
+  {
+    // draw label
+    cairo_set_font_size (cr, 11.0);
+    cairo_select_font_face (cr, "sans", CAIRO_FONT_SLANT_NORMAL, bold ? CAIRO_FONT_WEIGHT_BOLD : CAIRO_FONT_WEIGHT_NORMAL);
+
+    cairo_text_extents_t extents;
+    cairo_text_extents (cr, text.c_str(), &extents);
+    return extents.width;
+  }
 };
 
 }

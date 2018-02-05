@@ -18,6 +18,7 @@
 #include "smframe.hh"
 #include "smcombobox.hh"
 #include "smscrollbar.hh"
+#include "smmenubar.hh"
 #include "smrandom.hh"
 
 using namespace SpectMorph;
@@ -27,10 +28,13 @@ using std::string;
 
 struct FixedGrid
 {
+  double dx = 0;
+  double dy = 0;
+
   void add_widget (Widget *w, double x, double y, double width, double height)
   {
-    w->x = x * 8;
-    w->y = y * 8;
+    w->x = (x + dx) * 8;
+    w->y = (y + dy) * 8;
     w->width = width * 8;
     w->height = height * 8;
   }
@@ -44,6 +48,16 @@ public:
   {
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
+
+    MenuBar *menu_bar = new MenuBar (this);
+    Menu *file_menu = menu_bar->add_menu ("File");
+    Menu *preset_menu = menu_bar->add_menu ("Open Preset");
+    Menu *op_menu = menu_bar->add_menu ("Add Operator");
+    Menu *help_menu = menu_bar->add_menu ("Help");
+    grid.add_widget (menu_bar, 1, 1, 46, 3);
+
+    grid.dx = 0;
+    grid.dy = 4;
 
     grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
 
@@ -60,7 +74,7 @@ public:
     grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
     grid.add_widget (cb2, 10, 8, 32, 3);
 
-    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 46);
+    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 42);
 
     vector<string> item_vec = {
       "*Wind",
