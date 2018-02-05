@@ -255,26 +255,21 @@ Window::on_event (const PuglEvent* event)
         ey = event->motion.y / global_scale;
         if (mouse_widget) /* user interaction with one widget */
           {
-            Widget *w = mouse_widget;
-            w->motion (ex - w->x, ey - w->y);
+            current_widget = mouse_widget;
           }
         else
           {
-            for (auto w : crawl_widgets()) /* no specific widget, search for match */
+            current_widget = find_widget_xy (ex, ey);
+            if (enter_widget != current_widget)
               {
-                if (ex >= w->x &&
-                    ey >= w->y &&
-                    ex < w->x + w->width &&
-                    ey < w->y + w->height)
-                  {
-                    if (enter_widget)
-                      enter_widget->leave_event();
-                    enter_widget = w;
-                    w->enter_event();
-                    w->motion (ex - w->x, ey - w->y);
-                  }
+                if (enter_widget)
+                  enter_widget->leave_event();
+
+                enter_widget = current_widget;
+                current_widget->enter_event();
               }
           }
+        current_widget->motion (ex - current_widget->x, ey - current_widget->y);
         puglPostRedisplay (view);
         break;
       case PUGL_SCROLL:
