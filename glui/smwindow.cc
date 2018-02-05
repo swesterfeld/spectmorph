@@ -210,7 +210,7 @@ dump_event (const PuglEvent *event)
         break;
       case PUGL_MOTION_NOTIFY:      printf ("Event: motion\n");
         break;
-      case PUGL_SCROLL:             printf ("Event: scroll\n");
+      case PUGL_SCROLL:             printf ("Event: scroll: dx=%f dy=%f\n", event->scroll.dx, event->scroll.dy);
         break;
       case PUGL_FOCUS_IN:           printf ("Event: focus in\n");
         break;
@@ -283,6 +283,26 @@ Window::on_event (const PuglEvent* event)
                     w->motion (ex - w->x, ey - w->y);
                   }
               }
+          }
+        puglPostRedisplay (view);
+        break;
+      case PUGL_SCROLL:
+        ex = event->scroll.x / global_scale;
+        ey = event->scroll.y / global_scale;
+        if (mouse_widget)
+          mouse_widget->scroll (event->scroll.dx, event->scroll.dy);
+        else
+          {
+            for (auto w : crawl_widgets()) /* no specific widget, search for match */
+              {
+                if (ex >= w->x &&
+                    ey >= w->y &&
+                    ex < w->x + w->width &&
+                    ey < w->y + w->height)
+                  {
+                    w->scroll (event->scroll.dx, event->scroll.dy);
+                  }
+               }
           }
         puglPostRedisplay (view);
         break;

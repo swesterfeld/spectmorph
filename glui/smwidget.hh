@@ -59,6 +59,10 @@ public:
   {
   }
   virtual void
+  scroll (double dx, double dy)
+  {
+  }
+  virtual void
   enter_event()
   {
   }

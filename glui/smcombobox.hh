@@ -125,6 +125,11 @@ struct ComboBoxMenu : public Widget
     selected_item = best_item;
   }
   void
+  scroll (double dx, double dy) override
+  {
+    scroll_bar->scroll (dx, dy);
+  }
+  void
   mouse_release (double x, double y) override;
 };
 

@@ -4,6 +4,7 @@
 #define SPECTMORPH_SCROLLBAR_HH
 
 #include "smdrawutils.hh"
+#include "smmath.hh"
 
 namespace SpectMorph
 {
@@ -56,6 +57,13 @@ struct ScrollBar : public Widget
         if (m_callback)
           m_callback (pos);
       }
+  }
+  void
+  scroll (double dx, double dy) override
+  {
+    pos = sm_bound<double> (0, pos - 0.25 * page_size * dy, 1 - page_size);
+    if (m_callback)
+      m_callback (pos);
   }
   void
   mouse_release (double mx, double my) override
