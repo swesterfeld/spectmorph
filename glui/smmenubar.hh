@@ -97,6 +97,7 @@ struct MenuBar : public Widget
     current_menu.reset (new ComboBoxMenu (this, menus[selected_item]->sx + x, y + height, width / 2, 100, items, ""));
     current_menu->set_done_callback ([=](const std::string& text) {
       current_menu.reset();
+      window()->set_menu_widget (nullptr);
     });
     window()->set_menu_widget (this);
   }
