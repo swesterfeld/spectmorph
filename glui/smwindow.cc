@@ -226,26 +226,17 @@ Window::on_event (const PuglEvent* event)
     dump_event (event);
 
   double ex, ey; /* global scale translated */
+  Widget *current_widget = nullptr;
+
   switch (event->type)
     {
       case PUGL_BUTTON_PRESS:
         ex = event->button.x / global_scale;
         ey = event->button.y / global_scale;
 
-        mouse_widget = menu_widget ? menu_widget : this;  // active menu => only children of the menu get clicks
-
-        for (auto w : ::crawl_widgets ({ mouse_widget })) // which child gets the click?
-          {
-            if (ex >= w->x &&
-                ey >= w->y &&
-                ex < w->x + w->width &&
-                ey < w->y + w->height)
-              {
-                mouse_widget = w;
-              }
-          }
-
+        mouse_widget = find_widget_xy (ex, ey);
         mouse_widget->mouse_press (ex - mouse_widget->x, ey - mouse_widget->y);
+
         puglPostRedisplay (view);
         break;
       case PUGL_BUTTON_RELEASE:
@@ -290,20 +281,11 @@ Window::on_event (const PuglEvent* event)
         ex = event->scroll.x / global_scale;
         ey = event->scroll.y / global_scale;
         if (mouse_widget)
-          mouse_widget->scroll (event->scroll.dx, event->scroll.dy);
+          current_widget = mouse_widget;
         else
-          {
-            for (auto w : crawl_widgets()) /* no specific widget, search for match */
-              {
-                if (ex >= w->x &&
-                    ey >= w->y &&
-                    ex < w->x + w->width &&
-                    ey < w->y + w->height)
-                  {
-                    w->scroll (event->scroll.dx, event->scroll.dy);
-                  }
-               }
-          }
+          current_widget = find_widget_xy (ex, ey);
+
+        current_widget->scroll (event->scroll.dx, event->scroll.dy);
         puglPostRedisplay (view);
         break;
       case PUGL_KEY_PRESS:
@@ -328,6 +310,24 @@ Window::on_event (const PuglEvent* event)
       default:
         break;
     }
+}
+
+Widget *
+Window::find_widget_xy (double ex, double ey)
+{
+  Widget *widget = menu_widget ? menu_widget : this;  // active menu => only children of the menu get clicks
+
+  for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
+    {
+      if (ex >= w->x &&
+          ey >= w->y &&
+          ex < w->x + w->width &&
+          ey < w->y + w->height)
+        {
+          widget = w;
+        }
+    }
+  return widget;
 }
 
 void
