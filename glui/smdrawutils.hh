@@ -9,6 +9,7 @@ namespace SpectMorph
 struct DrawUtils
 {
   cairo_t *cr;
+  bool bold = false;
 
   DrawUtils (cairo_t *cr) :
     cr (cr)
@@ -47,10 +48,11 @@ struct DrawUtils
     cairo_stroke (cr);
   }
   void
-  text (const std::string& text, double x, double y, double width, double height)
+  text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)
   {
     // draw label
     cairo_set_font_size (cr, 11.0);
+    cairo_select_font_face (cr, "sans", CAIRO_FONT_SLANT_NORMAL, bold ? CAIRO_FONT_WEIGHT_BOLD : CAIRO_FONT_WEIGHT_NORMAL);
 
     cairo_font_extents_t font_extents;
     cairo_font_extents (cr, &font_extents);
@@ -59,12 +61,15 @@ struct DrawUtils
     cairo_text_extents (cr, text.c_str(), &extents);
 
     double fy = height / 2 - font_extents.descent + font_extents.height / 2;
-    //if (align == Align::LEFT)
-      cairo_move_to (cr, x, fy + y);
-    //else if (align == Align::CENTER)
-      //cairo_move_to (cr, (width / 2) - extents.x_bearing - extents.width / 2, fy);
-    //else
-      //cairo_move_to (cr, width - extents.x_bearing - extents.width, fy);
+    switch (align)
+      {
+        case TextAlign::LEFT:   cairo_move_to (cr, x, fy + y);
+                                break;
+        case TextAlign::CENTER: cairo_move_to (cr, (width / 2) - extents.x_bearing - extents.width / 2, fy + y);
+                                break;
+        case TextAlign::RIGHT:  cairo_move_to (cr, width - extents.x_bearing - extents.width, fy + y);
+                                break;
+      }
     cairo_show_text (cr, text.c_str());
   }
 };

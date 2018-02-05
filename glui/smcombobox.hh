@@ -5,11 +5,23 @@
 
 #include "smdrawutils.hh"
 #include "smscrollbar.hh"
+#include "smmath.hh"
 
 namespace SpectMorph
 {
 
 struct ComboBox;
+struct ComboBoxItem
+{
+  std::string text;
+  bool        headline = false;
+  ComboBoxItem (const std::string& text, bool headline = false) :
+    text (text),
+    headline (headline)
+  {
+  }
+};
+
 struct ComboBoxMenu : public Widget
 {
   const double px_starty = 8;
@@ -21,9 +33,9 @@ struct ComboBoxMenu : public Widget
   int items_per_page;
   int first_item;
 
-  std::vector<std::string> items;
+  std::vector<ComboBoxItem> items;
 
-  ComboBoxMenu (Widget *parent, double x, double y, double width, double height, const std::vector<std::string>& items, const std::string& text) :
+  ComboBoxMenu (Widget *parent, double x, double y, double width, double height, const std::vector<ComboBoxItem>& items, const std::string& text) :
     Widget (parent, x, y, width, height),
     items (items)
   {
@@ -34,7 +46,7 @@ struct ComboBoxMenu : public Widget
 
     first_item = 0;
     for (size_t i = 0; i < items.size(); i++)
-      if (items[i] == text)
+      if (items[i].text == text)
         {
           selected_item = i;
           first_item = std::min (selected_item - items_per_page / 2, int (items.size()) - items_per_page);
@@ -85,7 +97,10 @@ struct ComboBoxMenu : public Widget
         else
           cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
 
-        du.text (items[i], 10, starty, width - 10, 16);
+        du.bold = items[i].headline;
+
+        TextAlign align = items[i].headline ? TextAlign::CENTER : TextAlign::LEFT;
+        du.text (items[i].text, 10, starty, width - 10, 16, align);
         starty += 16;
       }
   }
@@ -93,11 +108,20 @@ struct ComboBoxMenu : public Widget
   motion (double x, double y) override
   {
     y -= px_starty;
-    selected_item = first_item + y / 16;
-    if (selected_item < 0)
-      selected_item = 0;
-    if (selected_item > items.size() - 1)
-      selected_item = items.size() - 1;
+    selected_item = sm_bound<int> (0, first_item + y / 16, items.size() - 1);
+
+    int best_item = -1;
+    for (size_t i = 0; i < items.size(); i++)
+      {
+        if (!items[i].headline)
+          {
+            if (best_item == -1)      // first non-headline item
+              best_item = i;
+            if (i <= selected_item)   // close to selected item
+              best_item = i;
+          }
+      }
+    selected_item = best_item;
   }
   void
   mouse_release (double x, double y) override;
@@ -108,7 +132,7 @@ struct ComboBox : public Widget
   bool mouse_down = false;
   std::unique_ptr<ComboBoxMenu> menu;
   std::string text;
-  std::vector<std::string> items;
+  std::vector<ComboBoxItem> items;
 
   ComboBox (Widget *parent)
     : Widget (parent, 0, 0, 100, 100)
@@ -152,7 +176,7 @@ struct ComboBox : public Widget
 void
 ComboBoxMenu::mouse_release (double x, double y)
 {
-  box->close_menu (items[selected_item]);
+  box->close_menu (items[selected_item].text);
 }
 
 }

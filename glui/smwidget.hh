@@ -10,6 +10,12 @@
 namespace SpectMorph
 {
 
+enum class TextAlign {
+  LEFT,
+  CENTER,
+  RIGHT
+};
+
 struct Widget
 {
 protected:

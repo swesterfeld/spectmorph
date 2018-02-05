@@ -43,7 +43,7 @@ public:
     Window (width, height, win_id, true)
   {
     Label *mw_label = new Label (this, 0, 200, 400, 200, " --- main window --- ");
-    mw_label->align = Label::Align::CENTER;
+    mw_label->align = TextAlign::CENTER;
 
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
@@ -51,7 +51,7 @@ public:
     grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
 
     Label *op_title = new Label (this, 0, 0, 0, 0, "Output: Output #1");
-    op_title->align = Label::Align::CENTER;
+    op_title->align = TextAlign::CENTER;
     grid.add_widget (op_title, 1, 1, 43, 4);
 
     ComboBox *cb1 = new ComboBox (this);
@@ -64,9 +64,33 @@ public:
 
     grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 30);
 
-    cb1->items = { "Trumpet", "Bass Trombone", "French Horn", "Violin", "Cello" };
+    vector<string> item_vec = {
+      "*Wind",
+      "Alto Flute",
+      "Oboe",
+      "Bassoon",
+      "*Brass",
+      "Trumpet",
+      "Bass Trombone",
+      "French Horn",
+      "*Voices",
+      "Mirko Ah",
+      "Mikro Oh",
+      "*Keys",
+      "Reed Organ",
+      "Synth Saw",
+      "*Strings",
+      "Violin", "Viola", "Cello", "Double Bass"
+    };
+    for (auto item : item_vec)
+      {
+        if (item[0] == '*')
+          cb1->items.push_back (ComboBoxItem (item.c_str() + 1, true));
+        else
+          cb1->items.push_back (ComboBoxItem (item));
+      }
     for (size_t i = 0; i < 32; i++)
-      cb2->items.push_back ("Some Instrument #" + std::to_string (i));
+      cb2->items.push_back (ComboBoxItem ("Some Instrument #" + std::to_string (i)));
 
     int yoffset = 11;
     Random rng;

@@ -9,17 +9,12 @@ namespace SpectMorph
 struct Label : public Widget
 {
   std::string text;
-  enum class Align {
-    LEFT,
-    CENTER,
-    RIGHT
-  } align;
+  TextAlign align = TextAlign::LEFT;
 
   Label (Widget *parent, double x, double y, double w, double h, const std::string& text) :
     Widget (parent, x, y, w, h),
     text (text)
   {
-    align = Align::LEFT;
   }
   void
   draw (cairo_t *cr) override
@@ -36,9 +31,9 @@ struct Label : public Widget
     cairo_text_extents (cr, text.c_str(), &extents);
 
     double fy = height / 2 - font_extents.descent + font_extents.height / 2;
-    if (align == Align::LEFT)
+    if (align == TextAlign::LEFT)
       cairo_move_to (cr, 0, fy);
-    else if (align == Align::CENTER)
+    else if (align == TextAlign::CENTER)
       cairo_move_to (cr, (width / 2) - extents.x_bearing - extents.width / 2, fy);
     else
       cairo_move_to (cr, width - extents.x_bearing - extents.width, fy);
