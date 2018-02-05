@@ -57,7 +57,6 @@ on_event (PuglView* view, const PuglEvent* event)
 
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
-  quit (false),
   draw_grid (false),
   mouse_widget (nullptr),
   enter_widget (nullptr),
@@ -102,6 +101,8 @@ Window::on_dead_child (Widget *child)
     mouse_widget = nullptr;
   if (enter_widget == child)
     enter_widget = nullptr;
+  if (menu_widget == child)
+    menu_widget = nullptr;
 }
 
 static vector<Widget *>
@@ -229,17 +230,21 @@ Window::on_event (const PuglEvent* event)
       case PUGL_BUTTON_PRESS:
         ex = event->button.x / global_scale;
         ey = event->button.y / global_scale;
-        for (auto w : crawl_widgets())
+
+        mouse_widget = menu_widget ? menu_widget : this;  // active menu => only children of the menu get clicks
+
+        for (auto w : ::crawl_widgets ({ mouse_widget })) // which child gets the click?
           {
             if (ex >= w->x &&
                 ey >= w->y &&
                 ex < w->x + w->width &&
                 ey < w->y + w->height)
               {
-                w->mouse_press (ex - w->x, ey - w->y);
                 mouse_widget = w;
               }
           }
+
+        mouse_widget->mouse_press (ex - mouse_widget->x, ey - mouse_widget->y);
         puglPostRedisplay (view);
         break;
       case PUGL_BUTTON_RELEASE:
@@ -286,7 +291,8 @@ Window::on_event (const PuglEvent* event)
         update();
         break;
       case PUGL_CLOSE:
-        quit = true;
+        if (m_close_callback)
+          m_close_callback();
         break;
       case PUGL_EXPOSE:
         on_display();
@@ -316,8 +322,26 @@ Window::update()
   puglPostRedisplay (view);
 }
 
+Window *
+Window::window()
+{
+  return this;
+}
+
 void
 Window::wait_for_event()
 {
   puglWaitForEvent (view);
+}
+
+void
+Window::set_menu_widget (Widget *widget)
+{
+  menu_widget = widget;
+}
+
+void
+Window::set_close_callback (const std::function<void()>& callback)
+{
+  m_close_callback = callback;
 }

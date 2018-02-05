@@ -14,14 +14,18 @@ struct CairoGL;
 
 struct Window : public Widget
 {
+protected:
   PuglView                 *view;
   std::unique_ptr<CairoGL>  cairo_gl;
-  bool                      quit;
   bool                      draw_grid;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
+  Widget                   *menu_widget;
   double                    global_scale;
 
+  std::function<void()>     m_close_callback;
+
+public:
   Window (int width, int height, PuglNativeWindow parent = 0, bool resize = false);
   virtual ~Window();
 
@@ -34,6 +38,9 @@ struct Window : public Widget
   void draw (cairo_t *cr) override;
   void update() override;
   void on_dead_child (Widget *widget) override;
+  void set_menu_widget (Widget *widget);
+  void set_close_callback (const std::function<void()>& callback);
+  Window *window() override;
 };
 
 }

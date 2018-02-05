@@ -162,21 +162,29 @@ struct ComboBox : public Widget
         /* click */
         menu.reset (new ComboBoxMenu (parent, x, y + height, width, 100, items, text));
         menu->set_box (this);
+
+        Window *win = window();
+        if (win)
+          win->set_menu_widget (menu.get());
       }
     mouse_down = false;
   }
   void
   close_menu (const std::string& new_text)
   {
-    text = new_text;
+    if (new_text != "")
+      text = new_text;
     menu.reset();
   }
 };
 
 void
-ComboBoxMenu::mouse_release (double x, double y)
+ComboBoxMenu::mouse_release (double mx, double my)
 {
-  box->close_menu (items[selected_item].text);
+  if (mx >= 0 && mx < width && my >= px_starty && my < height - px_starty)
+    box->close_menu (items[selected_item].text);
+  else
+    box->close_menu ("");  /* abort */
 }
 
 }

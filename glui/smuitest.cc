@@ -125,11 +125,14 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+  bool quit = false;
+
   MainWindow window (384, 384);
 
   window.show();
+  window.set_close_callback ([&]() { quit = true; });
 
-  while (!window.quit) {
+  while (!quit) {
     window.wait_for_event();
     window.process_events();
   }

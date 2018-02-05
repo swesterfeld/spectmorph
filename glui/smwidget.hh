@@ -16,6 +16,8 @@ enum class TextAlign {
   RIGHT
 };
 
+struct Window;
+
 struct Widget
 {
 protected:
@@ -69,6 +71,11 @@ public:
   {
     if (parent)
       parent->update();
+  }
+  virtual Window *
+  window()
+  {
+    return parent ? parent->window() : nullptr;
   }
   virtual void
   on_dead_child (Widget *widget)
