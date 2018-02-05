@@ -42,9 +42,6 @@ public:
   MainWindow (int width, int height, PuglNativeWindow win_id = 0) :
     Window (width, height, win_id, true)
   {
-    Label *mw_label = new Label (this, 0, 200, 400, 200, " --- main window --- ");
-    mw_label->align = TextAlign::CENTER;
-
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
 
@@ -52,6 +49,7 @@ public:
 
     Label *op_title = new Label (this, 0, 0, 0, 0, "Output: Output #1");
     op_title->align = TextAlign::CENTER;
+    op_title->bold  = true;
     grid.add_widget (op_title, 1, 1, 43, 4);
 
     ComboBox *cb1 = new ComboBox (this);
@@ -62,7 +60,7 @@ public:
     grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
     grid.add_widget (cb2, 10, 8, 32, 3);
 
-    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 30);
+    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 46);
 
     vector<string> item_vec = {
       "*Wind",

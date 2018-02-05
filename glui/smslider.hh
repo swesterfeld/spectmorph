@@ -22,9 +22,6 @@ struct Slider : public Widget
   void
   draw (cairo_t *cr) override
   {
-    /*if (enter)
-      debug_fill (cr); */
-
     double H = 4; // height of slider thing
     double C = 6;
     double value_pos = C + (width - C * 2) * value;
