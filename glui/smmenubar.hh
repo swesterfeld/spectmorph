@@ -84,14 +84,17 @@ struct MenuBar : public Widget
       }
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (double mx, double my) override
   {
+    if (selected_item < 0)
+      return;
+
     std::vector<ComboBoxItem> items;
     items.push_back (ComboBoxItem ("Foo"));
     items.push_back (ComboBoxItem ("Bar"));
     items.push_back (ComboBoxItem ("Bazz"));
 
-    current_menu.reset (new ComboBoxMenu (parent, x, y + height, width / 2, 100, items, ""));
+    current_menu.reset (new ComboBoxMenu (parent, menus[selected_item]->sx + x, y + height, width / 2, 100, items, ""));
     current_menu->set_done_callback ([=](const std::string& text) {
       current_menu.reset();
     });
