@@ -54,13 +54,15 @@ public:
     Menu *preset_menu = menu_bar->add_menu ("Open Preset");
     Menu *op_menu = menu_bar->add_menu ("Add Operator");
     Menu *help_menu = menu_bar->add_menu ("Help");
+    Label *menu_label = new Label (this, 0, 0, 0, 0, "Menu Label");
 
-    auto set_items = [](Menu *m, const std::vector<string>& items) {
+    auto set_items = [menu_label](Menu *m, const std::vector<string>& items) {
       for (auto i : items) {
         MenuItem *item = m->add_item (i);
         item->set_callback ([=]()
           {
             printf ("menu item %s selected\n", i.c_str());
+            menu_label->text = "selected: " + i;
           });
       }
     };
@@ -72,6 +74,8 @@ public:
 
     grid.dx = 0;
     grid.dy = 4;
+
+    grid.add_widget (menu_label, 1, 30, 46, 5);
 
     grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
 

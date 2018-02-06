@@ -43,7 +43,7 @@ struct MenuBar : public Widget
   std::vector<std::unique_ptr<Menu>> menus;
   int selected_item = -1;
   int active_menu = -1;
-  int selected_menu_item = 1;
+  int selected_menu_item = -1;
   std::unique_ptr<ComboBoxMenu> current_menu;
 
   MenuBar (Widget *parent)
@@ -132,7 +132,7 @@ struct MenuBar : public Widget
                 menu->items[i]->sy = starty;
                 starty += 16;
               }
-        }
+          }
       }
   }
   bool
@@ -143,7 +143,8 @@ struct MenuBar : public Widget
   void
   motion (double x, double y) override
   {
-    selected_item = -1;
+    selected_item = active_menu;
+    selected_menu_item = -1;
 
     for (size_t i = 0; i < menus.size(); i++)
       {
@@ -189,6 +190,11 @@ struct MenuBar : public Widget
 
         if (item->m_callback)
           item->m_callback();
+
+        window()->set_menu_widget (nullptr);
+        active_menu = -1;
+        selected_item = -1;
+        selected_menu_item = -1;
       }
   }
   void
