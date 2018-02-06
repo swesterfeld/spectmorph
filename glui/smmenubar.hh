@@ -172,9 +172,10 @@ struct MenuBar : public Widget
   void
   mouse_press (double mx, double my) override
   {
-    if (selected_item < 0)
+    if (selected_item < 0 || (active_menu >= 0 && selected_menu_item < 0))
       {
         window()->set_menu_widget (nullptr);
+        selected_item = -1;
         active_menu = -1;
         return;
       }
