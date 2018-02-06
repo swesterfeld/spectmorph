@@ -41,8 +41,8 @@ struct Menu
 struct MenuBar : public Widget
 {
   std::vector<std::unique_ptr<Menu>> menus;
-  int selected_item = -1;
-  int active_menu = -1;
+  int selected_menu = -1;
+  bool menu_open = false;
   int selected_menu_item = -1;
   std::unique_ptr<ComboBoxMenu> current_menu;
 
@@ -81,7 +81,7 @@ struct MenuBar : public Widget
         double sx = start - 16;
         double ex = end + 16;
 
-        if (item == selected_item)
+        if (item == selected_menu)
           {
             cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
             du.round_box (sx, space, ex - sx, height - 2 * space, 1, 5, true);
@@ -98,7 +98,7 @@ struct MenuBar : public Widget
         tx = end + 32;
         menu_p->ex = ex;
 
-        if (active_menu == item)
+        if (menu_open && selected_menu == item)
           {
             Menu *menu = menus[item].get();
 
@@ -138,27 +138,22 @@ struct MenuBar : public Widget
   bool
   clipping() override
   {
-    return active_menu < 0;
+    return !menu_open;
   }
   void
   motion (double x, double y) override
   {
-    selected_item = active_menu;
     selected_menu_item = -1;
 
     for (size_t i = 0; i < menus.size(); i++)
       {
         if (x >= menus[i]->sx && x < menus[i]->ex && y >= 0 && y < height)
-          {
-            selected_item = i;
-            if (active_menu >= 0)
-              active_menu = selected_item;
-          }
+          selected_menu = i;
       }
 
-    if (active_menu >= 0)
+    if (menu_open)
       {
-        Menu *menu = menus[active_menu].get();
+        Menu *menu = menus[selected_menu].get();
 
         for (int i = 0; i < menu->items.size(); i++)
           {
@@ -172,36 +167,38 @@ struct MenuBar : public Widget
   void
   mouse_press (double mx, double my) override
   {
-    if (selected_item < 0 || (active_menu >= 0 && selected_menu_item < 0))
+    if (selected_menu < 0 || (menu_open && selected_menu_item < 0))
       {
         window()->set_menu_widget (nullptr);
-        selected_item = -1;
-        active_menu = -1;
-        return;
+        selected_menu = -1;
+        menu_open = false;
       }
-    window()->set_menu_widget (this);
-    active_menu = selected_item;
+    else
+      {
+        window()->set_menu_widget (this);
+        menu_open = true;
+      }
   }
   void
   mouse_release (double mx, double my) override
   {
-    if (active_menu >= 0 && selected_menu_item >= 0)
+    if (menu_open && selected_menu_item >= 0)
       {
-        MenuItem *item = menus[active_menu]->items[selected_menu_item].get();
+        MenuItem *item = menus[selected_menu]->items[selected_menu_item].get();
 
         if (item->m_callback)
           item->m_callback();
 
         window()->set_menu_widget (nullptr);
-        active_menu = -1;
-        selected_item = -1;
+        menu_open = false;
+        selected_menu = -1;
         selected_menu_item = -1;
       }
   }
   void
   leave_event() override
   {
-    selected_item = -1;
+    selected_menu = -1;
   }
 };
 
