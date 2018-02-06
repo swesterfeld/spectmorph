@@ -46,6 +46,12 @@ public:
     cairo_rectangle (cr, 0, 0, width, height);
     cairo_fill (cr);
   }
+  virtual bool
+  clipping()
+  {
+    // clipping for draw() - enabled by default
+    return true;
+  }
 
   virtual void motion (double x, double y)
   {

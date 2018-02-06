@@ -65,9 +65,9 @@ struct DrawUtils
       {
         case TextAlign::LEFT:   cairo_move_to (cr, x, fy + y);
                                 break;
-        case TextAlign::CENTER: cairo_move_to (cr, (width / 2) - extents.x_bearing - extents.width / 2, fy + y);
+        case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy + y);
                                 break;
-        case TextAlign::RIGHT:  cairo_move_to (cr, width - extents.x_bearing - extents.width, fy + y);
+        case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy + y);
                                 break;
       }
     cairo_show_text (cr, text.c_str());

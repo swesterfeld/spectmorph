@@ -54,6 +54,20 @@ public:
     Menu *preset_menu = menu_bar->add_menu ("Open Preset");
     Menu *op_menu = menu_bar->add_menu ("Add Operator");
     Menu *help_menu = menu_bar->add_menu ("Help");
+
+    auto set_items = [](Menu *m, const std::vector<string>& items) {
+      for (auto i : items) {
+        MenuItem *item = m->add_item (i);
+        item->set_callback ([=]()
+          {
+            printf ("menu item %s selected\n", i.c_str());
+          });
+      }
+    };
+    set_items (file_menu, {"Import...", "Export...", "Load Instrument Set..."});
+    set_items (preset_menu, {"2x2 Grid Morph using GUI", "Fancy Preset", "Cool Preset" });
+    set_items (op_menu, {"Source", "Output", "Linear Morph", "Grid Morph", "LFO" });
+    set_items (help_menu, {"About..."});
     grid.add_widget (menu_bar, 1, 1, 46, 3);
 
     grid.dx = 0;

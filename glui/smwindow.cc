@@ -156,8 +156,11 @@ Window::on_display()
               cairo_scale (cr, global_scale, global_scale);
               // local coordinates
               cairo_translate (cr, w->x, w->y);
-              cairo_rectangle (cr, 0, 0, w->width, w->height);
-              cairo_clip (cr);
+              if (w->clipping())
+                {
+                  cairo_rectangle (cr, 0, 0, w->width, w->height);
+                  cairo_clip (cr);
+                }
 
               if (draw_grid && w == enter_widget)
                 w->debug_fill (cr);
