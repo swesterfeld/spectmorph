@@ -20,25 +20,12 @@
 #include "smscrollbar.hh"
 #include "smmenubar.hh"
 #include "smrandom.hh"
+#include "smfixedgrid.hh"
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
-
-struct FixedGrid
-{
-  double dx = 0;
-  double dy = 0;
-
-  void add_widget (Widget *w, double x, double y, double width, double height)
-  {
-    w->x = (x + dx) * 8;
-    w->y = (y + dy) * 8;
-    w->width = width * 8;
-    w->height = height * 8;
-  }
-};
 
 class MainWindow : public Window
 {

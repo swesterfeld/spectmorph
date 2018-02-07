@@ -322,7 +322,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetPlugCategory:
       return kPlugCategSynth;
     case effGetEffectName:
-      strcpy((char *)ptr, "SpectMorph");
+      strcpy((char *)ptr, "SpectMorph Test");
       return 1;
     case effGetVendorString:
       strcpy((char *)ptr, "Stefan Westerfeld");

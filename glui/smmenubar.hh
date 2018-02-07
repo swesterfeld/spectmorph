@@ -44,7 +44,6 @@ struct MenuBar : public Widget
   int selected_menu = -1;
   bool menu_open = false;
   int selected_menu_item = -1;
-  std::unique_ptr<ComboBoxMenu> current_menu;
 
   MenuBar (Widget *parent)
     : Widget (parent, 0, 0, 100, 100)

@@ -40,7 +40,7 @@ VstUI::open (PuglNativeWindow win_id)
   widget->show();
 #endif
   control_widget = nullptr;
-  widget = new MorphPlanWindow (512, 512, win_id, false);
+  widget = new MorphPlanWindow (512, 512, win_id, false, morph_plan);
   widget->show();
 
   rectangle.top = 0;
