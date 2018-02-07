@@ -18,18 +18,13 @@ public:
   MorphPlanView (Widget *parent, MorphPlan *morph_plan) :
     Widget (parent)
   {
-    FixedGrid grid (this);
+    FixedGrid grid;
 
-    int y = 4;
     for (auto op : morph_plan->operators())
       {
-        FixedGrid op_grid;
-        op_grid.dx = 1;
-        op_grid.dy = y;
-
-        MorphOperatorView *op_view = new MorphOperatorView (this, op_grid, op);
-        op_grid.add_widget (op_view, 0, 0, 40, 5);
-        y += 6;
+        MorphOperatorView *op_view = new MorphOperatorView (this, op);
+        grid.add_widget (op_view, 1, y, 43, 7);
+        y += 8;
 #if 0
         MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
         vbox->addWidget (op_view);

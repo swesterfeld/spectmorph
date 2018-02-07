@@ -91,6 +91,8 @@ public:
   {
     return parent ? parent->window() : nullptr;
   }
+  double abs_x() const;
+  double abs_y() const;
 };
 
 }

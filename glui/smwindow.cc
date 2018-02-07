@@ -64,9 +64,10 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   draw_grid (false),
   mouse_widget (nullptr),
   enter_widget (nullptr),
-  menu_widget (nullptr),
-  global_scale (1.0)
+  menu_widget (nullptr)
 {
+  global_scale = min (width, height) / 384.;
+
   view = puglInit (nullptr, nullptr);
 
   puglInitWindowClass (view, "PuglTest");
@@ -159,7 +160,7 @@ Window::on_display()
 
               cairo_scale (cr, global_scale, global_scale);
               // local coordinates
-              cairo_translate (cr, w->x, w->y);
+              cairo_translate (cr, w->abs_x(), w->abs_y());
               if (w->clipping())
                 {
                   cairo_rectangle (cr, 0, 0, w->width, w->height);
@@ -260,7 +261,7 @@ Window::on_event (const PuglEvent* event)
         ey = event->button.y / global_scale;
 
         mouse_widget = find_widget_xy (ex, ey);
-        mouse_widget->mouse_press (ex - mouse_widget->x, ey - mouse_widget->y);
+        mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
 
         puglPostRedisplay (view);
         break;
@@ -270,7 +271,7 @@ Window::on_event (const PuglEvent* event)
         if (mouse_widget)
           {
             Widget *w = mouse_widget;
-            w->mouse_release (ex - w->x, ey - w->y);
+            w->mouse_release (ex - w->abs_x(), ey - w->abs_y());
             mouse_widget = nullptr;
           }
         puglPostRedisplay (view);
@@ -294,7 +295,7 @@ Window::on_event (const PuglEvent* event)
                 current_widget->enter_event();
               }
           }
-        current_widget->motion (ex - current_widget->x, ey - current_widget->y);
+        current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
         puglPostRedisplay (view);
         break;
       case PUGL_SCROLL:
@@ -339,10 +340,13 @@ Window::find_widget_xy (double ex, double ey)
 
   for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
     {
-      if (ex >= w->x &&
-          ey >= w->y &&
-          ex < w->x + w->width &&
-          ey < w->y + w->height)
+      const double wx = w->abs_x();
+      const double wy = w->abs_y();
+
+      if (ex >= wx &&
+          ey >= wy &&
+          ex < wx + w->width &&
+          ey < wy + w->height)
         {
           widget = w;
         }

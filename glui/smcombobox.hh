@@ -56,8 +56,8 @@ struct ComboBoxMenu : public Widget
 
     this->height = items_per_page * 16 + 16;
     scroll_bar = new ScrollBar (this, double (items_per_page) / items.size());
-    scroll_bar->x = x + width - 20;
-    scroll_bar->y = y + 8;
+    scroll_bar->x = width - 20;
+    scroll_bar->y = 8;
     scroll_bar->width = 16;
     scroll_bar->height = items_per_page * 16;
     scroll_bar->pos = double (first_item) / items.size();
@@ -157,7 +157,7 @@ struct ComboBox : public Widget
   void
   mouse_press (double mx, double my) override
   {
-    menu.reset (new ComboBoxMenu (this, x, y + height, width, 100, items, text));
+    menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, text));
     menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
     window()->set_menu_widget (menu.get());

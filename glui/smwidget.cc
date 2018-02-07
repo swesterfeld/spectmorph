@@ -47,3 +47,22 @@ Widget::remove_child (Widget *child)
       }
   g_assert_not_reached();
 }
+
+/* map relative to absolute coordinates */
+double
+Widget::abs_x() const
+{
+  if (!parent)
+    return x;
+  else
+    return parent->abs_x() + x;
+}
+
+double
+Widget::abs_y() const
+{
+  if (!parent)
+    return y;
+  else
+    return parent->abs_y() + y;
+}
