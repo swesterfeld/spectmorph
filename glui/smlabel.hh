@@ -14,8 +14,8 @@ struct Label : public Widget
   TextAlign align = TextAlign::LEFT;
   bool bold = false;
 
-  Label (Widget *parent, double x, double y, double w, double h, const std::string& text) :
-    Widget (parent, x, y, w, h),
+  Label (Widget *parent, const std::string& text) :
+    Widget (parent),
     text (text)
   {
   }

@@ -37,6 +37,10 @@ public:
   }
 
   Widget (Widget *parent, double x, double y, double width, double height);
+  Widget (Widget *parent) :
+    Widget (parent, 0, 0, 300, 100)
+  {
+  }
   virtual ~Widget();
 
   virtual void
