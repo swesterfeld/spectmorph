@@ -43,8 +43,8 @@ struct FixedGrid
 class MainWindow : public Window
 {
 public:
-  MainWindow (int width, int height, PuglNativeWindow win_id = 0) :
-    Window (width, height, win_id, true)
+  MainWindow (int width, int height, PuglNativeWindow win_id = 0, bool resize = true) :
+    Window (width, height, win_id, resize)
   {
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;

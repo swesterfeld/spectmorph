@@ -151,7 +151,7 @@ public:
   open (WId win_id)
   {
     debug ("... create MainWindow\n");
-    main_window = new MainWindow (512, 512, win_id);
+    main_window = new MainWindow (512, 512, win_id, false);
     debug ("... done\n");
 
     main_window->show();
