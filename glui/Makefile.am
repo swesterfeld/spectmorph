@@ -21,7 +21,8 @@ noinst_LTLIBRARIES = libspectmorphglui.la
 
 SMSRCS = smwidget.cc smwindow.cc
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
-	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh
+	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
+	 smmorphplanwindow.hh smmorphplancontrol.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
@@ -37,9 +38,10 @@ noinst_PROGRAMS = smuitest
 plugindir = $(abs_builddir)/VST_TEST_DIR
 plugin_LTLIBRARIES = smvstplugin.la
 
-SMVSTSOURCES = smvstplugin.cc
+SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
+SMVSTSOURCES = smvstplugin.cc smvstui.cc
 
-smvstplugin_la_SOURCES = $(SMVSTSOURCES)
+smvstplugin_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
 smvstplugin_la_LIBADD  = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
 

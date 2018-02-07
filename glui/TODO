@@ -1,3 +1,6 @@
+vst:
+ - debug location
+
 cleanup:
  - don't hardcode colors
  - make stuff private

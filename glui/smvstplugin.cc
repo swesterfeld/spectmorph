@@ -13,24 +13,18 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <glib/gstdio.h>
 
 #include "vestige/aeffectx.h"
-#if 0 // WIN32
 #include "smutils.hh"
 #include "smmorphplan.hh"
 #include "smmorphplansynth.hh"
 #include "smmidisynth.hh"
 #include "smmain.hh"
+#include "smvstui.hh"
+#include "smvstplugin.hh"
+#include "smmorphoutputmodule.hh"
 
 #include <QMutex>
-#include <QPushButton>
-#include <QApplication>
-#else
-#include <glib.h>
-#endif
-#include <algorithm>
-#include <string>
 
 // from http://www.asseca.org/vst-24-specs/index.html
 #define effGetParamLabel        6
@@ -39,235 +33,251 @@
 #define effSetChunk             24
 #define effCanBeAutomated       26
 #define effGetOutputProperties  34
+#define effVendorSpecific       50
 #define effGetTailSize          52
 #define effGetMidiKeyName       66
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
-#define VST_PLUGIN 1
-#include "smuitest.cc"
-
 #define DEBUG 1
 
-#if 0
 using namespace SpectMorph;
-#endif
-
-static FILE *debug_file = NULL;
-#if 0
-QMutex       debug_mutex;
-#endif
 
 using std::string;
 
-typedef uintptr_t WId;
+static FILE *debug_file = NULL;
+QMutex       debug_mutex;
 
-string
-get_plugin_dir()
-{
-#if WIN32
-  return "C:/msys64/home/stefan/src/sandbox/smvstp";
-#else
-  string home = g_get_home_dir();
-  return home + "/src/sandbox/smvstp";
-#endif
-}
-
-static void
-debug (const char *fmt, ...)
+void
+VstUtils::debug (const char *fmt, ...)
 {
   if (DEBUG)
     {
-#if 0
       QMutexLocker locker (&debug_mutex);
-#endif
 
       if (!debug_file)
-	{
-	  string debug_file_name = get_plugin_dir() + "/vstplugin.log";
-	  debug_file = fopen (debug_file_name.c_str(), "w");
-	}
+        debug_file = fopen ("/tmp/smvstplugin.log", "w");
 
       va_list ap;
 
       va_start (ap, fmt);
-      fprintf (debug_file, "%s", g_strdup_vprintf (fmt, ap)); // FIXME: leak
+      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
       va_end (ap);
       fflush (debug_file);
     }
 }
 
-#if 0
-static bool
-is_note_on (const VstMidiEvent *event)
+using VstUtils::debug;
+
+void
+VstPlugin::preinit_plan (MorphPlanPtr plan)
 {
-  if ((event->midiData[0] & 0xf0) == 0x90)
+  // this might take a while, and cannot be used in RT callback
+  MorphPlanSynth mp_synth (mix_freq);
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (plan);
+
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
     {
-      if (event->midiData[2] != 0) /* note on with velocity 0 => note off */
-        return true;
+      om->retrigger (0, 440, 1);
+      float s;
+      float *values[1] = { &s };
+      om->process (1, values, 1);
     }
-  return false;
 }
 
-static bool
-is_note_off (const VstMidiEvent *event)
+VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
+  audioMaster (master),
+  aeffect (aeffect),
+  plan (new MorphPlan()),
+  midi_synth (nullptr)
 {
-  if ((event->midiData[0] & 0xf0) == 0x90)
-    {
-      if (event->midiData[2] == 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  else if ((event->midiData[0] & 0xf0) == 0x80)
-    {
-      return true;
-    }
-  return false;
-}
-#endif
+  audioMaster = master;
 
-struct ERect
+  string filename = sm_get_default_plan();
+
+  GenericIn *in = StdioIn::open (filename);
+  if (in)
+    {
+      plan->load (in);
+      delete in;
+    }
+  if (!in)
+    {
+      g_printerr ("Error opening '%s'.\n", filename.c_str());
+      // in this case we fail gracefully and start with an empty plan
+    }
+  ui = new VstUI (plan->clone(), this);
+
+  parameters.push_back (Parameter ("Control #1", 0, -1, 1));
+  parameters.push_back (Parameter ("Control #2", 0, -1, 1));
+
+  set_volume (-6); // default volume
+  m_voices_active = false;
+
+  // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
+  set_mix_freq (48000);
+}
+
+VstPlugin::~VstPlugin()
 {
-	short top;
-	short left;
-	short bottom;
-	short right;
-};
+  delete ui;
+  ui = nullptr;
+
+  if (midi_synth)
+    {
+      delete midi_synth;
+      midi_synth = nullptr;
+    }
+}
+
+void
+VstPlugin::change_plan (MorphPlanPtr plan)
+{
+  preinit_plan (plan);
+
+  QMutexLocker locker (&m_new_plan_mutex);
+  m_new_plan = plan;
+}
+
+void
+VstPlugin::set_volume (double new_volume)
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  m_volume = new_volume;
+}
+
+double
+VstPlugin::volume()
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  return m_volume;
+}
+
+bool
+VstPlugin::voices_active()
+{
+  QMutexLocker locker (&m_new_plan_mutex);
+  return m_voices_active;
+}
+
+void
+VstPlugin::get_parameter_name (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, parameters[param].name.c_str(), len);
+}
+
+void
+VstPlugin::get_parameter_label (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, parameters[param].label.c_str(), len);
+}
+
+void
+VstPlugin::get_parameter_display (Param param, char *out, size_t len) const
+{
+  if (param >= 0 && param < parameters.size())
+    strncpy (out, string_printf ("%.5f", parameters[param].value).c_str(), len);
+}
+
+void
+VstPlugin::set_parameter_scale (Param param, float value)
+{
+  if (param >= 0 && param < parameters.size())
+    parameters[param].value = parameters[param].min_value + (parameters[param].max_value - parameters[param].min_value) * value;
+}
+
+float
+VstPlugin::get_parameter_scale (Param param) const
+{
+  if (param >= 0 && param < parameters.size())
+    return (parameters[param].value - parameters[param].min_value) / (parameters[param].max_value - parameters[param].min_value);
+
+  return 0;
+}
+
+float
+VstPlugin::get_parameter_value (Param param) const
+{
+  if (param >= 0 && param < parameters.size())
+    return parameters[param].value;
+
+  return 0;
+}
+
+void
+VstPlugin::set_parameter_value (Param param, float value)
+{
+  if (param >= 0 && param < parameters.size())
+    parameters[param].value = value;
+}
+
+void
+VstPlugin::set_mix_freq (double new_mix_freq)
+{
+  /* this should only be called by the host if the plugin is suspended, so
+   * we can alter variables that are used by process|processReplacing in the real time thread
+   */
+  if (midi_synth)
+    delete midi_synth;
+
+  mix_freq = new_mix_freq;
+
+  midi_synth = new MidiSynth (mix_freq, 64);
+  midi_synth->update_plan (plan);
+}
+
 
 static char hostProductString[64] = "";
 
-class VstUI
-{
-  ERect rectangle;
-  MainWindow *main_window;
-public:
-  VstUI()
-  {
-    rectangle.top = 0;
-    rectangle.left = 0;
-    rectangle.bottom = 512;
-    rectangle.right  = 512;
-  }
-  bool
-  open (WId win_id)
-  {
-    debug ("... create MainWindow\n");
-    main_window = new MainWindow (512, 512, win_id, false);
-    debug ("... done\n");
-
-    main_window->show();
-
-    return true;
-  }
-  bool
-  getRect (ERect** rect)
-  {
-    *rect = &rectangle;
-    debug ("getRect -> %d %d %d %d\n", rectangle.top, rectangle.left, rectangle.bottom, rectangle.right);
-
-    return true;
-  }
-  void
-  close()
-  {
-    delete main_window;
-  }
-  void
-  idle()
-  {
-    main_window->process_events();
-  }
-};
-
-struct Plugin
-{
-  Plugin(audioMasterCallback master) :
-#if 0 // WIN32
-    plan (new MorphPlan()),
-    morph_plan_synth (48000), // FIXME
-    midi_synth (morph_plan_synth, 48000, 64), // FIXME
-#endif
-    ui (new VstUI)
-  {
-    audioMaster = master;
-
-#if 0 // WIN32
-    std::string filename = "/home/stefan/lv2.smplan";
-    GenericIn *in = StdioIn::open (filename);
-    if (!in)
-      {
-        g_printerr ("Error opening '%s'.\n", filename.c_str());
-        exit (1);
-      }
-    plan->load (in);
-    delete in;
-#endif
-#if 0
-    morph_plan_synth.update_plan (plan);
-#endif
-  }
-
-  ~Plugin()
-  {
-    delete ui;
-    ui = nullptr;
-  }
-
-  audioMasterCallback audioMaster;
-#if 0 // WIN32
-  MorphPlanPtr        plan;
-  MorphPlanSynth      morph_plan_synth;
-  MidiSynth           midi_synth;
-#endif
-  VstUI              *ui;
-};
-
 static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val, void *ptr, float f)
 {
-	Plugin *plugin = (Plugin *)effect->ptr3;
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
-	switch (opcode) {
-		case effOpen:
-			return 0;
+  switch (opcode) {
+    case effOpen:
+      return 0;
 
-		case effClose:
-			delete plugin;
-			memset(effect, 0, sizeof(AEffect));
-			free(effect);
-			return 0;
+    case effClose:
+      delete plugin;
+      memset(effect, 0, sizeof(AEffect));
+      free(effect);
+      return 0;
 
-		case effSetProgram:
-		case effGetProgram:
-		case effGetProgramName:
-			return 0;
+    case effSetProgram:
+    case effGetProgram:
+    case effGetProgramName:
+      return 0;
 
-#if 0 // FIXME
-		case effGetParamLabel:
-			// FIXME plugin->synthesizer->getParameterLabel((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamLabel:
+      plugin->get_parameter_label ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-		case effGetParamDisplay:
-			// FIXME plugin->synthesizer->getParameterDisplay((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamDisplay:
+      plugin->get_parameter_display ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-		case effGetParamName:
-			// FIXME plugin->synthesizer->getParameterName((Param)index, (char *)ptr, 32);
-			return 0;
+    case effGetParamName:
+      plugin->get_parameter_name ((VstPlugin::Param)index, (char *)ptr, 32);
+      return 0;
 
-#endif
-		case effSetSampleRate:
-			debug ("fake set sample rate %f\n", f); //// FIXME plugin->synthesizer->setSampleRate(f);
-			return 0;
+    case effSetSampleRate:
+      plugin->set_mix_freq (f);
+      return 0;
 
-		case effSetBlockSize:
-		case effMainsChanged:
-			return 0;
+    case effSetBlockSize:
+    case effMainsChanged:
+      return 0;
 
     case effEditGetRect:
       plugin->ui->getRect ((ERect **) ptr);
       return 1;
 
     case effEditOpen:
-      plugin->ui->open((WId)(uintptr_t)ptr);
+      plugin->ui->open((PuglNativeWindow)(uintptr_t)ptr);
       return 1;
 
     case effEditClose:
@@ -278,181 +288,145 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       plugin->ui->idle();
       return 0;
 
-#if 0 // FIXME
-		case effGetChunk:
-			// FIXME return plugin->synthesizer->saveState((char **)ptr);
+    case effGetChunk:
+      {
+        int result = plugin->ui->save_state((char **)ptr);
+        debug ("get chunk returned: %s\n", *(char **)ptr);
+        return result;
+      }
 
-		case effSetChunk:
-			// FIXME plugin->synthesizer->loadState((char *)ptr);
-			return 0;
-#endif
+    case effSetChunk:
+      debug ("set chunk: %s\n", (char *)ptr);
+      plugin->ui->load_state((char *)ptr);
+      return 0;
 
-		case effProcessEvents: {
-			VstEvents *events = (VstEvents *)ptr;
+    case effProcessEvents:
+      {
+        VstEvents *events = (VstEvents *)ptr;
 
-			for (int32_t i=0; i<events->numEvents; i++)
-                          {
-                            VstMidiEvent *event = (VstMidiEvent *)events->events[i];
-                            if (event->type != kVstMidiType)
-                              continue;
+        for (int32_t i = 0; i < events->numEvents; i++)
+          {
+            VstMidiEvent *event = (VstMidiEvent *)events->events[i];
+            if (event->type != kVstMidiType)
+              continue;
 
-#if 0 // WIN32
-			    debug ("EV: %x %d %d\n", event->midiData[0], event->midiData[1], event->midiData[2]);
-                            if (is_note_on (event))
-                              {
-                                plugin->midi_synth.process_note_on (event->midiData[1], event->midiData[2]);
-                              }
-                            else if (is_note_off (event))
-                              {
-                                plugin->midi_synth.process_note_off (event->midiData[1]);
-                              }
-#endif
-			  }
+            plugin->midi_synth->add_midi_event (event->deltaFrames, reinterpret_cast <unsigned char *> (&event->midiData[0]));
+          }
+        return 1;
+      }
 
-			return 1;
-#if 0 // FIXME
-			VstEvents *events = (VstEvents *)ptr;
+    case effCanBeAutomated:
+    case effGetOutputProperties:
+      return 0;
 
-			assert(plugin->midiEvents.empty());
+    case effGetPlugCategory:
+      return kPlugCategSynth;
+    case effGetEffectName:
+      strcpy((char *)ptr, "SpectMorph");
+      return 1;
+    case effGetVendorString:
+      strcpy((char *)ptr, "Stefan Westerfeld");
+      return 1;
+    case effGetProductString:
+      strcpy((char *)ptr, "SpectMorph");
+      return 1;
+    case effGetVendorVersion:
+       return 0;
+    case effCanDo:
+      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 || strcmp("MPE", (char *)ptr) == 0) return 1;
+      if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
+              strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
+              strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
+              strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
+              false) return 0;
+      debug("unhandled canDo: %s\n", (char *)ptr);
+      return 0;
 
-			memset(plugin->midiBuffer, 0, 4096);
-			unsigned char *buffer = plugin->midiBuffer;
-			
-			for (int32_t i=0; i<events->numEvents; i++) {
-				VstMidiEvent *event = (VstMidiEvent *)events->events[i];
-				if (event->type != kVstMidiType) {
-					continue;
-				}
+    case effGetTailSize:
+    case effIdle:
+    case effGetParameterProperties:
+      return 0;
 
-				memcpy(buffer, event->midiData, 4);
+    case effGetVstVersion:
+      return 2400;
 
-				amsynth_midi_event_t midi_event;
-				memset(&midi_event, 0, sizeof(midi_event));
-				midi_event.offset_frames = event->deltaFrames;
-				midi_event.buffer = buffer;
-				midi_event.length = 4;
-				plugin->midiEvents.push_back(midi_event);
+    case effGetMidiKeyName:
+    case effStartProcess:
+    case effStopProcess:
+    case effBeginSetProgram:
+    case effEndSetProgram:
+    case effBeginLoadBank:
+      return 0;
 
-				buffer += event->byteSize;
-
-				assert(buffer < plugin->midiBuffer + 4096);
-#endif
-		}
-
-		case effCanBeAutomated:
-		case effGetOutputProperties:
-			return 0;
-
-		case effGetPlugCategory:
-			return kPlugCategSynth;
-		case effGetEffectName:
-			strcpy((char *)ptr, "SpectMorph Test");
-			return 1;
-		case effGetVendorString:
-			strcpy((char *)ptr, "Stefan Westerfeld");
-			return 1;
-#if 0
-		case effGetProductString:
-			strcpy((char *)ptr, "amsynth");
-			return 1;
-#endif
-		case effGetVendorVersion:
-			return 0;
-
-		case effCanDo:
-			if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
-				false) return 1;
-			if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
-				strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
-				strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
-				strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
-				false) return 0;
-			debug("unhandled canDo: %s\n", (char *)ptr);
-			return 0;
-
-		case effGetTailSize:
-		case effIdle:
-		case effGetParameterProperties:
-			return 0;
-
-		case effGetVstVersion:
-			return 2400;
-
-		case effGetMidiKeyName:
-		case effStartProcess:
-		case effStopProcess:
-		case effBeginSetProgram:
-		case effEndSetProgram:
-		case effBeginLoadBank:
-			return 0;
-
-		default:
-			debug ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
-			return 0;
-	}
+    default:
+      debug ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
+      return 0;
+  }
 }
 
-static void process(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
+static void
+processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
-#if 0 // FIXME
-  Plugin *plugin = (Plugin *)effect->ptr3;
-  debug ("!missing process\n");
-  std::vector<amsynth_midi_cc_t> midi_out;
-  plugin->synthesizer->process(numSampleFrames, plugin->midiEvents, midi_out, outputs[0], outputs[1]);
-  plugin->midiEvents.clear();
-#endif
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
+
+  // update plan with new parameters / new modules if necessary
+  if (plugin->m_new_plan_mutex.tryLock())
+    {
+      if (plugin->m_new_plan)
+        {
+          plugin->midi_synth->update_plan (plugin->m_new_plan);
+          plugin->m_new_plan = NULL;
+        }
+      plugin->rt_volume = plugin->m_volume;
+      plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
+      plugin->m_new_plan_mutex.unlock();
+    }
+  plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
+  plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
+  plugin->midi_synth->process (outputs[0], numSampleFrames);
+
+  // apply replay volume
+  const float volume_factor = db_to_factor (plugin->rt_volume);
+  for (int i = 0; i < numSampleFrames; i++)
+    outputs[0][i] *= volume_factor;
+
+  std::copy (outputs[0], outputs[0] + numSampleFrames, outputs[1]);
 }
 
-static void processReplacing(AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
+static void
+process (AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
-#if 0 // WIN32
-  Plugin *plugin = (Plugin *)effect->ptr3;
+  // this is not as efficient as it could be
+  // however, most likely the actual morphing is a lot more expensive
 
-  plugin->midi_synth.process_audio (outputs[0], numSampleFrames);
-  std::copy_n (outputs[0], numSampleFrames, outputs[1]);
-#else
-  std::fill_n (outputs[0], numSampleFrames, 0.0);
-  std::fill_n (outputs[1], numSampleFrames, 0.0);
-#endif
+  float  tmp_output_l[numSampleFrames];
+  float  tmp_output_r[numSampleFrames];
+  float *tmp_outputs[2] = { tmp_output_l, tmp_output_r };
+
+  processReplacing (effect, inputs, tmp_outputs, numSampleFrames);
+
+  for (int i = 0; i < numSampleFrames; i++)
+    {
+      outputs[0][i] += tmp_output_l[i];
+      outputs[1][i] += tmp_output_r[i];
+    }
 }
 
 static void setParameter(AEffect *effect, int i, float f)
 {
-#if 0
-  Plugin *plugin = (Plugin *)effect->ptr3;
-  debug ("!missing set parameter\n");
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
-  // FIXME plugin->ynthesizer->setNormalizedParameterValue((Param) i, f);
-#endif
+  plugin->set_parameter_scale ((VstPlugin::Param) i, f);
 }
 
 static float getParameter(AEffect *effect, int i)
 {
-#if 0
-  Plugin *plugin = (Plugin *)effect->ptr3;
-  debug ("!missing get parameter\n");
+  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
-  // FIXME return plugin->synthesizer->getNormalizedParameterValue((Param) i);
-#else
-  return 0;
-#endif
+  return plugin->get_parameter_scale((VstPlugin::Param) i);
 }
 
-extern "C" {
-
-#if defined (__GNUC__) && ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
-	#define VST_EXPORT	__attribute__ ((visibility ("default")))
-#else
-	#define VST_EXPORT
-#endif
-
-VST_EXPORT AEffect* VSTPluginMain (audioMasterCallback audioMaster) 
-#if WIN32
-  __declspec(dllexport)
-#endif
-  ;
-
-VST_EXPORT AEffect* VSTPluginMain (audioMasterCallback audioMaster)
+extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
 {
   debug ("VSTPluginMain called\n");
   if (audioMaster)
@@ -470,13 +444,13 @@ VST_EXPORT AEffect* VSTPluginMain (audioMasterCallback audioMaster)
   effect->setParameter = setParameter;
   effect->getParameter = getParameter;
   effect->numPrograms = 0;
-  effect->numParams = 0; // FIXME kAmsynthParameterCount;
+  effect->numParams = VstPlugin::PARAM_COUNT;
   effect->numInputs = 0;
   effect->numOutputs = 2;
   effect->flags = effFlagsCanReplacing | effFlagsIsSynth | effFlagsProgramChunks | effFlagsHasEditor;
 
   // Do no use the ->user pointer because ardour clobbers it
-  effect->ptr3 = new Plugin(audioMaster);
+  effect->ptr3 = new VstPlugin (audioMaster, effect);
   effect->uniqueID = CCONST ('s', 'm', 'T', 'p'); // T => test
   effect->processReplacing = processReplacing;
 
@@ -484,38 +458,6 @@ VST_EXPORT AEffect* VSTPluginMain (audioMasterCallback audioMaster)
   return effect;
 }
 
-// support for old hosts not looking for VSTPluginMain
-#if (TARGET_API_MAC_CARBON && __ppc__)
-VST_EXPORT AEffect* main_macho (audioMasterCallback audioMaster) { return VSTPluginMain (audioMaster); }
-#elif WIN32
-VST_EXPORT AEffect* MAIN (audioMasterCallback audioMaster) { return VSTPluginMain (audioMaster); }
-#elif BEOS
-VST_EXPORT AEffect* main_plugin (audioMasterCallback audioMaster) { return VSTPluginMain (audioMaster); }
-#endif
-
-} // extern "C"
-
-//------------------------------------------------------------------------
-#if WIN32
-#include <windows.h>
-void* hInstance;
-
-extern "C" {
-BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
-{
-	hInstance = hInst;
-	return 1;
-}
-} // extern "C"
-#endif
-#if 00
-extern "C" AEffect * MAIN(audioMasterCallback audioMaster) __declspec(dllexport);
-
-extern "C" __attribute__ ((visibility("default"))) AEffect * MAIN(audioMasterCallback audioMaster)
-{
-	return VSTPluginMain (audioMaster);
-}
-#endif
 #if 0
 // this is required because GCC throws an error if we declare a non-standard function named 'main'
 extern "C" __attribute__ ((visibility("default"))) AEffect * main_plugin(audioMasterCallback audioMaster) asm ("main");
