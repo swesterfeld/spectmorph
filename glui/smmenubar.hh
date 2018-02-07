@@ -69,7 +69,7 @@ struct MenuBar : public Widget
     cairo_set_source_rgba (cr, 1, 1, 1, 1);
 
     double tx = 16;
-    for (int item = 0; item < menus.size(); item++)
+    for (int item = 0; item < int (menus.size()); item++)
       {
         auto& menu_p = menus[item];
 
@@ -114,7 +114,7 @@ struct MenuBar : public Widget
             du.round_box (sx, height + space, max_text_width + 32, menu_height, 1, 5, true);
 
             double starty = height + space + 8;
-            for (size_t i = 0; i < menu->items.size(); i++)
+            for (int i = 0; i < int (menu->items.size()); i++)
               {
                 if (selected_menu_item == i)
                   {
@@ -155,7 +155,7 @@ struct MenuBar : public Widget
       {
         Menu *menu = menus[selected_menu].get();
 
-        for (int i = 0; i < menu->items.size(); i++)
+        for (size_t i = 0; i < menu->items.size(); i++)
           {
             MenuItem *item = menu->items[i].get();
 

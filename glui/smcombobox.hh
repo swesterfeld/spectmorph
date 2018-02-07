@@ -67,7 +67,7 @@ struct ComboBoxMenu : public Widget
         first_item = pos * items.size();
         if (first_item < 0)
           first_item = 0;
-        if (first_item > items.size() - items_per_page)
+        if (first_item > int (items.size()) - items_per_page)
           first_item = items.size() - items_per_page;
       });
   }
@@ -86,7 +86,7 @@ struct ComboBoxMenu : public Widget
     du.round_box (0, space, width, height - 2 * space, 1, 5, true);
 
     double starty = px_starty;
-    for (size_t i = first_item; i < first_item + items_per_page; i++)
+    for (int i = first_item; i < first_item + items_per_page; i++)
       {
         if (selected_item == i)
           {
@@ -112,7 +112,7 @@ struct ComboBoxMenu : public Widget
     selected_item = sm_bound<int> (0, first_item + y / 16, items.size() - 1);
 
     int best_item = -1;
-    for (size_t i = 0; i < items.size(); i++)
+    for (int i = 0; i < int (items.size()); i++)
       {
         if (!items[i].headline)
           {
