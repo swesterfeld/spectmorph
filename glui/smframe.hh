@@ -10,8 +10,8 @@ namespace SpectMorph
 
 struct Frame : public Widget
 {
-  Frame (Widget *parent, double x, double y, double width, double height)
-    : Widget (parent, x, y, width, height)
+  Frame (Widget *parent)
+    : Widget (parent)
   {
   }
   void

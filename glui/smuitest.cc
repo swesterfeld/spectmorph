@@ -77,7 +77,7 @@ public:
 
     grid.add_widget (menu_label, 1, 30, 46, 5);
 
-    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
+    grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 11);
 
     Label *op_title = new Label (this, "Output: Output #1");
     op_title->align = TextAlign::CENTER;

@@ -140,7 +140,7 @@ struct ComboBox : public Widget
   std::vector<ComboBoxItem> items;
 
   ComboBox (Widget *parent)
-    : Widget (parent, 0, 0, 100, 100)
+    : Widget (parent)
   {
     text = "Trumpet";
   }
