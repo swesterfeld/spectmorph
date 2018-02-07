@@ -1,5 +1,9 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
+#include "pugl/gl.h"
+#if !__APPLE__
+#include "GL/glext.h"
+#endif
 #include "smwindow.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>

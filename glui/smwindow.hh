@@ -6,6 +6,7 @@
 #include "smwidget.hh"
 #include "pugl/pugl.h"
 #include <memory>
+#include <functional>
 
 namespace SpectMorph
 {
