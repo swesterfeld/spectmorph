@@ -15,7 +15,7 @@ if COND_WINDOWS
   PUGL_LIBS = pugl/libspectmorphpugl.la -lopengl32 -lgdi32 -luser32
 endif
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
 noinst_LTLIBRARIES = libspectmorphglui.la
 
@@ -43,5 +43,10 @@ smvstplugin_la_SOURCES = $(SMVSTSOURCES)
 smvstplugin_la_LIBADD  = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
 
+STATIC_DLL_LIBS = \
+  .libs/libspectmorphglui.a \
+  pugl/.libs/libspectmorphpugl.a \
+  $(top_builddir)/lib/.libs/libspectmorph.a
+
 dll:
-	$(CXX) -shared -o smvstplugin.dll smvstplugin.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(BSE_LIBS) $(FFTW_LIBS) pugl/.libs/libspectmorphpugl.a $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -liconv
+	$(CXX) -shared -o smvstplugin.dll smvstplugin.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -liconv
