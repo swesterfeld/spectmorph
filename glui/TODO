@@ -1,0 +1,13 @@
+cleanup:
+ - don't hardcode colors
+ - make stuff private
+ - no 0,0,0,0 sizes
+ - scaling via settings
+
+widgets:
+ - popup menu
+ - scroll view
+ - checkbox
+ - knob
+
+file open dialog
