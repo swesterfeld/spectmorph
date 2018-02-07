@@ -54,7 +54,7 @@ public:
     Menu *preset_menu = menu_bar->add_menu ("Open Preset");
     Menu *op_menu = menu_bar->add_menu ("Add Operator");
     Menu *help_menu = menu_bar->add_menu ("Help");
-    Label *menu_label = new Label (this, 0, 0, 0, 0, "Menu Label");
+    Label *menu_label = new Label (this, "Menu Label");
 
     auto set_items = [menu_label](Menu *m, const std::vector<string>& items) {
       for (auto i : items) {
@@ -77,9 +77,9 @@ public:
 
     grid.add_widget (menu_label, 1, 30, 46, 5);
 
-    grid.add_widget (new Frame (this, 0, 0, 0, 0), 1, 1, 43, sl_params.size() * 2 + 11);
+    grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 11);
 
-    Label *op_title = new Label (this, 0, 0, 0, 0, "Output: Output #1");
+    Label *op_title = new Label (this, "Output: Output #1");
     op_title->align = TextAlign::CENTER;
     op_title->bold  = true;
     grid.add_widget (op_title, 1, 1, 43, 4);
@@ -87,9 +87,9 @@ public:
     ComboBox *cb1 = new ComboBox (this);
     ComboBox *cb2 = new ComboBox (this);
 
-    grid.add_widget (new Label (this, 0, 0, 0, 0, "LSource"), 3, 5, 7, 3);
+    grid.add_widget (new Label (this, "LSource"), 3, 5, 7, 3);
     grid.add_widget (cb1, 10, 5, 32, 3);
-    grid.add_widget (new Label (this, 0, 0, 0, 0, "RSource"), 3, 8, 7, 3);
+    grid.add_widget (new Label (this, "RSource"), 3, 8, 7, 3);
     grid.add_widget (cb2, 10, 8, 32, 3);
 
     grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 42);
@@ -126,9 +126,9 @@ public:
     Random rng;
     for (auto s : sl_params)
       {
-        Label *label = new Label (this, 0, 0, 0, 0, s);
-        Slider *slider = new Slider (this, 0, 0, 0, 0, rng.random_double_range (0.0, 1.0));
-        Label *value_label = new Label (this, 0, 0, 0, 0, "50%");
+        Label *label = new Label (this, s);
+        Slider *slider = new Slider (this, rng.random_double_range (0.0, 1.0));
+        Label *value_label = new Label (this, "50%");
 
         grid.add_widget (label, 3, yoffset, 7, 2);
         grid.add_widget (slider,  10, yoffset, 27, 2);
@@ -144,7 +144,7 @@ public:
       {
         vector<string> texts = { "A", "b", "c", "D", ".", "'", "|" };
         for (size_t x = 0; x < texts.size(); x++)
-          grid.add_widget (new Label (this, 0, 0, 0, 0, texts[x]), 3 + x * 2, 20, 2, 2);
+          grid.add_widget (new Label (this, texts[x]), 3 + x * 2, 20, 2, 2);
       }
   }
 };
