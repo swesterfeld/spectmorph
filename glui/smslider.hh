@@ -14,9 +14,9 @@ struct Slider : public Widget
   bool enter = false;
   std::function<void(float)> m_callback;
 
-  Slider (Widget *parent, double x, double y, double width, double height, double value)
-    : Widget (parent, x, y, width, height),
-      value (value)
+  Slider (Widget *parent, double value) :
+    Widget (parent),
+    value (value)
   {
   }
   void

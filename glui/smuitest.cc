@@ -127,7 +127,7 @@ public:
     for (auto s : sl_params)
       {
         Label *label = new Label (this, s);
-        Slider *slider = new Slider (this, 0, 0, 0, 0, rng.random_double_range (0.0, 1.0));
+        Slider *slider = new Slider (this, rng.random_double_range (0.0, 1.0));
         Label *value_label = new Label (this, "50%");
 
         grid.add_widget (label, 3, yoffset, 7, 2);
