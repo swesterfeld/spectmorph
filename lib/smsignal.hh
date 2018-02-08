@@ -13,27 +13,37 @@ namespace SpectMorph
 template<class... Args>
 class Signal;
 
+struct SignalBase
+{
+  virtual void disconnect (uint64 id) = 0;
+};
+
 class SignalReceiver
 {
+  struct SignalSource
+  {
+    SignalBase *signal;
+    uint64      id;
+  };
+  std::vector<SignalSource> m_signal_sources;
+
 public:
   template<class... Args, class CbFunction>
   uint64
   connect (Signal<Args...>& signal, const CbFunction& callback)
   {
-    return signal.connect_with_owner (callback);
-  }
-  SignalReceiver()
-  {
+    SignalSource src { &signal, signal.connect_with_owner (callback) };
+    m_signal_sources.push_back (src);
+    return src.id;
   }
   virtual
   ~SignalReceiver()
   {
+    for (auto& signal_source : m_signal_sources)
+      {
+        signal_source.signal->disconnect (signal_source.id);
+      }
   }
-};
-
-struct SignalBase
-{
-  virtual void disconnect (uint64 id) = 0;
 };
 
 template<class... Args>
