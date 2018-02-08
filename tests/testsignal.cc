@@ -7,7 +7,9 @@ using namespace SpectMorph;
 
 using std::string;
 
-Signal<void()> simple_signal;
+Signal<> signal_simple;
+Signal<int> signal_int;
+Signal<std::string, double> signal_sd;
 
 struct Receiver : SignalReceiver
 {
@@ -15,7 +17,8 @@ struct Receiver : SignalReceiver
   Receiver (const string& message) :
     message (message)
   {
-    connect (simple_signal, std::function<void()> ([&]() { simple_slot(); }));
+    connect (signal_simple, [&]() { simple_slot(); });
+    connect (signal_int,    [&](int i) { printf ("%s::%d\n", message.c_str(), i); });
   }
   void
   simple_slot()
@@ -30,16 +33,42 @@ main (int argc, char **argv)
   sm_init (&argc, &argv);
 
   printf ("---- expect: nothing\n");
-  simple_signal();
+  signal_simple();
   printf ("---- end ----\n\n");
 
   Receiver *receiver = new Receiver ("receiver 1");
   printf ("---- expect: something\n");
-  simple_signal();
+  signal_simple();
   printf ("---- end ----\n\n");
 
   delete receiver;
   printf ("---- expect: nothing\n");
-  simple_signal();
+  signal_simple();
+  printf ("---- end ----\n\n");
+
+  Receiver *int_r = new Receiver ("int_r");
+  printf ("---- expect: int 23\n");
+  signal_int (23);
+  printf ("---- end ----\n\n");
+  delete int_r;
+
+  printf ("---- expect: nothing\n");
+  signal_int (23);
+  printf ("---- end ----\n\n");
+  {
+    struct StackR : public SignalReceiver
+    {
+      static void
+      slot (const std::string& s, double d)
+      {
+        printf ("%s ## %f\n", s.c_str(), d);
+      }
+    } stack_r;
+    stack_r.connect (signal_sd, StackR::slot);
+    signal_sd ("foo", 3);
+  }
+
+  printf ("---- expect: nothing\n");
+  signal_sd ("foo", 3);
   printf ("---- end ----\n\n");
 }
