@@ -71,4 +71,12 @@ main (int argc, char **argv)
   printf ("---- expect: nothing\n");
   signal_sd ("foo", 3);
   printf ("---- end ----\n\n");
+
+  Receiver *r = new Receiver ("junk");
+  {
+    Signal<> signal_temporary;
+    r->connect (signal_temporary, [] () { printf ("signal_temporary\n"); });
+    signal_temporary();
+  }
+  delete r; // signal should be dead by now
 }
