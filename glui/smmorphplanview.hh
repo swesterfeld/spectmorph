@@ -23,7 +23,7 @@ public:
     for (auto op : morph_plan->operators())
       {
         MorphOperatorView *op_view = new MorphOperatorView (this, op);
-        grid.add_widget (op_view, 1, y, 43, 7);
+        grid.add_widget (op_view, 0, y, 43, 7);
         y += 8;
 #if 0
         MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
