@@ -10,15 +10,15 @@
 namespace SpectMorph
 {
 
-template<class Func>
+template<class... Args>
 class Signal;
 
 class SignalReceiver
 {
 public:
-  template<class Func, class CbFunction>
+  template<class... Args, class CbFunction>
   uint64
-  connect (Signal<Func>& signal, const CbFunction& callback)
+  connect (Signal<Args...>& signal, const CbFunction& callback)
   {
     return signal.connect_with_owner (callback);
   }
@@ -36,18 +36,20 @@ struct SignalBase
   virtual void disconnect (uint64 id) = 0;
 };
 
-template<class Func>
+template<class... Args>
 struct Signal : public SignalBase
 {
+  typedef std::function<void (Args...)> CbFunction;
+
   struct SignalConnection
   {
-    std::function<Func> func;
-    uint64              id;
+    CbFunction  func;
+    uint64      id;
   };
   std::vector<SignalConnection> callbacks;
 
   uint64
-  connect_with_owner (const std::function<Func>& callback)
+  connect_with_owner (const CbFunction& callback)
   {
     static uint64 static_id = 1;
     callbacks.push_back ({callback, static_id});
@@ -63,12 +65,12 @@ struct Signal : public SignalBase
       }
   }
   void
-  operator()()
+  operator()(Args&&... args)
   {
-    for (auto callback : callbacks)
+    for (auto& callback : callbacks)
       {
         if (callback.id)
-          callback.func();
+          callback.func (std::forward<Args>(args)...);
       }
   }
 };
