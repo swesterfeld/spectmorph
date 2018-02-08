@@ -5,6 +5,7 @@
 
 #include "smdrawutils.hh"
 #include "smmath.hh"
+#include "smsignal.hh"
 
 namespace SpectMorph
 {
@@ -12,14 +13,8 @@ namespace SpectMorph
 struct MenuItem
 {
   std::string text;
-  std::function<void()> m_callback;
+  Signal<> signal_clicked;
   double sx, ex, sy;
-
-  void
-  set_callback (const std::function<void()>& callback)
-  {
-    m_callback = callback;
-  }
 };
 
 struct Menu
@@ -185,8 +180,7 @@ struct MenuBar : public Widget
       {
         MenuItem *item = menus[selected_menu]->items[selected_menu_item].get();
 
-        if (item->m_callback)
-          item->m_callback();
+        item->signal_clicked();
 
         window()->set_menu_widget (nullptr);
         menu_open = false;
