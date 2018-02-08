@@ -1,0 +1,78 @@
+// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+
+#ifndef SPECTMORPH_SIGNAL_HH
+#define SPECTMORPH_SIGNAL_HH
+
+#include "smutils.hh"
+#include <functional>
+#include <vector>
+
+namespace SpectMorph
+{
+
+template<class Func>
+class Signal;
+
+class SignalReceiver
+{
+public:
+  template<class Func, class CbFunction>
+  uint64
+  connect (Signal<Func>& signal, const CbFunction& callback)
+  {
+    return signal.connect_with_owner (callback);
+  }
+  SignalReceiver()
+  {
+  }
+  virtual
+  ~SignalReceiver()
+  {
+  }
+};
+
+struct SignalBase
+{
+  virtual void disconnect (uint64 id) = 0;
+};
+
+template<class Func>
+struct Signal : public SignalBase
+{
+  struct SignalConnection
+  {
+    std::function<Func> func;
+    uint64              id;
+  };
+  std::vector<SignalConnection> callbacks;
+
+  uint64
+  connect_with_owner (const std::function<Func>& callback)
+  {
+    static uint64 static_id = 1;
+    callbacks.push_back ({callback, static_id});
+    return static_id++;
+  }
+  void
+  disconnect (uint64 id) override
+  {
+    for (size_t i = 0; i < callbacks.size(); i++)
+      {
+        if (callbacks[i].id == id)
+          callbacks[i].id = 0;
+      }
+  }
+  void
+  operator()()
+  {
+    for (auto callback : callbacks)
+      {
+        if (callback.id)
+          callback.func();
+      }
+  }
+};
+
+}
+
+#endif
