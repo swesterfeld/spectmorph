@@ -7,6 +7,8 @@
 #include <cairo.h>
 #include <stdio.h>
 
+#include "smsignal.hh"
+
 namespace SpectMorph
 {
 
@@ -18,7 +20,7 @@ enum class TextAlign {
 
 struct Window;
 
-struct Widget
+struct Widget : public SignalReceiver
 {
 protected:
   void remove_child (Widget *child);
