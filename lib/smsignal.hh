@@ -19,7 +19,14 @@ struct SignalBase
 {
   volatile bool m_signal_alive = true;
 
-  virtual void disconnect (uint64 id) = 0;
+  static uint64
+  next_signal_id()
+  {
+    static uint64 next_id = 1;
+
+    return next_id++;
+  }
+  virtual void disconnect_impl (uint64 id) = 0;
   virtual
   ~SignalBase()
   {
@@ -44,9 +51,21 @@ public:
   {
     assert (m_signal_receiver_alive);
 
-    SignalSource src { &signal, signal.connect_with_owner (this, callback) };
+    SignalSource src { &signal, signal.connect_impl (this, callback) };
     m_signal_sources.push_back (src);
     return src.id;
+  }
+  void
+  disconnect (uint64 id)
+  {
+    for (auto& signal_source : m_signal_sources)
+      {
+        if (signal_source.id == id)
+          {
+            signal_source.signal->disconnect_impl (id);
+            signal_source.id = 0;
+          }
+      }
   }
   virtual
   ~SignalReceiver()
@@ -56,7 +75,7 @@ public:
     for (auto& signal_source : m_signal_sources)
       {
         if (signal_source.id)
-          signal_source.signal->disconnect (signal_source.id);
+          signal_source.signal->disconnect_impl (signal_source.id);
       }
     m_signal_receiver_alive = false;
   }
@@ -109,16 +128,16 @@ class Signal : public SignalBase
   }
 public:
   uint64
-  connect_with_owner (SignalReceiver *receiver, const CbFunction& callback)
+  connect_impl (SignalReceiver *receiver, const CbFunction& callback)
   {
     assert (m_signal_alive);
 
-    static uint64 static_id = 1;
-    callbacks.push_back ({callback, static_id, receiver, true});
-    return static_id++;
+    uint64 id = next_signal_id();
+    callbacks.push_back ({callback, id, receiver, true});
+    return id;
   }
   void
-  disconnect (uint64 id) override
+  disconnect_impl (uint64 id) override
   {
     assert (m_signal_alive);
 
