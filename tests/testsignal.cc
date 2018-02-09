@@ -18,8 +18,9 @@ struct Receiver : SignalReceiver
   Receiver (const string& message) :
     message (message)
   {
-    connect (signal_simple, [&]() { simple_slot(); });
-    connect (signal_int,    [&](int i) { printf ("%s::%d\n", message.c_str(), i); });
+    uint64 id1 = connect (signal_simple, [&]() { simple_slot(); });
+    uint64 id2 = connect (signal_int,    [&](int i) { printf ("%s::%d\n", message.c_str(), i); });
+    printf ("connect: %d %d\n", int (id1), int (id2));
   }
   void
   simple_slot()
