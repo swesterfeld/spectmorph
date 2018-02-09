@@ -55,6 +55,15 @@ public:
     m_signal_sources.push_back (src);
     return src.id;
   }
+  template<class... Args, class Instance, class Method>
+  uint64
+  connect (Signal<Args...>& signal, Instance *instance, const Method& method)
+  {
+    return SignalReceiver::connect (signal, [&](Args&&... args)
+      {
+        std::mem_fn (method) (instance, std::forward<Args>(args)...);
+      });
+  }
   void
   disconnect (uint64 id)
   {
