@@ -101,6 +101,29 @@ struct DReceiver : SignalReceiver
   }
 };
 
+struct MemFnReceiver : public SignalReceiver
+{
+  Signal<string> signal_str;
+  string         local_state;
+
+  MemFnReceiver()
+  {
+    local_state = "mem-fn-rcv";
+
+    connect (signal_str, this, &MemFnReceiver::slot);
+    signal_str ("hello");
+    signal_str ("world");
+  }
+  void
+  slot1()
+  {
+  }
+  void
+  slot (const string& s)
+  {
+    printf ("%s-%s\n", local_state.c_str(), s.c_str());
+  }
+};
 
 int
 main (int argc, char **argv)
@@ -161,4 +184,6 @@ main (int argc, char **argv)
   ModifyInCallback mic;
 
   DReceiver drc;
+
+  MemFnReceiver mfr;
 }
