@@ -6,6 +6,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 Signal<> signal_simple;
 Signal<int> signal_int;
@@ -24,6 +25,43 @@ struct Receiver : SignalReceiver
   simple_slot()
   {
     printf ("%s\n", message.c_str());
+  }
+};
+
+struct ModifyInCallback : public SignalReceiver
+{
+  Signal<int> signal_add_connections;
+  Signal<>    signal_del_connections;
+  vector<uint64> del_ids;
+  int conn_count = 0;
+
+  void
+  add_connection()
+  {
+    connect (signal_add_connections, [&](int count) {
+      while (conn_count < count)
+        add_connection();
+    });
+    conn_count++;
+  }
+  ModifyInCallback()
+  {
+    while (conn_count < 10)
+      {
+        add_connection();
+      }
+    printf ("add connections test\n");
+    signal_add_connections (1000);
+
+    for (int i = 0; i < 100; i++)
+      {
+        del_ids.push_back (connect (signal_del_connections, [this]() {
+          for (auto id : del_ids)
+            signal_del_connections.disconnect (id);
+        }));
+      }
+    printf ("del connections test\n");
+    signal_del_connections();
   }
 };
 
@@ -55,6 +93,8 @@ main (int argc, char **argv)
   printf ("---- expect: nothing\n");
   signal_int (23);
   printf ("---- end ----\n\n");
+
+  printf ("---- expect: int 3\n");
   {
     struct StackR : public SignalReceiver
     {
@@ -67,6 +107,7 @@ main (int argc, char **argv)
     stack_r.connect (signal_sd, StackR::slot);
     signal_sd ("foo", 3);
   }
+  printf ("---- end ----\n\n");
 
   printf ("---- expect: nothing\n");
   signal_sd ("foo", 3);
@@ -79,4 +120,6 @@ main (int argc, char **argv)
     signal_temporary();
   }
   delete r; // signal should be dead by now
+
+  ModifyInCallback mic;
 }
