@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <functional>
 #include <vector>
+#include <list>
 
 namespace SpectMorph
 {
@@ -71,7 +72,7 @@ public:
 };
 
 template<class... Args>
-struct Signal : public SignalBase
+class Signal : public SignalBase
 {
   typedef std::function<void (Args...)> CbFunction;
 
@@ -80,16 +81,40 @@ struct Signal : public SignalBase
     CbFunction      func;
     uint64          id;
     SignalReceiver *receiver;
-  };
-  std::vector<SignalConnection> callbacks;
+    volatile bool   alive;
 
+    ~SignalConnection()
+    {
+      alive = false;
+    }
+  };
+  std::list<SignalConnection> callbacks;
+  int block_remove_count = 0;
+
+  void
+  block_remove()
+  {
+    block_remove_count++;
+  }
+  void
+  unblock_remove()
+  {
+    block_remove_count--;
+  }
+  void
+  remove_unused_items()
+  {
+    if (!block_remove_count) // safe to remove only if not in callback
+      callbacks.remove_if ([](const SignalConnection& conn) -> bool { return conn.id == 0; });
+  }
+public:
   uint64
   connect_with_owner (SignalReceiver *receiver, const CbFunction& callback)
   {
     assert (m_signal_alive);
 
     static uint64 static_id = 1;
-    callbacks.push_back ({callback, static_id, receiver});
+    callbacks.push_back ({callback, static_id, receiver, true});
     return static_id++;
   }
   void
@@ -97,22 +122,32 @@ struct Signal : public SignalBase
   {
     assert (m_signal_alive);
 
-    for (size_t i = 0; i < callbacks.size(); i++)
+    for (auto& cb : callbacks)
       {
-        if (callbacks[i].id == id)
-          callbacks[i].id = 0;
+        assert (cb.alive);
+
+        if (cb.id == id)
+          cb.id = 0;
       }
+    remove_unused_items();
   }
   void
   operator()(Args&&... args)
   {
     assert (m_signal_alive);
 
+    block_remove();  // do not free entries while we're iterating over items
+
     for (auto& callback : callbacks)
       {
+        assert (callback.alive);
+
         if (callback.id)
           callback.func (std::forward<Args>(args)...);
       }
+
+    unblock_remove();
+    remove_unused_items();
   }
   ~Signal()
   {
@@ -120,6 +155,8 @@ struct Signal : public SignalBase
 
     for (auto& callback : callbacks)
       {
+        assert (callback.alive);
+
         if (callback.id)
           callback.receiver->dead_signal (callback.id);
       }
