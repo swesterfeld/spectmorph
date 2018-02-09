@@ -58,13 +58,49 @@ struct ModifyInCallback : public SignalReceiver
       {
         del_ids.push_back (connect (signal_del_connections, [this]() {
           for (auto id : del_ids)
-            signal_del_connections.disconnect (id);
+            disconnect (id);
         }));
       }
     printf ("del connections test\n");
     signal_del_connections();
   }
 };
+
+struct DReceiver : SignalReceiver
+{
+  Signal<> signal_test;
+
+  DReceiver()
+  {
+    uint64 id1 = connect (signal_test, slot);
+    uint64 id2 = connect (signal_test, slot);
+    uint64 id3 = connect (signal_test, slot);
+
+    printf ("expect 3: ");
+    signal_test();
+    printf ("\n");
+    disconnect (id2);
+
+    printf ("expect 2: ");
+    signal_test();
+    printf ("\n");
+    disconnect (id1);
+
+    printf ("expect 1: ");
+    signal_test();
+    printf ("\n");
+    disconnect (id3);
+    printf ("expect 0: ");
+    signal_test();
+    printf ("\n");
+  }
+  static void
+  slot()
+  {
+    printf (".");
+  }
+};
+
 
 int
 main (int argc, char **argv)
@@ -123,4 +159,6 @@ main (int argc, char **argv)
   delete r; // signal should be dead by now
 
   ModifyInCallback mic;
+
+  DReceiver drc;
 }
