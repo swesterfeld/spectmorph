@@ -61,7 +61,7 @@ public:
   {
     return SignalReceiver::connect (signal, [&](Args&&... args)
       {
-        std::mem_fn (method) (instance, std::forward<Args>(args)...);
+        (instance->*method) (std::forward<Args>(args)...);
       });
   }
   void
