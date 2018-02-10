@@ -42,8 +42,34 @@ class SignalReceiver
   {
     int ref_count = 1;
 
-    SignalReceiverData *ref() { assert (this); assert (ref_count > 0); ref_count++; return this; }
-    void unref() { ref_count--; /* FIXME: cleanup */ if (!ref_count) { delete this; } }
+    SignalReceiverData *
+    ref()
+    {
+      assert (this);
+      assert (ref_count > 0);
+      ref_count++;
+      return this;
+    }
+    void
+    unref()
+    {
+      assert (this);
+      assert (ref_count > 0);
+      ref_count--;
+      if (!ref_count)
+        delete this;
+    }
+    void
+    cleanup()
+    {
+      if (ref_count == 1) /* ensure nobody is iterating over the data */
+        {
+          sources.remove_if ([](SignalSource& signal_source) -> bool
+            {
+              return signal_source.id == 0;
+            });
+        }
+    }
     std::list<SignalSource> sources;
   };
   struct SignalReceiverData *signal_receiver_data;
@@ -60,6 +86,7 @@ public:
     auto id = signal.connect_impl (this, callback);
     data->sources.push_back ({ &signal, id });
     data->unref();
+    data->cleanup();
 
     return id;
   }
@@ -86,6 +113,7 @@ public:
           }
       }
     data->unref();
+    data->cleanup();
   }
   SignalReceiver() :
     signal_receiver_data (new SignalReceiverData())
@@ -119,6 +147,7 @@ public:
       }
 
     data->unref();
+    data->cleanup();
   }
 };
 
@@ -137,8 +166,35 @@ class Signal : public SignalBase
   {
     int ref_count = 1;
 
-    Data *ref() { assert (this); assert (ref_count > 0); ref_count++; return (this); }
-    void unref() { ref_count--; /* FIXME: cleanup */ if (!ref_count) { delete this; } }
+    Data *
+    ref()
+    {
+      assert (this);
+      assert (ref_count > 0);
+      ref_count++;
+
+      return this;
+    }
+    void
+    unref()
+    {
+      assert (this);
+      assert (ref_count > 0);
+      ref_count--;
+      if (!ref_count)
+        delete this;
+    }
+    void
+    cleanup()
+    {
+      if (ref_count == 1) /* ensure nobody is iterating over the data */
+        {
+          connections.remove_if ([](Connection& conn) -> bool
+            {
+              return conn.id == 0;
+            });
+        }
+    }
 
     std::list<Connection> connections;
   };
@@ -151,6 +207,7 @@ public:
     uint64 id = next_signal_id();
     data->connections.push_back ({callback, id, receiver});
     data->unref();
+    data->cleanup();
 
     return id;
   }
@@ -164,6 +221,7 @@ public:
           conn.id = 0;
       }
     data->unref();
+    data->cleanup();
   }
   void
   operator()(Args&&... args)
@@ -177,6 +235,7 @@ public:
       }
 
     data->unref();
+    data->cleanup();
   }
   Signal() :
     signal_data (new Data())
