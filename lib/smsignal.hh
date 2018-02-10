@@ -17,8 +17,6 @@ class Signal;
 
 struct SignalBase
 {
-  volatile bool m_signal_alive = true;
-
   static uint64
   next_signal_id()
   {
@@ -30,7 +28,6 @@ struct SignalBase
   virtual
   ~SignalBase()
   {
-    m_signal_alive = false;
   }
 };
 
@@ -41,19 +38,30 @@ class SignalReceiver
     SignalBase *signal;
     uint64      id;
   };
-  std::vector<SignalSource> m_signal_sources;
-  volatile bool m_signal_receiver_alive = true;
+  struct SignalReceiverData
+  {
+    int ref_count = 1;
+
+    SignalReceiverData *ref() { assert (this); assert (ref_count > 0); ref_count++; return this; }
+    void unref() { ref_count--; /* FIXME: cleanup */ if (!ref_count) { delete this; } }
+    std::list<SignalSource> sources;
+  };
+  struct SignalReceiverData *signal_receiver_data;
 
 public:
   template<class... Args, class CbFunction>
   uint64
   connect (Signal<Args...>& signal, const CbFunction& callback)
   {
-    assert (m_signal_receiver_alive);
+    assert (signal_receiver_data);
 
-    SignalSource src { &signal, signal.connect_impl (this, callback) };
-    m_signal_sources.push_back (src);
-    return src.id;
+    SignalReceiverData *data = signal_receiver_data->ref();
+
+    auto id = signal.connect_impl (this, callback);
+    data->sources.push_back ({ &signal, id });
+    data->unref();
+
+    return id;
   }
   template<class... Args, class Instance, class Method>
   uint64
@@ -67,7 +75,9 @@ public:
   void
   disconnect (uint64 id)
   {
-    for (auto& signal_source : m_signal_sources)
+    SignalReceiverData *data = signal_receiver_data->ref();
+
+    for (auto& signal_source : data->sources)
       {
         if (signal_source.id == id)
           {
@@ -75,27 +85,40 @@ public:
             signal_source.id = 0;
           }
       }
+    data->unref();
+  }
+  SignalReceiver() :
+    signal_receiver_data (new SignalReceiverData())
+  {
   }
   virtual
   ~SignalReceiver()
   {
-    assert (m_signal_receiver_alive);
+    assert (signal_receiver_data);
 
-    for (auto& signal_source : m_signal_sources)
+    for (auto& signal_source : signal_receiver_data->sources)
       {
         if (signal_source.id)
-          signal_source.signal->disconnect_impl (signal_source.id);
+          {
+            signal_source.signal->disconnect_impl (signal_source.id);
+            signal_source.id = 0;
+          }
       }
-    m_signal_receiver_alive = false;
+    signal_receiver_data->unref();
+    signal_receiver_data = nullptr;
   }
   void
   dead_signal (uint64 id)
   {
-    for (auto& signal_source : m_signal_sources)
+    SignalReceiverData *data = signal_receiver_data->ref();
+
+    for (auto& signal_source : data->sources)
       {
         if (signal_source.id == id)
           signal_source.id = 0;
       }
+
+    data->unref();
   }
 };
 
@@ -104,90 +127,76 @@ class Signal : public SignalBase
 {
   typedef std::function<void (Args...)> CbFunction;
 
-  struct SignalConnection
+  struct Connection
   {
     CbFunction      func;
     uint64          id;
     SignalReceiver *receiver;
-    volatile bool   alive;
-
-    ~SignalConnection()
-    {
-      alive = false;
-    }
   };
-  std::list<SignalConnection> callbacks;
-  int block_remove_count = 0;
+  struct Data
+  {
+    int ref_count = 1;
 
-  void
-  block_remove()
-  {
-    block_remove_count++;
-  }
-  void
-  unblock_remove()
-  {
-    block_remove_count--;
-  }
-  void
-  remove_unused_items()
-  {
-    if (!block_remove_count) // safe to remove only if not in callback
-      callbacks.remove_if ([](const SignalConnection& conn) -> bool { return conn.id == 0; });
-  }
+    Data *ref() { assert (this); assert (ref_count > 0); ref_count++; return (this); }
+    void unref() { ref_count--; /* FIXME: cleanup */ if (!ref_count) { delete this; } }
+
+    std::list<Connection> connections;
+  };
+  Data *signal_data;
 public:
   uint64
   connect_impl (SignalReceiver *receiver, const CbFunction& callback)
   {
-    assert (m_signal_alive);
-
+    Data *data = signal_data->ref();
     uint64 id = next_signal_id();
-    callbacks.push_back ({callback, id, receiver, true});
+    data->connections.push_back ({callback, id, receiver});
+    data->unref();
+
     return id;
   }
   void
   disconnect_impl (uint64 id) override
   {
-    assert (m_signal_alive);
-
-    for (auto& cb : callbacks)
+    Data *data = signal_data->ref();
+    for (auto& conn : data->connections)
       {
-        assert (cb.alive);
-
-        if (cb.id == id)
-          cb.id = 0;
+        if (conn.id == id)
+          conn.id = 0;
       }
-    remove_unused_items();
+    data->unref();
   }
   void
   operator()(Args&&... args)
   {
-    assert (m_signal_alive);
+    Data *data = signal_data->ref();
 
-    block_remove();  // do not free entries while we're iterating over items
-
-    for (auto& callback : callbacks)
+    for (auto& conn : data->connections)
       {
-        assert (callback.alive);
-
-        if (callback.id)
-          callback.func (std::forward<Args>(args)...);
+        if (conn.id)
+          conn.func (std::forward<Args>(args)...);
       }
 
-    unblock_remove();
-    remove_unused_items();
+    data->unref();
+  }
+  Signal() :
+    signal_data (new Data())
+  {
   }
   ~Signal()
   {
-    assert (m_signal_alive);
+    assert (signal_data);
 
-    for (auto& callback : callbacks)
+    for (auto& conn : signal_data->connections)
       {
-        assert (callback.alive);
-
-        if (callback.id)
-          callback.receiver->dead_signal (callback.id);
+        if (conn.id)
+          {
+            conn.receiver->dead_signal (conn.id);
+            conn.id = 0;
+          }
       }
+
+    signal_data->unref();
+    signal_data = nullptr;
   }
 };
 

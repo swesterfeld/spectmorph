@@ -8,6 +8,7 @@
 #include "smobject.hh"
 #include "smaudio.hh"
 #include "smutils.hh"
+#include "smsignal.hh"
 
 namespace SpectMorph
 {
@@ -59,6 +60,8 @@ public:
 
   static std::string id_chars();
   static std::string generate_id();
+
+  Signal<> signal_plan_changed;
 
 signals:
   void plan_changed();

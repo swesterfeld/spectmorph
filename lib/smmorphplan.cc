@@ -400,7 +400,10 @@ void
 MorphPlan::emit_plan_changed()
 {
   if (!in_restore)
-    Q_EMIT plan_changed();
+    {
+      Q_EMIT plan_changed();
+      signal_plan_changed();
+    }
 }
 
 void
