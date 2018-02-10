@@ -115,13 +115,37 @@ struct MemFnReceiver : public SignalReceiver
     signal_str ("world");
   }
   void
-  slot1()
-  {
-  }
-  void
   slot (const string& s)
   {
     printf ("%s-%s\n", local_state.c_str(), s.c_str());
+  }
+};
+
+struct DestroyEmit : public SignalReceiver
+{
+  Signal<> *signal = nullptr;
+
+  DestroyEmit()
+  {
+    signal = new Signal<>();
+
+    connect (*signal, this, &DestroyEmit::slot);
+    connect (*signal, this, &DestroyEmit::slot);
+    connect (*signal, this, &DestroyEmit::slot);
+    connect (*signal, this, &DestroyEmit::slot);
+    connect (*signal, this, &DestroyEmit::slot);
+    connect (*signal, this, &DestroyEmit::slot);
+    (*signal)();
+  }
+  void
+  slot()
+  {
+    printf ("de-test %p\n", signal);
+    if (signal)
+      {
+        delete signal;
+        signal = nullptr;
+      }
   }
 };
 
@@ -186,4 +210,6 @@ main (int argc, char **argv)
   DReceiver drc;
 
   MemFnReceiver mfr;
+
+  DestroyEmit de;
 }
