@@ -12,14 +12,17 @@
 namespace SpectMorph
 {
 
+class MorphPlanWindow;
+
 struct MorphPlanView : public Widget
 {
-  MorphPlan *morph_plan;
-  bool       need_view_rebuild;
+  MorphPlan       *morph_plan;
+  MorphPlanWindow *morph_plan_window;
+  bool             need_view_rebuild;
 
   std::vector<MorphOperatorView *> m_op_views;
 public:
-  MorphPlanView (Widget *parent, MorphPlan *morph_plan);
+  MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   void on_plan_changed();
   void on_need_view_rebuild();

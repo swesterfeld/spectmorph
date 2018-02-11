@@ -129,20 +129,43 @@ struct ComboBoxMenu : public Widget
   {
     scroll_bar->scroll (dx, dy);
   }
-  void
+  inline void
   mouse_release (double x, double y) override;
 };
 
 struct ComboBox : public Widget
 {
+protected:
   std::unique_ptr<ComboBoxMenu> menu;
-  std::string text;
+  std::string m_text;
   std::vector<ComboBoxItem> items;
 
+public:
+  Signal<> signal_item_changed;
+
+  void
+  add_item (const ComboBoxItem& item)
+  {
+    items.push_back (item);
+  }
+  void
+  clear()
+  {
+    items.clear();
+  }
+  void
+  set_text (const std::string& new_text)
+  {
+    m_text = new_text;
+  }
+  std::string
+  text() const
+  {
+    return m_text;
+  }
   ComboBox (Widget *parent)
     : Widget (parent)
   {
-    text = "Trumpet";
   }
   void
   draw (cairo_t *cr) override
@@ -152,12 +175,12 @@ struct ComboBox : public Widget
     double space = 2;
     cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
     du.round_box (0, space, width, height - 2 * space, 1, 5);
-    du.text (text, 10, 0, width - 10, height);
+    du.text (m_text, 10, 0, width - 10, height);
   }
   void
   mouse_press (double mx, double my) override
   {
-    menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, text));
+    menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, m_text));
     menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
     window()->set_menu_widget (menu.get());
@@ -166,7 +189,10 @@ struct ComboBox : public Widget
   close_menu (const std::string& new_text)
   {
     if (new_text != "")
-      text = new_text;
+      {
+        m_text = new_text;
+        signal_item_changed();
+      }
     menu.reset();
   }
 };

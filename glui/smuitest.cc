@@ -102,12 +102,12 @@ public:
     for (auto item : item_vec)
       {
         if (item[0] == '*')
-          cb1->items.push_back (ComboBoxItem (item.c_str() + 1, true));
+          cb1->add_item (ComboBoxItem (item.c_str() + 1, true));
         else
-          cb1->items.push_back (ComboBoxItem (item));
+          cb1->add_item (ComboBoxItem (item));
       }
     for (size_t i = 0; i < 32; i++)
-      cb2->items.push_back (ComboBoxItem ("Some Instrument #" + std::to_string (i)));
+      cb2->add_item (ComboBoxItem ("Some Instrument #" + std::to_string (i)));
 
     int yoffset = 11;
     Random rng;

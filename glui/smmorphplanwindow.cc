@@ -35,7 +35,7 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   set_items (help_menu, {"About..."});
   grid.add_widget (menu_bar, 1, 1, 46, 3);
 
-  grid.add_widget (new MorphPlanView (this, morph_plan.c_ptr()), 1, 5, 44, 20);
+  grid.add_widget (new MorphPlanView (this, morph_plan.c_ptr(), this), 1, 5, 44, 20);
   grid.add_widget (new ScrollBar (this, 0.3), 45, 5, 2, 42);
 }
 

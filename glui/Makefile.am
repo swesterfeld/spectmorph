@@ -19,11 +19,13 @@ SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
 noinst_LTLIBRARIES = libspectmorphglui.la
 
-SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc
+SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
+	 smmorphsourceview.cc
+
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
 	 smmorphplanwindow.hh smmorphplancontrol.hh smmorphplanview.hh \
-	 smfixedgrid.hh smmorphoperatorview.hh
+	 smfixedgrid.hh smmorphoperatorview.hh smmorphsourceview.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)

@@ -1,12 +1,16 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphplanview.hh"
+#include "smmorphsourceview.hh"
 
 using namespace SpectMorph;
 
-MorphPlanView::MorphPlanView (Widget *parent, MorphPlan *morph_plan) :
+using std::string;
+
+MorphPlanView::MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
   Widget (parent),
-  morph_plan (morph_plan)
+  morph_plan (morph_plan),
+  morph_plan_window (morph_plan_window)
 {
   connect (morph_plan->signal_plan_changed, this, &MorphPlanView::on_plan_changed);
   connect (morph_plan->signal_need_view_rebuild, this, &MorphPlanView::on_need_view_rebuild);
@@ -29,10 +33,20 @@ MorphPlanView::on_plan_changed()
   for (auto op : morph_plan->operators())
     {
       // MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
-      MorphOperatorView *op_view = new MorphOperatorView (this, op);
+      MorphOperatorView *op_view = nullptr;
 
-      grid.add_widget (op_view, 0, y, 43, 7);
-      y += 8;
+      string type = op->type();
+      if (type == "SpectMorph::MorphSource")
+        {
+          op_view = new MorphSourceView (this, static_cast<MorphSource *> (op), morph_plan_window);
+        }
+      else
+        {
+          op_view = new MorphOperatorView (this, op, morph_plan_window);
+        }
+
+      grid.add_widget (op_view, 0, y, 43, op_view->view_height());
+      y += op_view->view_height() + 1;
 
       m_op_views.push_back (op_view);
     }
