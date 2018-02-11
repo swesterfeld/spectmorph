@@ -94,7 +94,7 @@ public:
   uint64
   connect (Signal<Args...>& signal, Instance *instance, const Method& method)
   {
-    return SignalReceiver::connect (signal, [&](Args&&... args)
+    return SignalReceiver::connect (signal, [instance, method](Args&&... args)
       {
         (instance->*method) (std::forward<Args>(args)...);
       });
