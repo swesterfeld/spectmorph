@@ -414,7 +414,10 @@ void
 MorphPlan::emit_index_changed()
 {
   if (!in_restore)
-    Q_EMIT index_changed();
+    {
+      Q_EMIT index_changed();
+      signal_index_changed();
+    }
 }
 
 string
