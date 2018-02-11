@@ -149,6 +149,11 @@ public:
     items.push_back (item);
   }
   void
+  add_item (const std::string& item_text)
+  {
+    add_item (ComboBoxItem (item_text));
+  }
+  void
   clear()
   {
     items.clear();
