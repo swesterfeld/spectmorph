@@ -62,6 +62,7 @@ public:
   static std::string generate_id();
 
   Signal<> signal_plan_changed;
+  Signal<> signal_need_view_rebuild;
 
 signals:
   void plan_changed();

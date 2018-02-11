@@ -127,6 +127,7 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
     }
 
   Q_EMIT need_view_rebuild();
+  signal_need_view_rebuild();
   emit_plan_changed();
 }
 
@@ -153,6 +154,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   in_restore = true;
 
   Q_EMIT need_view_rebuild();
+  signal_need_view_rebuild();
 
   clear();
   InFile ifile (in);
@@ -321,6 +323,7 @@ MorphPlan::remove (MorphOperator *op)
 {
   Q_EMIT need_view_rebuild();
   Q_EMIT operator_removed (op);
+  signal_need_view_rebuild();
 
   // accessing operator contents after remove was called is an error
   delete op;
@@ -341,6 +344,7 @@ void
 MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 {
   Q_EMIT need_view_rebuild();
+  signal_need_view_rebuild();
 
   vector<MorphOperator *> new_operators;
 
