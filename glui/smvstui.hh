@@ -14,7 +14,7 @@ namespace SpectMorph
 
 struct VstPlugin;
 
-class VstUI
+class VstUI : public SignalReceiver
 {
   ERect                 rectangle;
   MorphPlanWindow      *widget;

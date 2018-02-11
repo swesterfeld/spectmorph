@@ -19,7 +19,7 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   morph_plan (plan),
   plugin (plugin)
 {
-  //XXX connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
 }
 
 bool
