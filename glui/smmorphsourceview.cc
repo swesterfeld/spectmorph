@@ -52,6 +52,8 @@ MorphSourceView::on_index_changed()
   else
     {
       // use first instrument as default (could be moved from gui code to model)
+      if (!smsets.empty())
+        instrument_combobox->set_text (smsets[0]);
       on_instrument_changed();
     }
 }
