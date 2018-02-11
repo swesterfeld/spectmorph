@@ -8,6 +8,7 @@
 #include "smfixedgrid.hh"
 #include "smframe.hh"
 #include "smslider.hh"
+#include "smmorphplan.hh"
 #include <functional>
 
 namespace SpectMorph

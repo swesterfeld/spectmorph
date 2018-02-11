@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_SLIDER_HH
 #define SPECTMORPH_SLIDER_HH
 
+#include <math.h>
+
 namespace SpectMorph
 {
 
