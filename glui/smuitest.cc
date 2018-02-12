@@ -21,6 +21,7 @@
 #include "smmenubar.hh"
 #include "smrandom.hh"
 #include "smfixedgrid.hh"
+#include "smcheckbox.hh"
 
 using namespace SpectMorph;
 
@@ -64,7 +65,7 @@ public:
 
     grid.add_widget (menu_label, 1, 30, 46, 5);
 
-    grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 11);
+    grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 15);
 
     Label *op_title = new Label (this, "Output: Output #1");
     op_title->align = TextAlign::CENTER;
@@ -126,6 +127,11 @@ public:
         connect (slider->signal_value_changed, call_back);
         call_back (slider->value);
       }
+    CheckBox *box1 = new CheckBox (this, "Enable Sine Synthesis");
+    grid.add_widget (box1, 3, yoffset, 30, 2);
+    yoffset += 2;
+    CheckBox *box2 = new CheckBox (this, "Enable Noise Synthesis");
+    grid.add_widget (box2, 3, yoffset, 30, 2);
 
     if (0) // TEXT ALIGN
       {

@@ -27,7 +27,8 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
 	 smmorphplanwindow.hh smmorphplancontrol.hh smmorphplanview.hh \
 	 smfixedgrid.hh smmorphoperatorview.hh smmorphsourceview.hh \
-	 smmorphoutputview.hh smcomboboxoperator.hh smmorphlinearview.hh
+	 smmorphoutputview.hh smcomboboxoperator.hh smmorphlinearview.hh \
+	 smcheckbox.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
