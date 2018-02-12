@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_DRAWUTILS_HH
 #define SPECTMORPH_DRAWUTILS_HH
 
+#include "smwidget.hh"
+
 namespace SpectMorph
 {
 

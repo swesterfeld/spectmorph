@@ -6,6 +6,7 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphoutput.hh"
 #include "smcomboboxoperator.hh"
+#include "smpropertyview.hh"
 
 namespace SpectMorph
 {
@@ -25,6 +26,17 @@ class MorphOutputView : public MorphOperatorView
   MorphOutput                *morph_output;
 
   MorphOutputProperties       morph_output_properties;
+
+  PropertyView                pv_adsr_skip;
+  PropertyView                pv_adsr_attack;
+  PropertyView                pv_adsr_decay;
+  PropertyView                pv_adsr_sustain;
+  PropertyView                pv_adsr_release;
+
+  PropertyView                pv_portamento_glide;
+  PropertyView                pv_vibrato_depth;
+  PropertyView                pv_vibrato_frequency;
+  PropertyView                pv_vibrato_attack;
 
   void update_enabled();
 

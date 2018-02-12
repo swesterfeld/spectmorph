@@ -13,7 +13,16 @@ using std::vector;
 MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_output, morph_plan_window),
   morph_output (morph_output),
-  morph_output_properties (morph_output)
+  morph_output_properties (morph_output),
+  pv_adsr_skip (morph_output_properties.adsr_skip),
+  pv_adsr_attack (morph_output_properties.adsr_attack),
+  pv_adsr_decay (morph_output_properties.adsr_decay),
+  pv_adsr_sustain (morph_output_properties.adsr_sustain),
+  pv_adsr_release (morph_output_properties.adsr_release),
+  pv_portamento_glide (morph_output_properties.portamento_glide),
+  pv_vibrato_depth (morph_output_properties.vibrato_depth),
+  pv_vibrato_frequency (morph_output_properties.vibrato_frequency),
+  pv_vibrato_attack (morph_output_properties.vibrato_attack)
 {
   FixedGrid grid;
 
@@ -94,17 +103,30 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 
   yoffset += 2;
 
+  yoffset += pv_adsr_skip.init_ui (this, grid, yoffset);
+  yoffset += pv_adsr_attack.init_ui (this, grid, yoffset);
+  yoffset += pv_adsr_decay.init_ui (this, grid, yoffset);
+  yoffset += pv_adsr_sustain.init_ui (this, grid, yoffset);
+  yoffset += pv_adsr_release.init_ui (this, grid, yoffset);
+
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (this, "Enable Portamento (Mono)");
   portamento_check_box->set_checked (morph_output->portamento());
   grid.add_widget (portamento_check_box, 2, yoffset, 30, 2);
-
   yoffset += 2;
+
+  yoffset += pv_portamento_glide.init_ui (this, grid, yoffset);
 
   // Vibrato
   CheckBox *vibrato_check_box = new CheckBox (this, "Enable Vibrato");
   vibrato_check_box->set_checked (morph_output->vibrato());
   grid.add_widget (vibrato_check_box, 2, yoffset, 30, 2);
+
+  yoffset += 2;
+
+  yoffset += pv_vibrato_depth.init_ui (this, grid, yoffset);
+  yoffset += pv_vibrato_frequency.init_ui (this, grid, yoffset);
+  yoffset += pv_vibrato_attack.init_ui (this, grid, yoffset);
 
   connect (sines_check_box->signal_toggled, [morph_output] (bool new_value) {
     morph_output->set_sines (new_value);
@@ -135,7 +157,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 double
 MorphOutputView::view_height()
 {
-  return 24;
+  return 42;
 }
 
 void
@@ -169,4 +191,16 @@ MorphOutputView::update_enabled()
   unison_detune_title->set_enabled (morph_output->unison());
   unison_detune_label->set_enabled (morph_output->unison());
   unison_detune_slider->set_enabled (morph_output->unison());
+
+  pv_adsr_skip.set_enabled (morph_output->adsr());
+  pv_adsr_attack.set_enabled (morph_output->adsr());
+  pv_adsr_decay.set_enabled (morph_output->adsr());
+  pv_adsr_sustain.set_enabled (morph_output->adsr());
+  pv_adsr_release.set_enabled (morph_output->adsr());
+
+  pv_portamento_glide.set_enabled (morph_output->portamento());
+
+  pv_vibrato_depth.set_enabled (morph_output->vibrato());
+  pv_vibrato_frequency.set_enabled (morph_output->vibrato());
+  pv_vibrato_attack.set_enabled (morph_output->vibrato());
 }

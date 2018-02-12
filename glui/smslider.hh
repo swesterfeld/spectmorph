@@ -63,7 +63,7 @@ struct Slider : public Widget
       }
     else
       {
-        cairo_set_source_rgb (cr, 0.6, 0.6, 0.6);
+        cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
       }
     cairo_arc (cr, value_pos, height / 2, C, 0, 2 * M_PI);
     cairo_fill (cr);
