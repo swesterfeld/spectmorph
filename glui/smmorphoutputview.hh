@@ -14,9 +14,19 @@ class MorphOutputView : public MorphOperatorView
 {
   ComboBoxOperator           *source_combobox;
 
+  Label                      *unison_voices_title;
+  Label                      *unison_voices_label;
+  Slider                     *unison_voices_slider;
+
+  Label                      *unison_detune_title;
+  Label                      *unison_detune_label;
+  Slider                     *unison_detune_slider;
+
   MorphOutput                *morph_output;
 
   MorphOutputProperties       morph_output_properties;
+
+  void update_enabled();
 
 public:
   MorphOutputView (Widget *parent, MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
@@ -25,6 +35,8 @@ public:
 
   /* slots */
   void on_operator_changed();
+  void on_unison_voices_changed (int voices);
+  void on_unison_detune_changed (int detune);
 };
 
 }
