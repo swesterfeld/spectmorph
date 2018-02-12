@@ -343,7 +343,8 @@ Window::find_widget_xy (double ex, double ey)
       const double wx = w->abs_x();
       const double wy = w->abs_y();
 
-      if (ex >= wx &&
+      if (w->enabled() &&
+          ex >= wx &&
           ey >= wy &&
           ex < wx + w->width &&
           ey < wy + w->height)
