@@ -224,14 +224,14 @@ public:
     data->cleanup();
   }
   void
-  operator()(Args&&... args)
+  operator()(Args... args)
   {
     Data *data = signal_data->ref();
 
     for (auto& conn : data->connections)
       {
         if (conn.id)
-          conn.func (std::forward<Args>(args)...);
+          conn.func (args...);
       }
 
     data->unref();
