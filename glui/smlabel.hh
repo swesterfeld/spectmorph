@@ -24,7 +24,10 @@ struct Label : public Widget
   {
     DrawUtils du (cr);
 
-    cairo_set_source_rgba (cr, 1, 1, 1, 1);
+    if (enabled())
+      cairo_set_source_rgba (cr, 1, 1, 1, 1);
+    else
+      cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
 
     du.bold = bold;
     du.text (text, 0, 0, width, height, align);

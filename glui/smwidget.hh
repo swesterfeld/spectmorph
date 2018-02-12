@@ -22,6 +22,9 @@ struct Window;
 
 struct Widget : public SignalReceiver
 {
+private:
+  bool m_enabled = true;
+
 protected:
   void remove_child (Widget *child);
 
@@ -92,6 +95,16 @@ public:
   window()
   {
     return parent ? parent->window() : nullptr;
+  }
+  void
+  set_enabled (bool e)
+  {
+    m_enabled = e;
+  }
+  bool
+  enabled() const
+  {
+    return m_enabled;
   }
   double abs_x() const;
   double abs_y() const;

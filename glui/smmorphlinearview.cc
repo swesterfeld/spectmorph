@@ -78,36 +78,24 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   // MORPHING
   double morphing_slider_value = (morph_linear->morphing() + 1) / 2.0; /* restore value from operator */
 
+  morphing_title = new Label (this, "Morphing");
   morphing_slider = new Slider (this, morphing_slider_value);
   morphing_label = new Label (this, "0");
-  grid.add_widget (new Label (this, "Morphing"), 2, yoffset, 9, 2);
+  grid.add_widget (morphing_title, 2, yoffset, 9, 2);
   grid.add_widget (morphing_slider,  11, yoffset, 25, 2);
   grid.add_widget (morphing_label, 37, yoffset, 5, 2);
-
 
   connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
 
   on_morphing_changed (morphing_slider->value);
+  update_slider();
 
 #if 0
-
   // FLAG: DB LINEAR
   QCheckBox *db_linear_box = new QCheckBox ("dB Linear Morphing");
   db_linear_box->setChecked (morph_linear->db_linear());
   grid_layout->addWidget (db_linear_box, 4, 0, 1, 2);
   connect (db_linear_box, SIGNAL (toggled (bool)), this, SLOT (on_db_linear_changed (bool)));
-
-#if SPECTMORPH_SUPPORT_LPC
-  // FLAG: USE LPC
-  QCheckBox *use_lpc_box = new QCheckBox ("Use LPC Envelope");
-  use_lpc_box->setChecked (morph_linear->use_lpc());
-  grid_layout->addWidget (use_lpc_box, 5, 0, 1, 2);
-  connect (use_lpc_box, SIGNAL (toggled (bool)), this, SLOT (on_use_lpc_changed (bool)));
-#endif
-
-  update_slider();
-
-  set_body_layout (grid_layout);
 #endif
 }
 
@@ -155,16 +143,11 @@ MorphLinearView::on_control_changed()
 void
 MorphLinearView::update_slider()
 {
-#if 0
-  if (morph_linear->control_type() == MorphLinear::CONTROL_GUI)
-    {
-      morphing_stack->setCurrentIndex (0);
-    }
-  else
-    {
-      morphing_stack->setCurrentIndex (1);
-    }
-#endif
+  bool enabled = (morph_linear->control_type() == MorphLinear::CONTROL_GUI);
+
+  morphing_title->set_enabled (enabled);
+  morphing_slider->set_enabled (enabled);
+  morphing_label->set_enabled (enabled);
 }
 
 void

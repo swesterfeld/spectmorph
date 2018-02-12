@@ -15,6 +15,7 @@ class MorphLinearView : public MorphOperatorView
 protected:
   MorphLinear                     *morph_linear;
 
+  Label                           *morphing_title;
   Label                           *morphing_label;
   Slider                          *morphing_slider;
 

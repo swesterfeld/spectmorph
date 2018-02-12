@@ -30,17 +30,27 @@ struct Slider : public Widget
     double value_pos = C + (width - C * 2) * value;
 
     cairo_rectangle (cr, C, height / 2 - H / 2, value_pos, H);
-    cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+    if (enabled())
+      cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+    else
+      cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
     cairo_fill (cr);
 
     cairo_rectangle (cr, value_pos, height / 2 - H / 2, (width - C - value_pos), H);
     cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
     cairo_fill (cr);
 
-    if (highlight || mouse_down)
-      cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+    if (enabled())
+      {
+        if (highlight || mouse_down)
+          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+        else
+          cairo_set_source_rgb (cr, 0.8, 0.8, 0.8);
+      }
     else
-      cairo_set_source_rgb (cr, 0.8, 0.8, 0.8);
+      {
+        cairo_set_source_rgb (cr, 0.6, 0.6, 0.6);
+      }
     cairo_arc (cr, value_pos, height / 2, C, 0, 2 * M_PI);
     cairo_fill (cr);
   }
