@@ -123,7 +123,7 @@ public:
         yoffset += 2;
 
         auto call_back = [=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; };
-        slider->set_callback (call_back);
+        connect (slider->signal_value_changed, call_back);
         call_back (slider->value);
       }
 
@@ -138,7 +138,6 @@ public:
 
 using std::vector;
 
-#if !VST_PLUGIN
 int
 main (int argc, char **argv)
 {
@@ -156,4 +155,3 @@ main (int argc, char **argv)
     window.process_events();
   }
 }
-#endif

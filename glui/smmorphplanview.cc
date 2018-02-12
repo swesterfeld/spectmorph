@@ -3,6 +3,7 @@
 #include "smmorphplanview.hh"
 #include "smmorphsourceview.hh"
 #include "smmorphoutputview.hh"
+#include "smmorphlinearview.hh"
 
 using namespace SpectMorph;
 
@@ -44,6 +45,10 @@ MorphPlanView::on_plan_changed()
       else if (type == "SpectMorph::MorphOutput")
         {
           op_view = new MorphOutputView (this, static_cast<MorphOutput *> (op), morph_plan_window);
+        }
+      else if (type == "SpectMorph::MorphLinear")
+        {
+          op_view = new MorphLinearView (this, static_cast<MorphLinear *> (op), morph_plan_window);
         }
       else
         {

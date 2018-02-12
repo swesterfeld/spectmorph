@@ -32,6 +32,20 @@ public:
   void set_active (MorphOperator *new_op);
   MorphOperator *active();
 
+  void           add_str_choice (const std::string& str);
+  void           clear_str_choices();
+
+  std::string    active_str_choice();
+  void           set_active_str_choice (const std::string& str);
+
+  void           set_none_ok (bool none_ok);
+
+  static OperatorFilter
+  make_filter (MorphOperator *my_op, MorphOperator::OutputType type)
+  {
+    return [my_op, type] (MorphOperator *op) -> bool { return ((op != my_op) && op->output_type() == type); };
+  }
+
   /* signals */
   Signal<> signal_item_changed;
 

@@ -22,6 +22,9 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
 }
 
+#define UI_WIDTH  512
+#define UI_HEIGHT 1024
+
 bool
 VstUI::open (PuglNativeWindow win_id)
 {
@@ -40,13 +43,13 @@ VstUI::open (PuglNativeWindow win_id)
   widget->show();
 #endif
   control_widget = nullptr;
-  widget = new MorphPlanWindow (512, 512, win_id, false, morph_plan);
+  widget = new MorphPlanWindow (UI_WIDTH, UI_HEIGHT, win_id, false, morph_plan);
   widget->show();
 
   rectangle.top = 0;
   rectangle.left = 0;
-  rectangle.bottom = 512; // XXXwidget->height();
-  rectangle.right = 512;  // XXXwidget->width();
+  rectangle.bottom = UI_HEIGHT; // XXXwidget->height();
+  rectangle.right = UI_WIDTH;  // XXXwidget->width();
 
   return true;
 }
@@ -99,8 +102,8 @@ VstUI::on_update_window_size()
   if (!widget)  // if editor window is not visible, ignore
     return;
 
-  const int width = 512;  // XXX
-  const int height = 512; // XXX
+  const int width = UI_WIDTH;  // XXX
+  const int height = UI_HEIGHT; // XXX
 
   if (height != rectangle.bottom || height != rectangle.right)
     {

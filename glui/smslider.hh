@@ -4,6 +4,7 @@
 #define SPECTMORPH_SLIDER_HH
 
 #include <math.h>
+#include "smmath.hh"
 
 namespace SpectMorph
 {
@@ -14,7 +15,7 @@ struct Slider : public Widget
   bool highlight = false;
   bool mouse_down = false;
   bool enter = false;
-  std::function<void(float)> m_callback;
+  Signal<double> signal_value_changed;
 
   Slider (Widget *parent, double value) :
     Widget (parent),
@@ -62,19 +63,10 @@ struct Slider : public Widget
     if (mouse_down)
       {
         double C = 6;
-        value = (x - C) / (width - C * 2);
-        if (value < 0)
-          value = 0;
-        if (value > 1)
-          value = 1;
-        if (m_callback)
-          m_callback (value);
+        value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
+
+        signal_value_changed (value);
       }
-  }
-  void
-  set_callback (const std::function<void(float)>& callback)
-  {
-    m_callback = callback;
   }
   void
   mouse_press (double x, double y) override

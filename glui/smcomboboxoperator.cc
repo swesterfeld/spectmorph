@@ -102,3 +102,53 @@ ComboBoxOperator::active()
 {
   return op;
 }
+
+void
+ComboBoxOperator::add_str_choice (const string& str)
+{
+  str_choices.push_back (str);
+
+  on_operators_changed();
+}
+
+void
+ComboBoxOperator::clear_str_choices()
+{
+  str_choices.clear();
+  str_choice = "";
+
+  on_operators_changed();
+}
+
+string
+ComboBoxOperator::active_str_choice()
+{
+  return str_choice;
+}
+
+void
+ComboBoxOperator::set_active_str_choice (const string& new_str)
+{
+  for (auto str : str_choices)
+    {
+      if (new_str == str)
+        {
+          op         = NULL;
+          str_choice = new_str;
+
+          on_operators_changed();
+
+          return;
+        }
+    }
+  printf ("ComboBoxOperator::set_active_str_choice (%s) failed\n", new_str.c_str());
+  g_assert_not_reached();
+}
+
+void
+ComboBoxOperator::set_none_ok (bool new_none_ok)
+{
+  none_ok = new_none_ok;
+
+  on_operators_changed();
+}
