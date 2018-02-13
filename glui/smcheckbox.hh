@@ -34,11 +34,6 @@ struct CheckBox : public Widget
 
     double space = 2;
 
-    if (highlight)
-      cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
-    else
-      cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
-
     if (checked)
       {
         if (highlight)
@@ -46,12 +41,20 @@ struct CheckBox : public Widget
         else
           cairo_set_source_rgb (cr, 0.1, 0.7, 0.1);
       }
+    else
+      {
+        if (highlight)
+          cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
+        else
+          cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+      }
+
     du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2, true);
 
     if (checked)
       cairo_set_source_rgb (cr, 0.1, 0.5, 0.1);
     else
-      cairo_set_source_rgba (cr, 0.6, 0.6, 0.6, 1);
+      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
     du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2);
 
     if (enabled())
