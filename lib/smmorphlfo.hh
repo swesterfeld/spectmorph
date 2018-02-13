@@ -4,11 +4,24 @@
 #define SPECTMORPH_MORPH_LFO_HH
 
 #include "smmorphoperator.hh"
+#include "smproperty.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
+
+class MorphLFO;
+
+struct MorphLFOProperties
+{
+  MorphLFOProperties (MorphLFO *lfo);
+
+  LogParamProperty<MorphLFO>    frequency;
+  LinearParamProperty<MorphLFO> depth;
+  LinearParamProperty<MorphLFO> center;
+  LinearParamProperty<MorphLFO> start_phase;
+};
 
 class MorphLFO : public MorphOperator
 {

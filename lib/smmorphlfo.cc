@@ -13,6 +13,16 @@ using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphLFO");
 
+MorphLFOProperties::MorphLFOProperties (MorphLFO *lfo) :
+  frequency (lfo, "Frequency", "%.3f Hz", 0.01, 10, &MorphLFO::frequency, &MorphLFO::set_frequency),
+  depth (lfo, "Depth", "-", 0, 1, &MorphLFO::depth, &MorphLFO::set_depth),
+  center (lfo, "Center", "%.2f", -1, 1, &MorphLFO::center, &MorphLFO::set_center),
+  start_phase (lfo, "Start Phase", "%.1f", -180, 180, &MorphLFO::start_phase, &MorphLFO::set_start_phase)
+{
+  /* FIXME: ideally the storage format should be changed -> store depth as percent */
+  depth.set_custom_formatter ([](float f) -> string { return string_locale_printf ("%.1f %%", f * 100); });
+}
+
 MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {

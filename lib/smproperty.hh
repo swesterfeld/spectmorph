@@ -30,6 +30,8 @@ class IProperty : public Property
   MorphOp&      morph_op;
   std::string   m_label;
   std::string   m_format;
+  std::function<std::string (float)> m_custom_formatter;
+
   std::function<float(const MorphOp&)> get_value;
   std::function<void (MorphOp&, float)> set_value;
 public:
@@ -54,7 +56,21 @@ public:
   virtual double ui2value (double ui) = 0;
 
   std::string label() { return m_label; }
-  std::string value_label() { return string_locale_printf (m_format.c_str(), get_value (morph_op)); }
+
+  std::string
+  value_label()
+  {
+    if (m_custom_formatter)
+      return m_custom_formatter (get_value (morph_op));
+    else
+      return string_locale_printf (m_format.c_str(), get_value (morph_op));
+  }
+
+  void
+  set_custom_formatter (const std::function<std::string (float)>& formatter)
+  {
+    m_custom_formatter = formatter;
+  }
 };
 
 template<class MorphOp>
