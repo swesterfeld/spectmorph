@@ -3,6 +3,7 @@
 #include "smmorphlinearview.hh"
 #include "smmorphplan.hh"
 #include "smcomboboxoperator.hh"
+#include "smcheckbox.hh"
 #include "smutils.hh"
 
 using namespace SpectMorph;
@@ -84,25 +85,27 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   grid.add_widget (morphing_title, 2, yoffset, 9, 2);
   grid.add_widget (morphing_slider,  11, yoffset, 25, 2);
   grid.add_widget (morphing_label, 37, yoffset, 5, 2);
+  yoffset += 2;
 
   connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
 
   on_morphing_changed (morphing_slider->value);
   update_slider();
 
-#if 0
   // FLAG: DB LINEAR
-  QCheckBox *db_linear_box = new QCheckBox ("dB Linear Morphing");
-  db_linear_box->setChecked (morph_linear->db_linear());
-  grid_layout->addWidget (db_linear_box, 4, 0, 1, 2);
-  connect (db_linear_box, SIGNAL (toggled (bool)), this, SLOT (on_db_linear_changed (bool)));
-#endif
+  CheckBox *db_linear_box = new CheckBox (this, "dB Linear Morphing");
+  db_linear_box->set_checked (morph_linear->db_linear());
+  grid.add_widget (db_linear_box, 2, yoffset, 30, 2);
+
+  connect (db_linear_box->signal_toggled, [morph_linear] (bool new_value) {
+    morph_linear->set_db_linear (new_value);
+  });
 }
 
 double
 MorphLinearView::view_height()
 {
-  return 16;
+  return 18;
 }
 
 void
