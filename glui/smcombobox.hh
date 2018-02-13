@@ -62,7 +62,7 @@ struct ComboBoxMenu : public Widget
     scroll_bar->height = items_per_page * 16;
     scroll_bar->pos = double (first_item) / items.size();
 
-    scroll_bar->set_callback ([=] (double pos)
+    connect (scroll_bar->signal_position_changed, [=] (double pos)
       {
         first_item = pos * items.size();
         if (first_item < 0)
