@@ -31,8 +31,8 @@ struct ScrollView : public Widget
   {
     DrawUtils du (cr);
 
-    cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
-    du.round_box (0, 0, width, height, 1, 1);
+    cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
+    du.round_box (0, 0, width, height, 1, 2);
   }
 };
 

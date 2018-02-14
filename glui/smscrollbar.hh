@@ -41,24 +41,20 @@ struct ScrollBar : public Widget
   {
     DrawUtils du (cr);
 
-    double space = 2;
+    const double space = 2;
+
+    const double rwidth = width - 2 * space;
+    const double rheight = height - 2 * space;
+
+    cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+    du.round_box (space, space, rwidth, rheight, 1, 5, true);
+
+    cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
 
     if (orientation == Orientation::HORIZONTAL)
-      {
-        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
-        du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 5, true);
-
-        cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
-        du.round_box (space + pos * width, space, width * page_size, height - 2 * space, 1, 5, true);
-      }
+      du.round_box (space + pos * rwidth, space, rwidth * page_size, rheight, 1, 5, true);
     else
-      {
-        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
-        du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 5, true);
-
-        cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
-        du.round_box (space, pos * height, width - 2 * space, height * page_size, 1, 5, true);
-      }
+      du.round_box (space, space + pos * rheight, rwidth, rheight * page_size, 1, 5, true);
   }
   void
   mouse_press (double x, double y) override

@@ -21,7 +21,7 @@ public:
   {
     FixedGrid grid;
     ScrollView *scroll_view = new ScrollView (this);
-    grid.add_widget (scroll_view, 2, 2, 40, 40);
+    grid.add_widget (scroll_view, 1, 1, 44, 44);
 
     int maxx = 0;
     int maxy = 0;
@@ -42,10 +42,10 @@ public:
     maxx *= 8;
     maxy *= 8;
     ScrollBar *sb = new ScrollBar (this, scroll_view->width / (maxy + 16), Orientation::VERTICAL);
-    grid.add_widget (sb, 45, 4, 2, 40);
+    grid.add_widget (sb, 45, 1, 2, 44);
 
     ScrollBar *sbh = new ScrollBar (this, scroll_view->height / (maxx + 16), Orientation::HORIZONTAL);
-    grid.add_widget (sbh, 2, 45, 42, 2);
+    grid.add_widget (sbh, 1, 45, 44, 2);
 
     auto rescroll = [=](double) {
       scroll_view->scroll_y = -8 + sb->pos * (maxy + 16);
