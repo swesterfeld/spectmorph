@@ -1,3 +1,5 @@
+// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+
 #include <stdio.h>
 #include "pugl/gl.h"
 #if !__APPLE__
@@ -80,7 +82,7 @@ public:
     grid.add_widget (new Label (this, "RSource"), 3, 8, 7, 3);
     grid.add_widget (cb2, 10, 8, 32, 3);
 
-    grid.add_widget (new ScrollBar (this, 0.3), 45, 1, 2, 42);
+    grid.add_widget (new ScrollBar (this, 0.3, Orientation::VERTICAL), 45, 1, 2, 42);
 
     vector<string> item_vec = {
       "*Wind",

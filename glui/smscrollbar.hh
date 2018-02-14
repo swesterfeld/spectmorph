@@ -9,20 +9,31 @@
 namespace SpectMorph
 {
 
+enum class
+Orientation
+{
+  HORIZONTAL,
+  VERTICAL
+};
+
 struct ScrollBar : public Widget
 {
   double page_size;
   double pos;
   double old_pos;
   double mouse_y;
+  double mouse_x;
   bool mouse_down = false;
+
+  Orientation orientation;
 
   Signal<double> signal_position_changed;
 
-  ScrollBar (Widget *parent, double page_size) :
-    Widget (parent, 0, 0, 100, 100),
+  ScrollBar (Widget *parent, double page_size, Orientation orientation) :
+    Widget (parent),
     page_size (page_size),
-    pos (0)
+    pos (0),
+    orientation (orientation)
   {
   }
   void
@@ -32,17 +43,29 @@ struct ScrollBar : public Widget
 
     double space = 2;
 
-    cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
-    du.round_box (space, 0, width - 2 * space, height, 1, 5, true);
+    if (orientation == Orientation::HORIZONTAL)
+      {
+        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+        du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 5, true);
 
-    cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
-    du.round_box (space, pos * height, width - 2 * space, height * page_size, 1, 5, true);
+        cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
+        du.round_box (space + pos * width, space, width * page_size, height - 2 * space, 1, 5, true);
+      }
+    else
+      {
+        cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+        du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 5, true);
+
+        cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
+        du.round_box (space, pos * height, width - 2 * space, height * page_size, 1, 5, true);
+      }
   }
   void
   mouse_press (double x, double y) override
   {
     mouse_down = true;
     mouse_y = y;
+    mouse_x = x;
     old_pos = pos;
   }
   void
@@ -50,11 +73,12 @@ struct ScrollBar : public Widget
   {
     if (mouse_down)
       {
-        pos = old_pos + (y - mouse_y) / height;
-        if (pos > (1 - page_size))
-          pos = 1 - page_size;
-        if (pos < 0)
-          pos = 0;
+        if (orientation == Orientation::VERTICAL)
+          pos = old_pos + (y - mouse_y) / height;
+        else
+          pos = old_pos + (x - mouse_x) / width;
+
+        pos = sm_bound (0.0, pos, 1 - page_size);
         signal_position_changed (pos);
       }
   }

@@ -55,7 +55,7 @@ struct ComboBoxMenu : public Widget
         }
 
     this->height = items_per_page * 16 + 16;
-    scroll_bar = new ScrollBar (this, double (items_per_page) / items.size());
+    scroll_bar = new ScrollBar (this, double (items_per_page) / items.size(), Orientation::VERTICAL);
     scroll_bar->x = width - 20;
     scroll_bar->y = 8;
     scroll_bar->width = 16;

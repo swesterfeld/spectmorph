@@ -39,11 +39,15 @@ smuitest_SOURCES = smuitest.cc
 smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
+smscrolltest_SOURCES = smscrolltest.cc
+smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smscrolltest_LDFLAGS = $(PUGL_LDFLAGS)
+
 smplantest_SOURCES = smplantest.cc
 smplantest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smplantest_LDFLAGS = $(PUGL_LDFLAGS)
 
-noinst_PROGRAMS = smuitest smplantest
+noinst_PROGRAMS = smuitest smplantest smscrolltest
 
 plugindir = $(abs_builddir)/VST_TEST_DIR
 plugin_LTLIBRARIES = smvstplugin.la

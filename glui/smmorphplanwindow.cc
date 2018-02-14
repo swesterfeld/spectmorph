@@ -38,7 +38,7 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   MorphPlanView *mp_view = new MorphPlanView (this, morph_plan.c_ptr(), this);
   grid.add_widget (mp_view, 1, 5, 44, 42);
 
-  ScrollBar *sb = new ScrollBar (this, 0.5);
+  ScrollBar *sb = new ScrollBar (this, 0.5, Orientation::VERTICAL);
   grid.add_widget (sb, 45, 5, 2, 42);
   connect (sb->signal_position_changed, [=](double pos) {
     mp_view->scroll_y = pos * 900;
