@@ -171,7 +171,12 @@ Window::on_display()
                       double delta_y = scroll_view->abs_y() - w->abs_y();
                       if (delta_y < 0)
                         delta_y = 0;
-                      cairo_rectangle (cr, 0, delta_y, w->width, w->height);
+
+                      double delta_x = scroll_view->abs_x() - w->abs_x();
+                      if (delta_x < 0)
+                        delta_x = 0;
+
+                      cairo_rectangle (cr, delta_x, delta_y, w->width, w->height);
                     }
                   else
                     {
