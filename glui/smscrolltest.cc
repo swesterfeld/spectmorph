@@ -11,6 +11,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::max;
 
 class MainWindow : public Window
 {
@@ -22,30 +23,37 @@ public:
     ScrollView *scroll_view = new ScrollView (this);
     grid.add_widget (scroll_view, 2, 2, 40, 40);
 
-    ScrollBar *sb = new ScrollBar (this, 0.5, Orientation::VERTICAL);
-    grid.add_widget (sb, 45, 4, 2, 40);
-    connect (sb->signal_position_changed, [=](double pos) {
-      scroll_view->scroll_y = pos * 900;
-    });
+    int maxx = 0;
+    int maxy = 0;
 
-    ScrollBar *sbh = new ScrollBar (this, 0.5, Orientation::HORIZONTAL);
-    grid.add_widget (sbh, 2, 45, 42, 2);
-    connect (sbh->signal_position_changed, [=](double pos) {
-      scroll_view->scroll_x = pos * 900;
-    });
-
-   for (int bx = 0; bx < 10; bx++)
+    for (int bx = 0; bx < 10; bx++)
       {
         for (int by = 0; by < 20; by++)
           {
             string text = string_printf ("Button %dx%d", bx + 1, by + 1);
 
             Button *button = new Button (scroll_view, text);
-            grid.add_widget (button, 3 + bx * 12, 3 + by * 5, 11, 4);
-
+            grid.add_widget (button, bx * 12, by * 5, 11, 4);
+            maxx = max (maxx, bx * 12 + 11);
+            maxy = max (maxy, by * 5 + 4);
             connect (button->signal_clicked, [=](){ printf ("%s\n", text.c_str()); });
           }
       }
+    maxx *= 8;
+    maxy *= 8;
+    ScrollBar *sb = new ScrollBar (this, scroll_view->width / (maxy + 16), Orientation::VERTICAL);
+    grid.add_widget (sb, 45, 4, 2, 40);
+
+    ScrollBar *sbh = new ScrollBar (this, scroll_view->height / (maxx + 16), Orientation::HORIZONTAL);
+    grid.add_widget (sbh, 2, 45, 42, 2);
+
+    auto rescroll = [=](double) {
+      scroll_view->scroll_y = -8 + sb->pos * (maxy + 16);
+      scroll_view->scroll_x = -8 + sbh->pos * (maxx + 16);
+    };
+    connect (sb->signal_position_changed, rescroll);
+    connect (sbh->signal_position_changed, rescroll);
+    rescroll (0);
   }
 };
 

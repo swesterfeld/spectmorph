@@ -39,13 +39,13 @@ struct Button : public Widget
     if (pressed)
       cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
 
-    du.round_box (0, space, width - 2 * space, height - 2 * space, 1, 10, true);
+    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10, true);
 
     cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
     if (pressed)
       cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
 
-    du.round_box (0, space, width - 2 * space, height - 2 * space, 1, 10);
+    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10);
 
     cairo_set_source_rgba (cr, 1, 1, 1, 1);
     du.text (text, 0, 0, width, height, TextAlign::CENTER);
