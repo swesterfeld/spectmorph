@@ -19,6 +19,7 @@ enum class TextAlign {
 };
 
 struct Window;
+struct ScrollView;
 
 struct Widget : public SignalReceiver
 {
@@ -95,6 +96,16 @@ public:
   window()
   {
     return parent ? parent->window() : nullptr;
+  }
+  virtual ScrollView *
+  scroll_view()
+  {
+    return parent ? parent->scroll_view() : nullptr;
+  }
+  virtual ScrollView *
+  is_scroll_view()
+  {
+    return nullptr;
   }
   void
   set_enabled (bool e)

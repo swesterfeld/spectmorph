@@ -7,6 +7,7 @@
 #include "smlabel.hh"
 #include "smfixedgrid.hh"
 #include "smmorphoperatorview.hh"
+#include "smscrollview.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -14,7 +15,7 @@ namespace SpectMorph
 
 class MorphPlanWindow;
 
-struct MorphPlanView : public Widget
+struct MorphPlanView : public ScrollView
 {
   MorphPlan       *morph_plan;
   MorphPlanWindow *morph_plan_window;

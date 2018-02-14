@@ -5,6 +5,7 @@
 #include "GL/glext.h"
 #endif
 #include "smwindow.hh"
+#include "smscrollview.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>
 
@@ -159,11 +160,23 @@ Window::on_display()
               cairo_save (cr);
 
               cairo_scale (cr, global_scale, global_scale);
+
               // local coordinates
               cairo_translate (cr, w->abs_x(), w->abs_y());
+              ScrollView *scroll_view = w->scroll_view();
               if (w->clipping())
                 {
-                  cairo_rectangle (cr, 0, 0, w->width, w->height);
+                  if (scroll_view)
+                    {
+                      double delta_y = scroll_view->abs_y() - w->abs_y();
+                      if (delta_y < 0)
+                        delta_y = 0;
+                      cairo_rectangle (cr, 0, delta_y, w->width, w->height);
+                    }
+                  else
+                    {
+                      cairo_rectangle (cr, 0, 0, w->width, w->height);
+                    }
                   cairo_clip (cr);
                 }
 

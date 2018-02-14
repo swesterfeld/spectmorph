@@ -5,11 +5,13 @@ cleanup:
  - don't hardcode colors
  - make stuff private
  - scaling via settings
+ - replace callbacks with signals
+ - redraw only if necessary
 
 widgets:
  - popup menu
  - scroll view
- - checkbox
  - knob
 
+instruments should have human names & categories
 file open dialog

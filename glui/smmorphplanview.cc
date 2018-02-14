@@ -11,7 +11,7 @@ using namespace SpectMorph;
 using std::string;
 
 MorphPlanView::MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
-  Widget (parent),
+  ScrollView (parent),
   morph_plan (morph_plan),
   morph_plan_window (morph_plan_window)
 {

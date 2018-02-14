@@ -3,6 +3,7 @@
 #include "smwidget.hh"
 #include "smleakdebugger.hh"
 #include "smwindow.hh"
+#include "smscrollview.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -64,5 +65,13 @@ Widget::abs_y() const
   if (!parent)
     return y;
   else
-    return parent->abs_y() + y;
+    {
+      double scroll_y = 0;
+
+      ScrollView *scroll_view = parent->is_scroll_view();
+      if (scroll_view)
+        scroll_y = scroll_view->scroll_y;
+
+      return parent->abs_y() + y - scroll_y;
+    }
 }
