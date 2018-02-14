@@ -34,9 +34,9 @@ public:
       scroll_view->scroll_x = pos * 900;
     });
 
-   for (int bx = 0; bx < 5; bx++)
+   for (int bx = 0; bx < 10; bx++)
       {
-        for (int by = 0; by < 10; by++)
+        for (int by = 0; by < 20; by++)
           {
             string text = string_printf ("Button %dx%d", bx + 1, by + 1);
 

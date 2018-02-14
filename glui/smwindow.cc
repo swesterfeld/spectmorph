@@ -13,6 +13,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::min;
+using std::max;
 
 struct SpectMorph::CairoGL
 {
@@ -168,15 +169,13 @@ Window::on_display()
                 {
                   if (scroll_view)
                     {
-                      double delta_y = scroll_view->abs_y() - w->abs_y();
-                      if (delta_y < 0)
-                        delta_y = 0;
+                      const double delta_y = scroll_view->abs_y() - w->abs_y();
+                      const double delta_x = scroll_view->abs_x() - w->abs_x();
 
-                      double delta_x = scroll_view->abs_x() - w->abs_x();
-                      if (delta_x < 0)
-                        delta_x = 0;
+                      const double max_height = scroll_view->height + delta_y;
+                      const double max_width = scroll_view->width + delta_x;
 
-                      cairo_rectangle (cr, delta_x, delta_y, w->width, w->height);
+                      cairo_rectangle (cr, max (delta_x, 0.0), max (delta_y, 0.0), min (w->width, max_width), min (w->height, max_height));
                     }
                   else
                     {
