@@ -348,14 +348,7 @@ Window::find_widget_xy (double ex, double ey)
 
   for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
     {
-      const double wx = w->abs_x();
-      const double wy = w->abs_y();
-
-      if (w->enabled() &&
-          ex >= wx &&
-          ey >= wy &&
-          ex < wx + w->width &&
-          ey < wy + w->height)
+      if (w->enabled() && w->abs_visible_rect().contains (ex, ey))
         {
           widget = w;
         }
