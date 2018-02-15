@@ -12,8 +12,6 @@ namespace SpectMorph
 class ScrollView : public Widget
 {
 public:
-  double scroll_x = 0;
-  double scroll_y = 0;
   double view_width = 0;
   double view_height = 0;
   ScrollBar *h_scroll_bar = nullptr;
