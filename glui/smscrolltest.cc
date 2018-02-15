@@ -23,6 +23,7 @@ public:
     ScrollView *scroll_view = new ScrollView (this);
     grid.add_widget (scroll_view, 1, 1, 44, 44);
 
+    Widget *scroll_widget = new Widget (scroll_view);
     int maxx = 0;
     int maxy = 0;
 
@@ -32,7 +33,7 @@ public:
           {
             string text = string_printf ("Button %dx%d", bx + 1, by + 1);
 
-            Button *button = new Button (scroll_view, text);
+            Button *button = new Button (scroll_widget, text);
             grid.add_widget (button, bx * 12, by * 5, 11, 4);
             maxx = max (maxx, bx * 12 + 11);
             maxy = max (maxy, by * 5 + 4);
@@ -41,19 +42,10 @@ public:
       }
     maxx *= 8;
     maxy *= 8;
-    ScrollBar *sb = new ScrollBar (this, scroll_view->width / (maxy + 16), Orientation::VERTICAL);
-    grid.add_widget (sb, 45, 1, 2, 44);
+    scroll_widget->width  = maxx;
+    scroll_widget->height = maxy;
 
-    ScrollBar *sbh = new ScrollBar (this, scroll_view->height / (maxx + 16), Orientation::HORIZONTAL);
-    grid.add_widget (sbh, 1, 45, 44, 2);
-
-    auto rescroll = [=](double) {
-      scroll_view->scroll_y = -8 + sb->pos * (maxy + 16);
-      scroll_view->scroll_x = -8 + sbh->pos * (maxx + 16);
-    };
-    connect (sb->signal_position_changed, rescroll);
-    connect (sbh->signal_position_changed, rescroll);
-    rescroll (0);
+    scroll_view->set_scroll_widget (scroll_widget, true, true);
   }
 };
 

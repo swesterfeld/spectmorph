@@ -56,15 +56,7 @@ Widget::abs_x() const
   if (!parent)
     return x;
   else
-    {
-      double scroll_x = 0;
-
-      ScrollView *scroll_view = parent->is_scroll_view();
-      if (scroll_view)
-        scroll_x = scroll_view->scroll_x;
-
-      return parent->abs_x() + x - scroll_x;
-    }
+    return parent->abs_x() + x;
 }
 
 double
@@ -73,13 +65,5 @@ Widget::abs_y() const
   if (!parent)
     return y;
   else
-    {
-      double scroll_y = 0;
-
-      ScrollView *scroll_view = parent->is_scroll_view();
-      if (scroll_view)
-        scroll_y = scroll_view->scroll_y;
-
-      return parent->abs_y() + y - scroll_y;
-    }
+    return parent->abs_y() + y;
 }

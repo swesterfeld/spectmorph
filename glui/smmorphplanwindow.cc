@@ -35,17 +35,15 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   set_items (help_menu, {"About..."});
   grid.add_widget (menu_bar, 1, 1, 46, 3);
 
-  MorphPlanView *mp_view = new MorphPlanView (this, morph_plan.c_ptr(), this);
-  grid.add_widget (mp_view, 1, 5, 45, 42);
+  ScrollView *scroll_view = new ScrollView (this);
+  grid.add_widget (scroll_view, 1, 5, 47, 42);
 
-  ScrollBar *sb = new ScrollBar (this, 0.5, Orientation::VERTICAL);
-  grid.add_widget (sb, 46, 5, 2, 42);
-  auto rescroll = [=](double pos) {
-    mp_view->scroll_x = -8;
-    mp_view->scroll_y = -8 + pos * 928;
+  MorphPlanView *mp_view = new MorphPlanView (scroll_view, morph_plan.c_ptr(), this);
+  auto update_mp_size = [=]() {
+    scroll_view->set_scroll_widget (mp_view, false, true);
   };
-  connect (sb->signal_position_changed, rescroll);
-  rescroll (0.0);
+  connect (mp_view->signal_widget_size_changed, update_mp_size);
+  update_mp_size();
 }
 
 void

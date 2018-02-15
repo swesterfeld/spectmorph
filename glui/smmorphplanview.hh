@@ -15,7 +15,7 @@ namespace SpectMorph
 
 class MorphPlanWindow;
 
-struct MorphPlanView : public ScrollView
+struct MorphPlanView : public Widget
 {
   MorphPlan       *morph_plan;
   MorphPlanWindow *morph_plan_window;
@@ -23,6 +23,8 @@ struct MorphPlanView : public ScrollView
 
   std::vector<MorphOperatorView *> m_op_views;
 public:
+  Signal<> signal_widget_size_changed;
+
   MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   void on_plan_changed();
