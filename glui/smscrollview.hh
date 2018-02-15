@@ -27,10 +27,11 @@ public:
   {
     return this;
   }
-  ScrollView *
-  is_scroll_view() override
+  bool
+  is_scroll_child (Widget *w)
   {
-    return this;
+    /* return true for scroll_widget and all its children */
+    return (w != this && w != h_scroll_bar && w != v_scroll_bar);
   }
   void
   draw (cairo_t *cr) override

@@ -167,13 +167,13 @@ Window::on_display()
               ScrollView *scroll_view = w->scroll_view();
               if (w->clipping())
                 {
-                  if (scroll_view && !w->is_scroll_view())
+                  if (scroll_view && scroll_view->is_scroll_child (w))
                     {
                       const double delta_y = scroll_view->abs_y() - w->abs_y() + 2;
                       const double delta_x = scroll_view->abs_x() - w->abs_x() + 2;
 
-                      const double max_height = scroll_view->height + delta_y - 4;
-                      const double max_width = scroll_view->width + delta_x - 4;
+                      const double max_height = scroll_view->view_height + delta_y - 4;
+                      const double max_width = scroll_view->view_width + delta_x - 4;
 
                       cairo_rectangle (cr, max (delta_x, 0.0), max (delta_y, 0.0), min (w->width, max_width), min (w->height, max_height));
                     }

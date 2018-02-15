@@ -21,7 +21,7 @@ public:
   {
     FixedGrid grid;
     ScrollView *scroll_view = new ScrollView (this);
-    grid.add_widget (scroll_view, 1, 1, 44, 44);
+    grid.add_widget (scroll_view, 1, 1, 46, 46);
 
     Widget *scroll_widget = new Widget (scroll_view);
     int maxx = 0;

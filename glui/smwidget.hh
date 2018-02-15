@@ -102,11 +102,6 @@ public:
   {
     return parent ? parent->scroll_view() : nullptr;
   }
-  virtual ScrollView *
-  is_scroll_view()
-  {
-    return nullptr;
-  }
   void
   set_enabled (bool e)
   {
