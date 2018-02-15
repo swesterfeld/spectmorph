@@ -164,23 +164,14 @@ Window::on_display()
 
               // local coordinates
               cairo_translate (cr, w->abs_x(), w->abs_y());
-              ScrollView *scroll_view = w->scroll_view();
               if (w->clipping())
                 {
-                  if (scroll_view && scroll_view->is_scroll_child (w))
-                    {
-                      const double delta_y = scroll_view->abs_y() - w->abs_y() + 2;
-                      const double delta_x = scroll_view->abs_x() - w->abs_x() + 2;
+                  Rect visible_rect = w->abs_visible_rect();
 
-                      const double max_height = scroll_view->view_height + delta_y - 4;
-                      const double max_width = scroll_view->view_width + delta_x - 4;
+                  // translate to widget local coordinates
+                  visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
 
-                      cairo_rectangle (cr, max (delta_x, 0.0), max (delta_y, 0.0), min (w->width, max_width), min (w->height, max_height));
-                    }
-                  else
-                    {
-                      cairo_rectangle (cr, 0, 0, w->width, w->height);
-                    }
+                  cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
                   cairo_clip (cr);
                 }
 

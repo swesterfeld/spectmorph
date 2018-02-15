@@ -21,6 +21,46 @@ enum class TextAlign {
 struct Window;
 struct ScrollView;
 
+class Rect
+{
+  double m_x;
+  double m_y;
+  double m_width;
+  double m_height;
+public:
+  Rect (double x, double y, double width, double height) :
+    m_x (x), m_y (y), m_width (width), m_height (height)
+  {
+  }
+  void
+  move_to (double x, double y)
+  {
+    m_x = x;
+    m_y = y;
+  }
+
+  double
+  x() const
+  {
+    return m_x;
+  }
+  double
+  y() const
+  {
+    return m_y;
+  }
+  double
+  width() const
+  {
+    return m_width;
+  }
+  double
+  height() const
+  {
+    return m_height;
+  }
+};
+
 struct Widget : public SignalReceiver
 {
 private:
@@ -114,6 +154,8 @@ public:
   }
   double abs_x() const;
   double abs_y() const;
+
+  Rect   abs_visible_rect();
 };
 
 }
