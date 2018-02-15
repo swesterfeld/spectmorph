@@ -11,13 +11,13 @@ namespace SpectMorph
 
 class ScrollView : public Widget
 {
-public:
   double view_width = 0;
   double view_height = 0;
   ScrollBar *h_scroll_bar = nullptr;
   ScrollBar *v_scroll_bar = nullptr;
   Widget *scroll_widget = 0;
 
+public:
   ScrollView (Widget *parent) :
     Widget (parent)
   {
@@ -32,6 +32,11 @@ public:
   {
     /* return true for scroll_widget and all its children */
     return (w != this && w != h_scroll_bar && w != v_scroll_bar);
+  }
+  Rect
+  child_rect()
+  {
+    return Rect (abs_x() + 2, abs_y() + 2, view_width - 4, view_height - 4);
   }
   void
   draw (cairo_t *cr) override

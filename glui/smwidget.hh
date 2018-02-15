@@ -63,6 +63,20 @@ public:
   {
     return m_height;
   }
+  Rect
+  intersection (const Rect& r)
+  {
+    // lower left corner
+    double x1 = std::max (m_x, r.m_x);
+    double y1 = std::max (m_y, r.m_y);
+
+    // upper right corner
+    double x2 = std::min (m_x + m_width,  r.m_x + r.m_width);
+    double y2 = std::min (m_y + m_height, r.m_y + r.m_height);
+
+    // FIXME: maybe special case the "no intersection at all" rectangle
+    return Rect (x1, y1, std::max (x2 - x1, 0.0), std::max (y2 - y1, 0.0));
+  }
 };
 
 struct Widget : public SignalReceiver

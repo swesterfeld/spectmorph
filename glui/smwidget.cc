@@ -75,18 +75,14 @@ Widget::abs_visible_rect()
 {
   ScrollView *sview = scroll_view();
 
+  Rect visible_rect (abs_x(), abs_y(), width, height);
+
   if (sview && sview->is_scroll_child (this))
     {
-      const double delta_y = sview->abs_y() - abs_y() + 2;
-      const double delta_x = sview->abs_x() - abs_x() + 2;
-
-      const double max_height = sview->view_height + delta_y - 4;
-      const double max_width = sview->view_width + delta_x - 4;
-
-      return Rect (max (delta_x, 0.0) + abs_x(), max (delta_y, 0.0) + abs_y(), min (width, max_width), min (height, max_height));
+      return visible_rect.intersection (sview->child_rect());
     }
   else
     {
-      return Rect (abs_x(), abs_y(), width, height);
+      return visible_rect;
     }
 }
