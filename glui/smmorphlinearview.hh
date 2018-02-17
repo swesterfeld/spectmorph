@@ -30,7 +30,7 @@ public:
 
   double view_height() override;
 
-public slots:
+/* slots: */
   void on_morphing_changed (double new_value);
   void on_control_changed();
   void on_operator_changed();

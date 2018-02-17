@@ -29,7 +29,7 @@ public:
 
   double view_height() override;
 
-public slots:
+/* slots: */
   void on_wave_type_changed();
 };
 
