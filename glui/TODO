@@ -10,7 +10,6 @@ cleanup:
 
 widgets:
  - popup menu
- - scroll view
  - knob
 
 instruments should have human names & categories
