@@ -57,7 +57,7 @@ public:
 
     if (enabled())
       {
-        if (highlight)
+        if (highlight || mouse_down)
           cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
         else
           cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
@@ -75,10 +75,13 @@ public:
   void
   mouse_press (double x, double y) override
   {
-    mouse_down = true;
-    mouse_y = y;
-    mouse_x = x;
-    old_pos = pos;
+    if (clickable_rect.contains (x, y))
+      {
+        mouse_down = true;
+        mouse_y = y;
+        mouse_x = x;
+        old_pos = pos;
+      }
   }
   void
   motion (double x, double y) override
