@@ -4,14 +4,14 @@
 #define SPECTMORPH_OBJECT_HH
 
 #include <QObject>
-#include <QMutex>
+#include <mutex>
 
 namespace SpectMorph
 {
 
 class Object : public QObject
 {
-  QMutex        object_mutex;
+  std::mutex    object_mutex;
   unsigned int  object_ref_count;
 
 public:

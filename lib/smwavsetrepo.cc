@@ -19,7 +19,7 @@ WavSetRepo::the()
 WavSet*
 WavSetRepo::get (const string& filename)
 {
-  QMutexLocker lock (&mutex);
+  std::lock_guard<std::mutex> lock (mutex);
 
   WavSet*& wav_set = wav_set_map[filename];
   if (!wav_set)

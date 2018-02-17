@@ -5,15 +5,14 @@
 
 #include <map>
 #include <string>
-
-#include <QMutex>
+#include <mutex>
 
 namespace SpectMorph
 {
 
 class LeakDebugger
 {
-  QMutex                   mutex;
+  std::mutex               mutex;
   std::map<void *, int>    ptr_map;
   std::string              type;
 

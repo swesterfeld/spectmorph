@@ -14,7 +14,7 @@ Object::Object()
 void
 Object::ref()
 {
-  QMutexLocker lock (&object_mutex);
+  std::lock_guard<std::mutex> lock (object_mutex);
 
   assert (object_ref_count > 0);
   object_ref_count++;
@@ -26,7 +26,7 @@ Object::unref()
   bool destroy;
   // unlock before possible delete this
   {
-    QMutexLocker lock (&object_mutex);
+    std::lock_guard<std::mutex> lock (object_mutex);
     assert (object_ref_count > 0);
     object_ref_count--;
     destroy = (object_ref_count == 0);

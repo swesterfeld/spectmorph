@@ -5,7 +5,7 @@
 
 #include "smwavset.hh"
 
-#include <QMutex>
+#include <mutex>
 
 #include <map>
 
@@ -13,7 +13,7 @@ namespace SpectMorph
 {
 
 class WavSetRepo {
-  QMutex mutex;
+  std::mutex mutex;
   std::map<std::string, WavSet *> wav_set_map;
 public:
   WavSet *get (const std::string& filename);
