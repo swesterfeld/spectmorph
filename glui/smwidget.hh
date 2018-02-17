@@ -87,6 +87,7 @@ struct Widget : public SignalReceiver
 {
 private:
   bool m_enabled = true;
+  bool m_visible = true;
 
 protected:
   void remove_child (Widget *child);
@@ -173,6 +174,16 @@ public:
   enabled() const
   {
     return m_enabled;
+  }
+  void
+  set_visible (bool v)
+  {
+    m_visible = v;
+  }
+  bool
+  visible() const
+  {
+    return m_visible;
   }
   double abs_x() const;
   double abs_y() const;

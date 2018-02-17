@@ -16,12 +16,12 @@ MorphSourceView::MorphSourceView (Widget *parent, MorphSource *morph_source, Mor
 {
   FixedGrid grid;
 
-  Label *instrument_label = new Label (this, "Instrument");
-  instrument_combobox = new ComboBox (this);
+  Label *instrument_label = new Label (body_widget, "Instrument");
+  instrument_combobox = new ComboBox (body_widget);
 
-  int yoffset = 4;
-  grid.add_widget (instrument_label, 2, yoffset, 9, 3);
-  grid.add_widget (instrument_combobox, 11, yoffset, 30, 3);
+  int yoffset = 0;
+  grid.add_widget (instrument_label, 0, yoffset, 9, 3);
+  grid.add_widget (instrument_combobox, 9, yoffset, 30, 3);
 
   on_index_changed();
 

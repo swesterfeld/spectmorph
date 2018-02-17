@@ -33,9 +33,9 @@ PropertyView::init_ui (Widget *parent, FixedGrid& grid, int yoffset)
 
   connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
 
-  grid.add_widget (title, 2, yoffset, 9, 2);
-  grid.add_widget (slider,  11, yoffset, 25, 2);
-  grid.add_widget (label, 37, yoffset, 5, 2);
+  grid.add_widget (title, 0, yoffset, 9, 2);
+  grid.add_widget (slider,  9, yoffset, 25, 2);
+  grid.add_widget (label, 35, yoffset, 5, 2);
 
   return 2;
 }

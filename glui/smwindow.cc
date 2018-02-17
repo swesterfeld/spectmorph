@@ -145,6 +145,18 @@ get_layer (Widget *w, Widget *menu_widget)
     return 0; // no parent
 }
 
+static bool
+get_visible_recursive (Widget *w)
+{
+  if (!w->visible())
+    return false;
+
+  if (w->parent)
+    return get_visible_recursive (w->parent);
+  else
+    return true; // no parent
+}
+
 void
 Window::on_display()
 {
@@ -154,7 +166,7 @@ Window::on_display()
     {
       for (auto w : crawl_widgets())
         {
-          if (get_layer (w, menu_widget) == layer)
+          if (get_layer (w, menu_widget) == layer && get_visible_recursive (w))
             {
               cairo_t *cr = cairo_gl->cr;
 
@@ -348,7 +360,7 @@ Window::find_widget_xy (double ex, double ey)
 
   for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
     {
-      if (w->enabled() && w->abs_visible_rect().contains (ex, ey))
+      if (get_visible_recursive (w) && w->enabled() && w->abs_visible_rect().contains (ex, ey))
         {
           widget = w;
         }

@@ -21,28 +21,28 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 {
   FixedGrid grid;
 
-  int yoffset = 4;
+  int yoffset = 0;
 
   auto operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_AUDIO);
   auto control_operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_CONTROL);
 
   // LEFT SOURCE
-  left_combobox = new ComboBoxOperator (this, morph_linear->morph_plan(), operator_filter);
+  left_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
   left_combobox->set_active (morph_linear->left_op());
 
-  grid.add_widget (new Label (this, "Left Source"), 2, yoffset, 9, 3);
-  grid.add_widget (left_combobox, 11, yoffset, 30, 3);
+  grid.add_widget (new Label (body_widget, "Left Source"), 0, yoffset, 9, 3);
+  grid.add_widget (left_combobox, 9, yoffset, 30, 3);
 
   connect (left_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
   yoffset += 3;
 
   // RIGHT SOURCE
-  right_combobox = new ComboBoxOperator (this, morph_linear->morph_plan(), operator_filter);
+  right_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
   right_combobox->set_active (morph_linear->right_op());
 
-  grid.add_widget (new Label (this, "Right Source"), 2, yoffset, 9, 3);
-  grid.add_widget (right_combobox, 11, yoffset, 30, 3);
+  grid.add_widget (new Label (body_widget, "Right Source"), 0, yoffset, 9, 3);
+  grid.add_widget (right_combobox, 9, yoffset, 30, 3);
 
   connect (right_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
@@ -50,14 +50,14 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   yoffset += 3;
 
-  control_combobox = new ComboBoxOperator (this, morph_linear->morph_plan(), control_operator_filter);
+  control_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), control_operator_filter);
   control_combobox->add_str_choice (CONTROL_TEXT_GUI);
   control_combobox->add_str_choice (CONTROL_TEXT_1);
   control_combobox->add_str_choice (CONTROL_TEXT_2);
   control_combobox->set_none_ok (false);
 
-  grid.add_widget (new Label (this, "Control Input"), 2, yoffset, 9, 3);
-  grid.add_widget (control_combobox, 11, yoffset, 30, 3);
+  grid.add_widget (new Label (body_widget, "Control Input"), 0, yoffset, 9, 3);
+  grid.add_widget (control_combobox, 9, yoffset, 30, 3);
 
   connect (control_combobox->signal_item_changed, this, &MorphLinearView::on_control_changed);
 
@@ -79,12 +79,12 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   // MORPHING
   double morphing_slider_value = (morph_linear->morphing() + 1) / 2.0; /* restore value from operator */
 
-  morphing_title = new Label (this, "Morphing");
-  morphing_slider = new Slider (this, morphing_slider_value);
-  morphing_label = new Label (this, "0");
-  grid.add_widget (morphing_title, 2, yoffset, 9, 2);
-  grid.add_widget (morphing_slider,  11, yoffset, 25, 2);
-  grid.add_widget (morphing_label, 37, yoffset, 5, 2);
+  morphing_title = new Label (body_widget, "Morphing");
+  morphing_slider = new Slider (body_widget, morphing_slider_value);
+  morphing_label = new Label (body_widget, "0");
+  grid.add_widget (morphing_title, 0, yoffset, 9, 2);
+  grid.add_widget (morphing_slider,  9, yoffset, 25, 2);
+  grid.add_widget (morphing_label, 35, yoffset, 5, 2);
   yoffset += 2;
 
   connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
@@ -93,9 +93,9 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   update_slider();
 
   // FLAG: DB LINEAR
-  CheckBox *db_linear_box = new CheckBox (this, "dB Linear Morphing");
+  CheckBox *db_linear_box = new CheckBox (body_widget, "dB Linear Morphing");
   db_linear_box->set_checked (morph_linear->db_linear());
-  grid.add_widget (db_linear_box, 2, yoffset, 30, 2);
+  grid.add_widget (db_linear_box, 0, yoffset, 30, 2);
 
   connect (db_linear_box->signal_toggled, [morph_linear] (bool new_value) {
     morph_linear->set_db_linear (new_value);

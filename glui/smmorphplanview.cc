@@ -30,9 +30,6 @@ MorphPlanView::on_plan_changed()
 
   need_view_rebuild = false;
 
-  FixedGrid grid;
-
-  double y = 0;
   for (auto op : morph_plan->operators())
     {
       // MorphOperatorView *op_view = MorphOperatorView::create (*oi, morph_plan_window);
@@ -59,12 +56,37 @@ MorphPlanView::on_plan_changed()
         {
           op_view = new MorphOperatorView (this, op, morph_plan_window);
         }
-
-      grid.add_widget (op_view, 0, y, 43, op_view->view_height());
-      y += op_view->view_height() + 1;
+      connect (op_view->signal_fold_changed, this, &MorphPlanView::update_positions);
 
       m_op_views.push_back (op_view);
     }
+  update_positions();
+}
+
+void
+MorphPlanView::update_positions()
+{
+  FixedGrid grid;
+
+  double y = 0;
+
+  for (auto op_view : m_op_views)
+    {
+      double view_height;
+      if (op_view->m_op->folded())
+        {
+          view_height = 4;
+        }
+      else
+        {
+          view_height = op_view->view_height();
+        }
+
+      grid.add_widget (op_view, 0, y, 43, view_height);
+      grid.add_widget (op_view->body_widget, 2, 4, 40, view_height - 5);
+      y += view_height + 1;
+    }
+
   height = (y - 1) * 8;
   width  = 43 * 8;
   signal_widget_size_changed();

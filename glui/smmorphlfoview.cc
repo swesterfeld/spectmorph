@@ -25,7 +25,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   FixedGrid grid;
 
   // WAVE TYPE
-  wave_type_combobox = new ComboBox (this);
+  wave_type_combobox = new ComboBox (body_widget);
   wave_type_combobox->add_item (WAVE_TEXT_SINE);
   wave_type_combobox->add_item (WAVE_TEXT_TRIANGLE);
 
@@ -39,21 +39,21 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
     }
   connect (wave_type_combobox->signal_item_changed, this, &MorphLFOView::on_wave_type_changed);
 
-  int yoffset = 4;
-  grid.add_widget (new Label (this, "Wave Type"), 2, yoffset, 9, 3);
-  grid.add_widget (wave_type_combobox, 11, yoffset, 30, 3);
+  int yoffset = 0;
+  grid.add_widget (new Label (body_widget, "Wave Type"), 0, yoffset, 9, 3);
+  grid.add_widget (wave_type_combobox, 9, yoffset, 30, 3);
 
   yoffset += 3;
 
-  yoffset += pv_frequency.init_ui (this, grid, yoffset);
-  yoffset += pv_depth.init_ui (this, grid, yoffset);
-  yoffset += pv_center.init_ui (this, grid, yoffset);
-  yoffset += pv_start_phase.init_ui (this, grid, yoffset);
+  yoffset += pv_frequency.init_ui (body_widget, grid, yoffset);
+  yoffset += pv_depth.init_ui (body_widget, grid, yoffset);
+  yoffset += pv_center.init_ui (body_widget, grid, yoffset);
+  yoffset += pv_start_phase.init_ui (body_widget, grid, yoffset);
 
   // FLAG: SYNC PHASE
-  CheckBox *sync_voices_box = new CheckBox (this, "Sync Phase for all voices");
+  CheckBox *sync_voices_box = new CheckBox (body_widget, "Sync Phase for all voices");
   sync_voices_box->set_checked (morph_lfo->sync_voices());
-  grid.add_widget (sync_voices_box, 2, yoffset, 30, 2);
+  grid.add_widget (sync_voices_box, 0, yoffset, 30, 2);
 
   connect (sync_voices_box->signal_toggled, [morph_lfo] (bool new_value) {
     morph_lfo->set_sync_voices (new_value);

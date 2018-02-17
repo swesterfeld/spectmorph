@@ -27,6 +27,7 @@ public:
 
   MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
+  void update_positions();
   void on_plan_changed();
   void on_need_view_rebuild();
 };
