@@ -14,6 +14,8 @@
 #include "smutils.hh"
 #include "smlv2common.hh"
 
+#include <QMutex>
+
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"

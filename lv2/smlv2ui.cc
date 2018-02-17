@@ -9,6 +9,8 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 
+#include <QMutex>
+
 using namespace SpectMorph;
 
 using std::vector;
