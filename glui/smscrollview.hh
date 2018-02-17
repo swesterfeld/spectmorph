@@ -74,23 +74,27 @@ public:
     /* create new scrollbars */
     if (hscroll)
       {
-        h_scroll_bar = new ScrollBar (this, view_width / (scroll_widget->width + 16), Orientation::HORIZONTAL);
+        const double h_page_size = view_width / (scroll_widget->width + 16);
+        h_scroll_bar = new ScrollBar (this, h_page_size, Orientation::HORIZONTAL);
         h_scroll_bar->x = 0;
         h_scroll_bar->y = view_height;
         h_scroll_bar->height = 16;
         h_scroll_bar->width = view_width;
 
+        h_scroll_bar->set_enabled (h_page_size < 1.0);
         connect (h_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
 
     if (vscroll)
       {
-        v_scroll_bar = new ScrollBar (this, view_height / (scroll_widget->height + 16), Orientation::VERTICAL);
+        const double v_page_size = view_height / (scroll_widget->height + 16);
+        v_scroll_bar = new ScrollBar (this, v_page_size, Orientation::VERTICAL);
         v_scroll_bar->x = view_width;
         v_scroll_bar->y = 0;
         v_scroll_bar->height = view_height;
         v_scroll_bar->width = 16;
 
+        v_scroll_bar->set_enabled (v_page_size < 1.0);
         connect (v_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
     on_scroll_bar_changed (0);
