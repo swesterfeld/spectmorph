@@ -50,6 +50,11 @@ struct DrawUtils
     cairo_stroke (cr);
   }
   void
+  round_box (const Rect& r, double line_width, double radius, bool fill = false)
+  {
+    round_box (r.x(), r.y(), r.width(), r.height(), line_width, radius, fill);
+  }
+  void
   text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)
   {
     // draw label

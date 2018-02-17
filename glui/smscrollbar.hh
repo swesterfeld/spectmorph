@@ -25,6 +25,8 @@ public:
   double mouse_y;
   double mouse_x;
   bool mouse_down = false;
+  bool highlight = false;
+  Rect clickable_rect;
 
   Orientation orientation;
 
@@ -54,14 +56,21 @@ public:
     du.round_box (space, space, rwidth, rheight, 1, 5, true);
 
     if (enabled())
-      cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
+      {
+        if (highlight)
+          cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
+        else
+          cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
+      }
     else
       cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
 
     if (orientation == Orientation::HORIZONTAL)
-      du.round_box (space + pos * rwidth, space, rwidth * page_size, rheight, 1, 5, true);
+      clickable_rect = Rect (space + pos * rwidth, space, rwidth * page_size, rheight);
     else
-      du.round_box (space, space + pos * rheight, rwidth, rheight * page_size, 1, 5, true);
+      clickable_rect = Rect (space, space + pos * rheight, rwidth, rheight * page_size);
+
+    du.round_box (clickable_rect, 1, 5, true);
   }
   void
   mouse_press (double x, double y) override
@@ -74,6 +83,8 @@ public:
   void
   motion (double x, double y) override
   {
+    highlight = clickable_rect.contains (x, y);
+
     if (mouse_down)
       {
         if (orientation == Orientation::VERTICAL)

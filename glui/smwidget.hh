@@ -28,6 +28,10 @@ class Rect
   double m_width;
   double m_height;
 public:
+  Rect() :
+    m_x (0), m_y (0), m_width (0), m_height (0)
+  {
+  }
   Rect (double x, double y, double width, double height) :
     m_x (x), m_y (y), m_width (width), m_height (height)
   {
