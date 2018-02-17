@@ -9,8 +9,6 @@
 
 #include <map>
 
-#include <QObject>
-
 namespace SpectMorph
 {
 
