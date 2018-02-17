@@ -75,12 +75,38 @@ public:
   void
   mouse_press (double x, double y) override
   {
-    if (clickable_rect.contains (x, y))
+    if (clickable_rect.contains (x, y)) /* drag scroll bar */
       {
         mouse_down = true;
         mouse_y = y;
         mouse_x = x;
         old_pos = pos;
+      }
+    else /* click, not in scroll bar rect => jump one page */
+      {
+        double new_pos = pos;
+
+        if (orientation == Orientation::HORIZONTAL)
+          {
+            if (x < clickable_rect.x())
+              new_pos = pos - page_size;
+            else if (x > clickable_rect.x() + clickable_rect.width())
+              new_pos = pos + page_size;
+          }
+        else
+          {
+            if (y < clickable_rect.y())
+              new_pos = pos - page_size;
+            else if (y > clickable_rect.y() + clickable_rect.height())
+              new_pos = pos + page_size;
+          }
+
+        new_pos = sm_bound (0.0, new_pos, 1 - page_size);
+        if (pos != new_pos)
+          {
+            pos = new_pos;
+            signal_position_changed (pos);
+          }
       }
   }
   void
