@@ -322,8 +322,8 @@ void
 MorphPlan::remove (MorphOperator *op)
 {
   Q_EMIT need_view_rebuild();
-  Q_EMIT operator_removed (op);
   signal_need_view_rebuild();
+  signal_operator_removed (op);
 
   // accessing operator contents after remove was called is an error
   delete op;

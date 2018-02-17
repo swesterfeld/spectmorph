@@ -5,6 +5,7 @@
 
 #include "smoutfile.hh"
 #include "sminfile.hh"
+#include "smsignal.hh"
 
 #include <map>
 
@@ -16,9 +17,8 @@ namespace SpectMorph
 class MorphOperatorView;
 class MorphPlan;
 
-class MorphOperator : public QObject
+class MorphOperator : public SignalReceiver
 {
-  Q_OBJECT
 protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;

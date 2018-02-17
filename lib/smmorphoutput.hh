@@ -34,8 +34,6 @@ struct MorphOutputProperties
 
 class MorphOutput : public MorphOperator
 {
-  Q_OBJECT
-
   std::vector<std::string>     load_channel_op_names;
   std::vector<MorphOperator *> channel_ops;
 
@@ -127,7 +125,7 @@ public:
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
 
-public slots:
+/* slots: */
   void on_operator_removed (MorphOperator *op);
 };
 

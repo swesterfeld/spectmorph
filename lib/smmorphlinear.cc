@@ -16,7 +16,7 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphLinear");
 MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
+  connect (morph_plan->signal_operator_removed, this, &MorphLinear::on_operator_removed);
 
   m_left_op = NULL;
   m_right_op = NULL;

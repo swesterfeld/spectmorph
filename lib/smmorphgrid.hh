@@ -21,8 +21,6 @@ struct MorphGridNode
 
 class MorphGrid : public MorphOperator
 {
-  Q_OBJECT
-
 public:
   enum ControlType {
     CONTROL_GUI      = 1,
@@ -91,7 +89,7 @@ public:
   MorphGridNode   input_node (int x, int y);
   std::string     input_node_label (int x, int y);
 
-public slots:
+/* slots: */
   void            on_operator_removed (MorphOperator *op);
 };
 

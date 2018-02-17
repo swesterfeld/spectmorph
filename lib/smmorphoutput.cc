@@ -19,7 +19,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan),
   channel_ops (CHANNEL_OP_COUNT)
 {
-  connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
+  connect (morph_plan->signal_operator_removed, this, &MorphOutput::on_operator_removed);
 
   m_sines = true;
   m_noise = true;

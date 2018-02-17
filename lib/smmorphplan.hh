@@ -61,14 +61,14 @@ public:
   static std::string id_chars();
   static std::string generate_id();
 
-  Signal<> signal_plan_changed;
-  Signal<> signal_index_changed;
-  Signal<> signal_need_view_rebuild;
+  Signal<>                signal_plan_changed;
+  Signal<>                signal_index_changed;
+  Signal<>                signal_need_view_rebuild;
+  Signal<MorphOperator *> signal_operator_removed;
 
 signals:
   void plan_changed();
   void index_changed();
-  void operator_removed (MorphOperator *op);
   void need_view_rebuild();
 };
 

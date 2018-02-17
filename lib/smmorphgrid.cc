@@ -23,7 +23,7 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 {
   leak_debugger.add (this);
 
-  connect (morph_plan, SIGNAL (operator_removed (MorphOperator *)), this, SLOT (on_operator_removed (MorphOperator *)));
+  connect (morph_plan->signal_operator_removed, this, &MorphGrid::on_operator_removed);
 
   m_width = 2;
   m_height = 1;
