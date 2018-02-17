@@ -15,6 +15,7 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QGroupBox>
+#include <QMutex>
 
 #include <jack/jack.h>
 
