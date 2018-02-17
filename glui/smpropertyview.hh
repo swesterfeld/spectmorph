@@ -24,7 +24,7 @@ public:
   int init_ui (Widget *parent, FixedGrid& layout, int yoffset);
   void set_enabled (bool enabled);
 
-public slots:
+/* slots: */
   void on_value_changed (int new_value);
 };
 
