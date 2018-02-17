@@ -7,6 +7,8 @@
 #include "smmorphplansynth.hh"
 #include "smmidisynth.hh"
 
+#include <QMutex>
+
 namespace SpectMorph
 {
 
