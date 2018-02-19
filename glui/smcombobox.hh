@@ -153,6 +153,7 @@ protected:
   std::unique_ptr<ComboBoxMenu> menu;
   std::string m_text;
   std::vector<ComboBoxItem> items;
+  bool highlight = false;
 
 public:
   Signal<> signal_item_changed;
@@ -192,9 +193,26 @@ public:
     DrawUtils du (cr);
 
     double space = 2;
+    if (highlight || menu)
+      {
+        cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
+        du.round_box (0, space, width, height - 2 * space, 1, 5, true);
+      }
     cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
     du.round_box (0, space, width, height - 2 * space, 1, 5);
     du.text (m_text, 10, 0, width - 10, height);
+
+    /* triangle */
+    double tri_x = width - 20;
+    double tri_y = height / 2 - 3;
+
+    cairo_move_to (cr, tri_x, tri_y);
+    cairo_line_to (cr, tri_x + 8, tri_y);
+    cairo_line_to (cr, tri_x + 4, tri_y + 6);
+
+    cairo_close_path (cr);
+    cairo_stroke_preserve (cr);
+    cairo_fill (cr);
   }
   void
   mouse_press (double mx, double my) override
@@ -203,6 +221,16 @@ public:
     menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
     window()->set_menu_widget (menu.get());
+  }
+  void
+  enter_event() override
+  {
+    highlight = true;
+  }
+  void
+  leave_event() override
+  {
+    highlight = false;
   }
   void
   close_menu (const std::string& new_text)
