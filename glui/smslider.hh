@@ -14,7 +14,6 @@ struct Slider : public Widget
   double value;
   bool highlight = false;
   bool mouse_down = false;
-  bool enter = false;
   int int_range_min = 0;
   int int_range_max = 0;
   Signal<double> signal_value_changed;
@@ -39,20 +38,28 @@ struct Slider : public Widget
   void
   draw (cairo_t *cr) override
   {
-    double H = 4; // height of slider thing
+    DrawUtils du (cr);
+
+    double H = 6; // height of slider thing
     double C = 6;
     double value_pos = C + (width - C * 2) * value;
 
-    cairo_rectangle (cr, C, height / 2 - H / 2, value_pos, H);
     if (enabled())
-      cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+      {
+        if (highlight)
+          cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+        else
+          cairo_set_source_rgb (cr, 0.1, 0.7, 0.1);
+      }
     else
       cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
-    cairo_fill (cr);
+    du.round_box (0, height / 2 - H / 2, value_pos, H, 0, 2, true);
 
-    cairo_rectangle (cr, value_pos, height / 2 - H / 2, (width - C - value_pos), H);
-    cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
-    cairo_fill (cr);
+    if (highlight)
+      cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+    else
+      cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
+    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 0, 2, true);
 
     if (enabled())
       {
@@ -68,46 +75,34 @@ struct Slider : public Widget
     cairo_arc (cr, value_pos, height / 2, C, 0, 2 * M_PI);
     cairo_fill (cr);
   }
-  bool
-  in_circle (double x, double y)
+  void
+  slider_value_from_x (double x)
   {
     double C = 6;
-    double value_pos = C + (width - C * 2) * value;
+    value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
 
-    double dx = value_pos - x;
-    double dy = height / 2 - y;
-    double dist = sqrt (dx * dx + dy * dy);
+    /* optional: only allow discrete integer values */
+    if (int_range_min != int_range_max)
+      {
+        int ivalue = int_range_min + sm_round_positive (value * (int_range_max - int_range_min));
+        value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
 
-    return (dist < C);
+        signal_int_value_changed (ivalue);
+      }
+
+    signal_value_changed (value);
   }
   void
   motion (double x, double y) override
   {
-    highlight = in_circle (x, y);
     if (mouse_down)
-      {
-        double C = 6;
-        value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
-
-        /* optional: only allow discrete integer values */
-        if (int_range_min != int_range_max)
-          {
-            int ivalue = int_range_min + sm_round_positive (value * (int_range_max - int_range_min));
-            value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
-
-            signal_int_value_changed (ivalue);
-          }
-
-        signal_value_changed (value);
-      }
+      slider_value_from_x (x);
   }
   void
   mouse_press (double x, double y) override
   {
-    if (in_circle (x, y))
-      {
-        mouse_down = true;
-      }
+    slider_value_from_x (x);
+    mouse_down = true;
   }
   void
   mouse_release (double x, double y) override
@@ -117,12 +112,11 @@ struct Slider : public Widget
   void
   enter_event() override
   {
-    enter = true;
+    highlight = true;
   }
   void
   leave_event() override
   {
-    enter = false;
     highlight = false;
   }
 };
