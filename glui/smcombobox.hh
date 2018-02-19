@@ -27,7 +27,7 @@ struct ComboBoxMenu : public Widget
   const double px_starty = 8;
 
   int selected_item = 0;
-  ScrollBar *scroll_bar;
+  ScrollBar *scroll_bar = nullptr;
   std::function<void(const std::string&)> m_done_callback;
 
   int items_per_page;
@@ -41,9 +41,17 @@ struct ComboBoxMenu : public Widget
     items (items)
   {
     if (items.size() > 10)
-      items_per_page = 10;
+      {
+        /* need scroll bar */
+        items_per_page = 10;
+
+        scroll_bar = new ScrollBar (this, double (items_per_page) / items.size(), Orientation::VERTICAL);
+      }
     else
-      items_per_page = items.size();
+      {
+        /* all items fit on screen */
+        items_per_page = items.size();
+      }
 
     first_item = 0;
     for (size_t i = 0; i < items.size(); i++)
@@ -55,21 +63,24 @@ struct ComboBoxMenu : public Widget
         }
 
     this->height = items_per_page * 16 + 16;
-    scroll_bar = new ScrollBar (this, double (items_per_page) / items.size(), Orientation::VERTICAL);
-    scroll_bar->x = width - 20;
-    scroll_bar->y = 8;
-    scroll_bar->width = 16;
-    scroll_bar->height = items_per_page * 16;
-    scroll_bar->pos = double (first_item) / items.size();
 
-    connect (scroll_bar->signal_position_changed, [=] (double pos)
+    if (scroll_bar)
       {
-        first_item = pos * items.size();
-        if (first_item < 0)
-          first_item = 0;
-        if (first_item > int (items.size()) - items_per_page)
-          first_item = items.size() - items_per_page;
-      });
+        scroll_bar->x = width - 20;
+        scroll_bar->y = 8;
+        scroll_bar->width = 16;
+        scroll_bar->height = items_per_page * 16;
+        scroll_bar->pos = double (first_item) / items.size();
+
+        connect (scroll_bar->signal_position_changed, [=] (double pos)
+          {
+            first_item = pos * items.size();
+            if (first_item < 0)
+              first_item = 0;
+            if (first_item > int (items.size()) - items_per_page)
+              first_item = items.size() - items_per_page;
+          });
+      }
   }
   void
   set_done_callback (const std::function<void(const std::string&)>& callback)
@@ -90,8 +101,10 @@ struct ComboBoxMenu : public Widget
       {
         if (selected_item == i)
           {
+            const double box_width = scroll_bar ? width - 28 : width - 8;
+
             cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
-            du.round_box (4, starty, width - 28, 16, 1, 5, true);
+            du.round_box (4, starty, box_width, 16, 1, 5, true);
 
             cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
           }
@@ -127,7 +140,8 @@ struct ComboBoxMenu : public Widget
   void
   scroll (double dx, double dy) override
   {
-    scroll_bar->scroll (dx, dy);
+    if (scroll_bar)
+      scroll_bar->scroll (dx, dy);
   }
   inline void
   mouse_release (double x, double y) override;
