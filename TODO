@@ -13,6 +13,7 @@ NEXT RELEASE:
 - why does white noise not sound like white noise?
 - panning per note
 - velocity should map to "Velocity Sensitivity (dB)"
+- morph plan operator cycles lead to crashes
 
 beast:
 - move spectmorph osc plugin from spectmorph to beast
