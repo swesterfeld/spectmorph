@@ -109,8 +109,7 @@ struct MenuBar : public Widget
               {
                 if (selected_menu_item == i)
                   {
-                    cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
-                    du.round_box (sx + 4, starty, max_text_width + 24, 16, 1, 5, true);
+                    du.round_box (sx + 4, starty, max_text_width + 24, 16, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
 
                     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
                   }

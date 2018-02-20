@@ -26,26 +26,20 @@ struct Button : public Widget
   {
     DrawUtils du (cr);
 
-    if (enabled())
-      cairo_set_source_rgba (cr, 1, 1, 1, 1);
-    else
-      cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
-
     double space = 2;
+    Color bg_color;
     if (highlight)
-      cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
+      bg_color.set_rgb (0.7, 0.7, 0.7);
     else
-      cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+      bg_color.set_rgb (0.5, 0.5, 0.5);
     if (pressed)
-      cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
+      bg_color.set_rgb (0.3, 0.3, 0.3);
 
-    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10, true);
-
-    cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
+    Color frame_color (0.3, 0.3, 0.3);
     if (pressed)
-      cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
+      frame_color.set_rgb (0.4, 0.4, 0.4);
 
-    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10);
+    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10, frame_color, bg_color);
 
     cairo_set_source_rgba (cr, 1, 1, 1, 1);
     du.text (text, 0, 0, width, height, TextAlign::CENTER);

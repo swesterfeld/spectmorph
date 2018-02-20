@@ -110,6 +110,12 @@ public:
         case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
       }
   }
+  Color (double r, double g, double b)
+  {
+    m_red = r;
+    m_green = g;
+    m_blue = b;
+  }
   operator bool()
   {
     return m_valid;

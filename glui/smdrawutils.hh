@@ -62,41 +62,10 @@ struct DrawUtils
       }
   }
   void
-  round_box (double x, double y, double width, double height, double line_width, double radius,
-             bool fill = false)
+  round_box (const Rect& r, double line_width, double radius,
+             Color frame_color, Color fill_color = Color::null())
   {
-    static const double degrees = 3.14159265 / 180.0;
-    static const double lw_2 = line_width / 2;
-
-    cairo_new_sub_path (cr);
-    cairo_arc (cr,
-               x + width - lw_2 - radius,
-               y + lw_2 + radius,
-               radius, -90 * degrees, 0 * degrees);
-    cairo_arc (cr,
-               x + width - lw_2 - radius,
-               y + height - lw_2 - radius,
-               radius, 0 * degrees, 90 * degrees);
-    cairo_arc (cr,
-               x + lw_2 + radius,
-               y + height - lw_2 - radius,
-               radius, 90 * degrees, 180 * degrees);
-    cairo_arc (cr,
-               x + lw_2 + radius,
-               y + lw_2 + radius,
-               radius, 180 * degrees, 270 * degrees);
-    cairo_close_path (cr);
-
-    if (fill)
-      cairo_fill_preserve (cr);
-    // Draw border
-    cairo_set_line_width (cr, line_width);
-    cairo_stroke (cr);
-  }
-  void
-  round_box (const Rect& r, double line_width, double radius, bool fill = false)
-  {
-    round_box (r.x(), r.y(), r.width(), r.height(), line_width, radius, fill);
+    round_box (r.x(), r.y(), r.width(), r.height(), line_width, radius, frame_color, fill_color);
   }
   void
   text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)

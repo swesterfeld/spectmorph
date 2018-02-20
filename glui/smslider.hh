@@ -44,22 +44,24 @@ struct Slider : public Widget
     double C = 6;
     double value_pos = C + (width - C * 2) * value;
 
+    Color slider_color_l;
     if (enabled())
       {
         if (highlight)
-          cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+          slider_color_l.set_rgb (0.1, 0.9, 0.1);
         else
-          cairo_set_source_rgb (cr, 0.1, 0.7, 0.1);
+          slider_color_l.set_rgb (0.1, 0.7, 0.1);
       }
     else
-      cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
-    du.round_box (0, height / 2 - H / 2, value_pos, H, 0, 2, true);
+      slider_color_l.set_rgb (0.4, 0.4, 0.4);
+    du.round_box (0, height / 2 - H / 2, value_pos, H, 0, 2, Color::null(), slider_color_l);
 
+    Color slider_color_r;
     if (highlight)
-      cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+      slider_color_r.set_rgb (0.5, 0.5, 0.5);
     else
-      cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
-    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 0, 2, true);
+      slider_color_r.set_rgb (0.3, 0.3, 0.3);
+    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 0, 2, Color::null(), slider_color_r);
 
     if (enabled())
       {

@@ -49,28 +49,30 @@ public:
     const double rwidth = width - 2 * space;
     const double rheight = height - 2 * space;
 
+    Color bg_color;
     if (enabled())
-      cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+      bg_color.set_rgb (0.5, 0.5, 0.5);
     else
-      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-    du.round_box (space, space, rwidth, rheight, 1, 5, true);
+      bg_color.set_rgb (0.3, 0.3, 0.3);
+    du.round_box (space, space, rwidth, rheight, 1, 5, Color::null(), bg_color);
 
+    Color fg_color;
     if (enabled())
       {
         if (highlight || mouse_down)
-          cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
+          fg_color.set_rgb (0.8, 0.8, 0.8);
         else
-          cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
+          fg_color.set_rgb (0.7, 0.7, 0.7);
       }
     else
-      cairo_set_source_rgba (cr, 0.5, 0.5, 0.5, 1);
+      fg_color.set_rgb (0.5, 0.5, 0.5);
 
     if (orientation == Orientation::HORIZONTAL)
       clickable_rect = Rect (space + pos * rwidth, space, rwidth * page_size, rheight);
     else
       clickable_rect = Rect (space, space + pos * rheight, rwidth, rheight * page_size);
 
-    du.round_box (clickable_rect, 1, 5, true);
+    du.round_box (clickable_rect, 1, 5, Color::null(), fg_color);
   }
   void
   mouse_press (double x, double y) override

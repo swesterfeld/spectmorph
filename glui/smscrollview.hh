@@ -43,8 +43,7 @@ public:
   {
     DrawUtils du (cr);
 
-    cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
-    du.round_box (0, 0, view_width, view_height, 1, 2);
+    du.round_box (0, 0, view_width, view_height, 1, 2, ThemeColor::MENU_BG);
   }
   void
   set_scroll_widget (Widget *new_scroll_widget, bool hscroll, bool vscroll)
