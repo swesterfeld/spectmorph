@@ -40,20 +40,30 @@ MorphSourceView::on_index_changed()
 {
   instrument_combobox->clear();
 
-  vector<string> smsets = morph_source->morph_plan()->index()->smsets();
-  for (auto s : smsets)
-    instrument_combobox->add_item (ComboBoxItem (s));
-
-  auto it = find (smsets.begin(), smsets.end(), morph_source->smset());
-  if (it != smsets.end())
+  auto groups = morph_source->morph_plan()->index()->groups();
+  for (auto group : groups)
     {
-      instrument_combobox->set_text (morph_source->smset());
+      instrument_combobox->add_item (ComboBoxItem (group.group, true));
+      for (auto instrument : group.instruments)
+        {
+          instrument_combobox->add_item (ComboBoxItem (instrument.label));
+        }
+    }
+
+  string label = morph_source->morph_plan()->index()->smset_to_label (morph_source->smset());
+  if (!label.empty())
+    {
+      instrument_combobox->set_text (label);
     }
   else
     {
       // use first instrument as default (could be moved from gui code to model)
+      auto smsets = morph_source->morph_plan()->index()->smsets();
       if (!smsets.empty())
-        instrument_combobox->set_text (smsets[0]);
+        {
+          string label = morph_source->morph_plan()->index()->smset_to_label (smsets[0]);
+          instrument_combobox->set_text (label);
+        }
       on_instrument_changed();
     }
 }
@@ -61,5 +71,8 @@ MorphSourceView::on_index_changed()
 void
 MorphSourceView::on_instrument_changed()
 {
-  morph_source->set_smset (instrument_combobox->text());
+  string smset = morph_source->morph_plan()->index()->label_to_smset (instrument_combobox->text());
+
+  // smset could be empty here (label not found) - but that is ok, then we unset source instrument
+  morph_source->set_smset (smset);
 }
