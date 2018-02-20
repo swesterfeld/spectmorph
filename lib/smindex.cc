@@ -25,6 +25,7 @@ Index::clear()
 {
   m_smset_dir = "";
   m_smsets.clear();
+  m_groups.clear();
 
   m_expanded_filename = "";
   m_filename = "";
@@ -92,13 +93,29 @@ Index::load_file (const string& filename)
       return false;
     }
 
+  Group group;
+  group.group = "-no-group-";
   while (cfg.next())
     {
-      string str;
+      string str, label;
 
       if (cfg.command ("smset", str))
         {
           m_smsets.push_back (str);
+          group.instruments.push_back (Instrument ({ str, str }));
+        }
+      else if (cfg.command ("smset", str, label))
+        {
+          m_smsets.push_back (str);
+          group.instruments.push_back (Instrument ({ str, label }));
+        }
+      else if (cfg.command ("group", str))
+        {
+          if (group.instruments.size())
+            m_groups.push_back (group);
+
+          group = Group();
+          group.group = str;
         }
       else if (cfg.command ("smset_dir", str))
         {
@@ -120,6 +137,8 @@ Index::load_file (const string& filename)
           cfg.die_if_unknown();
         }
     }
+  if (group.instruments.size())
+    m_groups.push_back (group);
   m_load_ok = true;
   return true;
 }
@@ -169,4 +188,38 @@ string
 Index::smset_dir() const
 {
   return m_smset_dir;
+}
+
+const vector<Index::Group>
+Index::groups() const
+{
+  return m_groups;
+}
+
+string
+Index::label_to_smset (const std::string& label) const
+{
+  for (auto group : m_groups)
+    {
+      for (auto instrument : group.instruments)
+        {
+          if (instrument.label == label)
+            return instrument.smset;
+        }
+    }
+  return "";
+}
+
+string
+Index::smset_to_label (const std::string& smset) const
+{
+  for (auto group : m_groups)
+    {
+      for (auto instrument : group.instruments)
+        {
+          if (instrument.smset == smset)
+            return instrument.label;
+        }
+    }
+  return "";
 }

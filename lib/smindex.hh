@@ -18,8 +18,23 @@ enum IndexType
 
 class Index
 {
+public:
+  struct Instrument
+  {
+    std::string smset;
+    std::string label;
+  };
+
+  struct Group
+  {
+    std::string group;
+    std::vector<Instrument> instruments;
+  };
+
+private:
   std::vector<std::string> m_smsets;
   std::string              m_smset_dir;
+  std::vector<Group>       m_groups;
 
   std::string              m_expanded_filename;
   std::string              m_filename;
@@ -37,6 +52,10 @@ public:
   std::string expanded_filename() const;
   std::string dir() const;
   bool        load_ok() const;
+  std::string label_to_smset (const std::string& label) const;
+  std::string smset_to_label (const std::string& smset) const;
+
+  const std::vector<Group>        groups() const;
 
   const std::vector<std::string>& smsets() const;
   std::string                     smset_dir() const;
