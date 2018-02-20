@@ -88,7 +88,8 @@ enum class ThemeColor
   FRAME,
   MENU_BG,
   MENU_ITEM,
-  CHECKBOX
+  CHECKBOX,
+  SLIDER
 };
 
 class Color
@@ -110,6 +111,7 @@ public:
         case ThemeColor::MENU_BG:   set_rgb (0.3, 0.3, 0.3);  break;
         case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
         case ThemeColor::CHECKBOX:  set_rgb (0.1, 0.7, 0.1);  break;
+        case ThemeColor::SLIDER:    set_rgb (0.1, 0.7, 0.1);  break;
       }
   }
   Color (double r, double g, double b)

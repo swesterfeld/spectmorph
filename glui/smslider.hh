@@ -44,13 +44,11 @@ struct Slider : public Widget
     double C = 6;
     double value_pos = C + (width - C * 2) * value;
 
-    Color slider_color_l;
+    Color slider_color_l = ThemeColor::SLIDER;
     if (enabled())
       {
         if (highlight)
-          slider_color_l.set_rgb (0.1, 0.9, 0.1);
-        else
-          slider_color_l.set_rgb (0.1, 0.7, 0.1);
+          slider_color_l = slider_color_l.lighter();
       }
     else
       slider_color_l.set_rgb (0.4, 0.4, 0.4);
