@@ -41,7 +41,7 @@ struct MenuBar : public Widget
   int selected_menu_item = -1;
 
   MenuBar (Widget *parent)
-    : Widget (parent, 0, 0, 100, 100)
+    : Widget (parent)
   {
   }
   Menu *
