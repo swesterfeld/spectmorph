@@ -144,6 +144,8 @@ public:
     m_blue = b;
     m_valid = true;
   }
+  void set_hsv (double h, double s, double v);
+  void get_hsv (double *h, double *s, double *v);
 };
 
 struct Widget : public SignalReceiver

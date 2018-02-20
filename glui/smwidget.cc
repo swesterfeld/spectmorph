@@ -86,3 +86,70 @@ Widget::abs_visible_rect()
       return visible_rect;
     }
 }
+
+/* Color conversion from Rapicorn */
+// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
+void
+Color::get_hsv (double *huep,           /* 0..360: 0=red, 120=green, 240=blue */
+                double *saturationp,    /* 0..1 */
+                double *valuep)         /* 0..1 */
+{
+  double r = red(), g = green(), b = blue();
+  double value = MAX (MAX (r, g), b);
+  double delta = value - MIN (MIN (r, g), b);
+  double saturation = value == 0 ? 0 : delta / value;
+  double hue = 0;
+  if (saturation && huep)
+    {
+      if (r == value)
+        {
+          hue = 0 + 60 * (g - b) / delta;
+          if (hue <= 0)
+            hue += 360;
+        }
+      else if (g == value)
+        hue = 120 + 60 * (b - r) / delta;
+      else /* b == value */
+        hue = 240 + 60 * (r - g) / delta;
+    }
+  if (huep)
+    *huep = hue;
+  if (saturationp)
+    *saturationp = saturation;
+  if (valuep)
+    *valuep = value;
+}
+
+void
+Color::set_hsv (double hue,             /* 0..360: 0=red, 120=green, 240=blue */
+                double saturation,      /* 0..1 */
+                double value)           /* 0..1 */
+{
+  uint center = int (hue / 60);
+  double frac = hue / 60 - center;
+  double v1s = value * (1 - saturation);
+  double vsf = value * (1 - saturation * frac);
+  double v1f = value * (1 - saturation * (1 - frac));
+  switch (center)
+    {
+    case 6:
+    case 0: /* red */
+      set_rgb (value, v1f, v1s);
+      break;
+    case 1: /* red + green */
+      set_rgb (vsf, value, v1s);
+      break;
+    case 2: /* green */
+      set_rgb (v1s, value, v1f);
+      break;
+    case 3: /* green + blue */
+      set_rgb (v1s, vsf, value);
+      break;
+    case 4: /* blue */
+      set_rgb (v1f, v1s, value);
+      break;
+    case 5: /* blue + red */
+      set_rgb (value, v1s, vsf);
+      break;
+    }
+}
