@@ -15,7 +15,7 @@
 namespace SpectMorph
 {
 
-struct MorphPlanWindow : public Window
+class MorphPlanWindow : public Window
 {
   MorphPlanPtr m_morph_plan;
   std::string  m_filename;

@@ -19,7 +19,7 @@ enum class TextAlign {
 };
 
 struct Window;
-struct ScrollView;
+class ScrollView;
 
 class Rect
 {
