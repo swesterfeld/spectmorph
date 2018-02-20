@@ -34,8 +34,9 @@ class ColorTest : public Widget
 {
 public:
   Color color;
-  ColorTest (Widget *parent) :
-    Widget (parent)
+  ColorTest (Widget *parent, Color color) :
+    Widget (parent),
+    color (color)
   {
   }
   void draw (cairo_t *cr) override
@@ -158,16 +159,20 @@ public:
           grid.add_widget (new Label (this, texts[x]), 3 + x * 2, 20, 2, 2);
       }
     Color green (0.1, 0.7, 0.1);
-    ColorTest *ct0 = new ColorTest (this);
-    ct0->color = green;
+    ColorTest *ct0 = new ColorTest (this, green);
     grid.add_widget (ct0, 3, 40, 2, 2);
-    ColorTest *ct1 = new ColorTest (this);
     double h, s, v;
     green.get_hsv (&h, &s, &v);
     Color green2;
     green2.set_hsv (h, s, v);
-    ct1->color = green2;
+    ColorTest *ct1 = new ColorTest (this, green2);
     grid.add_widget (ct1, 6, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.lighter (150)), 9, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.lighter (200)), 12, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.lighter (250)), 15, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.darker (150)), 18, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.darker (200)), 21, 40, 2, 2);
+    grid.add_widget (new ColorTest (this, green.darker (250)), 24, 40, 2, 2);
   }
 };
 

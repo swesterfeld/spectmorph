@@ -38,22 +38,16 @@ struct CheckBox : public Widget
 
     if (checked)
       {
-        frame_color.set_rgb (0.1, 0.5, 0.1);
-
-        if (highlight)
-          fill_color.set_rgb (0.1, 0.9, 0.1);
-        else
-          fill_color.set_rgb (0.1, 0.7, 0.1);
+        fill_color = ThemeColor::CHECKBOX;
       }
     else
       {
-        frame_color.set_rgb (0.3, 0.3, 0.3);
-
-        if (highlight)
-          fill_color.set_rgb (0.7, 0.7, 0.7);
-        else
-          fill_color.set_rgb (0.5, 0.5, 0.5);
+        fill_color.set_rgb (0.5, 0.5, 0.5);
       }
+    if (highlight)
+      fill_color = fill_color.lighter();
+
+    frame_color = fill_color.darker();
 
     du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2, frame_color, fill_color);
 

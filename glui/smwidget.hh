@@ -87,7 +87,8 @@ enum class ThemeColor
 {
   FRAME,
   MENU_BG,
-  MENU_ITEM
+  MENU_ITEM,
+  CHECKBOX
 };
 
 class Color
@@ -108,13 +109,12 @@ public:
         case ThemeColor::FRAME:     set_rgb (0.8, 0.8, 0.8);  break;
         case ThemeColor::MENU_BG:   set_rgb (0.3, 0.3, 0.3);  break;
         case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
+        case ThemeColor::CHECKBOX:  set_rgb (0.1, 0.7, 0.1);  break;
       }
   }
   Color (double r, double g, double b)
   {
-    m_red = r;
-    m_green = g;
-    m_blue = b;
+    set_rgb (r, g, b);
   }
   operator bool()
   {
@@ -146,6 +146,8 @@ public:
   }
   void set_hsv (double h, double s, double v);
   void get_hsv (double *h, double *s, double *v);
+  Color lighter (double factor = 150);
+  Color darker (double factor = 150);
 };
 
 struct Widget : public SignalReceiver

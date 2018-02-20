@@ -153,3 +153,39 @@ Color::set_hsv (double hue,             /* 0..360: 0=red, 120=green, 240=blue */
       break;
     }
 }
+
+Color
+Color::lighter (double factor)
+{
+  if (!m_valid)
+    return Color::null();
+
+  double h, s, v;
+  get_hsv (&h, &s, &v);
+
+  v = factor * v / 100;
+  if (v > 1)
+    {
+      // overflow: adjust saturation
+      s = max (s - (v - 1), 0.0);
+      v = 1;
+    }
+
+  Color color;
+  color.set_hsv (h, s, v);
+  return color;
+}
+
+Color
+Color::darker (double factor)
+{
+  if (!m_valid)
+    return Color::null();
+
+  double h, s, v;
+  get_hsv (&h, &s, &v);
+
+  Color color;
+  color.set_hsv (h, s, v * 100 / factor);
+  return color;
+}
