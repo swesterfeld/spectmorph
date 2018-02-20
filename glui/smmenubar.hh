@@ -58,8 +58,7 @@ struct MenuBar : public Widget
     DrawUtils du (cr);
 
     double space = 2;
-    cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-    du.round_box (0, space, width, height - 2 * space, 1, 5, true);
+    du.round_box (0, space, width, height - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_BG);
     cairo_set_source_rgba (cr, 1, 1, 1, 1);
 
     double tx = 16;
@@ -77,8 +76,7 @@ struct MenuBar : public Widget
 
         if (item == selected_menu)
           {
-            cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
-            du.round_box (sx, space, ex - sx, height - 2 * space, 1, 5, true);
+            du.round_box (sx, space, ex - sx, height - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
 
             cairo_set_source_rgba (cr, 0, 0, 0, 1); /* black text */
           }
@@ -104,8 +102,7 @@ struct MenuBar : public Widget
 
             const double menu_height = menu->items.size() * 16 + 16;
 
-            cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-            du.round_box (sx, height + space, max_text_width + 32, menu_height, 1, 5, true);
+            du.round_box (sx, height + space, max_text_width + 32, menu_height, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
 
             double starty = height + space + 8;
             for (int i = 0; i < int (menu->items.size()); i++)

@@ -20,9 +20,8 @@ struct Frame : public Widget
     const double radius  = 10;
     const double line_width = 1.5;
 
-    cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
     DrawUtils du (cr);
-    du.round_box (0, 0, width, height, line_width, radius);
+    du.round_box (0, 0, width, height, line_width, radius, ThemeColor::FRAME);
 }
 };
 

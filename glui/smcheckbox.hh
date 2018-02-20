@@ -34,28 +34,28 @@ struct CheckBox : public Widget
 
     double space = 2;
 
+    Color frame_color, fill_color;
+
     if (checked)
       {
+        frame_color.set_rgb (0.1, 0.5, 0.1);
+
         if (highlight)
-          cairo_set_source_rgb (cr, 0.1, 0.9, 0.1);
+          fill_color.set_rgb (0.1, 0.9, 0.1);
         else
-          cairo_set_source_rgb (cr, 0.1, 0.7, 0.1);
+          fill_color.set_rgb (0.1, 0.7, 0.1);
       }
     else
       {
+        frame_color.set_rgb (0.3, 0.3, 0.3);
+
         if (highlight)
-          cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
+          fill_color.set_rgb (0.7, 0.7, 0.7);
         else
-          cairo_set_source_rgb (cr, 0.5, 0.5, 0.5);
+          fill_color.set_rgb (0.5, 0.5, 0.5);
       }
 
-    du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2, true);
-
-    if (checked)
-      cairo_set_source_rgb (cr, 0.1, 0.5, 0.1);
-    else
-      cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-    du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2);
+    du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2, frame_color, fill_color);
 
     if (enabled())
       cairo_set_source_rgba (cr, 1, 1, 1, 1);

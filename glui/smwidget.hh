@@ -83,6 +83,63 @@ public:
   }
 };
 
+enum class ThemeColor
+{
+  FRAME,
+  MENU_BG,
+  MENU_ITEM
+};
+
+class Color
+{
+  bool   m_valid = false;
+  double m_red = 0;
+  double m_green = 0;
+  double m_blue = 0;
+
+public:
+  Color()
+  {
+  }
+  Color (ThemeColor theme_color)
+  {
+    switch (theme_color)
+      {
+        case ThemeColor::FRAME:     set_rgb (0.8, 0.8, 0.8);  break;
+        case ThemeColor::MENU_BG:   set_rgb (0.3, 0.3, 0.3);  break;
+        case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
+      }
+  }
+  operator bool()
+  {
+    return m_valid;
+  }
+  static Color null()
+  {
+    return Color(); // not valid
+  }
+  double red() const
+  {
+    return m_red;
+  }
+  double green() const
+  {
+    return m_green;
+  }
+  double blue() const
+  {
+    return m_blue;
+  }
+  void
+  set_rgb (double r, double g, double b)
+  {
+    m_red = r;
+    m_green = g;
+    m_blue = b;
+    m_valid = true;
+  }
+};
+
 struct Widget : public SignalReceiver
 {
 private:

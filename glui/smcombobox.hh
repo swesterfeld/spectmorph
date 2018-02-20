@@ -93,8 +93,7 @@ struct ComboBoxMenu : public Widget
     DrawUtils du (cr);
 
     double space = 2;
-    cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-    du.round_box (0, space, width, height - 2 * space, 1, 5, true);
+    du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
 
     double starty = px_starty;
     for (int i = first_item; i < first_item + items_per_page; i++)
@@ -103,8 +102,7 @@ struct ComboBoxMenu : public Widget
           {
             const double box_width = scroll_bar ? width - 28 : width - 8;
 
-            cairo_set_source_rgba (cr, 1, 0.6, 0.0, 1);
-            du.round_box (4, starty, box_width, 16, 1, 5, true);
+            du.round_box (4, starty, box_width, 16, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
 
             cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
           }
@@ -193,13 +191,11 @@ public:
     DrawUtils du (cr);
 
     double space = 2;
+    Color fill_color;
     if (highlight || menu)
-      {
-        cairo_set_source_rgba (cr, 0.3, 0.3, 0.3, 1);
-        du.round_box (0, space, width, height - 2 * space, 1, 5, true);
-      }
-    cairo_set_source_rgba (cr, 0.8, 0.8, 0.8, 1);
-    du.round_box (0, space, width, height - 2 * space, 1, 5);
+      fill_color = ThemeColor::MENU_BG;
+
+    du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME, fill_color);
     du.text (m_text, 10, 0, width - 10, height);
 
     /* triangle */

@@ -19,6 +19,50 @@ struct DrawUtils
   }
   void
   round_box (double x, double y, double width, double height, double line_width, double radius,
+             Color frame_color, Color fill_color = Color::null())
+  {
+    static const double degrees = 3.14159265 / 180.0;
+    static const double lw_2 = line_width / 2;
+
+    cairo_new_sub_path (cr);
+    cairo_arc (cr,
+               x + width - lw_2 - radius,
+               y + lw_2 + radius,
+               radius, -90 * degrees, 0 * degrees);
+    cairo_arc (cr,
+               x + width - lw_2 - radius,
+               y + height - lw_2 - radius,
+               radius, 0 * degrees, 90 * degrees);
+    cairo_arc (cr,
+               x + lw_2 + radius,
+               y + height - lw_2 - radius,
+               radius, 90 * degrees, 180 * degrees);
+    cairo_arc (cr,
+               x + lw_2 + radius,
+               y + lw_2 + radius,
+               radius, 180 * degrees, 270 * degrees);
+    cairo_close_path (cr);
+
+    if (fill_color)
+      {
+        // Draw background
+        cairo_set_source_rgb (cr, fill_color.red(), fill_color.green(), fill_color.blue());
+
+        if (frame_color) /* preserve path for frame */
+          cairo_fill_preserve (cr);
+        else
+          cairo_fill (cr);
+      }
+    // Draw border
+    if (frame_color)
+      {
+        cairo_set_source_rgb (cr, frame_color.red(), frame_color.green(), frame_color.blue());
+        cairo_set_line_width (cr, line_width);
+        cairo_stroke (cr);
+      }
+  }
+  void
+  round_box (double x, double y, double width, double height, double line_width, double radius,
              bool fill = false)
   {
     static const double degrees = 3.14159265 / 180.0;
