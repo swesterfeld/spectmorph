@@ -21,7 +21,8 @@ noinst_LTLIBRARIES = libspectmorphglui.la
 
 SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smmorphsourceview.cc smmorphoutputview.cc smcomboboxoperator.cc \
-	 smmorphlinearview.cc smpropertyview.cc smmorphlfoview.cc
+	 smmorphlinearview.cc smpropertyview.cc smmorphlfoview.cc \
+	 smmorphgridview.cc
 
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
@@ -29,7 +30,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smfixedgrid.hh smmorphoperatorview.hh smmorphsourceview.hh \
 	 smmorphoutputview.hh smcomboboxoperator.hh smmorphlinearview.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
-	 smbutton.hh smfoldbutton.hh
+	 smbutton.hh smfoldbutton.hh smmorphgridview.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)

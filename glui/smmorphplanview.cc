@@ -5,6 +5,7 @@
 #include "smmorphoutputview.hh"
 #include "smmorphlinearview.hh"
 #include "smmorphlfoview.hh"
+#include "smmorphgridview.hh"
 
 using namespace SpectMorph;
 
@@ -51,6 +52,10 @@ MorphPlanView::on_plan_changed()
       else if (type == "SpectMorph::MorphLFO")
         {
           op_view = new MorphLFOView (this, static_cast<MorphLFO *> (op), morph_plan_window);
+        }
+      else if (type == "SpectMorph::MorphGrid")
+        {
+          op_view = new MorphGridView (this, static_cast<MorphGrid *> (op), morph_plan_window);
         }
       else
         {
