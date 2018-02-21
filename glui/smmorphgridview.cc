@@ -53,6 +53,7 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
       assert (false);
     }
 
+  title = new Label (body_widget, ctl_xy == CONTROL_X ? "X Value" : "Y Value");
   slider = new Slider (body_widget, 0);
   label = new Label (body_widget, "");
 
@@ -123,6 +124,7 @@ MorphGridControlUI::on_combobox_changed()
       else
         morph_grid->set_y_control_type (new_type);
     }
+  title->set_enabled (control_gui);
   label->set_enabled (control_gui);
   slider->set_enabled (control_gui);
 }
@@ -184,14 +186,14 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   yoffset += 3;
 
   // X Value
-  grid.add_widget (new Label (body_widget, "X Value"), 0, yoffset, 9, 2);
-  grid.add_widget (x_ui->slider,  9, yoffset, 25, 2);
+  grid.add_widget (x_ui->title, 0, yoffset, 9, 2);
+  grid.add_widget (x_ui->slider, 9, yoffset, 25, 2);
   grid.add_widget (x_ui->label, 35, yoffset, 5, 2);
 
   yoffset += 2;
 
   // Y Value
-  grid.add_widget (new Label (body_widget, "Y Value"), 0, yoffset, 9, 2);
+  grid.add_widget (y_ui->title, 0, yoffset, 9, 2);
   grid.add_widget (y_ui->slider,  9, yoffset, 25, 2);
   grid.add_widget (y_ui->label, 35, yoffset, 5, 2);
 

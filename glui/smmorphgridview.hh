@@ -20,6 +20,7 @@ public:
   MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy);
 
   ComboBoxOperator *combobox;
+  Label            *title;
   Slider           *slider;
   Label            *label;
   double            value;
