@@ -152,8 +152,8 @@ public:
   }
   void set_hsv (double h, double s, double v);
   void get_hsv (double *h, double *s, double *v);
-  Color lighter (double factor = 150);
-  Color darker (double factor = 150);
+  Color lighter (double factor = 130);
+  Color darker (double factor = 130);
 };
 
 struct Widget : public SignalReceiver

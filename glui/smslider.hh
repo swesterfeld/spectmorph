@@ -54,11 +54,9 @@ struct Slider : public Widget
       slider_color_l.set_rgb (0.4, 0.4, 0.4);
     du.round_box (0, height / 2 - H / 2, value_pos, H, 0, 2, Color::null(), slider_color_l);
 
-    Color slider_color_r;
+    Color slider_color_r (0.3, 0.3, 0.3);
     if (highlight)
-      slider_color_r.set_rgb (0.5, 0.5, 0.5);
-    else
-      slider_color_r.set_rgb (0.3, 0.3, 0.3);
+      slider_color_r = slider_color_r.lighter();
     du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 0, 2, Color::null(), slider_color_r);
 
     if (enabled())
