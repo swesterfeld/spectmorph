@@ -228,6 +228,8 @@ MorphGridView::on_plan_changed()
 {
   width_label->text = string_printf ("%d", morph_grid->width());
   height_label->text = string_printf ("%d", morph_grid->height());
+  x_ui->slider->value = (morph_grid->x_morphing() + 1) / 2;
+  y_ui->slider->value = (morph_grid->y_morphing() + 1) / 2;
   x_ui->label->text = string_locale_printf ("%.2f", morph_grid->x_morphing());
   y_ui->label->text = string_locale_printf ("%.2f", morph_grid->y_morphing());
 }

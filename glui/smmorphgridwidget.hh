@@ -13,8 +13,16 @@ class MorphGridWidget : public Widget
 {
   MorphGrid *morph_grid;
 
+  bool move_controller = false;
+
 public:
   MorphGridWidget (Widget *parent, MorphGrid *morph_grid);
+
+  void draw (cairo_t *cr) override;
+
+  void mouse_press (double x, double y) override;
+  void mouse_release (double x, double y) override;
+  void motion (double x, double y) override;
 
 /* slots: */
   void on_plan_changed();
