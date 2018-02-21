@@ -52,12 +52,12 @@ struct Slider : public Widget
       }
     else
       slider_color_l.set_rgb (0.4, 0.4, 0.4);
-    du.round_box (0, height / 2 - H / 2, value_pos, H, 0, 2, Color::null(), slider_color_l);
+    du.round_box (0, height / 2 - H / 2, value_pos, H, 1, 2, slider_color_l.darker(), slider_color_l);
 
     Color slider_color_r (0.3, 0.3, 0.3);
     if (highlight)
       slider_color_r = slider_color_r.lighter();
-    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 0, 2, Color::null(), slider_color_r);
+    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 1, 2, slider_color_r.darker(), slider_color_r);
 
     if (enabled())
       {
