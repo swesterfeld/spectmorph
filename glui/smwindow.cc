@@ -94,6 +94,8 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   fflush (stdout);
   puglLeaveContext(view, false);
+
+  set_background_color (ThemeColor::WINDOW_BG);
 }
 
 Window::~Window()

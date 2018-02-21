@@ -89,7 +89,8 @@ enum class ThemeColor
   MENU_BG,
   MENU_ITEM,
   CHECKBOX,
-  SLIDER
+  SLIDER,
+  WINDOW_BG
 };
 
 class Color
@@ -112,6 +113,7 @@ public:
         case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
         case ThemeColor::CHECKBOX:  set_rgb (0.1, 0.7, 0.1);  break;
         case ThemeColor::SLIDER:    set_rgb (0.1, 0.7, 0.1);  break;
+        case ThemeColor::WINDOW_BG: set_rgb (0.2, 0.2, 0.2);  break;
       }
   }
   Color (double r, double g, double b)
@@ -157,6 +159,7 @@ struct Widget : public SignalReceiver
 private:
   bool m_enabled = true;
   bool m_visible = true;
+  Color m_background_color;
 
 protected:
   void remove_child (Widget *child);
@@ -182,12 +185,7 @@ public:
   virtual ~Widget();
 
   virtual void
-  draw (cairo_t *cr)
-  {
-    cairo_set_source_rgb (cr, 0.2, 0.2, 0.2);
-    cairo_rectangle (cr, 0, 0, width, height);
-    cairo_fill (cr);
-  }
+  draw (cairo_t *cr);
   virtual bool
   clipping()
   {
@@ -253,6 +251,16 @@ public:
   visible() const
   {
     return m_visible;
+  }
+  void
+  set_background_color (Color color)
+  {
+    m_background_color = color;
+  }
+  Color
+  background_color() const
+  {
+    return m_background_color;
   }
   double abs_x() const;
   double abs_y() const;

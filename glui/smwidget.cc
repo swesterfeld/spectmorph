@@ -87,6 +87,18 @@ Widget::abs_visible_rect()
     }
 }
 
+void
+Widget::draw (cairo_t *cr)
+{
+  if (m_background_color)
+    {
+      DrawUtils du (cr);
+      du.set_color (m_background_color);
+      cairo_rectangle (cr, 0, 0, width, height);
+      cairo_fill (cr);
+    }
+}
+
 /* Color conversion from Rapicorn */
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 void

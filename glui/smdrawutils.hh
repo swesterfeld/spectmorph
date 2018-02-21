@@ -103,6 +103,11 @@ struct DrawUtils
     cairo_text_extents (cr, text.c_str(), &extents);
     return extents.width;
   }
+  void
+  set_color (Color color)
+  {
+    cairo_set_source_rgb (cr, color.red(), color.blue(), color.green());
+  }
 };
 
 }
