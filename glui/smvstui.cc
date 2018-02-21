@@ -22,8 +22,8 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
 }
 
-#define UI_WIDTH  512
-#define UI_HEIGHT 1024
+#define UI_WIDTH  384
+#define UI_HEIGHT 800
 
 bool
 VstUI::open (PuglNativeWindow win_id)

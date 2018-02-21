@@ -199,6 +199,18 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 
   yoffset += 2;
 
+  yoffset++;
+  grid_widget = new MorphGridWidget (body_widget, morph_grid);
+  grid.add_widget (grid_widget, 5, yoffset, 30, 30);
+
+  yoffset += 31;
+
+  // Source
+  auto input_op_filter = ComboBoxOperator::make_filter (morph_grid, MorphOperator::OUTPUT_AUDIO);
+  op_combobox = new ComboBoxOperator (body_widget, morph_grid->morph_plan(), input_op_filter);
+  grid.add_widget (new Label (body_widget, "Source"), 0, yoffset, 9, 3);
+  grid.add_widget (op_combobox, 9, yoffset, 30, 3);
+
   // Global
   connect (morph_grid->morph_plan()->signal_plan_changed, this, &MorphGridView::on_plan_changed);
 
@@ -208,7 +220,7 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 double
 MorphGridView::view_height()
 {
-  return 20;
+  return 55;
 }
 
 void

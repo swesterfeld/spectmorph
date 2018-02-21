@@ -6,6 +6,7 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphgrid.hh"
 #include "smcomboboxoperator.hh"
+#include "smmorphgridwidget.hh"
 
 namespace SpectMorph
 {
@@ -34,8 +35,10 @@ class MorphGridView : public MorphOperatorView
 {
 protected:
   MorphGrid          *morph_grid;
+  MorphGridWidget    *grid_widget;
   Label              *width_label;
   Label              *height_label;
+  ComboBoxOperator   *op_combobox;
 
   MorphGridControlUI *x_ui;
   MorphGridControlUI *y_ui;

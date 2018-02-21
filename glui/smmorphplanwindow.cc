@@ -36,7 +36,7 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   grid.add_widget (menu_bar, 1, 1, 46, 3);
 
   ScrollView *scroll_view = new ScrollView (this);
-  grid.add_widget (scroll_view, 1, 5, 47, 42);
+  grid.add_widget (scroll_view, 1, 5, 47, height / 8 - 6);
 
   MorphPlanView *mp_view = new MorphPlanView (scroll_view, morph_plan.c_ptr(), this);
   auto update_mp_size = [=]() {
