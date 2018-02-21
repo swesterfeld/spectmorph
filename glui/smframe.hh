@@ -21,7 +21,7 @@ struct Frame : public Widget
     const double line_width = 1.5;
 
     DrawUtils du (cr);
-    du.round_box (0, 0, width, height, line_width, radius, ThemeColor::FRAME);
+    du.round_box (0, 0, width, height, line_width, radius, ThemeColor::FRAME, ThemeColor::OPERATOR_BG);
 }
 };
 
