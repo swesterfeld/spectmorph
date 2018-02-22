@@ -46,7 +46,7 @@ struct DrawUtils
     if (fill_color)
       {
         // Draw background
-        cairo_set_source_rgb (cr, fill_color.red(), fill_color.green(), fill_color.blue());
+        set_color (fill_color);
 
         if (frame_color) /* preserve path for frame */
           cairo_fill_preserve (cr);
@@ -56,7 +56,7 @@ struct DrawUtils
     // Draw border
     if (frame_color)
       {
-        cairo_set_source_rgb (cr, frame_color.red(), frame_color.green(), frame_color.blue());
+        set_color (frame_color);
         cairo_set_line_width (cr, line_width);
         cairo_stroke (cr);
       }
@@ -106,7 +106,7 @@ struct DrawUtils
   void
   set_color (Color color)
   {
-    cairo_set_source_rgb (cr, color.red(), color.blue(), color.green());
+    cairo_set_source_rgb (cr, color.red(), color.green(), color.blue());
   }
 };
 
