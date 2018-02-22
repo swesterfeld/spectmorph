@@ -264,6 +264,15 @@ public:
   {
     return m_background_color;
   }
+  bool
+  recursive_enabled() const
+  {
+    if (!m_enabled)
+      return false;
+    if (parent)
+      return parent->recursive_enabled();
+    return true;
+  }
   double abs_x() const;
   double abs_y() const;
 

@@ -195,7 +195,17 @@ public:
     if (highlight || menu)
       fill_color = ThemeColor::MENU_BG;
 
-    du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME, fill_color);
+    Color text_color (1, 1, 1);
+    Color frame_color = ThemeColor::FRAME;
+    if (!recursive_enabled())
+      {
+        text_color = text_color.darker();
+        frame_color = frame_color.darker();
+      }
+
+    du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color, fill_color);
+
+    du.set_color (text_color);
     du.text (m_text, 10, 0, width - 10, height);
 
     /* triangle */

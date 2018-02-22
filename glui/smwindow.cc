@@ -362,7 +362,7 @@ Window::find_widget_xy (double ex, double ey)
 
   for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
     {
-      if (get_visible_recursive (w) && w->enabled() && w->abs_visible_rect().contains (ex, ey))
+      if (get_visible_recursive (w) && w->recursive_enabled() && w->abs_visible_rect().contains (ex, ey))
         {
           widget = w;
         }
