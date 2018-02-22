@@ -28,7 +28,6 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   // LEFT SOURCE
   left_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
-  left_combobox->set_active (morph_linear->left_op());
 
   grid.add_widget (new Label (body_widget, "Left Source"), 0, yoffset, 9, 3);
   grid.add_widget (left_combobox, 9, yoffset, 30, 3);
@@ -39,7 +38,6 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   // RIGHT SOURCE
   right_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
-  right_combobox->set_active (morph_linear->right_op());
 
   grid.add_widget (new Label (body_widget, "Right Source"), 0, yoffset, 9, 3);
   grid.add_widget (right_combobox, 9, yoffset, 30, 3);
@@ -100,6 +98,10 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   connect (db_linear_box->signal_toggled, [morph_linear] (bool new_value) {
     morph_linear->set_db_linear (new_value);
   });
+
+  connect (morph_linear->morph_plan()->signal_index_changed, this, &MorphLinearView::on_index_changed);
+
+  on_index_changed();     // add instruments to left/right combobox
 }
 
 double
@@ -156,12 +158,55 @@ MorphLinearView::update_slider()
 void
 MorphLinearView::on_operator_changed()
 {
+  const Index *index = morph_linear->morph_plan()->index();
+
   morph_linear->set_left_op (left_combobox->active());
+  morph_linear->set_left_smset (index->label_to_smset (left_combobox->active_str_choice()));
+
   morph_linear->set_right_op (right_combobox->active());
+  morph_linear->set_right_smset (index->label_to_smset (right_combobox->active_str_choice()));
 }
 
 void
 MorphLinearView::on_db_linear_changed (bool new_value)
 {
   morph_linear->set_db_linear (new_value);
+}
+
+void
+MorphLinearView::on_index_changed()
+{
+  left_combobox->clear_str_choices();
+  right_combobox->clear_str_choices();
+
+  auto groups = morph_linear->morph_plan()->index()->groups();
+  for (auto group : groups)
+    {
+      left_combobox->add_str_headline (group.group);
+      right_combobox->add_str_headline (group.group);
+      for (auto instrument : group.instruments)
+        {
+          left_combobox->add_str_choice (instrument.label);
+          right_combobox->add_str_choice (instrument.label);
+        }
+    }
+  left_combobox->set_op_headline ("Sources");
+  right_combobox->set_op_headline ("Sources");
+
+  if (morph_linear->left_op())
+    left_combobox->set_active (morph_linear->left_op());
+
+  if (morph_linear->left_smset() != "")
+    {
+      string label = morph_linear->morph_plan()->index()->smset_to_label (morph_linear->left_smset());
+      left_combobox->set_active_str_choice (label);
+    }
+  if (morph_linear->right_op())
+    right_combobox->set_active (morph_linear->right_op());
+
+  if (morph_linear->right_smset() != "")
+    {
+      string label = morph_linear->morph_plan()->index()->smset_to_label (morph_linear->right_smset());
+      right_combobox->set_active_str_choice (label);
+    }
 }
