@@ -3,6 +3,7 @@
 #include "smmorphgridwidget.hh"
 #include "smdrawutils.hh"
 #include "smmath.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
@@ -12,6 +13,7 @@ MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid) :
   Widget (parent),
   morph_grid (morph_grid)
 {
+  connect (morph_grid->morph_plan()->signal_plan_changed, this, &MorphGridWidget::on_plan_changed);
 }
 
 void
@@ -191,4 +193,19 @@ void
 MorphGridWidget::mouse_release (double x, double y)
 {
   move_controller = false;
+}
+
+void
+MorphGridWidget::on_plan_changed()
+{
+  if (morph_grid->selected_x() >= morph_grid->width())
+    {
+      morph_grid->set_selected_x (-1);
+      signal_selection_changed();
+    }
+  if (morph_grid->selected_y() >= morph_grid->height())
+    {
+      morph_grid->set_selected_y (-1);
+      signal_selection_changed();
+    }
 }
