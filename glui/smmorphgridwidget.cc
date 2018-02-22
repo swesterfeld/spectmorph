@@ -6,6 +6,8 @@
 
 using namespace SpectMorph;
 
+using std::min;
+
 MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid) :
   Widget (parent),
   morph_grid (morph_grid)
@@ -19,10 +21,102 @@ MorphGridWidget::draw (cairo_t *cr)
 
   du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
-  const double start_x = 20;
-  const double end_x = height - 20;
-  const double start_y = 20;
-  const double end_y = width - 20;
+  const double node_rect_width = 40;
+  const double node_rect_height = 20;
+
+  const double start_x = 10 + node_rect_width / 2;
+  const double end_x = width - node_rect_width / 2 - 10;
+  const double start_y = 10 + node_rect_height / 2;
+  const double end_y = height - node_rect_height / 2 - 10;
+
+  x_coord.resize (morph_grid->width());
+  y_coord.resize (morph_grid->height());
+
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      if (morph_grid->width() > 1)
+        {
+          x_coord[x] = start_x + (end_x - start_x) * double (x) / (morph_grid->width() - 1);
+        }
+      else
+        {
+          x_coord[x] = (start_x + end_x) / 2;
+        }
+    }
+
+  for (int y = 0; y < morph_grid->height(); y++)
+    {
+      if (morph_grid->height() > 1)
+        {
+          y_coord[y] = start_y + (end_y - start_y) * double (y) / (morph_grid->height() - 1);
+        }
+      else
+        {
+          y_coord[y] = (start_y + end_y) / 2;
+        }
+    }
+
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+#if 0
+          if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
+            painter.setBrush (QColor (255, 255, 255, 230));
+          else
+            painter.setBrush (QColor (255, 255, 255, 128));
+
+#endif
+          Color line_color (1.0, 1.0, 1.0);
+
+          const double corner_radius = min (node_rect_width, node_rect_height) / 2;
+
+          du.round_box (x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
+                        node_rect_width, node_rect_height, 1, corner_radius, line_color);
+
+
+          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+          cairo_set_line_width (cr, 1);
+
+          if (x > 0)
+            {
+              cairo_move_to (cr, x_coord[x - 1] + node_rect_width / 2, y_coord[y]);
+              cairo_line_to (cr, x_coord[x]     - node_rect_width / 2, y_coord[y]);
+              cairo_stroke (cr);
+            }
+          if (y > 0)
+            {
+              cairo_move_to (cr, x_coord[x], y_coord[y - 1] + node_rect_height / 2);
+              cairo_line_to (cr, x_coord[x], y_coord[y]     - node_rect_height / 2);
+              cairo_stroke (cr);
+            }
+        }
+    }
+
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+#if 0
+          if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
+            painter.setPen (QColor (0, 0, 0));
+          else
+            painter.setPen (QColor (255, 255, 255));
+#endif
+
+          MorphGridNode node = morph_grid->input_node (x, y);
+
+#if 0
+          if (!node.op && node.smset == "")
+            painter.setPen (QColor (200, 0, 0));
+#endif
+
+          du.text (morph_grid->input_node_label (x, y),
+                   x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
+                   node_rect_width, node_rect_height, TextAlign::CENTER);
+        }
+    }
+
 
   const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
   const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;

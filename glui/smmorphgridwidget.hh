@@ -13,6 +13,9 @@ class MorphGridWidget : public Widget
 {
   MorphGrid *morph_grid;
 
+  std::vector<int> x_coord;
+  std::vector<int> y_coord;
+
   bool move_controller = false;
 
 public:
