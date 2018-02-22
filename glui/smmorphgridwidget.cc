@@ -60,19 +60,16 @@ MorphGridWidget::draw (cairo_t *cr)
     {
       for (int y = 0; y < morph_grid->height(); y++)
         {
-#if 0
+          Color fill_color (0.5, 0.5, 0.5);
           if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
-            painter.setBrush (QColor (255, 255, 255, 230));
-          else
-            painter.setBrush (QColor (255, 255, 255, 128));
+            fill_color = fill_color.lighter();
 
-#endif
           Color line_color (1.0, 1.0, 1.0);
 
           const double corner_radius = min (node_rect_width, node_rect_height) / 2;
 
           du.round_box (x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
-                        node_rect_width, node_rect_height, 1, corner_radius, line_color);
+                        node_rect_width, node_rect_height, 1, corner_radius, line_color, fill_color);
 
 
           cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
@@ -97,19 +94,15 @@ MorphGridWidget::draw (cairo_t *cr)
     {
       for (int y = 0; y < morph_grid->height(); y++)
         {
-#if 0
           if (x == morph_grid->selected_x() && y == morph_grid->selected_y())
-            painter.setPen (QColor (0, 0, 0));
+            du.set_color (Color (0, 0, 0));
           else
-            painter.setPen (QColor (255, 255, 255));
-#endif
+            du.set_color (Color (1, 1, 1));
 
           MorphGridNode node = morph_grid->input_node (x, y);
 
-#if 0
           if (!node.op && node.smset == "")
-            painter.setPen (QColor (200, 0, 0));
-#endif
+            du.set_color (Color (0.8, 0, 0));
 
           du.text (morph_grid->input_node_label (x, y),
                    x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
@@ -132,9 +125,8 @@ MorphGridWidget::draw (cairo_t *cr)
 }
 
 void
-MorphGridWidget::mouse_press (double x, double y)
+MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
 {
-#if 0
   const double start_x = 20;
   const double end_x = height - 20;
   const double start_y = 20;
@@ -143,14 +135,37 @@ MorphGridWidget::mouse_press (double x, double y)
   const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
   const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
 
-  double mdx = mx - x;
-  double mdy = my - y;
+  double mdx = mx - mouse_x;
+  double mdy = my - mouse_y;
   double mdist = sqrt (mdx * mdx + mdy * mdy);
   if (mdist < 11)
-#endif
     {
       move_controller = true;
-      motion (x, y);
+      motion (mouse_x, mouse_y);
+    }
+  int selected_x = -1;
+  int selected_y = -1;
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          double delta_x = x_coord[x] - mouse_x;
+          double delta_y = y_coord[y] - mouse_y;
+          double dist = sqrt (delta_x * delta_x + delta_y * delta_y);
+          if (dist < 11)
+            {
+              selected_x = x;
+              selected_y = y;
+            }
+        }
+    }
+  morph_grid->set_selected_x (selected_x);
+  morph_grid->set_selected_y (selected_y);
+  signal_selection_changed();
+  if (selected_x == -1 && selected_y == -1)
+    {
+      move_controller = true;
+      motion (mouse_x, mouse_y);
     }
 }
 
