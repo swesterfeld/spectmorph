@@ -7,6 +7,7 @@
 #include "smmorphoutput.hh"
 #include "smmorphoperatormodule.hh"
 #include "smmorphlinear.hh"
+#include "smmorphsourcemodule.hh"
 
 namespace SpectMorph
 {
@@ -16,6 +17,10 @@ class MorphLinearModule : public MorphOperatorModule
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
   MorphOperatorModule *control_mod;
+  SimpleWavSetSource   left_source;
+  bool                 have_left_source;
+  SimpleWavSetSource   right_source;
+  bool                 have_right_source;
   float                morphing;
   bool                 db_linear;
   bool                 use_lpc;

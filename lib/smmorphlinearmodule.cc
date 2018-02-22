@@ -67,6 +67,27 @@ MorphLinearModule::set_config (MorphOperator *op)
   else
     right_mod = NULL;
 
+  string left_smset = linear->left_smset();
+  string right_smset = linear->right_smset();
+
+  have_left_source = (left_smset != "");
+  if (have_left_source)
+    {
+      string smset_dir = linear->morph_plan()->index()->smset_dir();
+      string path = smset_dir + "/" + left_smset;
+
+      left_source.set_wav_set (path);
+    }
+
+  have_right_source = (right_smset != "");
+  if (have_right_source)
+    {
+      string smset_dir = linear->morph_plan()->index()->smset_dir();
+      string path = smset_dir + "/" + right_smset;
+
+      right_source.set_wav_set (path);
+    }
+
   if (control_op)
     control_mod = morph_plan_voice->module (control_op);
   else
@@ -94,6 +115,16 @@ MorphLinearModule::MySource::retrigger (int channel, float freq, int midi_veloci
   if (module->right_mod && module->right_mod->source())
     {
       module->right_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+    }
+
+  if (module->have_left_source)
+    {
+      module->left_source.retrigger (channel, freq, midi_velocity, mix_freq);
+    }
+
+  if (module->have_right_source)
+    {
+      module->right_source.retrigger (channel, freq, midi_velocity, mix_freq);
     }
 }
 
@@ -183,16 +214,34 @@ MorphLinearModule::MySource::audio_block (size_t index)
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 
+  Audio *left_audio = nullptr;
+  Audio *right_audio = nullptr;
   if (module->left_mod && module->left_mod->source())
-    have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
+    {
+      have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
+      left_audio = module->left_mod->source()->audio();
+    }
 
   if (module->right_mod && module->right_mod->source())
-    have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
+    {
+      have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
+      right_audio = module->right_mod->source()->audio();
+    }
+
+  if (module->have_left_source)
+    {
+      have_left = MorphUtils::get_normalized_block (&module->left_source, time_ms, left_block);
+      left_audio = module->left_source.audio();
+    }
+
+  if (module->have_right_source)
+    {
+      have_right = MorphUtils::get_normalized_block (&module->right_source, time_ms, right_block);
+      right_audio = module->right_source.audio();
+    }
 
   if (have_left && have_right) // true morph: both sources present
     {
-      Audio *left_audio = module->left_mod->source()->audio();
-      Audio *right_audio = module->right_mod->source()->audio();
       assert (left_audio && right_audio);
 
       module->audio_block.freqs.clear();
