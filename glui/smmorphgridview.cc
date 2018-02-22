@@ -9,6 +9,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::set;
 
 #define CONTROL_TEXT_GUI "Gui Slider"
 #define CONTROL_TEXT_1   "Control Signal #1"
@@ -199,28 +200,50 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 
   yoffset += 2;
 
+  // Grid
   yoffset++;
   grid_widget = new MorphGridWidget (body_widget, morph_grid);
   grid.add_widget (grid_widget, 5, yoffset, 30, 30);
+
+  connect (grid_widget->signal_selection_changed, this, &MorphGridView::on_selection_changed);
 
   yoffset += 31;
 
   // Source
   auto input_op_filter = ComboBoxOperator::make_filter (morph_grid, MorphOperator::OUTPUT_AUDIO);
+  op_title = new Label (body_widget, "Source");
   op_combobox = new ComboBoxOperator (body_widget, morph_grid->morph_plan(), input_op_filter);
-  grid.add_widget (new Label (body_widget, "Source"), 0, yoffset, 9, 3);
+  grid.add_widget (op_title, 0, yoffset, 9, 3);
   grid.add_widget (op_combobox, 9, yoffset, 30, 3);
+
+  connect (op_combobox->signal_item_changed, this, &MorphGridView::on_operator_changed);
+
+  yoffset += 3;
+
+  // Volume
+  delta_db_title = new Label (body_widget, "Volume");
+  delta_db_slider = new Slider (body_widget, 0.5);
+  delta_db_label = new Label (body_widget, string_locale_printf ("%.1f dB", 0.0));
+
+  grid.add_widget (delta_db_title, 0, yoffset, 9, 2);
+  grid.add_widget (delta_db_slider, 9, yoffset, 25, 2);
+  grid.add_widget (delta_db_label, 35, yoffset, 5, 2);
+
+  connect (delta_db_slider->signal_value_changed, this, &MorphGridView::on_delta_db_changed);
 
   // Global
   connect (morph_grid->morph_plan()->signal_plan_changed, this, &MorphGridView::on_plan_changed);
+  connect (morph_grid->morph_plan()->signal_index_changed, this, &MorphGridView::on_index_changed);
 
-  on_plan_changed();
+  on_index_changed();     // add instruments to op_combobox
+  on_plan_changed();      // initial morphing slider/label setup
+  on_selection_changed(); // initial selection
 }
 
 double
 MorphGridView::view_height()
 {
-  return 55;
+  return 56;
 }
 
 void
@@ -232,4 +255,88 @@ MorphGridView::on_plan_changed()
   y_ui->slider->value = (morph_grid->y_morphing() + 1) / 2;
   x_ui->label->text = string_locale_printf ("%.2f", morph_grid->x_morphing());
   y_ui->label->text = string_locale_printf ("%.2f", morph_grid->y_morphing());
+}
+
+void
+MorphGridView::on_operator_changed()
+{
+  if (morph_grid->has_selection())
+    {
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
+
+      node.op = op_combobox->active();
+      node.smset = op_combobox->active_str_choice();
+
+      morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
+    }
+}
+
+void
+MorphGridView::on_delta_db_changed (double new_value)
+{
+  const double db = (new_value * 2 - 1) * 48;
+
+  delta_db_label->text = string_locale_printf ("%.1f dB", db);
+
+  if (morph_grid->has_selection())
+    {
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
+
+      node.delta_db = db;
+
+      morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
+    }
+}
+
+void
+MorphGridView::on_selection_changed()
+{
+  op_title->set_enabled (morph_grid->has_selection());
+  op_combobox->set_enabled (morph_grid->has_selection());
+  delta_db_title->set_enabled (morph_grid->has_selection());
+  delta_db_slider->set_enabled (morph_grid->has_selection());
+  delta_db_label->set_enabled (morph_grid->has_selection());
+
+  if (morph_grid->has_selection())
+    {
+      MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
+
+      if (node.smset != "")
+        {
+          g_assert (node.op == NULL);
+          op_combobox->set_active_str_choice (node.smset);
+        }
+      else
+        {
+          op_combobox->set_active (node.op);
+        }
+      delta_db_slider->value = (node.delta_db / 48 + 1) / 2;
+    }
+}
+
+void
+MorphGridView::on_index_changed()
+{
+  op_combobox->clear_str_choices();
+
+  vector<string> smsets = morph_grid->morph_plan()->index()->smsets();
+  for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
+    op_combobox->add_str_choice (*si);
+
+  set<string> smset_set (smsets.begin(), smsets.end());
+  for (int x = 0; x < morph_grid->width(); x++)
+    {
+      for (int y = 0; y < morph_grid->height(); y++)
+        {
+          MorphGridNode node = morph_grid->input_node (x, y);
+
+          if (node.smset != "" && !smset_set.count (node.smset))
+            {
+              // instrument not present in new index, remove
+              // (probably should not be done in gui code)
+              node.smset = "";
+              morph_grid->set_input_node (x, y, node);
+            }
+        }
+    }
 }

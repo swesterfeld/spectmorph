@@ -38,7 +38,11 @@ protected:
   MorphGridWidget    *grid_widget;
   Label              *width_label;
   Label              *height_label;
+  Label              *op_title;
   ComboBoxOperator   *op_combobox;
+  Label              *delta_db_title;
+  Label              *delta_db_label;
+  Slider             *delta_db_slider;
 
   MorphGridControlUI *x_ui;
   MorphGridControlUI *y_ui;
@@ -48,7 +52,12 @@ public:
 
   double view_height() override;
 
+/* slots: */
   void on_plan_changed();
+  void on_delta_db_changed (double new_value);
+  void on_selection_changed();
+  void on_index_changed();
+  void on_operator_changed();
 };
 
 }
