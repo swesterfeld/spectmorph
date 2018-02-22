@@ -70,11 +70,7 @@ MorphGridWidget::draw (cairo_t *cr)
 
           const double corner_radius = min (node_rect_width, node_rect_height) / 2;
 
-          du.round_box (x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
-                        node_rect_width, node_rect_height, 1, corner_radius, line_color, fill_color);
-
-
-          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+          du.set_color (line_color);
           cairo_set_line_width (cr, 1);
 
           if (x > 0)
@@ -89,6 +85,9 @@ MorphGridWidget::draw (cairo_t *cr)
               cairo_line_to (cr, x_coord[x], y_coord[y]     - node_rect_height / 2);
               cairo_stroke (cr);
             }
+
+          du.round_box (x_coord[x] - node_rect_width / 2, y_coord[y] - node_rect_height / 2,
+                        node_rect_width, node_rect_height, 1, corner_radius, line_color, fill_color);
         }
     }
 
