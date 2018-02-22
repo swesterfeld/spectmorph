@@ -98,10 +98,10 @@ struct ComboBoxMenu : public Widget
     double starty = px_starty;
     for (int i = first_item; i < first_item + items_per_page; i++)
       {
+        const double box_width = scroll_bar ? width - 28 : width - 8;
+
         if (selected_item == i)
           {
-            const double box_width = scroll_bar ? width - 28 : width - 8;
-
             du.round_box (4, starty, box_width, 16, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
 
             cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 1.0);
@@ -112,7 +112,7 @@ struct ComboBoxMenu : public Widget
         du.bold = items[i].headline;
 
         TextAlign align = items[i].headline ? TextAlign::CENTER : TextAlign::LEFT;
-        du.text (items[i].text, 10, starty, width - 10, 16, align);
+        du.text (items[i].text, 10, starty, box_width - 12, 16, align);
         starty += 16;
       }
   }
