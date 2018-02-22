@@ -23,7 +23,9 @@ protected:
   std::string    load_left, load_right, load_control;
 
   MorphOperator *m_left_op;
+  std::string    m_left_smset;
   MorphOperator *m_right_op;
+  std::string    m_right_smset;
   MorphOperator *m_control_op;
   double         m_morphing;
   ControlType    m_control_type;
@@ -45,8 +47,14 @@ public:
   MorphOperator *left_op();
   void set_left_op (MorphOperator *op);
 
+  std::string left_smset();
+  void set_left_smset (const std::string& smset);
+
   MorphOperator *right_op();
   void set_right_op (MorphOperator *op);
+
+  std::string right_smset();
+  void set_right_smset (const std::string& smset);
 
   MorphOperator *control_op();
   void set_control_op (MorphOperator *op);

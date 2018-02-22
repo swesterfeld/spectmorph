@@ -52,6 +52,8 @@ MorphLinear::save (OutFile& out_file)
   write_operator (out_file, "left", m_left_op);
   write_operator (out_file, "right", m_right_op);
   write_operator (out_file, "control", m_control_op);
+  out_file.write_string ("left_smset", m_left_smset);
+  out_file.write_string ("right_smset", m_right_smset);
   out_file.write_float ("morphing", m_morphing);
   out_file.write_int ("control_type", m_control_type);
   out_file.write_bool ("db_linear", m_db_linear);
@@ -82,6 +84,14 @@ MorphLinear::load (InFile& ifile)
           else if (ifile.event_name() == "control")
             {
               load_control = ifile.event_data();
+            }
+          else if (ifile.event_name() == "left_smset")
+            {
+              m_left_smset = ifile.event_data();
+            }
+          else if (ifile.event_name() == "right_smset")
+            {
+              m_right_smset = ifile.event_data();
             }
           else
             {
@@ -209,6 +219,34 @@ void
 MorphLinear::set_control_op (MorphOperator *op)
 {
   m_control_op = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+string
+MorphLinear::left_smset()
+{
+  return m_left_smset;
+}
+
+string
+MorphLinear::right_smset()
+{
+  return m_right_smset;
+}
+
+void
+MorphLinear::set_left_smset (const string& smset)
+{
+  m_left_smset = smset;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+void
+MorphLinear::set_right_smset (const string& smset)
+{
+  m_right_smset = smset;
 
   m_morph_plan->emit_plan_changed();
 }
