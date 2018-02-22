@@ -20,11 +20,17 @@ protected:
   OperatorFilter  op_filter;
   MorphOperator  *op;
   std::string     str_choice;
+  std::string     op_headline;
 
   ComboBox       *combobox;
   bool            none_ok;
 
-  std::vector<std::string> str_choices;
+  struct StrItem
+  {
+    bool        headline;
+    std::string text;
+  };
+  std::vector<StrItem> str_items;
 
 public:
   ComboBoxOperator (Widget *parent, MorphPlan *plan, const OperatorFilter& op_filter);
@@ -32,6 +38,7 @@ public:
   void set_active (MorphOperator *new_op);
   MorphOperator *active();
 
+  void           add_str_headline (const std::string& str);
   void           add_str_choice (const std::string& str);
   void           clear_str_choices();
 
@@ -39,6 +46,7 @@ public:
   void           set_active_str_choice (const std::string& str);
 
   void           set_none_ok (bool none_ok);
+  void           set_op_headline (const std::string& headline);
 
   static OperatorFilter
   make_filter (MorphOperator *my_op, MorphOperator::OutputType type)

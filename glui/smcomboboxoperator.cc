@@ -40,13 +40,25 @@ ComboBoxOperator::on_operators_changed()
   if (none_ok)
     combobox->add_item (OPERATOR_TEXT_NONE);
 
-  for (auto str : str_choices)
-    combobox->add_item (str);
+  for (auto item : str_items)
+    {
+      if (item.headline)
+        combobox->add_item (ComboBoxItem (item.text, true));
+      else
+        combobox->add_item (item.text);
+    }
 
+  bool add_op_headline = (op_headline != "");
   for (MorphOperator *morph_op : morph_plan->operators())
     {
       if (op_filter (morph_op))
         {
+          if (add_op_headline)
+            {
+              // if we find any matches, add op_headline once
+              combobox->add_item (ComboBoxItem (op_headline, true));
+              add_op_headline = false;
+            }
           combobox->add_item (morph_op->name());
         }
     }
@@ -77,12 +89,12 @@ ComboBoxOperator::on_combobox_changed()
           str_choice = "";
         }
     }
-  for (auto str : str_choices)
+  for (auto item : str_items)
     {
-      if (str == active_text)
+      if (!item.headline && item.text == active_text)
         {
           op         = NULL;
-          str_choice = str;
+          str_choice = item.text;
         }
     }
   signal_item_changed();
@@ -104,9 +116,23 @@ ComboBoxOperator::active()
 }
 
 void
+ComboBoxOperator::set_op_headline (const std::string& headline)
+{
+  op_headline = headline;
+}
+
+void
 ComboBoxOperator::add_str_choice (const string& str)
 {
-  str_choices.push_back (str);
+  str_items.push_back (StrItem {false, str});
+
+  on_operators_changed();
+}
+
+void
+ComboBoxOperator::add_str_headline (const std::string& str)
+{
+  str_items.push_back (StrItem {true, str});
 
   on_operators_changed();
 }
@@ -114,7 +140,7 @@ ComboBoxOperator::add_str_choice (const string& str)
 void
 ComboBoxOperator::clear_str_choices()
 {
-  str_choices.clear();
+  str_items.clear();
   str_choice = "";
 
   on_operators_changed();
@@ -129,12 +155,12 @@ ComboBoxOperator::active_str_choice()
 void
 ComboBoxOperator::set_active_str_choice (const string& new_str)
 {
-  for (auto str : str_choices)
+  for (auto item : str_items)
     {
-      if (new_str == str)
+      if (new_str == item.text)
         {
           op         = NULL;
-          str_choice = new_str;
+          str_choice = item.text;
 
           on_operators_changed();
 

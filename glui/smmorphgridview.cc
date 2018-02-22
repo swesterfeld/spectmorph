@@ -265,7 +265,7 @@ MorphGridView::on_operator_changed()
       MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
 
       node.op = op_combobox->active();
-      node.smset = op_combobox->active_str_choice();
+      node.smset = morph_grid->morph_plan()->index()->label_to_smset (op_combobox->active_str_choice());
 
       morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
     }
@@ -304,7 +304,8 @@ MorphGridView::on_selection_changed()
       if (node.smset != "")
         {
           g_assert (node.op == NULL);
-          op_combobox->set_active_str_choice (node.smset);
+          string label = morph_grid->morph_plan()->index()->smset_to_label (node.smset);
+          op_combobox->set_active_str_choice (label);
         }
       else
         {
@@ -319,11 +320,19 @@ MorphGridView::on_index_changed()
 {
   op_combobox->clear_str_choices();
 
-  vector<string> smsets = morph_grid->morph_plan()->index()->smsets();
-  for (vector<string>::iterator si = smsets.begin(); si != smsets.end(); si++)
-    op_combobox->add_str_choice (*si);
+  set<string> smset_set;
+  auto groups = morph_grid->morph_plan()->index()->groups();
+  for (auto group : groups)
+    {
+      op_combobox->add_str_headline (group.group);
+      for (auto instrument : group.instruments)
+        {
+          op_combobox->add_str_choice (instrument.label);
+          smset_set.insert (instrument.smset);
+        }
+    }
+  op_combobox->set_op_headline ("Sources");
 
-  set<string> smset_set (smsets.begin(), smsets.end());
   for (int x = 0; x < morph_grid->width(); x++)
     {
       for (int y = 0; y < morph_grid->height(); y++)
