@@ -28,17 +28,20 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   set_items (file_menu, {"Import...", "Export...", "Load Instrument Set..."});
   fill_preset_menu (preset_menu);
   add_op_menu_item (op_menu, "Source", "SpectMorph::MorphSource");
-  add_op_menu_item (op_menu, "Output", "SpectMorph::MorphOutput");
+  // add_op_menu_item (op_menu, "Output", "SpectMorph::MorphOutput"); <- we have only one output
   add_op_menu_item (op_menu, "Linear Morph", "SpectMorph::MorphLinear");
   add_op_menu_item (op_menu, "Grid Morph", "SpectMorph::MorphGrid");
   add_op_menu_item (op_menu, "LFO", "SpectMorph::MorphLFO");
   set_items (help_menu, {"About..."});
-  grid.add_widget (menu_bar, 1, 1, 46, 3);
+  grid.add_widget (menu_bar, 1, 1, 91, 3);
 
   ScrollView *scroll_view = new ScrollView (this);
   grid.add_widget (scroll_view, 1, 5, 47, height / 8 - 6);
 
-  MorphPlanView *mp_view = new MorphPlanView (scroll_view, morph_plan.c_ptr(), this);
+  Widget *output_parent = new Widget (this);
+  grid.add_widget (output_parent, 49, 5, 47, height / 8 - 6);
+
+  MorphPlanView *mp_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
   auto update_mp_size = [=]() {
     scroll_view->set_scroll_widget (mp_view, false, true);
   };

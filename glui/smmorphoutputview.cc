@@ -160,6 +160,12 @@ MorphOutputView::view_height()
   return 42;
 }
 
+bool
+MorphOutputView::is_output()
+{
+  return true;
+}
+
 void
 MorphOutputView::on_operator_changed()
 {

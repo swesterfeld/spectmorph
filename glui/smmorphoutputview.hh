@@ -44,6 +44,7 @@ public:
   MorphOutputView (Widget *parent, MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
 
   double view_height() override;
+  bool   is_output() override;
 
   /* slots */
   void on_operator_changed();

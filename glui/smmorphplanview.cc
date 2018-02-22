@@ -11,8 +11,9 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphPlanView::MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
+MorphPlanView::MorphPlanView (Widget *parent, Widget *output_parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
   Widget (parent),
+  output_parent (output_parent),
   morph_plan (morph_plan),
   morph_plan_window (morph_plan_window)
 {
@@ -43,7 +44,7 @@ MorphPlanView::on_plan_changed()
         }
       else if (type == "SpectMorph::MorphOutput")
         {
-          op_view = new MorphOutputView (this, static_cast<MorphOutput *> (op), morph_plan_window);
+          op_view = new MorphOutputView (output_parent, static_cast<MorphOutput *> (op), morph_plan_window);
         }
       else if (type == "SpectMorph::MorphLinear")
         {
@@ -87,9 +88,17 @@ MorphPlanView::update_positions()
           view_height = op_view->view_height();
         }
 
-      grid.add_widget (op_view, 0, y, 43, view_height);
-      grid.add_widget (op_view->body_widget, 2, 4, 40, view_height - 5);
-      y += view_height + 1;
+      if (op_view->is_output())
+        {
+          grid.add_widget (op_view, 0, 0, 43, view_height);
+          grid.add_widget (op_view->body_widget, 2, 4, 40, view_height - 5);
+        }
+      else
+        {
+          grid.add_widget (op_view, 0, y, 43, view_height);
+          grid.add_widget (op_view->body_widget, 2, 4, 40, view_height - 5);
+          y += view_height + 1;
+        }
     }
 
   height = (y - 1) * 8;

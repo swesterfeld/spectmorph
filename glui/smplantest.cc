@@ -30,7 +30,7 @@ main (int argc, char **argv)
 
   bool resize = (argc >= 2 && strcmp (argv[1], "resize") == 0);
 
-  MorphPlanWindow window (384, 900, 0, resize, morph_plan);
+  MorphPlanWindow window (744, 560, 0, resize, morph_plan);
   window.show();
 
   bool quit = false;

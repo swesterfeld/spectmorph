@@ -17,6 +17,7 @@ class MorphPlanWindow;
 
 struct MorphPlanView : public Widget
 {
+  Widget          *output_parent;
   MorphPlan       *morph_plan;
   MorphPlanWindow *morph_plan_window;
   bool             need_view_rebuild;
@@ -25,7 +26,7 @@ struct MorphPlanView : public Widget
 public:
   Signal<> signal_widget_size_changed;
 
-  MorphPlanView (Widget *parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
+  MorphPlanView (Widget *parent, Widget *output_parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   void update_positions();
   void on_plan_changed();

@@ -70,6 +70,11 @@ public:
   {
     return 4;
   }
+  virtual bool
+  is_output()
+  {
+    return false;
+  }
 };
 
 }

@@ -23,6 +23,7 @@ protected:
   Widget                   *enter_widget;
   Widget                   *menu_widget;
   double                    global_scale;
+  double                    scale_to_width;
 
   std::function<void()>     m_close_callback;
 

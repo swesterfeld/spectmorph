@@ -68,7 +68,8 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   enter_widget (nullptr),
   menu_widget (nullptr)
 {
-  global_scale = min (width, height) / 384.;
+  scale_to_width = width;
+  global_scale = 1;
 
   view = puglInit (nullptr, nullptr);
 
@@ -344,7 +345,7 @@ Window::on_event (const PuglEvent* event)
         on_display();
         break;
       case PUGL_CONFIGURE:
-        global_scale = min (event->configure.width, event->configure.height) / 384.;
+        global_scale = event->configure.width / scale_to_width;
         cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
         puglEnterContext (view);
         cairo_gl->configure();
