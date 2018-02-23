@@ -39,6 +39,8 @@ public:
   void wait_for_event();
   void process_events();
   void show();
+  void open_file_dialog (const std::string& title);
+  void on_file_selected (const char *filename);
   void draw (cairo_t *cr) override;
   void update() override;
   void on_widget_deleted (Widget *widget);

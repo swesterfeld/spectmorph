@@ -471,6 +471,12 @@ PUGL_API void
 puglHideWindow(PuglView* view);
 
 /**
+   Open a file dialog window.
+ */
+PUGL_API int
+puglOpenFileDialog(PuglView* view, const char *title);
+
+/**
    Return the native window handle.
 */
 PUGL_API PuglNativeWindow
@@ -561,6 +567,20 @@ typedef void (*PuglEventFunc)(PuglView* view, const PuglEvent* event);
 */
 PUGL_API void
 puglSetEventFunc(PuglView* view, PuglEventFunc eventFunc);
+
+/**
+   A function called when a filename is selected via file-browser.
+
+   @param view The view the event occured in.
+   @param filename The selected file name or NULL if the dialog was canceled.
+*/
+typedef void (*PuglFileSelectedFunc)(PuglView* view, const char* filename);
+
+/**
+   Set the function to call on file-browser selections.
+*/
+PUGL_API void
+puglSetFileSelectedFunc(PuglView* view, PuglFileSelectedFunc fileSelectedFunc);
 
 /**
    Ignore synthetic repeated key events.

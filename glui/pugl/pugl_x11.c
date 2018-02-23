@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -41,6 +42,7 @@
 
 #include "pugl/cairo_gl.h"
 #include "pugl/pugl_internal.h"
+
 #include "libsofd.h"
 
 #ifndef MIN
@@ -357,6 +359,21 @@ puglHideWindow(PuglView* view)
 	view->visible = false;
 }
 
+int
+puglOpenFileDialog(PuglView* view, const char *title)
+{
+	//x_fib_cfg_filter_callback (fib_filter_movie_filename);
+	if (x_fib_configure (1, title)) {
+		return -1;
+	}
+	//x_fib_load_recent ("~/.robtk.recent");
+	if (x_fib_show (view->impl->display, view->impl->win, 300, 300)) {
+		return -1;
+	}
+	return 0;
+}
+
+
 void
 puglDestroy(PuglView* view)
 {
@@ -619,6 +636,33 @@ puglProcessEvents(PuglView* view)
 	XEvent    xevent;
 	while (XPending(view->impl->display) > 0) {
 		XNextEvent(view->impl->display, &xevent);
+
+/* ---- sofd ---- */
+		if (x_fib_handle_events(view->impl->display, &xevent)) {
+			const int status = x_fib_status();
+
+			if (status > 0) {
+				char* const filename = x_fib_filename();
+				x_fib_close(view->impl->display);
+				x_fib_add_recent (filename, time(NULL));
+				//x_fib_save_recent ("~/.robtk.recent");
+				if (view->fileSelectedFunc) {
+					view->fileSelectedFunc(view, filename);
+				}
+				free(filename);
+				x_fib_free_recent ();
+			} else if (status < 0) {
+				x_fib_close(view->impl->display);
+				if (view->fileSelectedFunc) {
+					view->fileSelectedFunc(view, NULL);
+				}
+			}
+		}
+		if (xevent.xany.window != view->impl->win) {
+			continue;
+		}
+/* ---- end sofd ---- */
+
 		if (xevent.type == KeyRelease) {
 			// Ignore key repeat if necessary
 			if (view->ignoreKeyRepeat &&

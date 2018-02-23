@@ -21,6 +21,7 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
       MenuItem *item = m->add_item (i);
       connect (item->signal_clicked, [=]()
         {
+          open_file_dialog ("Import SpectMorph Preset");
           printf ("menu item %s selected\n", i.c_str());
         });
     }

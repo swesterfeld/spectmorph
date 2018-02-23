@@ -36,8 +36,9 @@
 typedef struct PuglInternalsImpl PuglInternals;
 
 struct PuglViewImpl {
-	PuglHandle       handle;
-	PuglEventFunc    eventFunc;
+	PuglHandle           handle;
+	PuglEventFunc        eventFunc;
+	PuglFileSelectedFunc fileSelectedFunc;
 
 	PuglInternals* impl;
 
@@ -179,6 +180,12 @@ void
 puglSetEventFunc(PuglView* view, PuglEventFunc eventFunc)
 {
 	view->eventFunc = eventFunc;
+}
+
+void
+puglSetFileSelectedFunc(PuglView* view, PuglFileSelectedFunc fileSelectedFunc)
+{
+	view->fileSelectedFunc = fileSelectedFunc;
 }
 
 /** Return the code point for buf, or the replacement character on error. */
