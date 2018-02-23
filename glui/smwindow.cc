@@ -7,7 +7,9 @@
 #include "smwindow.hh"
 #include "smscrollview.hh"
 #include "pugl/cairo_gl.h"
+#include "smfiledialog.hh"
 #include <string.h>
+#include <unistd.h>
 
 using namespace SpectMorph;
 
@@ -246,6 +248,18 @@ Window::draw (cairo_t *cr)
 void
 Window::process_events()
 {
+  if (file_dialog)
+    {
+      file_dialog->process_events();
+
+      if (!have_file_dialog)
+        {
+          /* file dialog closed - must be deleted after (not during) process_events */
+          delete file_dialog;
+          file_dialog = nullptr;
+        }
+    }
+
   puglProcessEvents (view);
 }
 
@@ -402,7 +416,8 @@ Window::show()
 void
 Window::open_file_dialog (const string& title, std::function<void(string)> callback)
 {
-  puglOpenFileDialog (view, title.c_str());
+  //puglOpenFileDialog (view, title.c_str());
+  file_dialog = new FileDialog (this);
   file_dialog_callback = callback;
   have_file_dialog = true;
 }
@@ -433,7 +448,15 @@ Window::window()
 void
 Window::wait_for_event()
 {
-  puglWaitForEvent (view);
+  if (file_dialog)
+    {
+      /* need to wait for events of two views */
+      usleep (50 * 1000);
+    }
+  else
+    {
+      puglWaitForEvent (view);
+    }
 }
 
 void
