@@ -3,6 +3,7 @@
 #include "smmorphplanwindow.hh"
 
 using namespace SpectMorph;
+using std::string;
 
 MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
   Window (width, height, win_id, resize),
@@ -21,12 +22,20 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
       MenuItem *item = m->add_item (i);
       connect (item->signal_clicked, [=]()
         {
-          open_file_dialog ("Import SpectMorph Preset");
           printf ("menu item %s selected\n", i.c_str());
         });
-    }
+     }
   };
-  set_items (file_menu, {"Import...", "Export...", "Load Instrument Set..."});
+
+  MenuItem *import_item = file_menu->add_item ("Import Preset...");
+  connect (import_item->signal_clicked, this, &MorphPlanWindow::on_file_import_clicked);
+
+  MenuItem *export_item = file_menu->add_item ("Export Preset...");
+  connect (export_item->signal_clicked, this, &MorphPlanWindow::on_file_export_clicked);
+
+  MenuItem *load_index_item = file_menu->add_item ("Load Index...");
+  connect (load_index_item->signal_clicked, this, &MorphPlanWindow::on_load_index_clicked);
+
   fill_preset_menu (preset_menu);
   add_op_menu_item (op_menu, "Source", "SpectMorph::MorphSource");
   // add_op_menu_item (op_menu, "Output", "SpectMorph::MorphOutput"); <- we have only one output
@@ -119,4 +128,35 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
                              string_locale_printf ("Loading template failed, unable to open file '%s'.", filename.c_str()).c_str());
 #endif
     }
+}
+
+void
+MorphPlanWindow::on_file_import_clicked()
+{
+  open_file_dialog ("Select SpectMorph Preset to import", [=](string filename) {
+    if (filename != "" && !load (filename))
+      {
+#if 0
+        QMessageBox::critical (this, "Error",
+                               string_locale_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
+#endif
+      }
+  });
+}
+
+void
+MorphPlanWindow::on_file_export_clicked()
+{
+  open_file_dialog ("Select SpectMorph Preset to export", [=](string filename) {});
+}
+
+void
+MorphPlanWindow::on_load_index_clicked()
+{
+  open_file_dialog ("Select SpectMorph Instrument Index", [=](string filename) {
+    if (filename != "")
+      {
+        m_morph_plan->load_index (filename);
+      }
+  });
 }

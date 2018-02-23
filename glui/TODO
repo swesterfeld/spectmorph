@@ -12,7 +12,6 @@ widgets:
  - popup menu
  - knob
 
-- instruments should have human names & categories
 - file open dialog
 - operator move
 - operator remove

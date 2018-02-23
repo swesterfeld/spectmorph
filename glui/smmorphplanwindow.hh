@@ -33,6 +33,11 @@ public:
   void fill_preset_menu (Menu *menu);
   bool load (const std::string& filename);
   void on_load_preset (const std::string& rel_filename);
+
+/* slots: */
+  void on_file_import_clicked();
+  void on_file_export_clicked();
+  void on_load_index_clicked();
 };
 
 }

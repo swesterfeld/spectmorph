@@ -400,17 +400,22 @@ Window::show()
 }
 
 void
-Window::open_file_dialog (const string& title)
+Window::open_file_dialog (const string& title, std::function<void(string)> callback)
 {
   puglOpenFileDialog (view, title.c_str());
+  file_dialog_callback = callback;
   have_file_dialog = true;
 }
 
 void
 Window::on_file_selected (const char *filename)
 {
+  if (file_dialog_callback)
+    {
+      file_dialog_callback (filename ? filename : "");
+      file_dialog_callback = nullptr;
+    }
   have_file_dialog = false;
-  printf ("File selected: %s\n", filename);
 }
 
 void

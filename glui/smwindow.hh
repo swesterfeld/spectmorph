@@ -20,6 +20,7 @@ protected:
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      draw_grid;
   bool                      have_file_dialog = false;
+  std::function<void(std::string)> file_dialog_callback;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   Widget                   *menu_widget;
@@ -40,7 +41,7 @@ public:
   void wait_for_event();
   void process_events();
   void show();
-  void open_file_dialog (const std::string& title);
+  void open_file_dialog (const std::string& title, std::function<void(std::string)> callback);
   void on_file_selected (const char *filename);
   void draw (cairo_t *cr) override;
   void update() override;
