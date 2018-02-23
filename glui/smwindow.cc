@@ -209,6 +209,13 @@ Window::on_display()
         }
     }
 
+  if (have_file_dialog)
+    {
+      cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
+      cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
+      cairo_fill (cairo_gl->cr);
+    }
+
   cairo_gl->draw();
 }
 
@@ -286,6 +293,10 @@ Window::on_event (const PuglEvent* event)
 
   double ex, ey; /* global scale translated */
   Widget *current_widget = nullptr;
+
+  /* as long as the file dialog is open, ignore user input */
+  if (have_file_dialog && event->type != PUGL_EXPOSE && event->type != PUGL_CONFIGURE)
+    return;
 
   switch (event->type)
     {
@@ -392,11 +403,13 @@ void
 Window::open_file_dialog (const string& title)
 {
   puglOpenFileDialog (view, title.c_str());
+  have_file_dialog = true;
 }
 
 void
 Window::on_file_selected (const char *filename)
 {
+  have_file_dialog = false;
   printf ("File selected: %s\n", filename);
 }
 

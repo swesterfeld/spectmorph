@@ -19,6 +19,7 @@ protected:
   PuglView                 *view;
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      draw_grid;
+  bool                      have_file_dialog = false;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   Widget                   *menu_widget;
