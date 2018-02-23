@@ -1,5 +1,5 @@
 if COND_LINUX
-  PUGL_SOURCE = pugl_x11.c
+  PUGL_SOURCE = pugl_x11.c libsofd.c
 endif
 if COND_MACOS
   PUGL_SOURCE = pugl_osx.m
@@ -8,7 +8,7 @@ if COND_WINDOWS
   PUGL_SOURCE = pugl_win.cpp
 endif
 
-SMHDRS = cairo_gl.h glew.h gl.h glu.h pugl.h pugl_internal.h
+SMHDRS = cairo_gl.h glew.h gl.h glu.h pugl.h pugl_internal.h libsofd.h
 
 noinst_LTLIBRARIES = libspectmorphpugl.la
 

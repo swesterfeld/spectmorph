@@ -41,6 +41,7 @@
 
 #include "pugl/cairo_gl.h"
 #include "pugl/pugl_internal.h"
+#include "libsofd.h"
 
 #ifndef MIN
 #    define MIN(a, b) (((a) < (b)) ? (a) : (b))
