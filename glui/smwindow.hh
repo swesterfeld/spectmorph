@@ -26,6 +26,7 @@ protected:
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   Widget                   *menu_widget;
+  Widget                   *keyboard_focus_widget;
   double                    global_scale;
   double                    scale_to_width;
 
@@ -49,6 +50,7 @@ public:
   void update() override;
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
+  void set_keyboard_focus (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   Window *window() override;
 };

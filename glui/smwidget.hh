@@ -7,6 +7,7 @@
 #include <cairo.h>
 #include <stdio.h>
 
+#include "pugl/pugl.h"
 #include "smsignal.hh"
 
 namespace SpectMorph
@@ -216,6 +217,10 @@ public:
   }
   virtual void
   leave_event()
+  {
+  }
+  virtual void
+  key_press_event (const PuglEventKey& key_event)
   {
   }
   virtual void

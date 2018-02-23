@@ -126,6 +126,8 @@ Window::on_widget_deleted (Widget *child)
     enter_widget = nullptr;
   if (menu_widget == child)
     menu_widget = nullptr;
+  if (keyboard_focus_widget == child)
+    keyboard_focus_widget = nullptr;
 }
 
 static vector<Widget *>
@@ -368,8 +370,13 @@ Window::on_event (const PuglEvent* event)
         puglPostRedisplay (view);
         break;
       case PUGL_KEY_PRESS:
-        if (event->key.character == 'g')
-          draw_grid = !draw_grid;
+        if (keyboard_focus_widget)
+          keyboard_focus_widget->key_press_event (event->key);
+        else
+          {
+            if (event->key.character == 'g')
+              draw_grid = !draw_grid;
+          }
         update();
         break;
       case PUGL_CLOSE:
@@ -470,4 +477,10 @@ void
 Window::set_close_callback (const std::function<void()>& callback)
 {
   m_close_callback = callback;
+}
+
+void
+Window::set_keyboard_focus (Widget *widget)
+{
+  keyboard_focus_widget = widget;
 }
