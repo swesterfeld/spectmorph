@@ -53,16 +53,59 @@ public:
 
     du.set_color (text_color);
     du.text (m_text, 10, 0, width - 10, height);
-    double tw = du.text_width (m_text);
-    du.round_box (10 + tw + 1, space * 2, 10, height - 4 * space, 1, 0, Color::null(), ThemeColor::SLIDER /* FIXME */ );
+    double w_ = du.text_width ("_");
+    double tw = du.text_width ("_" + m_text + "_") - 2 * w_; /* also count spaces at start/end */
+    du.round_box (10 + tw + 1, space * 2, w_, height - 4 * space, 1, 0, Color::null(), ThemeColor::SLIDER /* FIXME */ );
+  }
+  bool
+  is_control (uint32 u)
+  {
+    return (u <= 0x1F) || (u >= 0x7F && u <= 0x9f);
+  }
+  static std::string
+  utf8_from_unicode (const std::vector<uint32>& unicode)
+  {
+    std::string utf8 = "";
+    for (auto c : unicode)
+      {
+        char buffer[8] = { 0, };
+        g_unichar_to_utf8 (c, buffer);
+        utf8 += buffer;
+      }
+    return utf8;
+  }
+  static std::vector<uint32>
+  utf8_to_unicode (const std::string& utf8)
+  {
+    gunichar *uc = g_utf8_to_ucs4 (utf8.c_str(), -1, NULL, NULL, NULL);
+    std::vector<uint32> chars;
+    if (uc)
+      {
+        for (size_t i = 0; uc[i]; i++)
+          chars.push_back (uc[i]);
+      }
+    g_free (uc);
+    return chars;
   }
   virtual void
   key_press_event (const PuglEventKey& key_event)
   {
-    if (isprint (key_event.character))
-      m_text += key_event.character;
+    if (key_event.filter)
+      {
+        /* multi key sequence -> ignore */
+        return;
+      }
+    if (!is_control (key_event.character) && key_event.utf8[0])
+      {
+        m_text += (const char *) key_event.utf8;
+      }
     else if (key_event.character == PUGL_CHAR_BACKSPACE && !m_text.empty())
-      m_text = m_text.substr (0, m_text.size() - 1);
+      {
+        std::vector<uint32> chars = utf8_to_unicode (m_text);
+        if (chars.size())
+          chars.pop_back();
+        m_text = utf8_from_unicode (chars);
+      }
   }
   void
   enter_event() override
