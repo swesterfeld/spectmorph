@@ -7,7 +7,7 @@
 #include "smwindow.hh"
 #include "smscrollview.hh"
 #include "pugl/cairo_gl.h"
-#include "smfiledialog.hh"
+#include "smextfiledialog.hh"
 #include <string.h>
 #include <unistd.h>
 
@@ -250,15 +250,14 @@ Window::draw (cairo_t *cr)
 void
 Window::process_events()
 {
-  if (file_dialog)
+  if (ext_file_dialog)
     {
-      file_dialog->process_events();
+      ext_file_dialog->handle_io();
 
       if (!have_file_dialog)
         {
           /* file dialog closed - must be deleted after (not during) process_events */
-          delete file_dialog;
-          file_dialog = nullptr;
+          ext_file_dialog.reset();
         }
     }
 
@@ -424,20 +423,22 @@ void
 Window::open_file_dialog (const string& title, std::function<void(string)> callback)
 {
   //puglOpenFileDialog (view, title.c_str());
-  file_dialog = new FileDialog (this);
+  ext_file_dialog.reset (new ExtFileDialog (this));
   file_dialog_callback = callback;
+  connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;
 }
 
 void
-Window::on_file_selected (const char *filename)
+Window::on_file_selected (const std::string& filename)
 {
   if (file_dialog_callback)
     {
-      file_dialog_callback (filename ? filename : "");
+      file_dialog_callback (filename);
       file_dialog_callback = nullptr;
     }
   have_file_dialog = false;
+  update();
 }
 
 void
@@ -455,9 +456,9 @@ Window::window()
 void
 Window::wait_for_event()
 {
-  if (file_dialog)
+  if (ext_file_dialog)
     {
-      /* need to wait for events of two views */
+      /* need to wait for events of this view, and handle io for file dialog */
       usleep (50 * 1000);
     }
   else

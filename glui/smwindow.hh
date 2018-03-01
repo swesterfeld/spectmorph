@@ -12,7 +12,7 @@ namespace SpectMorph
 {
 
 struct CairoGL;
-class FileDialog;
+class ExtFileDialog;
 
 struct Window : public Widget
 {
@@ -22,7 +22,7 @@ protected:
   bool                      draw_grid;
   bool                      have_file_dialog = false;
   std::function<void(std::string)> file_dialog_callback;
-  FileDialog               *file_dialog = nullptr;
+  std::unique_ptr<ExtFileDialog> ext_file_dialog;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   Widget                   *menu_widget;
@@ -45,7 +45,7 @@ public:
   void process_events();
   void show();
   void open_file_dialog (const std::string& title, std::function<void(std::string)> callback);
-  void on_file_selected (const char *filename);
+  void on_file_selected (const std::string& filename);
   void draw (cairo_t *cr) override;
   void update() override;
   void on_widget_deleted (Widget *widget);
