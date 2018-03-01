@@ -34,6 +34,7 @@ ExtFileDialog::ExtFileDialog (Window *main_window)
       child_pid = -1;
     }
   printf ("child_stdout = %d\n", child_stdout);
+  selected_filename_ok = false;
 }
 
 void
@@ -51,24 +52,27 @@ ExtFileDialog::handle_io()
       tv.tv_usec = 0;
 
       int select_ret = select (child_stdout + 1, &fds, NULL, NULL, &tv);
-      if (select_ret < 0)
-        return;
 
-      if (FD_ISSET (child_stdout, &fds))
+      if (select_ret > 0 && FD_ISSET (child_stdout, &fds))
         {
           char buffer[1024];
 
           int bytes = read (child_stdout, buffer, 1024);
           for (int i = 0; i < bytes; i++)
-            if (buffer[i] >= 32)
-              selected_filename += buffer[i];
+            {
+              if (buffer[i] >= 32)
+                selected_filename += buffer[i];
+              if (buffer[i] == '\n')
+                selected_filename_ok = true;
+            }
           if (bytes == 0)
             {
+              // we ignore waitpid result here, as child may no longer exist,
+              // and somebody else used waitpid() already (host)
               int status;
-              waitpid (child_pid, &status, 0);
+              waitpid (child_pid, &status, WNOHANG);
 
-              int xstatus = WEXITSTATUS (status);
-              if (xstatus == 0) /* success */
+              if (selected_filename_ok)
                 signal_file_selected (selected_filename);
               else
                 signal_file_selected ("");

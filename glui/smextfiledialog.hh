@@ -15,6 +15,7 @@ class ExtFileDialog
   int         child_pid;
   int         child_stdout;
   std::string selected_filename;
+  bool        selected_filename_ok;
 
 public:
   ExtFileDialog (Window *main_window);
