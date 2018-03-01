@@ -13,11 +13,11 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-ExtFileDialog::ExtFileDialog (Window *main_window)
+ExtFileDialog::ExtFileDialog (Window *main_window, bool open)
 {
   GError *err;
 
-  vector<const char *> argv = { "kdialog", "--getopenfilename", "/home/stefan", "*.smplan", NULL };
+  vector<const char *> argv = { "kdialog", open ? "--getopenfilename" : "--getsavefilename", "/home/stefan", "*.smplan", NULL };
   if (!g_spawn_async_with_pipes (NULL, /* working directory = current dir */
                                  (char **) &argv[0],
                                  NULL, /* inherit environment */

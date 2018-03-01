@@ -45,6 +45,7 @@ public:
   void process_events();
   void show();
   void open_file_dialog (const std::string& title, std::function<void(std::string)> callback);
+  void save_file_dialog (const std::string& title, std::function<void(std::string)> callback);
   void on_file_selected (const std::string& filename);
   void draw (cairo_t *cr) override;
   void update() override;

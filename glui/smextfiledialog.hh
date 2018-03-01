@@ -18,7 +18,7 @@ class ExtFileDialog
   bool        selected_filename_ok;
 
 public:
-  ExtFileDialog (Window *main_window);
+  ExtFileDialog (Window *main_window, bool open);
 
   void handle_io();
 

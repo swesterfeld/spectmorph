@@ -423,7 +423,16 @@ void
 Window::open_file_dialog (const string& title, std::function<void(string)> callback)
 {
   //puglOpenFileDialog (view, title.c_str());
-  ext_file_dialog.reset (new ExtFileDialog (this));
+  ext_file_dialog.reset (new ExtFileDialog (this, true));
+  file_dialog_callback = callback;
+  connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
+  have_file_dialog = true;
+}
+
+void
+Window::save_file_dialog (const string& title, std::function<void(string)> callback)
+{
+  ext_file_dialog.reset (new ExtFileDialog (this, false));
   file_dialog_callback = callback;
   connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;

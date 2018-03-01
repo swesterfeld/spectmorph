@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphplanwindow.hh"
+#include "smstdioout.hh"
 
 using namespace SpectMorph;
 using std::string;
@@ -147,7 +148,23 @@ MorphPlanWindow::on_file_import_clicked()
 void
 MorphPlanWindow::on_file_export_clicked()
 {
-  open_file_dialog ("Select SpectMorph Preset to export", [=](string filename) {});
+  save_file_dialog ("Select SpectMorph Preset to export", [=](string filename) {
+    GenericOut *out = StdioOut::open (filename);
+    if (out)
+      {
+        m_morph_plan->save (out);
+        delete out; // close file
+
+        set_filename (filename);
+      }
+    else
+      {
+#if 0
+        QMessageBox::critical (this, "Error",
+                               string_locale_printf ("Export failed, unable to open file '%s'.", file_name_local.data()).c_str());
+#endif
+      }
+  });
 }
 
 void
