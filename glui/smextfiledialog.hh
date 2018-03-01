@@ -18,7 +18,7 @@ class ExtFileDialog
   bool        selected_filename_ok;
 
 public:
-  ExtFileDialog (Window *main_window, bool open);
+  ExtFileDialog (Window *main_window, bool open, const std::string& filter);
 
   void handle_io();
 

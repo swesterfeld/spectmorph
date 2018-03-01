@@ -420,19 +420,19 @@ Window::show()
 }
 
 void
-Window::open_file_dialog (const string& title, std::function<void(string)> callback)
+Window::open_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
 {
   //puglOpenFileDialog (view, title.c_str());
-  ext_file_dialog.reset (new ExtFileDialog (this, true));
+  ext_file_dialog.reset (new ExtFileDialog (this, true, filter));
   file_dialog_callback = callback;
   connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;
 }
 
 void
-Window::save_file_dialog (const string& title, std::function<void(string)> callback)
+Window::save_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
 {
-  ext_file_dialog.reset (new ExtFileDialog (this, false));
+  ext_file_dialog.reset (new ExtFileDialog (this, false, filter));
   file_dialog_callback = callback;
   connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;
