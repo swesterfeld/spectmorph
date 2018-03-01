@@ -1,7 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#ifndef SPECTMORPH_FILE_DIALOG_HH
-#define SPECTMORPH_FILE_DIALOG_HH
+#ifndef SPECTMORPH_EXT_FILE_DIALOG_HH
+#define SPECTMORPH_EXT_FILE_DIALOG_HH
 
 #include <string>
 #include "smsignal.hh"
