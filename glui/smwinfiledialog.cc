@@ -28,14 +28,8 @@ class WinFileDialog : public NativeFileDialog
 public:
   WinFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter)
   {
-    if (open)
-      {
-        state = State::running;
-        dialog_thread.reset (new std::thread ([=]() { thread_open (win_id, filter); }));
-      }
-    else
-      {
-      }
+    state = State::running;
+    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, filter); }));
   }
   ~WinFileDialog()
   {
@@ -43,7 +37,7 @@ public:
       dialog_thread->join();
   }
   void
-  thread_open (PuglNativeWindow win_id, const string& filter)
+  thread_run (PuglNativeWindow win_id, bool open, const string& filter)
   { 
     OPENFILENAME ofn;
     char filename[1024] = "";
@@ -56,14 +50,15 @@ public:
     ofn.lpstrFilter = "All\0*.*\0";
     ofn.nFilterIndex = 0;
     ofn.lpstrInitialDir = 0;
-    ofn.Flags = OFN_ENABLESIZING | OFN_FILEMUSTEXIST | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
-
+    ofn.Flags = OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
+    if (open)
+      ofn.Flags |= OFN_FILEMUSTEXIST;
     ofn.hwndOwner = (HWND) win_id; // modal
 
-    auto ofn_result = GetOpenFileName (&ofn);
+    auto fn_result = open ? GetOpenFileName (&ofn) : GetSaveFileName (&ofn);
 
     std::lock_guard<std::mutex> lg (mutex);
-    if (ofn_result)
+    if (fn_result)
       {
         selected_filename = filename;
         state = State::ok;
