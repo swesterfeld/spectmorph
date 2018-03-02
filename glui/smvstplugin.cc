@@ -43,8 +43,8 @@ using namespace SpectMorph;
 
 using std::string;
 
-static FILE *debug_file = NULL;
-std::mutex   debug_mutex;
+static FILE       *debug_file = NULL;
+static std::mutex  debug_mutex;
 
 void
 VstUtils::debug (const char *fmt, ...)
