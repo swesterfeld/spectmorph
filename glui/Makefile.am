@@ -13,12 +13,13 @@ if COND_MACOS
 endif
 
 if COND_WINDOWS
-  PUGL_LIBS = pugl/libspectmorphpugl.la -lopengl32 -lgdi32 -luser32
+  PUGL_LIBS = pugl/libspectmorphpugl.la -lopengl32 -lgdi32 -luser32 -lcomdlg32
+  SMFDIALOG = smwinfiledialog.cc
 endif
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
-noinst_LTLIBRARIES = libspectmorphglui.la
+lib_LTLIBRARIES = libspectmorphglui.la
 
 SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smmorphsourceview.cc smmorphoutputview.cc smcomboboxoperator.cc \
@@ -70,4 +71,4 @@ STATIC_DLL_LIBS = \
   $(top_builddir)/lib/.libs/libspectmorph.a
 
 dll:
-	$(CXX) -shared -o smvstplugin.dll smvstplugin.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -liconv
+	$(CXX) -shared -o smvstplugin.dll $(SMVSTSOURCES) -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
