@@ -56,15 +56,12 @@ bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 
 const char *sm_error_blurb (Error error);
 
-/* operating system: one of 
- *  - SM_OS_WIN (windows)
- *  - SM_OS_MAC (macOS)
- *  - SM_OS_LINUX (linux)
+/* operating system: one of these three
  */
 #if WIN32
-  #define SM_OS_WIN
+  #define SM_OS_WINDOWS
 #elif __APPLE__
-  #define SM_OS_MAC
+  #define SM_OS_MACOS
 #elif __linux__
   #define SM_OS_LINUX
 #else
