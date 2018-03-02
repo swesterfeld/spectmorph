@@ -424,7 +424,11 @@ static float getParameter(AEffect *effect, int i)
   return plugin->get_parameter_scale((VstPlugin::Param) i);
 }
 
-extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
+#ifdef SM_OS_WINDOWS
+extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(dllexport);
+#endif
+
+extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
   debug ("VSTPluginMain called\n");
   if (audioMaster)
