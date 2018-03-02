@@ -56,6 +56,21 @@ bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 
 const char *sm_error_blurb (Error error);
 
+/* operating system: one of 
+ *  - SM_OS_WIN (windows)
+ *  - SM_OS_MAC (macOS)
+ *  - SM_OS_LINUX (linux)
+ */
+#if WIN32
+  #define SM_OS_WIN
+#elif __APPLE__
+  #define SM_OS_MAC
+#elif __linux__
+  #define SM_OS_LINUX
+#else
+  #error "unsupported platform"
+#endif
+
 } // namespace SpectMorph
 
 #endif
