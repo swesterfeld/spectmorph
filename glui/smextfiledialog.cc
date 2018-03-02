@@ -1,6 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include "smextfiledialog.hh"
+#include "smnativefiledialog.hh"
 #include "smwindow.hh"
 
 #include <glib.h>
@@ -12,6 +12,23 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+
+namespace SpectMorph {
+
+class ExtFileDialog : public NativeFileDialog
+{
+  int         child_pid;
+  int         child_stdout;
+  std::string selected_filename;
+  bool        selected_filename_ok;
+
+public:
+  ExtFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter);
+
+  void process_events();
+};
+
+}
 
 NativeFileDialog *
 NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& filter)
