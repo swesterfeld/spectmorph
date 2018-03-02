@@ -6,8 +6,8 @@
 #endif
 #include "smwindow.hh"
 #include "smscrollview.hh"
+#include "smnativefiledialog.hh"
 #include "pugl/cairo_gl.h"
-#include "smextfiledialog.hh"
 #include <string.h>
 #include <unistd.h>
 
@@ -250,14 +250,14 @@ Window::draw (cairo_t *cr)
 void
 Window::process_events()
 {
-  if (ext_file_dialog)
+  if (native_file_dialog)
     {
-      ext_file_dialog->handle_io();
+      native_file_dialog->process_events();
 
       if (!have_file_dialog)
         {
           /* file dialog closed - must be deleted after (not during) process_events */
-          ext_file_dialog.reset();
+          native_file_dialog.reset();
         }
     }
 
@@ -422,20 +422,25 @@ Window::show()
 void
 Window::open_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
 {
-  //puglOpenFileDialog (view, title.c_str());
-  ext_file_dialog.reset (new ExtFileDialog (this, true, filter));
+  PuglNativeWindow win_id = puglGetNativeWindow (view);
+
   file_dialog_callback = callback;
-  connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;
+
+  native_file_dialog.reset (NativeFileDialog::create (win_id, true, filter));
+  connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 
 void
 Window::save_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
 {
-  ext_file_dialog.reset (new ExtFileDialog (this, false, filter));
+  PuglNativeWindow win_id = puglGetNativeWindow (view);
+
   file_dialog_callback = callback;
-  connect (ext_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   have_file_dialog = true;
+
+  native_file_dialog.reset (NativeFileDialog::create (win_id, false, filter));
+  connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 
 void
@@ -465,7 +470,7 @@ Window::window()
 void
 Window::wait_for_event()
 {
-  if (ext_file_dialog)
+  if (native_file_dialog)
     {
       /* need to wait for events of this view, and handle io for file dialog */
       usleep (50 * 1000);

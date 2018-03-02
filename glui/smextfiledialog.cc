@@ -13,7 +13,13 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-ExtFileDialog::ExtFileDialog (Window *main_window, bool open, const string& filter)
+NativeFileDialog *
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& filter)
+{
+  return new ExtFileDialog (win_id, open, filter);
+}
+
+ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& filter)
 {
   GError *err;
 
@@ -38,7 +44,7 @@ ExtFileDialog::ExtFileDialog (Window *main_window, bool open, const string& filt
 }
 
 void
-ExtFileDialog::handle_io()
+ExtFileDialog::process_events()
 {
   if (child_stdout >= 0)
     {

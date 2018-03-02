@@ -12,7 +12,7 @@ namespace SpectMorph
 {
 
 struct CairoGL;
-class ExtFileDialog;
+class NativeFileDialog;
 
 struct Window : public Widget
 {
@@ -22,7 +22,7 @@ protected:
   bool                      draw_grid;
   bool                      have_file_dialog = false;
   std::function<void(std::string)> file_dialog_callback;
-  std::unique_ptr<ExtFileDialog> ext_file_dialog;
+  std::unique_ptr<NativeFileDialog> native_file_dialog;
   Widget                   *mouse_widget;
   Widget                   *enter_widget;
   Widget                   *menu_widget;

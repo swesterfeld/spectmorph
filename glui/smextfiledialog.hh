@@ -5,12 +5,13 @@
 
 #include <string>
 #include "smsignal.hh"
+#include "smnativefiledialog.hh"
 
 namespace SpectMorph
 {
 
 class Window;
-class ExtFileDialog
+class ExtFileDialog : public NativeFileDialog
 {
   int         child_pid;
   int         child_stdout;
@@ -18,11 +19,9 @@ class ExtFileDialog
   bool        selected_filename_ok;
 
 public:
-  ExtFileDialog (Window *main_window, bool open, const std::string& filter);
+  ExtFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter);
 
-  void handle_io();
-
-  Signal<std::string> signal_file_selected;
+  void process_events();
 };
 
 }
