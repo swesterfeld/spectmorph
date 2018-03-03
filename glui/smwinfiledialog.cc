@@ -26,10 +26,10 @@ class WinFileDialog : public NativeFileDialog
 
   string selected_filename;
 public:
-  WinFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter)
+  WinFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
   {
     state = State::running;
-    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, filter); }));
+    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, title, filter); }));
   }
   ~WinFileDialog()
   {
@@ -37,7 +37,7 @@ public:
       dialog_thread->join();
   }
   void
-  thread_run (PuglNativeWindow win_id, bool open, const string& filter)
+  thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
   { 
     OPENFILENAME ofn;
     char filename[1024] = "";
@@ -46,7 +46,7 @@ public:
     ofn.lStructSize = sizeof (OPENFILENAME);
     ofn.lpstrFile = filename;
     ofn.nMaxFile = 1024;
-    ofn.lpstrTitle = "!FIXME: window title";
+    ofn.lpstrTitle = title.c_str();
     ofn.lpstrFilter = "All\0*.*\0";
     ofn.nFilterIndex = 0;
     ofn.lpstrInitialDir = 0;
@@ -87,9 +87,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
 {
-  return new WinFileDialog (win_id, open, filter);
+  return new WinFileDialog (win_id, open, title, filter);
 }
 
 }
