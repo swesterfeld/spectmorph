@@ -26,10 +26,10 @@ class WinFileDialog : public NativeFileDialog
 
   string selected_filename;
 public:
-  WinFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
+  WinFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
   {
     state = State::running;
-    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, title, filter); }));
+    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, title, filter_title, filter); }));
   }
   ~WinFileDialog()
   {
@@ -37,17 +37,22 @@ public:
       dialog_thread->join();
   }
   void
-  thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
+  thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
   { 
     OPENFILENAME ofn;
     char filename[1024] = "";
+
+    string filter_spec = filter_title;
+    filter_spec.push_back (0);
+    filter_spec += filter;
+    filter_spec.push_back (0);
 
     ZeroMemory (&ofn, sizeof (OPENFILENAME));
     ofn.lStructSize = sizeof (OPENFILENAME);
     ofn.lpstrFile = filename;
     ofn.nMaxFile = 1024;
     ofn.lpstrTitle = title.c_str();
-    ofn.lpstrFilter = "All\0*.*\0";
+    ofn.lpstrFilter = filter_spec.c_str();
     ofn.nFilterIndex = 0;
     ofn.lpstrInitialDir = 0;
     ofn.Flags = OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
@@ -87,9 +92,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
 {
-  return new WinFileDialog (win_id, open, title, filter);
+  return new WinFileDialog (win_id, open, title, filter_title, filter);
 }
 
 }
