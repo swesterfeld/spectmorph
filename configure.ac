@@ -149,10 +149,8 @@ dnl JACK
 dnl
 AC_DEFUN([AC_JACK_REQUIREMENTS],
 [
-    dnl We need JACK libs and cflags
-    PKG_CHECK_MODULES(JACK, [jack])
-    AC_SUBST(JACK_CFLAGS)
-    AC_SUBST(JACK_LIBS)
+    dnl disable jack if not found using pkg-config
+    PKG_CHECK_MODULES(JACK, [jack], [with_jack="yes"], [with_jack="no"])
 ])
 dnl
 dnl sndfile
@@ -266,10 +264,18 @@ dnl -------------------------------------------------------------------------
 
 dnl -------------------- lv2 support is optional ----------------------------
 AC_ARG_WITH([lv2], [AS_HELP_STRING([--with-lv2], [build support for LV2])])
-if test "$with_lv2" != "xno"; then
+if test "x$with_lv2" != "xno"; then
   AC_LV2_REQUIREMENTS
 fi
 AM_CONDITIONAL([COND_WITH_LV2], [test "x$with_lv2" != "xno"])
+dnl -------------------------------------------------------------------------
+
+dnl -------------------- jack support is optional ---------------------------
+AC_ARG_WITH([jack], [AS_HELP_STRING([--with-jack], [build support for JACK])])
+if test "x$with_jack" != "xno"; then
+  AC_JACK_REQUIREMENTS
+fi
+AM_CONDITIONAL([COND_WITH_JACK], [test "x$with_jack" != "xno"])
 dnl -------------------------------------------------------------------------
 
 dnl detect host os
@@ -307,7 +313,6 @@ BOOST_NUMERIC_UBLAS
 AC_AO_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
 AC_QT_REQUIREMENTS
-AC_JACK_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
@@ -386,6 +391,7 @@ echo "--------------------------------------------------------------------------
 echo "$PACKAGE_NAME $PACKAGE_VERSION"
 echo "---------------------------------------------------------------------------"
 echo "  LV2 plug-in support  . .: $with_lv2"
+echo "  JACK support   . . . . .: $with_jack"
 echo "  Install prefix . . . . .: $prefix"
 if test "x$with_beast" = "xyes"; then
   echo
