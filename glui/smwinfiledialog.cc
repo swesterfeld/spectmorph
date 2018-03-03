@@ -36,6 +36,24 @@ public:
     if (dialog_thread)
       dialog_thread->join();
   }
+  string
+  filter2ext (const string& filter)
+  {
+    // filter="*.txt"    => ext = "txt"
+    // filter="*.*"      => ext = ""
+    // filter="*"        => ext = ""
+    // filter="*.iso.gz" => ext = "gz"
+    string ext;
+
+    for (auto c : filter)
+      {
+        ext += c;
+
+        if (c == '*' || c == '.')
+          ext.clear();
+      }
+    return ext;
+  }
   void
   thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
   { 
@@ -55,6 +73,11 @@ public:
     ofn.lpstrFilter = filter_spec.c_str();
     ofn.nFilterIndex = 0;
     ofn.lpstrInitialDir = 0;
+    // NOTE: if the current filter has an extension, this extension will
+    // be used, rather than the default extension, so in most cases the
+    // actual value given here is ignored
+    string def_ext = filter2ext (filter);
+    ofn.lpstrDefExt = def_ext.c_str();
     ofn.Flags = OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
     if (open)
       ofn.Flags |= OFN_FILEMUSTEXIST;
