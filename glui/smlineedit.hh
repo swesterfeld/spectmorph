@@ -88,7 +88,7 @@ public:
     return chars;
   }
   virtual void
-  key_press_event (const PuglEventKey& key_event)
+  key_press_event (const PuglEventKey& key_event) override
   {
     if (key_event.filter)
       {
