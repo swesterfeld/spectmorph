@@ -9,6 +9,7 @@ AC_PROG_CXX
 CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 AC_PROG_LIBTOOL
 AC_PROG_OBJC
+AC_PROG_OBJCXX
 
 dnl Version splitted
 
