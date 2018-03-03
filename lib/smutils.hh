@@ -9,10 +9,11 @@ namespace SpectMorph
 {
 
 /* integer types */
-typedef uint8_t  uint8;
-typedef uint32_t uint32;
-typedef int64_t  int64;
-typedef uint64_t uint64;
+typedef uint8_t       uint8;
+typedef uint32_t      uint32;
+typedef int64_t       int64;
+typedef uint64_t      uint64;
+typedef unsigned int  uint;
 
 #define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
