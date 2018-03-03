@@ -10,6 +10,11 @@ endif
 if COND_MACOS
   PUGL_LIBS = pugl/libspectmorphpugl.la
   PUGL_LDFLAGS = -framework Cocoa -framework OpenGL
+  SMFDIALOG = smmacfiledialog.mm
+
+  libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
+  # FIXME: there may be a cleaner solution to compile in C++11 mode
+  libspectmorphglui_la_OBJCXXFLAGS = $(AM_OBJCFLAGS) $(AM_CXXFLAGS) -std=gnu++11
 endif
 
 if COND_WINDOWS
