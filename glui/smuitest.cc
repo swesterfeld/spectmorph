@@ -176,11 +176,11 @@ public:
     grid.add_widget (new ColorTest (this, green.darker (250)), 24, 40, 2, 2);
 
     Button *open_button = new Button (this, "Open File");
-    connect (open_button->signal_clicked, [=] () { open_file_dialog ("Select SpectMorph Preset", "*.smplan", [=](string filename) { printf ("open file: '%s'\n", filename.c_str()); }); });
+    connect (open_button->signal_clicked, [=] () { open_file_dialog ("Select SpectMorph Preset", "SpectMorph Preset files", "*.smplan", [=](string filename) { printf ("open file: '%s'\n", filename.c_str()); }); });
     grid.add_widget (open_button, 3, 35, 10, 3);
 
     Button *save_button = new Button (this, "Save File");
-    connect (save_button->signal_clicked, [=] () { save_file_dialog ("Select SpectMorph Preset", "*.smplan", [=](string filename) { printf ("save file: '%s'\n", filename.c_str()); }); });
+    connect (save_button->signal_clicked, [=] () { save_file_dialog ("Select SpectMorph Preset", "SpectMorph Preset files", "*.smplan", [=](string filename) { printf ("save file: '%s'\n", filename.c_str()); }); });
     grid.add_widget (save_button, 15, 35, 10, 3);
   }
 };

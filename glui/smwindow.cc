@@ -420,26 +420,26 @@ Window::show()
 }
 
 void
-Window::open_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
+Window::open_file_dialog (const string& title, const string& filter_title, const string& filter, std::function<void(string)> callback)
 {
   PuglNativeWindow win_id = puglGetNativeWindow (view);
 
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, filter_title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 
 void
-Window::save_file_dialog (const string& title, const string& filter, std::function<void(string)> callback)
+Window::save_file_dialog (const string& title, const string& filter_title, const string& filter, std::function<void(string)> callback)
 {
   PuglNativeWindow win_id = puglGetNativeWindow (view);
 
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, filter_title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 

@@ -134,7 +134,7 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 void
 MorphPlanWindow::on_file_import_clicked()
 {
-  open_file_dialog ("Select SpectMorph Preset to import", "*.smplan", [=](string filename) {
+  open_file_dialog ("Select SpectMorph Preset to import", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     if (filename != "" && !load (filename))
       {
 #if 0
@@ -148,7 +148,7 @@ MorphPlanWindow::on_file_import_clicked()
 void
 MorphPlanWindow::on_file_export_clicked()
 {
-  save_file_dialog ("Select SpectMorph Preset export filename", "*.smplan", [=](string filename) {
+  save_file_dialog ("Select SpectMorph Preset export filename", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     GenericOut *out = StdioOut::open (filename);
     if (out)
       {
@@ -170,7 +170,7 @@ MorphPlanWindow::on_file_export_clicked()
 void
 MorphPlanWindow::on_load_index_clicked()
 {
-  open_file_dialog ("Select SpectMorph Instrument Index", "*.smindex", [=](string filename) {
+  open_file_dialog ("Select SpectMorph Instrument Index", "SpectMorph Index files", "*.smindex", [=](string filename) {
     if (filename != "")
       {
         m_morph_plan->load_index (filename);
