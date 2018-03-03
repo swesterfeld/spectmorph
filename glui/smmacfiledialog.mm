@@ -17,10 +17,14 @@ class MacFileDialog : public NativeFileDialog
     fail
   } state = State::null;
 
-  std::string selected_filename;
+  string selected_filename;
 public:
-  MacFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter)
+  MacFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
   {
+    NSString* titleString = [[NSString alloc]
+                             initWithBytes:title.c_str()
+                             length:title.size()
+                             encoding:NSUTF8StringEncoding];
     if (open)
       {
         NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -28,8 +32,11 @@ public:
         [panel setCanChooseFiles:YES];
         [panel setCanChooseDirectories:NO];
         [panel setAllowsMultipleSelection:NO];
+        [panel setTitle:titleString];
 
         [panel beginWithCompletionHandler:^(NSInteger result) {
+          state = State::fail;
+
           if (result == NSModalResponseOK)
             {
               for (NSURL *url in [panel URLs])
@@ -40,9 +47,6 @@ public:
                   selected_filename = [url.path UTF8String];
                   break;
                 }
-
-              if (state != State::ok)
-                state = State::fail;
             }
         }];
       }
@@ -50,7 +54,11 @@ public:
       {
         NSSavePanel *panel = [NSSavePanel savePanel];
 
+        [panel setTitle:titleString];
+
         [panel beginWithCompletionHandler:^(NSInteger result) {
+          state = State::fail;
+
           if (result == NSModalResponseOK)
             {
               NSURL* url = [panel URL];
@@ -60,9 +68,6 @@ public:
                   selected_filename = [url.path UTF8String];
                 }
             }
-
-          if (state != State::ok)
-            state = State::fail;
         }];
       }
   }
@@ -83,9 +88,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
 {
-  return new MacFileDialog (win_id, open, filter);
+  return new MacFileDialog (win_id, open, title, filter);
 }
 
 }
