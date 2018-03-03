@@ -13,6 +13,7 @@ widgets:
  - knob
 
 - file open dialog
+  - macos: filter .smplan, should add .smplan
 - operator move
 - operator remove
 - grid morph
