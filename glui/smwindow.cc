@@ -427,7 +427,7 @@ Window::open_file_dialog (const string& title, const string& filter, std::functi
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, true, filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 
@@ -439,7 +439,7 @@ Window::save_file_dialog (const string& title, const string& filter, std::functi
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, false, filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
 }
 

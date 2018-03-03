@@ -13,7 +13,7 @@ namespace SpectMorph
 class NativeFileDialog
 {
 public:
-  static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& filter);
+  static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& title, const std::string& filter);
 
   virtual void process_events() = 0;
   virtual ~NativeFileDialog() {}

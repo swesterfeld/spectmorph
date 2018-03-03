@@ -23,7 +23,7 @@ class ExtFileDialog : public NativeFileDialog
   bool   selected_filename_ok = false;
 
 public:
-  ExtFileDialog (PuglNativeWindow win_id, bool open, const string& filter);
+  ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter);
 
   void process_events();
 };
@@ -31,16 +31,16 @@ public:
 }
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
 {
-  return new ExtFileDialog (win_id, open, filter);
+  return new ExtFileDialog (win_id, open, title, filter);
 }
 
-ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& filter)
+ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
 {
   GError *err;
 
-  vector<const char *> argv = { "kdialog", open ? "--getopenfilename" : "--getsavefilename", g_get_home_dir(), filter.c_str(), NULL };
+  vector<const char *> argv = { "kdialog", open ? "--getopenfilename" : "--getsavefilename", g_get_home_dir(), filter.c_str(), "--title", title.c_str(), NULL };
   if (!g_spawn_async_with_pipes (NULL, /* working directory = current dir */
                                  (char **) &argv[0],
                                  NULL, /* inherit environment */

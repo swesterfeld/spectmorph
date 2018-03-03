@@ -148,7 +148,7 @@ MorphPlanWindow::on_file_import_clicked()
 void
 MorphPlanWindow::on_file_export_clicked()
 {
-  save_file_dialog ("Select SpectMorph Preset to export", "*.smplan", [=](string filename) {
+  save_file_dialog ("Select SpectMorph Preset export filename", "*.smplan", [=](string filename) {
     GenericOut *out = StdioOut::open (filename);
     if (out)
       {
