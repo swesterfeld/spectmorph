@@ -54,7 +54,11 @@ VstUtils::debug (const char *fmt, ...)
       std::lock_guard<std::mutex> locker (debug_mutex);
 
       if (!debug_file)
-        debug_file = fopen ("/tmp/smvstplugin.log", "w");
+        {
+          gchar *filename = g_build_filename (g_get_tmp_dir(), "smvstplugin.log", nullptr);
+          debug_file = fopen (filename, "w");
+          g_free (filename);
+        }
 
       va_list ap;
 
