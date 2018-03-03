@@ -12,7 +12,6 @@ if COND_MACOS
   PUGL_LDFLAGS = -framework Cocoa -framework OpenGL
   SMFDIALOG = smmacfiledialog.mm
 
-  libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
   # FIXME: there may be a cleaner solution to compile in C++11 mode
   libspectmorphglui_la_OBJCXXFLAGS = $(AM_OBJCFLAGS) $(AM_CXXFLAGS) -std=gnu++11
 endif
@@ -43,6 +42,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
+libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
 
 AM_CXXFLAGS += $(QTCORE_CFLAGS) $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
