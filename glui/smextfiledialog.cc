@@ -17,13 +17,13 @@ namespace SpectMorph {
 
 class ExtFileDialog : public NativeFileDialog
 {
-  int         child_pid;
-  int         child_stdout;
-  std::string selected_filename;
-  bool        selected_filename_ok;
+  int    child_pid = -1;
+  int    child_stdout = -1;
+  string selected_filename;
+  bool   selected_filename_ok = false;
 
 public:
-  ExtFileDialog (PuglNativeWindow win_id, bool open, const std::string& filter);
+  ExtFileDialog (PuglNativeWindow win_id, bool open, const string& filter);
 
   void process_events();
 };
@@ -53,11 +53,7 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
                                  &err))
     {
       printf ("error spawning child %s\n", err->message);
-      child_stdout = -1;
-      child_pid = -1;
     }
-  printf ("child_stdout = %d\n", child_stdout);
-  selected_filename_ok = false;
 }
 
 void
