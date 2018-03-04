@@ -6,8 +6,10 @@
 #include <string>
 #include <assert.h>
 #include <stdarg.h>
-#include <xlocale.h>
+#include <glib.h>
 
+#ifndef SM_OS_WINDOWS
+#include <xlocale.h>
 /********************************************************************************
 * START: Code from Rapicorn
 *********************************************************************************/
@@ -94,6 +96,12 @@ ScopedPosixLocale::posix_locale ()
 /********************************************************************************
 * END: Code from Rapicorn
 *********************************************************************************/
+#else
+struct ScopedPosixLocale /* dummy - no locale support under windows */
+{
+  ScopedPosixLocale() {}
+};
+#endif
 
 using std::string;
 
@@ -101,15 +109,22 @@ static string
 string_current_vprintf (const char *format,
                         va_list     vargs)
 {
+  string s;
+#ifndef SM_OS_WINDOWS
   char *str = NULL;
   if (vasprintf (&str, format, vargs) >= 0 && str)
     {
-      string s = str;
+      s = str;
       free (str);
-      return s;
     }
   else
-    return format;
+    s = format;
+#else /* no vasprintf on windows */
+  gchar *gstr = g_strdup_vprintf (format, vargs);
+  s = gstr;
+  g_free (gstr);
+#endif
+  return s;
 }
 
 namespace SpectMorph
