@@ -23,10 +23,10 @@ protected:
   bool                      have_file_dialog = false;
   std::function<void(std::string)> file_dialog_callback;
   std::unique_ptr<NativeFileDialog> native_file_dialog;
-  Widget                   *mouse_widget;
-  Widget                   *enter_widget;
-  Widget                   *menu_widget;
-  Widget                   *keyboard_focus_widget;
+  Widget                   *mouse_widget = nullptr;
+  Widget                   *enter_widget = nullptr;
+  Widget                   *menu_widget = nullptr;
+  Widget                   *keyboard_focus_widget = nullptr;
   double                    global_scale;
   double                    scale_to_width;
 

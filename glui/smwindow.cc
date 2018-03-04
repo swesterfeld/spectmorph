@@ -66,10 +66,7 @@ on_event (PuglView* view, const PuglEvent* event)
 
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
-  draw_grid (false),
-  mouse_widget (nullptr),
-  enter_widget (nullptr),
-  menu_widget (nullptr)
+  draw_grid (false)
 {
   scale_to_width = width;
   global_scale = 1;
