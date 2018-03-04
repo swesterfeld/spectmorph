@@ -19,7 +19,7 @@ class MacFileDialog : public NativeFileDialog
 
   string selected_filename;
 public:
-  MacFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
+  MacFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
   {
     NSString* titleString = [[NSString alloc]
                              initWithBytes:title.c_str()
@@ -88,9 +88,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
 {
-  return new MacFileDialog (win_id, open, title, filter);
+  return new MacFileDialog (win_id, open, title, filter_title, filter);
 }
 
 }
