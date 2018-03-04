@@ -25,6 +25,12 @@ public:
                              initWithBytes:title.c_str()
                              length:title.size()
                              encoding:NSUTF8StringEncoding];
+
+    string extension = filter2ext (filter);
+
+    NSMutableArray *file_types_array = [NSMutableArray new];
+    [file_types_array addObject:[NSString stringWithUTF8String:extension.c_str()]];
+
     if (open)
       {
         NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -33,6 +39,7 @@ public:
         [panel setCanChooseDirectories:NO];
         [panel setAllowsMultipleSelection:NO];
         [panel setTitle:titleString];
+        [panel setAllowedFileTypes:file_types_array];
 
         [panel beginWithCompletionHandler:^(NSInteger result) {
           state = State::fail;
@@ -55,6 +62,7 @@ public:
         NSSavePanel *panel = [NSSavePanel savePanel];
 
         [panel setTitle:titleString];
+        [panel setAllowedFileTypes:file_types_array];
 
         [panel beginWithCompletionHandler:^(NSInteger result) {
           state = State::fail;

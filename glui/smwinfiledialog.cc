@@ -36,24 +36,6 @@ public:
     if (dialog_thread)
       dialog_thread->join();
   }
-  string
-  filter2ext (const string& filter)
-  {
-    // filter="*.txt"    => ext = "txt"
-    // filter="*.*"      => ext = ""
-    // filter="*"        => ext = ""
-    // filter="*.iso.gz" => ext = "gz"
-    string ext;
-
-    for (auto c : filter)
-      {
-        ext += c;
-
-        if (c == '*' || c == '.')
-          ext.clear();
-      }
-    return ext;
-  }
   void
   thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
   { 

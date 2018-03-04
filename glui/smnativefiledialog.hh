@@ -12,6 +12,25 @@ namespace SpectMorph
 
 class NativeFileDialog
 {
+protected:
+  std::string
+  filter2ext (const std::string& filter)
+  {
+    // filter="*.txt"    => ext = "txt"
+    // filter="*.*"      => ext = ""
+    // filter="*"        => ext = ""
+    // filter="*.iso.gz" => ext = "gz"
+    std::string ext;
+
+    for (auto c : filter)
+      {
+        ext += c;
+
+        if (c == '*' || c == '.')
+          ext.clear();
+      }
+    return ext;
+  }
 public:
   static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& title, const std::string& filter_title, const std::string& filter);
 
