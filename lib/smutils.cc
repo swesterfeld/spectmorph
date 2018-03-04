@@ -173,13 +173,21 @@ sm_printf (const char *format, ...)
   printf ("%s", str.c_str());
 }
 
+static string pkg_data_dir = CONFIGURE_INSTALLPATH_PKGDATADIR;
+
+void
+sm_set_pkg_data_dir (const string& data_dir)
+{
+  pkg_data_dir = data_dir;
+}
+
 std::string
 sm_get_install_dir (InstallDir p)
 {
   switch (p)
     {
-      case INSTALL_DIR_TEMPLATES:   return CONFIGURE_INSTALLPATH_PKGDATADIR "/templates";
-      case INSTALL_DIR_INSTRUMENTS: return CONFIGURE_INSTALLPATH_PKGDATADIR "/instruments";
+      case INSTALL_DIR_TEMPLATES:   return pkg_data_dir + "/templates";
+      case INSTALL_DIR_INSTRUMENTS: return pkg_data_dir + "/instruments";
     }
   return "";
 }

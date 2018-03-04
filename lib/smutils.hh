@@ -33,6 +33,9 @@ enum InstallDir
 
 std::string sm_get_install_dir (InstallDir p);
 
+// data directory is relocatable
+void        sm_set_pkg_data_dir (const std::string& data_dir);
+
 enum UserDir
 {
   USER_DIR_INSTRUMENTS
