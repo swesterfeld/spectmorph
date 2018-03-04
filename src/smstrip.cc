@@ -7,7 +7,7 @@
 #include "config.h"
 
 using std::string;
-using SpectMorph::sm_init;
+using namespace SpectMorph;
 
 /// @cond
 struct Options
