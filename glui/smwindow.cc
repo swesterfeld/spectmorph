@@ -64,14 +64,6 @@ on_event (PuglView* view, const PuglEvent* event)
   window->on_event (event);
 }
 
-static void
-on_file_selected (PuglView* view, const char *filename)
-{
-  Window *window = reinterpret_cast<Window *> (puglGetHandle (view));
-
-  window->on_file_selected (filename);
-}
-
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false),
@@ -95,7 +87,6 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
 
   puglSetHandle (view, this);
   puglSetEventFunc (view, ::on_event);
-  puglSetFileSelectedFunc (view, ::on_file_selected);
 
   cairo_gl.reset (new CairoGL (width, height));
 
