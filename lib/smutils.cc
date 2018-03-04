@@ -6,6 +6,7 @@
 #include <string>
 #include <assert.h>
 #include <stdarg.h>
+#include <xlocale.h>
 
 /********************************************************************************
 * START: Code from Rapicorn
@@ -93,6 +94,7 @@ ScopedPosixLocale::posix_locale ()
 /********************************************************************************
 * END: Code from Rapicorn
 *********************************************************************************/
+
 using std::string;
 
 static string

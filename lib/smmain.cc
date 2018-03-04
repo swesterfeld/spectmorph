@@ -6,6 +6,7 @@
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
+#include <locale.h>
 
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsemain.hh>
