@@ -53,6 +53,8 @@ sm_init_plugin()
 void
 sm_init (int *argc_p, char ***argv_p)
 {
+  /* internationalized string printf */
+  setlocale (LC_ALL, "");
 #if SPECTMORPH_HAVE_BSE
   bse_init_inprocess (argc_p, *argv_p, NULL);
 #endif
