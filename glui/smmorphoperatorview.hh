@@ -10,7 +10,7 @@
 #include "smslider.hh"
 #include "smmorphplan.hh"
 #include "smmorphplanwindow.hh"
-#include "smfoldbutton.hh"
+#include "smtoolbutton.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -21,7 +21,8 @@ class MorphPlanWindow;
 class MorphOperatorView : public Frame
 {
 protected:
-  FoldButton    *fold_button;
+  ToolButton    *fold_button;
+  ToolButton    *close_button;
 
 public:
   Widget        *body_widget;
@@ -43,18 +44,28 @@ public:
     label->bold  = true;
     grid.add_widget (label, 0, 0, 43, 4);
 
-    fold_button = new FoldButton (this, m_op->folded());
+    fold_button = new ToolButton (this);
     grid.add_widget (fold_button, 2, 1, 2, 2);
     connect (fold_button->signal_clicked, this, &MorphOperatorView::on_fold_clicked);
+
+    close_button = new ToolButton (this, 'x');
+    grid.add_widget (close_button, 39, 1, 2, 2);
+    connect (close_button->signal_clicked, [=]() { m_op->morph_plan()->remove (m_op); });
 
     body_widget = new Widget (this);
 
     update_body_visible();
   }
   void
+  hide_tool_buttons()
+  {
+    fold_button->set_visible (false);
+    close_button->set_visible (false);
+  }
+  void
   on_fold_clicked()
   {
-    m_op->set_folded (fold_button->folded);
+    m_op->set_folded (!m_op->folded());
 
     update_body_visible();
 
@@ -63,6 +74,7 @@ public:
   void
   update_body_visible()
   {
+    fold_button->symbol = m_op->folded() ? '>' : 'v';
     body_widget->set_visible (!m_op->folded());
   }
   virtual double

@@ -1,24 +1,24 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 //
-#ifndef SPECTMORPH_FOLD_BUTTON_HH
-#define SPECTMORPH_FOLD_BUTTON_HH
+#ifndef SPECTMORPH_TOOL_BUTTON_HH
+#define SPECTMORPH_TOOL_BUTTON_HH
 
 #include "smdrawutils.hh"
 
 namespace SpectMorph
 {
 
-struct FoldButton : public Widget
+struct ToolButton : public Widget
 {
   bool        highlight = false;
   bool        pressed = false;
-  bool        folded;
+  char        symbol;
 
   Signal<> signal_clicked;
 
-  FoldButton (Widget *parent, bool folded) :
+  ToolButton (Widget *parent, char symbol = 0) :
     Widget (parent),
-    folded (folded)
+    symbol (symbol)
   {
   }
   void
@@ -33,22 +33,37 @@ struct FoldButton : public Widget
     else
       cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
 
-    if (!folded) /* draw triangle */
+    if (symbol == 'v') /* draw triangle */
       {
         cairo_move_to (cr, space, space);
         cairo_line_to (cr, width - space, space);
         cairo_line_to (cr, width / 2, space + (width - 2 * space) * 0.8);
+
+        cairo_close_path (cr);
+        cairo_stroke_preserve (cr);
+        cairo_fill (cr);
       }
-    else
+    else if (symbol == '>')
       {
         cairo_move_to (cr, space, space);
         cairo_line_to (cr, space, height - space);
         cairo_line_to (cr, space + (height - 2 * space) * 0.8, height / 2);
-      }
 
-    cairo_close_path (cr);
-    cairo_stroke_preserve (cr);
-    cairo_fill (cr);
+        cairo_close_path (cr);
+        cairo_stroke_preserve (cr);
+        cairo_fill (cr);
+      }
+    else if (symbol == 'x')
+      {
+        cairo_move_to (cr, space, space);
+        cairo_line_to (cr, width - space, height - space);
+
+        cairo_move_to (cr, space, height - space);
+        cairo_line_to (cr, width - space, space);
+
+        cairo_set_line_width (cr, 2.0);
+        cairo_stroke (cr);
+      }
   }
   void
   enter_event() override
@@ -65,7 +80,6 @@ struct FoldButton : public Widget
   {
     if (pressed && x >= 0 && y >= 0 && x < width && y < height)
       {
-        folded = !folded;
         signal_clicked();
       }
   }

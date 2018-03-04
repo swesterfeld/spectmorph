@@ -26,6 +26,8 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 {
   FixedGrid grid;
 
+  hide_tool_buttons(); // no fold/close for output
+
   source_combobox = new ComboBoxOperator (body_widget, morph_output->morph_plan(),
     [](MorphOperator *op) {
       return (op->output_type() == MorphOperator::OUTPUT_AUDIO);

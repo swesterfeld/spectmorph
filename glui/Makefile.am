@@ -37,7 +37,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smfixedgrid.hh smmorphoperatorview.hh smmorphsourceview.hh \
 	 smmorphoutputview.hh smcomboboxoperator.hh smmorphlinearview.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
-	 smbutton.hh smfoldbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
+	 smbutton.hh smtoolbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
 	 smfiledialog.hh smlineedit.hh smnativefiledialog.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)

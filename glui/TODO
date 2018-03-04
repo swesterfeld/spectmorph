@@ -13,6 +13,6 @@ widgets:
  - knob
 
 - operator move
-- operator remove
+- operator rename
 - global settings
 - control widget
