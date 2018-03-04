@@ -11,7 +11,7 @@ static LeakDebugger leak_debugger ("SpectMorph::StdioOut");
 GenericOut*
 StdioOut::open (const std::string& filename)
 {
-  FILE *file = fopen (filename.c_str(), "w");
+  FILE *file = fopen (filename.c_str(), "wb");
 
   if (file)
     return new StdioOut (file);

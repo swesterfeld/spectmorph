@@ -16,7 +16,7 @@ static LeakDebugger leak_debugger ("SpectMorph::StdioIn");
 GenericIn*
 StdioIn::open (const string& filename)
 {
-  FILE *file = fopen (filename.c_str(), "r");
+  FILE *file = fopen (filename.c_str(), "rb");
 
   if (file)
     return new StdioIn (file, filename);

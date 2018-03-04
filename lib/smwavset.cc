@@ -51,7 +51,7 @@ WavSet::save (const string& filename, bool embed_models)
         }
       else if (embed_models)
         {
-          FILE *in = fopen (waves[i].path.c_str(), "r");
+          FILE *in = fopen (waves[i].path.c_str(), "rb");
           if (in)
             {
               vector<unsigned char> data;
