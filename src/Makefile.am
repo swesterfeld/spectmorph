@@ -4,7 +4,12 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(AO_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib $(BOO
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
 
-bin_PROGRAMS = smenc smplay smtool smstrip smwavset
+bin_PROGRAMS = smenc smplay smtool smstrip
+
+if !COND_WINDOWS
+# smwavset needs job queue
+bin_PROGRAMS += smwavset
+endif
 
 SMHDRS = stwutils.hh
 
