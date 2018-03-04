@@ -16,9 +16,13 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
         testidb testifreq testbesseli0
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
-        testjobqueue testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
+        testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
         testlsfperf testmutexperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
         testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal
+
+if !COND_WINDOWS
+noinst_PROGRAMS += testjobqueue
+endif
 
 testfastsin_SOURCES = testfastsin.cc
 testfastsin_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
