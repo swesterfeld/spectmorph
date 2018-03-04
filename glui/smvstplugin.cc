@@ -443,6 +443,11 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
   if (!sm_init_done())
     sm_init_plugin();
 
+#ifdef SM_OS_WINDOWS
+  // FIXME: use better strategy to find plugin data dir
+  sm_set_pkg_data_dir ("c:/spectmorph");
+#endif
+
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
   effect->magic = kEffectMagic;
   effect->dispatcher = dispatcher;
