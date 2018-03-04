@@ -14,4 +14,6 @@ main (int argc, char **argv)
   printf ("string_printf          %s", string_printf ("%.2f\n", 3.14).c_str());
   printf ("sm_printf              ");
   sm_printf ("%.2f\n", 3.14);
+  printf ("printf                 ");
+  printf ("%.2f\n", 3.14);
 }
