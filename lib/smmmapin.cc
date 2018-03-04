@@ -2,16 +2,20 @@
 
 #include "smmmapin.hh"
 #include "smleakdebugger.hh"
+#include "smutils.hh"
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifndef SM_OS_WINDOWS
+#include <sys/mman.h>
+#endif
 
 using namespace SpectMorph;
 
@@ -20,8 +24,9 @@ static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
 GenericIn*
 MMapIn::open (const std::string& filename)
 {
+#ifndef SM_OS_WINDOWS
   if (getenv ("SPECTMORPH_NOMMAP"))
-    return NULL;
+    return nullptr;
 
   int fd = ::open (filename.c_str(), O_RDONLY);
   if (fd >= 0)
@@ -30,14 +35,15 @@ MMapIn::open (const std::string& filename)
 
       if (fstat (fd, &st) == 0)
         {
-          unsigned char *mapfile = static_cast<unsigned char *> (mmap (NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
+          unsigned char *mapfile = static_cast<unsigned char *> (mmap (nullptr, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
           if (mapfile != MAP_FAILED)
             {
               return new MMapIn (mapfile, mapfile + st.st_size, fd);
             }
         }
     }
-  return NULL;
+#endif
+  return nullptr;
 }
 
 GenericIn*
@@ -58,11 +64,13 @@ MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
 
 MMapIn::~MMapIn()
 {
+#ifndef SM_OS_WINDOWS
   if (fd >= 0)
     {
       munmap (mapfile, mapend - mapfile);
       close (fd);
     }
+#endif
   leak_debugger.del (this);
 }
 
