@@ -26,7 +26,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smgenericout.cc smstdioout.cc smmemout.cc smlivedecoder.cc \
                            smrandom.cc smfft.cc smmain.cc smdebug.cc smnoisebandpartition.cc \
                            smifftsynth.cc smlivedecodersource.cc smpolyphaseinter.cc \
-                           smjobqueue.cc smmicroconf.cc smhexstring.cc \
+                           smmicroconf.cc smhexstring.cc \
                            smmorphplanvoice.cc smmorphplan.cc smmorphoperator.cc \
                            smindex.cc smmorphsource.cc smmorphoutput.cc smmorphlinear.cc \
                            smmorphoperatormodule.cc smmorphsourcemodule.cc smmorphlinearmodule.cc \
@@ -37,6 +37,10 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smmorphgridmodule.cc smmath.cc smmorphutils.cc smutils.cc \
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc
+
+if !COND_WINDOWS
+libspectmorph_la_SOURCES += smjobqueue.cc
+endif
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
 
