@@ -108,6 +108,14 @@ public:
           chars.pop_back();
         m_text = utf8_from_unicode (chars);
       }
+    else if (key_event.character == 13)
+      {
+        signal_return_pressed();
+      }
+    else if (key_event.character == 27)
+      {
+        signal_esc_pressed();
+      }
     if (m_text != old_text)
       signal_text_changed (m_text);
   }
@@ -123,6 +131,8 @@ public:
   }
 
   Signal<std::string> signal_text_changed;
+  Signal<>            signal_return_pressed;
+  Signal<>            signal_esc_pressed;
 };
 
 }
