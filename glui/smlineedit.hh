@@ -26,10 +26,10 @@ public:
   {
     return m_text;
   }
-  LineEdit (Widget *parent)
-    : Widget (parent)
+  LineEdit (Widget *parent, const std::string& start_text) :
+    Widget (parent),
+    m_text (start_text)
   {
-    m_text = "/tmp/foo.smplan";
   }
   void
   draw (cairo_t *cr) override

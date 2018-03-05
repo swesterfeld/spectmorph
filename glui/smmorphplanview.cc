@@ -126,8 +126,13 @@ MorphPlanView::op_views()
 }
 
 void
-MorphPlanView::on_move_indication (MorphOperator *op)
+MorphPlanView::on_move_indication (MorphOperator *op, bool done)
 {
+  if (done)
+    {
+      move_ind_widget.reset();
+      return;
+    }
   MorphOperatorView *view = nullptr;
 
   for (auto v : m_op_views)

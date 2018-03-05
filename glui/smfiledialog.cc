@@ -21,7 +21,7 @@ FileDialog::FileDialog (Window *parent_window)
   Label  *fn_label = new Label (this, "File Name");
   Button *open_button = new Button (this, "Open File");
   Button *cancel_button = new Button (this, "Cancel");
-  LineEdit *filename_edit = new LineEdit (this);
+  LineEdit *filename_edit = new LineEdit (this, "/tmp/foo.smplan");
 
   double w8 = width / 8;
   double h8 = height / 8;

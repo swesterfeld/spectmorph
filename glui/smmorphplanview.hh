@@ -34,7 +34,7 @@ public:
   const std::vector<MorphOperatorView *>& op_views();
 
   void on_plan_changed();
-  void on_move_indication (MorphOperator *op);
+  void on_move_indication (MorphOperator *op, bool done);
   void on_need_view_rebuild();
 };
 
