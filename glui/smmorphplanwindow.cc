@@ -5,6 +5,7 @@
 
 using namespace SpectMorph;
 using std::string;
+using std::vector;
 
 MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
   Window (width, height, win_id, resize),
@@ -52,11 +53,11 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   Widget *output_parent = new Widget (this);
   grid.add_widget (output_parent, 49, 5, 47, height / 8 - 6);
 
-  MorphPlanView *mp_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
+  m_morph_plan_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
   auto update_mp_size = [=]() {
-    scroll_view->set_scroll_widget (mp_view, false, true);
+    scroll_view->set_scroll_widget (m_morph_plan_view, false, true);
   };
-  connect (mp_view->signal_widget_size_changed, update_mp_size);
+  connect (m_morph_plan_view->signal_widget_size_changed, update_mp_size);
   update_mp_size();
 }
 
@@ -176,4 +177,32 @@ MorphPlanWindow::on_load_index_clicked()
         m_morph_plan->load_index (filename);
       }
   });
+}
+
+MorphOperator *
+MorphPlanWindow::where (MorphOperator *op, double y)
+{
+  MorphOperator *result = nullptr;
+
+  double end_y = 0;
+
+  const vector<MorphOperatorView *> op_views = m_morph_plan_view->op_views();
+  if (!op_views.empty())
+    result = op_views[0]->op();
+
+  for (auto view : op_views)
+    {
+      if (!view->is_output())
+        {
+          if (view->abs_y() < y)
+            result = view->op();
+
+          end_y = view->abs_y() + view->height;
+        }
+    }
+
+  if (y > end_y)  // below last operator?
+    return nullptr;
+  else
+    return result;
 }

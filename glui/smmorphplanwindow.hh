@@ -15,10 +15,12 @@
 namespace SpectMorph
 {
 
+class MorphPlanView;
 class MorphPlanWindow : public Window
 {
-  MorphPlanPtr m_morph_plan;
-  std::string  m_filename;
+  MorphPlanPtr    m_morph_plan;
+  MorphPlanView  *m_morph_plan_view;
+  std::string     m_filename;
 
   void
   set_filename (const std::string& filename)
@@ -33,6 +35,8 @@ public:
   void fill_preset_menu (Menu *menu);
   bool load (const std::string& filename);
   void on_load_preset (const std::string& rel_filename);
+
+  MorphOperator *where (MorphOperator *op, double y);
 
 /* slots: */
   void on_file_import_clicked();

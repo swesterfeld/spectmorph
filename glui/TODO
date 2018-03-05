@@ -12,7 +12,6 @@ widgets:
  - popup menu
  - knob
 
-- operator move
 - operator rename
 - global settings
 - control widget

@@ -23,13 +23,18 @@ struct MorphPlanView : public Widget
   bool             need_view_rebuild;
 
   std::vector<MorphOperatorView *> m_op_views;
+
+  std::unique_ptr<Widget> move_ind_widget;
 public:
   Signal<> signal_widget_size_changed;
 
   MorphPlanView (Widget *parent, Widget *output_parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window);
 
   void update_positions();
+  const std::vector<MorphOperatorView *>& op_views();
+
   void on_plan_changed();
+  void on_move_indication (MorphOperator *op);
   void on_need_view_rebuild();
 };
 

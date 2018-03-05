@@ -10,6 +10,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 MorphPlanView::MorphPlanView (Widget *parent, Widget *output_parent, MorphPlan *morph_plan, MorphPlanWindow *morph_plan_window) :
   Widget (parent),
@@ -63,6 +64,7 @@ MorphPlanView::on_plan_changed()
           op_view = new MorphOperatorView (this, op, morph_plan_window);
         }
       connect (op_view->signal_fold_changed, this, &MorphPlanView::update_positions);
+      connect (op_view->signal_move_indication, this, &MorphPlanView::on_move_indication);
 
       m_op_views.push_back (op_view);
     }
@@ -79,7 +81,7 @@ MorphPlanView::update_positions()
   for (auto op_view : m_op_views)
     {
       double view_height;
-      if (op_view->m_op->folded())
+      if (op_view->op()->folded())
         {
           view_height = 4;
         }
@@ -114,4 +116,46 @@ MorphPlanView::on_need_view_rebuild()
   for (auto view : m_op_views)
     delete view;
   m_op_views.clear();
+  move_ind_widget.reset();
+}
+
+const vector<MorphOperatorView *>&
+MorphPlanView::op_views()
+{
+  return m_op_views;
+}
+
+void
+MorphPlanView::on_move_indication (MorphOperator *op)
+{
+  MorphOperatorView *view = nullptr;
+
+  for (auto v : m_op_views)
+    {
+      if (op) // search for matching view
+        {
+          if (v->op() == op)
+            view = v;
+        }
+      else if (!v->is_output())  // last view for op == null
+        view = v;
+    }
+  if (!view) // shouldn't happen
+    return;
+
+  move_ind_widget.reset (new Widget (this));
+
+  move_ind_widget->set_background_color (ThemeColor::MENU_ITEM);
+  move_ind_widget->x = view->x;
+  move_ind_widget->width = view->width;
+  move_ind_widget->height = 4;
+
+  if (op) // before view
+    {
+      move_ind_widget->y = view->y - 6;
+    }
+  else // after view
+    {
+      move_ind_widget->y = view->y + view->height + 2;
+    }
 }

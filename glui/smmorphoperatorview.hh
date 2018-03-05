@@ -16,6 +16,36 @@
 namespace SpectMorph
 {
 
+class MorphOperatorTitle : public Label
+{
+  bool in_move = false;
+public:
+  MorphOperatorTitle (Widget *parent, const std::string& text) :
+    Label (parent, text)
+  {
+  }
+  void
+  mouse_press (double x, double y) override
+  {
+    in_move = true;
+
+    signal_move (abs_y() + y);
+  }
+  void
+  motion (double x, double y) override
+  {
+    if (in_move)
+      signal_move (abs_y() + y);
+  }
+  void
+  mouse_release (double x, double y) override
+  {
+    if (in_move)
+      signal_end_move (abs_y() + y);
+  }
+  Signal<double> signal_move;
+  Signal<double> signal_end_move;
+};
 class MorphPlanWindow;
 
 class MorphOperatorView : public Frame
@@ -24,38 +54,17 @@ protected:
   ToolButton    *fold_button;
   ToolButton    *close_button;
 
-public:
-  Widget        *body_widget;
+  MorphPlanWindow *morph_plan_window;
   MorphOperator *m_op;
 
-  Signal<> signal_fold_changed;
+public:
+  Widget        *body_widget;
 
-  MorphOperatorView (Widget *parent, MorphOperator *op, MorphPlanWindow *window) :
-    Frame (parent),
-    m_op (op)
-  {
-    FixedGrid grid;
+  Signal<>                signal_fold_changed;
+  Signal<MorphOperator *> signal_move_indication;
 
-    // FIXME: need update (signal) on_operators_changed
-    std::string title = op->type_name() + ": " + op->name();
+  MorphOperatorView (Widget *parent, MorphOperator *op, MorphPlanWindow *window);
 
-    Label *label = new Label (this, title);
-    label->align = TextAlign::CENTER;
-    label->bold  = true;
-    grid.add_widget (label, 0, 0, 43, 4);
-
-    fold_button = new ToolButton (this);
-    grid.add_widget (fold_button, 2, 1, 2, 2);
-    connect (fold_button->signal_clicked, this, &MorphOperatorView::on_fold_clicked);
-
-    close_button = new ToolButton (this, 'x');
-    grid.add_widget (close_button, 39, 1, 2, 2);
-    connect (close_button->signal_clicked, [=]() { m_op->morph_plan()->remove (m_op); });
-
-    body_widget = new Widget (this);
-
-    update_body_visible();
-  }
   void
   hide_tool_buttons()
   {
@@ -87,6 +96,14 @@ public:
   {
     return false;
   }
+  MorphOperator *
+  op()
+  {
+    return m_op;
+  }
+
+  void on_move (double y);
+  void on_end_move (double y);
 };
 
 }
