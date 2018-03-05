@@ -57,6 +57,8 @@ RenameOpDialog::new_name()
 void
 RenameOpDialog::run (std::function<void(bool)> callback)
 {
+  window()->set_dialog_widget (this);
+
   connect (line_edit->signal_return_pressed,  [=]() { callback (ok_button->enabled()); delete this; });
   connect (line_edit->signal_esc_pressed,     [=]() { callback (false); delete this; });
   connect (ok_button->signal_clicked,         [=]() { callback (true); delete this; });

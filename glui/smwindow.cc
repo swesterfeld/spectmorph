@@ -116,6 +116,8 @@ Window::on_widget_deleted (Widget *child)
     menu_widget = nullptr;
   if (keyboard_focus_widget == child)
     keyboard_focus_widget = nullptr;
+  if (dialog_widget == child)
+    dialog_widget = nullptr;
 }
 
 static vector<Widget *>
@@ -388,7 +390,13 @@ Window::on_event (const PuglEvent* event)
 Widget *
 Window::find_widget_xy (double ex, double ey)
 {
-  Widget *widget = menu_widget ? menu_widget : this;  // active menu => only children of the menu get clicks
+  Widget *widget = this;
+
+  if (menu_widget)
+    widget = menu_widget;  // active menu => only children of the menu get clicks
+
+  if (dialog_widget)
+    widget = dialog_widget;
 
   for (auto w : ::crawl_widgets ({ widget })) // which child gets the click?
     {
@@ -486,4 +494,10 @@ void
 Window::set_keyboard_focus (Widget *widget)
 {
   keyboard_focus_widget = widget;
+}
+
+void
+Window::set_dialog_widget (Widget *widget)
+{
+  dialog_widget = widget;
 }

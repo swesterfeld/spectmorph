@@ -27,6 +27,7 @@ protected:
   Widget                   *enter_widget = nullptr;
   Widget                   *menu_widget = nullptr;
   Widget                   *keyboard_focus_widget = nullptr;
+  Widget                   *dialog_widget = nullptr;
   double                    global_scale;
   double                    scale_to_width;
 
@@ -52,6 +53,7 @@ public:
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
   void set_keyboard_focus (Widget *widget);
+  void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   Window *window() override;
 };
