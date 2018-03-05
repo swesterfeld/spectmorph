@@ -141,13 +141,15 @@ Window::crawl_widgets()
 }
 
 static int
-get_layer (Widget *w, Widget *menu_widget)
+get_layer (Widget *w, Widget *menu_widget, Widget *dialog_widget)
 {
   if (w == menu_widget)
     return 1;
+  if (w == dialog_widget)
+    return 2;
 
   if (w->parent)
-    return get_layer (w->parent, menu_widget);
+    return get_layer (w->parent, menu_widget, dialog_widget);
   else
     return 0; // no parent
 }
@@ -169,11 +171,17 @@ Window::on_display()
 {
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  for (int layer = 0; layer < 2; layer++)
+  for (int layer = 0; layer < 3; layer++)
     {
+      if (dialog_widget && layer == 2) /* draw rest of ui darker if dialog is open */
+        {
+          cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
+          cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
+          cairo_fill (cairo_gl->cr);
+        }
       for (auto w : crawl_widgets())
         {
-          if (get_layer (w, menu_widget) == layer && get_visible_recursive (w))
+          if (get_layer (w, menu_widget, dialog_widget) == layer && get_visible_recursive (w))
             {
               cairo_t *cr = cairo_gl->cr;
 
