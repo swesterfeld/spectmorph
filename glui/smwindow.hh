@@ -48,7 +48,6 @@ public:
   void open_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
   void save_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
   void on_file_selected (const std::string& filename);
-  void draw (cairo_t *cr) override;
   void update() override;
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);

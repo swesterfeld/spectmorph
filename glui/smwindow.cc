@@ -218,16 +218,13 @@ Window::on_display()
       cairo_fill (cairo_gl->cr);
     }
 
-  cairo_gl->draw();
-}
-
-void
-Window::draw (cairo_t *cr)
-{
-  Widget::draw (cr);
-
   if (draw_grid)
     {
+      cairo_t *cr = cairo_gl->cr;
+
+      cairo_save (cr);
+      cairo_scale (cr, global_scale, global_scale);
+
       cairo_set_source_rgb (cr, 0, 0, 0);
       cairo_set_line_width (cr, 0.5);
 
@@ -242,7 +239,10 @@ Window::draw (cairo_t *cr)
             }
         }
       cairo_stroke (cr);
+      cairo_restore (cr);
     }
+
+  cairo_gl->draw();
 }
 
 void
