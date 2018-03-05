@@ -2,6 +2,7 @@
 
 #include "smmorphplanwindow.hh"
 #include "smstdioout.hh"
+#include "smaboutdialog.hh"
 
 using namespace SpectMorph;
 using std::string;
@@ -19,16 +20,6 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   Menu *op_menu = menu_bar->add_menu ("Add Operator");
   Menu *help_menu = menu_bar->add_menu ("Help");
 
-  auto set_items = [this](Menu *m, const std::vector<std::string>& items) {
-    for (auto i : items) {
-      MenuItem *item = m->add_item (i);
-      connect (item->signal_clicked, [=]()
-        {
-          printf ("menu item %s selected\n", i.c_str());
-        });
-     }
-  };
-
   MenuItem *import_item = file_menu->add_item ("Import Preset...");
   connect (import_item->signal_clicked, this, &MorphPlanWindow::on_file_import_clicked);
 
@@ -44,7 +35,10 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   add_op_menu_item (op_menu, "Linear Morph", "SpectMorph::MorphLinear");
   add_op_menu_item (op_menu, "Grid Morph", "SpectMorph::MorphGrid");
   add_op_menu_item (op_menu, "LFO", "SpectMorph::MorphLFO");
-  set_items (help_menu, {"About..."});
+
+  MenuItem *about_item = help_menu->add_item ("About...");
+  connect (about_item->signal_clicked, this, &MorphPlanWindow::on_about_clicked);
+
   grid.add_widget (menu_bar, 1, 1, 91, 3);
 
   ScrollView *scroll_view = new ScrollView (this);
@@ -205,4 +199,12 @@ MorphPlanWindow::where (MorphOperator *op, double y)
     return nullptr;
   else
     return result;
+}
+
+void
+MorphPlanWindow::on_about_clicked()
+{
+  auto dialog = new AboutDialog (this);
+
+  dialog->run();
 }

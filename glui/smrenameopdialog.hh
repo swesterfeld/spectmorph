@@ -23,7 +23,6 @@ protected:
 public:
   RenameOpDialog (Window *parent, MorphOperator *op);
 
-  void run (std::function<void (bool)> done_callback);
   std::string new_name();
 };
 

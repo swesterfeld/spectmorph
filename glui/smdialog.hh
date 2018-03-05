@@ -11,8 +11,15 @@ namespace SpectMorph
 
 class Dialog : public Frame
 {
+  std::function<void (bool)> m_done_callback;
+
 public:
   Dialog (Window *parent);
+
+  void run (std::function<void (bool)> done_callback = nullptr);
+
+  void on_accept();
+  void on_reject();
 };
 
 }

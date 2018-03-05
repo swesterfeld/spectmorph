@@ -21,8 +21,6 @@ RenameOpDialog::RenameOpDialog (Window *window, MorphOperator *op) :
 
   grid.add_widget (title_label, 0, 0, 40, 4);
   grid.add_widget (this, 0, 0, 40, 15);
-  x = (window->width - width) / 2;
-  y = (window->height - height) / 2;
 
   double yoffset = 4;
   grid.add_widget (new Label (this, "Old Name"), 3, yoffset, 30, 3);
@@ -46,21 +44,18 @@ RenameOpDialog::RenameOpDialog (Window *window, MorphOperator *op) :
   connect (line_edit->signal_text_changed, [=](string txt) {
     ok_button->set_enabled (op->can_rename (txt));
   });
+
+  connect (line_edit->signal_return_pressed,  [=]() {
+    if (ok_button->enabled())
+      on_accept();
+  });
+  connect (line_edit->signal_esc_pressed, this, &Dialog::on_reject);
+  connect (ok_button->signal_clicked,     this, &Dialog::on_accept);
+  connect (cancel_button->signal_clicked, this, &Dialog::on_reject);
 }
 
 string
 RenameOpDialog::new_name()
 {
   return line_edit->text();
-}
-
-void
-RenameOpDialog::run (std::function<void(bool)> callback)
-{
-  window()->set_dialog_widget (this);
-
-  connect (line_edit->signal_return_pressed,  [=]() { callback (ok_button->enabled()); delete this; });
-  connect (line_edit->signal_esc_pressed,     [=]() { callback (false); delete this; });
-  connect (ok_button->signal_clicked,         [=]() { callback (true); delete this; });
-  connect (cancel_button->signal_clicked,     [=]() { callback (false); delete this; });
 }

@@ -40,7 +40,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
 	 smbutton.hh smtoolbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
 	 smlineedit.hh smnativefiledialog.hh \
-	 smrenameopdialog.hh smdialog.hh
+	 smrenameopdialog.hh smdialog.hh smaboutdialog.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
