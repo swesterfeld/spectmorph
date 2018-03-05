@@ -90,6 +90,8 @@ public:
   virtual void
   key_press_event (const PuglEventKey& key_event) override
   {
+    std::string old_text = m_text;
+
     if (key_event.filter)
       {
         /* multi key sequence -> ignore */
@@ -106,6 +108,8 @@ public:
           chars.pop_back();
         m_text = utf8_from_unicode (chars);
       }
+    if (m_text != old_text)
+      signal_text_changed (m_text);
   }
   void
   enter_event() override
@@ -117,6 +121,8 @@ public:
   {
     highlight = false;
   }
+
+  Signal<std::string> signal_text_changed;
 };
 
 }
