@@ -42,6 +42,10 @@ RenameOpDialog::RenameOpDialog (Window *window, MorphOperator *op) :
 
   grid.add_widget (ok_button, 18, yoffset, 10, 3);
   grid.add_widget (cancel_button, 28, yoffset, 10, 3);
+
+  connect (line_edit->signal_text_changed, [=](string txt) {
+    ok_button->set_enabled (op->can_rename (txt));
+  });
 }
 
 string

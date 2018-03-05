@@ -83,7 +83,9 @@ void
 MorphOperatorView::on_rename()
 {
   auto dialog = new RenameOpDialog (window(), m_op);
+
   dialog->run ([=](bool ok) {
-    m_op->set_name (dialog->new_name());
+    if (ok)
+      m_op->set_name (dialog->new_name());
   });
 }
