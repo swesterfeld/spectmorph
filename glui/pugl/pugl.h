@@ -615,6 +615,31 @@ puglDestroy(PuglView* view);
    @}
 */
 
+//----------------------------- resize from robtk pugl --------------------------
+/**
+   Called outside glx-context when the plugin schedules a resize via puglPostResize.
+
+   @param view The view being resized.
+   @param width view width to resize to (variable is initialized to current size)
+   @param height view height to resize to (variable is initialized to current size)
+   @param set_hints if non-zero set window-hints
+ */
+typedef void (*PuglResizeFunc)(PuglView* view, int *width, int *height, int *set_hints);
+
+/**
+   Set callback function to change window size.
+*/
+PUGL_API void
+puglSetResizeFunc(PuglView* view, PuglResizeFunc resizeFunc);
+
+/**
+   Request a resize on the next call to puglProcessEvents().
+*/
+PUGL_API void
+puglPostResize(PuglView* view);
+
+//--------------------------- end: resize from robtk pugl --------------------------
+
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif

@@ -64,11 +64,20 @@ on_event (PuglView* view, const PuglEvent* event)
   window->on_event (event);
 }
 
+static void
+on_resize (PuglView *view, int *width, int *height, int *set_hints)
+{
+  Window *window = reinterpret_cast<Window *> (puglGetHandle (view));
+
+  window->on_resize (width, height);
+}
+
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
-  scale_to_width = width;
+  orig_width = width;
+  orig_height = height;
   global_scale = 1;
 
   view = puglInit (nullptr, nullptr);
@@ -84,6 +93,7 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
 
   puglSetHandle (view, this);
   puglSetEventFunc (view, ::on_event);
+  puglSetResizeFunc (view, ::on_resize);
 
   cairo_gl.reset (new CairoGL (width, height));
 
@@ -384,7 +394,6 @@ Window::on_event (const PuglEvent* event)
         on_display();
         break;
       case PUGL_CONFIGURE:
-        global_scale = event->configure.width / scale_to_width;
         cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
         puglEnterContext (view);
         cairo_gl->configure();
@@ -514,10 +523,19 @@ void
 Window::set_gui_scaling (double s)
 {
   global_scale = s;
+
+  puglPostResize (view);
 }
 
 double
 Window::gui_scaling()
 {
   return global_scale;
+}
+
+void
+Window::on_resize (int *width, int *height)
+{
+  *width = orig_width * global_scale;
+  *height = orig_height * global_scale;
 }

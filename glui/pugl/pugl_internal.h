@@ -38,6 +38,7 @@ typedef struct PuglInternalsImpl PuglInternals;
 struct PuglViewImpl {
 	PuglHandle       handle;
 	PuglEventFunc    eventFunc;
+	PuglResizeFunc   resizeFunc;
 
 	PuglInternals* impl;
 
@@ -56,6 +57,7 @@ struct PuglViewImpl {
 	int      max_aspect_y;
 	bool     ignoreKeyRepeat;
 	bool     redisplay;
+	bool     resize;
 	bool     resizable;
 	bool     visible;
 };
@@ -179,6 +181,12 @@ void
 puglSetEventFunc(PuglView* view, PuglEventFunc eventFunc)
 {
 	view->eventFunc = eventFunc;
+}
+
+void
+puglSetResizeFunc(PuglView* view, PuglResizeFunc resizeFunc)
+{
+	view->resizeFunc = resizeFunc;
 }
 
 /** Return the code point for buf, or the replacement character on error. */

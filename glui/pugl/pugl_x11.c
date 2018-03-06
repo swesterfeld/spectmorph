@@ -580,6 +580,39 @@ puglGrabFocus(PuglView* view)
 		view->impl->display, view->impl->win, RevertToPointerRoot, CurrentTime);
 }
 
+static void
+puglResize(PuglView* view)
+{
+	int set_hints = 1;
+	view->resize = false;
+	if (!view->resizeFunc) { return; }
+	/* ask the plugin about the new size */
+	view->resizeFunc(view, &view->width, &view->height, &set_hints);
+
+	XSizeHints *hints = XAllocSizeHints();
+	hints->min_width = view->width;
+	hints->min_height = view->height;
+	hints->max_width = view->resizable ? 2048 : view->width;
+	hints->max_height = view->resizable ? 2048 : view->height;
+	hints->flags = PMaxSize | PMinSize;
+
+	if (set_hints) {
+		XSetWMNormalHints(view->impl->display, view->impl->win, hints);
+	}
+	XResizeWindow(view->impl->display, view->impl->win, view->width, view->height);
+	XFlush(view->impl->display);
+	XFree(hints);
+
+#ifdef VERBOSE_PUGL
+	printf("puGL: window resize (%dx%d)\n", view->width, view->height);
+#endif
+
+#if 0 // FIXME
+	/* and call Reshape in glX context */
+	puglReshape(view, view->width, view->height);
+#endif
+}
+
 PuglStatus
 puglWaitForEvent(PuglView* view)
 {
@@ -680,6 +713,10 @@ puglProcessEvents(PuglView* view)
 		puglDispatchEvent(view, (const PuglEvent*)&config_event);
 	}
 
+	if (view->resize) {
+		puglResize(view);
+	}
+
 	if (view->redisplay) {
 		expose_event.expose.type       = PUGL_EXPOSE;
 		expose_event.expose.view       = view;
@@ -701,6 +738,12 @@ void
 puglPostRedisplay(PuglView* view)
 {
 	view->redisplay = true;
+}
+
+void
+puglPostResize(PuglView* view)
+{
+	view->resize = true;
 }
 
 PuglNativeWindow

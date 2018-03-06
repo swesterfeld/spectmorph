@@ -29,7 +29,8 @@ protected:
   Widget                   *keyboard_focus_widget = nullptr;
   Widget                   *dialog_widget = nullptr;
   double                    global_scale;
-  double                    scale_to_width;
+  double                    orig_width;
+  double                    orig_height;
 
   std::function<void()>     m_close_callback;
 
@@ -42,6 +43,7 @@ public:
   std::vector<Widget *> crawl_widgets();
   void on_display();
   void on_event (const PuglEvent *event);
+  void on_resize (int *width, int *height);
   void wait_for_event();
   void process_events();
   void show();

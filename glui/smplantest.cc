@@ -28,9 +28,7 @@ main (int argc, char **argv)
       fprintf (stderr, "Error opening '%s'.\n", filename.c_str());
     }
 
-  bool resize = (argc >= 2 && strcmp (argv[1], "resize") == 0);
-
-  MorphPlanWindow window (744, 560, 0, resize, morph_plan);
+  MorphPlanWindow window (744, 560, 0, false, morph_plan);
   window.show();
 
   bool quit = false;
