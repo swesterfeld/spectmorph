@@ -55,6 +55,7 @@ struct PuglInternalsImpl {
 	HDC      hdc;
 	HGLRC    hglrc;
 	WNDCLASS wc;
+	int      win_flags;
 };
 
 LRESULT CALLBACK
@@ -137,19 +138,18 @@ puglCreateWindow(PuglView* view, const char* title)
 		return NULL;
 	}
 
-	int winFlags;
 	if (view->parent) {
-		winFlags = WS_CHILD;
+		view->impl->win_flags = WS_CHILD;
 	}
 	else {
-		winFlags = WS_POPUPWINDOW | WS_CAPTION;
+		view->impl->win_flags = WS_POPUPWINDOW | WS_CAPTION;
 	}
 	if (view->resizable) {
-		winFlags |= WS_SIZEBOX;
+		view->impl->win_flags |= WS_SIZEBOX;
 		if (view->min_width || view->min_height) {
 			// Adjust the minimum window size to accomodate requested view size
 			RECT mr = { 0, 0, view->min_width, view->min_height };
-			AdjustWindowRectEx(&mr, winFlags, FALSE, WS_EX_TOPMOST);
+			AdjustWindowRectEx(&mr, view->impl->win_flags, FALSE, WS_EX_TOPMOST);
 			view->min_width  = mr.right - mr.left;
 			view->min_height = mr.bottom - mr.top;
 		}
@@ -157,11 +157,11 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	// Adjust the window size to accomodate requested view size
 	RECT wr = { 0, 0, view->width, view->height };
-	AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
+	AdjustWindowRectEx(&wr, view->impl->win_flags, FALSE, WS_EX_TOPMOST);
 
 	impl->hwnd = CreateWindowEx(
 		WS_EX_TOPMOST,
-		wc.lpszClassName, title, winFlags,
+		wc.lpszClassName, title, view->impl->win_flags,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right-wr.left, wr.bottom-wr.top,
 		(HWND)view->parent, NULL, NULL, NULL);
 
@@ -224,6 +224,43 @@ puglHideWindow(PuglView* view)
 
 	ShowWindow(impl->hwnd, SW_HIDE);
 	view->visible = false;
+}
+
+static void
+puglResize(PuglView* view)
+{
+	int set_hints; // ignored for now
+	view->resize = false;
+	if (!view->resizeFunc) { return; }
+	/* ask the plugin about the new size */
+	view->resizeFunc(view, &view->width, &view->height, &set_hints);
+
+	HWND parent = GetParent (view->impl->hwnd);
+	if (parent) {
+#if 0 // FIXME
+		puglReshape(view, view->width, view->height);
+#endif
+		SetWindowPos (view->impl->hwnd, HWND_TOP,
+				0, 0, view->width, view->height,
+				SWP_NOZORDER | SWP_NOMOVE);
+		return;
+	}
+
+	RECT wr = { 0, 0, (long)view->width, (long)view->height };
+	AdjustWindowRectEx(&wr, view->impl->win_flags, FALSE, WS_EX_TOPMOST);
+	SetWindowPos (view->impl->hwnd,
+#if 0 // FIXME
+			view->ontop ? HWND_TOPMOST : HWND_NOTOPMOST,
+#endif
+			HWND_NOTOPMOST,
+			0, 0, wr.right-wr.left, wr.bottom-wr.top,
+			SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER /*|SWP_NOZORDER*/);
+	UpdateWindow(view->impl->hwnd);
+
+#if 0 // FIXME
+	/* and call Reshape in GL context */
+	puglReshape(view, view->width, view->height);
+#endif
 }
 
 void
@@ -601,6 +638,10 @@ puglProcessEvents(PuglView* view)
 		handleMessage(view, msg.message, msg.wParam, msg.lParam);
 	}
 
+	if (view->resize) {
+		puglResize(view);
+	}
+
 	if (view->redisplay) {
 		InvalidateRect(view->impl->hwnd, NULL, FALSE);
 		view->redisplay = false;
@@ -641,6 +682,13 @@ puglPostRedisplay(PuglView* view)
 {
 	view->redisplay = true;
 }
+
+void
+puglPostResize(PuglView* view)
+{
+	view->resize = true;
+}
+
 
 PuglNativeWindow
 puglGetNativeWindow(PuglView* view)
