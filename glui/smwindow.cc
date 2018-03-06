@@ -509,3 +509,15 @@ Window::set_dialog_widget (Widget *widget)
 {
   dialog_widget = widget;
 }
+
+void
+Window::set_gui_scaling (double s)
+{
+  global_scale = s;
+}
+
+double
+Window::gui_scaling()
+{
+  return global_scale;
+}

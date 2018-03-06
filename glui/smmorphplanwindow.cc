@@ -15,11 +15,13 @@ MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id
   FixedGrid grid;
 
   MenuBar *menu_bar = new MenuBar (this);
+  Menu *zoom_menu = menu_bar->add_menu ("Zoom");
   Menu *file_menu = menu_bar->add_menu ("File");
   Menu *preset_menu = menu_bar->add_menu ("Open Preset");
   Menu *op_menu = menu_bar->add_menu ("Add Operator");
   Menu *help_menu = menu_bar->add_menu ("Help");
 
+  fill_zoom_menu (zoom_menu);
   MenuItem *import_item = file_menu->add_item ("Import Preset...");
   connect (import_item->signal_clicked, this, &MorphPlanWindow::on_file_import_clicked);
 
@@ -77,6 +79,27 @@ MorphPlanWindow::fill_preset_menu (Menu *menu)
               on_load_preset (filename);
             });
         }
+    }
+}
+
+void
+MorphPlanWindow::fill_zoom_menu (Menu *menu)
+{
+  for (int z = 70; z <= 500; )
+    {
+      int w = 800 * z / 100;
+      int h = 600 * z / 100;
+      MenuItem *item = menu->add_item (string_locale_printf ("%d%%   -   %dx%d", z, w, h));
+      connect (item->signal_clicked, [=]() { window()->set_gui_scaling (z / 100.); });
+
+      if (z >= 400)
+        z += 50;
+      else if (z >= 300)
+        z += 25;
+      else if (z >= 200)
+        z += 20;
+      else
+        z += 10;
     }
 }
 
