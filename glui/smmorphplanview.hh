@@ -15,7 +15,7 @@ namespace SpectMorph
 
 class MorphPlanWindow;
 
-struct MorphPlanView : public Widget
+class MorphPlanView : public Widget
 {
   Widget          *output_parent;
   MorphPlan       *morph_plan;
