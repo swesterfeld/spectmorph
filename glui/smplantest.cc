@@ -28,7 +28,7 @@ main (int argc, char **argv)
       fprintf (stderr, "Error opening '%s'.\n", filename.c_str());
     }
 
-  MorphPlanWindow window (744, 560, 0, false, morph_plan);
+  MorphPlanWindow window (0, false, morph_plan);
   window.show();
 
   bool quit = false;

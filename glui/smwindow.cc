@@ -76,8 +76,6 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
-  orig_width = width;
-  orig_height = height;
   global_scale = 1;
 
   view = puglInit (nullptr, nullptr);
@@ -525,6 +523,8 @@ Window::set_gui_scaling (double s)
   global_scale = s;
 
   puglPostResize (view);
+
+  signal_update_size();
 }
 
 double
@@ -534,8 +534,14 @@ Window::gui_scaling()
 }
 
 void
-Window::on_resize (int *width, int *height)
+Window::on_resize (int *win_width, int *win_height)
 {
-  *width = orig_width * global_scale;
-  *height = orig_height * global_scale;
+  get_scaled_size (win_width, win_height);
+}
+
+void
+Window::get_scaled_size (int *w, int *h)
+{
+  *w = width * global_scale;
+  *h = height * global_scale;
 }

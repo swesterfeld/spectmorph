@@ -29,8 +29,6 @@ protected:
   Widget                   *keyboard_focus_widget = nullptr;
   Widget                   *dialog_widget = nullptr;
   double                    global_scale;
-  double                    orig_width;
-  double                    orig_height;
 
   std::function<void()>     m_close_callback;
 
@@ -59,6 +57,10 @@ public:
   Window *window() override;
   void set_gui_scaling (double s);
   double gui_scaling();
+
+  void get_scaled_size (int *w, int *h);
+
+  Signal<> signal_update_size;
 };
 
 }

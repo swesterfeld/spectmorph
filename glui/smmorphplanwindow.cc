@@ -8,8 +8,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphPlanWindow::MorphPlanWindow (int width, int height, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
-  Window (width, height, win_id, resize),
+MorphPlanWindow::MorphPlanWindow (PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
+  Window (744, 560, win_id, resize),
   m_morph_plan (morph_plan)
 {
   FixedGrid grid;
@@ -87,8 +87,8 @@ MorphPlanWindow::fill_zoom_menu (Menu *menu)
 {
   for (int z = 70; z <= 500; )
     {
-      int w = 800 * z / 100;
-      int h = 600 * z / 100;
+      int w = width * z / 100;
+      int h = height * z / 100;
       MenuItem *item = menu->add_item (string_locale_printf ("%d%%   -   %dx%d", z, w, h));
       connect (item->signal_clicked, [=]() { window()->set_gui_scaling (z / 100.); });
 
