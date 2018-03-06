@@ -702,6 +702,31 @@ puglProcessEvents(PuglView* view)
 	return PUGL_SUCCESS;
 }
 
+static void
+puglResize(PuglView* view)
+{
+	int set_hints; // ignored
+	view->resize = false;
+	if (!view->resizeFunc) { return; }
+
+	[[view->impl->glview openGLContext] makeCurrentContext];
+	view->resizeFunc(view, &view->width, &view->height, &set_hints);
+	if (view->impl->window) {
+		[view->impl->window setContentSize:NSMakeSize(view->width, view->height) ];
+	} else {
+		[view->impl->glview setFrameSize:NSMakeSize(view->width, view->height)];
+	}
+	[view->impl->glview reshape];
+	[NSOpenGLContext clearCurrentContext];
+}
+
+void
+puglPostResize(PuglView* view)
+{
+	view->resize = true;
+	puglResize(view);
+}
+
 void
 puglPostRedisplay(PuglView* view)
 {
