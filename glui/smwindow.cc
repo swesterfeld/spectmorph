@@ -10,6 +10,7 @@
 #include "pugl/cairo_gl.h"
 #include <string.h>
 #include <unistd.h>
+#include <glib.h>
 
 using namespace SpectMorph;
 
@@ -82,7 +83,12 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
 
   view = puglInit (nullptr, nullptr);
 
-  puglInitWindowClass (view, "PuglTest");
+  /* draw 128 bits from random generator to ensure that window class name is unique */
+  string window_class = "SpectMorph_";
+  for (size_t i = 0; i < 4; i++)
+    window_class += string_printf ("%08x", g_random_int());
+
+  puglInitWindowClass (view, window_class.c_str());
   puglInitWindowSize (view, width, height);
   //puglInitWindowMinSize (view, 256, 256);
   puglInitResizable (view, resize);
