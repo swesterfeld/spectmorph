@@ -88,8 +88,11 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   for (size_t i = 0; i < 4; i++)
     window_class += string_printf ("%08x", g_random_int());
 
+  int scaled_width, scaled_height;
+  get_scaled_size (&scaled_width, &scaled_height);
+
   puglInitWindowClass (view, window_class.c_str());
-  puglInitWindowSize (view, width, height);
+  puglInitWindowSize (view, scaled_width, scaled_height);
   //puglInitWindowMinSize (view, 256, 256);
   puglInitResizable (view, resize);
   puglIgnoreKeyRepeat (view, false);
@@ -101,15 +104,14 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   puglSetEventFunc (view, ::on_event);
   puglSetResizeFunc (view, ::on_resize);
 
-  cairo_gl.reset (new CairoGL (width, height));
+  cairo_gl.reset (new CairoGL (scaled_width, scaled_height));
 
   puglEnterContext (view);
   glEnable (GL_DEPTH_TEST);
   glDepthFunc (GL_LESS);
   glClearColor (0.4f, 0.4f, 0.4f, 1.0f);
   cairo_gl->configure();
-  printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
-  fflush (stdout);
+  // printf ("OpenGL Version: %s\n",(const char*) glGetString(GL_VERSION));
   puglLeaveContext(view, false);
 
   set_background_color (ThemeColor::WINDOW_BG);
