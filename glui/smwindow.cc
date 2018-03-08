@@ -436,7 +436,7 @@ Window::find_widget_xy (double ex, double ey)
 void
 Window::show()
 {
-  // puglPostRedisplay (view);
+  puglPostRedisplay (view);
   puglShowWindow (view);
 }
 
