@@ -2,10 +2,12 @@
 
 #include "smnativefiledialog.hh"
 #include "pugl/pugl.h"
+
+#include <windows.h>
+
 #include <mutex>
 #include <memory>
 #include <thread>
-#include "Windows.h"
 
 using std::string;
 
