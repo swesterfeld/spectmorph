@@ -79,7 +79,8 @@ STATIC_DLL_LIBS = \
   $(top_builddir)/lib/.libs/libspectmorph.a
 
 install-exec-hook: smvstplugin.dll
-	cp smvstplugin.dll $(plugindir)
+	mkdir -p $(libdir)/vst
+	cp smvstplugin.dll $(libdir)/vst
 
 smvstplugin.dll: $(plugin_LTLIBRARIES)
 	$(CXX) -shared -o smvstplugin.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
