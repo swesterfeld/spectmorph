@@ -72,6 +72,7 @@ smvstplugin_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
 smvstplugin_la_LIBADD  = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
 
+if COND_WINDOWS
 STATIC_DLL_LIBS = \
   .libs/libspectmorphglui.a \
   pugl/.libs/libspectmorphpugl.a \
@@ -81,4 +82,5 @@ install-exec-hook: smvstplugin.dll
 	cp smvstplugin.dll $(plugindir)
 
 smvstplugin.dll: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o smvstplugin.dll $(SMVSTSOURCES) -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
+	$(CXX) -shared -o smvstplugin.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
+endif
