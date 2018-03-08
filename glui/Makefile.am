@@ -77,5 +77,8 @@ STATIC_DLL_LIBS = \
   pugl/.libs/libspectmorphpugl.a \
   $(top_builddir)/lib/.libs/libspectmorph.a
 
-dll:
+install-exec-hook: smvstplugin.dll
+	cp smvstplugin.dll $(plugindir)
+
+smvstplugin.dll: $(plugin_LTLIBRARIES)
 	$(CXX) -shared -o smvstplugin.dll $(SMVSTSOURCES) -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
