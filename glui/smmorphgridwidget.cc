@@ -26,10 +26,10 @@ MorphGridWidget::draw (cairo_t *cr)
   const double node_rect_width = 40;
   const double node_rect_height = 20;
 
-  const double start_x = 10 + node_rect_width / 2;
-  const double end_x = width - node_rect_width / 2 - 10;
-  const double start_y = 10 + node_rect_height / 2;
-  const double end_y = height - node_rect_height / 2 - 10;
+  start_x = 10 + node_rect_width / 2;
+  end_x = width - node_rect_width / 2 - 10;
+  start_y = 10 + node_rect_height / 2;
+  end_y = height - node_rect_height / 2 - 10;
 
   x_coord.resize (morph_grid->width());
   y_coord.resize (morph_grid->height());
@@ -128,11 +128,6 @@ MorphGridWidget::draw (cairo_t *cr)
 void
 MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
 {
-  const double start_x = 20;
-  const double end_x = width - 20;
-  const double start_y = 20;
-  const double end_y = height - 20;
-
   const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
   const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
 
@@ -175,11 +170,6 @@ MorphGridWidget::motion (double x, double y)
 {
   if (move_controller)
     {
-      const double start_x = 20;
-      const double end_x = width - 20;
-      const double start_y = 20;
-      const double end_y = height - 20;
-
       double dx = (x - start_x) / double (end_x - start_x) * 2.0 - 1.0;
       double dy = (y - start_y) / double (end_y - start_y) * 2.0 - 1.0;
 

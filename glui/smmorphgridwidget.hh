@@ -15,6 +15,10 @@ class MorphGridWidget : public Widget
 
   std::vector<int> x_coord;
   std::vector<int> y_coord;
+  double start_x = 0;
+  double start_y = 0;
+  double end_x = 0;
+  double end_y = 0;
 
   bool move_controller = false;
 
