@@ -129,9 +129,9 @@ void
 MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
 {
   const double start_x = 20;
-  const double end_x = height - 20;
+  const double end_x = width - 20;
   const double start_y = 20;
-  const double end_y = width - 20;
+  const double end_y = height - 20;
 
   const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
   const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
@@ -176,9 +176,9 @@ MorphGridWidget::motion (double x, double y)
   if (move_controller)
     {
       const double start_x = 20;
-      const double end_x = height - 20;
+      const double end_x = width - 20;
       const double start_y = 20;
-      const double end_y = width - 20;
+      const double end_y = height - 20;
 
       double dx = (x - start_x) / double (end_x - start_x) * 2.0 - 1.0;
       double dy = (y - start_y) / double (end_y - start_y) * 2.0 - 1.0;

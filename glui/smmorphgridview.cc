@@ -4,6 +4,7 @@
 #include "smmorphplan.hh"
 #include "smcomboboxoperator.hh"
 #include "smutils.hh"
+#include "smoperatorlayout.hh"
 
 using namespace SpectMorph;
 
@@ -136,9 +137,7 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   MorphOperatorView (parent, morph_grid, morph_plan_window),
   morph_grid (morph_grid)
 {
-  FixedGrid grid;
-
-  int yoffset = 0;
+  OperatorLayout op_layout;
 
   // Width
   Label *width_title   = new Label (body_widget, "Width");
@@ -146,15 +145,11 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   width_slider->set_int_range (1, 7);
   width_label = new Label (body_widget, "0");
 
-  grid.add_widget (width_title, 0, yoffset, 9, 2);
-  grid.add_widget (width_slider,  9, yoffset, 25, 2);
-  grid.add_widget (width_label, 35, yoffset, 5, 2);
+  op_layout.add_row (2, width_title, width_slider, width_label);
 
   width_slider->set_int_value (morph_grid->width());
 
   connect (width_slider->signal_int_value_changed, [=] (int width) { morph_grid->set_width (width); });
-
-  yoffset += 2;
 
   // Height
   Label *height_title   = new Label (body_widget, "Height");
@@ -162,72 +157,46 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   height_slider->set_int_range (1, 7);
   height_label = new Label (body_widget, "0");
 
-  grid.add_widget (height_title, 0, yoffset, 9, 2);
-  grid.add_widget (height_slider,  9, yoffset, 25, 2);
-  grid.add_widget (height_label, 35, yoffset, 5, 2);
+  op_layout.add_row (2, height_title, height_slider, height_label);
 
   height_slider->set_int_value (morph_grid->height());
 
   connect (height_slider->signal_int_value_changed, [=] (int height) { morph_grid->set_height (height); });
 
-  yoffset += 2;
-
   // X Control
   x_ui = new MorphGridControlUI (this, morph_grid, body_widget, MorphGridControlUI::CONTROL_X);
-  grid.add_widget (new Label (body_widget, "X Control"), 0, yoffset, 9, 3);
-  grid.add_widget (x_ui->combobox, 9, yoffset, 30, 3);
-
-  yoffset += 3;
+  op_layout.add_row (3, new Label (body_widget, "X Control"), x_ui->combobox);
 
   // Y Control
   y_ui = new MorphGridControlUI (this, morph_grid, body_widget, MorphGridControlUI::CONTROL_Y);
-  grid.add_widget (new Label (body_widget, "Y Control"), 0, yoffset, 9, 3);
-  grid.add_widget (y_ui->combobox, 9, yoffset, 30, 3);
-
-  yoffset += 3;
+  op_layout.add_row (3, new Label (body_widget, "Y Control"), y_ui->combobox);
 
   // X Value
-  grid.add_widget (x_ui->title, 0, yoffset, 9, 2);
-  grid.add_widget (x_ui->slider, 9, yoffset, 25, 2);
-  grid.add_widget (x_ui->label, 35, yoffset, 5, 2);
-
-  yoffset += 2;
+  op_layout.add_row (2, x_ui->title, x_ui->slider, x_ui->label);
 
   // Y Value
-  grid.add_widget (y_ui->title, 0, yoffset, 9, 2);
-  grid.add_widget (y_ui->slider,  9, yoffset, 25, 2);
-  grid.add_widget (y_ui->label, 35, yoffset, 5, 2);
-
-  yoffset += 2;
+  op_layout.add_row (2, y_ui->title, y_ui->slider, y_ui->label);
 
   // Grid
-  yoffset++;
   grid_widget = new MorphGridWidget (body_widget, morph_grid);
-  grid.add_widget (grid_widget, 5, yoffset, 30, 30);
+  op_layout.add_fixed (30, 30, grid_widget);
 
   connect (grid_widget->signal_selection_changed, this, &MorphGridView::on_selection_changed);
-
-  yoffset += 31;
 
   // Source
   auto input_op_filter = ComboBoxOperator::make_filter (morph_grid, MorphOperator::OUTPUT_AUDIO);
   op_title = new Label (body_widget, "Source");
   op_combobox = new ComboBoxOperator (body_widget, morph_grid->morph_plan(), input_op_filter);
-  grid.add_widget (op_title, 0, yoffset, 9, 3);
-  grid.add_widget (op_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, op_title, op_combobox);
 
   connect (op_combobox->signal_item_changed, this, &MorphGridView::on_operator_changed);
-
-  yoffset += 3;
 
   // Volume
   delta_db_title = new Label (body_widget, "Volume");
   delta_db_slider = new Slider (body_widget, 0.5);
   delta_db_label = new Label (body_widget, string_locale_printf ("%.1f dB", 0.0));
 
-  grid.add_widget (delta_db_title, 0, yoffset, 9, 2);
-  grid.add_widget (delta_db_slider, 9, yoffset, 25, 2);
-  grid.add_widget (delta_db_label, 35, yoffset, 5, 2);
+  op_layout.add_row (2, delta_db_title, delta_db_slider, delta_db_label);
 
   connect (delta_db_slider->signal_value_changed, this, &MorphGridView::on_delta_db_changed);
 
@@ -238,6 +207,8 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   on_index_changed();     // add instruments to op_combobox
   on_plan_changed();      // initial morphing slider/label setup
   on_selection_changed(); // initial selection
+
+  op_layout.activate();
 }
 
 double
