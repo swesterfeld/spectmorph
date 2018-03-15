@@ -5,6 +5,9 @@
 
 #include <string>
 
+/* we want to be able to use sm_debug without extra includes */
+#include "smdebug.hh"
+
 namespace SpectMorph
 {
 

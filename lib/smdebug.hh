@@ -18,6 +18,9 @@ void set_filename (const std::string& filename);
 
 }
 
+// simple debugging function on "global" area
+void sm_debug (const char *fmt, ...) G_GNUC_PRINTF (1, 2);
+
 }
 
 #endif

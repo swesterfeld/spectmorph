@@ -20,13 +20,9 @@ static string      debug_filename = "smdebug.log";
 static std::mutex  debug_mutex;
 static std::atomic<int>  have_areas {0};
 
-void
-Debug::debug (const char *area, const char *fmt, ...)
+static inline void
+debugv (const char *area, const char *format, va_list vargs)
 {
-  // no debugging -> return as quickly as possible
-  if (!have_areas.load())
-    return;
-
   std::lock_guard<std::mutex> locker (debug_mutex);
   if (active_areas.find (area) != active_areas.end())
     {
@@ -37,16 +33,43 @@ Debug::debug (const char *area, const char *fmt, ...)
           g_free (abs_filename);
         }
 
-      va_list ap;
-
-      va_start (ap, fmt);
-      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
-      va_end (ap);
+      fprintf (debug_file, "%s", string_vprintf (format, vargs).c_str());
 
       // hack: avoid fflush for encoder (since it writes lots of lines)
       if (strcmp (area, "encoder") != 0)
         fflush (debug_file);
     }
+}
+
+namespace SpectMorph
+{
+
+void
+Debug::debug (const char *area, const char *fmt, ...)
+{
+  // no debugging -> return as quickly as possible
+  if (!have_areas.load())
+    return;
+
+  va_list ap;
+
+  va_start (ap, fmt);
+  debugv (area, fmt, ap);
+  va_end (ap);
+}
+
+void
+sm_debug (const char *fmt, ...)
+{
+  // no debugging -> return as quickly as possible
+  if (!have_areas.load())
+    return;
+
+  va_list ap;
+
+  va_start (ap, fmt);
+  debugv ("global", fmt, ap);
+  va_end (ap);
 }
 
 void
@@ -64,4 +87,6 @@ Debug::set_filename (const std::string& filename)
   std::lock_guard<std::mutex> locker (debug_mutex);
 
   debug_filename = filename;
+}
+
 }
