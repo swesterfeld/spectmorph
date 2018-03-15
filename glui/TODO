@@ -13,6 +13,7 @@ widgets:
 - control widget *
 - message box for error messages *
 - operator layout *
+- rename fold changed
 
 windows:
  - 32bit compile crashes in apply window sse code - why?

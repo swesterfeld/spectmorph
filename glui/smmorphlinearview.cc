@@ -3,6 +3,7 @@
 #include "smmorphlinearview.hh"
 #include "smmorphplan.hh"
 #include "smcomboboxoperator.hh"
+#include "smoperatorlayout.hh"
 #include "smcheckbox.hh"
 #include "smutils.hh"
 
@@ -19,9 +20,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   MorphOperatorView (parent, morph_linear, morph_plan_window),
   morph_linear (morph_linear)
 {
-  FixedGrid grid;
-
-  int yoffset = 0;
+  OperatorLayout op_layout;
 
   auto operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_AUDIO);
   auto control_operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_CONTROL);
@@ -29,24 +28,18 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   // LEFT SOURCE
   left_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
 
-  grid.add_widget (new Label (body_widget, "Left Source"), 0, yoffset, 9, 3);
-  grid.add_widget (left_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, new Label (body_widget, "Left Source"), left_combobox);
 
   connect (left_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
-
-  yoffset += 3;
 
   // RIGHT SOURCE
   right_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
 
-  grid.add_widget (new Label (body_widget, "Right Source"), 0, yoffset, 9, 3);
-  grid.add_widget (right_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, new Label (body_widget, "Right Source"), right_combobox);
 
   connect (right_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
   // CONTROL INPUT
-
-  yoffset += 3;
 
   control_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), control_operator_filter);
   control_combobox->add_str_choice (CONTROL_TEXT_GUI);
@@ -54,8 +47,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   control_combobox->add_str_choice (CONTROL_TEXT_2);
   control_combobox->set_none_ok (false);
 
-  grid.add_widget (new Label (body_widget, "Control Input"), 0, yoffset, 9, 3);
-  grid.add_widget (control_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, new Label (body_widget, "Control Input"), control_combobox);
 
   connect (control_combobox->signal_item_changed, this, &MorphLinearView::on_control_changed);
 
@@ -72,18 +64,13 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
       assert (false);
     }
 
-  yoffset += 3;
-
   // MORPHING
   double morphing_slider_value = (morph_linear->morphing() + 1) / 2.0; /* restore value from operator */
 
   morphing_title = new Label (body_widget, "Morphing");
   morphing_slider = new Slider (body_widget, morphing_slider_value);
   morphing_label = new Label (body_widget, "0");
-  grid.add_widget (morphing_title, 0, yoffset, 9, 2);
-  grid.add_widget (morphing_slider,  9, yoffset, 25, 2);
-  grid.add_widget (morphing_label, 35, yoffset, 5, 2);
-  yoffset += 2;
+  op_layout.add_row (2, morphing_title, morphing_slider, morphing_label);
 
   connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
 
@@ -93,7 +80,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   // FLAG: DB LINEAR
   CheckBox *db_linear_box = new CheckBox (body_widget, "dB Linear Morphing");
   db_linear_box->set_checked (morph_linear->db_linear());
-  grid.add_widget (db_linear_box, 0, yoffset, 30, 2);
+  op_layout.add_row (2, db_linear_box);
 
   connect (db_linear_box->signal_toggled, [morph_linear] (bool new_value) {
     morph_linear->set_db_linear (new_value);
@@ -101,6 +88,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   connect (morph_linear->morph_plan()->signal_index_changed, this, &MorphLinearView::on_index_changed);
 
+  op_layout.activate();
   on_index_changed();     // add instruments to left/right combobox
 }
 

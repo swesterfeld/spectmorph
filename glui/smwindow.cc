@@ -73,7 +73,7 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
   window->on_resize (width, height);
 }
 
-static double static_FIXME_scale = 1;
+static double static_FIXME_scale = 1.7;
 
 Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),

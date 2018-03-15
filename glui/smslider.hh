@@ -122,4 +122,3 @@ struct Slider : public Widget
 }
 
 #endif
-
