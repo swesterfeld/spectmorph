@@ -90,7 +90,7 @@ protected:
 public:
   Widget        *body_widget;
 
-  Signal<>                      signal_fold_changed;
+  Signal<>                      signal_size_changed;
   Signal<MorphOperator *, bool> signal_move_indication;
 
   MorphOperatorView (Widget *parent, MorphOperator *op, MorphPlanWindow *window);
@@ -108,7 +108,7 @@ public:
 
     update_body_visible();
 
-    signal_fold_changed();
+    signal_size_changed();
   }
   void
   update_body_visible()

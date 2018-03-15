@@ -191,5 +191,5 @@ MorphOutputView::update_visible()
   pv_vibrato_attack.set_visible (morph_output->vibrato());
 
   op_layout_height = op_layout.activate();
-  signal_fold_changed(); // FIXME: rename signal
+  signal_size_changed();
 }

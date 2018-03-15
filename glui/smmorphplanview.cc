@@ -63,7 +63,7 @@ MorphPlanView::on_plan_changed()
         {
           op_view = new MorphOperatorView (this, op, morph_plan_window);
         }
-      connect (op_view->signal_fold_changed, this, &MorphPlanView::update_positions);
+      connect (op_view->signal_size_changed, this, &MorphPlanView::update_positions);
       connect (op_view->signal_move_indication, this, &MorphPlanView::on_move_indication);
 
       m_op_views.push_back (op_view);
