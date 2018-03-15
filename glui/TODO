@@ -12,7 +12,7 @@ widgets:
 - scaling save/restore
 - control widget *
 - message box for error messages *
-- rename fold changed
+- preserve scroll position on fold/...
 
 windows:
  - 32bit compile crashes in apply window sse code - why?
