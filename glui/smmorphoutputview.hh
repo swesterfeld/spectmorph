@@ -7,6 +7,7 @@
 #include "smmorphoutput.hh"
 #include "smcomboboxoperator.hh"
 #include "smpropertyview.hh"
+#include "smoperatorlayout.hh"
 
 namespace SpectMorph
 {
@@ -38,7 +39,10 @@ class MorphOutputView : public MorphOperatorView
   PropertyView                pv_vibrato_frequency;
   PropertyView                pv_vibrato_attack;
 
-  void update_enabled();
+  OperatorLayout              op_layout;
+  int                         op_layout_height;
+
+  void update_visible();
 
 public:
   MorphOutputView (Widget *parent, MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
