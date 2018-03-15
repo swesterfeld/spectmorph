@@ -4,6 +4,7 @@
 #include "smmorphplan.hh"
 #include "smutils.hh"
 #include "smcheckbox.hh"
+#include "smoperatorlayout.hh"
 
 using namespace SpectMorph;
 
@@ -22,7 +23,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   pv_center (morph_lfo_properties.center),
   pv_start_phase (morph_lfo_properties.start_phase)
 {
-  FixedGrid grid;
+  OperatorLayout op_layout;
 
   // WAVE TYPE
   wave_type_combobox = new ComboBox (body_widget);
@@ -39,27 +40,23 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
     }
   connect (wave_type_combobox->signal_item_changed, this, &MorphLFOView::on_wave_type_changed);
 
-  int yoffset = 0;
-  grid.add_widget (new Label (body_widget, "Wave Type"), 0, yoffset, 9, 3);
-  grid.add_widget (wave_type_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
 
-  yoffset += 3;
-
-  yoffset += pv_frequency.init_ui (body_widget, grid, yoffset);
-  yoffset += pv_depth.init_ui (body_widget, grid, yoffset);
-  yoffset += pv_center.init_ui (body_widget, grid, yoffset);
-  yoffset += pv_start_phase.init_ui (body_widget, grid, yoffset);
+  pv_frequency.init_ui (body_widget, op_layout);
+  pv_depth.init_ui (body_widget, op_layout);
+  pv_center.init_ui (body_widget, op_layout);
+  pv_start_phase.init_ui (body_widget, op_layout);
 
   // FLAG: SYNC PHASE
   CheckBox *sync_voices_box = new CheckBox (body_widget, "Sync Phase for all voices");
   sync_voices_box->set_checked (morph_lfo->sync_voices());
-  grid.add_widget (sync_voices_box, 0, yoffset, 30, 2);
+  op_layout.add_row (2, sync_voices_box);
 
   connect (sync_voices_box->signal_toggled, [morph_lfo] (bool new_value) {
     morph_lfo->set_sync_voices (new_value);
   });
 
-  yoffset += 2;
+  op_layout.activate();
 }
 
 double
