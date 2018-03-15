@@ -4,6 +4,7 @@
 #include "smmorphplan.hh"
 
 #include "smlabel.hh"
+#include "smoperatorlayout.hh"
 
 using namespace SpectMorph;
 
@@ -14,14 +15,13 @@ MorphSourceView::MorphSourceView (Widget *parent, MorphSource *morph_source, Mor
   MorphOperatorView (parent, morph_source, morph_plan_window),
   morph_source (morph_source)
 {
-  FixedGrid grid;
+  OperatorLayout op_layout;
 
   Label *instrument_label = new Label (body_widget, "Instrument");
   instrument_combobox = new ComboBox (body_widget);
 
-  int yoffset = 0;
-  grid.add_widget (instrument_label, 0, yoffset, 9, 3);
-  grid.add_widget (instrument_combobox, 9, yoffset, 30, 3);
+  op_layout.add_row (3, instrument_label, instrument_combobox);
+  op_layout.activate();
 
   on_index_changed();
 
