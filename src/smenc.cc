@@ -138,7 +138,7 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "-d"))
 	{
-          SpectMorph::Debug::debug_enable ("encoder");
+          Debug::enable ("encoder");
 	}
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
