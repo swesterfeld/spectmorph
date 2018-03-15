@@ -2,6 +2,7 @@
 
 #include "smmidisynth.hh"
 #include "smmorphoutputmodule.hh"
+#include "smdebug.hh"
 
 #include <mutex>
 
@@ -14,29 +15,7 @@ using std::max;
 
 using std::string;
 
-#define DEBUG 0
-
-static FILE       *debug_file = NULL;
-static std::mutex  debug_mutex;
-
-static void
-debug (const char *fmt, ...)
-{
-  if (DEBUG)
-    {
-      std::lock_guard<std::mutex> lock (debug_mutex);
-
-      if (!debug_file)
-        debug_file = fopen ("/tmp/smmidi.log", "w");
-
-      va_list ap;
-
-      va_start (ap, fmt);
-      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
-      va_end (ap);
-      fflush (debug_file);
-    }
-}
+#define MIDI_DEBUG(...) Debug::debug ("midi", __VA_ARGS__)
 
 #define SM_MIDI_CTL_SUSTAIN 0x40
 
@@ -316,7 +295,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 
   if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
     {
-      debug ("%zd | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
+      MIDI_DEBUG ("%zd | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
       event.offset = offset;
       event.midi_data[0] = midi_data[0];
@@ -326,7 +305,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
     }
   else
     {
-      debug ("%zd | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
+      MIDI_DEBUG ("%zd | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
     }
 }
 
@@ -426,7 +405,7 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
           const float semi_tones = (value * (1./0x2000) - 1.0) * 48;
-          debug ("%zd | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
+          MIDI_DEBUG ("%zd | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
           process_pitch_bend (midi_event.channel(), semi_tones);
         }
       if (midi_event.is_note_on())
@@ -434,19 +413,19 @@ MidiSynth::process (float *output, size_t n_values)
           const int midi_note     = midi_event.midi_data[1];
           const int midi_velocity = midi_event.midi_data[2];
 
-          debug ("%zd | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
+          MIDI_DEBUG ("%zd | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
           process_note_on (midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
           const int midi_note     = midi_event.midi_data[1];
 
-          debug ("%zd | note off event, note %d\n", audio_time_stamp, midi_note);
+          MIDI_DEBUG ("%zd | note off event, note %d\n", audio_time_stamp, midi_note);
           process_note_off (midi_note);
         }
       else if (midi_event.is_controller())
         {
-          debug ("%zd | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
+          MIDI_DEBUG ("%zd | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
           process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
         }
     }
