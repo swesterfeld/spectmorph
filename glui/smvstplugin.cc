@@ -407,6 +407,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
   Debug::set_filename ("smvstplugin.log");
   Debug::enable ("vst");
+  Debug::enable ("global");
 
   VST_DEBUG ("VSTPluginMain called\n");
   if (audioMaster)
