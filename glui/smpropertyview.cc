@@ -2,6 +2,7 @@
 
 #include "smpropertyview.hh"
 #include "smlabel.hh"
+#include "smoperatorlayout.hh"
 
 using namespace SpectMorph;
 
@@ -21,6 +22,14 @@ PropertyView::set_enabled (bool enabled)
   label->set_enabled (enabled);
 }
 
+void
+PropertyView::set_visible (bool visible)
+{
+  title->set_visible (visible);
+  slider->set_visible (visible);
+  label->set_visible (visible);
+}
+
 int
 PropertyView::init_ui (Widget *parent, FixedGrid& grid, int yoffset)
 {
@@ -38,6 +47,21 @@ PropertyView::init_ui (Widget *parent, FixedGrid& grid, int yoffset)
   grid.add_widget (label, 35, yoffset, 5, 2);
 
   return 2;
+}
+
+void
+PropertyView::init_ui (Widget *parent, OperatorLayout& op_layout)
+{
+  slider = new Slider (parent, 0);
+
+  slider->set_int_range (property.min(), property.max());
+  label = new Label (parent, property.value_label());
+  title = new Label (parent, property.label());
+  slider->set_int_value (property.get());
+
+  connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
+
+  op_layout.add_row (2, title, slider, label);
 }
 
 void
