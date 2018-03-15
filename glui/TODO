@@ -1,16 +1,18 @@
-vst:
- - debug location
-
 cleanup:
  - don't hardcode colors
  - make stuff private
- - scaling via settings
  - replace callbacks with signals
  - redraw only if necessary
 
 widgets:
  - popup menu
  - knob
+ - led
 
-- global settings
-- control widget
+- scaling save/restore
+- control widget *
+- message box for error messages *
+- operator layout *
+
+windows:
+ - 32bit compile crashes in apply window sse code - why?
