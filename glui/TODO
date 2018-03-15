@@ -16,3 +16,4 @@ widgets:
 
 windows:
  - 32bit compile crashes in apply window sse code - why?
+ - zoom doesn't resize windows in cubase
