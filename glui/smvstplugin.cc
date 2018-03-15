@@ -23,6 +23,7 @@
 #include "smvstui.hh"
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
+#include "smdebug.hh"
 
 // from http://www.asseca.org/vst-24-specs/index.html
 #define effGetParamLabel        6
@@ -37,39 +38,9 @@
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
-#define DEBUG 1
-
 using namespace SpectMorph;
 
 using std::string;
-
-static FILE       *debug_file = NULL;
-static std::mutex  debug_mutex;
-
-void
-VstUtils::debug (const char *fmt, ...)
-{
-  if (DEBUG)
-    {
-      std::lock_guard<std::mutex> locker (debug_mutex);
-
-      if (!debug_file)
-        {
-          gchar *filename = g_build_filename (g_get_tmp_dir(), "smvstplugin.log", nullptr);
-          debug_file = fopen (filename, "w");
-          g_free (filename);
-        }
-
-      va_list ap;
-
-      va_start (ap, fmt);
-      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
-      va_end (ap);
-      fflush (debug_file);
-    }
-}
-
-using VstUtils::debug;
 
 void
 VstPlugin::preinit_plan (MorphPlanPtr plan)
@@ -293,12 +264,12 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetChunk:
       {
         int result = plugin->ui->save_state((char **)ptr);
-        debug ("get chunk returned: %s\n", *(char **)ptr);
+        VST_DEBUG ("get chunk returned: %s\n", *(char **)ptr);
         return result;
       }
 
     case effSetChunk:
-      debug ("set chunk: %s\n", (char *)ptr);
+      VST_DEBUG ("set chunk: %s\n", (char *)ptr);
       plugin->ui->load_state((char *)ptr);
       return 0;
 
@@ -341,7 +312,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
               strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
               strcmp("sendVstMidiEvent", (char *)ptr) == 0 ||
               false) return 0;
-      debug("unhandled canDo: %s\n", (char *)ptr);
+      VST_DEBUG ("unhandled canDo: %s\n", (char *)ptr);
       return 0;
 
     case effGetTailSize:
@@ -361,7 +332,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       return 0;
 
     default:
-      debug ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
+      VST_DEBUG ("[smvstplugin] unhandled VST opcode: %d\n", opcode);
       return 0;
   }
 }
@@ -434,7 +405,10 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(d
 
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
-  debug ("VSTPluginMain called\n");
+  Debug::set_filename ("smvstplugin.log");
+  Debug::enable ("vst");
+
+  VST_DEBUG ("VSTPluginMain called\n");
   if (audioMaster)
     {
       audioMaster (NULL, audioMasterGetProductString, 0, 0, hostProductString, 0.0f);
@@ -465,7 +439,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
   effect->uniqueID = CCONST ('s', 'm', 'T', 'p'); // T => test
   effect->processReplacing = processReplacing;
 
-  debug ("VSTPluginMain done => return %p\n", effect);
+  VST_DEBUG ("VSTPluginMain done => return %p\n", effect);
   return effect;
 }
 
