@@ -43,7 +43,7 @@ int
 JackSynth::process (jack_nframes_t nframes)
 {
   // update plan with new parameters / new modules if necessary
-  if (m_new_plan_mutex.tryLock())
+  if (m_new_plan_mutex.try_lock())
     {
       if (m_new_plan)
         {
@@ -180,21 +180,21 @@ JackSynth::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_new_plan = plan;
 }
 
 void
 JackSynth::change_volume (double new_volume)
 {
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_new_volume = new_volume;
 }
 
 bool
 JackSynth::voices_active()
 {
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   return m_voices_active;
 }
 

@@ -15,7 +15,6 @@
 #include <QPushButton>
 #include <QSlider>
 #include <QGroupBox>
-#include <QMutex>
 
 #include <jack/jack.h>
 
@@ -35,7 +34,7 @@ protected:
 
   MidiSynth                    *midi_synth;
 
-  QMutex                        m_new_plan_mutex;
+  std::mutex                    m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
   bool                          m_voices_active;
