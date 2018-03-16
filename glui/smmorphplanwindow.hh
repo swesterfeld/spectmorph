@@ -24,14 +24,15 @@ class MorphPlanWindow : public Window
   MorphPlanControl *m_control_widget = nullptr;
   std::string       m_filename;
 
+  void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
+public:
   void
   set_filename (const std::string& filename)
   {
     m_filename = filename;
     // FIXME update_window_title();
   }
-  void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
-public:
+
   MorphPlanWindow (const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
 
   void fill_preset_menu (Menu *menu);
