@@ -32,7 +32,7 @@ class MorphPlanWindow : public Window
   }
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
 public:
-  MorphPlanWindow (PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
+  MorphPlanWindow (const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
 
   void fill_preset_menu (Menu *menu);
   void fill_zoom_menu (Menu *menu);

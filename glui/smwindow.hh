@@ -35,7 +35,7 @@ protected:
   Widget *find_widget_xy (double ex, double ey);
 
 public:
-  Window (int width, int height, PuglNativeWindow parent = 0, bool resize = false);
+  Window (const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false);
   virtual ~Window();
 
   std::vector<Widget *> crawl_widgets();

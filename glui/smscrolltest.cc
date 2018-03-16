@@ -17,7 +17,7 @@ class MainWindow : public Window
 {
 public:
   MainWindow() :
-    Window (512, 512)
+    Window ("SpectMorph - Scroll Test", 512, 512)
   {
     FixedGrid grid;
     ScrollView *scroll_view = new ScrollView (this);

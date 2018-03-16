@@ -23,7 +23,7 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
 bool
 VstUI::open (PuglNativeWindow win_id)
 {
-  widget = new MorphPlanWindow (win_id, false, morph_plan);
+  widget = new MorphPlanWindow ("SpectMorph VST", win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
   control_widget = widget->add_control_widget();

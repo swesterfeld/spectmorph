@@ -75,7 +75,7 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
 
 static double static_FIXME_scale = 1.7;
 
-Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
+Window::Window (const string& title, int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
@@ -98,7 +98,7 @@ Window::Window (int width, int height, PuglNativeWindow win_id, bool resize) :
   puglIgnoreKeyRepeat (view, false);
   if (win_id)
     puglInitWindowParent (view, win_id);
-  puglCreateWindow (view, "Pugl Test");
+  puglCreateWindow (view, title.c_str());
 
   puglSetHandle (view, this);
   puglSetEventFunc (view, ::on_event);

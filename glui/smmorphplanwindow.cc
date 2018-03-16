@@ -8,8 +8,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphPlanWindow::MorphPlanWindow (PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
-  Window (744, 560, win_id, resize),
+MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
+  Window (title, 744, 560, win_id, resize),
   m_morph_plan (morph_plan)
 {
   FixedGrid grid;

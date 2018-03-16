@@ -52,7 +52,7 @@ class MainWindow : public Window
 {
 public:
   MainWindow (int width, int height, PuglNativeWindow win_id = 0, bool resize = true) :
-    Window (width, height, win_id, resize)
+    Window ("SpectMorph UI Test", width, height, win_id, resize)
   {
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;

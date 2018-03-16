@@ -28,7 +28,7 @@ main (int argc, char **argv)
       fprintf (stderr, "Error opening '%s'.\n", filename.c_str());
     }
 
-  MorphPlanWindow window (0, false, morph_plan);
+  MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan);
 
   MorphPlanControl *control_widget = window.add_control_widget();
   control_widget->set_volume (-6);
