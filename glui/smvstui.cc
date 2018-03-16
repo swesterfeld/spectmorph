@@ -37,9 +37,13 @@ VstUI::open (PuglNativeWindow win_id)
   widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
   widget->show();
 #endif
-  control_widget = nullptr;
   widget = new MorphPlanWindow (win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
+
+  control_widget = widget->add_control_widget();
+  control_widget->set_volume (plugin->volume());
+  connect (control_widget->signal_volume_changed, this, &VstUI::on_volume_changed);
+
   widget->show();
 
   int width, height;

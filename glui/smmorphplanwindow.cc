@@ -231,3 +231,13 @@ MorphPlanWindow::on_about_clicked()
 
   dialog->run();
 }
+
+MorphPlanControl *
+MorphPlanWindow::add_control_widget (MorphPlanControl::Features f)
+{
+  FixedGrid grid;
+  m_control_widget = new MorphPlanControl (this, m_morph_plan, f);
+
+  grid.add_widget (m_control_widget, 49, height / 8 - 10, 43, 9);
+  return m_control_widget;
+}
