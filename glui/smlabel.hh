@@ -13,6 +13,7 @@ struct Label : public Widget
   std::string text;
   TextAlign align = TextAlign::LEFT;
   bool bold = false;
+  Color color = ThemeColor::TEXT;
 
   Label (Widget *parent, const std::string& text) :
     Widget (parent),
@@ -24,11 +25,12 @@ struct Label : public Widget
   {
     DrawUtils du (cr);
 
-    if (enabled())
-      cairo_set_source_rgba (cr, 1, 1, 1, 1);
-    else
-      cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
+    Color text_color = color;
 
+    if (!enabled())
+      text_color = text_color.darker();
+
+    du.set_color (text_color);
     du.bold = bold;
     du.text (text, 0, 0, width, height, align);
   }

@@ -13,10 +13,13 @@
 namespace SpectMorph
 {
 
-struct MorphPlanControl : public Frame
+class MorphPlanControl : public Frame
 {
+  MorphPlanPtr morph_plan;
   Label       *volume_value_label;
   Slider      *volume_slider;
+  Widget      *midi_led;
+  Label       *inst_status;
 
 public:
   enum Features {
@@ -25,12 +28,15 @@ public:
   };
 
   MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features f = ALL_WIDGETS);
+
   void set_volume (double volume);
+  void set_led (bool on);
 
   Signal<double> signal_volume_changed;
 
 /* slots */
   void on_volume_changed (double new_volume);
+  void on_index_changed();
 };
 
 }

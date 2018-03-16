@@ -92,7 +92,8 @@ enum class ThemeColor
   CHECKBOX,
   SLIDER,
   WINDOW_BG,
-  OPERATOR_BG
+  OPERATOR_BG,
+  TEXT
 };
 
 class Color
@@ -117,6 +118,7 @@ public:
         case ThemeColor::SLIDER:    set_rgb (0.1, 0.7, 0.1);  break;
         case ThemeColor::WINDOW_BG: set_rgb (0.2, 0.2, 0.2);  break;
         case ThemeColor::OPERATOR_BG: set_rgb (0.2, 0.2, 0.2); break;
+        case ThemeColor::TEXT:      set_rgb (1.0, 1.0, 1.0);  break;
       }
   }
   Color (double r, double g, double b)

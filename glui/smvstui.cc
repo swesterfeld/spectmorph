@@ -23,20 +23,6 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
 bool
 VstUI::open (PuglNativeWindow win_id)
 {
-#if 0 //XXX
-  widget = new MorphPlanWindow (morph_plan, "!title!");
-  connect (widget, SIGNAL (update_size()), this, SLOT (on_update_window_size()));
-
-  control_widget = new MorphPlanControl (morph_plan);
-  control_widget->set_volume (plugin->volume());
-  connect (control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
-
-  widget->add_control_widget (control_widget);
-
-  widget->winId();
-  widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
-  widget->show();
-#endif
   widget = new MorphPlanWindow (win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
@@ -69,7 +55,6 @@ VstUI::getRect (ERect** rect)
 void
 VstUI::close()
 {
-  delete control_widget;
   control_widget = nullptr;
 
   delete widget;
@@ -79,10 +64,8 @@ VstUI::close()
 void
 VstUI::idle()
 {
-#if 0 //XXX
   if (control_widget)
     control_widget->set_led (plugin->voices_active());
-#endif
 
   if (widget)
     widget->process_events();
@@ -182,9 +165,6 @@ VstUI::load_state (char *buffer)
   morph_plan->load (in, &params);
   delete in;
 
-#if 0
-  // XXX
   if (control_widget)
     control_widget->set_volume (plugin->volume());
-#endif
 }
