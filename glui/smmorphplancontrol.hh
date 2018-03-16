@@ -8,6 +8,7 @@
 #include "smframe.hh"
 #include "smlabel.hh"
 #include "smslider.hh"
+#include "smled.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -18,7 +19,7 @@ class MorphPlanControl : public Frame
   MorphPlanPtr morph_plan;
   Label       *volume_value_label;
   Slider      *volume_slider;
-  Widget      *midi_led;
+  Led         *midi_led;
   Label       *inst_status;
 
 public:

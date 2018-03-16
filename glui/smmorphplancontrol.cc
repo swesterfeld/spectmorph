@@ -24,12 +24,14 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
 
   volume_slider = new Slider (this, 0);
   volume_value_label = new Label (this, "");
+  midi_led = new Led (this, false);
 
   connect (volume_slider->signal_value_changed, this, &MorphPlanControl::on_volume_changed);
 
   grid.add_widget (new Label (this, "Volume"), 2, voffset, 7, 2);
   grid.add_widget (volume_slider, 8, voffset, 23, 2);
   grid.add_widget (volume_value_label, 32, voffset, 7, 2);
+  grid.add_widget (midi_led, 39, voffset, 2, 2);
 
   voffset += 2;
 
@@ -65,7 +67,7 @@ MorphPlanControl::on_volume_changed (double new_volume)
 void
 MorphPlanControl::set_led (bool on)
 {
-  //midi_led->setState (on ? Led::On : Led::Off);
+  midi_led->set_on (on);
 }
 
 void
