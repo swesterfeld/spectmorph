@@ -13,16 +13,6 @@
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
-#include <QApplication>
-#include <QWidget>
-#include <QLabel>
-#include <QHBoxLayout>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QSlider>
-#include <QCloseEvent>
-#include <QSocketNotifier>
-
 #include "smmain.hh"
 #include "smjack.hh"
 
@@ -52,14 +42,7 @@ JackSynth::process (jack_nframes_t nframes)
         }
       m_volume = m_new_volume;
 
-      bool new_voices_active = midi_synth->active_voice_count() > 0;
-      if (m_voices_active != new_voices_active)
-        {
-          m_voices_active = new_voices_active;
-          // wakeup main thread
-          while (write (main_thread_wakeup_pfds[1], "W", 1) != 1)
-            ;
-        }
+      m_voices_active = midi_synth->active_voice_count() > 0;
       m_new_plan_mutex.unlock();
     }
 
@@ -103,12 +86,6 @@ JackSynth::JackSynth (jack_client_t *client) :
   m_volume = 1;
   m_new_volume = 1;
 
-  int pipe_rc = pipe (main_thread_wakeup_pfds);
-  g_assert (pipe_rc == 0);
-
-  QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
-  connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_voices_active_changed()));
-
   jack_mix_freq = jack_get_sample_rate (client);
 
   midi_synth = new MidiSynth (jack_mix_freq, 64);
@@ -136,25 +113,6 @@ JackSynth::~JackSynth()
       delete midi_synth;
       midi_synth = NULL;
     }
-}
-
-void
-JackSynth::on_voices_active_changed()
-{
-  // clear wakeup pipe
-  struct pollfd poll_fds[1];
-  poll_fds[0].fd = main_thread_wakeup_pfds[0];
-  poll_fds[0].events = POLLIN;
-  poll_fds[0].revents = 0;
-
-  if (poll (poll_fds, 1, 0) > 0)
-    {
-      char c;
-      int rc = read (main_thread_wakeup_pfds[0], &c, 1);
-      g_assert (rc != -1 || errno == EAGAIN);
-    }
-
-  Q_EMIT voices_active_changed();
 }
 
 void
@@ -198,25 +156,24 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
-JackControl::JackControl (MorphPlanPtr plan, JackSynth *synth) :
+JackControl::JackControl (MorphPlanPtr plan, MorphPlanControl *control_widget, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
 {
-  m_control_widget = new MorphPlanControl (plan);
+  m_control_widget = control_widget;
   m_control_widget->set_volume (-6); // default volume
   on_volume_changed (-6);
 
-  connect (m_control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
-  connect (synth, SIGNAL (voices_active_changed()), this, SLOT (on_update_led()));
-  connect (plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (m_control_widget->signal_volume_changed, this, &JackControl::on_volume_changed);
+  connect (plan->signal_plan_changed, this, &JackControl::on_plan_changed);
 
   on_plan_changed();
 }
 
-MorphPlanControl *
-JackControl::control_widget()
+void
+JackControl::update_led()
 {
-  return m_control_widget;
+  m_control_widget->set_led (synth->voices_active());
 }
 
 void
@@ -232,18 +189,10 @@ JackControl::on_plan_changed()
   synth->change_plan (morph_plan->clone());
 }
 
-void
-JackControl::on_update_led()
-{
-  m_control_widget->set_led (synth->voices_active());
-}
-
 int
 main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
-
-  QApplication app (argc, argv);
 
   if (argc > 2)
     {
@@ -300,14 +249,23 @@ main (int argc, char **argv)
     }
 
   JackSynth   synth (client);
-  JackControl control (morph_plan, &synth);
 
-  MorphPlanWindow window (morph_plan, "SpectMorph JACK Client");
+  MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
   if (filename != "")
     window.set_filename (filename);
-  window.add_control_widget (control.control_widget());
+  MorphPlanControl *control_widget = window.add_control_widget();
+  JackControl control (morph_plan, control_widget, &synth);
   window.show();
-  int rc = app.exec();
+  bool quit = false;
+
+  window.set_close_callback ([&]() { quit = true; });
+
+  while (!quit)
+    {
+      usleep (50 * 1000);
+      control.update_led();
+      window.process_events();
+    }
   jack_deactivate (client);
-  return rc;
+  return 0;
 }

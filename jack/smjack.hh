@@ -10,20 +10,13 @@
 #include "smmidisynth.hh"
 #include "smled.hh"
 
-#include <QWidget>
-#include <QLabel>
-#include <QPushButton>
-#include <QSlider>
-#include <QGroupBox>
-
 #include <jack/jack.h>
 
 namespace SpectMorph
 {
 
-class JackSynth : public QObject
+class JackSynth
 {
-  Q_OBJECT
 protected:
   double                        jack_mix_freq;
   jack_port_t                  *input_port;
@@ -39,8 +32,6 @@ protected:
   double                        m_new_volume;
   bool                          m_voices_active;
 
-  int                           main_thread_wakeup_pfds[2];
-
 public:
   JackSynth (jack_client_t *client);
   ~JackSynth();
@@ -50,30 +41,21 @@ public:
   void change_volume (double new_volume);
   bool voices_active();
   int  process (jack_nframes_t nframes);
-
-public slots:
-  void on_voices_active_changed();
-
-signals:
-  void voices_active_changed();
 };
 
-class JackControl : public QObject
+class JackControl : public SignalReceiver
 {
-  Q_OBJECT
-
   MorphPlanControl  *m_control_widget;
   JackSynth         *synth;
   MorphPlanPtr       morph_plan;
 
 public:
-  JackControl (MorphPlanPtr plan, JackSynth *synth);
+  JackControl (MorphPlanPtr plan, MorphPlanControl *control_widget, JackSynth *synth);
 
-  MorphPlanControl *control_widget();
+  void update_led();
 
-public slots:
+/* slots: */
   void on_plan_changed();
-  void on_update_led();
   void on_volume_changed (double d);
 };
 
