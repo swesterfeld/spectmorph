@@ -37,6 +37,9 @@ public:
   void
   set_on (bool on)
   {
+    if (m_on == on)
+      return;
+
     m_on = on;
     update();
   }
