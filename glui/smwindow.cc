@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <glib.h>
+#include <sys/time.h>
 
 using namespace SpectMorph;
 
@@ -277,6 +278,19 @@ Window::process_events()
         }
     }
 
+  if (0)
+    {
+      timeval tv;
+      gettimeofday (&tv, 0);
+
+      static double last_time_ms = 0;
+      const double time_ms = tv.tv_sec + tv.tv_usec / 1000000.0;
+      const double delta_time_ms = time_ms - last_time_ms;
+      last_time_ms = time_ms;
+
+      if (last_time_ms > 0)
+        sm_debug ("process_delta_time %f\n", delta_time_ms);
+    }
   puglProcessEvents (view);
 }
 
@@ -489,12 +503,24 @@ Window::window()
 }
 
 void
+Window::wait_event_fps()
+{
+  /* tradeoff between UI responsiveness and cpu usage caused by thread wakeups
+   *
+   * 60 fps should make the UI look smooth
+   */
+  const double frames_per_second = 60;
+
+  usleep (1000 * 1000 / frames_per_second);
+}
+
+void
 Window::wait_for_event()
 {
   if (native_file_dialog)
     {
       /* need to wait for events of this view, and handle io for file dialog */
-      usleep (50 * 1000);
+      wait_event_fps();
     }
   else
     {

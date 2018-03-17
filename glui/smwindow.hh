@@ -43,6 +43,7 @@ public:
   void on_event (const PuglEvent *event);
   void on_resize (int *width, int *height);
   void wait_for_event();
+  void wait_event_fps();
   void process_events();
   void show();
   void open_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
