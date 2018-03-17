@@ -6,11 +6,6 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 
-#include <QWindow>
-#include <QPushButton>
-#include <QApplication>
-#include <QTimer>
-
 using namespace SpectMorph;
 
 using std::string;
@@ -22,29 +17,29 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   morph_plan (plan),
   plugin (plugin)
 {
-  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
 }
 
 bool
-VstUI::open (WId win_id)
+VstUI::open (PuglNativeWindow win_id)
 {
-  widget = new MorphPlanWindow (morph_plan, "!title!");
-  connect (widget, SIGNAL (update_size()), this, SLOT (on_update_window_size()));
+  widget = new MorphPlanWindow ("SpectMorph VST", win_id, false, morph_plan);
+  connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
-  control_widget = new MorphPlanControl (morph_plan);
+  control_widget = widget->add_control_widget();
   control_widget->set_volume (plugin->volume());
-  connect (control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
+  connect (control_widget->signal_volume_changed, this, &VstUI::on_volume_changed);
 
-  widget->add_control_widget (control_widget);
-
-  widget->winId();
-  widget->windowHandle()->setParent (QWindow::fromWinId (win_id));
   widget->show();
+
+  int width, height;
+
+  widget->get_scaled_size (&width, &height);
 
   rectangle.top = 0;
   rectangle.left = 0;
-  rectangle.bottom = widget->height();
-  rectangle.right = widget->width();
+  rectangle.bottom = height;
+  rectangle.right = width;
 
   return true;
 }
@@ -60,7 +55,6 @@ VstUI::getRect (ERect** rect)
 void
 VstUI::close()
 {
-  delete control_widget;
   control_widget = nullptr;
 
   delete widget;
@@ -73,7 +67,8 @@ VstUI::idle()
   if (control_widget)
     control_widget->set_led (plugin->voices_active());
 
-  QApplication::processEvents();
+  if (widget)
+    widget->process_events();
 }
 
 void
@@ -94,15 +89,14 @@ VstUI::on_update_window_size()
   if (!widget)  // if editor window is not visible, ignore
     return;
 
-  const int width = widget->minimumWidth();
-  const int height = widget->minimumHeight();
+  int width, height;
+  widget->get_scaled_size (&width, &height);
 
   if (height != rectangle.bottom || height != rectangle.right)
     {
       rectangle.bottom = height;
       rectangle.right  = width;
 
-      widget->resize (width, height);
       plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
     }
 }

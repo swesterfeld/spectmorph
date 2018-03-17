@@ -2,10 +2,10 @@ include $(top_srcdir)/Makefile.decl
 
 SUBDIRS = vestige
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/gui
+AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(QT_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
-SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
+SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
 spectmorph_vstdir = $(libdir)/vst
 
@@ -16,7 +16,7 @@ SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
 SMVSTSOURCES = smvstplugin.cc smvstui.cc moc_smvstui.cc
 
 spectmorph_vst_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
-spectmorph_vst_la_LIBADD  = $(QT_LIBS) $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS)
+spectmorph_vst_la_LIBADD  = $(QT_LIBS) $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 spectmorph_vst_la_LDFLAGS = -rpath $(spectmorph_vstdir) -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
 
 testlink: testlink.cc

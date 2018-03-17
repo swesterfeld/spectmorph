@@ -7,26 +7,25 @@
 
 #include "smmorphplanwindow.hh"
 #include "smmorphplancontrol.hh"
+#include "smmorphplan.hh"
 
 namespace SpectMorph
 {
 
 struct VstPlugin;
 
-class VstUI : public QObject
+class VstUI : public SignalReceiver
 {
-  Q_OBJECT
-
   ERect                 rectangle;
   MorphPlanWindow      *widget;
   MorphPlanControl     *control_widget;
   MorphPlanPtr          morph_plan;
   VstPlugin            *plugin;
-  
+
 public:
   VstUI (MorphPlanPtr plan, VstPlugin *plugin);
 
-  bool open (WId win_id);
+  bool open (PuglNativeWindow win_id);
   bool getRect (ERect** rect);
   void close();
   void idle();
@@ -34,7 +33,7 @@ public:
   int   save_state (char **ptr);
   void  load_state (char *ptr);
 
-public slots:
+/* slots: */
   void on_plan_changed();
   void on_update_window_size();
   void on_volume_changed (double new_volume);
