@@ -41,7 +41,8 @@ debug (const char *fmt, ...)
     }
 }
 
-LV2UI::LV2UI (PuglNativeWindow parent_win_id) :
+LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
+  ui_resize (ui_resize),
   morph_plan (new MorphPlan ())
 {
   window = new MorphPlanWindow ("SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan);
@@ -49,8 +50,21 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id) :
 
   connect (control_widget->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
+  connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
 
   window->show();
+}
+
+void
+LV2UI::on_update_window_size()
+{
+  if (ui_resize)
+    {
+      int width, height;
+      window->get_scaled_size (&width, &height);
+
+      ui_resize->ui_resize (ui_resize->handle, width, height);
+    }
 }
 
 LV2UI::~LV2UI()
@@ -121,7 +135,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
   PuglNativeWindow parent_win_id = 0;
   LV2_URID_Map* map    = nullptr;
-  LV2UI_Resize *resize = nullptr;
+  LV2UI_Resize *ui_resize = nullptr;
   for (int i = 0; features[i]; i++)
     {
       if (!strcmp (features[i]->URI, LV2_URID__map))
@@ -135,14 +149,14 @@ instantiate(const LV2UI_Descriptor*   descriptor,
         }
       else if (!strcmp(features[i]->URI, LV2_UI__resize))
         {
-          resize = (LV2UI_Resize*)features[i]->data;
+          ui_resize = (LV2UI_Resize*)features[i]->data;
         }
     }
   if (!map)
     {
       return nullptr; // host bug, we need this feature
     }
-  LV2UI *ui = new LV2UI (parent_win_id);
+  LV2UI *ui = new LV2UI (parent_win_id, ui_resize);
   ui->init_map (map);
 
   ui->write = write_function;
@@ -164,12 +178,9 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
   *widget = (void *)ui->window->native_window();
 
-  if (resize)
-    {
-      int width, height;
-      ui->window->get_scaled_size (&width, &height);
-      resize->ui_resize (resize->handle, width, height);
-    }
+  /* set initial window size */
+  ui->on_update_window_size();
+
   return ui;
 }
 

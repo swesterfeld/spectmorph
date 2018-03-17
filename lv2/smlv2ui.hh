@@ -14,9 +14,10 @@ class LV2UI : public SignalReceiver,
               public LV2Common
 {
   std::string           current_plan;
+  LV2UI_Resize         *ui_resize;
 
 public:
-  LV2UI (PuglNativeWindow parent_win_id);
+  LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize);
   ~LV2UI();
 
   MorphPlanWindow      *window;
@@ -33,6 +34,7 @@ public:
 /* slots: */
   void on_plan_changed();
   void on_volume_changed (double new_volume);
+  void on_update_window_size();
 };
 
 }
