@@ -262,7 +262,7 @@ main (int argc, char **argv)
 
   while (!quit)
     {
-      usleep (50 * 1000);
+      window.wait_event_fps();
       control.update_led();
       window.process_events();
     }
