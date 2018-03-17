@@ -56,6 +56,7 @@ public:
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   Window *window() override;
+  PuglNativeWindow native_window();
   void set_gui_scaling (double s);
   double gui_scaling();
 

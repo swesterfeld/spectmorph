@@ -553,6 +553,12 @@ Window::set_dialog_widget (Widget *widget)
   dialog_widget = widget;
 }
 
+PuglNativeWindow
+Window::native_window()
+{
+  return puglGetNativeWindow (view);
+}
+
 void
 Window::set_gui_scaling (double s)
 {
