@@ -24,7 +24,6 @@
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
 
-#include <QMutex>
 #include <QApplication>
 
 // from http://www.asseca.org/vst-24-specs/index.html
@@ -114,28 +113,28 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
   m_new_plan = plan;
 }
 
 void
 VstPlugin::set_volume (double new_volume)
 {
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
   m_volume = new_volume;
 }
 
 double
 VstPlugin::volume()
 {
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
   return m_volume;
 }
 
 bool
 VstPlugin::voices_active()
 {
-  QMutexLocker locker (&m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
   return m_voices_active;
 }
 
@@ -347,7 +346,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
   // update plan with new parameters / new modules if necessary
-  if (plugin->m_new_plan_mutex.tryLock())
+  if (plugin->m_new_plan_mutex.try_lock())
     {
       if (plugin->m_new_plan)
         {

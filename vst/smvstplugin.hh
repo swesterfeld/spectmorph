@@ -7,8 +7,6 @@
 #include "smmorphplansynth.hh"
 #include "smmidisynth.hh"
 
-#include <QMutex>
-
 #define VST_DEBUG(...) Debug::debug ("vst", __VA_ARGS__)
 
 namespace SpectMorph
@@ -73,7 +71,7 @@ struct VstPlugin
   VstUI              *ui;
   double              mix_freq;
 
-  QMutex              m_new_plan_mutex;
+  std::mutex          m_new_plan_mutex;
   MorphPlanPtr        m_new_plan;
   double              m_volume;
   bool                m_voices_active;
