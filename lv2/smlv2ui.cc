@@ -8,6 +8,7 @@
 #include "smmemout.hh"
 #include "smhexstring.hh"
 #include "smutils.hh"
+#include "smmain.hh"
 
 #include <QMutex>
 
@@ -40,25 +41,30 @@ debug (const char *fmt, ...)
     }
 }
 
-LV2UI::LV2UI() :
-  morph_plan (new MorphPlan())
+LV2UI::LV2UI (PuglNativeWindow parent_win_id) :
+  morph_plan (new MorphPlan ())
 {
-  window = new MorphPlanWindow (morph_plan, "!title!");
-  control_widget = new MorphPlanControl (morph_plan);
-  connect (control_widget, SIGNAL (volume_changed (double)), this, SLOT (on_volume_changed (double)));
+  window = new MorphPlanWindow ("SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan);
+  control_widget = window->add_control_widget();
 
-  window->add_control_widget (control_widget);
+  connect (control_widget->signal_volume_changed, this, &LV2UI::on_volume_changed);
+  connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
 
-  connect (morph_plan.c_ptr(), SIGNAL (plan_changed()), this, SLOT (on_plan_changed()));
+  window->show();
 }
 
 LV2UI::~LV2UI()
 {
-  delete control_widget;
   control_widget = nullptr;
 
   delete window;
   window = nullptr;
+}
+
+void
+LV2UI::idle()
+{
+  window->process_events();
 }
 
 void
@@ -112,22 +118,26 @@ instantiate(const LV2UI_Descriptor*   descriptor,
   if (!sm_init_done())
     sm_init_plugin();
 
-  LV2UI *ui = new LV2UI();
 
+  PuglNativeWindow parent_win_id = 0;
   LV2_URID_Map* map = NULL;
   for (int i = 0; features[i]; i++)
     {
       if (!strcmp (features[i]->URI, LV2_URID__map))
         {
           map = (LV2_URID_Map*)features[i]->data;
-          break;
         }
+      else if (!strcmp(features[i]->URI, LV2_UI__parent))
+        {
+          parent_win_id = (PuglNativeWindow)features[i]->data;
+          debug ("Parent X11 ID %i\n", parent_win_id);
+       }
     }
   if (!map)
     {
-      delete ui;
-      return NULL; // host bug, we need this feature
+      return nullptr; // host bug, we need this feature
     }
+  LV2UI *ui = new LV2UI (parent_win_id);
   ui->init_map (map);
 
   ui->write = write_function;
@@ -209,11 +219,26 @@ port_event(LV2UI_Handle handle,
 
 }
 
+static int
+idle (LV2UI_Handle handle)
+{
+  LV2UI* ui = (LV2UI*) handle;
+
+  ui->idle();
+  return 0;
+}
+
+static const LV2UI_Idle_Interface idle_iface = { idle };
+
 static const void*
 extension_data (const char* uri)
 {
-  // could implement show|idle interface
-  return NULL;
+  // could implement show interface
+
+  if (!strcmp(uri, LV2_UI__idleInterface)) {
+    return &idle_iface;
+  }
+  return nullptr;
 }
 
 static const LV2UI_Descriptor descriptor = {

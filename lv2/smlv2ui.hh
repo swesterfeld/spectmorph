@@ -10,15 +10,13 @@
 namespace SpectMorph
 {
 
-class LV2UI : public QObject,
+class LV2UI : public SignalReceiver,
               public LV2Common
 {
-  Q_OBJECT
-
   std::string           current_plan;
 
 public:
-  LV2UI();
+  LV2UI (PuglNativeWindow parent_win_id);
   ~LV2UI();
 
   MorphPlanWindow      *window;
@@ -30,8 +28,9 @@ public:
   LV2UI_Controller      controller;
 
   void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
+  void idle();
 
-public slots:
+/* slots: */
   void on_plan_changed();
   void on_volume_changed (double new_volume);
 };

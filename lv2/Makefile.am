@@ -1,9 +1,9 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/gui
+AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(QT_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
-SPECTMORPH_GUI_LIBS = $(top_builddir)/gui/libspectmorphgui.la
+SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
 SMHDRS = smlv2common.hh
 
@@ -18,7 +18,7 @@ spectmorph_lv2_la_LIBADD  = $(plugin_libs) $(QTCORE_LIBS)
 spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
 spectmorph_lv2_ui_la_SOURCES = smlv2ui.cc $(SMHDRS) smlv2ui.hh moc_smlv2ui.cc
-spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GUI_LIBS) $(QT_LIBS)
+spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GLUI_LIBS) $(QT_LIBS)
 spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
 spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
