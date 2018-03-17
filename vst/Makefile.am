@@ -13,7 +13,7 @@ plugindir = $(spectmorph_vstdir)
 plugin_LTLIBRARIES = spectmorph_vst.la
 
 SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
-SMVSTSOURCES = smvstplugin.cc smvstui.cc moc_smvstui.cc
+SMVSTSOURCES = smvstplugin.cc smvstui.cc
 
 spectmorph_vst_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
 spectmorph_vst_la_LIBADD  = $(QT_LIBS) $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
@@ -21,9 +21,6 @@ spectmorph_vst_la_LDFLAGS = -rpath $(spectmorph_vstdir) -avoid-version -module -
 
 testlink: testlink.cc
 	$(CXX) -o /dev/null testlink.cc $(SMVSTSOURCES) $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(QT_LIBS) $(BSE_LIBS) -fPIC -L../lib/.libs -lspectmorph -L../gui/.libs -lspectmorphgui
-
-moc_smvstui.cc: smvstui.hh
-	$(MOC) smvstui.hh > moc_smvstui.cc
 
 # we only want to install the .so file; not the .la file
 install-data-hook:
