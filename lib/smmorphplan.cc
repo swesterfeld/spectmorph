@@ -126,7 +126,6 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
       m_operators.push_back (op);
     }
 
-  Q_EMIT need_view_rebuild();
   signal_need_view_rebuild();
   emit_plan_changed();
 }
@@ -153,7 +152,6 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
 
-  Q_EMIT need_view_rebuild();
   signal_need_view_rebuild();
 
   clear();
@@ -321,7 +319,6 @@ MorphPlan::index()
 void
 MorphPlan::remove (MorphOperator *op)
 {
-  Q_EMIT need_view_rebuild();
   signal_need_view_rebuild();
   signal_operator_removed (op);
 
@@ -343,7 +340,6 @@ MorphPlan::remove (MorphOperator *op)
 void
 MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 {
-  Q_EMIT need_view_rebuild();
   signal_need_view_rebuild();
 
   vector<MorphOperator *> new_operators;
@@ -405,7 +401,6 @@ MorphPlan::emit_plan_changed()
 {
   if (!in_restore)
     {
-      Q_EMIT plan_changed();
       signal_plan_changed();
     }
 }
@@ -415,7 +410,6 @@ MorphPlan::emit_index_changed()
 {
   if (!in_restore)
     {
-      Q_EMIT index_changed();
       signal_index_changed();
     }
 }

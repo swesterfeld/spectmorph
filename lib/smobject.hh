@@ -3,13 +3,13 @@
 #ifndef SPECTMORPH_OBJECT_HH
 #define SPECTMORPH_OBJECT_HH
 
-#include <QObject>
 #include <mutex>
+#include "smsignal.hh"
 
 namespace SpectMorph
 {
 
-class Object : public QObject
+class Object : public SignalReceiver
 {
   std::mutex    object_mutex;
   unsigned int  object_ref_count;

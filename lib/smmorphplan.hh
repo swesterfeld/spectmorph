@@ -15,7 +15,6 @@ namespace SpectMorph
 
 class MorphPlan : public Object
 {
-  Q_OBJECT
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
 
@@ -65,11 +64,6 @@ public:
   Signal<>                signal_index_changed;
   Signal<>                signal_need_view_rebuild;
   Signal<MorphOperator *> signal_operator_removed;
-
-signals:
-  void plan_changed();
-  void index_changed();
-  void need_view_rebuild();
 };
 
 typedef RefPtr<MorphPlan> MorphPlanPtr;
