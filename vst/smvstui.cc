@@ -13,8 +13,6 @@
 
 using namespace SpectMorph;
 
-using VstUtils::debug;
-
 using std::string;
 using std::vector;
 

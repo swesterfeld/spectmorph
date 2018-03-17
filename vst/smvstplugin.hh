@@ -9,13 +9,10 @@
 
 #include <QMutex>
 
+#define VST_DEBUG(...) Debug::debug ("vst", __VA_ARGS__)
+
 namespace SpectMorph
 {
-
-namespace VstUtils
-{
-  void debug (const char *fmt, ...);
-}
 
 struct VstPlugin
 {
