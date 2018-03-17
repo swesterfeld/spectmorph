@@ -24,8 +24,6 @@
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
 
-#include <QApplication>
-
 // from http://www.asseca.org/vst-24-specs/index.html
 #define effGetParamLabel        6
 #define effGetParamDisplay      7
@@ -253,7 +251,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       return 1;
 
     case effEditOpen:
-      plugin->ui->open((WId)(uintptr_t)ptr);
+      plugin->ui->open((PuglNativeWindow)(uintptr_t)ptr);
       return 1;
 
     case effEditClose:
@@ -419,17 +417,6 @@ extern "C" AEffect * VSTPluginMain(audioMasterCallback audioMaster)
 
   if (!sm_init_done())
     sm_init_plugin();
-
-  if (qApp)
-    {
-      VST_DEBUG ("... (have qapp) ...\n");
-    }
-  else
-    {
-      printf ("...  (creating qapp) ...\n");
-      static int argc = 0;
-      new QApplication(argc, NULL, true);
-    }
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
   effect->magic = kEffectMagic;
