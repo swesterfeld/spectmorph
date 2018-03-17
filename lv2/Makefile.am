@@ -17,7 +17,7 @@ spectmorph_lv2_la_SOURCES = smlv2plugin.cc $(SMHDRS)
 spectmorph_lv2_la_LIBADD  = $(plugin_libs) $(QTCORE_LIBS)
 spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
-spectmorph_lv2_ui_la_SOURCES = smlv2ui.cc $(SMHDRS) smlv2ui.hh moc_smlv2ui.cc
+spectmorph_lv2_ui_la_SOURCES = smlv2ui.cc $(SMHDRS) smlv2ui.hh
 spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GLUI_LIBS) $(QT_LIBS)
 spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
 
@@ -27,9 +27,6 @@ CLEANFILES += spectmorph.ttl
 spectmorph.ttl: $(top_builddir)/config.status
 
 EXTRA_DIST += manifest.ttl
-
-moc_smlv2ui.cc: smlv2ui.hh
-	$(MOC) smlv2ui.hh > moc_smlv2ui.cc
 
 # we only want to install the .so file; not the .la file
 install-data-hook:
