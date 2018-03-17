@@ -120,7 +120,8 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
 
   PuglNativeWindow parent_win_id = 0;
-  LV2_URID_Map* map = NULL;
+  LV2_URID_Map* map    = nullptr;
+  LV2UI_Resize *resize = nullptr;
   for (int i = 0; features[i]; i++)
     {
       if (!strcmp (features[i]->URI, LV2_URID__map))
@@ -131,7 +132,11 @@ instantiate(const LV2UI_Descriptor*   descriptor,
         {
           parent_win_id = (PuglNativeWindow)features[i]->data;
           debug ("Parent X11 ID %i\n", parent_win_id);
-       }
+        }
+      else if (!strcmp(features[i]->URI, LV2_UI__resize))
+        {
+          resize = (LV2UI_Resize*)features[i]->data;
+        }
     }
   if (!map)
     {
@@ -157,7 +162,14 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             ui->uris.atom_eventTransfer,
             msg);
 
-  *widget = ui->window;
+  *widget = (void *)ui->window->native_window();
+
+  if (resize)
+    {
+      int width, height;
+      ui->window->get_scaled_size (&width, &height);
+      resize->ui_resize (resize->handle, width, height);
+    }
   return ui;
 }
 
