@@ -93,6 +93,8 @@
   lv2:extensionData   ui:idleInterface ;
   lv2:requiredFeature ui:idleInterface ;
 
+  lv2:optionalFeature ui:noUserResize ;
+
   lv2:requiredFeature urid:map;
   ui:portNotification
     [
