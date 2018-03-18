@@ -21,7 +21,7 @@ if COND_WINDOWS
   SMFDIALOG = smwinfiledialog.cc
 endif
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 lib_LTLIBRARIES = libspectmorphglui.la
 
@@ -47,7 +47,7 @@ libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
 libspectmorphglui_la_LIBADD = $(PUGL_LIBS) $(CAIRO_LIBS)
 libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
 
-AM_CXXFLAGS += $(QTCORE_CFLAGS) $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
+AM_CXXFLAGS += $(BSE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
 smuitest_SOURCES = smuitest.cc
 smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
@@ -62,27 +62,3 @@ smplantest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_L
 smplantest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest smplantest smscrolltest
-
-plugindir = $(abs_builddir)/VST_TEST_DIR
-plugin_LTLIBRARIES = smvstplugin.la
-
-SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
-SMVSTSOURCES = smvstplugin.cc smvstui.cc
-
-smvstplugin_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
-smvstplugin_la_LIBADD  = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
-smvstplugin_la_LDFLAGS = -avoid-version -module -export-symbols-regex "VSTPluginMain|main"
-
-if COND_WINDOWS
-STATIC_DLL_LIBS = \
-  .libs/libspectmorphglui.a \
-  pugl/.libs/libspectmorphpugl.a \
-  $(top_builddir)/lib/.libs/libspectmorph.a
-
-install-exec-hook: smvstplugin.dll
-	mkdir -p $(libdir)/vst
-	cp smvstplugin.dll $(libdir)/vst
-
-smvstplugin.dll: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o smvstplugin.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(QTCORE_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -liconv
-endif
