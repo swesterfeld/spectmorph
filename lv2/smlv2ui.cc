@@ -10,7 +10,7 @@
 #include "smutils.hh"
 #include "smmain.hh"
 
-#include <QMutex>
+#include <mutex>
 
 using namespace SpectMorph;
 
@@ -20,14 +20,14 @@ using std::string;
 #define DEBUG 0
 
 static FILE *debug_file = NULL;
-QMutex       debug_mutex;
+std::mutex   debug_mutex;
 
 static void
 debug (const char *fmt, ...)
 {
   if (DEBUG)
     {
-      QMutexLocker locker (&debug_mutex);
+      std::lock_guard<std::mutex> locker (debug_mutex);
 
       if (!debug_file)
         debug_file = fopen ("/tmp/smlv2ui.log", "w");

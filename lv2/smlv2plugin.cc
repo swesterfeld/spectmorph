@@ -14,7 +14,7 @@
 #include "smutils.hh"
 #include "smlv2common.hh"
 
-#include <QMutex>
+#include <mutex>
 
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
@@ -29,14 +29,14 @@ using std::max;
 #define DEBUG 0
 
 static FILE *debug_file = NULL;
-QMutex       debug_mutex;
+std::mutex   debug_mutex;
 
 static void
 debug (const char *fmt, ...)
 {
   if (DEBUG)
     {
-      QMutexLocker locker (&debug_mutex);
+      std::lock_guard<std::mutex> locker (debug_mutex);
 
       if (!debug_file)
         debug_file = fopen ("/tmp/smlv2plugin.log", "w");
@@ -89,7 +89,7 @@ public:
   // SpectMorph stuff
   double          mix_freq;
   double          volume;
-  QMutex          new_plan_mutex;
+  std::mutex      new_plan_mutex;
   MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   string          plan_str;
@@ -163,7 +163,7 @@ LV2Plugin::update_plan (const string& new_plan_str)
     }
 
   // install new plan
-  QMutexLocker locker (&new_plan_mutex);
+  std::lock_guard<std::mutex> locker (new_plan_mutex);
   this->new_plan = new_plan;
   plan_str = new_plan_str;
 }
@@ -303,7 +303,7 @@ run (LV2_Handle instance, uint32_t n_samples)
 {
   LV2Plugin* self = (LV2Plugin*)instance;
 
-  if (self->new_plan_mutex.tryLock())
+  if (self->new_plan_mutex.try_lock())
     {
       if (self->new_plan)
         {
@@ -332,7 +332,7 @@ run (LV2_Handle instance, uint32_t n_samples)
   // send new settings to ui after restore
   if (self->send_settings_to_ui)
     {
-      QMutexLocker locker (&self->new_plan_mutex); // need lock to access plan_str
+      std::lock_guard<std::mutex> locker (self->new_plan_mutex); // need lock to access plan_str
 
       lv2_atom_forge_frame_time (&self->forge, offset);
 
@@ -377,7 +377,7 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               lv2_atom_forge_frame_time (&self->forge, offset);
 
-              QMutexLocker locker (&self->new_plan_mutex); // need lock to access plan_str
+              std::lock_guard<std::mutex> locker (self->new_plan_mutex); // need lock to access plan_str
               self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
             }
         }
@@ -425,7 +425,7 @@ save(LV2_Handle                instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
-  QMutexLocker locker (&self->new_plan_mutex); // we read plan_str
+  std::lock_guard<std::mutex> locker (self->new_plan_mutex); // we read plan_str
 
   store (handle,
          self->uris.spectmorph_plan,
