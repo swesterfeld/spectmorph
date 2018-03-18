@@ -15,9 +15,6 @@ NEXT RELEASE:
 - velocity should map to "Velocity Sensitivity (dB)"
 - morph plan operator cycles lead to crashes
 
-beast:
-- move spectmorph osc plugin from spectmorph to beast
-
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
