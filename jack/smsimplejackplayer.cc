@@ -79,7 +79,7 @@ SimpleJackPlayer::SimpleJackPlayer (const std::string& client_name) :
 int
 SimpleJackPlayer::process (jack_nframes_t nframes)
 {
-  QMutexLocker lock (&decoder_mutex);
+  std::lock_guard<std::mutex> lock (decoder_mutex);
 
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out_port, nframes);
   if (decoder)
@@ -180,7 +180,7 @@ SimpleJackPlayer::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_a
 void
 SimpleJackPlayer::set_volume (double new_volume)
 {
-  QMutexLocker lock (&decoder_mutex);
+  std::lock_guard<std::mutex> lock (decoder_mutex);
   decoder_volume = new_volume;
 }
 

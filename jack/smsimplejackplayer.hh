@@ -5,7 +5,7 @@
 
 #include <jack/jack.h>
 
-#include <QMutex>
+#include <mutex>
 
 #include "smlivedecoder.hh"
 
@@ -17,7 +17,7 @@ class SimpleJackPlayer
   jack_port_t        *audio_out_port;
   jack_client_t      *jack_client;
 
-  QMutex              decoder_mutex;
+  std::mutex          decoder_mutex;
   LiveDecoder        *decoder;                  // decoder_mutex!
   Audio              *decoder_audio;            // decoder_mutex!
   LiveDecoderSource  *decoder_source;           // decoder_mutex!
