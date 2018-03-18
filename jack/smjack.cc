@@ -253,8 +253,7 @@ main (int argc, char **argv)
   MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
   if (filename != "")
     window.set_filename (filename);
-  MorphPlanControl *control_widget = window.add_control_widget();
-  JackControl control (morph_plan, control_widget, &synth);
+  JackControl control (morph_plan, window.control_widget(), &synth);
   window.show();
   bool quit = false;
 
