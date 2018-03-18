@@ -17,10 +17,11 @@ namespace SpectMorph
 class MorphPlanControl : public Frame
 {
   MorphPlanPtr morph_plan;
-  Label       *volume_value_label;
-  Slider      *volume_slider;
-  Led         *midi_led;
-  Label       *inst_status;
+  Label       *volume_value_label = nullptr;
+  Slider      *volume_slider = nullptr;
+  Led         *midi_led = nullptr;
+  Label       *inst_status = nullptr;
+  double       m_view_height;
 
 public:
   enum Features {
@@ -29,6 +30,8 @@ public:
   };
 
   MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features f = ALL_WIDGETS);
+
+  double view_height();
 
   void set_volume (double volume);
   void set_led (bool on);

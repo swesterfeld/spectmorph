@@ -59,7 +59,8 @@ MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, 
 
   /* control widget */
   m_control_widget = new MorphPlanControl (this, m_morph_plan, f);
-  grid.add_widget (m_control_widget, 49, height / 8 - 10, 43, 9);
+  double cw_height = m_control_widget->view_height();
+  grid.add_widget (m_control_widget, 49, height / 8 - cw_height - 1, 43, cw_height);
 }
 
 void

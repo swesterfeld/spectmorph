@@ -22,27 +22,33 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
 
   int voffset = 4;
 
-  volume_slider = new Slider (this, 0);
-  volume_value_label = new Label (this, "");
-  midi_led = new Led (this, false);
+  if (f == ALL_WIDGETS)
+    {
+      volume_slider = new Slider (this, 0);
+      volume_value_label = new Label (this, "");
+      midi_led = new Led (this, false);
 
-  connect (volume_slider->signal_value_changed, this, &MorphPlanControl::on_volume_changed);
+      connect (volume_slider->signal_value_changed, this, &MorphPlanControl::on_volume_changed);
 
-  grid.add_widget (new Label (this, "Volume"), 2, voffset, 7, 2);
-  grid.add_widget (volume_slider, 8, voffset, 23, 2);
-  grid.add_widget (volume_value_label, 32, voffset, 7, 2);
-  grid.add_widget (midi_led, 39, voffset, 2, 2);
+      grid.add_widget (new Label (this, "Volume"), 2, voffset, 7, 2);
+      grid.add_widget (volume_slider, 8, voffset, 23, 2);
+      grid.add_widget (volume_value_label, 32, voffset, 7, 2);
+      grid.add_widget (midi_led, 39, voffset, 2, 2);
 
-  voffset += 2;
+      // start at -6 dB
+      set_volume (-6.0);
 
-  // start at -6 dB
-  set_volume (-6.0);
+      // initial label
+      on_volume_changed (volume_slider->value);
 
-  // initial label
-  on_volume_changed (volume_slider->value);
+      voffset += 2;
+    }
 
   inst_status = new Label (this, "");
   grid.add_widget (inst_status, 2, voffset, 40, 2);
+
+  voffset += 2;
+  m_view_height = voffset + 1;
 
   connect (plan->signal_index_changed, this, &MorphPlanControl::on_index_changed);
 
@@ -52,12 +58,16 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
 void
 MorphPlanControl::set_volume (double v_db)
 {
+  g_return_if_fail (volume_slider);
+
   volume_slider->value = (v_db + 48) / 60; // map [-48:12] -> [0:1]
 }
 
 void
 MorphPlanControl::on_volume_changed (double new_volume)
 {
+  g_return_if_fail (volume_value_label);
+
   double new_volume_f = new_volume * 60 - 48; // map [0:1] -> [-48:12]
   volume_value_label->text = string_locale_printf ("%.1f dB", new_volume_f);
 
@@ -67,6 +77,8 @@ MorphPlanControl::on_volume_changed (double new_volume)
 void
 MorphPlanControl::set_led (bool on)
 {
+  g_return_if_fail (midi_led);
+
   midi_led->set_on (on);
 }
 
@@ -123,4 +135,8 @@ MorphPlanControl::on_index_changed()
   inst_status->text = text;
 }
 
-
+double
+MorphPlanControl::view_height()
+{
+  return m_view_height;
+}
