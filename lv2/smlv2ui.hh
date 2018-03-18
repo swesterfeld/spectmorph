@@ -21,7 +21,6 @@ public:
   ~LV2UI();
 
   MorphPlanWindow      *window;
-  MorphPlanControl     *control_widget;
   MorphPlanPtr          morph_plan;
 
   LV2_Atom_Forge        forge;

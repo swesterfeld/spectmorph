@@ -46,9 +46,8 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
   morph_plan (new MorphPlan ())
 {
   window = new MorphPlanWindow ("SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan);
-  control_widget = window->add_control_widget();
 
-  connect (control_widget->signal_volume_changed, this, &LV2UI::on_volume_changed);
+  connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
 
@@ -69,8 +68,6 @@ LV2UI::on_update_window_size()
 
 LV2UI::~LV2UI()
 {
-  control_widget = nullptr;
-
   delete window;
   window = nullptr;
 }
@@ -222,9 +219,9 @@ LV2UI::port_event (uint32_t     port_index,
                   morph_plan->set_plan_str (current_plan);
                 }
               if (volume_ptr)
-                control_widget->set_volume (*volume_ptr);
+                window->control_widget()->set_volume (*volume_ptr);
               if (led_ptr)
-                control_widget->set_led (*led_ptr);
+                window->control_widget()->set_led (*led_ptr);
             }
         }
     }
