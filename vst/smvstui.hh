@@ -18,7 +18,6 @@ class VstUI : public SignalReceiver
 {
   ERect                 rectangle;
   MorphPlanWindow      *widget;
-  MorphPlanControl     *control_widget;
   MorphPlanPtr          morph_plan;
   VstPlugin            *plugin;
 

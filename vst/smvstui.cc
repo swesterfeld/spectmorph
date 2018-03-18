@@ -13,7 +13,6 @@ using std::vector;
 
 VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   widget (nullptr),
-  control_widget (nullptr),
   morph_plan (plan),
   plugin (plugin)
 {
@@ -26,9 +25,8 @@ VstUI::open (PuglNativeWindow win_id)
   widget = new MorphPlanWindow ("SpectMorph VST", win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
-  control_widget = widget->add_control_widget();
-  control_widget->set_volume (plugin->volume());
-  connect (control_widget->signal_volume_changed, this, &VstUI::on_volume_changed);
+  widget->control_widget()->set_volume (plugin->volume());
+  connect (widget->control_widget()->signal_volume_changed, this, &VstUI::on_volume_changed);
 
   widget->show();
 
@@ -55,8 +53,6 @@ VstUI::getRect (ERect** rect)
 void
 VstUI::close()
 {
-  control_widget = nullptr;
-
   delete widget;
   widget = nullptr;
 }
@@ -64,11 +60,11 @@ VstUI::close()
 void
 VstUI::idle()
 {
-  if (control_widget)
-    control_widget->set_led (plugin->voices_active());
-
   if (widget)
-    widget->process_events();
+    {
+      widget->control_widget()->set_led (plugin->voices_active());
+      widget->process_events();
+    }
 }
 
 void
@@ -165,6 +161,6 @@ VstUI::load_state (char *buffer)
   morph_plan->load (in, &params);
   delete in;
 
-  if (control_widget)
-    control_widget->set_volume (plugin->volume());
+  if (widget)
+    widget->control_widget()->set_volume (plugin->volume());
 }
