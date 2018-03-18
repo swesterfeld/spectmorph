@@ -40,5 +40,7 @@ testbesseli0
 testadsr
 testadsrdecay
 testmidisynth
+testsignal
+teststrformat
 .libs
 .deps
