@@ -14,5 +14,6 @@ stamp-h1
 ChangeLog
 spectmorph.pc
 spectmorphgui.pc
+spectmorphglui.pc
 html
 latex
