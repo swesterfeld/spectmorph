@@ -70,26 +70,15 @@ AC_DEFUN([AC_BSE_REQUIREMENTS],
     AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
 ])
 dnl
-dnl libqt4 is not supported in any way; things will break if you try to build against Qt4
-dnl
-AC_DEFUN([AC_QT4_REQUIREMENTS],
-[
-    PKG_CHECK_MODULES(QT, [QtCore >= 4.0.0 QtGui >= 4.0.0],[:],[
-      AC_MSG_ERROR([You need to install Qt4 to build this package.])
-    ])
-    QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
-    AC_SUBST(QT_CFLAGS)
-    AC_SUBST(QT_LIBS)
-    MOC=`pkg-config --variable moc_location QtCore`
-    AC_SUBST(MOC)
-])
-dnl
 dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
 [
     PKG_CHECK_MODULES(QTCORE, [Qt5Core >= 5.0.0],[:],[
-      AC_MSG_ERROR([You need to install Qt5 to build this package.])
+      AC_MSG_ERROR([You need to install Qt5 to build this package.
+
+You can manually disable Qt5 using --without-qt (in this case some tools will not be built).
+      ])
     ])
     PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
       AC_MSG_ERROR([You need to install Qt5 to build this package.])
@@ -278,6 +267,16 @@ fi
 AM_CONDITIONAL([COND_WITH_JACK], [test "x$with_jack" != "xno"])
 dnl -------------------------------------------------------------------------
 
+dnl -------------- qt support can be disabled manually ----------------------
+AC_ARG_WITH([qt], [AS_HELP_STRING([--with-qt], [build tools which need Qt5])])
+if test "x$with_qt" != "xno"; then
+  dnl this check will abort if Qt5 is not found
+  AC_QT_REQUIREMENTS
+  with_qt=yes
+fi
+AM_CONDITIONAL([COND_WITH_QT], [test "x$with_qt" != "xno"])
+dnl -------------------------------------------------------------------------
+
 dnl detect host os
 AC_CANONICAL_HOST
 
@@ -312,7 +311,6 @@ BOOST_NUMERIC_UBLAS
 
 AC_AO_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
-AC_QT_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
@@ -392,6 +390,7 @@ echo "$PACKAGE_NAME $PACKAGE_VERSION"
 echo "---------------------------------------------------------------------------"
 echo "  LV2 plug-in support  . .: $with_lv2"
 echo "  JACK support   . . . . .: $with_jack"
+echo "  Qt5 available  . . . . .: $with_qt"
 echo "  Install prefix . . . . .: $prefix"
 if test "x$with_beast" = "xyes"; then
   echo
