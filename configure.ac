@@ -379,7 +379,7 @@ AC_CONFIG_FILES([Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile
-tools/sminstbuilder spectmorph.pc spectmorphgui.pc lv2/spectmorph.ttl
+tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT

@@ -6,7 +6,6 @@ includedir=@includedir@
 
 Name: SpectMorph
 Description: SpectMorph sound morphing library
-Requires: Qt5Core
 Version: @VERSION@
 Libs: -L${libdir} -lspectmorph
 Cflags: -I${includedir}/spectmorph/smcore

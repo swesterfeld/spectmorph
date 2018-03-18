@@ -16,7 +16,7 @@ endif
 EXTRA_DIST += DESIGN README.md TODO Doxyfile
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = spectmorph.pc spectmorphgui.pc
+pkgconfig_DATA = spectmorph.pc spectmorphgui.pc spectmorphglui.pc
 $(pkgconfig_DATA): $(top_builddir)/config.status
-CLEANFILES += spectmorph.pc spectmorphgui.pc
-EXTRA_DIST += spectmorph.pc.in spectmorphgui.pc.in
+CLEANFILES += spectmorph.pc spectmorphgui.pc spectmorphglui.pc
+EXTRA_DIST += spectmorph.pc.in spectmorphgui.pc.in spectmorphglui.pc.in
