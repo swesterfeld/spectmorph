@@ -376,7 +376,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 ])
 
 AC_CONFIG_FILES([Makefile
-lib/Makefile gui/Makefile src/Makefile tools/Makefile python/Makefile tests/Makefile docs/Makefile
+lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
