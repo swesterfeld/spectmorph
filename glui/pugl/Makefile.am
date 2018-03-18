@@ -19,3 +19,6 @@ libspectmorphpugl_la_CFLAGS = $(AM_CFLAGS) $(PUGL_CFLAGS)
 libspectmorphpugl_la_OBJCFLAGS = $(AM_OBJCFLAGS) $(PUGL_CFLAGS)
 libspectmorphpugl_la_CXXFLAGS = $(AM_CXXFLAGS) $(PUGL_CFLAGS)
 libspectmorphpugl_la_LIBTOOLFLAGS = --tag CC
+
+smpuglincludedir = $(includedir)/spectmorph/smglui/pugl
+smpuglinclude_HEADERS = $(SMHDRS)
