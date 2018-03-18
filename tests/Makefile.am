@@ -1,12 +1,12 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src $(QTCORE_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
 
 ASCII2WAV = $(top_builddir)/tools/ascii2wav
 SINSIGNAL = $(top_srcdir)/python/sinsignal.py
 SMRESVALUE = $(top_srcdir)/tests/smresvalue.sh
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(QTCORE_LIBS)
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
         smresvalue.sh tune-test.sh test-norm.sh
@@ -17,7 +17,7 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
-        testlsfperf testmutexperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
+        testlsfperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
         testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat
 
@@ -99,9 +99,6 @@ testlsfperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlsfplot_SOURCES = testlsfplot.cc
 testlsfplot_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
-testmutexperf_SOURCES = testmutexperf.cc
-testmutexperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testsortfreqs_SOURCES = testsortfreqs.cc
 testsortfreqs_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
