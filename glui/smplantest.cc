@@ -30,9 +30,8 @@ main (int argc, char **argv)
 
   MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan);
 
-  MorphPlanControl *control_widget = window.add_control_widget();
-  control_widget->set_volume (-6);
-  window.connect (control_widget->signal_volume_changed, [](double v) { printf ("volume=%f\n", v); });
+  window.control_widget()->set_volume (-6);
+  window.connect (window.control_widget()->signal_volume_changed, [](double v) { printf ("volume=%f\n", v); });
 
   window.show();
 

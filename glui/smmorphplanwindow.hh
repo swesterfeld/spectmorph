@@ -33,14 +33,15 @@ public:
     // FIXME update_window_title();
   }
 
-  MorphPlanWindow (const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
+  MorphPlanWindow (const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
+                   MorphPlanControl::Features f = MorphPlanControl::ALL_WIDGETS);
 
   void fill_preset_menu (Menu *menu);
   void fill_zoom_menu (Menu *menu);
   bool load (const std::string& filename);
   void on_load_preset (const std::string& rel_filename);
 
-  MorphPlanControl *add_control_widget (MorphPlanControl::Features f = MorphPlanControl::ALL_WIDGETS);
+  MorphPlanControl *control_widget();
 
   MorphOperator *where (MorphOperator *op, double y);
 

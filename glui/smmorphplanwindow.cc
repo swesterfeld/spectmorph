@@ -8,7 +8,8 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
+MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
+                                  MorphPlanControl::Features f) :
   Window (title, 744, 560, win_id, resize),
   m_morph_plan (morph_plan)
 {
@@ -55,6 +56,10 @@ MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, 
   };
   connect (m_morph_plan_view->signal_widget_size_changed, update_mp_size);
   update_mp_size();
+
+  /* control widget */
+  m_control_widget = new MorphPlanControl (this, m_morph_plan, f);
+  grid.add_widget (m_control_widget, 49, height / 8 - 10, 43, 9);
 }
 
 void
@@ -233,11 +238,7 @@ MorphPlanWindow::on_about_clicked()
 }
 
 MorphPlanControl *
-MorphPlanWindow::add_control_widget (MorphPlanControl::Features f)
+MorphPlanWindow::control_widget()
 {
-  FixedGrid grid;
-  m_control_widget = new MorphPlanControl (this, m_morph_plan, f);
-
-  grid.add_widget (m_control_widget, 49, height / 8 - 10, 43, 9);
   return m_control_widget;
 }
