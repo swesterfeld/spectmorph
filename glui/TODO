@@ -27,3 +27,4 @@ windows:
  - keyboard input broken
  - dpi scaling
  - led sometimes wrong
+ - USER_DATA_DIR should point to a useful location
