@@ -10,7 +10,6 @@ widgets:
  - led
 
 general:
- - scaling save/restore
  - message box for error messages *
  - preserve scroll position on fold/...
  - recover after loading junk
@@ -27,4 +26,3 @@ windows:
  - keyboard input broken
  - dpi scaling
  - led sometimes wrong
- - USER_DATA_DIR should point to a useful location
