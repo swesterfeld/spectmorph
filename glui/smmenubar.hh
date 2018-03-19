@@ -23,6 +23,7 @@ struct Menu
 
   std::string title;
   double sx, ex;
+
   MenuItem *
   add_item (const std::string& text)
   {
@@ -30,6 +31,11 @@ struct Menu
     items.emplace_back (m = new MenuItem());
     m->text = text;
     return m;
+  }
+  void
+  clear()
+  {
+    items.clear();
   }
 };
 
