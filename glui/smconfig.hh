@@ -12,6 +12,7 @@ namespace SpectMorph
 class Config
 {
   int m_zoom = 100;
+  int m_auto_redraw = 1;
 
   std::string
   get_config_filename()
@@ -28,10 +29,14 @@ public:
 
     while (cfg_parser.next())
       {
-        int z;
-        if (cfg_parser.command ("zoom", z))
+        int i;
+        if (cfg_parser.command ("zoom", i))
           {
-            m_zoom = z;
+            m_zoom = i;
+          }
+        else if (cfg_parser.command ("auto_redraw", i))
+          {
+            m_auto_redraw = i;
           }
         else
           {
@@ -52,6 +57,17 @@ public:
     m_zoom = z;
   }
 
+  bool
+  auto_redraw()
+  {
+    return m_auto_redraw > 0;
+  }
+
+  void
+  set_auto_redraw (bool b)
+  {
+    m_auto_redraw = b ? 1 : 0;
+  }
   void
   store()
   {
@@ -63,6 +79,7 @@ public:
     fprintf (file, "# this file is automatically updated by SpectMorph\n");
     fprintf (file, "# it can be manually edited, however, if you do that, be careful\n");
     fprintf (file, "zoom %d\n", m_zoom);
+    fprintf (file, "auto_redraw %d\n", m_auto_redraw);
 
     fclose (file);
   }

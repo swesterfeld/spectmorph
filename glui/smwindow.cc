@@ -82,6 +82,7 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   Config cfg;
 
   global_scale = cfg.zoom() / 100.0;
+  auto_redraw = cfg.auto_redraw();
 
   view = puglInit (nullptr, nullptr);
 
@@ -353,7 +354,8 @@ Window::on_event (const PuglEvent* event)
         mouse_widget = find_widget_xy (ex, ey);
         mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
 
-        puglPostRedisplay (view);
+        if (auto_redraw)
+          update();
         break;
       case PUGL_BUTTON_RELEASE:
         ex = event->button.x / global_scale;
@@ -364,7 +366,8 @@ Window::on_event (const PuglEvent* event)
             w->mouse_release (ex - w->abs_x(), ey - w->abs_y());
             mouse_widget = nullptr;
           }
-        puglPostRedisplay (view);
+        if (auto_redraw)
+          update();
         break;
       case PUGL_MOTION_NOTIFY:
         ex = event->motion.x / global_scale;
@@ -386,7 +389,8 @@ Window::on_event (const PuglEvent* event)
               }
           }
         current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
-        puglPostRedisplay (view);
+        if (auto_redraw)
+          update();
         break;
       case PUGL_SCROLL:
         ex = event->scroll.x / global_scale;
@@ -397,7 +401,8 @@ Window::on_event (const PuglEvent* event)
           current_widget = find_widget_xy (ex, ey);
 
         current_widget->scroll (event->scroll.dx, event->scroll.dy);
-        puglPostRedisplay (view);
+        if (auto_redraw)
+          update();
         break;
       case PUGL_KEY_PRESS:
         if (keyboard_focus_widget)
@@ -407,7 +412,8 @@ Window::on_event (const PuglEvent* event)
             if (event->key.character == 'g')
               draw_grid = !draw_grid;
           }
-        update();
+        if (auto_redraw)
+          update();
         break;
       case PUGL_CLOSE:
         if (m_close_callback)

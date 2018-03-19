@@ -29,6 +29,7 @@ protected:
   Widget                   *keyboard_focus_widget = nullptr;
   Widget                   *dialog_widget = nullptr;
   double                    global_scale;
+  bool                      auto_redraw;
 
   std::function<void()>     m_close_callback;
 
