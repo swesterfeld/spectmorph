@@ -67,7 +67,6 @@ lv2:
 windows:
 - relocatable plugin installation
 - symlink to install location
-- place fftw wisdom to better location
 - support mmap?
 - installer
 - build script that builds deps and then main

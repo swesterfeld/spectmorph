@@ -194,9 +194,8 @@ FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
 static string
 wisdom_filename()
 {
-  const char *homedir = g_get_home_dir();
   const char *hostname = g_get_host_name();
-  return homedir + string ("/.spectmorph_fftw_wisdom_") + hostname;
+  return sm_get_user_dir (USER_DIR_DATA) + string ("/.fftw_wisdom_") + hostname;
 }
 
 static void
