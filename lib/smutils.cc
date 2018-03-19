@@ -101,6 +101,9 @@ struct ScopedPosixLocale /* dummy - no locale support under windows */
 {
   ScopedPosixLocale() {}
 };
+
+#include "windows.h"
+#include "shlobj.h"
 #endif
 
 using std::string;
@@ -192,17 +195,34 @@ sm_get_install_dir (InstallDir p)
   return "";
 }
 
+#ifdef SM_OS_WINDOWS
+static string
+dot_spectmorph_dir()
+{
+  /* Windows: use local app data dir */
+  char buffer[MAX_PATH + 1];
+  if (SHGetSpecialFolderPath (NULL, buffer, CSIDL_LOCAL_APPDATA, true))
+    return string (buffer) + "/SpectMorph";
+  else
+    return "";
+}
+#else
+static string
+dot_spectmorph_dir()
+{
+  /* Linux/macOS */
+  const char *home = g_get_home_dir();
+  return home ? string (home) + "/.spectmorph" : "";
+}
+#endif
+
 std::string
 sm_get_user_dir (UserDir p)
 {
-  char *home = getenv ("HOME");
-  if (!home)
-    return "";
-
   switch (p)
     {
-      case USER_DIR_INSTRUMENTS: return string (home) + "/.spectmorph/instruments";
-      case USER_DIR_DATA:        return string (home) + "/.spectmorph";
+      case USER_DIR_INSTRUMENTS: return dot_spectmorph_dir() + "/instruments";
+      case USER_DIR_DATA:        return dot_spectmorph_dir();
     }
   return "";
 }
