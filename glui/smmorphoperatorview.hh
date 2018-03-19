@@ -113,7 +113,7 @@ public:
   void
   update_body_visible()
   {
-    fold_button->symbol = m_op->folded() ? '>' : 'v';
+    fold_button->set_symbol (m_op->folded() ? '>' : 'v');
     body_widget->set_visible (!m_op->folded());
   }
   virtual double

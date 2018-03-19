@@ -8,13 +8,14 @@
 namespace SpectMorph
 {
 
-struct CheckBox : public Widget
+class CheckBox : public Widget
 {
   std::string text;
   bool highlight = false;
   bool checked = false;
   double end_x = 0;
 
+public:
   Signal<bool> signal_toggled;
 
   CheckBox (Widget *parent, const std::string& text) :
@@ -25,7 +26,11 @@ struct CheckBox : public Widget
   void
   set_checked (bool new_checked)
   {
-    checked = new_checked;
+    if (checked != new_checked)
+      {
+        checked = new_checked;
+        update();
+      }
   }
   void
   draw (cairo_t *cr) override
@@ -62,7 +67,13 @@ struct CheckBox : public Widget
   void
   motion (double x, double y) override
   {
-    highlight = x < end_x;
+    bool new_highlight = x < end_x;
+
+    if (new_highlight != highlight)
+      {
+        highlight = new_highlight;
+        update();
+      }
   }
   void
   mouse_press (double x, double y) override
@@ -77,6 +88,7 @@ struct CheckBox : public Widget
   leave_event() override
   {
     highlight = false;
+    update();
   }
 };
 
