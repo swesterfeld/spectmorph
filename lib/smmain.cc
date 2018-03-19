@@ -3,6 +3,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smmath.hh"
+#include "smutils.hh"
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
@@ -11,6 +12,8 @@
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsemain.hh>
 #endif
+
+using std::string;
 
 namespace SpectMorph
 {
@@ -43,6 +46,10 @@ void
 sm_init_plugin()
 {
   assert (sm_init_done_flag == false);
+
+  /* ensure that user data dir exists */
+  string user_data_dir = sm_get_user_dir (USER_DIR_DATA);
+  g_mkdir_with_parents (user_data_dir.c_str(), 0775);
 
   FFT::load_wisdom();
   int_sincos_init();
