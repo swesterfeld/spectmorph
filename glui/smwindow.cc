@@ -7,6 +7,7 @@
 #include "smwindow.hh"
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
+#include "smconfig.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>
 #include <unistd.h>
@@ -74,13 +75,13 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
   window->on_resize (width, height);
 }
 
-static double static_FIXME_scale = 1.7;
-
 Window::Window (const string& title, int width, int height, PuglNativeWindow win_id, bool resize) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
-  global_scale = static_FIXME_scale;
+  Config cfg;
+
+  global_scale = cfg.zoom() / 100.0;
 
   view = puglInit (nullptr, nullptr);
 
@@ -563,7 +564,12 @@ void
 Window::set_gui_scaling (double s)
 {
   global_scale = s;
-  static_FIXME_scale = s; /* restart with this gui scaling next time */
+
+  /* restart with this gui scaling next time */
+  Config cfg;
+
+  cfg.set_zoom (sm_round_positive (s * 100));
+  cfg.store();
 
   puglPostResize (view);
 
