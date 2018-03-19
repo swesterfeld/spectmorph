@@ -202,6 +202,7 @@ sm_get_user_dir (UserDir p)
   switch (p)
     {
       case USER_DIR_INSTRUMENTS: return string (home) + "/.spectmorph/instruments";
+      case USER_DIR_DATA:        return string (home) + "/.spectmorph";
     }
   return "";
 }

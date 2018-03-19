@@ -41,7 +41,8 @@ void        sm_set_pkg_data_dir (const std::string& data_dir);
 
 enum UserDir
 {
-  USER_DIR_INSTRUMENTS
+  USER_DIR_INSTRUMENTS,
+  USER_DIR_DATA
 };
 
 std::string sm_get_user_dir (UserDir p);
