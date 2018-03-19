@@ -13,13 +13,16 @@ class Config
   int m_zoom = 100;
 
   std::string
+  get_config_dir()
+  {
+    std::string dir = g_get_home_dir();
+
+    return dir + "/.spectmorph";
+  }
+  std::string
   get_config_filename()
   {
-    std::string filename = g_get_home_dir();
-
-    filename += "/.spectmorph/config";
-
-    return filename;
+    return get_config_dir() + "/config";
   }
 public:
   Config()
@@ -58,6 +61,8 @@ public:
   void
   store()
   {
+    g_mkdir_with_parents (get_config_dir().c_str(), 0775);
+
     FILE *file = fopen (get_config_filename().c_str(), "w");
 
     if (!file)
