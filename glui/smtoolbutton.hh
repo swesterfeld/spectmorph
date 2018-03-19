@@ -8,12 +8,13 @@
 namespace SpectMorph
 {
 
-struct ToolButton : public Widget
+class ToolButton : public Widget
 {
   bool        highlight = false;
   bool        pressed = false;
   char        symbol;
 
+public:
   Signal<> signal_clicked;
 
   ToolButton (Widget *parent, char symbol = 0) :
@@ -93,6 +94,12 @@ struct ToolButton : public Widget
   {
     highlight = false;
     pressed = false;
+    update();
+  }
+  void
+  set_symbol (char s)
+  {
+    symbol = s;
     update();
   }
 };
