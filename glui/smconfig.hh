@@ -14,14 +14,9 @@ class Config
   int m_zoom = 100;
 
   std::string
-  get_config_dir()
-  {
-    return sm_get_user_dir (USER_DIR_DATA);
-  }
-  std::string
   get_config_filename()
   {
-    return get_config_dir() + "/config";
+    return sm_get_user_dir (USER_DIR_DATA) + "/config";
   }
 public:
   Config()
@@ -60,8 +55,6 @@ public:
   void
   store()
   {
-    g_mkdir_with_parents (get_config_dir().c_str(), 0775);
-
     FILE *file = fopen (get_config_filename().c_str(), "w");
 
     if (!file)
