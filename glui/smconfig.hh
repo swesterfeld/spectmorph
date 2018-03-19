@@ -4,6 +4,7 @@
 #define SPECTMORPH_CONFIG_HH
 
 #include "smmicroconf.hh"
+#include "smutils.hh"
 
 namespace SpectMorph
 {
@@ -15,9 +16,7 @@ class Config
   std::string
   get_config_dir()
   {
-    std::string dir = g_get_home_dir();
-
-    return dir + "/.spectmorph";
+    return sm_get_user_dir (USER_DIR_DATA);
   }
   std::string
   get_config_filename()
