@@ -69,11 +69,13 @@ struct ToolButton : public Widget
   enter_event() override
   {
     highlight = true;
+    update();
   }
   void
   mouse_press (double x, double y) override
   {
     pressed = true;
+    update();
   }
   void
   mouse_release (double x, double y) override
@@ -82,12 +84,16 @@ struct ToolButton : public Widget
       {
         signal_clicked();
       }
+
+    pressed = false;
+    update();
   }
   void
   leave_event() override
   {
     highlight = false;
     pressed = false;
+    update();
   }
 };
 
