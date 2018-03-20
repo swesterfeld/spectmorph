@@ -36,6 +36,7 @@ public:
   set_int_value (int ivalue)
   {
     m_value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
+    update();
   }
   void
   draw (cairo_t *cr) override
@@ -96,33 +97,41 @@ public:
   motion (double x, double y) override
   {
     if (mouse_down)
-      slider_value_from_x (x);
+      {
+        slider_value_from_x (x);
+        update();
+      }
   }
   void
   mouse_press (double x, double y) override
   {
     slider_value_from_x (x);
     mouse_down = true;
+    update();
   }
   void
   mouse_release (double x, double y) override
   {
     mouse_down = false;
+    update();
   }
   void
   enter_event() override
   {
     highlight = true;
+    update();
   }
   void
   leave_event() override
   {
     highlight = false;
+    update();
   }
   void
   set_value (double v)
   {
     m_value = v;
+    update();
   }
   double
   value() const
