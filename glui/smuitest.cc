@@ -145,7 +145,7 @@ public:
 
         auto call_back = [=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; };
         connect (slider->signal_value_changed, call_back);
-        call_back (slider->value);
+        call_back (slider->value());
       }
     CheckBox *box1 = new CheckBox (this, "Enable Sine Synthesis");
     grid.add_widget (box1, 3, yoffset, 30, 2);

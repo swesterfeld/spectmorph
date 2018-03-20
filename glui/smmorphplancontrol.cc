@@ -39,7 +39,7 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
       set_volume (-6.0);
 
       // initial label
-      on_volume_changed (volume_slider->value);
+      on_volume_changed (volume_slider->value());
 
       voffset += 2;
     }
@@ -60,7 +60,7 @@ MorphPlanControl::set_volume (double v_db)
 {
   g_return_if_fail (volume_slider);
 
-  volume_slider->value = (v_db + 48) / 60; // map [-48:12] -> [0:1]
+  volume_slider->set_value ((v_db + 48) / 60); // map [-48:12] -> [0:1]
 }
 
 void

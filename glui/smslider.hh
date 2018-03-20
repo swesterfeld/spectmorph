@@ -9,19 +9,21 @@
 namespace SpectMorph
 {
 
-struct Slider : public Widget
+class Slider : public Widget
 {
-  double value;
+  double m_value;
   bool highlight = false;
   bool mouse_down = false;
   int int_range_min = 0;
   int int_range_max = 0;
+
+public:
   Signal<double> signal_value_changed;
   Signal<int>    signal_int_value_changed;
 
   Slider (Widget *parent, double value) :
     Widget (parent),
-    value (value)
+    m_value (value)
   {
   }
   void
@@ -33,7 +35,7 @@ struct Slider : public Widget
   void
   set_int_value (int ivalue)
   {
-    value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
+    m_value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
   }
   void
   draw (cairo_t *cr) override
@@ -42,7 +44,7 @@ struct Slider : public Widget
 
     double H = 6; // height of slider thing
     double C = 6;
-    double value_pos = C + (width - C * 2) * value;
+    double value_pos = C + (width - C * 2) * m_value;
 
     Color slider_color_l = ThemeColor::SLIDER;
     if (enabled())
@@ -77,18 +79,18 @@ struct Slider : public Widget
   slider_value_from_x (double x)
   {
     double C = 6;
-    value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
+    m_value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
 
     /* optional: only allow discrete integer values */
     if (int_range_min != int_range_max)
       {
-        int ivalue = int_range_min + sm_round_positive (value * (int_range_max - int_range_min));
-        value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
+        int ivalue = int_range_min + sm_round_positive (m_value * (int_range_max - int_range_min));
+        m_value = double (ivalue - int_range_min) / (int_range_max - int_range_min);
 
         signal_int_value_changed (ivalue);
       }
 
-    signal_value_changed (value);
+    signal_value_changed (m_value);
   }
   void
   motion (double x, double y) override
@@ -116,6 +118,16 @@ struct Slider : public Widget
   leave_event() override
   {
     highlight = false;
+  }
+  void
+  set_value (double v)
+  {
+    m_value = v;
+  }
+  double
+  value() const
+  {
+    return m_value;
   }
 };
 

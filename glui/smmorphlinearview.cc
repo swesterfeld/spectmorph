@@ -74,7 +74,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
 
-  on_morphing_changed (morphing_slider->value);
+  on_morphing_changed (morphing_slider->value());
   update_slider();
 
   // FLAG: DB LINEAR

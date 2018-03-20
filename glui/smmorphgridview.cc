@@ -61,9 +61,9 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
 
   /* restore slider value from operator */
   if (ctl_xy == CONTROL_X)
-    slider->value = (morph_grid->x_morphing() + 1) / 2;
+    slider->set_value ((morph_grid->x_morphing() + 1) / 2);
   else
-    slider->value = (morph_grid->y_morphing() + 1) / 2;
+    slider->set_value ((morph_grid->y_morphing() + 1) / 2);
 
   connect (slider->signal_value_changed, this, &MorphGridControlUI::on_slider_changed);
   connect (combobox->signal_item_changed, this, &MorphGridControlUI::on_combobox_changed);
@@ -222,8 +222,8 @@ MorphGridView::on_plan_changed()
 {
   width_label->text = string_printf ("%d", morph_grid->width());
   height_label->text = string_printf ("%d", morph_grid->height());
-  x_ui->slider->value = (morph_grid->x_morphing() + 1) / 2;
-  y_ui->slider->value = (morph_grid->y_morphing() + 1) / 2;
+  x_ui->slider->set_value ((morph_grid->x_morphing() + 1) / 2);
+  y_ui->slider->set_value ((morph_grid->y_morphing() + 1) / 2);
   x_ui->label->text = string_locale_printf ("%.2f", morph_grid->x_morphing());
   y_ui->label->text = string_locale_printf ("%.2f", morph_grid->y_morphing());
 }
@@ -282,7 +282,7 @@ MorphGridView::on_selection_changed()
         {
           op_combobox->set_active (node.op);
         }
-      delta_db_slider->value = (node.delta_db / 48 + 1) / 2;
+      delta_db_slider->set_value ((node.delta_db / 48 + 1) / 2);
     }
 }
 
