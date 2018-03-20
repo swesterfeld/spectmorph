@@ -56,6 +56,8 @@ struct MenuBar : public Widget
     Menu *menu = new Menu();
     menu->title = title;
     menus.emplace_back (menu);
+
+    update();
     return menu;
   }
   void
@@ -139,6 +141,8 @@ struct MenuBar : public Widget
   void
   motion (double x, double y) override
   {
+    const int old_menu = selected_menu, old_menu_item = selected_menu_item;
+
     selected_menu_item = -1;
 
     for (size_t i = 0; i < menus.size(); i++)
@@ -159,6 +163,9 @@ struct MenuBar : public Widget
               selected_menu_item = i;
           }
       }
+
+    if (old_menu != selected_menu || old_menu_item != selected_menu_item)
+      update();
   }
   void
   mouse_press (double mx, double my) override
@@ -174,6 +181,7 @@ struct MenuBar : public Widget
         window()->set_menu_widget (this);
         menu_open = true;
       }
+    update();
   }
   void
   mouse_release (double mx, double my) override
@@ -188,12 +196,15 @@ struct MenuBar : public Widget
         menu_open = false;
         selected_menu = -1;
         selected_menu_item = -1;
+
+        update();
       }
   }
   void
   leave_event() override
   {
     selected_menu = -1;
+    update();
   }
 };
 
