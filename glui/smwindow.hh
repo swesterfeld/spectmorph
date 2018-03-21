@@ -31,6 +31,7 @@ protected:
   double                    global_scale;
   bool                      auto_redraw;
   Rect                      update_region;
+  bool                      update_full_redraw = false;
 
   std::function<void()>     m_close_callback;
 

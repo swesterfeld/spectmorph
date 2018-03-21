@@ -28,7 +28,6 @@ private:
   cairo_surface_t *surface;
   int  m_width;
   int  m_height;
-  bool m_first_frame = true;
 
   vector<uint32> tmp_buffer;
 
@@ -112,8 +111,6 @@ public:
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_TEXTURE_RECTANGLE_ARB);
     glPopMatrix();
-
-    m_first_frame = false;
   }
   int
   width()
@@ -124,11 +121,6 @@ public:
   height()
   {
     return m_height;
-  }
-  bool
-  first_frame()
-  {
-    return m_first_frame;
   }
 };
 
@@ -181,6 +173,7 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   puglSetResizeFunc (view, ::on_resize);
 
   cairo_gl.reset (new CairoGL (scaled_width, scaled_height));
+  update_full();
 
   puglEnterContext (view);
   glEnable (GL_DEPTH_TEST);
@@ -265,6 +258,14 @@ Window::on_display()
 {
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  cairo_save (cairo_gl->cr);
+  if (!update_full_redraw)
+    {
+      // setup clipping - only need to redraw part of the screen
+      cairo_rectangle (cairo_gl->cr, update_region.x() * global_scale, update_region.y() * global_scale, update_region.width() * global_scale, update_region.height() * global_scale);
+      cairo_clip (cairo_gl->cr);
+    }
+
   for (int layer = 0; layer < 3; layer++)
     {
       if (dialog_widget && layer == 2) /* draw rest of ui darker if dialog is open */
@@ -335,8 +336,9 @@ Window::on_display()
       cairo_stroke (cr);
       cairo_restore (cr);
     }
+  cairo_restore (cairo_gl->cr);
 
-  if (cairo_gl->first_frame()) // first frame is always a full redraw
+  if (update_full_redraw)
     {
       cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
     }
@@ -361,6 +363,7 @@ Window::on_display()
     }
   // clear update region (will be assigned by update[_full] before next redraw)
   update_region = Rect();
+  update_full_redraw = false;
 }
 
 void
@@ -524,6 +527,7 @@ Window::on_event (const PuglEvent* event)
         puglEnterContext (view);
         cairo_gl->configure();
         puglLeaveContext (view, false);
+        update_full();
         break;
       default:
         break;
@@ -595,9 +599,13 @@ Window::on_file_selected (const std::string& filename)
 }
 
 void
-Window::need_update (Widget *w)
+Window::need_update (Widget *widget)
 {
-  update_region = update_region.rect_union (w->abs_visible_rect());
+  if (widget)
+    update_region = update_region.rect_union (widget->abs_visible_rect());
+  else
+    update_full_redraw = true;
+
   puglPostRedisplay (view);
 }
 
