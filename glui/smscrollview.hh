@@ -104,9 +104,9 @@ public:
     scroll_widget->x = scroll_widget->y = 8;
 
     if (v_scroll_bar)
-      scroll_widget->y -= v_scroll_bar->pos * (scroll_widget->height + 16);
+      scroll_widget->y -= v_scroll_bar->pos() * (scroll_widget->height + 16);
     if (h_scroll_bar)
-      scroll_widget->x -= h_scroll_bar->pos * (scroll_widget->width + 16);
+      scroll_widget->x -= h_scroll_bar->pos() * (scroll_widget->width + 16);
   }
 };
 
