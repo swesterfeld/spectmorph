@@ -79,6 +79,7 @@ struct ComboBoxMenu : public Widget
               first_item = 0;
             if (first_item > int (items.size()) - items_per_page)
               first_item = items.size() - items_per_page;
+            update();
           });
       }
   }
@@ -120,7 +121,7 @@ struct ComboBoxMenu : public Widget
   motion (double x, double y) override
   {
     y -= px_starty;
-    selected_item = sm_bound<int> (0, first_item + y / 16, items.size() - 1);
+    int new_selected_item = sm_bound<int> (0, first_item + y / 16, items.size() - 1);
 
     int best_item = -1;
     for (int i = 0; i < int (items.size()); i++)
@@ -129,11 +130,16 @@ struct ComboBoxMenu : public Widget
           {
             if (best_item == -1)      // first non-headline item
               best_item = i;
-            if (i <= selected_item)   // close to selected item
+            if (i <= new_selected_item)   // close to selected item
               best_item = i;
           }
       }
-    selected_item = best_item;
+    new_selected_item = best_item;
+    if (new_selected_item != selected_item)
+      {
+        selected_item = new_selected_item;
+        update();
+      }
   }
   void
   scroll (double dx, double dy) override
@@ -175,6 +181,7 @@ public:
   set_text (const std::string& new_text)
   {
     m_text = new_text;
+    update();
   }
   std::string
   text() const
@@ -232,11 +239,13 @@ public:
   enter_event() override
   {
     highlight = true;
+    update();
   }
   void
   leave_event() override
   {
     highlight = false;
+    update();
   }
   void
   close_menu (const std::string& new_text)
