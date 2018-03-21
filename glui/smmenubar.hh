@@ -165,7 +165,11 @@ struct MenuBar : public Widget
       }
 
     if (old_menu != selected_menu || old_menu_item != selected_menu_item)
-      update();
+      {
+        update();
+        if (menu_open)
+          update_full();
+      }
   }
   void
   mouse_press (double mx, double my) override
@@ -181,7 +185,7 @@ struct MenuBar : public Widget
         window()->set_menu_widget (this);
         menu_open = true;
       }
-    update();
+    update_full();
   }
   void
   mouse_release (double mx, double my) override
@@ -197,7 +201,7 @@ struct MenuBar : public Widget
         selected_menu = -1;
         selected_menu_item = -1;
 
-        update();
+        update_full();
       }
   }
   void
