@@ -197,4 +197,5 @@ MorphGridWidget::on_plan_changed()
       morph_grid->set_selected_y (-1);
       signal_selection_changed();
     }
+  update();
 }
