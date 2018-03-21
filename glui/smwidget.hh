@@ -261,7 +261,11 @@ public:
   void
   set_enabled (bool e)
   {
+    if (e == m_enabled)
+      return;
+
     m_enabled = e;
+    update_with_children();
   }
   bool
   enabled() const
@@ -271,7 +275,11 @@ public:
   void
   set_visible (bool v)
   {
+    if (v == m_visible)
+      return;
+
     m_visible = v;
+    update_with_children();
   }
   bool
   visible() const
@@ -302,6 +310,7 @@ public:
 
   Rect   abs_visible_rect();
   void   update();
+  void   update_with_children();
   void   update_full();
 };
 

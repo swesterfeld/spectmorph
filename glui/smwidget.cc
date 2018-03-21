@@ -117,6 +117,16 @@ Widget::update()
 }
 
 void
+Widget::update_with_children()
+{
+  // recursively update this widget and all children
+  update();
+
+  for (auto c : children)
+    c->update_with_children();
+}
+
+void
 Widget::update_full()
 {
   Window *win = window();
