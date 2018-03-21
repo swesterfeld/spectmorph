@@ -81,13 +81,14 @@ public:
   void
   mouse_release (double x, double y) override
   {
-    if (pressed && x >= 0 && y >= 0 && x < width && y < height)
-      {
-        signal_clicked();
-      }
+    if (!pressed)
+      return;
 
     pressed = false;
     update();
+
+    if (x >= 0 && y >= 0 && x < width && y < height)
+      signal_clicked();  // this must be the last line, as deletion can occur afterwards
   }
   void
   leave_event() override
