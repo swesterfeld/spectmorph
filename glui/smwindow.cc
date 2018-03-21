@@ -26,14 +26,17 @@ struct SpectMorph::CairoGL
 private:
   PuglCairoGL pugl_cairo_gl;
   cairo_surface_t *surface;
-  int width;
-  int height;
+  int  m_width;
+  int  m_height;
+  bool m_first_frame = true;
+
+  vector<uint32> tmp_buffer;
 
 public:
   cairo_t *cr;
 
   CairoGL (int width, int height) :
-    width (width), height (height)
+    m_width (width), m_height (height)
   {
     memset (&pugl_cairo_gl, 0, sizeof (pugl_cairo_gl));
 
@@ -50,12 +53,82 @@ public:
   void
   configure()
   {
-    pugl_cairo_gl_configure (&pugl_cairo_gl, width, height);
+    pugl_cairo_gl_configure (&pugl_cairo_gl, m_width, m_height);
+
+    glTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA8,
+                  m_width, m_height, 0,
+                  GL_BGRA, GL_UNSIGNED_BYTE, pugl_cairo_gl.buffer);
   }
   void
-  draw()
+  draw (int x, int y, int w, int h)
   {
-    pugl_cairo_gl_draw (&pugl_cairo_gl, width, height);
+    (void) pugl_cairo_gl_draw; // reimplement this:
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glViewport(0, 0, m_width, m_height);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glPushMatrix();
+    glEnable(GL_TEXTURE_RECTANGLE_ARB);
+    glEnable(GL_TEXTURE_2D);
+
+    void *draw_buffer;
+    if (x == 0 && y == 0 && w == m_width && h == m_height)
+      {
+        // draw full frame
+        draw_buffer = pugl_cairo_gl.buffer;
+      }
+    else
+      {
+        uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
+        tmp_buffer.resize (w * h);
+
+        for (int by = 0; by < h; by++)
+          {
+            memcpy (&tmp_buffer[by * w], &src_buffer[(by + y) * m_width + x], w * 4);
+          }
+        draw_buffer = tmp_buffer.data();
+      }
+
+    glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
+                     x, y, w, h,
+                     GL_BGRA, GL_UNSIGNED_BYTE, draw_buffer);
+
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, (GLfloat)m_height);
+    glVertex2f(-1.0f, -1.0f);
+
+    glTexCoord2f((GLfloat)m_width, (GLfloat)m_height);
+    glVertex2f(1.0f, -1.0f);
+
+    glTexCoord2f((GLfloat)m_width, 0.0f);
+    glVertex2f(1.0f, 1.0f);
+
+    glTexCoord2f(0.0f, 0.0f);
+    glVertex2f(-1.0f, 1.0f);
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_TEXTURE_RECTANGLE_ARB);
+    glPopMatrix();
+
+    m_first_frame = false;
+  }
+  int
+  width()
+  {
+    return m_width;
+  }
+  int
+  height()
+  {
+    return m_height;
+  }
+  bool
+  first_frame()
+  {
+    return m_first_frame;
   }
 };
 
@@ -263,7 +336,9 @@ Window::on_display()
       cairo_restore (cr);
     }
 
-  cairo_gl->draw();
+  //if (cairo_gl->first_frame()) // first frame is always a full redraw
+
+  cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
 }
 
 void
