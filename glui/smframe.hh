@@ -8,10 +8,12 @@
 namespace SpectMorph
 {
 
-struct Frame : public Widget
+class Frame : public Widget
 {
-  Color frame_color = ThemeColor::FRAME;
+protected:
+  Color m_frame_color = ThemeColor::FRAME;
 
+public:
   Frame (Widget *parent)
     : Widget (parent)
   {
@@ -23,8 +25,17 @@ struct Frame : public Widget
     const double line_width = 1.5;
 
     DrawUtils du (cr);
-    du.round_box (0, 0, width, height, line_width, radius, frame_color, ThemeColor::OPERATOR_BG);
-}
+    du.round_box (0, 0, width, height, line_width, radius, m_frame_color, ThemeColor::OPERATOR_BG);
+  }
+  void
+  set_frame_color (Color color)
+  {
+    if (color == m_frame_color)
+      return;
+
+    m_frame_color = color;
+    update();
+  }
 };
 
 }

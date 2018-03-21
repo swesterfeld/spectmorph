@@ -180,6 +180,18 @@ public:
   void get_hsv (double *h, double *s, double *v);
   Color lighter (double factor = 130);
   Color darker (double factor = 130);
+
+  /* comparision */
+  bool
+  operator== (const Color& other) const
+  {
+    return other.m_valid == m_valid && other.m_red == m_red && other.m_green == m_green && other.m_blue == m_blue;
+  }
+  bool
+  operator!= (const Color& other) const
+  {
+    return !(other == *this);
+  }
 };
 
 struct Widget : public SignalReceiver

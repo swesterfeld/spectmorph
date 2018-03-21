@@ -53,7 +53,7 @@ MorphOperatorView::on_move (double y)
   if (is_output()) // output operator: move not supported
     return;
 
-  frame_color = ThemeColor::MENU_ITEM;
+  set_frame_color (ThemeColor::MENU_ITEM);
 
   MorphOperator *op_next = morph_plan_window->where (m_op, y);
 
@@ -66,7 +66,7 @@ MorphOperatorView::on_end_move (double y)
   if (is_output()) // output operator: move not supported
     return;
 
-  frame_color = ThemeColor::FRAME;
+  set_frame_color (ThemeColor::FRAME);
 
   MorphOperator *op_next = morph_plan_window->where (m_op, y);
 
