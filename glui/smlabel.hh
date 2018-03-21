@@ -38,22 +38,38 @@ public:
   void
   set_bold (bool bold)
   {
+    if (m_bold == bold)
+      return;
+
     m_bold = bold;
+    update();
   }
   void
   set_text (const std::string& text)
   {
+    if (m_text == text)
+      return;
+
     m_text = text;
+    update();
   }
   void
   set_align (TextAlign align)
   {
+    if (m_align == align)
+      return;
+
     m_align = align;
+    update();
   }
   void
   set_color (Color color)
   {
+    if (m_color == color)
+      return;
+
     m_color = color;
+    update();
   }
 };
 
