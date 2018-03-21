@@ -253,17 +253,61 @@ get_visible_recursive (Widget *w)
     return true; // no parent
 }
 
+namespace {
+
+struct IRect
+{
+  int x, y, w, h;
+
+  IRect (const Rect& r, double scale)
+  {
+    x = r.x() * scale;
+    y = r.y() * scale;
+    w = r.width() * scale;
+    h = r.height() * scale;
+  }
+
+  void
+  grow (int px)
+  {
+    x -= px;
+    y -= px;
+    w += px * 2;
+    h += px * 2;
+  }
+
+  void
+  clip (int width, int height)
+  {
+    x = sm_bound (0, x, width);
+    y = sm_bound (0, y, height);
+    w = sm_bound (0, w, width - x);
+    h = sm_bound (0, h, height - y);
+  }
+};
+
+};
+
 void
 Window::on_display()
 {
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   cairo_save (cairo_gl->cr);
+
+  Rect update_region_larger;
   if (!update_full_redraw)
     {
       // setup clipping - only need to redraw part of the screen
-      cairo_rectangle (cairo_gl->cr, update_region.x() * global_scale, update_region.y() * global_scale, update_region.width() * global_scale, update_region.height() * global_scale);
+      IRect r (update_region, global_scale);
+
+      // since we have to convert double coordinates to integer, we add a bit of extra space
+      r.grow (4);
+
+      cairo_rectangle (cairo_gl->cr, r.x, r.y, r.w, r.h);
       cairo_clip (cairo_gl->cr);
+
+      update_region_larger = Rect (r.x / global_scale, r.y / global_scale, r.w / global_scale, r.h / global_scale);
     }
 
   for (int layer = 0; layer < 3; layer++)
@@ -278,30 +322,33 @@ Window::on_display()
         {
           if (get_layer (w, menu_widget, dialog_widget) == layer && get_visible_recursive (w))
             {
-              cairo_t *cr = cairo_gl->cr;
-
-              cairo_save (cr);
-
-              cairo_scale (cr, global_scale, global_scale);
-
-              // local coordinates
-              cairo_translate (cr, w->abs_x(), w->abs_y());
-              if (w->clipping())
+              if (update_full_redraw || !w->abs_visible_rect().intersection (update_region_larger).empty())
                 {
-                  Rect visible_rect = w->abs_visible_rect();
+                  cairo_t *cr = cairo_gl->cr;
 
-                  // translate to widget local coordinates
-                  visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
+                  cairo_save (cr);
 
-                  cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
-                  cairo_clip (cr);
+                  cairo_scale (cr, global_scale, global_scale);
+
+                  // local coordinates
+                  cairo_translate (cr, w->abs_x(), w->abs_y());
+                  if (w->clipping())
+                    {
+                      Rect visible_rect = w->abs_visible_rect();
+
+                      // translate to widget local coordinates
+                      visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
+
+                      cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
+                      cairo_clip (cr);
+                    }
+
+                  if (draw_grid && w == enter_widget)
+                    w->debug_fill (cr);
+
+                      w->draw (cr);
+                  cairo_restore (cr);
                 }
-
-              if (draw_grid && w == enter_widget)
-                w->debug_fill (cr);
-
-              w->draw (cr);
-              cairo_restore (cr);
             }
         }
     }
@@ -344,22 +391,12 @@ Window::on_display()
     }
   else
     {
-      int x = update_region.x() * global_scale;
-      int y = update_region.y() * global_scale;
-      int w = update_region.width() * global_scale;
-      int h = update_region.height() * global_scale;
+      IRect r (update_region, global_scale);
 
-      x -= 2;
-      y -= 2;
-      w += 2;
-      h += 2;
+      r.grow (2); // add some extra space
+      r.clip (cairo_gl->width(), cairo_gl->height());
 
-      x = sm_bound (0, x, cairo_gl->width());
-      y = sm_bound (0, y, cairo_gl->height());
-      w = sm_bound (0, w, cairo_gl->width() - x);
-      h = sm_bound (0, h, cairo_gl->height() - y);
-
-      cairo_gl->draw (x, y, w, h);
+      cairo_gl->draw (r.x, r.y, r.w, r.h);
     }
   // clear update region (will be assigned by update[_full] before next redraw)
   update_region = Rect();
