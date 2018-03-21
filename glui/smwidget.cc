@@ -30,8 +30,8 @@ Widget::Widget (Widget *parent, double x, double y, double width, double height)
 Widget::~Widget()
 {
   // ensure that deleted widget is no longer visible, too
-  // (we don't want that in every constructor)
-  update_full();
+  // (we don't want that in every destructor)
+  update();
 
   while (!children.empty())
     {
