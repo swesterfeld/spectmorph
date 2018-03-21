@@ -107,6 +107,7 @@ public:
       scroll_widget->y -= v_scroll_bar->pos() * (scroll_widget->height + 16);
     if (h_scroll_bar)
       scroll_widget->x -= h_scroll_bar->pos() * (scroll_widget->width + 16);
+    update();
   }
 };
 
