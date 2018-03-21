@@ -21,10 +21,18 @@ Widget::Widget (Widget *parent, double x, double y, double width, double height)
 
   if (parent)
     parent->children.push_back (this);
+
+  // ensure that newly created widget is drawn, too
+  // (we don't want that in every constructor)
+  update_full();
 }
 
 Widget::~Widget()
 {
+  // ensure that deleted widget is no longer visible, too
+  // (we don't want that in every constructor)
+  update_full();
+
   while (!children.empty())
     {
       delete children.front();
