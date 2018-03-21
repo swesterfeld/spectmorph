@@ -14,8 +14,8 @@ MorphOperatorView::MorphOperatorView (Widget *parent, MorphOperator *op, MorphPl
   FixedGrid grid;
 
   title_label = new MorphOperatorTitle (this, "");
-  title_label->align = TextAlign::CENTER;
-  title_label->bold  = true;
+  title_label->set_align (TextAlign::CENTER);
+  title_label->set_bold (true);
   grid.add_widget (title_label, 0, 0, 43, 4);
 
   connect (title_label->signal_move, this, &MorphOperatorView::on_move);
@@ -44,7 +44,7 @@ MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
 
-  title_label->text = title;
+  title_label->set_text (title);
 }
 
 void

@@ -70,7 +70,7 @@ public:
         connect (item->signal_clicked, [=]()
           {
             printf ("menu item %s selected\n", i.c_str());
-            menu_label->text = "selected: " + i;
+            menu_label->set_text ("selected: " + i);
           });
       }
     };
@@ -88,8 +88,8 @@ public:
     grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 15);
 
     Label *op_title = new Label (this, "Output: Output #1");
-    op_title->align = TextAlign::CENTER;
-    op_title->bold  = true;
+    op_title->set_align (TextAlign::CENTER);
+    op_title->set_bold (true);
     grid.add_widget (op_title, 1, 1, 43, 4);
 
     ComboBox *cb1 = new ComboBox (this);
@@ -143,7 +143,7 @@ public:
         grid.add_widget (value_label, 38, yoffset, 5, 2);
         yoffset += 2;
 
-        auto call_back = [=](float value) { value_label->text = std::to_string((int) (value * 100 + 0.5)) + "%"; };
+        auto call_back = [=](float value) { value_label->set_text (std::to_string((int) (value * 100 + 0.5)) + "%"); };
         connect (slider->signal_value_changed, call_back);
         call_back (slider->value());
       }

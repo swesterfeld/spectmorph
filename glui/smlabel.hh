@@ -8,16 +8,17 @@
 namespace SpectMorph
 {
 
-struct Label : public Widget
+class Label : public Widget
 {
-  std::string text;
-  TextAlign align = TextAlign::LEFT;
-  bool bold = false;
-  Color color = ThemeColor::TEXT;
+  std::string   m_text;
+  TextAlign     m_align = TextAlign::LEFT;
+  bool          m_bold = false;
+  Color         m_color = ThemeColor::TEXT;
 
+public:
   Label (Widget *parent, const std::string& text) :
     Widget (parent),
-    text (text)
+    m_text (text)
   {
   }
   void
@@ -25,14 +26,34 @@ struct Label : public Widget
   {
     DrawUtils du (cr);
 
-    Color text_color = color;
+    Color text_color = m_color;
 
     if (!enabled())
       text_color = text_color.darker();
 
     du.set_color (text_color);
-    du.bold = bold;
-    du.text (text, 0, 0, width, height, align);
+    du.bold = m_bold;
+    du.text (m_text, 0, 0, width, height, m_align);
+  }
+  void
+  set_bold (bool bold)
+  {
+    m_bold = bold;
+  }
+  void
+  set_text (const std::string& text)
+  {
+    m_text = text;
+  }
+  void
+  set_align (TextAlign align)
+  {
+    m_align = align;
+  }
+  void
+  set_color (Color color)
+  {
+    m_color = color;
   }
 };
 

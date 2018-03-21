@@ -14,8 +14,8 @@ AboutDialog::AboutDialog (Window *window) :
   FixedGrid grid;
 
   auto title_label = new Label (this, "SpectMorph " PACKAGE_VERSION);
-  title_label->bold = true;
-  title_label->align = TextAlign::CENTER;
+  title_label->set_bold (true);
+  title_label->set_align (TextAlign::CENTER);
 
   grid.add_widget (title_label, 0, 0, 40, 4);
   grid.add_widget (this, 0, 0, 40, 18);

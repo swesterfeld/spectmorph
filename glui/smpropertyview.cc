@@ -68,5 +68,5 @@ void
 PropertyView::on_value_changed (int value)
 {
   property.set (value);
-  label->text = property.value_label();
+  label->set_text (property.value_label());
 }

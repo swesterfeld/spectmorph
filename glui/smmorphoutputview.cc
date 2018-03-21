@@ -155,7 +155,7 @@ MorphOutputView::on_operator_changed()
 void
 MorphOutputView::on_unison_voices_changed (int voices)
 {
-  unison_voices_label->text = string_locale_printf ("%d", voices);
+  unison_voices_label->set_text (string_locale_printf ("%d", voices));
   morph_output->set_unison_voices (voices);
 }
 
@@ -163,7 +163,7 @@ void
 MorphOutputView::on_unison_detune_changed (int new_value)
 {
   const double detune = new_value / 10.0;
-  unison_detune_label->text = string_locale_printf ("%.1f Cent", detune);
+  unison_detune_label->set_text (string_locale_printf ("%.1f Cent", detune));
   morph_output->set_unison_detune (detune);
 }
 

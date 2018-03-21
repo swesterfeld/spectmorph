@@ -15,8 +15,8 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
   FixedGrid grid;
 
   Label *title_label = new Label (this, "Global Instrument Settings");
-  title_label->align = TextAlign::CENTER;
-  title_label->bold  = true;
+  title_label->set_align (TextAlign::CENTER);
+  title_label->set_bold (true);
 
   grid.add_widget (title_label, 0, 0, 43, 4);
 
@@ -69,7 +69,7 @@ MorphPlanControl::on_volume_changed (double new_volume)
   g_return_if_fail (volume_value_label);
 
   double new_volume_f = new_volume * 60 - 48; // map [0:1] -> [-48:12]
-  volume_value_label->text = string_locale_printf ("%.1f dB", new_volume_f);
+  volume_value_label->set_text (string_locale_printf ("%.1f dB", new_volume_f));
 
   signal_volume_changed (new_volume_f); // emit dB value
 }
@@ -129,10 +129,10 @@ MorphPlanControl::on_index_changed()
 #endif
     }
   if (red)
-    inst_status->color = Color (1.0, 0.0, 0.0);
+    inst_status->set_color (Color (1.0, 0.0, 0.0));
   else
-    inst_status->color = ThemeColor::TEXT;
-  inst_status->text = text;
+    inst_status->set_color (ThemeColor::TEXT);
+  inst_status->set_text (text);
 }
 
 double

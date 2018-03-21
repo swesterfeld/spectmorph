@@ -220,12 +220,12 @@ MorphGridView::view_height()
 void
 MorphGridView::on_plan_changed()
 {
-  width_label->text = string_printf ("%d", morph_grid->width());
-  height_label->text = string_printf ("%d", morph_grid->height());
+  width_label->set_text (string_printf ("%d", morph_grid->width()));
+  height_label->set_text (string_printf ("%d", morph_grid->height()));
   x_ui->slider->set_value ((morph_grid->x_morphing() + 1) / 2);
   y_ui->slider->set_value ((morph_grid->y_morphing() + 1) / 2);
-  x_ui->label->text = string_locale_printf ("%.2f", morph_grid->x_morphing());
-  y_ui->label->text = string_locale_printf ("%.2f", morph_grid->y_morphing());
+  x_ui->label->set_text (string_locale_printf ("%.2f", morph_grid->x_morphing()));
+  y_ui->label->set_text (string_locale_printf ("%.2f", morph_grid->y_morphing()));
 }
 
 void
@@ -247,7 +247,7 @@ MorphGridView::on_delta_db_changed (double new_value)
 {
   const double db = (new_value * 2 - 1) * 48;
 
-  delta_db_label->text = string_locale_printf ("%.1f dB", db);
+  delta_db_label->set_text (string_locale_printf ("%.1f dB", db));
 
   if (morph_grid->has_selection())
     {
