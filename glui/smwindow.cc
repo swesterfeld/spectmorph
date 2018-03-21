@@ -391,12 +391,20 @@ Window::on_display()
     }
   else
     {
-      IRect r (update_region, global_scale);
+      IRect draw_region (update_region, global_scale);
 
-      r.grow (2); // add some extra space
-      r.clip (cairo_gl->width(), cairo_gl->height());
+      /* the number of pixels we blit is somewhat smaller than "update_region_larger", so we have
+       *
+       * update_region < draw_region < update_region larger
+       *
+       * the extra space should compensate for the effect of fractional
+       * coordinates (which do not render at exact pixel boundaries)
+       */
+      draw_region.grow (2);
 
-      cairo_gl->draw (r.x, r.y, r.w, r.h);
+      draw_region.clip (cairo_gl->width(), cairo_gl->height());
+
+      cairo_gl->draw (draw_region.x, draw_region.y, draw_region.w, draw_region.h);
     }
   // clear update region (will be assigned by update[_full] before next redraw)
   update_region = Rect();
