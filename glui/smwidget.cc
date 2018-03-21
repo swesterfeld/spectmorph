@@ -99,6 +99,24 @@ Widget::draw (cairo_t *cr)
     }
 }
 
+void
+Widget::update()
+{
+  Window *win = window();
+
+  if (win)
+    win->need_update (this);
+}
+
+void
+Widget::update_full()
+{
+  Window *win = window();
+
+  if (win)
+    win->need_update (nullptr);
+}
+
 /* Color conversion from Rapicorn */
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 void

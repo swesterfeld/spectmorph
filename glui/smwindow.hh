@@ -30,6 +30,7 @@ protected:
   Widget                   *dialog_widget = nullptr;
   double                    global_scale;
   bool                      auto_redraw;
+  Rect                      update_region;
 
   std::function<void()>     m_close_callback;
 
@@ -50,7 +51,7 @@ public:
   void open_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
   void save_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
   void on_file_selected (const std::string& filename);
-  void update() override;
+  void need_update (Widget *widget);
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
   void set_keyboard_focus (Widget *widget);

@@ -336,9 +336,31 @@ Window::on_display()
       cairo_restore (cr);
     }
 
-  //if (cairo_gl->first_frame()) // first frame is always a full redraw
+  if (cairo_gl->first_frame()) // first frame is always a full redraw
+    {
+      cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
+    }
+  else
+    {
+      int x = update_region.x() * global_scale;
+      int y = update_region.y() * global_scale;
+      int w = update_region.width() * global_scale;
+      int h = update_region.height() * global_scale;
 
-  cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
+      x -= 2;
+      y -= 2;
+      w += 2;
+      h += 2;
+
+      x = sm_bound (0, x, cairo_gl->width());
+      y = sm_bound (0, y, cairo_gl->height());
+      w = sm_bound (0, w, cairo_gl->width() - x);
+      h = sm_bound (0, h, cairo_gl->height() - y);
+
+      cairo_gl->draw (x, y, w, h);
+    }
+  // clear update region (will be assigned by update[_full] before next redraw)
+  update_region = Rect();
 }
 
 void
@@ -573,8 +595,9 @@ Window::on_file_selected (const std::string& filename)
 }
 
 void
-Window::update()
+Window::need_update (Widget *w)
 {
+  update_region = update_region.rect_union (w->abs_visible_rect());
   puglPostRedisplay (view);
 }
 
