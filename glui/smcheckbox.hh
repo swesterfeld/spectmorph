@@ -82,6 +82,7 @@ public:
       {
         checked = !checked;
         signal_toggled (checked);
+        update();
       }
   }
   void
