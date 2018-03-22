@@ -204,7 +204,10 @@ Window::on_widget_deleted (Widget *child)
   if (keyboard_focus_widget == child)
     keyboard_focus_widget = nullptr;
   if (dialog_widget == child)
-    dialog_widget = nullptr;
+    {
+      update_full();
+      dialog_widget = nullptr;
+    }
 }
 
 static vector<Widget *>
