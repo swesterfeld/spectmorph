@@ -165,6 +165,8 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   string         load_name;
   string         load_id;
   bool           load_folded = false;
+  Error          error = Error::NONE;
+
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
@@ -273,30 +275,36 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
       else if (ifile.event() == InFile::READ_ERROR)
         {
           g_printerr ("read error\n");
+          error = Error::PARSE_ERROR;
           break;
         }
       ifile.next_event();
     }
 
-  load_index (index_filename);
+  if (error == 0)
+    load_index (index_filename);
 
-  map<string, MorphOperator *> op_name2ptr;
-  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+  if (error == 0)
     {
-      MorphOperator *op = *oi;
-      op_name2ptr[op->name()] = *oi;
-    }
-  for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
-    {
-      MorphOperator *op = *oi;
-      op->post_load (op_name2ptr);
+      map<string, MorphOperator *> op_name2ptr;
+      for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+        {
+          MorphOperator *op = *oi;
+          op_name2ptr[op->name()] = *oi;
+        }
+      for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
+        {
+          MorphOperator *op = *oi;
+          op->post_load (op_name2ptr);
+        }
     }
 
   in_restore = false;
+
   emit_plan_changed();
   emit_index_changed();
 
-  return Error::NONE;
+  return error;
 }
 
 /**
