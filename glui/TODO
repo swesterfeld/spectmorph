@@ -10,7 +10,6 @@ widgets:
  - led
 
 general:
- - message box for error messages *
  - preserve scroll position on fold/...
  - recover after loading junk
  - add output if necessary (morph_plan->ensure_output())

@@ -3,6 +3,7 @@
 #include "smmorphplanwindow.hh"
 #include "smstdioout.hh"
 #include "smaboutdialog.hh"
+#include "smmessagebox.hh"
 
 using namespace SpectMorph;
 using std::string;
@@ -137,20 +138,39 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 }
 
 
-bool
+Error
 MorphPlanWindow::load (const std::string& filename)
 {
   GenericIn *in = StdioIn::open (filename);
   if (in)
     {
-      m_morph_plan->load (in);
+      Error error = m_morph_plan->load (in);
       delete in; // close file
 
-      set_filename (filename);
+      if (error == 0)
+        set_filename (filename);
 
-      return true;
+      return error;
     }
-  return false;
+  return Error::FILE_NOT_FOUND;
+}
+
+Error
+MorphPlanWindow::save (const std::string& filename)
+{
+  GenericOut *out = StdioOut::open (filename);
+
+  if (out)
+    {
+      Error error = m_morph_plan->save (out);
+      delete out; // close file
+
+      if (error == 0)
+        set_filename (filename);
+
+      return error;
+    }
+  return Error::FILE_NOT_FOUND;
 }
 
 void
@@ -158,12 +178,11 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 {
   std::string filename = sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/" + rel_filename;
 
-  if (!load (filename))
+  Error error = load (filename);
+  if (error != 0)
     {
-#if 0 // FIXME
-      QMessageBox::critical (this, "Error",
-                             string_locale_printf ("Loading template failed, unable to open file '%s'.", filename.c_str()).c_str());
-#endif
+        MessageBox::critical (this, "Error",
+                              string_locale_printf ("Loading template failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
     }
 }
 
@@ -171,12 +190,15 @@ void
 MorphPlanWindow::on_file_import_clicked()
 {
   open_file_dialog ("Select SpectMorph Preset to import", "SpectMorph Preset files", "*.smplan", [=](string filename) {
-    if (filename != "" && !load (filename))
+    if (filename != "")
       {
-#if 0
-        QMessageBox::critical (this, "Error",
-                               string_locale_printf ("Import failed, unable to open file '%s'.", file_name_local.data()).c_str());
-#endif
+        Error error = load (filename);
+
+        if (error != 0)
+          {
+            MessageBox::critical (this, "Error",
+                                  string_locale_printf ("Import failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
+          }
       }
   });
 }
@@ -185,20 +207,15 @@ void
 MorphPlanWindow::on_file_export_clicked()
 {
   save_file_dialog ("Select SpectMorph Preset export filename", "SpectMorph Preset files", "*.smplan", [=](string filename) {
-    GenericOut *out = StdioOut::open (filename);
-    if (out)
+    if (filename != "")
       {
-        m_morph_plan->save (out);
-        delete out; // close file
+        Error error = save (filename);
 
-        set_filename (filename);
-      }
-    else
-      {
-#if 0
-        QMessageBox::critical (this, "Error",
-                               string_locale_printf ("Export failed, unable to open file '%s'.", file_name_local.data()).c_str());
-#endif
+        if (error != 0)
+          {
+            MessageBox::critical (this, "Error",
+                                  string_locale_printf ("Export failed, unable to save to file:\n'%s'.\n%s", filename.c_str(), sm_error_blurb (error)));
+          }
       }
   });
 }

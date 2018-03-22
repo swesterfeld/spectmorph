@@ -25,6 +25,9 @@ class MorphPlanWindow : public Window
   std::string       m_filename;
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
+
+  Error load (const std::string& filename);
+  Error save (const std::string& filename);
 public:
   void
   set_filename (const std::string& filename)
@@ -38,7 +41,6 @@ public:
 
   void fill_preset_menu (Menu *menu);
   void fill_zoom_menu (Menu *menu);
-  bool load (const std::string& filename);
   void on_load_preset (const std::string& rel_filename);
 
   MorphPlanControl *control_widget();
