@@ -30,7 +30,8 @@ SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smmorphlinearview.cc smpropertyview.cc smmorphlfoview.cc \
 	 smmorphgridview.cc smmorphgridwidget.cc smmessagebox.cc \
 	 smmorphoperatorview.cc $(SMFDIALOG) smrenameopdialog.cc \
-	 smdialog.cc smaboutdialog.cc smmorphplancontrol.cc
+	 smdialog.cc smaboutdialog.cc smmorphplancontrol.cc \
+	 smdrawutils.cc
 
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \

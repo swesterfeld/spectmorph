@@ -7,6 +7,7 @@
 
 using std::vector;
 using std::string;
+using std::max;
 
 using namespace SpectMorph;
 
@@ -39,11 +40,18 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text)
 {
   FixedGrid grid;
 
+  // window width
+  double w = 20;
+  for (auto line : split (text))
+    w = max (w, DrawUtils::static_text_width (window, line) / 8);
+
   auto title_label = new Label (this, title);
   title_label->set_bold (true);
   title_label->set_align (TextAlign::CENTER);
 
-  grid.add_widget (title_label, 0, 0, 40, 4);
+  const double xframe = 2;
+
+  grid.add_widget (title_label, 0, 0, w + 2 * xframe, 4);
 
   double yoffset = 4;
   /* put each line in one label */
@@ -52,17 +60,17 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text)
       auto line_label = new Label (this, line);
 
       line_label->set_align (TextAlign::CENTER);
-      grid.add_widget (line_label, 1, yoffset, 40, 2);
+      grid.add_widget (line_label, xframe, yoffset, w, 2);
       yoffset += 2;
     }
   yoffset += 1;
 
   auto ok_button = new Button (this, "Ok");
-  grid.add_widget (ok_button, 15, yoffset, 10, 3);
+  grid.add_widget (ok_button, (w + 2 * xframe) / 2 - 5, yoffset, 10, 3);
   connect (ok_button->signal_clicked, this, &Dialog::on_accept);
   yoffset += 3;
 
-  grid.add_widget (this, 0, 0, 40, yoffset + 1);
+  grid.add_widget (this, 0, 0, w + 2 * xframe, yoffset + 1);
   window->set_keyboard_focus (this);
 }
 

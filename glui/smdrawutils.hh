@@ -108,6 +108,7 @@ struct DrawUtils
   {
     cairo_set_source_rgb (cr, color.red(), color.green(), color.blue());
   }
+  static double static_text_width (Window *window, const std::string& text); /* static version: without instance */
 };
 
 }
