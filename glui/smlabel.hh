@@ -1,5 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
-//
+
 #ifndef SPECTMORPH_LABEL_HH
 #define SPECTMORPH_LABEL_HH
 
