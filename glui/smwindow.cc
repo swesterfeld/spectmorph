@@ -521,7 +521,7 @@ Window::on_event (const PuglEvent* event)
         mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
 
         if (auto_redraw)
-          update();
+          update_full();
         break;
       case PUGL_BUTTON_RELEASE:
         ex = event->button.x / global_scale;
@@ -533,7 +533,7 @@ Window::on_event (const PuglEvent* event)
             mouse_widget = nullptr;
           }
         if (auto_redraw)
-          update();
+          update_full();
         break;
       case PUGL_MOTION_NOTIFY:
         ex = event->motion.x / global_scale;
@@ -556,7 +556,7 @@ Window::on_event (const PuglEvent* event)
           }
         current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
         if (auto_redraw)
-          update();
+          update_full();
         break;
       case PUGL_SCROLL:
         ex = event->scroll.x / global_scale;
@@ -568,7 +568,7 @@ Window::on_event (const PuglEvent* event)
 
         current_widget->scroll (event->scroll.dx, event->scroll.dy);
         if (auto_redraw)
-          update();
+          update_full();
         break;
       case PUGL_KEY_PRESS:
         if (keyboard_focus_widget)
@@ -581,7 +581,7 @@ Window::on_event (const PuglEvent* event)
               debug_update_region = !debug_update_region;
           }
         if (auto_redraw)
-          update();
+          update_full();
         break;
       case PUGL_CLOSE:
         if (m_close_callback)
@@ -663,7 +663,7 @@ Window::on_file_selected (const std::string& filename)
       file_dialog_callback = nullptr;
     }
   have_file_dialog = false;
-  update();
+  update_full();
 }
 
 void
