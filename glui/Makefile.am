@@ -28,7 +28,7 @@ lib_LTLIBRARIES = libspectmorphglui.la
 SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smmorphsourceview.cc smmorphoutputview.cc smcomboboxoperator.cc \
 	 smmorphlinearview.cc smpropertyview.cc smmorphlfoview.cc \
-	 smmorphgridview.cc smmorphgridwidget.cc \
+	 smmorphgridview.cc smmorphgridwidget.cc smmessagebox.cc \
 	 smmorphoperatorview.cc $(SMFDIALOG) smrenameopdialog.cc \
 	 smdialog.cc smaboutdialog.cc smmorphplancontrol.cc
 
@@ -40,7 +40,8 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
 	 smbutton.hh smtoolbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
 	 smlineedit.hh smnativefiledialog.hh smled.hh smconfig.hh \
-	 smrenameopdialog.hh smdialog.hh smaboutdialog.hh smoperatorlayout.hh
+	 smrenameopdialog.hh smdialog.hh smaboutdialog.hh smoperatorlayout.hh \
+	 smmessagebox.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
