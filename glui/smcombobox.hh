@@ -180,6 +180,9 @@ public:
   void
   set_text (const std::string& new_text)
   {
+    if (m_text == new_text)
+      return;
+
     m_text = new_text;
     update();
   }
