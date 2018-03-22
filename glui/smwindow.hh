@@ -32,6 +32,7 @@ protected:
   bool                      auto_redraw;
   Rect                      update_region;
   bool                      update_full_redraw = false;
+  bool                      debug_update_region = false;
 
   std::function<void()>     m_close_callback;
 

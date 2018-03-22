@@ -295,6 +295,11 @@ Window::on_display()
 
   cairo_save (cairo_gl->cr);
 
+  /* for debugging, we want a rectangle around the area we would normally update */
+  const bool draw_update_region_rect = debug_update_region && !update_full_redraw;
+  if (draw_update_region_rect)
+    update_full_redraw = true;   // always draw full frames in debug mode
+
   Rect update_region_larger;
   if (!update_full_redraw)
     {
@@ -384,6 +389,19 @@ Window::on_display()
       cairo_restore (cr);
     }
   cairo_restore (cairo_gl->cr);
+
+  if (draw_update_region_rect)
+    {
+      cairo_t *cr = cairo_gl->cr;
+
+      cairo_save (cr);
+      cairo_scale (cr, global_scale, global_scale);
+      cairo_rectangle (cr, update_region.x(), update_region.y(), update_region.width(), update_region.height());
+      cairo_set_source_rgb (cr, 1.0, 0.4, 0.4);
+      cairo_set_line_width (cr, 3.0);
+      cairo_stroke (cr);
+      cairo_restore (cr);
+    }
 
   if (update_full_redraw)
     {
@@ -556,6 +574,8 @@ Window::on_event (const PuglEvent* event)
           {
             if (event->key.character == 'g')
               draw_grid = !draw_grid;
+            else if (event->key.character == 'u')
+              debug_update_region = !debug_update_region;
           }
         if (auto_redraw)
           update();
