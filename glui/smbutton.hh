@@ -8,12 +8,13 @@
 namespace SpectMorph
 {
 
-struct Button : public Widget
+class Button : public Widget
 {
   std::string text;
   bool        highlight = false;
   bool        pressed = false;
 
+public:
   Signal<> signal_clicked;
 
   Button (Widget *parent, const std::string& text) :
@@ -55,26 +56,32 @@ struct Button : public Widget
   enter_event() override
   {
     highlight = true;
+    update();
   }
   void
   mouse_press (double x, double y) override
   {
     pressed = true;
+    update();
   }
   void
   mouse_release (double x, double y) override
   {
-    if (pressed && x >= 0 && y >= 0 && x < width && y < height)
-      {
-        signal_clicked();
-      }
+    if (!pressed)
+      return;
+
     pressed = false;
+    update();
+
+    if (x >= 0 && y >= 0 && x < width && y < height)
+      signal_clicked();  // this must be the last line, as deletion can occur afterwards
   }
   void
   leave_event() override
   {
     highlight = false;
     pressed = false;
+    update();
   }
 };
 
