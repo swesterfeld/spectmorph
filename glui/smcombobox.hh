@@ -64,6 +64,11 @@ struct ComboBoxMenu : public Widget
 
     this->height = items_per_page * 16 + 16;
 
+    /* if there is not enough space below the combobox, display menu above the combobox */
+    Window *win = window();
+    if (win && (abs_y() + this->height + 16) > win->height)
+      this->y = -this->height;
+
     if (scroll_bar)
       {
         scroll_bar->x = width - 20;

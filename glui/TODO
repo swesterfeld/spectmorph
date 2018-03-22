@@ -15,7 +15,6 @@ general:
  - recover after loading junk
  - add output if necessary (morph_plan->ensure_output())
  - scroll wheel propagation
- - combobox doesn't work at bottom of screen
  - post resize and signal_update possibly occur in wrong order
 
 beast:
