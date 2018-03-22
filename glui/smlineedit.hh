@@ -19,7 +19,11 @@ public:
   void
   set_text (const std::string& new_text)
   {
+    if (m_text == new_text)
+      return;
+
     m_text = new_text;
+    update();
   }
   std::string
   text() const
@@ -117,17 +121,22 @@ public:
         signal_esc_pressed();
       }
     if (m_text != old_text)
-      signal_text_changed (m_text);
+      {
+        signal_text_changed (m_text);
+        update();
+      }
   }
   void
   enter_event() override
   {
     highlight = true;
+    update();
   }
   void
   leave_event() override
   {
     highlight = false;
+    update();
   }
 
   Signal<std::string> signal_text_changed;
