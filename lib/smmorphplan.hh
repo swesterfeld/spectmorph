@@ -15,18 +15,7 @@ namespace SpectMorph
 
 class MorphPlan : public Object
 {
-  Index                        m_index;
-  std::vector<MorphOperator *> m_operators;
-
-  std::string                  index_filename;
-  bool                         in_restore;
-
-  void clear();
-
 public:
-  MorphPlan();
-  ~MorphPlan();
-
   class ExtraParameters
   {
   public:
@@ -34,6 +23,20 @@ public:
     virtual void          save (OutFile& out_file) = 0;
     virtual void          handle_event (InFile& ifile) = 0;
   };
+
+protected:
+  Index                        m_index;
+  std::vector<MorphOperator *> m_operators;
+
+  std::string                  index_filename;
+  bool                         in_restore;
+
+  void  clear();
+  Error load_internal (GenericIn *in, ExtraParameters *params = nullptr);
+
+public:
+  MorphPlan();
+  ~MorphPlan();
 
   bool         load_index (const std::string& filename);
   const Index *index();

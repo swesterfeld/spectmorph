@@ -142,13 +142,8 @@ MorphPlan::set_plan_str (const string& str)
   delete in;
 }
 
-/**
- * Loads MorphPlan from input stream.
- *
- * \returns BSE_ERROR_NONE if everything worked, an error otherwise
- */
 Error
-MorphPlan::load (GenericIn *in, ExtraParameters *params)
+MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
 
@@ -300,6 +295,32 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
     }
 
   in_restore = false;
+
+  return error;
+}
+
+/**
+ * Loads MorphPlan from input stream.
+ *
+ * \returns Error::NONE if everything worked, an error otherwise
+ */
+Error
+MorphPlan::load (GenericIn *in, ExtraParameters *params)
+{
+  /* backup old plan */
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  save (&mo);
+
+  Error error = load_internal (in, params);
+
+  /* restore old plan if something went wrong */
+  if (error != 0)
+    {
+      GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      load_internal (old_in);
+      delete old_in;
+    }
 
   emit_plan_changed();
   emit_index_changed();
