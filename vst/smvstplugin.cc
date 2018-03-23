@@ -69,19 +69,8 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
 {
   audioMaster = master;
 
-  string filename = sm_get_default_plan();
+  plan->load_default();
 
-  GenericIn *in = StdioIn::open (filename);
-  if (in)
-    {
-      plan->load (in);
-      delete in;
-    }
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", filename.c_str());
-      // in this case we fail gracefully and start with an empty plan
-    }
   ui = new VstUI (plan->clone(), this);
 
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
