@@ -328,6 +328,40 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   return error;
 }
 
+void
+MorphPlan::load_default()
+{
+  string filename = sm_get_default_plan();
+
+  GenericIn *in = StdioIn::open (filename);
+  if (in)
+    {
+      Error error = load (in);
+      delete in;
+
+      if (error == 0)
+        return;
+    }
+
+  // if loading default plan fails: start with an empty plan
+  //
+  g_printerr ("Error opening '%s'.\n", filename.c_str());
+
+  clear();
+
+  // create one output operator (as these cannot be created using the UI)
+
+  MorphOperator *op = MorphOperator::create ("SpectMorph::MorphOutput", this);
+
+  g_return_if_fail (op != NULL);
+
+  add_operator (op, MorphPlan::ADD_POS_AUTO);
+
+  // load standard instrument set
+
+  load_index ("instruments:standard");
+}
+
 /**
  * Get MorphPlan operators.
  *

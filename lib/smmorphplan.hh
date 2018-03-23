@@ -58,6 +58,8 @@ public:
   Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
   Error load (GenericIn *in, ExtraParameters *params = nullptr);
 
+  void load_default();
+
   MorphPlan *clone() const; // create a deep copy
 
   static std::string id_chars();
