@@ -1,12 +1,7 @@
 general:
  - preserve scroll position on fold/...
- - recover after loading junk
- - add output if necessary (morph_plan->ensure_output())
  - scroll wheel propagation
  - post resize and signal_update possibly occur in wrong order
-
-beast:
- - init with default plan
 
 windows:
  - 32bit compile crashes in apply window sse code - why?
@@ -14,6 +9,11 @@ windows:
  - keyboard input broken
  - dpi scaling
  - led sometimes wrong
+ - relocatable plugin installation
+ - symlink to install location
+ - support mmap?
+ - installer
+ - build script that builds deps and then main
 
 later:
  - popup menu
