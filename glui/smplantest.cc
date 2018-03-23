@@ -15,18 +15,7 @@ main (int argc, char **argv)
 
   MorphPlanPtr morph_plan = new MorphPlan;
 
-  string filename = sm_get_default_plan();
-
-  GenericIn *in = StdioIn::open (filename);
-  if (in)
-    {
-      morph_plan->load (in);
-      delete in;
-    }
-  else
-    {
-      fprintf (stderr, "Error opening '%s'.\n", filename.c_str());
-    }
+  morph_plan->load_default();
 
   MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan);
 
