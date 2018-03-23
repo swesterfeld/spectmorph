@@ -226,19 +226,7 @@ main (int argc, char **argv)
     }
   else
     {
-      filename = sm_get_default_plan();
-
-      GenericIn *in = StdioIn::open (filename);
-      if (in)
-        {
-          morph_plan->load (in);
-          delete in;
-        }
-      else
-        {
-          g_printerr ("Error opening '%s'.\n", filename.c_str());
-          // in this case we fail gracefully and start with an empty plan
-        }
+      morph_plan->load_default();
     }
 
   jack_client_t *client = jack_client_open ("smjack", JackNullOption, NULL);
