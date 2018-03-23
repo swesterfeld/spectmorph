@@ -113,21 +113,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   mix_freq (mix_freq),
   midi_synth (mix_freq, 64)
 {
-  string filename = sm_get_default_plan();
-
   MorphPlanPtr plan = new MorphPlan();
-
-  GenericIn *in = StdioIn::open (filename);
-  if (in)
-    {
-      plan->load (in);
-      delete in;
-    }
-  else
-    {
-      g_printerr ("Error opening '%s'.\n", filename.c_str());
-      // in this case we fail gracefully and start with an empty plan
-    }
+  plan->load_default();
 
   vector<unsigned char> data;
   MemOut mo (&data);
