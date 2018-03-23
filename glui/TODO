@@ -1,14 +1,3 @@
-cleanup:
- - don't hardcode colors
- - make stuff private
- - replace callbacks with signals
- - redraw only if necessary
-
-widgets:
- - popup menu
- - knob
- - led
-
 general:
  - preserve scroll position on fold/...
  - recover after loading junk
@@ -25,3 +14,7 @@ windows:
  - keyboard input broken
  - dpi scaling
  - led sometimes wrong
+
+later:
+ - popup menu
+ - knob
