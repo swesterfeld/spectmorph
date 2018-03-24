@@ -37,8 +37,6 @@
 #define effBeginLoadBank        75
 #define effFlagsProgramChunks   (1 << 5)
 
-#define DEBUG 0
-
 using namespace SpectMorph;
 
 using std::string;
@@ -395,12 +393,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(d
 
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
-  if (DEBUG)
-    {
-      Debug::set_filename ("smvstplugin.log");
-      Debug::enable ("vst");
-      Debug::enable ("global");
-    }
+  Debug::set_filename ("smvstplugin.log");
 
   VST_DEBUG ("VSTPluginMain called\n");
   if (audioMaster)
