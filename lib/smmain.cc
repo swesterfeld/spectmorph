@@ -4,6 +4,7 @@
 #include "smfft.hh"
 #include "smmath.hh"
 #include "smutils.hh"
+#include "smconfig.hh"
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
@@ -50,6 +51,11 @@ sm_init_plugin()
   /* ensure that user data dir exists */
   string user_data_dir = sm_get_user_dir (USER_DIR_DATA);
   g_mkdir_with_parents (user_data_dir.c_str(), 0775);
+
+  Config cfg;
+
+  for (auto area : cfg.debug())
+    Debug::enable (area);
 
   FFT::load_wisdom();
   int_sincos_init();
