@@ -264,6 +264,7 @@ public:
         signal_item_changed();
       }
     menu.reset();
+    update();
   }
 };
 
