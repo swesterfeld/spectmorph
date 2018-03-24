@@ -28,7 +28,7 @@ debugv (const char *area, const char *format, va_list vargs)
     {
       if (!debug_file)
         {
-          char *abs_filename = g_build_filename (g_get_tmp_dir(), debug_filename.c_str(), nullptr);
+          char *abs_filename = g_build_filename (sm_get_user_dir (USER_DIR_DATA).c_str(), debug_filename.c_str(), nullptr);
           debug_file = fopen (abs_filename, "w");
           g_free (abs_filename);
         }
