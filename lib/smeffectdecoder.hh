@@ -18,13 +18,13 @@ class EffectDecoderSource;
 class EffectDecoder
 {
   LiveDecoderSource   *original_source;
-  EffectDecoderSource *skip_source;
 
-  bool use_skip_source;
+  bool                 use_skip_source;
 
-  std::unique_ptr<LiveDecoder>    chain_decoder;
-  std::unique_ptr<ADSREnvelope>   adsr_envelope;
-  std::unique_ptr<SimpleEnvelope> simple_envelope;
+  std::unique_ptr<EffectDecoderSource>  skip_source;
+  std::unique_ptr<LiveDecoder>          chain_decoder;
+  std::unique_ptr<ADSREnvelope>         adsr_envelope;
+  std::unique_ptr<SimpleEnvelope>       simple_envelope;
 
 public:
   EffectDecoder (LiveDecoderSource *source);

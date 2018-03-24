@@ -145,7 +145,7 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
     {
       if (!use_skip_source) // enable skip source
         {
-          chain_decoder.reset (new LiveDecoder (skip_source));
+          chain_decoder.reset (new LiveDecoder (skip_source.get()));
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
