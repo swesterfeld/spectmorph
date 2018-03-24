@@ -17,7 +17,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmorphgrid.hh smmorphgridmodule.hh smmorphutils.hh smutils.hh \
          smminiresampler.hh smmidisynth.hh smwavdata.hh smblockutils.hh \
          smalignedarray.hh smpcg32rng.hh smproperty.hh \
-         smeffectdecoder.hh smadsrenvelope.hh smsignal.hh
+         smeffectdecoder.hh smadsrenvelope.hh smsignal.hh smconfig.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -35,7 +35,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smmorphgrid.cc \
                            smmorphgridmodule.cc smmath.cc smmorphutils.cc smutils.cc \
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
-                           smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc
+                           smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc
 
 if !COND_WINDOWS
 libspectmorph_la_SOURCES += smjobqueue.cc
