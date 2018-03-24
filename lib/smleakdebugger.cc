@@ -46,8 +46,9 @@ LeakDebugger::ptr_del (void *p)
     }
 }
 
-LeakDebugger::LeakDebugger (const string& name) :
-  type (name)
+LeakDebugger::LeakDebugger (const string& name, std::function<void()> cleanup_function) :
+  type (name),
+  cleanup_function (cleanup_function)
 {
 }
 
@@ -55,6 +56,9 @@ LeakDebugger::~LeakDebugger()
 {
   if (DEBUG)
     {
+      if (cleanup_function)
+        cleanup_function();
+
       int alive = 0;
 
       for (map<void *, int>::iterator pi = ptr_map.begin(); pi != ptr_map.end(); pi++)
