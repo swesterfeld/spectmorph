@@ -40,7 +40,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smmorphoutputview.hh smcomboboxoperator.hh smmorphlinearview.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
 	 smbutton.hh smtoolbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
-	 smlineedit.hh smnativefiledialog.hh smled.hh smconfig.hh \
+	 smlineedit.hh smnativefiledialog.hh smled.hh \
 	 smrenameopdialog.hh smdialog.hh smaboutdialog.hh smoperatorlayout.hh \
 	 smmessagebox.hh
 
