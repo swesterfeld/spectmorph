@@ -7,6 +7,7 @@
 #include "smleakdebugger.hh"
 #include "smmemout.hh"
 #include "smmmapin.hh"
+#include "smwavsetrepo.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -17,7 +18,10 @@ using std::vector;
 
 using namespace SpectMorph;
 
-static LeakDebugger leak_debugger ("SpectMorph::Audio");
+/* wav set repo by design only loads files but never deletes them, so we clean
+ * the global audio files manually before printing LeakDebugger result
+ */
+static LeakDebugger leak_debugger ("SpectMorph::Audio", WavSetRepo::cleanup);
 
 /**
  * This function loads a SM-File.
@@ -235,7 +239,6 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
     }
   return Error::NONE;
 }
-
 
 SpectMorph::Audio::Audio() :
   zeropad (0),

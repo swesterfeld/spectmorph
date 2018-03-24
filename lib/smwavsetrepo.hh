@@ -19,6 +19,7 @@ public:
   WavSet *get (const std::string& filename);
 
   static WavSetRepo *the(); // Singleton
+  static void cleanup();
 };
 
 }
