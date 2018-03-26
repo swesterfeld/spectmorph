@@ -51,24 +51,21 @@ class SignalReceiver
       return this;
     }
     void
-    unref()
+    unref (bool cleanup)
     {
       assert (this);
       assert (ref_count > 0);
       ref_count--;
-      if (!ref_count)
-        delete this;
-    }
-    void
-    cleanup()
-    {
-      if (ref_count == 1) /* ensure nobody is iterating over the data */
+
+      if (cleanup && ref_count == 1) /* ensure nobody is iterating over the data */
         {
           sources.remove_if ([](SignalSource& signal_source) -> bool
             {
               return signal_source.id == 0;
             });
         }
+      else if (ref_count == 0)
+        delete this;
     }
     std::list<SignalSource> sources;
   };
@@ -85,8 +82,7 @@ public:
 
     auto id = signal.connect_impl (this, callback);
     data->sources.push_back ({ &signal, id });
-    data->unref();
-    data->cleanup();
+    data->unref (true);
 
     return id;
   }
@@ -112,8 +108,7 @@ public:
             signal_source.id = 0;
           }
       }
-    data->unref();
-    data->cleanup();
+    data->unref (true);
   }
   SignalReceiver() :
     signal_receiver_data (new SignalReceiverData())
@@ -132,7 +127,7 @@ public:
             signal_source.id = 0;
           }
       }
-    signal_receiver_data->unref();
+    signal_receiver_data->unref (false);
     signal_receiver_data = nullptr;
   }
   void
@@ -146,8 +141,7 @@ public:
           signal_source.id = 0;
       }
 
-    data->unref();
-    data->cleanup();
+    data->unref (true);
   }
 };
 
@@ -176,24 +170,21 @@ class Signal : public SignalBase
       return this;
     }
     void
-    unref()
+    unref (bool cleanup)
     {
       assert (this);
       assert (ref_count > 0);
       ref_count--;
-      if (!ref_count)
-        delete this;
-    }
-    void
-    cleanup()
-    {
-      if (ref_count == 1) /* ensure nobody is iterating over the data */
+
+      if (cleanup && ref_count == 1) /* ensure nobody is iterating over the data */
         {
           connections.remove_if ([](Connection& conn) -> bool
             {
               return conn.id == 0;
             });
         }
+      else if (ref_count == 0)
+        delete this;
     }
 
     std::list<Connection> connections;
@@ -206,8 +197,7 @@ public:
     Data *data = signal_data->ref();
     uint64 id = next_signal_id();
     data->connections.push_back ({callback, id, receiver});
-    data->unref();
-    data->cleanup();
+    data->unref (true);
 
     return id;
   }
@@ -220,8 +210,7 @@ public:
         if (conn.id == id)
           conn.id = 0;
       }
-    data->unref();
-    data->cleanup();
+    data->unref (true);
   }
   void
   operator()(Args... args)
@@ -234,8 +223,7 @@ public:
           conn.func (args...);
       }
 
-    data->unref();
-    data->cleanup();
+    data->unref (true);
   }
   Signal() :
     signal_data (new Data())
@@ -254,7 +242,7 @@ public:
           }
       }
 
-    signal_data->unref();
+    signal_data->unref (false);
     signal_data = nullptr;
   }
 };
