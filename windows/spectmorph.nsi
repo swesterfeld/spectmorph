@@ -40,8 +40,8 @@ InstallDir "$PROGRAMFILES64\SpectMorph"
 !insertmacro MUI_PAGE_FINISH
 
 Function .onInit
-	ClearErrors
-	StrCpy $pluginDir "$PROGRAMFILES64\Steinberg\VstPlugins"
+  ClearErrors
+  StrCpy $pluginDir "$PROGRAMFILES64\Steinberg\VstPlugins"
 FunctionEnd
 
 ;--------------------------------
@@ -59,12 +59,39 @@ Section "Install" ;No components page, name is not important
 
   CreateShortCut "$SMPROGRAMS\SpectMorph\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+  Call StorePluginDir
 SectionEnd ; end the section
 
 ;--------------------------------
 ;Uninstaller Section
 
 Section "Uninstall"
+  Call un.LoadPluginDir
+
   RMDir /r "$SMPROGRAMS\SpectMorph"
   RMDir /r "$INSTDIR"
+  Delete "$pluginDir\SpectMorph.dll"
+  Delete "$pluginDir\SpectMorph.Data.lnk"
 SectionEnd
+
+; uninstall needs to know in which vst plugin dir SpectMorph.dll was installed
+;
+; we store that information in a text file during install and retrieve
+; it from there on uninstall
+Var filePluginDir
+
+Function StorePluginDir
+  FileOpen $filePluginDir "$INSTDIR\PluginDir.txt" w
+  FileWrite $filePluginDir "$pluginDir"
+  FileClose $filePluginDir
+FunctionEnd
+
+Function un.LoadPluginDir
+  ClearErrors
+  FileOpen $filePluginDir "$INSTDIR\PluginDir.txt" r
+  IfErrors done
+  FileRead $filePluginDir $pluginDir
+  FileClose $filePluginDir
+  done:
+FunctionEnd
