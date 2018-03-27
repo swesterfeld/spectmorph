@@ -76,6 +76,10 @@ const char *sm_error_blurb (Error error);
   #error "unsupported platform"
 #endif
 
+#ifdef SM_OS_WINDOWS
+std::string sm_resolve_link (const std::string& link_file);
+#endif
+
 } // namespace SpectMorph
 
 #endif

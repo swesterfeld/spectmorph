@@ -206,6 +206,76 @@ dot_spectmorph_dir()
   else
     return "";
 }
+string
+sm_resolve_link (const string& link_file)
+{
+  string      dest_path;
+  IShellLink* psl;
+  bool        com_need_uninit = false;
+  HWND        hwnd = NULL;
+
+  // Get a pointer to the IShellLink interface.
+  HRESULT hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl);
+  if (hres == CO_E_NOTINITIALIZED)
+    {
+      // COM was not initialized
+      CoInitialize (NULL);
+      com_need_uninit = true;
+
+      hres = CoCreateInstance (CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID*)&psl);
+    }
+
+  if (SUCCEEDED (hres))
+    {
+      IPersistFile* ppf;
+
+      // Get a pointer to the IPersistFile interface.
+      hres = psl->QueryInterface (IID_IPersistFile, (void**)&ppf);
+
+      if (SUCCEEDED (hres))
+        {
+          WCHAR wsz[MAX_PATH];
+
+          // Ensure that the string is Unicode.
+          MultiByteToWideChar (CP_ACP, 0, link_file.c_str(), -1, wsz, MAX_PATH);
+
+          // Add code here to check return value from MultiByteWideChar
+          // for success.
+
+          // Load the shortcut.
+          hres = ppf->Load (wsz, STGM_READ);
+
+          if (SUCCEEDED (hres))
+            {
+              // Resolve the link.
+              hres = psl->Resolve (hwnd, 0);
+
+              if (SUCCEEDED (hres))
+                {
+                  // Get the path to the link target.
+                  WIN32_FIND_DATA wfd;
+                  char            szGotPath[MAX_PATH];
+
+                  hres = psl->GetPath (szGotPath, MAX_PATH, &wfd, SLGP_SHORTPATH);
+                  if (SUCCEEDED (hres))
+                    {
+                      dest_path = szGotPath;
+                    }
+                }
+            }
+
+          // Release the pointer to the IPersistFile interface.
+          ppf->Release();
+        }
+
+      // Release the pointer to the IShellLink interface.
+      psl->Release();
+    }
+  if (com_need_uninit)
+    CoUninitialize();
+
+  return dest_path;
+}
 #else
 static string
 dot_spectmorph_dir()

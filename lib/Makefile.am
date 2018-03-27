@@ -37,11 +37,13 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc
 
-if !COND_WINDOWS
-libspectmorph_la_SOURCES += smjobqueue.cc
-endif
-
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
+
+if COND_WINDOWS
+  libspectmorph_la_LIBADD += -luuid
+else
+  libspectmorph_la_SOURCES += smjobqueue.cc
+endif
 
 spectmorphincludedir = $(includedir)/spectmorph/smcore
 spectmorphinclude_HEADERS = $(SMHDRS) spectmorph.hh
