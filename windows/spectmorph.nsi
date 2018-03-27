@@ -57,6 +57,7 @@ Section "Install" ;No components page, name is not important
   File SpectMorph.dll
   CreateShortCut "SpectMorph.Data.lnk" "$INSTDIR"
 
+  CreateDirectory "$SMPROGRAMS\SpectMorph"
   CreateShortCut "$SMPROGRAMS\SpectMorph\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
   WriteUninstaller "$INSTDIR\Uninstall.exe"
 
