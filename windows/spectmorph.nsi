@@ -3,6 +3,7 @@
 !include "MUI2.nsh"
 !include x64.nsh
 !insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
 
 Var pluginDir
 
