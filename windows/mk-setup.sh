@@ -65,8 +65,6 @@ cat >> $SETUP_NSI << EOH
   File SpectMorph.dll
   CreateShortCut "\$pluginDir\\SpectMorph.data.lnk" "\$INSTDIR"
 
-  CreateDirectory "\$SMPROGRAMS\\SpectMorph"
-  CreateShortCut "\$SMPROGRAMS\\SpectMorph\\Uninstall.lnk" "\$INSTDIR\\Uninstall.exe"
   WriteUninstaller "\$INSTDIR\\Uninstall.exe"
 
   Call StorePluginDir
@@ -104,7 +102,6 @@ cat >> $SETUP_NSI << EOH
   RMDir "\$INSTDIR"
   Delete "\$pluginDir\\SpectMorph.dll"
   Delete "\$pluginDir\\SpectMorph.Data.lnk"
-  RMDir /r "\$SMPROGRAMS\\SpectMorph"
 SectionEnd
 
 ; uninstall needs to know in which vst plugin dir SpectMorph.dll was installed
