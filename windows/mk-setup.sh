@@ -49,19 +49,23 @@ FunctionEnd
 ;--------------------------------
 ; The stuff to install
 Section "Install" ;No components page, name is not important
-  ; Set output path to the installation directory.
-  SetOutPath \$INSTDIR
 EOH
 
-find instruments templates -type f | while read f
-do
-  echo "  SetOutPath \$INSTDIR/$(dirname $f)" | sed 's,/,\\,g'
-  echo "  File $f" | sed 's,/,\\,g'
-done >> $SETUP_NSI
+(
+  OUT_PATH="_none_"
+  find instruments templates -type f | while read FILE
+  do
+    NEW_OUT_PATH="$(dirname $FILE)"
+    if test "x$NEW_OUT_PATH" != "x$OUT_PATH"; then
+      OUT_PATH="$NEW_OUT_PATH"
+      echo "  SetOutPath \$INSTDIR/$OUT_PATH" | sed 's,/,\\,g'
+    fi
+    echo "  File $FILE" | sed 's,/,\\,g'
+  done
+) >> $SETUP_NSI
 
 cat >> $SETUP_NSI << EOH
   SetOutPath \$pluginDir
-  ; Put archive file there
   File SpectMorph.dll
   CreateShortCut "\$pluginDir\\SpectMorph.data.lnk" "\$INSTDIR"
 
