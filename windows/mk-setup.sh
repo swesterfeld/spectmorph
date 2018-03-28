@@ -56,14 +56,14 @@ EOH
 find instruments templates -type f | while read f
 do
   echo "  SetOutPath \$INSTDIR/$(dirname $f)" | sed 's,/,\\,g'
-  echo "  File $f"
+  echo "  File $f" | sed 's,/,\\,g'
 done >> $SETUP_NSI
 
 cat >> $SETUP_NSI << EOH
   SetOutPath \$pluginDir
   ; Put archive file there
   File SpectMorph.dll
-  CreateShortCut "SpectMorph.Data.lnk" "\$INSTDIR"
+  CreateShortCut "\$pluginDir\\SpectMorph.data.lnk" "\$INSTDIR"
 
   CreateDirectory "\$SMPROGRAMS\\SpectMorph"
   CreateShortCut "\$SMPROGRAMS\\SpectMorph\\Uninstall.lnk" "\$INSTDIR\\Uninstall.exe"

@@ -420,7 +420,7 @@ set_windows_data_dir()
     }
   *last_backslash = 0;
 
-  string link = string (path) + "\\SpectMorph.Data.lnk";
+  string link = string (path) + "\\SpectMorph.data.lnk";
   string pkg_data_dir = sm_resolve_link (link);
   if (pkg_data_dir == "")
     {
