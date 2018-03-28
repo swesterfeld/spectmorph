@@ -70,12 +70,19 @@ cat >> $SETUP_NSI << EOH
   WriteUninstaller "\$INSTDIR\\Uninstall.exe"
 
   Call StorePluginDir
-SectionEnd ; end the section
+
+  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SpectMorph" "DisplayName" "SpectMorph 0.4.0"
+  WriteRegStr HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SpectMorph" "UninstallString" '"\$INSTDIR\\uninstall.exe"'
+  WriteRegDWORD HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SpectMorph" "NoModify" 1
+  WriteRegDWORD HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SpectMorph" "NoRepair" 1
+SectionEnd
 
 ;--------------------------------
 ;Uninstaller Section
 
 Section "Uninstall"
+  DeleteRegKey HKLM "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\SpectMorph"
+
   Call un.LoadPluginDir
 EOH
 
