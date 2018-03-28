@@ -9,8 +9,6 @@ windows:
  - keyboard input broken
  - dpi scaling
  - led sometimes wrong
- - relocatable plugin installation
- - symlink to install location
  - support mmap?
  - installer
  - build script that builds deps and then main

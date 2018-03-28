@@ -388,6 +388,50 @@ static float getParameter(AEffect *effect, int i)
 }
 
 #ifdef SM_OS_WINDOWS
+#include "windows.h"
+
+HMODULE hInstance;
+
+extern "C" {
+BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
+{
+  hInstance = hInst;
+  return 1;
+}
+} // extern "C"
+
+static void
+set_windows_data_dir()
+{
+  char path[MAX_PATH];
+
+  if (!GetModuleFileName (hInstance, path, MAX_PATH))
+    {
+      VST_DEBUG ("windows data dir: GetModuleFileName failed\n");
+      return;
+    }
+  VST_DEBUG ("windows data dir: dll path is '%s'\n", path);
+
+  char *last_backslash = strrchr (path, '\\');
+  if (!last_backslash)
+    {
+      VST_DEBUG ("windows data dir: no backslash found\n");
+      return;
+    }
+  *last_backslash = 0;
+
+  string link = string (path) + "\\SpectMorph.Data.lnk";
+  string pkg_data_dir = sm_resolve_link (link);
+  if (pkg_data_dir == "")
+    {
+      VST_DEBUG ("windows data dir: error resolving link '%s'\n", link.c_str());
+      return;
+    }
+
+  VST_DEBUG ("windows data dir: link points to '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
+
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(dllexport);
 #endif
 
@@ -395,18 +439,18 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
   Debug::set_filename ("smvstplugin.log");
 
-  VST_DEBUG ("VSTPluginMain called\n");
+  if (!sm_init_done())
+    sm_init_plugin();
+
+  VST_DEBUG ("VSTPluginMain called\n"); // debug statements are only visible after init
+
   if (audioMaster)
     {
       audioMaster (NULL, audioMasterGetProductString, 0, 0, hostProductString, 0.0f);
     }
 
-  if (!sm_init_done())
-    sm_init_plugin();
-
 #ifdef SM_OS_WINDOWS
-  // FIXME: use better strategy to find plugin data dir
-  sm_set_pkg_data_dir ("c:/spectmorph");
+  set_windows_data_dir();
 #endif
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
