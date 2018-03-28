@@ -92,24 +92,26 @@ Section "Uninstall"
   Call un.LoadPluginDir
 EOH
 
-# remove files
-find instruments templates -type f | while read f
-do
-  echo "Delete \$INSTDIR/$f" | sed 's,/,\\,g'
-done >> $SETUP_NSI
+(
+  # remove files
+  find instruments templates -type f | while read FILE
+  do
+    echo "  Delete \$INSTDIR/$FILE" | sed 's,/,\\,g'
+  done
 
-# remove dirs in reverse order
-find instruments templates -type d | tac | while read d
-do
-  echo "RMDir \$INSTDIR/$d" | sed 's,/,\\,g'
-done >> $SETUP_NSI
+  # remove dirs in reverse order
+  find instruments templates -type d | tac | while read DIR
+  do
+    echo "  RMDir \$INSTDIR/$DIR" | sed 's,/,\\,g'
+  done
+) >> $SETUP_NSI
 
 cat >> $SETUP_NSI << EOH
   Delete "\$INSTDIR\\Uninstall.exe"
   Delete "\$INSTDIR\\PluginDir.txt"
   RMDir "\$INSTDIR"
   Delete "\$pluginDir\\SpectMorph.dll"
-  Delete "\$pluginDir\\SpectMorph.Data.lnk"
+  Delete "\$pluginDir\\SpectMorph.data.lnk"
 SectionEnd
 
 ; uninstall needs to know in which vst plugin dir SpectMorph.dll was installed
@@ -122,6 +124,7 @@ Function StorePluginDir
   FileOpen \$filePluginDir "\$INSTDIR\\PluginDir.txt" w
   FileWrite \$filePluginDir "\$pluginDir"
   FileClose \$filePluginDir
+  SetFileAttributes "\$INSTDIR\\PluginDir.txt" HIDDEN
 FunctionEnd
 
 Function un.LoadPluginDir
