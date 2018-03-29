@@ -591,7 +591,14 @@ Window::on_event (const PuglEvent* event)
         on_display();
         break;
       case PUGL_CONFIGURE:
-        cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
+        {
+          int w, h;
+          get_scaled_size (&w, &h);
+          cairo_gl.reset (new CairoGL (w, h));
+
+          // on windows, the coordinates of the event often doesn't match actual size
+          // cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
+        }
         puglEnterContext (view);
         cairo_gl->configure();
         puglLeaveContext (view, false);
