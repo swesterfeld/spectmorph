@@ -6,5 +6,6 @@ smplay
 smtool
 smstrip
 smwavset
+sm*.exe
 .deps
 .libs

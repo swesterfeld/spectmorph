@@ -3,6 +3,7 @@
 *.o
 *.lo
 *.la
+sm*.exe
 smuitest
 smplantest
 smscrolltest
