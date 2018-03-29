@@ -5,6 +5,7 @@
 #include "smmemout.hh"
 #include "smhexstring.hh"
 #include "smutils.hh"
+#include "smvstresize.hh"
 
 using namespace SpectMorph;
 
@@ -93,7 +94,9 @@ VstUI::on_update_window_size()
       rectangle.bottom = height;
       rectangle.right  = width;
 
-      plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
+      int rc = plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
+      if (rc == 0)
+        vst_manual_resize (widget, width, height);
     }
 }
 

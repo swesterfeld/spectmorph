@@ -12,7 +12,7 @@ spectmorph_vstdir = $(libdir)/vst
 plugindir = $(spectmorph_vstdir)
 plugin_LTLIBRARIES = spectmorph_vst.la
 
-SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh
+SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh smvstresize.hh
 SMVSTSOURCES = smvstplugin.cc smvstui.cc
 
 spectmorph_vst_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
