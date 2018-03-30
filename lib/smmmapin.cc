@@ -13,10 +13,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#ifndef SM_OS_WINDOWS
-#include <sys/mman.h>
-#endif
-
 using namespace SpectMorph;
 
 static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
@@ -24,38 +20,33 @@ static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
 GenericIn*
 MMapIn::open (const std::string& filename)
 {
-#ifndef SM_OS_WINDOWS
   if (getenv ("SPECTMORPH_NOMMAP"))
     return nullptr;
 
-  int fd = ::open (filename.c_str(), O_RDONLY);
-  if (fd >= 0)
+  GMappedFile *gmf = g_mapped_file_new (filename.c_str(), FALSE, nullptr);
+  if (gmf)
     {
-      struct stat st;
+      unsigned char *bytes  = reinterpret_cast<unsigned char *> (g_mapped_file_get_contents (gmf));
+      size_t         length = g_mapped_file_get_length (gmf);
 
-      if (fstat (fd, &st) == 0)
-        {
-          unsigned char *mapfile = static_cast<unsigned char *> (mmap (nullptr, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
-          if (mapfile != MAP_FAILED)
-            {
-              return new MMapIn (mapfile, mapfile + st.st_size, fd);
-            }
-        }
+      return new MMapIn (bytes, bytes + length, gmf);
     }
-#endif
-  return nullptr;
+  else
+    {
+      return nullptr;
+    }
 }
 
 GenericIn*
 MMapIn::open_mem (unsigned char *begin, unsigned char *end)
 {
-  return new MMapIn (begin, end, -1);
+  return new MMapIn (begin, end, nullptr);
 }
 
-MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
+MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, GMappedFile *gmf) :
   mapfile (mapfile),
   mapend (mapend),
-  fd (fd)
+  g_mapped_file (gmf)
 {
   pos = static_cast<unsigned char *> (mapfile);
 
@@ -64,13 +55,9 @@ MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd) :
 
 MMapIn::~MMapIn()
 {
-#ifndef SM_OS_WINDOWS
-  if (fd >= 0)
-    {
-      munmap (mapfile, mapend - mapfile);
-      close (fd);
-    }
-#endif
+  if (g_mapped_file)
+    g_mapped_file_unref (g_mapped_file);
+
   leak_debugger.del (this);
 }
 
@@ -126,5 +113,5 @@ MMapIn::get_pos()
 GenericIn *
 MMapIn::open_subfile (size_t pos, size_t len)
 {
-  return new MMapIn (mapfile + pos, mapfile + pos + len, -1 /* no fd */);
+  return new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */);
 }

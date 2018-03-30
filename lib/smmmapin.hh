@@ -4,7 +4,7 @@
 #define SPECTMORPH_MMAP_IN_HH
 
 #include <string>
-
+#include <glib.h>
 #include "smgenericin.hh"
 
 namespace SpectMorph
@@ -15,9 +15,9 @@ class MMapIn : public GenericIn
   unsigned char *mapfile;
   unsigned char *mapend;
   unsigned char *pos;
-  int            fd;
+  GMappedFile   *g_mapped_file;
 
-  MMapIn (unsigned char *mapfile, unsigned char *mapend, int fd);
+  MMapIn (unsigned char *mapfile, unsigned char *mapend, GMappedFile *g_mapped_file);
   ~MMapIn();
 public:
   static GenericIn* open (const std::string& filename);
