@@ -11,7 +11,6 @@
 #include "smmorphplan.hh"
 #include "smmorphplanwindow.hh"
 #include "smtoolbutton.hh"
-#include "smrenameopdialog.hh"
 #include <functional>
 #include <sys/time.h>
 
