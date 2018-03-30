@@ -140,7 +140,7 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
   window->on_resize (width, height);
 }
 
-Window::Window (const string& title, int width, int height, PuglNativeWindow win_id, bool resize) :
+Window::Window (const string& title, int width, int height, PuglNativeWindow win_id, bool resize, PuglNativeWindow transient_parent) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
@@ -166,6 +166,8 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   puglIgnoreKeyRepeat (view, false);
   if (win_id)
     puglInitWindowParent (view, win_id);
+  if (transient_parent)
+    puglInitTransientFor (view, transient_parent);
   puglCreateWindow (view, title.c_str());
 
   puglSetHandle (view, this);
