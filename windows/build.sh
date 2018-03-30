@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source ./config.sh
+
 die()
 {
   echo "$0: $@"
@@ -9,6 +11,7 @@ die()
 set -x
 make -j9 -C.. || die "make failed"
 make -C.. install || die "make install failed"
-cp -v /mingw64/lib/vst/SpectMorph.dll .
+cp -v $PREFIX/lib/vst/SpectMorph.dll . || die "error: cp SpectMorph.dll"
+mkdir -p ./templates
 rm ./templates/*
-cp -v /mingw64/share/spectmorph/templates/* templates
+cp -v $PREFIX/share/spectmorph/templates/* templates || die "error: cp templates"
