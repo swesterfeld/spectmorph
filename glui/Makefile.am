@@ -29,7 +29,7 @@ SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smmorphsourceview.cc smmorphoutputview.cc smcomboboxoperator.cc \
 	 smmorphlinearview.cc smpropertyview.cc smmorphlfoview.cc \
 	 smmorphgridview.cc smmorphgridwidget.cc smmessagebox.cc \
-	 smmorphoperatorview.cc $(SMFDIALOG) smrenameopdialog.cc \
+	 smmorphoperatorview.cc $(SMFDIALOG) \
 	 smdialog.cc smaboutdialog.cc smmorphplancontrol.cc \
 	 smdrawutils.cc smrenameopwindow.cc
 
@@ -41,7 +41,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcheckbox.hh smpropertyview.hh smmorphlfoview.hh smscrollview.hh \
 	 smbutton.hh smtoolbutton.hh smmorphgridview.hh smmorphgridwidget.hh \
 	 smlineedit.hh smnativefiledialog.hh smled.hh \
-	 smrenameopdialog.hh smdialog.hh smaboutdialog.hh smoperatorlayout.hh \
+	 smdialog.hh smaboutdialog.hh smoperatorlayout.hh \
 	 smmessagebox.hh smrenameopwindow.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
