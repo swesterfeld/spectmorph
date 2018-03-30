@@ -19,7 +19,7 @@ typedef uint64_t      uint64;
 typedef unsigned int  uint;
 
 #define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
-#define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+#define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
 
 std::string string_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
