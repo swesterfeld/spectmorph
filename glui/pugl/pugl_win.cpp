@@ -159,11 +159,19 @@ puglCreateWindow(PuglView* view, const char* title)
 	RECT wr = { 0, 0, view->width, view->height };
 	AdjustWindowRectEx(&wr, view->impl->win_flags, FALSE, WS_EX_TOPMOST);
 
+	int x = CW_USEDEFAULT, y = CW_USEDEFAULT;
+	if (view->transient_parent) {
+		// center this window on top of transient parent
+		RECT rect;
+		GetWindowRect ((HWND) view->transient_parent, &rect);
+		x = (rect.left + rect.right) / 2 - (wr.right - wr.left) / 2;
+		y = (rect.top + rect.bottom) / 2 - (wr.bottom - wr.top) / 2;
+	}
 	impl->hwnd = CreateWindowEx(
 		WS_EX_TOPMOST,
 		wc.lpszClassName, title, view->impl->win_flags,
-		CW_USEDEFAULT, CW_USEDEFAULT, wr.right-wr.left, wr.bottom-wr.top,
-		(HWND)view->parent, NULL, NULL, NULL);
+		x, y, wr.right-wr.left, wr.bottom-wr.top,
+		view->parent ? (HWND)view->parent : (HWND)view->transient_parent, NULL, NULL, NULL);
 
 	if (!impl->hwnd) {
 		free((void*)impl->wc.lpszClassName);
