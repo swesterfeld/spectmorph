@@ -294,7 +294,9 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetVendorVersion:
        return 0;
     case effCanDo:
-      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 || strcmp("MPE", (char *)ptr) == 0) return 1;
+      if (strcmp("receiveVstMidiEvent", (char *)ptr) == 0 ||
+          strcmp("MPE", (char *)ptr) == 0 ||
+          strcmp ("supportsViewDpiScaling", (char *)ptr) == 0) return 1;
       if (strcmp("midiKeyBasedInstrumentControl", (char *)ptr) == 0 ||
               strcmp("receiveVstSysexEvent", (char *)ptr) == 0 ||
               strcmp("midiSingleNoteTuningChange", (char *)ptr) == 0 ||
