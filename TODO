@@ -3,7 +3,6 @@ insts:
  - tuba
  - double bass
  - flute
- - instrument reorder
 
 NEXT RELEASE:
 - maybe treat std::sin, std::cos like std::fabs
