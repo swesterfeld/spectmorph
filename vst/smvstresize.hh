@@ -24,9 +24,15 @@
 */
 
 #include "smutils.hh"
-#ifdef SM_OS_WINDOWS
+
+#ifndef SM_OS_WINDOWS
+static inline void
+vst_manual_resize (SpectMorph::Window *window, int newWidth, int newHeight)
+{
+  /* dummy implementation */
+}
+#else
 #include "windows.h"
-#endif
 
 using std::string;
 
@@ -55,7 +61,6 @@ string_eq_ignore_case (const string& a, const string &b)
 static inline void
 vst_manual_resize (SpectMorph::Window *window, int newWidth, int newHeight)
 {
-#ifdef SM_OS_WINDOWS
   // some hosts don't support the sizeWindow call, so do it manually..
   int dw = 0;
   int dh = 0;
@@ -98,5 +103,5 @@ vst_manual_resize (SpectMorph::Window *window, int newWidth, int newHeight)
   if (w != 0)
     SetWindowPos (w, 0, 0, 0, newWidth + dw, newHeight + dh,
         SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
-#endif
 }
+#endif
