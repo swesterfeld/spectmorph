@@ -361,7 +361,7 @@ Window::on_display()
         }
     }
 
-  if (have_file_dialog)
+  if (have_file_dialog || have_popup_window)
     {
       cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
       cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
@@ -435,6 +435,13 @@ Window::on_display()
 void
 Window::process_events()
 {
+  if (popup_window)
+    {
+      popup_window->process_events();
+
+      if (!have_popup_window)
+        popup_window.reset(); // must be deleted after (not during) process_events */
+    }
   if (native_file_dialog)
     {
       native_file_dialog->process_events();
@@ -507,8 +514,9 @@ Window::on_event (const PuglEvent* event)
   double ex, ey; /* global scale translated */
   Widget *current_widget = nullptr;
 
-  /* as long as the file dialog is open, ignore user input */
-  if (have_file_dialog && event->type != PUGL_EXPOSE && event->type != PUGL_CONFIGURE)
+  /* as long as the file dialog or popup window is open, ignore user input */
+  const bool ignore_input = have_file_dialog || have_popup_window;
+  if (ignore_input && event->type != PUGL_EXPOSE && event->type != PUGL_CONFIGURE)
     return;
 
   switch (event->type)
@@ -705,7 +713,7 @@ Window::wait_event_fps()
 void
 Window::wait_for_event()
 {
-  if (native_file_dialog)
+  if (native_file_dialog || popup_window)
     {
       /* need to wait for events of this view, and handle io for file dialog */
       wait_event_fps();
@@ -739,6 +747,23 @@ void
 Window::set_dialog_widget (Widget *widget)
 {
   dialog_widget = widget;
+}
+
+void
+Window::set_popup_window (Window *pwin)
+{
+  if (pwin)
+    {
+      // take ownership
+      popup_window.reset (pwin);
+
+      have_popup_window = true;
+    }
+  else
+    {
+      have_popup_window = false;
+    }
+  update_full();
 }
 
 PuglNativeWindow

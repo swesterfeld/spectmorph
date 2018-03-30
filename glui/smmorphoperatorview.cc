@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphoperatorview.hh"
+#include "smrenameopwindow.hh"
 
 using namespace SpectMorph;
 
@@ -82,10 +83,5 @@ MorphOperatorView::on_end_move (double y)
 void
 MorphOperatorView::on_rename()
 {
-  auto dialog = new RenameOpDialog (window(), m_op);
-
-  dialog->run ([=](bool ok) {
-    if (ok)
-      m_op->set_name (dialog->new_name());
-  });
+  RenameOpWindow::create (window(), m_op);
 }

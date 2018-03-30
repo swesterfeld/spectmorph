@@ -28,6 +28,8 @@ protected:
   Widget                   *menu_widget = nullptr;
   Widget                   *keyboard_focus_widget = nullptr;
   Widget                   *dialog_widget = nullptr;
+  bool                      have_popup_window = false;
+  std::unique_ptr<Window>   popup_window;
   double                    global_scale;
   bool                      auto_redraw;
   Rect                      update_region;
@@ -59,6 +61,7 @@ public:
   void set_keyboard_focus (Widget *widget);
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
+  void set_popup_window (Window *window);
   Window *window() override;
   PuglNativeWindow native_window();
   void set_gui_scaling (double s);
