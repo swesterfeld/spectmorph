@@ -171,7 +171,11 @@ puglCreateWindow(PuglView* view, const char* title)
 		WS_EX_TOPMOST,
 		wc.lpszClassName, title, view->impl->win_flags,
 		x, y, wr.right-wr.left, wr.bottom-wr.top,
-		view->parent ? (HWND)view->parent : (HWND)view->transient_parent, NULL, NULL, NULL);
+		// view->parent ? (HWND)view->parent : (HWND)view->transient_parent,
+		//  -> transient setup unfortunately this fails with bitwigs keyboard intercept ("space")
+		//     so we don't use it
+		(HWND)view->parent,
+		NULL, NULL, NULL);
 
 	if (!impl->hwnd) {
 		free((void*)impl->wc.lpszClassName);
