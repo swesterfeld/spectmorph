@@ -5,9 +5,6 @@
 
 #include <string>
 
-/* we want to be able to use sm_debug without extra includes */
-#include "smdebug.hh"
-
 namespace SpectMorph
 {
 
@@ -81,5 +78,8 @@ std::string sm_resolve_link (const std::string& link_file);
 #endif
 
 } // namespace SpectMorph
+
+/* we want to be able to use sm_debug without extra includes */
+#include "smdebug.hh"
 
 #endif

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <string.h>
+#include <glib.h>
 #include <set>
 #include <mutex>
 #include <atomic>
