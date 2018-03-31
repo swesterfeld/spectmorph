@@ -74,6 +74,8 @@ puglInit()
 	view->width  = 640;
 	view->height = 480;
 
+        (void) puglDecodeUTF8; // avoid compiler warning
+
 	return view;
 }
 
@@ -135,7 +137,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		free((void*)impl->wc.lpszClassName);
 		free(impl);
 		free(view);
-		return NULL;
+		return 0;
 	}
 
 	if (view->parent) {
@@ -213,7 +215,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		free((void*)impl->wc.lpszClassName);
 		free(impl);
 		free(view);
-		return NULL;
+		return 0;
 	}
 	wglMakeCurrent(impl->hdc, impl->hglrc);
 
@@ -510,7 +512,6 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 	RECT        rect;
 	MINMAXINFO* mmi;
 	POINT       pt;
-	bool        dispatchThisEvent = true;
 
 	memset(&event, 0, sizeof(event));
 
