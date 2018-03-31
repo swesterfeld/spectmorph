@@ -34,12 +34,8 @@ MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   audio.mix_freq             = 48000;
   audio.frame_size_ms        = 1;
   audio.frame_step_ms        = 1;
-  audio.attack_start_ms      = 0;
-  audio.attack_end_ms        = 0;
   audio.zeropad              = 4;
   audio.loop_type            = Audio::LOOP_NONE;
-  audio.zero_values_at_start = 0;
-  audio.sample_count         = 2 << 31;
 
   leak_debugger.add (this);
 }

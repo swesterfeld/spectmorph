@@ -118,12 +118,8 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.mix_freq             = 48000;
   m_audio.frame_size_ms        = 1;
   m_audio.frame_step_ms        = 1;
-  m_audio.attack_start_ms      = 0;
-  m_audio.attack_end_ms        = 0;
   m_audio.zeropad              = 4;
   m_audio.loop_type            = Audio::LOOP_NONE;
-  m_audio.zero_values_at_start = 0;
-  m_audio.sample_count         = 2 << 31;
 }
 
 EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
