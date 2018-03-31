@@ -7,7 +7,6 @@ windows:
  - led sometimes wrong
 
 other:
- - compile warnings on win32
  - tuba, double bass, ...
  - improve sminstbuilder tools to support relative filenames
  - velocity should map to "Velocity Sensitivity (dB)" (?)
