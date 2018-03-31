@@ -240,12 +240,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
   return Error::NONE;
 }
 
-SpectMorph::Audio::Audio() :
-  zeropad (0),
-  loop_type (LOOP_NONE), /* no loop */
-  loop_start (-1),
-  loop_end (-1),
-  original_samples_norm_db (0)
+SpectMorph::Audio::Audio()
 {
   leak_debugger.add (this);
 }

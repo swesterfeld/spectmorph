@@ -93,21 +93,21 @@ public:
     LOOP_TIME_PING_PONG,
   };
 
-  float    fundamental_freq;            //!< fundamental frequency (note which was encoded), or 0 if not available
-  float    mix_freq;                    //!< mix freq (sampling rate) of the original audio data
-  float    frame_size_ms;               //!< length of each audio frame in milliseconds
-  float    frame_step_ms;               //!< stepping of the audio frames in milliseconds
-  float    attack_start_ms;             //!< start of attack in milliseconds
-  float    attack_end_ms;               //!< end of attack in milliseconds
-  int      zeropad;                     //!< FFT zeropadding used during analysis
-  LoopType loop_type;                   //!< type of loop to be used during sustain phase of playback
-  int      loop_start;                  //!< loop point to be used during sustain phase of playback
-  int      loop_end;                    //!< loop point to be used during sustain phase of playback
-  int      zero_values_at_start;        //!< number of zero values added by encoder (strip during decoding)
-  int      sample_count;                //!< number of samples encoded (including zero_values_at_start)
-  std::vector<float> original_samples;  //!< original time domain signal as samples (debugging only)
-  float    original_samples_norm_db;    //!< normalization factor to be applied to original samples
-  std::vector<AudioBlock> contents;     //!< the actual frame data
+  float    fundamental_freq         = 0;          //!< fundamental frequency (note which was encoded), or 0 if not available
+  float    mix_freq                 = 0;          //!< mix freq (sampling rate) of the original audio data
+  float    frame_size_ms            = 0;          //!< length of each audio frame in milliseconds
+  float    frame_step_ms            = 0;          //!< stepping of the audio frames in milliseconds
+  float    attack_start_ms          = 0;          //!< start of attack in milliseconds
+  float    attack_end_ms            = 0;          //!< end of attack in milliseconds
+  int      zeropad                  = 0;          //!< FFT zeropadding used during analysis
+  LoopType loop_type                = LOOP_NONE;  //!< type of loop to be used during sustain phase of playback
+  int      loop_start               = 0;          //!< loop point to be used during sustain phase of playback
+  int      loop_end                 = 0;          //!< loop point to be used during sustain phase of playback
+  int      zero_values_at_start     = 0;          //!< number of zero values added by encoder (strip during decoding)
+  int      sample_count             = 0;          //!< number of samples encoded (including zero_values_at_start)
+  std::vector<float> original_samples;            //!< original time domain signal as samples (debugging only)
+  float    original_samples_norm_db = 0;          //!< normalization factor to be applied to original samples
+  std::vector<AudioBlock> contents;               //!< the actual frame data
 
   Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   Error load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
