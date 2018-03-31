@@ -218,8 +218,6 @@ public:
     my_audio.attack_end_ms = 20;
     my_audio.zeropad = 4;
     my_audio.loop_type = Audio::LOOP_NONE;
-    my_audio.zero_values_at_start = 0;
-    my_audio.sample_count = 1024*1024*1024;
 
     if (my_audio_block.noise.empty())
       {
