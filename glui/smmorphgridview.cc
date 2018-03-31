@@ -52,7 +52,7 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_
     }
   else
     {
-      assert (false);
+      g_assert_not_reached();
     }
 
   title = new Label (body_widget, ctl_xy == CONTROL_X ? "X Value" : "Y Value");
@@ -119,7 +119,7 @@ MorphGridControlUI::on_combobox_changed()
         new_type = MorphGrid::CONTROL_SIGNAL_2;
       else
         {
-          assert (false);
+          g_assert_not_reached();
         }
       if (ctl_xy == CONTROL_X)
         morph_grid->set_x_control_type (new_type);

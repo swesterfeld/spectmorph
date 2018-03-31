@@ -61,7 +61,7 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
     control_combobox->set_active (morph_linear->control_op());
   else
     {
-      assert (false);
+      g_assert_not_reached();
     }
 
   // MORPHING
@@ -127,7 +127,7 @@ MorphLinearView::on_control_changed()
         morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
       else
         {
-          assert (false);
+          g_assert_not_reached();
         }
     }
   update_slider();

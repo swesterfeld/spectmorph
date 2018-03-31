@@ -36,7 +36,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
     wave_type_combobox->set_text (WAVE_TEXT_TRIANGLE);
   else
     {
-      assert (false);
+      g_assert_not_reached();
     }
   connect (wave_type_combobox->signal_item_changed, this, &MorphLFOView::on_wave_type_changed);
 
@@ -76,6 +76,6 @@ MorphLFOView::on_wave_type_changed()
     morph_lfo->set_wave_type (MorphLFO::WAVE_TRIANGLE);
   else
     {
-      assert (false);
+      g_assert_not_reached();
     }
 }
