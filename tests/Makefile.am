@@ -19,7 +19,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
         testlsfperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
         testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
-	teststrformat
+	teststrformat testvelocity
 
 if !COND_WINDOWS
 noinst_PROGRAMS += testjobqueue
@@ -141,6 +141,9 @@ testmidisynth_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 teststrformat_SOURCES = teststrformat.cc
 teststrformat_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testvelocity_SOURCES = testvelocity.cc
+testvelocity_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm
