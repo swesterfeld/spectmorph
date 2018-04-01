@@ -21,7 +21,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 {
   connect (morph_plan->signal_operator_removed, this, &MorphOutput::on_operator_removed);
 
-  m_velocity_sensitivity = 30; /* dB */
+  m_velocity_sensitivity = 24; /* dB */
 
   m_sines = true;
   m_noise = true;
@@ -58,7 +58,7 @@ MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
   vibrato_depth (output, "Depth", "%.2f Cent", 0, 50, &MorphOutput::vibrato_depth, &MorphOutput::set_vibrato_depth),
   vibrato_frequency (output, "Frequency", "%.3f Hz", 1.0, 15, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
   vibrato_attack (output, "Attack", "%.2f ms", 0, 1000, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack),
-  velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 50, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
+  velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 48, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
 {
 }
 
