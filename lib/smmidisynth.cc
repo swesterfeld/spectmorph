@@ -98,8 +98,9 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
   if (!morph_plan_synth.have_output())
     return;
 
-  set_mono_enabled (voices[0].mp_voice->output()->portamento());
-  portamento_glide = voices[0].mp_voice->output()->portamento_glide();
+  const MorphOutputModule *output = voices[0].mp_voice->output();
+  set_mono_enabled (output->portamento());
+  portamento_glide = output->portamento_glide();
 
   Voice *voice = alloc_voice();
   if (voice)
@@ -110,7 +111,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
       voice->pitch_bend_steps  = 0;
       voice->state             = Voice::STATE_ON;
       voice->midi_note         = midi_note;
-      voice->velocity          = midi_velocity / 127.;
+      voice->gain              = velocity_to_gain (midi_velocity / 127., output->velocity_sensitivity());
       voice->channel           = channel;
 
       if (!mono_enabled)
@@ -139,7 +140,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
                   mono_voice->pitch_bend_steps  = voice->pitch_bend_steps;
                   mono_voice->state             = voice->state;
                   mono_voice->midi_note         = voice->midi_note;
-                  mono_voice->velocity          = voice->velocity;
+                  mono_voice->gain              = voice->gain;
                   mono_voice->channel           = voice->channel;
 
 
@@ -355,7 +356,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * voice->velocity;
+            output[i] += samples[i] * voice->gain;
         }
       else if (voice->state == Voice::STATE_RELEASE)
         {
@@ -363,7 +364,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * voice->velocity;
+            output[i] += samples[i] * voice->gain;
 
           if (output_module->done())
             {

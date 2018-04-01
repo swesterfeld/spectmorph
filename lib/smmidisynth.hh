@@ -29,7 +29,7 @@ class MidiSynth
     bool         pedal;
     int          midi_note;
     int          channel;
-    double       velocity;
+    double       gain;
     double       freq;
     double       pitch_bend_freq;
     double       pitch_bend_factor;
