@@ -30,12 +30,16 @@ struct MorphOutputProperties
   LinearParamProperty<MorphOutput> vibrato_depth;
   LogParamProperty<MorphOutput>    vibrato_frequency;
   LinearParamProperty<MorphOutput> vibrato_attack;
+
+  LinearParamProperty<MorphOutput> velocity_sensitivity;
 };
 
 class MorphOutput : public MorphOperator
 {
   std::vector<std::string>     load_channel_op_names;
   std::vector<MorphOperator *> channel_ops;
+
+  float                        m_velocity_sensitivity;
 
   bool                         m_sines;
   bool                         m_noise;
@@ -121,6 +125,9 @@ public:
 
   void           set_vibrato_attack (float attack);
   float          vibrato_attack() const;
+
+  void           set_velocity_sensitivity (float vsense);
+  float          velocity_sensitivity() const;
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);

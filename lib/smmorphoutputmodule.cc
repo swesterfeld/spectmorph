@@ -73,8 +73,9 @@ MorphOutputModule::set_config (MorphOperator *op)
       if (dec)
         dec->set_config (out_op, morph_plan_voice->mix_freq());
 
-      m_portamento       = out_op->portamento();
-      m_portamento_glide = out_op->portamento_glide();
+      m_portamento            = out_op->portamento();
+      m_portamento_glide      = out_op->portamento_glide();
+      m_velocity_sensitivity  = out_op->velocity_sensitivity();
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
@@ -93,6 +94,12 @@ float
 MorphOutputModule::portamento_glide() const
 {
   return m_portamento_glide;
+}
+
+float
+MorphOutputModule::velocity_sensitivity() const
+{
+  return m_velocity_sensitivity;
 }
 
 static void

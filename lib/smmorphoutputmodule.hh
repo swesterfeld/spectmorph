@@ -16,6 +16,7 @@ class MorphOutputModule : public MorphOperatorModule
 
   bool  m_portamento;
   float m_portamento_glide;
+  float m_velocity_sensitivity;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
@@ -29,6 +30,7 @@ public:
 
   bool  portamento() const;
   float portamento_glide() const;
+  float velocity_sensitivity() const;
 };
 
 }

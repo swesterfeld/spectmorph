@@ -21,6 +21,8 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 {
   connect (morph_plan->signal_operator_removed, this, &MorphOutput::on_operator_removed);
 
+  m_velocity_sensitivity = 30; /* dB */
+
   m_sines = true;
   m_noise = true;
 
@@ -55,7 +57,8 @@ MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
   portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
   vibrato_depth (output, "Depth", "%.2f Cent", 0, 50, &MorphOutput::vibrato_depth, &MorphOutput::set_vibrato_depth),
   vibrato_frequency (output, "Frequency", "%.3f Hz", 1.0, 15, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
-  vibrato_attack (output, "Attack", "%.2f ms", 0, 1000, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack)
+  vibrato_attack (output, "Attack", "%.2f ms", 0, 1000, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack),
+  velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 50, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
 {
 }
 
@@ -109,6 +112,9 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("vibrato_depth", m_vibrato_depth);
   out_file.write_float ("vibrato_frequency", m_vibrato_frequency);
   out_file.write_float ("vibrato_attack", m_vibrato_attack);
+
+  out_file.write_float ("velocity_sensitivity", m_velocity_sensitivity);
+
   return true;
 }
 
@@ -216,6 +222,10 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "vibrato_attack")
             {
               m_vibrato_attack = ifile.event_float();
+            }
+          else if (ifile.event_name() == "velocity_sensitivity")
+            {
+              m_velocity_sensitivity = ifile.event_float();
             }
           else
             {
@@ -511,6 +521,20 @@ void
 MorphOutput::set_vibrato_attack (float attack)
 {
   m_vibrato_attack = attack;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+float
+MorphOutput::velocity_sensitivity() const
+{
+  return m_velocity_sensitivity;
+}
+
+void
+MorphOutput::set_velocity_sensitivity (float velocity_sensitivity)
+{
+  m_velocity_sensitivity = velocity_sensitivity;
 
   m_morph_plan->emit_plan_changed();
 }
