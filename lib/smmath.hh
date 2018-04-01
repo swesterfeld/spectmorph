@@ -525,6 +525,7 @@ double sm_xparam (double x, double slope);
 double sm_xparam_inv (double x, double slope);
 
 double sm_bessel_i0 (double x);
+double velocity_to_gain (double velocity, double vrange_db);
 
 template<typename T>
 inline const T&

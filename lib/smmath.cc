@@ -143,4 +143,23 @@ sm_bessel_i0 (double x)
   return result;
 }
 
+double
+velocity_to_gain (double velocity, double vrange_db)
+{
+  /* vrange_db should be positive or zero */
+  g_return_val_if_fail (vrange_db > -0.01, 0);
+
+  /* convert, so that
+   *  - gain (0)   is   at the -vrange_db
+   *  - gain (1)   is   0 db
+   *  - sqrt(gain(v)) is a straight line
+   *
+   *  See Roger B. Dannenberg: The Interpretation of Midi Velocity
+   */
+  const double b = db_to_factor (-vrange_db * 0.5);
+  const double x = (1 - b) * velocity + b;
+
+  return x * x;
+}
+
 }
