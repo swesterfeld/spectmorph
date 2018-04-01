@@ -38,6 +38,7 @@ class MorphOutputView : public MorphOperatorView
   PropertyView                pv_vibrato_depth;
   PropertyView                pv_vibrato_frequency;
   PropertyView                pv_vibrato_attack;
+  PropertyView                pv_velocity_sensitivity;
 
   OperatorLayout              op_layout;
   int                         op_layout_height;

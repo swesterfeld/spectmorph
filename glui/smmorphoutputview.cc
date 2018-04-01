@@ -23,7 +23,8 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_portamento_glide (morph_output_properties.portamento_glide),
   pv_vibrato_depth (morph_output_properties.vibrato_depth),
   pv_vibrato_frequency (morph_output_properties.vibrato_frequency),
-  pv_vibrato_attack (morph_output_properties.vibrato_attack)
+  pv_vibrato_attack (morph_output_properties.vibrato_attack),
+  pv_velocity_sensitivity (morph_output_properties.velocity_sensitivity)
 {
   hide_tool_buttons(); // no fold/close for output
 
@@ -38,6 +39,10 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 
   op_layout.add_row (3, new Label (body_widget, "Source"), source_combobox);
 
+  // Velocity Sensitivity
+  pv_velocity_sensitivity.init_ui (body_widget, op_layout);
+
+  // Sines + Noise
   CheckBox *sines_check_box = new CheckBox (body_widget, "Enable Sine Synthesis");
   sines_check_box->set_checked (morph_output->sines());
   op_layout.add_row (2, sines_check_box);
@@ -46,6 +51,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   noise_check_box->set_checked (morph_output->noise());
   op_layout.add_row (2, noise_check_box);
 
+  // Unison
   CheckBox *unison_check_box = new CheckBox (body_widget, "Enable Unison Effect");
   unison_check_box->set_checked (morph_output->unison());
   op_layout.add_row (2, unison_check_box);
