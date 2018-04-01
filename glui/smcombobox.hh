@@ -146,11 +146,12 @@ struct ComboBoxMenu : public Widget
         update();
       }
   }
-  void
+  bool
   scroll (double dx, double dy) override
   {
     if (scroll_bar)
-      scroll_bar->scroll (dx, dy);
+      return scroll_bar->scroll (dx, dy);
+    return false;
   }
   inline void
   mouse_release (double x, double y) override;

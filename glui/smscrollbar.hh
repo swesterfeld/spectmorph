@@ -26,6 +26,7 @@ class ScrollBar : public Widget
   bool mouse_down = false;
   bool highlight = false;
   Rect clickable_rect;
+  double scroll_factor = 0.25;
 
   Orientation orientation;
 
@@ -136,12 +137,19 @@ public:
       }
   }
   void
+  set_scroll_factor (double new_scroll_factor)
+  {
+    scroll_factor = new_scroll_factor;
+  }
+  bool
   scroll (double dx, double dy) override
   {
-    m_pos = sm_bound<double> (0, m_pos - 0.25 * page_size * dy, 1 - page_size);
+    m_pos = sm_bound<double> (0, m_pos - scroll_factor * page_size * dy, 1 - page_size);
 
     signal_position_changed (m_pos);
     update();
+
+    return true;
   }
   void
   mouse_release (double mx, double my) override

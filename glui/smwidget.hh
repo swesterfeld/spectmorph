@@ -244,9 +244,10 @@ public:
   mouse_release (double x, double y)
   {
   }
-  virtual void
+  virtual bool
   scroll (double dx, double dy)
   {
+    return false;
   }
   virtual void
   enter_event()

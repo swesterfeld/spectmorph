@@ -1,6 +1,5 @@
 general:
  - preserve scroll position on fold/...
- - scroll wheel propagation
  - post resize and signal_update possibly occur in wrong order
  - ship with smfiledialog binary on linux
 

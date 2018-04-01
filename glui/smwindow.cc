@@ -576,7 +576,13 @@ Window::on_event (const PuglEvent* event)
         else
           current_widget = find_widget_xy (ex, ey);
 
-        current_widget->scroll (event->scroll.dx, event->scroll.dy);
+        while (current_widget)
+          {
+            if (current_widget->scroll (event->scroll.dx, event->scroll.dy))
+              break;
+
+            current_widget = current_widget->parent;
+          }
         if (auto_redraw)
           update_full();
         break;

@@ -80,6 +80,7 @@ public:
         h_scroll_bar->height = 16;
         h_scroll_bar->width = view_width;
 
+        h_scroll_bar->set_scroll_factor (0.08);
         h_scroll_bar->set_enabled (h_page_size < 1.0);
         connect (h_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
@@ -93,6 +94,7 @@ public:
         v_scroll_bar->height = view_height;
         v_scroll_bar->width = 16;
 
+        v_scroll_bar->set_scroll_factor (0.08);
         v_scroll_bar->set_enabled (v_page_size < 1.0);
         connect (v_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
@@ -108,6 +110,14 @@ public:
     if (h_scroll_bar)
       scroll_widget->x -= h_scroll_bar->pos() * (scroll_widget->width + 16);
     update();
+  }
+  bool
+  scroll (double dx, double dy) override
+  {
+    if (v_scroll_bar)
+      return v_scroll_bar->scroll (dx, dy);
+
+    return false;
   }
 };
 
