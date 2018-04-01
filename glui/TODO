@@ -10,7 +10,6 @@ windows:
 other:
  - tuba, double bass, ...
  - improve sminstbuilder tools to support relative filenames
- - velocity should map to "Velocity Sensitivity (dB)" (?)
  - morph plan operator cycles lead to crashes
  - font (?)
 
