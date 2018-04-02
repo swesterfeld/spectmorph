@@ -11,9 +11,16 @@ SMSRCS = smzoomcontroller.cc smsampleview.cc smlpcztrans.cc \
 
 lib_LTLIBRARIES = libspectmorphgui.la
 
+bin_PROGRAMS = smfiledialog
+
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphgui_la_CXXFLAGS = $(AM_CXXFLAGS)
 libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
+
+# this little tool should be built unconditionally on linux targets, so we put
+# it in this directory, rather than tools
+smfiledialog_SOURCES  = smfiledialog.cc
+smfiledialog_LDADD    = $(QT_LIBS)
 
 smguiincludedir = $(includedir)/spectmorph/smgui
 smguiinclude_HEADERS = $(SMHDRS) spectmorphgui.hh
