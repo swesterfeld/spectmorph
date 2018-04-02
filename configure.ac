@@ -222,19 +222,24 @@ fi
 rm -fr conftest*
 ])dnl
 
-# define pkgdatadir
+# expand some installation paths for config.h
+#
 # backup old vars
 bak_datadir="$datadir"
+bak_bindir="$bindir"
 bak_prefix="$prefix"
 bak_exec_prefix="$exec_prefix"
 # no prefix given to configure -> use default prefix
 test "x$prefix" = xNONE && prefix="$ac_default_prefix"
 test "x$exec_prefix" = xNONE && exec_prefix="$prefix"
-# define data directory in config.h
+# define data/bin directory in config.h
 datadir=`eval echo "${datadir}"`
+bindir=`eval echo "${bindir}"`
 AC_DEFINE_UNQUOTED(CONFIGURE_INSTALLPATH_PKGDATADIR, ["`eval echo ${datadir}/spectmorph`"], [Package data directory])
+AC_DEFINE_UNQUOTED(CONFIGURE_INSTALLPATH_BINDIR, ["`eval echo ${bindir}`"], [Binary directory])
 # restore old vars
 datadir="$bak_datadir"
+bindir="$bak_bindir"
 prefix="$bak_prefix"
 exec_prefix="$bak_exec_prefix"
 
