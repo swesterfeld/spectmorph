@@ -2,6 +2,7 @@
 
 #include "smnativefiledialog.hh"
 #include "smwindow.hh"
+#include "config.h"
 
 #include <glib.h>
 #include <unistd.h>
@@ -40,11 +41,17 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
 {
   GError *err;
 
+#if 0
   string filter_spec = filter + "|" + filter_title;
   string attach = string_printf ("%ld", win_id);
 
   vector<const char *> argv = { "kdialog", open ? "--getopenfilename" : "--getsavefilename", g_get_home_dir(), filter_spec.c_str(), "--title", title.c_str(),
                                            "--attach", attach.c_str(), nullptr };
+#endif
+  string attach = string_printf ("%ld", win_id);
+
+  vector<const char *> argv = { CONFIGURE_INSTALLPATH_BINDIR "/smfiledialog", open ? "open" : "save", g_get_home_dir(), filter.c_str(), filter_title.c_str(), title.c_str(), attach.c_str(), nullptr };
+
   if (!g_spawn_async_with_pipes (NULL, /* working directory = current dir */
                                  (char **) &argv[0],
                                  NULL, /* inherit environment */
