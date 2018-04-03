@@ -37,7 +37,7 @@ typedef unsigned int  uint;
 
 #define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
 
-#ifdef GM_COMP_GCC
+#ifdef SM_COMP_GCC
   #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
 #else
   #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
