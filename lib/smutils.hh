@@ -5,6 +5,26 @@
 
 #include <string>
 
+// operating system: one of these three
+#if WIN32
+  #define SM_OS_WINDOWS
+#elif __APPLE__
+  #define SM_OS_MACOS
+#elif __linux__
+  #define SM_OS_LINUX
+#else
+  #error "unsupported platform"
+#endif
+
+// detect compiler
+#if __clang__
+  #define SM_COMP_CLANG
+#elif __GNUC__ > 2
+  #define SM_COMP_GCC
+#else
+  #error "unsupported compiler"
+#endif
+
 namespace SpectMorph
 {
 
@@ -16,7 +36,12 @@ typedef uint64_t      uint64;
 typedef unsigned int  uint;
 
 #define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
-#define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
+
+#ifdef GM_COMP_GCC
+  #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
+#else
+  #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (__printf__, format_idx, arg_idx)))
+#endif
 
 std::string string_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 std::string string_vprintf (const char *format, va_list vargs);
@@ -60,18 +85,6 @@ bool constexpr operator!= (Error v, int64_t n) { return int64_t (v) != n; }
 bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 
 const char *sm_error_blurb (Error error);
-
-/* operating system: one of these three
- */
-#if WIN32
-  #define SM_OS_WINDOWS
-#elif __APPLE__
-  #define SM_OS_MACOS
-#elif __linux__
-  #define SM_OS_LINUX
-#else
-  #error "unsupported platform"
-#endif
 
 #ifdef SM_OS_WINDOWS
 std::string sm_resolve_link (const std::string& link_file);
