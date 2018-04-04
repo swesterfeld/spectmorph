@@ -46,7 +46,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
-libspectmorphglui_la_LIBADD = $(PUGL_LIBS) $(CAIRO_LIBS)
+libspectmorphglui_la_LIBADD = $(SPECTMORPH_LIBS) $(PUGL_LIBS) $(CAIRO_LIBS)
 libspectmorphglui_la_LDFLAGS = -no-undefined
 libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
 
