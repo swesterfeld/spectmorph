@@ -18,7 +18,7 @@ Orientation
 
 class ScrollBar : public Widget
 {
-  double page_size;
+  double m_page_size;
   double m_pos;
   double old_pos;
   double mouse_y;
@@ -33,12 +33,12 @@ class ScrollBar : public Widget
 public:
   Signal<double> signal_position_changed;
 
-  ScrollBar (Widget *parent, double new_page_size, Orientation orientation) :
+  ScrollBar (Widget *parent, double page_size, Orientation orientation) :
     Widget (parent),
     m_pos (0),
     orientation (orientation)
   {
-    page_size = sm_bound<double> (0, new_page_size, 1);
+    m_page_size = sm_bound<double> (0, page_size, 1);
   }
   void
   draw (cairo_t *cr) override
@@ -69,9 +69,9 @@ public:
       fg_color.set_rgb (0.5, 0.5, 0.5);
 
     if (orientation == Orientation::HORIZONTAL)
-      clickable_rect = Rect (space + m_pos * rwidth, space, rwidth * page_size, rheight);
+      clickable_rect = Rect (space + m_pos * rwidth, space, rwidth * m_page_size, rheight);
     else
-      clickable_rect = Rect (space, space + m_pos * rheight, rwidth, rheight * page_size);
+      clickable_rect = Rect (space, space + m_pos * rheight, rwidth, rheight * m_page_size);
 
     du.round_box (clickable_rect, 1, 5, Color::null(), fg_color);
   }
@@ -93,19 +93,19 @@ public:
         if (orientation == Orientation::HORIZONTAL)
           {
             if (x < clickable_rect.x())
-              new_pos = m_pos - page_size;
+              new_pos = m_pos - m_page_size;
             else if (x > clickable_rect.x() + clickable_rect.width())
-              new_pos = m_pos + page_size;
+              new_pos = m_pos + m_page_size;
           }
         else
           {
             if (y < clickable_rect.y())
-              new_pos = m_pos - page_size;
+              new_pos = m_pos - m_page_size;
             else if (y > clickable_rect.y() + clickable_rect.height())
-              new_pos = m_pos + page_size;
+              new_pos = m_pos + m_page_size;
           }
 
-        new_pos = sm_bound (0.0, new_pos, 1 - page_size);
+        new_pos = sm_bound (0.0, new_pos, 1 - m_page_size);
         if (m_pos != new_pos)
           {
             m_pos = new_pos;
@@ -131,7 +131,7 @@ public:
         else
           m_pos = old_pos + (x - mouse_x) / width;
 
-        m_pos = sm_bound (0.0, m_pos, 1 - page_size);
+        m_pos = sm_bound (0.0, m_pos, 1 - m_page_size);
         signal_position_changed (m_pos);
         update();
       }
@@ -144,7 +144,7 @@ public:
   bool
   scroll (double dx, double dy) override
   {
-    m_pos = sm_bound<double> (0, m_pos - scroll_factor * page_size * dy, 1 - page_size);
+    m_pos = sm_bound<double> (0, m_pos - scroll_factor * m_page_size * dy, 1 - m_page_size);
 
     signal_position_changed (m_pos);
     update();
