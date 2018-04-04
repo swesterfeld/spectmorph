@@ -2,9 +2,6 @@ general:
  - preserve scroll position on fold/...
  - post resize and signal_update possibly occur in wrong order
 
-windows:
- - led sometimes wrong
-
 other:
  - tuba, double bass, ...
  - improve sminstbuilder tools to support relative filenames
