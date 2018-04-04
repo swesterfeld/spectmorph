@@ -65,8 +65,10 @@ public:
   {
     if (in_move)
       {
-        signal_end_move (abs_y() + y);
         in_move = false;
+
+        // DELETION can occur here
+        signal_end_move (abs_y() + y);
       }
   }
   Signal<double> signal_move;
