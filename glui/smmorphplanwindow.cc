@@ -52,11 +52,9 @@ MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, 
   grid.add_widget (output_parent, 49, 5, 47, height / 8 - 6);
 
   m_morph_plan_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
-  auto update_mp_size = [=]() {
-    scroll_view->set_scroll_widget (m_morph_plan_view, false, true);
-  };
-  connect (m_morph_plan_view->signal_widget_size_changed, update_mp_size);
-  update_mp_size();
+  scroll_view->set_scroll_widget (m_morph_plan_view, false, true);
+
+  connect (m_morph_plan_view->signal_widget_size_changed, scroll_view, &ScrollView::on_widget_size_changed);
 
   /* control widget */
   m_control_widget = new MorphPlanControl (this, m_morph_plan, f);

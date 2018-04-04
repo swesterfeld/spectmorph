@@ -177,6 +177,28 @@ public:
     m_pos = pos;
     update();
   }
+  void
+  set_page_size (double new_page_size)
+  {
+    if (m_page_size == new_page_size)
+      return;
+
+    new_page_size = sm_bound<double> (0, new_page_size, 1);
+
+    m_pos = std::min (m_pos / m_page_size * new_page_size, 1 - new_page_size);
+    if (m_pos < 0)
+      m_pos = 0;
+
+    m_page_size = new_page_size;
+
+    signal_position_changed (m_pos);
+    update();
+  }
+  double
+  page_size() const
+  {
+    return m_page_size;
+  }
 };
 
 }

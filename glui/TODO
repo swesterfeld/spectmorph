@@ -1,5 +1,4 @@
 general:
- - preserve scroll position on fold/...
  - post resize and signal_update possibly occur in wrong order
 
 other:
