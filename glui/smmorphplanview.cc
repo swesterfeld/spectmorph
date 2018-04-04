@@ -106,6 +106,14 @@ MorphPlanView::update_positions()
   height = (y - 1) * 8;
   width  = 43 * 8;
   signal_widget_size_changed();
+
+  /*
+   * it would be possible to avoid a full update if moving widgets on the screen
+   * would automatically update old/new region occupied by the widget
+   *
+   * however update_positions() doesn't happen often, so it should be cheap enough
+   */
+  update_full();
 }
 
 void
