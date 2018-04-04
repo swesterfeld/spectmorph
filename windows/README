@@ -1,0 +1,41 @@
+Download installer
+
+  https://www.msys2.org/
+  msys2-x86_64
+
+Install to C:\msys64
+
+package db update: pacman -Syu
+
+update rest: pacman -Su
+
+Install stuff:
+
+pacman -S git
+pacman -S automake
+pacman -S autoconf
+pacman -S libtool
+# doesn't work: pacman -S mingw-w64-x86_64-cairo
+pacman -S pkg-config
+pacman -S mingw-w64-x86_64-gcc
+pacman -S mingw-w64-x86_64-boost
+pacman -S mingw-w64-x86_64-libao
+pacman -S mingw-w64-x86_64-libsndfile
+pacman -S mingw-w64-x86_64-fftw
+pacman -S autoconf-archive
+pacman -S make
+
+pacman -S mingw-w64-x86_64-libpng
+pacman -S mingw-w64-x86_64-glib2
+pacman -S mingw-w64-x86_64-pixman
+pacman -S mingw-w64-x86_64-nsis
+
+wget https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
+tar xf cairo-1.15.10.tar.xz
+configure --prefix ~/cairo
+make -j9
+make install
+
+export PKG_CONFIG_PATH=~/cairo/lib/pkgconfig:$PKG_CONFIG_PATH
+
+./autogen.sh --prefix=/usr/local/spectmorph --disable-shared --without-qt
