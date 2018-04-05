@@ -8,8 +8,15 @@
 #include <stdarg.h>
 #include <glib.h>
 
-#ifndef SM_OS_WINDOWS
+#ifdef SM_OS_MACOS
 #include <xlocale.h>
+#endif
+
+#ifdef SM_OS_LINUX
+#include <locale.h>
+#endif
+
+#ifndef SM_OS_WINDOWS
 /********************************************************************************
 * START: Code from Rapicorn
 *********************************************************************************/
