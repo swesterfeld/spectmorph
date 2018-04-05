@@ -4,14 +4,33 @@
 #include "smstdioout.hh"
 #include "smaboutdialog.hh"
 #include "smmessagebox.hh"
+#include "smconfig.hh"
 
 using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+// unfortunately some hosts need to know the window size before creating the window
+// so we provide a way to compute it without creating a window
+namespace
+{
+  static const int win_width = 744;
+  static const int win_height = 560;
+};
+
+void
+MorphPlanWindow::static_scaled_size (int *w, int *h)
+{
+  const Config cfg;
+  const double global_scale = cfg.zoom() / 100.0;
+
+  *w = win_width * global_scale;
+  *h = win_height * global_scale;
+}
+
 MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
                                   MorphPlanControl::Features f) :
-  Window (title, 744, 560, win_id, resize),
+  Window (title, win_width, win_height, win_id, resize),
   m_morph_plan (morph_plan)
 {
   FixedGrid grid;

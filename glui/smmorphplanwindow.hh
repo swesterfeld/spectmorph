@@ -42,6 +42,7 @@ public:
   void fill_preset_menu (Menu *menu);
   void fill_zoom_menu (Menu *menu);
   void on_load_preset (const std::string& rel_filename);
+  static void static_scaled_size (int *w, int *h);
 
   MorphPlanControl *control_widget();
 
