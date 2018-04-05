@@ -64,7 +64,7 @@ def tokenize (input_str):
     if ((ch >= 'a' and ch <= 'z') or
         (ch >= 'A' and ch <= 'Z') or
         (ch >= '0' and ch <= '9') or
-         ch in ".:=/-_%"):
+         ch in ".:=/-_%$"):
       return True
     return False
 
@@ -109,7 +109,14 @@ def tokenize (input_str):
     raise Exception ("Parse Error in String: \"" + input_str + "\"")
   return tokens
 
-def parse_config (filename):
+def tokenize_expand (builder_config, input_str):
+  tokens = tokenize (input_str)
+  for t in range (len (tokens)):
+    tokens[t] = re.sub ('\$ROOT', builder_config.root_dir, tokens[t])
+
+  return tokens
+
+def parse_config (filename, builder_config):
   config = Config()
   try:
     f = open (filename)
@@ -117,7 +124,7 @@ def parse_config (filename):
     die ("file '%s' missing" % filename)
   line_number = 1
   for line in f:
-    tokens = tokenize (line)
+    tokens = tokenize_expand (builder_config, line)
     parse_ok = False
     if re.match ("^#", line): # comment
       tokens = []
@@ -223,15 +230,17 @@ def parse_config (filename):
     die ("sountfont command can be used at most once in config")
   return config
 
-def parse_builder_config (filename):
+def parse_builder_config():
   builder_config = BuilderConfig()
+  builder_config.root_dir = os.getcwd()
+  filename = "sminstbuilder.cfg"
   try:
     f = open (filename)
   except:
     die ("file '%s' missing" % filename)
   line_number = 1
   for line in f:
-    tokens = tokenize (line)
+    tokens = tokenize_expand (builder_config, line)
     parse_ok = False
     if len (tokens) == 0: # blank line: ok
       parse_ok = True
@@ -348,7 +357,7 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
   except:
     die ("directory '%s' not found" % inst_dir)
 
-  config = parse_config ("config")
+  config = parse_config ("config", builder_config)
 
   # create data dir
   system_or_die ("rm -rf %s" % config.dir)
@@ -417,7 +426,7 @@ def main():
   cmdline_args = parser.parse_args()
 
   print "SpectMorph Instrument Builder, Version @VERSION@"
-  builder_config = parse_builder_config ("sminstbuilder.cfg")
+  builder_config = parse_builder_config()
 
   for inst_dir in cmdline_args.instruments:
     build_instrument (inst_dir, builder_config, cmdline_args)
