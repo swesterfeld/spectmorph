@@ -18,6 +18,15 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   plugin (plugin)
 {
   connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
+
+  // some hosts ask for the window size before creating the window
+  int width, height;
+  MorphPlanWindow::static_scaled_size (&width, &height);
+
+  rectangle.top = 0;
+  rectangle.left = 0;
+  rectangle.bottom = height;
+  rectangle.right = width;
 }
 
 bool
