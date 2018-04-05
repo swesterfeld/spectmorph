@@ -147,7 +147,7 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   Config cfg;
 
   global_scale = cfg.zoom() / 100.0;
-  auto_redraw = cfg.auto_redraw();
+  auto_redraw = false;
 
   view = puglInit (nullptr, nullptr);
 
