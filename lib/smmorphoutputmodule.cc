@@ -149,16 +149,35 @@ recursive_reset_value (MorphOperatorModule *module)
     }
 }
 
+static bool
+recursive_cycle_check (MorphOperatorModule *module, int depth = 0)
+{
+  /* check if processing would fail due to cycles
+   *
+   * this check should avoid crashes in this situation, although no audio will be produced
+   */
+  if (depth > 500)
+    return true;
+
+  for (auto mod : module->dependencies())
+    if (recursive_cycle_check (mod, depth + 1))
+      return true;
+
+  return false;
+}
+
 void
 MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
+  const bool have_cycle = recursive_cycle_check (this);
+
   for (size_t port = 0; port < n_ports; port++)
     {
       if (values[port])
         {
-          if (out_decoders[port])
+          if (out_decoders[port] && !have_cycle)
             {
               out_decoders[port]->process (n_samples, freq_in, values[port]);
             }
@@ -168,13 +187,20 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, co
             }
         }
     }
-  recursive_reset_tag (this);
-  recursive_update_value (this, n_samples / morph_plan_voice->mix_freq() * 1000);
+
+  if (!have_cycle)
+    {
+      recursive_reset_tag (this);
+      recursive_update_value (this, n_samples / morph_plan_voice->mix_freq() * 1000);
+    }
 }
 
 void
 MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
 {
+  if (recursive_cycle_check (this))
+    return;
+
   for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)
     {
       if (out_decoders[port])
