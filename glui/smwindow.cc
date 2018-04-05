@@ -612,6 +612,8 @@ Window::on_event (const PuglEvent* event)
           get_scaled_size (&w, &h);
           cairo_gl.reset (new CairoGL (w, h));
 
+          signal_update_size();
+
           // on windows, the coordinates of the event often doesn't match actual size
           // cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
         }
@@ -792,8 +794,6 @@ Window::set_gui_scaling (double s)
   cfg.store();
 
   puglPostResize (view);
-
-  signal_update_size();
 }
 
 double

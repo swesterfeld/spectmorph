@@ -1,12 +1,9 @@
-general:
- - post resize and signal_update possibly occur in wrong order
-
 other:
  - tuba, double bass, ...
  - improve sminstbuilder tools to support relative filenames
- - font (?)
 
 later:
  - 32bit compile crashes in apply window sse code - why?
  - popup menu
  - knob
+ - font (?)
