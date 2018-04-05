@@ -16,8 +16,9 @@ using std::set;
 #define CONTROL_TEXT_1   "Control Signal #1"
 #define CONTROL_TEXT_2   "Control Signal #2"
 
-MorphGridControlUI::MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy) :
+MorphGridControlUI::MorphGridControlUI (MorphGridView *morph_grid_view, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy) :
   morph_grid (morph_grid),
+  morph_grid_view (morph_grid_view),
   ctl_xy (ctl_xy)
 {
   auto control_operator_filter = ComboBoxOperator::make_filter (morph_grid, MorphOperator::OUTPUT_CONTROL);
@@ -81,6 +82,8 @@ MorphGridControlUI::on_slider_changed (double value)
     morph_grid->set_x_morphing (value);
   else
     morph_grid->set_y_morphing (value);
+
+  morph_grid_view->signal_grid_params_changed();
 }
 
 void
@@ -149,7 +152,10 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 
   width_slider->set_int_value (morph_grid->width());
 
-  connect (width_slider->signal_int_value_changed, [=] (int width) { morph_grid->set_width (width); });
+  connect (width_slider->signal_int_value_changed, [=] (int width) {
+    morph_grid->set_width (width);
+    signal_grid_params_changed();
+  });
 
   // Height
   Label *height_title   = new Label (body_widget, "Height");
@@ -161,7 +167,10 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 
   height_slider->set_int_value (morph_grid->height());
 
-  connect (height_slider->signal_int_value_changed, [=] (int height) { morph_grid->set_height (height); });
+  connect (height_slider->signal_int_value_changed, [=] (int height) {
+    morph_grid->set_height (height);
+    signal_grid_params_changed();
+  });
 
   // X Control
   x_ui = new MorphGridControlUI (this, morph_grid, body_widget, MorphGridControlUI::CONTROL_X);
@@ -178,7 +187,7 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   op_layout.add_row (2, y_ui->title, y_ui->slider, y_ui->label);
 
   // Grid
-  grid_widget = new MorphGridWidget (body_widget, morph_grid);
+  grid_widget = new MorphGridWidget (body_widget, morph_grid, this);
   op_layout.add_fixed (30, 30, grid_widget);
 
   connect (grid_widget->signal_selection_changed, this, &MorphGridView::on_selection_changed);
@@ -200,13 +209,16 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
 
   connect (delta_db_slider->signal_value_changed, this, &MorphGridView::on_delta_db_changed);
 
+  // state updates to perform if some grid parameter changes
+  connect (signal_grid_params_changed, this, &MorphGridView::on_grid_params_changed);
+  connect (grid_widget->signal_grid_params_changed, this, &MorphGridView::on_grid_params_changed);
+
   // Global
-  connect (morph_grid->morph_plan()->signal_plan_changed, this, &MorphGridView::on_plan_changed);
   connect (morph_grid->morph_plan()->signal_index_changed, this, &MorphGridView::on_index_changed);
 
-  on_index_changed();     // add instruments to op_combobox
-  on_plan_changed();      // initial morphing slider/label setup
-  on_selection_changed(); // initial selection
+  on_index_changed();       // add instruments to op_combobox
+  on_grid_params_changed(); // initial morphing slider/label setup
+  on_selection_changed();   // initial selection
 
   op_layout.activate();
 }
@@ -218,7 +230,7 @@ MorphGridView::view_height()
 }
 
 void
-MorphGridView::on_plan_changed()
+MorphGridView::on_grid_params_changed()
 {
   width_label->set_text (string_printf ("%d", morph_grid->width()));
   height_label->set_text (string_printf ("%d", morph_grid->height()));
@@ -239,6 +251,8 @@ MorphGridView::on_operator_changed()
       node.smset = morph_grid->morph_plan()->index()->label_to_smset (op_combobox->active_str_choice());
 
       morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
+
+      signal_grid_params_changed();
     }
 }
 

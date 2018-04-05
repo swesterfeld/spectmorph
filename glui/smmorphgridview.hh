@@ -15,6 +15,7 @@ class MorphGridView;
 class MorphGridControlUI : public SignalReceiver
 {
   MorphGrid          *morph_grid;
+  MorphGridView      *morph_grid_view;
 
 public:
   enum ControlXYType { CONTROL_X, CONTROL_Y } ctl_xy;
@@ -52,8 +53,11 @@ public:
 
   double view_height() override;
 
+/* signals: */
+  Signal<> signal_grid_params_changed;
+
 /* slots: */
-  void on_plan_changed();
+  void on_grid_params_changed();
   void on_delta_db_changed (double new_value);
   void on_selection_changed();
   void on_index_changed();

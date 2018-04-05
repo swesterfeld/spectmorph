@@ -1,6 +1,5 @@
 general:
  - post resize and signal_update possibly occur in wrong order
- - avoid unnecessary grid morph updates
 
 other:
  - tuba, double bass, ...

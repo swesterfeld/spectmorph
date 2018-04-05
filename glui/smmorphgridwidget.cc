@@ -4,16 +4,18 @@
 #include "smdrawutils.hh"
 #include "smmath.hh"
 #include "smmorphplan.hh"
+#include "smmorphgridview.hh"
 
 using namespace SpectMorph;
 
 using std::min;
 
-MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid) :
+MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view) :
   Widget (parent),
   morph_grid (morph_grid)
 {
-  connect (morph_grid->morph_plan()->signal_plan_changed, this, &MorphGridWidget::on_plan_changed);
+  connect (morph_grid_view->signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
+  connect (signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
 }
 
 void
@@ -158,6 +160,8 @@ MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
   morph_grid->set_selected_x (selected_x);
   morph_grid->set_selected_y (selected_y);
   signal_selection_changed();
+  update();
+
   if (selected_x == -1 && selected_y == -1)
     {
       move_controller = true;
@@ -175,6 +179,8 @@ MorphGridWidget::motion (double x, double y)
 
       morph_grid->set_x_morphing (sm_bound (-1.0, dx, 1.0));
       morph_grid->set_y_morphing (sm_bound (-1.0, dy, 1.0));
+
+      signal_grid_params_changed();
     }
 }
 
@@ -185,7 +191,7 @@ MorphGridWidget::mouse_release (double x, double y)
 }
 
 void
-MorphGridWidget::on_plan_changed()
+MorphGridWidget::on_grid_params_changed()
 {
   if (morph_grid->selected_x() >= morph_grid->width())
     {

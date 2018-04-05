@@ -9,6 +9,7 @@
 namespace SpectMorph
 {
 
+class MorphGridView;
 class MorphGridWidget : public Widget
 {
   MorphGrid *morph_grid;
@@ -23,7 +24,7 @@ class MorphGridWidget : public Widget
   bool move_controller = false;
 
 public:
-  MorphGridWidget (Widget *parent, MorphGrid *morph_grid);
+  MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view);
 
   void draw (cairo_t *cr) override;
 
@@ -32,10 +33,11 @@ public:
   void motion (double x, double y) override;
 
 /* slots: */
-  void on_plan_changed();
+  void on_grid_params_changed();
 
 /* signals: */
   Signal<> signal_selection_changed;
+  Signal<> signal_grid_params_changed;
 };
 
 }
