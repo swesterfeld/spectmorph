@@ -45,7 +45,6 @@ class SignalReceiver
     SignalReceiverData *
     ref()
     {
-      assert (this);
       assert (ref_count > 0);
       ref_count++;
       return this;
@@ -53,7 +52,6 @@ class SignalReceiver
     void
     unref (bool cleanup)
     {
-      assert (this);
       assert (ref_count > 0);
       ref_count--;
 
@@ -98,6 +96,8 @@ public:
   void
   disconnect (uint64 id)
   {
+    assert (signal_receiver_data);
+
     SignalReceiverData *data = signal_receiver_data->ref();
 
     for (auto& signal_source : data->sources)
@@ -163,7 +163,6 @@ class Signal : public SignalBase
     Data *
     ref()
     {
-      assert (this);
       assert (ref_count > 0);
       ref_count++;
 
@@ -172,7 +171,6 @@ class Signal : public SignalBase
     void
     unref (bool cleanup)
     {
-      assert (this);
       assert (ref_count > 0);
       ref_count--;
 
@@ -194,6 +192,8 @@ public:
   uint64
   connect_impl (SignalReceiver *receiver, const CbFunction& callback)
   {
+    assert (signal_data);
+
     Data *data = signal_data->ref();
     uint64 id = next_signal_id();
     data->connections.push_back ({callback, id, receiver});
@@ -204,6 +204,8 @@ public:
   void
   disconnect_impl (uint64 id) override
   {
+    assert (signal_data);
+
     Data *data = signal_data->ref();
     for (auto& conn : data->connections)
       {
@@ -215,6 +217,8 @@ public:
   void
   operator()(Args... args)
   {
+    assert (signal_data);
+
     Data *data = signal_data->ref();
 
     for (auto& conn : data->connections)
