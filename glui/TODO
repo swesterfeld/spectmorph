@@ -4,7 +4,6 @@ general:
 other:
  - tuba, double bass, ...
  - improve sminstbuilder tools to support relative filenames
- - morph plan operator cycles lead to crashes
  - font (?)
 
 later:

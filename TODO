@@ -11,8 +11,6 @@ NEXT RELEASE:
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
-- velocity should map to "Velocity Sensitivity (dB)"
-- morph plan operator cycles lead to crashes
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
