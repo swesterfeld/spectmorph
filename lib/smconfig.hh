@@ -13,18 +13,14 @@ namespace SpectMorph
 class Config
 {
   int                      m_zoom = 100;
-  int                      m_auto_redraw = 1;
   std::vector<std::string> m_debug;
 
   std::string get_config_filename();
 public:
   Config();
 
-  int   zoom();
+  int   zoom() const;
   void  set_zoom (int z);
-
-  bool  auto_redraw();
-  void  set_auto_redraw (bool b);
 
   std::vector<std::string> debug();
 

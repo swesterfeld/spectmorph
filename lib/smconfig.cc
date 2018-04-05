@@ -30,10 +30,6 @@ Config::Config()
         {
           m_zoom = i;
         }
-      else if (cfg_parser.command ("auto_redraw", i))
-        {
-          m_auto_redraw = i;
-        }
       else if (cfg_parser.command ("debug", s))
         {
           m_debug.push_back (s);
@@ -46,7 +42,7 @@ Config::Config()
 }
 
 int
-Config::zoom()
+Config::zoom() const
 {
   return m_zoom;
 }
@@ -55,18 +51,6 @@ void
 Config::set_zoom (int z)
 {
   m_zoom = z;
-}
-
-bool
-Config::auto_redraw()
-{
-  return m_auto_redraw > 0;
-}
-
-void
-Config::set_auto_redraw (bool b)
-{
-  m_auto_redraw = b ? 1 : 0;
 }
 
 vector<string>
@@ -86,7 +70,6 @@ Config::store()
   fprintf (file, "# this file is automatically updated by SpectMorph\n");
   fprintf (file, "# it can be manually edited, however, if you do that, be careful\n");
   fprintf (file, "zoom %d\n", m_zoom);
-  fprintf (file, "auto_redraw %d\n", m_auto_redraw);
 
   for (auto area : m_debug)
     fprintf (file, "debug %s\n", area.c_str());
