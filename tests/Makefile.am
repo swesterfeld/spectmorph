@@ -17,7 +17,7 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
-        testlsfperf testsortfreqs testconvperf testminires testnoisesr testlsfplot \
+        testlsfperf testsortfreqs testconvperf testminires testnoisesr \
         testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity
 
@@ -96,9 +96,6 @@ testrootfinder_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlsfperf_SOURCES = testlsfperf.cc
 testlsfperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
-testlsfplot_SOURCES = testlsfplot.cc
-testlsfplot_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testsortfreqs_SOURCES = testsortfreqs.cc
 testsortfreqs_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
