@@ -2,7 +2,6 @@
 
 #include "smspectrumview.hh"
 #include "smnavigator.hh"
-#include "smlpc.hh"
 
 #include <QPainter>
 
@@ -84,47 +83,6 @@ SpectrumView::paintEvent (QPaintEvent *event)
 
       last_x = x;
       last_y = y;
-    }
-
-  // draw lpc envelope
-  if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lpc())
-    {
-      LPC::LSFEnvelope env;
-      env.init (audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
-
-      painter.setPen (QPen (QColor (0, 200, 0), 2));
-      double max_lpc_value = 0;
-      for (float freq = 0; freq < M_PI; freq += 0.001)
-        {
-          double value = env.eval (freq);
-          double value_db = db_from_factor (value, -200);
-          max_lpc_value = max (max_lpc_value, value_db);
-        }
-      for (float freq = 0; freq < M_PI; freq += 0.001)
-        {
-          double value = env.eval (freq);
-          double value_db = db_from_factor (value, -200) - max_lpc_value + max_value;
-          int x = freq / M_PI * width;
-          int y = height - value_db / max_value * height;
-          if (freq > 0)
-            painter.drawLine (last_x, last_y, x, y);
-          last_x = x;
-          last_y = y;
-        }
-    }
-  // draw lsf parameters
-  if (audio_block.lpc_lsf_p.size() > 10 && navigator->display_param_window()->show_lsf())
-    {
-      painter.setPen (QPen (QColor (0, 0, 80), 2));
-      for (size_t i = 0; i < audio_block.lpc_lsf_p.size(); i++)
-        {
-          painter.drawLine (audio_block.lpc_lsf_p[i] / M_PI * width, 0, audio_block.lpc_lsf_p[i] / M_PI * width, height);
-        }
-      painter.setPen (QPen (QColor (0, 0, 220), 2));
-      for (size_t i = 0; i < audio_block.lpc_lsf_q.size(); i++)
-        {
-          painter.drawLine (audio_block.lpc_lsf_q[i] / M_PI * width, 0, audio_block.lpc_lsf_q[i] / M_PI * width, height);
-        }
     }
 }
 

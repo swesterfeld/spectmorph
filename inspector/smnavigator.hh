@@ -6,7 +6,6 @@
 #include "smwavset.hh"
 #include "smtimefreqwindow.hh"
 #include "smplayerwindow.hh"
-#include "smlpcwindow.hh"
 #include "smdisplayparamwindow.hh"
 #include "smfftparamwindow.hh"
 #include "smspectrumwindow.hh"
@@ -50,7 +49,6 @@ private:
   FFTParamWindow       *m_fft_param_window;
   SpectrumWindow       *spectrum_window;
   DisplayParamWindow   *m_display_param_window;
-  LPCWindow            *lpc_window;
 
 public:
   Navigator (const std::string& filename);
@@ -78,7 +76,6 @@ public slots:
   void on_show_frequency_grid_changed();
   void on_view_spectrum();
   void on_view_display_params();
-  void on_view_lpc();
   void on_next_sample();
   void on_prev_sample();
   void on_audio_edit();

@@ -8,20 +8,20 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
-         smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh smlpcwindow.hh \
-         smlpcview.hh smdisplayparamwindow.hh smnavigatorwindow.hh smsamplewinview.hh \
+         smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh \
+         smdisplayparamwindow.hh smnavigatorwindow.hh smsamplewinview.hh \
          smtimefreqwinview.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
-         smplayerwindow.cc smlpcwindow.cc smlpcview.cc smdisplayparamwindow.cc smnavigatorwindow.cc \
+         smplayerwindow.cc smdisplayparamwindow.cc smnavigatorwindow.cc \
          smsamplewinview.cc smtimefreqwinview.cc \
          moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
          moc_smtimefreqwindow.cc moc_smfftparamwindow.cc moc_smfftthread.cc moc_smcwt.cc \
          moc_smtimefreqview.cc moc_smspectrumwindow.cc moc_smspectrumview.cc moc_smdisplayparamwindow.cc \
-         moc_smlpcview.cc moc_smlpcwindow.cc moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc
+         moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -74,12 +74,6 @@ moc_smspectrumview.cc: smspectrumview.hh
 
 moc_smdisplayparamwindow.cc: smdisplayparamwindow.hh
 	$(MOC) smdisplayparamwindow.hh > moc_smdisplayparamwindow.cc
-
-moc_smlpcview.cc: smlpcview.hh
-	$(MOC) smlpcview.hh > moc_smlpcview.cc
-
-moc_smlpcwindow.cc: smlpcwindow.hh
-	$(MOC) smlpcwindow.hh > moc_smlpcwindow.cc
 
 moc_smnavigatorwindow.cc: smnavigatorwindow.hh
 	$(MOC) smnavigatorwindow.hh > moc_smnavigatorwindow.cc
