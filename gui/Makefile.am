@@ -4,9 +4,9 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/sr
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-SMHDRS = smzoomcontroller.hh smsampleview.hh smlpcztrans.hh
+SMHDRS = smzoomcontroller.hh smsampleview.hh
 
-SMSRCS = smzoomcontroller.cc smsampleview.cc smlpcztrans.cc \
+SMSRCS = smzoomcontroller.cc smsampleview.cc \
          moc_smsampleview.cc moc_smzoomcontroller.cc
 
 lib_LTLIBRARIES = libspectmorphgui.la
