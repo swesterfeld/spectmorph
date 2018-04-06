@@ -11,7 +11,6 @@
 #include "smutils.hh"
 
 #define SPECTMORPH_BINARY_FILE_VERSION   14
-#define SPECTMORPH_SUPPORT_LPC           0
 #define SPECTMORPH_SUPPORT_MULTI_CHANNEL 0
 
 namespace SpectMorph
