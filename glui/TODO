@@ -1,8 +1,5 @@
 other:
  - tuba, double bass, ...
- - improve sminstbuilder tools to support relative filenames
-   - solve nproc problem
-   - initialize cache ; move cache to ~/.cache/smenccache
  - default preset should be mirko-oh <=> pan flute
 
 later:
