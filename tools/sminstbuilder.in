@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys, os, subprocess, re, argparse
+import sys, os, subprocess, re, argparse, multiprocessing
 
 class Config:
   def __init__ (self):
@@ -41,6 +41,7 @@ class Config:
 class BuilderConfig:
   def __init__ (self):
     self.jobs_count = 0
+    self.jobs = multiprocessing.cpu_count()
     self.cache_count = 0
     self.output_dir_count = 0
     self.lpc_order_count = 0
@@ -277,8 +278,8 @@ def parse_builder_config():
     die ("cache command must occur exactly once in config")
   if builder_config.output_dir_count != 1:
     die ("output-dir command must occur exactly once in config")
-  if builder_config.jobs_count != 1:
-    die ("jobs command must occur exactly once in config")
+  if builder_config.jobs_count > 1:
+    die ("jobs command can be used at most once in config")
   return builder_config
 
 def system_or_die (command):
