@@ -16,9 +16,9 @@ TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth te
         testidb testifreq testbesseli0
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
-        testrefptr testparamupdate testloopindex testoutfileperf testlpc testrootfinder \
-        testlsfperf testsortfreqs testconvperf testminires testnoisesr \
-        testlpca testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
+        testrefptr testparamupdate testloopindex testoutfileperf \
+        testsortfreqs testconvperf testminires testnoisesr \
+        testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity
 
 if !COND_WINDOWS
@@ -88,15 +88,6 @@ testloopindex_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 testoutfileperf_SOURCES = testoutfileperf.cc
 testoutfileperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
-testlpc_SOURCES = testlpc.cc
-testlpc_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
-testrootfinder_SOURCES = testrootfinder.cc
-testrootfinder_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
-testlsfperf_SOURCES = testlsfperf.cc
-testlsfperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
 testsortfreqs_SOURCES = testsortfreqs.cc
 testsortfreqs_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
@@ -114,9 +105,6 @@ testminires_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testnoisesr_SOURCES = testnoisesr.cc
 testnoisesr_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
-testlpca_SOURCES = testlpca.cc
-testlpca_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testlowpass1_SOURCES = testlowpass1.cc
 testlowpass1_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
