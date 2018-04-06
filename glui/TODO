@@ -3,6 +3,7 @@ other:
 
 windows:
  - cubase resize broken (again)
+   - try leaving all resizing to the host, no more puglPostResize
 
 later:
  - 32bit compile crashes in apply window sse code - why?
