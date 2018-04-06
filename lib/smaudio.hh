@@ -10,7 +10,7 @@
 #include "smmath.hh"
 #include "smutils.hh"
 
-#define SPECTMORPH_BINARY_FILE_VERSION   13
+#define SPECTMORPH_BINARY_FILE_VERSION   14
 #define SPECTMORPH_SUPPORT_LPC           0
 #define SPECTMORPH_SUPPORT_MULTI_CHANNEL 0
 
@@ -32,8 +32,6 @@ public:
   std::vector<uint16_t> freqs;       //!< frequencies of the sine components of this frame
   std::vector<uint16_t> mags;        //!< magnitudes of the sine components
   std::vector<uint16_t> phases;      //!< phases of the sine components
-  std::vector<float> lpc_lsf_p;      //!< LPC line spectrum frequencies, P(z) roots
-  std::vector<float> lpc_lsf_q;      //!< LPC line spectrum frequencies, Q(z) roots
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 

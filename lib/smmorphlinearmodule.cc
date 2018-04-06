@@ -244,38 +244,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
       module->audio_block.mags.clear();
       module->audio_block.phases.clear();
 
-      // compute interpolated LPC envelope
-      bool use_lpc = false;
-
-      const size_t lsf_order = left_block.lpc_lsf_p.size();
-
-      LPC::LSFEnvelope left_env, right_env, interp_env;
-
-      if (SPECTMORPH_SUPPORT_LPC &&
-          lsf_order > 0 &&
-          left_block.lpc_lsf_p.size() == lsf_order &&
-          left_block.lpc_lsf_q.size() == lsf_order &&
-          right_block.lpc_lsf_p.size() == lsf_order &&
-          right_block.lpc_lsf_p.size() == lsf_order &&
-          module->use_lpc)
-        {
-          assert (lsf_order > 0);
-
-          vector<float> interp_lsf_p (lsf_order);
-          vector<float> interp_lsf_q (lsf_order);
-
-          for (size_t i = 0; i < interp_lsf_p.size(); i++)
-            {
-              interp_lsf_p[i] = (1 - interp) * left_block.lpc_lsf_p[i] + interp * right_block.lpc_lsf_p[i];
-              interp_lsf_q[i] = (1 - interp) * left_block.lpc_lsf_q[i] + interp * right_block.lpc_lsf_q[i];
-            }
-          left_env.init (left_block.lpc_lsf_p, left_block.lpc_lsf_q);
-          right_env.init (right_block.lpc_lsf_p, right_block.lpc_lsf_q);
-          interp_env.init (interp_lsf_p, interp_lsf_q);
-
-          use_lpc = true;
-        }
-
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
 
@@ -353,38 +321,12 @@ MorphLinearModule::MySource::audio_block (size_t index)
               double mag;
               if (module->db_linear)
                 {
+                  // FIXME: this could be faster if we avoided db conversion (see grid morph)
+
                   double lmag_db = db_from_factor (left_block.mags_f (i), -100);
                   double rmag_db = db_from_factor (right_block.mags_f (j), -100);
 
-                  //--------------------------- LPC stuff ---------------------------
-                  double l_env_mag_db = 0;
-                  double r_env_mag_db = 0;
-                  double interp_env_mag_db = 0;
-
-                  if (use_lpc)
-                    {
-                      double l_freq = left_block.freqs_f (i) * left_audio->fundamental_freq;
-                      l_freq *= 2 * M_PI / LPC::MIX_FREQ; /* map frequency to [0..M_PI] */
-
-                      double r_freq = right_block.freqs_f (j) * right_audio->fundamental_freq;
-                      r_freq *= 2 * M_PI / LPC::MIX_FREQ; /* map frequency to [0..M_PI] */
-
-                      l_env_mag_db = db_from_factor (left_env.eval (l_freq), -100);
-                      r_env_mag_db = db_from_factor (right_env.eval (r_freq), -100);
-
-                      double interp_freq = (1 - interp) * l_freq + interp * r_freq;
-                      interp_env_mag_db = db_from_factor (interp_env.eval (interp_freq), -100);
-                    }
-                  //--------------------------- LPC stuff ---------------------------
-
-                  // whiten spectrum
-                  lmag_db -= l_env_mag_db;
-                  rmag_db -= r_env_mag_db;
-
                   double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
-
-                  // recolorize
-                  mag_db += interp_env_mag_db;
 
                   mag = db_to_factor (mag_db);
                 }

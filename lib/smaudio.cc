@@ -166,15 +166,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else
             {
               assert (audio_block != NULL);
-              if (ifile.event_name() == "lpc_lsf_p")
-                {
-                  audio_block->lpc_lsf_p = fb;
-                }
-              else if (ifile.event_name() == "lpc_lsf_q")
-                {
-                  audio_block->lpc_lsf_q = fb;
-                }
-              else if (ifile.event_name() == "original_fft")
+              if (ifile.event_name() == "original_fft")
                 {
                   audio_block->original_fft = fb;
                 }
@@ -311,8 +303,6 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.write_uint16_block ("freqs", contents[i].freqs);
       of.write_uint16_block ("mags", contents[i].mags);
       of.write_uint16_block ("phases", contents[i].phases);
-      of.write_float_block ("lpc_lsf_p", contents[i].lpc_lsf_p);
-      of.write_float_block ("lpc_lsf_q", contents[i].lpc_lsf_q);
       of.write_float_block ("original_fft", contents[i].original_fft);
       of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();

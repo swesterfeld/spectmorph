@@ -114,12 +114,6 @@ get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out
   out_audio_block.phases = block_ptr->phases;  // usually not used
   out_audio_block.freqs  = block_ptr->freqs;
 
-  if (SPECTMORPH_SUPPORT_LPC) // not necessary to copy data if lpc support is disabled
-    {
-      out_audio_block.lpc_lsf_p = block_ptr->lpc_lsf_p;
-      out_audio_block.lpc_lsf_q = block_ptr->lpc_lsf_q;
-    }
-
   return true;
 }
 
