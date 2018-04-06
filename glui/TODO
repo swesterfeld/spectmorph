@@ -1,6 +1,9 @@
 other:
  - tuba, double bass, ...
 
+windows:
+ - cubase resize broken (again)
+
 later:
  - 32bit compile crashes in apply window sse code - why?
  - popup menu
