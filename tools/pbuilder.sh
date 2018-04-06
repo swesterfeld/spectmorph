@@ -20,7 +20,7 @@ unset CC
 unset CXX
 export DEB_BUILD_OPTIONS="parallel=$(nproc)"
 
-for DIST in xenial
+for DIST in xenial bionic
 do
   for ARCH in i386 amd64
   do
