@@ -67,7 +67,6 @@ public:
   ~AnalysisCommand();
   void execute();
   void execute_cwt();
-  void execute_lpc();
 
 public slots:
   void set_progress (double progress);

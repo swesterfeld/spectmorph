@@ -4,7 +4,6 @@
 #include "smtimefreqview.hh"
 #include "smfft.hh"
 #include "smcwt.hh"
-#include "smlpc.hh"
 #include "smblockutils.hh"
 
 #include <QSocketNotifier>
@@ -190,63 +189,6 @@ AnalysisCommand::execute_cwt()
 }
 
 void
-AnalysisCommand::execute_lpc()
-{
-  const vector<float>& signal = wav_data.samples();
-  const uint64 n_values = wav_data.n_values();
-  const float mix_freq = wav_data.mix_freq();
-
-  vector< vector<float> > results;
-
-  for (size_t start = 0; start < n_values; start += 1500)
-    {
-      size_t end = start + mix_freq * 0.030; // 30 ms;
-      if (start < end && end < signal.size())
-        {
-          vector<double> lpc (50);
-          LPC::compute_lpc (lpc, &signal[start], &signal[end]);
-          vector<float> result;
-          for (float freq = 0; freq < M_PI; freq += 0.001)
-            {
-              float mag = LPC::eval_lpc (lpc, freq);
-              result.push_back (mag);
-            }
-          results.push_back (result);
-        }
-      set_progress (CLAMP (start / double (n_values), 0.0, 1.0));
-    }
-
-  size_t width = results.size();
-  size_t height = 0;
-  if (!results.empty())
-    height = results[0].size();
-
-  image.resize (width, height);
-
-  float max_value = -200;
-  for (vector< vector<float> >::iterator fi = results.begin(); fi != results.end(); fi++)
-    {
-      for (vector<float>::iterator mi = fi->begin(); mi != fi->end(); mi++)
-        {
-          *mi = value_scale (*mi);
-          max_value = max (max_value, *mi);
-        }
-    }
-  int    *p = image.get_pixels();
-  size_t  row_stride = image.get_rowstride();
-  for (size_t frame = 0; frame < width; frame++)
-    {
-      for (size_t y = 0; y < height; y++)
-        {
-          size_t src_y = height - y - 1;
-          p[src_y * row_stride] = (results[frame][y] - max_value) * 256;  // 8 bits fixed point
-        }
-      p++;
-    }
-}
-
-
-void
 AnalysisCommand::execute()
 {
   if (wav_data.n_channels() != 1)
@@ -260,11 +202,7 @@ AnalysisCommand::execute()
       execute_cwt();
       return;
     }
-  else if (analysis_params.transform_type == SM_TRANSFORM_LPC)
-    {
-      execute_lpc();
-      return;
-    }
+
   size_t frame_size = analysis_params.frame_size_ms * wav_data.mix_freq() / 1000.0;
   size_t block_size = 1;
   while (block_size < frame_size)
