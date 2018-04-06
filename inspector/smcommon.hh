@@ -13,7 +13,6 @@ enum TransformType
   SM_TRANSFORM_NONE = 0,
   SM_TRANSFORM_FFT = 1,
   SM_TRANSFORM_CWT = 2,
-  SM_TRANSFORM_LPC = 3
 };
 
 enum CWTMode

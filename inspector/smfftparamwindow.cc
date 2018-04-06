@@ -14,7 +14,6 @@ using std::string;
 
 #define TEXT_FFT "Fourier Transform"
 #define TEXT_CWT "Wavelet Transform"
-#define TEXT_LPC "LPC Transform"
 
 #define TEXT_VTIME "Frequency dependant time scale"
 #define TEXT_CTIME "Constant time scale"
@@ -33,7 +32,6 @@ FFTParamWindow::FFTParamWindow()
   transform_combobox = new QComboBox();
   transform_combobox->addItem (TEXT_FFT);
   transform_combobox->addItem (TEXT_CWT);
-  transform_combobox->addItem (TEXT_LPC);
   connect (transform_combobox, SIGNAL (currentIndexChanged (int)), this, SLOT (on_value_changed()));
 
   QGroupBox *fft_groupbox = new QGroupBox ("Fourier Transform Parameters");
@@ -127,8 +125,6 @@ FFTParamWindow::get_analysis_params()
     params.transform_type = SM_TRANSFORM_FFT;
   else if (transform_text == TEXT_CWT)
     params.transform_type = SM_TRANSFORM_CWT;
-  else if (transform_text == TEXT_LPC)
-    params.transform_type = SM_TRANSFORM_LPC;
   else
     assert (false);
 
