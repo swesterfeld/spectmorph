@@ -14,10 +14,11 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-DSC=../../spectmorph_0.3.4.dsc
+DSC=../../spectmorph_0.4.0.dsc
 
 unset CC
 unset CXX
+export DEB_BUILD_OPTIONS="parallel=$(nproc)"
 
 for DIST in xenial
 do

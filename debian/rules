@@ -18,7 +18,7 @@ export DH_OPTIONS
 
 
 %:
-	dh $@
+	dh $@ --parallel
 
 override_dh_auto_configure:
 	dh_auto_configure -- --without-beast
