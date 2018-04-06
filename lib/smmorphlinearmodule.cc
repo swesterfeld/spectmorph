@@ -5,7 +5,6 @@
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
-#include "smlpc.hh"
 #include "smleakdebugger.hh"
 #include "smlivedecoder.hh"
 #include "smmorphutils.hh"

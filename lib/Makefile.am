@@ -13,7 +13,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smindex.hh smmorphsource.hh smmorphoutput.hh smmorphlinear.hh \
          smmorphoperatormodule.hh smmorphsourcemodule.hh smmorphlinearmodule.hh \
          smmorphoutputmodule.hh smwavsetrepo.hh smleakdebugger.hh smobject.hh \
-         smlpc.hh smmorphlfo.hh smmorphlfomodule.hh smmorphplansynth.hh \
+         smmorphlfo.hh smmorphlfomodule.hh smmorphplansynth.hh \
          smmorphgrid.hh smmorphgridmodule.hh smmorphutils.hh smutils.hh \
          smminiresampler.hh smmidisynth.hh smwavdata.hh smblockutils.hh \
          smalignedarray.hh smpcg32rng.hh smproperty.hh \
@@ -31,7 +31,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smindex.cc smmorphsource.cc smmorphoutput.cc smmorphlinear.cc \
                            smmorphoperatormodule.cc smmorphsourcemodule.cc smmorphlinearmodule.cc \
                            smmorphoutputmodule.cc smwavsetrepo.cc smleakdebugger.cc smobject.cc \
-                           smlpc.cc smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS) \
+                           smmorphlfo.cc smmorphlfomodule.cc smmorphplansynth.cc $(SMHDRS) \
                            smmorphgrid.cc \
                            smmorphgridmodule.cc smmath.cc smmorphutils.cc smutils.cc \
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
