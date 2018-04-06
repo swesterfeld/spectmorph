@@ -10,7 +10,6 @@
 #include "smmain.hh"
 #include "sminfile.hh"
 #include "smutils.hh"
-#include "smlpc.hh"
 #include "smfft.hh"
 
 using namespace SpectMorph;
@@ -19,7 +18,6 @@ using std::min;
 using std::max;
 using std::string;
 using std::set;
-using std::complex;
 
 double
 vector_delta (const vector<double>& a, const vector<double>& b)
@@ -1147,7 +1145,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    /* it would be nice if we could have options like --keep-samples || --strip-lpc
+    /* it would be nice if we could have options like --keep-samples
      * but for now we just do the default thing
      */
     for (size_t i = 0; i < audio.contents.size(); i++)
@@ -1159,75 +1157,6 @@ public:
     return true;
   }
 } strip_command;
-
-class LPCCommand : public Command
-{
-  int lpc_order;
-public:
-  LPCCommand() : Command ("lpc")
-  {
-    set_need_save (true);
-  }
-  bool
-  parse_args (vector<string>& args)
-  {
-    if (args.size() == 1)
-      {
-        lpc_order = atoi (args[0].c_str());
-
-        assert ((lpc_order & 1) == 0);  // lpc order must be even
-        assert (lpc_order >= 2);        // ... and at least 2
-
-        return true;
-      }
-    return false;
-  }
-  void
-  usage (bool one_line)
-  {
-    printf ("<lpc_order>\n");
-  }
-  bool
-  exec (Audio& audio)
-  {
-    const size_t frame_size = audio.frame_size_ms * LPC::MIX_FREQ / 1000;
-
-    for (AudioBlock& audio_block : audio.contents)
-      {
-        AlignedArray<float,16> signal (frame_size);
-        for (size_t i = 0; i < audio_block.freqs.size(); i++)
-          {
-            const double freq = audio_block.freqs_f (i) * audio.fundamental_freq;
-            const double mag = audio_block.mags_f (i);
-
-            if (freq < LPC::MIX_FREQ / 2) // ignore freqs > nyquist
-              {
-                VectorSinParams params;
-                params.mix_freq = LPC::MIX_FREQ;
-                params.freq = freq;
-                params.phase = 0;
-                params.mag = mag;
-                params.mode = VectorSinParams::ADD;
-
-                fast_vector_sinf (params, &signal[0], &signal[frame_size]);
-              }
-          }
-        vector<double> lpc (lpc_order);
-
-        LPC::compute_lpc (lpc, &signal[0], &signal[frame_size]);
-
-        // make LPC filter stable
-        vector< complex<double> > roots;
-        bool good_roots = LPC::find_roots (lpc, roots);
-        assert (good_roots);
-        LPC::make_stable_roots (roots);
-        LPC::roots2lpc (roots, lpc);
-
-        LPC::lpc2lsf (lpc, audio_block.lpc_lsf_p, audio_block.lpc_lsf_q);
-      }
-    return true;
-  }
-} lpc_command;
 
 int
 main (int argc, char **argv)
