@@ -293,7 +293,7 @@ dot_spectmorph_dir()
 }
 #endif
 
-std::string
+string
 sm_get_user_dir (UserDir p)
 {
   switch (p)
@@ -302,6 +302,23 @@ sm_get_user_dir (UserDir p)
       case USER_DIR_DATA:        return dot_spectmorph_dir();
     }
   return "";
+}
+
+string
+sm_get_cache_dir()   /* used by smenccache */
+{
+#ifdef SM_OS_LINUX
+  const char *xdg_cache = getenv ("XDG_CACHE_HOME");
+  if (xdg_cache && g_path_is_absolute (xdg_cache))
+    return xdg_cache;
+
+  const char *home = g_get_home_dir();
+  assert (home);
+
+  return string (home) + "/.cache";
+#else
+  return dot_spectmorph_dir() + "/cache";
+#endif
 }
 
 std::string
