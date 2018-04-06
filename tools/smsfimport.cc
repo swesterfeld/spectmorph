@@ -536,8 +536,6 @@ Options::parse (int   *argc_p,
   gchar **argv = *argv_p;
   unsigned int i, e;
 
-  g_return_if_fail (argc >= 0);
-
   for (i = 1; i < argc; i++)
     {
       const char *opt_arg;
