@@ -37,8 +37,6 @@ Options::parse (int   *argc_p,
   gchar **argv = *argv_p;
   unsigned int i, e;
 
-  g_return_if_fail (argc >= 0);
-
   /*  I am tired of seeing .libs/lt-gst123 all the time,
    *  but basically this should be done (to allow renaming the binary):
    *
