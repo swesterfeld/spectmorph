@@ -310,10 +310,6 @@ AM_CONDITIONAL([COND_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 
-# need boost basic linear algebra for LPC
-BOOST_REQUIRE
-BOOST_NUMERIC_UBLAS
-
 AC_AO_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
