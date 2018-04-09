@@ -21,6 +21,10 @@ Var pluginDir
 Name "SpectMorph ${PACKAGE_VERSION}"
 ; The file to write
 OutFile "setup-spectmorph-${PACKAGE_VERSION}.exe"
+
+; License
+!insertmacro MUI_PAGE_LICENSE "COPYING.GPL3"
+
 ; The default installation directory
 InstallDir "\$PROGRAMFILES64\\SpectMorph"
 
