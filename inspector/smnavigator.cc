@@ -142,7 +142,6 @@ Navigator::Navigator (const string& filename)
   setLayout (vbox);
 
   m_fft_param_window = new FFTParamWindow();
-  m_display_param_window = new DisplayParamWindow();
 
   player_window = new PlayerWindow (this);
   connect (player_window, SIGNAL (next_sample()), this, SLOT (on_next_sample()));
@@ -181,7 +180,6 @@ Navigator::handle_close_event()
   time_freq_window->close();
   spectrum_window->close();
   m_fft_param_window->close();
-  m_display_param_window->close();
   return true;
 }
 
@@ -394,21 +392,9 @@ Navigator::on_prev_sample()
 }
 
 void
-Navigator::on_view_display_params()
-{
-  m_display_param_window->show();
-}
-
-void
 Navigator::on_view_spectrum()
 {
   spectrum_window->show();
-}
-
-DisplayParamWindow *
-Navigator::display_param_window()
-{
-  return m_display_param_window;
 }
 
 string

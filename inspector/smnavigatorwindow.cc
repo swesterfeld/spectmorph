@@ -31,9 +31,6 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   QAction *view_fft_params_action = new QAction ("FFT Params", this);
   connect (view_fft_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_fft_params()));
 
-  QAction *view_display_params_action = new QAction ("Display Params", this);
-  connect (view_display_params_action, SIGNAL (triggered()), navigator, SLOT (on_view_display_params()));
-
   QAction *view_player_action = new QAction ("Player", this);
   connect (view_player_action, SIGNAL (triggered()), navigator, SLOT (on_view_player()));
 
@@ -45,7 +42,6 @@ NavigatorWindow::NavigatorWindow (const string& filename)
   view_menu->addAction (view_sample_action);
   view_menu->addAction (view_spectrum_action);
   view_menu->addAction (view_fft_params_action);
-  view_menu->addAction (view_display_params_action);
   view_menu->addAction (view_player_action);
 
   setCentralWidget (navigator);
