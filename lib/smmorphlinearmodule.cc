@@ -96,7 +96,6 @@ MorphLinearModule::set_config (MorphOperator *op)
   morphing = linear->morphing();
   control_type = linear->control_type();
   db_linear = linear->db_linear();
-  use_lpc = linear->use_lpc();
 }
 
 void

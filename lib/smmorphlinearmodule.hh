@@ -23,7 +23,6 @@ class MorphLinearModule : public MorphOperatorModule
   bool                 have_right_source;
   float                morphing;
   bool                 db_linear;
-  bool                 use_lpc;
 
   MorphLinear::ControlType control_type;
 

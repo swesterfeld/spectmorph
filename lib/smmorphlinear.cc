@@ -24,7 +24,6 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   m_morphing = 0;
   m_control_type = CONTROL_GUI;
   m_db_linear = false;
-  m_use_lpc = false;
 
   leak_debugger.add (this);
 }
@@ -57,7 +56,6 @@ MorphLinear::save (OutFile& out_file)
   out_file.write_float ("morphing", m_morphing);
   out_file.write_int ("control_type", m_control_type);
   out_file.write_bool ("db_linear", m_db_linear);
-  out_file.write_bool ("use_lpc", m_use_lpc);
 
   return true;
 }
@@ -131,7 +129,9 @@ MorphLinear::load (InFile& ifile)
             }
           else if (ifile.event_name() == "use_lpc")
             {
-              m_use_lpc = ifile.event_bool();
+              /* we need to skip this without error, as old files may contain this setting
+               * lpc is however no longer supported, so we always ignore the value
+               */
             }
           else
             {
@@ -289,20 +289,6 @@ void
 MorphLinear::set_db_linear (bool dbl)
 {
   m_db_linear = dbl;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-bool
-MorphLinear::use_lpc()
-{
-  return m_use_lpc;
-}
-
-void
-MorphLinear::set_use_lpc (bool use_lpc)
-{
-  m_use_lpc = use_lpc;
 
   m_morph_plan->emit_plan_changed();
 }
