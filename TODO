@@ -1,9 +1,3 @@
-insts:
- - horn
- - tuba
- - double bass
- - flute
-
 NEXT RELEASE:
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
@@ -11,6 +5,11 @@ NEXT RELEASE:
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
+
+insts:
+ - tuba
+ - double bass
+ - flute
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
