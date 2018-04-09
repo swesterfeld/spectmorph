@@ -1,3 +1,21 @@
+Overview of Changes in spectmorph-0.4.0:
+
+* Windows is now supported: provide 64-bit Windows VST plugin
+* Plugin UI redesign
+  - use pugl library for portability (uses GL + cairo) instead of Qt5
+  - use categories for instruments
+  - directly support instrument names in linear morphing
+  - get rid of Qt5 dependency for libspectmorph, smjack, VST and LV2 plugins
+  - UI now has "Zoom" feature to support higher DPI displays
+* Use non-linear configurable new velocity -> volume mapping for midi
+* Some portability fixes for macOS (which however isn't supported yet)
+* Improved tools for building custom instruments
+  - tools are now installed by default
+  - sminstbuilder files support new syntax for relative paths
+  - encoder cache moved to ~/.cache/smenccache, which is created if necessary
+  - use number of processors as default for jobs
+* LPC/LSF support removed
+
 Overview of Changes in spectmorph-0.3.4:
 
 * Added optional ADSR Envelope
