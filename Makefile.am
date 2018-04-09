@@ -28,3 +28,8 @@ pkgconfig_DATA = spectmorph.pc spectmorphgui.pc spectmorphglui.pc
 $(pkgconfig_DATA): $(top_builddir)/config.status
 CLEANFILES += spectmorph.pc spectmorphgui.pc spectmorphglui.pc
 EXTRA_DIST += spectmorph.pc.in spectmorphgui.pc.in spectmorphglui.pc.in
+
+rebuild-meta-headers:
+	make -Clib rebuild-spectmorph-hh
+	make -Cglui rebuild-spectmorphglui-hh
+	make -Cgui rebuild-spectmorphgui-hh
