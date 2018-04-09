@@ -6,7 +6,6 @@
 #include "smwavset.hh"
 #include "smtimefreqwindow.hh"
 #include "smplayerwindow.hh"
-#include "smdisplayparamwindow.hh"
 #include "smfftparamwindow.hh"
 #include "smspectrumwindow.hh"
 #include "smsamplewindow.hh"
