@@ -1,6 +1,3 @@
-other:
- - tuba, double bass, ...
-
 later:
  - 32bit compile crashes in apply window sse code - why?
  - popup menu
