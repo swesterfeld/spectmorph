@@ -1,5 +1,9 @@
 later:
- - 32bit compile crashes in apply window sse code - why?
  - popup menu
  - knob
  - font (?)
+
+later(windows):
+ - 32bit compile crashes in apply window sse code - why?
+ - making zoom smaller on ardour/windows doesn't work
+ - led sometimes remains on
