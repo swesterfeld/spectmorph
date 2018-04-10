@@ -85,29 +85,6 @@ LV2 Plugin:
 SpectMorph provides a LV2 Plugin, which can be used together with DAWs that
 support LV2, such as Ardour, Qtractor and others.
 
-Ardour and other Hosts using SUIL:
-----------------------------------
-
-SUIL is a library that is used by Ardour (and probably others) to display the
-plugin UI.  SpectMorph is using the Qt5 library for implementing its plugin UI.
-The latest stable release of SUIL does not (at the time of writing this) come
-with support for for Qt5. However the development version has support for Qt5,
-(it was added on 2017-03-18). So you need a SUIL library version that is newer
-than this, to be able to use SpectMorph in Ardour.
-
-Crashes with Hosts using Qt4:
------------------------------
-
-Some Hosts have been compiled against the (old) Qt4 GUI library. Since
-SpectMorph is using Qt5 for its code, loading the SpectMorph plugin into such a
-host will create problems. Usually the Host will crash. I know of no workaround
-for this issue other than building the Host against Qt5, too.
-
-Qtractor:
----------
-
-Qtractor (when compiled against Qt5) works fine with SpectMorph.
-
 Controlling Morphing with Automation:
 -------------------------------------
 
