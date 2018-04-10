@@ -167,8 +167,10 @@ ComboBoxOperator::set_active_str_choice (const string& new_str)
           return;
         }
     }
-  printf ("ComboBoxOperator::set_active_str_choice (%s) failed\n", new_str.c_str());
-  g_assert_not_reached();
+  fprintf (stderr, "ComboBoxOperator::set_active_str_choice (%s) failed\n", new_str.c_str());
+
+  str_choice = "";
+  on_operators_changed();
 }
 
 void
