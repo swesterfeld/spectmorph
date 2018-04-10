@@ -20,8 +20,11 @@ Installing Instruments:
 =======================
 
 To use SpectMorph, you need to install the standard Instrument Set first.
-SpectMorph will load instruments automatically from your home directory.
-The convention is that you install them in
+If you're using the Windows Installer, you do not need to do this, because
+the instruments are already included in the Installer.
+
+On Linux, SpectMorph will load instruments automatically from your home
+directory.  The convention is that you install them in
 
     ~/.spectmorph/instruments
 
