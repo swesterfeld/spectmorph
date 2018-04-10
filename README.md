@@ -62,9 +62,9 @@ VST Plugin:
 ===========
 
 The VST Plugin is available for Linux and 64-bit Windows, and should work in
-many different hosts, such as Bitwig, Renoise, Cubase and others.
-In linux hosts that support LV2, using the SpectMorph LV2 plugin is the
-preferred way of integration.
+many different hosts, such as Bitwig, Renoise, Cubase and others. For Linux
+hosts that support LV2, using the SpectMorph LV2 plugin is the preferred way of
+integration.
 
 Controlling Morphing with Automation:
 -------------------------------------
@@ -77,8 +77,8 @@ back.
 LV2 Plugin:
 ===========
 
-SpectMorph provides a LV2 Plugin, which can be used together with DAWs that
-support LV2, such as Ardour, Qtractor and others.
+SpectMorph provides a LV2 Plugin, which can be used together with Linux DAWs
+that support LV2, such as Ardour, Qtractor and others.
 
 Controlling Morphing with Automation:
 -------------------------------------
