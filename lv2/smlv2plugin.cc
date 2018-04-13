@@ -28,8 +28,8 @@ using std::max;
 
 #define DEBUG 0
 
-static FILE *debug_file = NULL;
-std::mutex   debug_mutex;
+static FILE       *debug_file = NULL;
+static std::mutex  debug_mutex;
 
 static void
 debug (const char *fmt, ...)
