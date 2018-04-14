@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui
+AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
@@ -15,11 +15,11 @@ plugin_LTLIBRARIES = spectmorph_lv2.la spectmorph_lv2_ui.la
 
 spectmorph_lv2_la_SOURCES = smlv2plugin.cc $(SMHDRS)
 spectmorph_lv2_la_LIBADD  = $(plugin_libs)
-spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
+spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static
 
 spectmorph_lv2_ui_la_SOURCES = smlv2ui.cc $(SMHDRS) smlv2ui.hh
 spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GLUI_LIBS)
-spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static -export-symbols-regex "lv2_descriptor"
+spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static
 
 spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
