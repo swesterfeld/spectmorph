@@ -83,7 +83,7 @@ MicroConf::line()
   return current_line;
 }
 
-bool
+static bool
 string_chars (char ch)
 {
   if ((ch >= 'A' && ch <= 'Z')
@@ -100,7 +100,7 @@ string_chars (char ch)
   return false;
 }
 
-bool
+static bool
 white_space (char ch)
 {
   return (ch == ' ' || ch == '\n' || ch == '\t' || ch == '\r');
