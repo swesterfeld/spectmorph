@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 SUBDIRS = vestige
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui
+AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
@@ -17,7 +17,7 @@ SMVSTSOURCES = smvstplugin.cc smvstui.cc
 
 spectmorph_vst_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
 spectmorph_vst_la_LIBADD  = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
-spectmorph_vst_la_LDFLAGS = -rpath $(spectmorph_vstdir) -avoid-version -module -export-symbols-regex "VSTPluginMain|main" -no-undefined
+spectmorph_vst_la_LDFLAGS = -rpath $(spectmorph_vstdir) -avoid-version -module -no-undefined
 
 testlink: testlink.cc
 	$(CXX) -o /dev/null testlink.cc $(SMVSTSOURCES) $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(BSE_LIBS) -L../lib/.libs -lspectmorph -L../glui/.libs -lspectmorphglui

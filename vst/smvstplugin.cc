@@ -435,6 +435,8 @@ set_windows_data_dir()
 }
 
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(dllexport);
+#else
+extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __attribute__((visibility("default")));
 #endif
 
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
