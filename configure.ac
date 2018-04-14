@@ -359,6 +359,8 @@ AC_SUBST(AM_CFLAGS)
 AC_SUBST(AM_CXXFLAGS)
 # --- AC_SUBST(AM_CPPFLAGS) ---
 
+# check if compiler supports -fvisibility=hidden
+gl_VISIBILITY
 
 AC_ARG_ENABLE(oprofile,AS_HELP_STRING([--enable-oprofile], [setup compiler flags to allow oprofile usage]),
 [
