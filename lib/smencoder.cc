@@ -942,7 +942,7 @@ approximate_noise_spectrum (int frame,
     }
 }
 
-void
+static void
 xnoise_envelope_to_spectrum (int frame,
                              double mix_freq,
                              const vector<double>& envelope,

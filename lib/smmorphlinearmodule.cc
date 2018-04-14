@@ -128,7 +128,7 @@ MorphLinearModule::MySource::audio()
   return &module->audio;
 }
 
-void
+static void
 dump_block (size_t index, const char *what, const AudioBlock& block)
 {
   if (DEBUG)
@@ -138,7 +138,7 @@ dump_block (size_t index, const char *what, const AudioBlock& block)
     }
 }
 
-void
+static void
 dump_line (size_t index, const char *what, double start, double end)
 {
   if (DEBUG)
