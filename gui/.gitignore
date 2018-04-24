@@ -4,3 +4,4 @@
 *.lo
 *.la
 moc_*.cc
+smfiledialog
