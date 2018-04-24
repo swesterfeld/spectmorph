@@ -42,6 +42,7 @@ testadsrdecay
 testmidisynth
 testsignal
 teststrformat
+testvelocity
 test*.exe
 .libs
 .deps
