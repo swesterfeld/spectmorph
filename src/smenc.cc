@@ -140,7 +140,7 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "-f", &opt_arg))
 	{
-	  fundamental_freq = atof (opt_arg);
+	  fundamental_freq = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "-m", &opt_arg))
         {
@@ -184,11 +184,11 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--loop-start", &opt_arg))
         {
-          loop_start = atof (opt_arg);
+          loop_start = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--loop-end", &opt_arg))
         {
-          loop_end = atof (opt_arg);
+          loop_end = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--loop-type", &opt_arg))
         {

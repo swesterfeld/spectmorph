@@ -282,7 +282,7 @@ public:
   {
     if (args.size() == 1)
       {
-        percent = atof (args[0].c_str());
+        percent = sm_atof (args[0].c_str());
         return true;
       }
     return false;
@@ -665,8 +665,8 @@ public:
   {
     if (args.size() == 2)
       {
-        freq_min = atof (args[0].c_str());
-        freq_max = atof (args[1].c_str());
+        freq_min = sm_atof (args[0].c_str());
+        freq_max = sm_atof (args[1].c_str());
         return true;
       }
     return false;
@@ -800,7 +800,7 @@ public:
   {
     if (args.size() == 1)
       {
-        percent = atof (args[0].c_str());
+        percent = sm_atof (args[0].c_str());
         if (percent < 0 || percent > 100)
           {
             fprintf (stderr, "bad loop percentage: %f\n", percent);
@@ -1063,7 +1063,7 @@ public:
   {
     if (args.size() == 1)
       {
-        percent = atof (args[0].c_str());
+        percent = sm_atof (args[0].c_str());
         if (percent < 0 || percent > 100)
           {
             fprintf (stderr, "bad volume percentage: %f\n", percent);
@@ -1116,7 +1116,7 @@ public:
   {
     if (args.size() == 1)
       {
-        norm_db = atof (args[0].c_str());
+        norm_db = sm_atof (args[0].c_str());
         return true;
       }
     return false;

@@ -98,7 +98,7 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
-          gain = atof (opt_arg);
+          gain = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--no-noise"))
         {
