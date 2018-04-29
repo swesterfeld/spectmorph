@@ -55,7 +55,7 @@ public:
   std::string label_to_smset (const std::string& label) const;
   std::string smset_to_label (const std::string& smset) const;
 
-  const std::vector<Group>        groups() const;
+  const std::vector<Group>&       groups() const;
 
   const std::vector<std::string>& smsets() const;
   std::string                     smset_dir() const;

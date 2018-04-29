@@ -190,7 +190,7 @@ Index::smset_dir() const
   return m_smset_dir;
 }
 
-const vector<Index::Group>
+const vector<Index::Group>&
 Index::groups() const
 {
   return m_groups;
