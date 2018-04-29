@@ -191,28 +191,6 @@ Encoder::Encoder (const EncoderParams& enc_params)
   optimal_attack.attack_end_ms = 0;
 }
 
-bool
-Encoder::check_harmonic (double freq, double& new_freq, double mix_freq)
-{
-  if (enc_params.fundamental_freq > 0)
-    {
-      for (int i = 1; i < 100; i++)
-	{
-          // FIXME: why hardcode 2048
-	  double base_freq = (mix_freq/2048*16);
-	  double harmonic_freq = i * base_freq;
-	  double diff = fabs (harmonic_freq - freq) / base_freq;
-	  if (diff < 0.125)
-	    {
-	      new_freq = harmonic_freq;
-	      return true;
-	    }
-	}
-    }
-  new_freq = freq;
-  return false;
-}
-
 /**
  * This function computes the short-time-fourier-transform (STFT) of the input
  * signal using a window to cut the individual frames out of the sample.
@@ -439,12 +417,10 @@ Encoder::search_local_maxima (const vector<float>& window)
                         }
                       tracksel.phase = phase;
 
-                      double dummy_freq;
-                      tracksel.is_harmonic = check_harmonic (tracksel.freq, dummy_freq, mix_freq);
                       // FIXME: need a different criterion here
                       // mag2 > -30 doesn't track all partials
                       // mag2 > -60 tracks lots of junk, too
-                      if ((mag2 > -90 || tracksel.is_harmonic) && tracksel.freq > 10)
+                      if (mag2 > -90 && tracksel.freq > 10)
                         frame_tracksels[n].push_back (tracksel);
 
                       if (peak_type == PEAK_DOUBLE)
@@ -576,24 +552,15 @@ Encoder::validate_partials()
 	  if (!processed_tracksel[&(*i)])
 	    {
 	      double biggest_mag = -100;
-	      bool   is_harmonic = false;
-	      for (Tracksel *t = &(*i); t->next; t = t->next)
+	      for (Tracksel *t = &(*i); t; t = t->next)
 		{
 		  biggest_mag = max (biggest_mag, t->mag2);
-		  if (t->is_harmonic)
-		    is_harmonic = true;
 		  processed_tracksel[t] = true;
 		}
-	      if (biggest_mag > -90 || is_harmonic)
+	      if (biggest_mag > -90)
 		{
-		  for (Tracksel *t = &(*i); t->next; t = t->next)
+		  for (Tracksel *t = &(*i); t; t = t->next)
 		    {
-#if 0
-		      double new_freq;
-		      if (check_harmonic (t->freq, new_freq, mix_freq))
-			t->freq = new_freq;
-#endif
-
 		      audio_blocks[t->frame].freqs.push_back (t->freq);
 		      audio_blocks[t->frame].mags.push_back (t->mag);
 		      audio_blocks[t->frame].phases.push_back (t->phase);

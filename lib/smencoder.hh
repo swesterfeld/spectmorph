@@ -22,7 +22,7 @@ namespace SpectMorph
 struct EncoderParams
 {
   /** sample rate of the original audio file */
-  float   mix_freq;         
+  float   mix_freq;
 
   /** step size for analysis frames in milliseconds */
   float   frame_step_ms;
@@ -65,7 +65,7 @@ struct Tracksel {
   double   mag;
   double   mag2;      /* magnitude in dB */
   double   phase;     /* phase */
-  bool     is_harmonic;
+
   Tracksel *prev, *next;
 };
 
@@ -94,8 +94,6 @@ class Encoder
   int                                  loop_start;
   int                                  loop_end;
   Audio::LoopType                      loop_type;
-
-  bool check_harmonic (double freq, double& new_freq, double mix_freq);
 
   std::vector< std::vector<Tracksel> > frame_tracksels; //!< Analog to Canny Algorithms edgels - only used internally
 
