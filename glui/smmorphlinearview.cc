@@ -28,14 +28,14 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   // LEFT SOURCE
   left_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
 
-  op_layout.add_row (3, new Label (body_widget, "Left Source"), left_combobox);
+  op_layout.add_row (3, new Label (body_widget, "Source A"), left_combobox);
 
   connect (left_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
   // RIGHT SOURCE
   right_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
 
-  op_layout.add_row (3, new Label (body_widget, "Right Source"), right_combobox);
+  op_layout.add_row (3, new Label (body_widget, "Source B"), right_combobox);
 
   connect (right_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
