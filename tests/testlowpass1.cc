@@ -14,8 +14,8 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  double mix_freq = atof (argv[1]);
-  double freq = atof (argv[2]);
+  double mix_freq = sm_atof (argv[1]);
+  double freq = sm_atof (argv[2]);
   double a = sm_lowpass1_factor (mix_freq, freq);
 
   printf ("# a=%f\n", a);

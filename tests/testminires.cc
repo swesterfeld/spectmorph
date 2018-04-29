@@ -124,10 +124,10 @@ main (int argc, char **argv)
     }
   else if (argc == 5 && strcmp (argv[1], "error-spectrum") == 0)
     {
-      error_spectrum (atoi (argv[2]), atoi (argv[3]), atof (argv[4]), false);
+      error_spectrum (atoi (argv[2]), atoi (argv[3]), sm_atof (argv[4]), false);
     }
   else if (argc == 5 && strcmp (argv[1], "error-spectrum-pp") == 0)
     {
-      error_spectrum (atoi (argv[2]), atoi (argv[3]), atof (argv[4]), true);
+      error_spectrum (atoi (argv[2]), atoi (argv[3]), sm_atof (argv[4]), true);
     }
 }

@@ -2,6 +2,7 @@
 
 #include "smadsrenvelope.hh"
 #include "smmain.hh"
+#include "smmath.hh"
 
 #include <stdlib.h>
 
@@ -14,5 +15,5 @@ main (int argc, char **argv)
 
   ADSREnvelope adsr_envelope;
 
-  adsr_envelope.test_decay (atoi (argv[1]), atof (argv[2]), atof (argv[3]));
+  adsr_envelope.test_decay (atoi (argv[1]), sm_atof (argv[2]), sm_atof (argv[3]));
 }

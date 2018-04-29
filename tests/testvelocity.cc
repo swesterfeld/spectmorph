@@ -11,7 +11,7 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  double vrange_db = (argc == 2) ? atof (argv[1]) : 30;
+  double vrange_db = (argc == 2) ? sm_atof (argv[1]) : 30;
 
   for (int i = 0; i < 128; i++)
     {

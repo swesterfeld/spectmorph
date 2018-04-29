@@ -314,7 +314,7 @@ main (int argc, char **argv)
     }
   else if (argc == 4 && string (argv[1]) == "rspectrum")
     {
-      rspectrum (atof (argv[2]), atof (argv[3]));
+      rspectrum (sm_atof (argv[2]), sm_atof (argv[3]));
     }
   else
     {

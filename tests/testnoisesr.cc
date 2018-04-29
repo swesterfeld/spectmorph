@@ -260,7 +260,7 @@ reencode (int argc, char **argv)
   int from_sr = atoi (argv[2]);
   int to_sr   = atoi (argv[3]);
   string win = (argc >= 5) ? argv[4] : "cos";
-  float fundamental_freq = (argc >= 6) ? atof (argv[5]) : 440;
+  float fundamental_freq = (argc >= 6) ? sm_atof (argv[5]) : 440;
 
   printf ("# reencode from_sr = %d to_sr = %d, win = %s, fundamental = %f\n", from_sr, to_sr, win.c_str(), fundamental_freq);
 
@@ -310,7 +310,7 @@ main (int argc, char **argv)
   // default noise sr test
   int sr = (argc >= 2) ? atoi (argv[1]) : 48000;
   string win = (argc >= 3) ? argv[2] : "cos";
-  float fundamental_freq = (argc >= 4) ? atof (argv[3]) : 440;
+  float fundamental_freq = (argc >= 4) ? sm_atof (argv[3]) : 440;
 
   printf ("# sr = %d, win = %s, fundamental_freq = %f\n", sr, win.c_str(), fundamental_freq);
 
