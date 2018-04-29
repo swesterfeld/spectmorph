@@ -52,7 +52,7 @@ main (int argc, char **argv)
       return 1;
     }
 
-  const float freq = atof (argv[2]);
+  const float freq = sm_atof (argv[2]);
   assert (freq >= 20 && freq < 22000);
 
   int priority = adjust_priority();

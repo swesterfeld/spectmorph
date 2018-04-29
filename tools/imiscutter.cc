@@ -82,11 +82,11 @@ Options::parse (int   *argc_p,
 	}
       else if (check_arg (argc, argv, &i, "--silence", &opt_arg))
 	{
-	  silence_threshold = atof (opt_arg);
+	  silence_threshold = sm_atof (opt_arg);
 	}
       else if (check_arg (argc, argv, &i, "--signal", &opt_arg))
         {
-          signal_threshold = atof (opt_arg);
+          signal_threshold = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--step", &opt_arg))
         {

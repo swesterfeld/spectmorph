@@ -107,7 +107,7 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--freq", &opt_arg) || check_arg (argc, argv, &i, "-f", &opt_arg))
         {
-          freq = atof (opt_arg);
+          freq = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--freq-in", &opt_arg))
         {
@@ -119,11 +119,11 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
-          gain = atof (opt_arg);
+          gain = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--loop", &opt_arg))
         {
-          loop = atof (opt_arg);
+          loop = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--det-random"))
         {
@@ -192,8 +192,8 @@ parse_freq_in (vector<float>& freq_vector)
           char *value_str = strtok (NULL, " \n");
           if (!value_str)
             continue;
-          time.push_back (atof (time_str));
-          value.push_back (atof (value_str));
+          time.push_back (sm_atof (time_str));
+          value.push_back (sm_atof (value_str));
         }
     }
   size_t t = 0;

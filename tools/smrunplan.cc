@@ -88,7 +88,7 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--len", &opt_arg) || check_arg (argc, argv, &i, "-l", &opt_arg))
         {
-          len = atof (opt_arg);
+          len = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--fade") || check_arg (argc, argv, &i, "-f"))
         {
@@ -104,7 +104,7 @@ Options::parse (int   *argc_p,
             {
               if (*opt_arg == ',')
                 {
-                  fade_env.push_back (atof (field.c_str()));
+                  fade_env.push_back (sm_atof (field.c_str()));
                   field = "";
                 }
               else
@@ -113,7 +113,7 @@ Options::parse (int   *argc_p,
                 }
               opt_arg++;
             }
-          fade_env.push_back (atof (field.c_str()));
+          fade_env.push_back (sm_atof (field.c_str()));
         }
       else if (check_arg (argc, argv, &i, "--quiet") || check_arg (argc, argv, &i, "-q"))
         {
@@ -129,7 +129,7 @@ Options::parse (int   *argc_p,
         }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
-          gain = atof (opt_arg);
+          gain = sm_atof (opt_arg);
         }
       else if (check_arg (argc, argv, &i, "--rate", &opt_arg) || check_arg (argc, argv, &i, "-r", &opt_arg))
         {

@@ -106,7 +106,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
           string  value = string_printf ("%.17g", fvalue);
 
           process_property (property, value);
-          fvalue = atof (value.c_str());
+          fvalue = sm_atof (value.c_str());
 
           ofile.write_float (ifile.event_name(), fvalue);
         }
