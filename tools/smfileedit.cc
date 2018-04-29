@@ -6,6 +6,7 @@
 #include "smmain.hh"
 #include "smhexstring.hh"
 #include "smutils.hh"
+#include "smmath.hh"
 
 #include <map>
 
