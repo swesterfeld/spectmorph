@@ -436,3 +436,45 @@ AudioBlock::sort_freqs()
       phases[p] = pvec[p].phase;
     }
 }
+
+double
+AudioBlock::estimate_fundamental (int n_partials, double *mag) const
+{
+  g_return_val_if_fail (n_partials >= 1 && n_partials <= 3, 1.0);
+
+  double est_freq = 0, est_mag = 0;
+
+  auto update_estimate = [&] (int n, double freq_min, double freq_max)
+    {
+      if (n > n_partials)
+        return;
+
+      double best_freq = 0, best_mag = 0;
+
+      for (size_t p = 0; p < mags.size(); p++)
+        {
+          if (freqs_f (p) > freq_min && freqs_f (p) < freq_max && mags_f (p) > best_mag)
+            {
+              best_mag = mags_f (p);
+              best_freq = freqs_f (p) / n;
+            }
+        }
+      if (best_mag > 0)
+        {
+          est_mag += best_mag;
+          est_freq += best_freq * best_mag;
+        }
+    };
+
+  update_estimate (1, 0.8, 1.25);
+  update_estimate (2, 1.5, 2.5);
+  update_estimate (3, 2.5, 3.5);
+
+  if (mag)
+    *mag = est_mag;
+
+  if (est_mag > 0)
+    return est_freq / est_mag;
+  else
+    return 1;
+}

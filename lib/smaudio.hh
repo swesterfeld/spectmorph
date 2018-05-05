@@ -34,7 +34,8 @@ public:
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 
-  void sort_freqs();
+  void    sort_freqs();
+  double  estimate_fundamental (int n_partials = 1, double *mag = nullptr) const;
 
   double
   freqs_f (size_t i) const
