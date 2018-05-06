@@ -1018,6 +1018,75 @@ public:
   }
 } tune_all_frames_command;
 
+class SmoothTuneCommand : public Command
+{
+  int fundamental_est_n; /* number of partials to use for fundamental estimation in range [1,3] */
+  double smooth_ms;
+  double smooth_percent;
+public:
+  SmoothTuneCommand() : Command ("smooth-tune")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 3)
+      {
+        fundamental_est_n = atoi (args[0].c_str());
+        assert (fundamental_est_n >= 1 && fundamental_est_n <= 3);
+        smooth_ms = sm_atof (args[1].c_str());
+        assert (smooth_ms > 10 && smooth_ms < 5000);
+        smooth_percent = sm_atof (args[2].c_str());
+        assert (smooth_percent > -1 && smooth_percent < 101);
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<n_partials> <smooth_ms> <smooth_percent>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    vector<double> freq_vector;
+
+    for (const auto& block : audio.contents)
+      freq_vector.push_back (block.estimate_fundamental (fundamental_est_n));
+
+    for (size_t f = 0; f < audio.contents.size(); f++)
+      {
+        double avg = 0;
+        int count = 0;
+        for (size_t j = 0; j < audio.contents.size(); j++)
+          {
+            double distance_ms = audio.frame_step_ms * fabs (double (f) - double (j));
+            if (distance_ms < smooth_ms)
+              {
+                avg += freq_vector[j];
+                count += 1;
+              }
+          }
+
+        double smooth_freq = avg / count;
+        double interp = smooth_percent / 100;
+        double dest_freq = (freq_vector[f] / smooth_freq - 1) * interp + 1;
+        const double tune_factor = dest_freq / freq_vector[f];
+
+        AudioBlock& block = audio.contents[f];
+
+        for (size_t p = 0; p < block.freqs.size(); p++)
+          {
+            const double freq = block.freqs_f (p) * tune_factor;
+            block.freqs[p] = sm_freq2ifreq (freq);
+          }
+        set_need_save (true);
+      }
+    return true;
+  }
+} smooth_tune_command;
+
 static void
 normalize_factor (double norm, Audio& audio)
 {
