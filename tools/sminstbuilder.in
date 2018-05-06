@@ -31,6 +31,7 @@ class Config:
     self.samples           = []
     self.set_markers_count = 0
     self.tune_all_frames_count = 0
+    self.smooth_tune_count = 0
     self.name_count        = 0
     self.short_name_count  = 0
     self.encoder_args_count = 0
@@ -190,6 +191,11 @@ def parse_config (filename, builder_config):
         config.soundfont_preset = tokens[2]
         config.soundfont_count += 1
         parse_ok = True
+    if len (tokens) == 4:
+      if tokens[0] == 'smooth-tune':
+        config.smooth_tune = tokens[1:]
+        config.smooth_tune_count += 1
+        parse_ok = True
     if len (tokens) >= 3:
       if tokens[0] == 'encoder-config':
         config.encoder_config += [ tokens[1:] ]
@@ -223,10 +229,12 @@ def parse_config (filename, builder_config):
     die ("set-markers command must occur at most once in config")
   if config.tune_all_frames_count > 1:
     die ("tune-all-frames command can be used at most once in config")
+  if config.smooth_tune_count > 1:
+    die ("smooth-tune command can be used at most once in config")
   if config.encoder_args_count > 1:
     die ("encoder_args command can be used at most once in config")
-  if config.tune_all_frames_count > 0 and config.auto_tune_count > 0:
-    die ("auto-tune/tune-all-frames command should not be used together")
+  if config.tune_all_frames_count + config.auto_tune_count + config.smooth_tune_count > 1:
+    die ("auto-tune/tune-all-frames/smooth_tune command should not be used together")
   if config.soundfont_count > 1:
     die ("sountfont command can be used at most once in config")
   return config
@@ -388,7 +396,13 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
     if cmdline_args.untuned:
       print "+++ skip smtool %s tune-all-frames (untuned version)" % final_smset
     else:
-      system_or_die ("smtool %s tune-all-frames %s" % (final_smset, config.tune_all_frames));
+      system_or_die ("smtool %s tune-all-frames %s" % (final_smset, config.tune_all_frames))
+
+  if (config.smooth_tune_count > 0):
+    if cmdline_args.untuned:
+      print "+++ skip smtool %s smooth-tune (untuned version)" % final_smset
+    else:
+      system_or_die ("smtool %s smooth-tune %s" % (final_smset, " ".join (config.smooth_tune)))
 
   if (config.auto_loop_count > 0):
     system_or_die ("smtool %s auto-loop %s" % (final_smset, config.auto_loop));
