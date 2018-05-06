@@ -43,6 +43,7 @@ private:
   double             vzoom;
   EditMarkerType     m_edit_marker_type;
   bool               button_1_pressed;
+  bool               m_show_tuning = false;
 
   void               update_size();
   void               mousePressEvent (QMouseEvent *event);
@@ -58,6 +59,8 @@ public:
 
   void set_edit_marker_type (EditMarkerType marker_type);
   EditMarkerType edit_marker_type();
+
+  void set_show_tuning (bool show_tuning);
 
   template<class Painter> static void
   draw_signal (std::vector<float>& signal, Painter& painter, const QRect& rect, int height, double vz, double hz)

@@ -30,6 +30,12 @@ SampleView::SampleView()
   setMouseTracking (true);
 }
 
+static double
+freq_ratio_to_cent (double freq_ratio)
+{
+  return log (freq_ratio) / log (2) * 1200;
+}
+
 void
 SampleView::paintEvent (QPaintEvent *event)
 {
@@ -70,6 +76,27 @@ SampleView::paintEvent (QPaintEvent *event)
           else
             painter.setPen (QColor (150, 150, 150));
           painter.drawLine (hz * loop_end, 0, hz * loop_end, height);
+        }
+
+      if (m_show_tuning)
+        {
+          double last_cent = 0;
+
+          for (size_t frame = 0; frame < audio->contents.size(); frame++)
+            {
+              double last_pos = (frame - 1.0) * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+              double pos = frame * audio->frame_step_ms / 1000.0 * audio->mix_freq;
+
+              const int n_partials = 3;
+              const AudioBlock& block = audio->contents[frame];
+
+              double cent = freq_ratio_to_cent (block.estimate_fundamental (n_partials));
+
+              painter.setPen (QColor (0, 200, 0));
+              painter.drawLine (hz * last_pos, height / 2 - last_cent * height / 100, hz * pos, height / 2 - cent * height / 100);
+
+              last_cent = cent;
+            }
         }
     }
 
@@ -224,5 +251,12 @@ void
 SampleView::set_edit_marker_type (EditMarkerType marker_type)
 {
   m_edit_marker_type = marker_type;
+  update();
+}
+
+void
+SampleView::set_show_tuning (bool show_tuning)
+{
+  m_show_tuning = show_tuning;
   update();
 }
