@@ -26,6 +26,7 @@ class SampleWinView : public QWidget
   QPushButton    *edit_loop_start;
   QPushButton    *edit_loop_end;
   QComboBox      *loop_type_combo;
+  QPushButton    *show_tuning_button;
 
   Navigator      *navigator;
 public:
@@ -39,6 +40,7 @@ public slots:
   void on_mouse_time_changed (int new_time);
   void on_edit_marker_changed();
   void on_loop_type_changed();
+  void on_show_tuning_changed();
 
 signals:
   void audio_edit();

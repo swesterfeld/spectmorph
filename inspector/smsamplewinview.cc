@@ -46,6 +46,10 @@ SampleWinView::SampleWinView (Navigator *navigator)
 
   connect (loop_type_combo, SIGNAL (currentIndexChanged (int)), this, SLOT (on_loop_type_changed()));
 
+  show_tuning_button = new QPushButton ("Show Tuning");
+  connect (show_tuning_button, SIGNAL (clicked()), this, SLOT (on_show_tuning_changed()));
+  show_tuning_button->setCheckable (true);
+
   scroll_area = new QScrollArea();
   scroll_area->setWidgetResizable (true);
   scroll_area->setWidget (m_sample_view);
@@ -58,12 +62,12 @@ SampleWinView::SampleWinView (Navigator *navigator)
       grid->addWidget (zoom_controller->hwidget (i), 1, i);
       grid->addWidget (zoom_controller->vwidget (i), 2, i);
     }
-
   QHBoxLayout *button_hbox = new QHBoxLayout();
   button_hbox->addWidget (time_label);
   button_hbox->addWidget (edit_loop_start);
   button_hbox->addWidget (edit_loop_end);
   button_hbox->addWidget (loop_type_combo);
+  button_hbox->addWidget (show_tuning_button);
 
   grid->addLayout (button_hbox, 3, 0, 1, 3);
 
@@ -130,6 +134,12 @@ SampleWinView::on_edit_marker_changed()
 
   edit_loop_start->setChecked (marker_type == SampleView::MARKER_LOOP_START);
   edit_loop_end->setChecked (marker_type == SampleView::MARKER_LOOP_END);
+}
+
+void
+SampleWinView::on_show_tuning_changed()
+{
+  m_sample_view->set_show_tuning (show_tuning_button->isChecked());
 }
 
 void
