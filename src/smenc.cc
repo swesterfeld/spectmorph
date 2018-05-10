@@ -247,6 +247,7 @@ Options::print_usage ()
   sm_printf (" --loop-start                set timeloop start\n");
   sm_printf (" --loop-end                  set timeloop end\n");
   sm_printf (" --debug-decode              debug decode sm file using unquantized values\n");
+  sm_printf (" -d                          dump encoder debug information\n");
   sm_printf (" --text-input-file <rate>    set input file format to human readable text values\n");
   sm_printf (" --config <config>           set additional parameters for analysis\n");
   sm_printf ("\n");
