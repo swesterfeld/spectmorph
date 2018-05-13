@@ -687,7 +687,10 @@ puglProcessEvents(PuglView* view)
 		// Get the next event, or use the cached one from puglWaitForEvent
 		if (!view->impl->nextEvent) {
 			view->impl->nextEvent = [view->impl->window
-			                            nextEventMatchingMask: NSAnyEventMask];
+			                            nextEventMatchingMask: NSAnyEventMask
+                                                    untilDate:nil
+                                                    inMode:NSDefaultRunLoopMode
+                                                    dequeue:YES];
 		}
 
 		if (!view->impl->nextEvent) {
