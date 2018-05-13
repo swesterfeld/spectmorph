@@ -43,3 +43,28 @@ install-exec-hook: SpectMorph.dll
 SpectMorph.dll: $(plugin_LTLIBRARIES)
 	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
 endif
+if COND_MACOS
+STATIC_DLL_LIBS = \
+  $(top_builddir)/glui/.libs/libspectmorphglui.a \
+  $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
+  $(top_builddir)/lib/.libs/libspectmorph.a
+
+STATIC_BREW_DEPS = \
+  /usr/local/lib/libcairo.a \
+  /usr/local/lib/libpixman-1.a \
+  /usr/local/lib/libglib-2.0.a \
+  /usr/local/opt/gettext/lib/libintl.a \
+  /usr/local/lib/libfftw3f.a \
+  /usr/local/lib/libfontconfig.a \
+  /usr/local/lib/libfreetype.a \
+  /usr/local/lib/libpng16.a
+
+SYS_DEPS = -liconv -lexpat -lz -lbz2 -lm -framework Cocoa -framework OpenGL
+
+install-exec-hook: SpectMorph.so
+	mkdir -p $(libdir)/vst
+	cp SpectMorph.so $(libdir)/vst
+
+SpectMorph.so: $(plugin_LTLIBRARIES)
+	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(STATIC_BREW_DEPS) $(SYS_DEPS)
+endif
