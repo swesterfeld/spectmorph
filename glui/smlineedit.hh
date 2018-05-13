@@ -105,8 +105,9 @@ public:
       {
         m_text += (const char *) key_event.utf8;
       }
-    else if (key_event.character == PUGL_CHAR_BACKSPACE && !m_text.empty())
+    else if ((key_event.character == PUGL_CHAR_BACKSPACE || key_event.character == PUGL_CHAR_DELETE) && !m_text.empty())
       {
+        // Windows and Linux use backspace, macOS uses delete, so we support both
         std::vector<uint32> chars = utf8_to_unicode (m_text);
         if (chars.size())
           chars.pop_back();
