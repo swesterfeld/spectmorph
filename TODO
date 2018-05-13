@@ -5,6 +5,7 @@ NEXT RELEASE:
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
+- better spectral subtract [1]
 
 insts:
  - tuba
@@ -79,3 +80,20 @@ lv2:
 - release announcement mailing lists
 - mail arch linux maintainer (AUR)
 - test builds on gentoo and ubuntu 17.04
+
+------------------------------------
+
+[1] encoder: better spectral subtract
+
+Often, partials are not stable within one analysis frame - their amplitude
+and/or frequency can change (see claudia-ah|claudia-ih|claudia-oh) - as a
+result, the peak can be more wide than a mere windowed sine. The result
+is extra noise (for instance claudia-ah-1-84.sm with frame size 20).
+
+The idea of this change is to subtract a slightly wider peak from the
+spectrum to compensate for unstable partials. A gaussian peak could be
+tried, or sines with different frequency|amplitude variations could be
+analyzed.
+
+Noise very close to the partial would normally not be audible anyways, as
+it should be masked.
