@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <unistd.h>
+#include <errno.h>
 
 using namespace SpectMorph;
 
