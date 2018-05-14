@@ -18,3 +18,5 @@ cp -rv $PREFIX/share/spectmorph/templates SpectMorph.vst/Contents/Resources || d
 cp -rv instruments SpectMorph.vst/Contents/Resources || die "error: cp instruments"
 cp -rv Info.plist PkgInfo SpectMorph.vst/Contents || die "error: cp ...info"
 zip -r SpectMorph-${PACKAGE_VERSION}.zip SpectMorph.vst || die "error: zip"
+
+# unzip SpectMorph-0.4.0.zip -d ~/Library/Audio/Plug-Ins/VST
