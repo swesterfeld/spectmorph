@@ -620,6 +620,12 @@ puglCreateWindow(PuglView* view, const char* title)
 		[impl->app activateIgnoringOtherApps:YES];
 		[window makeFirstResponder:impl->glview];
 		[window makeKeyAndOrderFront:window];
+
+                if (view->transient_parent) {
+                        // modal dialogs are usually centered on macOS
+                        // (this window is not really modal, but at least centered)
+                        [window center];
+                }
 	}
 
 	return 0;
