@@ -24,6 +24,10 @@
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
 
+#ifdef SM_OS_MACOS // need to include this before using namespace SpectMorph
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 // from http://www.asseca.org/vst-24-specs/index.html
 #define effGetParamLabel        6
 #define effGetParamDisplay      7
@@ -389,6 +393,34 @@ static float getParameter(AEffect *effect, int i)
   return plugin->get_parameter_scale((VstPlugin::Param) i);
 }
 
+#ifdef SM_OS_MACOS
+static void
+set_macos_data_dir()
+{
+  CFBundleRef ref = CFBundleGetBundleWithIdentifier (CFSTR ("org.spectmorph.vst.SpectMorph"));
+
+  if(ref)
+    {
+      CFURLRef url = CFBundleCopyBundleURL (ref);
+      if (url)
+        {
+          char path[1024];
+
+          CFURLGetFileSystemRepresentation (url, true, (UInt8 *) path, 1024);
+          CFRelease (url);
+
+          VST_DEBUG ("macOS bundle path: '%s'\n", path);
+
+          string pkg_data_dir = path;
+          pkg_data_dir += "/Contents/Resources";
+
+          VST_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
+          sm_set_pkg_data_dir (pkg_data_dir);
+        }
+    }
+}
+#endif
+
 #ifdef SM_OS_WINDOWS
 #include "windows.h"
 
@@ -455,6 +487,9 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 
 #ifdef SM_OS_WINDOWS
   set_windows_data_dir();
+#endif
+#ifdef SM_OS_MACOS
+  set_macos_data_dir();
 #endif
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
