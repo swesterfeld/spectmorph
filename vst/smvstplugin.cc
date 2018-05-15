@@ -229,6 +229,12 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       plugin->get_parameter_name ((VstPlugin::Param)index, (char *)ptr, 32);
       return 0;
 
+    case effCanBeAutomated:
+      // for now, all parameters can be automated, so we hardcode this
+      if (index >= 0 && index < VstPlugin::PARAM_COUNT)
+        return 1;
+      return 0;
+
     case effSetSampleRate:
       plugin->set_mix_freq (f);
       return 0;
@@ -280,7 +286,6 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
         return 1;
       }
 
-    case effCanBeAutomated:
     case effGetOutputProperties:
       return 0;
 
