@@ -1,0 +1,21 @@
+Install devel tools:
+
+$ xcode-select --install
+
+You also need these brew packages
+
+$ brew leaves
+
+autoconf-archive
+automake
+boost
+cairo
+ccache
+cmake
+fftw
+jack
+libao
+libtool
+lv2
+pkg-config
+qt
