@@ -67,5 +67,5 @@ install-exec-hook: SpectMorph.so
 	cp SpectMorph.so $(libdir)/vst
 
 SpectMorph.so: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
+	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
 endif
