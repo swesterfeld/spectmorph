@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source ./config.sh
 
 die()
 {
@@ -9,6 +8,20 @@ die()
 }
 
 set -x
+
+export PREFIX=$PWD/prefix
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
+export MACOS_DIR=$PWD
+cd ..
+CFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
+CXXFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
+OBJCFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
+OBJCXXFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
+./autogen.sh --prefix=/usr/local/spectmorph --without-qt --without-lv2 --without-jack || die "configure failed"
+cd $MACOS_DIR || die "cd macos_dir"
+
+source ./config.sh || die "source config.sh"
+
 make -j9 -C.. || die "make failed"
 make -C.. install || die "make install failed"
 rm -rf ./SpectMorph.vst/*
