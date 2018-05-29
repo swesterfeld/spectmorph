@@ -43,6 +43,7 @@ GLOBAL_CFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/M
 GLOBAL_LDFLAGS="-L$PREFIX/lib"
 MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
+export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 
 src zlib-1.2.7 tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/history/zlib/zlib-1.2.7.tar.gz
 
