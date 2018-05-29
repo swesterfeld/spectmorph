@@ -69,7 +69,6 @@ autoconfbuild --disable-fortran --enable-single
 src libffi-3.2.1 tar.gz https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
 autoconfbuild
 
-
 src gettext-0.19.8.1 tar.xz https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz
 autoconfbuild "--disable-silent-rules" "--disable-debug" \
               "--with-included-gettext" "--with-included-glib" "--with-included-libcroco" "--with-included-libunistring" "--with-emacs" \
@@ -82,6 +81,7 @@ src freetype-2.5.3 tar.gz http://download.savannah.gnu.org/releases/freetype/fre
 autoconfbuild --with-harfbuzz=no --with-png=no --with-bzip2=no
 
 src pixman-0.34.0 tar.gz https://www.cairographics.org/releases/pixman-0.34.0.tar.gz
+patch -p1 < ../../pixman-0.34.0.diff
 autoconfbuild
 
 src cairo-1.15.10 tar.xz https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
