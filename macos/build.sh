@@ -9,14 +9,16 @@ die()
 
 set -x
 
+. sdk-options.sh
+
 export PREFIX=$PWD/prefix
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 export MACOS_DIR=$PWD
 cd ..
-CFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
-CXXFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
-OBJCFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
-OBJCXXFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk" \
+CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION" \
+CXXFLAGS="$CFLAGS" \
+OBJCFLAGS="$CFLAGS" \
+OBJCXXFLAGS="$CFLAGS" \
 ./autogen.sh --prefix=/usr/local/spectmorph --without-qt --without-lv2 --without-jack || die "configure failed"
 cd $MACOS_DIR || die "cd macos_dir"
 

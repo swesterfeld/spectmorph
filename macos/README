@@ -9,13 +9,19 @@ $ brew leaves
 autoconf-archive
 automake
 boost
-cairo
 ccache
 cmake
 fftw
 jack
 libao
 libtool
-lv2
 pkg-config
-qt
+#lv2
+#qt
+#cairo
+
+Finally: edit macos/sdk-options.sh
+
+$ cd macos
+$ ./build-deps.sh
+$ ./build.sh

@@ -38,8 +38,9 @@ BUILDD=$PWD/build
 
 mkdir -p $SRCDIR $BUILDD
 
+. sdk-options.sh
 PREFIX=$PWD/prefix
-GLOBAL_CFLAGS="-isysroot /Applications/Xcode.app/Contents//Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.9.sdk"
+GLOBAL_CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION"
 GLOBAL_LDFLAGS="-L$PREFIX/lib"
 MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
