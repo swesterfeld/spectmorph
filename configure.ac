@@ -162,7 +162,7 @@ dnl FFTW3
 AC_DEFUN([AC_FFTW_CHECK],
 [
     dnl this used to be optional, but is currently required
-    PKG_CHECK_MODULES(FFTW, [fftw3 fftw3f])
+    PKG_CHECK_MODULES(FFTW, [fftw3f])
 
     SPECTMORPH_HAVE_FFTW=1
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
