@@ -11,15 +11,16 @@ set -x
 
 . sdk-options.sh
 
-export PREFIX=$PWD/prefix
-export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
+export DEPS_PREFIX=$PWD/prefix
+export SM_PREFIX=$PWD/spectmorph
+export PKG_CONFIG_PATH=$DEPS_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 export MACOS_DIR=$PWD
 cd ..
 CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION" \
 CXXFLAGS="$CFLAGS" \
 OBJCFLAGS="$CFLAGS" \
 OBJCXXFLAGS="$CFLAGS" \
-./autogen.sh --prefix=/usr/local/spectmorph --without-qt --without-lv2 --without-jack || die "configure failed"
+./autogen.sh --prefix=$SM_PREFIX --without-qt --without-lv2 --without-jack || die "configure failed"
 cd $MACOS_DIR || die "cd macos_dir"
 
 source ./config.sh || die "source config.sh"
