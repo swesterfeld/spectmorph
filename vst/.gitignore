@@ -4,4 +4,5 @@
 *.lo
 *.la
 SpectMorph.dll
+SpectMorph.so*
 moc_*.cc
