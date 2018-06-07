@@ -24,7 +24,7 @@ dist-hook:
 
 install-data-hook:
 	if test -f $(INSTRUMENTS_ARCHIVE); then \
-	  tar xf $(INSTRUMENTS_ARCHIVE) -C $(DESTDIR)$(pkgdatadir); \
+	  tar xf $(INSTRUMENTS_ARCHIVE) -C $(DESTDIR)$(pkgdatadir) --no-same-owner; \
 	fi
 
 # uninstall all files that the tarball contains
