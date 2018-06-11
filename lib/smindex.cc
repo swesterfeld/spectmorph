@@ -3,6 +3,7 @@
 #include "smindex.hh"
 #include "smmicroconf.hh"
 #include "smutils.hh"
+#include "config.h"
 
 #include <glib.h>
 
@@ -45,6 +46,25 @@ file_exists (const string& filename)
   return false;
 }
 
+// just check version, ignore rest
+static bool
+version_ok (const string& filename)
+{
+  MicroConf cfg (filename);
+  if (cfg.open_ok())
+    {
+      while (cfg.next())
+        {
+          string version;
+
+          // could be relaxed to a minimum version check
+          if (cfg.command ("version", version))
+            return version == PACKAGE_VERSION;
+        }
+    }
+  return false;
+}
+
 bool
 Index::load_file (const string& filename)
 {
@@ -65,12 +85,12 @@ Index::load_file (const string& filename)
           string user_filename = sm_get_user_dir (USER_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
           string inst_filename = sm_get_install_dir (INSTALL_DIR_INSTRUMENTS) + "/" + name + "/index.smindex";
 
-          if (file_exists (user_filename))
+          if (file_exists (user_filename) && version_ok (user_filename))
             {
               // if user has instruments, they will be used
               m_expanded_filename = user_filename;
             }
-          else if (file_exists (inst_filename))
+          else if (file_exists (inst_filename) && version_ok (inst_filename))
             {
               // if user doesn't have instruments, but system wide instruments are installed, they will be used
               m_expanded_filename = inst_filename;
@@ -86,6 +106,9 @@ Index::load_file (const string& filename)
     }
   if (m_dir == "")
     m_filename = filename;
+
+  if (!version_ok (m_expanded_filename))
+    return false;
 
   MicroConf cfg (m_expanded_filename);
   if (!cfg.open_ok())
@@ -131,6 +154,10 @@ Index::load_file (const string& filename)
             {
               m_smset_dir = str;
             }
+        }
+      else if (cfg.command ("version", str))
+        {
+          // ignore here, we check this before starting to load
         }
       else
         {
