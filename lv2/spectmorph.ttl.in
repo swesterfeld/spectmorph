@@ -25,6 +25,7 @@
     [
       foaf:name "Stefan Westerfeld";
       foaf:mbox <mailto:stefan@space.twc.de>;
+      foaf:homepage <http://space.twc.de/~stefan>;
     ];
 
   lv2:microVersion @MICRO_VERSION@;
