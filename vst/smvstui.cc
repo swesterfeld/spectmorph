@@ -27,6 +27,10 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   rectangle.left = 0;
   rectangle.bottom = height;
   rectangle.right = width;
+
+  const int sizeWindowOk = plugin->audioMaster (plugin->aeffect, audioMasterCanDo, 0, 0, (void *) "sizeWindow", 0);
+
+  VST_DEBUG ("ui: sizeWindow supported: %d\n", sizeWindowOk);
 }
 
 bool
@@ -106,6 +110,8 @@ VstUI::on_update_window_size()
       int rc = plugin->audioMaster (plugin->aeffect, audioMasterSizeWindow, width, height, 0, 0);
       if (rc == 0)
         vst_manual_resize (widget, width, height);
+
+      VST_DEBUG ("ui: audioMasterSizeWindow returned %d\n", rc);
     }
 }
 

@@ -488,6 +488,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
   if (audioMaster)
     {
       audioMaster (NULL, audioMasterGetProductString, 0, 0, hostProductString, 0.0f);
+      VST_DEBUG ("Host: %s\n", hostProductString);
     }
 
 #ifdef SM_OS_WINDOWS
