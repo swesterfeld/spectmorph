@@ -257,11 +257,17 @@ MorphGridView::on_operator_changed()
 }
 
 void
+MorphGridView::update_db_label (double db)
+{
+  delta_db_label->set_text (string_locale_printf ("%.1f dB", db));
+}
+
+void
 MorphGridView::on_delta_db_changed (double new_value)
 {
   const double db = (new_value * 2 - 1) * 48;
 
-  delta_db_label->set_text (string_locale_printf ("%.1f dB", db));
+  update_db_label (db);
 
   if (morph_grid->has_selection())
     {
@@ -297,6 +303,7 @@ MorphGridView::on_selection_changed()
           op_combobox->set_active (node.op);
         }
       delta_db_slider->set_value ((node.delta_db / 48 + 1) / 2);
+      update_db_label (node.delta_db);
     }
 }
 

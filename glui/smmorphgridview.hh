@@ -48,6 +48,8 @@ protected:
   MorphGridControlUI *x_ui;
   MorphGridControlUI *y_ui;
 
+  void update_db_label (double db);
+
 public:
   MorphGridView (Widget *parent, MorphGrid *op, MorphPlanWindow *morph_plan_window);
 
