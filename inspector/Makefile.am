@@ -6,6 +6,13 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/sr
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la
 SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
+SMMOCS = moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
+         moc_smtimefreqwindow.cc moc_smfftparamwindow.cc moc_smfftthread.cc moc_smcwt.cc \
+         moc_smtimefreqview.cc moc_smspectrumwindow.cc moc_smspectrumview.cc \
+         moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc
+
+CLEANFILES += $(SMMOCS)
+
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh \
@@ -16,11 +23,7 @@ SMSRCS = smspectrumview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
          smplayerwindow.cc smnavigatorwindow.cc \
-         smsamplewinview.cc smtimefreqwinview.cc \
-         moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
-         moc_smtimefreqwindow.cc moc_smfftparamwindow.cc moc_smfftthread.cc moc_smcwt.cc \
-         moc_smtimefreqview.cc moc_smspectrumwindow.cc moc_smspectrumview.cc \
-         moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc
+         smsamplewinview.cc smtimefreqwinview.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -28,6 +31,7 @@ noinst_LTLIBRARIES = libsminspector.la
 bin_PROGRAMS = sminspector
 
 libsminspector_la_SOURCES = $(SMSRCS) $(SMHDRS)
+nodist_libsminspector_la_SOURCES = $(SMMOCS)
 libsminspector_la_CXXFLAGS = $(AM_CXXFLAGS)
 
 sminspector_SOURCES = sminspector.cc
