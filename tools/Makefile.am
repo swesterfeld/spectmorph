@@ -41,9 +41,12 @@ smlive_CXXFLAGS = $(AM_CXXFLAGS) $(AO_CFLAGS)
 smenccache_SOURCES = smenccache.cc
 smenccache_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
 
-smsampleedit_SOURCES = smsampleedit.cc moc_smsampleedit.cc smsampleedit.hh
+smsampleedit_SOURCES = smsampleedit.cc smsampleedit.hh
+nodist_smsampleedit_SOURCES = moc_smsampleedit.cc
 smsampleedit_LDADD   = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GUI_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
 smsampleedit_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/gui -I$(top_srcdir)/jack
+
+CLEANFILES += $(nodist_smsampleedit_SOURCES)
 
 smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
