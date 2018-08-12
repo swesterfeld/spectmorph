@@ -21,13 +21,18 @@ main (int argc, char **argv)
 
   QApplication app (argc, argv);
 
-  if (argc != 2)
+  const char *index;
+  if (argc == 1)
+    index = "instruments:standard";
+  else if (argc == 2)
+    index = argv[1];
+  if (argc > 2)
     {
       printf ("usage: %s <smindex-file>\n", argv[0]);
       exit (1);
     }
 
-  NavigatorWindow window (argv[1]);
+  NavigatorWindow window (index);
   window.show();
 
   return app.exec();
