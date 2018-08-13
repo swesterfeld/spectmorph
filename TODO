@@ -5,7 +5,6 @@ NEXT RELEASE:
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
-- volume initial value in grid is wrong when switching instruments
 - configurable midi synth semi tones (i.e jack)
 - support midi jack modulation
 - better spectral subtract [1]
