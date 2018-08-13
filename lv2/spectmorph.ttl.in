@@ -20,7 +20,7 @@
   a lv2:Plugin,
     lv2:InstrumentPlugin;
   doap:name "SpectMorph";
-  doap:license <http://opensource.org/licenses/isc>;      # FIXME: license
+  doap:license <http://opensource.org/licenses/lgpl-3.0>;
   doap:maintainer
     [
       foaf:name "Stefan Westerfeld";
