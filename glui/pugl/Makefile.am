@@ -12,7 +12,7 @@ SMHDRS = cairo_gl.h glew.h gl.h glu.h pugl.h pugl_internal.h
 
 noinst_LTLIBRARIES = libspectmorphpugl.la
 
-PUGL_CFLAGS = $(CAIRO_CFLAGS) -I$(top_srcdir)/glui -DPUGL_HAVE_CAIRO -DPUGL_HAVE_GL
+PUGL_CFLAGS = $(CAIRO_CFLAGS) -I$(top_srcdir)/glui -DPUGL_HAVE_CAIRO -DPUGL_HAVE_GL $(CFLAG_VISIBILITY)
 
 libspectmorphpugl_la_SOURCES = $(PUGL_SOURCE) $(SMHDRS)
 libspectmorphpugl_la_CFLAGS = $(AM_CFLAGS) $(PUGL_CFLAGS)
