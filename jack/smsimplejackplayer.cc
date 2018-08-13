@@ -49,7 +49,7 @@ Source::audio_block (size_t index)
 
 }
 
-int
+static int
 jack_process (jack_nframes_t nframes, void *arg)
 {
   SimpleJackPlayer *instance = reinterpret_cast<SimpleJackPlayer *> (arg);
