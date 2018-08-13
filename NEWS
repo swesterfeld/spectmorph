@@ -1,3 +1,22 @@
+Overview of Changes in spectmorph-0.4.1:
+
+* macOS is now supported: provide VST plugin for macOS >= 10.9
+* Include instruments in source tarball and packages
+* Install instruments to system-wide location
+* New Instruments: Claudia Ah / Ih / Oh (female version of human voice)
+* Improved tools for instrument building
+  - support displaying tuning in sminspector
+  - implement "smooth-tune" command for reducing vibrato from recordings
+  - minor encoder fixes/cleanups
+  - smlive now supports enable/disable noise
+* VST plugin: fix automation in Cubase (define "effCanBeAutomated")
+* UI: use Source A / Source B instead of Left Source / Right Source
+* UI: update db label properly on grid instrument selection change
+* Avoid exporting symbols that don't belong to the SpectMorph namespace
+* Fix some LV2 ttl problems
+* Fix locale related problems when using atof()
+* Minor fixes and cleanups
+
 Overview of Changes in spectmorph-0.4.0:
 
 * Windows is now supported: provide 64-bit Windows VST plugin
