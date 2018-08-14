@@ -180,20 +180,19 @@ test_accs()
   vector<float> osamples (block_size);
 
   for (size_t i = 0; i < window.size(); i++)
-    window[i] = window_blackman_harris_92 (2.0 * i / block_size - 1.0);
+    window[i] = window_cos (2.0 * i / block_size - 1.0);
 
   SineDecoder sd (440, mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
   AudioBlock b, next_b;
-  vector<double> dwindow (window.begin(), window.end());
 
   b.freqs.push_back (sm_freq2ifreq (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440) / 440.0));
   b.mags.push_back (sm_factor2idb (0.9));
   b.phases.push_back (5000);
 
-  sd.process (b, next_b, dwindow, samples);
+  sd.process (b, next_b, vector<double> (block_size) /* unused for ifft synth */, samples);
 
   SineDecoder sdo (440, mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
-  sdo.process (b, next_b, dwindow, osamples);
+  sdo.process (b, next_b, window, osamples);
 
   float max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
