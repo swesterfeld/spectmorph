@@ -299,9 +299,7 @@ test_phase()
 
   AudioBlock audio_block;
 
-  audio_block.freqs.push_back (freq);
-  audio_block.mags.push_back (1);
-  audio_block.phases.push_back (0.9);
+  push_partial_f (audio_block, 1, 1, 0.9);
 
   ConstBlockSource source (audio_block);
 
@@ -335,11 +333,7 @@ test_saw_perf()
   AudioBlock audio_block;
 
   for (size_t partial = 1; partial <= PARTIALS; partial++)
-    {
-      audio_block.freqs.push_back (freq * partial);
-      audio_block.mags.push_back (1.0 / partial);
-      audio_block.phases.push_back (0.9);
-    }
+    push_partial_f (audio_block, partial, 1.0 / partial, 0.9);
 
   vector<float> samples (block_size * 100);
   const int RUNS = 50;
