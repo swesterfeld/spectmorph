@@ -170,6 +170,14 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
 }
 
 void
+push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
+{
+  block.freqs.push_back (sm_freq2ifreq (freq_f));
+  block.mags.push_back (sm_factor2idb (mag_f));
+  block.phases.push_back (sm_bound<int> (0, sm_round_positive (phase_f / 2 / M_PI * 65536), 65535));
+}
+
+void
 test_accs()
 {
   const double mix_freq = 48000;
@@ -185,9 +193,7 @@ test_accs()
   SineDecoder sd (440, mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP_IFFT);
   AudioBlock b, next_b;
 
-  b.freqs.push_back (sm_freq2ifreq (IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440) / 440.0));
-  b.mags.push_back (sm_factor2idb (0.9));
-  b.phases.push_back (5000);
+  push_partial_f (b, IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92).quantized_freq (440) / 440.0, 0.9, 0.5);
 
   sd.process (b, next_b, vector<double> (block_size) /* unused for ifft synth */, samples);
 
@@ -247,9 +253,7 @@ test_spect()
 
   AudioBlock audio_block;
 
-  audio_block.freqs.push_back (freq);
-  audio_block.mags.push_back (1);
-  audio_block.phases.push_back (0.9);
+  push_partial_f (audio_block, 1, 1, 0.9);
 
   ConstBlockSource source (audio_block);
 
