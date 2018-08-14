@@ -30,6 +30,14 @@ gettime()
 }
 
 void
+push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
+{
+  block.freqs.push_back (sm_freq2ifreq (freq_f));
+  block.mags.push_back (sm_factor2idb (mag_f));
+  block.phases.push_back (sm_bound<int> (0, sm_round_positive (phase_f / 2 / M_PI * 65536), 65535));
+}
+
+void
 perf_test()
 {
   const double mix_freq = 48000;
@@ -87,11 +95,8 @@ perf_test()
 
   int FREQS = 1000;
   for (int i = 0; i < FREQS; i++)
-    {
-      b.freqs.push_back (440 + i);
-      b.mags.push_back (0.9);
-      b.phases.push_back (0.5);
-    }
+    push_partial_f (b, (440 + i) / 440.0, 0.9, 0.5);
+
   start = gettime();
   for (int r = 0; r < RUNS; r++)
     sd.process (b, next_b, dwindow, samples);
@@ -167,14 +172,6 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
     *output_diff = max_diff;                       // output value diff
   if (frequency_diff)
     *frequency_diff = fabs (freq - vsparams.freq); // frequency diff due to quantization
-}
-
-void
-push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
-{
-  block.freqs.push_back (sm_freq2ifreq (freq_f));
-  block.mags.push_back (sm_factor2idb (mag_f));
-  block.phases.push_back (sm_bound<int> (0, sm_round_positive (phase_f / 2 / M_PI * 65536), 65535));
 }
 
 void
