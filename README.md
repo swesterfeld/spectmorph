@@ -16,51 +16,6 @@ Configure should automatically determine via pkg-config whether the lv2
 development headers are available. When the LV2 plugin doesn't get built,
 install them.
 
-Installing Instruments:
-=======================
-
-To use SpectMorph, you need to install the standard Instrument Set first.
-If you're using the Windows Installer, you do not need to do this, because
-the instruments are already included in the Installer.
-
-On Linux, SpectMorph will load instruments automatically from your home
-directory.  The convention is that you install them in
-
-    ~/.spectmorph/instruments
-
-All UIs (BEAST|JACK|LV2|VST) will warn you with the message
-
-    Instrument Set 'standard' NOT FOUND.
-
-If the instruments could not be loaded. In this case standard is the name
-of the instrument set that is missing. It would be searched in
-
-    ~/.spectmorph/instruments/standard
-
-The tarball containing the standard instruments can be downloaded from
-http://spectmorph.org/downloads and should be extracted with these three steps:
-
-    $ mkdir ~/.spectmorph
-    $ cd ~/.spectmorph
-    $ tar xvf /path/to/downloaded/instruments.tar.xz
-
-This should put the instruments into the correct directory. After this, all
-templates that can be loaded from the UI (and the default template) should
-produce sound out of the box.
-
-Packaging Instruments:
-======================
-
-If you are a packager, packages can install the instruments to a system-wide
-location. That way users don't need to download the instruments seperately.
-The instrument location is prefix dependant. If SpectMorph is installed in
-
-    /usr
-
-then the instruments should go to
-
-    /usr/share/spectmorph/instruments
-
 VST Plugin:
 ===========
 
@@ -113,4 +68,41 @@ Since BEAST is modular, the SpectMorph plugin comes as an oscillator. So you
 can build your own instrument network with SpectMorph generating the sound, and
 combine SpectMorph with the other components from BEAST.
 
+Packaging Instruments:
+======================
 
+If you are a packager, packages should install the standard instrument set to a
+system-wide location. The instrument location is prefix dependant. If
+SpectMorph is installed in
+
+    /usr
+
+then the instruments should go to
+
+    /usr/share/spectmorph/instruments
+
+If you are building from the original source tarball, this should work automatically,
+the instruments are bundled and will be installed during
+
+    $ make install
+
+Installing Instruments for Git:
+===============================
+
+If you're building from git, you are responsible for obtaining a copy of the standard
+instrument tarball. Extract the SpectMorph release source tarball. The location will
+be something like
+
+    spectmorph-0.4.1/data/spectmorph-instruments-0.4.1.tar.xz
+
+You can either ensure that these instruments live in
+
+    ~/.spectmorph/instruments/standard
+
+or copy the instrment tarball to the data directory of your git checkout. In this
+case SpectMorph will automatically install the instruments to the system-wide
+location (like the original release tarball does).
+
+Note that if incompatible changes happen to the file format, the git version will
+no longer work with the released instruments set. In that case, feel free to ask
+for a tarball for your git version.
