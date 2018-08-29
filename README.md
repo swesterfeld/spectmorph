@@ -17,10 +17,10 @@ install them.
 VST Plugin:
 ===========
 
-The VST Plugin is available for Linux and 64-bit Windows, and should work in
-many different hosts, such as Bitwig, Renoise, Cubase and others. For Linux
-hosts that support LV2, using the SpectMorph LV2 plugin is the preferred way of
-integration.
+The VST Plugin is available for Linux, macOS and 64-bit Windows, and should
+work in many different hosts, such as Bitwig, Renoise, Cubase and others. For
+Linux hosts that support LV2, using the SpectMorph LV2 plugin is the preferred
+way of integration.
 
 Controlling Morphing with Automation:
 -------------------------------------
