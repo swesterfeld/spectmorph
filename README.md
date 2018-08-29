@@ -1,13 +1,11 @@
 Compiling SpectMorph:
 =====================
 
-To compile SpectMorph, the usual
+To compile SpectMorph, use the usual
 
     ./configure
     make
     make install
-
-needs to be used.
 
 LV2 Support:
 ------------
