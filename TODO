@@ -1,5 +1,4 @@
 NEXT RELEASE:
-- reorder claudia insts
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
 - maybe lv2 dirty
