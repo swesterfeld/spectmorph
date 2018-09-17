@@ -1227,6 +1227,49 @@ public:
   }
 } strip_command;
 
+class StripAllCommand : public Command
+{
+public:
+  StripAllCommand() : Command ("strip-all")
+  {
+    set_need_save (true);
+  }
+  bool
+  exec (Audio& audio)
+  {
+    for (size_t i = 0; i < audio.contents.size(); i++)
+      {
+        audio.contents[i].phases.clear();
+        audio.contents[i].debug_samples.clear();
+        audio.contents[i].original_fft.clear();
+      }
+    int loop_end = -1;
+    switch (audio.loop_type)
+      {
+        case Audio::LOOP_FRAME_FORWARD:
+        case Audio::LOOP_FRAME_PING_PONG:
+          /* strip frames */
+          loop_end = audio.loop_end;
+          break;
+
+        case Audio::LOOP_NONE:
+        case Audio::LOOP_TIME_FORWARD:
+        case Audio::LOOP_TIME_PING_PONG:
+          /* don't strip frames */
+          break;
+      }
+    if (loop_end >= 0)
+      {
+        size_t new_size = loop_end + 1;
+
+        if (new_size < audio.contents.size())
+          audio.contents.resize (new_size);
+      }
+    audio.original_samples.clear();
+    return true;
+  }
+} strip_all_command;
+
 int
 main (int argc, char **argv)
 {
