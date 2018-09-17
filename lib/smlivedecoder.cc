@@ -337,7 +337,6 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               const AudioBlock& audio_block = *audio_block_ptr;
 
               assert (audio_block.freqs.size() == audio_block.mags.size());
-              assert (audio_block.freqs.size() == audio_block.phases.size());
 
               ifft_synth->clear_partials();
 
