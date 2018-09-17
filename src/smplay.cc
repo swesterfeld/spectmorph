@@ -263,6 +263,19 @@ main (int argc, char **argv)
   NoiseDecoder noise_decoder (format.rate, noise_block_size);
   SineDecoder  sine_decoder (audio.fundamental_freq, format.rate, frame_size, frame_step, mode);
 
+  if (mode != SineDecoder::MODE_TRACKING)
+    {
+      bool have_phases = false;
+      for (auto block : audio.contents)
+        have_phases = have_phases || !block.phases.empty();
+
+      if (!have_phases)
+        {
+          fprintf (stderr, "%s: no phase information found in input data (required by decoder mode)\n", options.program_name.c_str());
+          return 1;
+        }
+    }
+
   if (options.deterministic_random)
     noise_decoder.set_seed (0x123456);
 
