@@ -231,7 +231,6 @@ morph (AudioBlock& out_block,
   // clear result block
   out_block.freqs.clear();
   out_block.mags.clear();
-  out_block.phases.clear();
 
   // FIXME: lpc stuff
   MagData mds[left_block.freqs.size() + right_block.freqs.size()];
@@ -284,8 +283,6 @@ morph (AudioBlock& out_block,
         }
       if (match)
         {
-          const double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
-
           /* prefer frequency of louder partial:
            *
            * if the magnitudes are similar, mfact will be close to 1, and freq will become approx.
@@ -322,7 +319,6 @@ morph (AudioBlock& out_block,
 
           out_block.freqs.push_back (freq);
           out_block.mags.push_back (mag_idb);
-          out_block.phases.push_back (phase);
 
           left_freqs[i].used = 1;
           right_freqs[j].used = 1;
@@ -334,7 +330,6 @@ morph (AudioBlock& out_block,
         {
           out_block.freqs.push_back (left_block.freqs[i]);
           out_block.mags.push_back (left_block.mags[i]);
-          out_block.phases.push_back (left_block.phases[i]);
 
           interp_mag_one (interp, &out_block.mags.back(), NULL);
         }
@@ -345,7 +340,6 @@ morph (AudioBlock& out_block,
         {
           out_block.freqs.push_back (right_block.freqs[i]);
           out_block.mags.push_back (right_block.mags[i]);
-          out_block.phases.push_back (right_block.phases[i]);
 
           interp_mag_one (interp, NULL, &out_block.mags.back());
         }

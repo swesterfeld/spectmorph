@@ -240,7 +240,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
       module->audio_block.freqs.clear();
       module->audio_block.mags.clear();
-      module->audio_block.phases.clear();
 
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
@@ -295,10 +294,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
             }
           if (match)
             {
-              double freq =  (1 - interp) * left_block.freqs[i]  + interp * right_block.freqs[j]; // <- NEEDS better averaging
-              double phase = (1 - interp) * left_block.phases[i] + interp * right_block.phases[j];
+              double freq;
 
-#if 1
               /* prefer frequency of louder partial */
               const double lfreq = left_block.freqs[i];
               const double rfreq = right_block.freqs[j];
@@ -315,7 +312,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 
                   freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
                 }
-#endif
+
               double mag;
               if (module->db_linear)
                 {
@@ -334,7 +331,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
                 }
               module->audio_block.freqs.push_back (freq);
               module->audio_block.mags.push_back (sm_factor2idb (mag));
-              module->audio_block.phases.push_back (phase);
+
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_freqs[i].used = 1;
               right_freqs[j].used = 1;
@@ -346,7 +343,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
             {
               module->audio_block.freqs.push_back (left_block.freqs[i]);
               module->audio_block.mags.push_back (left_block.mags[i]);
-              module->audio_block.phases.push_back (left_block.phases[i]);
 
               interp_mag_one (interp, &module->audio_block.mags.back(), NULL);
             }
@@ -357,7 +353,6 @@ MorphLinearModule::MySource::audio_block (size_t index)
             {
               module->audio_block.freqs.push_back (right_block.freqs[i]);
               module->audio_block.mags.push_back (right_block.mags[i]);
-              module->audio_block.phases.push_back (right_block.phases[i]);
 
               interp_mag_one (interp, NULL, &module->audio_block.mags.back());
             }
