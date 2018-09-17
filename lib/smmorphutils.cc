@@ -111,7 +111,6 @@ get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out
 
   out_audio_block.noise  = block_ptr->noise;
   out_audio_block.mags   = block_ptr->mags;
-  out_audio_block.phases = block_ptr->phases;  // usually not used
   out_audio_block.freqs  = block_ptr->freqs;
 
   return true;

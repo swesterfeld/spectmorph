@@ -402,7 +402,6 @@ struct PartialData
 {
   uint16_t freq;
   uint16_t mag;
-  uint16_t phase;
 };
 
 static bool
@@ -416,6 +415,9 @@ pd_cmp (const PartialData& p1, const PartialData& p2)
 void
 AudioBlock::sort_freqs()
 {
+  // sorting is required for morphing generated blocks only, which have no phase information
+  g_return_if_fail (phases.empty());
+
   // sort partials by frequency
   const size_t N = freqs.size();
   PartialData pvec[N];
@@ -424,7 +426,6 @@ AudioBlock::sort_freqs()
     {
       pvec[p].freq = freqs[p];
       pvec[p].mag = mags[p];
-      pvec[p].phase = phases[p];
     }
   std::sort (pvec, pvec + N, pd_cmp);
 
@@ -433,7 +434,6 @@ AudioBlock::sort_freqs()
     {
       freqs[p] = pvec[p].freq;
       mags[p] = pvec[p].mag;
-      phases[p] = pvec[p].phase;
     }
 }
 
