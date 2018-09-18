@@ -60,4 +60,4 @@ install-exec-hook:
 	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder
 
 moc_smsampleedit.cc: smsampleedit.hh
-	$(MOC) smsampleedit.hh > moc_smsampleedit.cc
+	$(MOC) $(srcdir)/smsampleedit.hh > moc_smsampleedit.cc
