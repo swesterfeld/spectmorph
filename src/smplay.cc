@@ -265,9 +265,20 @@ main (int argc, char **argv)
 
   if (mode != SineDecoder::MODE_TRACKING)
     {
-      bool have_phases = false;
+      bool have_phases = true;
       for (auto block : audio.contents)
-        have_phases = have_phases || !block.phases.empty();
+        {
+          if (block.freqs.size() > 0) // only blocks with freqs/mags entries are relevant
+            {
+              assert (block.freqs.size() == block.mags.size());
+
+              if (block.freqs.size() > block.phases.size())
+                {
+                  assert (block.phases.size() == 0);
+                  have_phases = false;
+                }
+            }
+        }
 
       if (!have_phases)
         {
