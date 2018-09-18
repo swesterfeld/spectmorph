@@ -15,6 +15,7 @@ class OutputADSRWidget : public Widget
 
   std::vector<Point> ps;
   int sel_point = -1;
+  bool mouse_down = false;
 
   void
   draw_grid (cairo_t *cr)
@@ -88,14 +89,18 @@ public:
         cairo_line_to (cr, ps[sel_point].x(), height);
         cairo_stroke (cr);
       }
-    for (size_t i = 0; i < ps.size(); i++)
+    for (size_t i = 1; i < ps.size(); i++)
       {
-        Color c_color (1.0, 1.0, 1.0);
+        Color c_color (0.8, 0.8, 0.8);
         double R = 4;
         if (sel_point == int (i))
           {
             R += 2;
             c_color = ThemeColor::SLIDER;
+            if (mouse_down) // indicate drag
+              c_color = c_color.lighter();
+            else
+              c_color = Color (1.0, 1.0, 1.0);
           }
         du.round_box (ps[i].x() - R, ps[i].y() - R, 2 * R, 2 * R, 1, R, c_color, c_color);
       }
@@ -104,21 +109,73 @@ public:
   void
   motion (double x, double y)
   {
-    double min_dist = 1e8;
-
-    for (size_t i = 0; i < ps.size(); i++)
+    if (!mouse_down)
       {
-        double dx = x - ps[i].x();
-        double dy = y - ps[i].y();
-        double dist = dx * dx + dy * dy;
+        double min_dist = 1e8;
 
-        if (dist < min_dist)
+        for (size_t i = 1; i < ps.size(); i++)
           {
-            sel_point = i;
-            min_dist = dist;
+            double dist = fabs (x - ps[i].x());
+
+            if (dist < min_dist)
+              {
+                sel_point = i;
+                min_dist = dist;
+                update();
+              }
+          }
+      }
+    else
+      {
+        // drag
+        const double pad = 8;
+        const double yspace = (width - 2 * pad) / 4;
+
+        if (sel_point > 0)
+          {
+            double new_x_percent = sm_bound (0.0, 100.0 * (x - ps[sel_point - 1].x()) / yspace, 100.0);
+            double new_y_percent = sm_bound (0.0, 100.0 * (1.0 - (y - pad) / yspace), 100.0);
+
+            if (sel_point == 1) // A
+              morph_output->set_adsr_attack (new_x_percent);
+
+            if (sel_point == 2) // D
+              {
+                morph_output->set_adsr_decay (new_x_percent);
+                morph_output->set_adsr_sustain (new_y_percent);
+              }
+
+            if (sel_point == 3) // S
+                morph_output->set_adsr_sustain (new_y_percent);
+
+            if (sel_point == 4) // R
+              morph_output->set_adsr_release (new_x_percent);
+
+            signal_adsr_params_changed();
+
             update();
           }
       }
+  }
+
+  void
+  mouse_press (double x, double y) override
+  {
+    mouse_down = true;
+    update();
+  }
+  void
+  mouse_release (double x, double y) override
+  {
+    mouse_down = false;
+    update();
+  }
+
+  void
+  leave_event() override
+  {
+    sel_point = -1;
+    update();
   }
 
 /* slots: */

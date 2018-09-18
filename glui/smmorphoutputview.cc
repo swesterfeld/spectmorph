@@ -102,10 +102,12 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_adsr_sustain.init_ui (body_widget, op_layout);
   pv_adsr_release.init_ui (body_widget, op_layout);
 
-  connect (pv_adsr_attack.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
-  connect (pv_adsr_decay.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
-  connect (pv_adsr_sustain.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
-  connect (pv_adsr_release.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
+  // link values for property views and adsr widget
+  for (auto pv_ptr : vector<PropertyView *> { &pv_adsr_attack, &pv_adsr_decay, &pv_adsr_sustain, &pv_adsr_release })
+    {
+      connect (pv_ptr->signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
+      connect (output_adsr_widget->signal_adsr_params_changed, pv_ptr, &PropertyView::on_update_value);
+    }
 
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");

@@ -72,3 +72,10 @@ PropertyView::on_value_changed (int value)
 
   signal_value_changed();
 }
+
+void
+PropertyView::on_update_value()
+{
+  slider->set_int_value (property.get());
+  label->set_text (property.value_label());
+}

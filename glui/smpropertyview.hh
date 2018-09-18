@@ -21,6 +21,8 @@ struct PropertyView : public SignalReceiver
   Slider   *slider;
   Label    *label;
 
+  void on_value_changed (int new_value);
+
 public:
   PropertyView (Property& property);
   int init_ui (Widget *parent, FixedGrid& layout, int yoffset);
@@ -32,7 +34,7 @@ public:
   Signal<> signal_value_changed;
 
 /* slots: */
-  void on_value_changed (int new_value);
+  void on_update_value();
 };
 
 }
