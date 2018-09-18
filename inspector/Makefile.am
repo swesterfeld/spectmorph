@@ -43,40 +43,40 @@ testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LI
 testinspector_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_smnavigator.cc: smnavigator.hh
-	$(MOC) smnavigator.hh > moc_smnavigator.cc
+	$(MOC) $(srcdir)/smnavigator.hh > moc_smnavigator.cc
 
 moc_smsamplewinview.cc: smsamplewinview.hh
-	$(MOC) smsamplewinview.hh > moc_smsamplewinview.cc
+	$(MOC) $(srcdir)/smsamplewinview.hh > moc_smsamplewinview.cc
 
 moc_smsamplewindow.cc: smsamplewindow.hh
-	$(MOC) smsamplewindow.hh > moc_smsamplewindow.cc
+	$(MOC) $(srcdir)/smsamplewindow.hh > moc_smsamplewindow.cc
 
 moc_smplayerwindow.cc: smplayerwindow.hh
-	$(MOC) smplayerwindow.hh > moc_smplayerwindow.cc
+	$(MOC) $(srcdir)/smplayerwindow.hh > moc_smplayerwindow.cc
 
 moc_smtimefreqwindow.cc: smtimefreqwindow.hh
-	$(MOC) smtimefreqwindow.hh > moc_smtimefreqwindow.cc
+	$(MOC) $(srcdir)/smtimefreqwindow.hh > moc_smtimefreqwindow.cc
 
 moc_smfftparamwindow.cc: smfftparamwindow.hh
-	$(MOC) smfftparamwindow.hh > moc_smfftparamwindow.cc
+	$(MOC) $(srcdir)/smfftparamwindow.hh > moc_smfftparamwindow.cc
 
 moc_smfftthread.cc: smfftthread.hh
-	$(MOC) smfftthread.hh > moc_smfftthread.cc
+	$(MOC) $(srcdir)/smfftthread.hh > moc_smfftthread.cc
 
 moc_smcwt.cc: smcwt.hh
-	$(MOC) smcwt.hh > moc_smcwt.cc
+	$(MOC) $(srcdir)/smcwt.hh > moc_smcwt.cc
 
 moc_smtimefreqview.cc: smtimefreqview.hh
-	$(MOC) smtimefreqview.hh > moc_smtimefreqview.cc
+	$(MOC) $(srcdir)/smtimefreqview.hh > moc_smtimefreqview.cc
 
 moc_smspectrumwindow.cc: smspectrumwindow.hh
-	$(MOC) smspectrumwindow.hh > moc_smspectrumwindow.cc
+	$(MOC) $(srcdir)/smspectrumwindow.hh > moc_smspectrumwindow.cc
 
 moc_smspectrumview.cc: smspectrumview.hh
-	$(MOC) smspectrumview.hh > moc_smspectrumview.cc
+	$(MOC) $(srcdir)/smspectrumview.hh > moc_smspectrumview.cc
 
 moc_smnavigatorwindow.cc: smnavigatorwindow.hh
-	$(MOC) smnavigatorwindow.hh > moc_smnavigatorwindow.cc
+	$(MOC) $(srcdir)/smnavigatorwindow.hh > moc_smnavigatorwindow.cc
 
 moc_smtimefreqwinview.cc: smtimefreqwinview.hh
-	$(MOC) smtimefreqwinview.hh > moc_smtimefreqwinview.cc
+	$(MOC) $(srcdir)/smtimefreqwinview.hh > moc_smtimefreqwinview.cc
