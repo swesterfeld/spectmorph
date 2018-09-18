@@ -53,7 +53,20 @@ public:
 
     for (auto row : rows)
       {
-        if (row.width != 0) // FIXED SIZE WIDGET
+        bool visible = false;
+
+        if (row.widget1)
+          visible = visible || row.widget1->visible();
+        if (row.widget2)
+          visible = visible || row.widget2->visible();
+        if (row.widget3)
+          visible = visible || row.widget3->visible();
+
+        if (!visible)
+          {
+            // skip widget(s)
+          }
+        else if (row.width != 0) // FIXED SIZE WIDGET
           {
             int w = width[0] + 1 + width[1] + 1 + width[2];
             yoffset += row.space;
@@ -62,50 +75,37 @@ public:
           }
         else
           {
-            bool visible = false;
-
+            int start = 0, w = 0;
             if (row.widget1)
-              visible = visible || row.widget1->visible();
-            if (row.widget2)
-              visible = visible || row.widget2->visible();
-            if (row.widget3)
-              visible = visible || row.widget3->visible();
-
-            if (visible)
               {
-
-                int start = 0, w = 0;
-                if (row.widget1)
+                w = width[0];
+                if (!row.widget2) // if next widgets are missing: grow
                   {
-                    w = width[0];
-                    if (!row.widget2) // if next widgets are missing: grow
-                      {
-                        w += 1 + width[1];
-                        if (!row.widget3)
-                          w += 1 + width[2];
-                      }
-                    grid.add_widget (row.widget1, start, yoffset, w, row.height);
-                    start += w + 1;
-                  }
-
-                if (row.widget2)
-                  {
-                    w = width[1];
+                    w += 1 + width[1];
                     if (!row.widget3)
                       w += 1 + width[2];
-
-                    grid.add_widget (row.widget2, start, yoffset, w, row.height);
-                    start += w + 1;
                   }
-
-                if (row.widget3)
-                  {
-                    w = width[2];
-                    grid.add_widget (row.widget3, start, yoffset, w, row.height);
-                  }
-
-                yoffset += row.height;
+                grid.add_widget (row.widget1, start, yoffset, w, row.height);
+                start += w + 1;
               }
+
+            if (row.widget2)
+              {
+                w = width[1];
+                if (!row.widget3)
+                  w += 1 + width[2];
+
+                grid.add_widget (row.widget2, start, yoffset, w, row.height);
+                start += w + 1;
+              }
+
+            if (row.widget3)
+              {
+                w = width[2];
+                grid.add_widget (row.widget3, start, yoffset, w, row.height);
+              }
+
+            yoffset += row.height;
           }
       }
     return yoffset;
