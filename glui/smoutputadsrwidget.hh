@@ -115,7 +115,10 @@ public:
 
         for (size_t i = 1; i < ps.size(); i++)
           {
-            double dist = fabs (x - ps[i].x());
+            // this ensures that the x-values of the points are a little bit different
+            // (allows selecting one of two points with same x value)
+            const double small_epsilon = 1e-5 * i;
+            const double dist = fabs (x - (ps[i].x() + small_epsilon));
 
             if (dist < min_dist)
               {
