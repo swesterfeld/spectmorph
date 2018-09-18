@@ -69,4 +69,6 @@ PropertyView::on_value_changed (int value)
 {
   property.set (value);
   label->set_text (property.value_label());
+
+  signal_value_changed();
 }

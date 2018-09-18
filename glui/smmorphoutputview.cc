@@ -92,11 +92,20 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   adsr_check_box->set_checked (morph_output->adsr());
   op_layout.add_row (2, adsr_check_box);
 
+  // ADSR Widget
+  output_adsr_widget = new OutputADSRWidget (body_widget, morph_output, this);
+  op_layout.add_fixed (30, 8, output_adsr_widget);
+
   pv_adsr_skip.init_ui (body_widget, op_layout);
   pv_adsr_attack.init_ui (body_widget, op_layout);
   pv_adsr_decay.init_ui (body_widget, op_layout);
   pv_adsr_sustain.init_ui (body_widget, op_layout);
   pv_adsr_release.init_ui (body_widget, op_layout);
+
+  connect (pv_adsr_attack.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
+  connect (pv_adsr_decay.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
+  connect (pv_adsr_sustain.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
+  connect (pv_adsr_release.signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);
 
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
@@ -183,6 +192,8 @@ MorphOutputView::update_visible()
   unison_detune_title->set_visible (morph_output->unison());
   unison_detune_label->set_visible (morph_output->unison());
   unison_detune_slider->set_visible (morph_output->unison());
+
+  output_adsr_widget->set_visible (morph_output->adsr());
 
   pv_adsr_skip.set_visible (morph_output->adsr());
   pv_adsr_attack.set_visible (morph_output->adsr());

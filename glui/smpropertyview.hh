@@ -28,6 +28,9 @@ public:
   void set_enabled (bool enabled);
   void set_visible (bool visible);
 
+/* signals: */
+  Signal<> signal_value_changed;
+
 /* slots: */
   void on_value_changed (int new_value);
 };
