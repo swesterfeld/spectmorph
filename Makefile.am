@@ -14,7 +14,7 @@ if COND_WITH_LV2
 endif
 
 if COND_WITH_JACK
-  SUBDIRS += jack
+  SUBDIRS += jack instedit
 
 if COND_WITH_QT
   SUBDIRS += tools inspector
