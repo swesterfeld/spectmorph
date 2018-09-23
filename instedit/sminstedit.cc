@@ -90,6 +90,7 @@ class SampleWidget : public Widget
       }
   }
   vector<float> samples;
+  double        vzoom = 1;
 public:
   SampleWidget (Widget *parent)
     : Widget (parent)
@@ -111,7 +112,7 @@ public:
     for (size_t i = 0; i < samples.size(); i++)
       {
         cairo_move_to (cr, double (i) * width / samples.size(), height / 2);
-        cairo_line_to (cr, double (i) * width / samples.size(), height / 2 + (height * samples[i]));
+        cairo_line_to (cr, double (i) * width / samples.size(), height / 2 + (height / 2 * samples[i] * vzoom));
         cairo_stroke (cr);
       }
 
@@ -124,6 +125,13 @@ public:
   set_samples (const vector<float>& samples)
   {
     this->samples = samples;
+    update();
+  }
+  void
+  set_vzoom (double factor)
+  {
+    vzoom = factor;
+    update();
   }
 };
 
@@ -144,6 +152,7 @@ class MainWindow : public Window
       }
   }
   ScrollView *sample_scroll_view;
+  Label *hzoom_label;
   Label *vzoom_label;
 public:
   void
@@ -176,16 +185,29 @@ public:
     sample_scroll_view->set_scroll_widget (sample_widget, true, false);
 
     load_sample ("/home/stefan/src/spectmorph-trumpet/samples/trumpet/trumpet-ff-c4.flac");
-    grid.add_widget (new Label (this, "VZoom"), 1, 51, 10, 3);
-    Slider *slider = new Slider (this, 0.0);
-    grid.add_widget (slider, 8, 51, 30, 3);
-    connect (slider->signal_value_changed, this, &MainWindow::on_update_hzoom);
+
+    /*----- hzoom -----*/
+    grid.add_widget (new Label (this, "HZoom"), 1, 51, 10, 3);
+    Slider *hzoom_slider = new Slider (this, 0.0);
+    grid.add_widget (hzoom_slider, 8, 51, 30, 3);
+    connect (hzoom_slider->signal_value_changed, this, &MainWindow::on_update_hzoom);
+
+    hzoom_label = new Label (this, "0");
+    grid.add_widget (hzoom_label, 40, 51, 10, 3);
+
+    /*----- vzoom -----*/
+    grid.add_widget (new Label (this, "VZoom"), 1, 54, 10, 3);
+    Slider *vzoom_slider = new Slider (this, 0.0);
+    grid.add_widget (vzoom_slider, 8, 54, 30, 3);
+    connect (vzoom_slider->signal_value_changed, this, &MainWindow::on_update_vzoom);
 
     vzoom_label = new Label (this, "0");
-    grid.add_widget (vzoom_label, 40, 51, 10, 3);
+    grid.add_widget (vzoom_label, 40, 54, 10, 3);
 
     // show complete wave
     on_update_hzoom (0);
+
+    on_update_vzoom (0);
   }
   void
   on_update_hzoom (float value)
@@ -194,6 +216,14 @@ public:
     double factor = pow (2, value * 10);
     grid.add_widget (sample_widget, 1, 1, 89 * factor, 42);
     sample_scroll_view->on_widget_size_changed();
+    hzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
+  }
+  void
+  on_update_vzoom (float value)
+  {
+    FixedGrid grid;
+    double factor = pow (10, value);
+    sample_widget->set_vzoom (factor);
     vzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
   }
 };
