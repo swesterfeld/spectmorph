@@ -112,9 +112,14 @@ public:
     du.set_color (Color (0.9, 0.1, 0.1));
     for (size_t i = 0; i < samples.size(); i++)
       {
-        cairo_move_to (cr, double (i) * width / samples.size(), height / 2);
-        cairo_line_to (cr, double (i) * width / samples.size(), height / 2 + (height / 2 * samples[i] * vzoom));
-        cairo_stroke (cr);
+        double dx = double (i) * width / samples.size();
+
+        if (dx >= devent.rect.x() && dx <= devent.rect.x() + devent.rect.width())
+          {
+            cairo_move_to (cr, double (i) * width / samples.size(), height / 2);
+            cairo_line_to (cr, double (i) * width / samples.size(), height / 2 + (height / 2 * samples[i] * vzoom));
+            cairo_stroke (cr);
+          }
       }
 
     du.set_color (Color (1.0, 0.3, 0.3));
