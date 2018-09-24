@@ -140,6 +140,8 @@ public:
           }
         cairo_line_to (cr, last_x_pixel, height / 2);
         cairo_close_path (cr);
+        cairo_set_line_width (cr, 1);
+        cairo_stroke_preserve (cr);
         cairo_fill (cr);
       }
     du.set_color (Color (1.0, 0.3, 0.3));
