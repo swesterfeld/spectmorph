@@ -110,18 +110,38 @@ public:
 
     //du.set_color (Color (0.4, 0.4, 1.0));
     du.set_color (Color (0.9, 0.1, 0.1));
-    for (size_t i = 0; i < samples.size(); i++)
+    for (int pass = 0; pass < 2; pass++)
       {
-        double dx = double (i) * width / samples.size();
-
-        if (dx >= devent.rect.x() && dx <= devent.rect.x() + devent.rect.width())
+        int last_x_pixel = -1;
+        float max_s = 0;
+        float min_s = 0;
+        cairo_move_to (cr, 0, height / 2);
+        for (size_t i = 0; i < samples.size(); i++)
           {
-            cairo_move_to (cr, double (i) * width / samples.size(), height / 2);
-            cairo_line_to (cr, double (i) * width / samples.size(), height / 2 + (height / 2 * samples[i] * vzoom));
-            cairo_stroke (cr);
-          }
-      }
+            double dx = double (i) * width / samples.size();
 
+            if (dx >= devent.rect.x() && dx <= devent.rect.x() + devent.rect.width())
+              {
+                int x_pixel = dx;
+                max_s = std::max (samples[i], max_s);
+                min_s = std::min (samples[i], min_s);
+                if (x_pixel != last_x_pixel)
+                  {
+                    if (pass == 0)
+                      cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom);
+                    else
+                      cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom);
+
+                    last_x_pixel = x_pixel;
+                    max_s = 0;
+                    min_s = 0;
+                  }
+              }
+          }
+        cairo_line_to (cr, last_x_pixel, height / 2);
+        cairo_close_path (cr);
+        cairo_fill (cr);
+      }
     du.set_color (Color (1.0, 0.3, 0.3));
     cairo_move_to (cr, 0, height/2);
     cairo_line_to (cr, width, height/2);
@@ -168,7 +188,7 @@ public:
       load_sample (filename);
     });
   }
-  MainWindow() :
+  MainWindow (const string& test_sample) :
     Window ("SpectMorph - Instrument Editor", win_width, win_height)
   {
     FixedGrid grid;
@@ -190,7 +210,7 @@ public:
     grid.add_widget (sample_widget, 1, 1, 100, 42);
     sample_scroll_view->set_scroll_widget (sample_widget, true, false);
 
-    load_sample ("/home/stefan/src/spectmorph-trumpet/samples/trumpet/trumpet-ff-c4.flac");
+    load_sample (test_sample);
 
     /*----- hzoom -----*/
     grid.add_widget (new Label (this, "HZoom"), 1, 51, 10, 3);
@@ -250,7 +270,8 @@ main (int argc, char **argv)
 
   bool quit = false;
 
-  MainWindow window;
+  string fn = (argc > 1) ? argv[1] : "/home/stefan/src/spectmorph-trumpet/samples/trumpet/trumpet-ff-c4.flac";
+  MainWindow window (fn);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
