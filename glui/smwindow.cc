@@ -340,6 +340,8 @@ Window::on_display()
 
                   cairo_scale (cr, global_scale, global_scale);
 
+                  DrawEvent devent;
+
                   // local coordinates
                   cairo_translate (cr, w->abs_x(), w->abs_y());
                   if (w->clipping())
@@ -351,12 +353,13 @@ Window::on_display()
 
                       cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
                       cairo_clip (cr);
+
+                      devent.rect = visible_rect;
                     }
 
                   if (draw_grid && w == enter_widget)
                     w->debug_fill (cr);
 
-                  DrawEvent devent;
                   devent.cr = cr;
                   w->draw (devent);
                   cairo_restore (cr);

@@ -253,6 +253,8 @@ public:
   struct DrawEvent
   {
     cairo_t *cr;
+
+    Rect     rect; // only valid for clipping() == true
   };
 
   virtual void draw (const DrawEvent& draw);
