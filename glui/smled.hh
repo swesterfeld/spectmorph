@@ -17,8 +17,9 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
     double radius = std::min (width, height) / 2 - 2;
 

@@ -40,8 +40,9 @@ public:
     color (color)
   {
   }
-  void draw (cairo_t *cr) override
+  void draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     cairo_rectangle (cr, 0, 0, width, height);
     cairo_set_source_rgb (cr, color.red(), color.green(), color.blue());
     cairo_fill (cr);

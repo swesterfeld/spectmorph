@@ -36,9 +36,9 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
-    DrawUtils du (cr);
+    DrawUtils du (devent.cr);
 
     double space = 2;
     Color fill_color;

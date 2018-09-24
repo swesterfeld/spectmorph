@@ -96,8 +96,10 @@ Widget::abs_visible_rect()
 }
 
 void
-Widget::draw (cairo_t *cr)
+Widget::draw (const DrawEvent& devent)
 {
+  cairo_t *cr = devent.cr;
+
   if (m_background_color)
     {
       DrawUtils du (cr);

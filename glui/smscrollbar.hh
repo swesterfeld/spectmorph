@@ -41,9 +41,9 @@ public:
     m_page_size = sm_bound<double> (0, page_size, 1);
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
-    DrawUtils du (cr);
+    DrawUtils du (devent.cr);
 
     const double space = 2;
 

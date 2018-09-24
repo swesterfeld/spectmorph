@@ -19,12 +19,12 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
     const double radius  = 10;
     const double line_width = 1.5;
 
-    DrawUtils du (cr);
+    DrawUtils du (devent.cr);
     du.round_box (0, 0, width, height, line_width, radius, m_frame_color, ThemeColor::OPERATOR_BG);
   }
   void

@@ -26,7 +26,7 @@ class MorphGridWidget : public Widget
 public:
   MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view);
 
-  void draw (cairo_t *cr) override;
+  void draw (const DrawEvent& devent) override;
 
   void mouse_press (double x, double y) override;
   void mouse_release (double x, double y) override;

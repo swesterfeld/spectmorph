@@ -22,9 +22,9 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
-    DrawUtils du (cr);
+    DrawUtils du (devent.cr);
 
     Color text_color = m_color;
 

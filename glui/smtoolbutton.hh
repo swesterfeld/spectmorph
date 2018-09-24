@@ -23,8 +23,9 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
     double space = 4;

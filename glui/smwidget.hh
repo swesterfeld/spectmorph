@@ -250,8 +250,13 @@ public:
   }
   virtual ~Widget();
 
-  virtual void
-  draw (cairo_t *cr);
+  struct DrawEvent
+  {
+    cairo_t *cr;
+  };
+
+  virtual void draw (const DrawEvent& draw);
+
   virtual bool
   clipping()
   {

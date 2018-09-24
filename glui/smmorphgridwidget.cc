@@ -19,9 +19,10 @@ MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGr
 }
 
 void
-MorphGridWidget::draw (cairo_t *cr)
+MorphGridWidget::draw (const DrawEvent& devent)
 {
-  DrawUtils du (cr);
+  cairo_t *cr = devent.cr;
+  DrawUtils du (devent.cr);
 
   du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 

@@ -94,8 +94,9 @@ struct ComboBoxMenu : public Widget
     m_done_callback = callback;
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
     double space = 2;
@@ -202,8 +203,9 @@ public:
   {
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
     double space = 2;

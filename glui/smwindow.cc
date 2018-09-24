@@ -356,7 +356,9 @@ Window::on_display()
                   if (draw_grid && w == enter_widget)
                     w->debug_fill (cr);
 
-                      w->draw (cr);
+                  DrawEvent devent;
+                  devent.cr = cr;
+                  w->draw (devent);
                   cairo_restore (cr);
                 }
             }

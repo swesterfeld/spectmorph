@@ -39,9 +39,9 @@ public:
     return Rect (abs_x() + 2, abs_y() + 2, view_width - 4, view_height - 4);
   }
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
-    DrawUtils du (cr);
+    DrawUtils du (devent.cr);
 
     du.round_box (0, 0, view_width, view_height, 1, 2, ThemeColor::MENU_BG);
   }

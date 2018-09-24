@@ -47,8 +47,9 @@ public:
   }
 
   void
-  draw (cairo_t *cr) override
+  draw (const DrawEvent& devent) override
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
