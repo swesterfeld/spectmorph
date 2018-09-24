@@ -460,13 +460,14 @@ Window::process_events()
       timeval tv;
       gettimeofday (&tv, 0);
 
-      static double last_time_ms = 0;
-      const double time_ms = tv.tv_sec + tv.tv_usec / 1000000.0;
-      const double delta_time_ms = time_ms - last_time_ms;
-      last_time_ms = time_ms;
+      static double last_time = -1;
+      const double time = tv.tv_sec + tv.tv_usec / 1000000.0;
+      const double delta_time = time - last_time;
 
-      if (last_time_ms > 0)
-        sm_debug ("process_delta_time %f\n", delta_time_ms);
+      if (last_time > 0)
+        sm_debug ("process_delta_time %f %f\n", /* time diff */ delta_time, /* frames per second */ 1.0 / delta_time);
+
+      last_time = time;
     }
   puglProcessEvents (view);
 }
