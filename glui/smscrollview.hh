@@ -137,6 +137,8 @@ public:
         v_scroll_bar->set_enabled (v_page_size < 1.0);
         v_scroll_bar->set_page_size (v_page_size);
       }
+    // reposition widget on screen if necessary
+    on_scroll_bar_changed (0);
   }
 };
 
