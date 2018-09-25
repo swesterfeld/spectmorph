@@ -210,7 +210,7 @@ public:
     sample_widget = new SampleWidget (sample_scroll_view);
 
     grid.add_widget (sample_widget, 1, 1, 100, 42);
-    sample_scroll_view->set_scroll_widget (sample_widget, true, false);
+    sample_scroll_view->set_scroll_widget (sample_widget, true, false, /* center_zoom */ true);
 
     load_sample (test_sample);
 
