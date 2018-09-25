@@ -1,5 +1,3 @@
 - sample view:
   - markers
   - maybe upsample or interpolate waveform
-  - try clipping for grid
-  - center zoom

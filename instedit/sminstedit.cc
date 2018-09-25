@@ -68,8 +68,9 @@ namespace
 class SampleWidget : public Widget
 {
   void
-  draw_grid (cairo_t *cr)
+  draw_grid (const DrawEvent& devent)
   {
+    cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
     du.set_color (Color (0.33, 0.33, 0.33));
@@ -84,9 +85,12 @@ class SampleWidget : public Widget
       }
     for (double x = pad; x < width - 4; x += pad)
       {
-        cairo_move_to (cr, x, 0);
-        cairo_line_to (cr, x, height);
-        cairo_stroke (cr);
+        if (x >= devent.rect.x() && x <= devent.rect.x() + devent.rect.width())
+          {
+            cairo_move_to (cr, x, 0);
+            cairo_line_to (cr, x, height);
+            cairo_stroke (cr);
+          }
       }
   }
   vector<float> samples;
@@ -104,7 +108,7 @@ public:
 
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
-    draw_grid (cr);
+    draw_grid (devent);
     /* redraw border to overdraw line endings */
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color::null());
 
