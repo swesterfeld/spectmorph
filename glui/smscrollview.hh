@@ -46,7 +46,7 @@ public:
     du.round_box (0, 0, view_width, view_height, 1, 2, ThemeColor::MENU_BG);
   }
   void
-  set_scroll_widget (Widget *new_scroll_widget, bool hscroll, bool vscroll)
+  set_scroll_widget (Widget *new_scroll_widget, bool hscroll, bool vscroll, bool center_zoom = false)
   {
     /* cleanup old scrollbars */
     if (h_scroll_bar)
@@ -80,6 +80,7 @@ public:
         h_scroll_bar->width = view_width;
 
         h_scroll_bar->set_scroll_factor (0.08);
+        h_scroll_bar->set_center_zoom (center_zoom);
         connect (h_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
 
@@ -92,8 +93,10 @@ public:
         v_scroll_bar->width = 16;
 
         v_scroll_bar->set_scroll_factor (0.08);
+        v_scroll_bar->set_center_zoom (center_zoom);
         connect (v_scroll_bar->signal_position_changed, this, &ScrollView::on_scroll_bar_changed);
       }
+
     on_widget_size_changed();
     on_scroll_bar_changed (0);
   }

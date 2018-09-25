@@ -20,6 +20,7 @@ class ScrollBar : public Widget
 {
   double m_page_size;
   double m_pos;
+  bool   m_center_zoom = false;
   double old_pos;
   double mouse_y;
   double mouse_x;
@@ -185,9 +186,15 @@ public:
 
     new_page_size = sm_bound<double> (0, new_page_size, 1);
 
-    m_pos = std::min (m_pos / m_page_size * new_page_size, 1 - new_page_size);
-    if (m_pos < 0)
-      m_pos = 0;
+    if (m_center_zoom)
+      {
+        m_pos += m_page_size / 2 - new_page_size / 2;
+      }
+    else
+      {
+        m_pos = m_pos / m_page_size * new_page_size;
+      }
+    m_pos = sm_bound<double> (0, m_pos, 1 - new_page_size);
 
     m_page_size = new_page_size;
 
@@ -198,6 +205,11 @@ public:
   page_size() const
   {
     return m_page_size;
+  }
+  void
+  set_center_zoom (bool czoom)
+  {
+    m_center_zoom = czoom;
   }
 };
 
