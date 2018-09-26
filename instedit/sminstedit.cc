@@ -130,6 +130,9 @@ class SampleWidget : public Widget
   double        mix_freq;
   double        vzoom = 1;
   Markers      *m_markers = nullptr;
+  MarkerType    selected_marker = MARKER_NONE;
+  bool          mouse_down = false;
+  map<MarkerType, Rect> marker_rect;
 public:
   SampleWidget (Widget *parent)
     : Widget (parent)
@@ -214,31 +217,81 @@ public:
         MarkerType marker = static_cast<MarkerType> (m);
         double marker_x = mix_freq * m_markers->get (marker) / 1000. * width / samples.size();
 
+        Rect  rect;
+        Color color;
         if (m == MARKER_LOOP_START)
           {
-            cairo_rectangle (cr, marker_x, 0, 10, 10);
-            du.set_color (Color (1.0, 0.3, 0));
+            rect = Rect (marker_x, 0, 10, 10);
+            color = Color (1.0, 0.3, 0);
           }
         else if (m == MARKER_LOOP_END)
           {
-            cairo_rectangle (cr, marker_x - 10, 0, 10, 10);
-            du.set_color (Color (1.0, 0.3, 0));
+            rect = Rect (marker_x - 10, 0, 10, 10);
+            color = Color (1.0, 0.3, 0);
           }
         else if (m == MARKER_CLIP_START)
           {
-            cairo_rectangle (cr, marker_x, height - 10, 10, 10);
-            du.set_color (Color (0.8, 0, 0));
+            rect = Rect (marker_x, height - 10, 10, 10);
+            color = Color (0.8, 0, 0);
           }
         else if (m == MARKER_CLIP_END)
           {
-            cairo_rectangle (cr, marker_x - 10, height - 10, 10, 10);
-            du.set_color (Color (0.8, 0, 0));
+            rect = Rect (marker_x - 10, height - 10, 10, 10);
+            color = Color (0.8, 0, 0);
           }
+        marker_rect[marker] = rect;
+
+        if (marker == selected_marker)
+          color = color.lighter (175);
+        du.set_color (color);
+
+        cairo_rectangle (cr, rect.x(), rect.y(), rect.width(), rect.height());
         cairo_fill (cr);
         cairo_move_to (cr, marker_x, 0);
         cairo_line_to (cr, marker_x, height);
         cairo_stroke (cr);
       }
+  }
+  void
+  motion (double x, double y) override
+  {
+    if (mouse_down)
+      {
+        if (selected_marker == MARKER_NONE)
+          return;
+
+        const double sample_len_ms = samples.size() / mix_freq * 1000.0;
+        const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
+
+        m_markers->set (selected_marker, x_ms);
+        update();
+      }
+    else
+      {
+        MarkerType old_marker = selected_marker;
+
+        selected_marker = MARKER_NONE;
+        for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
+          {
+            MarkerType marker = MarkerType (m);
+
+            if (marker_rect[marker].contains (x, y))
+              selected_marker = marker;
+          }
+
+        if (selected_marker != old_marker)
+          update();
+      }
+  }
+  void
+  mouse_press (double x, double y) override
+  {
+    mouse_down = true;
+  }
+  void
+  mouse_release (double x, double y) override
+  {
+    mouse_down = false;
   }
   void
   set_samples (const vector<float>& samples, double mix_freq)
@@ -273,7 +326,6 @@ class MainWindow : public Window
         WavData wav_data;
         if (wav_data.load_mono (filename))
           {
-            printf ("%s %f %zd\n", filename.c_str(), wav_data.mix_freq(), wav_data.samples().size());
             sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
 
             markers.clear();
