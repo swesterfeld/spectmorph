@@ -252,6 +252,38 @@ public:
         cairo_stroke (cr);
       }
   }
+  MarkerType
+  find_marker_xy (double x, double y)
+  {
+    for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
+      {
+        MarkerType marker = MarkerType (m);
+
+        if (marker_rect[marker].contains (x, y))
+          return marker;
+      }
+    return MARKER_NONE;
+  }
+  void
+  get_order (MarkerType marker, vector<MarkerType>& left, vector<MarkerType>& right)
+  {
+    vector<MarkerType> left_to_right { MARKER_CLIP_START, MARKER_LOOP_START, MARKER_LOOP_END, MARKER_CLIP_END };
+
+    vector<MarkerType>::iterator it = find (left_to_right.begin(), left_to_right.end(), marker);
+    size_t pos = it - left_to_right.begin();
+
+    left.clear();
+    right.clear();
+
+    for (size_t i = 0; i < left_to_right.size(); i++)
+      {
+        const MarkerType lr_marker = left_to_right[i];
+        if (i < pos)
+          left.push_back (lr_marker);
+        if (i > pos)
+          right.push_back (lr_marker);
+      }
+  }
   void
   motion (double x, double y) override
   {
@@ -264,20 +296,25 @@ public:
         const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
 
         m_markers->set (selected_marker, x_ms);
+
+        /* enforce ordering constraints */
+        vector<MarkerType> left, right;
+        get_order (selected_marker, left, right);
+
+        for (auto l : left)
+          if (m_markers->get (l) > x_ms)
+            m_markers->set (l, x_ms);
+
+        for (auto r : right)
+          if (m_markers->get (r) < x_ms)
+            m_markers->set (r, x_ms);
+
         update();
       }
     else
       {
         MarkerType old_marker = selected_marker;
-
-        selected_marker = MARKER_NONE;
-        for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
-          {
-            MarkerType marker = MarkerType (m);
-
-            if (marker_rect[marker].contains (x, y))
-              selected_marker = marker;
-          }
+        selected_marker = find_marker_xy (x, y);
 
         if (selected_marker != old_marker)
           update();
@@ -292,6 +329,9 @@ public:
   mouse_release (double x, double y) override
   {
     mouse_down = false;
+    selected_marker = find_marker_xy (x, y);
+
+    update();
   }
   void
   set_samples (const vector<float>& samples, double mix_freq)
