@@ -14,6 +14,7 @@ using namespace SpectMorph;
 using std::string;
 using std::max;
 using std::vector;
+using std::map;
 
 class JackBackend
 {
@@ -58,6 +59,38 @@ public:
   }
 };
 
+enum MarkerType {
+  MARKER_NONE = 0,
+  MARKER_LOOP_START,
+  MARKER_LOOP_END,
+  MARKER_CLIP_START,
+  MARKER_CLIP_END
+};
+
+class Markers
+{
+  map<MarkerType, double> pos_map;
+public:
+  void
+  clear()
+  {
+    pos_map.clear();
+  }
+  void
+  set (MarkerType marker_type, double value)
+  {
+    pos_map[marker_type] = value;
+  }
+  double
+  get (MarkerType marker_type)
+  {
+    auto it = pos_map.find (marker_type);
+    if (it != pos_map.end())
+      return it->second;
+    return -1;
+  }
+};
+
 // morph plan window size
 namespace
 {
@@ -94,7 +127,9 @@ class SampleWidget : public Widget
       }
   }
   vector<float> samples;
+  double        mix_freq;
   double        vzoom = 1;
+  Markers      *m_markers = nullptr;
 public:
   SampleWidget (Widget *parent)
     : Widget (parent)
@@ -109,8 +144,19 @@ public:
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
     draw_grid (devent);
+
     /* redraw border to overdraw line endings */
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color::null());
+
+    const double clip_start_x = mix_freq * m_markers->get (MARKER_CLIP_START) / 1000. * width / samples.size();
+    const double clip_end_x = mix_freq * m_markers->get (MARKER_CLIP_END) / 1000. * width / samples.size();
+    const double loop_start_x = mix_freq * m_markers->get (MARKER_LOOP_START) / 1000. * width / samples.size();
+    const double loop_end_x = mix_freq * m_markers->get (MARKER_LOOP_END) / 1000. * width / samples.size();
+
+    /* modify background widget in loop region */
+    cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
+    cairo_set_source_rgba (cr, 0.5, 0.5, 1.0, 0.25);
+    cairo_fill (cr);
 
     //du.set_color (Color (0.4, 0.4, 1.0));
     du.set_color (Color (0.9, 0.1, 0.1));
@@ -148,15 +194,57 @@ public:
         cairo_stroke_preserve (cr);
         cairo_fill (cr);
       }
+
+    /* darken widget before and after clip region */
+    cairo_rectangle (cr, 0, 0, clip_start_x, height);
+    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
+    cairo_fill (cr);
+    cairo_rectangle (cr, clip_end_x, 0, width - clip_end_x, height);
+    cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
+    cairo_fill (cr);
+
     du.set_color (Color (1.0, 0.3, 0.3));
     cairo_move_to (cr, 0, height/2);
     cairo_line_to (cr, width, height/2);
     cairo_stroke (cr);
+
+    /* markers */
+    for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
+      {
+        MarkerType marker = static_cast<MarkerType> (m);
+        double marker_x = mix_freq * m_markers->get (marker) / 1000. * width / samples.size();
+
+        if (m == MARKER_LOOP_START)
+          {
+            cairo_rectangle (cr, marker_x, 0, 10, 10);
+            du.set_color (Color (1.0, 0.3, 0));
+          }
+        else if (m == MARKER_LOOP_END)
+          {
+            cairo_rectangle (cr, marker_x - 10, 0, 10, 10);
+            du.set_color (Color (1.0, 0.3, 0));
+          }
+        else if (m == MARKER_CLIP_START)
+          {
+            cairo_rectangle (cr, marker_x, height - 10, 10, 10);
+            du.set_color (Color (0.8, 0, 0));
+          }
+        else if (m == MARKER_CLIP_END)
+          {
+            cairo_rectangle (cr, marker_x - 10, height - 10, 10, 10);
+            du.set_color (Color (0.8, 0, 0));
+          }
+        cairo_fill (cr);
+        cairo_move_to (cr, marker_x, 0);
+        cairo_line_to (cr, marker_x, height);
+        cairo_stroke (cr);
+      }
   }
   void
-  set_samples (const vector<float>& samples)
+  set_samples (const vector<float>& samples, double mix_freq)
   {
     this->samples = samples;
+    this->mix_freq = mix_freq;
     update();
   }
   void
@@ -165,11 +253,18 @@ public:
     vzoom = factor;
     update();
   }
+  void
+  set_markers (Markers *markers)
+  {
+    m_markers = markers;
+    update();
+  }
 };
 
 class MainWindow : public Window
 {
   SampleWidget *sample_widget;
+  Markers markers;
   void
   load_sample (const string& filename)
   {
@@ -179,7 +274,14 @@ class MainWindow : public Window
         if (wav_data.load_mono (filename))
           {
             printf ("%s %f %zd\n", filename.c_str(), wav_data.mix_freq(), wav_data.samples().size());
-            sample_widget->set_samples (wav_data.samples());
+            sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
+
+            markers.clear();
+            markers.set (MARKER_CLIP_START, 0.2 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+            markers.set (MARKER_CLIP_END, 0.9 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+            markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+            markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+            sample_widget->set_markers (&markers);
           }
       }
   }
