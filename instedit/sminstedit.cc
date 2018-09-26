@@ -156,11 +156,6 @@ public:
     const double loop_start_x = mix_freq * m_markers->get (MARKER_LOOP_START) / 1000. * width / samples.size();
     const double loop_end_x = mix_freq * m_markers->get (MARKER_LOOP_END) / 1000. * width / samples.size();
 
-    /* modify background widget in loop region */
-    cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
-    cairo_set_source_rgba (cr, 0.5, 0.5, 1.0, 0.25);
-    cairo_fill (cr);
-
     //du.set_color (Color (0.4, 0.4, 1.0));
     du.set_color (Color (0.9, 0.1, 0.1));
     for (int pass = 0; pass < 2; pass++)
@@ -197,6 +192,11 @@ public:
         cairo_stroke_preserve (cr);
         cairo_fill (cr);
       }
+
+    /* lighten loop region */
+    cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
+    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.25);
+    cairo_fill (cr);
 
     /* darken widget before and after clip region */
     cairo_rectangle (cr, 0, 0, clip_start_x, height);
@@ -331,6 +331,12 @@ public:
     mouse_down = false;
     selected_marker = find_marker_xy (x, y);
 
+    update();
+  }
+  void
+  leave_event() override
+  {
+    selected_marker = MARKER_NONE;
     update();
   }
   void
