@@ -2,6 +2,7 @@
 
 #include "smmain.hh"
 #include "spectmorphglui.hh"
+#include "smpugixml.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -15,6 +16,9 @@ using std::string;
 using std::max;
 using std::vector;
 using std::map;
+
+using pugi::xml_document;
+using pugi::xml_node;
 
 class JackBackend
 {
@@ -364,6 +368,7 @@ class MainWindow : public Window
 {
   SampleWidget *sample_widget;
   Markers markers;
+  string  filename;
   void
   load_sample (const string& filename)
   {
@@ -380,6 +385,11 @@ class MainWindow : public Window
             markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
             markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
             sample_widget->set_markers (&markers);
+            this->filename = filename;
+          }
+        else
+          {
+            this->filename = "";
           }
       }
   }
@@ -401,10 +411,14 @@ public:
 
     MenuBar *menu_bar = new MenuBar (this);
 
+    fill_zoom_menu (menu_bar->add_menu ("Zoom"));
     Menu *file_menu = menu_bar->add_menu ("File");
 
-    MenuItem *import_item = file_menu->add_item ("Add Sample...");
-    connect (import_item->signal_clicked, this, &MainWindow::on_add_sample_clicked);
+    MenuItem *add_item = file_menu->add_item ("Add Sample...");
+    connect (add_item->signal_clicked, this, &MainWindow::on_add_sample_clicked);
+
+    MenuItem *save_item = file_menu->add_item ("Save Instrument...");
+    connect (save_item->signal_clicked, this, &MainWindow::on_save_clicked);
 
     grid.add_widget (menu_bar, 1, 1, 91, 3);
 
@@ -457,6 +471,18 @@ public:
     double factor = pow (10, value);
     sample_widget->set_vzoom (factor);
     vzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
+  }
+  void
+  on_save_clicked()
+  {
+    xml_document doc;
+    xml_node inst_node = doc.append_child ("instrument");
+    xml_node sample_node = inst_node.append_child ("sample");
+    sample_node.append_attribute ("filename").set_value (filename.c_str());
+    xml_node clip_node = sample_node.append_child ("clip");
+    clip_node.append_attribute ("start") = string_printf ("%.3f", markers.get (MARKER_CLIP_START)).c_str();
+    clip_node.append_attribute ("end") = string_printf ("%.3f", markers.get (MARKER_CLIP_END)).c_str();
+    doc.save_file ("/tmp/x.sminst");
   }
 };
 
