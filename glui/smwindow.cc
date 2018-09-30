@@ -5,6 +5,7 @@
 #include "GL/glext.h"
 #endif
 #include "smwindow.hh"
+#include "smmenubar.hh"
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
 #include "smconfig.hh"
@@ -784,6 +785,39 @@ PuglNativeWindow
 Window::native_window()
 {
   return puglGetNativeWindow (view);
+}
+
+void
+Window::fill_zoom_menu (Menu *menu)
+{
+  menu->clear();
+
+  for (int z = 70; z <= 500; )
+    {
+      int w = width * z / 100;
+      int h = height * z / 100;
+
+      string text = string_locale_printf ("%d%%   -   %dx%d", z, w, h);
+
+      if (sm_round_positive (window()->gui_scaling() * 100) == z)
+        text += "   -   current zoom";
+      MenuItem *item = menu->add_item (text);
+      connect (item->signal_clicked, [=]() {
+        window()->set_gui_scaling (z / 100.);
+
+        // we need to refill the menu to update the "current zoom" entry
+        fill_zoom_menu (menu);
+      });
+
+      if (z >= 400)
+        z += 50;
+      else if (z >= 300)
+        z += 25;
+      else if (z >= 200)
+        z += 20;
+      else
+        z += 10;
+    }
 }
 
 void

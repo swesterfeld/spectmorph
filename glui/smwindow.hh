@@ -13,6 +13,7 @@ namespace SpectMorph
 
 struct CairoGL;
 class NativeFileDialog;
+class Menu;
 
 struct Window : public Widget
 {
@@ -64,6 +65,8 @@ public:
   void set_popup_window (Window *window);
   Window *window() override;
   PuglNativeWindow native_window();
+
+  void fill_zoom_menu (Menu *menu);
   void set_gui_scaling (double s);
   double gui_scaling();
 
