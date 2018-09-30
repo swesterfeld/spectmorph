@@ -51,6 +51,9 @@ spectmorphinclude_HEADERS = $(SMHDRS) spectmorph.hh
 
 EXTRA_DIST += smpolyphasecoeffs.cc
 
+# pugixml as header only xml parsing library
+EXTRA_DIST += smpugiconfig.hh smpugixml.cc smpugixml.hh
+
 install-exec-hook: # libtool doesn't always set rpath, requiring ldconfig
 	test ! -x /sbin/ldconfig -o ! -w /etc/ld.so.cache || /sbin/ldconfig $(DESTDIR)$(libdir)
 
