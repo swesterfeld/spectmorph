@@ -417,6 +417,9 @@ public:
     MenuItem *add_item = file_menu->add_item ("Add Sample...");
     connect (add_item->signal_clicked, this, &MainWindow::on_add_sample_clicked);
 
+    MenuItem *load_item = file_menu->add_item ("Load Instrument...");
+    connect (load_item->signal_clicked, this, &MainWindow::on_load_clicked);
+
     MenuItem *save_item = file_menu->add_item ("Save Instrument...");
     connect (save_item->signal_clicked, this, &MainWindow::on_save_clicked);
 
@@ -483,6 +486,22 @@ public:
     clip_node.append_attribute ("start") = string_printf ("%.3f", markers.get (MARKER_CLIP_START)).c_str();
     clip_node.append_attribute ("end") = string_printf ("%.3f", markers.get (MARKER_CLIP_END)).c_str();
     doc.save_file ("/tmp/x.sminst");
+  }
+  void
+  on_load_clicked()
+  {
+    xml_document doc;
+    doc.load_file ("/tmp/x.sminst");
+    xml_node inst_node = doc.child ("instrument");
+    xml_node sample_node = inst_node.child ("sample");
+    string filename = sample_node.attribute ("filename").value();
+    load_sample (filename);
+    xml_node clip_node = sample_node.child ("clip");
+    if (clip_node)
+      {
+        markers.set (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
+        markers.set (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
+      }
   }
 };
 
