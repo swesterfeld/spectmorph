@@ -460,16 +460,7 @@ public:
   void
   on_save_clicked()
   {
-#if 0
-    xml_document doc;
-    xml_node inst_node = doc.append_child ("instrument");
-    xml_node sample_node = inst_node.append_child ("sample");
-    sample_node.append_attribute ("filename").set_value (filename.c_str());
-    xml_node clip_node = sample_node.append_child ("clip");
-    clip_node.append_attribute ("start") = string_printf ("%.3f", markers.get (MARKER_CLIP_START)).c_str();
-    clip_node.append_attribute ("end") = string_printf ("%.3f", markers.get (MARKER_CLIP_END)).c_str();
-    doc.save_file ("/tmp/x.sminst");
-#endif
+    instrument.save ("/tmp/x.sminst");
   }
   void
   on_load_clicked()

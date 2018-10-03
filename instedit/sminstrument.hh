@@ -5,6 +5,9 @@
 
 namespace SpectMorph
 {
+  /* OK in SpectMorph namespace */
+  using pugi::xml_document;
+  using pugi::xml_node;
 
 enum MarkerType {
   MARKER_NONE = 0,
@@ -105,6 +108,27 @@ public:
   selected()
   {
     return m_selected;
+  }
+  void
+  save (const std::string& filename)
+  {
+    xml_document doc;
+    xml_node inst_node = doc.append_child ("instrument");
+    for (auto& sample : samples)
+      {
+        xml_node sample_node = inst_node.append_child ("sample");
+        sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
+        sample_node.append_attribute ("midi_note").set_value (sample->midi_note);
+
+        xml_node clip_node = sample_node.append_child ("clip");
+        clip_node.append_attribute ("start") = string_printf ("%.3f", sample->markers.get (MARKER_CLIP_START)).c_str();
+        clip_node.append_attribute ("end") = string_printf ("%.3f", sample->markers.get (MARKER_CLIP_END)).c_str();
+
+        xml_node loop_node = sample_node.append_child ("loop");
+        loop_node.append_attribute ("start") = string_printf ("%.3f", sample->markers.get (MARKER_LOOP_START)).c_str();
+        loop_node.append_attribute ("end") = string_printf ("%.3f", sample->markers.get (MARKER_LOOP_END)).c_str();
+      }
+    doc.save_file (filename.c_str());
   }
 };
 
