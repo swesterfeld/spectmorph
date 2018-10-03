@@ -184,6 +184,17 @@ public:
   {
     items.clear();
   }
+  int
+  current_index()
+  {
+    /* assume that all text entries are different */
+    for (size_t i = 0; i < items.size(); i++)
+      {
+        if (items[i].text == m_text && !items[i].headline)
+          return i;
+      }
+    return -1;
+  }
   void
   set_text (const std::string& new_text)
   {
