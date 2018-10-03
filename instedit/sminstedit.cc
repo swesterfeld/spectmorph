@@ -64,38 +64,6 @@ public:
   }
 };
 
-enum MarkerType {
-  MARKER_NONE = 0,
-  MARKER_LOOP_START,
-  MARKER_LOOP_END,
-  MARKER_CLIP_START,
-  MARKER_CLIP_END
-};
-
-class Markers
-{
-  map<MarkerType, double> pos_map;
-public:
-  void
-  clear()
-  {
-    pos_map.clear();
-  }
-  void
-  set (MarkerType marker_type, double value)
-  {
-    pos_map[marker_type] = value;
-  }
-  double
-  get (MarkerType marker_type)
-  {
-    auto it = pos_map.find (marker_type);
-    if (it != pos_map.end())
-      return it->second;
-    return -1;
-  }
-};
-
 // morph plan window size
 namespace
 {
@@ -370,22 +338,16 @@ class MainWindow : public Window
   Instrument instrument;
 
   SampleWidget *sample_widget;
-  Markers markers;
   void
   switch_to (Sample *sample)
   {
-    WavData wav_data;
-    if (wav_data.load_mono (sample->filename))
-      {
-        sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
+    if (!sample)
+      return;
 
-        markers.clear();
-        markers.set (MARKER_CLIP_START, 0.2 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-        markers.set (MARKER_CLIP_END, 0.9 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-        markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-        markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-        sample_widget->set_markers (&markers);
-      }
+    const WavData& wav_data = sample->wav_data;
+
+    sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
+    sample_widget->set_markers (&sample->markers);
   }
   void
   load_sample (const string& filename)
