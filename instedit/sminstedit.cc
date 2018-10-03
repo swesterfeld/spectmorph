@@ -3,6 +3,7 @@
 #include "smmain.hh"
 #include "spectmorphglui.hh"
 #include "smpugixml.hh"
+#include "sminstrument.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -366,33 +367,47 @@ public:
 
 class MainWindow : public Window
 {
+  Instrument instrument;
+
   SampleWidget *sample_widget;
   Markers markers;
-  string  filename;
+  void
+  switch_to (Sample *sample)
+  {
+    WavData wav_data;
+    if (wav_data.load_mono (sample->filename))
+      {
+        sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
+
+        markers.clear();
+        markers.set (MARKER_CLIP_START, 0.2 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+        markers.set (MARKER_CLIP_END, 0.9 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+        markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+        markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+        sample_widget->set_markers (&markers);
+      }
+  }
   void
   load_sample (const string& filename)
   {
     if (filename != "")
       {
-        WavData wav_data;
-        if (wav_data.load_mono (filename))
+        sample_combobox->clear();
+        instrument.add_sample (filename);
+        for (size_t i = 0; i < instrument.size(); i++)
           {
-            sample_widget->set_samples (wav_data.samples(), wav_data.mix_freq());
+            Sample *sample = instrument.sample (i);
+            string text = string_printf ("%zd %d %s", i, sample->midi_note, sample->filename.c_str());
 
-            markers.clear();
-            markers.set (MARKER_CLIP_START, 0.2 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-            markers.set (MARKER_CLIP_END, 0.9 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-            markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-            markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-            sample_widget->set_markers (&markers);
-            this->filename = filename;
+            sample_combobox->add_item (text);
+
+            if (int (i) == instrument.selected())
+              sample_combobox->set_text (text);
           }
-        else
-          {
-            this->filename = "";
-          }
+        switch_to (instrument.sample (instrument.selected()));
       }
   }
+  ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
   Label *vzoom_label;
@@ -425,8 +440,13 @@ public:
 
     grid.add_widget (menu_bar, 1, 1, 91, 3);
 
+    sample_combobox = new ComboBox (this);
+    grid.add_widget (sample_combobox, 1, 5, 91, 3);
+
+    connect (sample_combobox->signal_item_changed, this, &MainWindow::on_sample_changed);
+
     sample_scroll_view = new ScrollView (this);
-    grid.add_widget (sample_scroll_view, 1, 5, 91, 46);
+    grid.add_widget (sample_scroll_view, 1, 8, 91, 46);
 
     sample_widget = new SampleWidget (sample_scroll_view);
 
@@ -436,22 +456,22 @@ public:
     load_sample (test_sample);
 
     /*----- hzoom -----*/
-    grid.add_widget (new Label (this, "HZoom"), 1, 51, 10, 3);
+    grid.add_widget (new Label (this, "HZoom"), 1, 54, 10, 3);
     Slider *hzoom_slider = new Slider (this, 0.0);
-    grid.add_widget (hzoom_slider, 8, 51, 30, 3);
+    grid.add_widget (hzoom_slider, 8, 54, 30, 3);
     connect (hzoom_slider->signal_value_changed, this, &MainWindow::on_update_hzoom);
 
     hzoom_label = new Label (this, "0");
-    grid.add_widget (hzoom_label, 40, 51, 10, 3);
+    grid.add_widget (hzoom_label, 40, 54, 10, 3);
 
     /*----- vzoom -----*/
-    grid.add_widget (new Label (this, "VZoom"), 1, 54, 10, 3);
+    grid.add_widget (new Label (this, "VZoom"), 1, 57, 10, 3);
     Slider *vzoom_slider = new Slider (this, 0.0);
-    grid.add_widget (vzoom_slider, 8, 54, 30, 3);
+    grid.add_widget (vzoom_slider, 8, 57, 30, 3);
     connect (vzoom_slider->signal_value_changed, this, &MainWindow::on_update_vzoom);
 
     vzoom_label = new Label (this, "0");
-    grid.add_widget (vzoom_label, 40, 54, 10, 3);
+    grid.add_widget (vzoom_label, 40, 57, 10, 3);
 
     // show complete wave
     on_update_hzoom (0);
@@ -478,6 +498,7 @@ public:
   void
   on_save_clicked()
   {
+#if 0
     xml_document doc;
     xml_node inst_node = doc.append_child ("instrument");
     xml_node sample_node = inst_node.append_child ("sample");
@@ -486,10 +507,12 @@ public:
     clip_node.append_attribute ("start") = string_printf ("%.3f", markers.get (MARKER_CLIP_START)).c_str();
     clip_node.append_attribute ("end") = string_printf ("%.3f", markers.get (MARKER_CLIP_END)).c_str();
     doc.save_file ("/tmp/x.sminst");
+#endif
   }
   void
   on_load_clicked()
   {
+#if 0
     xml_document doc;
     doc.load_file ("/tmp/x.sminst");
     xml_node inst_node = doc.child ("instrument");
@@ -501,6 +524,20 @@ public:
       {
         markers.set (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
         markers.set (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
+      }
+#endif
+  }
+  void
+  on_sample_changed()
+  {
+    int idx = sample_combobox->current_index();
+    if (idx >= 0)
+      {
+        Sample *sample = instrument.sample (idx);
+        if (sample)
+          {
+            switch_to (sample);
+          }
       }
   }
 };
