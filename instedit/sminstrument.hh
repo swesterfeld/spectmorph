@@ -17,42 +17,33 @@ enum MarkerType {
   MARKER_CLIP_END
 };
 
-class Markers
-{
-  std::map<MarkerType, double> pos_map;
-public:
-  void
-  clear()
-  {
-    pos_map.clear();
-  }
-  void
-  set (MarkerType marker_type, double value)
-  {
-    pos_map[marker_type] = value;
-  }
-  double
-  get (MarkerType marker_type)
-  {
-    auto it = pos_map.find (marker_type);
-    if (it != pos_map.end())
-      return it->second;
-    return -1;
-  }
-};
-
 class Sample
 {
-SPECTMORPH_CLASS_NON_COPYABLE (Sample);
+  SPECTMORPH_CLASS_NON_COPYABLE (Sample);
+
+  std::map<MarkerType, double> marker_map;
+
 public:
   Sample()
   {
+  }
+  void
+  set_marker (MarkerType marker_type, double value)
+  {
+    marker_map[marker_type] = value;
+  }
+  double
+  get_marker (MarkerType marker_type)
+  {
+    auto it = marker_map.find (marker_type);
+    if (it != marker_map.end())
+      return it->second;
+    return -1;
   }
 
   std::string filename;
   int         midi_note;
   WavData     wav_data;
-  Markers     markers;
 };
 
 class Instrument
@@ -83,11 +74,10 @@ public:
     sample->midi_note = 69;
     sample->wav_data = wav_data;
 
-    sample->markers.clear();
-    sample->markers.set (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-    sample->markers.set (MARKER_CLIP_END, 1.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-    sample->markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
-    sample->markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+    sample->set_marker (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+    sample->set_marker (MARKER_CLIP_END, 1.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+    sample->set_marker (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
+    sample->set_marker (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
 
     signal_samples_changed();
 
@@ -146,14 +136,14 @@ public:
             xml_node clip_node = sample_node.child ("clip");
             if (clip_node)
               {
-                sample->markers.set (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
-                sample->markers.set (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
+                sample->set_marker (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
+                sample->set_marker (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
               }
             xml_node loop_node = sample_node.child ("loop");
             if (loop_node)
               {
-                sample->markers.set (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
-                sample->markers.set (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
+                sample->set_marker (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
+                sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
               }
           }
       }
@@ -171,12 +161,12 @@ public:
         sample_node.append_attribute ("midi_note").set_value (sample->midi_note);
 
         xml_node clip_node = sample_node.append_child ("clip");
-        clip_node.append_attribute ("start") = string_printf ("%.3f", sample->markers.get (MARKER_CLIP_START)).c_str();
-        clip_node.append_attribute ("end") = string_printf ("%.3f", sample->markers.get (MARKER_CLIP_END)).c_str();
+        clip_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_START)).c_str();
+        clip_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_END)).c_str();
 
         xml_node loop_node = sample_node.append_child ("loop");
-        loop_node.append_attribute ("start") = string_printf ("%.3f", sample->markers.get (MARKER_LOOP_START)).c_str();
-        loop_node.append_attribute ("end") = string_printf ("%.3f", sample->markers.get (MARKER_LOOP_END)).c_str();
+        loop_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_START)).c_str();
+        loop_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_END)).c_str();
       }
     doc.save_file (filename.c_str());
   }

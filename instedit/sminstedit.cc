@@ -126,10 +126,10 @@ public:
       return;
 
     const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
-    const double clip_start_x = m_sample->markers.get (MARKER_CLIP_START) / length_ms * width;
-    const double clip_end_x = m_sample->markers.get (MARKER_CLIP_END) / length_ms * width;
-    const double loop_start_x = m_sample->markers.get (MARKER_LOOP_START) / length_ms * width;
-    const double loop_end_x = m_sample->markers.get (MARKER_LOOP_END) / length_ms * width;
+    const double clip_start_x = m_sample->get_marker (MARKER_CLIP_START) / length_ms * width;
+    const double clip_end_x = m_sample->get_marker (MARKER_CLIP_END) / length_ms * width;
+    const double loop_start_x = m_sample->get_marker (MARKER_LOOP_START) / length_ms * width;
+    const double loop_end_x = m_sample->get_marker (MARKER_LOOP_END) / length_ms * width;
     const vector<float>& samples = m_sample->wav_data.samples();
 
     //du.set_color (Color (0.4, 0.4, 1.0));
@@ -191,7 +191,7 @@ public:
     for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
       {
         MarkerType marker = static_cast<MarkerType> (m);
-        double marker_x = m_sample->markers.get (marker) / length_ms * width;
+        double marker_x = m_sample->get_marker (marker) / length_ms * width;
 
         Rect  rect;
         Color color;
@@ -271,19 +271,19 @@ public:
         const double sample_len_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000.0;
         const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
 
-        m_sample->markers.set (selected_marker, x_ms);
+        m_sample->set_marker (selected_marker, x_ms);
 
         /* enforce ordering constraints */
         vector<MarkerType> left, right;
         get_order (selected_marker, left, right);
 
         for (auto l : left)
-          if (m_sample->markers.get (l) > x_ms)
-            m_sample->markers.set (l, x_ms);
+          if (m_sample->get_marker (l) > x_ms)
+            m_sample->set_marker (l, x_ms);
 
         for (auto r : right)
-          if (m_sample->markers.get (r) < x_ms)
-            m_sample->markers.set (r, x_ms);
+          if (m_sample->get_marker (r) < x_ms)
+            m_sample->set_marker (r, x_ms);
 
         update();
       }
