@@ -354,20 +354,24 @@ class MainWindow : public Window
   {
     if (filename != "")
       {
-        sample_combobox->clear();
         instrument.add_sample (filename);
-        for (size_t i = 0; i < instrument.size(); i++)
-          {
-            Sample *sample = instrument.sample (i);
-            string text = string_printf ("%zd %d %s", i, sample->midi_note, sample->filename.c_str());
-
-            sample_combobox->add_item (text);
-
-            if (int (i) == instrument.selected())
-              sample_combobox->set_text (text);
-          }
-        switch_to (instrument.sample (instrument.selected()));
       }
+  }
+  void
+  on_samples_changed()
+  {
+    sample_combobox->clear();
+    for (size_t i = 0; i < instrument.size(); i++)
+      {
+        Sample *sample = instrument.sample (i);
+        string text = string_printf ("%zd %d %s", i, sample->midi_note, sample->filename.c_str());
+
+        sample_combobox->add_item (text);
+
+        if (int (i) == instrument.selected())
+          sample_combobox->set_text (text);
+      }
+    switch_to (instrument.sample (instrument.selected()));
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
@@ -384,6 +388,9 @@ public:
   MainWindow (const string& test_sample) :
     Window ("SpectMorph - Instrument Editor", win_width, win_height)
   {
+    /* attach to model */
+    connect (instrument.signal_samples_changed, this, &MainWindow::on_samples_changed);
+
     FixedGrid grid;
 
     MenuBar *menu_bar = new MenuBar (this);
@@ -465,20 +472,7 @@ public:
   void
   on_load_clicked()
   {
-#if 0
-    xml_document doc;
-    doc.load_file ("/tmp/x.sminst");
-    xml_node inst_node = doc.child ("instrument");
-    xml_node sample_node = inst_node.child ("sample");
-    string filename = sample_node.attribute ("filename").value();
-    load_sample (filename);
-    xml_node clip_node = sample_node.child ("clip");
-    if (clip_node)
-      {
-        markers.set (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
-        markers.set (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
-      }
-#endif
+    instrument.load ("/tmp/x.sminst");
   }
   void
   on_sample_changed()

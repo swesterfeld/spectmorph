@@ -89,6 +89,8 @@ public:
     sample->markers.set (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
     sample->markers.set (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
 
+    signal_samples_changed();
+
     return true; /* FIXME: fail if load fails */
   }
   size_t
@@ -108,6 +110,47 @@ public:
   selected()
   {
     return m_selected;
+  }
+  void
+  load (const std::string& filename)
+  {
+    samples.clear();
+
+    xml_document doc;
+    doc.load_file ("/tmp/x.sminst");
+    xml_node inst_node = doc.child ("instrument");
+    for (xml_node sample_node : inst_node.children ("sample"))
+      {
+        std::string filename = sample_node.attribute ("filename").value();
+        int midi_note = atoi (sample_node.attribute ("midi_note").value());
+        if (midi_note == 0) /* default */
+          midi_note = 69;
+
+        /* try loading file */
+        WavData wav_data;
+        if (wav_data.load_mono (filename))
+          {
+            Sample *sample = new Sample();
+            samples.emplace_back (sample);
+            sample->filename  = filename;
+            sample->midi_note = midi_note;
+            sample->wav_data = wav_data;
+
+            xml_node clip_node = sample_node.child ("clip");
+            if (clip_node)
+              {
+                sample->markers.set (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
+                sample->markers.set (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
+              }
+            xml_node loop_node = sample_node.child ("loop");
+            if (loop_node)
+              {
+                sample->markers.set (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
+                sample->markers.set (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
+              }
+          }
+      }
+    signal_samples_changed();
   }
   void
   save (const std::string& filename)
@@ -130,6 +173,7 @@ public:
       }
     doc.save_file (filename.c_str());
   }
+  Signal<> signal_samples_changed;
 };
 
 }
