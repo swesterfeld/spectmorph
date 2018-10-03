@@ -112,6 +112,13 @@ public:
     return m_selected;
   }
   void
+  set_selected (int sel)
+  {
+    m_selected = sel;
+
+    signal_samples_changed();
+  }
+  void
   load (const std::string& filename)
   {
     samples.clear();
