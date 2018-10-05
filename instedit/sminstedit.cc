@@ -359,7 +359,7 @@ class MainWindow : public Window
     for (size_t i = 0; i < instrument.size(); i++)
       {
         Sample *sample = instrument.sample (i);
-        string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note).c_str(), sample->filename.c_str());
+        string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->filename.c_str());
 
         sample_combobox->add_item (text);
 
@@ -376,7 +376,7 @@ class MainWindow : public Window
       }
     else
       {
-        midi_note_combobox->set_text (note_to_text (sample->midi_note));
+        midi_note_combobox->set_text (note_to_text (sample->midi_note()));
       }
   }
   ComboBox *sample_combobox;
@@ -508,10 +508,7 @@ public:
       {
         if (midi_note_combobox->text() == note_to_text (i))
           {
-            sample->midi_note = i;
-
-            // FIXME: model should notify here
-            on_samples_changed();
+            sample->set_midi_note (i);
           }
       }
   }

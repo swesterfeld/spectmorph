@@ -17,14 +17,19 @@ enum MarkerType {
   MARKER_CLIP_END
 };
 
+class Instrument;
+
 class Sample
 {
   SPECTMORPH_CLASS_NON_COPYABLE (Sample);
 
   std::map<MarkerType, double> marker_map;
+  int m_midi_note = 69;
+  Instrument *instrument = nullptr;
 
 public:
-  Sample()
+  Sample (Instrument *inst) :
+    instrument (inst)
   {
   }
   void
@@ -40,9 +45,13 @@ public:
       return it->second;
     return -1;
   }
-
+  int
+  midi_note() const
+  {
+    return m_midi_note;
+  }
+  void set_midi_note (int note);
   std::string filename;
-  int         midi_note;
   WavData     wav_data;
 };
 
@@ -68,10 +77,9 @@ public:
     /* new sample will be selected */
     m_selected = samples.size();
 
-    Sample *sample = new Sample();
+    Sample *sample = new Sample (this);
     samples.emplace_back (sample);
     sample->filename  = filename;
-    sample->midi_note = 69;
     sample->wav_data = wav_data;
 
     sample->set_marker (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
@@ -127,10 +135,10 @@ public:
         WavData wav_data;
         if (wav_data.load_mono (filename))
           {
-            Sample *sample = new Sample();
+            Sample *sample = new Sample (this);
             samples.emplace_back (sample);
             sample->filename  = filename;
-            sample->midi_note = midi_note;
+            sample->set_midi_note (midi_note);
             sample->wav_data = wav_data;
 
             xml_node clip_node = sample_node.child ("clip");
@@ -163,7 +171,7 @@ public:
       {
         xml_node sample_node = inst_node.append_child ("sample");
         sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
-        sample_node.append_attribute ("midi_note").set_value (sample->midi_note);
+        sample_node.append_attribute ("midi_note").set_value (sample->midi_note());
 
         xml_node clip_node = sample_node.append_child ("clip");
         clip_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_START)).c_str();
@@ -175,8 +183,35 @@ public:
       }
     doc.save_file (filename.c_str());
   }
+  void
+  update_order()
+  {
+    Sample *ssample = sample (selected());
+    sort (samples.begin(), samples.end(),
+      [](auto& s1, auto& s2) {
+        if (s1->midi_note() > s2->midi_note())
+          return true;
+        if (s1->midi_note() < s2->midi_note())
+          return false;
+        return s1->filename < s2->filename;
+      });
+
+    for (size_t n = 0; n < samples.size(); n++)
+      if (samples[n].get() == ssample)
+        m_selected = n;
+
+    signal_samples_changed();
+  }
   Signal<> signal_samples_changed;
 };
+
+void
+Sample::set_midi_note (int note)
+{
+  m_midi_note = note;
+
+  instrument->update_order();
+}
 
 }
 
