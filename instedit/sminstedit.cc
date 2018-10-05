@@ -409,7 +409,7 @@ public:
     grid.add_widget (sample_widget, 1, 1, 100, 42);
     sample_scroll_view->set_scroll_widget (sample_widget, true, false, /* center_zoom */ true);
 
-    load_sample (test_sample);
+    instrument.load (test_sample);
 
     /*----- hzoom -----*/
     grid.add_widget (new Label (this, "HZoom"), 1, 54, 10, 3);
@@ -486,7 +486,7 @@ main (int argc, char **argv)
 
   bool quit = false;
 
-  string fn = (argc > 1) ? argv[1] : "/home/stefan/src/spectmorph-trumpet/samples/trumpet/trumpet-ff-c4.flac";
+  string fn = (argc > 1) ? argv[1] : "test.sminst";
   MainWindow window (fn);
 
   window.show();

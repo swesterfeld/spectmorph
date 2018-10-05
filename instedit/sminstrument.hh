@@ -147,6 +147,11 @@ public:
               }
           }
       }
+    /* select first sample if possible */
+    if (samples.empty())
+      m_selected = -1;
+    else
+      m_selected = 0;
     signal_samples_changed();
   }
   void
