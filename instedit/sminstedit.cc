@@ -334,6 +334,14 @@ class MainWindow : public Window
   Instrument instrument;
 
   SampleWidget *sample_widget;
+  ComboBox *midi_note_combobox = nullptr;
+
+  string
+  note_to_text (int i)
+  {
+    vector<string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+    return string_printf ("%d  :  %s%d", i, note_name[i % 12].c_str(), i / 12 - 2);
+  }
   void
   load_sample (const string& filename)
   {
@@ -351,14 +359,25 @@ class MainWindow : public Window
     for (size_t i = 0; i < instrument.size(); i++)
       {
         Sample *sample = instrument.sample (i);
-        string text = string_printf ("%zd %d %s", i, sample->midi_note, sample->filename.c_str());
+        string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note).c_str(), sample->filename.c_str());
 
         sample_combobox->add_item (text);
 
         if (int (i) == instrument.selected())
           sample_combobox->set_text (text);
       }
-    sample_widget->set_sample (instrument.sample (instrument.selected()));
+    Sample *sample = instrument.sample (instrument.selected());
+    sample_widget->set_sample (sample);
+    midi_note_combobox->set_enabled (sample != nullptr);
+    sample_combobox->set_enabled (sample != nullptr);
+    if (!sample)
+      {
+        midi_note_combobox->set_text ("");
+      }
+    else
+      {
+        midi_note_combobox->set_text (note_to_text (sample->midi_note));
+      }
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
@@ -409,8 +428,6 @@ public:
     grid.add_widget (sample_widget, 1, 1, 100, 42);
     sample_scroll_view->set_scroll_widget (sample_widget, true, false, /* center_zoom */ true);
 
-    instrument.load (test_sample);
-
     /*----- hzoom -----*/
     grid.add_widget (new Label (this, "HZoom"), 1, 54, 10, 3);
     Slider *hzoom_slider = new Slider (this, 0.0);
@@ -428,6 +445,18 @@ public:
 
     vzoom_label = new Label (this, "0");
     grid.add_widget (vzoom_label, 40, 57, 10, 3);
+
+    /*---- midi_note ---- */
+    midi_note_combobox = new ComboBox (this);
+    connect (midi_note_combobox->signal_item_changed, this, &MainWindow::on_midi_note_changed);
+
+    for (int i = 127; i >= 0; i--)
+      midi_note_combobox->add_item (note_to_text (i));
+
+    grid.add_widget (new Label (this, "Midi Note"), 1, 60, 10, 3);
+    grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
+
+    instrument.load (test_sample);
 
     // show complete wave
     on_update_hzoom (0);
@@ -467,6 +496,24 @@ public:
     int idx = sample_combobox->current_index();
     if (idx >= 0)
       instrument.set_selected (idx);
+  }
+  void
+  on_midi_note_changed()
+  {
+    Sample *sample = instrument.sample (instrument.selected());
+
+    if (!sample)
+      return;
+    for (int i = 0; i < 128; i++)
+      {
+        if (midi_note_combobox->text() == note_to_text (i))
+          {
+            sample->midi_note = i;
+
+            // FIXME: model should notify here
+            on_samples_changed();
+          }
+      }
   }
 };
 

@@ -114,7 +114,7 @@ public:
     samples.clear();
 
     xml_document doc;
-    doc.load_file ("/tmp/x.sminst");
+    doc.load_file (filename.c_str());
     xml_node inst_node = doc.child ("instrument");
     for (xml_node sample_node : inst_node.children ("sample"))
       {
