@@ -26,8 +26,12 @@ class JackBackend
   double jack_mix_freq;
   jack_port_t *input_port;
   jack_port_t *output_port;
-public:
 
+  std::mutex decoder_mutex;
+  std::unique_ptr<LiveDecoder> decoder;
+  double decoder_factor = 0;
+  WavSet wav_set;
+public:
 
   static int
   jack_process (jack_nframes_t nframes, void *arg)
@@ -36,14 +40,47 @@ public:
     return instance->process (nframes);
   }
 
+  double
+  note_to_freq (int note)
+  {
+    return 440 * exp (log (2) * (note - 69) / 12.0);
+  }
   int
   process (jack_nframes_t nframes)
   {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
     float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
 
-    for (jack_nframes_t i = 0; i < nframes; i++)
-      audio_out[i] = g_random_double_range (-0.1, 0.1);
+    void* port_buf = jack_port_get_buffer (input_port, nframes);
+    jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
+    if (event_count)
+      for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
+      {
+        jack_midi_event_t    in_event;
+        jack_midi_event_get (&in_event, port_buf, event_index);
 
+        if (in_event.buffer[0] == 0x90)
+          {
+            const int note = in_event.buffer[1];
+            const double freq = note_to_freq (note);
+
+            if (decoder)
+              decoder->retrigger (0, freq, 127, 48000);
+            decoder_factor = 1;
+          }
+        if (in_event.buffer[0] == 0x80)
+          {
+            decoder_factor = 0;
+          }
+        //midi_synth->add_midi_event (in_event.time, in_event.buffer);
+      }
+
+    if (decoder)
+      {
+        decoder->process (nframes, nullptr, &audio_out[0]);
+        for (uint i = 0; i < nframes; i++)
+          audio_out[i] *= decoder_factor;
+      }
     return 0;
   }
 
@@ -61,6 +98,32 @@ public:
         fprintf (stderr, "cannot activate client");
         exit (1);
       }
+  }
+
+  void
+  switch_to_sample (const Sample *sample)
+  {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
+
+    wav_set.clear();
+
+    WavSetWave new_wave;
+    new_wave.midi_note = sample->midi_note();
+    // new_wave.path = "..";
+    new_wave.channel = 0;
+    new_wave.velocity_range_min = 0;
+    new_wave.velocity_range_max = 127;
+
+    Audio audio;
+    audio.mix_freq = sample->wav_data.mix_freq();
+    audio.fundamental_freq = note_to_freq (sample->midi_note()); /* doesn't matter */
+    audio.original_samples = sample->wav_data.samples();
+    new_wave.audio = audio.clone();
+
+    wav_set.waves.push_back (new_wave);
+
+    decoder.reset (new LiveDecoder (&wav_set));
+    decoder->enable_original_samples (true);
   }
 };
 
@@ -378,11 +441,16 @@ class MainWindow : public Window
       {
         midi_note_combobox->set_text (note_to_text (sample->midi_note()));
       }
+    if (sample)
+      {
+        jack_backend->switch_to_sample (sample);
+      }
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
   Label *vzoom_label;
+  JackBackend *jack_backend;
 public:
   void
   on_add_sample_clicked()
@@ -391,8 +459,9 @@ public:
       load_sample (filename);
     });
   }
-  MainWindow (const string& test_sample) :
-    Window ("SpectMorph - Instrument Editor", win_width, win_height)
+  MainWindow (const string& test_sample, JackBackend *jack_backend) :
+    Window ("SpectMorph - Instrument Editor", win_width, win_height),
+    jack_backend (jack_backend)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &MainWindow::on_samples_changed);
@@ -531,7 +600,7 @@ main (int argc, char **argv)
   bool quit = false;
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
-  MainWindow window (fn);
+  MainWindow window (fn, &jack_backend);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
