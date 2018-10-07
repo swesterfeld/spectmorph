@@ -21,6 +21,13 @@ using std::map;
 using pugi::xml_document;
 using pugi::xml_node;
 
+enum class PlayMode
+{
+  SAMPLE,
+  SPECTMORPH,
+  REFERENCE
+};
+
 class JackBackend
 {
   double jack_mix_freq;
@@ -81,6 +88,11 @@ public:
         for (uint i = 0; i < nframes; i++)
           audio_out[i] *= decoder_factor;
       }
+    else
+      {
+        for (uint i = 0; i < nframes; i++)
+          audio_out[i] = 0;
+      }
     return 0;
   }
 
@@ -101,29 +113,45 @@ public:
   }
 
   void
-  switch_to_sample (const Sample *sample)
+  switch_to_sample (const Sample *sample, PlayMode play_mode)
   {
     std::lock_guard<std::mutex> lg (decoder_mutex);
 
-    wav_set.clear();
+    if (play_mode == PlayMode::SAMPLE)
+      {
+        wav_set.clear();
 
-    WavSetWave new_wave;
-    new_wave.midi_note = sample->midi_note();
-    // new_wave.path = "..";
-    new_wave.channel = 0;
-    new_wave.velocity_range_min = 0;
-    new_wave.velocity_range_max = 127;
+        WavSetWave new_wave;
+        new_wave.midi_note = sample->midi_note();
+        // new_wave.path = "..";
+        new_wave.channel = 0;
+        new_wave.velocity_range_min = 0;
+        new_wave.velocity_range_max = 127;
 
-    Audio audio;
-    audio.mix_freq = sample->wav_data.mix_freq();
-    audio.fundamental_freq = note_to_freq (sample->midi_note()); /* doesn't matter */
-    audio.original_samples = sample->wav_data.samples();
-    new_wave.audio = audio.clone();
+        Audio audio;
+        audio.mix_freq = sample->wav_data.mix_freq();
+        audio.fundamental_freq = note_to_freq (sample->midi_note());
+        audio.original_samples = sample->wav_data.samples();
+        new_wave.audio = audio.clone();
 
-    wav_set.waves.push_back (new_wave);
+        wav_set.waves.push_back (new_wave);
 
-    decoder.reset (new LiveDecoder (&wav_set));
-    decoder->enable_original_samples (true);
+        decoder.reset (new LiveDecoder (&wav_set));
+        decoder->enable_original_samples (true);
+      }
+    else if (play_mode == PlayMode::REFERENCE)
+      {
+        Index index;
+        index.load_file ("instruments:standard");
+
+        string smset_dir = index.smset_dir();
+
+        decoder.reset (new LiveDecoder (WavSetRepo::the()->get (smset_dir + "/synth-saw.smset")));
+      }
+    else
+      {
+        decoder.reset (nullptr); // not yet implemented
+      }
   }
 };
 
@@ -443,7 +471,7 @@ class MainWindow : public Window
       }
     if (sample)
       {
-        jack_backend->switch_to_sample (sample);
+        jack_backend->switch_to_sample (sample, play_mode);
       }
   }
   ComboBox *sample_combobox;
@@ -451,6 +479,8 @@ class MainWindow : public Window
   Label *hzoom_label;
   Label *vzoom_label;
   JackBackend *jack_backend;
+  PlayMode play_mode = PlayMode::SAMPLE;
+  ComboBox *play_mode_combobox;
 public:
   void
   on_add_sample_clicked()
@@ -525,6 +555,16 @@ public:
     grid.add_widget (new Label (this, "Midi Note"), 1, 60, 10, 3);
     grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
 
+    /*--- play mode ---*/
+    play_mode_combobox = new ComboBox (this);
+    connect (play_mode_combobox->signal_item_changed, this, &MainWindow::on_play_mode_changed);
+    grid.add_widget (new Label (this, "Play Mode"), 60, 54, 10, 3);
+    grid.add_widget (play_mode_combobox, 68, 54, 20, 3);
+    play_mode_combobox->add_item ("Original Sample");
+    play_mode_combobox->set_text ("Original Sample"); // default
+    play_mode_combobox->add_item ("SpectMorph Instrument");
+    play_mode_combobox->add_item ("Reference Instrument");
+
     instrument.load (test_sample);
 
     // show complete wave
@@ -579,6 +619,19 @@ public:
           {
             sample->set_midi_note (i);
           }
+      }
+  }
+  void
+  on_play_mode_changed()
+  {
+    int idx = play_mode_combobox->current_index();
+    if (idx >= 0)
+      {
+        play_mode = static_cast <PlayMode> (idx);
+
+        // this may do a little more than we need, but it updates play_mode
+        // in the backend
+        on_samples_changed();
       }
   }
 };
