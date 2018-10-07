@@ -282,6 +282,24 @@ fi
 AM_CONDITIONAL([COND_WITH_QT], [test "x$with_qt" != "xno"])
 dnl -------------------------------------------------------------------------
 
+dnl allow setting location of the instruments tarball (default in data/ dir)
+AC_ARG_WITH([instruments], [AS_HELP_STRING([--with-instruments=FILE], [use custom instruments tarball])],,with_instruments=no)
+
+if test "x$with_instruments" != "xno"; then
+  # translate relative path to absolute path
+  with_instruments_dir=`dirname $with_instruments`
+  with_instruments_file=`basename $with_instruments`
+
+  INSTRUMENTS_ARCHIVE=`cd $with_instruments_dir && echo $PWD`/$with_instruments_file
+  if test ! -f $INSTRUMENTS_ARCHIVE; then
+    AC_MSG_ERROR([invalid instrument tarball path: $with_instruments])
+  fi
+else
+  INSTRUMENTS_ARCHIVE=`cd $srcdir && echo $PWD`/data/spectmorph-instruments-$VERSION.tar.xz
+fi
+AC_SUBST(INSTRUMENTS_ARCHIVE)
+dnl -------------------------------------------------------------------------
+
 dnl detect host os
 AC_CANONICAL_HOST
 
@@ -395,7 +413,13 @@ echo "--------------------------------------------------------------------------
 echo "  LV2 plug-in support  . .: $with_lv2"
 echo "  JACK support   . . . . .: $with_jack"
 echo "  Qt5 available  . . . . .: $with_qt"
+
+if test "x$with_instruments" != "xno"; then
+  echo "  Instruments  . . . . . .: $INSTRUMENTS_ARCHIVE"
+fi
+
 echo "  Install prefix . . . . .: $prefix"
+
 if test "x$with_beast" = "xyes"; then
   echo
   echo "  * building against libbse (this is a developer only option, not recommended)"

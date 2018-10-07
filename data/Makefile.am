@@ -14,9 +14,6 @@ sharedpixmaps_DATA = smjack.png
 
 EXTRA_DIST += $(sharedpixmaps_DATA)
 
-# instruments: distribute / install if available, ignore otherwise
-INSTRUMENTS_ARCHIVE = $(srcdir)/spectmorph-instruments-$(VERSION).tar.xz
-
 dist-hook:
 	if test -f $(INSTRUMENTS_ARCHIVE); then \
 	  cp $(INSTRUMENTS_ARCHIVE) $(distdir); \
