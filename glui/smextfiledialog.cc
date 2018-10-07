@@ -23,11 +23,15 @@ class ExtFileDialog : public NativeFileDialog
   string selected_filename;
   bool   selected_filename_ok = false;
 
+  static string last_start_directory;
+
 public:
   ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter);
 
   void process_events();
 };
+
+string ExtFileDialog::last_start_directory;
 
 }
 
@@ -41,6 +45,9 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
 {
   GError *err;
 
+  if (last_start_directory == "")
+    last_start_directory = g_get_home_dir();
+
 #if 0
   string filter_spec = filter + "|" + filter_title;
   string attach = string_printf ("%ld", win_id);
@@ -50,7 +57,8 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
 #endif
   string attach = string_printf ("%ld", win_id);
 
-  vector<const char *> argv = { CONFIGURE_INSTALLPATH_BINDIR "/smfiledialog", open ? "open" : "save", g_get_home_dir(), filter.c_str(), filter_title.c_str(), title.c_str(), attach.c_str(), nullptr };
+  vector<const char *> argv = { CONFIGURE_INSTALLPATH_BINDIR "/smfiledialog", open ? "open" : "save",
+                                last_start_directory.c_str(), filter.c_str(), filter_title.c_str(), title.c_str(), attach.c_str(), nullptr };
 
   if (!g_spawn_async_with_pipes (NULL, /* working directory = current dir */
                                  (char **) &argv[0],
@@ -103,7 +111,13 @@ ExtFileDialog::process_events()
               waitpid (child_pid, &status, WNOHANG);
 
               if (selected_filename_ok)
-                signal_file_selected (selected_filename);
+                {
+                  char *dir_name = g_path_get_dirname (selected_filename.c_str());
+                  last_start_directory = dir_name;
+                  g_free (dir_name);
+
+                  signal_file_selected (selected_filename);
+                }
               else
                 signal_file_selected ("");
 
