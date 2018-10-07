@@ -148,6 +148,27 @@ public:
 
         decoder.reset (new LiveDecoder (WavSetRepo::the()->get (smset_dir + "/synth-saw.smset")));
       }
+    else if (play_mode == PlayMode::SPECTMORPH)
+      {
+        string cmd = string_printf ("smenccache '%s' /tmp/x.sm -m %d -O1 -s", sample->filename.c_str(), sample->midi_note());
+        printf ("# %s\n", cmd.c_str());
+        system (cmd.c_str());
+
+        wav_set.clear();
+
+        WavSetWave new_wave;
+        new_wave.midi_note = sample->midi_note();
+        new_wave.path = "/tmp/x.sm";
+        new_wave.channel = 0;
+        new_wave.velocity_range_min = 0;
+        new_wave.velocity_range_max = 127;
+
+        wav_set.waves.push_back (new_wave);
+        wav_set.save ("/tmp/x.smset", true); // link wavset
+
+        wav_set.load ("/tmp/x.smset");
+        decoder.reset (new LiveDecoder (&wav_set));
+      }
     else
       {
         decoder.reset (nullptr); // not yet implemented
@@ -461,6 +482,7 @@ class MainWindow : public Window
     sample_widget->set_sample (sample);
     midi_note_combobox->set_enabled (sample != nullptr);
     sample_combobox->set_enabled (sample != nullptr);
+    play_mode_combobox->set_enabled (sample != nullptr);
     if (!sample)
       {
         midi_note_combobox->set_text ("");
