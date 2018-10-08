@@ -32,13 +32,9 @@ public:
     instrument (inst)
   {
   }
-  void
-  set_marker (MarkerType marker_type, double value)
-  {
-    marker_map[marker_type] = value;
-  }
+  void set_marker (MarkerType marker_type, double value);
   double
-  get_marker (MarkerType marker_type)
+  get_marker (MarkerType marker_type) const
   {
     auto it = marker_map.find (marker_type);
     if (it != marker_map.end())
@@ -202,7 +198,13 @@ public:
 
     signal_samples_changed();
   }
+  void
+  marker_changed()
+  {
+    signal_marker_changed();
+  }
   Signal<> signal_samples_changed;
+  Signal<> signal_marker_changed;
 };
 
 void
@@ -211,6 +213,13 @@ Sample::set_midi_note (int note)
   m_midi_note = note;
 
   instrument->update_order();
+}
+
+void
+Sample::set_marker (MarkerType marker_type, double value)
+{
+  marker_map[marker_type] = value;
+  instrument->marker_changed();
 }
 
 }

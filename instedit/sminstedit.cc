@@ -155,7 +155,6 @@ public:
         system (cmd.c_str());
 
         wav_set.clear();
-
         WavSetWave new_wave;
         new_wave.midi_note = sample->midi_note();
         new_wave.path = "/tmp/x.sm";
@@ -167,12 +166,44 @@ public:
         wav_set.save ("/tmp/x.smset", true); // link wavset
 
         wav_set.load ("/tmp/x.smset");
+
+        update_markers (sample);
+
         decoder.reset (new LiveDecoder (&wav_set));
       }
     else
       {
         decoder.reset (nullptr); // not yet implemented
       }
+  }
+  void
+  on_marker_changed (const Sample *sample, PlayMode play_mode)
+  {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
+
+    if (play_mode == PlayMode::SPECTMORPH)
+      update_markers (sample);
+  }
+  void
+  update_markers (const Sample *sample)
+  {
+    assert (wav_set.waves.size() == 1);
+
+    float loop_start = sample->get_marker (MARKER_LOOP_START);
+    float loop_end = sample->get_marker (MARKER_LOOP_END);
+
+    // FIXME! account for zero_padding at start of sample
+    wav_set.waves[0].audio->loop_start = loop_start / wav_set.waves[0].audio->frame_step_ms;
+    wav_set.waves[0].audio->loop_end = loop_end / wav_set.waves[0].audio->frame_step_ms;
+    wav_set.waves[0].audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+
+    string lt_string;
+    bool have_loop_type = Audio::loop_type_to_string (wav_set.waves[0].audio->loop_type, lt_string);
+    if (have_loop_type)
+      printf ("loop-type  = %s\n", lt_string.c_str());
+
+    printf ("loop-start = %d\n", wav_set.waves[0].audio->loop_start);
+    printf ("loop-end   = %d\n", wav_set.waves[0].audio->loop_end);
   }
 };
 
@@ -496,6 +527,14 @@ class MainWindow : public Window
         jack_backend->switch_to_sample (sample, play_mode);
       }
   }
+  void
+  on_marker_changed()
+  {
+    Sample *sample = instrument.sample (instrument.selected());
+
+    if (sample)
+      jack_backend->on_marker_changed (sample, play_mode);
+  }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
@@ -517,6 +556,7 @@ public:
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &MainWindow::on_samples_changed);
+    connect (instrument.signal_marker_changed, this, &MainWindow::on_marker_changed);
 
     FixedGrid grid;
 
