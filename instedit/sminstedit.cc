@@ -340,15 +340,25 @@ public:
       }
 
     /* lighten loop region */
-    cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
-    cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.25);
-    cairo_fill (cr);
+    if (m_sample->loop() == Sample::Loop::FORWARD || m_sample->loop() == Sample::Loop::PING_PONG)
+      {
+        cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
+        cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.25);
+        cairo_fill (cr);
+      }
 
     /* darken widget before and after clip region */
     cairo_rectangle (cr, 0, 0, clip_start_x, height);
     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
     cairo_fill (cr);
-    cairo_rectangle (cr, clip_end_x, 0, width - clip_end_x, height);
+
+    double effective_end_x = clip_end_x;
+    if (m_sample->loop() == Sample::Loop::FORWARD || m_sample->loop() == Sample::Loop::PING_PONG)
+      effective_end_x = loop_end_x;
+    if (m_sample->loop() == Sample::Loop::SINGLE_FRAME)
+      effective_end_x = loop_start_x;
+
+    cairo_rectangle (cr, effective_end_x, 0, width - effective_end_x, height);
     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
     cairo_fill (cr);
 
@@ -367,11 +377,22 @@ public:
         Color color;
         if (m == MARKER_LOOP_START)
           {
-            rect = Rect (marker_x, 0, 10, 10);
+            double c = 0;
+
+            if (m_sample->loop() == Sample::Loop::NONE)
+              continue;
+            if (m_sample->loop() == Sample::Loop::SINGLE_FRAME) // center rect for single frame loop
+              c = 5;
+
+            rect = Rect (marker_x - c, 0, 10, 10);
             color = Color (0.7, 0.7, 1);
+
           }
         else if (m == MARKER_LOOP_END)
           {
+            if (m_sample->loop() == Sample::Loop::NONE || m_sample->loop() == Sample::Loop::SINGLE_FRAME)
+              continue;
+
             rect = Rect (marker_x - 10, 0, 10, 10);
             color = Color (0.7, 0.7, 1);
           }
@@ -382,6 +403,9 @@ public:
           }
         else if (m == MARKER_CLIP_END)
           {
+            if (m_sample->loop() != Sample::Loop::NONE)
+              continue;
+
             rect = Rect (marker_x - 10, height - 10, 10, 10);
             color = Color (0.4, 0.4, 1);
           }
@@ -497,6 +521,11 @@ public:
     vzoom = factor;
     update();
   }
+  void
+  update_markers()
+  {
+    update();
+  }
 };
 
 class MainWindow : public Window
@@ -563,7 +592,10 @@ class MainWindow : public Window
     Sample *sample = instrument.sample (instrument.selected());
 
     if (sample)
-      jack_backend->on_marker_changed (sample, play_mode);
+      {
+        sample_widget->update_markers();
+        jack_backend->on_marker_changed (sample, play_mode);
+      }
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
