@@ -21,11 +21,16 @@ class Instrument;
 
 class Sample
 {
+public:
+  enum class Loop { NONE, FORWARD, PING_PONG, SINGLE_FRAME };
+
+private:
   SPECTMORPH_CLASS_NON_COPYABLE (Sample);
 
   std::map<MarkerType, double> marker_map;
   int m_midi_note = 69;
   Instrument *instrument = nullptr;
+  Loop m_loop = Loop::NONE;
 
 public:
   Sample (Instrument *inst) :
@@ -47,6 +52,12 @@ public:
     return m_midi_note;
   }
   void set_midi_note (int note);
+  Loop
+  loop () const
+  {
+    return m_loop;
+  }
+  void set_loop (Loop loop);
   std::string filename;
   WavData     wav_data;
 };
@@ -146,6 +157,14 @@ public:
             xml_node loop_node = sample_node.child ("loop");
             if (loop_node)
               {
+                std::string loop_type = loop_node.attribute ("type").value();
+                if (loop_type == "forward")
+                  sample->set_loop (Sample::Loop::FORWARD);
+                if (loop_type == "ping-pong")
+                  sample->set_loop (Sample::Loop::PING_PONG);
+                if (loop_type == "single-frame")
+                  sample->set_loop (Sample::Loop::SINGLE_FRAME);
+
                 sample->set_marker (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
                 sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
               }
@@ -173,9 +192,22 @@ public:
         clip_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_START)).c_str();
         clip_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_END)).c_str();
 
-        xml_node loop_node = sample_node.append_child ("loop");
-        loop_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_START)).c_str();
-        loop_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_END)).c_str();
+        if (sample->loop() != Sample::Loop::NONE)
+          {
+            std::string loop_type;
+
+            if (sample->loop() == Sample::Loop::FORWARD)
+              loop_type = "forward";
+            if (sample->loop() == Sample::Loop::PING_PONG)
+              loop_type = "ping-pong";
+            if (sample->loop() == Sample::Loop::SINGLE_FRAME)
+              loop_type = "single-frame";
+
+            xml_node loop_node = sample_node.append_child ("loop");
+            loop_node.append_attribute ("type") = loop_type.c_str();
+            loop_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_START)).c_str();
+            loop_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_END)).c_str();
+          }
       }
     doc.save_file (filename.c_str());
   }
@@ -222,6 +254,12 @@ Sample::set_marker (MarkerType marker_type, double value)
   instrument->marker_changed();
 }
 
+void
+Sample::set_loop (Loop loop)
+{
+  m_loop = loop;
+  instrument->marker_changed();
+}
 }
 
 #endif

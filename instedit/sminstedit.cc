@@ -189,21 +189,48 @@ public:
   {
     assert (wav_set.waves.size() == 1);
 
-    float loop_start = sample->get_marker (MARKER_LOOP_START);
-    float loop_end = sample->get_marker (MARKER_LOOP_END);
+    float loop_start_ms = sample->get_marker (MARKER_LOOP_START);
+    float loop_end_ms = sample->get_marker (MARKER_LOOP_END);
 
     // FIXME! account for zero_padding at start of sample
-    wav_set.waves[0].audio->loop_start = loop_start / wav_set.waves[0].audio->frame_step_ms;
-    wav_set.waves[0].audio->loop_end = loop_end / wav_set.waves[0].audio->frame_step_ms;
-    wav_set.waves[0].audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+    const int loop_start = loop_start_ms / wav_set.waves[0].audio->frame_step_ms;
+    const int loop_end   = loop_end_ms / wav_set.waves[0].audio->frame_step_ms;
+    Audio *audio = wav_set.waves[0].audio;
+
+    if (sample->loop() == Sample::Loop::NONE)
+      {
+        audio->loop_type = Audio::LOOP_NONE;
+        audio->loop_start = 0;
+        audio->loop_end = 0;
+      }
+    else if (sample->loop() == Sample::Loop::FORWARD)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+        audio->loop_start = loop_start;
+        audio->loop_end = loop_end;
+      }
+    else if (sample->loop() == Sample::Loop::PING_PONG)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
+        audio->loop_start = loop_start;
+        audio->loop_end = loop_end;
+      }
+    else if (sample->loop() == Sample::Loop::SINGLE_FRAME)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+
+        // single frame loop
+        audio->loop_start = loop_start;
+        audio->loop_end   = loop_start;
+      }
 
     string lt_string;
-    bool have_loop_type = Audio::loop_type_to_string (wav_set.waves[0].audio->loop_type, lt_string);
+    bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
     if (have_loop_type)
       printf ("loop-type  = %s\n", lt_string.c_str());
 
-    printf ("loop-start = %d\n", wav_set.waves[0].audio->loop_start);
-    printf ("loop-end   = %d\n", wav_set.waves[0].audio->loop_end);
+    printf ("loop-start = %d\n", audio->loop_start);
+    printf ("loop-end   = %d\n", audio->loop_end);
   }
 };
 
@@ -514,13 +541,16 @@ class MainWindow : public Window
     midi_note_combobox->set_enabled (sample != nullptr);
     sample_combobox->set_enabled (sample != nullptr);
     play_mode_combobox->set_enabled (sample != nullptr);
+    loop_combobox->set_enabled (sample != nullptr);
     if (!sample)
       {
         midi_note_combobox->set_text ("");
+        loop_combobox->set_text ("");
       }
     else
       {
         midi_note_combobox->set_text (note_to_text (sample->midi_note()));
+        loop_combobox->set_text (loop_to_text (sample->loop()));
       }
     if (sample)
       {
@@ -542,6 +572,33 @@ class MainWindow : public Window
   JackBackend *jack_backend;
   PlayMode play_mode = PlayMode::SAMPLE;
   ComboBox *play_mode_combobox;
+  ComboBox *loop_combobox;
+
+  Sample::Loop
+  text_to_loop (const std::string& text)
+  {
+    for (int i = 0; ; i++)
+      {
+        string txt = loop_to_text (Sample::Loop (i));
+
+        if (txt == text)
+          return Sample::Loop (i);
+        if (txt == "")
+          return Sample::Loop (0);
+      }
+  }
+  string
+  loop_to_text (const Sample::Loop loop)
+  {
+    switch (loop)
+      {
+        case Sample::Loop::NONE:        return "None";
+        case Sample::Loop::FORWARD:     return "Forward";
+        case Sample::Loop::PING_PONG:   return "Ping Pong";
+        case Sample::Loop::SINGLE_FRAME:return "Single Frame";
+      }
+    return ""; /* not found */
+  }
 public:
   void
   on_add_sample_clicked()
@@ -616,6 +673,20 @@ public:
 
     grid.add_widget (new Label (this, "Midi Note"), 1, 60, 10, 3);
     grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
+
+    /*---- loop mode ----*/
+
+    loop_combobox = new ComboBox (this);
+    connect (loop_combobox->signal_item_changed, this, &MainWindow::on_loop_changed);
+
+    loop_combobox->add_item (loop_to_text (Sample::Loop::NONE));
+    loop_combobox->set_text (loop_to_text (Sample::Loop::NONE));
+    loop_combobox->add_item (loop_to_text (Sample::Loop::FORWARD));
+    loop_combobox->add_item (loop_to_text (Sample::Loop::PING_PONG));
+    loop_combobox->add_item (loop_to_text (Sample::Loop::SINGLE_FRAME));
+
+    grid.add_widget (new Label (this, "Loop"), 1, 63, 10, 3);
+    grid.add_widget (loop_combobox, 8, 63, 20, 3);
 
     /*--- play mode ---*/
     play_mode_combobox = new ComboBox (this);
@@ -695,6 +766,13 @@ public:
         // in the backend
         on_samples_changed();
       }
+  }
+  void
+  on_loop_changed()
+  {
+    Sample *sample = instrument.sample (instrument.selected());
+
+    sample->set_loop (text_to_loop (loop_combobox->text()));
   }
 };
 
