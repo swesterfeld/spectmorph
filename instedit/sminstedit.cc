@@ -4,6 +4,7 @@
 #include "spectmorphglui.hh"
 #include "smpugixml.hh"
 #include "sminstrument.hh"
+#include <thread>
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -27,6 +28,45 @@ enum class PlayMode
   SPECTMORPH,
   REFERENCE
 };
+
+class WavSetCreator
+{
+  WavData wav_data;
+  WavSet  wav_set;
+  int     midi_note;
+public:
+  WavSetCreator (const Sample *sample, WavData& wav_data) :
+    wav_data (wav_data)
+  {
+    midi_note = sample->midi_note();
+  }
+  void
+  run()
+  {
+    printf ("+++run()+++\n");
+    wav_data.save ("/tmp/x.wav");
+    string cmd = string_printf ("smenccache /tmp/x.wav /tmp/x.sm -m %d -O1 -s", midi_note);
+    printf ("# %s\n", cmd.c_str());
+    system (cmd.c_str());
+
+    WavSetWave new_wave;
+    new_wave.midi_note = midi_note;
+    new_wave.path = "/tmp/x.sm";
+    new_wave.channel = 0;
+    new_wave.velocity_range_min = 0;
+    new_wave.velocity_range_max = 127;
+
+    wav_set.waves.push_back (new_wave);
+    wav_set.save ("/tmp/x.smset", true); // link wavset
+    printf ("---run()---\n");
+  }
+  string
+  filename()
+  {
+    return "/tmp/x.smset";
+  }
+};
+
 
 class JackBackend
 {
@@ -150,30 +190,79 @@ public:
       }
     else if (play_mode == PlayMode::SPECTMORPH)
       {
-        string cmd = string_printf ("smenccache '%s' /tmp/x.sm -m %d -O1 -s", sample->filename.c_str(), sample->midi_note());
-        printf ("# %s\n", cmd.c_str());
-        system (cmd.c_str());
+        assert (sample->wav_data.n_channels() == 1);
 
-        wav_set.clear();
-        WavSetWave new_wave;
-        new_wave.midi_note = sample->midi_note();
-        new_wave.path = "/tmp/x.sm";
-        new_wave.channel = 0;
-        new_wave.velocity_range_min = 0;
-        new_wave.velocity_range_max = 127;
+        vector<float> samples = sample->wav_data.samples();
+        vector<float> clipped_samples;
+        for (size_t i = 0; i < samples.size(); i++)
+          {
+            double pos_ms = i * (1000.0 / sample->wav_data.mix_freq());
+            if (pos_ms >= sample->get_marker (MARKER_CLIP_START))
+              {
+                /* if we have a loop, the loop end determines the real end of the recording */
+                if (sample->loop() != Sample::Loop::NONE || pos_ms <= sample->get_marker (MARKER_CLIP_END))
+                  clipped_samples.push_back (samples[i]);
+              }
+          }
 
-        wav_set.waves.push_back (new_wave);
-        wav_set.save ("/tmp/x.smset", true); // link wavset
+        WavData wd_clipped;
+        wd_clipped.load (clipped_samples, 1, sample->wav_data.mix_freq());
 
-        wav_set.load ("/tmp/x.smset");
+        WavSetCreator *wcreator = new WavSetCreator (sample, wd_clipped);
 
-        update_markers (sample);
-
-        decoder.reset (new LiveDecoder (&wav_set));
+        add_creator (wcreator);
       }
     else
       {
         decoder.reset (nullptr); // not yet implemented
+      }
+  }
+  WavSetCreator *current_creator = nullptr;
+  WavSetCreator *next_creator = nullptr;
+  void
+  add_creator (WavSetCreator *creator)
+  {
+    if (current_creator)
+      {
+        if (next_creator) /* kill and overwrite obsolete next creator */
+          delete next_creator;
+
+        next_creator = creator;
+      }
+    else
+      {
+        start_as_current (creator);
+      }
+  }
+  void
+  start_as_current (WavSetCreator *creator)
+  {
+    current_creator = creator;
+    new std::thread ([this] () {
+      current_creator->run();
+
+      finish_current_creator();
+    });
+  }
+  void
+  finish_current_creator()
+  {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
+
+    wav_set.load (current_creator->filename());
+    // FIXME: update_markers (sample);
+
+    decoder.reset (new LiveDecoder (&wav_set));
+
+    delete current_creator;
+    current_creator = nullptr;
+
+    if (next_creator)
+      {
+        WavSetCreator *creator = next_creator;
+
+        next_creator = nullptr;
+        start_as_current (creator);
       }
   }
   void
@@ -594,7 +683,7 @@ class MainWindow : public Window
     if (sample)
       {
         sample_widget->update_markers();
-        jack_backend->on_marker_changed (sample, play_mode);
+        jack_backend->switch_to_sample (sample, play_mode);
       }
   }
   ComboBox *sample_combobox;
