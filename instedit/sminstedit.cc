@@ -324,6 +324,13 @@ public:
         start_as_current (creator);
       }
   }
+  bool
+  have_creator()
+  {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
+
+    return current_creator != nullptr;
+  }
 };
 
 // morph plan window size
@@ -697,6 +704,7 @@ class MainWindow : public Window
   PlayMode play_mode = PlayMode::SAMPLE;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
+  Led *led;
 
   Sample::Loop
   text_to_loop (const std::string& text)
@@ -822,6 +830,11 @@ public:
     play_mode_combobox->add_item ("SpectMorph Instrument");
     play_mode_combobox->add_item ("Reference Instrument");
 
+    /*--- led ---*/
+    led = new Led (this, false);
+    grid.add_widget (new Label (this, "Analyzing"), 70, 64, 10, 3);
+    grid.add_widget (led, 77, 64.5, 2, 2);
+
     instrument.load (test_sample);
 
     // show complete wave
@@ -898,6 +911,11 @@ public:
 
     sample->set_loop (text_to_loop (loop_combobox->text()));
   }
+  void
+  update_led()
+  {
+    led->set_on (jack_backend->have_creator());
+  }
 };
 
 int
@@ -924,8 +942,9 @@ main (int argc, char **argv)
 
   while (!quit)
     {
-      window.wait_for_event();
+      window.wait_event_fps();
       window.process_events();
+      window.update_led();
     }
   jack_deactivate (client);
 }
