@@ -34,16 +34,71 @@ class WavSetCreator
   WavData wav_data;
   WavSet  wav_set;
   int     midi_note;
+  double  loop_start_ms;
+  double  loop_end_ms;
+  Sample::Loop loop;
+
+  void
+  apply_loop_settings()
+  {
+    wav_set.load ("/tmp/x.smset");
+
+    assert (wav_set.waves.size() == 1);
+
+    // FIXME! account for zero_padding at start of sample
+    const int loop_start = loop_start_ms / wav_set.waves[0].audio->frame_step_ms;
+    const int loop_end   = loop_end_ms / wav_set.waves[0].audio->frame_step_ms;
+    Audio *audio = wav_set.waves[0].audio;
+
+    if (loop == Sample::Loop::NONE)
+      {
+        audio->loop_type = Audio::LOOP_NONE;
+        audio->loop_start = 0;
+        audio->loop_end = 0;
+      }
+    else if (loop == Sample::Loop::FORWARD)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+        audio->loop_start = loop_start;
+        audio->loop_end = loop_end;
+      }
+    else if (loop == Sample::Loop::PING_PONG)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
+        audio->loop_start = loop_start;
+        audio->loop_end = loop_end;
+      }
+    else if (loop == Sample::Loop::SINGLE_FRAME)
+      {
+        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+
+        // single frame loop
+        audio->loop_start = loop_start;
+        audio->loop_end   = loop_start;
+      }
+
+    string lt_string;
+    bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
+    if (have_loop_type)
+      printf ("loop-type  = %s\n", lt_string.c_str());
+
+    printf ("loop-start = %d\n", audio->loop_start);
+    printf ("loop-end   = %d\n", audio->loop_end);
+
+    wav_set.save ("/tmp/x.smset");
+  }
 public:
   WavSetCreator (const Sample *sample, WavData& wav_data) :
     wav_data (wav_data)
   {
     midi_note = sample->midi_note();
+    loop = sample->loop();
+    loop_start_ms = sample->get_marker (MARKER_LOOP_START);
+    loop_end_ms = sample->get_marker (MARKER_LOOP_END);
   }
   void
   run()
   {
-    printf ("+++run()+++\n");
     wav_data.save ("/tmp/x.wav");
     string cmd = string_printf ("smenccache /tmp/x.wav /tmp/x.sm -m %d -O1 -s", midi_note);
     printf ("# %s\n", cmd.c_str());
@@ -58,7 +113,8 @@ public:
 
     wav_set.waves.push_back (new_wave);
     wav_set.save ("/tmp/x.smset", true); // link wavset
-    printf ("---run()---\n");
+
+    apply_loop_settings();
   }
   string
   filename()
@@ -264,62 +320,6 @@ public:
         next_creator = nullptr;
         start_as_current (creator);
       }
-  }
-  void
-  on_marker_changed (const Sample *sample, PlayMode play_mode)
-  {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
-
-    if (play_mode == PlayMode::SPECTMORPH)
-      update_markers (sample);
-  }
-  void
-  update_markers (const Sample *sample)
-  {
-    assert (wav_set.waves.size() == 1);
-
-    float loop_start_ms = sample->get_marker (MARKER_LOOP_START);
-    float loop_end_ms = sample->get_marker (MARKER_LOOP_END);
-
-    // FIXME! account for zero_padding at start of sample
-    const int loop_start = loop_start_ms / wav_set.waves[0].audio->frame_step_ms;
-    const int loop_end   = loop_end_ms / wav_set.waves[0].audio->frame_step_ms;
-    Audio *audio = wav_set.waves[0].audio;
-
-    if (sample->loop() == Sample::Loop::NONE)
-      {
-        audio->loop_type = Audio::LOOP_NONE;
-        audio->loop_start = 0;
-        audio->loop_end = 0;
-      }
-    else if (sample->loop() == Sample::Loop::FORWARD)
-      {
-        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
-        audio->loop_start = loop_start;
-        audio->loop_end = loop_end;
-      }
-    else if (sample->loop() == Sample::Loop::PING_PONG)
-      {
-        audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
-        audio->loop_start = loop_start;
-        audio->loop_end = loop_end;
-      }
-    else if (sample->loop() == Sample::Loop::SINGLE_FRAME)
-      {
-        audio->loop_type = Audio::LOOP_FRAME_FORWARD;
-
-        // single frame loop
-        audio->loop_start = loop_start;
-        audio->loop_end   = loop_start;
-      }
-
-    string lt_string;
-    bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
-    if (have_loop_type)
-      printf ("loop-type  = %s\n", lt_string.c_str());
-
-    printf ("loop-start = %d\n", audio->loop_start);
-    printf ("loop-end   = %d\n", audio->loop_end);
   }
 };
 
