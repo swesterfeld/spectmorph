@@ -92,9 +92,12 @@ public:
     wav_data (wav_data)
   {
     midi_note = sample->midi_note();
+
+    const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
+
     loop = sample->loop();
-    loop_start_ms = sample->get_marker (MARKER_LOOP_START);
-    loop_end_ms = sample->get_marker (MARKER_LOOP_END);
+    loop_start_ms = sample->get_marker (MARKER_LOOP_START) - clip_adjust;
+    loop_end_ms = sample->get_marker (MARKER_LOOP_END) - clip_adjust;
   }
   void
   run()
