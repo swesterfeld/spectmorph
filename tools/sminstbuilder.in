@@ -438,6 +438,26 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 def audio_len_ms (filename):
   return float (subprocess.check_output (["soxi", "-D", filename])) * 1000.0
 
+
+def parse_markers (filename):
+  markers=dict()
+  try:
+    f = open (filename)
+    for line in f:
+      (set_m, marker, note, time) = line.split()
+      note = int (note)
+      if (set_m != "set-marker"):
+        die ("unknown marker command %s" % set_m)
+      if marker == "clip-start" or marker == "clip-end":
+        if note not in markers.keys():
+          markers[note] = dict()
+        markers[note][marker] = float (time)
+      else:
+        print "unsupported marker '%s'" % marker
+  except:
+    die ("file '%s' missing" % filename)
+  return markers
+
 def export_instrument (inst_dir, builder_config, cmdline_args):
   old_path = os.getcwd()
   try:
@@ -447,13 +467,27 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
 
   config = parse_config ("config", builder_config)
 
+  if os.path.isfile ("clip_markers"):
+    clip_markers = parse_markers ("clip_markers")
+  else:
+    clip_markers = dict()
+
   instrument_node = ET.Element ("instrument")
   for sample in config.samples:
     filename = sample[1]
-    sample_node = ET.SubElement (instrument_node, "sample", filename=filename, midi_note=sample[0])
+    midi_note = int (sample[0])
+    sample_node = ET.SubElement (instrument_node, "sample", filename=filename, midi_note="%d" % midi_note)
 
     clip_start_ms = 0
     clip_end_ms = audio_len_ms (filename)
+    try:
+      clip_start_ms = clip_markers[int (midi_note)]["clip-start"]
+    except:
+      pass
+    try:
+      clip_end_ms = clip_markers[int (midi_note)]["clip-end"]
+    except:
+      pass
     clip_node = ET.SubElement (sample_node, "clip", start="%.3f" % clip_start_ms, end="%.3f" % clip_end_ms)
 
     if (config.auto_loop_count > 0):
