@@ -136,6 +136,7 @@ class JackBackend
   std::mutex decoder_mutex;
   std::unique_ptr<LiveDecoder> decoder;
   double decoder_factor = 0;
+  int m_current_midi_note = -1;
   WavSet wav_set;
 public:
 
@@ -171,12 +172,16 @@ public:
             const double freq = note_to_freq (note);
 
             if (decoder)
-              decoder->retrigger (0, freq, 127, 48000);
+              {
+                decoder->retrigger (0, freq, 127, 48000);
+                m_current_midi_note = note;
+              }
             decoder_factor = 1;
           }
         if (in_event.buffer[0] == 0x80)
           {
             decoder_factor = 0;
+            m_current_midi_note = -1;
           }
         //midi_synth->add_midi_event (in_event.time, in_event.buffer);
       }
@@ -275,6 +280,13 @@ public:
       {
         decoder.reset (nullptr); // not yet implemented
       }
+  }
+  int
+  current_midi_note()
+  {
+    std::lock_guard<std::mutex> lg (decoder_mutex);
+
+    return m_current_midi_note;
   }
   WavSetCreator *current_creator = nullptr;
   WavSetCreator *next_creator = nullptr;
@@ -705,6 +717,7 @@ class MainWindow : public Window
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
   Led *led;
+  Label *playing_label;
 
   Sample::Loop
   text_to_loop (const std::string& text)
@@ -835,6 +848,11 @@ public:
     grid.add_widget (new Label (this, "Analyzing"), 70, 64, 10, 3);
     grid.add_widget (led, 77, 64.5, 2, 2);
 
+    /*--- playing ---*/
+    playing_label = new Label (this, "");
+    grid.add_widget (new Label (this, "Playing"), 70, 67, 10, 3);
+    grid.add_widget (playing_label, 77, 67, 10, 3);
+
     instrument.load (test_sample);
 
     // show complete wave
@@ -915,6 +933,9 @@ public:
   update_led()
   {
     led->set_on (jack_backend->have_creator());
+
+    int note = jack_backend->current_midi_note();
+    playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
   }
 };
 
