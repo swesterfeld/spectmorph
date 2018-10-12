@@ -3,6 +3,15 @@
 #ifndef SPECTMORPH_INSTRUMENT_HH
 #define SPECTMORPH_INSTRUMENT_HH
 
+#include "smpugixml.hh"
+#include "smutils.hh"
+#include "smwavdata.hh"
+#include "smsignal.hh"
+#include "smmath.hh"
+
+#include <map>
+#include <memory>
+
 namespace SpectMorph
 {
   /* OK in SpectMorph namespace */
@@ -99,12 +108,12 @@ public:
     return true; /* FIXME: fail if load fails */
   }
   size_t
-  size()
+  size() const
   {
     return samples.size();
   }
   Sample *
-  sample (size_t n)
+  sample (size_t n) const
   {
     if (n < samples.size())
       return samples[n].get();
@@ -239,7 +248,7 @@ public:
   Signal<> signal_marker_changed;
 };
 
-void
+inline void
 Sample::set_midi_note (int note)
 {
   m_midi_note = note;
@@ -247,14 +256,14 @@ Sample::set_midi_note (int note)
   instrument->update_order();
 }
 
-void
+inline void
 Sample::set_marker (MarkerType marker_type, double value)
 {
   marker_map[marker_type] = value;
   instrument->marker_changed();
 }
 
-void
+inline void
 Sample::set_loop (Loop loop)
 {
   m_loop = loop;

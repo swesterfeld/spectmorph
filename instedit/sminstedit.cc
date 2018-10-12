@@ -4,6 +4,7 @@
 #include "spectmorphglui.hh"
 #include "smpugixml.hh"
 #include "sminstrument.hh"
+#include "smwavsetbuilder.hh"
 #include <thread>
 
 #include <jack/jack.h>
@@ -29,6 +30,7 @@ enum class PlayMode
   REFERENCE
 };
 
+#if 0
 class WavSetCreator
 {
   WavData wav_data;
@@ -125,7 +127,7 @@ public:
     return "/tmp/x.smset";
   }
 };
-
+#endif
 
 class JackBackend
 {
@@ -217,7 +219,7 @@ public:
   }
 
   void
-  switch_to_sample (const Sample *sample, PlayMode play_mode)
+  switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
   {
     std::lock_guard<std::mutex> lg (decoder_mutex);
 
@@ -254,6 +256,7 @@ public:
       }
     else if (play_mode == PlayMode::SPECTMORPH)
       {
+#if 0
         assert (sample->wav_data.n_channels() == 1);
 
         vector<float> samples = sample->wav_data.samples();
@@ -272,9 +275,13 @@ public:
         WavData wd_clipped;
         wd_clipped.load (clipped_samples, 1, sample->wav_data.mix_freq());
 
-        WavSetCreator *wcreator = new WavSetCreator (sample, wd_clipped);
+        WavSetBuilder *wbuilder = new WavSetBuilder (sample, wd_clipped);
 
-        add_creator (wcreator);
+        add_builder (wbuilder);
+#endif
+        WavSetBuilder *wbuilder = new WavSetBuilder (instrument);
+
+        add_builder (wbuilder);
       }
     else
       {
@@ -288,60 +295,59 @@ public:
 
     return m_current_midi_note;
   }
-  WavSetCreator *current_creator = nullptr;
-  WavSetCreator *next_creator = nullptr;
+  WavSetBuilder *current_builder = nullptr;
+  WavSetBuilder *next_builder = nullptr;
   void
-  add_creator (WavSetCreator *creator)
+  add_builder (WavSetBuilder *builder)
   {
-    if (current_creator)
+    if (current_builder)
       {
-        if (next_creator) /* kill and overwrite obsolete next creator */
-          delete next_creator;
+        if (next_builder) /* kill and overwrite obsolete next builder */
+          delete next_builder;
 
-        next_creator = creator;
+        next_builder = builder;
       }
     else
       {
-        start_as_current (creator);
+        start_as_current (builder);
       }
   }
   void
-  start_as_current (WavSetCreator *creator)
+  start_as_current (WavSetBuilder *builder)
   {
-    current_creator = creator;
+    current_builder = builder;
     new std::thread ([this] () {
-      current_creator->run();
+      current_builder->run();
 
-      finish_current_creator();
+      finish_current_builder();
     });
   }
   void
-  finish_current_creator()
+  finish_current_builder()
   {
     std::lock_guard<std::mutex> lg (decoder_mutex);
 
-    wav_set.load (current_creator->filename());
-    // FIXME: update_markers (sample);
+    current_builder->get_result (wav_set);
 
     decoder.reset (new LiveDecoder (&wav_set));
 
-    delete current_creator;
-    current_creator = nullptr;
+    delete current_builder;
+    current_builder = nullptr;
 
-    if (next_creator)
+    if (next_builder)
       {
-        WavSetCreator *creator = next_creator;
+        WavSetBuilder *builder = next_builder;
 
-        next_creator = nullptr;
-        start_as_current (creator);
+        next_builder = nullptr;
+        start_as_current (builder);
       }
   }
   bool
-  have_creator()
+  have_builder()
   {
     std::lock_guard<std::mutex> lg (decoder_mutex);
 
-    return current_creator != nullptr;
+    return current_builder != nullptr;
   }
 };
 
@@ -694,7 +700,7 @@ class MainWindow : public Window
       }
     if (sample)
       {
-        jack_backend->switch_to_sample (sample, play_mode);
+        jack_backend->switch_to_sample (sample, play_mode, &instrument);
       }
   }
   void
@@ -705,7 +711,7 @@ class MainWindow : public Window
     if (sample)
       {
         sample_widget->update_markers();
-        jack_backend->switch_to_sample (sample, play_mode);
+        jack_backend->switch_to_sample (sample, play_mode, &instrument);
       }
   }
   ComboBox *sample_combobox;
@@ -932,7 +938,7 @@ public:
   void
   update_led()
   {
-    led->set_on (jack_backend->have_creator());
+    led->set_on (jack_backend->have_builder());
 
     int note = jack_backend->current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
