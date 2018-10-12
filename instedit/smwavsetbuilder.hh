@@ -15,9 +15,14 @@ class WavSetBuilder
   {
     int       midi_note;
     WavData  *wav_data_ptr;  // FIXME: clean this up
+
+    Sample::Loop loop;
+    double       loop_start_ms;
+    double       loop_end_ms;
   };
   std::vector<SampleData> sample_data_vec;
 
+  void apply_loop_settings();
   void add_sample (const Sample *sample);
 public:
   WavSetBuilder (const Instrument *instrument);

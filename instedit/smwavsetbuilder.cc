@@ -5,6 +5,8 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::map;
+using std::vector;
 
 WavSetBuilder::WavSetBuilder (const Instrument *instrument)
 {
@@ -26,6 +28,12 @@ WavSetBuilder::add_sample (const Sample *sample)
 
   // FIXME: clean this up
   sd.wav_data_ptr  = const_cast<WavData *> (&sample->wav_data);
+
+  const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
+
+  sd.loop = sample->loop();
+  sd.loop_start_ms = sample->get_marker (MARKER_LOOP_START) - clip_adjust;
+  sd.loop_end_ms = sample->get_marker (MARKER_LOOP_END) - clip_adjust;
 
   sample_data_vec.push_back (sd);
 }
@@ -54,6 +62,76 @@ WavSetBuilder::run()
       wav_set.waves.push_back (new_wave);
     }
   wav_set.save ("/tmp/x.smset", true); // link wavset
+
+  apply_loop_settings();
+}
+
+void
+WavSetBuilder::apply_loop_settings()
+{
+  WavSet wav_set;
+
+  wav_set.load ("/tmp/x.smset");
+
+  // build index for sample data vector
+  map<int, SampleData*> note_to_sd;
+  for (auto& sd : sample_data_vec)
+    note_to_sd[sd.midi_note] = &sd;
+
+  for (auto& wave : wav_set.waves)
+    {
+      SampleData *sd = note_to_sd[wave.midi_note];
+
+      if (!sd)
+        {
+          printf ("warning: no to sd mapping %d failed\n", wave.midi_note);
+          continue;
+        }
+
+      Audio *audio = wave.audio;
+
+      // FIXME! account for zero_padding at start of sample
+      const int loop_start = sd->loop_start_ms / audio->frame_step_ms;
+      const int loop_end   = sd->loop_end_ms / audio->frame_step_ms;
+
+
+      if (sd->loop == Sample::Loop::NONE)
+        {
+          audio->loop_type = Audio::LOOP_NONE;
+          audio->loop_start = 0;
+          audio->loop_end = 0;
+        }
+      else if (sd->loop == Sample::Loop::FORWARD)
+        {
+          audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+          audio->loop_start = loop_start;
+          audio->loop_end = loop_end;
+        }
+      else if (sd->loop == Sample::Loop::PING_PONG)
+        {
+          audio->loop_type = Audio::LOOP_FRAME_PING_PONG;
+          audio->loop_start = loop_start;
+          audio->loop_end = loop_end;
+        }
+      else if (sd->loop == Sample::Loop::SINGLE_FRAME)
+        {
+          audio->loop_type = Audio::LOOP_FRAME_FORWARD;
+
+          // single frame loop
+          audio->loop_start = loop_start;
+          audio->loop_end   = loop_start;
+        }
+
+      string lt_string;
+      bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
+      if (have_loop_type)
+        printf ("loop-type  = %s\n", lt_string.c_str());
+
+      printf ("loop-start = %d\n", audio->loop_start);
+      printf ("loop-end   = %d\n", audio->loop_end);
+    }
+
+  wav_set.save ("/tmp/x.smset");
 }
 
 void
