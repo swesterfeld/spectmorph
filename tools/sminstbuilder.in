@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys, os, subprocess, re, argparse, multiprocessing
+from lxml import etree as ET
 
 class Config:
   def __init__ (self):
@@ -434,9 +435,40 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 
   os.chdir (old_path)
 
+def audio_len_ms (filename):
+  return float (subprocess.check_output (["soxi", "-D", filename])) * 1000.0
+
+def export_instrument (inst_dir, builder_config, cmdline_args):
+  old_path = os.getcwd()
+  try:
+    os.chdir (inst_dir)
+  except:
+    die ("directory '%s' not found" % inst_dir)
+
+  config = parse_config ("config", builder_config)
+
+  instrument_node = ET.Element ("instrument")
+  for sample in config.samples:
+    filename = sample[1]
+    sample_node = ET.SubElement (instrument_node, "sample", filename=filename, midi_note=sample[0])
+
+    clip_start_ms = 0
+    clip_end_ms = audio_len_ms (filename)
+    clip_node = ET.SubElement (sample_node, "clip", start="%.3f" % clip_start_ms, end="%.3f" % clip_end_ms)
+
+    if (config.auto_loop_count > 0):
+      loop_start_ms = clip_start_ms + (clip_end_ms - clip_start_ms) * float (config.auto_loop) / 100.0
+      loop_node = ET.SubElement (sample_node, "loop", type="single-frame", start="%.3f" % loop_start_ms, end="%.3f" % loop_start_ms)
+
+  tree = ET.ElementTree (instrument_node)
+  tree.write ("config.sminst", pretty_print=True)
+
+  os.chdir (old_path)
+
 def main():
   parser = argparse.ArgumentParser (prog='sminstbuilder')
   parser.add_argument ('--untuned', action='store_true', help='build instruments without auto-tune')
+  parser.add_argument ('--export', action='store_true', help='export instrument description to xml')
   parser.add_argument ('instruments', nargs='+', help='instrument directories to be processed')
   cmdline_args = parser.parse_args()
 
@@ -444,6 +476,9 @@ def main():
   builder_config = parse_builder_config()
 
   for inst_dir in cmdline_args.instruments:
-    build_instrument (inst_dir, builder_config, cmdline_args)
+    if (cmdline_args.export):
+      export_instrument (inst_dir, builder_config, cmdline_args)
+    else:
+      build_instrument (inst_dir, builder_config, cmdline_args)
 
 main()
