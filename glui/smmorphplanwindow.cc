@@ -54,6 +54,7 @@ MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, 
 
   fill_preset_menu (preset_menu);
   add_op_menu_item (op_menu, "Source", "SpectMorph::MorphSource");
+  add_op_menu_item (op_menu, "Wav Source", "SpectMorph::MorphWavSource");
   // add_op_menu_item (op_menu, "Output", "SpectMorph::MorphOutput"); <- we have only one output
   add_op_menu_item (op_menu, "Linear Morph", "SpectMorph::MorphLinear");
   add_op_menu_item (op_menu, "Grid Morph", "SpectMorph::MorphGrid");

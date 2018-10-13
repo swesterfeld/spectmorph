@@ -2,6 +2,7 @@
 
 #include "smmorphplanview.hh"
 #include "smmorphsourceview.hh"
+#include "smmorphwavsourceview.hh"
 #include "smmorphoutputview.hh"
 #include "smmorphlinearview.hh"
 #include "smmorphlfoview.hh"
@@ -42,6 +43,10 @@ MorphPlanView::on_plan_changed()
       if (type == "SpectMorph::MorphSource")
         {
           op_view = new MorphSourceView (this, static_cast<MorphSource *> (op), morph_plan_window);
+        }
+      else if (type == "SpectMorph::MorphWavSource")
+        {
+          op_view = new MorphWavSourceView (this, static_cast<MorphWavSource *> (op), morph_plan_window);
         }
       else if (type == "SpectMorph::MorphOutput")
         {
