@@ -25,11 +25,14 @@ freq_to_note (float freq)
 void
 InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  std::lock_guard<std::mutex> lg (mutex);
-
   Audio  *best_audio = nullptr;
-  WavSet *wav_set = &this->wav_set;
   float   best_diff  = 1e10;
+
+  // we can not delete the old wav_set alive between retrigger() invocations
+  //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
+  //
+  if (next_wav_set)
+    wav_set = next_wav_set;
 
   if (wav_set)
     {
@@ -50,7 +53,7 @@ InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float m
             }
         }
     }
-  active_audio = best_audio;  // FIXME: this pointer could become dangling if the underlying wav_set changes
+  active_audio = best_audio;
 }
 
 Audio*
@@ -66,6 +69,12 @@ InstrumentSource::audio_block (size_t index)
     return &active_audio->contents[index];
   else
     return nullptr;
+}
+
+void
+InstrumentSource::update_wav_set (std::shared_ptr<WavSet> next)
+{
+  next_wav_set = next;
 }
 
 
@@ -91,16 +100,24 @@ MorphWavSourceModule::set_config (MorphOperator *op)
 {
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
 
-  printf ("MorphWavSourceModule::set_config: using instrument=%s\n", source->instrument().c_str());
-  Instrument inst;
-  inst.load (source->instrument());
-  printf ("%zd\n", inst.size());
-  WavSetBuilder builder (&inst);
-  builder.run();
+  static int64 iid = 0;
+  static std::shared_ptr<WavSet> builder_wav_set;
 
-  std::lock_guard<std::mutex> lg (my_source.mutex);
-  builder.get_result (my_source.wav_set);
-  printf ("wsize %zd\n", my_source.wav_set.waves.size());
+  if (iid != source->instrument_id())
+    {
+      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld\n", source->instrument().c_str(), source->instrument_id());
+
+      Instrument inst;
+      inst.load (source->instrument());
+
+      WavSetBuilder builder (&inst);
+      builder.run();
+      builder_wav_set = std::make_shared<WavSet>();
+      builder.get_result (*builder_wav_set);
+
+      iid = source->instrument_id();
+    }
+  my_source.update_wav_set (builder_wav_set);
 }
 
 #include "../instedit/smwavsetbuilder.cc"

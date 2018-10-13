@@ -22,9 +22,19 @@ MorphWavSource::~MorphWavSource()
 }
 
 void
+MorphWavSource::update_instrument_and_id (const string& instrument)
+{
+  static int64 static_id = 1;
+
+  m_instrument    = instrument;
+  m_instrument_id = static_id++;
+}
+
+void
 MorphWavSource::set_instrument (const string& instrument)
 {
-  m_instrument = instrument;
+  update_instrument_and_id (instrument);
+
   m_morph_plan->emit_plan_changed();
 }
 
@@ -32,6 +42,12 @@ string
 MorphWavSource::instrument()
 {
   return m_instrument;
+}
+
+int64
+MorphWavSource::instrument_id()
+{
+  return m_instrument_id;
 }
 
 const char *
@@ -63,7 +79,7 @@ MorphWavSource::load (InFile& ifile)
         {
           if (ifile.event_name() == "instrument")
             {
-              m_instrument = ifile.event_data();
+              update_instrument_and_id (ifile.event_data());
             }
           else
             {

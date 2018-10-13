@@ -13,6 +13,9 @@ namespace SpectMorph
 class MorphWavSource : public MorphOperator
 {
   std::string m_instrument;
+  int64       m_instrument_id = 0;
+  void update_instrument_and_id (const std::string& new_instrument);
+
 public:
   MorphWavSource (MorphPlan *morph_plan);
   ~MorphWavSource();
@@ -26,6 +29,8 @@ public:
 
   void        set_instrument (const std::string& instrument);
   std::string instrument();
+
+  int64       instrument_id();
 };
 
 }

@@ -5,21 +5,22 @@
 
 #include "smmorphoperatormodule.hh"
 #include "smwavset.hh"
-#include <mutex>
+#include <memory>
 
 namespace SpectMorph
 {
 
 class InstrumentSource : public LiveDecoderSource
 {
-  Audio  *active_audio = nullptr;
+  Audio                  *active_audio = nullptr;
+  std::shared_ptr<WavSet> wav_set;
+  std::shared_ptr<WavSet> next_wav_set;
 public:
-  WavSet      wav_set;
-  std::mutex  mutex;
-
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
   Audio *audio() override;
   AudioBlock *audio_block (size_t index) override;
+
+  void update_wav_set (std::shared_ptr<WavSet> next);
 };
 
 class MorphWavSourceModule : public MorphOperatorModule
