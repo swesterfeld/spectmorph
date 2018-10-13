@@ -17,7 +17,8 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmorphgrid.hh smmorphgridmodule.hh smmorphutils.hh smutils.hh \
          smminiresampler.hh smmidisynth.hh smwavdata.hh smblockutils.hh \
          smalignedarray.hh smpcg32rng.hh smproperty.hh \
-         smeffectdecoder.hh smadsrenvelope.hh smsignal.hh smconfig.hh
+         smeffectdecoder.hh smadsrenvelope.hh smsignal.hh smconfig.hh \
+	 smmorphwavsource.hh smmorphwavsourcemodule.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -35,7 +36,8 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smmorphgrid.cc \
                            smmorphgridmodule.cc smmath.cc smmorphutils.cc smutils.cc \
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
-                           smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc
+                           smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc \
+			   smmorphwavsource.cc smmorphwavsourcemodule.cc
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
 libspectmorph_la_LDFLAGS = -no-undefined

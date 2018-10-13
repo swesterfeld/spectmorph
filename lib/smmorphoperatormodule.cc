@@ -6,6 +6,7 @@
 #include "smmorphgridmodule.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmorphsourcemodule.hh"
+#include "smmorphwavsourcemodule.hh"
 #include "smmorphlfomodule.hh"
 #include "smleakdebugger.hh"
 
@@ -93,11 +94,12 @@ MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
 {
   string type = op->type();
 
-  if (type == "SpectMorph::MorphLinear")  return new MorphLinearModule (voice);
-  if (type == "SpectMorph::MorphGrid")    return new MorphGridModule (voice);
-  if (type == "SpectMorph::MorphSource")  return new MorphSourceModule (voice);
-  if (type == "SpectMorph::MorphOutput")  return new MorphOutputModule (voice);
-  if (type == "SpectMorph::MorphLFO")     return new MorphLFOModule (voice);
+  if (type == "SpectMorph::MorphLinear")    return new MorphLinearModule (voice);
+  if (type == "SpectMorph::MorphGrid")      return new MorphGridModule (voice);
+  if (type == "SpectMorph::MorphSource")    return new MorphSourceModule (voice);
+  if (type == "SpectMorph::MorphWavSource") return new MorphWavSourceModule (voice);
+  if (type == "SpectMorph::MorphOutput")    return new MorphOutputModule (voice);
+  if (type == "SpectMorph::MorphLFO")       return new MorphLFOModule (voice);
 
   return NULL;
 }
