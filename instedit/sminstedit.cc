@@ -157,29 +157,6 @@ public:
       }
     else if (play_mode == PlayMode::SPECTMORPH)
       {
-#if 0
-        assert (sample->wav_data.n_channels() == 1);
-
-        vector<float> samples = sample->wav_data.samples();
-        vector<float> clipped_samples;
-        for (size_t i = 0; i < samples.size(); i++)
-          {
-            double pos_ms = i * (1000.0 / sample->wav_data.mix_freq());
-            if (pos_ms >= sample->get_marker (MARKER_CLIP_START))
-              {
-                /* if we have a loop, the loop end determines the real end of the recording */
-                if (sample->loop() != Sample::Loop::NONE || pos_ms <= sample->get_marker (MARKER_CLIP_END))
-                  clipped_samples.push_back (samples[i]);
-              }
-          }
-
-        WavData wd_clipped;
-        wd_clipped.load (clipped_samples, 1, sample->wav_data.mix_freq());
-
-        WavSetBuilder *wbuilder = new WavSetBuilder (sample, wd_clipped);
-
-        add_builder (wbuilder);
-#endif
         WavSetBuilder *wbuilder = new WavSetBuilder (instrument);
 
         add_builder (wbuilder);

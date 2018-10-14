@@ -34,6 +34,8 @@ WavSetBuilder::add_sample (const Sample *sample)
   sd.loop = sample->loop();
   sd.loop_start_ms = sample->get_marker (MARKER_LOOP_START) - clip_adjust;
   sd.loop_end_ms = sample->get_marker (MARKER_LOOP_END) - clip_adjust;
+  sd.clip_start_ms = sample->get_marker (MARKER_CLIP_START);
+  sd.clip_end_ms = sample->get_marker (MARKER_CLIP_END);
 
   sample_data_vec.push_back (sd);
 }
@@ -45,9 +47,29 @@ WavSetBuilder::run()
 
   for (auto& sd : sample_data_vec)
     {
+      /* clipping */
+      assert (sd.wav_data_ptr->n_channels() == 1);
+
+      vector<float> samples = sd.wav_data_ptr->samples();
+      vector<float> clipped_samples;
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          double pos_ms = i * (1000.0 / sd.wav_data_ptr->mix_freq());
+          if (pos_ms >= sd.clip_start_ms)
+            {
+              /* if we have a loop, the loop end determines the real end of the recording */
+              if (sd.loop != Sample::Loop::NONE || pos_ms <= sd.clip_end_ms)
+                clipped_samples.push_back (samples[i]);
+            }
+        }
+
+      WavData wd_clipped;
+      wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
+      wd_clipped.save ("/tmp/x.wav");
+
+      /* encoding */
       string sm_name = string_printf ("/tmp/x%d.sm", sd.midi_note);
 
-      sd.wav_data_ptr->save ("/tmp/x.wav");
       string cmd = string_printf ("smenccache /tmp/x.wav %s -m %d -O1 -s", sm_name.c_str(), sd.midi_note);
       printf ("# %s\n", cmd.c_str());
       system (cmd.c_str());

@@ -17,6 +17,8 @@ class WavSetBuilder
     WavData  *wav_data_ptr;  // FIXME: clean this up
 
     Sample::Loop loop;
+    double       clip_start_ms;
+    double       clip_end_ms;
     double       loop_start_ms;
     double       loop_end_ms;
   };
