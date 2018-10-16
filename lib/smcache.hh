@@ -11,10 +11,28 @@
 namespace SpectMorph
 {
 
-struct CacheEntry
+class CacheEntry
 {
+  std::shared_ptr<WavSet> m_wav_set;
+  std::mutex              mutex;
+public:
+
   bool                    used;
-  std::shared_ptr<WavSet> wav_set;
+
+  std::shared_ptr<WavSet>
+  wav_set()
+  {
+    std::lock_guard<std::mutex> lg (mutex);
+
+    return m_wav_set;
+  }
+  void
+  set_wav_set (std::shared_ptr<WavSet> wav_set)
+  {
+    std::lock_guard<std::mutex> lg (mutex);
+
+    m_wav_set = wav_set;
+  }
 };
 
 class Cache

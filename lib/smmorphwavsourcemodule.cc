@@ -8,6 +8,7 @@
 #include "../instedit/smwavsetbuilder.hh"
 #include "smcache.hh"
 #include <glib.h>
+#include <thread>
 
 using namespace SpectMorph;
 
@@ -29,11 +30,15 @@ InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float m
   Audio  *best_audio = nullptr;
   float   best_diff  = 1e10;
 
-  // we can not delete the old wav_set alive between retrigger() invocations
+  // we can not delete the old wav_set between retrigger() invocations
   //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
-  //
-  if (next_wav_set)
-    wav_set = next_wav_set;
+
+  CacheEntry *cache_entry = Cache::the()->lookup (instrument);
+
+  if (cache_entry)
+    wav_set = cache_entry->wav_set();
+  else
+    wav_set = nullptr;
 
   if (wav_set)
     {
@@ -73,9 +78,9 @@ InstrumentSource::audio_block (size_t index)
 }
 
 void
-InstrumentSource::update_wav_set (std::shared_ptr<WavSet> next)
+InstrumentSource::update_instrument (const string& instrument)
 {
-  next_wav_set = next;
+  this->instrument = instrument;
 }
 
 
@@ -105,21 +110,30 @@ MorphWavSourceModule::set_config (MorphOperator *op)
   CacheEntry *cache_entry = cache.lookup (source->instrument());
   if (!cache_entry)
     {
+      cache.store (source->instrument(), new CacheEntry()); // store empty cache entry
+
       printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld\n", source->instrument().c_str(), source->instrument_id());
 
-      Instrument inst;
-      inst.load (source->instrument());
+      new std::thread ([filename = source->instrument()]() {
+        Instrument inst;
+        inst.load (filename);
 
-      WavSetBuilder builder (&inst);
-      builder.run();
+        /* this should not be necessary if builder was thread safe */
+        static std::mutex bmutex;
+        std::lock_guard<std::mutex> lg (bmutex);
 
-      cache_entry = new CacheEntry();
-      cache_entry->wav_set = std::make_shared<WavSet>();
-      builder.get_result (*cache_entry->wav_set);
+        WavSetBuilder builder (&inst);
+        builder.run();
+        CacheEntry *cache_entry = Cache::the()->lookup (filename);
 
-      cache.store (source->instrument(), cache_entry);
+        auto wav_set = std::make_shared<WavSet>();
+        builder.get_result (*wav_set);
+
+        cache_entry->set_wav_set (wav_set);
+      });
+
     }
-  my_source.update_wav_set (cache_entry->wav_set);
+  my_source.update_instrument (source->instrument());
 }
 
 #include "../instedit/smwavsetbuilder.cc"
