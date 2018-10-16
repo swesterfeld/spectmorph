@@ -6,6 +6,7 @@
 #include "smleakdebugger.hh"
 #include "../instedit/sminstrument.hh"
 #include "../instedit/smwavsetbuilder.hh"
+#include "smcache.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -99,11 +100,10 @@ void
 MorphWavSourceModule::set_config (MorphOperator *op)
 {
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
+  Cache& cache = *Cache::the();
 
-  static int64 iid = 0;
-  static std::shared_ptr<WavSet> builder_wav_set;
-
-  if (iid != source->instrument_id())
+  CacheEntry *cache_entry = cache.lookup (source->instrument());
+  if (!cache_entry)
     {
       printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld\n", source->instrument().c_str(), source->instrument_id());
 
@@ -112,12 +112,14 @@ MorphWavSourceModule::set_config (MorphOperator *op)
 
       WavSetBuilder builder (&inst);
       builder.run();
-      builder_wav_set = std::make_shared<WavSet>();
-      builder.get_result (*builder_wav_set);
 
-      iid = source->instrument_id();
+      cache_entry = new CacheEntry();
+      cache_entry->wav_set = std::make_shared<WavSet>();
+      builder.get_result (*cache_entry->wav_set);
+
+      cache.store (source->instrument(), cache_entry);
     }
-  my_source.update_wav_set (builder_wav_set);
+  my_source.update_wav_set (cache_entry->wav_set);
 }
 
 #include "../instedit/smwavsetbuilder.cc"
