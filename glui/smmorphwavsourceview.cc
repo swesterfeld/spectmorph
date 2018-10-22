@@ -20,8 +20,9 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 
   Label *instrument_label = new Label (body_widget, "Instrument");
   Button *load_button = new Button (body_widget, "Load");
+  Button *edit_button = new Button (body_widget, "Edit");
 
-  op_layout.add_row (3, instrument_label, load_button);
+  op_layout.add_row (3, instrument_label, load_button, edit_button);
   op_layout.activate();
 
   connect (load_button->signal_clicked, this, &MorphWavSourceView::on_load);
