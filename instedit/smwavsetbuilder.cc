@@ -70,7 +70,7 @@ WavSetBuilder::run()
       /* encoding */
       string sm_name = string_printf ("/tmp/x%d.sm", sd.midi_note);
 
-      string cmd = string_printf ("smenccache /tmp/x.wav %s -m %d -O1 -s", sm_name.c_str(), sd.midi_note);
+      string cmd = string_printf ("%s/smenccache /tmp/x.wav %s -m %d -O1 -s", sm_get_install_dir (INSTALL_DIR_BIN).c_str(), sm_name.c_str(), sd.midi_note);
       printf ("# %s\n", cmd.c_str());
       system (cmd.c_str());
 
@@ -147,10 +147,7 @@ WavSetBuilder::apply_loop_settings()
       string lt_string;
       bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
       if (have_loop_type)
-        printf ("loop-type  = %s\n", lt_string.c_str());
-
-      printf ("loop-start = %d\n", audio->loop_start);
-      printf ("loop-end   = %d\n", audio->loop_end);
+        printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
     }
 
   wav_set.save ("/tmp/x.smset");
