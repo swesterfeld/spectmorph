@@ -161,7 +161,7 @@ main (int argc, char **argv)
 
   if (argc == 3)
     {
-      string cmdline = string_printf ("smenc \"%s\" \"%s\"", argv[1], argv[2]);
+      string cmdline = string_printf ("%s/smenc \"%s\" \"%s\"", sm_get_install_dir (INSTALL_DIR_BIN).c_str(), argv[1], argv[2]);
       string cmdargs;
       for (vector<string>::iterator ai = options.args.begin(); ai != options.args.end(); ai++)
         cmdargs += " " + *ai;
