@@ -52,6 +52,7 @@ void        sm_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 
 enum InstallDir
 {
+  INSTALL_DIR_BIN,
   INSTALL_DIR_TEMPLATES,
   INSTALL_DIR_INSTRUMENTS
 };

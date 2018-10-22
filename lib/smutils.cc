@@ -184,6 +184,7 @@ sm_printf (const char *format, ...)
 }
 
 static string pkg_data_dir = CONFIGURE_INSTALLPATH_PKGDATADIR;
+static string bin_dir      = CONFIGURE_INSTALLPATH_BINDIR;
 
 void
 sm_set_pkg_data_dir (const string& data_dir)
@@ -191,11 +192,18 @@ sm_set_pkg_data_dir (const string& data_dir)
   pkg_data_dir = data_dir;
 }
 
+void
+sm_set_bin_dir (const string& dir)
+{
+  bin_dir = dir;
+}
+
 std::string
 sm_get_install_dir (InstallDir p)
 {
   switch (p)
     {
+      case INSTALL_DIR_BIN:         return bin_dir;
       case INSTALL_DIR_TEMPLATES:   return pkg_data_dir + "/templates";
       case INSTALL_DIR_INSTRUMENTS: return pkg_data_dir + "/instruments";
     }
