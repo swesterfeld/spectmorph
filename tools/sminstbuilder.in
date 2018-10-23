@@ -474,7 +474,7 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
 
   instrument_node = ET.Element ("instrument")
   for sample in config.samples:
-    filename = sample[1]
+    filename = os.path.abspath (sample[1])
     midi_note = int (sample[0])
     sample_node = ET.SubElement (instrument_node, "sample", filename=filename, midi_note="%d" % midi_note)
 
