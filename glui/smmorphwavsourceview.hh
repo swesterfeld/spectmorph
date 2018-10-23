@@ -15,6 +15,7 @@ class MorphWavSourceView : public MorphOperatorView
   MorphWavSource   *morph_wav_source;
 
   void on_load();
+  void on_edit();
 public:
   MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window);
 

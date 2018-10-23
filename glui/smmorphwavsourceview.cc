@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphwavsourceview.hh"
+#include "smsamplewidget.hh"
 #include "smmorphplan.hh"
 
 #include "smlabel.hh"
@@ -26,6 +27,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.activate();
 
   connect (load_button->signal_clicked, this, &MorphWavSourceView::on_load);
+  connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
 }
 
 double
@@ -52,4 +54,10 @@ MorphWavSourceView::on_load()
           */
       }
   });
+}
+
+void
+MorphWavSourceView::on_edit()
+{
+  new SampleWidget (this);
 }
