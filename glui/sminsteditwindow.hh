@@ -142,8 +142,8 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (const std::string& test_sample, Backend *backend) :
-    Window ("SpectMorph - Instrument Editor", win_width, win_height),
+  InstEditWindow (const std::string& test_sample, Backend *backend, Window *parent_window = nullptr) :
+    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
     backend (backend)
   {
     /* attach to model */

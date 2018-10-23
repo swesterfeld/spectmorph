@@ -68,8 +68,15 @@ void
 MorphWavSourceView::on_edit()
 {
   NullBackend *nb = new NullBackend();
-  InstEditWindow *win = new InstEditWindow ("test.sminst", nb);
+  InstEditWindow *win = new InstEditWindow (morph_wav_source->instrument(), nb, window());
+
+  win->show();
 
   // after this line, rename window is owned by parent window
   window()->set_popup_window (win);
+
+  win->set_close_callback ([&]()
+    {
+      window()->set_popup_window (nullptr);
+    });
 }
