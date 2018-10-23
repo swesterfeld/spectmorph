@@ -4,7 +4,7 @@
 #define SPECTMORPH_SAMPLE_WIDGET_HH
 
 #include "smwidget.hh"
-#include "../instedit/sminstrument.hh"
+#include "sminstrument.hh"
 
 #include <map>
 

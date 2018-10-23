@@ -1,7 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmorphwavsourceview.hh"
-#include "smsamplewidget.hh"
+#include "sminsteditwindow.hh"
 #include "smmorphplan.hh"
 
 #include "smlabel.hh"
@@ -56,8 +56,20 @@ MorphWavSourceView::on_load()
   });
 }
 
+class NullBackend : public Backend
+{
+public:
+  void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr) {}
+  bool have_builder() {return false;}
+  int current_midi_note() {return 69;}
+};
+
 void
 MorphWavSourceView::on_edit()
 {
-  new SampleWidget (this);
+  NullBackend *nb = new NullBackend();
+  InstEditWindow *win = new InstEditWindow ("test.sminst", nb);
+
+  // after this line, rename window is owned by parent window
+  window()->set_popup_window (win);
 }

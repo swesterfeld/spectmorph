@@ -4,8 +4,8 @@
 #include "smmorphwavsource.hh"
 #include "smmorphplan.hh"
 #include "smleakdebugger.hh"
-#include "../instedit/sminstrument.hh"
-#include "../instedit/smwavsetbuilder.hh"
+#include "sminstrument.hh"
+#include "smwavsetbuilder.hh"
 #include "smcache.hh"
 #include <glib.h>
 #include <thread>
@@ -135,5 +135,3 @@ MorphWavSourceModule::set_config (MorphOperator *op)
     }
   my_source.update_instrument (source->instrument());
 }
-
-#include "../instedit/smwavsetbuilder.cc"

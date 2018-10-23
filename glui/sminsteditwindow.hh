@@ -4,6 +4,8 @@
 #define SPECTMORPH_INST_EDIT_WINDOW_HH
 
 #include "sminstrument.hh"
+#include "smsamplewidget.hh"
+#include "smcombobox.hh"
 
 namespace SpectMorph
 {
