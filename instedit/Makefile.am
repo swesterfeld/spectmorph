@@ -7,5 +7,5 @@ SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
 bin_PROGRAMS = sminstedit
 
-sminstedit_SOURCES = sminstedit.cc sminstrument.hh smwavsetbuilder.cc smwavsetbuilder.hh
+sminstedit_SOURCES = sminstedit.cc sminstrument.hh smwavsetbuilder.cc smwavsetbuilder.hh sminsteditwindow.hh
 sminstedit_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS) $(CAIRO_LIBS)
