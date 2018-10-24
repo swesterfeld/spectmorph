@@ -4,6 +4,7 @@
 #define SPECTMORPH_MIDI_SYNTH_HH
 
 #include "smmorphplansynth.hh"
+#include "sminsteditsynth.hh"
 
 namespace SpectMorph {
 
@@ -49,6 +50,7 @@ class MidiSynth
   };
 
   MorphPlanSynth        morph_plan_synth;
+  InstEditSynth         m_inst_edit_synth;
 
   std::vector<Voice>    voices;
   std::vector<Voice *>  idle_voices;
@@ -60,6 +62,7 @@ class MidiSynth
   float                 portamento_glide;
   int                   portamento_note_id;
   int                   next_note_id;
+  bool                  inst_edit = false;
 
   float                 control[2];
 
@@ -99,6 +102,9 @@ public:
   void update_plan (MorphPlanPtr new_plan);
 
   size_t active_voice_count() const;
+
+  void set_inst_edit (bool inst_edit);
+  InstEditSynth *inst_edit_synth();
 };
 
 }

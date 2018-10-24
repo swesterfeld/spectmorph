@@ -21,6 +21,7 @@ using std::string;
 
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq),
+  m_inst_edit_synth (mix_freq),
   mix_freq (mix_freq),
   pedal_down (false),
   audio_time_stamp (0),
@@ -292,6 +293,11 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
 void
 MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 {
+  if (inst_edit) // inst edit mode? -> delegate
+    {
+      m_inst_edit_synth.handle_midi_event (midi_data);
+      return;
+    }
   unsigned char status = midi_data[0] & 0xf0;
 
   if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
@@ -389,6 +395,11 @@ MidiSynth::process_audio (float *output, size_t n_values)
 void
 MidiSynth::process (float *output, size_t n_values)
 {
+  if (inst_edit) // inst edit mode? -> delegate
+    {
+      m_inst_edit_synth.process (output, n_values);
+      return;
+    }
   uint32_t offset = 0;
 
   for (const auto& midi_event : midi_events)
@@ -475,6 +486,18 @@ void
 MidiSynth::update_plan (MorphPlanPtr new_plan)
 {
   morph_plan_synth.update_plan (new_plan);
+}
+
+void
+MidiSynth::set_inst_edit (bool iedit)
+{
+  inst_edit = iedit;
+}
+
+InstEditSynth *
+MidiSynth::inst_edit_synth()
+{
+  return &m_inst_edit_synth;
 }
 
 // midi event classification functions
