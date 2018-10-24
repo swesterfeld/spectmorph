@@ -12,10 +12,22 @@ namespace SpectMorph {
 
 class InstEditSynth
 {
+  enum class State {
+    ON,
+    RELEASE,
+    IDLE
+  };
+  struct Voice {
+    State                        state = State::IDLE;
+    std::unique_ptr<LiveDecoder> decoder;
+    double                       decoder_factor = 0;
+    unsigned int                 note = 0;
+  };
+
   float                        mix_freq;
-  double                       decoder_factor = 0;
-  std::unique_ptr<LiveDecoder> decoder;
   WavSet                       wav_set;
+  std::vector<Voice>           voices;
+
 public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
