@@ -31,11 +31,9 @@ class JackBackend : public Backend
   jack_port_t *input_port;
   jack_port_t *output_port;
 
-  std::mutex decoder_mutex;
-  std::unique_ptr<LiveDecoder> decoder;
-  double decoder_factor = 0;
+  std::mutex synth_mutex;
   int m_current_midi_note = -1;
-  WavSet wav_set;
+  std::unique_ptr<MidiSynth> midi_synth;
 public:
 
   static int
@@ -53,54 +51,29 @@ public:
   int
   process (jack_nframes_t nframes)
   {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
-    float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
+    std::lock_guard<std::mutex> lg (synth_mutex);
 
-    void* port_buf = jack_port_get_buffer (input_port, nframes);
+    float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
+    void *port_buf = jack_port_get_buffer (input_port, nframes);
+
     jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
-    if (event_count)
-      for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
+    for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
       {
         jack_midi_event_t    in_event;
         jack_midi_event_get (&in_event, port_buf, event_index);
 
-        if (in_event.buffer[0] == 0x90)
-          {
-            const int note = in_event.buffer[1];
-            const double freq = note_to_freq (note);
-
-            if (decoder)
-              {
-                decoder->retrigger (0, freq, 127, 48000);
-                m_current_midi_note = note;
-              }
-            decoder_factor = 1;
-          }
-        if (in_event.buffer[0] == 0x80)
-          {
-            decoder_factor = 0;
-            m_current_midi_note = -1;
-          }
-        //midi_synth->add_midi_event (in_event.time, in_event.buffer);
+        midi_synth->add_midi_event (in_event.time, in_event.buffer);
       }
-
-    if (decoder)
-      {
-        decoder->process (nframes, nullptr, &audio_out[0]);
-        for (uint i = 0; i < nframes; i++)
-          audio_out[i] *= decoder_factor;
-      }
-    else
-      {
-        for (uint i = 0; i < nframes; i++)
-          audio_out[i] = 0;
-      }
+    midi_synth->process (audio_out, nframes);
     return 0;
   }
 
   JackBackend (jack_client_t *client)
   {
     jack_mix_freq = jack_get_sample_rate (client);
+
+    midi_synth.reset (new MidiSynth (jack_mix_freq, 64));
+    midi_synth->set_inst_edit (true);
 
     jack_set_process_callback (client, jack_process, this);
 
@@ -117,11 +90,11 @@ public:
   void
   switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
   {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
+    std::lock_guard<std::mutex> lg (synth_mutex);
 
     if (play_mode == PlayMode::SAMPLE)
       {
-        wav_set.clear();
+        WavSet wav_set;
 
         WavSetWave new_wave;
         new_wave.midi_note = sample->midi_note();
@@ -138,8 +111,8 @@ public:
 
         wav_set.waves.push_back (new_wave);
 
-        decoder.reset (new LiveDecoder (&wav_set));
-        decoder->enable_original_samples (true);
+        wav_set.save ("/tmp/midi_synth.smset");
+        midi_synth->inst_edit_synth()->load_smset ("/tmp/midi_synth.smset", true);
       }
     else if (play_mode == PlayMode::REFERENCE)
       {
@@ -148,7 +121,7 @@ public:
 
         string smset_dir = index.smset_dir();
 
-        decoder.reset (new LiveDecoder (WavSetRepo::the()->get (smset_dir + "/synth-saw.smset")));
+        midi_synth->inst_edit_synth()->load_smset (smset_dir + "/synth-saw.smset", false);
       }
     else if (play_mode == PlayMode::SPECTMORPH)
       {
@@ -156,15 +129,11 @@ public:
 
         add_builder (wbuilder);
       }
-    else
-      {
-        decoder.reset (nullptr); // not yet implemented
-      }
   }
   int
   current_midi_note()
   {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
+    std::lock_guard<std::mutex> lg (synth_mutex);
 
     return m_current_midi_note;
   }
@@ -198,11 +167,13 @@ public:
   void
   finish_current_builder()
   {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
+    std::lock_guard<std::mutex> lg (synth_mutex);
 
+    WavSet wav_set;
     current_builder->get_result (wav_set);
 
-    decoder.reset (new LiveDecoder (&wav_set));
+    wav_set.save ("/tmp/midi_synth.smset");
+    midi_synth->inst_edit_synth()->load_smset ("/tmp/midi_synth.smset", false);
 
     delete current_builder;
     current_builder = nullptr;
@@ -218,7 +189,7 @@ public:
   bool
   have_builder()
   {
-    std::lock_guard<std::mutex> lg (decoder_mutex);
+    std::lock_guard<std::mutex> lg (synth_mutex);
 
     return current_builder != nullptr;
   }
