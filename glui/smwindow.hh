@@ -14,6 +14,7 @@ namespace SpectMorph
 struct CairoGL;
 class NativeFileDialog;
 class Menu;
+class Timer;
 
 struct Window : public Widget
 {
@@ -36,6 +37,7 @@ protected:
   Rect                      update_region;
   bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
+  std::vector<Timer *>      timers;
 
   std::function<void()>     m_close_callback;
 
@@ -63,6 +65,8 @@ public:
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   void set_popup_window (Window *window);
+  void add_timer (Timer *timer);
+  void remove_timer (Timer *timer);
   Window *window() override;
   PuglNativeWindow native_window();
 

@@ -44,6 +44,11 @@ public:
     m_on = on;
     update();
   }
+  bool
+  on() const
+  {
+    return m_on;
+  }
 };
 
 }

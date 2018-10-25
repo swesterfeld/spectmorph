@@ -25,6 +25,8 @@
 #include "smfixedgrid.hh"
 #include "smcheckbox.hh"
 #include "smbutton.hh"
+#include "smtimer.hh"
+#include "smled.hh"
 
 using namespace SpectMorph;
 
@@ -183,6 +185,16 @@ public:
     Button *save_button = new Button (this, "Save File");
     connect (save_button->signal_clicked, [=] () { save_file_dialog ("Select SpectMorph Preset", "SpectMorph Preset files", "*.smplan", [=](string filename) { printf ("save file: '%s'\n", filename.c_str()); }); });
     grid.add_widget (save_button, 15, 35, 10, 3);
+
+    Led *timer_led = new Led (this, true);
+    grid.add_widget (timer_led, 30, 40, 3, 3);
+
+    Timer *timer = new Timer (this);
+    connect (timer->signal_timeout, [=] { timer_led->set_on (!timer_led->on()); });
+
+    Button *toggle_timer = new Button (this, "Timer");
+    connect (toggle_timer->signal_clicked, [=] () { if (timer->active()) timer->stop(); else timer->start (500); });
+    grid.add_widget (toggle_timer, 27, 35, 10, 3);
   }
 };
 

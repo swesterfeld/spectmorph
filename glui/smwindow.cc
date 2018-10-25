@@ -9,6 +9,7 @@
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
 #include "smconfig.hh"
+#include "smtimer.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>
 #include <unistd.h>
@@ -192,6 +193,15 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
 Window::~Window()
 {
   puglDestroy (view);
+
+  /* this code needs to work if remove_timer & add_timer are called from one of the destructors */
+  for (size_t i = 0; i < timers.size(); i++)
+    {
+      if (timers[i])
+        delete timers[i];
+    }
+  for (size_t i = 0; i < timers.size(); i++)
+    assert (timers[i] == nullptr);
 }
 
 void
@@ -461,6 +471,19 @@ Window::process_events()
         }
     }
 
+  /* do not use auto here, since timers may get modified */
+  for (size_t i = 0; i < timers.size(); i++)
+    {
+      Timer *timer = timers[i];
+      if (timer)
+        timer->process_events();
+    }
+  /* timers array may have been modified - remove null entries */
+  vector<Timer *> new_timers;
+  for (auto t : timers)
+    new_timers.push_back (t);
+  timers = new_timers;
+
   if (0)
     {
       timeval tv;
@@ -728,7 +751,13 @@ Window::wait_event_fps()
 void
 Window::wait_for_event()
 {
-  if (native_file_dialog || popup_window)
+  bool active_timer = false;
+  for (auto t : timers)
+    {
+      if (t)
+        active_timer = t->active() || active_timer;
+    }
+  if (native_file_dialog || popup_window || active_timer)
     {
       /* need to wait for events of this view, and handle io for file dialog */
       wait_event_fps();
@@ -855,4 +884,20 @@ Window::get_scaled_size (int *w, int *h)
 {
   *w = width * global_scale;
   *h = height * global_scale;
+}
+
+void
+Window::add_timer (Timer *timer)
+{
+  timers.push_back (timer);
+}
+
+void
+Window::remove_timer (Timer *timer)
+{
+  for (auto& t : timers)
+    {
+      if (t == timer)
+        t = nullptr;
+    }
 }
