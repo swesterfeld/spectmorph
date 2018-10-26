@@ -42,9 +42,18 @@ JackSynth::process (jack_nframes_t nframes)
           midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
+      if (m_inst_edit_changed)
+        {
+          midi_synth->set_inst_edit (m_inst_edit_active);
+
+          if (m_inst_edit_active && m_inst_edit_filename != "") // problem: takes too long
+            midi_synth->inst_edit_synth()->load_smset (m_inst_edit_filename, m_inst_edit_original_samples);
+          m_inst_edit_changed = false;
+        }
       m_volume = m_new_volume;
 
       m_voices_active = midi_synth->active_voice_count() > 0;
+
       m_new_plan_mutex.unlock();
     }
 
@@ -157,6 +166,16 @@ JackSynth::change_volume (double new_volume)
   m_new_volume = new_volume;
 }
 
+void
+JackSynth::handle_inst_edit_update (bool active, const string& filename, bool original_samples)
+{
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  m_inst_edit_changed = true;
+  m_inst_edit_active = active;
+  m_inst_edit_filename = filename;
+  m_inst_edit_original_samples = original_samples;
+}
+
 bool
 JackSynth::voices_active()
 {
@@ -164,7 +183,7 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
-JackControl::JackControl (MorphPlanPtr plan, MorphPlanControl *control_widget, JackSynth *synth) :
+JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
 {
@@ -174,6 +193,7 @@ JackControl::JackControl (MorphPlanPtr plan, MorphPlanControl *control_widget, J
 
   connect (m_control_widget->signal_volume_changed, this, &JackControl::on_volume_changed);
   connect (plan->signal_plan_changed, this, &JackControl::on_plan_changed);
+  connect (window.signal_inst_edit_update, this, &JackControl::on_handle_inst_edit_update);
 
   on_plan_changed();
 }
@@ -195,6 +215,12 @@ void
 JackControl::on_plan_changed()
 {
   synth->change_plan (morph_plan->clone());
+}
+
+void
+JackControl::on_handle_inst_edit_update (bool active, const string& filename, bool original_samples)
+{
+  synth->handle_inst_edit_update (active, filename, original_samples);
 }
 
 int
@@ -249,7 +275,7 @@ main (int argc, char **argv)
   MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
   if (filename != "")
     window.set_filename (filename);
-  JackControl control (morph_plan, window.control_widget(), &synth);
+  JackControl control (morph_plan, window, window.control_widget(), &synth);
   window.show();
   bool quit = false;
 

@@ -32,6 +32,11 @@ protected:
   double                        m_new_volume;
   bool                          m_voices_active;
 
+  bool                          m_inst_edit_changed = false;
+  bool                          m_inst_edit_active = false;
+  std::string                   m_inst_edit_filename;
+  bool                          m_inst_edit_original_samples = false;
+
 public:
   JackSynth (jack_client_t *client);
   ~JackSynth();
@@ -39,6 +44,7 @@ public:
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
+  void handle_inst_edit_update (bool active, const std::string& filename, bool original_samples);
   bool voices_active();
   int  process (jack_nframes_t nframes);
 };
@@ -50,13 +56,14 @@ class JackControl : public SignalReceiver
   MorphPlanPtr       morph_plan;
 
 public:
-  JackControl (MorphPlanPtr plan, MorphPlanControl *control_widget, JackSynth *synth);
+  JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth);
 
   void update_led();
 
 /* slots: */
   void on_plan_changed();
   void on_volume_changed (double d);
+  void on_handle_inst_edit_update (bool active, const std::string& filename, bool original_samples);
 };
 
 }
