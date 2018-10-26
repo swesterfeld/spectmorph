@@ -41,6 +41,7 @@ VstUI::open (PuglNativeWindow win_id)
 
   widget->control_widget()->set_volume (plugin->volume());
   connect (widget->control_widget()->signal_volume_changed, this, &VstUI::on_volume_changed);
+  connect (widget->signal_inst_edit_update, this, &VstUI::on_inst_edit_update);
 
   widget->show();
 
@@ -91,6 +92,12 @@ void
 VstUI::on_volume_changed (double new_volume)
 {
   plugin->set_volume (new_volume);
+}
+
+void
+VstUI::on_inst_edit_update (bool active, const string& filename, bool orig_samples)
+{
+  plugin->handle_inst_edit_update (active, filename, orig_samples);
 }
 
 void

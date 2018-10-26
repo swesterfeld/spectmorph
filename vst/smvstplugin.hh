@@ -62,6 +62,7 @@ struct VstPlugin
   void  preinit_plan (MorphPlanPtr plan);
 
   void  change_plan (MorphPlanPtr ptr);
+  void  handle_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
@@ -76,6 +77,11 @@ struct VstPlugin
   double              m_volume;
   bool                m_voices_active;
   double              rt_volume; // realtime thread only
+
+  bool                m_have_inst_edit_update;
+  bool                m_inst_edit_active;
+  std::string         m_inst_edit_filename;
+  bool                m_inst_edit_original_samples;
 };
 
 }
