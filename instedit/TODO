@@ -2,3 +2,4 @@
   - maybe upsample or interpolate waveform
 
 - creator should thread::join()
+- merge instedit and glui backend threading code
