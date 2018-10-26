@@ -36,6 +36,12 @@ class JackBackend : public Backend
   std::unique_ptr<MidiSynth> midi_synth;
 public:
 
+  void
+  on_timer()
+  {
+    // FIXME: not used yet
+  }
+
   static int
   jack_process (jack_nframes_t nframes, void *arg)
   {
@@ -221,7 +227,6 @@ main (int argc, char **argv)
     {
       window.wait_event_fps();
       window.process_events();
-      window.update_led();
     }
   jack_deactivate (client);
 }
