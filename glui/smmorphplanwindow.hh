@@ -52,6 +52,9 @@ public:
   void on_file_export_clicked();
   void on_load_index_clicked();
   void on_about_clicked();
+
+/* signals: */
+  Signal<bool, std::string, bool> signal_inst_edit_update;
 };
 
 }

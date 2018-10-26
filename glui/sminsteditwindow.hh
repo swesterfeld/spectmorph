@@ -6,6 +6,7 @@
 #include "sminstrument.hh"
 #include "smsamplewidget.hh"
 #include "smcombobox.hh"
+#include "smtimer.hh"
 
 namespace SpectMorph
 {
@@ -23,6 +24,7 @@ public:
   virtual void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr) = 0;
   virtual bool have_builder() = 0;
   virtual int current_midi_note() = 0;
+  virtual void on_timer() = 0;
 };
 
 class InstEditWindow : public Window
@@ -243,6 +245,12 @@ public:
     grid.add_widget (new Label (this, "Playing"), 70, 67, 10, 3);
     grid.add_widget (playing_label, 77, 67, 10, 3);
 
+    /* --- timer --- */
+    Timer *timer = new Timer (this);
+    connect (timer->signal_timeout, backend, &Backend::on_timer);
+    connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
+    timer->start (0);
+
     instrument.load (test_sample);
 
     // show complete wave
@@ -320,7 +328,7 @@ public:
     sample->set_loop (text_to_loop (loop_combobox->text()));
   }
   void
-  update_led()
+  on_update_led()
   {
     led->set_on (backend->have_builder());
 
