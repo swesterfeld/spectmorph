@@ -59,105 +59,18 @@ MorphWavSourceView::on_load()
   });
 }
 
-class NullBackend : public Backend
-{
-  MorphPlanWindow *morph_plan_window = nullptr;
-  Timer *timer = nullptr;
-
-  std::mutex result_mutex;
-  bool have_result = false;
-public:
-  NullBackend (MorphPlanWindow *morph_plan_window) :
-    morph_plan_window (morph_plan_window)
-  {
-  }
-  void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
-  {
-    if (instrument)
-      {
-        WavSetBuilder *builder = new WavSetBuilder (instrument);
-
-        add_builder (builder);
-      }
-  }
-  WavSetBuilder *current_builder = nullptr;
-  WavSetBuilder *next_builder = nullptr;
-  void
-  add_builder (WavSetBuilder *builder)
-  {
-    if (current_builder)
-      {
-        if (next_builder) /* kill and overwrite obsolete next builder */
-          delete next_builder;
-
-        next_builder = builder;
-      }
-    else
-      {
-        start_as_current (builder);
-      }
-  }
-  void
-  start_as_current (WavSetBuilder *builder)
-  {
-    current_builder = builder;
-    new std::thread ([this] () {
-      current_builder->run();
-
-      finish_current_builder();
-    });
-  }
-  void
-  finish_current_builder()
-  {
-    std::lock_guard<std::mutex> lg (result_mutex);
-
-    WavSet wav_set;
-    current_builder->get_result (wav_set);
-
-    have_result = true;
-
-    wav_set.save ("/tmp/midi_synth.smset");
-
-    delete current_builder;
-    current_builder = nullptr;
-
-    if (next_builder)
-      {
-        WavSetBuilder *builder = next_builder;
-
-        next_builder = nullptr;
-        start_as_current (builder);
-      }
-  }
-  bool
-  have_builder()
-  {
-    std::lock_guard<std::mutex> lg (result_mutex);
-
-    return current_builder != nullptr;
-  }
-  int current_midi_note() {return 69;}
-  void
-  on_timer()
-  {
-    std::lock_guard<std::mutex> lg (result_mutex);
-    if (have_result)
-      {
-        printf ("got result!\n");
-        morph_plan_window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
-        have_result = false;
-      }
-  }
-};
-
 void
 MorphWavSourceView::on_edit()
 {
-  NullBackend *nb = new NullBackend (morph_plan_window);
+  NullBackend *nb = new NullBackend();
   InstEditWindow *win = new InstEditWindow (morph_wav_source->instrument(), nb, window());
 
+  connect (nb->signal_inst_edit_update, [this](bool active, const string& str, bool orig) {
+    morph_plan_window->signal_inst_edit_update (active, str, orig);
+  });
+
   morph_plan_window->signal_inst_edit_update (true, "", false);
+
   win->show();
 
   // after this line, rename window is owned by parent window

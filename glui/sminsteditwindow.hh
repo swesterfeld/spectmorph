@@ -7,6 +7,9 @@
 #include "smsamplewidget.hh"
 #include "smcombobox.hh"
 #include "smtimer.hh"
+#include "smwavsetbuilder.hh"
+
+#include <thread>
 
 namespace SpectMorph
 {
@@ -25,6 +28,93 @@ public:
   virtual bool have_builder() = 0;
   virtual int current_midi_note() = 0;
   virtual void on_timer() = 0;
+  Signal<bool, std::string, bool> signal_inst_edit_update;
+};
+
+class NullBackend : public Backend
+{
+  std::mutex result_mutex;
+  bool have_result = false;
+public:
+  void
+  switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
+  {
+    if (instrument)
+      {
+        WavSetBuilder *builder = new WavSetBuilder (instrument);
+
+        add_builder (builder);
+      }
+  }
+  WavSetBuilder *current_builder = nullptr;
+  WavSetBuilder *next_builder = nullptr;
+  void
+  add_builder (WavSetBuilder *builder)
+  {
+    if (current_builder)
+      {
+        if (next_builder) /* kill and overwrite obsolete next builder */
+          delete next_builder;
+
+        next_builder = builder;
+      }
+    else
+      {
+        start_as_current (builder);
+      }
+  }
+  void
+  start_as_current (WavSetBuilder *builder)
+  {
+    current_builder = builder;
+    new std::thread ([this] () {
+      current_builder->run();
+
+      finish_current_builder();
+    });
+  }
+  void
+  finish_current_builder()
+  {
+    std::lock_guard<std::mutex> lg (result_mutex);
+
+    WavSet wav_set;
+    current_builder->get_result (wav_set);
+
+    have_result = true;
+
+    wav_set.save ("/tmp/midi_synth.smset");
+
+    delete current_builder;
+    current_builder = nullptr;
+
+    if (next_builder)
+      {
+        WavSetBuilder *builder = next_builder;
+
+        next_builder = nullptr;
+        start_as_current (builder);
+      }
+  }
+  bool
+  have_builder()
+  {
+    std::lock_guard<std::mutex> lg (result_mutex);
+
+    return current_builder != nullptr;
+  }
+  int current_midi_note() {return 69;}
+  void
+  on_timer()
+  {
+    std::lock_guard<std::mutex> lg (result_mutex);
+    if (have_result)
+      {
+        printf ("got result!\n");
+        signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
+        have_result = false;
+      }
+  }
 };
 
 class InstEditWindow : public Window
@@ -82,7 +172,7 @@ class InstEditWindow : public Window
       }
     if (sample)
       {
-        backend->switch_to_sample (sample, play_mode, &instrument);
+        m_backend->switch_to_sample (sample, play_mode, &instrument);
       }
   }
   void
@@ -93,14 +183,14 @@ class InstEditWindow : public Window
     if (sample)
       {
         sample_widget->update_markers();
-        backend->switch_to_sample (sample, play_mode, &instrument);
+        m_backend->switch_to_sample (sample, play_mode, &instrument);
       }
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
   Label *vzoom_label;
-  Backend *backend;
+  Backend *m_backend;
   PlayMode play_mode = PlayMode::SAMPLE;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
@@ -146,7 +236,7 @@ public:
 
   InstEditWindow (const std::string& test_sample, Backend *backend, Window *parent_window = nullptr) :
     Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
-    backend (backend)
+    m_backend (backend)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
@@ -247,7 +337,7 @@ public:
 
     /* --- timer --- */
     Timer *timer = new Timer (this);
-    connect (timer->signal_timeout, backend, &Backend::on_timer);
+    connect (timer->signal_timeout, m_backend, &Backend::on_timer);
     connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
     timer->start (0);
 
@@ -330,10 +420,15 @@ public:
   void
   on_update_led()
   {
-    led->set_on (backend->have_builder());
+    led->set_on (m_backend->have_builder());
 
-    int note = backend->current_midi_note();
+    int note = m_backend->current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
+  }
+  Backend *
+  backend()
+  {
+    return m_backend;
   }
 };
 
