@@ -27,21 +27,20 @@ class InstEditBackend
   std::mutex result_mutex;
   bool have_result = false;
   InstEditWindow *window = nullptr;
+
+  double
+  note_to_freq (int note)
+  {
+    return 440 * exp (log (2) * (note - 69) / 12.0);
+  }
+
 public:
   InstEditBackend (InstEditWindow *window) :
     window (window)
   {
   }
-  void
-  switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
-  {
-    if (instrument)
-      {
-        WavSetBuilder *builder = new WavSetBuilder (instrument);
+  void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument);
 
-        add_builder (builder);
-      }
-  }
   WavSetBuilder *current_builder = nullptr;
   WavSetBuilder *next_builder = nullptr;
   void
@@ -425,6 +424,48 @@ InstEditBackend::on_timer()
       printf ("got result!\n");
       window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
       have_result = false;
+    }
+}
+
+inline void
+InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
+{
+  printf ("switch to sample called, play mode=%d\n", int (play_mode));
+  if (play_mode == PlayMode::SAMPLE)
+    {
+      WavSet wav_set;
+
+      WavSetWave new_wave;
+      new_wave.midi_note = sample->midi_note();
+      // new_wave.path = "..";
+      new_wave.channel = 0;
+      new_wave.velocity_range_min = 0;
+      new_wave.velocity_range_max = 127;
+
+      Audio audio;
+      audio.mix_freq = sample->wav_data.mix_freq();
+      audio.fundamental_freq = note_to_freq (sample->midi_note());
+      audio.original_samples = sample->wav_data.samples();
+      new_wave.audio = audio.clone();
+
+      wav_set.waves.push_back (new_wave);
+
+      wav_set.save ("/tmp/midi_synth.smset");
+      window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", true);
+    }
+  else if (play_mode == PlayMode::REFERENCE)
+    {
+      Index index;
+      index.load_file ("instruments:standard");
+
+      std::string smset_dir = index.smset_dir();
+      window->signal_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
+    }
+  else if (play_mode == PlayMode::SPECTMORPH)
+    {
+      WavSetBuilder *builder = new WavSetBuilder (instrument);
+
+      add_builder (builder);
     }
 }
 
