@@ -64,7 +64,7 @@ MorphWavSourceView::on_edit()
 {
   InstEditWindow *win = new InstEditWindow (morph_wav_source->instrument(), window());
 
-  connect (win->backend()->signal_inst_edit_update, [this](bool active, const string& str, bool orig) {
+  connect (win->signal_inst_edit_update, [this](bool active, const string& str, bool orig) {
     morph_plan_window->signal_inst_edit_update (active, str, orig);
   });
 

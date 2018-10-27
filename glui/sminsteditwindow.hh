@@ -21,21 +21,17 @@ enum class PlayMode
   REFERENCE
 };
 
-class Backend
-{
-public:
-  virtual void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr) = 0;
-  virtual bool have_builder() = 0;
-  virtual int current_midi_note() = 0;
-  virtual void on_timer() = 0;
-  Signal<bool, std::string, bool> signal_inst_edit_update;
-};
-
-class NullBackend : public Backend
+class InstEditWindow;
+class InstEditBackend
 {
   std::mutex result_mutex;
   bool have_result = false;
+  InstEditWindow *window = nullptr;
 public:
+  InstEditBackend (InstEditWindow *window) :
+    window (window)
+  {
+  }
   void
   switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
   {
@@ -104,23 +100,14 @@ public:
     return current_builder != nullptr;
   }
   int current_midi_note() {return 69;}
-  void
-  on_timer()
-  {
-    std::lock_guard<std::mutex> lg (result_mutex);
-    if (have_result)
-      {
-        printf ("got result!\n");
-        signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
-        have_result = false;
-      }
-  }
+
+  void on_timer();
 };
 
 class InstEditWindow : public Window
 {
   Instrument instrument;
-  NullBackend m_backend;
+  InstEditBackend m_backend;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
@@ -235,7 +222,8 @@ public:
   static const int win_height = 560;
 
   InstEditWindow (const std::string& test_sample, Window *parent_window = nullptr) :
-    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0)
+    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
+    m_backend (this)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
@@ -336,7 +324,7 @@ public:
 
     /* --- timer --- */
     Timer *timer = new Timer (this);
-    connect (timer->signal_timeout, &m_backend, &Backend::on_timer);
+    connect (timer->signal_timeout, &m_backend, &InstEditBackend::on_timer);
     connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
     timer->start (0);
 
@@ -424,12 +412,21 @@ public:
     int note = m_backend.current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
   }
-  Backend *
-  backend()
-  {
-    return &m_backend;
-  }
+
+  Signal<bool, std::string, bool> signal_inst_edit_update;
 };
+
+inline void
+InstEditBackend::on_timer()
+{
+  std::lock_guard<std::mutex> lg (result_mutex);
+  if (have_result)
+    {
+      printf ("got result!\n");
+      window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
+      have_result = false;
+    }
+}
 
 }
 
