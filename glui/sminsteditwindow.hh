@@ -120,6 +120,7 @@ public:
 class InstEditWindow : public Window
 {
   Instrument instrument;
+  NullBackend m_backend;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
@@ -172,7 +173,7 @@ class InstEditWindow : public Window
       }
     if (sample)
       {
-        m_backend->switch_to_sample (sample, play_mode, &instrument);
+        m_backend.switch_to_sample (sample, play_mode, &instrument);
       }
   }
   void
@@ -183,14 +184,13 @@ class InstEditWindow : public Window
     if (sample)
       {
         sample_widget->update_markers();
-        m_backend->switch_to_sample (sample, play_mode, &instrument);
+        m_backend.switch_to_sample (sample, play_mode, &instrument);
       }
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
   Label *vzoom_label;
-  Backend *m_backend;
   PlayMode play_mode = PlayMode::SAMPLE;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
@@ -234,9 +234,8 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (const std::string& test_sample, Backend *backend, Window *parent_window = nullptr) :
-    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
-    m_backend (backend)
+  InstEditWindow (const std::string& test_sample, Window *parent_window = nullptr) :
+    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
@@ -337,7 +336,7 @@ public:
 
     /* --- timer --- */
     Timer *timer = new Timer (this);
-    connect (timer->signal_timeout, m_backend, &Backend::on_timer);
+    connect (timer->signal_timeout, &m_backend, &Backend::on_timer);
     connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
     timer->start (0);
 
@@ -420,15 +419,15 @@ public:
   void
   on_update_led()
   {
-    led->set_on (m_backend->have_builder());
+    led->set_on (m_backend.have_builder());
 
-    int note = m_backend->current_midi_note();
+    int note = m_backend.current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
   }
   Backend *
   backend()
   {
-    return m_backend;
+    return &m_backend;
   }
 };
 
