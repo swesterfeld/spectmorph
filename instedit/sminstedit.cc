@@ -25,7 +25,7 @@ using std::map;
 using pugi::xml_document;
 using pugi::xml_node;
 
-class JackBackend : public Backend
+class JackBackend : SignalReceiver
 {
   double jack_mix_freq;
   jack_port_t *input_port;
@@ -92,7 +92,7 @@ public:
         exit (1);
       }
   }
-
+#if 0
   void
   switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
   {
@@ -199,6 +199,20 @@ public:
 
     return current_builder != nullptr;
   }
+#endif
+  void
+  init (InstEditWindow *window)
+  {
+    connect (window->backend()->signal_inst_edit_update, this, &JackBackend::on_inst_edit_update);
+  }
+
+  void
+  on_inst_edit_update (bool active, const string& filename, bool orig_samples)
+  {
+    std::lock_guard<std::mutex> lg (synth_mutex);
+    if (active)
+      midi_synth->inst_edit_synth()->load_smset (filename, orig_samples);
+  }
 };
 
 int
@@ -215,10 +229,13 @@ main (int argc, char **argv)
 
   JackBackend jack_backend (client);
 
+  NullBackend nb; // FIXME
+
   bool quit = false;
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
-  InstEditWindow window (fn, &jack_backend);
+  InstEditWindow window (fn, &nb);
+  jack_backend.init (&window);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
