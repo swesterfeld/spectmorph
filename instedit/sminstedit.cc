@@ -87,111 +87,12 @@ public:
       }
   }
 #if 0
-  void
-  switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument = nullptr)
-  {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-
-    if (play_mode == PlayMode::SAMPLE)
-      {
-        WavSet wav_set;
-
-        WavSetWave new_wave;
-        new_wave.midi_note = sample->midi_note();
-        // new_wave.path = "..";
-        new_wave.channel = 0;
-        new_wave.velocity_range_min = 0;
-        new_wave.velocity_range_max = 127;
-
-        Audio audio;
-        audio.mix_freq = sample->wav_data.mix_freq();
-        audio.fundamental_freq = note_to_freq (sample->midi_note());
-        audio.original_samples = sample->wav_data.samples();
-        new_wave.audio = audio.clone();
-
-        wav_set.waves.push_back (new_wave);
-
-        wav_set.save ("/tmp/midi_synth.smset");
-        midi_synth->inst_edit_synth()->load_smset ("/tmp/midi_synth.smset", true);
-      }
-    else if (play_mode == PlayMode::REFERENCE)
-      {
-        Index index;
-        index.load_file ("instruments:standard");
-
-        string smset_dir = index.smset_dir();
-
-        midi_synth->inst_edit_synth()->load_smset (smset_dir + "/synth-saw.smset", false);
-      }
-    else if (play_mode == PlayMode::SPECTMORPH)
-      {
-        WavSetBuilder *wbuilder = new WavSetBuilder (instrument);
-
-        add_builder (wbuilder);
-      }
-  }
   int
   current_midi_note()
   {
     std::lock_guard<std::mutex> lg (synth_mutex);
 
     return m_current_midi_note;
-  }
-  WavSetBuilder *current_builder = nullptr;
-  WavSetBuilder *next_builder = nullptr;
-  void
-  add_builder (WavSetBuilder *builder)
-  {
-    if (current_builder)
-      {
-        if (next_builder) /* kill and overwrite obsolete next builder */
-          delete next_builder;
-
-        next_builder = builder;
-      }
-    else
-      {
-        start_as_current (builder);
-      }
-  }
-  void
-  start_as_current (WavSetBuilder *builder)
-  {
-    current_builder = builder;
-    new std::thread ([this] () {
-      current_builder->run();
-
-      finish_current_builder();
-    });
-  }
-  void
-  finish_current_builder()
-  {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-
-    WavSet wav_set;
-    current_builder->get_result (wav_set);
-
-    wav_set.save ("/tmp/midi_synth.smset");
-    midi_synth->inst_edit_synth()->load_smset ("/tmp/midi_synth.smset", false);
-
-    delete current_builder;
-    current_builder = nullptr;
-
-    if (next_builder)
-      {
-        WavSetBuilder *builder = next_builder;
-
-        next_builder = nullptr;
-        start_as_current (builder);
-      }
-  }
-  bool
-  have_builder()
-  {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-
-    return current_builder != nullptr;
   }
 #endif
   void
