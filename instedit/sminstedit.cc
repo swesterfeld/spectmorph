@@ -25,7 +25,7 @@ using std::map;
 using pugi::xml_document;
 using pugi::xml_node;
 
-class JackBackend : SignalReceiver
+class JackSynth : SignalReceiver
 {
   double jack_mix_freq;
   jack_port_t *input_port;
@@ -45,7 +45,7 @@ public:
   static int
   jack_process (jack_nframes_t nframes, void *arg)
   {
-    JackBackend *instance = reinterpret_cast<JackBackend *> (arg);
+    JackSynth *instance = reinterpret_cast<JackSynth *> (arg);
     return instance->process (nframes);
   }
 
@@ -74,7 +74,7 @@ public:
     return 0;
   }
 
-  JackBackend (jack_client_t *client)
+  JackSynth (jack_client_t *client)
   {
     jack_mix_freq = jack_get_sample_rate (client);
 
@@ -203,7 +203,7 @@ public:
   void
   init (InstEditWindow *window)
   {
-    connect (window->backend()->signal_inst_edit_update, this, &JackBackend::on_inst_edit_update);
+    connect (window->backend()->signal_inst_edit_update, this, &JackSynth::on_inst_edit_update);
   }
 
   void
@@ -227,7 +227,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  JackBackend jack_backend (client);
+  JackSynth jack_synth (client);
 
   NullBackend nb; // FIXME
 
@@ -235,7 +235,7 @@ main (int argc, char **argv)
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
   InstEditWindow window (fn, &nb);
-  jack_backend.init (&window);
+  jack_synth.init (&window);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
