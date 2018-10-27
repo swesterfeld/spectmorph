@@ -197,7 +197,7 @@ public:
   void
   init (InstEditWindow *window)
   {
-    connect (window->backend()->signal_inst_edit_update, this, &JackSynth::on_inst_edit_update);
+    connect (window->signal_inst_edit_update, this, &JackSynth::on_inst_edit_update);
   }
 
   void
