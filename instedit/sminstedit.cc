@@ -36,12 +36,6 @@ class JackSynth : SignalReceiver
   std::unique_ptr<MidiSynth> midi_synth;
 public:
 
-  void
-  on_timer()
-  {
-    // FIXME: not used yet
-  }
-
   static int
   jack_process (jack_nframes_t nframes, void *arg)
   {
@@ -229,12 +223,11 @@ main (int argc, char **argv)
 
   JackSynth jack_synth (client);
 
-  NullBackend nb; // FIXME
-
   bool quit = false;
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
-  InstEditWindow window (fn, &nb);
+
+  InstEditWindow window (fn);
   jack_synth.init (&window);
 
   window.show();
