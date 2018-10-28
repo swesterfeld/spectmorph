@@ -3,3 +3,5 @@
 
 - creator should thread::join()
 - merge instedit and glui backend threading code
+- integrate smenc proper
+- lv2 messaging

@@ -104,9 +104,11 @@ public:
   void
   on_inst_edit_update (bool active, const string& filename, bool orig_samples)
   {
+    InstEditUpdate ie_update (active, filename, orig_samples);
+    ie_update.prepare();
+
     std::lock_guard<std::mutex> lg (synth_mutex);
-    if (active)
-      midi_synth->inst_edit_synth()->load_smset (filename, orig_samples);
+    ie_update.run_rt (midi_synth.get());
   }
 };
 
