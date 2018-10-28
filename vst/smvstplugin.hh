@@ -79,9 +79,7 @@ struct VstPlugin
   double              rt_volume; // realtime thread only
 
   bool                m_have_inst_edit_update;
-  bool                m_inst_edit_active;
-  std::string         m_inst_edit_filename;
-  bool                m_inst_edit_original_samples;
+  InstEditUpdate      m_inst_edit_update;
 };
 
 }

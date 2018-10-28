@@ -109,11 +109,12 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 void
 VstPlugin::handle_inst_edit_update (bool active, const string& filename, bool orig_samples)
 {
+  InstEditUpdate ie_update (active, filename, orig_samples);
+  ie_update.prepare();
+
   std::lock_guard<std::mutex> locker (m_new_plan_mutex);
   m_have_inst_edit_update = true;
-  m_inst_edit_active = active;
-  m_inst_edit_filename = filename;
-  m_inst_edit_original_samples = orig_samples;
+  m_inst_edit_update = ie_update;
 }
 
 void
@@ -361,10 +362,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
         }
       if (plugin->m_have_inst_edit_update)
         {
-          plugin->midi_synth->set_inst_edit (plugin->m_inst_edit_active);
-
-          if (plugin->m_inst_edit_active && plugin->m_inst_edit_filename != "") // FIXME: problem: takes too long
-            plugin->midi_synth->inst_edit_synth()->load_smset (plugin->m_inst_edit_filename, plugin->m_inst_edit_original_samples);
+          plugin->m_inst_edit_update.run_rt (plugin->midi_synth);
           plugin->m_have_inst_edit_update = false;
         }
       plugin->rt_volume = plugin->m_volume;
