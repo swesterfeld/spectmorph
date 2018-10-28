@@ -107,6 +107,43 @@ public:
   InstEditSynth *inst_edit_synth();
 };
 
+class InstEditUpdate
+{
+  bool        active = false;
+  std::string filename;
+  bool        original_samples = false;
+  WavSet      *wav_set = nullptr;
+
+public:
+  InstEditUpdate (bool active, const std::string& filename, bool original_samples) :
+    active (active),
+    filename (filename),
+    original_samples (original_samples)
+  {
+  }
+  InstEditUpdate() = default;
+  void
+  prepare()
+  {
+    if (filename != "")
+      {
+        wav_set = new WavSet();
+        wav_set->load (filename);
+      }
+  }
+  void
+  run_rt (MidiSynth *midi_synth)
+  {
+    midi_synth->set_inst_edit (active);
+
+    if (active)
+      {
+        midi_synth->inst_edit_synth()->take_wav_set (wav_set, original_samples);
+        wav_set = nullptr;
+      }
+  }
+};
+
 }
 
 #endif /* SPECTMORPH_MIDI_SYNTH_HH */
