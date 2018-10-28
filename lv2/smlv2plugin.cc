@@ -96,9 +96,7 @@ public:
   bool            voices_active;
   bool            send_settings_to_ui;
   bool            inst_edit_changed;
-  bool            inst_edit_active;
-  string          inst_edit_filename;
-  bool            inst_edit_original_samples;
+  InstEditUpdate  inst_edit_update;
 
   void update_plan (const string& new_plan_str);
   void handle_event (const string& event_str);
@@ -182,11 +180,12 @@ LV2Plugin::handle_event (const string& event_str)
       string filename = vs[2];
       bool original_samples = atoi (vs[3].c_str()) > 0;
 
+      InstEditUpdate ie_update (active, filename, original_samples);
+      ie_update.prepare();
+
       std::lock_guard<std::mutex> lg (new_plan_mutex);
       inst_edit_changed = true;
-      inst_edit_active = active;
-      inst_edit_filename = filename;
-      inst_edit_original_samples = original_samples;
+      inst_edit_update = ie_update;
     }
 }
 
@@ -354,10 +353,7 @@ run (LV2_Handle instance, uint32_t n_samples)
         }
       if (self->inst_edit_changed)
         {
-          self->midi_synth.set_inst_edit (self->inst_edit_active);
-
-          if (self->inst_edit_active && self->inst_edit_filename != "") // FIXME: problem: takes too long
-            self->midi_synth.inst_edit_synth()->load_smset (self->inst_edit_filename, self->inst_edit_original_samples);
+          self->inst_edit_update.run_rt (&self->midi_synth);
           self->inst_edit_changed = false;
         }
       self->new_plan_mutex.unlock();
