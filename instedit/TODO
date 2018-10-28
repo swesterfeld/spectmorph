@@ -5,3 +5,5 @@
 - merge instedit and glui backend threading code
 - integrate smenc proper
 - lv2 messaging
+- temp file handling
+- auto tune and stuff
