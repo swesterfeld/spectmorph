@@ -25,14 +25,14 @@ class InstEditSynth
   };
 
   float                        mix_freq;
-  WavSet                       wav_set;
+  std::unique_ptr<WavSet>      wav_set;
   std::vector<Voice>           voices;
 
 public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
 
-  void load_smset (const std::string& filename, bool enable_original_samples);
+  void take_wav_set (WavSet *new_wav_set, bool enable_original_samples);
 
   void handle_midi_event (const unsigned char *midi_data);
   void process (float *output, size_t n_values);

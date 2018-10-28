@@ -23,12 +23,12 @@ InstEditSynth::~InstEditSynth()
 }
 
 void
-InstEditSynth::load_smset (const string& smset, bool enable_original_samples)
+InstEditSynth::take_wav_set (WavSet *new_wav_set, bool enable_original_samples)
 {
-  wav_set.load (smset);
+  wav_set.reset (new_wav_set);
   for (auto& voice : voices)
     {
-      voice.decoder.reset (new LiveDecoder (&wav_set));
+      voice.decoder.reset (new LiveDecoder (wav_set.get()));
       voice.decoder->enable_original_samples (enable_original_samples);
     }
 }
