@@ -95,8 +95,13 @@ public:
   string          plan_str;
   bool            voices_active;
   bool            send_settings_to_ui;
+  bool            inst_edit_changed;
+  bool            inst_edit_active;
+  string          inst_edit_filename;
+  bool            inst_edit_original_samples;
 
   void update_plan (const string& new_plan_str);
+  void handle_event (const string& event_str);
 };
 
 }
@@ -153,6 +158,36 @@ LV2Plugin::update_plan (const string& new_plan_str)
   std::lock_guard<std::mutex> locker (new_plan_mutex);
   this->new_plan = new_plan;
   plan_str = new_plan_str;
+}
+
+void
+LV2Plugin::handle_event (const string& event_str)
+{
+  string s;
+  string in = event_str + "|";
+  vector<string> vs;
+  for (auto c : in)
+    {
+      if (c == '|')
+        {
+          vs.push_back (s);
+          s = "";
+        }
+      else
+        s += c;
+    }
+  if (vs[0] == "InstEditUpdate")
+    {
+      bool active = atoi (vs[1].c_str()) > 0;
+      string filename = vs[2];
+      bool original_samples = atoi (vs[3].c_str()) > 0;
+
+      std::lock_guard<std::mutex> lg (new_plan_mutex);
+      inst_edit_changed = true;
+      inst_edit_active = active;
+      inst_edit_filename = filename;
+      inst_edit_original_samples = original_samples;
+    }
 }
 
 static LV2_Handle
@@ -234,11 +269,20 @@ activate (LV2_Handle instance)
 
 class WorkMsg
 {
-  char *m_plan_str;
 public:
-  WorkMsg (const char *plan_str)
+  enum class Type {
+    PLAN,
+    EVENT
+  };
+private:
+  char *m_str = nullptr;
+  Type  m_type;
+
+public:
+  WorkMsg (Type type, const char *str)
   {
-    m_plan_str = g_strdup (plan_str);
+    m_type = type;
+    m_str  = g_strdup (str);
   }
   WorkMsg (uint32_t size, const void *data)
   {
@@ -248,14 +292,19 @@ public:
   void
   free()
   {
-    g_free (m_plan_str);
+    g_free (m_str);
 
-    m_plan_str = NULL;
+    m_str = NULL;
   }
   const char *
-  plan_str()
+  str()
   {
-    return m_plan_str;
+    return m_str;
+  }
+  Type
+  type()
+  {
+    return m_type;
   }
 };
 
@@ -271,7 +320,13 @@ work (LV2_Handle                  instance,
   // Get new plan from message
   WorkMsg       msg (size, data);
 
-  self->update_plan (msg.plan_str());
+  switch (msg.type())
+    {
+      case WorkMsg::Type::PLAN:   self->update_plan (msg.str());
+                                  break;
+      case WorkMsg::Type::EVENT:  self->handle_event (msg.str());
+                                  break;
+    }
 
   msg.free();
   return LV2_WORKER_SUCCESS;
@@ -296,6 +351,14 @@ run (LV2_Handle instance, uint32_t n_samples)
         {
           self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
+        }
+      if (self->inst_edit_changed)
+        {
+          self->midi_synth.set_inst_edit (self->inst_edit_active);
+
+          if (self->inst_edit_active && self->inst_edit_filename != "") // FIXME: problem: takes too long
+            self->midi_synth.inst_edit_synth()->load_smset (self->inst_edit_filename, self->inst_edit_original_samples);
+          self->inst_edit_changed = false;
         }
       self->new_plan_mutex.unlock();
     }
@@ -350,7 +413,7 @@ run (LV2_Handle instance, uint32_t n_samples)
                   if (plan_str)
                     {
                       // send plan change to worker
-                      WorkMsg msg (plan_str);
+                      WorkMsg msg (WorkMsg::Type::PLAN, plan_str);
 
                       self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
                     }
@@ -366,6 +429,20 @@ run (LV2_Handle instance, uint32_t n_samples)
 
               std::lock_guard<std::mutex> locker (self->new_plan_mutex); // need lock to access plan_str
               self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
+            }
+          else if (obj->body.otype == self->uris.spectmorph_Event)
+            {
+              const char *event_str;
+
+              if (self->read_event (obj, &event_str))
+                {
+                  if (event_str)
+                    {
+                      WorkMsg msg (WorkMsg::Type::EVENT, event_str);
+
+                      self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
+                    }
+                }
             }
         }
     }

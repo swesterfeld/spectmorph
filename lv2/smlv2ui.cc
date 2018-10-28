@@ -50,6 +50,7 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
+  connect (window->signal_inst_edit_update, this, &LV2UI::on_inst_edit_update);
 
   window->show();
 }
@@ -97,6 +98,23 @@ LV2UI::on_plan_changed()
   lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
 
   const LV2_Atom* msg = write_set_plan (&forge, plan_str);
+
+  write (controller, 0, lv2_atom_total_size (msg),
+         uris.atom_eventTransfer,
+         msg);
+}
+
+void
+LV2UI::on_inst_edit_update (bool active, const string& filename, bool orig_samples)
+{
+  // FIXME: escape chars
+  string inst_edit_str = string_printf ("InstEditUpdate|%d|%s|%d", active, filename.c_str(), orig_samples);
+
+  const size_t OBJ_BUF_SIZE = inst_edit_str.size() + 1024;
+  uint8_t obj_buf[OBJ_BUF_SIZE];
+  lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
+
+  const LV2_Atom *msg = write_event (&forge, inst_edit_str);
 
   write (controller, 0, lv2_atom_total_size (msg),
          uris.atom_eventTransfer,
