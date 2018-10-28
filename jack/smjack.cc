@@ -44,10 +44,7 @@ JackSynth::process (jack_nframes_t nframes)
         }
       if (m_inst_edit_changed)
         {
-          midi_synth->set_inst_edit (m_inst_edit_active);
-
-          if (m_inst_edit_active && m_inst_edit_filename != "") // problem: takes too long
-            midi_synth->inst_edit_synth()->load_smset (m_inst_edit_filename, m_inst_edit_original_samples);
+          m_inst_edit_update.run_rt (midi_synth);
           m_inst_edit_changed = false;
         }
       m_volume = m_new_volume;
@@ -169,11 +166,12 @@ JackSynth::change_volume (double new_volume)
 void
 JackSynth::handle_inst_edit_update (bool active, const string& filename, bool original_samples)
 {
+  InstEditUpdate ie_update (active, filename, original_samples);
+  ie_update.prepare();
+
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_inst_edit_changed = true;
-  m_inst_edit_active = active;
-  m_inst_edit_filename = filename;
-  m_inst_edit_original_samples = original_samples;
+  m_inst_edit_update  = ie_update;
 }
 
 bool

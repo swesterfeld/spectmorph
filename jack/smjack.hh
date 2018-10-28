@@ -33,9 +33,7 @@ protected:
   bool                          m_voices_active;
 
   bool                          m_inst_edit_changed = false;
-  bool                          m_inst_edit_active = false;
-  std::string                   m_inst_edit_filename;
-  bool                          m_inst_edit_original_samples = false;
+  InstEditUpdate                m_inst_edit_update;
 
 public:
   JackSynth (jack_client_t *client);
