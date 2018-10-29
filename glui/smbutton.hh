@@ -16,6 +16,8 @@ class Button : public Widget
 
 public:
   Signal<> signal_clicked;
+  Signal<> signal_pressed;
+  Signal<> signal_released;
 
   Button (Widget *parent, const std::string& text) :
     Widget (parent),
@@ -64,6 +66,7 @@ public:
   {
     pressed = true;
     update();
+    signal_pressed();
   }
   void
   mouse_release (double x, double y) override
@@ -73,6 +76,7 @@ public:
 
     pressed = false;
     update();
+    signal_released();
 
     if (x >= 0 && y >= 0 && x < width && y < height)
       signal_clicked();  // this must be the last line, as deletion can occur afterwards
