@@ -95,8 +95,8 @@ public:
   string          plan_str;
   bool            voices_active;
   bool            send_settings_to_ui;
-  bool            inst_edit_changed;
-  InstEditUpdate  inst_edit_update;
+
+  std::unique_ptr<SynthControlEvent> control_event;
 
   void update_plan (const string& new_plan_str);
   void handle_event (const string& event_str);
@@ -161,32 +161,11 @@ LV2Plugin::update_plan (const string& new_plan_str)
 void
 LV2Plugin::handle_event (const string& event_str)
 {
-  string s;
-  string in = event_str + "|";
-  vector<string> vs;
-  for (auto c : in)
-    {
-      if (c == '|')
-        {
-          vs.push_back (s);
-          s = "";
-        }
-      else
-        s += c;
-    }
-  if (vs[0] == "InstEditUpdate")
-    {
-      bool active = atoi (vs[1].c_str()) > 0;
-      string filename = vs[2];
-      bool original_samples = atoi (vs[3].c_str()) > 0;
+  SynthControlEvent *event = SynthControlEvent::create (event_str);
+  event->prepare();
 
-      InstEditUpdate ie_update (active, filename, original_samples);
-      ie_update.prepare();
-
-      std::lock_guard<std::mutex> lg (new_plan_mutex);
-      inst_edit_changed = true;
-      inst_edit_update = ie_update;
-    }
+  std::lock_guard<std::mutex> lg (new_plan_mutex);
+  control_event.reset (event);
 }
 
 static LV2_Handle
@@ -351,10 +330,10 @@ run (LV2_Handle instance, uint32_t n_samples)
           self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
         }
-      if (self->inst_edit_changed)
+      if (self->control_event)
         {
-          self->inst_edit_update.run_rt (&self->midi_synth);
-          self->inst_edit_changed = false;
+          self->control_event->run_rt (&self->midi_synth);
+          self->control_event.reset();
         }
       self->new_plan_mutex.unlock();
     }

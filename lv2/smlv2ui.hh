@@ -31,8 +31,7 @@ public:
   void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
   void idle();
 
-  void synth_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
-  void synth_inst_edit_note (int midi_note, bool on);
+  void synth_take_control_event (SynthControlEvent *event) override;
 
 /* slots: */
   void on_plan_changed();

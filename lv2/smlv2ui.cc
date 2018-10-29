@@ -104,10 +104,10 @@ LV2UI::on_plan_changed()
 }
 
 void
-LV2UI::synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
+LV2UI::synth_take_control_event (SynthControlEvent *event)
 {
-  // FIXME: escape chars
-  string inst_edit_str = string_printf ("InstEditUpdate|%d|%s|%d", active, filename.c_str(), orig_samples);
+  string inst_edit_str = event->to_string();
+  delete event;
 
   const size_t OBJ_BUF_SIZE = inst_edit_str.size() + 1024;
   uint8_t obj_buf[OBJ_BUF_SIZE];
@@ -118,13 +118,6 @@ LV2UI::synth_inst_edit_update (bool active, const string& filename, bool orig_sa
   write (controller, 0, lv2_atom_total_size (msg),
          uris.atom_eventTransfer,
          msg);
-}
-
-void
-LV2UI::synth_inst_edit_note (int midi_note, bool on)
-{
-  // FIXME
-  printf ("FIXME: support synth_inst_edit_note/LV2\n");
 }
 
 void
