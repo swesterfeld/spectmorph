@@ -118,6 +118,17 @@ VstPlugin::synth_inst_edit_update (bool active, const string& filename, bool ori
 }
 
 void
+VstPlugin::synth_inst_edit_note (int midi_note, bool on)
+{
+  InstEditNote ie_note (midi_note, on);
+  ie_note.prepare();
+
+  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
+  m_have_inst_edit_note = true;
+  m_inst_edit_note = ie_note;
+}
+
+void
 VstPlugin::set_volume (double new_volume)
 {
   std::lock_guard<std::mutex> locker (m_new_plan_mutex);
@@ -364,6 +375,11 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
         {
           plugin->m_inst_edit_update.run_rt (plugin->midi_synth);
           plugin->m_have_inst_edit_update = false;
+        }
+      if (plugin->m_have_inst_edit_note)
+        {
+          plugin->m_inst_edit_note.run_rt (plugin->midi_synth);
+          plugin->m_have_inst_edit_note = false;
         }
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;

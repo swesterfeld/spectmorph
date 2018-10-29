@@ -63,6 +63,7 @@ struct VstPlugin : public SynthInterface
 
   void  change_plan (MorphPlanPtr ptr);
   void  synth_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
+  void  synth_inst_edit_note (int midi_note, bool on);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
@@ -80,6 +81,9 @@ struct VstPlugin : public SynthInterface
 
   bool                m_have_inst_edit_update;
   InstEditUpdate      m_inst_edit_update;
+
+  bool                m_have_inst_edit_note;
+  InstEditNote        m_inst_edit_note;
 };
 
 }
