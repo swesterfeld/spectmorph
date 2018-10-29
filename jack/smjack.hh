@@ -15,7 +15,7 @@
 namespace SpectMorph
 {
 
-class JackSynth
+class JackSynth : public SynthInterface
 {
 protected:
   double                        jack_mix_freq;
@@ -42,7 +42,7 @@ public:
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
-  void handle_inst_edit_update (bool active, const std::string& filename, bool original_samples);
+  void synth_inst_edit_update (bool active, const std::string& filename, bool original_samples);
   bool voices_active();
   int  process (jack_nframes_t nframes);
 };
@@ -61,7 +61,6 @@ public:
 /* slots: */
   void on_plan_changed();
   void on_volume_changed (double d);
-  void on_handle_inst_edit_update (bool active, const std::string& filename, bool original_samples);
 };
 
 }

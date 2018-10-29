@@ -164,7 +164,7 @@ JackSynth::change_volume (double new_volume)
 }
 
 void
-JackSynth::handle_inst_edit_update (bool active, const string& filename, bool original_samples)
+JackSynth::synth_inst_edit_update (bool active, const string& filename, bool original_samples)
 {
   InstEditUpdate ie_update (active, filename, original_samples);
   ie_update.prepare();
@@ -191,7 +191,6 @@ JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanC
 
   connect (m_control_widget->signal_volume_changed, this, &JackControl::on_volume_changed);
   connect (plan->signal_plan_changed, this, &JackControl::on_plan_changed);
-  connect (window.signal_inst_edit_update, this, &JackControl::on_handle_inst_edit_update);
 
   on_plan_changed();
 }
@@ -213,12 +212,6 @@ void
 JackControl::on_plan_changed()
 {
   synth->change_plan (morph_plan->clone());
-}
-
-void
-JackControl::on_handle_inst_edit_update (bool active, const string& filename, bool original_samples)
-{
-  synth->handle_inst_edit_update (active, filename, original_samples);
 }
 
 int
@@ -270,7 +263,7 @@ main (int argc, char **argv)
 
   JackSynth   synth (client);
 
-  MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
+  MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan, &synth);
   if (filename != "")
     window.set_filename (filename);
   JackControl control (morph_plan, window, window.control_widget(), &synth);
