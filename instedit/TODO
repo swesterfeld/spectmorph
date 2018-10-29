@@ -7,3 +7,5 @@
 - lv2 messaging
 - temp file handling
 - auto tune and stuff
+
+- fix error handling for WavSet::save() and others

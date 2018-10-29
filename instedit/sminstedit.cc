@@ -25,7 +25,8 @@ using std::map;
 using pugi::xml_document;
 using pugi::xml_node;
 
-class JackSynth : SignalReceiver
+class JackSynth : public SignalReceiver,
+                  public SynthInterface
 {
   double jack_mix_freq;
   jack_port_t *input_port;
@@ -95,14 +96,9 @@ public:
     return m_current_midi_note;
   }
 #endif
-  void
-  init (InstEditWindow *window)
-  {
-    connect (window->signal_inst_edit_update, this, &JackSynth::on_inst_edit_update);
-  }
 
   void
-  on_inst_edit_update (bool active, const string& filename, bool orig_samples)
+  synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
   {
     InstEditUpdate ie_update (active, filename, orig_samples);
     ie_update.prepare();
@@ -130,8 +126,7 @@ main (int argc, char **argv)
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
 
-  InstEditWindow window (fn);
-  jack_synth.init (&window);
+  InstEditWindow window (fn, &jack_synth);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
