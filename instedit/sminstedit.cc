@@ -98,22 +98,13 @@ public:
 #endif
 
   void
-  synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
+  synth_take_control_event (SynthControlEvent *event)
   {
-    InstEditUpdate ie_update (active, filename, orig_samples);
-    ie_update.prepare();
+    event->prepare();
 
     std::lock_guard<std::mutex> lg (synth_mutex);
-    ie_update.run_rt (midi_synth.get());
-  }
-  void
-  synth_inst_edit_note (int midi_note, bool on)
-  {
-    InstEditNote ie_note (midi_note, on);
-    ie_note.prepare();
-
-    std::lock_guard<std::mutex> lg (synth_mutex);
-    ie_note.run_rt (midi_synth.get());
+    event->run_rt (midi_synth.get());
+    delete event; // we could unlock before this, but it really doesn't matter
   }
 };
 
