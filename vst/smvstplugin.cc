@@ -107,7 +107,7 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 }
 
 void
-VstPlugin::handle_inst_edit_update (bool active, const string& filename, bool orig_samples)
+VstPlugin::synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
 {
   InstEditUpdate ie_update (active, filename, orig_samples);
   ie_update.prepare();

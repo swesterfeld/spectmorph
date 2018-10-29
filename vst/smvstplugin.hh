@@ -12,7 +12,7 @@
 namespace SpectMorph
 {
 
-struct VstPlugin
+struct VstPlugin : public SynthInterface
 {
   enum Param
   {
@@ -62,7 +62,7 @@ struct VstPlugin
   void  preinit_plan (MorphPlanPtr plan);
 
   void  change_plan (MorphPlanPtr ptr);
-  void  handle_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
+  void  synth_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
