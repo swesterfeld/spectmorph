@@ -45,12 +45,11 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
   ui_resize (ui_resize),
   morph_plan (new MorphPlan ())
 {
-  window = new MorphPlanWindow ("SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan);
+  window = new MorphPlanWindow ("SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, this);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
-  connect (window->signal_inst_edit_update, this, &LV2UI::on_inst_edit_update);
 
   window->show();
 }
@@ -105,7 +104,7 @@ LV2UI::on_plan_changed()
 }
 
 void
-LV2UI::on_inst_edit_update (bool active, const string& filename, bool orig_samples)
+LV2UI::synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
 {
   // FIXME: escape chars
   string inst_edit_str = string_printf ("InstEditUpdate|%d|%s|%d", active, filename.c_str(), orig_samples);

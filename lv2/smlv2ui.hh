@@ -11,7 +11,8 @@ namespace SpectMorph
 {
 
 class LV2UI : public SignalReceiver,
-              public LV2Common
+              public LV2Common,
+              public SynthInterface
 {
   std::string           current_plan;
   LV2UI_Resize         *ui_resize;
@@ -30,10 +31,11 @@ public:
   void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
   void idle();
 
+  void synth_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
+
 /* slots: */
   void on_plan_changed();
   void on_volume_changed (double new_volume);
-  void on_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
   void on_update_window_size();
 };
 
