@@ -121,6 +121,13 @@ LV2UI::synth_inst_edit_update (bool active, const string& filename, bool orig_sa
 }
 
 void
+LV2UI::synth_inst_edit_note (int midi_note, bool on)
+{
+  // FIXME
+  printf ("FIXME: support synth_inst_edit_note/LV2\n");
+}
+
+void
 LV2UI::on_volume_changed (double new_volume)
 {
   vector<uint8_t> obj_buf (512);

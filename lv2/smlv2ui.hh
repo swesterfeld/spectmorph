@@ -32,6 +32,7 @@ public:
   void idle();
 
   void synth_inst_edit_update (bool active, const std::string& filename, bool orig_samples);
+  void synth_inst_edit_note (int midi_note, bool on);
 
 /* slots: */
   void on_plan_changed();
