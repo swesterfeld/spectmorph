@@ -106,6 +106,15 @@ public:
     std::lock_guard<std::mutex> lg (synth_mutex);
     ie_update.run_rt (midi_synth.get());
   }
+  void
+  synth_inst_edit_note (int midi_note, bool on)
+  {
+    InstEditNote ie_note (midi_note, on);
+    ie_note.prepare();
+
+    std::lock_guard<std::mutex> lg (synth_mutex);
+    ie_note.run_rt (midi_synth.get());
+  }
 };
 
 int
