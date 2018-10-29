@@ -41,7 +41,7 @@ install-exec-hook: SpectMorph.dll
 	cp SpectMorph.dll $(libdir)/vst
 
 SpectMorph.dll: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
 endif
 if COND_MACOS
 STATIC_DLL_LIBS = \
