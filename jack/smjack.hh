@@ -32,11 +32,7 @@ protected:
   double                        m_new_volume;
   bool                          m_voices_active;
 
-  bool                          m_inst_edit_changed = false;
-  InstEditUpdate                m_inst_edit_update;
-
-  bool                          m_inst_edit_note_changed = false;
-  InstEditNote                  m_inst_edit_note;
+  std::unique_ptr<SynthControlEvent> m_control_event;
 
 public:
   JackSynth (jack_client_t *client);
@@ -45,8 +41,7 @@ public:
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
-  void synth_inst_edit_update (bool active, const std::string& filename, bool original_samples);
-  void synth_inst_edit_note (int midi_note, bool on);
+  void synth_take_control_event (SynthControlEvent *event);
   bool voices_active();
   int  process (jack_nframes_t nframes);
 };
