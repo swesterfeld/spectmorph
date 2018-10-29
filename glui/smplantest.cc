@@ -11,14 +11,9 @@ using std::string;
 class NullSynthInterface : public SynthInterface
 {
   void
-  synth_inst_edit_update (bool active, const std::string& filename, bool original_samples)
+  synth_take_control_event (SynthControlEvent *event)
   {
-    printf ("NullSynthInterface::synth_inst_edit_update %d %s %d\n", active, filename.c_str(), original_samples);
-  }
-  void
-  synth_inst_edit_note (int midi_note, bool on)
-  {
-    printf ("NullSynthInterface::synth_inst_edit_note %d %d\n", midi_note, on);
+    delete event;
   }
 };
 
