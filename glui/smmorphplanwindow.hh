@@ -11,6 +11,7 @@
 #include "smscrollbar.hh"
 #include "smmicroconf.hh"
 #include "smmorphplancontrol.hh"
+#include "smsynthinterface.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -22,6 +23,7 @@ class MorphPlanWindow : public Window
   MorphPlanPtr      m_morph_plan;
   MorphPlanView    *m_morph_plan_view = nullptr;
   MorphPlanControl *m_control_widget = nullptr;
+  SynthInterface   *m_synth_interface = nullptr;
   std::string       m_filename;
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
@@ -37,6 +39,7 @@ public:
   }
 
   MorphPlanWindow (const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
+                   SynthInterface *synth_interface,
                    MorphPlanControl::Features f = MorphPlanControl::ALL_WIDGETS);
 
   void fill_preset_menu (Menu *menu);
@@ -44,6 +47,7 @@ public:
   static void static_scaled_size (int *w, int *h);
 
   MorphPlanControl *control_widget();
+  SynthInterface   *synth_interface();
 
   MorphOperator *where (MorphOperator *op, double y);
 
@@ -52,9 +56,6 @@ public:
   void on_file_export_clicked();
   void on_load_index_clicked();
   void on_about_clicked();
-
-/* signals: */
-  Signal<bool, std::string, bool> signal_inst_edit_update;
 };
 
 }

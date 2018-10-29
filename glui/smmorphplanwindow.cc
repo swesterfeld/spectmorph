@@ -29,9 +29,11 @@ MorphPlanWindow::static_scaled_size (int *w, int *h)
 }
 
 MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
+                                  SynthInterface *synth_interface,
                                   MorphPlanControl::Features f) :
   Window (title, win_width, win_height, win_id, resize),
-  m_morph_plan (morph_plan)
+  m_morph_plan (morph_plan),
+  m_synth_interface (synth_interface)
 {
   FixedGrid grid;
 
@@ -256,4 +258,10 @@ MorphPlanControl *
 MorphPlanWindow::control_widget()
 {
   return m_control_widget;
+}
+
+SynthInterface*
+MorphPlanWindow::synth_interface()
+{
+  return m_synth_interface;
 }

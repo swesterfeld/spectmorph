@@ -8,6 +8,15 @@ using namespace SpectMorph;
 
 using std::string;
 
+class NullSynthInterface : public SynthInterface
+{
+  void
+  synth_inst_edit_update (bool active, const std::string& filename, bool original_samples)
+  {
+    printf ("NullSynthInterface::synth_inst_edit_update %d %s %d\n", active, filename.c_str(), original_samples);
+  }
+};
+
 int
 main (int argc, char **argv)
 {
@@ -17,7 +26,8 @@ main (int argc, char **argv)
 
   morph_plan->load_default();
 
-  MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan);
+  NullSynthInterface nsi;
+  MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan, &nsi);
 
   window.control_widget()->set_volume (-6);
   window.connect (window.control_widget()->signal_volume_changed, [](double v) { printf ("volume=%f\n", v); });

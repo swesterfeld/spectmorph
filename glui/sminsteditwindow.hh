@@ -27,6 +27,7 @@ class InstEditBackend
   std::mutex result_mutex;
   bool have_result = false;
   InstEditWindow *window = nullptr;
+  SynthInterface *synth_interface;
 
   double
   note_to_freq (int note)
@@ -35,8 +36,9 @@ class InstEditBackend
   }
 
 public:
-  InstEditBackend (InstEditWindow *window) :
-    window (window)
+  InstEditBackend (InstEditWindow *window, SynthInterface *synth_interface) :
+    window (window),
+    synth_interface (synth_interface)
   {
   }
   void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument);
@@ -107,6 +109,7 @@ class InstEditWindow : public Window
 {
   Instrument instrument;
   InstEditBackend m_backend;
+  SynthInterface *synth_interface;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
@@ -220,9 +223,10 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (const std::string& test_sample, Window *parent_window = nullptr) :
+  InstEditWindow (const std::string& test_sample, SynthInterface *synth_interface, Window *parent_window = nullptr) :
     Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
-    m_backend (this)
+    m_backend (this, synth_interface),
+    synth_interface (synth_interface)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
@@ -411,8 +415,6 @@ public:
     int note = m_backend.current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
   }
-
-  Signal<bool, std::string, bool> signal_inst_edit_update;
 };
 
 inline void
@@ -422,7 +424,7 @@ InstEditBackend::on_timer()
   if (have_result)
     {
       printf ("got result!\n");
-      window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", false);
+      synth_interface->synth_inst_edit_update (true, "/tmp/midi_synth.smset", false);
       have_result = false;
     }
 }
@@ -451,7 +453,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, con
       wav_set.waves.push_back (new_wave);
 
       wav_set.save ("/tmp/midi_synth.smset");
-      window->signal_inst_edit_update (true, "/tmp/midi_synth.smset", true);
+      synth_interface->synth_inst_edit_update (true, "/tmp/midi_synth.smset", true);
     }
   else if (play_mode == PlayMode::REFERENCE)
     {
@@ -459,7 +461,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, con
       index.load_file ("instruments:standard");
 
       std::string smset_dir = index.smset_dir();
-      window->signal_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
+      synth_interface->synth_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
     }
   else if (play_mode == PlayMode::SPECTMORPH)
     {

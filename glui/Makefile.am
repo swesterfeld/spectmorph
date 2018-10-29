@@ -45,7 +45,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smdialog.hh smaboutdialog.hh smoperatorlayout.hh \
 	 smmessagebox.hh smrenameopwindow.hh smoutputadsrwidget.hh \
 	 smmorphwavsourceview.hh smsamplewidget.hh sminsteditwindow.hh \
-	 smtimer.hh
+	 smtimer.hh smsynthinterface.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
