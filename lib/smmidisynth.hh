@@ -107,7 +107,21 @@ public:
   InstEditSynth *inst_edit_synth();
 };
 
-class InstEditUpdate
+class SynthControlEvent
+{
+public:
+  virtual void prepare() = 0;
+  virtual void run_rt (MidiSynth *midi_synth) = 0;
+  virtual std::string to_string() = 0;
+  virtual
+  ~SynthControlEvent()
+  {
+  }
+  static SynthControlEvent *
+  create (const std::string& str);
+};
+
+class InstEditUpdate : public SynthControlEvent
 {
   bool        active = false;
   std::string filename;
@@ -142,9 +156,14 @@ public:
         wav_set = nullptr;
       }
   }
+  std::string
+  to_string()
+  {
+    return string_printf ("InstEditUpdate|%d|%s|%d", active, filename.c_str(), original_samples);
+  }
 };
 
-struct InstEditNote
+struct InstEditNote : public SynthControlEvent
 {
   int midi_note;
   bool on;
@@ -169,6 +188,11 @@ public:
     event[2] = on ? 100 : 0;
 
     midi_synth->add_midi_event (0, event);
+  }
+  std::string
+  to_string()
+  {
+    return string_printf ("InstEditNote|%d|%d", midi_note, on);
   }
 };
 

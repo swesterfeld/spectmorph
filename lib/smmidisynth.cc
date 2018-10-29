@@ -544,3 +544,33 @@ MidiSynth::MidiEvent::channel() const
 {
   return midi_data[0] & 0xf;
 }
+
+// ----control events----
+SynthControlEvent *
+SynthControlEvent::create (const std::string& str)
+{
+  std::string s;
+  std::string in = str + "|";
+  std::vector<std::string> vs;
+  for (auto c : in)
+    {
+      if (c == '|')
+        {
+          vs.push_back (s);
+          s = "";
+        }
+      else
+        s += c;
+    }
+  if (vs[0] == "InstEditUpdate")
+    {
+      bool active = atoi (vs[1].c_str()) > 0;
+      std::string filename = vs[2];
+      bool original_samples = atoi (vs[3].c_str()) > 0;
+
+      return new InstEditUpdate (active, filename, original_samples);
+    }
+  if (vs[0] == "InstEditNote")
+    return new InstEditNote (atoi (vs[1].c_str()), atoi (vs[2].c_str()) > 0);
+  return nullptr;
+}
