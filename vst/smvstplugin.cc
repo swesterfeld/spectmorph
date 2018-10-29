@@ -107,25 +107,12 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 }
 
 void
-VstPlugin::synth_inst_edit_update (bool active, const string& filename, bool orig_samples)
+VstPlugin::synth_take_control_event (SynthControlEvent *event)
 {
-  InstEditUpdate ie_update (active, filename, orig_samples);
-  ie_update.prepare();
+  event->prepare();
 
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
-  m_have_inst_edit_update = true;
-  m_inst_edit_update = ie_update;
-}
-
-void
-VstPlugin::synth_inst_edit_note (int midi_note, bool on)
-{
-  InstEditNote ie_note (midi_note, on);
-  ie_note.prepare();
-
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
-  m_have_inst_edit_note = true;
-  m_inst_edit_note = ie_note;
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  m_control_event.reset (event);
 }
 
 void
@@ -371,15 +358,10 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
-      if (plugin->m_have_inst_edit_update)
+      if (plugin->m_control_event)
         {
-          plugin->m_inst_edit_update.run_rt (plugin->midi_synth);
-          plugin->m_have_inst_edit_update = false;
-        }
-      if (plugin->m_have_inst_edit_note)
-        {
-          plugin->m_inst_edit_note.run_rt (plugin->midi_synth);
-          plugin->m_have_inst_edit_note = false;
+          plugin->m_control_event->run_rt (plugin->midi_synth);
+          plugin->m_control_event.reset();
         }
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
