@@ -47,6 +47,11 @@ JackSynth::process (jack_nframes_t nframes)
           m_inst_edit_update.run_rt (midi_synth);
           m_inst_edit_changed = false;
         }
+      if (m_inst_edit_note_changed)
+        {
+          m_inst_edit_note.run_rt (midi_synth);
+          m_inst_edit_note_changed = false;
+        }
       m_volume = m_new_volume;
 
       m_voices_active = midi_synth->active_voice_count() > 0;
@@ -172,6 +177,17 @@ JackSynth::synth_inst_edit_update (bool active, const string& filename, bool ori
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_inst_edit_changed = true;
   m_inst_edit_update  = ie_update;
+}
+
+void
+JackSynth::synth_inst_edit_note (int midi_note, bool active)
+{
+  InstEditNote ie_note {midi_note, active};
+  ie_note.prepare();
+
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  m_inst_edit_note_changed = true;
+  m_inst_edit_note = ie_note;
 }
 
 bool
