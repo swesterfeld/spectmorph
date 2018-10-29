@@ -15,6 +15,11 @@ class NullSynthInterface : public SynthInterface
   {
     printf ("NullSynthInterface::synth_inst_edit_update %d %s %d\n", active, filename.c_str(), original_samples);
   }
+  void
+  synth_inst_edit_note (int midi_note, bool on)
+  {
+    printf ("NullSynthInterface::synth_inst_edit_note %d %d\n", midi_note, on);
+  }
 };
 
 int

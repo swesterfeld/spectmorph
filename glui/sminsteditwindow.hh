@@ -8,6 +8,7 @@
 #include "smcombobox.hh"
 #include "smtimer.hh"
 #include "smwavsetbuilder.hh"
+#include "smbutton.hh"
 
 #include <thread>
 
@@ -315,6 +316,12 @@ public:
     play_mode_combobox->add_item ("SpectMorph Instrument");
     play_mode_combobox->add_item ("Reference Instrument");
 
+    /*--- play button ---*/
+    Button *play_button = new Button (this, "Play");
+    connect (play_button->signal_pressed, this, &InstEditWindow::on_play_start);
+    connect (play_button->signal_released, this, &InstEditWindow::on_play_stop);
+    grid.add_widget (play_button, 51, 54, 8, 3);
+
     /*--- led ---*/
     led = new Led (this, false);
     grid.add_widget (new Label (this, "Analyzing"), 70, 64, 10, 3);
@@ -414,6 +421,20 @@ public:
 
     int note = m_backend.current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
+  }
+  void
+  on_play_start()
+  {
+    Sample *sample = instrument.sample (instrument.selected());
+    if (sample)
+      synth_interface->synth_inst_edit_note (sample->midi_note(), true);
+  }
+  void
+  on_play_stop()
+  {
+    Sample *sample = instrument.sample (instrument.selected());
+    if (sample)
+      synth_interface->synth_inst_edit_note (sample->midi_note(), false);
   }
 };
 
