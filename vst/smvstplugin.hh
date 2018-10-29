@@ -79,10 +79,10 @@ struct VstPlugin : public SynthInterface
   bool                m_voices_active;
   double              rt_volume; // realtime thread only
 
-  bool                m_have_inst_edit_update;
+  bool                m_have_inst_edit_update = false;
   InstEditUpdate      m_inst_edit_update;
 
-  bool                m_have_inst_edit_note;
+  bool                m_have_inst_edit_note = false;
   InstEditNote        m_inst_edit_note;
 };
 
