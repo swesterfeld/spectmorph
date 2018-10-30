@@ -106,6 +106,12 @@ public:
     event->run_rt (midi_synth.get());
     delete event; // we could unlock before this, but it really doesn't matter
   }
+  double
+  synth_get_current_pos() override
+  {
+    std::lock_guard<std::mutex> lg (synth_mutex);
+    return midi_synth->inst_edit_synth()->current_pos();
+  }
 };
 
 int
