@@ -33,6 +33,7 @@ protected:
   bool                          m_voices_active;
 
   std::unique_ptr<SynthControlEvent> m_control_event;
+  std::vector<std::string>      m_out_events;
 
 public:
   JackSynth (jack_client_t *client);
@@ -44,6 +45,7 @@ public:
   void synth_take_control_event (SynthControlEvent *event);
   bool voices_active();
   int  process (jack_nframes_t nframes);
+  void process_events();
 };
 
 class JackControl : public SignalReceiver

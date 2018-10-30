@@ -51,6 +51,8 @@ JackSynth::process (jack_nframes_t nframes)
 
       m_voices_active = midi_synth->active_voice_count() > 0;
 
+      m_out_events = midi_synth->inst_edit_synth()->take_out_events();
+
       m_new_plan_mutex.unlock();
     }
 
@@ -179,6 +181,27 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
+void
+JackSynth::process_events()
+{
+  vector<string> events;
+
+  { // this should not take long
+    std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+    events = std::move (m_out_events);
+  }
+
+  for (auto ev : events)
+    {
+      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
+      if (sn_event)
+        {
+          signal_notify_event (sn_event);
+          delete sn_event;
+        }
+    }
+}
+
 JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
@@ -197,6 +220,7 @@ void
 JackControl::update_led()
 {
   m_control_widget->set_led (synth->voices_active());
+  synth->process_events();
 }
 
 void
