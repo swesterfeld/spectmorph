@@ -43,7 +43,9 @@ class SampleWidget : public Widget
   Sample       *m_sample = nullptr;
   MarkerType    selected_marker = MARKER_NONE;
   bool          mouse_down = false;
+
   std::map<MarkerType, Rect> marker_rect;
+  std::vector<float>         m_play_pointers;
 public:
   SampleWidget (Widget *parent)
     : Widget (parent)
@@ -191,6 +193,23 @@ public:
         cairo_line_to (cr, marker_x, height);
         cairo_stroke (cr);
       }
+    for (auto p : m_play_pointers)
+      {
+        if (p > 0)
+          {
+            double pos_ms = p;
+            const double clip_start_ms = m_sample->get_marker (MARKER_CLIP_START);
+            if (clip_start_ms > 0)
+              pos_ms += clip_start_ms;
+
+            const double pos_x = pos_ms / length_ms * width;
+
+            du.set_color (Color (1.0, 0.5, 0.0));
+            cairo_move_to (cr, pos_x, 0);
+            cairo_line_to (cr, pos_x, height);
+            cairo_stroke (cr);
+          }
+      }
   }
   MarkerType
   find_marker_xy (double x, double y)
@@ -294,6 +313,15 @@ public:
   void
   update_markers()
   {
+    update();
+  }
+  void
+  set_play_pointers (const std::vector<float>& pointers)
+  {
+    if (pointers == m_play_pointers) /* save CPU power */
+      return;
+
+    m_play_pointers = pointers;
     update();
   }
 };

@@ -421,6 +421,9 @@ public:
 
     int note = m_backend.current_midi_note();
     playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
+
+    float pos = synth_interface->synth_get_current_pos();
+    sample_widget->set_play_pointers ({ pos });
   }
   void
   on_play_start()
