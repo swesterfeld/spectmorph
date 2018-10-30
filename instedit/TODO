@@ -7,5 +7,6 @@
 - lv2 messaging
 - temp file handling
 - auto tune and stuff
+- optimize update region for play position pointer
 
 - fix error handling for WavSet::save() and others
