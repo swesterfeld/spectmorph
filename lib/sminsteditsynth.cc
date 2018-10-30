@@ -78,6 +78,7 @@ InstEditSynth::process (float *output, size_t n_values)
     {
       if (voice.decoder && voice.state != State::IDLE)
         {
+          //printf ("voice|%d|%f|%f\n", voice.note, voice.decoder->current_pos(), voice.decoder->fundamental_note());
           float samples[n_values];
 
           voice.decoder->process (n_values, nullptr, &samples[0]);
@@ -103,4 +104,17 @@ InstEditSynth::process (float *output, size_t n_values)
             }
         }
     }
+}
+
+double
+InstEditSynth::current_pos()
+{
+  for (auto& voice : voices)
+    {
+      if (voice.decoder && voice.state != State::IDLE)
+        {
+          return voice.decoder->current_pos();
+        }
+    }
+  return -1;
 }

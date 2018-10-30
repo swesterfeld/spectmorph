@@ -36,6 +36,8 @@ public:
 
   void handle_midi_event (const unsigned char *midi_data);
   void process (float *output, size_t n_values);
+
+  double current_pos();
 };
 
 }

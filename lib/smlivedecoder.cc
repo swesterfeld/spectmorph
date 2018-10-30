@@ -818,3 +818,22 @@ LiveDecoder::set_vibrato (bool enabled, float depth, float frequency, float atta
   vibrato_frequency   = frequency;
   vibrato_attack      = attack;
 }
+
+double
+LiveDecoder::current_pos() const
+{
+  if (!audio)
+    return -1;
+
+  if (original_samples_enabled)
+    return original_sample_pos * 1000.0 / audio->mix_freq;
+
+  // FIXME: may need to take zero values at start into account
+  return frame_idx * audio->frame_step_ms;
+}
+
+double
+LiveDecoder::fundamental_note() const
+{
+  return freq_to_note (audio->fundamental_freq);
+}
