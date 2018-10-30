@@ -28,6 +28,7 @@ class InstEditSynth
   std::unique_ptr<WavSet>      wav_set;
   std::vector<Voice>           voices;
 
+  std::vector<std::string>     out_events;
 public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
@@ -38,6 +39,7 @@ public:
   void process (float *output, size_t n_values);
 
   double current_pos();
+  std::vector<std::string> take_out_events();
 };
 
 }

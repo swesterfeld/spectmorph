@@ -835,5 +835,8 @@ LiveDecoder::current_pos() const
 double
 LiveDecoder::fundamental_note() const
 {
+  if (!audio)
+    return -1;
+
   return freq_to_note (audio->fundamental_freq);
 }

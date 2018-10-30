@@ -6,6 +6,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::InstEditSynth");
 
@@ -73,12 +74,13 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data)
 void
 InstEditSynth::process (float *output, size_t n_values)
 {
+  string notify_event = "InstEditVoice";
   zero_float_block (n_values, output);
   for (auto& voice : voices)
     {
       if (voice.decoder && voice.state != State::IDLE)
         {
-          //printf ("voice|%d|%f|%f\n", voice.note, voice.decoder->current_pos(), voice.decoder->fundamental_note());
+          notify_event += string_printf ("|%d|%f|%f", voice.note, voice.decoder->current_pos(), voice.decoder->fundamental_note());
           float samples[n_values];
 
           voice.decoder->process (n_values, nullptr, &samples[0]);
@@ -104,6 +106,7 @@ InstEditSynth::process (float *output, size_t n_values)
             }
         }
     }
+  out_events.push_back (notify_event);
 }
 
 double
@@ -117,4 +120,10 @@ InstEditSynth::current_pos()
         }
     }
   return -1;
+}
+
+vector<string>
+InstEditSynth::take_out_events()
+{
+  return std::move (out_events);
 }

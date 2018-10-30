@@ -196,6 +196,28 @@ public:
   }
 };
 
+class SynthNotifyEvent
+{
+public:
+  virtual
+  ~SynthNotifyEvent()
+  {
+  }
+  static SynthNotifyEvent *
+  create (const std::string& str);
+};
+
+struct InstEditVoice : public SynthNotifyEvent
+{
+  std::vector<int> note;
+  std::vector<double> current_pos;
+  std::vector<double> fundamental_note;
+
+  InstEditVoice()
+  {
+  }
+};
+
 }
 
 #endif /* SPECTMORPH_MIDI_SYNTH_HH */

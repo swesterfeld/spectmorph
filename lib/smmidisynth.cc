@@ -574,3 +574,35 @@ SynthControlEvent::create (const std::string& str)
     return new InstEditNote (atoi (vs[1].c_str()), atoi (vs[2].c_str()) > 0);
   return nullptr;
 }
+
+// ----notify events----
+SynthNotifyEvent *
+SynthNotifyEvent::create (const std::string& str)
+{
+  std::string s;
+  std::string in = str + "|";
+  std::vector<std::string> vs;
+  for (auto c : in)
+    {
+      if (c == '|')
+        {
+          vs.push_back (s);
+          s = "";
+        }
+      else
+        s += c;
+    }
+  if (vs[0] == "InstEditVoice")
+    {
+      InstEditVoice *v = new InstEditVoice();
+      size_t pos = 1;
+      while (pos + 3 <= vs.size())
+        {
+          v->note.push_back (atoi (vs[pos++].c_str()));
+          v->current_pos.push_back (sm_atof (vs[pos++].c_str()));
+          v->fundamental_note.push_back (sm_atof (vs[pos++].c_str()));
+        }
+      return v;
+    }
+  return nullptr;
+}
