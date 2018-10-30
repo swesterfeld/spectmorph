@@ -442,6 +442,11 @@ run (LV2_Handle instance, uint32_t n_samples)
       self->write_set_led (&self->forge, new_voices_active);
       self->voices_active = new_voices_active;
     }
+  for (const auto& str : self->midi_synth.inst_edit_synth()->take_out_events())
+    {
+      lv2_atom_forge_frame_time (&self->forge, offset);
+      self->write_event (&self->forge, str);
+    }
 }
 
 static void
