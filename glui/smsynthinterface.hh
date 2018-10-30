@@ -29,6 +29,7 @@ public:
   {
     return -1;
   }
+  Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
 }

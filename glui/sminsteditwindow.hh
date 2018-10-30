@@ -338,6 +338,30 @@ public:
     connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
     timer->start (0);
 
+    connect (synth_interface->signal_notify_event, [this](SynthNotifyEvent *ne) {
+      auto iev = dynamic_cast<InstEditVoice *> (ne);
+      if (iev)
+        {
+          std::vector<float> play_pointers;
+
+          Sample *sample = instrument.sample (instrument.selected());
+          if (sample && play_mode != PlayMode::REFERENCE)
+            {
+              for (size_t i = 0; i < iev->current_pos.size(); i++)
+                {
+                  if (fabs (iev->fundamental_note[i] - sample->midi_note()) < 0.1)
+                    play_pointers.push_back (iev->current_pos[i]);
+                }
+            }
+          sample_widget->set_play_pointers (play_pointers);
+
+          std::string text = "---";
+          if (!iev->note.empty())
+            text = note_to_text (iev->note[0]);
+          playing_label->set_text (text);
+        }
+    });
+
     instrument.load (test_sample);
 
     // show complete wave
@@ -418,12 +442,6 @@ public:
   on_update_led()
   {
     led->set_on (m_backend.have_builder());
-
-    int note = m_backend.current_midi_note();
-    playing_label->set_text (note >= 0 ? note_to_text (note) : "---");
-
-    float pos = synth_interface->synth_get_current_pos();
-    sample_widget->set_play_pointers ({ pos });
   }
   void
   on_play_start()
