@@ -76,12 +76,11 @@ struct VstPlugin : public SynthInterface
 
   std::mutex          m_new_plan_mutex;
   MorphPlanPtr        m_new_plan;
+  ControlEventVector  m_control_events;
   std::vector<std::string> m_out_events;
   double              m_volume;
   bool                m_voices_active;
   double              rt_volume; // realtime thread only
-
-  std::unique_ptr<SynthControlEvent> m_control_event;
 };
 
 }

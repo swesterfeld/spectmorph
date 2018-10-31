@@ -113,7 +113,7 @@ VstPlugin::synth_take_control_event (SynthControlEvent *event)
   event->prepare();
 
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-  m_control_event.reset (event);
+  m_control_events.take (event);
 }
 
 vector<string>
@@ -366,11 +366,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
-      if (plugin->m_control_event)
-        {
-          plugin->m_control_event->run_rt (plugin->midi_synth);
-          plugin->m_control_event.reset();
-        }
+      plugin->m_control_events.run_rt (plugin->midi_synth);
       plugin->m_out_events = plugin->midi_synth->inst_edit_synth()->take_out_events();
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
