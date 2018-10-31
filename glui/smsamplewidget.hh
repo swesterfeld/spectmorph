@@ -242,6 +242,17 @@ public:
       }
   }
   void
+  update_marker (MarkerType marker)
+  {
+    if (m_sample)
+      {
+        const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
+        const double marker_x = m_sample->get_marker (marker) / length_ms * width;
+
+        update (marker_x - 11, 0, 22, height);
+      }
+  }
+  void
   motion (double x, double y) override
   {
     if (mouse_down)
@@ -252,7 +263,9 @@ public:
         const double sample_len_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000.0;
         const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
 
+        update_marker (selected_marker);
         m_sample->set_marker (selected_marker, x_ms);
+        update_marker (selected_marker);
 
         /* enforce ordering constraints */
         std::vector<MarkerType> left, right;
@@ -265,8 +278,6 @@ public:
         for (auto r : right)
           if (m_sample->get_marker (r) < x_ms)
             m_sample->set_marker (r, x_ms);
-
-        update();
       }
     else
       {
@@ -308,11 +319,6 @@ public:
     vzoom = factor;
     update();
   }
-  void
-  update_markers()
-  {
-    update();
-  }
   double
   play_pos_to_pixels (double pos_ms)
   {
@@ -350,6 +356,11 @@ public:
 
         update (min_x, 0, update_width, height);
       }
+  }
+  void
+  update_loop()
+  {
+    update();
   }
 };
 

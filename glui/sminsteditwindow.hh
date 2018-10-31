@@ -172,10 +172,7 @@ class InstEditWindow : public Window
     Sample *sample = instrument.sample (instrument.selected());
 
     if (sample)
-      {
-        sample_widget->update_markers();
-        m_backend.switch_to_sample (sample, play_mode, &instrument);
-      }
+      m_backend.switch_to_sample (sample, play_mode, &instrument);
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
@@ -437,6 +434,7 @@ public:
     Sample *sample = instrument.sample (instrument.selected());
 
     sample->set_loop (text_to_loop (loop_combobox->text()));
+    sample_widget->update_loop();
   }
   void
   on_update_led()
