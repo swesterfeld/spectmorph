@@ -25,10 +25,6 @@ public:
     synth_take_control_event (new InstEditNote (note, on));
   }
   virtual void synth_take_control_event (SynthControlEvent *event) = 0;
-  virtual double synth_get_current_pos()
-  {
-    return -1;
-  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
