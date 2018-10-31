@@ -197,12 +197,7 @@ public:
       {
         if (p > 0)
           {
-            double pos_ms = p;
-            const double clip_start_ms = m_sample->get_marker (MARKER_CLIP_START);
-            if (clip_start_ms > 0)
-              pos_ms += clip_start_ms;
-
-            const double pos_x = pos_ms / length_ms * width;
+            const double pos_x = play_pos_to_pixels (p);
 
             du.set_color (Color (1.0, 0.5, 0.0));
             cairo_move_to (cr, pos_x, 0);
@@ -315,14 +310,43 @@ public:
   {
     update();
   }
+  double
+  play_pos_to_pixels (double pos_ms)
+  {
+    if (!m_sample)
+      return -1;
+
+    const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
+    const double clip_start_ms = m_sample->get_marker (MARKER_CLIP_START);
+    if (clip_start_ms > 0)
+      pos_ms += clip_start_ms;
+
+    const double pos_x = pos_ms / length_ms * width;
+    return pos_x;
+  }
   void
   set_play_pointers (const std::vector<float>& pointers)
   {
     if (pointers == m_play_pointers) /* save CPU power */
       return;
 
+    std::vector<float> all_x;
+    for (auto p : m_play_pointers)
+      all_x.push_back (play_pos_to_pixels (p));
+
     m_play_pointers = pointers;
-    update();
+
+    for (auto p : m_play_pointers)
+      all_x.push_back (play_pos_to_pixels (p));
+
+    if (!all_x.empty())
+      {
+        double min_x = *std::min_element (all_x.begin(), all_x.end()) - 1;
+        double max_x = *std::max_element (all_x.begin(), all_x.end()) + 1;
+        double update_width = max_x - min_x;
+
+        update (min_x, 0, update_width, height);
+      }
   }
 };
 
