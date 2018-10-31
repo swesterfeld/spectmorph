@@ -7,6 +7,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 class NullSynthInterface : public SynthInterface
 {
@@ -14,6 +15,11 @@ class NullSynthInterface : public SynthInterface
   synth_take_control_event (SynthControlEvent *event)
   {
     delete event;
+  }
+  vector<string>
+  notify_take_events()
+  {
+    return {};
   }
 };
 

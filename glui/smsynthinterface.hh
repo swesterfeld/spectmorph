@@ -25,6 +25,8 @@ public:
     synth_take_control_event (new InstEditNote (note, on));
   }
   virtual void synth_take_control_event (SynthControlEvent *event) = 0;
+  virtual std::vector<std::string> notify_take_events() = 0;
+
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 

@@ -462,6 +462,16 @@ public:
 inline void
 InstEditBackend::on_timer()
 {
+  for (auto ev : synth_interface->notify_take_events())
+    {
+      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
+      if (sn_event)
+        {
+          synth_interface->signal_notify_event (sn_event);
+          delete sn_event;
+        }
+    }
+
   std::lock_guard<std::mutex> lg (result_mutex);
   if (have_result)
     {
