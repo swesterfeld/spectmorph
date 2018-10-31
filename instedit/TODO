@@ -5,6 +5,7 @@
 - merge instedit and glui backend threading code
 - integrate smenc proper
 - lv2 messaging
+- avoid printf in messaging
 - temp file handling
 - auto tune and stuff
 - optimize update region for play position pointer
