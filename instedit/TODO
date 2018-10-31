@@ -11,3 +11,4 @@
 
 - fix error handling for WavSet::save() and others
 - debug why lv2 ui sometimes starts without plan
+- use all samples in original sample mode  (maybe implement restrict to current)
