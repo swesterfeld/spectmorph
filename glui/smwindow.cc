@@ -343,12 +343,17 @@ Window::on_display()
         {
           if (get_layer (w, menu_widget, dialog_widget) == layer && get_visible_recursive (w))
             {
-              if (update_full_redraw || !w->abs_visible_rect().intersection (update_region_larger).empty())
+              Rect visible_rect = w->abs_visible_rect();
+              if (!update_full_redraw)
+                {
+                  // only redraw changed parts
+                  visible_rect = visible_rect.intersection (update_region_larger);
+                }
+              if (!visible_rect.empty())
                 {
                   cairo_t *cr = cairo_gl->cr;
 
                   cairo_save (cr);
-
                   cairo_scale (cr, global_scale, global_scale);
 
                   DrawEvent devent;
@@ -357,8 +362,6 @@ Window::on_display()
                   cairo_translate (cr, w->abs_x(), w->abs_y());
                   if (w->clipping())
                     {
-                      Rect visible_rect = w->abs_visible_rect();
-
                       // translate to widget local coordinates
                       visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
 
