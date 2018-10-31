@@ -63,18 +63,18 @@ void
 MorphWavSourceView::on_edit()
 {
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
-  InstEditWindow *win = new InstEditWindow (morph_wav_source->instrument(), synth_interface, window());
-
   synth_interface->synth_inst_edit_update (true, "", false);
 
-  win->show();
+  InstEditWindow *inst_edit_window = new InstEditWindow (morph_wav_source->instrument(), synth_interface, window());
 
-  // after this line, rename window is owned by parent window
-  window()->set_popup_window (win);
+  inst_edit_window->show();
 
-  win->set_close_callback ([synth_interface,this]()
+  // after this line, inst edit window is owned by parent window
+  window()->set_popup_window (inst_edit_window);
+
+  inst_edit_window->set_close_callback ([synth_interface,this]()
     {
-      synth_interface->synth_inst_edit_update (false, "", false);
       window()->set_popup_window (nullptr);
+      synth_interface->synth_inst_edit_update (false, "", false);
     });
 }
