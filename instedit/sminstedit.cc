@@ -33,10 +33,8 @@ class JackSynth : public SignalReceiver,
   jack_port_t *output_port;
 
   std::mutex synth_mutex;
-  int m_current_midi_note = -1;
   std::unique_ptr<MidiSynth> midi_synth;
 public:
-
   static int
   jack_process (jack_nframes_t nframes, void *arg)
   {
@@ -87,15 +85,6 @@ public:
         exit (1);
       }
   }
-#if 0
-  int
-  current_midi_note()
-  {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-
-    return m_current_midi_note;
-  }
-#endif
 
   void
   synth_take_control_event (SynthControlEvent *event)
@@ -105,12 +94,6 @@ public:
     std::lock_guard<std::mutex> lg (synth_mutex);
     event->run_rt (midi_synth.get());
     delete event; // we could unlock before this, but it really doesn't matter
-  }
-  double
-  synth_get_current_pos() override
-  {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-    return midi_synth->inst_edit_synth()->current_pos();
   }
 };
 
