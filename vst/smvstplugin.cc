@@ -44,6 +44,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 void
 VstPlugin::preinit_plan (MorphPlanPtr plan)
@@ -113,6 +114,13 @@ VstPlugin::synth_take_control_event (SynthControlEvent *event)
 
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_control_event.reset (event);
+}
+
+vector<string>
+VstPlugin::notify_take_events()
+{
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  return std::move (m_out_events);
 }
 
 void
@@ -363,6 +371,7 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->m_control_event->run_rt (plugin->midi_synth);
           plugin->m_control_event.reset();
         }
+      plugin->m_out_events = plugin->midi_synth->inst_edit_synth()->take_out_events();
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
       plugin->m_new_plan_mutex.unlock();
