@@ -42,11 +42,8 @@ JackSynth::process (jack_nframes_t nframes)
           midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
-      if (m_control_event) // FIXME: this should be a queue
-        {
-          m_control_event->run_rt (midi_synth);
-          m_control_event.reset();
-        }
+      m_control_events.run_rt (midi_synth);
+
       m_volume = m_new_volume;
 
       m_voices_active = midi_synth->active_voice_count() > 0;
@@ -171,7 +168,7 @@ JackSynth::synth_take_control_event (SynthControlEvent *event)
   event->prepare();
 
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-  m_control_event.reset (event);
+  m_control_events.take (event);
 }
 
 bool

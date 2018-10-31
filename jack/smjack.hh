@@ -32,7 +32,7 @@ protected:
   double                        m_new_volume;
   bool                          m_voices_active;
 
-  std::unique_ptr<SynthControlEvent> m_control_event;
+  ControlEventVector            m_control_events;
   std::vector<std::string>      m_out_events;
 
 public:
