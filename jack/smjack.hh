@@ -45,7 +45,8 @@ public:
   void synth_take_control_event (SynthControlEvent *event);
   bool voices_active();
   int  process (jack_nframes_t nframes);
-  void process_events();
+
+  std::vector<std::string> notify_take_events();
 };
 
 class JackControl : public SignalReceiver

@@ -181,25 +181,11 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
-void
-JackSynth::process_events()
+vector<string>
+JackSynth::notify_take_events()
 {
-  vector<string> events;
-
-  { // this should not take long
-    std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-    events = std::move (m_out_events);
-  }
-
-  for (auto ev : events)
-    {
-      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
-      if (sn_event)
-        {
-          signal_notify_event (sn_event);
-          delete sn_event;
-        }
-    }
+  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  return std::move (m_out_events);
 }
 
 JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
@@ -220,7 +206,6 @@ void
 JackControl::update_led()
 {
   m_control_widget->set_led (synth->voices_active());
-  synth->process_events();
 }
 
 void
