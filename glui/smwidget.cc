@@ -137,6 +137,19 @@ Widget::update_full()
     win->need_update (nullptr);
 }
 
+void
+Widget::update (double x, double y, double width, double height)
+{
+  Window *win = window();
+
+  if (win)
+    {
+      const Rect r (x, y, width, height);
+
+      win->need_update (this, &r);
+    }
+}
+
 /* Color conversion from Rapicorn */
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 void

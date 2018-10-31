@@ -720,10 +720,23 @@ Window::on_file_selected (const std::string& filename)
 }
 
 void
-Window::need_update (Widget *widget)
+Window::need_update (Widget *widget, const Rect *changed_rect)
 {
   if (widget)
-    update_region = update_region.rect_union (widget->abs_visible_rect());
+    {
+      Rect widget_rect = widget->abs_visible_rect();
+      if (changed_rect)
+        {
+          /* if changed rect is set, we only need to redraw a part of the widget */
+          Rect abs_changed_rect;
+          abs_changed_rect = Rect (changed_rect->x() + widget->abs_x(),
+                                   changed_rect->y() + widget->abs_y(),
+                                   changed_rect->width(),
+                                   changed_rect->height());
+          widget_rect = widget_rect.intersection (abs_changed_rect);
+        }
+      update_region = update_region.rect_union (widget_rect);
+    }
   else
     update_full_redraw = true;
 

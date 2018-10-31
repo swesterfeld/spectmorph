@@ -355,6 +355,7 @@ public:
   double abs_y() const;
 
   Rect   abs_visible_rect();
+  void   update (double x, double y, double width, double height);
   void   update();
   void   update_with_children();
   void   update_full();
