@@ -82,26 +82,29 @@ public:
         float max_s = 0;
         float min_s = 0;
         cairo_move_to (cr, 0, height / 2);
-        for (size_t i = 0; i < samples.size(); i++)
+
+        int draw_start = devent.rect.x() / width * samples.size();
+        int draw_end   = (devent.rect.x() + devent.rect.width()) / width * samples.size();
+
+        draw_start = std::max<int> (draw_start - 2, 0);
+        draw_end   = std::min<int> (draw_end   + 2, samples.size());
+        for (int i = draw_start; i < draw_end; i++)
           {
             double dx = double (i) * width / samples.size();
 
-            if (dx >= devent.rect.x() && dx <= devent.rect.x() + devent.rect.width())
+            int x_pixel = dx;
+            max_s = std::max (samples[i], max_s);
+            min_s = std::min (samples[i], min_s);
+            if (x_pixel != last_x_pixel)
               {
-                int x_pixel = dx;
-                max_s = std::max (samples[i], max_s);
-                min_s = std::min (samples[i], min_s);
-                if (x_pixel != last_x_pixel)
-                  {
-                    if (pass == 0)
-                      cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom);
-                    else
-                      cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom);
+                if (pass == 0)
+                  cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom);
+                else
+                  cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom);
 
-                    last_x_pixel = x_pixel;
-                    max_s = 0;
-                    min_s = 0;
-                  }
+                last_x_pixel = x_pixel;
+                max_s = 0;
+                min_s = 0;
               }
           }
         cairo_line_to (cr, last_x_pixel, height / 2);
