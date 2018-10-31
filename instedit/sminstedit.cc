@@ -95,6 +95,13 @@ public:
     event->run_rt (midi_synth.get());
     delete event; // we could unlock before this, but it really doesn't matter
   }
+
+  vector<string>
+  notify_take_events() override
+  {
+    std::lock_guard<std::mutex> lg (synth_mutex);
+    return midi_synth->inst_edit_synth()->take_out_events();
+  }
 };
 
 int
