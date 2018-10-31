@@ -13,6 +13,7 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 #include "smlv2common.hh"
+#include "smsynthinterface.hh"
 
 #include <mutex>
 
@@ -96,7 +97,7 @@ public:
   bool            voices_active;
   bool            send_settings_to_ui;
 
-  std::unique_ptr<SynthControlEvent> control_event;
+  ControlEventVector control_events;
 
   void update_plan (const string& new_plan_str);
   void handle_event (const string& event_str);
@@ -165,7 +166,7 @@ LV2Plugin::handle_event (const string& event_str)
   event->prepare();
 
   std::lock_guard<std::mutex> lg (new_plan_mutex);
-  control_event.reset (event);
+  control_events.take (event);
 }
 
 static LV2_Handle
@@ -330,11 +331,7 @@ run (LV2_Handle instance, uint32_t n_samples)
           self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
         }
-      if (self->control_event)
-        {
-          self->control_event->run_rt (&self->midi_synth);
-          self->control_event.reset();
-        }
+      self->control_events.run_rt (&self->midi_synth);
       self->new_plan_mutex.unlock();
     }
 
