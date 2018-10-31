@@ -42,7 +42,7 @@ JackSynth::process (jack_nframes_t nframes)
           midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
-      if (m_control_event)
+      if (m_control_event) // FIXME: this should be a queue
         {
           m_control_event->run_rt (midi_synth);
           m_control_event.reset();
