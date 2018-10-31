@@ -7,6 +7,36 @@
 namespace SpectMorph
 {
 
+class ControlEventVector
+{
+  std::vector<std::unique_ptr<SynthControlEvent>> events;
+  bool clear = false;
+public:
+  void
+  take (SynthControlEvent *ev)
+  {
+    // we'd rather run destructors in non-rt part of the code
+    if (clear)
+      {
+        events.clear();
+        clear = false;
+      }
+
+    events.emplace_back (ev);
+  }
+  void
+  run_rt (MidiSynth *midi_synth)
+  {
+    if (!clear)
+      {
+        for (const auto& ev : events)
+          ev->run_rt (midi_synth);
+
+        clear = true;
+      }
+  }
+};
+
 class SynthInterface
 {
 public:
