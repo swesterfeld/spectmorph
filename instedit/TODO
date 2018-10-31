@@ -2,13 +2,11 @@
   - maybe upsample or interpolate waveform
 
 - creator should thread::join()
-- merge instedit and glui backend threading code
 - integrate smenc proper
 - lv2 messaging
 - avoid printf in messaging
 - temp file handling
 - auto tune and stuff
-- optimize update region for play position pointer
 
 - fix error handling for WavSet::save() and others
 - debug why lv2 ui sometimes starts without plan
