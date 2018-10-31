@@ -17,8 +17,8 @@ namespace SpectMorph
 
 enum class PlayMode
 {
-  SAMPLE,
   SPECTMORPH,
+  SAMPLE,
   REFERENCE
 };
 
@@ -181,7 +181,7 @@ class InstEditWindow : public Window
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
   Label *vzoom_label;
-  PlayMode play_mode = PlayMode::SAMPLE;
+  PlayMode play_mode = PlayMode::SPECTMORPH;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
   Led *led;
@@ -311,9 +311,9 @@ public:
     connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
     grid.add_widget (new Label (this, "Play Mode"), 60, 54, 10, 3);
     grid.add_widget (play_mode_combobox, 68, 54, 20, 3);
+    play_mode_combobox->add_item ("SpectMorph Instrument"); // default
+    play_mode_combobox->set_text ("SpectMorph Instrument");
     play_mode_combobox->add_item ("Original Sample");
-    play_mode_combobox->set_text ("Original Sample"); // default
-    play_mode_combobox->add_item ("SpectMorph Instrument");
     play_mode_combobox->add_item ("Reference Instrument");
 
     /*--- play button ---*/
