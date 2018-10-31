@@ -243,14 +243,7 @@ LV2UI::port_event (uint32_t     port_index,
               if (read_event (obj, &event_str))
                 {
                   if (event_str)
-                    {
-                      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (event_str);
-                      if (sn_event)
-                        {
-                          signal_notify_event (sn_event);
-                          delete sn_event;
-                        }
-                    }
+                    notify_events.push_back (event_str);
                 }
             }
           else
@@ -260,6 +253,12 @@ LV2UI::port_event (uint32_t     port_index,
             }
         }
     }
+}
+
+vector<string>
+LV2UI::notify_take_events()
+{
+  return std::move (notify_events);
 }
 
 static void

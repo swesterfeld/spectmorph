@@ -16,6 +16,7 @@ class LV2UI : public SignalReceiver,
 {
   std::string           current_plan;
   LV2UI_Resize         *ui_resize;
+  std::vector<std::string>  notify_events;
 
 public:
   LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize);
@@ -32,6 +33,7 @@ public:
   void idle();
 
   void synth_take_control_event (SynthControlEvent *event) override;
+  std::vector<std::string> notify_take_events();
 
 /* slots: */
   void on_plan_changed();
