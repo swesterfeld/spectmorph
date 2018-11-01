@@ -45,6 +45,9 @@ struct EncoderParams
   /** user defined fundamental freq */
   double  fundamental_freq;
 
+  /** whether to generate phases in output */
+  bool    enable_phases = true;
+
   /* config file parameters */
   std::vector<std::string>            param_name_d;   // names of all supported double parameters
   std::map<std::string, double>       param_value_d;  // values of double parameters from config file

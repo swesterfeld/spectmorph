@@ -1335,7 +1335,9 @@ convert_freqs_mags_phases (const EncoderBlock& eblock, AudioBlock& ablock, const
         {
           ablock.freqs.push_back (ifreq);
           ablock.mags.push_back (imag);
-          ablock.phases.push_back (iphase);
+
+          if (enc_params.enable_phases)
+            ablock.phases.push_back (iphase);
         }
     }
 }

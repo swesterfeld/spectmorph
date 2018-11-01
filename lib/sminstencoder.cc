@@ -5,6 +5,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 using std::max;
 
 static float
@@ -55,6 +56,8 @@ InstEncoder::setup_params (const WavData& wav_data, int midi_note)
   enc_params.frame_size = frame_size;
   enc_params.block_size = block_size;
 
+  enc_params.enable_phases = false; // save some space
+
   // --- setup window ---
   window.resize (block_size);
   for (uint i = 0; i < window.size(); i++)
@@ -74,6 +77,16 @@ InstEncoder::encode (const WavData& wav_data, int midi_note, const string& filen
   Encoder encoder (enc_params);
 
   encoder.encode (wav_data, /* channel */ 0, window, /* opt */ 1, /* attack */ true, /* sines */ true);
+
+  /* strip stuff we don't need (but keep everything that is needed if loop points are changed) */
+  vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;
+
+  for (size_t i = 0; i < audio_blocks.size(); i++)
+    {
+      audio_blocks[i].debug_samples.clear();
+      audio_blocks[i].original_fft.clear();
+    }
+  encoder.original_samples.clear();
 
   return encoder.save (filename);
 }
