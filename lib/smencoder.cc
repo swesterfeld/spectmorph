@@ -1352,7 +1352,7 @@ convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
-void
+Error
 Encoder::save (const string& filename)
 {
   SpectMorph::Audio audio;
@@ -1388,7 +1388,7 @@ Encoder::save (const string& filename)
           audio.loop_end += zero_values_at_start;
         }
     }
-  audio.save (filename);
+  return audio.save (filename);  // saving can fail
 }
 
 void

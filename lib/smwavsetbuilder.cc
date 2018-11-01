@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smwavsetbuilder.hh"
+#include "sminstencoder.hh"
 
 using namespace SpectMorph;
 
@@ -65,14 +66,11 @@ WavSetBuilder::run()
 
       WavData wd_clipped;
       wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
-      wd_clipped.save ("/tmp/x.wav");
 
-      /* encoding */
       string sm_name = string_printf ("/tmp/x%d.sm", sd.midi_note);
 
-      string cmd = string_printf ("%s/smenccache /tmp/x.wav %s -m %d -O1 -s", sm_get_install_dir (INSTALL_DIR_BIN).c_str(), sm_name.c_str(), sd.midi_note);
-      printf ("# %s\n", cmd.c_str());
-      system (cmd.c_str());
+      InstEncoder enc;
+      enc.encode (wd_clipped, sd.midi_note, sm_name);
 
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;

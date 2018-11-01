@@ -131,7 +131,8 @@ public:
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);
   void set_loop_seconds (Audio::LoopType loop_type, double loop_start, double loop_end);
-  void save (const std::string& filename);
+
+  Error save (const std::string& filename);
 };
 
 }
