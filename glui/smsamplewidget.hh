@@ -84,9 +84,10 @@ public:
         cairo_move_to (cr, 0, height / 2);
 
         const int samples_per_pixel = sm_round_positive (std::max (samples.size() / width, 1.0));
+        const int pixels_per_sample = sm_round_positive (std::max (width / samples.size(), 1.0));
 
-        int draw_start = devent.rect.x() / width * samples.size();
-        int draw_end   = (devent.rect.x() + devent.rect.width()) / width * samples.size();
+        int draw_start = (devent.rect.x() - 2 * pixels_per_sample) / width * samples.size();
+        int draw_end   = (devent.rect.x() + 2 * pixels_per_sample + devent.rect.width()) / width * samples.size();
 
         draw_start = std::max<int> (draw_start - 2 * samples_per_pixel, 0);
         draw_end   = std::min<int> (draw_end   + 2 * samples_per_pixel, samples.size());
