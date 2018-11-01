@@ -3,6 +3,8 @@
 #include "smwavsetbuilder.hh"
 #include "sminstencoder.hh"
 
+#include <mutex>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -41,6 +43,52 @@ WavSetBuilder::add_sample (const Sample *sample)
   sample_data_vec.push_back (sd);
 }
 
+class InstEncCache
+{
+  struct CacheData
+  {
+    string                version;
+    vector<unsigned char> data;
+  };
+public:
+  void
+  encode (const WavData& wav_data, int midi_note, const string& filename)
+  {
+    static map<string, CacheData> cache;
+    static std::mutex             cache_mutex;
+
+    std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
+
+    string cache_key = filename; // should be something like "Trumpet:55"
+    string version = g_compute_checksum_for_data (G_CHECKSUM_SHA256, (const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size()); // FIXME: leak
+
+    if (cache[cache_key].version == version) // cache hit
+      {
+        FILE *out = fopen (filename.c_str(), "w");
+        assert (out);
+
+        for (auto b : cache[cache_key].data)
+          fputc (b, out);
+        fclose (out);
+        printf ("... cache hit: %s\n", filename.c_str());
+        return;
+      }
+
+    InstEncoder enc;
+    enc.encode (wav_data, midi_note, filename);
+
+    vector<unsigned char> data;
+    FILE *f = fopen (filename.c_str(), "r");
+    int c;
+    while ((c = fgetc (f)) >= 0)
+      data.push_back (c);
+    fclose (f);
+
+    cache[cache_key].version = version;
+    cache[cache_key].data    = data;
+  }
+};
+
 void
 WavSetBuilder::run()
 {
@@ -69,7 +117,7 @@ WavSetBuilder::run()
 
       string sm_name = string_printf ("/tmp/x%d.sm", sd.midi_note);
 
-      InstEncoder enc;
+      InstEncCache enc;
       enc.encode (wd_clipped, sd.midi_note, sm_name);
 
       WavSetWave new_wave;
