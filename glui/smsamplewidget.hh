@@ -83,11 +83,13 @@ public:
         float min_s = 0;
         cairo_move_to (cr, 0, height / 2);
 
+        const int samples_per_pixel = sm_round_positive (std::max (samples.size() / width, 1.0));
+
         int draw_start = devent.rect.x() / width * samples.size();
         int draw_end   = (devent.rect.x() + devent.rect.width()) / width * samples.size();
 
-        draw_start = std::max<int> (draw_start - 2, 0);
-        draw_end   = std::min<int> (draw_end   + 2, samples.size());
+        draw_start = std::max<int> (draw_start - 2 * samples_per_pixel, 0);
+        draw_end   = std::min<int> (draw_end   + 2 * samples_per_pixel, samples.size());
         for (int i = draw_start; i < draw_end; i++)
           {
             double dx = double (i) * width / samples.size();
