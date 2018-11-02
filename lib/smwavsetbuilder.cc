@@ -11,6 +11,12 @@ using std::string;
 using std::map;
 using std::vector;
 
+static string
+tmpfile (const string& filename)
+{
+  return sm_get_user_dir (USER_DIR_DATA) + "/" + filename;
+}
+
 WavSetBuilder::WavSetBuilder (const Instrument *instrument)
 {
   for (size_t i = 0; i < instrument->size(); i++)
@@ -115,7 +121,7 @@ WavSetBuilder::run()
       WavData wd_clipped;
       wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
 
-      string sm_name = string_printf ("/tmp/x%d.sm", sd.midi_note);
+      string sm_name = tmpfile (string_printf ("x%d.sm", sd.midi_note));
 
       InstEncCache enc;
       enc.encode (wd_clipped, sd.midi_note, sm_name);
@@ -129,7 +135,7 @@ WavSetBuilder::run()
 
       wav_set.waves.push_back (new_wave);
     }
-  wav_set.save ("/tmp/x.smset", true); // link wavset
+  wav_set.save (tmpfile ("x.smset"), true); // link wavset
 
   apply_loop_settings();
 }
@@ -139,7 +145,7 @@ WavSetBuilder::apply_loop_settings()
 {
   WavSet wav_set;
 
-  wav_set.load ("/tmp/x.smset");
+  wav_set.load (tmpfile ("x.smset"));
 
   // build index for sample data vector
   map<int, SampleData*> note_to_sd;
@@ -196,11 +202,11 @@ WavSetBuilder::apply_loop_settings()
         printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
     }
 
-  wav_set.save ("/tmp/x.smset");
+  wav_set.save (tmpfile ("x.smset"));
 }
 
 void
 WavSetBuilder::get_result (WavSet& wav_set)
 {
-  wav_set.load ("/tmp/x.smset");
+  wav_set.load (tmpfile ("x.smset"));
 }
