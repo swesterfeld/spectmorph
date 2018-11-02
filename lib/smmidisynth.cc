@@ -579,28 +579,23 @@ SynthControlEvent::create (const std::string& str)
 SynthNotifyEvent *
 SynthNotifyEvent::create (const std::string& str)
 {
-  std::string s;
-  std::string in = str + "|";
-  std::vector<std::string> vs;
-  for (auto c : in)
-    {
-      if (c == '|')
-        {
-          vs.push_back (s);
-          s = "";
-        }
-      else
-        s += c;
-    }
-  if (vs[0] == "InstEditVoice")
+  BinBuffer buffer;
+  buffer.from_string (str);
+
+  buffer.read_int();
+  const char *type = buffer.read_string_inplace();
+  if (strcmp (type, "InstEditVoice") == 0)
     {
       InstEditVoice *v = new InstEditVoice();
-      size_t pos = 1;
-      while (pos + 3 <= vs.size())
+
+      buffer.read_int_seq (v->note);
+      buffer.read_float_seq (v->current_pos);
+      buffer.read_float_seq (v->fundamental_note);
+
+      if (buffer.read_error())
         {
-          v->note.push_back (atoi (vs[pos++].c_str()));
-          v->current_pos.push_back (sm_atof (vs[pos++].c_str()));
-          v->fundamental_note.push_back (sm_atof (vs[pos++].c_str()));
+          delete v;
+          return nullptr;
         }
       return v;
     }

@@ -74,13 +74,21 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data)
 void
 InstEditSynth::process (float *output, size_t n_values)
 {
-  string notify_event = "InstEditVoice";
+  int   iev_note[voices.size()];
+  float iev_pos[voices.size()];
+  float iev_fnote[voices.size()];
+  int   iev_len = 0;
+
   zero_float_block (n_values, output);
   for (auto& voice : voices)
     {
       if (voice.decoder && voice.state != State::IDLE)
         {
-          notify_event += string_printf ("|%d|%f|%f", voice.note, voice.decoder->current_pos(), voice.decoder->fundamental_note());
+          iev_note[iev_len]  = voice.note;
+          iev_pos[iev_len]   = voice.decoder->current_pos();
+          iev_fnote[iev_len] = voice.decoder->fundamental_note();
+          iev_len++;
+
           float samples[n_values];
 
           voice.decoder->process (n_values, nullptr, &samples[0]);
@@ -106,20 +114,14 @@ InstEditSynth::process (float *output, size_t n_values)
             }
         }
     }
-  out_events.push_back (notify_event);
-}
 
-double
-InstEditSynth::current_pos()
-{
-  for (auto& voice : voices)
-    {
-      if (voice.decoder && voice.state != State::IDLE)
-        {
-          return voice.decoder->current_pos();
-        }
-    }
-  return -1;
+  notify_buffer.write_start ("InstEditVoice");
+  notify_buffer.write_int_seq (iev_note, iev_len);
+  notify_buffer.write_float_seq (iev_pos, iev_len);
+  notify_buffer.write_float_seq (iev_fnote, iev_len);
+  notify_buffer.write_end();
+
+  out_events.push_back (notify_buffer.to_string());
 }
 
 vector<string>

@@ -209,13 +209,9 @@ public:
 
 struct InstEditVoice : public SynthNotifyEvent
 {
-  std::vector<int> note;
-  std::vector<double> current_pos;
-  std::vector<double> fundamental_note;
-
-  InstEditVoice()
-  {
-  }
+  std::vector<int>   note;
+  std::vector<float> current_pos;
+  std::vector<float> fundamental_note;
 };
 
 }
