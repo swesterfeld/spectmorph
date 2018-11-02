@@ -36,6 +36,12 @@ class InstEditBackend
     return 440 * exp (log (2) * (note - 69) / 12.0);
   }
 
+  inline std::string
+  smset_file()
+  {
+    return sm_get_user_dir (USER_DIR_DATA) + "/midi_synth.smset";
+  }
+
 public:
   InstEditBackend (InstEditWindow *window, SynthInterface *synth_interface) :
     window (window),
@@ -81,7 +87,7 @@ public:
 
     have_result = true;
 
-    wav_set.save ("/tmp/midi_synth.smset");
+    wav_set.save (smset_file());
 
     delete current_builder;
     current_builder = nullptr;
@@ -474,7 +480,7 @@ InstEditBackend::on_timer()
   if (have_result)
     {
       printf ("got result!\n");
-      synth_interface->synth_inst_edit_update (true, "/tmp/midi_synth.smset", false);
+      synth_interface->synth_inst_edit_update (true, smset_file(), false);
       have_result = false;
     }
 }
@@ -502,8 +508,8 @@ InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, con
 
       wav_set.waves.push_back (new_wave);
 
-      wav_set.save ("/tmp/midi_synth.smset");
-      synth_interface->synth_inst_edit_update (true, "/tmp/midi_synth.smset", true);
+      wav_set.save (smset_file());
+      synth_interface->synth_inst_edit_update (true, smset_file(), true);
     }
   else if (play_mode == PlayMode::REFERENCE)
     {
