@@ -159,7 +159,15 @@ public:
   std::string
   to_string()
   {
-    return string_printf ("InstEditUpdate|%d|%s|%d", active, filename.c_str(), original_samples);
+    BinBuffer event_buffer;
+
+    event_buffer.write_start ("InstEditUpdate");
+    event_buffer.write_bool (active);
+    event_buffer.write_string (filename.c_str());
+    event_buffer.write_bool (original_samples);
+    event_buffer.write_end();
+
+    return event_buffer.to_string();
   }
 };
 
@@ -192,7 +200,14 @@ public:
   std::string
   to_string()
   {
-    return string_printf ("InstEditNote|%d|%d", midi_note, on);
+    BinBuffer event_buffer;
+
+    event_buffer.write_start ("InstEditNote");
+    event_buffer.write_int (midi_note);
+    event_buffer.write_bool (on);
+    event_buffer.write_end();
+
+    return event_buffer.to_string();
   }
 };
 

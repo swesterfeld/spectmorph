@@ -63,6 +63,11 @@ public:
     data.insert (data.end(), raw_str, raw_str + len);
   }
   void
+  write_bool (bool b)
+  {
+    data.push_back (b ? 1 : 0);
+  }
+  void
   write_byte (unsigned char byte)
   {
     data.push_back (byte);
@@ -153,6 +158,12 @@ public:
     else
       return "";
   }
+  const char *
+  read_start_inplace()
+  {
+    read_int(); // len
+    return read_string_inplace();
+  }
   void *
   read (size_t l)
   {
@@ -204,6 +215,19 @@ public:
       {
         m_read_error = true;
         result.clear();
+      }
+  }
+  bool
+  read_bool()
+  {
+    if(remaining() >= 1)
+      {
+        return data[rpos++] > 0;
+      }
+    else
+      {
+        m_read_error = true;
+        return false;
       }
   }
 };

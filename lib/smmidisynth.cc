@@ -549,29 +549,25 @@ MidiSynth::MidiEvent::channel() const
 SynthControlEvent *
 SynthControlEvent::create (const std::string& str)
 {
-  std::string s;
-  std::string in = str + "|";
-  std::vector<std::string> vs;
-  for (auto c : in)
+  BinBuffer buffer;
+  buffer.from_string (str);
+
+  const char *type = buffer.read_start_inplace();
+  if (strcmp (type, "InstEditUpdate") == 0)
     {
-      if (c == '|')
-        {
-          vs.push_back (s);
-          s = "";
-        }
-      else
-        s += c;
-    }
-  if (vs[0] == "InstEditUpdate")
-    {
-      bool active = atoi (vs[1].c_str()) > 0;
-      std::string filename = vs[2];
-      bool original_samples = atoi (vs[3].c_str()) > 0;
+      bool active           = buffer.read_bool();
+      std::string filename  = buffer.read_string_inplace();
+      bool original_samples = buffer.read_bool();
 
       return new InstEditUpdate (active, filename, original_samples);
     }
-  if (vs[0] == "InstEditNote")
-    return new InstEditNote (atoi (vs[1].c_str()), atoi (vs[2].c_str()) > 0);
+  else if (strcmp (type, "InstEditNote") == 0)
+    {
+      const int  midi_note = buffer.read_int();
+      const bool on        = buffer.read_bool();
+
+      return new InstEditNote (midi_note, on);
+    }
   return nullptr;
 }
 
