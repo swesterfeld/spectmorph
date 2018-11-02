@@ -70,7 +70,7 @@ public:
 
     if (cache[cache_key].version == version) // cache hit
       {
-        FILE *out = fopen (filename.c_str(), "w");
+        FILE *out = fopen (filename.c_str(), "wb");
         assert (out);
 
         for (auto b : cache[cache_key].data)
@@ -84,7 +84,7 @@ public:
     enc.encode (wav_data, midi_note, filename);
 
     vector<unsigned char> data;
-    FILE *f = fopen (filename.c_str(), "r");
+    FILE *f = fopen (filename.c_str(), "rb");
     int c;
     while ((c = fgetc (f)) >= 0)
       data.push_back (c);
