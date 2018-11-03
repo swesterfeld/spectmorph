@@ -20,6 +20,20 @@ tmpfile (const string& filename)
   return sm_get_user_dir (USER_DIR_DATA) + "/" + filename;
 }
 
+InstEncCache::InstEncCache()
+{
+}
+
+InstEncCache*
+InstEncCache::the()
+{
+  static InstEncCache *instance = NULL;
+  if (!instance)
+    instance = new InstEncCache;
+
+  return instance;
+}
+
 void
 InstEncCache::cache_save (const string& key, const CacheData& cache_data)
 {
@@ -97,12 +111,10 @@ InstEncCache::sha1_hash (const guchar *data, size_t len)
 
   return hash;
 }
+
 void
 InstEncCache::encode (const WavData& wav_data, int midi_note, const string& filename)
 {
-  static map<string, CacheData> cache;
-  static std::mutex             cache_mutex;
-
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
   string cache_key = filename; // should be something like "Trumpet:55"
@@ -138,4 +150,12 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
   cache[cache_key].data    = data;
 
   cache_save (string_printf ("uni_cache_%d", midi_note), cache[cache_key]);
+}
+
+void
+InstEncCache::clear()
+{
+  std::lock_guard<std::mutex> lg (cache_mutex);
+
+  cache.clear();
 }

@@ -79,8 +79,7 @@ WavSetBuilder::run()
 
       string sm_name = tmpfile (string_printf ("x%d.sm", sd.midi_note));
 
-      InstEncCache enc;
-      enc.encode (wd_clipped, sd.midi_note, sm_name);
+      InstEncCache::the()->encode (wd_clipped, sd.midi_note, sm_name);
 
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;
