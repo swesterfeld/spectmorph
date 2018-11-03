@@ -79,7 +79,6 @@ WavSetBuilder::run()
 
       string sm_name = tmpfile (string_printf ("x%d.sm", sd.midi_note));
 
-      InstEncCache::the()->encode (wd_clipped, sd.midi_note, sm_name);
 
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;
@@ -87,21 +86,18 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
+      new_wave.audio = InstEncCache::the()->encode (wd_clipped, sd.midi_note, sm_name);
 
       wav_set.waves.push_back (new_wave);
     }
-  wav_set.save (tmpfile ("x.smset"), true); // link wavset
+  apply_loop_settings (wav_set);
 
-  apply_loop_settings();
+  wav_set.save (tmpfile ("x.smset"));
 }
 
 void
-WavSetBuilder::apply_loop_settings()
+WavSetBuilder::apply_loop_settings (WavSet& wav_set)
 {
-  WavSet wav_set;
-
-  wav_set.load (tmpfile ("x.smset"));
-
   // build index for sample data vector
   map<int, SampleData*> note_to_sd;
   for (auto& sd : sample_data_vec)
@@ -156,8 +152,6 @@ WavSetBuilder::apply_loop_settings()
       if (have_loop_type)
         printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
     }
-
-  wav_set.save (tmpfile ("x.smset"));
 }
 
 void

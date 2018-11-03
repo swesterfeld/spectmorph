@@ -28,7 +28,7 @@ class InstEncCache
 
   InstEncCache(); // Singleton -> private constructor
 public:
-  void        encode (const WavData& wav_data, int midi_note, const std::string& filename);
+  Audio      *encode (const WavData& wav_data, int midi_note, const std::string& filename);
   void        clear();
 
   static InstEncCache *the(); // Singleton

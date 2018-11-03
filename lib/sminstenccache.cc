@@ -108,7 +108,7 @@ InstEncCache::sha1_hash (const guchar *data, size_t len)
   return hash;
 }
 
-void
+Audio *
 InstEncCache::encode (const WavData& wav_data, int midi_note, const string& filename)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
@@ -129,7 +129,15 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
         fputc (b, out);
       fclose (out);
       printf ("... cache hit: %s\n", filename.c_str());
-      return;
+
+      Audio *audio = new Audio;
+      if (audio->load (filename) == Error::NONE)
+        return audio;
+      else
+        {
+          delete audio;
+          return nullptr;
+        }
     }
 
   InstEncoder enc;
@@ -146,6 +154,15 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
   cache[cache_key].data    = data;
 
   cache_save (string_printf ("uni_cache_%d", midi_note), cache[cache_key]);
+
+  Audio *audio = new Audio;
+  if (audio->load (filename) == Error::NONE)
+    return audio;
+  else
+    {
+      delete audio;
+      return nullptr;
+    }
 }
 
 void
