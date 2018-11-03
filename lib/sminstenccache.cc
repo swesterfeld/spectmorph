@@ -41,6 +41,7 @@ InstEncCache::cache_save (const string& key, const CacheData& cache_data)
 
   buffer.write_start ("SpectMorphCache");
   buffer.write_string (cache_data.version.c_str());
+  buffer.write_int (cache_data.data.size());
   buffer.write_string (sha1_hash (&cache_data.data[0], cache_data.data.size()).c_str());
   buffer.write_end();
 
@@ -61,15 +62,15 @@ InstEncCache::cache_save (const string& key, const CacheData& cache_data)
 void
 InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const string& need_version)
 {
-  FILE *inf = fopen (tmpfile (key).c_str(), "rb");
+  GenericIn *in_file = GenericIn::open (tmpfile (key));
 
-  if (!inf)  // no cache entry
+  if (!in_file)  // no cache entry
     return;
 
   // read header (till zero char)
   string header_str;
   int ch;
-  while ((ch = fgetc (inf)) > 0)
+  while ((ch = in_file->get_byte()) > 0)
     header_str += char (ch);
 
   BinBuffer buffer;
@@ -77,28 +78,23 @@ InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const st
 
   string type       = buffer.read_start_inplace();
   string version    = buffer.read_string_inplace();
+  int    data_size  = buffer.read_int();
   string data_hash  = buffer.read_string_inplace();
 
-  printf ("type = %s\n", type.c_str());
-  printf ("version = %s\n", version.c_str());
-  printf ("need_version = %s\n", need_version.c_str());
-  printf ("hash = %s\n", data_hash.c_str());
-
-  vector<unsigned char> data;
-  int c;
-  while ((c = fgetc (inf)) >= 0)
-    data.push_back (c);
-
-  string load_data_hash = sha1_hash (&data[0], data.size());
-  printf ("load size = %zd\n", data.size());
-  printf ("load_hash = %s\n", load_data_hash.c_str());
-
-  if (version == need_version && load_data_hash == data_hash)
+  if (version == need_version)
     {
-      cache_data.version = version;
-      cache_data.data    = data;
+      vector<unsigned char> data (data_size);
+      if (in_file->read (&data[0], data.size()) == data_size)
+        {
+          string load_data_hash = sha1_hash (&data[0], data.size());
+          if (load_data_hash == data_hash)
+            {
+              cache_data.version = version;
+              cache_data.data    = std::move (data);
+            }
+        }
     }
-  fclose (inf);
+  delete in_file;
 }
 
 
