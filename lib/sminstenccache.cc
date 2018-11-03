@@ -3,6 +3,7 @@
 #include "sminstenccache.hh"
 #include "smbinbuffer.hh"
 #include "sminstencoder.hh"
+#include "smmmapin.hh"
 
 #include <mutex>
 
@@ -122,22 +123,19 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
     }
   if (cache[cache_key].version == version) // cache hit (in memory)
     {
-      FILE *out = fopen (filename.c_str(), "wb");
-      assert (out);
+      vector<unsigned char>& data = cache[cache_key].data;
 
-      for (auto b : cache[cache_key].data)
-        fputc (b, out);
-      fclose (out);
-      printf ("... cache hit: %s\n", filename.c_str());
+      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      Audio     *audio = new Audio;
+      bool       load_ok = (audio->load (in) == Error::NONE);
 
-      Audio *audio = new Audio;
-      if (audio->load (filename) == Error::NONE)
+      delete in;
+
+      if (load_ok)
         return audio;
-      else
-        {
-          delete audio;
-          return nullptr;
-        }
+
+      delete audio;
+      return nullptr;
     }
 
   InstEncoder enc;
