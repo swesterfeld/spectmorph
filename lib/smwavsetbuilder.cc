@@ -2,6 +2,7 @@
 
 #include "smwavsetbuilder.hh"
 #include "sminstencoder.hh"
+#include "smbinbuffer.hh"
 
 #include <mutex>
 
@@ -56,6 +57,80 @@ class InstEncCache
     string                version;
     vector<unsigned char> data;
   };
+  void
+  cache_save (const string& key, const CacheData& cache_data)
+  {
+    BinBuffer buffer;
+
+    buffer.write_start ("SpectMorphCache");
+    buffer.write_string (cache_data.version.c_str());
+    buffer.write_string (sha1_hash (&cache_data.data[0], cache_data.data.size()).c_str());
+    buffer.write_end();
+
+    string out_filename = tmpfile (key);
+    FILE *outf = fopen (out_filename.c_str(), "wb");
+    if (outf)
+      {
+        for (auto ch : buffer.to_string())
+          fputc (ch, outf);
+        fputc (0, outf);
+        printf ("save size = %zd\n", cache_data.data.size());
+        for (auto ch : cache_data.data)
+          fputc (ch, outf);
+        fclose (outf);
+      }
+  }
+  void
+  cache_try_load (CacheData& cache_data, const string& key, const string& need_version)
+  {
+    FILE *inf = fopen (tmpfile (key).c_str(), "rb");
+
+    if (!inf)  // no cache entry
+      return;
+
+    // read header (till zero char)
+    string header_str;
+    int ch;
+    while ((ch = fgetc (inf)) > 0)
+      header_str += char (ch);
+
+    BinBuffer buffer;
+    buffer.from_string (header_str);
+
+    string type       = buffer.read_start_inplace();
+    string version    = buffer.read_string_inplace();
+    string data_hash  = buffer.read_string_inplace();
+
+    printf ("type = %s\n", type.c_str());
+    printf ("version = %s\n", version.c_str());
+    printf ("need_version = %s\n", need_version.c_str());
+    printf ("hash = %s\n", data_hash.c_str());
+
+    vector<unsigned char> data;
+    int c;
+    while ((c = fgetc (inf)) >= 0)
+      data.push_back (c);
+
+    string load_data_hash = sha1_hash (&data[0], data.size());
+    printf ("load size = %zd\n", data.size());
+    printf ("load_hash = %s\n", load_data_hash.c_str());
+
+    if (version == need_version && load_data_hash == data_hash)
+      {
+        cache_data.version = version;
+        cache_data.data    = data;
+      }
+    fclose (inf);
+  }
+  string
+  sha1_hash (const guchar *data, size_t len)
+  {
+    char *result = g_compute_checksum_for_data (G_CHECKSUM_SHA1, data, len);
+    string hash = result;
+    g_free (result);
+
+    return hash;
+  }
 public:
   void
   encode (const WavData& wav_data, int midi_note, const string& filename)
@@ -66,9 +141,13 @@ public:
     std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
     string cache_key = filename; // should be something like "Trumpet:55"
-    string version = g_compute_checksum_for_data (G_CHECKSUM_SHA256, (const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size()); // FIXME: leak
+    string version = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
 
-    if (cache[cache_key].version == version) // cache hit
+    if (cache[cache_key].version != version)
+      {
+        cache_try_load (cache[cache_key], string_printf ("uni_cache_%d", midi_note), version);
+      }
+    if (cache[cache_key].version == version) // cache hit (in memory)
       {
         FILE *out = fopen (filename.c_str(), "wb");
         assert (out);
@@ -92,6 +171,8 @@ public:
 
     cache[cache_key].version = version;
     cache[cache_key].data    = data;
+
+    cache_save (string_printf ("uni_cache_%d", midi_note), cache[cache_key]);
   }
 };
 
