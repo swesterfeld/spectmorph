@@ -4,6 +4,7 @@
 #include "smbinbuffer.hh"
 #include "sminstencoder.hh"
 #include "smmmapin.hh"
+#include "smmemout.hh"
 
 #include <mutex>
 
@@ -139,28 +140,19 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
     }
 
   InstEncoder enc;
-  enc.encode (wav_data, midi_note, filename);
+  Audio *audio = enc.encode (wav_data, midi_note);
 
   vector<unsigned char> data;
-  FILE *f = fopen (filename.c_str(), "rb");
-  int c;
-  while ((c = fgetc (f)) >= 0)
-    data.push_back (c);
-  fclose (f);
+  MemOut                audio_mem_out (&data);
+
+  audio->save (&audio_mem_out);
 
   cache[cache_key].version = version;
   cache[cache_key].data    = data;
 
   cache_save (string_printf ("uni_cache_%d", midi_note), cache[cache_key]);
 
-  Audio *audio = new Audio;
-  if (audio->load (filename) == Error::NONE)
-    return audio;
-  else
-    {
-      delete audio;
-      return nullptr;
-    }
+  return audio;
 }
 
 void
