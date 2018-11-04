@@ -34,12 +34,13 @@ main (int argc, char **argv)
       InstEncCache::the()->clear();
 
       double t = gettime();
-      WavSet wav_set;
+
       Instrument inst;
       inst.load (argv[1]);
+
       WavSetBuilder builder (&inst);
-      builder.run();
-      builder.get_result (wav_set);
+      std::unique_ptr<WavSet> wav_set (builder.run());
+
       times.push_back ((gettime() - t) * 1000);
     }
 
