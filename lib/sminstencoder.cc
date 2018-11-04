@@ -69,8 +69,8 @@ InstEncoder::setup_params (const WavData& wav_data, int midi_note)
     }
 }
 
-Error
-InstEncoder::encode (const WavData& wav_data, int midi_note, const string& filename)
+Audio *
+InstEncoder::encode (const WavData& wav_data, int midi_note)
 {
   setup_params (wav_data, midi_note);
 
@@ -88,5 +88,5 @@ InstEncoder::encode (const WavData& wav_data, int midi_note, const string& filen
     }
   encoder.original_samples.clear();
 
-  return encoder.save (filename);
+  return encoder.save_as_audio();
 }
