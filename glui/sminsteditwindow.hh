@@ -72,21 +72,17 @@ public:
   {
     current_builder = builder;
     new std::thread ([this] () {
-      current_builder->run();
+      std::unique_ptr<WavSet> wav_set (current_builder->run());
 
-      finish_current_builder();
+      finish_current_builder (*wav_set);
     });
   }
   void
-  finish_current_builder()
+  finish_current_builder (WavSet& wav_set)
   {
     std::lock_guard<std::mutex> lg (result_mutex);
 
-    WavSet wav_set;
-    current_builder->get_result (wav_set);
-
     have_result = true;
-
     wav_set.save (smset_file());
 
     delete current_builder;
