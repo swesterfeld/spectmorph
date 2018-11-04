@@ -136,6 +136,7 @@ public:
   void set_loop_seconds (Audio::LoopType loop_type, double loop_start, double loop_end);
 
   Error save (const std::string& filename);
+  Audio *save_as_audio();
 };
 
 }

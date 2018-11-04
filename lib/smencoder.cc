@@ -16,6 +16,7 @@
 #include <complex>
 #include <map>
 #include <algorithm>
+#include <memory>
 #include <cinttypes>
 
 using namespace SpectMorph;
@@ -1357,15 +1358,28 @@ convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
 Error
 Encoder::save (const string& filename)
 {
-  SpectMorph::Audio audio;
-  audio.fundamental_freq = enc_params.fundamental_freq;
-  audio.mix_freq = enc_params.mix_freq;
-  audio.frame_size_ms = enc_params.frame_size_ms;
-  audio.frame_step_ms = enc_params.frame_step_ms;
-  audio.attack_start_ms = optimal_attack.attack_start_ms;
-  audio.attack_end_ms = optimal_attack.attack_end_ms;
-  audio.zero_values_at_start = zero_values_at_start;
-  audio.zeropad = enc_params.zeropad;
+  std::unique_ptr<Audio> audio (save_as_audio());
+
+  return audio->save (filename);  // saving can fail
+}
+
+/**
+ * This function saves the data produced by the encoder, returning a newly
+ * allocated Audio object (caller must free this).
+ */
+Audio *
+Encoder::save_as_audio()
+{
+  Audio *audio = new Audio();
+
+  audio->fundamental_freq = enc_params.fundamental_freq;
+  audio->mix_freq = enc_params.mix_freq;
+  audio->frame_size_ms = enc_params.frame_size_ms;
+  audio->frame_step_ms = enc_params.frame_step_ms;
+  audio->attack_start_ms = optimal_attack.attack_start_ms;
+  audio->attack_end_ms = optimal_attack.attack_end_ms;
+  audio->zero_values_at_start = zero_values_at_start;
+  audio->zeropad = enc_params.zeropad;
 
   for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
     {
@@ -1374,23 +1388,23 @@ Encoder::save (const string& filename)
       convert_noise (ai->noise, block.noise);
       block.original_fft = ai->original_fft;
       block.debug_samples = ai->debug_samples;
-      audio.contents.push_back (block);
+      audio->contents.push_back (block);
     }
-  audio.sample_count = sample_count;
-  audio.original_samples = original_samples;
+  audio->sample_count = sample_count;
+  audio->original_samples = original_samples;
   if (loop_start >= 0 && loop_end >= 0 && loop_type != Audio::LOOP_NONE)
     {
-      audio.loop_type = loop_type;
-      audio.loop_start = loop_start;
-      audio.loop_end = loop_end;
+      audio->loop_type = loop_type;
+      audio->loop_start = loop_start;
+      audio->loop_end = loop_end;
 
-      if (audio.loop_type == Audio::LOOP_TIME_FORWARD || audio.loop_type == Audio::LOOP_TIME_PING_PONG)
+      if (audio->loop_type == Audio::LOOP_TIME_FORWARD || audio->loop_type == Audio::LOOP_TIME_PING_PONG)
         {
-          audio.loop_start += zero_values_at_start;
-          audio.loop_end += zero_values_at_start;
+          audio->loop_start += zero_values_at_start;
+          audio->loop_end += zero_values_at_start;
         }
     }
-  return audio.save (filename);  // saving can fail
+  return audio;
 }
 
 void
