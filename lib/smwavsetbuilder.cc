@@ -21,12 +21,23 @@ tmpfile (const string& filename)
 
 WavSetBuilder::WavSetBuilder (const Instrument *instrument)
 {
+  wav_set = new WavSet();
+
   for (size_t i = 0; i < instrument->size(); i++)
     {
       Sample *sample = instrument->sample (i);
       assert (sample);
 
       add_sample (sample);
+    }
+}
+
+WavSetBuilder::~WavSetBuilder()
+{
+  if (wav_set)
+    {
+      delete wav_set;
+      wav_set = nullptr;
     }
 }
 
@@ -51,11 +62,9 @@ WavSetBuilder::add_sample (const Sample *sample)
   sample_data_vec.push_back (sd);
 }
 
-void
+WavSet *
 WavSetBuilder::run()
 {
-  WavSet wav_set;
-
   for (auto& sd : sample_data_vec)
     {
       /* clipping */
@@ -88,22 +97,25 @@ WavSetBuilder::run()
       new_wave.velocity_range_max = 127;
       new_wave.audio = InstEncCache::the()->encode (wd_clipped, sd.midi_note, sm_name);
 
-      wav_set.waves.push_back (new_wave);
+      wav_set->waves.push_back (new_wave);
     }
-  apply_loop_settings (wav_set);
+  apply_loop_settings();
 
-  wav_set.save (tmpfile ("x.smset"));
+  WavSet *result = wav_set;
+  wav_set = nullptr;
+
+  return result;
 }
 
 void
-WavSetBuilder::apply_loop_settings (WavSet& wav_set)
+WavSetBuilder::apply_loop_settings()
 {
   // build index for sample data vector
   map<int, SampleData*> note_to_sd;
   for (auto& sd : sample_data_vec)
     note_to_sd[sd.midi_note] = &sd;
 
-  for (auto& wave : wav_set.waves)
+  for (auto& wave : wav_set->waves)
     {
       SampleData *sd = note_to_sd[wave.midi_note];
 
@@ -152,10 +164,4 @@ WavSetBuilder::apply_loop_settings (WavSet& wav_set)
       if (have_loop_type)
         printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
     }
-}
-
-void
-WavSetBuilder::get_result (WavSet& wav_set)
-{
-  wav_set.load (tmpfile ("x.smset"));
 }

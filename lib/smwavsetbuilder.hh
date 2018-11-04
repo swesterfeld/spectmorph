@@ -23,15 +23,15 @@ class WavSetBuilder
     double       loop_end_ms;
   };
   std::vector<SampleData> sample_data_vec;
+  WavSet *wav_set;
 
-  void apply_loop_settings (WavSet& wav_set);
+  void apply_loop_settings();
   void add_sample (const Sample *sample);
 public:
   WavSetBuilder (const Instrument *instrument);
+  ~WavSetBuilder();
 
-  void run();
-
-  void get_result (WavSet& wav_set);
+  WavSet *run();
 };
 
 }

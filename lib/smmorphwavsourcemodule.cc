@@ -123,12 +123,9 @@ MorphWavSourceModule::set_config (MorphOperator *op)
         std::lock_guard<std::mutex> lg (bmutex);
 
         WavSetBuilder builder (&inst);
-        builder.run();
+        std::shared_ptr<WavSet> wav_set (builder.run());
+
         CacheEntry *cache_entry = Cache::the()->lookup (filename);
-
-        auto wav_set = std::make_shared<WavSet>();
-        builder.get_result (*wav_set);
-
         cache_entry->set_wav_set (wav_set);
       });
 
