@@ -22,12 +22,12 @@ class InstEncCache
   std::map<std::string, CacheData> cache;
   std::mutex                       cache_mutex;
 
-  void        cache_save (const std::string& key, const CacheData& cache_data);
-  void        cache_try_load (CacheData& cache_data, const std::string& key, const std::string& need_version);
+  void        cache_save (const std::string& key);
+  void        cache_try_load (const std::string& key, const std::string& need_version);
 
   InstEncCache(); // Singleton -> private constructor
 public:
-  Audio      *encode (const WavData& wav_data, int midi_note, const std::string& filename);
+  Audio      *encode (const std::string& inst_name, const WavData& wav_data, int midi_note);
   void        clear();
 
   static InstEncCache *the(); // Singleton

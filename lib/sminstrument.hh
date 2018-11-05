@@ -77,6 +77,7 @@ SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
 
   std::vector<std::unique_ptr<Sample>> samples;
   int m_selected = -1;
+  std::string m_name = "untitled";
 
 public:
   Instrument()
@@ -112,6 +113,11 @@ public:
   {
     return samples.size();
   }
+  std::string
+  name() const
+  {
+    return m_name;
+  }
   Sample *
   sample (size_t n) const
   {
@@ -136,6 +142,10 @@ public:
   load (const std::string& filename)
   {
     samples.clear();
+
+    char *basename = g_path_get_basename (filename.c_str());
+    m_name = basename;
+    g_free (basename);
 
     xml_document doc;
     doc.load_file (filename.c_str());

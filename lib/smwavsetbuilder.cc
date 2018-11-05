@@ -13,15 +13,10 @@ using std::string;
 using std::map;
 using std::vector;
 
-static string
-tmpfile (const string& filename)
-{
-  return sm_get_user_dir (USER_DIR_DATA) + "/" + filename;
-}
-
 WavSetBuilder::WavSetBuilder (const Instrument *instrument)
 {
   wav_set = new WavSet();
+  name = instrument->name();
 
   for (size_t i = 0; i < instrument->size(); i++)
     {
@@ -86,16 +81,12 @@ WavSetBuilder::run()
       WavData wd_clipped;
       wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
 
-      string sm_name = tmpfile (string_printf ("x%d.sm", sd.midi_note));
-
-
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;
-      new_wave.path = sm_name;
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (wd_clipped, sd.midi_note, sm_name);
+      new_wave.audio = InstEncCache::the()->encode (name, wd_clipped, sd.midi_note);
 
       wav_set->waves.push_back (new_wave);
     }

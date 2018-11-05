@@ -37,8 +37,10 @@ InstEncCache::the()
 }
 
 void
-InstEncCache::cache_save (const string& key, const CacheData& cache_data)
+InstEncCache::cache_save (const string& key)
 {
+  const CacheData& cache_data = cache[key];
+
   BinBuffer buffer;
 
   buffer.write_start ("SpectMorphCache");
@@ -54,7 +56,6 @@ InstEncCache::cache_save (const string& key, const CacheData& cache_data)
       for (auto ch : buffer.to_string())
         fputc (ch, outf);
       fputc (0, outf);
-      printf ("save size = %zd\n", cache_data.data.size());
       for (auto ch : cache_data.data)
         fputc (ch, outf);
       fclose (outf);
@@ -62,9 +63,9 @@ InstEncCache::cache_save (const string& key, const CacheData& cache_data)
 }
 
 void
-InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const string& need_version)
+InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
 {
-  GenericIn *in_file = GenericIn::open (tmpfile (key));
+  GenericIn *in_file = GenericIn::open (tmpfile (cache_key));
 
   if (!in_file)  // no cache entry
     return;
@@ -91,8 +92,8 @@ InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const st
           string load_data_hash = sha1_hash (&data[0], data.size());
           if (load_data_hash == data_hash)
             {
-              cache_data.version = version;
-              cache_data.data    = std::move (data);
+              cache[cache_key].version = version;
+              cache[cache_key].data    = std::move (data);
             }
         }
     }
@@ -100,16 +101,16 @@ InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const st
 }
 
 Audio *
-InstEncCache::encode (const WavData& wav_data, int midi_note, const string& filename)
+InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
-  string cache_key = filename; // should be something like "Trumpet:55"
+  string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
   string version = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
 
   if (cache[cache_key].version != version)
     {
-      cache_try_load (cache[cache_key], string_printf ("uni_cache_%d", midi_note), version);
+      cache_try_load (cache_key, version);
     }
   if (cache[cache_key].version == version) // cache hit (in memory)
     {
@@ -139,7 +140,7 @@ InstEncCache::encode (const WavData& wav_data, int midi_note, const string& file
   cache[cache_key].version = version;
   cache[cache_key].data    = data;
 
-  cache_save (string_printf ("uni_cache_%d", midi_note), cache[cache_key]);
+  cache_save (cache_key);
 
   return audio;
 }
