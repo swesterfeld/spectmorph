@@ -2,15 +2,14 @@
 
 #include "smoutfile.hh"
 #include "smstdioout.hh"
+#include "smutils.hh"
 
-#include <glib.h>
 #include <assert.h>
 
 using std::string;
 using std::vector;
-using SpectMorph::OutFile;
-using SpectMorph::GenericOut;
-using SpectMorph::StdioOut;
+
+using namespace SpectMorph;
 
 OutFile::OutFile (const string& filename, const string& file_type, int file_version)
 {
@@ -168,16 +167,6 @@ OutFile::write_uint16_block (const string& s,
 #endif
 }
 
-static string
-blob_sum (const void *data, size_t size)
-{
-  char *sha256_sum = g_compute_checksum_for_data (G_CHECKSUM_SHA256, (const guchar *) data, size);
-  string result = sha256_sum;
-  g_free (sha256_sum);
-
-  return result;
-}
-
 void
 OutFile::write_blob (const string& s,
                      const void   *data,
@@ -187,21 +176,21 @@ OutFile::write_blob (const string& s,
 
   write_raw_string (s);
 
-  string sha256_sum = blob_sum (data, size);
-  if (stored_blobs.find (sha256_sum) != stored_blobs.end())
+  string hash = sha1_hash ((const unsigned char *) data, size);
+  if (stored_blobs.find (hash) != stored_blobs.end())
     {
       // a blob with the same data was stored before -> just store hash sum
       write_raw_int (-1);
-      write_raw_string (sha256_sum);
+      write_raw_string (hash);
     }
   else
     {
       // first time we store this blob
       write_raw_int (size);
-      write_raw_string (sha256_sum);
+      write_raw_string (hash);
 
       file->write (data, size);
 
-      stored_blobs.insert (sha256_sum);
+      stored_blobs.insert (hash);
     }
 }

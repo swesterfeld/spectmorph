@@ -92,6 +92,8 @@ const char *sm_error_blurb (Error error);
 std::string sm_resolve_link (const std::string& link_file);
 #endif
 
+std::string sha1_hash (const unsigned char *data, size_t len);
+
 } // namespace SpectMorph
 
 /* we want to be able to use sm_debug without extra includes */

@@ -99,17 +99,6 @@ InstEncCache::cache_try_load (CacheData& cache_data, const string& key, const st
   delete in_file;
 }
 
-
-string
-InstEncCache::sha1_hash (const guchar *data, size_t len)
-{
-  char *result = g_compute_checksum_for_data (G_CHECKSUM_SHA1, data, len);
-  string hash = result;
-  g_free (result);
-
-  return hash;
-}
-
 Audio *
 InstEncCache::encode (const WavData& wav_data, int midi_note, const string& filename)
 {

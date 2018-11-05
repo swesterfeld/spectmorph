@@ -349,4 +349,15 @@ sm_error_blurb (Error error)
   return "Unknown error";
 }
 
+string
+sha1_hash (const unsigned char *data, size_t len)
+{
+  char *result = g_compute_checksum_for_data (G_CHECKSUM_SHA1, data, len);
+  string hash = result;
+  g_free (result);
+
+  return hash;
+}
+
+
 }

@@ -24,7 +24,6 @@ class InstEncCache
 
   void        cache_save (const std::string& key, const CacheData& cache_data);
   void        cache_try_load (CacheData& cache_data, const std::string& key, const std::string& need_version);
-  std::string sha1_hash (const guchar *data, size_t len);
 
   InstEncCache(); // Singleton -> private constructor
 public:
