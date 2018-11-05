@@ -58,7 +58,8 @@ struct Options
   int             max_velocity;
   vector<string>  format;
   int             max_jobs;
-  bool            loop_markers;
+  bool            loop_markers = false;
+  bool            loop_markers_ms = false;
   enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS, SET_NAMES, GET_NAMES } command;
 
   Options ();
@@ -150,6 +151,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--loop"))
         {
           loop_markers = true;
+        }
+      else if (check_arg (argc, argv, &i, "--loop-ms"))
+        {
+          loop_markers_ms = true;
         }
     }
 
@@ -584,6 +589,15 @@ main (int argc, char **argv)
                 wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_start);
               sm_printf ("set-marker loop-end %d %d %d %d %d\n", wi->midi_note, wi->channel,
                 wi->velocity_range_min, wi->velocity_range_max, wi->audio->loop_end);
+            }
+          if (options.loop_markers_ms)
+            {
+              double loop_start = wi->audio->loop_start * wi->audio->frame_step_ms;
+              double loop_end = wi->audio->loop_end * wi->audio->frame_step_ms;
+
+              // FIXME: (1) clip start
+              // FIXME: (2) zero values at start
+              sm_printf ("set-loop-ms %d %s %f %f\n", wi->midi_note, loop_type.c_str(), loop_start, loop_end);
             }
         }
     }
