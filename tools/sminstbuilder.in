@@ -458,6 +458,23 @@ def parse_markers (filename):
     die ("file '%s' missing" % filename)
   return markers
 
+def parse_loop_markers (filename):
+  markers=dict()
+  try:
+    f = open (filename)
+    for line in f:
+      if line.startswith ("set-loop-ms"):
+        (set_l, note, loop_type, start_ms, end_ms) = line.split()
+        note = int (note)
+        markers[note] = dict()
+        markers[note]["loop-type"] = loop_type
+        markers[note]["start"] = float (start_ms)
+        markers[note]["end"] = float (end_ms)
+  except:
+    die ("file '%s' missing" % filename)
+  return markers
+
+
 def export_instrument (inst_dir, builder_config, cmdline_args):
   old_path = os.getcwd()
   try:
@@ -471,6 +488,11 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
     clip_markers = parse_markers ("clip_markers")
   else:
     clip_markers = dict()
+
+  final_smset = config.dir + "/instrument.smset"
+  export_loop_markers = "export_loop_markers"
+  system_or_die ("smwavset get-markers %s --loop-ms > %s" % (final_smset, export_loop_markers))
+  loop_markers = parse_loop_markers (export_loop_markers)
 
   instrument_node = ET.Element ("instrument")
   for sample in config.samples:
@@ -490,9 +512,19 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
       pass
     clip_node = ET.SubElement (sample_node, "clip", start="%.3f" % clip_start_ms, end="%.3f" % clip_end_ms)
 
-    if (config.auto_loop_count > 0):
-      loop_start_ms = clip_start_ms + (clip_end_ms - clip_start_ms) * float (config.auto_loop) / 100.0
-      loop_node = ET.SubElement (sample_node, "loop", type="single-frame", start="%.3f" % loop_start_ms, end="%.3f" % loop_start_ms)
+    try:
+      loop_type = loop_markers[int (midi_note)]["loop-type"]
+      loop_start_ms = loop_markers[int (midi_note)]["start"]
+      loop_end_ms = loop_markers[int (midi_note)]["end"]
+      if loop_type == "loop-frame-forward":
+        loop_type = "forward"
+      if loop_type == "loop-frame-ping-pong":
+        loop_type = "ping-pong"
+      if loop_start_ms == loop_end_ms:
+        loop_type = "single-frame"
+      loop_node = ET.SubElement (sample_node, "loop", type=loop_type, start="%.3f" % loop_start_ms, end="%.3f" % loop_end_ms)
+    except:
+      pass
 
   tree = ET.ElementTree (instrument_node)
   tree.write ("config.sminst", pretty_print=True)
