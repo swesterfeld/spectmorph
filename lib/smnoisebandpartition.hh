@@ -24,6 +24,14 @@ public:
 
   size_t n_bands();
   size_t n_spectrum_bins();
+
+  int
+  bins_per_band (size_t band)
+  {
+    g_return_val_if_fail (band < band_count.size(), 0);
+
+    return band_count[band];
+  }
 };
 
 }
