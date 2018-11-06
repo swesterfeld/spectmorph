@@ -3,6 +3,7 @@
 #include "smlivedecoder.hh"
 #include "smutils.hh"
 #include "smmain.hh"
+#include "smaudiotool.hh"
 
 using namespace SpectMorph;
 
@@ -57,34 +58,6 @@ set_noise_f (AudioBlock& block, int band, double val)
   block.noise[band] = sm_factor2idb (val);
 }
 
-class Block2Energy
-{
-  vector<float> noise_factors;
-public:
-  Block2Energy (double mix_freq)
-  {
-    NoiseBandPartition partition (32, 4096, mix_freq);
-
-    for (size_t i = 0; i < 32; i++)
-      noise_factors.push_back (mix_freq * partition.bins_per_band (i) / 4096.);
-  }
-
-  double
-  energy (const AudioBlock& block)
-  {
-    g_return_val_if_fail (block.noise.size() == noise_factors.size(), 0);
-
-    double e = 0;
-    for (size_t i = 0; i < block.mags.size(); i++)
-      e += 0.5 * block.mags_f (i) * block.mags_f (i);
-
-    for (size_t i = 0; i < block.noise.size(); i++)
-      e += block.noise_f (i) * block.noise_f (i) * noise_factors[i];
-
-    return e;
-  }
-};
-
 double
 energy (const vector<float>& samples)
 {
@@ -128,7 +101,7 @@ run_test (int n_sines, int n_noise, int mix_freq)
   live_decoder.process (samples.size(), nullptr, &samples[0]);
   samples.erase (samples.begin(), samples.begin() + mix_freq);
 
-  Block2Energy b2e (mix_freq);
+  AudioTool::Block2Energy b2e (mix_freq);
 
   const double e = energy (samples);
   const double block_e = b2e.energy (audio_block);
