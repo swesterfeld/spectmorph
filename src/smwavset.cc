@@ -15,6 +15,8 @@
 #include "smjobqueue.hh"
 #include "smutils.hh"
 #include "smwavdata.hh"
+#include "sminstrument.hh"
+#include "smwavsetbuilder.hh"
 
 #include <string>
 #include <map>
@@ -60,7 +62,7 @@ struct Options
   int             max_jobs;
   bool            loop_markers = false;
   bool            loop_markers_ms = false;
-  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS, SET_NAMES, GET_NAMES } command;
+  enum { NONE, INIT, ADD, LIST, ENCODE, DECODE, DELTA, LINK, EXTRACT, GET_MARKERS, SET_MARKERS, SET_NAMES, GET_NAMES, BUILD } command;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -225,6 +227,10 @@ Options::parse (int   *argc_p,
             {
               command = GET_NAMES;
             }
+          else if (strcmp (argv[1], "build") == 0)
+            {
+              command = BUILD;
+            }
 
           if (command != NONE)
             {
@@ -251,6 +257,7 @@ Options::print_usage ()
   sm_printf (" smwavset link [ <options> ] <wset_filename>\n");
   sm_printf (" smwavset get-markers [ <options> ] <wset_filename>\n");
   sm_printf (" smwavset set-markers [ <options> ] <wset_filename> <marker_filename>\n");
+  sm_printf (" smwavset build <inst_filename> <smset_filename>\n");
   sm_printf ("\n");
   sm_printf ("options:\n");
   sm_printf (" -h, --help                  help for %s\n", options.program_name.c_str());
@@ -671,9 +678,25 @@ main (int argc, char **argv)
         }
       wset.save (argv[1]);
     }
+  else if (options.command == Options::BUILD)
+    {
+      assert (argc == 3);
+
+      string inst_filename = argv[1];
+      string out_filename = argv[2];
+
+      Instrument inst;
+      inst.load (inst_filename);
+
+      WavSetBuilder builder (&inst);
+      std::unique_ptr<WavSet> smset (builder.run());
+      assert (smset);
+
+      smset->save (out_filename);
+    }
   else
     {
-      sm_printf ("You need to specify a command (init, add, list, encode, decode, delta).\n\n");
+      sm_printf ("You need to specify a command (init, add, list, encode, decode, delta, build).\n\n");
       Options::print_usage();
       exit (1);
     }
