@@ -4,6 +4,7 @@
 #include "sminstencoder.hh"
 #include "smbinbuffer.hh"
 #include "sminstenccache.hh"
+#include "smaudiotool.hh"
 
 #include <mutex>
 
@@ -17,6 +18,7 @@ WavSetBuilder::WavSetBuilder (const Instrument *instrument)
 {
   wav_set = new WavSet();
   name = instrument->name();
+  auto_volume = instrument->auto_volume();
 
   for (size_t i = 0; i < instrument->size(); i++)
     {
@@ -91,6 +93,7 @@ WavSetBuilder::run()
       wav_set->waves.push_back (new_wave);
     }
   apply_loop_settings();
+  apply_auto_volume();
 
   WavSet *result = wav_set;
   wav_set = nullptr;
@@ -154,5 +157,21 @@ WavSetBuilder::apply_loop_settings()
       bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
       if (have_loop_type)
         printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
+    }
+}
+
+void
+WavSetBuilder::apply_auto_volume()
+{
+  if (!auto_volume)
+    return;
+
+  for (auto& wave : wav_set->waves)
+    {
+      Audio& audio = *wave.audio;
+
+      double energy = AudioTool::compute_energy (audio);
+
+      AudioTool::normalize_energy (energy, audio);
     }
 }
