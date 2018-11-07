@@ -5,6 +5,8 @@
 
 using namespace SpectMorph;
 
+using std::vector;
+
 AudioTool::Block2Energy::Block2Energy (double mix_freq)
 {
   NoiseBandPartition partition (32, 4096, mix_freq);
@@ -54,4 +56,34 @@ AudioTool::compute_energy (const Audio& audio)
       e_norm += 1;
     }
   return e / e_norm;
+}
+
+void
+AudioTool::normalize_factor (double norm, Audio& audio)
+{
+  const int    norm_delta_idb   = sm_factor2delta_idb (norm);
+
+  for (size_t f = 0; f < audio.contents.size(); f++)
+    {
+      vector<uint16_t>& mags = audio.contents[f].mags;
+      for (size_t i = 0; i < mags.size(); i++)
+        mags[i] = sm_bound<int> (0, mags[i] + norm_delta_idb, 65535);
+
+      vector<uint16_t>& noise = audio.contents[f].noise;
+      for (size_t i = 0; i < noise.size(); i++)
+        noise[i] = sm_bound<int> (0, noise[i] + norm_delta_idb, 65535);
+    }
+
+  // store normalization in order to replay original samples normalized
+  const double samples_factor = db_to_factor (audio.original_samples_norm_db);
+  audio.original_samples_norm_db = db_from_factor (samples_factor * norm, -200);
+}
+
+void
+AudioTool::normalize_energy (double energy, Audio& audio)
+{
+  const double target_energy = 0.05;
+  const double norm = sqrt (target_energy / energy);
+
+  normalize_factor (norm, audio);
 }

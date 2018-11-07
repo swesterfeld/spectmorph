@@ -12,6 +12,8 @@ namespace AudioTool
 {
 
 double compute_energy (const Audio& audio);
+void normalize_factor (double norm, Audio& audio);
+void normalize_energy (double energy, Audio& audio);
 
 class Block2Energy
 {
