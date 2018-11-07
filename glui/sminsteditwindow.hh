@@ -9,6 +9,7 @@
 #include "smtimer.hh"
 #include "smwavsetbuilder.hh"
 #include "smbutton.hh"
+#include "smcheckbox.hh"
 
 #include <thread>
 
@@ -176,6 +177,16 @@ class InstEditWindow : public Window
     if (sample)
       m_backend.switch_to_sample (sample, play_mode, &instrument);
   }
+  void
+  on_global_changed()
+  {
+    auto_volume_details_button->set_enabled (instrument.auto_volume());
+
+    Sample *sample = instrument.sample (instrument.selected());
+
+    if (sample)
+      m_backend.switch_to_sample (sample, play_mode, &instrument);
+  }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
   Label *hzoom_label;
@@ -185,6 +196,8 @@ class InstEditWindow : public Window
   ComboBox *loop_combobox;
   Led *led;
   Label *playing_label;
+  CheckBox *auto_volume_checkbox = nullptr;
+  Button   *auto_volume_details_button = nullptr;
 
   Sample::Loop
   text_to_loop (const std::string& text)
@@ -231,6 +244,7 @@ public:
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
     connect (instrument.signal_marker_changed, this, &InstEditWindow::on_marker_changed);
+    connect (instrument.signal_global_changed, this, &InstEditWindow::on_global_changed);
 
     FixedGrid grid;
 
@@ -309,7 +323,7 @@ public:
     play_mode_combobox = new ComboBox (this);
     connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
     grid.add_widget (new Label (this, "Play Mode"), 60, 54, 10, 3);
-    grid.add_widget (play_mode_combobox, 68, 54, 20, 3);
+    grid.add_widget (play_mode_combobox, 68, 54, 24, 3);
     play_mode_combobox->add_item ("SpectMorph Instrument"); // default
     play_mode_combobox->set_text ("SpectMorph Instrument");
     play_mode_combobox->add_item ("Original Sample");
@@ -323,8 +337,8 @@ public:
 
     /*--- led ---*/
     led = new Led (this, false);
-    grid.add_widget (new Label (this, "Analyzing"), 70, 64, 10, 3);
-    grid.add_widget (led, 77, 64.5, 2, 2);
+    grid.add_widget (new Label (this, "Analyzing"), 60, 67, 10, 3);
+    grid.add_widget (led, 67, 67.5, 2, 2);
 
     /*--- playing ---*/
     playing_label = new Label (this, "");
@@ -362,6 +376,27 @@ public:
     });
 
     instrument.load (test_sample);
+
+    /*--- auto volume ---*/
+    Button *b2, *b3;
+
+    auto_volume_checkbox = new CheckBox (this, "Auto Volume");
+    connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
+    grid.add_widget (auto_volume_checkbox, 60, 58.5, 20, 2);
+    grid.add_widget (auto_volume_details_button = new Button (this, "Details..."), 82, 58, 10, 3);
+
+    auto_volume_checkbox->set_checked (instrument.auto_volume());
+    auto_volume_details_button->set_enabled (instrument.auto_volume());
+
+    grid.add_widget (new CheckBox (this, "Auto Tune"), 60, 61.5, 20, 2);
+    grid.add_widget (b2 = new Button (this, "Details..."), 82, 61, 10, 3);
+
+    b2->set_enabled (false);
+
+    grid.add_widget (new CheckBox (this, "Custom Analysis Params"), 60, 64.5, 20, 2);
+    grid.add_widget (b3 = new Button (this, "Details..."), 82, 64, 10, 3);
+
+    b3->set_enabled (false);
 
     // show complete wave
     on_update_hzoom (0);
@@ -416,6 +451,11 @@ public:
             sample->set_midi_note (i);
           }
       }
+  }
+  void
+  on_auto_volume_changed (bool new_value)
+  {
+    instrument.set_auto_volume (new_value);
   }
   void
   on_play_mode_changed()
