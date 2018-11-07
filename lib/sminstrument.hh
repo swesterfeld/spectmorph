@@ -78,6 +78,7 @@ SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
   std::vector<std::unique_ptr<Sample>> samples;
   int m_selected = -1;
   std::string m_name = "untitled";
+  bool m_auto_volume = true;
 
 public:
   Instrument()
@@ -254,8 +255,21 @@ public:
   {
     signal_marker_changed();
   }
+  bool
+  auto_volume() const
+  {
+    return m_auto_volume;
+  }
+  void
+  set_auto_volume (bool new_value)
+  {
+    m_auto_volume = new_value;
+
+    signal_global_changed();
+  }
   Signal<> signal_samples_changed;
   Signal<> signal_marker_changed;
+  Signal<> signal_global_changed;  // global auto volume, auto tune or advanced params changed
 };
 
 inline void
