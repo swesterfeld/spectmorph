@@ -26,9 +26,14 @@ enum class PlayMode
 class InstEditWindow;
 class InstEditBackend
 {
-  std::mutex result_mutex;
+  std::mutex              result_mutex;
   std::unique_ptr<WavSet> result_wav_set;
-  SynthInterface *synth_interface;
+  PlayMode                result_play_mode;
+  SynthInterface         *synth_interface;
+
+  WavSetBuilder          *current_builder = nullptr;
+  WavSetBuilder          *next_builder = nullptr;
+
 
   double
   note_to_freq (int note)
@@ -49,11 +54,13 @@ public:
   }
   void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument);
 
-  WavSetBuilder *current_builder = nullptr;
-  WavSetBuilder *next_builder = nullptr;
   void
-  add_builder (WavSetBuilder *builder)
+  add_builder (WavSetBuilder *builder, PlayMode play_mode)
   {
+    std::lock_guard<std::mutex> lg (result_mutex);
+
+    result_play_mode = play_mode;
+
     if (current_builder)
       {
         if (next_builder) /* kill and overwrite obsolete next builder */
@@ -69,12 +76,13 @@ public:
   void
   start_as_current (WavSetBuilder *builder)
   {
+    // must have result_mutex lock
     current_builder = builder;
     new std::thread ([this] () {
       WavSet *wav_set = current_builder->run();
 
       finish_current_builder (wav_set);
-    });
+      });
   }
   void
   finish_current_builder (WavSet *wav_set)
@@ -536,7 +544,22 @@ InstEditBackend::on_timer()
       for (const auto& wave : result_wav_set->waves)
         signal_have_audio (wave.midi_note, wave.audio);
 
-      synth_interface->synth_inst_edit_update (true, smset_file(), false);
+      if (result_play_mode == PlayMode::SPECTMORPH)
+        {
+          synth_interface->synth_inst_edit_update (true, smset_file(), false);
+        }
+      else if (result_play_mode == PlayMode::SAMPLE)
+        {
+          synth_interface->synth_inst_edit_update (true, smset_file(), true);
+        }
+      else
+        {
+          Index index;
+          index.load_file ("instruments:standard");
+
+          std::string smset_dir = index.smset_dir();
+          synth_interface->synth_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
+        }
 
       // delete
       result_wav_set.reset();
@@ -546,45 +569,9 @@ InstEditBackend::on_timer()
 inline void
 InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
 {
-  printf ("switch to sample called, play mode=%d\n", int (play_mode));
-  if (play_mode == PlayMode::SAMPLE)
-    {
-#if 0
-      WavSet wav_set;
+  WavSetBuilder *builder = new WavSetBuilder (instrument);
 
-      WavSetWave new_wave;
-      new_wave.midi_note = sample->midi_note();
-      // new_wave.path = "..";
-      new_wave.channel = 0;
-      new_wave.velocity_range_min = 0;
-      new_wave.velocity_range_max = 127;
-
-      Audio audio;
-      audio.mix_freq = sample->wav_data.mix_freq();
-      audio.fundamental_freq = note_to_freq (sample->midi_note());
-      audio.original_samples = sample->wav_data.samples();
-      new_wave.audio = audio.clone();
-
-      wav_set.waves.push_back (new_wave);
-
-      wav_set.save (smset_file());
-#endif
-      synth_interface->synth_inst_edit_update (true, smset_file(), true);
-    }
-  else if (play_mode == PlayMode::REFERENCE)
-    {
-      Index index;
-      index.load_file ("instruments:standard");
-
-      std::string smset_dir = index.smset_dir();
-      synth_interface->synth_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
-    }
-  else if (play_mode == PlayMode::SPECTMORPH)
-    {
-      WavSetBuilder *builder = new WavSetBuilder (instrument);
-
-      add_builder (builder);
-    }
+  add_builder (builder, play_mode);
 }
 
 }
