@@ -34,7 +34,6 @@ class InstEditBackend
   WavSetBuilder          *current_builder = nullptr;
   WavSetBuilder          *next_builder = nullptr;
 
-
   double
   note_to_freq (int note)
   {
@@ -569,7 +568,7 @@ InstEditBackend::on_timer()
 inline void
 InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
 {
-  WavSetBuilder *builder = new WavSetBuilder (instrument);
+  WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
 
   add_builder (builder, play_mode);
 }
