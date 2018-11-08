@@ -89,6 +89,7 @@ WavSetBuilder::run()
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
       new_wave.audio = InstEncCache::the()->encode (name, wd_clipped, sd.midi_note);
+      new_wave.audio->original_samples = sd.wav_data_ptr->samples();
 
       wav_set->waves.push_back (new_wave);
     }
