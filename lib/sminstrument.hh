@@ -8,6 +8,7 @@
 #include "smwavdata.hh"
 #include "smsignal.hh"
 #include "smmath.hh"
+#include "smaudio.hh"
 
 #include <map>
 #include <memory>
@@ -69,6 +70,8 @@ public:
   void set_loop (Loop loop);
   std::string filename;
   WavData     wav_data;
+
+  std::unique_ptr<Audio> audio;
 };
 
 class Instrument
