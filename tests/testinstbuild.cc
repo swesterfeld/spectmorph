@@ -38,7 +38,7 @@ main (int argc, char **argv)
       Instrument inst;
       inst.load (argv[1]);
 
-      WavSetBuilder builder (&inst);
+      WavSetBuilder builder (&inst, /* keep_samples */ false);
       std::unique_ptr<WavSet> wav_set (builder.run());
 
       times.push_back ((gettime() - t) * 1000);
