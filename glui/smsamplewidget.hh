@@ -67,6 +67,12 @@ public:
     if (!m_sample)
       return;
 
+    double azoom;
+    if (m_sample->audio)
+      azoom = db_to_factor (m_sample->audio->original_samples_norm_db);
+    else
+      azoom = 1;
+
     const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
     const double clip_start_x = m_sample->get_marker (MARKER_CLIP_START) / length_ms * width;
     const double clip_end_x = m_sample->get_marker (MARKER_CLIP_END) / length_ms * width;
@@ -101,9 +107,9 @@ public:
             if (x_pixel != last_x_pixel)
               {
                 if (pass == 0)
-                  cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom);
+                  cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom * azoom);
                 else
-                  cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom);
+                  cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom * azoom);
 
                 last_x_pixel = x_pixel;
                 max_s = 0;
