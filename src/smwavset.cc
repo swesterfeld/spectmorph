@@ -688,7 +688,7 @@ main (int argc, char **argv)
       Instrument inst;
       inst.load (inst_filename);
 
-      WavSetBuilder builder (&inst);
+      WavSetBuilder builder (&inst, /* keep_samples */ false);
       std::unique_ptr<WavSet> smset (builder.run());
       assert (smset);
 
