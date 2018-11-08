@@ -27,8 +27,7 @@ class InstEditWindow;
 class InstEditBackend
 {
   std::mutex result_mutex;
-  bool have_result = false;
-  InstEditWindow *window = nullptr;
+  std::unique_ptr<WavSet> result_wav_set;
   SynthInterface *synth_interface;
 
   double
@@ -44,8 +43,7 @@ class InstEditBackend
   }
 
 public:
-  InstEditBackend (InstEditWindow *window, SynthInterface *synth_interface) :
-    window (window),
+  InstEditBackend (SynthInterface *synth_interface) :
     synth_interface (synth_interface)
   {
   }
@@ -73,18 +71,17 @@ public:
   {
     current_builder = builder;
     new std::thread ([this] () {
-      std::unique_ptr<WavSet> wav_set (current_builder->run());
+      WavSet *wav_set = current_builder->run();
 
-      finish_current_builder (*wav_set);
+      finish_current_builder (wav_set);
     });
   }
   void
-  finish_current_builder (WavSet& wav_set)
+  finish_current_builder (WavSet *wav_set)
   {
     std::lock_guard<std::mutex> lg (result_mutex);
 
-    have_result = true;
-    wav_set.save (smset_file());
+    result_wav_set.reset (wav_set);
 
     delete current_builder;
     current_builder = nullptr;
@@ -106,6 +103,7 @@ public:
   }
   int current_midi_note() {return 69;}
 
+  Signal<int, Audio *> signal_have_audio;
   void on_timer();
 };
 
@@ -238,13 +236,16 @@ public:
 
   InstEditWindow (const std::string& test_sample, SynthInterface *synth_interface, Window *parent_window = nullptr) :
     Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
-    m_backend (this, synth_interface),
+    m_backend (synth_interface),
     synth_interface (synth_interface)
   {
     /* attach to model */
     connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
     connect (instrument.signal_marker_changed, this, &InstEditWindow::on_marker_changed);
     connect (instrument.signal_global_changed, this, &InstEditWindow::on_global_changed);
+
+    /* attach to backend */
+    connect (m_backend.signal_have_audio, this, &InstEditWindow::on_have_audio);
 
     FixedGrid grid;
 
@@ -497,6 +498,21 @@ public:
     if (sample)
       synth_interface->synth_inst_edit_note (sample->midi_note(), false);
   }
+  void
+  on_have_audio (int note, Audio *audio)
+  {
+    if (!audio)
+      return;
+
+    for (size_t i = 0; i < instrument.size(); i++)
+      {
+        Sample *sample = instrument.sample (i);
+
+        if (sample->midi_note() == note)
+          sample->audio.reset (audio->clone());
+      }
+    sample_widget->update();
+  }
 };
 
 inline void
@@ -513,11 +529,17 @@ InstEditBackend::on_timer()
     }
 
   std::lock_guard<std::mutex> lg (result_mutex);
-  if (have_result)
+  if (result_wav_set)
     {
       printf ("got result!\n");
+      result_wav_set->save (smset_file());
+      for (const auto& wave : result_wav_set->waves)
+        signal_have_audio (wave.midi_note, wave.audio);
+
       synth_interface->synth_inst_edit_update (true, smset_file(), false);
-      have_result = false;
+
+      // delete
+      result_wav_set.reset();
     }
 }
 
@@ -527,6 +549,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, con
   printf ("switch to sample called, play mode=%d\n", int (play_mode));
   if (play_mode == PlayMode::SAMPLE)
     {
+#if 0
       WavSet wav_set;
 
       WavSetWave new_wave;
@@ -545,6 +568,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, con
       wav_set.waves.push_back (new_wave);
 
       wav_set.save (smset_file());
+#endif
       synth_interface->synth_inst_edit_update (true, smset_file(), true);
     }
   else if (play_mode == PlayMode::REFERENCE)
