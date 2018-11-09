@@ -525,6 +525,24 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
       loop_node = ET.SubElement (sample_node, "loop", type=loop_type, start="%.3f" % loop_start_ms, end="%.3f" % loop_end_ms)
     except:
       pass
+  # --- volume ---
+  # technically, auto-volume-from-loop and auto_volume are different; however in
+  # existing instruments, they have the same effect
+  if config.auto_volume_from_loop_count > 0 or config.auto_volume_count > 0:
+    auto_volume_node = ET.SubElement (instrument_node, "auto_volume", method="from_loop")
+
+  if config.global_volume_count > 0:
+    auto_volume_node = ET.SubElement (instrument_node, "auto_volume", method="global", gain=config.global_volume)
+
+  # --- tuning ---
+  if config.auto_tune_count > 0:
+    auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="simple")
+
+  if config.tune_all_frames_count > 0:
+    auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="all_frames", partials=config.tune_all_frames)
+
+  if config.smooth_tune_count > 0:
+    auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="smooth", partials=config.smooth_tune[0], time=config.smooth_tune[1], amount=config.smooth_tune[2])
 
   tree = ET.ElementTree (instrument_node)
   tree.write ("config.sminst", pretty_print=True)
