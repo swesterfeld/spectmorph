@@ -400,7 +400,7 @@ public:
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
-    auto_tune_checkbox->set_checked (instrument.auto_tune());
+    auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
 
     grid.add_widget (b2 = new Button (this, "Details..."), 82, 61, 10, 3);
 
@@ -476,7 +476,10 @@ public:
   void
   on_auto_tune_changed (bool new_value)
   {
-    instrument.set_auto_tune (new_value);
+    Instrument::AutoTune at = instrument.auto_tune();
+    at.enabled = new_value;
+
+    instrument.set_auto_tune (at);
   }
   void
   on_play_mode_changed()
