@@ -169,16 +169,23 @@ WavSetBuilder::apply_loop_settings()
 void
 WavSetBuilder::apply_auto_volume()
 {
-  if (!auto_volume)
+  if (!auto_volume.enabled)
     return;
 
   for (auto& wave : wav_set->waves)
     {
       Audio& audio = *wave.audio;
 
-      double energy = AudioTool::compute_energy (audio);
+      if (auto_volume.method == Instrument::AutoVolume::FROM_LOOP)
+        {
+          double energy = AudioTool::compute_energy (audio);
 
-      AudioTool::normalize_energy (energy, audio);
+          AudioTool::normalize_energy (energy, audio);
+        }
+      if (auto_volume.method == Instrument::AutoVolume::GLOBAL)
+        {
+          AudioTool::normalize_factor (db_to_factor (auto_volume.gain), audio);
+        }
     }
 }
 

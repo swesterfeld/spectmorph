@@ -183,10 +183,28 @@ Instrument::load (const string& filename)
     m_auto_tune = true;
 
   // auto volume
-  m_auto_volume = false;
+  m_auto_volume.enabled = false;
   xml_node auto_volume_node = inst_node.child ("auto_volume");
   if (auto_volume_node)
-    m_auto_volume = true;
+    {
+      string method = auto_volume_node.attribute ("method").value();
+
+      if (method == "from_loop")
+        {
+          m_auto_volume.method  = AutoVolume::FROM_LOOP;
+          m_auto_volume.enabled = true;
+        }
+      else if (method == "global")
+        {
+          m_auto_volume.method  = AutoVolume::GLOBAL;
+          m_auto_volume.gain    = sm_atof (auto_volume_node.attribute ("gain").value());
+          m_auto_volume.enabled = true;
+        }
+      else
+        {
+          fprintf (stderr, "unknown auto volume method: %s\n", method.c_str());
+        }
+    }
 
   /* select first sample if possible */
   if (samples.empty())
@@ -233,7 +251,7 @@ Instrument::save (const string& filename)
       xml_node auto_tune_node = inst_node.append_child ("auto_tune");
       auto_tune_node.append_attribute ("method").set_value ("simple");
     }
-  if (m_auto_volume)
+  if (m_auto_volume.enabled)
     {
       xml_node auto_volume_node = inst_node.append_child ("auto_volume");
       auto_volume_node.append_attribute ("method").set_value ("from_loop");
@@ -267,14 +285,14 @@ Instrument::marker_changed()
   signal_marker_changed();
 }
 
-bool
+Instrument::AutoVolume
 Instrument::auto_volume() const
 {
   return m_auto_volume;
 }
 
 void
-Instrument::set_auto_volume (bool new_value)
+Instrument::set_auto_volume (const AutoVolume& new_value)
 {
   m_auto_volume = new_value;
 

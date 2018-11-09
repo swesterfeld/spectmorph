@@ -25,7 +25,8 @@ class WavSetBuilder
   std::vector<SampleData> sample_data_vec;
   WavSet *wav_set;
   std::string name;
-  bool auto_volume;
+
+  Instrument::AutoVolume auto_volume;
   bool auto_tune;
   bool keep_samples;
 

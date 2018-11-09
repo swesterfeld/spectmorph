@@ -57,13 +57,24 @@ public:
 
 class Instrument
 {
-SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
+public:
+  struct AutoVolume {
+    enum { FROM_LOOP, GLOBAL } method = FROM_LOOP;
+
+    bool    enabled = false;
+    double  gain    = 0;     // used by: global
+  };
+
+private:
+  SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
 
   std::vector<std::unique_ptr<Sample>> samples;
   int m_selected = -1;
   std::string m_name = "untitled";
-  bool m_auto_volume = true;
-  bool m_auto_tune = false;
+
+  AutoVolume m_auto_volume;
+
+  bool   m_auto_tune = false;
 
 public:
   Instrument();
@@ -83,8 +94,9 @@ public:
   void        update_order();
   void        marker_changed();
 
-  bool        auto_volume() const;
-  void        set_auto_volume (bool new_value);
+  AutoVolume  auto_volume() const;
+  void        set_auto_volume (const AutoVolume& new_value);
+
   bool        auto_tune() const;
   void        set_auto_tune (bool new_value);
 
