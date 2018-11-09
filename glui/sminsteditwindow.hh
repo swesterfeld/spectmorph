@@ -203,6 +203,7 @@ class InstEditWindow : public Window
   Label *playing_label;
   CheckBox *auto_volume_checkbox = nullptr;
   Button   *auto_volume_details_button = nullptr;
+  CheckBox *auto_tune_checkbox = nullptr;
 
   Sample::Loop
   text_to_loop (const std::string& text)
@@ -396,7 +397,11 @@ public:
     auto_volume_checkbox->set_checked (instrument.auto_volume());
     auto_volume_details_button->set_enabled (instrument.auto_volume());
 
-    grid.add_widget (new CheckBox (this, "Auto Tune"), 60, 61.5, 20, 2);
+    auto_tune_checkbox = new CheckBox (this, "Auto Tune");
+    grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
+    connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
+    auto_tune_checkbox->set_checked (instrument.auto_tune());
+
     grid.add_widget (b2 = new Button (this, "Details..."), 82, 61, 10, 3);
 
     b2->set_enabled (false);
@@ -464,6 +469,11 @@ public:
   on_auto_volume_changed (bool new_value)
   {
     instrument.set_auto_volume (new_value);
+  }
+  void
+  on_auto_tune_changed (bool new_value)
+  {
+    instrument.set_auto_tune (new_value);
   }
   void
   on_play_mode_changed()
