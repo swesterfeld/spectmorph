@@ -87,3 +87,66 @@ AudioTool::normalize_energy (double energy, Audio& audio)
 
   normalize_factor (norm, audio);
 }
+
+bool
+AudioTool::get_auto_tune_factor (Audio& audio, double& tune_factor)
+{
+  const double freq_min = 0.8;
+  const double freq_max = 1.25;
+  double freq_sum = 0, mag_sum = 0;
+
+  for (size_t f = 0; f < audio.contents.size(); f++)
+    {
+      double position_percent = f * 100.0 / audio.contents.size();
+      if (position_percent >= 40 && position_percent <= 60)
+        {
+          const AudioBlock& block = audio.contents[f];
+          double best_freq = -1;
+          double best_mag = 0;
+          for (size_t n = 0; n < block.freqs.size(); n++)
+            {
+              const double freq = block.freqs_f (n);
+
+              if (freq > freq_min && freq < freq_max)
+                {
+                  const double m = block.mags_f (n);
+                  if (m > best_mag)
+                    {
+                      best_mag = m;
+                      best_freq = block.freqs_f (n);
+                    }
+                }
+            }
+          if (best_mag > 0)
+            {
+              freq_sum += best_freq * best_mag;
+              mag_sum += best_mag;
+            }
+        }
+    }
+  if (mag_sum > 0)
+    {
+      tune_factor = 1.0 / (freq_sum / mag_sum);
+      return true;
+    }
+  else
+    {
+      tune_factor = 1.0;
+      return false;
+    }
+}
+
+void
+AudioTool::apply_auto_tune_factor (Audio& audio, double tune_factor)
+{
+  for (size_t f = 0; f < audio.contents.size(); f++)
+    {
+      AudioBlock& block = audio.contents[f];
+
+      for (size_t n = 0; n < block.freqs.size(); n++)
+        {
+          const double freq = block.freqs_f (n) * tune_factor;
+          block.freqs[n] = sm_freq2ifreq (freq);
+        }
+    }
+}
