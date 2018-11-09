@@ -185,7 +185,7 @@ class InstEditWindow : public Window
   void
   on_global_changed()
   {
-    auto_volume_details_button->set_enabled (instrument.auto_volume());
+    auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
 
     Sample *sample = instrument.sample (instrument.selected());
 
@@ -394,8 +394,8 @@ public:
     grid.add_widget (auto_volume_checkbox, 60, 58.5, 20, 2);
     grid.add_widget (auto_volume_details_button = new Button (this, "Details..."), 82, 58, 10, 3);
 
-    auto_volume_checkbox->set_checked (instrument.auto_volume());
-    auto_volume_details_button->set_enabled (instrument.auto_volume());
+    auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
+    auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
@@ -468,7 +468,10 @@ public:
   void
   on_auto_volume_changed (bool new_value)
   {
-    instrument.set_auto_volume (new_value);
+    Instrument::AutoVolume av = instrument.auto_volume();
+    av.enabled = new_value;
+
+    instrument.set_auto_volume (av);
   }
   void
   on_auto_tune_changed (bool new_value)
