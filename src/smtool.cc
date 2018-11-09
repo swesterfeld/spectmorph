@@ -11,6 +11,7 @@
 #include "sminfile.hh"
 #include "smutils.hh"
 #include "smfft.hh"
+#include "smaudiotool.hh"
 
 using namespace SpectMorph;
 using std::vector;
@@ -873,53 +874,12 @@ public:
   bool
   exec (Audio& audio)
   {
-    const double freq_min = 0.8;
-    const double freq_max = 1.25;
-    double freq_sum = 0, mag_sum = 0;
-
-    for (size_t f = 0; f < audio.contents.size(); f++)
+    double tune_factor;
+    if (AudioTool::get_auto_tune_factor (audio, tune_factor))
       {
-        double position_percent = f * 100.0 / audio.contents.size();
-        if (position_percent >= 40 && position_percent <= 60)
-          {
-            const AudioBlock& block = audio.contents[f];
-            double best_freq = -1;
-            double best_mag = 0;
-            for (size_t n = 0; n < block.freqs.size(); n++)
-              {
-                const double freq = block.freqs_f (n);
+        AudioTool::apply_auto_tune_factor (audio, tune_factor);
 
-                if (freq > freq_min && freq < freq_max)
-                  {
-                    const double m = block.mags_f (n);
-                    if (m > best_mag)
-                      {
-                        best_mag = m;
-                        best_freq = block.freqs_f (n);
-                      }
-                  }
-              }
-            if (best_mag > 0)
-              {
-                freq_sum += best_freq * best_mag;
-                mag_sum += best_mag;
-              }
-          }
-      }
-    if (mag_sum > 0)
-      {
-        double tune_factor = 1.0 / (freq_sum / mag_sum);
         double input_fundamental_freq = audio.fundamental_freq / tune_factor;
-        for (size_t f = 0; f < audio.contents.size(); f++)
-          {
-            AudioBlock& block = audio.contents[f];
-
-            for (size_t n = 0; n < block.freqs.size(); n++)
-              {
-                const double freq = block.freqs_f (n) * tune_factor;
-                block.freqs[n] = sm_freq2ifreq (freq);
-              }
-          }
         sm_printf ("%.17g  %.17g  %.3f cent\n", audio.fundamental_freq, input_fundamental_freq, freq_ratio_to_cent (tune_factor));
 
         set_need_save (true);
