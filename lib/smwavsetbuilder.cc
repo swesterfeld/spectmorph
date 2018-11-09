@@ -192,15 +192,33 @@ WavSetBuilder::apply_auto_volume()
 void
 WavSetBuilder::apply_auto_tune()
 {
-  if (!auto_tune)
+  if (!auto_tune.enabled)
     return;
 
   for (auto& wave : wav_set->waves)
     {
       Audio& audio = *wave.audio;
-      double tune_factor;
 
-      if (AudioTool::get_auto_tune_factor (audio, tune_factor))
-        AudioTool::apply_auto_tune_factor (audio, tune_factor);
+      if (auto_tune.method == Instrument::AutoTune::SIMPLE)
+        {
+          double tune_factor;
+
+          if (AudioTool::get_auto_tune_factor (audio, tune_factor))
+            AudioTool::apply_auto_tune_factor (audio, tune_factor);
+        }
+      if (auto_tune.method == Instrument::AutoTune::ALL_FRAMES)
+        {
+          for (auto& block : audio.contents)
+            {
+              const double est_freq = block.estimate_fundamental (auto_tune.partials);
+              const double tune_factor = 1.0 / est_freq;
+
+              for (size_t p = 0; p < block.freqs.size(); p++)
+                {
+                  const double freq = block.freqs_f (p) * tune_factor;
+                  block.freqs[p] = sm_freq2ifreq (freq);
+                }
+            }
+        }
     }
 }

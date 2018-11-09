@@ -177,10 +177,24 @@ Instrument::load (const string& filename)
         }
     }
   // auto tune
-  m_auto_tune = false; // default
+  m_auto_tune.enabled = false; // default
   xml_node auto_tune_node = inst_node.child ("auto_tune");
   if (auto_tune_node)
-    m_auto_tune = true;
+    {
+      string method = auto_tune_node.attribute ("method").value();
+
+      if (method == "simple")
+        {
+          m_auto_tune.method = AutoTune::SIMPLE;
+          m_auto_tune.enabled = true;
+        }
+      else if (method == "all_frames")
+        {
+          m_auto_tune.method   = AutoTune::ALL_FRAMES;
+          m_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
+          m_auto_tune.enabled  = true;
+        }
+    }
 
   // auto volume
   m_auto_volume.enabled = false;
@@ -246,7 +260,7 @@ Instrument::save (const string& filename)
           loop_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_END)).c_str();
         }
     }
-  if (m_auto_tune)
+  if (m_auto_tune.enabled)
     {
       xml_node auto_tune_node = inst_node.append_child ("auto_tune");
       auto_tune_node.append_attribute ("method").set_value ("simple");
@@ -299,14 +313,14 @@ Instrument::set_auto_volume (const AutoVolume& new_value)
   signal_global_changed();
 }
 
-bool
+Instrument::AutoTune
 Instrument::auto_tune() const
 {
   return m_auto_tune;
 }
 
 void
-Instrument::set_auto_tune (bool new_value)
+Instrument::set_auto_tune (const AutoTune& new_value)
 {
   m_auto_tune = new_value;
 

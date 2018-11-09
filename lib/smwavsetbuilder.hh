@@ -27,7 +27,7 @@ class WavSetBuilder
   std::string name;
 
   Instrument::AutoVolume auto_volume;
-  bool auto_tune;
+  Instrument::AutoTune   auto_tune;
   bool keep_samples;
 
   void apply_loop_settings();

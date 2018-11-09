@@ -65,6 +65,13 @@ public:
     double  gain    = 0;     // used by: global
   };
 
+  struct AutoTune {
+    enum { SIMPLE, ALL_FRAMES } method = SIMPLE;
+
+    bool    enabled  = false;
+    int     partials = 1;    // used by: all_frames
+  };
+
 private:
   SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
 
@@ -73,8 +80,7 @@ private:
   std::string m_name = "untitled";
 
   AutoVolume m_auto_volume;
-
-  bool   m_auto_tune = false;
+  AutoTune   m_auto_tune;
 
 public:
   Instrument();
@@ -97,8 +103,8 @@ public:
   AutoVolume  auto_volume() const;
   void        set_auto_volume (const AutoVolume& new_value);
 
-  bool        auto_tune() const;
-  void        set_auto_tune (bool new_value);
+  AutoTune    auto_tune() const;
+  void        set_auto_tune (const AutoTune& new_value);
 
   Signal<> signal_samples_changed;
   Signal<> signal_marker_changed;
