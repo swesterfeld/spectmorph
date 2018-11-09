@@ -176,6 +176,18 @@ Instrument::load (const string& filename)
             }
         }
     }
+  // auto tune
+  m_auto_tune = false; // default
+  xml_node auto_tune_node = inst_node.child ("auto_tune");
+  if (auto_tune_node)
+    m_auto_tune = true;
+
+  // auto volume
+  m_auto_volume = false;
+  xml_node auto_volume_node = inst_node.child ("auto_volume");
+  if (auto_volume_node)
+    m_auto_volume = true;
+
   /* select first sample if possible */
   if (samples.empty())
     m_selected = -1;
@@ -215,6 +227,16 @@ Instrument::save (const string& filename)
           loop_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_START)).c_str();
           loop_node.append_attribute ("end") = string_printf ("%.3f", sample->get_marker (MARKER_LOOP_END)).c_str();
         }
+    }
+  if (m_auto_tune)
+    {
+      xml_node auto_tune_node = inst_node.append_child ("auto_tune");
+      auto_tune_node.append_attribute ("method").set_value ("simple");
+    }
+  if (m_auto_volume)
+    {
+      xml_node auto_volume_node = inst_node.append_child ("auto_volume");
+      auto_volume_node.append_attribute ("method").set_value ("from_loop");
     }
   doc.save_file (filename.c_str());
 }
