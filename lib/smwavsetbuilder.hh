@@ -26,10 +26,13 @@ class WavSetBuilder
   WavSet *wav_set;
   std::string name;
   bool auto_volume;
+  bool auto_tune;
   bool keep_samples;
 
   void apply_loop_settings();
   void apply_auto_volume();
+  void apply_auto_tune();
+
   void add_sample (const Sample *sample);
 public:
   WavSetBuilder (const Instrument *instrument, bool keep_samples);

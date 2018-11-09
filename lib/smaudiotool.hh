@@ -15,6 +15,9 @@ double compute_energy (const Audio& audio);
 void normalize_factor (double norm, Audio& audio);
 void normalize_energy (double energy, Audio& audio);
 
+bool get_auto_tune_factor (Audio& audio, double& tune_factor);
+void apply_auto_tune_factor (Audio& audio, double tune_factor);
+
 class Block2Energy
 {
   std::vector<float> noise_factors;

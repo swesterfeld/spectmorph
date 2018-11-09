@@ -82,6 +82,7 @@ SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
   int m_selected = -1;
   std::string m_name = "untitled";
   bool m_auto_volume = true;
+  bool m_auto_tune = false;
 
 public:
   Instrument()
@@ -267,6 +268,18 @@ public:
   set_auto_volume (bool new_value)
   {
     m_auto_volume = new_value;
+
+    signal_global_changed();
+  }
+  bool
+  auto_tune() const
+  {
+    return m_auto_tune;
+  }
+  void
+  set_auto_tune (bool new_value)
+  {
+    m_auto_tune = new_value;
 
     signal_global_changed();
   }

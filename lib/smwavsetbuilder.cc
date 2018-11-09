@@ -20,6 +20,7 @@ WavSetBuilder::WavSetBuilder (const Instrument *instrument, bool keep_samples) :
   wav_set = new WavSet();
   name = instrument->name();
   auto_volume = instrument->auto_volume();
+  auto_tune = instrument->auto_tune();
 
   for (size_t i = 0; i < instrument->size(); i++)
     {
@@ -98,6 +99,7 @@ WavSetBuilder::run()
     }
   apply_loop_settings();
   apply_auto_volume();
+  apply_auto_tune();
 
   WavSet *result = wav_set;
   wav_set = nullptr;
@@ -177,5 +179,21 @@ WavSetBuilder::apply_auto_volume()
       double energy = AudioTool::compute_energy (audio);
 
       AudioTool::normalize_energy (energy, audio);
+    }
+}
+
+void
+WavSetBuilder::apply_auto_tune()
+{
+  if (!auto_tune)
+    return;
+
+  for (auto& wave : wav_set->waves)
+    {
+      Audio& audio = *wave.audio;
+      double tune_factor;
+
+      if (AudioTool::get_auto_tune_factor (audio, tune_factor))
+        AudioTool::apply_auto_tune_factor (audio, tune_factor);
     }
 }
