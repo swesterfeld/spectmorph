@@ -277,8 +277,9 @@ void
 Instrument::update_order()
 {
   Sample *ssample = sample (selected());
+  using SUPtr = std::unique_ptr<Sample>;
   sort (samples.begin(), samples.end(),
-    [](auto& s1, auto& s2) {
+    [](const SUPtr& s1, const SUPtr& s2) {
       if (s1->midi_note() > s2->midi_note())
         return true;
       if (s1->midi_note() < s2->midi_note())
