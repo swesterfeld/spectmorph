@@ -108,7 +108,7 @@ public:
   }
 
   void
-  motion (double x, double y)
+  motion (double x, double y) override
   {
     if (!mouse_down)
       {
