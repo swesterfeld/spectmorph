@@ -167,7 +167,7 @@ public:
   void *
   read (size_t l)
   {
-    if (l >= 0 && remaining() >= l)
+    if (remaining() >= l)
       {
         void *result = &data[rpos];
         rpos += l;
@@ -185,7 +185,7 @@ public:
     // might be optimizable a bit
     size_t seqlen = read_int();
 
-    if (seqlen * 4 >= 0 && remaining() >= seqlen * 4)
+    if (remaining() >= seqlen * 4)
       {
         result.resize (seqlen);
 
@@ -204,7 +204,7 @@ public:
     // might be optimizable a bit
     size_t seqlen = read_int();
 
-    if (seqlen * 4 >= 0 && remaining() >= seqlen * 4)
+    if (remaining() >= seqlen * 4)
       {
         result.resize (seqlen);
 
