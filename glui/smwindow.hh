@@ -13,7 +13,7 @@ namespace SpectMorph
 
 struct CairoGL;
 class NativeFileDialog;
-class Menu;
+struct Menu;
 class Timer;
 
 struct Window : public Widget
