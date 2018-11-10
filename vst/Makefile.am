@@ -51,6 +51,11 @@ STATIC_DLL_LIBS = \
 
 STATIC_DEPS_DIR = $(top_builddir)/macos/prefix
 STATIC_DEPS = \
+  $(STATIC_DEPS_DIR)/lib/libsndfile.a \
+  $(STATIC_DEPS_DIR)/lib/libvorbisenc.a \
+  $(STATIC_DEPS_DIR)/lib/libvorbis.a \
+  $(STATIC_DEPS_DIR)/lib/libogg.a \
+  $(STATIC_DEPS_DIR)/lib/libFLAC.a \
   $(STATIC_DEPS_DIR)/lib/libcairo.a \
   $(STATIC_DEPS_DIR)/lib/libpixman-1.a \
   $(STATIC_DEPS_DIR)/lib/libglib-2.0.a \
