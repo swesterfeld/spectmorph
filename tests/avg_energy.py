@@ -23,4 +23,7 @@ for x in signal:
   energy += x * x
 
 energy /= len (signal)
-print 10 * math.log10 (energy)
+if energy > 0:
+  print 10 * math.log10 (energy)
+else:
+  print -200
