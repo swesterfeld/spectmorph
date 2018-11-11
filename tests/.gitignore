@@ -43,6 +43,8 @@ testmidisynth
 testsignal
 teststrformat
 testvelocity
+testautovol
+testinstbuild
 test*.exe
 .libs
 .deps
