@@ -8,6 +8,7 @@
 #include "smutils.hh"
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
+#include "smrandom.hh"
 
 #include <math.h>
 #include <stdio.h>
@@ -1140,6 +1141,10 @@ Encoder::compute_attack_params (const vector<float>& window)
       unscaled_signal.push_back (frame_signal);
     }
 
+  /* make attack envelope deterministically return the same result for the same input every time */
+  Random random;
+  random.set_seed (42);
+
   Attack attack;
   int no_modification = 0;
   double error = 1e7;
@@ -1162,9 +1167,11 @@ Encoder::compute_attack_params (const vector<float>& window)
         R = 0.2;
       else if (no_modification < 2500)
         R = 0.01;
+      else
+        R = 0.002;
 
-      new_attack.attack_start_ms += g_random_double_range (-R, R);
-      new_attack.attack_end_ms += g_random_double_range (-R, R);
+      new_attack.attack_start_ms += random.random_double_range (-R, R);
+      new_attack.attack_end_ms += random.random_double_range (-R, R);
 
       // constrain attack to at least 5ms to avoid clickiness at start
       new_attack.attack_end_ms = max (new_attack.attack_end_ms, new_attack.attack_start_ms + 5);
