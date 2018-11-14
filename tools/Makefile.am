@@ -11,7 +11,8 @@ EXTRA_DIST += delta.py smeval.py smutils.py
 bin_PROGRAMS = smsfimport smsampleedit smenccache
 bin_SCRIPTS  = sminstbuilder
 
-noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smrunplan smfileedit smevalplayer smlive
+noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smrunplan \
+		  smfileedit smevalplayer smlive smfcompare
 
 ascii2wav_SOURCES = ascii2wav.cc
 ascii2wav_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
@@ -55,6 +56,11 @@ smrunplan_CXXFLAGS = $(AM_CXXFLAGS)
 smevalplayer_SOURCES = smevalplayer.cc
 smevalplayer_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS)
 smevalplayer_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/jack
+
+smfcompare_SOURCES = smfcompare.cc
+smfcompare_LDADD = $(BSE_LIBS) $(SPECTMORPH_LIBS)
+smfcompare_CXXFLAGS = $(AM_CXXFLAGS)
+
 
 install-exec-hook:
 	@chmod +x $(DESTDIR)$(bindir)/sminstbuilder
