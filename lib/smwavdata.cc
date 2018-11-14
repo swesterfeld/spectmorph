@@ -43,8 +43,8 @@ WavData::load (const string& filename)
       return false;
     }
 
-  m_samples.resize (sfinfo.frames * sfinfo.channels);
-  sf_count_t count = sf_readf_float (sndfile, &m_samples[0], sfinfo.frames);
+  vector<int> isamples (sfinfo.frames * sfinfo.channels);
+  sf_count_t count = sf_readf_int (sndfile, &isamples[0], sfinfo.frames);
 
   error = sf_error (sndfile);
   if (error)
@@ -62,6 +62,20 @@ WavData::load (const string& filename)
 
       return false;
     }
+
+  m_samples.resize (sfinfo.frames * sfinfo.channels);
+
+  /* reading a wav file and saving it again with the libsndfile float API will
+   * change some values due to normalization issues:
+   *   http://www.mega-nerd.com/libsndfile/FAQ.html#Q010
+   *
+   * to avoid the problem, we use the int API and do the conversion beween int
+   * and float manually - the important part is that the normalization factors
+   * used during read and write are identical
+   */
+  const double norm = 1.0 / 0x80000000LL;
+  for (size_t i = 0; i < m_samples.size(); i++)
+    m_samples[i] = isamples[i] * norm;
 
   m_mix_freq    = sfinfo.samplerate;
   m_n_channels  = sfinfo.channels;
@@ -110,8 +124,18 @@ WavData::save (const string& filename)
       return false;
     }
 
+  vector<int> isamples (m_samples.size());
+  for (size_t i = 0; i < m_samples.size(); i++)
+    {
+      const double norm      =  0x80000000LL;
+      const double min_value = -0x80000000LL;
+      const double max_value =  0x7FFFFFFF;
+
+      isamples[i] = lrint (sm_bound<double> (min_value, m_samples[i] * norm, max_value));
+    }
+
   sf_count_t frames = m_samples.size() / m_n_channels;
-  sf_count_t count = sf_writef_float (sndfile, &m_samples[0], frames);
+  sf_count_t count = sf_writef_int (sndfile, &isamples[0], frames);
 
   error = sf_error (sndfile);
   if (error)
