@@ -544,6 +544,11 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
   if config.smooth_tune_count > 0:
     auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="smooth", partials=config.smooth_tune[0], time=config.smooth_tune[1], amount=config.smooth_tune[2])
 
+  # --- encoder config ---
+  if config.encoder_config_count > 0:
+    for cfg in config.encoder_config:
+      ET.SubElement (instrument_node, "encoder_config", param=cfg[0], value=cfg[1])
+
   tree = ET.ElementTree (instrument_node)
   tree.write ("config.sminst", pretty_print=True)
 
