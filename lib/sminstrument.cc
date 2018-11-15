@@ -275,12 +275,28 @@ Instrument::save (const string& filename)
   if (m_auto_tune.enabled)
     {
       xml_node auto_tune_node = inst_node.append_child ("auto_tune");
-      auto_tune_node.append_attribute ("method").set_value ("simple");
+      if (m_auto_tune.method == AutoTune::SIMPLE)
+        {
+          auto_tune_node.append_attribute ("method").set_value ("simple");
+        }
+      if (m_auto_tune.method == AutoTune::ALL_FRAMES)
+        {
+          auto_tune_node.append_attribute ("method").set_value ("all_frames");
+          auto_tune_node.append_attribute ("partials") = m_auto_tune.partials;
+        }
     }
   if (m_auto_volume.enabled)
     {
       xml_node auto_volume_node = inst_node.append_child ("auto_volume");
-      auto_volume_node.append_attribute ("method").set_value ("from_loop");
+      if (m_auto_volume.method == AutoVolume::FROM_LOOP)
+        {
+          auto_volume_node.append_attribute ("method").set_value ("from_loop");
+        }
+      if (m_auto_volume.method == AutoVolume::GLOBAL)
+        {
+          auto_volume_node.append_attribute ("method").set_value ("global");
+          auto_volume_node.append_attribute ("gain") = string_printf ("%.1f", m_auto_volume.gain).c_str();
+        }
     }
   for (auto entry : m_encoder_config.entries)
     {
