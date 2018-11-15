@@ -60,6 +60,28 @@ EncoderParams::EncoderParams() :
 }
 
 bool
+EncoderParams::add_config_entry (const string& param, const string& value)
+{
+  for (auto name : param_name_d) // double parameters
+    {
+      if (name == param)
+        {
+          param_value_d[name] = sm_atof (value.c_str());
+          return true;
+        }
+    }
+  for (auto name : param_name_s) // string parameters
+    {
+      if (name == param)
+        {
+          param_value_s[name] = value;
+          return true;
+        }
+    }
+  return false; // unsupported parameter
+}
+
+bool
 EncoderParams::load_config (const std::string& filename)
 {
   MicroConf cfg (filename);

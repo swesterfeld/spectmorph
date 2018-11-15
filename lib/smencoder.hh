@@ -54,6 +54,8 @@ struct EncoderParams
   std::vector<std::string>            param_name_s;   // names of all supported string parameters
   std::map<std::string, std::string>  param_value_s;  // values of string parameters from config file
 
+  bool add_config_entry (const std::string& param, const std::string& value);
+
   bool load_config (const std::string& filename);
   bool get_param (const std::string& param, double& value) const;
   bool get_param (const std::string& param, std::string& value) const;
