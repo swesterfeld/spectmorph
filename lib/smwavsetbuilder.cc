@@ -69,18 +69,19 @@ WavSetBuilder::run()
       /* clipping */
       assert (sd.wav_data_ptr->n_channels() == 1);
 
-      vector<float> samples = sd.wav_data_ptr->samples();
-      vector<float> clipped_samples;
-      for (size_t i = 0; i < samples.size(); i++)
+      vector<float> clipped_samples = sd.wav_data_ptr->samples();
+
+      /* if we have a loop, the loop end determines the real end of the recording */
+      if (sd.loop == Sample::Loop::NONE)
         {
-          double pos_ms = i * (1000.0 / sd.wav_data_ptr->mix_freq());
-          if (pos_ms >= sd.clip_start_ms)
-            {
-              /* if we have a loop, the loop end determines the real end of the recording */
-              if (sd.loop != Sample::Loop::NONE || pos_ms <= sd.clip_end_ms)
-                clipped_samples.push_back (samples[i]);
-            }
+          int iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * sd.wav_data_ptr->mix_freq() / 1000.0), clipped_samples.size());
+
+          clipped_samples.erase (clipped_samples.begin() + iclipend, clipped_samples.end());
         }
+
+      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * sd.wav_data_ptr->mix_freq() / 1000.0), clipped_samples.size());
+
+      clipped_samples.erase (clipped_samples.begin(), clipped_samples.begin() + iclipstart);
 
       WavData wd_clipped;
       wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
