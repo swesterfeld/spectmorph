@@ -93,6 +93,7 @@ std::string sm_resolve_link (const std::string& link_file);
 #endif
 
 std::string sha1_hash (const unsigned char *data, size_t len);
+std::string sha1_hash (const std::string& str);
 
 } // namespace SpectMorph
 

@@ -359,5 +359,11 @@ sha1_hash (const unsigned char *data, size_t len)
   return hash;
 }
 
+string
+sha1_hash (const string& str)
+{
+  return sha1_hash (reinterpret_cast<const unsigned char *> (str.data()), str.size());
+}
+
 
 }
