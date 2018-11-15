@@ -219,6 +219,18 @@ Instrument::load (const string& filename)
           fprintf (stderr, "unknown auto volume method: %s\n", method.c_str());
         }
     }
+  m_encoder_config = EncoderConfig(); // reset
+  for (xml_node enc_node : inst_node.children ("encoder_config"))
+    {
+      EncoderEntry entry;
+      entry.param = enc_node.attribute ("param").value();
+
+      if (entry.param != "")
+        {
+          entry.value = enc_node.attribute ("value").value();
+          m_encoder_config.entries.push_back (entry);
+        }
+    }
 
   /* select first sample if possible */
   if (samples.empty())
@@ -269,6 +281,12 @@ Instrument::save (const string& filename)
     {
       xml_node auto_volume_node = inst_node.append_child ("auto_volume");
       auto_volume_node.append_attribute ("method").set_value ("from_loop");
+    }
+  for (auto entry : m_encoder_config.entries)
+    {
+      xml_node conf_node = inst_node.append_child ("encoder_config");
+      conf_node.append_attribute ("param").set_value (entry.param.c_str());
+      conf_node.append_attribute ("value").set_value (entry.value.c_str());
     }
   doc.save_file (filename.c_str());
 }
@@ -324,6 +342,20 @@ void
 Instrument::set_auto_tune (const AutoTune& new_value)
 {
   m_auto_tune = new_value;
+
+  signal_global_changed();
+}
+
+Instrument::EncoderConfig
+Instrument::encoder_config() const
+{
+  return m_encoder_config;
+}
+
+void
+Instrument::set_encoder_config (const EncoderConfig& new_value)
+{
+  m_encoder_config = new_value;
 
   signal_global_changed();
 }

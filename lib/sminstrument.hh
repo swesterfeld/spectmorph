@@ -71,6 +71,15 @@ public:
     bool    enabled  = false;
     int     partials = 1;    // used by: all_frames
   };
+  struct EncoderEntry
+  {
+    std::string param;
+    std::string value;
+  };
+  struct EncoderConfig
+  {
+    std::vector<EncoderEntry> entries;
+  };
 
 private:
   SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
@@ -79,9 +88,9 @@ private:
   int m_selected = -1;
   std::string m_name = "untitled";
 
-  AutoVolume m_auto_volume;
-  AutoTune   m_auto_tune;
-
+  AutoVolume    m_auto_volume;
+  AutoTune      m_auto_tune;
+  EncoderConfig m_encoder_config;
 public:
   Instrument();
 
@@ -105,6 +114,9 @@ public:
 
   AutoTune    auto_tune() const;
   void        set_auto_tune (const AutoTune& new_value);
+
+  EncoderConfig encoder_config() const;
+  void          set_encoder_config (const EncoderConfig& new_value);
 
   Signal<> signal_samples_changed;
   Signal<> signal_marker_changed;
