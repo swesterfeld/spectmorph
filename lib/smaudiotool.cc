@@ -150,3 +150,40 @@ AudioTool::apply_auto_tune_factor (Audio& audio, double tune_factor)
         }
     }
 }
+
+void
+AudioTool::auto_tune_smooth (Audio& audio, int partials, double smooth_ms, double smooth_percent)
+{
+  vector<double> freq_vector;
+
+  for (const auto& block : audio.contents)
+    freq_vector.push_back (block.estimate_fundamental (partials));
+
+  for (size_t f = 0; f < audio.contents.size(); f++)
+    {
+      double avg = 0;
+      int count = 0;
+      for (size_t j = 0; j < audio.contents.size(); j++)
+        {
+          double distance_ms = audio.frame_step_ms * fabs (double (f) - double (j));
+          if (distance_ms < smooth_ms)
+            {
+              avg += freq_vector[j];
+              count += 1;
+            }
+        }
+
+      double smooth_freq = avg / count;
+      double interp = smooth_percent / 100;
+      double dest_freq = (freq_vector[f] / smooth_freq - 1) * interp + 1;
+      const double tune_factor = dest_freq / freq_vector[f];
+
+      AudioBlock& block = audio.contents[f];
+
+      for (size_t p = 0; p < block.freqs.size(); p++)
+        {
+          const double freq = block.freqs_f (p) * tune_factor;
+          block.freqs[p] = sm_freq2ifreq (freq);
+        }
+    }
+}

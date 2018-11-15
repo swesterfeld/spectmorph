@@ -17,6 +17,7 @@ void normalize_energy (double energy, Audio& audio);
 
 bool get_auto_tune_factor (Audio& audio, double& tune_factor);
 void apply_auto_tune_factor (Audio& audio, double tune_factor);
+void auto_tune_smooth (Audio& audio, int partials, double smooth_ms, double smooth_percent);
 
 class Block2Energy
 {

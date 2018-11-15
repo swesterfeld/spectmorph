@@ -222,5 +222,9 @@ WavSetBuilder::apply_auto_tune()
                 }
             }
         }
+      if (auto_tune.method == Instrument::AutoTune::SMOOTH)
+        {
+          AudioTool::auto_tune_smooth (audio, auto_tune.partials, auto_tune.time, auto_tune.amount);
+        }
     }
 }
