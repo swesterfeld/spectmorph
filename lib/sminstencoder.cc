@@ -70,8 +70,15 @@ InstEncoder::setup_params (const WavData& wav_data, int midi_note)
 }
 
 Audio *
-InstEncoder::encode (const WavData& wav_data, int midi_note)
+InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
 {
+  for (auto entry : cfg.entries)
+    {
+      if (!enc_params.add_config_entry (entry.param, entry.value))
+        {
+          fprintf (stderr, "InstEncoder: encoder config entry %s is not supported\n", entry.param.c_str());
+        }
+    }
   setup_params (wav_data, midi_note);
 
   Encoder encoder (enc_params);

@@ -5,6 +5,7 @@
 
 #include "smwavdata.hh"
 #include "smencoder.hh"
+#include "sminstrument.hh"
 
 namespace SpectMorph
 {
@@ -17,7 +18,7 @@ class InstEncoder
   void setup_params (const WavData& wd, int midi_note);
 
 public:
-  Audio *encode (const WavData& wd, int midi_note);
+  Audio *encode (const WavData& wd, int midi_note, Instrument::EncoderConfig& cfg);
 };
 
 }

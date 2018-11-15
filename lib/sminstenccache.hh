@@ -5,6 +5,7 @@
 
 #include "smwavdata.hh"
 #include "smencoder.hh"
+#include "sminstrument.hh"
 
 #include <mutex>
 
@@ -27,7 +28,7 @@ class InstEncCache
 
   InstEncCache(); // Singleton -> private constructor
 public:
-  Audio      *encode (const std::string& inst_name, const WavData& wav_data, int midi_note);
+  Audio      *encode (const std::string& inst_name, const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg);
   void        clear();
 
   static InstEncCache *the(); // Singleton

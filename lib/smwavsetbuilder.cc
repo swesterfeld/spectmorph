@@ -21,6 +21,7 @@ WavSetBuilder::WavSetBuilder (const Instrument *instrument, bool keep_samples) :
   name = instrument->name();
   auto_volume = instrument->auto_volume();
   auto_tune = instrument->auto_tune();
+  encoder_config = instrument->encoder_config();
 
   for (size_t i = 0; i < instrument->size(); i++)
     {
@@ -91,7 +92,7 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, wd_clipped, sd.midi_note);
+      new_wave.audio = InstEncCache::the()->encode (name, wd_clipped, sd.midi_note, encoder_config);
 
       if (keep_samples)
         new_wave.audio->original_samples = sd.wav_data_ptr->samples();

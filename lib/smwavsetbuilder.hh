@@ -26,8 +26,9 @@ class WavSetBuilder
   WavSet *wav_set;
   std::string name;
 
-  Instrument::AutoVolume auto_volume;
-  Instrument::AutoTune   auto_tune;
+  Instrument::AutoVolume     auto_volume;
+  Instrument::AutoTune       auto_tune;
+  Instrument::EncoderConfig  encoder_config;
   bool keep_samples;
 
   void apply_loop_settings();

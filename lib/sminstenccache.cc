@@ -100,13 +100,30 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
   delete in_file;
 }
 
+static string
+mk_version (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
+{
+  /* create one single string that lists all the dependencies for the cache entry;
+   * hash it to get a compact representation of the "version"
+   */
+  string depends;
+
+  depends += sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size()) + "\n";
+  depends += string_printf ("%d\n", midi_note);
+  for (auto entry : cfg.entries)
+    depends += entry.param + "=" + entry.value + "\n";
+
+  return sha1_hash (depends);
+}
+
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note)
+InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
   string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
-  string version = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
+
+  string version = mk_version (wav_data, midi_note, cfg);
 
   if (cache[cache_key].version != version)
     {
@@ -130,7 +147,7 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi
     }
 
   InstEncoder enc;
-  Audio *audio = enc.encode (wav_data, midi_note);
+  Audio *audio = enc.encode (wav_data, midi_note, cfg);
 
   vector<unsigned char> data;
   MemOut                audio_mem_out (&data);
