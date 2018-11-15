@@ -194,6 +194,14 @@ Instrument::load (const string& filename)
           m_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
           m_auto_tune.enabled  = true;
         }
+      else if (method == "smooth")
+        {
+          m_auto_tune.method   = AutoTune::SMOOTH;
+          m_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
+          m_auto_tune.time     = sm_atof (auto_tune_node.attribute ("time").value());
+          m_auto_tune.amount   = sm_atof (auto_tune_node.attribute ("amount").value());
+          m_auto_tune.enabled  = true;
+        }
     }
 
   // auto volume
@@ -279,10 +287,17 @@ Instrument::save (const string& filename)
         {
           auto_tune_node.append_attribute ("method").set_value ("simple");
         }
-      if (m_auto_tune.method == AutoTune::ALL_FRAMES)
+      else if (m_auto_tune.method == AutoTune::ALL_FRAMES)
         {
           auto_tune_node.append_attribute ("method").set_value ("all_frames");
           auto_tune_node.append_attribute ("partials") = m_auto_tune.partials;
+        }
+      else if (m_auto_tune.method == AutoTune::SMOOTH)
+        {
+          auto_tune_node.append_attribute ("method").set_value ("smooth");
+          auto_tune_node.append_attribute ("partials") = m_auto_tune.partials;
+          auto_tune_node.append_attribute ("time")     = string_printf ("%.1f", m_auto_tune.time).c_str();
+          auto_tune_node.append_attribute ("amount")   = string_printf ("%.1f", m_auto_tune.amount).c_str();
         }
     }
   if (m_auto_volume.enabled)

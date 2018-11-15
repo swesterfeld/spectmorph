@@ -66,10 +66,12 @@ public:
   };
 
   struct AutoTune {
-    enum { SIMPLE, ALL_FRAMES } method = SIMPLE;
+    enum { SIMPLE, ALL_FRAMES, SMOOTH } method = SIMPLE;
 
     bool    enabled  = false;
-    int     partials = 1;    // used by: all_frames
+    int     partials = 1;    // used by: all_frames, smooth
+    double  time     = 100;  // used_by: smooth
+    double  amount   = 25;   // used by: smooth
   };
   struct EncoderEntry
   {
