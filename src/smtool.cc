@@ -1230,6 +1230,43 @@ public:
   }
 } strip_all_command;
 
+class ExtractSMCommand : public Command
+{
+  int note;
+  string filename;
+public:
+  ExtractSMCommand() : Command ("extract-sm")
+  {
+  }
+  bool
+  parse_args (vector<string>& args)
+  {
+    if (args.size() == 2)
+      {
+        note = atoi (args[0].c_str());
+        filename = args[1];
+        return true;
+      }
+    return false;
+  }
+  void
+  usage (bool one_line)
+  {
+    printf ("<note> <filename>\n");
+  }
+  bool
+  exec (Audio& audio)
+  {
+    const WavSetWave *w = wave();
+    if (w && w->midi_note == note)
+      {
+        printf ("saving note %d to %s\n", w->midi_note, filename.c_str());
+        audio.save (filename);
+      }
+    return true;
+  }
+} extract_sm_command;
+
 int
 main (int argc, char **argv)
 {
