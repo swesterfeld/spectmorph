@@ -1109,7 +1109,7 @@ import_preset (const string& import_name)
                                       padded_sample.assign (&sample_data[samples[id].start], &sample_data[samples[id].end]);
                                     }
                                   assert (padded_len == padded_sample.size());
-                                  WavData wav_data (padded_sample, 1, samples[id].srate);
+                                  WavData wav_data (padded_sample, 1, samples[id].srate, 16);
                                   if (!wav_data.save (filename))
                                     {
                                       fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), filename.c_str(), wav_data.error_blurb());
