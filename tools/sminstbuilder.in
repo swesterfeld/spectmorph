@@ -514,8 +514,8 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
 
     try:
       loop_type = loop_markers[int (midi_note)]["loop-type"]
-      loop_start_ms = loop_markers[int (midi_note)]["start"]
-      loop_end_ms = loop_markers[int (midi_note)]["end"]
+      loop_start_ms = loop_markers[int (midi_note)]["start"] + clip_start_ms
+      loop_end_ms = loop_markers[int (midi_note)]["end"] + clip_start_ms
       if loop_type == "loop-frame-forward":
         loop_type = "forward"
       if loop_type == "loop-frame-ping-pong":
