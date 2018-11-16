@@ -20,12 +20,12 @@ class WavData
 
 public:
   WavData();
-  WavData (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth = 0);
+  WavData (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth);
 
   bool load (const std::string& filename);
   bool load_mono (const std::string& filename);
 
-  void load (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth = 0);
+  void load (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth);
 
   bool save (const std::string& filename);
 
