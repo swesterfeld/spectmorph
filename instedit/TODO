@@ -3,7 +3,6 @@
 
 - creator should thread::join()
 - integrate smenc:
-  - ensure that loop parameters match
   - move window to encoder params
   - move common init code from smenc to encoder parameters
   - move clipping down into the encoder (do not clip on cache hit)
