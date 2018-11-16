@@ -1010,63 +1010,12 @@ public:
   bool
   exec (Audio& audio)
   {
-    vector<double> freq_vector;
+    AudioTool::auto_tune_smooth (audio, fundamental_est_n, smooth_ms, smooth_percent);
+    set_need_save (true);
 
-    for (const auto& block : audio.contents)
-      freq_vector.push_back (block.estimate_fundamental (fundamental_est_n));
-
-    for (size_t f = 0; f < audio.contents.size(); f++)
-      {
-        double avg = 0;
-        int count = 0;
-        for (size_t j = 0; j < audio.contents.size(); j++)
-          {
-            double distance_ms = audio.frame_step_ms * fabs (double (f) - double (j));
-            if (distance_ms < smooth_ms)
-              {
-                avg += freq_vector[j];
-                count += 1;
-              }
-          }
-
-        double smooth_freq = avg / count;
-        double interp = smooth_percent / 100;
-        double dest_freq = (freq_vector[f] / smooth_freq - 1) * interp + 1;
-        const double tune_factor = dest_freq / freq_vector[f];
-
-        AudioBlock& block = audio.contents[f];
-
-        for (size_t p = 0; p < block.freqs.size(); p++)
-          {
-            const double freq = block.freqs_f (p) * tune_factor;
-            block.freqs[p] = sm_freq2ifreq (freq);
-          }
-        set_need_save (true);
-      }
     return true;
   }
 } smooth_tune_command;
-
-static void
-normalize_factor (double norm, Audio& audio)
-{
-  const int    norm_delta_idb   = sm_factor2delta_idb (norm);
-
-  for (size_t f = 0; f < audio.contents.size(); f++)
-    {
-      vector<uint16_t>& mags = audio.contents[f].mags;
-      for (size_t i = 0; i < mags.size(); i++)
-        mags[i] = sm_bound<int> (0, mags[i] + norm_delta_idb, 65535);
-
-      vector<uint16_t>& noise = audio.contents[f].noise;
-      for (size_t i = 0; i < noise.size(); i++)
-        noise[i] = sm_bound<int> (0, noise[i] + norm_delta_idb, 65535);
-    }
-
-  // store normalization in order to replay original samples normalized
-  const double samples_factor = db_to_factor (audio.original_samples_norm_db);
-  audio.original_samples_norm_db = db_from_factor (samples_factor * norm, -200);
-}
 
 static void
 normalize_energy (double energy, Audio& audio)
@@ -1076,7 +1025,7 @@ normalize_energy (double energy, Audio& audio)
   sm_printf ("avg_energy: %.17g\n", energy);
   sm_printf ("norm:       %.17g\n", norm);
 
-  normalize_factor (norm, audio);
+  AudioTool::normalize_factor (norm, audio);
 }
 
 class AutoVolumeCommand : public Command
@@ -1158,7 +1107,7 @@ public:
   bool
   exec (Audio& audio)
   {
-    normalize_factor (db_to_factor (norm_db), audio);
+    AudioTool::normalize_factor (db_to_factor (norm_db), audio);
     return true;
   }
 } global_volume_command;
