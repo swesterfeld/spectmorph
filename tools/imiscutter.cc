@@ -264,7 +264,7 @@ main (int argc, char **argv)
 
       string out_filename = string_printf (argv[4], region);
 
-      WavData wav_out_data (sample, n_channels, mix_freq);
+      WavData wav_out_data (sample, n_channels, mix_freq, wav_data.bit_depth());
       if (!wav_out_data.save (out_filename))
         {
           fprintf (stderr, "export to file %s failed: %s", out_filename.c_str(), wav_out_data.error_blurb());
