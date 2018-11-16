@@ -11,6 +11,7 @@ using namespace SpectMorph;
 
 using std::min;
 using std::map;
+using std::string;
 
 int
 get_best_norm (Audio& audio_a, Audio& audio_b)
@@ -50,6 +51,16 @@ get_best_norm (Audio& audio_a, Audio& audio_b)
   return result;
 }
 
+void
+meta_comp (int& exit_code, const string& str, int old_value, int new_value)
+{
+  if (old_value != new_value)
+    {
+      printf ("# %s diff: old=%d new=%d\n", str.c_str(), old_value, new_value);
+      exit_code = 1;
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -86,6 +97,17 @@ main (int argc, char **argv)
 
   if (audio_old && audio_new)
     {
+      meta_comp (exit_code, "loop_type", audio_old->loop_type, audio_new->loop_type);
+      if (audio_old->loop_type != 0 && audio_new->loop_type != 0)
+        {
+          meta_comp (exit_code, "loop_start", audio_old->loop_start,  audio_new->loop_start);
+          meta_comp (exit_code, "loop_end",   audio_old->loop_end,    audio_new->loop_end);
+        }
+      meta_comp (exit_code, "zeropad",                audio_old->zeropad,               audio_new->zeropad);
+      meta_comp (exit_code, "zero_values_at_start",   audio_old->zero_values_at_start,  audio_new->zero_values_at_start);
+      meta_comp (exit_code, "frame_count",            audio_old->contents.size(),       audio_new->contents.size());
+      meta_comp (exit_code, "sample_count",           audio_old->sample_count,          audio_new->sample_count);
+
       if (audio_old->contents.size() == audio_new->contents.size())
         {
           size_t id_count = 0; // stats
