@@ -231,7 +231,7 @@ Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const
 
   original_samples = single_channel_signal;
 
-  WavData wav_data (single_channel_signal, 1, multi_channel_wav_data.mix_freq());
+  WavData wav_data (single_channel_signal, 1, multi_channel_wav_data.mix_freq(), multi_channel_wav_data.bit_depth());
 
   /* encode single channel */
   zero_values_at_start = enc_params.frame_size - enc_params.frame_step / 2;

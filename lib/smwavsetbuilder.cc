@@ -85,7 +85,7 @@ WavSetBuilder::run()
       clipped_samples.erase (clipped_samples.begin(), clipped_samples.begin() + iclipstart);
 
       WavData wd_clipped;
-      wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq());
+      wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq(), sd.wav_data_ptr->bit_depth());
 
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;
