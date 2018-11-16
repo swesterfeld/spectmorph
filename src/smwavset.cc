@@ -599,11 +599,10 @@ main (int argc, char **argv)
             }
           if (options.loop_markers_ms)
             {
-              double loop_start = wi->audio->loop_start * wi->audio->frame_step_ms;
-              double loop_end = wi->audio->loop_end * wi->audio->frame_step_ms;
+              const double zero_values_ms = wi->audio->zero_values_at_start / wi->audio->mix_freq * 1000.0;
+              const double loop_start     = wi->audio->loop_start * wi->audio->frame_step_ms - zero_values_ms;
+              const double loop_end       = wi->audio->loop_end * wi->audio->frame_step_ms - zero_values_ms;
 
-              // FIXME: (1) clip start
-              // FIXME: (2) zero values at start
               sm_printf ("set-loop-ms %d %s %f %f\n", wi->midi_note, loop_type.c_str(), loop_start, loop_end);
             }
         }
