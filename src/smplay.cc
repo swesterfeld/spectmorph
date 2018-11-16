@@ -31,6 +31,7 @@ struct Options
   bool                sines_enabled;
   bool                deterministic_random;
   int                 rate;
+  int                 bits = 16;
   int                 midi_note;
   double              gain;
   string              export_wav;
@@ -88,6 +89,10 @@ Options::parse (int   *argc_p,
 	{
 	  rate = atoi (opt_arg);
 	}
+      else if (check_arg (argc, argv, &i, "--bits", &opt_arg))
+        {
+          bits = atoi (opt_arg);
+        }
       else if (check_arg (argc, argv, &i, "--export", &opt_arg) || check_arg (argc, argv, &i, "-x", &opt_arg))
         {
           export_wav = opt_arg;
@@ -151,6 +156,7 @@ Options::print_usage ()
   printf (" --no-sines                  disable sine decoder\n");
   printf (" --det-random                use deterministic/reproducable random generator\n");
   printf (" --export <wav filename>     export to wav file\n");
+  printf (" --bits <bits>               set export bit depth\n");
   printf (" -m, --midi-note <note>      set midi note to play for wavsets\n");
   printf ("\n");
 }
@@ -432,7 +438,7 @@ main (int argc, char **argv)
             }
         }
 
-      WavData wav_data (sample, 1, options.rate);
+      WavData wav_data (sample, 1, options.rate, options.bits);
       if (!wav_data.save (options.export_wav))
         {
           fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), options.export_wav.c_str(), wav_data.error_blurb());
