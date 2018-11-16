@@ -377,7 +377,7 @@ main (int argc, char **argv)
     {
       vector<float> text_input_signal = parse_text_input_file (input_file);
 
-      wav_data.load (text_input_signal, 1, options.text_input_rate);
+      wav_data.load (text_input_signal, 1, options.text_input_rate, 32);
     }
   else
     {
