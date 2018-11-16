@@ -25,15 +25,15 @@ using std::vector;
 /// @cond
 struct Options
 {
-  string	      program_name; /* FIXME: what to do with that */
-  SineDecoder::Mode   decoder_mode;
-  bool                noise_enabled;
-  bool                sines_enabled;
-  bool                deterministic_random;
-  int                 rate;
-  int                 bits = 16;
-  int                 midi_note;
-  double              gain;
+  string              program_name  = "smplay";
+  SineDecoder::Mode   decoder_mode  = SineDecoder::MODE_PHASE_SYNC_OVERLAP;
+  bool                noise_enabled = true;
+  bool                sines_enabled = true;
+  bool                deterministic_random = false;
+  int                 rate          = 44100;
+  int                 bits          = 16;
+  int                 midi_note     = -1;
+  double              gain          = 1.0;
   string              export_wav;
 
   Options ();
@@ -44,15 +44,7 @@ struct Options
 
 #include "stwutils.hh"
 
-Options::Options () :
-  program_name ("smplay"),
-  decoder_mode (SineDecoder::MODE_PHASE_SYNC_OVERLAP),
-  noise_enabled (true),
-  sines_enabled (true),
-  deterministic_random (false),
-  rate (44100),
-  midi_note (-1),
-  gain (1.0)
+Options::Options ()
 {
 }
 
