@@ -2,12 +2,21 @@
   - maybe upsample or interpolate waveform
 
 - creator should thread::join()
-- integrate smenc proper
+- integrate smenc:
+  - ensure that loop parameters match
+  - move window to encoder params
+  - move common init code from smenc to encoder parameters
+  - move clipping down into the encoder (do not clip on cache hit)
+- fix mirko-ah somehow (clip once)
+- smsfimport should be using xml
 - lv2 messaging
 - avoid printf in messaging
 - temp file handling
 - auto tune and stuff
+  - ui elements for tuning and volume
+  - plot tuning line
 - don't allow play if changes are to be made
+- frozen flac in memory
 
 - fix file dialog mask (allow .wav, .flac, ...)
 - fix file dialog in ardour
