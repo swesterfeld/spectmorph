@@ -246,11 +246,11 @@ Navigator::on_selection_changed()
       decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
       decoded_samples.resize (audio->sample_count);
       decoder.process (decoded_samples.size(), nullptr, &decoded_samples[0]);
-      wav_data->load (decoded_samples, 1, audio->mix_freq);
+      wav_data->load (decoded_samples, 1, audio->mix_freq, 32);
     }
   else
     {
-      wav_data->load (audio->original_samples, 1, audio->mix_freq);
+      wav_data->load (audio->original_samples, 1, audio->mix_freq, 32);
     }
   Q_EMIT wav_data_changed();
 }
