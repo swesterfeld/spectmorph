@@ -134,6 +134,7 @@ main (int argc, char **argv)
   else if (argc == 4 && string (argv[3]) == "export")
     {
       const int SR = 48000;
+      const int bits = 16;
 
       vector<float> audio_out (SR * 20);
       decoder.retrigger (0, freq, 127, SR);
@@ -141,7 +142,7 @@ main (int argc, char **argv)
 
       std::string export_wav = "tld.wav";
 
-      WavData wav_data (audio_out, 1, SR);
+      WavData wav_data (audio_out, 1, SR, bits);
       if (!wav_data.save (export_wav))
         {
           fprintf (stderr, "export to file %s failed: %s\n", export_wav.c_str(), wav_data.error_blurb());
