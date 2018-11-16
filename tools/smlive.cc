@@ -32,6 +32,7 @@ struct Options
   double      gain;
   double      loop;
   int         rate;
+  int         bits = 16;
   bool        noise_enabled = true;
   bool        sines_enabled = true;
   bool        deterministic_random = false;
@@ -98,6 +99,10 @@ Options::parse (int   *argc_p,
         {
           rate = atoi (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--bits", &opt_arg))
+        {
+          bits = atoi (opt_arg);
+        }
       else if (check_arg (argc, argv, &i, "--samples"))
         {
           enable_original_samples = true;
@@ -163,6 +168,7 @@ Options::print_usage ()
   printf (" -f, --freq <freq>             specify frequency in Hz\n");
   printf (" -m, --midi-note <note>        specify midi note\n");
   printf (" -x, --export <wav filename>   export to wav file\n");
+  printf (" --bits <bits>                 set export bit depth\n");
   printf (" --samples                     use original samples\n");
   printf (" --text                        print output samples as text\n");
   printf (" -g, --gain <gain>             set replay gain\n");
@@ -363,7 +369,7 @@ main (int argc, char **argv)
             }
         }
 
-      WavData wav_data (audio_out, 1, options.rate);
+      WavData wav_data (audio_out, 1, options.rate, options.bits);
       if (!wav_data.save (options.export_wav))
         {
           fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), options.export_wav.c_str(), wav_data.error_blurb());
