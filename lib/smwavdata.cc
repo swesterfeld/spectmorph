@@ -22,6 +22,7 @@ WavData::clear()
   m_samples.clear();
 
   m_n_channels  = 0;
+  m_bit_depth   = 0;
   m_mix_freq    = 0;
   m_error_blurb = "";
 }
@@ -80,6 +81,34 @@ WavData::load (const string& filename)
   m_mix_freq    = sfinfo.samplerate;
   m_n_channels  = sfinfo.channels;
 
+  switch (sfinfo.format & SF_FORMAT_SUBMASK)
+    {
+      case SF_FORMAT_PCM_U8:
+      case SF_FORMAT_PCM_S8:
+          m_bit_depth = 8;
+          break;
+
+      case SF_FORMAT_PCM_16:
+          m_bit_depth = 16;
+          break;
+
+      case SF_FORMAT_PCM_24:
+          m_bit_depth = 24;
+          break;
+
+      case SF_FORMAT_FLOAT:
+      case SF_FORMAT_PCM_32:
+          m_bit_depth = 32;
+          break;
+
+      case SF_FORMAT_DOUBLE:
+          m_bit_depth = 64;
+          break;
+
+      default:
+          m_bit_depth = 32; /* unknown */
+    }
+
   error = sf_close (sndfile);
   if (error)
     {
@@ -111,7 +140,11 @@ WavData::save (const string& filename)
 
   sfinfo.samplerate = sm_round_positive (m_mix_freq);
   sfinfo.channels   = m_n_channels;
-  sfinfo.format     = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+
+  if (m_bit_depth > 16)
+    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
+  else
+    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
   SNDFILE *sndfile = sf_open (filename.c_str(), SFM_WRITE, &sfinfo);
   int error = sf_error (sndfile);
@@ -163,21 +196,23 @@ WavData::save (const string& filename)
   return true;
 }
 
-WavData::WavData (const vector<float>& samples, int n_channels, float mix_freq)
+WavData::WavData (const vector<float>& samples, int n_channels, float mix_freq, int bit_depth)
 {
   m_samples     = samples;
   m_n_channels  = n_channels;
   m_mix_freq    = mix_freq;
+  m_bit_depth   = bit_depth;
 }
 
 void
-WavData::load (const vector<float>& samples, int n_channels, float mix_freq)
+WavData::load (const vector<float>& samples, int n_channels, float mix_freq, int bit_depth)
 {
   // same function: WavData::WavData(...)
 
   m_samples     = samples;
   m_n_channels  = n_channels;
   m_mix_freq    = mix_freq;
+  m_bit_depth   = bit_depth;
 }
 
 void
@@ -206,6 +241,12 @@ int
 WavData::n_channels() const
 {
   return m_n_channels;
+}
+
+int
+WavData::bit_depth() const
+{
+  return m_bit_depth;
 }
 
 const vector<float>&
