@@ -13,6 +13,7 @@ using namespace SpectMorph;
 using std::string;
 using std::map;
 using std::vector;
+using std::max;
 
 WavSetBuilder::WavSetBuilder (const Instrument *instrument, bool keep_samples) :
   keep_samples (keep_samples)
@@ -129,10 +130,10 @@ WavSetBuilder::apply_loop_settings()
 
       Audio *audio = wave.audio;
 
-      // FIXME! account for zero_padding at start of sample
-      const int loop_start = sd->loop_start_ms / audio->frame_step_ms;
-      const int loop_end   = sd->loop_end_ms / audio->frame_step_ms;
-
+      const int last_frame        = audio->contents.size() ? (audio->contents.size() - 1) : 0;
+      const double zero_values_ms = audio->zero_values_at_start / audio->mix_freq * 1000.0;
+      const int loop_start        = sm_bound<int> (0, lrint ((zero_values_ms + sd->loop_start_ms) / audio->frame_step_ms), last_frame);
+      const int loop_end          = sm_bound<int> (0, lrint ((zero_values_ms + sd->loop_end_ms) / audio->frame_step_ms), last_frame);
 
       if (sd->loop == Sample::Loop::NONE)
         {
