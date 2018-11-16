@@ -26,10 +26,13 @@ main (int argc, char **argv)
   char buffer[1024];
   vector<float> signal;
 
-  if (argc != 3)
+  if (argc != 3 && argc != 4)
     {
       printf ("usage example:\n\n");
       printf ("cat waveform.txt | ascii2wav wavform.wav 96000\n");
+      printf ("\n");
+      printf ("set 24 bit export like this:\n\n");
+      printf ("cat waveform.txt | ascii2wav wavform.wav 96000 24\n");
       exit (1);
     }
   /* init */
@@ -37,7 +40,11 @@ main (int argc, char **argv)
 
   string filename = argv[1];
   int    srate    = atoi (argv[2]);
+  int    bits     = 16;
   bool   level_warning = false;
+
+  if (argc > 3)
+    bits = atoi (argv[3]);
 
   int line = 1;
   while (fgets (buffer, 1024, stdin) != NULL)
@@ -75,7 +82,7 @@ main (int argc, char **argv)
         }
       line++;
     }
-  WavData wav_data (signal, 1, srate);
+  WavData wav_data (signal, 1, srate, bits);
 
   if (!wav_data.save (filename))
     {
