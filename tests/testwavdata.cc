@@ -16,7 +16,7 @@ save_load_test()
   for (int i = -0x8000; i <= 0x7FFF; i++)
     signal.push_back (i / double (0x8000));
 
-  WavData wav_data (signal, 1, 48000);
+  WavData wav_data (signal, 1, 48000, 16);
   wav_data.save ("testwd.wav");
 
   WavData a;
@@ -67,7 +67,7 @@ clip_test()
   signal.push_back (-2);
   signal.push_back (-50);
 
-  WavData wav_data (signal, 1, 48000);
+  WavData wav_data (signal, 1, 48000, 16);
   wav_data.save ("testwd.wav");
 
   WavData a;

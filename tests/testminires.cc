@@ -36,7 +36,7 @@ get_error_signal (int high_sr, int sr, double freq, bool use_ppi, vector<float>&
     }
   else
     {
-      WavData wav_data (audio_in, 1, high_sr);
+      WavData wav_data (audio_in, 1, high_sr, 32);
       MiniResampler mini_resampler (wav_data, double (high_sr) / sr);
       mini_resampler.read (0, out.size(), &out[0]);
     }

@@ -55,7 +55,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   Encoder encoder (enc_params);
 
-  WavData wav_data (audio_in, 1, enc_params.mix_freq);
+  WavData wav_data (audio_in, 1, enc_params.mix_freq, 32);
 
   const char *sm_file = "testaafilter.tmp.sm";
   encoder.encode (wav_data, 0, window, 1, false, true);

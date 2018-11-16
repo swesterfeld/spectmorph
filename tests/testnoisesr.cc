@@ -65,7 +65,7 @@ NoiseGenerator::gen_noise (int sr)
     }
 
   vector<float> out (5 * sr);
-  WavData wav_data (noise_96000, 1, 96000);
+  WavData wav_data (noise_96000, 1, 96000, 32);
   MiniResampler mini_resampler (wav_data, 96000 / double (sr));
   mini_resampler.read (0, out.size(), &out[0]);
   return out;
@@ -159,7 +159,7 @@ encode (vector<float>& audio_in, int sr, const string& win, float fundamental_fr
 
   Encoder encoder (enc_params);
 
-  WavData wav_data (audio_in, 1, enc_params.mix_freq);
+  WavData wav_data (audio_in, 1, enc_params.mix_freq, 32);
 
   const char *sm_file = "testnoisesr.tmp.sm";
   encoder.encode (wav_data, 0, window, 1, /*attack*/ false, /*sines*/ false);
@@ -197,7 +197,7 @@ decode_resample (vector<float>& audio_out, int sr)
 
   decode (audio_high, sr);
 
-  WavData wav_data (audio_high, 1, sr);
+  WavData wav_data (audio_high, 1, sr, 32);
   MiniResampler mini_resampler (wav_data, double (sr) / 48000.);
   mini_resampler.read (0, audio_out.size(), &audio_out[0]);
 }
