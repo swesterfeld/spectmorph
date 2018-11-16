@@ -244,7 +244,7 @@ MainWidget::clip (const string& export_pattern)
 
       string export_wav = string_printf (export_pattern.c_str(), wi->midi_note);
 
-      WavData wav_data (clipped_samples, 1, samples->mix_freq());
+      WavData wav_data (clipped_samples, 1, samples->mix_freq(), wav_in.bit_depth());
       if (!wav_data.save (export_wav))
         {
           fprintf (stderr, "export to file %s failed: %s\n", export_wav.c_str(), wav_data.error_blurb());
