@@ -828,8 +828,7 @@ LiveDecoder::current_pos() const
   if (original_samples_enabled)
     return original_sample_pos * 1000.0 / audio->mix_freq;
 
-  // FIXME: may need to take zero values at start into account
-  return frame_idx * audio->frame_step_ms;
+  return frame_idx * audio->frame_step_ms - audio->zero_values_at_start * 1000.0 / audio->mix_freq;
 }
 
 double
