@@ -12,8 +12,9 @@ using pugi::xml_document;
 using pugi::xml_node;
 using std::string;
 
-Sample::Sample (Instrument *inst) :
-  instrument (inst)
+Sample::Sample (Instrument *inst, const WavData& wav_data) :
+  instrument (inst),
+  m_wav_data (wav_data)
 {
 }
 
@@ -60,6 +61,12 @@ Sample::set_loop (Loop loop)
   instrument->marker_changed();
 }
 
+const WavData&
+Sample::wav_data() const
+{
+  return m_wav_data;
+}
+
 Instrument::Instrument()
 {
 }
@@ -75,10 +82,9 @@ Instrument::add_sample (const string& filename)
   /* new sample will be selected */
   m_selected = samples.size();
 
-  Sample *sample = new Sample (this);
+  Sample *sample = new Sample (this, wav_data);
   samples.emplace_back (sample);
   sample->filename  = filename;
-  sample->wav_data = wav_data;
 
   sample->set_marker (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
   sample->set_marker (MARKER_CLIP_END, 1.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
@@ -148,11 +154,10 @@ Instrument::load (const string& filename)
       WavData wav_data;
       if (wav_data.load_mono (filename))
         {
-          Sample *sample = new Sample (this);
+          Sample *sample = new Sample (this, wav_data);
           samples.emplace_back (sample);
           sample->filename  = filename;
           sample->set_midi_note (midi_note);
-          sample->wav_data = wav_data;
 
           xml_node clip_node = sample_node.child ("clip");
           if (clip_node)

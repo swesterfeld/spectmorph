@@ -50,7 +50,7 @@ WavSetBuilder::add_sample (const Sample *sample)
   sd.midi_note = sample->midi_note();
 
   // FIXME: clean this up
-  sd.wav_data_ptr  = const_cast<WavData *> (&sample->wav_data);
+  sd.wav_data_ptr = &sample->wav_data();
 
   const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
 

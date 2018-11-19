@@ -13,8 +13,8 @@ class WavSetBuilder
 {
   struct SampleData
   {
-    int       midi_note;
-    WavData  *wav_data_ptr;  // FIXME: clean this up
+    int             midi_note;
+    const WavData  *wav_data_ptr;  // FIXME: clean this up
 
     Sample::Loop loop;
     double       clip_start_ms;

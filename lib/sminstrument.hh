@@ -37,9 +37,10 @@ private:
   int m_midi_note = 69;
   Instrument *instrument = nullptr;
   Loop m_loop = Loop::NONE;
+  WavData    m_wav_data;
 
 public:
-  Sample (Instrument *inst);
+  Sample (Instrument *inst, const WavData& wav_data);
   void    set_marker (MarkerType marker_type, double value);
   double  get_marker (MarkerType marker_type) const;
 
@@ -49,8 +50,9 @@ public:
   Loop    loop() const;
   void    set_loop (Loop loop);
 
+  const WavData&  wav_data() const;
+
   std::string filename;
-  WavData     wav_data;
 
   std::unique_ptr<Audio> audio;
 };
