@@ -18,6 +18,7 @@
 #include "smwavset.hh"
 #include "smutils.hh"
 #include "smwavdata.hh"
+#include "sminstrument.hh"
 #include <stdlib.h>
 
 #if 1
@@ -44,6 +45,16 @@ using std::vector;
 using std::map;
 using std::sort;
 using std::set;
+
+static string
+get_current_dir()
+{
+  char *dir = g_get_current_dir();
+  string dir_str = dir;
+  g_free (dir);
+
+  return dir_str;
+}
 
 enum {
   GEN_PAN            = 17,
@@ -512,6 +523,7 @@ struct Options
   bool                fast_import;
   bool                debug;
   bool                mono_flat;
+  bool                sminst = false;
   int                 max_jobs;
   string              config_filename;
   string              smenc;
@@ -589,6 +601,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--mono-flat"))
         {
           mono_flat = true;
+        }
+      else if (check_arg (argc, argv, &i, "--sminst"))
+        {
+          sminst = true;
         }
     }
 
@@ -983,6 +999,13 @@ import_preset (const string& import_name)
 {
   map<string,bool> is_encoded;
 
+  struct LoopRange
+  {
+    double  start  = -1;
+    double  end    = -1;
+  };
+  map<string,LoopRange> loop_range;
+
   for (vector<Preset>::iterator pi = presets.begin(); pi != presets.end(); pi++)
     {
       if (pi->name == import_name)
@@ -1099,6 +1122,10 @@ import_preset (const string& import_name)
                                                                   samples[id].endloop - samples[id].start +
                                                                   loop_shift);
 
+                                      // store loop range for SpectMorph::Instrument
+                                      loop_range[filename].start = (samples[id].startloop - samples[id].start + loop_shift) * 1000.0 / samples[id].srate;
+                                      loop_range[filename].end   = (samples[id].endloop - samples[id].start + loop_shift) * 1000.0 / samples[id].srate;
+
                                       // 200 ms padding at the end of the loop, to ensure that silence after sample
                                       // is not encoded by encoder
                                       padded_len = samples[id].end - samples[id].start + 0.2 * samples[id].srate;
@@ -1140,10 +1167,14 @@ import_preset (const string& import_name)
                                 }
                               WavSetWave new_wave;
                               new_wave.midi_note = midi_note;
-                              new_wave.path = smname;
                               new_wave.channel = channel;
                               new_wave.velocity_range_min = vr_min;
                               new_wave.velocity_range_max = vr_max;
+
+                              if (options.sminst)
+                                new_wave.path = filename;
+                              else
+                                new_wave.path = smname;
 
                               wav_set.waves.push_back (new_wave);
                             }
@@ -1151,14 +1182,48 @@ import_preset (const string& import_name)
                     }
                 }
             }
-          run_all (enc_commands, "Encoder", options.max_jobs);
-          run_all (strip_commands, "Strip", options.max_jobs);
+          if (options.sminst)
+            {
+              make_mono_flat (wav_set);
 
-          if (options.mono_flat)
-            make_mono_flat (wav_set);
+              SpectMorph::Instrument sminst;
 
-          wav_set.save (output_filename);
-          xsystem (string_printf ("smwavset link %s", output_filename.c_str()));
+              for (auto w : wav_set.waves)
+                {
+                  string path = get_current_dir() + "/" + w.path;
+
+                  SpectMorph::Sample *sample = sminst.add_sample (path);
+                  if (sample)
+                    {
+                      sample->set_midi_note (w.midi_note);
+
+                      auto r = loop_range[w.path];
+                      if (r.start >= 0 && r.end >= 0)
+                        {
+                          sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
+                          sample->set_marker (SpectMorph::MARKER_LOOP_START, r.start);
+                          sample->set_marker (SpectMorph::MARKER_LOOP_END,   r.end);
+                        }
+                    }
+                  else
+                    {
+                      fprintf (stderr, "%s: loading file '%s' failed\n", options.program_name.c_str(), w.path.c_str());
+                      exit (1);
+                    }
+                }
+              sminst.save (output_filename);
+            }
+          else
+            {
+              run_all (enc_commands, "Encoder", options.max_jobs);
+              run_all (strip_commands, "Strip", options.max_jobs);
+
+              if (options.mono_flat)
+                make_mono_flat (wav_set);
+
+              wav_set.save (output_filename);
+              xsystem (string_printf ("smwavset link %s", output_filename.c_str()));
+            }
         }
     }
   return 0;
