@@ -101,7 +101,7 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
 }
 
 static string
-mk_version (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
+mk_version (const WavData& wav_data, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
 {
   /* create one single string that lists all the dependencies for the cache entry;
    * hash it to get a compact representation of the "version"
@@ -110,6 +110,8 @@ mk_version (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& c
 
   depends += sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size()) + "\n";
   depends += string_printf ("%d\n", midi_note);
+  depends += string_printf ("%d\n", iclipstart);
+  depends += string_printf ("%d\n", iclipend);
   for (auto entry : cfg.entries)
     depends += entry.param + "=" + entry.value + "\n";
 
@@ -117,13 +119,13 @@ mk_version (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& c
 }
 
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
+InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
   string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
 
-  string version = mk_version (wav_data, midi_note, cfg);
+  string version = mk_version (wav_data, midi_note, iclipstart, iclipend, cfg);
 
   if (cache[cache_key].version != version)
     {
@@ -146,8 +148,21 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi
       return nullptr;
     }
 
+  /* clip sample */
+  vector<float> clipped_samples = wav_data.samples();
+
+  /* sanity checks for clipping boundaries */
+  iclipend   = sm_bound<int> (0, iclipend,  clipped_samples.size());
+  iclipstart = sm_bound<int> (0, iclipstart, iclipend);
+
+  /* do the clipping */
+  clipped_samples.erase (clipped_samples.begin() + iclipend, clipped_samples.end());
+  clipped_samples.erase (clipped_samples.begin(), clipped_samples.begin() + iclipstart);
+
+  WavData wav_data_clipped (clipped_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
+
   InstEncoder enc;
-  Audio *audio = enc.encode (wav_data, midi_note, cfg);
+  Audio *audio = enc.encode (wav_data_clipped, midi_note, cfg);
 
   vector<unsigned char> data;
   MemOut                audio_mem_out (&data);

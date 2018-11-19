@@ -71,29 +71,21 @@ WavSetBuilder::run()
       /* clipping */
       assert (sd.wav_data_ptr->n_channels() == 1);
 
-      vector<float> clipped_samples = sd.wav_data_ptr->samples();
 
       /* if we have a loop, the loop end determines the real end of the recording */
+      int iclipend = sd.wav_data_ptr->n_values();
       if (sd.loop == Sample::Loop::NONE)
-        {
-          int iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * sd.wav_data_ptr->mix_freq() / 1000.0), clipped_samples.size());
+        iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * sd.wav_data_ptr->mix_freq() / 1000.0), sd.wav_data_ptr->n_values());
 
-          clipped_samples.erase (clipped_samples.begin() + iclipend, clipped_samples.end());
-        }
+      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * sd.wav_data_ptr->mix_freq() / 1000.0), iclipend);
 
-      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * sd.wav_data_ptr->mix_freq() / 1000.0), clipped_samples.size());
-
-      clipped_samples.erase (clipped_samples.begin(), clipped_samples.begin() + iclipstart);
-
-      WavData wd_clipped;
-      wd_clipped.load (clipped_samples, 1, sd.wav_data_ptr->mix_freq(), sd.wav_data_ptr->bit_depth());
 
       WavSetWave new_wave;
       new_wave.midi_note = sd.midi_note;
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, wd_clipped, sd.midi_note, encoder_config);
+      new_wave.audio = InstEncCache::the()->encode (name, *sd.wav_data_ptr, sd.midi_note, iclipstart, iclipend, encoder_config);
 
       if (keep_samples)
         new_wave.audio->original_samples = sd.wav_data_ptr->samples();
