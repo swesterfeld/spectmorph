@@ -55,13 +55,14 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
       else
         window[i] = 0;
     }
+  enc_params.window = window;
 
   Encoder encoder (enc_params);
 
   WavData wav_data (audio_in, 1, enc_params.mix_freq, 32);
 
   const char *sm_file = "testnoise.tmp.sm";
-  encoder.encode (wav_data, 0, window, 1, /*attack*/ false, /*sines*/ false);
+  encoder.encode (wav_data, 0, 1, /*attack*/ false, /*sines*/ false);
   encoder.save (sm_file);
 
   WavSet wav_set;
