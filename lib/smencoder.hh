@@ -116,15 +116,6 @@ class Encoder
   };
   double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const Attack& attack, std::vector<double>& out_scale);
 
-public:
-  std::vector<EncoderBlock>            audio_blocks;    //!< current state, and end result of the encoding algorithm
-  Attack                               optimal_attack;
-  size_t                               zero_values_at_start;
-  size_t                               sample_count;
-  std::vector<float>                   original_samples;
-
-  Encoder (const EncoderParams& enc_params);
-
   // single encoder steps:
   void compute_stft (const WavData& wav_data, int channel);
   void search_local_maxima();
@@ -135,6 +126,17 @@ public:
   void approx_noise();
   void compute_attack_params();
   void sort_freqs();
+
+  Attack                               optimal_attack;
+  size_t                               zero_values_at_start;
+  size_t                               sample_count;
+
+public:
+  std::vector<EncoderBlock>            audio_blocks;    //!< current state, and end result of the encoding algorithm
+  std::vector<float>                   original_samples;
+
+  Encoder (const EncoderParams& enc_params);
+
   void debug_decode (const std::string& filename);
 
   // all-in-one encoding function:
