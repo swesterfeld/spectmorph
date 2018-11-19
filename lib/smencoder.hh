@@ -19,40 +19,41 @@ namespace SpectMorph
  *
  * This struct contains parameters that configure the encoder algorithm.
  */
-struct EncoderParams
+class EncoderParams
 {
-  /** sample rate of the original audio file */
-  float   mix_freq;
-
-  /** step size for analysis frames in milliseconds */
-  float   frame_step_ms;
-
-  /** size of one analysis frame in milliseconds */
-  float   frame_size_ms;
-
-  /** lower bound for the amount of zero padding used during analysis */
-  int     zeropad;
-
-  /** size of the frame step in samples */
-  size_t  frame_step;
-
-  /** size of the analysis frame in samples */
-  size_t  frame_size;
-
-  /** analysis block size in samples, must be the smallest power of N greater than frame_size */
-  size_t  block_size;
-
-  /** user defined fundamental freq */
-  double  fundamental_freq;
-
-  /** whether to generate phases in output */
-  bool    enable_phases = true;
-
   /* config file parameters */
   std::vector<std::string>            param_name_d;   // names of all supported double parameters
   std::map<std::string, double>       param_value_d;  // values of double parameters from config file
   std::vector<std::string>            param_name_s;   // names of all supported string parameters
   std::map<std::string, std::string>  param_value_s;  // values of string parameters from config file
+
+public:
+  /** sample rate of the original audio file */
+  float   mix_freq = 0;
+
+  /** step size for analysis frames in milliseconds */
+  float   frame_step_ms = 0;
+
+  /** size of one analysis frame in milliseconds */
+  float   frame_size_ms = 0;
+
+  /** lower bound for the amount of zero padding used during analysis */
+  int     zeropad = 0;
+
+  /** size of the frame step in samples */
+  size_t  frame_step = 0;
+
+  /** size of the analysis frame in samples */
+  size_t  frame_size = 0;
+
+  /** analysis block size in samples, must be the smallest power of N greater than frame_size */
+  size_t  block_size = 0;
+
+  /** user defined fundamental freq */
+  double  fundamental_freq = 0;
+
+  /** whether to generate phases in output */
+  bool    enable_phases = true;
 
   bool add_config_entry (const std::string& param, const std::string& value);
 

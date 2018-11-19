@@ -46,14 +46,6 @@ normalize_phase (double phase)
 #define debug(...) SpectMorph::Debug::debug ("encoder", __VA_ARGS__)
 
 EncoderParams::EncoderParams() :
-  mix_freq (0),
-  frame_step_ms (0),
-  frame_size_ms (0),
-  zeropad (0),
-  frame_step (0),
-  frame_size (0),
-  block_size (0),
-  fundamental_freq (0),
   param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"}),
   param_name_s ({"window"})
 {
