@@ -1,13 +1,7 @@
 - creator should thread::join()
-- integrate smenc:
-  - move window to encoder params
-  - move common init code from smenc to encoder parameters
-  - move clipping down into the encoder (do not clip on cache hit)
-- auto tune and stuff
-- smsfimport should be using xml
+- avoid raw WavData pointer for WavSetBuilder (could be deleted) => shared pointer or similar
 - temp file handling
 - don't allow play if changes are to be made
-- frozen flac in memory
 - fix error handling for WavSet::save() and others
 
 UI:
