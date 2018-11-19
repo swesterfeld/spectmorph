@@ -65,6 +65,9 @@ public:
   bool get_param (const std::string& param, std::string& value) const;
 
   EncoderParams();
+
+  /** use sane defaults for every parameter: */
+  void setup_params (const WavData& wav_data, double fundamental_freq);
 };
 
 struct Tracksel {

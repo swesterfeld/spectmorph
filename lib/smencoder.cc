@@ -184,6 +184,53 @@ EncoderParams::get_param (const string& param, string& value) const
     }
 }
 
+static size_t
+make_odd (size_t n)
+{
+  if (n & 1)
+    return n;
+  return n - 1;
+}
+
+void
+EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_freq)
+{
+  mix_freq         = wav_data.mix_freq();
+  zeropad          = 4;
+  fundamental_freq = new_fundamental_freq;
+
+  // --- frame size & step ---
+  double min_frame_periods, min_frame_size;
+  if (!get_param ("min-frame-periods", min_frame_periods))
+    min_frame_periods = 4;  // default: at least 4 periods of the fundamental per frame
+  if (!get_param ("min-frame-size", min_frame_size))
+    min_frame_size = 40;    // default: at least 40ms frames
+
+  frame_size_ms = min_frame_size;
+  frame_size_ms = max<float> (frame_size_ms, 1000 / fundamental_freq * min_frame_periods);
+  frame_step_ms = frame_size_ms / 4.0;
+
+  // --- convert block sizes in ms to sample counts ----
+  frame_size = make_odd (mix_freq * 0.001 * frame_size_ms);
+  frame_step = mix_freq * 0.001 * frame_step_ms;
+
+  /* compute block size from frame size (smallest 2^k value >= frame_size) */
+  block_size = 1;
+  while (block_size < frame_size)
+    block_size *= 2;
+
+  /* compute encoder window */
+  window.resize (block_size);
+
+  for (size_t i = 0; i < window.size(); i++)
+    {
+      if (i < frame_size)
+        window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+      else
+        window[i] = 0;
+    }
+}
+
 /**
  * Constructor which initializes the Encoders parameters.
  */
