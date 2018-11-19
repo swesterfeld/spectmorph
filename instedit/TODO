@@ -1,24 +1,25 @@
-- sample view:
-  - maybe upsample or interpolate waveform
-
 - creator should thread::join()
 - integrate smenc:
   - move window to encoder params
   - move common init code from smenc to encoder parameters
   - move clipping down into the encoder (do not clip on cache hit)
-- fix mirko-ah somehow (clip once)
-- smsfimport should be using xml
-- lv2 messaging
-- avoid printf in messaging
-- temp file handling
 - auto tune and stuff
-  - ui elements for tuning and volume
-  - plot tuning line
+- smsfimport should be using xml
+- temp file handling
 - don't allow play if changes are to be made
 - frozen flac in memory
+- fix error handling for WavSet::save() and others
 
+UI:
 - fix file dialog mask (allow .wav, .flac, ...)
 - fix file dialog in ardour
-- fix error handling for WavSet::save() and others
+- tuning and volume
+- plot tuning line
+- encoder parameters
+- better progress bar widget
+- combobox should support scroll wheel
+- allow removing sample from instrument
+- maybe upsample or interpolate waveform
+
+BUGS:
 - debug why lv2 ui sometimes starts without plan
-- use all samples in original sample mode  (maybe implement restrict to current)
