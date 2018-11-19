@@ -73,12 +73,12 @@ public:
     else
       azoom = 1;
 
-    const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
+    const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
     const double clip_start_x = m_sample->get_marker (MARKER_CLIP_START) / length_ms * width;
     const double clip_end_x = m_sample->get_marker (MARKER_CLIP_END) / length_ms * width;
     const double loop_start_x = m_sample->get_marker (MARKER_LOOP_START) / length_ms * width;
     const double loop_end_x = m_sample->get_marker (MARKER_LOOP_END) / length_ms * width;
-    const std::vector<float>& samples = m_sample->wav_data.samples();
+    const std::vector<float>& samples = m_sample->wav_data().samples();
 
     //du.set_color (Color (0.4, 0.4, 1.0));
     du.set_color (Color (0.9, 0.1, 0.1));
@@ -255,7 +255,7 @@ public:
   {
     if (m_sample)
       {
-        const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
+        const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
         const double marker_x = m_sample->get_marker (marker) / length_ms * width;
 
         update (marker_x - 11, 0, 22, height);
@@ -269,7 +269,7 @@ public:
         if (selected_marker == MARKER_NONE)
           return;
 
-        const double sample_len_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000.0;
+        const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
         const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
 
         update_marker (selected_marker);
@@ -334,7 +334,7 @@ public:
     if (!m_sample)
       return -1;
 
-    const double length_ms = m_sample->wav_data.samples().size() / m_sample->wav_data.mix_freq() * 1000;
+    const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
     const double clip_start_ms = m_sample->get_marker (MARKER_CLIP_START);
     if (clip_start_ms > 0)
       pos_ms += clip_start_ms;
