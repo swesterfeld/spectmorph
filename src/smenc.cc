@@ -387,40 +387,47 @@ main (int argc, char **argv)
           exit (1);
         }
     }
+  /* use defaults, but customize window */
+  enc_params.setup_params (wav_data, options.fundamental_freq);
 
-  const double mix_freq = wav_data.mix_freq();
-  const int    zeropad  = 4;
+  /* compute encoder window */
+  vector<float> window (enc_params.block_size);
 
-  enc_params.mix_freq = mix_freq;
-  enc_params.zeropad  = zeropad;
-  if (options.fundamental_freq == 0)
+  string window_type;
+  if (!enc_params.get_param ("window", window_type))
+    window_type = "hann";
+
+  for (uint i = 0; i < window.size(); i++)
     {
-      fprintf (stderr, "%s: fundamental freq is required for encoding (use -f or -m options)\n", options.program_name.c_str());
-      exit (1);
+      const uint frame_size = enc_params.frame_size;
+
+      if (i < frame_size)
+        {
+          if (window_type == "hann")
+            {
+              window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+            }
+          else if (window_type == "hamming")
+            {
+              /* probably never a good idea, since the sidelobes of the spectrum
+               * do not roll off fast (as with the hann window)
+               */
+              window[i] = window_hamming (2.0 * i / (frame_size - 1) - 1.0);
+            }
+          else if (window_type == "blackman")
+            {
+              window[i] = window_blackman (2.0 * i / (frame_size - 1) - 1.0);
+            }
+          else
+            {
+              fprintf (stderr, "%s: unsupported window type in config.\n", options.program_name.c_str());
+              exit (1);
+            }
+        }
+      else
+        window[i] = 0;
     }
-  enc_params.fundamental_freq = options.fundamental_freq;
-
-  double min_frame_periods, min_frame_size;
-  if (!enc_params.get_param ("min-frame-periods", min_frame_periods))
-    min_frame_periods = 4;  // default: at least 4 periods of the fundamental per frame
-  if (!enc_params.get_param ("min-frame-size", min_frame_size))
-    min_frame_size = 40;    // default: at least 40ms frames
-
-  enc_params.frame_size_ms = min_frame_size;
-  enc_params.frame_size_ms = max<float> (enc_params.frame_size_ms, 1000 / options.fundamental_freq * min_frame_periods);
-  enc_params.frame_step_ms = enc_params.frame_size_ms / 4.0;
-
-  const size_t  frame_size = make_odd (mix_freq * 0.001 * enc_params.frame_size_ms);
-  const size_t  frame_step = mix_freq * 0.001 * enc_params.frame_step_ms;
-
-  /* compute block size from frame size (smallest 2^k value >= frame_size) */
-  uint64 block_size = 1;
-  while (block_size < frame_size)
-    block_size *= 2;
-
-  enc_params.frame_step = frame_step;
-  enc_params.frame_size = frame_size;
-  enc_params.block_size = block_size;
+  enc_params.window = window;
 
   int n_channels = wav_data.n_channels();
 
@@ -429,7 +436,6 @@ main (int argc, char **argv)
       string sm_file;
       if (argc == 2)
         {
-
           // replace suffix: foo.wav => foo.sm   (or foo-ch1.sm for channel 1)
           size_t dot_pos = input_file.rfind ('.');
           if (dot_pos == string::npos)
@@ -452,43 +458,6 @@ main (int argc, char **argv)
               exit (1);
             }
         }
-
-      /* compute encoder window */
-      vector<float> window (block_size);
-
-      string window_type;
-      if (!enc_params.get_param ("window", window_type))
-        window_type = "hann";
-
-      for (guint i = 0; i < window.size(); i++)
-        {
-          if (i < frame_size)
-            {
-              if (window_type == "hann")
-                {
-                  window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
-                }
-              else if (window_type == "hamming")
-                {
-                  /* probably never a good idea, since the sidelobes of the spectrum
-                   * do not roll off fast (as with the hann window)
-                   */
-                  window[i] = window_hamming (2.0 * i / (frame_size - 1) - 1.0);
-                }
-              else if (window_type == "blackman")
-                {
-                  window[i] = window_blackman (2.0 * i / (frame_size - 1) - 1.0);
-                }
-              else
-                {
-                  fprintf (stderr, "%s: unsupported window type in config.\n", options.program_name.c_str());
-                  exit (1);
-                }
-            }
-          else
-            window[i] = 0;
-        }
-      enc_params.window = window;
 
       Encoder encoder (enc_params);
       encoder.encode (wav_data, channel, options.optimization_level, options.attack, options.track_sines);
