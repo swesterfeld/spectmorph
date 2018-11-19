@@ -453,10 +453,8 @@ main (int argc, char **argv)
             }
         }
 
-      Encoder encoder (enc_params);
-
+      /* compute encoder window */
       vector<float> window (block_size);
-      vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;
 
       string window_type;
       if (!enc_params.get_param ("window", window_type))
@@ -490,10 +488,14 @@ main (int argc, char **argv)
           else
             window[i] = 0;
         }
+      enc_params.window = window;
 
-      encoder.encode (wav_data, channel, window, options.optimization_level, options.attack, options.track_sines);
+      Encoder encoder (enc_params);
+      encoder.encode (wav_data, channel, options.optimization_level, options.attack, options.track_sines);
       if (options.strip_models)
         {
+          vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;
+
           for (size_t i = 0; i < audio_blocks.size(); i++)
             {
               audio_blocks[i].debug_samples.clear();
@@ -523,7 +525,7 @@ main (int argc, char **argv)
             }
         }
       if (options.debug_decode_filename != "")
-        encoder.debug_decode (options.debug_decode_filename, window);
+        encoder.debug_decode (options.debug_decode_filename);
 
       encoder.save (sm_file);
     }
