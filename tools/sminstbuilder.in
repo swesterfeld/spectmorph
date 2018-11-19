@@ -496,20 +496,27 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
 
   instrument_node = ET.Element ("instrument")
   for sample in config.samples:
-    filename = os.path.abspath (sample[1])
     midi_note = int (sample[0])
+
+    if cmdline_args.clipped:
+      filename = os.path.abspath ("clipped-note-%d.wav" % midi_note)
+    else:
+      filename = os.path.abspath (sample[1])
+
     sample_node = ET.SubElement (instrument_node, "sample", filename=filename, midi_note="%d" % midi_note)
 
     clip_start_ms = 0
     clip_end_ms = audio_len_ms (filename)
-    try:
-      clip_start_ms = clip_markers[int (midi_note)]["clip-start"]
-    except:
-      pass
-    try:
-      clip_end_ms = clip_markers[int (midi_note)]["clip-end"]
-    except:
-      pass
+    if not cmdline_args.clipped:
+      try:
+        clip_start_ms = clip_markers[int (midi_note)]["clip-start"]
+      except:
+        pass
+      try:
+        clip_end_ms = clip_markers[int (midi_note)]["clip-end"]
+      except:
+        pass
+
     clip_node = ET.SubElement (sample_node, "clip", start="%.3f" % clip_start_ms, end="%.3f" % clip_end_ms)
 
     try:
@@ -558,6 +565,7 @@ def main():
   parser = argparse.ArgumentParser (prog='sminstbuilder')
   parser.add_argument ('--untuned', action='store_true', help='build instruments without auto-tune')
   parser.add_argument ('--export', action='store_true', help='export instrument description to xml')
+  parser.add_argument ('--clipped', action='store_true', help='use clipped samples for export')
   parser.add_argument ('instruments', nargs='+', help='instrument directories to be processed')
   cmdline_args = parser.parse_args()
 
