@@ -101,14 +101,14 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
 }
 
 static string
-mk_version (const WavData& wav_data, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
+mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
 {
   /* create one single string that lists all the dependencies for the cache entry;
    * hash it to get a compact representation of the "version"
    */
   string depends;
 
-  depends += sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size()) + "\n";
+  depends += wav_data_hash + "\n";
   depends += string_printf ("%d\n", midi_note);
   depends += string_printf ("%d\n", iclipstart);
   depends += string_printf ("%d\n", iclipend);
@@ -119,13 +119,13 @@ mk_version (const WavData& wav_data, int midi_note, int iclipstart, int iclipend
 }
 
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
+InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
   string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
 
-  string version = mk_version (wav_data, midi_note, iclipstart, iclipend, cfg);
+  string version = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
   if (cache[cache_key].version != version)
     {

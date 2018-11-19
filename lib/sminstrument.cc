@@ -16,6 +16,7 @@ Sample::Sample (Instrument *inst, const WavData& wav_data) :
   instrument (inst),
   m_wav_data (wav_data)
 {
+  m_wav_data_hash = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
 }
 
 void
@@ -65,6 +66,12 @@ const WavData&
 Sample::wav_data() const
 {
   return m_wav_data;
+}
+
+string
+Sample::wav_data_hash() const
+{
+  return m_wav_data_hash;
 }
 
 Instrument::Instrument()

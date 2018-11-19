@@ -51,6 +51,7 @@ WavSetBuilder::add_sample (const Sample *sample)
 
   // FIXME: clean this up
   sd.wav_data_ptr = &sample->wav_data();
+  sd.wav_data_hash = sample->wav_data_hash();
 
   const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
 
@@ -85,7 +86,7 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, *sd.wav_data_ptr, sd.midi_note, iclipstart, iclipend, encoder_config);
+      new_wave.audio = InstEncCache::the()->encode (name, *sd.wav_data_ptr, sd.wav_data_hash, sd.midi_note, iclipstart, iclipend, encoder_config);
 
       if (keep_samples)
         new_wave.audio->original_samples = sd.wav_data_ptr->samples();

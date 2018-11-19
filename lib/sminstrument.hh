@@ -37,7 +37,8 @@ private:
   int m_midi_note = 69;
   Instrument *instrument = nullptr;
   Loop m_loop = Loop::NONE;
-  WavData    m_wav_data;
+  WavData     m_wav_data;
+  std::string m_wav_data_hash;
 
 public:
   Sample (Instrument *inst, const WavData& wav_data);
@@ -51,6 +52,7 @@ public:
   void    set_loop (Loop loop);
 
   const WavData&  wav_data() const;
+  std::string     wav_data_hash() const;
 
   std::string filename;
 

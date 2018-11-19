@@ -15,6 +15,7 @@ class WavSetBuilder
   {
     int             midi_note;
     const WavData  *wav_data_ptr;  // FIXME: clean this up
+    std::string     wav_data_hash;
 
     Sample::Loop loop;
     double       clip_start_ms;
