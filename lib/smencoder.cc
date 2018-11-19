@@ -197,6 +197,7 @@ Encoder::Encoder (const EncoderParams& enc_params)
   assert (enc_params.frame_size > 0);
   assert (enc_params.block_size > 0);
   assert (enc_params.fundamental_freq > 0);
+  assert (enc_params.window.size() == enc_params.block_size);
 
   this->enc_params = enc_params;
 
@@ -212,7 +213,7 @@ Encoder::Encoder (const EncoderParams& enc_params)
  * signal using a window to cut the individual frames out of the sample.
  */
 void
-Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const vector<float>& window)
+Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel)
 {
   /* deinterleave multi channel signal */
   vector<float> single_channel_signal;
@@ -231,10 +232,11 @@ Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel, const
 
   wav_data.prepend (zero_values);
 
-  const uint64 n_values = wav_data.n_values();
+  const uint64 n_values   = wav_data.n_values();
   const size_t frame_size = enc_params.frame_size;
   const size_t block_size = enc_params.block_size;
   const int    zeropad    = enc_params.zeropad;
+  const auto&  window     = enc_params.window;
 
   sample_count = n_values;
 
@@ -312,12 +314,13 @@ public:
  * This function searches for peaks in the frame ffts. These are stored in frame_tracksels.
  */
 void
-Encoder::search_local_maxima (const vector<float>& window)
+Encoder::search_local_maxima()
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
   const int    zeropad    = enc_params.zeropad;
   const double mix_freq   = enc_params.mix_freq;
+  const auto&  window     = enc_params.window;
 
   // figure out normalization for window
   double window_weight = 0;
@@ -592,11 +595,12 @@ Encoder::validate_partials()
  * residue (remaining energy not corresponding to sine frequencies).
  */
 void
-Encoder::spectral_subtract (const vector<float>& window)
+Encoder::spectral_subtract()
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
-  const size_t zeropad = enc_params.zeropad;
+  const size_t zeropad    = enc_params.zeropad;
+  const auto&  window     = enc_params.window;
 
   float *fft_in = FFT::new_array_float (block_size * zeropad);
   float *fft_out = FFT::new_array_float (block_size * zeropad);
@@ -856,14 +860,14 @@ remove_small_partials (EncoderBlock& audio_block)
  * in the previous steps.
  */
 void
-Encoder::optimize_partials (const vector<float>& window, int optimization_level)
+Encoder::optimize_partials (int optimization_level)
 {
   const double mix_freq = enc_params.mix_freq;
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       if (optimization_level >= 1) // redo FFT estmates, only better
-        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, window);
+        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window);
 
       remove_small_partials (audio_blocks[frame]);
     }
@@ -999,11 +1003,12 @@ xnoise_envelope_to_spectrum (int frame,
  * for a noise signal.
  */
 void
-Encoder::approx_noise (const vector<float>& window)
+Encoder::approx_noise()
 {
   const size_t block_size = enc_params.block_size;
   const size_t frame_size = enc_params.frame_size;
-  const size_t zeropad = enc_params.zeropad;
+  const size_t zeropad    = enc_params.zeropad;
+  const auto&  window     = enc_params.window;
 
   double sum_w2 = 0;
   for (size_t x = 0; x < frame_size; x++)
@@ -1059,12 +1064,14 @@ Encoder::approx_noise (const vector<float>& window)
 }
 
 double
-Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const vector<float>& window, const Attack& attack, vector<double>& out_scale)
+Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const Attack& attack, vector<double>& out_scale)
 {
   const size_t frames = unscaled_signal.size();
   double total_error = 0;
   vector<double> decoded_signal (enc_params.frame_size + enc_params.frame_step * frames);
   vector<double> orig_signal (decoded_signal.size());
+
+  const auto& window = enc_params.window;
 
   for (size_t f = 0; f < frames; f++)
     {
@@ -1126,7 +1133,7 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const ve
  * attack envelope (attack_start_ms and attack_end_ms) given the data.
  */
 void
-Encoder::compute_attack_params (const vector<float>& window)
+Encoder::compute_attack_params()
 {
   const double mix_freq   = enc_params.mix_freq;
   const size_t frame_size = enc_params.frame_size;
@@ -1194,7 +1201,7 @@ Encoder::compute_attack_params (const vector<float>& window)
           new_attack.attack_start_ms >= zero_values_at_start_ms &&
           new_attack.attack_end_ms < 200)
         {
-          const double new_error = attack_error (unscaled_signal, window, new_attack, scale);
+          const double new_error = attack_error (unscaled_signal, new_attack, scale);
 #if 0
           printf ("attack=<%f, %f> error=%.17g new_attack=<%f, %f> new_arror=%.17g\n", attack.attack_start_ms, attack.attack_end_ms, error,
                                                                                        new_attack.attack_start_ms, new_attack.attack_end_ms, new_error);
@@ -1273,30 +1280,29 @@ Encoder::sort_freqs()
  * This function calls all steps necessary for encoding in the right order.
  *
  * \param dhandle a data handle containing the signal to be encoded
- * \param window the analysis window
  * \param optimization_level determines if fast (0), medium (1), or very slow (2) algorithm is used
  * \param attack whether to find the optimal attack parameters
  */
 void
-Encoder::encode (const WavData& wav_data, int channel, const vector<float>& window, int optimization_level,
+Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
                  bool attack, bool track_sines)
 {
-  compute_stft (wav_data, channel, window);
+  compute_stft (wav_data, channel);
 
   if (track_sines)
     {
-      search_local_maxima (window);
+      search_local_maxima();
       link_partials();
       validate_partials();
 
-      optimize_partials (window, optimization_level);
+      optimize_partials (optimization_level);
 
-      spectral_subtract (window);
+      spectral_subtract();
     }
-  approx_noise (window);
+  approx_noise();
 
   if (attack)
-    compute_attack_params (window);
+    compute_attack_params();
 
   sort_freqs();
 }
@@ -1429,7 +1435,7 @@ Encoder::save_as_audio()
 }
 
 void
-Encoder::debug_decode (const string& filename, const vector<float>& enc_window)
+Encoder::debug_decode (const string& filename)
 {
   const double mix_freq   = enc_params.mix_freq;
   const size_t frame_step = enc_params.frame_step;

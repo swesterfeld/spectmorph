@@ -81,9 +81,11 @@ InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::Encoder
     }
   setup_params (wav_data, midi_note);
 
+  enc_params.window = window;
+
   Encoder encoder (enc_params);
 
-  encoder.encode (wav_data, /* channel */ 0, window, /* opt */ 1, /* attack */ true, /* sines */ true);
+  encoder.encode (wav_data, /* channel */ 0, /* opt */ 1, /* attack */ true, /* sines */ true);
 
   /* strip stuff we don't need (but keep everything that is needed if loop points are changed) */
   vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;

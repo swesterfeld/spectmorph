@@ -55,6 +55,9 @@ public:
   /** whether to generate phases in output */
   bool    enable_phases = true;
 
+  /** window to be used for analysis (needs to have block_size entries) */
+  std::vector<float> window;
+
   bool add_config_entry (const std::string& param, const std::string& value);
 
   bool load_config (const std::string& filename);
@@ -108,7 +111,7 @@ class Encoder
     double attack_start_ms;
     double attack_end_ms;
   };
-  double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const std::vector<float>& window, const Attack& attack, std::vector<double>& out_scale);
+  double attack_error (const std::vector< std::vector<double> >& unscaled_signal, const Attack& attack, std::vector<double>& out_scale);
 
 public:
   std::vector<EncoderBlock>            audio_blocks;    //!< current state, and end result of the encoding algorithm
@@ -120,19 +123,19 @@ public:
   Encoder (const EncoderParams& enc_params);
 
   // single encoder steps:
-  void compute_stft (const WavData& wav_data, int channel, const std::vector<float>& window);
-  void search_local_maxima (const std::vector<float>& window);
+  void compute_stft (const WavData& wav_data, int channel);
+  void search_local_maxima();
   void link_partials();
   void validate_partials();
-  void optimize_partials (const std::vector<float>& window, int optimization_level);
-  void spectral_subtract (const std::vector<float>& window);
-  void approx_noise (const std::vector<float>& window);
-  void compute_attack_params (const std::vector<float>& window);
+  void optimize_partials (int optimization_level);
+  void spectral_subtract();
+  void approx_noise();
+  void compute_attack_params();
   void sort_freqs();
-  void debug_decode (const std::string& filename, const std::vector<float>& window);
+  void debug_decode (const std::string& filename);
 
   // all-in-one encoding function:
-  void encode (const WavData& wav_data, int channel, const std::vector<float>& window, int optimization_level,
+  void encode (const WavData& wav_data, int channel, int optimization_level,
                bool attack, bool track_sines);
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);
