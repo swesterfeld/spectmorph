@@ -29,7 +29,15 @@ debug (const char *fmt, ...)
 #define debug printf
 #endif
 
-using namespace SpectMorph;
+/* avoid problems with SpectMorph::Instrument and SpectMorph::Sample */
+using SpectMorph::GenericIn;
+using SpectMorph::JobQueue;
+using SpectMorph::WavSet;
+using SpectMorph::WavSetWave;
+using SpectMorph::WavData;
+
+using SpectMorph::string_printf;
+using SpectMorph::sm_init;
 
 using std::string;
 using std::vector;
