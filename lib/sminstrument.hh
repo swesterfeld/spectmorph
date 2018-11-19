@@ -96,7 +96,7 @@ private:
 public:
   Instrument();
 
-  bool        add_sample (const std::string& filename);
+  Sample     *add_sample (const std::string& filename);
   Sample     *sample (size_t n) const;
 
   size_t      size() const;
