@@ -30,15 +30,27 @@ class Sample
 public:
   enum class Loop { NONE, FORWARD, PING_PONG, SINGLE_FRAME };
 
+  struct Shared
+  {
+    WavData     m_wav_data;
+    std::string m_wav_data_hash;
+  public:
+    Shared (const WavData& wav_data);
+
+    const WavData& wav_data() const;
+    std::string    wav_data_hash() const;
+  };
+  typedef std::shared_ptr<Shared> SharedP;
 private:
+
   SPECTMORPH_CLASS_NON_COPYABLE (Sample);
 
   std::map<MarkerType, double> marker_map;
   int m_midi_note = 69;
   Instrument *instrument = nullptr;
   Loop m_loop = Loop::NONE;
-  WavData     m_wav_data;
-  std::string m_wav_data_hash;
+
+  SharedP m_shared;
 
 public:
   Sample (Instrument *inst, const WavData& wav_data);
@@ -50,6 +62,8 @@ public:
 
   Loop    loop() const;
   void    set_loop (Loop loop);
+
+  SharedP shared() const;
 
   const WavData&  wav_data() const;
   std::string     wav_data_hash() const;

@@ -13,15 +13,14 @@ class WavSetBuilder
 {
   struct SampleData
   {
-    int             midi_note;
-    const WavData  *wav_data_ptr;  // FIXME: clean this up
-    std::string     wav_data_hash;
-
+    int           midi_note;
     Sample::Loop loop;
     double       clip_start_ms;
     double       clip_end_ms;
     double       loop_start_ms;
     double       loop_end_ms;
+
+    Sample::SharedP shared;
   };
   std::vector<SampleData> sample_data_vec;
   WavSet *wav_set;

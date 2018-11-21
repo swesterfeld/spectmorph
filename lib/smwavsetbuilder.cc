@@ -48,10 +48,7 @@ WavSetBuilder::add_sample (const Sample *sample)
   SampleData sd;
 
   sd.midi_note = sample->midi_note();
-
-  // FIXME: clean this up
-  sd.wav_data_ptr = &sample->wav_data();
-  sd.wav_data_hash = sample->wav_data_hash();
+  sd.shared = sample->shared();
 
   const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
 
@@ -70,15 +67,15 @@ WavSetBuilder::run()
   for (auto& sd : sample_data_vec)
     {
       /* clipping */
-      assert (sd.wav_data_ptr->n_channels() == 1);
-
+      const WavData& wav_data = sd.shared->wav_data();
+      assert (wav_data.n_channels() == 1);
 
       /* if we have a loop, the loop end determines the real end of the recording */
-      int iclipend = sd.wav_data_ptr->n_values();
+      int iclipend = wav_data.n_values();
       if (sd.loop == Sample::Loop::NONE)
-        iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * sd.wav_data_ptr->mix_freq() / 1000.0), sd.wav_data_ptr->n_values());
+        iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * wav_data.mix_freq() / 1000.0), wav_data.n_values());
 
-      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * sd.wav_data_ptr->mix_freq() / 1000.0), iclipend);
+      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * wav_data.mix_freq() / 1000.0), iclipend);
 
 
       WavSetWave new_wave;
@@ -86,10 +83,10 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, *sd.wav_data_ptr, sd.wav_data_hash, sd.midi_note, iclipstart, iclipend, encoder_config);
+      new_wave.audio = InstEncCache::the()->encode (name, wav_data, sd.shared->wav_data_hash(), sd.midi_note, iclipstart, iclipend, encoder_config);
 
       if (keep_samples)
-        new_wave.audio->original_samples = sd.wav_data_ptr->samples();
+        new_wave.audio->original_samples = wav_data.samples(); // FIXME: clipping?
 
       wav_set->waves.push_back (new_wave);
     }

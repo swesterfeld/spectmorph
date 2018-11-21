@@ -12,11 +12,34 @@ using pugi::xml_document;
 using pugi::xml_node;
 using std::string;
 
-Sample::Sample (Instrument *inst, const WavData& wav_data) :
-  instrument (inst),
+/* ------------- Sample::Shared -------------*/
+
+// this class should never modify any data after construction
+//  -> we can share it between different threads
+
+Sample::Shared::Shared (const WavData& wav_data) :
   m_wav_data (wav_data)
 {
   m_wav_data_hash = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
+}
+
+string
+Sample::Shared::wav_data_hash() const
+{
+  return m_wav_data_hash;
+}
+
+const WavData&
+SpectMorph::Sample::Shared::wav_data() const
+{
+  return m_wav_data;
+}
+
+/* ------------- Sample -------------*/
+Sample::Sample (Instrument *inst, const WavData& wav_data) :
+  instrument (inst),
+  m_shared (new Sample::Shared (wav_data))
+{
 }
 
 void
@@ -65,14 +88,22 @@ Sample::set_loop (Loop loop)
 const WavData&
 Sample::wav_data() const
 {
-  return m_wav_data;
+  return m_shared->wav_data();
 }
 
 string
 Sample::wav_data_hash() const
 {
-  return m_wav_data_hash;
+  return m_shared->wav_data_hash();
 }
+
+Sample::SharedP
+Sample::shared() const
+{
+  return m_shared;
+}
+
+/* ------------- Instrument -------------*/
 
 Instrument::Instrument()
 {
