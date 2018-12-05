@@ -3,6 +3,7 @@
 #include "smwavdata.hh"
 
 #include <assert.h>
+#include <math.h>
 
 using namespace SpectMorph;
 
@@ -48,6 +49,7 @@ save_load_test()
         }
     }
   printf ("save/load test: ERR: repeat = %d; load = %d\n", repeat_error, reload_error);
+  assert (repeat_error == 0 && reload_error == 0);
 }
 
 void
@@ -78,9 +80,42 @@ clip_test()
     printf ("%.10f\n", sample);
 }
 
+void
+save_vec_test()
+{
+  vector<float> signal;
+  for (size_t i = 0; i < 48000; i++)
+    signal.push_back (sin (i * 2 * M_PI * 440 / 48000));
+
+  WavData wav_data (signal, 1, 48000, 16);
+
+  vector<unsigned char> out;
+  bool ok = wav_data.save (out);
+  assert (ok);
+
+  printf ("save ok: %s - size: %zd\n", ok ? "OK" : "FAIL", out.size());
+  FILE *t = fopen ("testwd.wav", "w");
+  fwrite (&out[0], 1, out.size(), t);
+  fclose (t);
+
+  WavData a;
+  ok = a.load ("testwd.wav");
+  assert (ok);
+
+  assert (signal.size() == a.n_values());
+  for (size_t i = 0; i < a.n_values(); i++)
+    {
+      /* FIXME: strange: the difference of signal[i] and a[i] seems to be positive
+       * all the time? why? shouldn't we sometimes round up and sometimes round down?
+       */
+      assert (fabs (signal[i] - a[i]) < 1 / 32000.);
+    }
+}
+
 int
 main()
 {
   save_load_test();
   clip_test();
+  save_vec_test();
 }
