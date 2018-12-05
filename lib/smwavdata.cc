@@ -136,6 +136,108 @@ WavData::load_mono (const string& filename)
 bool
 WavData::save (const string& filename)
 {
+  return save ([&] (SF_INFO *sfinfo)
+    {
+      return sf_open (filename.c_str(), SFM_WRITE, sfinfo);
+    });
+}
+
+namespace {
+struct VirtualData
+{
+  vector<unsigned char> *mem    = nullptr;
+  sf_count_t             offset = 0;
+};
+}
+
+static sf_count_t
+virtual_get_len (void *data)
+{
+  VirtualData *vdata = static_cast<VirtualData *> (data);
+
+  return vdata->mem->size();
+}
+
+static sf_count_t
+virtual_seek (sf_count_t offset, int whence, void *data)
+{
+  VirtualData *vdata = static_cast<VirtualData *> (data);
+
+  if (whence == SEEK_CUR)
+    {
+      vdata->offset = vdata->offset + offset;
+    }
+  else if (whence == SEEK_SET)
+    {
+      vdata->offset = offset;
+    }
+  else if (whence == SEEK_END)
+    {
+      vdata->offset = vdata->mem->size() + offset;
+    }
+
+  /* can't seek beyond eof */
+  vdata->offset = sm_bound<sf_count_t> (0, vdata->offset, vdata->mem->size());
+  return vdata->offset;
+}
+
+static sf_count_t
+virtual_read (void *ptr, sf_count_t count, void *data)
+{
+  /* FIXME: need to implement reading, too */
+  //VirtualData *vdata = static_cast<VirtualData *> (data);
+  /* not implemented yet */
+  return 0;
+}
+
+static sf_count_t
+virtual_write (const void *ptr, sf_count_t count, void *data)
+{
+  VirtualData *vdata = static_cast<VirtualData *> (data);
+
+  const unsigned char *uptr = static_cast<const unsigned char *> (ptr);
+  for (sf_count_t i = 0; i < count; i++)
+    {
+      unsigned char ch = uptr[i];
+
+      size_t wpos = i + vdata->offset;
+      if (wpos >= vdata->mem->size())
+        vdata->mem->resize (wpos + 1);
+      (*vdata->mem)[wpos] = ch;
+    }
+  vdata->offset += count;
+  return count;
+}
+
+static sf_count_t
+virtual_tell (void *data)
+{
+  VirtualData *vdata = static_cast<VirtualData *> (data);
+  return vdata->offset;
+}
+
+bool
+WavData::save (vector<unsigned char>& out)
+{
+  VirtualData virtual_data;
+
+  virtual_data.mem = &out;
+
+  SF_VIRTUAL_IO sfvirtual = {
+    virtual_get_len,
+    virtual_seek,
+    virtual_read,
+    virtual_write,
+    virtual_tell
+  };
+  return save ([&] (SF_INFO *sfinfo) {
+    return sf_open_virtual (&sfvirtual, SFM_WRITE, sfinfo, &virtual_data);
+  });
+}
+
+bool
+WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
+{
   SF_INFO sfinfo = {0,};
 
   sfinfo.samplerate = sm_round_positive (m_mix_freq);
@@ -146,7 +248,7 @@ WavData::save (const string& filename)
   else
     sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
 
-  SNDFILE *sndfile = sf_open (filename.c_str(), SFM_WRITE, &sfinfo);
+  SNDFILE *sndfile = open_func (&sfinfo);
   int error = sf_error (sndfile);
   if (error)
     {
