@@ -158,6 +158,11 @@ AC_DEFUN([AC_LV2_REQUIREMENTS],
   PKG_CHECK_MODULES([LV2], [[lv2 >= 1.2.0]], [with_lv2="yes"], [with_lv2="no"])
 ])
 
+AC_DEFUN([AC_ZLIB_REQUIREMENTS],
+[
+  PKG_CHECK_MODULES(ZLIB, zlib)
+])
+
 dnl FFTW3
 AC_DEFUN([AC_FFTW_CHECK],
 [
@@ -333,6 +338,7 @@ AC_CAIRO_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
+AC_ZLIB_REQUIREMENTS
 
 AM_CFLAGS=""
 AM_CXXFLAGS=""
@@ -395,6 +401,7 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 ])
 
 AC_CONFIG_FILES([Makefile
+3rdparty/Makefile 3rdparty/minizip/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile instedit/Makefile
