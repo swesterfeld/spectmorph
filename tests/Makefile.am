@@ -140,8 +140,7 @@ testwavdata_SOURCES = testwavdata.cc
 testwavdata_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testzip_SOURCES = testzip.cc
-testzip_CXXFLAGS = -I$(top_srcdir)/3rdparty/minizip
-testzip_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
+testzip_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm
