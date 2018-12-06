@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS)
+AM_CXXFLAGS += $(BSE_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/3rdparty/minizip
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmath.hh smwavset.hh smoutfile.hh sminfile.hh \
@@ -20,7 +20,8 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smeffectdecoder.hh smadsrenvelope.hh smsignal.hh smconfig.hh \
 	 smmorphwavsource.hh smmorphwavsourcemodule.hh smcache.hh \
 	 smwavsetbuilder.hh sminstrument.hh sminsteditsynth.hh \
-	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh
+	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh \
+	 smzip.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -41,9 +42,9 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc \
 			   smmorphwavsource.cc smmorphwavsourcemodule.cc smcache.cc \
 			   smwavsetbuilder.cc sminsteditsynth.cc sminstencoder.cc \
-			   sminstenccache.cc smaudiotool.cc sminstrument.cc
+			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc
 
-libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS)
+libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
 libspectmorph_la_LDFLAGS = -no-undefined
 
 if COND_WINDOWS
