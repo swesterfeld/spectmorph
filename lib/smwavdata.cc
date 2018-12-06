@@ -30,9 +30,17 @@ WavData::clear()
 bool
 WavData::load (const string& filename)
 {
+  return load ([&] (SF_INFO *sfinfo) {
+    return sf_open (filename.c_str(), SFM_READ, sfinfo);
+  });
+}
+
+bool
+WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
+{
   SF_INFO sfinfo = { 0, };
 
-  SNDFILE *sndfile = sf_open (filename.c_str(), SFM_READ, &sfinfo);
+  SNDFILE *sndfile = open_func (&sfinfo);
 
   int error = sf_error (sndfile);
   if (error)
@@ -185,9 +193,21 @@ static sf_count_t
 virtual_read (void *ptr, sf_count_t count, void *data)
 {
   /* FIXME: need to implement reading, too */
-  //VirtualData *vdata = static_cast<VirtualData *> (data);
-  /* not implemented yet */
-  return 0;
+  VirtualData *vdata = static_cast<VirtualData *> (data);
+
+  int rcount = 0;
+  unsigned char *uptr = static_cast<unsigned char *> (ptr);
+  for (sf_count_t i = 0; i < count; i++)
+    {
+      size_t rpos = i + vdata->offset;
+      if (rpos < vdata->mem->size())
+        {
+          uptr[i] = (*vdata->mem)[rpos];
+          rcount++;
+        }
+    }
+  vdata->offset += rcount;
+  return rcount;
 }
 
 static sf_count_t
@@ -232,6 +252,27 @@ WavData::save (vector<unsigned char>& out)
   };
   return save ([&] (SF_INFO *sfinfo) {
     return sf_open_virtual (&sfvirtual, SFM_WRITE, sfinfo, &virtual_data);
+  });
+}
+
+bool
+WavData::load (const vector<unsigned char>& in)
+{
+  VirtualData virtual_data;
+
+  /* to ensure that in really isn't modified */
+  vector<unsigned char> in_copy = in;
+  virtual_data.mem = &in_copy;
+
+  SF_VIRTUAL_IO sfvirtual = {
+    virtual_get_len,
+    virtual_seek,
+    virtual_read,
+    virtual_write,
+    virtual_tell
+  };
+  return load ([&] (SF_INFO *sfinfo) {
+    return sf_open_virtual (&sfvirtual, SFM_READ, sfinfo, &virtual_data);
   });
 }
 

@@ -22,11 +22,13 @@ class WavData
   std::string        m_error_blurb;
 
   bool save (std::function<SNDFILE* (SF_INFO *)> open_func);
+  bool load (std::function<SNDFILE* (SF_INFO *)> open_func);
 
 public:
   WavData();
   WavData (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth);
 
+  bool load (const std::vector<unsigned char>& in);
   bool load (const std::string& filename);
   bool load_mono (const std::string& filename);
 
