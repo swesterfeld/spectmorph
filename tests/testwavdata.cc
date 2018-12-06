@@ -110,6 +110,13 @@ save_vec_test()
        */
       assert (fabs (signal[i] - a[i]) < 1 / 32000.);
     }
+
+  WavData b;
+  ok = b.load (out);
+  assert (ok);
+
+  for (size_t i = 0; i < b.n_values(); i++)
+    assert (a[i] == b[i]);
 }
 
 int
