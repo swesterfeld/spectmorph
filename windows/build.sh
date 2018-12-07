@@ -9,7 +9,7 @@ die()
 }
 
 set -x
-make -j9 -C.. || die "make failed"
+make -j$(nproc) -C.. || die "make failed"
 make -C.. install || die "make install failed"
 cp -v $PREFIX/lib/vst/SpectMorph.dll . || die "error: cp SpectMorph.dll"
 mkdir -p ./templates
