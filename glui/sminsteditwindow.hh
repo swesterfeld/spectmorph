@@ -146,7 +146,7 @@ class InstEditWindow : public Window
     for (size_t i = 0; i < instrument.size(); i++)
       {
         Sample *sample = instrument.sample (i);
-        std::string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->filename.c_str());
+        std::string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->short_name.c_str());
 
         sample_combobox->add_item (text);
 
