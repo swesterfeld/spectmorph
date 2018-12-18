@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smzip.hh"
+#include "smutils.hh"
 
 #include "mz.h"
 #include "mz_os.h"
@@ -149,6 +150,10 @@ ZipWriter::add (const string& filename, const vector<uint8_t>& data)
   file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
   file_info.filename = filename.c_str();
   file_info.uncompressed_size = data.size();
+#ifdef SM_OS_LINUX
+  /* set sane unix specific attribute bits */
+  file_info.external_fa = 0664 << 16;
+#endif
 
   m_error = mz_zip_writer_add_buffer (writer, const_cast<unsigned char *> (data.data()), data.size(), &file_info);
 }
