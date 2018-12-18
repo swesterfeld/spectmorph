@@ -69,6 +69,7 @@ public:
   std::string     wav_data_hash() const;
 
   std::string filename;
+  std::string short_name;
 
   std::unique_ptr<Audio> audio;
 };
@@ -116,6 +117,7 @@ public:
 
   Sample     *add_sample (const std::string& filename);
   Sample     *sample (size_t n) const;
+  std::string gen_short_name (const std::string& filename);
 
   size_t      size() const;
   std::string name() const;
@@ -124,7 +126,7 @@ public:
   void        set_selected (int sel);
 
   void        load (const std::string& filename);
-  void        save (const std::string& filename);
+  void        save (const std::string& filename, bool zip = false);
 
   void        update_order();
   void        marker_changed();

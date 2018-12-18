@@ -2,6 +2,7 @@
 
 #include "sminstrument.hh"
 #include "smpugixml.hh"
+#include "smzip.hh"
 
 #include <map>
 #include <memory>
@@ -10,7 +11,11 @@ using namespace SpectMorph;
 
 using pugi::xml_document;
 using pugi::xml_node;
+using pugi::xml_writer;
+
 using std::string;
+using std::vector;
+using std::map;
 
 /* ------------- Sample::Shared -------------*/
 
@@ -123,6 +128,7 @@ Instrument::add_sample (const string& filename)
   Sample *sample = new Sample (this, wav_data);
   samples.emplace_back (sample);
   sample->filename  = filename;
+  sample->short_name = gen_short_name (filename);
 
   sample->set_marker (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
   sample->set_marker (MARKER_CLIP_END, 1.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
@@ -195,6 +201,7 @@ Instrument::load (const string& filename)
           Sample *sample = new Sample (this, wav_data);
           samples.emplace_back (sample);
           sample->filename  = filename;
+          sample->short_name = gen_short_name (filename);
           sample->set_midi_note (midi_note);
 
           xml_node clip_node = sample_node.child ("clip");
@@ -291,15 +298,71 @@ Instrument::load (const string& filename)
   signal_samples_changed();
 }
 
+static bool
+ends_with (const std::string& str, const std::string& suffix)
+{
+  /* if suffix is .wav, match foo.wav, foo.WAV, foo.Wav, ... */
+  return str.size() >= suffix.size() &&
+         std::equal (str.end() - suffix.size(), str.end(), suffix.begin(),
+                     [] (char c1, char c2) -> bool { return tolower (c1) == tolower (c2);});
+}
+
+static bool
+no_case_equal (const string& s1, const string& s2)
+{
+  if (s1.size() != s2.size())
+    return false;
+
+  return std::equal (s1.begin(), s1.end(), s2.begin(),
+                     [] (char c1, char c2) -> bool { return tolower (c1) == tolower (c2);});
+}
+
+string
+Instrument::gen_short_name (const string& filename)
+{
+  char *gbasename = g_path_get_basename (filename.c_str());
+  string basename = gbasename;
+  g_free (gbasename);
+
+  for (auto ext : vector<string> { ".wav", ".flac", ".ogg", ".aiff" })
+    if (ends_with (basename, ext))
+      {
+        basename.resize (basename.size() - ext.size());
+      }
+  for (int i = 1; ; i++)
+    {
+      string short_name = basename;
+      if (i > 1)
+        short_name += string_printf ("-%d", i);
+
+      bool   used = false;
+
+      for (auto& sample : samples)
+        {
+          /* some filesystems are case insensitive, so we avoid short names only differ in case */
+          if (no_case_equal (sample->short_name, short_name))
+            used = true;
+        }
+
+      if (!used)
+        {
+          return short_name;
+        }
+    }
+}
+
 void
-Instrument::save (const string& filename)
+Instrument::save (const string& filename, bool zip)
 {
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
   for (auto& sample : samples)
     {
       xml_node sample_node = inst_node.append_child ("sample");
-      sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
+      if (zip)
+        sample_node.append_attribute ("filename").set_value ((sample->short_name + ".wav").c_str());
+      else
+        sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
       sample_node.append_attribute ("midi_note").set_value (sample->midi_note());
 
       xml_node clip_node = sample_node.append_child ("clip");
@@ -362,7 +425,41 @@ Instrument::save (const string& filename)
       conf_node.append_attribute ("param").set_value (entry.param.c_str());
       conf_node.append_attribute ("value").set_value (entry.value.c_str());
     }
-  doc.save_file (filename.c_str());
+  if (zip)
+    {
+      class VectorOut : public xml_writer
+      {
+      public:
+        vector<unsigned char> vec;
+        void
+        write (const void* data, size_t size) override
+        {
+          const unsigned char *d = (const unsigned char *) data;
+
+          vec.insert (vec.end(), d, d + size);
+        }
+      } out;
+      doc.save (out);
+
+      ZipWriter writer (filename);
+      writer.add ("instrument.xml", out.vec);
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          /* we make a deep copy here, because save() is non-const */
+          WavData wav_data (samples[i]->wav_data().samples(),
+                            samples[i]->wav_data().n_channels(),
+                            samples[i]->wav_data().mix_freq(),
+                            samples[i]->wav_data().bit_depth());
+
+          vector<unsigned char> wav_file_vec;
+          wav_data.save (wav_file_vec);
+          writer.add (samples[i]->short_name + ".wav", wav_file_vec);
+        }
+    }
+  else
+    {
+      doc.save_file (filename.c_str());
+    }
 }
 
 void
