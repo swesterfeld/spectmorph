@@ -17,3 +17,9 @@ UI:
 
 BUGS:
 - debug why lv2 ui sometimes starts without plan
+
+SVEN:
+- display total sample time
+- don't display play position marker as it moves post end
+- play should be toggle (play -> stop -> play...)
+- spacebar should toggle play
