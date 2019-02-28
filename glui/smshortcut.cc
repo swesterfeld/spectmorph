@@ -172,11 +172,13 @@ Shortcut::test (Window *window)
     {
       gen_shortcut (string_printf ("Ctrl+%c", ch), ch, PUGL_MOD_CTRL);
       gen_shortcut (string_printf ("Alt+%c", ch), ch, PUGL_MOD_ALT);
+      gen_shortcut (string_printf ("Super+%c", ch), ch, PUGL_MOD_SUPER);
     }
   for (uint32_t i = 1; i <= 12; i++)
     {
       gen_shortcut (string_printf ("F%d", i), PUGL_KEY_F1 + i - 1);
       gen_shortcut (string_printf ("Shift+F%d", i), PUGL_KEY_F1 + i - 1, PUGL_MOD_SHIFT);
+      gen_shortcut (string_printf ("Super+F%d", i), PUGL_KEY_F1 + i - 1, PUGL_MOD_SUPER);
     }
 
   struct KeyName { uint32_t key; string name; };
@@ -198,5 +200,6 @@ Shortcut::test (Window *window)
       gen_shortcut ("Shift+" + k.name, k.key, PUGL_MOD_SHIFT);
       gen_shortcut ("Alt+" + k.name, k.key, PUGL_MOD_ALT);
       gen_shortcut ("Ctrl+" + k.name, k.key, PUGL_MOD_CTRL);
+      gen_shortcut ("Super+" + k.name, k.key, PUGL_MOD_SUPER);
     }
 }
