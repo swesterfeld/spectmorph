@@ -10,6 +10,7 @@
 #include "smwavsetbuilder.hh"
 #include "smbutton.hh"
 #include "smcheckbox.hh"
+#include "smshortcut.hh"
 
 #include <thread>
 
@@ -411,6 +412,7 @@ public:
 
     b3->set_enabled (false);
 
+    Shortcut::test (this);
     // show complete wave
     on_update_hzoom (0);
 

@@ -15,6 +15,7 @@ struct CairoGL;
 class NativeFileDialog;
 struct Menu;
 class Timer;
+class Shortcut;
 
 struct Window : public Widget
 {
@@ -38,6 +39,7 @@ protected:
   bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
   std::vector<Timer *>      timers;
+  std::vector<Shortcut *>   shortcuts;
 
   std::function<void()>     m_close_callback;
 
@@ -67,6 +69,8 @@ public:
   void set_popup_window (Window *window);
   void add_timer (Timer *timer);
   void remove_timer (Timer *timer);
+  void add_shortcut (Shortcut *shortcut);
+  void remove_shortcut (Shortcut *shortcut);
   Window *window() override;
   PuglNativeWindow native_window();
 

@@ -10,6 +10,7 @@
 #include "smnativefiledialog.hh"
 #include "smconfig.hh"
 #include "smtimer.hh"
+#include "smshortcut.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>
 #include <unistd.h>
@@ -202,6 +203,15 @@ Window::~Window()
     }
   for (size_t i = 0; i < timers.size(); i++)
     assert (timers[i] == nullptr);
+
+  /* cleanup shortcuts: this code needs to work if remove_shortcut & add_shortcut are called from one of the destructors */
+  for (size_t i = 0; i < shortcuts.size(); i++)
+    {
+      if (shortcuts[i])
+        delete shortcuts[i];
+    }
+  for (size_t i = 0; i < shortcuts.size(); i++)
+    assert (shortcuts[i] == nullptr);
 }
 
 void
@@ -453,6 +463,19 @@ Window::on_display()
   update_full_redraw = false;
 }
 
+template<class T>
+void
+cleanup_null (vector<T *>& vec)
+{
+  vector<T *> new_vec;
+  for (auto object : vec)
+    if (object)
+      new_vec.push_back (object);
+
+  if (vec.size() > new_vec.size())
+    vec = new_vec;
+}
+
 void
 Window::process_events()
 {
@@ -482,10 +505,7 @@ Window::process_events()
         timer->process_events();
     }
   /* timers array may have been modified - remove null entries */
-  vector<Timer *> new_timers;
-  for (auto t : timers)
-    new_timers.push_back (t);
-  timers = new_timers;
+  cleanup_null (timers);
 
   if (0)
     {
@@ -556,6 +576,8 @@ Window::on_event (const PuglEvent* event)
 
   switch (event->type)
     {
+      bool key_handled;
+
       case PUGL_BUTTON_PRESS:
         ex = event->button.x / global_scale;
         ey = event->button.y / global_scale;
@@ -620,9 +642,18 @@ Window::on_event (const PuglEvent* event)
           update_full();
         break;
       case PUGL_KEY_PRESS:
-        if (keyboard_focus_widget)
+        key_handled = false;
+        /* do not use auto here, since shortcuts may get modified */
+        cleanup_null (shortcuts);
+        for (size_t i = 0; i < shortcuts.size(); i++)
+          {
+            Shortcut *shortcut = shortcuts[i];
+            if (!key_handled && shortcut)
+              key_handled = shortcut->key_press_event (event->key);
+          }
+        if (!key_handled && keyboard_focus_widget)
           keyboard_focus_widget->key_press_event (event->key);
-        else
+        else if (!key_handled)
           {
             if (event->key.character == 'g')
               draw_grid = !draw_grid;
@@ -915,5 +946,21 @@ Window::remove_timer (Timer *timer)
     {
       if (t == timer)
         t = nullptr;
+    }
+}
+
+void
+Window::add_shortcut (Shortcut *shortcut)
+{
+  shortcuts.push_back (shortcut);
+}
+
+void
+Window::remove_shortcut (Shortcut *shortcut)
+{
+  for (auto& s : shortcuts)
+    {
+      if (s == shortcut)
+        s = nullptr;
     }
 }
