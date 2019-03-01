@@ -205,6 +205,8 @@ class InstEditWindow : public Window
   CheckBox *auto_volume_checkbox = nullptr;
   Button   *auto_volume_details_button = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
+  Button   *play_button = nullptr;
+  bool      playing = false;
 
   Sample::Loop
   text_to_loop (const std::string& text)
@@ -340,10 +342,12 @@ public:
     play_mode_combobox->add_item ("Reference Instrument");
 
     /*--- play button ---*/
-    Button *play_button = new Button (this, "Play");
-    connect (play_button->signal_pressed, this, &InstEditWindow::on_play_start);
-    connect (play_button->signal_released, this, &InstEditWindow::on_play_stop);
+    play_button = new Button (this, "Play");
+    connect (play_button->signal_pressed, this, &InstEditWindow::on_toggle_play);
     grid.add_widget (play_button, 51, 54, 8, 3);
+
+    Shortcut *play_shortcut = new Shortcut (this, ' ');
+    connect (play_shortcut->signal_activated, this, &InstEditWindow::on_toggle_play);
 
     /*--- led ---*/
     led = new Led (this, false);
@@ -412,7 +416,6 @@ public:
 
     b3->set_enabled (false);
 
-    Shortcut::test (this);
     // show complete wave
     on_update_hzoom (0);
 
@@ -510,18 +513,15 @@ public:
     led->set_on (m_backend.have_builder());
   }
   void
-  on_play_start()
+  on_toggle_play()
   {
     Sample *sample = instrument.sample (instrument.selected());
     if (sample)
-      synth_interface->synth_inst_edit_note (sample->midi_note(), true);
-  }
-  void
-  on_play_stop()
-  {
-    Sample *sample = instrument.sample (instrument.selected());
-    if (sample)
-      synth_interface->synth_inst_edit_note (sample->midi_note(), false);
+      {
+        playing = !playing;
+        play_button->set_text (playing ? "Stop" : "Play");
+        synth_interface->synth_inst_edit_note (sample->midi_note(), playing);
+      }
   }
   void
   on_have_audio (int note, Audio *audio)
