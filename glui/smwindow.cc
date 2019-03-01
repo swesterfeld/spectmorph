@@ -166,7 +166,7 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   puglInitWindowSize (view, scaled_width, scaled_height);
   //puglInitWindowMinSize (view, 256, 256);
   puglInitResizable (view, resize);
-  puglIgnoreKeyRepeat (view, false);
+  puglIgnoreKeyRepeat (view, true);
   if (win_id)
     puglInitWindowParent (view, win_id);
   if (transient_parent)
