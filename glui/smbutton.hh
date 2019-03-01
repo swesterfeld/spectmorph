@@ -10,7 +10,7 @@ namespace SpectMorph
 
 class Button : public Widget
 {
-  std::string text;
+  std::string m_text;
   bool        highlight = false;
   bool        pressed = false;
 
@@ -21,7 +21,7 @@ public:
 
   Button (Widget *parent, const std::string& text) :
     Widget (parent),
-    text (text)
+    m_text (text)
   {
   }
   void
@@ -53,7 +53,7 @@ public:
       text_color = Color (0.7, 0.7, 0.7);
 
     du.set_color (text_color);
-    du.text (text, 0, 0, width, height, TextAlign::CENTER);
+    du.text (m_text, 0, 0, width, height, TextAlign::CENTER);
   }
   void
   enter_event() override
@@ -86,6 +86,15 @@ public:
   {
     highlight = false;
     pressed = false;
+    update();
+  }
+  void
+  set_text (const std::string& text)
+  {
+    if (m_text == text)
+      return;
+
+    m_text = text;
     update();
   }
 };
