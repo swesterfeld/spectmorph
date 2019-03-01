@@ -382,9 +382,21 @@ public:
             }
           sample_widget->set_play_pointers (play_pointers);
 
+          /* this is not 100% accurate if external midi events also affect
+           * the state, but it should be good enough */
+          bool new_playing = false;
+          int  note = 0;
+          for (size_t i = 0; i < iev->current_pos.size(); i++)
+            if (iev->fundamental_note[i] > 0) /* -1 indicates decoder without audio */
+              {
+                new_playing = true;
+                note = iev->note[i];
+              }
+          set_playing (new_playing);
+
           std::string text = "---";
-          if (!iev->note.empty())
-            text = note_to_text (iev->note[0]);
+          if (note)
+            text = note_to_text (note);
           playing_label->set_text (text);
         }
     });
@@ -517,11 +529,16 @@ public:
   {
     Sample *sample = instrument.sample (instrument.selected());
     if (sample)
-      {
-        playing = !playing;
-        play_button->set_text (playing ? "Stop" : "Play");
-        synth_interface->synth_inst_edit_note (sample->midi_note(), playing);
-      }
+      synth_interface->synth_inst_edit_note (sample->midi_note(), !playing);
+  }
+  void
+  set_playing (bool new_playing)
+  {
+    if (playing == new_playing)
+      return;
+
+    playing = new_playing;
+    play_button->set_text (playing ? "Stop" : "Play");
   }
   void
   on_have_audio (int note, Audio *audio)
