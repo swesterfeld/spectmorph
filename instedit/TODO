@@ -21,5 +21,5 @@ BUGS:
 SVEN:
 - display total sample time
 - don't display play position marker as it moves post end
-- play should be toggle (play -> stop -> play...)
-- spacebar should toggle play
+- play toggle
+  - avoid error checks in ui, rather implement LiveDecoder::done()
