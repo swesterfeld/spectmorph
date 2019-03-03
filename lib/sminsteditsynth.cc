@@ -112,6 +112,8 @@ InstEditSynth::process (float *output, size_t n_values)
                     voice.state = State::IDLE;
                 }
             }
+          if (voice.decoder->done())
+            voice.state = State::IDLE;
         }
     }
 
