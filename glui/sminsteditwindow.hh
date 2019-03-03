@@ -384,19 +384,12 @@ public:
 
           /* this is not 100% accurate if external midi events also affect
            * the state, but it should be good enough */
-          bool new_playing = false;
-          int  note = 0;
-          for (size_t i = 0; i < iev->current_pos.size(); i++)
-            if (iev->fundamental_note[i] > 0) /* -1 indicates decoder without audio */
-              {
-                new_playing = true;
-                note = iev->note[i];
-              }
+          bool new_playing = iev->note.size() > 0;
           set_playing (new_playing);
 
           std::string text = "---";
-          if (note)
-            text = note_to_text (note);
+          if (iev->note.size() > 0)
+            text = note_to_text (iev->note[0]);
           playing_label->set_text (text);
         }
     });
