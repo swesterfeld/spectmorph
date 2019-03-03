@@ -276,11 +276,19 @@ public:
 
     grid.add_widget (menu_bar, 1, 1, 91, 3);
 
+    /*----- sample combobox -----*/
     sample_combobox = new ComboBox (this);
     grid.add_widget (sample_combobox, 1, 5, 91, 3);
 
     connect (sample_combobox->signal_item_changed, this, &InstEditWindow::on_sample_changed);
 
+    Shortcut *sample_up = new Shortcut (this, PUGL_KEY_UP);
+    connect (sample_up->signal_activated, this, &InstEditWindow::on_sample_up);
+
+    Shortcut *sample_down = new Shortcut (this, PUGL_KEY_DOWN);
+    connect (sample_down->signal_activated, this, &InstEditWindow::on_sample_down);
+
+    /*----- sample view -----*/
     sample_scroll_view = new ScrollView (this);
     grid.add_widget (sample_scroll_view, 1, 8, 91, 46);
 
@@ -459,6 +467,22 @@ public:
     int idx = sample_combobox->current_index();
     if (idx >= 0)
       instrument.set_selected (idx);
+  }
+  void
+  on_sample_up()
+  {
+    int selected = instrument.selected();
+
+    if (selected > 0)
+      instrument.set_selected (selected - 1);
+  }
+  void
+  on_sample_down()
+  {
+    int selected = instrument.selected();
+
+    if (selected >= 0 && size_t (selected + 1) < instrument.size())
+      instrument.set_selected (selected + 1);
   }
   void
   on_midi_note_changed()
