@@ -80,6 +80,14 @@ class LiveDecoder
   float               vibrato_phase;   // state
   float               vibrato_env;     // state
 
+  // active/done
+  enum class DoneState {
+    DONE,
+    ACTIVE,
+    ALMOST_DONE
+  };
+  DoneState           done_state = DoneState::DONE;
+
   Audio::LoopType     get_loop_type();
 
   void process_internal (size_t       n_values,
@@ -121,7 +129,7 @@ public:
   double fundamental_note() const;
 
   static size_t compute_loop_frame_index (size_t index, Audio *audio);
-// later:  bool done();
+  bool done() const;
 };
 
 }

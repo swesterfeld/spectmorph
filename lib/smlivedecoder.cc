@@ -179,6 +179,8 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       original_sample_pos = 0;
       original_samples_norm_factor = db_to_factor (audio->original_samples_norm_db);
 
+      done_state = DoneState::ACTIVE;
+
       // reset partial state vectors
       pstate[0].clear();
       pstate[1].clear();
@@ -286,6 +288,11 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
 
           original_sample_pos += phase_inc;
+        }
+      if (original_sample_pos > audio->original_samples.size() && get_loop_type() != Audio::LOOP_TIME_FORWARD)
+        {
+          if (done_state == DoneState::ACTIVE)
+            done_state = DoneState::ALMOST_DONE;
         }
       return;
     }
@@ -485,6 +492,11 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                   ifft_synth->get_samples (samples, IFFTSynth::ADD);
                 }
             }
+          else
+            {
+              if (done_state == DoneState::ACTIVE)
+                done_state = DoneState::ALMOST_DONE;
+            }
           pos = 0;
           have_samples = block_size / 2;
         }
@@ -663,6 +675,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   if (!audio)   // nothing loaded
     {
       std::fill (audio_out, audio_out + n_values, 0);
+      done_state = DoneState::DONE;
       return;
     }
   /*
@@ -670,6 +683,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
    *  -> limit n_values to keep portamento stretch settings up-to-date
    */
   const size_t max_n_values = current_mix_freq * 0.010;
+  const size_t orig_n_values = n_values;
+  const float *orig_audio_out = audio_out;
 
   while (n_values > 0)
     {
@@ -690,6 +705,24 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 
       audio_out += todo_values;
       n_values -= todo_values;
+    }
+
+  /* update done state ALMOST_DONE => DONE: we need
+   *  - done state ALMOST_DONE
+   *  - a silent output buffer
+   */
+  if (done_state == DoneState::ALMOST_DONE)
+    {
+      size_t i = 0;
+      while (i < orig_n_values)
+        {
+          if (orig_audio_out[i] != 0.0)
+            break;
+
+          i++;
+        }
+      if (i == orig_n_values)
+        done_state = DoneState::DONE;
     }
 }
 
@@ -838,4 +871,10 @@ LiveDecoder::fundamental_note() const
     return -1;
 
   return freq_to_note (audio->fundamental_freq);
+}
+
+bool
+LiveDecoder::done() const
+{
+  return done_state == DoneState::DONE;
 }
