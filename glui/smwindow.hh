@@ -40,6 +40,7 @@ protected:
   bool                      debug_update_region = false;
   std::vector<Timer *>      timers;
   std::vector<Shortcut *>   shortcuts;
+  std::vector<Window *>     child_windows;
 
   std::function<void()>     m_close_callback;
 
@@ -71,6 +72,8 @@ public:
   void remove_timer (Timer *timer);
   void add_shortcut (Shortcut *shortcut);
   void remove_shortcut (Shortcut *shortcut);
+  void add_child_window (Window *window);
+  void remove_child_window (Window *window);
   Window *window() override;
   PuglNativeWindow native_window();
 

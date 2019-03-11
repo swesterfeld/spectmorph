@@ -8,6 +8,7 @@
 #include "smcombobox.hh"
 #include "smtimer.hh"
 #include "smwavsetbuilder.hh"
+#include "sminsteditparams.hh"
 #include "smbutton.hh"
 #include "smcheckbox.hh"
 #include "smshortcut.hh"
@@ -414,6 +415,8 @@ public:
 
     auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
     auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
+
+    connect (auto_volume_details_button->signal_clicked, [&]() { new InstEditParams (this); });
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);

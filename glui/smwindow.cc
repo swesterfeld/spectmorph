@@ -212,6 +212,13 @@ Window::~Window()
     }
   for (size_t i = 0; i < shortcuts.size(); i++)
     assert (shortcuts[i] == nullptr);
+
+  /* cleanup child windows */
+  for (size_t i = 0; i < child_windows.size(); i++)
+    {
+      if (child_windows[i])
+        delete child_windows[i];
+    }
 }
 
 void
@@ -506,6 +513,21 @@ Window::process_events()
     }
   /* timers array may have been modified - remove null entries */
   cleanup_null (timers);
+
+  for (size_t i = 0; i < child_windows.size(); i++)
+    {
+      Window *window = child_windows[i];
+      if (window)
+        {
+          window->process_events();
+          if (child_windows[i] == nullptr)
+            {
+              /* window closed - must be deleted after (not during) process_events */
+              delete window;
+            }
+        }
+    }
+  cleanup_null (child_windows);
 
   if (0)
     {
@@ -855,6 +877,22 @@ Window::set_popup_window (Window *pwin)
       have_popup_window = false;
     }
   update_full();
+}
+
+void
+Window::add_child_window (Window *cwin)
+{
+  child_windows.push_back (cwin);
+}
+
+void
+Window::remove_child_window (Window *cwin)
+{
+  for (auto& c : child_windows)
+    {
+      if (c == cwin)
+        c = nullptr;
+    }
 }
 
 PuglNativeWindow
