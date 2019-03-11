@@ -187,7 +187,10 @@ class InstEditWindow : public Window
   void
   on_global_changed()
   {
+    auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
     auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
+
+    auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
 
     Sample *sample = instrument.sample (instrument.selected());
 
@@ -416,7 +419,7 @@ public:
     auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
     auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
 
-    connect (auto_volume_details_button->signal_clicked, [&]() { new InstEditParams (this); });
+    connect (auto_volume_details_button->signal_clicked, [&]() { new InstEditParams (this, &instrument); });
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
