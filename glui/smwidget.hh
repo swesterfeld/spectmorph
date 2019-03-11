@@ -367,6 +367,7 @@ public:
   void   update();
   void   update_with_children();
   void   update_full();
+  void   delete_later();
 };
 
 }

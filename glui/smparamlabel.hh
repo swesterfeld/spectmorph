@@ -78,7 +78,7 @@ public:
     model->set_value_text (line_edit->text());
     signal_value_changed (model->db);
     set_text (model->display_text());
-    delete line_edit;
+    line_edit->delete_later();
     line_edit = nullptr;
   }
   Signal<double> signal_value_changed;
