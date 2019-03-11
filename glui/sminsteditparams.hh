@@ -4,6 +4,7 @@
 #define SPECTMORPH_INST_EDIT_PARAMS_HH
 
 #include "smcheckbox.hh"
+#include "smparamlabel.hh"
 
 namespace SpectMorph
 {
@@ -14,6 +15,8 @@ class InstEditParams : public Window
 
   CheckBox   *auto_volume_checkbox = nullptr;
   ComboBox   *auto_volume_method_combobox = nullptr;
+  Label      *auto_volume_gain_label = nullptr;
+  ParamLabel *auto_volume_gain_param_label = nullptr;
 
   CheckBox   *auto_tune_checkbox = nullptr;
 public:
@@ -29,7 +32,7 @@ public:
     connect (auto_volume_checkbox->signal_toggled, this, &InstEditParams::on_auto_volume_changed);
     grid.add_widget (auto_volume_checkbox, 2, 2, 20, 2);
 
-    /*--- play mode ---*/
+    /*--- auto volume method ---*/
     auto_volume_method_combobox = new ComboBox (this);
     connect (auto_volume_method_combobox->signal_item_changed, this, &InstEditParams::on_auto_volume_method_changed);
     grid.add_widget (new Label (this, "Method"), 4, 4, 10, 3);
@@ -37,11 +40,20 @@ public:
     auto_volume_method_combobox->add_item ("From Loop"); // default
     auto_volume_method_combobox->add_item ("Global");
 
+    /*--- auto volume gain ---*/
+    auto_volume_gain_label = new Label (this, "Gain");
+    grid.add_widget (auto_volume_gain_label, 4, 7, 10, 3);
+
+    auto_volume_gain_param_label = new ParamLabel (this, "");
+    grid.add_widget (auto_volume_gain_param_label, 13, 7, 10, 3);
+
+    connect (auto_volume_gain_param_label->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
+
     connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
-    grid.add_widget (auto_tune_checkbox, 2, 7, 20, 2);
+    grid.add_widget (auto_tune_checkbox, 2, 10, 20, 2);
 
     on_global_changed();
 
@@ -52,6 +64,7 @@ public:
   {
     auto_volume_checkbox->set_checked (instrument->auto_volume().enabled);
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
+    auto_volume_gain_param_label->set_text (string_printf ("%.2f dB", instrument->auto_volume().gain));
 
     if (instrument->auto_volume().method == Instrument::AutoVolume::GLOBAL)
       auto_volume_method_combobox->set_text ("Global");
@@ -78,6 +91,14 @@ public:
       av.method = Instrument::AutoVolume::GLOBAL;
 
     this->instrument->set_auto_volume (av);
+  }
+  void
+  on_auto_volume_gain_changed (double gain)
+  {
+    Instrument::AutoVolume av = instrument->auto_volume();
+    av.gain = gain;
+
+    instrument->set_auto_volume (av);
   }
   void
   on_auto_tune_changed (bool new_value)

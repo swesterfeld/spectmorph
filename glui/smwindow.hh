@@ -30,6 +30,7 @@ protected:
   Widget                   *enter_widget = nullptr;
   Widget                   *menu_widget = nullptr;
   Widget                   *keyboard_focus_widget = nullptr;
+  bool                      keyboard_focus_release_on_click = false;
   Widget                   *dialog_widget = nullptr;
   bool                      have_popup_window = false;
   std::unique_ptr<Window>   popup_window;
@@ -64,7 +65,7 @@ public:
   void need_update (Widget *widget, const Rect *changed_rect = nullptr);
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
-  void set_keyboard_focus (Widget *widget);
+  void set_keyboard_focus (Widget *widget, bool release_on_click = false);
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   void set_popup_window (Window *window);

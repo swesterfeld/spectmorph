@@ -605,7 +605,15 @@ Window::on_event (const PuglEvent* event)
         ey = event->button.y / global_scale;
 
         mouse_widget = find_widget_xy (ex, ey);
-        mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
+        if (keyboard_focus_widget && keyboard_focus_release_on_click)
+          {
+            keyboard_focus_widget->focus_out_event();
+            keyboard_focus_widget = nullptr;
+          }
+        else
+          {
+            mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
+          }
 
         if (auto_redraw)
           update_full();
@@ -851,9 +859,11 @@ Window::set_close_callback (const std::function<void()>& callback)
 }
 
 void
-Window::set_keyboard_focus (Widget *widget)
+Window::set_keyboard_focus (Widget *widget, bool release_on_click)
 {
   keyboard_focus_widget = widget;
+  keyboard_focus_widget->focus_event();
+  keyboard_focus_release_on_click = release_on_click;
 }
 
 void

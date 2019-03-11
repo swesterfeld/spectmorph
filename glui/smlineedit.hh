@@ -139,10 +139,16 @@ public:
     highlight = false;
     update();
   }
+  void
+  focus_out_event() override
+  {
+    signal_focus_out();
+  }
 
   Signal<std::string> signal_text_changed;
   Signal<>            signal_return_pressed;
   Signal<>            signal_esc_pressed;
+  Signal<>            signal_focus_out;
 };
 
 }

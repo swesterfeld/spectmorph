@@ -291,6 +291,14 @@ public:
   {
   }
   virtual void
+  focus_event()
+  {
+  }
+  virtual void
+  focus_out_event()
+  {
+  }
+  virtual void
   key_press_event (const PuglEventKey& key_event)
   {
   }
