@@ -16,12 +16,17 @@ class InstEditParams : public Window
 
   CheckBox   *auto_volume_checkbox = nullptr;
   ComboBox   *auto_volume_method_combobox = nullptr;
+  Label      *auto_volume_method_label = nullptr;
   Label      *auto_volume_gain_label = nullptr;
   ParamLabel *auto_volume_gain_param_label = nullptr;
 
   CheckBox   *auto_tune_checkbox = nullptr;
 
   CheckBox   *enc_cfg_checkbox = nullptr;
+  std::vector<Widget *> enc_widgets;
+
+  ScrollView *scroll_view = nullptr;
+  Widget     *scroll_widget = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument) :
     Window ("Instrument Params", 320, 400, 0, false, window->native_window()),
@@ -31,53 +36,71 @@ public:
     set_close_callback ([this,window]() { window->remove_child_window (this); });
 
     FixedGrid grid;
-    auto_volume_checkbox = new CheckBox (this, "Auto Volume");
+    grid.add_widget (scroll_view = new ScrollView (this), 1, 1, width / 8 - 2, height / 8 - 2);
+    scroll_widget = new Widget (scroll_view);
+    scroll_view->set_scroll_widget (scroll_widget, false, true);
+
+    auto_volume_checkbox = new CheckBox (scroll_widget, "Auto Volume");
     connect (auto_volume_checkbox->signal_toggled, this, &InstEditParams::on_auto_volume_changed);
-    grid.add_widget (auto_volume_checkbox, 2, 2, 20, 2);
 
     /*--- auto volume method ---*/
-    auto_volume_method_combobox = new ComboBox (this);
+    auto_volume_method_combobox = new ComboBox (scroll_widget);
+    auto_volume_method_label = new Label (scroll_widget, "Method");
+
     connect (auto_volume_method_combobox->signal_item_changed, this, &InstEditParams::on_auto_volume_method_changed);
-    grid.add_widget (new Label (this, "Method"), 4, 4, 10, 3);
-    grid.add_widget (auto_volume_method_combobox, 13, 4, 24, 3);
     auto_volume_method_combobox->add_item ("From Loop"); // default
     auto_volume_method_combobox->add_item ("Global");
 
     /*--- auto volume gain ---*/
-    auto_volume_gain_label = new Label (this, "Gain");
-    grid.add_widget (auto_volume_gain_label, 4, 7, 10, 3);
+    auto_volume_gain_label = new Label (scroll_widget, "Gain");
 
-    auto_volume_gain_param_label = new ParamLabel (this, "");
-    grid.add_widget (auto_volume_gain_param_label, 13, 7, 10, 3);
+    auto_volume_gain_param_label = new ParamLabel (scroll_widget, "");
 
     connect (auto_volume_gain_param_label->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
 
-    connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
-
-    auto_tune_checkbox = new CheckBox (this, "Auto Tune");
+    auto_tune_checkbox = new CheckBox (scroll_widget, "Auto Tune");
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
-    grid.add_widget (auto_tune_checkbox, 2, 10, 20, 2);
 
-    enc_cfg_checkbox = new CheckBox (this, "Custom Analysis Parameters");
-    grid.add_widget (enc_cfg_checkbox, 2, 13, 30, 2);
+    enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
     connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
 
-    auto encoder_config = instrument->encoder_config();
-    for (int i = 0; i < encoder_config.entries.size(); i++)
-      {
-        grid.add_widget (new ParamLabel (this, encoder_config.entries[i].param), 4, 15 + i * 3, 20, 3);
-        grid.add_widget (new ParamLabel (this, encoder_config.entries[i].value), 24, 15 + i * 3, 15, 3);
-        grid.add_widget (new ToolButton (this, 'x'), 34.5, 15.5 + i * 3, 2, 2);
-      }
 
+    connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
     on_global_changed();
-
     show();
   }
   void
   on_global_changed()
   {
-    auto_volume_checkbox->set_checked (instrument->auto_volume().enabled);
+    FixedGrid grid;
+
+    const auto auto_volume = instrument->auto_volume();
+    auto_volume_checkbox->set_checked (auto_volume.enabled);
+    auto_volume_method_label->set_visible (auto_volume.enabled);
+    auto_volume_method_combobox->set_visible (auto_volume.enabled);
+    auto_volume_gain_label->set_visible (auto_volume.enabled && auto_volume.method == Instrument::AutoVolume::GLOBAL);
+    auto_volume_gain_param_label->set_visible (auto_volume.enabled && auto_volume.method == Instrument::AutoVolume::GLOBAL);
+
+    double y = 0;
+    grid.add_widget (auto_volume_checkbox, 0, y, 20, 2);
+    y += 2;
+    if (auto_volume.enabled)
+      {
+        grid.add_widget (auto_volume_method_label, 2, y, 10, 3);
+        grid.add_widget (auto_volume_method_combobox, 11, y, 23, 3);
+        y += 3;
+        if (auto_volume.method == Instrument::AutoVolume::GLOBAL)
+          {
+            grid.add_widget (auto_volume_gain_label, 2, y, 10, 3);
+            grid.add_widget (auto_volume_gain_param_label, 11, y, 10, 3);
+            y += 3;
+          }
+      }
+    grid.add_widget (auto_tune_checkbox, 0, y, 20, 2);
+    y += 2;
+    grid.add_widget (enc_cfg_checkbox, 0, y, 30, 2);
+    y += 2;
+
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
     enc_cfg_checkbox->set_checked (instrument->encoder_config().enabled);
     auto_volume_gain_param_label->set_text (string_printf ("%.2f dB", instrument->auto_volume().gain));
@@ -86,6 +109,34 @@ public:
       auto_volume_method_combobox->set_text ("Global");
     else
       auto_volume_method_combobox->set_text ("From Loop");
+
+    auto encoder_config = instrument->encoder_config();
+
+    for (auto w : enc_widgets) /* delete old enc widgets */
+      delete w;
+    enc_widgets.clear();
+
+    if (encoder_config.enabled)
+      {
+        for (int i = 0; i < encoder_config.entries.size(); i++)
+          {
+            ParamLabel *plabel = new ParamLabel (scroll_widget, encoder_config.entries[i].param);
+            ParamLabel *vlabel = new ParamLabel (scroll_widget, encoder_config.entries[i].value);
+            ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
+
+            grid.add_widget (plabel, 2, y, 20, 3);
+            grid.add_widget (vlabel, 21, y, 11, 3);
+            grid.add_widget (tbutton, 32.5, y + 0.5, 2, 2);
+            y += 3;
+            enc_widgets.push_back (plabel);
+            enc_widgets.push_back (vlabel);
+            enc_widgets.push_back (tbutton);
+          }
+      }
+
+    scroll_widget->height = y * 8;
+    scroll_widget->width = 32 * 8;
+    scroll_view->on_widget_size_changed();
   }
   void
   on_auto_volume_changed (bool new_value)
