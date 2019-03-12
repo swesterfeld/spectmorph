@@ -5,6 +5,7 @@
 
 #include "smcheckbox.hh"
 #include "smparamlabel.hh"
+#include "smbutton.hh"
 
 namespace SpectMorph
 {
@@ -19,6 +20,8 @@ class InstEditParams : public Window
   ParamLabel *auto_volume_gain_param_label = nullptr;
 
   CheckBox   *auto_tune_checkbox = nullptr;
+
+  CheckBox   *enc_cfg_checkbox = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument) :
     Window ("Instrument Params", 320, 400, 0, false, window->native_window()),
@@ -55,6 +58,18 @@ public:
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
     grid.add_widget (auto_tune_checkbox, 2, 10, 20, 2);
 
+    enc_cfg_checkbox = new CheckBox (this, "Custom Analysis Parameters");
+    grid.add_widget (enc_cfg_checkbox, 2, 13, 30, 2);
+    connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
+
+    auto encoder_config = instrument->encoder_config();
+    for (int i = 0; i < encoder_config.entries.size(); i++)
+      {
+        grid.add_widget (new ParamLabel (this, encoder_config.entries[i].param), 4, 15 + i * 3, 20, 3);
+        grid.add_widget (new ParamLabel (this, encoder_config.entries[i].value), 24, 15 + i * 3, 15, 3);
+        grid.add_widget (new ToolButton (this, 'x'), 34.5, 15.5 + i * 3, 2, 2);
+      }
+
     on_global_changed();
 
     show();
@@ -64,6 +79,7 @@ public:
   {
     auto_volume_checkbox->set_checked (instrument->auto_volume().enabled);
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
+    enc_cfg_checkbox->set_checked (instrument->encoder_config().enabled);
     auto_volume_gain_param_label->set_text (string_printf ("%.2f dB", instrument->auto_volume().gain));
 
     if (instrument->auto_volume().method == Instrument::AutoVolume::GLOBAL)
@@ -107,6 +123,14 @@ public:
     at.enabled = new_value;
 
     instrument->set_auto_tune (at);
+  }
+  void
+  on_enc_cfg_changed (bool new_value)
+  {
+    auto enc_cfg = instrument->encoder_config();
+    enc_cfg.enabled = new_value;
+
+    instrument->set_encoder_config (enc_cfg);
   }
 };
 
