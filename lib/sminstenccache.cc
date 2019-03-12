@@ -112,8 +112,11 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
   depends += string_printf ("%d\n", midi_note);
   depends += string_printf ("%d\n", iclipstart);
   depends += string_printf ("%d\n", iclipend);
-  for (auto entry : cfg.entries)
-    depends += entry.param + "=" + entry.value + "\n";
+  if (cfg.enabled)
+    {
+      for (auto entry : cfg.entries)
+        depends += entry.param + "=" + entry.value + "\n";
+    }
 
   return sha1_hash (depends);
 }

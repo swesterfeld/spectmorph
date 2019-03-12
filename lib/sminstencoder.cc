@@ -17,11 +17,14 @@ freq_from_note (float note)
 Audio *
 InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
 {
-  for (auto entry : cfg.entries)
+  if (cfg.enabled)
     {
-      if (!enc_params.add_config_entry (entry.param, entry.value))
+      for (auto entry : cfg.entries)
         {
-          fprintf (stderr, "InstEncoder: encoder config entry %s is not supported\n", entry.param.c_str());
+          if (!enc_params.add_config_entry (entry.param, entry.value))
+            {
+              fprintf (stderr, "InstEncoder: encoder config entry %s is not supported\n", entry.param.c_str());
+            }
         }
     }
   enc_params.setup_params (wav_data, freq_from_note (midi_note));

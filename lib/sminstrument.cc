@@ -287,6 +287,7 @@ Instrument::load (const string& filename)
         {
           entry.value = enc_node.attribute ("value").value();
           m_encoder_config.entries.push_back (entry);
+          m_encoder_config.enabled = true;
         }
     }
 
@@ -419,11 +420,14 @@ Instrument::save (const string& filename, bool zip)
           auto_volume_node.append_attribute ("gain") = string_printf ("%.1f", m_auto_volume.gain).c_str();
         }
     }
-  for (auto entry : m_encoder_config.entries)
+  if (m_encoder_config.enabled)
     {
-      xml_node conf_node = inst_node.append_child ("encoder_config");
-      conf_node.append_attribute ("param").set_value (entry.param.c_str());
-      conf_node.append_attribute ("value").set_value (entry.value.c_str());
+      for (auto entry : m_encoder_config.entries)
+        {
+          xml_node conf_node = inst_node.append_child ("encoder_config");
+          conf_node.append_attribute ("param").set_value (entry.param.c_str());
+          conf_node.append_attribute ("value").set_value (entry.value.c_str());
+        }
     }
   if (zip)
     {

@@ -99,6 +99,8 @@ public:
   };
   struct EncoderConfig
   {
+    bool enabled = false;
+
     std::vector<EncoderEntry> entries;
   };
 
