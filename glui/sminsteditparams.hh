@@ -21,6 +21,8 @@ class InstEditParams : public Window
   ParamLabel *auto_volume_gain_param_label = nullptr;
 
   CheckBox   *auto_tune_checkbox = nullptr;
+  ComboBox   *auto_tune_method_combobox = nullptr;
+  Label      *auto_tune_method_label = nullptr;
 
   CheckBox   *enc_cfg_checkbox = nullptr;
   std::vector<Widget *> enc_widgets;
@@ -61,6 +63,15 @@ public:
     auto_tune_checkbox = new CheckBox (scroll_widget, "Auto Tune");
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
 
+    /*--- auto tune method ---*/
+    auto_tune_method_combobox = new ComboBox (scroll_widget);
+    auto_tune_method_label = new Label (scroll_widget, "Method");
+
+    connect (auto_tune_method_combobox->signal_item_changed, this, &InstEditParams::on_auto_tune_method_changed);
+    auto_tune_method_combobox->add_item ("Simple"); // default
+    auto_tune_method_combobox->add_item ("All Frames");
+    auto_tune_method_combobox->add_item ("Smooth");
+
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
     connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
 
@@ -96,10 +107,32 @@ public:
             y += 3;
           }
       }
+    const auto auto_tune = instrument->auto_tune();
+    auto_tune_method_label->set_visible (auto_tune.enabled);
+    auto_tune_method_combobox->set_visible (auto_tune.enabled);
     grid.add_widget (auto_tune_checkbox, 0, y, 20, 2);
     y += 2;
+    if (auto_tune.enabled)
+      {
+        grid.add_widget (auto_tune_method_label, 2, y, 10, 3);
+        grid.add_widget (auto_tune_method_combobox, 11, y, 23, 3);
+        y += 3;
+      }
     grid.add_widget (enc_cfg_checkbox, 0, y, 30, 2);
     y += 2;
+
+    switch (auto_tune.method)
+    {
+      case Instrument::AutoTune::SIMPLE:
+        auto_tune_method_combobox->set_text ("Simple");
+        break;
+      case Instrument::AutoTune::ALL_FRAMES:
+        auto_tune_method_combobox->set_text ("All Frames");
+        break;
+      case Instrument::AutoTune::SMOOTH:
+        auto_tune_method_combobox->set_text ("Smooth");
+        break;
+    }
 
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
     enc_cfg_checkbox->set_checked (instrument->encoder_config().enabled);
@@ -156,7 +189,7 @@ public:
   void
   on_auto_volume_method_changed()
   {
-    Instrument::AutoVolume av = this->instrument->auto_volume();
+    Instrument::AutoVolume av = instrument->auto_volume();
 
     int idx = auto_volume_method_combobox->current_index();
     if (idx == 0)
@@ -164,7 +197,7 @@ public:
     else
       av.method = Instrument::AutoVolume::GLOBAL;
 
-    this->instrument->set_auto_volume (av);
+    instrument->set_auto_volume (av);
   }
   void
   on_auto_volume_gain_changed (double gain)
@@ -179,6 +212,21 @@ public:
   {
     auto at = instrument->auto_tune();
     at.enabled = new_value;
+
+    instrument->set_auto_tune (at);
+  }
+  void
+  on_auto_tune_method_changed()
+  {
+    auto at = instrument->auto_tune();
+
+    int idx = auto_tune_method_combobox->current_index();
+    if (idx == 0)
+      at.method = Instrument::AutoTune::SIMPLE;
+    if (idx == 1)
+      at.method = Instrument::AutoTune::ALL_FRAMES;
+    if (idx == 2)
+      at.method = Instrument::AutoTune::SMOOTH;
 
     instrument->set_auto_tune (at);
   }
