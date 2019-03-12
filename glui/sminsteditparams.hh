@@ -118,7 +118,7 @@ public:
 
     if (encoder_config.enabled)
       {
-        for (int i = 0; i < encoder_config.entries.size(); i++)
+        for (size_t i = 0; i < encoder_config.entries.size(); i++)
           {
             ParamLabel *plabel = new ParamLabel (scroll_widget, encoder_config.entries[i].param);
             ParamLabel *vlabel = new ParamLabel (scroll_widget, encoder_config.entries[i].value);
@@ -131,7 +131,14 @@ public:
             enc_widgets.push_back (plabel);
             enc_widgets.push_back (vlabel);
             enc_widgets.push_back (tbutton);
+
+            connect (tbutton->signal_clicked, [this,i]() { on_remove_enc_entry (i); });
           }
+        Button *add_button = new Button (scroll_widget, "Add Entry");
+        grid.add_widget (add_button, 2, y, 12, 3);
+        connect (add_button->signal_clicked, this, &InstEditParams::on_add_enc_entry);
+        enc_widgets.push_back (add_button);
+        y += 3;
       }
 
     scroll_widget->height = y * 8;
@@ -180,6 +187,26 @@ public:
   {
     auto enc_cfg = instrument->encoder_config();
     enc_cfg.enabled = new_value;
+
+    instrument->set_encoder_config (enc_cfg);
+  }
+  void
+  on_remove_enc_entry (size_t i)
+  {
+    auto enc_cfg = instrument->encoder_config();
+
+    if (i < enc_cfg.entries.size())
+      enc_cfg.entries.erase (enc_cfg.entries.begin() + i);
+
+    instrument->set_encoder_config (enc_cfg);
+  }
+  void
+  on_add_enc_entry()
+  {
+    auto enc_cfg = instrument->encoder_config();
+
+    Instrument::EncoderEntry entry {"key", "value" };
+    enc_cfg.entries.push_back (entry);
 
     instrument->set_encoder_config (enc_cfg);
   }
