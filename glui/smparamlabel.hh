@@ -41,6 +41,31 @@ public:
   Signal<double> signal_value_changed;
 };
 
+class ParamLabelModelInt : public ParamLabelModel
+{
+public:
+  int i = 0;
+
+  std::string
+  value_text()
+  {
+    return string_locale_printf ("%d", i);
+  }
+  std::string
+  display_text()
+  {
+    return string_locale_printf ("%d", i);
+  }
+  void
+  set_value_text (const std::string& t)
+  {
+    i = atoi (t.c_str());
+
+    signal_value_changed (i);
+  }
+  Signal<int> signal_value_changed;
+};
+
 class ParamLabelModelString : public ParamLabelModel
 {
 public:

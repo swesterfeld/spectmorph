@@ -23,6 +23,10 @@ class InstEditParams : public Window
   CheckBox   *auto_tune_checkbox = nullptr;
   ComboBox   *auto_tune_method_combobox = nullptr;
   Label      *auto_tune_method_label = nullptr;
+  Label      *auto_tune_partials_label = nullptr;
+  ParamLabel *auto_tune_partials_param_label = nullptr;
+  Label      *auto_tune_time_label = nullptr;
+  Label      *auto_tune_amount_label = nullptr;
 
   CheckBox   *enc_cfg_checkbox = nullptr;
   std::vector<Widget *> enc_widgets;
@@ -74,6 +78,18 @@ public:
     auto_tune_method_combobox->add_item ("All Frames");
     auto_tune_method_combobox->add_item ("Smooth");
 
+    /*--- auto tune partials ---*/
+    auto_tune_partials_label = new Label (scroll_widget, "Partials");
+
+    auto pmod = new ParamLabelModelInt();
+    pmod->i = instrument->auto_tune().partials;
+    auto_tune_partials_param_label = new ParamLabel (scroll_widget, pmod);
+
+    connect (pmod->signal_value_changed, this, &InstEditParams::on_auto_tune_partials_changed);
+
+    auto_tune_time_label = new Label (scroll_widget, "Time");
+    auto_tune_amount_label = new Label (scroll_widget, "Amount");
+
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
     connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
 
@@ -112,6 +128,15 @@ public:
     const auto auto_tune = instrument->auto_tune();
     auto_tune_method_label->set_visible (auto_tune.enabled);
     auto_tune_method_combobox->set_visible (auto_tune.enabled);
+
+    auto_tune_partials_label->set_visible (auto_tune.enabled &&
+      (auto_tune.method == Instrument::AutoTune::ALL_FRAMES || auto_tune.method == Instrument::AutoTune::SMOOTH));
+    auto_tune_partials_param_label->set_visible (auto_tune_partials_label->visible());
+
+    auto_tune_time_label->set_visible (auto_tune.enabled && auto_tune.method == Instrument::AutoTune::SMOOTH);
+
+    auto_tune_amount_label->set_visible (auto_tune.enabled && auto_tune.method == Instrument::AutoTune::SMOOTH);
+
     grid.add_widget (auto_tune_checkbox, 0, y, 20, 2);
     y += 2;
     if (auto_tune.enabled)
@@ -119,6 +144,22 @@ public:
         grid.add_widget (auto_tune_method_label, 2, y, 10, 3);
         grid.add_widget (auto_tune_method_combobox, 11, y, 23, 3);
         y += 3;
+        if (auto_tune_partials_label->visible())
+          {
+            grid.add_widget (auto_tune_partials_label, 2, y, 10, 3);
+            grid.add_widget (auto_tune_partials_param_label, 11, y, 10, 3);
+            y += 3;
+          }
+        if(auto_tune_time_label->visible())
+          {
+            grid.add_widget (auto_tune_time_label, 2, y, 10, 3);
+            y += 3;
+          }
+        if (auto_tune_amount_label->visible())
+          {
+            grid.add_widget (auto_tune_amount_label, 2, y, 10, 3);
+            y += 3;
+          }
       }
     grid.add_widget (enc_cfg_checkbox, 0, y, 30, 2);
     y += 2;
@@ -236,6 +277,14 @@ public:
       at.method = Instrument::AutoTune::ALL_FRAMES;
     if (idx == 2)
       at.method = Instrument::AutoTune::SMOOTH;
+
+    instrument->set_auto_tune (at);
+  }
+  void
+  on_auto_tune_partials_changed (int p)
+  {
+    auto at = instrument->auto_tune();
+    at.partials = p;
 
     instrument->set_auto_tune (at);
   }
