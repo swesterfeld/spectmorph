@@ -100,25 +100,29 @@ public:
 
 class ParamLabelModelString : public ParamLabelModel
 {
-public:
-  std::string s;
+  std::string value;
 
+public:
+  ParamLabelModelString (const std::string& s):
+    value (s)
+  {
+  }
   std::string
   value_text()
   {
-    return s;
+    return value;
   }
   std::string
   display_text()
   {
-    return s;
+    return value;
   }
   void
   set_value_text (const std::string& t)
   {
-    s = t;
+    value = t;
 
-    signal_value_changed (s);
+    signal_value_changed (value);
   }
   Signal<std::string> signal_value_changed;
 };

@@ -216,16 +216,14 @@ public:
       {
         for (size_t i = 0; i < encoder_config.entries.size(); i++)
           {
-            ParamLabelModelString *ps = new ParamLabelModelString();
-            ps->s = encoder_config.entries[i].param;
-            connect (ps->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, s.c_str(), nullptr); });
+            auto param_mod = new ParamLabelModelString (encoder_config.entries[i].param);
+            connect (param_mod->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, s.c_str(), nullptr); });
 
-            ParamLabelModelString *vs = new ParamLabelModelString();
-            vs->s = encoder_config.entries[i].value;
-            connect (vs->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, nullptr, s.c_str()); });
+            auto value_mod = new ParamLabelModelString (encoder_config.entries[i].value);
+            connect (value_mod->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, nullptr, s.c_str()); });
 
-            ParamLabel *plabel = new ParamLabel (scroll_widget, ps);
-            ParamLabel *vlabel = new ParamLabel (scroll_widget, vs);
+            ParamLabel *plabel = new ParamLabel (scroll_widget, param_mod);
+            ParamLabel *vlabel = new ParamLabel (scroll_widget, value_mod);
             ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
 
             grid.add_widget (plabel, 2, y, 20, 3);
