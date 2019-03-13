@@ -11,7 +11,16 @@ namespace SpectMorph
 class ParamLabelModel
 {
 public:
+  virtual std::string value_text() = 0;
+  virtual std::string display_text() = 0;
+  virtual void        set_value_text (const std::string& t) = 0;
+};
+
+class ParamLabelModelDouble : public ParamLabelModel
+{
+public:
   double db = 0;
+
   std::string
   value_text()
   {
@@ -26,7 +35,35 @@ public:
   set_value_text (const std::string& t)
   {
     db = atof (t.c_str());
+
+    signal_value_changed (db);
   }
+  Signal<double> signal_value_changed;
+};
+
+class ParamLabelModelString : public ParamLabelModel
+{
+public:
+  std::string s;
+
+  std::string
+  value_text()
+  {
+    return s;
+  }
+  std::string
+  display_text()
+  {
+    return s;
+  }
+  void
+  set_value_text (const std::string& t)
+  {
+    s = t;
+
+    signal_value_changed (s);
+  }
+  Signal<std::string> signal_value_changed;
 };
 
 class ParamLabel : public Label
@@ -36,10 +73,11 @@ class ParamLabel : public Label
 
   ParamLabelModel *model;
 public:
-  ParamLabel (Widget *parent, const std::string& text) :
-    Label (parent, text)
+  ParamLabel (Widget *parent, ParamLabelModel *model) :
+    Label (parent, ""),
+    model (model)
   {
-    model = new ParamLabelModel();
+    set_text (model->display_text());
   }
   void
   mouse_press (double x, double y) override
@@ -76,12 +114,10 @@ public:
       return;
 
     model->set_value_text (line_edit->text());
-    signal_value_changed (model->db);
     set_text (model->display_text());
     line_edit->delete_later();
     line_edit = nullptr;
   }
-  Signal<double> signal_value_changed;
 };
 
 }

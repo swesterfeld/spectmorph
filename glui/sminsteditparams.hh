@@ -56,9 +56,11 @@ public:
     /*--- auto volume gain ---*/
     auto_volume_gain_label = new Label (scroll_widget, "Gain");
 
-    auto_volume_gain_param_label = new ParamLabel (scroll_widget, "");
+    auto pd = new ParamLabelModelDouble();
+    pd->db = instrument->auto_volume().gain;
+    auto_volume_gain_param_label = new ParamLabel (scroll_widget, pd);
 
-    connect (auto_volume_gain_param_label->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
+    connect (pd->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
 
     auto_tune_checkbox = new CheckBox (scroll_widget, "Auto Tune");
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
@@ -136,7 +138,6 @@ public:
 
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
     enc_cfg_checkbox->set_checked (instrument->encoder_config().enabled);
-    auto_volume_gain_param_label->set_text (string_printf ("%.2f dB", instrument->auto_volume().gain));
 
     if (instrument->auto_volume().method == Instrument::AutoVolume::GLOBAL)
       auto_volume_method_combobox->set_text ("Global");
@@ -146,15 +147,23 @@ public:
     auto encoder_config = instrument->encoder_config();
 
     for (auto w : enc_widgets) /* delete old enc widgets */
-      delete w;
+      w->delete_later();
     enc_widgets.clear();
 
     if (encoder_config.enabled)
       {
         for (size_t i = 0; i < encoder_config.entries.size(); i++)
           {
-            ParamLabel *plabel = new ParamLabel (scroll_widget, encoder_config.entries[i].param);
-            ParamLabel *vlabel = new ParamLabel (scroll_widget, encoder_config.entries[i].value);
+            ParamLabelModelString *ps = new ParamLabelModelString();
+            ps->s = encoder_config.entries[i].param;
+            connect (ps->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, s.c_str(), nullptr); });
+
+            ParamLabelModelString *vs = new ParamLabelModelString();
+            vs->s = encoder_config.entries[i].value;
+            connect (vs->signal_value_changed, [this,i] (const std::string& s) { on_change_enc_entry (i, nullptr, s.c_str()); });
+
+            ParamLabel *plabel = new ParamLabel (scroll_widget, ps);
+            ParamLabel *vlabel = new ParamLabel (scroll_widget, vs);
             ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
 
             grid.add_widget (plabel, 2, y, 20, 3);
@@ -255,6 +264,21 @@ public:
 
     Instrument::EncoderEntry entry {"key", "value" };
     enc_cfg.entries.push_back (entry);
+
+    instrument->set_encoder_config (enc_cfg);
+  }
+  void
+  on_change_enc_entry (size_t i, const char *k, const char *v)
+  {
+    auto enc_cfg = instrument->encoder_config();
+
+    if (i < enc_cfg.entries.size())
+      {
+        if (k)
+          enc_cfg.entries[i].param = k;
+        if (v)
+          enc_cfg.entries[i].value = v;
+      }
 
     instrument->set_encoder_config (enc_cfg);
   }
