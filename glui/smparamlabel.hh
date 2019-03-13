@@ -18,18 +18,27 @@ public:
 
 class ParamLabelModelDouble : public ParamLabelModel
 {
+  std::string value_fmt;
+  std::string display_fmt;
 public:
   double db = 0;
+
+  ParamLabelModelDouble (double start, const std::string& value_fmt, const std::string& display_fmt) :
+    value_fmt (value_fmt),
+    display_fmt (display_fmt),
+    db (start)
+  {
+  }
 
   std::string
   value_text()
   {
-    return string_locale_printf ("%.2f", db);
+    return string_locale_printf (value_fmt.c_str(), db);
   }
   std::string
   display_text()
   {
-    return string_locale_printf ("%.2f dB", db);
+    return string_locale_printf (display_fmt.c_str(), db);
   }
   void
   set_value_text (const std::string& t)

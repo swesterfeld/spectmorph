@@ -23,10 +23,15 @@ class InstEditParams : public Window
   CheckBox   *auto_tune_checkbox = nullptr;
   ComboBox   *auto_tune_method_combobox = nullptr;
   Label      *auto_tune_method_label = nullptr;
+
   Label      *auto_tune_partials_label = nullptr;
   ParamLabel *auto_tune_partials_param_label = nullptr;
+
   Label      *auto_tune_time_label = nullptr;
+  ParamLabel *auto_tune_time_param_label = nullptr;
+
   Label      *auto_tune_amount_label = nullptr;
+  ParamLabel *auto_tune_amount_param_label = nullptr;
 
   CheckBox   *enc_cfg_checkbox = nullptr;
   std::vector<Widget *> enc_widgets;
@@ -60,8 +65,7 @@ public:
     /*--- auto volume gain ---*/
     auto_volume_gain_label = new Label (scroll_widget, "Gain");
 
-    auto pd = new ParamLabelModelDouble();
-    pd->db = instrument->auto_volume().gain;
+    auto pd = new ParamLabelModelDouble (instrument->auto_volume().gain, "%.2f", "%.2f dB");
     auto_volume_gain_param_label = new ParamLabel (scroll_widget, pd);
 
     connect (pd->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
@@ -87,9 +91,23 @@ public:
 
     connect (pmod->signal_value_changed, this, &InstEditParams::on_auto_tune_partials_changed);
 
+    /*--- auto tune time ---*/
     auto_tune_time_label = new Label (scroll_widget, "Time");
+
+    auto time_mod = new ParamLabelModelDouble (instrument->auto_tune().time, "%.2f", "%.2f ms");
+    auto_tune_time_param_label = new ParamLabel (scroll_widget, time_mod);
+
+    connect (time_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_time_changed);
+
+    /*--- auto tune amount ---*/
     auto_tune_amount_label = new Label (scroll_widget, "Amount");
 
+    auto amount_mod = new ParamLabelModelDouble (instrument->auto_tune().amount, "%.1f", "%.1f %%");
+    auto_tune_amount_param_label = new ParamLabel (scroll_widget, amount_mod);
+
+    connect (time_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_amount_changed);
+
+    /*--- encoder config ---*/
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
     connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
 
@@ -134,8 +152,10 @@ public:
     auto_tune_partials_param_label->set_visible (auto_tune_partials_label->visible());
 
     auto_tune_time_label->set_visible (auto_tune.enabled && auto_tune.method == Instrument::AutoTune::SMOOTH);
+    auto_tune_time_param_label->set_visible (auto_tune_time_label->visible());
 
     auto_tune_amount_label->set_visible (auto_tune.enabled && auto_tune.method == Instrument::AutoTune::SMOOTH);
+    auto_tune_amount_param_label->set_visible (auto_tune_amount_label->visible());
 
     grid.add_widget (auto_tune_checkbox, 0, y, 20, 2);
     y += 2;
@@ -150,14 +170,16 @@ public:
             grid.add_widget (auto_tune_partials_param_label, 11, y, 10, 3);
             y += 3;
           }
-        if(auto_tune_time_label->visible())
+        if (auto_tune_time_label->visible())
           {
             grid.add_widget (auto_tune_time_label, 2, y, 10, 3);
+            grid.add_widget (auto_tune_time_param_label, 11, y, 10, 3);
             y += 3;
           }
         if (auto_tune_amount_label->visible())
           {
             grid.add_widget (auto_tune_amount_label, 2, y, 10, 3);
+            grid.add_widget (auto_tune_amount_param_label, 11, y, 10, 3);
             y += 3;
           }
       }
@@ -285,6 +307,22 @@ public:
   {
     auto at = instrument->auto_tune();
     at.partials = p;
+
+    instrument->set_auto_tune (at);
+  }
+  void
+  on_auto_tune_time_changed (double t)
+  {
+    auto at = instrument->auto_tune();
+    at.time = t;
+
+    instrument->set_auto_tune (at);
+  }
+  void
+  on_auto_tune_amount_changed (double a)
+  {
+    auto at = instrument->auto_tune();
+    at.amount = a;
 
     instrument->set_auto_tune (at);
   }
