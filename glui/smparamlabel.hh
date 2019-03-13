@@ -18,59 +18,77 @@ public:
 
 class ParamLabelModelDouble : public ParamLabelModel
 {
+  double value;
+  double min_value;
+  double max_value;
+
   std::string value_fmt;
   std::string display_fmt;
-public:
-  double db = 0;
 
-  ParamLabelModelDouble (double start, const std::string& value_fmt, const std::string& display_fmt) :
+public:
+  ParamLabelModelDouble (double start, double min_val, double max_val, const std::string& value_fmt, const std::string& display_fmt) :
+    value (start),
+    min_value (min_val),
+    max_value (max_val),
     value_fmt (value_fmt),
-    display_fmt (display_fmt),
-    db (start)
+    display_fmt (display_fmt)
   {
   }
 
   std::string
   value_text()
   {
-    return string_locale_printf (value_fmt.c_str(), db);
+    return string_locale_printf (value_fmt.c_str(), value);
   }
   std::string
   display_text()
   {
-    return string_locale_printf (display_fmt.c_str(), db);
+    return string_locale_printf (display_fmt.c_str(), value);
   }
   void
   set_value_text (const std::string& t)
   {
-    db = atof (t.c_str());
+    value = atof (t.c_str());
 
-    signal_value_changed (db);
+    value = sm_bound (min_value, value, max_value);
+
+    signal_value_changed (value);
   }
   Signal<double> signal_value_changed;
 };
 
 class ParamLabelModelInt : public ParamLabelModel
 {
+  int value;
+  int min_value;
+  int max_value;
+
 public:
-  int i = 0;
+  ParamLabelModelInt (int i, int min_value, int max_value) :
+    value (i),
+    min_value (min_value),
+    max_value (max_value)
+  {
+  }
 
   std::string
   value_text()
   {
-    return string_locale_printf ("%d", i);
+    return string_locale_printf ("%d", value);
   }
   std::string
   display_text()
   {
-    return string_locale_printf ("%d", i);
+    return string_locale_printf ("%d", value);
   }
   void
   set_value_text (const std::string& t)
   {
-    i = atoi (t.c_str());
+    value = atoi (t.c_str());
 
-    signal_value_changed (i);
+    value = sm_bound (min_value, value, max_value);
+
+    signal_value_changed (value);
   }
   Signal<int> signal_value_changed;
 };

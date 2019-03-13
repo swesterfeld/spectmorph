@@ -65,10 +65,10 @@ public:
     /*--- auto volume gain ---*/
     auto_volume_gain_label = new Label (scroll_widget, "Gain");
 
-    auto pd = new ParamLabelModelDouble (instrument->auto_volume().gain, "%.2f", "%.2f dB");
-    auto_volume_gain_param_label = new ParamLabel (scroll_widget, pd);
+    auto gain_mod = new ParamLabelModelDouble (instrument->auto_volume().gain, -48.0, 48.0, "%.2f", "%.2f dB");
+    auto_volume_gain_param_label = new ParamLabel (scroll_widget, gain_mod);
 
-    connect (pd->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
+    connect (gain_mod->signal_value_changed, this, &InstEditParams::on_auto_volume_gain_changed);
 
     auto_tune_checkbox = new CheckBox (scroll_widget, "Auto Tune");
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditParams::on_auto_tune_changed);
@@ -85,16 +85,15 @@ public:
     /*--- auto tune partials ---*/
     auto_tune_partials_label = new Label (scroll_widget, "Partials");
 
-    auto pmod = new ParamLabelModelInt();
-    pmod->i = instrument->auto_tune().partials;
-    auto_tune_partials_param_label = new ParamLabel (scroll_widget, pmod);
+    auto partials_mod = new ParamLabelModelInt (instrument->auto_tune().partials, 1, 3);
+    auto_tune_partials_param_label = new ParamLabel (scroll_widget, partials_mod);
 
-    connect (pmod->signal_value_changed, this, &InstEditParams::on_auto_tune_partials_changed);
+    connect (partials_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_partials_changed);
 
     /*--- auto tune time ---*/
     auto_tune_time_label = new Label (scroll_widget, "Time");
 
-    auto time_mod = new ParamLabelModelDouble (instrument->auto_tune().time, "%.2f", "%.2f ms");
+    auto time_mod = new ParamLabelModelDouble (instrument->auto_tune().time, 1, 2000, "%.2f", "%.2f ms");
     auto_tune_time_param_label = new ParamLabel (scroll_widget, time_mod);
 
     connect (time_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_time_changed);
@@ -102,7 +101,7 @@ public:
     /*--- auto tune amount ---*/
     auto_tune_amount_label = new Label (scroll_widget, "Amount");
 
-    auto amount_mod = new ParamLabelModelDouble (instrument->auto_tune().amount, "%.1f", "%.1f %%");
+    auto amount_mod = new ParamLabelModelDouble (instrument->auto_tune().amount, 0, 100, "%.1f", "%.1f %%");
     auto_tune_amount_param_label = new ParamLabel (scroll_widget, amount_mod);
 
     connect (time_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_amount_changed);
