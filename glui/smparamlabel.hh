@@ -4,6 +4,8 @@
 #define SPECTMORPH_PARAM_LABEL_HH
 
 #include "smlineedit.hh"
+#include "smlabel.hh"
+#include "smwindow.hh"
 
 namespace SpectMorph
 {
@@ -11,6 +13,9 @@ namespace SpectMorph
 class ParamLabelModel
 {
 public:
+  ParamLabelModel();
+  virtual ~ParamLabelModel();
+
   virtual std::string value_text() = 0;
   virtual std::string display_text() = 0;
   virtual void        set_value_text (const std::string& t) = 0;
@@ -123,7 +128,7 @@ class ParamLabel : public Label
   bool      pressed = false;
   LineEdit *line_edit = nullptr;
 
-  ParamLabelModel *model;
+  std::unique_ptr<ParamLabelModel> model;
 public:
   ParamLabel (Widget *parent, ParamLabelModel *model) :
     Label (parent, ""),
