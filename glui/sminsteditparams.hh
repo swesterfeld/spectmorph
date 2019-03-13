@@ -40,7 +40,7 @@ class InstEditParams : public Window
   Widget     *scroll_widget = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument) :
-    Window ("Instrument Params", 320, 400, 0, false, window->native_window()),
+    Window ("SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
     instrument (instrument)
   {
     window->add_child_window (this);
@@ -226,7 +226,7 @@ public:
             ParamLabel *vlabel = new ParamLabel (scroll_widget, value_mod);
             ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
 
-            grid.add_widget (plabel, 2, y, 20, 3);
+            grid.add_widget (plabel, 2, y, 18, 3);
             grid.add_widget (vlabel, 21, y, 11, 3);
             grid.add_widget (tbutton, 32.5, y + 0.5, 2, 2);
             y += 3;
