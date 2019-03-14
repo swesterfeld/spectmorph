@@ -419,7 +419,10 @@ public:
     auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
     auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
 
-    connect (auto_volume_details_button->signal_clicked, [&]() { new InstEditParams (this, &instrument); });
+    connect (auto_volume_details_button->signal_clicked, [&]() {
+      auto ie_params = new InstEditParams (this, &instrument);
+      connect (ie_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+    });
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);

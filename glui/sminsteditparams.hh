@@ -6,6 +6,7 @@
 #include "smcheckbox.hh"
 #include "smparamlabel.hh"
 #include "smbutton.hh"
+#include "smshortcut.hh"
 
 namespace SpectMorph
 {
@@ -45,6 +46,9 @@ public:
   {
     window->add_child_window (this);
     set_close_callback ([this,window]() { window->remove_child_window (this); });
+
+    Shortcut *play_shortcut = new Shortcut (this, ' ');
+    connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
     FixedGrid grid;
     grid.add_widget (scroll_view = new ScrollView (this), 1, 1, width / 8 - 2, height / 8 - 2);
@@ -366,6 +370,7 @@ public:
 
     instrument->set_encoder_config (enc_cfg);
   }
+  Signal<> signal_toggle_play;
 };
 
 }
