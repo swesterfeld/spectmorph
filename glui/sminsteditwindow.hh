@@ -188,7 +188,6 @@ class InstEditWindow : public Window
   on_global_changed()
   {
     auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
-    auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
 
     auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
 
@@ -207,7 +206,6 @@ class InstEditWindow : public Window
   Led *led;
   Label *playing_label;
   CheckBox *auto_volume_checkbox = nullptr;
-  Button   *auto_volume_details_button = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
   Button   *play_button = nullptr;
   bool      playing = false;
@@ -409,34 +407,23 @@ public:
     instrument.load (test_sample);
 
     /*--- auto volume ---*/
-    Button *b2, *b3;
-
     auto_volume_checkbox = new CheckBox (this, "Auto Volume");
     connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
     grid.add_widget (auto_volume_checkbox, 60, 58.5, 20, 2);
-    grid.add_widget (auto_volume_details_button = new Button (this, "Details..."), 82, 58, 10, 3);
 
     auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
-    auto_volume_details_button->set_enabled (instrument.auto_volume().enabled);
-
-    connect (auto_volume_details_button->signal_clicked, [&]() {
-      auto ie_params = new InstEditParams (this, &instrument);
-      connect (ie_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
-    });
 
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
     auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
 
-    grid.add_widget (b2 = new Button (this, "Details..."), 82, 61, 10, 3);
-
-    b2->set_enabled (false);
-
-    grid.add_widget (new CheckBox (this, "Custom Analysis Params"), 60, 64.5, 20, 2);
-    grid.add_widget (b3 = new Button (this, "Details..."), 82, 64, 10, 3);
-
-    b3->set_enabled (false);
+    auto show_params_button = new Button (this, "Show All Parameters...");
+    connect (show_params_button->signal_clicked, [&]() {
+      auto ie_params = new InstEditParams (this, &instrument);
+      connect (ie_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+    });
+    grid.add_widget (show_params_button, 60, 64, 25, 3);
 
     // show complete wave
     on_update_hzoom (0);
