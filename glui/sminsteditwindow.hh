@@ -248,6 +248,9 @@ class InstEditWindow : public Window
   Button   *play_button = nullptr;
   bool      playing = false;
 
+  InstEditParams *inst_edit_params = nullptr;
+  Button         *show_params_button = nullptr;
+
   Sample::Loop
   text_to_loop (const std::string& text)
   {
@@ -451,11 +454,8 @@ public:
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
 
-    auto show_params_button = new Button (this, "Show All Parameters...");
-    connect (show_params_button->signal_clicked, [&]() {
-      auto ie_params = new InstEditParams (this, &instrument);
-      connect (ie_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
-    });
+    show_params_button = new Button (this, "Show All Parameters...");
+    connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
     grid.add_widget (show_params_button, 60, 64, 25, 3);
 
     update_auto_checkboxes();
@@ -482,6 +482,27 @@ public:
     double factor = pow (10, value);
     sample_widget->set_vzoom (factor);
     vzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
+  }
+  void
+  on_show_hide_params()
+  {
+    if (inst_edit_params)
+      {
+        // unfortunately both ways of destroying the param window result in a crash
+        // inst_edit_params->delete_later();
+        // delete inst_edit_params;
+        // inst_edit_params = nullptr;
+      }
+    else
+      {
+        inst_edit_params = new InstEditParams (this, &instrument);
+        connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+        connect (inst_edit_params->signal_closed, [this]() {
+          show_params_button->set_enabled (true);
+          inst_edit_params = nullptr;
+        });
+        show_params_button->set_enabled (false);
+      }
   }
   void
   on_save_clicked()

@@ -45,7 +45,10 @@ public:
     instrument (instrument)
   {
     window->add_child_window (this);
-    set_close_callback ([this,window]() { window->remove_child_window (this); });
+    set_close_callback ([this,window]() {
+      signal_closed();
+      window->remove_child_window (this);
+     });
 
     Shortcut *play_shortcut = new Shortcut (this, ' ');
     connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
@@ -371,6 +374,7 @@ public:
     instrument->set_encoder_config (enc_cfg);
   }
   Signal<> signal_toggle_play;
+  Signal<> signal_closed;
 };
 
 }
