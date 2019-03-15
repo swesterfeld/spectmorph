@@ -297,6 +297,7 @@ Instrument::load (const string& filename)
   else
     m_selected = 0;
   signal_samples_changed();
+  signal_global_changed();
 }
 
 static bool
