@@ -33,6 +33,15 @@ public:
       }
   }
   void
+  set_text (const std::string& new_text)
+  {
+    if (text == new_text)
+      return;
+
+    text = new_text;
+    update();
+  }
+  void
   draw (const DrawEvent& devent) override
   {
     cairo_t *cr = devent.cr;

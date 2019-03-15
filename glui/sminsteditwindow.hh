@@ -185,11 +185,49 @@ class InstEditWindow : public Window
       m_backend.switch_to_sample (sample, play_mode, &instrument);
   }
   void
+  update_auto_checkboxes()
+  {
+    /* update auto volume checkbox */
+    const auto auto_volume = instrument.auto_volume();
+
+    auto_volume_checkbox->set_checked (auto_volume.enabled);
+
+    std::string av_text = "Auto Volume";
+    if (auto_volume.enabled)
+      {
+        switch (auto_volume.method)
+        {
+          case Instrument::AutoVolume::FROM_LOOP: av_text += " - From Loop";
+                                                  break;
+          case Instrument::AutoVolume::GLOBAL:    av_text += " - Global";
+                                                  break;
+        }
+      }
+    auto_volume_checkbox->set_text (av_text);
+
+    /* update auto tune checkbox */
+    const auto auto_tune = instrument.auto_tune();
+
+    auto_tune_checkbox->set_checked (auto_tune.enabled);
+    std::string at_text = "Auto Tune";
+    if (auto_tune.enabled)
+      {
+        switch (auto_tune.method)
+        {
+          case Instrument::AutoTune::SIMPLE:      at_text += " - Simple";
+                                                  break;
+          case Instrument::AutoTune::ALL_FRAMES:  at_text += " - All Frames";
+                                                  break;
+          case Instrument::AutoTune::SMOOTH:      at_text += " - Smooth";
+                                                  break;
+        }
+      }
+    auto_tune_checkbox->set_text (at_text);
+  }
+  void
   on_global_changed()
   {
-    auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
-
-    auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
+    update_auto_checkboxes();
 
     Sample *sample = instrument.sample (instrument.selected());
 
@@ -404,19 +442,14 @@ public:
         }
     });
 
-    instrument.load (test_sample);
-
     /*--- auto volume ---*/
     auto_volume_checkbox = new CheckBox (this, "Auto Volume");
     connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
     grid.add_widget (auto_volume_checkbox, 60, 58.5, 20, 2);
 
-    auto_volume_checkbox->set_checked (instrument.auto_volume().enabled);
-
     auto_tune_checkbox = new CheckBox (this, "Auto Tune");
     grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
     connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
-    auto_tune_checkbox->set_checked (instrument.auto_tune().enabled);
 
     auto show_params_button = new Button (this, "Show All Parameters...");
     connect (show_params_button->signal_clicked, [&]() {
@@ -425,6 +458,9 @@ public:
     });
     grid.add_widget (show_params_button, 60, 64, 25, 3);
 
+    update_auto_checkboxes();
+
+    instrument.load (test_sample);
     // show complete wave
     on_update_hzoom (0);
 
