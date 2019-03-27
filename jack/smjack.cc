@@ -10,6 +10,7 @@
 #include "smled.hh"
 #include "smutils.hh"
 #include "smcache.hh"
+#include "smeventloop.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
@@ -267,7 +268,8 @@ main (int argc, char **argv)
 
   JackSynth   synth (client);
 
-  MorphPlanWindow window ("SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan, &synth);
+  EventLoop event_loop;
+  MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan, &synth);
   if (filename != "")
     window.set_filename (filename);
   JackControl control (morph_plan, window, window.control_widget(), &synth);
@@ -278,9 +280,9 @@ main (int argc, char **argv)
 
   while (!quit)
     {
-      window.wait_event_fps();
+      event_loop.wait_event_fps();
       control.update_led();
-      window.process_events();
+      event_loop.process_events();
     }
   jack_deactivate (client);
   return 0;
