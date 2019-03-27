@@ -20,7 +20,7 @@ RenameOpWindow::create (Window *window, MorphOperator *op)
 }
 
 RenameOpWindow::RenameOpWindow (Window *window, MorphOperator *op) :
-  Window ("Rename", 320, 88, 0, false, window->native_window())
+  Window (*window->event_loop(), "Rename", 320, 88, 0, false, window->native_window())
 {
   parent_window = window;
   m_op = op;

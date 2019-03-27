@@ -41,7 +41,7 @@ class InstEditParams : public Window
   Widget     *scroll_widget = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument) :
-    Window ("SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
+    Window (*window->event_loop(), "SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
     instrument (instrument)
   {
     window->add_child_window (this);

@@ -11,6 +11,7 @@
 #include "smconfig.hh"
 #include "smtimer.hh"
 #include "smshortcut.hh"
+#include "smeventloop.hh"
 #include "pugl/cairo_gl.h"
 #include <string.h>
 #include <unistd.h>
@@ -143,7 +144,7 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
   window->on_resize (width, height);
 }
 
-Window::Window (const string& title, int width, int height, PuglNativeWindow win_id, bool resize, PuglNativeWindow transient_parent) :
+Window::Window (EventLoop& event_loop, const string& title, int width, int height, PuglNativeWindow win_id, bool resize, PuglNativeWindow transient_parent) :
   Widget (nullptr, 0, 0, width, height),
   draw_grid (false)
 {
@@ -189,10 +190,14 @@ Window::Window (const string& title, int width, int height, PuglNativeWindow win
   puglLeaveContext(view, false);
 
   set_background_color (ThemeColor::WINDOW_BG);
+
+  m_event_loop = &event_loop;
+  m_event_loop->add_window (this);
 }
 
 Window::~Window()
 {
+  m_event_loop->remove_window (this);
   puglDestroy (view);
 
   /* this code needs to work if remove_timer & add_timer are called from one of the destructors */
@@ -494,6 +499,9 @@ cleanup_null (vector<T *>& vec)
 void
 Window::process_events()
 {
+  assert (m_event_loop);
+  assert (m_event_loop->level() == 1);
+
   if (popup_window)
     {
       popup_window->process_events();
@@ -1034,4 +1042,10 @@ void
 Window::add_delete_later (Widget *widget)
 {
   delete_later_widgets.push_back (widget);
+}
+
+EventLoop *
+Window::event_loop() const
+{
+  return m_event_loop;
 }

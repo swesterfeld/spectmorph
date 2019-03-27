@@ -3,6 +3,7 @@
 #include "smmain.hh"
 #include "smmorphplan.hh"
 #include "smmorphplanwindow.hh"
+#include "smeventloop.hh"
 
 using namespace SpectMorph;
 
@@ -32,8 +33,9 @@ main (int argc, char **argv)
 
   morph_plan->load_default();
 
+  EventLoop event_loop;
   NullSynthInterface nsi;
-  MorphPlanWindow window ("SpectMorph - Plan Test", 0, false, morph_plan, &nsi);
+  MorphPlanWindow window (event_loop, "SpectMorph - Plan Test", 0, false, morph_plan, &nsi);
 
   window.control_widget()->set_volume (-6);
   window.connect (window.control_widget()->signal_volume_changed, [](double v) { printf ("volume=%f\n", v); });
@@ -45,7 +47,7 @@ main (int argc, char **argv)
   window.set_close_callback ([&]() { quit = true; });
 
   while (!quit) {
-    window.wait_for_event();
-    window.process_events();
+    event_loop.wait_event_fps();
+    event_loop.process_events();
   }
 }

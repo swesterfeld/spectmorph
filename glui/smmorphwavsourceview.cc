@@ -65,7 +65,7 @@ MorphWavSourceView::on_edit()
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
   synth_interface->synth_inst_edit_update (true, "", false);
 
-  InstEditWindow *inst_edit_window = new InstEditWindow (morph_wav_source->instrument(), synth_interface, window());
+  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), morph_wav_source->instrument(), synth_interface, window());
 
   inst_edit_window->show();
 

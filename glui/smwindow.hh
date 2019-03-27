@@ -16,6 +16,7 @@ class NativeFileDialog;
 struct Menu;
 class Timer;
 class Shortcut;
+class EventLoop;
 
 struct Window : public Widget
 {
@@ -39,6 +40,8 @@ protected:
   Rect                      update_region;
   bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
+  EventLoop                *m_event_loop = nullptr;
+
   std::vector<Timer *>      timers;
   std::vector<Shortcut *>   shortcuts;
   std::vector<Window *>     child_windows;
@@ -49,7 +52,7 @@ protected:
   Widget *find_widget_xy (double ex, double ey);
 
 public:
-  Window (const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
+  Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
   virtual ~Window();
 
   std::vector<Widget *> crawl_widgets();
@@ -59,6 +62,7 @@ public:
   void wait_for_event();
   void wait_event_fps();
   void process_events();
+  EventLoop *event_loop() const;
   void show();
   void open_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
   void save_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);

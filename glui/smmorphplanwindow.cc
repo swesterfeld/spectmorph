@@ -4,6 +4,7 @@
 #include "smstdioout.hh"
 #include "smaboutdialog.hh"
 #include "smmessagebox.hh"
+#include "smeventloop.hh"
 #include "smconfig.hh"
 
 using namespace SpectMorph;
@@ -28,10 +29,11 @@ MorphPlanWindow::static_scaled_size (int *w, int *h)
   *h = win_height * global_scale;
 }
 
-MorphPlanWindow::MorphPlanWindow (const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
+MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
+                                  const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
                                   SynthInterface *synth_interface,
                                   MorphPlanControl::Features f) :
-  Window (title, win_width, win_height, win_id, resize),
+  Window (event_loop, title, win_width, win_height, win_id, resize),
   m_morph_plan (morph_plan),
   m_synth_interface (synth_interface)
 {

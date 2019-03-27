@@ -6,6 +6,7 @@
 #include "smbutton.hh"
 #include "smmain.hh"
 #include "smscrollbar.hh"
+#include "smeventloop.hh"
 
 using namespace SpectMorph;
 
@@ -16,8 +17,8 @@ using std::max;
 class MainWindow : public Window
 {
 public:
-  MainWindow() :
-    Window ("SpectMorph - Scroll Test", 512, 512)
+  MainWindow (EventLoop& event_loop) :
+    Window (event_loop, "SpectMorph - Scroll Test", 512, 512)
   {
     FixedGrid grid;
     ScrollView *scroll_view = new ScrollView (this);
@@ -58,14 +59,15 @@ main (int argc, char **argv)
 
   bool quit = false;
 
-  MainWindow window;
+  EventLoop  event_loop;
+  MainWindow window (event_loop);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
 
   while (!quit)
     {
-      window.wait_for_event();
-      window.process_events();
+      event_loop.wait_event_fps();
+      event_loop.process_events();
     }
 }

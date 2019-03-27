@@ -288,8 +288,8 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (const std::string& test_sample, SynthInterface *synth_interface, Window *parent_window = nullptr) :
-    Window ("SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
+  InstEditWindow (EventLoop& event_loop, const std::string& test_sample, SynthInterface *synth_interface, Window *parent_window = nullptr) :
+    Window (event_loop, "SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
     m_backend (synth_interface),
     synth_interface (synth_interface)
   {

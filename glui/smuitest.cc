@@ -29,6 +29,7 @@
 #include "smled.hh"
 #include "smshortcut.hh"
 #include "smaboutdialog.hh"
+#include "smeventloop.hh"
 
 using namespace SpectMorph;
 
@@ -56,8 +57,8 @@ public:
 class MainWindow : public Window
 {
 public:
-  MainWindow (int width, int height, PuglNativeWindow win_id = 0, bool resize = true) :
-    Window ("SpectMorph UI Test", width, height, win_id, resize)
+  MainWindow (EventLoop& event_loop, int width, int height, PuglNativeWindow win_id = 0, bool resize = true) :
+    Window (event_loop, "SpectMorph UI Test", width, height, win_id, resize)
   {
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
@@ -211,13 +212,14 @@ main (int argc, char **argv)
 
   bool quit = false;
 
-  MainWindow window (384, 384);
+  EventLoop event_loop;
+  MainWindow window (event_loop, 384, 384);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
 
   while (!quit) {
-    window.wait_for_event();
-    window.process_events();
+    event_loop.wait_event_fps();
+    event_loop.process_events();
   }
 }
