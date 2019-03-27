@@ -17,9 +17,10 @@ struct VstPlugin;
 class VstUI : public SignalReceiver
 {
   ERect                 rectangle;
-  MorphPlanWindow      *widget;
+  MorphPlanWindow      *widget = nullptr;
+  EventLoop            *event_loop = nullptr;
   MorphPlanPtr          morph_plan;
-  VstPlugin            *plugin;
+  VstPlugin            *plugin = nullptr;
 
 public:
   VstUI (MorphPlanPtr plan, VstPlugin *plugin);

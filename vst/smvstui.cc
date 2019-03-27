@@ -6,6 +6,7 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 #include "smvstresize.hh"
+#include "smeventloop.hh"
 
 using namespace SpectMorph;
 
@@ -13,7 +14,6 @@ using std::string;
 using std::vector;
 
 VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
-  widget (nullptr),
   morph_plan (plan),
   plugin (plugin)
 {
@@ -36,7 +36,8 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
 bool
 VstUI::open (PuglNativeWindow win_id)
 {
-  widget = new MorphPlanWindow ("SpectMorph VST", win_id, false, morph_plan, plugin);
+  event_loop = new EventLoop();
+  widget = new MorphPlanWindow (*event_loop, "SpectMorph VST", win_id, false, morph_plan, plugin);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
   widget->control_widget()->set_volume (plugin->volume());
@@ -69,6 +70,8 @@ VstUI::close()
 {
   delete widget;
   widget = nullptr;
+  delete event_loop;
+  event_loop = nullptr;
 }
 
 void
@@ -77,7 +80,7 @@ VstUI::idle()
   if (widget)
     {
       widget->control_widget()->set_led (plugin->voices_active());
-      widget->process_events();
+      event_loop->process_events();
     }
 }
 
