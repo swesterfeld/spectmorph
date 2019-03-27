@@ -7,6 +7,7 @@
 #include "smsamplewidget.hh"
 #include "smwavsetbuilder.hh"
 #include "sminsteditwindow.hh"
+#include "smeventloop.hh"
 #include <thread>
 
 #include <jack/jack.h>
@@ -122,15 +123,16 @@ main (int argc, char **argv)
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
 
-  InstEditWindow window (fn, &jack_synth);
+  EventLoop event_loop;
+  InstEditWindow window (event_loop, fn, &jack_synth);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
 
   while (!quit)
     {
-      window.wait_event_fps();
-      window.process_events();
+      event_loop.wait_event_fps();
+      event_loop.process_events();
     }
   jack_deactivate (client);
 }
