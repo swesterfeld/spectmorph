@@ -466,6 +466,14 @@ public:
 
     on_update_vzoom (0);
   }
+  ~InstEditWindow()
+  {
+    if (inst_edit_params)
+      {
+        delete inst_edit_params;
+        inst_edit_params = nullptr;
+      }
+  }
   void
   on_update_hzoom (float value)
   {

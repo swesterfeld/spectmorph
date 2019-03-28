@@ -46,7 +46,6 @@ public:
     instrument (instrument),
     parent_window (window)
   {
-    window->add_child_window (this);
     set_close_callback ([this]() {
       signal_closed();
       delete_later();
@@ -123,10 +122,6 @@ public:
     connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
     on_global_changed();
     show();
-  }
-  ~InstEditParams()
-  {
-    parent_window->remove_child_window (this);
   }
   void
   on_global_changed()
