@@ -39,15 +39,17 @@ class InstEditParams : public Window
 
   ScrollView *scroll_view = nullptr;
   Widget     *scroll_widget = nullptr;
+  Window     *parent_window = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument) :
     Window (*window->event_loop(), "SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
-    instrument (instrument)
+    instrument (instrument),
+    parent_window (window)
   {
     window->add_child_window (this);
-    set_close_callback ([this,window]() {
+    set_close_callback ([this]() {
       signal_closed();
-      window->remove_child_window (this);
+      delete_later();
      });
 
     Shortcut *play_shortcut = new Shortcut (this, ' ');
@@ -121,6 +123,10 @@ public:
     connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
     on_global_changed();
     show();
+  }
+  ~InstEditParams()
+  {
+    parent_window->remove_child_window (this);
   }
   void
   on_global_changed()

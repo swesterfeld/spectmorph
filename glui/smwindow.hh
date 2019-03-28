@@ -45,7 +45,6 @@ protected:
   std::vector<Timer *>      timers;
   std::vector<Shortcut *>   shortcuts;
   std::vector<Window *>     child_windows;
-  std::vector<Widget *>     delete_later_widgets;
 
   std::function<void()>     m_close_callback;
 
@@ -80,7 +79,6 @@ public:
   void remove_shortcut (Shortcut *shortcut);
   void add_child_window (Window *window);
   void remove_child_window (Window *window);
-  void add_delete_later (Widget *widget);
   Window *window() override;
   PuglNativeWindow native_window();
 

@@ -488,20 +488,16 @@ public:
   {
     if (inst_edit_params)
       {
-        // unfortunately both ways of destroying the param window result in a crash
-        // inst_edit_params->delete_later();
-        // delete inst_edit_params;
-        // inst_edit_params = nullptr;
+        inst_edit_params->delete_later();
+        inst_edit_params = nullptr;
       }
     else
       {
         inst_edit_params = new InstEditParams (this, &instrument);
         connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
         connect (inst_edit_params->signal_closed, [this]() {
-          show_params_button->set_enabled (true);
           inst_edit_params = nullptr;
         });
-        show_params_button->set_enabled (false);
       }
   }
   void

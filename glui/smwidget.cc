@@ -4,6 +4,7 @@
 #include "smleakdebugger.hh"
 #include "smwindow.hh"
 #include "smscrollview.hh"
+#include "smeventloop.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -155,7 +156,7 @@ Widget::delete_later()
 {
   Window *win = window();
   if (win)
-    win->add_delete_later (this);
+    win->event_loop()->add_delete_later (this);
 }
 
 /* Color conversion from Rapicorn */

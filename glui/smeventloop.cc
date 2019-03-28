@@ -28,7 +28,16 @@ EventLoop::process_events()
       if (windows[i])
         windows[i]->process_events();
     }
+
+  /* do not use auto here */
+  for (size_t i = 0; i < delete_later_widgets.size(); i++)
+    {
+      delete delete_later_widgets[i];
+      assert (!delete_later_widgets[i]);
+    }
+
   /* FIXME: cleanup nullptr windows */
+  /* FIXME: cleanup nullptr delete_later_widgets */
   m_level--;
 }
 
@@ -50,6 +59,23 @@ EventLoop::remove_window (Window *window)
   for (auto& w : windows)
     {
       if (w == window)
+        w = nullptr;
+    }
+  on_widget_deleted (window);
+}
+
+void
+EventLoop::add_delete_later (Widget *widget)
+{
+  delete_later_widgets.push_back (widget);
+}
+
+void
+EventLoop::on_widget_deleted (Widget *widget)
+{
+  for (auto& w : delete_later_widgets)
+    {
+      if (w == widget)
         w = nullptr;
     }
 }

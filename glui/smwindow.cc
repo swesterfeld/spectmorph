@@ -224,9 +224,6 @@ Window::~Window()
       if (child_windows[i])
         delete child_windows[i];
     }
-  /* do not use auto here */
-  for (size_t i = 0; i < delete_later_widgets.size(); i++)
-    delete delete_later_widgets[i];
 }
 
 void
@@ -241,16 +238,13 @@ Window::on_widget_deleted (Widget *child)
     menu_widget = nullptr;
   if (keyboard_focus_widget == child)
     keyboard_focus_widget = nullptr;
-  for (auto& w : delete_later_widgets)
-    {
-      if (w == child)
-        w = nullptr;
-    }
   if (dialog_widget == child)
     {
       update_full();
       dialog_widget = nullptr;
     }
+
+  event_loop()->on_widget_deleted (child);
 }
 
 static vector<Widget *>
@@ -535,7 +529,6 @@ Window::process_events()
       Window *window = child_windows[i];
       if (window)
         {
-          window->process_events();
           if (child_windows[i] == nullptr)
             {
               /* window closed - must be deleted after (not during) process_events */
@@ -544,15 +537,6 @@ Window::process_events()
         }
     }
   cleanup_null (child_windows);
-
-  /* do not use auto here */
-  for (size_t i = 0; i < delete_later_widgets.size(); i++)
-    {
-      delete delete_later_widgets[i];
-
-      assert (!delete_later_widgets[i]);
-    }
-  cleanup_null (delete_later_widgets);
 
   if (0)
     {
@@ -1036,12 +1020,6 @@ Window::remove_shortcut (Shortcut *shortcut)
       if (s == shortcut)
         s = nullptr;
     }
-}
-
-void
-Window::add_delete_later (Widget *widget)
-{
-  delete_later_widgets.push_back (widget);
 }
 
 EventLoop *
