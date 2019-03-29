@@ -56,8 +56,6 @@ public:
   void on_display();
   void on_event (const PuglEvent *event);
   void on_resize (int *width, int *height);
-  void wait_for_event();
-  void wait_event_fps();
   void process_events();
   EventLoop *event_loop() const;
   void show();

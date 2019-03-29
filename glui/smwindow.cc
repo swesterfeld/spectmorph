@@ -795,38 +795,6 @@ Window::window()
 }
 
 void
-Window::wait_event_fps()
-{
-  /* tradeoff between UI responsiveness and cpu usage caused by thread wakeups
-   *
-   * 60 fps should make the UI look smooth
-   */
-  const double frames_per_second = 60;
-
-  usleep (1000 * 1000 / frames_per_second);
-}
-
-void
-Window::wait_for_event()
-{
-  bool active_timer = false;
-  for (auto t : timers)
-    {
-      if (t)
-        active_timer = t->active() || active_timer;
-    }
-  if (native_file_dialog || popup_window || active_timer)
-    {
-      /* need to wait for events of this view, and handle io for file dialog */
-      wait_event_fps();
-    }
-  else
-    {
-      puglWaitForEvent (view);
-    }
-}
-
-void
 Window::set_menu_widget (Widget *widget)
 {
   menu_widget = widget;
