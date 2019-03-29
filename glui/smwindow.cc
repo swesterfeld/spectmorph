@@ -399,7 +399,7 @@ Window::on_display()
         }
     }
 
-  if (have_file_dialog || have_popup_window)
+  if (have_file_dialog || popup_window)
     {
       cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
       cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
@@ -489,13 +489,6 @@ Window::process_events()
   assert (m_event_loop);
   assert (m_event_loop->level() == 1);
 
-  if (popup_window)
-    {
-      popup_window->process_events();
-
-      if (!have_popup_window)
-        popup_window.reset(); // must be deleted after (not during) process_events */
-    }
   if (native_file_dialog)
     {
       native_file_dialog->process_events();
@@ -580,7 +573,7 @@ Window::on_event (const PuglEvent* event)
   Widget *current_widget = nullptr;
 
   /* as long as the file dialog or popup window is open, ignore user input */
-  const bool ignore_input = have_file_dialog || have_popup_window;
+  const bool ignore_input = have_file_dialog || popup_window;
   if (ignore_input && event->type != PUGL_EXPOSE && event->type != PUGL_CONFIGURE)
     return;
 
@@ -867,12 +860,12 @@ Window::set_popup_window (Window *pwin)
     {
       // take ownership
       popup_window.reset (pwin);
-
-      have_popup_window = true;
     }
   else
     {
-      have_popup_window = false;
+      auto del_window = popup_window.release();
+
+      del_window->delete_later();
     }
   update_full();
 }

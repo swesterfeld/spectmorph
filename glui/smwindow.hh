@@ -33,7 +33,6 @@ protected:
   Widget                   *keyboard_focus_widget = nullptr;
   bool                      keyboard_focus_release_on_click = false;
   Widget                   *dialog_widget = nullptr;
-  bool                      have_popup_window = false;
   std::unique_ptr<Window>   popup_window;
   double                    global_scale;
   bool                      auto_redraw;
