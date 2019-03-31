@@ -85,6 +85,20 @@ public:
   Signal<> signal_update_size;
 };
 
+/* helper to remove all nullptr entries from a vector */
+template<class T>
+void
+cleanup_null (std::vector<T *>& vec)
+{
+  std::vector<T *> new_vec;
+  for (auto object : vec)
+    if (object)
+      new_vec.push_back (object);
+
+  if (vec.size() > new_vec.size())
+    vec = new_vec;
+}
+
 }
 
 #endif

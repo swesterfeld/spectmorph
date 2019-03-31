@@ -36,8 +36,9 @@ EventLoop::process_events()
       assert (!delete_later_widgets[i]);
     }
 
-  /* FIXME: cleanup nullptr windows */
-  /* FIXME: cleanup nullptr delete_later_widgets */
+  cleanup_null (windows);
+  cleanup_null (delete_later_widgets);
+
   m_level--;
 }
 

@@ -470,19 +470,6 @@ Window::on_display()
   update_full_redraw = false;
 }
 
-template<class T>
-void
-cleanup_null (vector<T *>& vec)
-{
-  vector<T *> new_vec;
-  for (auto object : vec)
-    if (object)
-      new_vec.push_back (object);
-
-  if (vec.size() > new_vec.size())
-    vec = new_vec;
-}
-
 void
 Window::process_events()
 {
