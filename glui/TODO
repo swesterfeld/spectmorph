@@ -1,3 +1,5 @@
+- may be able to remove -DPUGL_HAVE_CAIRO from Makefile.am
+
 later:
  - popup menu
  - knob
