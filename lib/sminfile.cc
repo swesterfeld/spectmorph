@@ -292,15 +292,18 @@ InFile::read_raw_float_block (vector<float>& fb)
     return false;
 
   fb.resize (size);
-  int *buffer = reinterpret_cast <int*> (&fb[0]);
+  if (size > 0)
+    {
+      int *buffer = reinterpret_cast <int*> (&fb[0]);
 
-  if (file->read (&buffer[0], fb.size() * 4) != size * 4)
-    return false;
+      if (file->read (&buffer[0], fb.size() * 4) != size * 4)
+        return false;
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
-  for (size_t x = 0; x < fb.size(); x++)
-    buffer[x] = GINT32_FROM_LE (buffer[x]);
+      for (size_t x = 0; x < fb.size(); x++)
+        buffer[x] = GINT32_FROM_LE (buffer[x]);
 #endif
+    }
   return true;
 }
 
@@ -312,14 +315,16 @@ InFile::read_raw_uint16_block (vector<uint16_t>& ib)
     return false;
 
   ib.resize (size);
-
-  if (file->read (&ib[0], ib.size() * 2) != size * 2)
-    return false;
+  if (size > 0)
+    {
+      if (file->read (&ib[0], ib.size() * 2) != size * 2)
+        return false;
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
-  for (size_t x = 0; x < ib.size(); x++)
-    ib[x] = GUINT16_FROM_LE (ib[x]);
+      for (size_t x = 0; x < ib.size(); x++)
+        ib[x] = GUINT16_FROM_LE (ib[x]);
 #endif
+    }
   return true;
 }
 
