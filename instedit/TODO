@@ -20,3 +20,11 @@ BUGS:
 
 SVEN:
 - display total sample time
+
+STORAGE:
+- smjack should keep instrument in memory after load / edit
+- load/edit should actually show the instrument
+- morph plan attachments
+- lv2 plugin should use instance access
+- store-as-zip with preset
+- sminstedit load / store instrument should work
