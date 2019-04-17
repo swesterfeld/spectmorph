@@ -123,8 +123,11 @@ main (int argc, char **argv)
 
   string fn = (argc > 1) ? argv[1] : "test.sminst";
 
+  Instrument instrument;
+  instrument.load (fn);
+
   EventLoop event_loop;
-  InstEditWindow window (event_loop, fn, &jack_synth);
+  InstEditWindow window (event_loop, &instrument, &jack_synth);
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
