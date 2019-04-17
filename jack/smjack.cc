@@ -230,7 +230,8 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MorphPlanPtr morph_plan = new MorphPlan;
+  Project project;
+  MorphPlanPtr morph_plan = new MorphPlan (project);
 
   string filename;
   if (argc == 2)
