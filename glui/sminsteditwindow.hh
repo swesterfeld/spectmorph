@@ -118,7 +118,7 @@ public:
 
 class InstEditWindow : public Window
 {
-  Instrument instrument;
+  Instrument *instrument;
   InstEditBackend m_backend;
   SynthInterface *synth_interface;
 
@@ -135,27 +135,27 @@ class InstEditWindow : public Window
   load_sample (const std::string& filename)
   {
     if (filename != "")
-      instrument.add_sample (filename);
+      instrument->add_sample (filename);
   }
   void
   on_samples_changed()
   {
     sample_combobox->clear();
-    if (instrument.size() == 0)
+    if (instrument->size() == 0)
       {
         sample_combobox->set_text ("");
       }
-    for (size_t i = 0; i < instrument.size(); i++)
+    for (size_t i = 0; i < instrument->size(); i++)
       {
-        Sample *sample = instrument.sample (i);
+        Sample *sample = instrument->sample (i);
         std::string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->short_name.c_str());
 
         sample_combobox->add_item (text);
 
-        if (int (i) == instrument.selected())
+        if (int (i) == instrument->selected())
           sample_combobox->set_text (text);
       }
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
     sample_widget->set_sample (sample);
     midi_note_combobox->set_enabled (sample != nullptr);
     sample_combobox->set_enabled (sample != nullptr);
@@ -173,22 +173,22 @@ class InstEditWindow : public Window
       }
     if (sample)
       {
-        m_backend.switch_to_sample (sample, play_mode, &instrument);
+        m_backend.switch_to_sample (sample, play_mode, instrument);
       }
   }
   void
   on_marker_changed()
   {
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
 
     if (sample)
-      m_backend.switch_to_sample (sample, play_mode, &instrument);
+      m_backend.switch_to_sample (sample, play_mode, instrument);
   }
   void
   update_auto_checkboxes()
   {
     /* update auto volume checkbox */
-    const auto auto_volume = instrument.auto_volume();
+    const auto auto_volume = instrument->auto_volume();
 
     auto_volume_checkbox->set_checked (auto_volume.enabled);
 
@@ -206,7 +206,7 @@ class InstEditWindow : public Window
     auto_volume_checkbox->set_text (av_text);
 
     /* update auto tune checkbox */
-    const auto auto_tune = instrument.auto_tune();
+    const auto auto_tune = instrument->auto_tune();
 
     auto_tune_checkbox->set_checked (auto_tune.enabled);
     std::string at_text = "Auto Tune";
@@ -229,10 +229,10 @@ class InstEditWindow : public Window
   {
     update_auto_checkboxes();
 
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
 
     if (sample)
-      m_backend.switch_to_sample (sample, play_mode, &instrument);
+      m_backend.switch_to_sample (sample, play_mode, instrument);
   }
   ComboBox *sample_combobox;
   ScrollView *sample_scroll_view;
@@ -288,15 +288,18 @@ public:
   static const int win_width = 744;
   static const int win_height = 560;
 
-  InstEditWindow (EventLoop& event_loop, const std::string& test_sample, SynthInterface *synth_interface, Window *parent_window = nullptr) :
+  InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window = nullptr) :
     Window (event_loop, "SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
     m_backend (synth_interface),
     synth_interface (synth_interface)
   {
+    assert (edit_instrument != nullptr);
+    instrument = edit_instrument;
+
     /* attach to model */
-    connect (instrument.signal_samples_changed, this, &InstEditWindow::on_samples_changed);
-    connect (instrument.signal_marker_changed, this, &InstEditWindow::on_marker_changed);
-    connect (instrument.signal_global_changed, this, &InstEditWindow::on_global_changed);
+    connect (instrument->signal_samples_changed, this, &InstEditWindow::on_samples_changed);
+    connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_changed);
+    connect (instrument->signal_global_changed, this, &InstEditWindow::on_global_changed);
 
     /* attach to backend */
     connect (m_backend.signal_have_audio, this, &InstEditWindow::on_have_audio);
@@ -422,7 +425,7 @@ public:
         {
           std::vector<float> play_pointers;
 
-          Sample *sample = instrument.sample (instrument.selected());
+          Sample *sample = instrument->sample (instrument->selected());
           if (sample && play_mode != PlayMode::REFERENCE)
             {
               for (size_t i = 0; i < iev->current_pos.size(); i++)
@@ -460,7 +463,8 @@ public:
 
     update_auto_checkboxes();
 
-    instrument.load (test_sample);
+    on_samples_changed();
+
     // show complete wave
     on_update_hzoom (0);
 
@@ -501,7 +505,7 @@ public:
       }
     else
       {
-        inst_edit_params = new InstEditParams (this, &instrument);
+        inst_edit_params = new InstEditParams (this, instrument);
         connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
         connect (inst_edit_params->signal_closed, [this]() {
           inst_edit_params = nullptr;
@@ -511,40 +515,40 @@ public:
   void
   on_save_clicked()
   {
-    instrument.save ("/tmp/x.sminst");
+    instrument->save ("/tmp/x.sminst");
   }
   void
   on_load_clicked()
   {
-    instrument.load ("/tmp/x.sminst");
+    instrument->load ("/tmp/x.sminst");
   }
   void
   on_sample_changed()
   {
     int idx = sample_combobox->current_index();
     if (idx >= 0)
-      instrument.set_selected (idx);
+      instrument->set_selected (idx);
   }
   void
   on_sample_up()
   {
-    int selected = instrument.selected();
+    int selected = instrument->selected();
 
     if (selected > 0)
-      instrument.set_selected (selected - 1);
+      instrument->set_selected (selected - 1);
   }
   void
   on_sample_down()
   {
-    int selected = instrument.selected();
+    int selected = instrument->selected();
 
-    if (selected >= 0 && size_t (selected + 1) < instrument.size())
-      instrument.set_selected (selected + 1);
+    if (selected >= 0 && size_t (selected + 1) < instrument->size())
+      instrument->set_selected (selected + 1);
   }
   void
   on_midi_note_changed()
   {
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
 
     if (!sample)
       return;
@@ -559,18 +563,18 @@ public:
   void
   on_auto_volume_changed (bool new_value)
   {
-    Instrument::AutoVolume av = instrument.auto_volume();
+    Instrument::AutoVolume av = instrument->auto_volume();
     av.enabled = new_value;
 
-    instrument.set_auto_volume (av);
+    instrument->set_auto_volume (av);
   }
   void
   on_auto_tune_changed (bool new_value)
   {
-    Instrument::AutoTune at = instrument.auto_tune();
+    Instrument::AutoTune at = instrument->auto_tune();
     at.enabled = new_value;
 
-    instrument.set_auto_tune (at);
+    instrument->set_auto_tune (at);
   }
   void
   on_play_mode_changed()
@@ -588,7 +592,7 @@ public:
   void
   on_loop_changed()
   {
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
 
     sample->set_loop (text_to_loop (loop_combobox->text()));
     sample_widget->update_loop();
@@ -601,7 +605,7 @@ public:
   void
   on_toggle_play()
   {
-    Sample *sample = instrument.sample (instrument.selected());
+    Sample *sample = instrument->sample (instrument->selected());
     if (sample)
       synth_interface->synth_inst_edit_note (sample->midi_note(), !playing);
   }
@@ -620,9 +624,9 @@ public:
     if (!audio)
       return;
 
-    for (size_t i = 0; i < instrument.size(); i++)
+    for (size_t i = 0; i < instrument->size(); i++)
       {
-        Sample *sample = instrument.sample (i);
+        Sample *sample = instrument->sample (i);
 
         if (sample->midi_note() == note)
           sample->audio.reset (audio->clone());
