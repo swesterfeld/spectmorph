@@ -67,7 +67,7 @@ VstPlugin::preinit_plan (MorphPlanPtr plan)
 VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
-  plan (new MorphPlan()),
+  plan (new MorphPlan (project)),
   midi_synth (nullptr)
 {
   audioMaster = master;

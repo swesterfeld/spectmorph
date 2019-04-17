@@ -69,6 +69,7 @@ struct VstPlugin : public SynthInterface
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
 
+  Project             project;
   MorphPlanPtr        plan;
   MidiSynth          *midi_synth;
   VstUI              *ui;
