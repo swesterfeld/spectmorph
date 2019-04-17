@@ -188,6 +188,7 @@ class Player
   MorphGrid      *grid_op;
   MorphPlanVoice *voice;
 
+  Project         project;
   MorphPlanPtr    plan;
   MorphPlanSynth  synth;
 public:
@@ -202,7 +203,7 @@ Player::Player() :
   linear_op (0),
   grid_op (0),
   voice (0),
-  plan (new MorphPlan()),
+  plan (new MorphPlan (project)),
   synth (options.rate)
 {
 }
