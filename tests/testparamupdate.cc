@@ -54,7 +54,8 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  MorphPlanPtr plan = new MorphPlan();
+  Project      project;
+  MorphPlanPtr plan = new MorphPlan (project);
   GenericIn *in = StdioIn::open (argv[1]);
   if (!in)
     {

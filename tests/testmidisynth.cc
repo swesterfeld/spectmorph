@@ -17,9 +17,10 @@ main (int argc, char **argv)
       return 1;
     }
 
+  Project   project;
   MidiSynth midi_synth (48000, 16 /* voices */);
 
-  MorphPlanPtr plan (new MorphPlan());
+  MorphPlanPtr plan (new MorphPlan (project));
 
   GenericIn *in = StdioIn::open (argv[1]);
   if (!in)
