@@ -29,7 +29,8 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
-  MorphPlanPtr morph_plan = new MorphPlan;
+  Project project;
+  MorphPlanPtr morph_plan = new MorphPlan (project);
 
   morph_plan->load_default();
 
