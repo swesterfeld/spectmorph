@@ -45,7 +45,9 @@ MorphWavSourceView::on_load()
   window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
     if (filename != "")
       {
-        morph_wav_source->set_instrument (filename);
+        Instrument *instrument = &morph_wav_source->morph_plan()->project()->instrument;
+        //morph_wav_source->set_instrument (filename);
+        instrument->load (filename);
       /*
         Error error = load (filename);
 
@@ -65,7 +67,8 @@ MorphWavSourceView::on_edit()
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
   synth_interface->synth_inst_edit_update (true, "", false);
 
-  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), morph_wav_source->instrument(), synth_interface, window());
+  Instrument *instrument = &morph_wav_source->morph_plan()->project()->instrument;
+  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
 
   inst_edit_window->show();
 
