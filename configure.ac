@@ -403,11 +403,12 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
 AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
-glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
+glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile instedit/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
 windows/config.sh macos/config.sh macos/Info.plist
 ])
+# lv2/Makefile <- disabled due to new features which need instance access
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
 
