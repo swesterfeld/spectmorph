@@ -9,6 +9,7 @@
 #include "smaudio.hh"
 #include "smutils.hh"
 #include "smsignal.hh"
+#include "smproject.hh"
 
 namespace SpectMorph
 {
@@ -25,6 +26,7 @@ public:
   };
 
 protected:
+  Project                     *m_project = nullptr;
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
 
@@ -35,11 +37,12 @@ protected:
   Error load_internal (GenericIn *in, ExtraParameters *params = nullptr);
 
 public:
-  MorphPlan();
+  MorphPlan (Project& project);
   ~MorphPlan();
 
   bool         load_index (const std::string& filename);
   const Index *index();
+  Project     *project();
 
   enum AddPos {
     ADD_POS_AUTO,

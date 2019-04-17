@@ -24,7 +24,8 @@ using std::map;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphPlan");
 
-MorphPlan::MorphPlan()
+MorphPlan::MorphPlan (Project& project) :
+  m_project (&project)
 {
   in_restore = false;
 
@@ -495,6 +496,12 @@ MorphPlan::id_chars()
   return G_CSET_A_2_Z G_CSET_a_2_z G_CSET_DIGITS "_-.:,;/&%$*+@?!#|{}()[]<>=^";
 }
 
+Project *
+MorphPlan::project()
+{
+  return m_project;
+}
+
 MorphPlan *
 MorphPlan::clone() const
 {
@@ -504,7 +511,7 @@ MorphPlan::clone() const
 
   save (&plan_mo);
 
-  MorphPlan *plan_clone = new MorphPlan();
+  MorphPlan *plan_clone = new MorphPlan (*m_project);
   GenericIn *in = MMapIn::open_mem (&plan_data[0], &plan_data[plan_data.size()]);
   plan_clone->load (in);
   delete in;

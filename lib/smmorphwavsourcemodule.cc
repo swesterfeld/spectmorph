@@ -106,13 +106,14 @@ MorphWavSourceModule::set_config (MorphOperator *op)
 {
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
   Cache& cache = *Cache::the();
+  Project *p = op->morph_plan()->project();
 
   CacheEntry *cache_entry = cache.lookup (source->instrument());
   if (!cache_entry)
     {
       cache.store (source->instrument(), new CacheEntry()); // store empty cache entry
 
-      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld\n", source->instrument().c_str(), source->instrument_id());
+      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld %p\n", source->instrument().c_str(), source->instrument_id(), p);
 
       new std::thread ([filename = source->instrument()]() {
         Instrument inst;
