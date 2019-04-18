@@ -18,7 +18,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smminiresampler.hh smmidisynth.hh smwavdata.hh smblockutils.hh \
          smalignedarray.hh smpcg32rng.hh smproperty.hh \
          smeffectdecoder.hh smadsrenvelope.hh smsignal.hh smconfig.hh \
-	 smmorphwavsource.hh smmorphwavsourcemodule.hh smcache.hh \
+	 smmorphwavsource.hh smmorphwavsourcemodule.hh \
 	 smwavsetbuilder.hh sminstrument.hh sminsteditsynth.hh \
 	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh \
 	 smzip.hh smproject.hh
@@ -40,7 +40,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smmorphgridmodule.cc smmath.cc smmorphutils.cc smutils.cc \
                            smminiresampler.cc smmidisynth.cc smwavdata.cc smblockutils.cc \
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc \
-			   smmorphwavsource.cc smmorphwavsourcemodule.cc smcache.cc \
+			   smmorphwavsource.cc smmorphwavsourcemodule.cc \
 			   smwavsetbuilder.cc sminsteditsynth.cc sminstencoder.cc \
 			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc
 

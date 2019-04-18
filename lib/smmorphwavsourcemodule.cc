@@ -6,7 +6,6 @@
 #include "smleakdebugger.hh"
 #include "sminstrument.hh"
 #include "smwavsetbuilder.hh"
-#include "smcache.hh"
 #include <glib.h>
 #include <thread>
 
@@ -104,28 +103,8 @@ void
 MorphWavSourceModule::set_config (MorphOperator *op)
 {
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
-  Cache& cache = *Cache::the();
   Project *project = op->morph_plan()->project();
 
-  CacheEntry *cache_entry = cache.lookup (source->instrument());
-  if (!cache_entry)
-    {
-      cache.store (source->instrument(), new CacheEntry()); // store empty cache entry
-
-      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld %p\n", source->instrument().c_str(), source->instrument_id(), project);
-
-      new std::thread ([filename = source->instrument()]() {
-        Instrument inst;
-        inst.load (filename);
-
-        WavSetBuilder builder (&inst, /* keep_samples */ false);
-        std::shared_ptr<WavSet> wav_set (builder.run());
-
-        CacheEntry *cache_entry = Cache::the()->lookup (filename);
-        cache_entry->set_wav_set (wav_set);
-      });
-
-    }
   my_source.update_project (project);
   my_source.update_instrument (source->instrument());
 }
