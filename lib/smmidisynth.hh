@@ -112,13 +112,10 @@ class SynthControlEvent
 public:
   virtual void prepare() = 0;
   virtual void run_rt (MidiSynth *midi_synth) = 0;
-  virtual std::string to_string() = 0;
   virtual
   ~SynthControlEvent()
   {
   }
-  static SynthControlEvent *
-  create (const std::string& str);
 };
 
 class InstEditUpdate : public SynthControlEvent
@@ -156,19 +153,6 @@ public:
         wav_set = nullptr;
       }
   }
-  std::string
-  to_string()
-  {
-    BinBuffer event_buffer;
-
-    event_buffer.write_start ("InstEditUpdate");
-    event_buffer.write_bool (active);
-    event_buffer.write_string (filename.c_str());
-    event_buffer.write_bool (original_samples);
-    event_buffer.write_end();
-
-    return event_buffer.to_string();
-  }
 };
 
 struct InstEditNote : public SynthControlEvent
@@ -181,7 +165,6 @@ public:
     on (on)
   {
   }
-  InstEditNote() = default;
   void
   prepare()
   {
@@ -196,18 +179,6 @@ public:
     event[2] = on ? 100 : 0;
 
     midi_synth->add_midi_event (0, event);
-  }
-  std::string
-  to_string()
-  {
-    BinBuffer event_buffer;
-
-    event_buffer.write_start ("InstEditNote");
-    event_buffer.write_int (midi_note);
-    event_buffer.write_bool (on);
-    event_buffer.write_end();
-
-    return event_buffer.to_string();
   }
 };
 

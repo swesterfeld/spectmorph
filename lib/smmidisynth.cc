@@ -545,32 +545,6 @@ MidiSynth::MidiEvent::channel() const
   return midi_data[0] & 0xf;
 }
 
-// ----control events----
-SynthControlEvent *
-SynthControlEvent::create (const std::string& str)
-{
-  BinBuffer buffer;
-  buffer.from_string (str);
-
-  const char *type = buffer.read_start_inplace();
-  if (strcmp (type, "InstEditUpdate") == 0)
-    {
-      bool active           = buffer.read_bool();
-      std::string filename  = buffer.read_string_inplace();
-      bool original_samples = buffer.read_bool();
-
-      return new InstEditUpdate (active, filename, original_samples);
-    }
-  else if (strcmp (type, "InstEditNote") == 0)
-    {
-      const int  midi_note = buffer.read_int();
-      const bool on        = buffer.read_bool();
-
-      return new InstEditNote (midi_note, on);
-    }
-  return nullptr;
-}
-
 // ----notify events----
 SynthNotifyEvent *
 SynthNotifyEvent::create (const std::string& str)
