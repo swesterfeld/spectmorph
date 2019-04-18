@@ -9,7 +9,6 @@
 #include "smmemout.hh"
 #include "smled.hh"
 #include "smutils.hh"
-#include "smcache.hh"
 #include "smeventloop.hh"
 
 #include <jack/jack.h>
@@ -39,7 +38,6 @@ JackSynth::process (jack_nframes_t nframes)
     {
       if (m_new_plan)
         {
-          Cache::the()->unset_used();
           midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
@@ -144,12 +142,6 @@ JackSynth::preinit_plan (MorphPlanPtr plan)
 void
 JackSynth::change_plan (MorphPlanPtr plan)
 {
-  {
-    std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-    if (!m_new_plan)
-      Cache::the()->free_unused();
-  }
-
   preinit_plan (plan);
 
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
