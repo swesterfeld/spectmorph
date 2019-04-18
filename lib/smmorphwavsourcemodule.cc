@@ -32,13 +32,7 @@ InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float m
 
   // we can not delete the old wav_set between retrigger() invocations
   //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
-
-  CacheEntry *cache_entry = Cache::the()->lookup (instrument);
-
-  if (cache_entry)
-    wav_set = cache_entry->wav_set();
-  else
-    wav_set = nullptr;
+  wav_set = project->get_wav_set();
 
   if (wav_set)
     {
@@ -83,6 +77,11 @@ InstrumentSource::update_instrument (const string& instrument)
   this->instrument = instrument;
 }
 
+void
+InstrumentSource::update_project (Project *p)
+{
+  project = p;
+}
 
 MorphWavSourceModule::MorphWavSourceModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
@@ -106,14 +105,14 @@ MorphWavSourceModule::set_config (MorphOperator *op)
 {
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
   Cache& cache = *Cache::the();
-  Project *p = op->morph_plan()->project();
+  Project *project = op->morph_plan()->project();
 
   CacheEntry *cache_entry = cache.lookup (source->instrument());
   if (!cache_entry)
     {
       cache.store (source->instrument(), new CacheEntry()); // store empty cache entry
 
-      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld %p\n", source->instrument().c_str(), source->instrument_id(), p);
+      printf ("MorphWavSourceModule::set_config: using instrument=%s source=%ld %p\n", source->instrument().c_str(), source->instrument_id(), project);
 
       new std::thread ([filename = source->instrument()]() {
         Instrument inst;
@@ -127,5 +126,6 @@ MorphWavSourceModule::set_config (MorphOperator *op)
       });
 
     }
+  my_source.update_project (project);
   my_source.update_instrument (source->instrument());
 }

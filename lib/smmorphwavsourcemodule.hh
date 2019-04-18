@@ -5,6 +5,7 @@
 
 #include "smmorphoperatormodule.hh"
 #include "smwavset.hh"
+#include "smproject.hh"
 #include <memory>
 
 namespace SpectMorph
@@ -15,11 +16,13 @@ class InstrumentSource : public LiveDecoderSource
   Audio                  *active_audio = nullptr;
   std::shared_ptr<WavSet> wav_set;
   std::string             instrument;
+  Project                *project;
 public:
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
   Audio *audio() override;
   AudioBlock *audio_block (size_t index) override;
 
+  void update_project (Project *project);
   void update_instrument (const std::string& instrument);
 };
 
