@@ -48,6 +48,7 @@ MorphWavSourceView::on_load()
         Instrument *instrument = &morph_wav_source->morph_plan()->project()->instrument;
         //morph_wav_source->set_instrument (filename);
         instrument->load (filename);
+        morph_wav_source->morph_plan()->project()->rebuild();
       /*
         Error error = load (filename);
 
@@ -79,5 +80,6 @@ MorphWavSourceView::on_edit()
     {
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, "", false);
+      morph_wav_source->morph_plan()->project()->rebuild();
     });
 }
