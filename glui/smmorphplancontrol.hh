@@ -23,6 +23,7 @@ class MorphPlanControl : public Frame
   Label       *inst_status = nullptr;
   double       m_view_height;
 
+  void update_volume_label (double volume);
 public:
   enum Features {
     ALL_WIDGETS,

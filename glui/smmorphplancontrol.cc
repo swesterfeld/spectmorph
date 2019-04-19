@@ -39,7 +39,7 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
       set_volume (-6.0);
 
       // initial label
-      on_volume_changed (volume_slider->value());
+      update_volume_label (volume_slider->value());
 
       voffset += 2;
     }
@@ -61,6 +61,7 @@ MorphPlanControl::set_volume (double v_db)
   g_return_if_fail (volume_slider);
 
   volume_slider->set_value ((v_db + 48) / 60); // map [-48:12] -> [0:1]
+  update_volume_label (v_db);
 }
 
 void
@@ -69,9 +70,15 @@ MorphPlanControl::on_volume_changed (double new_volume)
   g_return_if_fail (volume_value_label);
 
   double new_volume_f = new_volume * 60 - 48; // map [0:1] -> [-48:12]
-  volume_value_label->set_text (string_locale_printf ("%.1f dB", new_volume_f));
+  update_volume_label (new_volume_f);
 
   signal_volume_changed (new_volume_f); // emit dB value
+}
+
+void
+MorphPlanControl::update_volume_label (double volume)
+{
+  volume_value_label->set_text (string_locale_printf ("%.1f dB", volume));
 }
 
 void
