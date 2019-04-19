@@ -13,8 +13,7 @@ namespace SpectMorph
 {
 
 class LV2UI : public SignalReceiver,
-              public LV2Common,
-              public SynthInterface
+              public LV2Common
 {
   LV2Plugin            *plugin;
   std::string           current_plan;
@@ -36,7 +35,6 @@ public:
   void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
   void idle();
 
-  void synth_take_control_event (SynthControlEvent *event) override;
   std::vector<std::string> notify_take_events();
 
 /* slots: */

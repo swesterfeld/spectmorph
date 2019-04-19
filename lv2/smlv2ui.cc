@@ -49,7 +49,7 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin
 {
   morph_plan->set_plan_str (plugin->plan_str);
 
-  window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, this);
+  window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, plugin);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
@@ -91,25 +91,6 @@ LV2UI::on_plan_changed()
 
   string plan_str = HexString::encode (data);
   plugin->update_plan (plan_str);
-}
-
-void
-LV2UI::synth_take_control_event (SynthControlEvent *event)
-{
-#if 0 //XXX
-  string inst_edit_str = event->to_string();
-  delete event;
-
-  const size_t OBJ_BUF_SIZE = inst_edit_str.size() + 1024;
-  uint8_t obj_buf[OBJ_BUF_SIZE];
-  lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
-
-  const LV2_Atom *msg = write_event (&forge, inst_edit_str);
-
-  write (controller, 0, lv2_atom_total_size (msg),
-         uris.atom_eventTransfer,
-         msg);
-#endif
 }
 
 void
@@ -209,12 +190,6 @@ LV2UI::port_event (uint32_t     port_index,
                    uint32_t     format,
                    const void*  buffer)
 {
-}
-
-vector<string>
-LV2UI::notify_take_events()
-{
-  return std::move (notify_events);
 }
 
 static void

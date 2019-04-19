@@ -13,7 +13,8 @@
 namespace SpectMorph
 {
 
-class LV2Plugin : public LV2Common
+class LV2Plugin : public LV2Common,
+                  public SynthInterface
 {
 public:
   // Port buffers
@@ -37,6 +38,10 @@ public:
 
   LV2Plugin (double mix_freq);
 
+  // SynthInterface
+  void synth_take_control_event (SynthControlEvent *event) override;
+  std::vector<std::string> notify_take_events() override;
+
   // SpectMorph stuff
   Project         project;
   double          mix_freq;
@@ -51,7 +56,6 @@ public:
   ControlEventVector control_events;
 
   void update_plan (const std::string& new_plan_str);
-  void handle_event (const std::string& event_str);
 };
 
 }

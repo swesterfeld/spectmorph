@@ -111,15 +111,18 @@ LV2Plugin::update_plan (const string& new_plan_str)
 }
 
 void
-LV2Plugin::handle_event (const string& event_str)
+LV2Plugin::synth_take_control_event (SynthControlEvent *event)
 {
-#if 0 // XXX
-  SynthControlEvent *event = SynthControlEvent::create (event_str);
   event->prepare();
 
   std::lock_guard<std::mutex> lg (new_plan_mutex);
   control_events.take (event);
-#endif
+}
+
+vector<string>
+LV2Plugin::notify_take_events()
+{
+  return {}; // FIXME
 }
 
 static LV2_Handle
@@ -197,79 +200,6 @@ connect_port (LV2_Handle instance,
 static void
 activate (LV2_Handle instance)
 {
-}
-
-class WorkMsg
-{
-public:
-  enum class Type {
-    PLAN,
-    EVENT
-  };
-private:
-  char *m_str = nullptr;
-  Type  m_type;
-
-public:
-  WorkMsg (Type type, const char *str)
-  {
-    m_type = type;
-    m_str  = g_strdup (str);
-  }
-  WorkMsg (uint32_t size, const void *data)
-  {
-    assert (size == sizeof (WorkMsg));
-    memcpy (this, data, size);
-  }
-  void
-  free()
-  {
-    g_free (m_str);
-
-    m_str = NULL;
-  }
-  const char *
-  str()
-  {
-    return m_str;
-  }
-  Type
-  type()
-  {
-    return m_type;
-  }
-};
-
-static LV2_Worker_Status
-work (LV2_Handle                  instance,
-      LV2_Worker_Respond_Function respond,
-      LV2_Worker_Respond_Handle   handle,
-      uint32_t                    size,
-      const void*                 data)
-{
-  LV2Plugin* self = (LV2Plugin*)instance;
-
-  // Get new plan from message
-  WorkMsg       msg (size, data);
-
-  switch (msg.type())
-    {
-      case WorkMsg::Type::PLAN:   self->update_plan (msg.str());
-                                  break;
-      case WorkMsg::Type::EVENT:  self->handle_event (msg.str());
-                                  break;
-    }
-
-  msg.free();
-  return LV2_WORKER_SUCCESS;
-}
-
-static LV2_Worker_Status
-work_response (LV2_Handle  instance,
-               uint32_t    size,
-               const void* data)
-{
-  return LV2_WORKER_SUCCESS;
 }
 
 static void
@@ -425,15 +355,10 @@ static const void*
 extension_data (const char* uri)
 {
   static const LV2_State_Interface  state  = { save, restore };
-  static const LV2_Worker_Interface worker = { work, work_response, NULL };
 
   if (!strcmp(uri, LV2_STATE__interface))
     {
       return &state;
-    }
-  else if (!strcmp(uri, LV2_WORKER__interface))
-    {
-      return &worker;
     }
   return NULL;
 }
