@@ -90,21 +90,7 @@ LV2UI::on_plan_changed()
   morph_plan->save (&mo);
 
   string plan_str = HexString::encode (data);
-
-  // if we know that the plugin already has this plan, don't send it again
-  if (plan_str == current_plan)
-    return;
-  current_plan = plan_str;
-
-  const size_t OBJ_BUF_SIZE = plan_str.size() + 1024;
-  uint8_t obj_buf[OBJ_BUF_SIZE];
-  lv2_atom_forge_set_buffer (&forge, obj_buf, OBJ_BUF_SIZE);
-
-  const LV2_Atom* msg = write_set_plan (&forge, plan_str);
-
-  write (controller, 0, lv2_atom_total_size (msg),
-         uris.atom_eventTransfer,
-         msg);
+  plugin->update_plan (plan_str);
 }
 
 void

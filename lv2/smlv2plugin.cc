@@ -323,46 +323,6 @@ run (LV2_Handle instance, uint32_t n_samples)
 
           self->midi_synth.add_midi_event (ev->time.frames, msg);
         }
-      else if (lv2_atom_forge_is_object_type (&self->forge, ev->body.type))
-        {
-          const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
-
-          if (obj->body.otype == self->uris.spectmorph_Set)
-            {
-              const char  *plan_str;
-              const float *volume_ptr;
-              const int   *led_ptr;
-
-              if (self->read_set (obj, &plan_str, &volume_ptr, &led_ptr))
-                {
-                  if (plan_str)
-                    {
-                      // send plan change to worker
-                      WorkMsg msg (WorkMsg::Type::PLAN, plan_str);
-
-                      self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
-                    }
-                  if (volume_ptr)
-                    {
-                      self->volume = *volume_ptr;
-                    }
-                }
-            }
-          else if (obj->body.otype == self->uris.spectmorph_Event)
-            {
-              const char *event_str;
-
-              if (self->read_event (obj, &event_str))
-                {
-                  if (event_str)
-                    {
-                      WorkMsg msg (WorkMsg::Type::EVENT, event_str);
-
-                      self->schedule->schedule_work (self->schedule->handle, sizeof (msg), &msg);
-                    }
-                }
-            }
-        }
     }
   self->midi_synth.set_control_input (0, control_1);
   self->midi_synth.set_control_input (1, control_2);
