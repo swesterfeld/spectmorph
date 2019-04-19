@@ -10,7 +10,7 @@ if COND_WITH_QT
 endif
 
 if COND_WITH_LV2
-# SUBDIRS += lv2 # FIXME: use Project
+  SUBDIRS += lv2
 endif
 
 if COND_WITH_JACK
