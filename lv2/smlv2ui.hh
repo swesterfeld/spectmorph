@@ -7,6 +7,7 @@
 #include "smmorphplancontrol.hh"
 #include "smlv2common.hh"
 #include "smeventloop.hh"
+#include "smlv2plugin.hh"
 
 namespace SpectMorph
 {
@@ -15,13 +16,14 @@ class LV2UI : public SignalReceiver,
               public LV2Common,
               public SynthInterface
 {
+  LV2Plugin            *plugin;
   std::string           current_plan;
   LV2UI_Resize         *ui_resize;
   std::vector<std::string>  notify_events;
   EventLoop             event_loop;
 
 public:
-  LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize);
+  LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin *plugin);
   ~LV2UI();
 
   MorphPlanWindow      *window;

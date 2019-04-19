@@ -42,12 +42,13 @@ debug (const char *fmt, ...)
     }
 }
 
-LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
-  ui_resize (ui_resize)
-  //morph_plan (new MorphPlan ())
+LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin *plugin) :
+  plugin (plugin),
+  ui_resize (ui_resize),
+  morph_plan (new MorphPlan (plugin->project))
 {
-  Project *fake = new Project();
-  morph_plan = new MorphPlan (*fake);
+  morph_plan->set_plan_str (plugin->plan_str);
+
   window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, this);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
@@ -151,7 +152,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
   if (!sm_init_done())
     sm_init_plugin();
 
-
+  LV2Plugin *plugin = nullptr;
   PuglNativeWindow parent_win_id = 0;
   LV2_URID_Map* map    = nullptr;
   LV2UI_Resize *ui_resize = nullptr;
@@ -172,14 +173,14 @@ instantiate(const LV2UI_Descriptor*   descriptor,
         }
       else if (!strcmp (features[i]->URI, LV2_INSTANCE_ACCESS_URI))
         {
-          debug ("instance access: %s\n", ((LV2Plugin *) features[i]->data)->plan_str.c_str());
+          plugin = (LV2Plugin *) features[i]->data;
         }
     }
   if (!map)
     {
       return nullptr; // host bug, we need this feature
     }
-  LV2UI *ui = new LV2UI (parent_win_id, ui_resize);
+  LV2UI *ui = new LV2UI (parent_win_id, ui_resize, plugin);
   ui->init_map (map);
 
   ui->write = write_function;

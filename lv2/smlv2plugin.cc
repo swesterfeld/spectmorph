@@ -348,13 +348,6 @@ run (LV2_Handle instance, uint32_t n_samples)
                     }
                 }
             }
-          else if (obj->body.otype == self->uris.spectmorph_Get)
-            {
-              lv2_atom_forge_frame_time (&self->forge, offset);
-
-              std::lock_guard<std::mutex> locker (self->new_plan_mutex); // need lock to access plan_str
-              self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
-            }
           else if (obj->body.otype == self->uris.spectmorph_Event)
             {
               const char *event_str;
