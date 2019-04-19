@@ -11,6 +11,7 @@
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
+#include "lv2/lv2plug.in/ns/ext/instance-access/instance-access.h"
 
 #include <string>
 

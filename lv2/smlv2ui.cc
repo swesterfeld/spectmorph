@@ -17,7 +17,7 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
-#define DEBUG 0
+#define DEBUG 1
 
 static FILE       *debug_file = NULL;
 static std::mutex  debug_mutex;
@@ -42,9 +42,11 @@ debug (const char *fmt, ...)
 }
 
 LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize) :
-  ui_resize (ui_resize),
-  morph_plan (new MorphPlan ())
+  ui_resize (ui_resize)
+  //morph_plan (new MorphPlan ())
 {
+  Project *fake = new Project();
+  morph_plan = new MorphPlan (*fake);
   window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, this);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
@@ -106,6 +108,7 @@ LV2UI::on_plan_changed()
 void
 LV2UI::synth_take_control_event (SynthControlEvent *event)
 {
+#if 0 //XXX
   string inst_edit_str = event->to_string();
   delete event;
 
@@ -118,6 +121,7 @@ LV2UI::synth_take_control_event (SynthControlEvent *event)
   write (controller, 0, lv2_atom_total_size (msg),
          uris.atom_eventTransfer,
          msg);
+#endif
 }
 
 void
@@ -156,14 +160,18 @@ instantiate(const LV2UI_Descriptor*   descriptor,
         {
           map = (LV2_URID_Map*)features[i]->data;
         }
-      else if (!strcmp(features[i]->URI, LV2_UI__parent))
+      else if (!strcmp (features[i]->URI, LV2_UI__parent))
         {
           parent_win_id = (PuglNativeWindow)features[i]->data;
           debug ("Parent X11 ID %i\n", parent_win_id);
         }
-      else if (!strcmp(features[i]->URI, LV2_UI__resize))
+      else if (!strcmp (features[i]->URI, LV2_UI__resize))
         {
           ui_resize = (LV2UI_Resize*)features[i]->data;
+        }
+      else if (!strcmp (features[i]->URI, LV2_INSTANCE_ACCESS_URI))
+        {
+          debug ("instance access: %p\n", features[i]->data);
         }
     }
   if (!map)

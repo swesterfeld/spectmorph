@@ -88,6 +88,7 @@ public:
   LV2Plugin (double mix_freq);
 
   // SpectMorph stuff
+  Project         project;
   double          mix_freq;
   double          volume;
   std::mutex      new_plan_mutex;
@@ -117,7 +118,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   mix_freq (mix_freq),
   midi_synth (mix_freq, 64)
 {
-  MorphPlanPtr plan = new MorphPlan();
+  MorphPlanPtr plan = new MorphPlan (project);
   plan->load_default();
 
   vector<unsigned char> data;
@@ -136,7 +137,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 void
 LV2Plugin::update_plan (const string& new_plan_str)
 {
-  MorphPlanPtr new_plan = new MorphPlan();
+  MorphPlanPtr new_plan = new MorphPlan (project);
   new_plan->set_plan_str (new_plan_str);
 
   // this might take a while, and cannot be used in audio thread
@@ -162,11 +163,13 @@ LV2Plugin::update_plan (const string& new_plan_str)
 void
 LV2Plugin::handle_event (const string& event_str)
 {
+#if 0 // XXX
   SynthControlEvent *event = SynthControlEvent::create (event_str);
   event->prepare();
 
   std::lock_guard<std::mutex> lg (new_plan_mutex);
   control_events.take (event);
+#endif
 }
 
 static LV2_Handle

@@ -101,6 +101,7 @@
 
   lv2:optionalFeature ui:noUserResize ;
 
+  lv2:requiredFeature <http://lv2plug.in/ns/ext/instance-access>;
   lv2:requiredFeature urid:map;
   ui:portNotification
     [
