@@ -81,7 +81,6 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 
   volume = -6;            // default volume (dB)
   voices_active = false;  // no note being played right now
-  send_settings_to_ui = false;
 }
 
 void
@@ -108,6 +107,13 @@ LV2Plugin::update_plan (const string& new_plan_str)
   std::lock_guard<std::mutex> locker (new_plan_mutex);
   this->new_plan = new_plan;
   plan_str = new_plan_str;
+}
+
+void
+LV2Plugin::set_volume (double new_volume)
+{
+  std::lock_guard<std::mutex> locker (new_plan_mutex);
+  volume = new_volume;
 }
 
 void
@@ -236,17 +242,6 @@ run (LV2_Handle instance, uint32_t n_samples)
   // Start a sequence in the notify output port.
   lv2_atom_forge_sequence_head(&self->forge, &self->notify_frame, 0);
 
-  // send new settings to ui after restore
-  if (self->send_settings_to_ui)
-    {
-      std::lock_guard<std::mutex> locker (self->new_plan_mutex); // need lock to access plan_str
-
-      lv2_atom_forge_frame_time (&self->forge, offset);
-
-      self->write_set_all (&self->forge, self->plan_str, self->volume, self->voices_active);
-      self->send_settings_to_ui = false;
-    }
-
   LV2_ATOM_SEQUENCE_FOREACH (self->midi_in, ev)
     {
       if (ev->body.type == self->uris.midi_MidiEvent)
@@ -348,7 +343,7 @@ restore(LV2_Handle                  instance,
       self->volume = *((const float *) value);
       debug (" -> volume: %f\n", self->volume);
     }
-  self->send_settings_to_ui = true;
+  self->signal_post_load();
 
   return LV2_STATE_SUCCESS;
 }

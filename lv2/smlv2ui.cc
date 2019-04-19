@@ -50,10 +50,12 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin
   morph_plan->set_plan_str (plugin->plan_str);
 
   window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan, plugin);
+  window->control_widget()->set_volume (plugin->volume);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
+  connect (plugin->signal_post_load, this, &LV2UI::on_post_load);
 
   window->show();
 }
@@ -96,13 +98,14 @@ LV2UI::on_plan_changed()
 void
 LV2UI::on_volume_changed (double new_volume)
 {
-  vector<uint8_t> obj_buf (512);
+  plugin->set_volume (new_volume);
+}
 
-  lv2_atom_forge_set_buffer (&forge, &obj_buf[0], obj_buf.size());
-
-  const LV2_Atom* msg = write_set_volume (&forge, new_volume);
-
-  write (controller, 0, lv2_atom_total_size (msg), uris.atom_eventTransfer, msg);
+void
+LV2UI::on_post_load()
+{
+  morph_plan->set_plan_str (plugin->plan_str);
+  window->control_widget()->set_volume (plugin->volume);
 }
 
 static LV2UI_Handle
@@ -152,20 +155,6 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
   ui->write = write_function;
   ui->controller = controller;
-
-  lv2_atom_forge_init (&ui->forge, ui->map);
-
-  // Request state (volume, plan) from plugin
-  uint8_t get_buf[512];
-  lv2_atom_forge_set_buffer(&ui->forge, get_buf, sizeof(get_buf));
-
-  LV2_Atom_Forge_Frame frame;
-  LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&ui->forge, &frame, 0, ui->uris.spectmorph_Get);
-  lv2_atom_forge_pop (&ui->forge, &frame);
-
-  ui->write(ui->controller, 0, lv2_atom_total_size(msg),
-            ui->uris.atom_eventTransfer,
-            msg);
 
   *widget = (void *)ui->window->native_window();
 

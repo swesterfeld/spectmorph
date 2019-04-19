@@ -51,12 +51,14 @@ public:
   MidiSynth       midi_synth;
   std::string     plan_str;
   bool            voices_active;
-  bool            send_settings_to_ui;
 
   ControlEventVector control_events;
   std::vector<std::string> out_events;
 
   void update_plan (const std::string& new_plan_str);
+  void set_volume (double new_volume);
+
+  Signal<> signal_post_load;
 };
 
 }
