@@ -5,21 +5,16 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
-SMHDRS = smlv2common.hh smlv2plugin.hh
+SMHDRS = smlv2common.hh smlv2plugin.hh smlv2ui.hh
 
 spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 
 plugindir = $(spectmorph_lv2dir)
-plugin_libs = $(BSE_LIBS) $(SPECTMORPH_LIBS)
-plugin_LTLIBRARIES = spectmorph_lv2.la spectmorph_lv2_ui.la
+plugin_LTLIBRARIES = spectmorph_lv2.la
 
-spectmorph_lv2_la_SOURCES = smlv2plugin.cc $(SMHDRS)
-spectmorph_lv2_la_LIBADD  = $(plugin_libs)
+spectmorph_lv2_la_SOURCES = smlv2plugin.cc smlv2ui.cc $(SMHDRS)
+spectmorph_lv2_la_LIBADD  = $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static
-
-spectmorph_lv2_ui_la_SOURCES = smlv2ui.cc $(SMHDRS) smlv2ui.hh
-spectmorph_lv2_ui_la_LIBADD  = $(plugin_libs) $(SPECTMORPH_GLUI_LIBS)
-spectmorph_lv2_ui_la_LDFLAGS = -module -avoid-version -disable-static
 
 spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
@@ -32,9 +27,6 @@ EXTRA_DIST += manifest.ttl
 install-data-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.la
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.a
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.la
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.a
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.so
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2_ui.so

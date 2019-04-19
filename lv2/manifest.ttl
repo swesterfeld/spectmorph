@@ -13,5 +13,5 @@
 
 <http://spectmorph.org/plugins/spectmorph#ui>
   a ui:X11UI;
-  ui:binary <spectmorph_lv2_ui.so>;
+  ui:binary <spectmorph_lv2.so>;
   rdfs:seeAlso <spectmorph.ttl> .
