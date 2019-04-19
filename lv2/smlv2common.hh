@@ -161,40 +161,6 @@ public:
 
     return set;
   }
-
-  bool
-  read_event (const LV2_Atom_Object* obj, const char **event_str)
-  {
-    const LV2_Atom* event_property  = nullptr;
-
-    *event_str = nullptr;
-
-    lv2_atom_object_get (obj, uris.spectmorph_event,  &event_property, 0);
-
-    if (!event_property)
-      {
-        fprintf(stderr, "Malformed set message has no body.\n");
-        return false;
-      }
-    if (event_property && event_property->type == uris.atom_String)
-      {
-        *event_str = (const char*) LV2_ATOM_BODY_CONST (event_property);
-      }
-    return true;
-  }
-  LV2_Atom*
-  write_event (LV2_Atom_Forge* forge, const std::string& body)
-  {
-    LV2_Atom_Forge_Frame frame;
-    LV2_Atom* event = (LV2_Atom*) lv2_atom_forge_object (forge, &frame, 0, uris.spectmorph_Event);
-
-    lv2_atom_forge_key    (forge, uris.spectmorph_event);
-    lv2_atom_forge_string (forge, body.c_str(), body.size());
-
-    lv2_atom_forge_pop (forge, &frame);
-
-    return event;
- }
 };
 
 }
