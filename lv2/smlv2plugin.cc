@@ -13,14 +13,10 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 #include "smlv2common.hh"
-#include "smsynthinterface.hh"
+#include "smlv2plugin.hh"
 
 #include <mutex>
 
-#include "lv2/lv2plug.in/ns/ext/log/log.h"
-#include "lv2/lv2plug.in/ns/ext/log/logger.h"
-#include "lv2/lv2plug.in/ns/ext/worker/worker.h"
-#include "lv2/lv2plug.in/ns/ext/state/state.h"
 
 using namespace SpectMorph;
 using std::string;
@@ -59,52 +55,6 @@ enum PortIndex {
   SPECTMORPH_RIGHT_OUT  = 4,
   SPECTMORPH_NOTIFY     = 5
 };
-
-namespace SpectMorph
-{
-
-class LV2Plugin : public LV2Common
-{
-public:
-  // Port buffers
-  const LV2_Atom_Sequence* midi_in;
-  const float* control_1;
-  const float* control_2;
-  float*       left_out;
-  float*       right_out;
-  LV2_Atom_Sequence* notify_port;
-
-  // Logger
-  LV2_Log_Log*          log;
-  LV2_Log_Logger        logger;
-
-  LV2_Worker_Schedule*  schedule;
-
-  LV2_Atom_Forge  forge;
-
-  // Forge frame for notify port
-  LV2_Atom_Forge_Frame notify_frame;
-
-  LV2Plugin (double mix_freq);
-
-  // SpectMorph stuff
-  Project         project;
-  double          mix_freq;
-  double          volume;
-  std::mutex      new_plan_mutex;
-  MorphPlanPtr    new_plan;
-  MidiSynth       midi_synth;
-  string          plan_str;
-  bool            voices_active;
-  bool            send_settings_to_ui;
-
-  ControlEventVector control_events;
-
-  void update_plan (const string& new_plan_str);
-  void handle_event (const string& event_str);
-};
-
-}
 
 LV2Plugin::LV2Plugin (double mix_freq) :
   midi_in (NULL),

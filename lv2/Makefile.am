@@ -5,7 +5,7 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
-SMHDRS = smlv2common.hh
+SMHDRS = smlv2common.hh smlv2plugin.hh
 
 spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 

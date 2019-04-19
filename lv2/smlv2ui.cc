@@ -5,6 +5,7 @@
 
 #include "smlv2common.hh"
 #include "smlv2ui.hh"
+#include "smlv2plugin.hh"
 #include "smmemout.hh"
 #include "smhexstring.hh"
 #include "smutils.hh"
@@ -171,7 +172,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
         }
       else if (!strcmp (features[i]->URI, LV2_INSTANCE_ACCESS_URI))
         {
-          debug ("instance access: %p\n", features[i]->data);
+          debug ("instance access: %s\n", ((LV2Plugin *) features[i]->data)->plan_str.c_str());
         }
     }
   if (!map)
