@@ -122,7 +122,8 @@ LV2Plugin::synth_take_control_event (SynthControlEvent *event)
 vector<string>
 LV2Plugin::notify_take_events()
 {
-  return {}; // FIXME
+  std::lock_guard<std::mutex> lg (new_plan_mutex);
+  return std::move (out_events);
 }
 
 static LV2_Handle
@@ -215,6 +216,7 @@ run (LV2_Handle instance, uint32_t n_samples)
           self->new_plan = NULL;
         }
       self->control_events.run_rt (&self->midi_synth);
+      self->out_events = self->midi_synth.inst_edit_synth()->take_out_events();
       self->new_plan_mutex.unlock();
     }
 

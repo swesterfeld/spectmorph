@@ -54,6 +54,7 @@ public:
   bool            send_settings_to_ui;
 
   ControlEventVector control_events;
+  std::vector<std::string> out_events;
 
   void update_plan (const std::string& new_plan_str);
 };
