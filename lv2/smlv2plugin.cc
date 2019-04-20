@@ -102,8 +102,6 @@ LV2Plugin::voices_active()
 void
 LV2Plugin::synth_take_control_event (SynthControlEvent *event)
 {
-  event->prepare();
-
   std::lock_guard<std::mutex> lg (new_plan_mutex);
   control_events.take (event);
 }
