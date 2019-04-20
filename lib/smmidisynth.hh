@@ -110,7 +110,6 @@ public:
 class SynthControlEvent
 {
 public:
-  virtual void prepare() = 0;
   virtual void run_rt (MidiSynth *midi_synth) = 0;
   virtual
   ~SynthControlEvent()
@@ -120,27 +119,16 @@ public:
 
 class InstEditUpdate : public SynthControlEvent
 {
-  bool        active = false;
-  std::string filename;
-  bool        original_samples = false;
-  WavSet      *wav_set = nullptr;
+  bool                    active = false;
+  std::unique_ptr<WavSet> wav_set;
+  bool                    original_samples = false;
 
 public:
-  InstEditUpdate (bool active, const std::string& filename, bool original_samples) :
+  InstEditUpdate (bool active, WavSet *wav_set, bool original_samples) :
     active (active),
-    filename (filename),
+    wav_set (wav_set),
     original_samples (original_samples)
   {
-  }
-  InstEditUpdate() = default;
-  void
-  prepare()
-  {
-    if (filename != "")
-      {
-        wav_set = new WavSet();
-        wav_set->load (filename);
-      }
   }
   void
   run_rt (MidiSynth *midi_synth)
@@ -149,8 +137,7 @@ public:
 
     if (active)
       {
-        midi_synth->inst_edit_synth()->take_wav_set (wav_set, original_samples);
-        wav_set = nullptr;
+        midi_synth->inst_edit_synth()->take_wav_set (wav_set.release(), original_samples);
       }
   }
 };
@@ -163,10 +150,6 @@ public:
   InstEditNote (int midi_note, bool on) :
     midi_note (midi_note),
     on (on)
-  {
-  }
-  void
-  prepare()
   {
   }
   void
