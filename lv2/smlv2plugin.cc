@@ -79,8 +79,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   debug ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   midi_synth.update_plan (plan);
 
-  volume = -6;            // default volume (dB)
-  voices_active = false;  // no note being played right now
+  volume = -6;              // default volume (dB)
+  m_voices_active = false;  // no note being played right now
 }
 
 void
@@ -114,6 +114,13 @@ LV2Plugin::set_volume (double new_volume)
 {
   std::lock_guard<std::mutex> locker (new_plan_mutex);
   volume = new_volume;
+}
+
+bool
+LV2Plugin::voices_active()
+{
+  std::lock_guard<std::mutex> locker (new_plan_mutex);
+  return m_voices_active;
 }
 
 void
@@ -223,6 +230,7 @@ run (LV2_Handle instance, uint32_t n_samples)
         }
       self->control_events.run_rt (&self->midi_synth);
       self->out_events = self->midi_synth.inst_edit_synth()->take_out_events();
+      self->m_voices_active = self->midi_synth.active_voice_count() > 0;
       self->new_plan_mutex.unlock();
     }
 
@@ -230,8 +238,6 @@ run (LV2_Handle instance, uint32_t n_samples)
   const float        control_2  = *(self->control_2);
   float* const       left_out   = self->left_out;
   float* const       right_out  = self->right_out;
-
-  uint32_t  offset = 0;
 
   // Set up forge to write directly to notify output port.
   const uint32_t notify_capacity = self->notify_port->atom.size;
@@ -262,16 +268,6 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   // proper stereo support will be added later
   std::copy (left_out, left_out + n_samples, right_out);
-
-  // update led (all midi events processed by now)
-  bool new_voices_active = self->midi_synth.active_voice_count() > 0;
-  if (self->voices_active != new_voices_active)
-    {
-      lv2_atom_forge_frame_time (&self->forge, offset);
-
-      self->write_set_led (&self->forge, new_voices_active);
-      self->voices_active = new_voices_active;
-    }
 }
 
 static void
