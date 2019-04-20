@@ -90,8 +90,6 @@ public:
   void
   synth_take_control_event (SynthControlEvent *event)
   {
-    event->prepare();
-
     std::lock_guard<std::mutex> lg (synth_mutex);
     event->run_rt (midi_synth.get());
     delete event; // we could unlock before this, but it really doesn't matter
