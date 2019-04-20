@@ -117,51 +117,25 @@ public:
   }
 };
 
-class InstEditUpdate : public SynthControlEvent
+struct InstFunc : public SynthControlEvent
 {
-  bool                    active = false;
-  std::unique_ptr<WavSet> wav_set;
-  bool                    original_samples = false;
-
+  std::function<void(MidiSynth *)> func;
+  std::function<void()>            free_func;
 public:
-  InstEditUpdate (bool active, WavSet *wav_set, bool original_samples) :
-    active (active),
-    wav_set (wav_set),
-    original_samples (original_samples)
+  InstFunc (const std::function<void(MidiSynth *)>& func,
+            const std::function<void()>& free_func) :
+    func (func),
+    free_func (free_func)
   {
+  }
+  ~InstFunc()
+  {
+    free_func();
   }
   void
   run_rt (MidiSynth *midi_synth)
   {
-    midi_synth->set_inst_edit (active);
-
-    if (active)
-      {
-        midi_synth->inst_edit_synth()->take_wav_set (wav_set.release(), original_samples);
-      }
-  }
-};
-
-struct InstEditNote : public SynthControlEvent
-{
-  int midi_note;
-  bool on;
-public:
-  InstEditNote (int midi_note, bool on) :
-    midi_note (midi_note),
-    on (on)
-  {
-  }
-  void
-  run_rt (MidiSynth *midi_synth)
-  {
-    unsigned char event[3];
-
-    event[0] = on ? 0x90 : 0x80;
-    event[1] = midi_note;
-    event[2] = on ? 100 : 0;
-
-    midi_synth->add_midi_event (0, event);
+    func (midi_synth);
   }
 };
 
