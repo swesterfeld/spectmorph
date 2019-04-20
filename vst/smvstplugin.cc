@@ -110,8 +110,6 @@ VstPlugin::change_plan (MorphPlanPtr plan)
 void
 VstPlugin::synth_take_control_event (SynthControlEvent *event)
 {
-  event->prepare();
-
   std::lock_guard<std::mutex> lg (m_new_plan_mutex);
   m_control_events.take (event);
 }
