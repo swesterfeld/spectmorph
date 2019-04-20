@@ -11,36 +11,10 @@
 #include "smutils.hh"
 #include "smmain.hh"
 
-#include <mutex>
-
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
-
-#define DEBUG 1
-
-static FILE       *debug_file = NULL;
-static std::mutex  debug_mutex;
-
-static void
-debug (const char *fmt, ...)
-{
-  if (DEBUG)
-    {
-      std::lock_guard<std::mutex> locker (debug_mutex);
-
-      if (!debug_file)
-        debug_file = fopen ("/tmp/smlv2ui.log", "w");
-
-      va_list ap;
-
-      va_start (ap, fmt);
-      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
-      va_end (ap);
-      fflush (debug_file);
-    }
-}
 
 LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin *plugin) :
   plugin (plugin),
@@ -118,7 +92,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             LV2UI_Widget*             widget,
             const LV2_Feature* const* features)
 {
-  debug ("instantiate called for ui\n");
+  LV2_DEBUG ("instantiate called for ui\n");
 
   if (!sm_init_done())
     sm_init_plugin();
@@ -136,7 +110,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
       else if (!strcmp (features[i]->URI, LV2_UI__parent))
         {
           parent_win_id = (PuglNativeWindow)features[i]->data;
-          debug ("Parent X11 ID %i\n", parent_win_id);
+          LV2_DEBUG ("Parent X11 ID %ld\n", parent_win_id);
         }
       else if (!strcmp (features[i]->URI, LV2_UI__resize))
         {
@@ -168,7 +142,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 static void
 cleanup (LV2UI_Handle handle)
 {
-  debug ("cleanup called for ui\n");
+  LV2_DEBUG ("cleanup called for ui\n");
 
   LV2UI *ui = static_cast <LV2UI *> (handle);
   delete ui;

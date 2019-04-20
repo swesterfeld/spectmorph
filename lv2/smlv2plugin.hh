@@ -10,6 +10,8 @@
 #include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 
+#define LV2_DEBUG(...) Debug::debug ("lv2", __VA_ARGS__)
+
 namespace SpectMorph
 {
 

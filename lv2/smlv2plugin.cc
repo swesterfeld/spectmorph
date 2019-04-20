@@ -23,30 +23,6 @@ using std::string;
 using std::vector;
 using std::max;
 
-#define DEBUG 0
-
-static FILE       *debug_file = NULL;
-static std::mutex  debug_mutex;
-
-static void
-debug (const char *fmt, ...)
-{
-  if (DEBUG)
-    {
-      std::lock_guard<std::mutex> locker (debug_mutex);
-
-      if (!debug_file)
-        debug_file = fopen ("/tmp/smlv2plugin.log", "w");
-
-      va_list ap;
-
-      va_start (ap, fmt);
-      fprintf (debug_file, "%s", string_vprintf (fmt, ap).c_str());
-      va_end (ap);
-      fflush (debug_file);
-    }
-}
-
 enum PortIndex {
   SPECTMORPH_MIDI_IN    = 0,
   SPECTMORPH_CONTROL_1  = 1,
@@ -76,7 +52,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan->save (&mo);
   plan_str = HexString::encode (data);
 
-  debug ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
+  LV2_DEBUG ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   midi_synth.update_plan (plan);
 
   volume = -6;              // default volume (dB)
@@ -305,7 +281,7 @@ save(LV2_Handle                instance,
          self->uris.atom_Float,
          LV2_STATE_IS_POD);
 
-  debug ("state save called: %s\nstate volume: %f\n", self->plan_str.c_str(), self->volume);
+  LV2_DEBUG ("state save called: %s\nstate volume: %f\n", self->plan_str.c_str(), self->volume);
   return LV2_STATE_SUCCESS;
 }
 
@@ -318,7 +294,7 @@ restore(LV2_Handle                  instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
-  debug ("state restore called\n");
+  LV2_DEBUG ("state restore called\n");
 
   size_t      size;
   uint32_t    type;
@@ -330,14 +306,14 @@ restore(LV2_Handle                  instance,
     {
       const char *plan_str = (const char *)value;
 
-      debug (" -> plan_str: %s\n", plan_str);
+      LV2_DEBUG (" -> plan_str: %s\n", plan_str);
       self->update_plan (plan_str);
     }
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)
     {
       self->volume = *((const float *) value);
-      debug (" -> volume: %f\n", self->volume);
+      LV2_DEBUG (" -> volume: %f\n", self->volume);
     }
   self->signal_post_load();
 
