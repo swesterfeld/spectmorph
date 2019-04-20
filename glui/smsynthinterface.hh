@@ -45,9 +45,10 @@ public:
   {
   }
   void
-  synth_inst_edit_update (bool active, const std::string& filename, bool original_samples)
+  synth_inst_edit_update (bool active, WavSet *take_wav_set, bool original_samples)
   {
-    synth_take_control_event (new InstEditUpdate (active, filename, original_samples));
+    /* ownership of take_wav_set is transferred to the event */
+    synth_take_control_event (new InstEditUpdate (active, take_wav_set, original_samples));
   }
   void
   synth_inst_edit_note (int note, bool on)

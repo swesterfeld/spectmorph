@@ -42,12 +42,6 @@ class InstEditBackend
     return 440 * exp (log (2) * (note - 69) / 12.0);
   }
 
-  inline std::string
-  smset_file()
-  {
-    return sm_get_user_dir (USER_DIR_DATA) + "/midi_synth.smset";
-  }
-
 public:
   InstEditBackend (SynthInterface *synth_interface) :
     synth_interface (synth_interface)
@@ -652,25 +646,26 @@ InstEditBackend::on_timer()
   if (result_wav_set)
     {
       printf ("got result!\n");
-      result_wav_set->save (smset_file());
       for (const auto& wave : result_wav_set->waves)
         signal_have_audio (wave.midi_note, wave.audio);
 
       if (result_play_mode == PlayMode::SPECTMORPH)
         {
-          synth_interface->synth_inst_edit_update (true, smset_file(), false);
+          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), false);
         }
       else if (result_play_mode == PlayMode::SAMPLE)
         {
-          synth_interface->synth_inst_edit_update (true, smset_file(), true);
+          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), true);
         }
       else
         {
           Index index;
           index.load_file ("instruments:standard");
 
-          std::string smset_dir = index.smset_dir();
-          synth_interface->synth_inst_edit_update (true, smset_dir + "/synth-saw.smset", false);
+          WavSet *wav_set = new WavSet();
+          wav_set->load (index.smset_dir() + "/synth-saw.smset");
+
+          synth_interface->synth_inst_edit_update (true, wav_set, false);
         }
 
       // delete
