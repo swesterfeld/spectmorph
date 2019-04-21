@@ -62,7 +62,6 @@ public:
         });
   }
   virtual Project *get_project() = 0;
-  virtual std::vector<std::string> notify_take_events() = 0;
 
   Signal<SynthNotifyEvent *> signal_notify_event;
 };

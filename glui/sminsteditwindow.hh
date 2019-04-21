@@ -632,7 +632,7 @@ public:
 inline void
 InstEditBackend::on_timer()
 {
-  for (auto ev : synth_interface->notify_take_events())
+  for (auto ev : synth_interface->get_project()->notify_take_events())
     {
       SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
       if (sn_event)
