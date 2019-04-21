@@ -7,36 +7,6 @@
 namespace SpectMorph
 {
 
-class ControlEventVector
-{
-  std::vector<std::unique_ptr<SynthControlEvent>> events;
-  bool clear = false;
-public:
-  void
-  take (SynthControlEvent *ev)
-  {
-    // we'd rather run destructors in non-rt part of the code
-    if (clear)
-      {
-        events.clear();
-        clear = false;
-      }
-
-    events.emplace_back (ev);
-  }
-  void
-  run_rt (MidiSynth *midi_synth)
-  {
-    if (!clear)
-      {
-        for (const auto& ev : events)
-          ev->run_rt (midi_synth);
-
-        clear = true;
-      }
-  }
-};
-
 class SynthInterface
 {
 public:
@@ -48,12 +18,12 @@ public:
   void
   send_control_event (const std::function<void(MidiSynth *)>& func, DATA *data = nullptr)
   {
-    synth_take_control_event (new InstFunc (func, [data]() { delete data;}));
+    get_project()->synth_take_control_event (new InstFunc (func, [data]() { delete data;}));
   }
   void
   send_control_event (const std::function<void(MidiSynth *)>& func)
   {
-    synth_take_control_event (new InstFunc (func, []() {}));
+    get_project()->synth_take_control_event (new InstFunc (func, []() {}));
   }
   void
   synth_inst_edit_update (bool active, WavSet *take_wav_set, bool original_samples)
@@ -91,7 +61,7 @@ public:
           midi_synth->add_midi_event (0, event);
         });
   }
-  virtual void synth_take_control_event (SynthControlEvent *event) = 0;
+  virtual Project *get_project() = 0;
   virtual std::vector<std::string> notify_take_events() = 0;
 
   Signal<SynthNotifyEvent *> signal_notify_event;

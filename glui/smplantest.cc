@@ -10,12 +10,13 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-class NullSynthInterface : public SynthInterface
+struct NullSynthInterface : public SynthInterface
 {
-  void
-  synth_take_control_event (SynthControlEvent *event)
+  Project *m_project;
+  Project*
+  get_project() override
   {
-    delete event;
+    return m_project;
   }
   vector<string>
   notify_take_events()
@@ -36,6 +37,7 @@ main (int argc, char **argv)
 
   EventLoop event_loop;
   NullSynthInterface nsi;
+  nsi.m_project = &project;
   MorphPlanWindow window (event_loop, "SpectMorph - Plan Test", 0, false, morph_plan, &nsi);
 
   window.control_widget()->set_volume (-6);
