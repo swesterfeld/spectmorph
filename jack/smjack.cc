@@ -47,8 +47,6 @@ JackSynth::process (jack_nframes_t nframes)
 
       m_voices_active = midi_synth->active_voice_count() > 0;
 
-      m_out_events = midi_synth->inst_edit_synth()->take_out_events();
-
       m_project->synth_mutex().unlock();
     }
 

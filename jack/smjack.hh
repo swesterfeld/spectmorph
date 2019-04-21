@@ -32,8 +32,6 @@ protected:
   double                        m_new_volume;
   bool                          m_voices_active;
 
-  std::vector<std::string>      m_out_events;
-
 public:
   JackSynth (jack_client_t *client, Project *project);
   ~JackSynth();
