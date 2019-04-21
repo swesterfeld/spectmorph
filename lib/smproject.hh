@@ -36,7 +36,7 @@ public:
 
 class Project
 {
-  std::shared_ptr<WavSet> wav_set = nullptr;
+  std::shared_ptr<WavSet> wav_set;
 
   std::mutex              m_synth_mutex;
   MidiSynth              *m_midi_synth = nullptr;
@@ -44,16 +44,7 @@ class Project
 public:
   Instrument instrument;
 
-  void
-  rebuild()
-  {
-    WavSetBuilder *builder = new WavSetBuilder (&instrument, /* keep_samples */ false);
-    new std::thread ([this, builder]() {
-      /* FIXME: sharing a pointer between threads can crash */
-      wav_set = std::shared_ptr<WavSet> (builder->run());
-      delete builder;
-    });
-  }
+  void rebuild();
   std::shared_ptr<WavSet>
   get_wav_set()
   {

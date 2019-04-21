@@ -49,3 +49,28 @@ Project::synth_take_control_event (SynthControlEvent *event)
   std::lock_guard<std::mutex> lg (m_synth_mutex);
   m_control_events.take (event);
 }
+
+void
+Project::rebuild()
+{
+  WavSetBuilder *builder = new WavSetBuilder (&instrument, /* keep_samples */ false);
+
+  new std::thread ([this, builder]() {
+    struct Event : public SynthControlEvent {
+      std::shared_ptr<WavSet> wav_set;
+      Project *project;
+
+      void
+      run_rt (SpectMorph::MidiSynth*)
+      {
+        project->wav_set = wav_set;
+      }
+    } *event = new Event();
+
+    event->wav_set = std::shared_ptr<WavSet> (builder->run());
+    event->project = this;
+    delete builder;
+
+    synth_take_control_event (event);
+  });
+}
