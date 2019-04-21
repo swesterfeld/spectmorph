@@ -33,23 +33,23 @@ using std::min;
 int
 JackSynth::process (jack_nframes_t nframes)
 {
+  m_project->try_update_synth();
+
   // update plan with new parameters / new modules if necessary
-  if (m_new_plan_mutex.try_lock())
+  if (m_project->synth_mutex().try_lock())
     {
       if (m_new_plan)
         {
           midi_synth->update_plan (m_new_plan);
           m_new_plan = NULL;
         }
-      m_control_events.run_rt (midi_synth);
-
       m_volume = m_new_volume;
 
       m_voices_active = midi_synth->active_voice_count() > 0;
 
       m_out_events = midi_synth->inst_edit_synth()->take_out_events();
 
-      m_new_plan_mutex.unlock();
+      m_project->synth_mutex().unlock();
     }
 
   const float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
@@ -86,7 +86,8 @@ jack_process (jack_nframes_t nframes, void *arg)
   return instance->process (nframes);
 }
 
-JackSynth::JackSynth (jack_client_t *client) :
+JackSynth::JackSynth (jack_client_t *client, Project *project) :
+  m_project (project),
   m_voices_active (false)
 {
   m_volume = 1;
@@ -95,6 +96,7 @@ JackSynth::JackSynth (jack_client_t *client) :
   jack_mix_freq = jack_get_sample_rate (client);
 
   midi_synth = new MidiSynth (jack_mix_freq, 64);
+  m_project->change_midi_synth (midi_synth);
 
   jack_set_process_callback (client, jack_process, this);
 
@@ -144,35 +146,34 @@ JackSynth::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
   m_new_plan = plan;
 }
 
 void
 JackSynth::change_volume (double new_volume)
 {
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
   m_new_volume = new_volume;
-}
-
-void
-JackSynth::synth_take_control_event (SynthControlEvent *event)
-{
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-  m_control_events.take (event);
 }
 
 bool
 JackSynth::voices_active()
 {
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
   return m_voices_active;
+}
+
+Project*
+JackSynth::get_project()
+{
+  return m_project;
 }
 
 vector<string>
 JackSynth::notify_take_events()
 {
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
   return std::move (m_out_events);
 }
 
@@ -257,7 +258,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  JackSynth   synth (client);
+  JackSynth   synth (client, &project);
 
   EventLoop event_loop;
   MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan, &synth);

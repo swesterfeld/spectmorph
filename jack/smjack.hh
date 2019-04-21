@@ -26,26 +26,25 @@ protected:
   double                        m_volume;
 
   MidiSynth                    *midi_synth;
+  Project                      *m_project;
 
-  std::mutex                    m_new_plan_mutex;
   MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
   bool                          m_voices_active;
 
-  ControlEventVector            m_control_events;
   std::vector<std::string>      m_out_events;
 
 public:
-  JackSynth (jack_client_t *client);
+  JackSynth (jack_client_t *client, Project *project);
   ~JackSynth();
 
   void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
-  void synth_take_control_event (SynthControlEvent *event);
   bool voices_active();
   int  process (jack_nframes_t nframes);
 
+  Project *get_project() override;
   std::vector<std::string> notify_take_events();
 };
 
