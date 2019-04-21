@@ -94,12 +94,6 @@ public:
   {
     return &project;
   }
-  vector<string>
-  notify_take_events() override
-  {
-    std::lock_guard<std::mutex> lg (project.synth_mutex());
-    return midi_synth->inst_edit_synth()->take_out_events();
-  }
 };
 
 int
