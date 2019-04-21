@@ -7,6 +7,7 @@
 #include "smmorphgrid.hh"
 #include "smmain.hh"
 #include "smutils.hh"
+#include "smsynthinterface.hh"
 #include "config.h"
 
 #include <sys/time.h>
