@@ -98,47 +98,46 @@ VstPlugin::~VstPlugin()
     }
 }
 
+Project *
+VstPlugin::get_project()
+{
+  return &project;
+}
+
 void
 VstPlugin::change_plan (MorphPlanPtr plan)
 {
   preinit_plan (plan);
 
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   m_new_plan = plan;
-}
-
-void
-VstPlugin::synth_take_control_event (SynthControlEvent *event)
-{
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
-  m_control_events.take (event);
 }
 
 vector<string>
 VstPlugin::notify_take_events()
 {
-  std::lock_guard<std::mutex> lg (m_new_plan_mutex);
+  std::lock_guard<std::mutex> lg (project.synth_mutex());
   return std::move (m_out_events);
 }
 
 void
 VstPlugin::set_volume (double new_volume)
 {
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   m_volume = new_volume;
 }
 
 double
 VstPlugin::volume()
 {
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   return m_volume;
 }
 
 bool
 VstPlugin::voices_active()
 {
-  std::lock_guard<std::mutex> locker (m_new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   return m_voices_active;
 }
 
@@ -208,6 +207,8 @@ VstPlugin::set_mix_freq (double new_mix_freq)
 
   midi_synth = new MidiSynth (mix_freq, 64);
   midi_synth->update_plan (plan);
+
+  project.change_midi_synth (midi_synth);
 }
 
 
@@ -357,18 +358,19 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   VstPlugin *plugin = (VstPlugin *)effect->ptr3;
 
   // update plan with new parameters / new modules if necessary
-  if (plugin->m_new_plan_mutex.try_lock())
+  plugin->project.try_update_synth();
+
+  if (plugin->project.synth_mutex().try_lock())
     {
       if (plugin->m_new_plan)
         {
           plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
-      plugin->m_control_events.run_rt (plugin->midi_synth);
       plugin->m_out_events = plugin->midi_synth->inst_edit_synth()->take_out_events();
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
-      plugin->m_new_plan_mutex.unlock();
+      plugin->project.synth_mutex().unlock();
     }
   plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);

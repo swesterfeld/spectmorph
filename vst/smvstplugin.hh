@@ -62,7 +62,7 @@ struct VstPlugin : public SynthInterface
   void  preinit_plan (MorphPlanPtr plan);
 
   void  change_plan (MorphPlanPtr ptr);
-  void  synth_take_control_event (SynthControlEvent *event) override;
+  Project *get_project() override;
 
   std::vector<std::string> notify_take_events() override;
 
@@ -75,9 +75,7 @@ struct VstPlugin : public SynthInterface
   VstUI              *ui;
   double              mix_freq;
 
-  std::mutex          m_new_plan_mutex;
   MorphPlanPtr        m_new_plan;
-  ControlEventVector  m_control_events;
   std::vector<std::string> m_out_events;
   double              m_volume;
   bool                m_voices_active;
