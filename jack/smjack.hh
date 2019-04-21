@@ -15,7 +15,7 @@
 namespace SpectMorph
 {
 
-class JackSynth : public SynthInterface
+class JackSynth
 {
 protected:
   double                        jack_mix_freq;
@@ -43,9 +43,6 @@ public:
   void change_volume (double new_volume);
   bool voices_active();
   int  process (jack_nframes_t nframes);
-
-  Project *get_project() override;
-  std::vector<std::string> notify_take_events();
 };
 
 class JackControl : public SignalReceiver

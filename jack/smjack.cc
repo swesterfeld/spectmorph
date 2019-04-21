@@ -164,19 +164,6 @@ JackSynth::voices_active()
   return m_voices_active;
 }
 
-Project*
-JackSynth::get_project()
-{
-  return m_project;
-}
-
-vector<string>
-JackSynth::notify_take_events()
-{
-  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
-  return std::move (m_out_events);
-}
-
 JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
@@ -261,7 +248,7 @@ main (int argc, char **argv)
   JackSynth   synth (client, &project);
 
   EventLoop event_loop;
-  MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan, &synth);
+  MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
   if (filename != "")
     window.set_filename (filename);
   JackControl control (morph_plan, window, window.control_widget(), &synth);
