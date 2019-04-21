@@ -107,16 +107,6 @@ public:
   InstEditSynth *inst_edit_synth();
 };
 
-class SynthControlEvent
-{
-public:
-  virtual void run_rt (MidiSynth *midi_synth) = 0;
-  virtual
-  ~SynthControlEvent()
-  {
-  }
-};
-
 struct InstFunc : public SynthControlEvent
 {
   std::function<void(MidiSynth *)> func;

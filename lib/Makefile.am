@@ -42,7 +42,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc \
 			   smmorphwavsource.cc smmorphwavsourcemodule.cc \
 			   smwavsetbuilder.cc sminsteditsynth.cc sminstencoder.cc \
-			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc
+			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc smproject.cc
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
 libspectmorph_la_LDFLAGS = -no-undefined
