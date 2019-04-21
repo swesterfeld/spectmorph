@@ -2,6 +2,7 @@
 
 #include "smmidisynth.hh"
 #include "smmain.hh"
+#include "smproject.hh"
 
 using namespace SpectMorph;
 

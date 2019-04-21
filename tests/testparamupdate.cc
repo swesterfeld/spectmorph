@@ -5,6 +5,7 @@
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
 #include "smmain.hh"
+#include "smproject.hh"
 
 #include <sys/time.h>
 
