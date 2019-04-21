@@ -33,7 +33,7 @@ class JackSynth : public SignalReceiver,
   jack_port_t *input_port;
   jack_port_t *output_port;
 
-  std::mutex synth_mutex;
+  Project project;
   std::unique_ptr<MidiSynth> midi_synth;
 public:
   static int
@@ -51,7 +51,7 @@ public:
   int
   process (jack_nframes_t nframes)
   {
-    std::lock_guard<std::mutex> lg (synth_mutex);
+    project.try_update_synth();
 
     float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
     void *port_buf = jack_port_get_buffer (input_port, nframes);
@@ -75,6 +75,8 @@ public:
     midi_synth.reset (new MidiSynth (jack_mix_freq, 64));
     midi_synth->set_inst_edit (true);
 
+    project.change_midi_synth (midi_synth.get());
+
     jack_set_process_callback (client, jack_process, this);
 
     input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
@@ -87,18 +89,15 @@ public:
       }
   }
 
-  void
-  synth_take_control_event (SynthControlEvent *event)
+  Project *
+  get_project()
   {
-    std::lock_guard<std::mutex> lg (synth_mutex);
-    event->run_rt (midi_synth.get());
-    delete event; // we could unlock before this, but it really doesn't matter
+    return &project;
   }
-
   vector<string>
   notify_take_events() override
   {
-    std::lock_guard<std::mutex> lg (synth_mutex);
+    std::lock_guard<std::mutex> lg (project.synth_mutex());
     return midi_synth->inst_edit_synth()->take_out_events();
   }
 };
