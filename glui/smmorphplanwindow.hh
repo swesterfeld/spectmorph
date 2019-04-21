@@ -39,7 +39,6 @@ public:
   }
 
   MorphPlanWindow (EventLoop& event_loop, const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
-                   SynthInterface *synth_interface,
                    MorphPlanControl::Features f = MorphPlanControl::ALL_WIDGETS);
 
   void fill_preset_menu (Menu *menu);
