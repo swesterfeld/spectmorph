@@ -26,8 +26,7 @@ using std::map;
 using pugi::xml_document;
 using pugi::xml_node;
 
-class JackSynth : public SignalReceiver,
-                  public SynthInterface
+class JackSynth : public SignalReceiver
 {
   double jack_mix_freq;
   jack_port_t *input_port;
@@ -118,7 +117,7 @@ main (int argc, char **argv)
   instrument.load (fn);
 
   EventLoop event_loop;
-  InstEditWindow window (event_loop, &instrument, &jack_synth);
+  InstEditWindow window (event_loop, &instrument, jack_synth.get_project()->synth_interface());
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
