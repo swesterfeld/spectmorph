@@ -15,8 +15,7 @@
 namespace SpectMorph
 {
 
-class LV2Plugin : public LV2Common,
-                  public SynthInterface
+class LV2Plugin : public LV2Common
 {
 public:
   // Port buffers
@@ -39,9 +38,6 @@ public:
   LV2_Atom_Forge_Frame notify_frame;
 
   LV2Plugin (double mix_freq);
-
-  // SynthInterface
-  Project *get_project() override { return &project; }
 
   // SpectMorph stuff
   Project         project;
