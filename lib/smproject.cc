@@ -5,6 +5,9 @@
 
 using namespace SpectMorph;
 
+using std::string;
+using std::vector;
+
 void
 ControlEventVector::take (SynthControlEvent *ev)
 {
@@ -39,6 +42,8 @@ Project::try_update_synth()
   if (m_synth_mutex.try_lock())
     {
       m_control_events.run_rt (m_midi_synth);
+      m_out_events = m_midi_synth->inst_edit_synth()->take_out_events();
+
       m_synth_mutex.unlock();
     }
 }
@@ -73,4 +78,11 @@ Project::rebuild()
 
     synth_take_control_event (event);
   });
+}
+
+vector<string>
+Project::notify_take_events()
+{
+  std::lock_guard<std::mutex> lg (m_synth_mutex);
+  return std::move (m_out_events);
 }

@@ -38,9 +38,10 @@ class Project
 {
   std::shared_ptr<WavSet> wav_set;
 
-  std::mutex              m_synth_mutex;
-  MidiSynth              *m_midi_synth = nullptr;
-  ControlEventVector      m_control_events;
+  std::mutex                m_synth_mutex;
+  MidiSynth                *m_midi_synth = nullptr;
+  ControlEventVector        m_control_events;
+  std::vector<std::string>  m_out_events;
 public:
   Instrument instrument;
 
@@ -75,6 +76,7 @@ public:
   {
     m_midi_synth = midi_synth;
   }
+  std::vector<std::string> notify_take_events();
 };
 
 }
