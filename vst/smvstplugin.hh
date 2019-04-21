@@ -64,8 +64,6 @@ struct VstPlugin : public SynthInterface
   void  change_plan (MorphPlanPtr ptr);
   Project *get_project() override;
 
-  std::vector<std::string> notify_take_events() override;
-
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
 
@@ -76,7 +74,6 @@ struct VstPlugin : public SynthInterface
   double              mix_freq;
 
   MorphPlanPtr        m_new_plan;
-  std::vector<std::string> m_out_events;
   double              m_volume;
   bool                m_voices_active;
   double              rt_volume; // realtime thread only

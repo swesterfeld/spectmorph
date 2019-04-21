@@ -113,13 +113,6 @@ VstPlugin::change_plan (MorphPlanPtr plan)
   m_new_plan = plan;
 }
 
-vector<string>
-VstPlugin::notify_take_events()
-{
-  std::lock_guard<std::mutex> lg (project.synth_mutex());
-  return std::move (m_out_events);
-}
-
 void
 VstPlugin::set_volume (double new_volume)
 {
@@ -367,7 +360,6 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
           plugin->midi_synth->update_plan (plugin->m_new_plan);
           plugin->m_new_plan = NULL;
         }
-      plugin->m_out_events = plugin->midi_synth->inst_edit_synth()->take_out_events();
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
       plugin->project.synth_mutex().unlock();
