@@ -64,11 +64,7 @@ smscrolltest_SOURCES = smscrolltest.cc
 smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smscrolltest_LDFLAGS = $(PUGL_LDFLAGS)
 
-smplantest_SOURCES = smplantest.cc
-smplantest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
-smplantest_LDFLAGS = $(PUGL_LDFLAGS)
-
-noinst_PROGRAMS = smuitest smplantest smscrolltest
+noinst_PROGRAMS = smuitest smscrolltest
 
 smgluiincludedir = $(includedir)/spectmorph/smglui
 smgluiinclude_HEADERS = $(SMHDRS) spectmorphglui.hh
