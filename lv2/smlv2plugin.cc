@@ -44,6 +44,8 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   mix_freq (mix_freq),
   midi_synth (mix_freq, 64)
 {
+  project.change_midi_synth (&midi_synth);
+
   MorphPlanPtr plan = new MorphPlan (project);
   plan->load_default();
 
@@ -80,7 +82,7 @@ LV2Plugin::update_plan (const string& new_plan_str)
     }
 
   // install new plan
-  std::lock_guard<std::mutex> locker (new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   this->new_plan = new_plan;
   plan_str = new_plan_str;
 }
@@ -88,28 +90,21 @@ LV2Plugin::update_plan (const string& new_plan_str)
 void
 LV2Plugin::set_volume (double new_volume)
 {
-  std::lock_guard<std::mutex> locker (new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   volume = new_volume;
 }
 
 bool
 LV2Plugin::voices_active()
 {
-  std::lock_guard<std::mutex> locker (new_plan_mutex);
+  std::lock_guard<std::mutex> locker (project.synth_mutex());
   return m_voices_active;
-}
-
-void
-LV2Plugin::synth_take_control_event (SynthControlEvent *event)
-{
-  std::lock_guard<std::mutex> lg (new_plan_mutex);
-  control_events.take (event);
 }
 
 vector<string>
 LV2Plugin::notify_take_events()
 {
-  std::lock_guard<std::mutex> lg (new_plan_mutex);
+  std::lock_guard<std::mutex> lg (project.synth_mutex());
   return std::move (out_events);
 }
 
@@ -195,17 +190,18 @@ run (LV2_Handle instance, uint32_t n_samples)
 {
   LV2Plugin* self = (LV2Plugin*)instance;
 
-  if (self->new_plan_mutex.try_lock())
+  self->project.try_update_synth();
+
+  if (self->project.synth_mutex().try_lock())
     {
       if (self->new_plan)
         {
           self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
         }
-      self->control_events.run_rt (&self->midi_synth);
       self->out_events = self->midi_synth.inst_edit_synth()->take_out_events();
       self->m_voices_active = self->midi_synth.active_voice_count() > 0;
-      self->new_plan_mutex.unlock();
+      self->project.synth_mutex().unlock();
     }
 
   const float        control_1  = *(self->control_1);
@@ -264,7 +260,7 @@ save(LV2_Handle                instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
-  std::lock_guard<std::mutex> locker (self->new_plan_mutex); // we read plan_str
+  std::lock_guard<std::mutex> locker (self->project.synth_mutex()); // we read plan_str
 
   store (handle,
          self->uris.spectmorph_plan,

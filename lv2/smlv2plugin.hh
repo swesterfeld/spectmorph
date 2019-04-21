@@ -41,20 +41,18 @@ public:
   LV2Plugin (double mix_freq);
 
   // SynthInterface
-  void synth_take_control_event (SynthControlEvent *event) override;
+  Project *get_project() override { return &project; }
   std::vector<std::string> notify_take_events() override;
 
   // SpectMorph stuff
   Project         project;
   double          mix_freq;
   double          volume;
-  std::mutex      new_plan_mutex;
   MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   std::string     plan_str;
   bool            m_voices_active;
 
-  ControlEventVector control_events;
   std::vector<std::string> out_events;
 
   void update_plan (const std::string& new_plan_str);
