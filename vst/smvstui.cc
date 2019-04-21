@@ -37,7 +37,7 @@ bool
 VstUI::open (PuglNativeWindow win_id)
 {
   event_loop = new EventLoop();
-  widget = new MorphPlanWindow (*event_loop, "SpectMorph VST", win_id, false, morph_plan, plugin);
+  widget = new MorphPlanWindow (*event_loop, "SpectMorph VST", win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
   widget->control_widget()->set_volume (plugin->volume());

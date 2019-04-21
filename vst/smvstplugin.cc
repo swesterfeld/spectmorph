@@ -98,12 +98,6 @@ VstPlugin::~VstPlugin()
     }
 }
 
-Project *
-VstPlugin::get_project()
-{
-  return &project;
-}
-
 void
 VstPlugin::change_plan (MorphPlanPtr plan)
 {
