@@ -21,7 +21,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
 	 smmorphwavsource.hh smmorphwavsourcemodule.hh \
 	 smwavsetbuilder.hh sminstrument.hh sminsteditsynth.hh \
 	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh \
-	 smzip.hh smproject.hh
+	 smzip.hh smproject.hh smsynthinterface.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \

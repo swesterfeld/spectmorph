@@ -14,6 +14,7 @@ namespace SpectMorph
 {
 
 class MidiSynth;
+class SynthInterface;
 
 class SynthControlEvent
 {
@@ -42,8 +43,12 @@ class Project
   MidiSynth                *m_midi_synth = nullptr;
   ControlEventVector        m_control_events;
   std::vector<std::string>  m_out_events;
+
+  std::unique_ptr<SynthInterface> m_synth_interface;
 public:
   Instrument instrument;
+
+  Project();
 
   void rebuild();
   std::shared_ptr<WavSet>
@@ -77,6 +82,7 @@ public:
     m_midi_synth = midi_synth;
   }
   std::vector<std::string> notify_take_events();
+  SynthInterface *synth_interface();
 };
 
 }

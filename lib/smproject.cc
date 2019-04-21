@@ -2,6 +2,7 @@
 
 #include "smproject.hh"
 #include "smmidisynth.hh"
+#include "smsynthinterface.hh"
 
 using namespace SpectMorph;
 
@@ -85,4 +86,15 @@ Project::notify_take_events()
 {
   std::lock_guard<std::mutex> lg (m_synth_mutex);
   return std::move (m_out_events);
+}
+
+SynthInterface *
+Project::synth_interface()
+{
+  return m_synth_interface.get();
+}
+
+Project::Project()
+{
+  m_synth_interface.reset (new SynthInterface (this));
 }
