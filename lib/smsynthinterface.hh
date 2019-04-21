@@ -15,6 +15,11 @@ public:
   {
     m_project = project;
   }
+  Project *
+  get_project()
+  {
+    return m_project;
+  }
   template<class DATA>
   void
   send_control_event (const std::function<void(MidiSynth *)>& func, DATA *data = nullptr)
