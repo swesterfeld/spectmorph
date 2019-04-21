@@ -25,6 +25,13 @@ STORAGE:
 - smjack should keep instrument in memory after load / edit
 - load/edit should actually show the instrument
 - morph plan attachments
-- lv2 plugin should use instance access
 - store-as-zip with preset
 - sminstedit load / store instrument should work
+
+PROJECT:
+- migrate set-plan, active, ... to Project
+- Project::set_mix_freq -> make Project own MidiSynth
+- support more than one Instrument
+- thread::join()
+- improve background rendering code
+- change ControlEvent signature: use Project* instead of MidiSynth*
