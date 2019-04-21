@@ -42,7 +42,6 @@ public:
 
   // SynthInterface
   Project *get_project() override { return &project; }
-  std::vector<std::string> notify_take_events() override;
 
   // SpectMorph stuff
   Project         project;
@@ -52,8 +51,6 @@ public:
   MidiSynth       midi_synth;
   std::string     plan_str;
   bool            m_voices_active;
-
-  std::vector<std::string> out_events;
 
   void update_plan (const std::string& new_plan_str);
   void set_volume (double new_volume);

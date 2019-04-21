@@ -101,13 +101,6 @@ LV2Plugin::voices_active()
   return m_voices_active;
 }
 
-vector<string>
-LV2Plugin::notify_take_events()
-{
-  std::lock_guard<std::mutex> lg (project.synth_mutex());
-  return std::move (out_events);
-}
-
 static LV2_Handle
 instantiate (const LV2_Descriptor*     descriptor,
              double                    rate,
@@ -199,7 +192,6 @@ run (LV2_Handle instance, uint32_t n_samples)
           self->midi_synth.update_plan (self->new_plan);
           self->new_plan = NULL;
         }
-      self->out_events = self->midi_synth.inst_edit_synth()->take_out_events();
       self->m_voices_active = self->midi_synth.active_voice_count() > 0;
       self->project.synth_mutex().unlock();
     }
