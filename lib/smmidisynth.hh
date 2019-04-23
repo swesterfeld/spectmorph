@@ -55,7 +55,7 @@ class MidiSynth
   std::vector<Voice>    voices;
   std::vector<Voice *>  idle_voices;
   std::vector<Voice *>  active_voices;
-  double                mix_freq;
+  double                m_mix_freq;
   bool                  pedal_down;
   size_t                audio_time_stamp;
   bool                  mono_enabled;
@@ -100,6 +100,7 @@ public:
 
   void set_control_input (int i, float value);
   void update_plan (MorphPlanPtr new_plan);
+  double mix_freq() const;
 
   size_t active_voice_count() const;
 

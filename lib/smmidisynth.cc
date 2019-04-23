@@ -22,7 +22,7 @@ using std::string;
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq),
   m_inst_edit_synth (mix_freq),
-  mix_freq (mix_freq),
+  m_mix_freq (mix_freq),
   pedal_down (false),
   audio_time_stamp (0),
   mono_enabled (false),
@@ -204,7 +204,7 @@ void
 MidiSynth::start_pitch_bend (Voice *voice, double dest_freq, double time_ms)
 {
   // require at least one step
-  voice->pitch_bend_steps = max (sm_round_positive (time_ms / 1000.0 * mix_freq), 1);
+  voice->pitch_bend_steps = max (sm_round_positive (time_ms / 1000.0 * m_mix_freq), 1);
 
   // "steps" multiplications with factor will produce voice->pitch_bend_freq == dest_freq
   voice->pitch_bend_factor = exp (log (dest_freq / voice->pitch_bend_freq) / voice->pitch_bend_steps);
@@ -446,7 +446,7 @@ MidiSynth::process (float *output, size_t n_values)
 
   midi_events.clear();
 
-  morph_plan_synth.update_shared_state (n_values / mix_freq * 1000);
+  morph_plan_synth.update_shared_state (n_values / m_mix_freq * 1000);
 }
 
 void
@@ -498,6 +498,12 @@ InstEditSynth *
 MidiSynth::inst_edit_synth()
 {
   return &m_inst_edit_synth;
+}
+
+double
+MidiSynth::mix_freq() const
+{
+  return m_mix_freq;
 }
 
 // midi event classification functions
