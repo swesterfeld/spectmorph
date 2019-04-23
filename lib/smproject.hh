@@ -13,16 +13,39 @@
 namespace SpectMorph
 {
 
+class Project;
 class MidiSynth;
 class SynthInterface;
 
 class SynthControlEvent
 {
 public:
-  virtual void run_rt (MidiSynth *midi_synth) = 0;
+  virtual void run_rt (Project *project) = 0;
   virtual
   ~SynthControlEvent()
   {
+  }
+};
+
+struct InstFunc : public SynthControlEvent
+{
+  std::function<void(Project *)> func;
+  std::function<void()>          free_func;
+public:
+  InstFunc (const std::function<void(Project *)>& func,
+            const std::function<void()>& free_func) :
+    func (func),
+    free_func (free_func)
+  {
+  }
+  ~InstFunc()
+  {
+    free_func();
+  }
+  void
+  run_rt (Project *project)
+  {
+    func (project);
   }
 };
 
@@ -32,7 +55,7 @@ class ControlEventVector
   bool clear = false;
 public:
   void take (SynthControlEvent *ev);
-  void run_rt (MidiSynth *midi_synth);
+  void run_rt (Project *project);
 };
 
 class Project
@@ -82,7 +105,8 @@ public:
     m_midi_synth = midi_synth;
   }
   std::vector<std::string> notify_take_events();
-  SynthInterface *synth_interface();
+  SynthInterface *synth_interface() const;
+  MidiSynth *midi_synth() const;
 };
 
 }

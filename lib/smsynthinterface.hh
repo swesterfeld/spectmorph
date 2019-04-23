@@ -22,12 +22,12 @@ public:
   }
   template<class DATA>
   void
-  send_control_event (const std::function<void(MidiSynth *)>& func, DATA *data = nullptr)
+  send_control_event (const std::function<void(Project *)>& func, DATA *data = nullptr)
   {
     m_project->synth_take_control_event (new InstFunc (func, [data]() { delete data;}));
   }
   void
-  send_control_event (const std::function<void(MidiSynth *)>& func)
+  send_control_event (const std::function<void(Project *)>& func)
   {
     m_project->synth_take_control_event (new InstFunc (func, []() {}));
   }
@@ -43,12 +43,12 @@ public:
     event_data->wav_set.reset (take_wav_set);
 
     send_control_event (
-      [=] (MidiSynth *midi_synth)
+      [=] (Project *project)
         {
-          midi_synth->set_inst_edit (active);
+          project->midi_synth()->set_inst_edit (active);
 
           if (active)
-            midi_synth->inst_edit_synth()->take_wav_set (event_data->wav_set.release(), original_samples);
+            project->midi_synth()->inst_edit_synth()->take_wav_set (event_data->wav_set.release(), original_samples);
         },
       event_data);
   }
@@ -56,7 +56,7 @@ public:
   synth_inst_edit_note (int note, bool on)
   {
     send_control_event (
-      [=] (MidiSynth *midi_synth)
+      [=] (Project *project)
         {
           unsigned char event[3];
 
@@ -64,7 +64,7 @@ public:
           event[1] = note;
           event[2] = on ? 100 : 0;
 
-          midi_synth->add_midi_event (0, event);
+          project->midi_synth()->add_midi_event (0, event);
         });
   }
   Signal<SynthNotifyEvent *> signal_notify_event;

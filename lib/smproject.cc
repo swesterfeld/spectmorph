@@ -23,12 +23,12 @@ ControlEventVector::take (SynthControlEvent *ev)
 }
 
 void
-ControlEventVector::run_rt (MidiSynth *midi_synth)
+ControlEventVector::run_rt (Project *project)
 {
   if (!clear)
     {
       for (const auto& ev : events)
-        ev->run_rt (midi_synth);
+        ev->run_rt (project);
 
       clear = true;
     }
@@ -42,7 +42,7 @@ Project::try_update_synth()
   //  - process events
   if (m_synth_mutex.try_lock())
     {
-      m_control_events.run_rt (m_midi_synth);
+      m_control_events.run_rt (this);
       m_out_events = m_midi_synth->inst_edit_synth()->take_out_events();
 
       m_synth_mutex.unlock();
@@ -64,17 +64,15 @@ Project::rebuild()
   new std::thread ([this, builder]() {
     struct Event : public SynthControlEvent {
       std::shared_ptr<WavSet> wav_set;
-      Project *project;
 
       void
-      run_rt (SpectMorph::MidiSynth*)
+      run_rt (Project *project) // FIXME: EventData!
       {
         project->wav_set = wav_set;
       }
     } *event = new Event();
 
     event->wav_set = std::shared_ptr<WavSet> (builder->run());
-    event->project = this;
     delete builder;
 
     synth_take_control_event (event);
@@ -89,9 +87,15 @@ Project::notify_take_events()
 }
 
 SynthInterface *
-Project::synth_interface()
+Project::synth_interface() const
 {
   return m_synth_interface.get();
+}
+
+MidiSynth *
+Project::midi_synth() const
+{
+  return m_midi_synth;
 }
 
 Project::Project()

@@ -107,28 +107,6 @@ public:
   InstEditSynth *inst_edit_synth();
 };
 
-struct InstFunc : public SynthControlEvent
-{
-  std::function<void(MidiSynth *)> func;
-  std::function<void()>            free_func;
-public:
-  InstFunc (const std::function<void(MidiSynth *)>& func,
-            const std::function<void()>& free_func) :
-    func (func),
-    free_func (free_func)
-  {
-  }
-  ~InstFunc()
-  {
-    free_func();
-  }
-  void
-  run_rt (MidiSynth *midi_synth)
-  {
-    func (midi_synth);
-  }
-};
-
 class SynthNotifyEvent
 {
 public:
