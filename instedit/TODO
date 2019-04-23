@@ -29,9 +29,8 @@ STORAGE:
 - sminstedit load / store instrument should work
 
 PROJECT:
-- migrate set-plan, active, ... to Project
+- migrate active, ... to Project
 - Project::set_mix_freq -> make Project own MidiSynth
 - support more than one Instrument
 - thread::join()
 - improve background rendering code
-- change ControlEvent signature: use Project* instead of MidiSynth*
