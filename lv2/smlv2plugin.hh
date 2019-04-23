@@ -43,7 +43,6 @@ public:
   Project         project;
   double          mix_freq;
   double          volume;
-  MorphPlanPtr    new_plan;
   MidiSynth       midi_synth;
   std::string     plan_str;
   bool            m_voices_active;

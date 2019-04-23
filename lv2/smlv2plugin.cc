@@ -66,24 +66,10 @@ LV2Plugin::update_plan (const string& new_plan_str)
 {
   MorphPlanPtr new_plan = new MorphPlan (project);
   new_plan->set_plan_str (new_plan_str);
+  project.update_plan (new_plan);
 
-  // this might take a while, and cannot be used in audio thread
-  MorphPlanSynth mp_synth (mix_freq);
-  MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (new_plan);
-
-  MorphOutputModule *om = mp_voice->output();
-  if (om)
-    {
-      om->retrigger (0, 440, 1);
-      float s;
-      float *values[1] = { &s };
-      om->process (1, values, 1);
-    }
-
-  // install new plan
+  // store plan for later
   std::lock_guard<std::mutex> locker (project.synth_mutex());
-  this->new_plan = new_plan;
   plan_str = new_plan_str;
 }
 
@@ -187,11 +173,6 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   if (self->project.synth_mutex().try_lock())
     {
-      if (self->new_plan)
-        {
-          self->midi_synth.update_plan (self->new_plan);
-          self->new_plan = NULL;
-        }
       self->m_voices_active = self->midi_synth.active_voice_count() > 0;
       self->project.synth_mutex().unlock();
     }
