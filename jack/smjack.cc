@@ -38,11 +38,6 @@ JackSynth::process (jack_nframes_t nframes)
   // update plan with new parameters / new modules if necessary
   if (m_project->synth_mutex().try_lock())
     {
-      if (m_new_plan)
-        {
-          midi_synth->update_plan (m_new_plan);
-          m_new_plan = NULL;
-        }
       m_volume = m_new_volume;
 
       m_voices_active = midi_synth->active_voice_count() > 0;
@@ -122,30 +117,9 @@ JackSynth::~JackSynth()
 }
 
 void
-JackSynth::preinit_plan (MorphPlanPtr plan)
-{
-  // this might take a while, and cannot be used in RT callback
-  MorphPlanSynth mp_synth (jack_mix_freq);
-  MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (plan);
-
-  MorphOutputModule *om = mp_voice->output();
-  if (om)
-    {
-      om->retrigger (0, 440, 1);
-      float s;
-      float *values[1] = { &s };
-      om->process (1, values, 1);
-    }
-}
-
-void
 JackSynth::change_plan (MorphPlanPtr plan)
 {
-  preinit_plan (plan);
-
-  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
-  m_new_plan = plan;
+  m_project->update_plan (plan);
 }
 
 void

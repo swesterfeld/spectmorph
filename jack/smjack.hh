@@ -28,7 +28,6 @@ protected:
   MidiSynth                    *midi_synth;
   Project                      *m_project;
 
-  MorphPlanPtr                  m_new_plan;
   double                        m_new_volume;
   bool                          m_voices_active;
 
@@ -36,7 +35,6 @@ public:
   JackSynth (jack_client_t *client, Project *project);
   ~JackSynth();
 
-  void preinit_plan (MorphPlanPtr plan);
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
   bool voices_active();
