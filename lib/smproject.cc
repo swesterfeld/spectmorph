@@ -3,6 +3,7 @@
 #include "smproject.hh"
 #include "smmidisynth.hh"
 #include "smsynthinterface.hh"
+#include "smmorphoutputmodule.hh"
 
 using namespace SpectMorph;
 
@@ -101,4 +102,25 @@ Project::midi_synth() const
 Project::Project()
 {
   m_synth_interface.reset (new SynthInterface (this));
+}
+
+void
+Project::update_plan (MorphPlanPtr plan)
+{
+  // this might take a while, and cannot be done in synthesis thread
+  MorphPlanSynth mp_synth (m_midi_synth->mix_freq());
+  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  mp_synth.update_plan (plan);
+
+  MorphOutputModule *om = mp_voice->output();
+  if (om)
+    {
+      om->retrigger (0, 440, 1);
+      float s;
+      float *values[1] = { &s };
+      om->process (1, values, 1);
+    }
+
+  // FIXME: refptr is locking (which is not too good)
+  m_synth_interface->emit_update_plan (plan);
 }

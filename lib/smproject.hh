@@ -6,6 +6,7 @@
 #include "sminstrument.hh"
 #include "smwavset.hh"
 #include "smwavsetbuilder.hh"
+#include "smobject.hh"
 
 #include <thread>
 #include <mutex>
@@ -16,6 +17,7 @@ namespace SpectMorph
 class Project;
 class MidiSynth;
 class SynthInterface;
+class MorphPlan;
 
 class SynthControlEvent
 {
@@ -104,6 +106,8 @@ public:
   {
     m_midi_synth = midi_synth;
   }
+  void update_plan (RefPtr<MorphPlan> plan);
+
   std::vector<std::string> notify_take_events();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;

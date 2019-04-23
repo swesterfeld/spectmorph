@@ -67,6 +67,25 @@ public:
           project->midi_synth()->add_midi_event (0, event);
         });
   }
+  void
+  emit_update_plan (MorphPlanPtr new_plan)
+  {
+    /* ownership of plan is transferred to the event */
+    struct EventData
+    {
+      MorphPlanPtr plan;
+    } *event_data = new EventData;
+
+    // FIXME: refptr is locking (which is not too good)
+    event_data->plan = new_plan;
+
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->midi_synth()->update_plan (event_data->plan);
+        },
+      event_data);
+  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
