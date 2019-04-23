@@ -59,7 +59,6 @@ struct VstPlugin
   bool  voices_active();
 
   void  set_mix_freq (double mix_freq);
-  void  preinit_plan (MorphPlanPtr plan);
 
   void  change_plan (MorphPlanPtr ptr);
 
@@ -72,7 +71,6 @@ struct VstPlugin
   VstUI              *ui;
   double              mix_freq;
 
-  MorphPlanPtr        m_new_plan;
   double              m_volume;
   bool                m_voices_active;
   double              rt_volume; // realtime thread only

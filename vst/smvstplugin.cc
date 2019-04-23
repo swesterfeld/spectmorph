@@ -46,24 +46,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-void
-VstPlugin::preinit_plan (MorphPlanPtr plan)
-{
-  // this might take a while, and cannot be used in RT callback
-  MorphPlanSynth mp_synth (mix_freq);
-  MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (plan);
-
-  MorphOutputModule *om = mp_voice->output();
-  if (om)
-    {
-      om->retrigger (0, 440, 1);
-      float s;
-      float *values[1] = { &s };
-      om->process (1, values, 1);
-    }
-}
-
 VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
@@ -101,10 +83,7 @@ VstPlugin::~VstPlugin()
 void
 VstPlugin::change_plan (MorphPlanPtr plan)
 {
-  preinit_plan (plan);
-
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  m_new_plan = plan;
+  project.update_plan (plan);
 }
 
 void
@@ -349,11 +328,6 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
 
   if (plugin->project.synth_mutex().try_lock())
     {
-      if (plugin->m_new_plan)
-        {
-          plugin->midi_synth->update_plan (plugin->m_new_plan);
-          plugin->m_new_plan = NULL;
-        }
       plugin->rt_volume = plugin->m_volume;
       plugin->m_voices_active = plugin->midi_synth->active_voice_count() > 0;
       plugin->project.synth_mutex().unlock();
