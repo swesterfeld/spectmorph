@@ -62,7 +62,7 @@ public:
 
 class Project : public SignalReceiver
 {
-  std::shared_ptr<WavSet> wav_set;
+  std::vector<std::shared_ptr<WavSet>> wav_sets;
 
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
@@ -86,11 +86,7 @@ public:
   int add_instrument();
   Instrument *get_instrument (int inst_id);
 
-  std::shared_ptr<WavSet>
-  get_wav_set()
-  {
-    return wav_set;
-  }
+  std::shared_ptr<WavSet> get_wav_set (int inst_id);
 
   void synth_take_control_event (SynthControlEvent *event);
 

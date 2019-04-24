@@ -68,18 +68,25 @@ Project::rebuild (int inst_id)
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
 
-  new std::thread ([this, builder]() {
+  // FIXME: improve rendering pipeline; this version can crash due to more than one rendering thread
+  new std::thread ([this, builder, inst_id]() {
     struct Event : public SynthControlEvent {
       std::shared_ptr<WavSet> wav_set;
+      int                     inst_id;
 
       void
       run_rt (Project *project) // FIXME: EventData!
       {
-        project->wav_set = wav_set;
+        size_t s = inst_id + 1;
+        if (s > project->wav_sets.size())
+          project->wav_sets.resize (s);
+
+        project->wav_sets[inst_id] = wav_set;
       }
     } *event = new Event();
 
     event->wav_set = std::shared_ptr<WavSet> (builder->run());
+    event->inst_id = inst_id;
     delete builder;
 
     synth_take_control_event (event);
@@ -102,6 +109,15 @@ Instrument *
 Project::get_instrument (int inst_id)
 {
   return instrument_map[inst_id].get();
+}
+
+std::shared_ptr<WavSet>
+Project::get_wav_set (int inst_id)
+{
+  if (size_t (inst_id) < wav_sets.size())
+    return wav_sets[inst_id];
+  else
+    return nullptr;
 }
 
 vector<string>

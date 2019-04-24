@@ -31,7 +31,7 @@ InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float m
 
   // we can not delete the old wav_set between retrigger() invocations
   //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
-  wav_set = project->get_wav_set();
+  wav_set = project->get_wav_set (instrument_id);
 
   if (wav_set)
     {
