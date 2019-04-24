@@ -35,13 +35,13 @@ public:
   double view_height();
 
   void set_volume (double volume);
-  void set_led (bool on);
 
   Signal<double> signal_volume_changed;
 
 /* slots */
   void on_volume_changed (double new_volume);
   void on_index_changed();
+  void on_update_led();
 };
 
 }

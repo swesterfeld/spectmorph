@@ -3,6 +3,7 @@
 #include "smmorphplancontrol.hh"
 #include "smfixedgrid.hh"
 #include "smlabel.hh"
+#include "smtimer.hh"
 
 using namespace SpectMorph;
 
@@ -52,6 +53,14 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
 
   connect (plan->signal_index_changed, this, &MorphPlanControl::on_index_changed);
 
+  /* --- update led each time process_events() is called: --- */
+  // NOTE: this would be cleaner if Timers could be owned by widgets (rather than windows)
+  // however, as MorphPlanControl and MorphPlanWindow are created/destroyed together,
+  // everything is fine...
+  Timer *led_timer = new Timer (window());
+  connect (led_timer->signal_timeout, this, &MorphPlanControl::on_update_led);
+  led_timer->start (0);
+
   on_index_changed();
 }
 
@@ -82,11 +91,11 @@ MorphPlanControl::update_volume_label (double volume)
 }
 
 void
-MorphPlanControl::set_led (bool on)
+MorphPlanControl::on_update_led()
 {
   g_return_if_fail (midi_led);
 
-  midi_led->set_on (on);
+  midi_led->set_on (morph_plan->project()->voices_active());
 }
 
 void
