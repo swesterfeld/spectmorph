@@ -45,30 +45,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 {
   project.set_mix_freq (mix_freq);
 
-  MorphPlanPtr plan = new MorphPlan (project);
-  plan->load_default();
-
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  plan->save (&mo);
-  plan_str = HexString::encode (data);
-
-  LV2_DEBUG ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-  project.midi_synth()->update_plan (plan); // FIXME: remove me later
-
   volume = -6;              // default volume (dB)
-}
-
-void
-LV2Plugin::update_plan (const string& new_plan_str)
-{
-  MorphPlanPtr new_plan = new MorphPlan (project);
-  new_plan->set_plan_str (new_plan_str);
-  project.update_plan (new_plan);
-
-  // store plan for later
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  plan_str = new_plan_str;
 }
 
 void
@@ -220,12 +197,15 @@ save(LV2_Handle                instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
-  std::lock_guard<std::mutex> locker (self->project.synth_mutex()); // we read plan_str
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  self->project.morph_plan()->save (&mo);
+  string plan_str = HexString::encode (data);
 
   store (handle,
          self->uris.spectmorph_plan,
-         self->plan_str.c_str(),
-         self->plan_str.size() + 1,
+         plan_str.c_str(),
+         plan_str.size() + 1,
          self->uris.atom_String,
          LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
@@ -235,7 +215,7 @@ save(LV2_Handle                instance,
          self->uris.atom_Float,
          LV2_STATE_IS_POD);
 
-  LV2_DEBUG ("state save called: %s\nstate volume: %f\n", self->plan_str.c_str(), self->volume);
+  LV2_DEBUG ("state save called: %s\nstate volume: %f\n", plan_str.c_str(), self->volume);
   return LV2_STATE_SUCCESS;
 }
 
@@ -261,7 +241,7 @@ restore(LV2_Handle                  instance,
       const char *plan_str = (const char *)value;
 
       LV2_DEBUG (" -> plan_str: %s\n", plan_str);
-      self->update_plan (plan_str);
+      self->project.morph_plan()->set_plan_str (plan_str);
     }
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)

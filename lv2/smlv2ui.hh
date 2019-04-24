@@ -26,11 +26,6 @@ public:
   ~LV2UI();
 
   MorphPlanWindow      *window;
-  MorphPlanPtr          morph_plan;
-
-  LV2_Atom_Forge        forge;
-  LV2UI_Write_Function  write;
-  LV2UI_Controller      controller;
 
   void port_event (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void*  buffer);
   void idle();
@@ -38,7 +33,6 @@ public:
   std::vector<std::string> notify_take_events();
 
 /* slots: */
-  void on_plan_changed();
   void on_volume_changed (double new_volume);
   void on_update_window_size();
   void on_post_load();

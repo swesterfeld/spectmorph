@@ -43,9 +43,7 @@ public:
   Project         project;
   double          mix_freq;
   double          volume;
-  std::string     plan_str;
 
-  void update_plan (const std::string& new_plan_str);
   void set_volume (double new_volume);
 
   Signal<> signal_post_load;

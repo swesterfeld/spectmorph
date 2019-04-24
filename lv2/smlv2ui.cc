@@ -18,16 +18,12 @@ using std::string;
 
 LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin *plugin) :
   plugin (plugin),
-  ui_resize (ui_resize),
-  morph_plan (new MorphPlan (plugin->project))
+  ui_resize (ui_resize)
 {
-  morph_plan->set_plan_str (plugin->plan_str);
-
-  window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, morph_plan);
+  window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, plugin->project.morph_plan());
   window->control_widget()->set_volume (plugin->volume);
 
   connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
-  connect (morph_plan->signal_plan_changed, this, &LV2UI::on_plan_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
   connect (plugin->signal_post_load, this, &LV2UI::on_post_load);
 
@@ -59,17 +55,6 @@ LV2UI::idle()
 }
 
 void
-LV2UI::on_plan_changed()
-{
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  morph_plan->save (&mo);
-
-  string plan_str = HexString::encode (data);
-  plugin->update_plan (plan_str);
-}
-
-void
 LV2UI::on_volume_changed (double new_volume)
 {
   plugin->set_volume (new_volume);
@@ -78,7 +63,6 @@ LV2UI::on_volume_changed (double new_volume)
 void
 LV2UI::on_post_load()
 {
-  morph_plan->set_plan_str (plugin->plan_str);
   window->control_widget()->set_volume (plugin->volume);
 }
 
@@ -126,9 +110,6 @@ instantiate(const LV2UI_Descriptor*   descriptor,
     }
   LV2UI *ui = new LV2UI (parent_win_id, ui_resize, plugin);
   ui->init_map (map);
-
-  ui->write = write_function;
-  ui->controller = controller;
 
   *widget = (void *)ui->window->native_window();
 
