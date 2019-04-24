@@ -97,7 +97,6 @@ instantiate (const LV2_Descriptor*     descriptor,
 
   self->init_map (map);
 
-  lv2_atom_forge_init (&self->forge, self->map);
   lv2_log_logger_init (&self->logger, self->map, self->log);
 
   return (LV2_Handle)self;
@@ -145,15 +144,6 @@ run (LV2_Handle instance, uint32_t n_samples)
   float* const       right_out  = self->right_out;
 
   MidiSynth         *midi_synth = self->project.midi_synth();
-
-  // Set up forge to write directly to notify output port.
-  const uint32_t notify_capacity = self->notify_port->atom.size;
-  lv2_atom_forge_set_buffer(&self->forge,
-                            (uint8_t*)self->notify_port,
-                            notify_capacity);
-
-  // Start a sequence in the notify output port.
-  lv2_atom_forge_sequence_head(&self->forge, &self->notify_frame, 0);
 
   LV2_ATOM_SEQUENCE_FOREACH (self->midi_in, ev)
     {

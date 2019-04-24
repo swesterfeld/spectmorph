@@ -32,11 +32,6 @@ public:
 
   LV2_Worker_Schedule*  schedule;
 
-  LV2_Atom_Forge  forge;
-
-  // Forge frame for notify port
-  LV2_Atom_Forge_Frame notify_frame;
-
   LV2Plugin (double mix_freq);
 
   // SpectMorph stuff
