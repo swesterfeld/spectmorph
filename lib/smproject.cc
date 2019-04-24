@@ -119,6 +119,7 @@ Project::set_mix_freq (double mix_freq)
 
   // FIXME: can this cause problems if an old plan change control event remained
   m_midi_synth->update_plan (m_morph_plan->clone());
+  m_midi_synth->set_gain (db_to_factor (m_volume));
 }
 
 void
@@ -155,4 +156,19 @@ MorphPlanPtr
 Project::morph_plan() const
 {
   return m_morph_plan;
+}
+
+double
+Project::volume() const
+{
+  return m_volume;
+}
+
+void
+Project::set_volume (double volume)
+{
+  m_volume = volume;
+  m_synth_interface->emit_update_gain (db_to_factor (m_volume));
+
+  signal_volume_changed (m_volume);
 }

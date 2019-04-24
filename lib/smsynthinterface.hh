@@ -86,6 +86,15 @@ public:
         },
       event_data);
   }
+  void
+  emit_update_gain (double gain)
+  {
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->midi_synth()->set_gain (gain);
+        });
+  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 

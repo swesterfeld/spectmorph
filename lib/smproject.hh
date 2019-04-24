@@ -66,6 +66,7 @@ class Project : public SignalReceiver
 
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
+  double                      m_volume = -6;
   RefPtr<MorphPlan>           m_morph_plan;
 
   std::mutex                  m_synth_mutex;
@@ -111,10 +112,15 @@ public:
   void set_mix_freq (double mix_freq);
   bool voices_active();
 
+  void set_volume (double new_volume);
+  double volume() const;
+
   std::vector<std::string> notify_take_events();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
   RefPtr<MorphPlan> morph_plan() const;
+
+  Signal<double> signal_volume_changed;
 };
 
 }
