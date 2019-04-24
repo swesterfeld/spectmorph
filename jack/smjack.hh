@@ -27,7 +27,6 @@ protected:
 public:
   JackSynth (jack_client_t *client, Project *project);
 
-  void change_volume (double new_volume);
   int  process (jack_nframes_t nframes);
 };
 
