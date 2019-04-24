@@ -72,7 +72,6 @@ struct VstPlugin
   double              mix_freq;
 
   double              m_volume;
-  bool                m_voices_active;
   double              rt_volume; // realtime thread only
 };
 

@@ -78,10 +78,7 @@ void
 VstUI::idle()
 {
   if (widget)
-    {
-      widget->control_widget()->set_led (plugin->voices_active());
-      event_loop->process_events();
-    }
+    event_loop->process_events();
 }
 
 void
