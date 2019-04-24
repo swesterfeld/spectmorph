@@ -60,18 +60,23 @@ public:
   void run_rt (Project *project);
 };
 
-class Project
+class Project : public SignalReceiver
 {
   std::shared_ptr<WavSet> wav_set;
 
-  std::mutex                  m_synth_mutex;
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
+  RefPtr<MorphPlan>           m_morph_plan;
+
+  std::mutex                  m_synth_mutex;
   ControlEventVector          m_control_events;          // protected by synth mutex
   std::vector<std::string>    m_out_events;              // protected by synth mutex
   bool                        m_voices_active = false;   // protected by synth mutex
 
   std::unique_ptr<SynthInterface> m_synth_interface;
+
+  void on_plan_changed();
+
 public:
   Instrument instrument;
 
@@ -104,12 +109,12 @@ public:
   }
   void try_update_synth();
   void set_mix_freq (double mix_freq);
-  void update_plan (RefPtr<MorphPlan> plan);
   bool voices_active();
 
   std::vector<std::string> notify_take_events();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
+  RefPtr<MorphPlan> morph_plan() const;
 };
 
 }

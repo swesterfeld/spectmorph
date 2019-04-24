@@ -102,6 +102,11 @@ Project::midi_synth() const
 
 Project::Project()
 {
+  m_morph_plan = new MorphPlan (*this);
+  m_morph_plan->load_default();
+
+  connect (m_morph_plan->signal_plan_changed, this, &Project::on_plan_changed);
+
   m_synth_interface.reset (new SynthInterface (this));
 }
 
@@ -111,11 +116,16 @@ Project::set_mix_freq (double mix_freq)
   // not rt safe, needs to be called when synthesis thread is not running
   m_midi_synth.reset (new MidiSynth (mix_freq, 64));
   m_mix_freq = mix_freq;
+
+  // FIXME: can this cause problems if an old plan change control event remained
+  m_midi_synth->update_plan (m_morph_plan->clone());
 }
 
 void
-Project::update_plan (MorphPlanPtr plan)
+Project::on_plan_changed()
 {
+  MorphPlanPtr plan = m_morph_plan->clone();
+
   // this might take a while, and cannot be done in synthesis thread
   MorphPlanSynth mp_synth (m_mix_freq);
   MorphPlanVoice *mp_voice = mp_synth.add_voice();
@@ -139,4 +149,10 @@ Project::voices_active()
 {
   std::lock_guard<std::mutex> lg (m_synth_mutex);
   return m_voices_active;
+}
+
+MorphPlanPtr
+Project::morph_plan() const
+{
+  return m_morph_plan;
 }
