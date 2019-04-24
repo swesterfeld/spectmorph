@@ -35,14 +35,6 @@ JackSynth::process (jack_nframes_t nframes)
 {
   m_project->try_update_synth();
 
-  // update plan with new parameters / new modules if necessary
-  if (m_project->synth_mutex().try_lock())
-    {
-      m_volume = m_new_volume;
-
-      m_project->synth_mutex().unlock();
-    }
-
   const float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
   const float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
@@ -66,9 +58,6 @@ JackSynth::process (jack_nframes_t nframes)
 
   midi_synth->process (audio_out, nframes);
 
-  for (size_t i = 0; i < nframes; i++)
-    audio_out[i] *= m_volume;
-
   return 0;
 }
 
@@ -82,9 +71,6 @@ jack_process (jack_nframes_t nframes, void *arg)
 JackSynth::JackSynth (jack_client_t *client, Project *project) :
   m_project (project)
 {
-  m_volume = 1;
-  m_new_volume = 1;
-
   m_project->set_mix_freq (jack_get_sample_rate (client));
 
   jack_set_process_callback (client, jack_process, this);
@@ -101,30 +87,6 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
       fprintf (stderr, "cannot activate client");
       exit (1);
     }
-}
-
-void
-JackSynth::change_volume (double new_volume)
-{
-  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
-  m_new_volume = new_volume;
-}
-
-JackControl::JackControl (MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
-  synth (synth)
-{
-  m_control_widget = control_widget;
-  m_control_widget->set_volume (-6); // default volume
-  on_volume_changed (-6);
-
-  connect (m_control_widget->signal_volume_changed, this, &JackControl::on_volume_changed);
-}
-
-void
-JackControl::on_volume_changed (double new_volume)
-{
-  double new_decoder_volume = db_to_factor (new_volume);
-  synth->change_volume (new_decoder_volume);
 }
 
 int
@@ -176,7 +138,6 @@ main (int argc, char **argv)
   MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, project.morph_plan());
   if (filename != "")
     window.set_filename (filename);
-  JackControl control (window, window.control_widget(), &synth);
   window.show();
   bool quit = false;
 
