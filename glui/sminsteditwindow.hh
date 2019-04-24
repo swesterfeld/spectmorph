@@ -509,12 +509,18 @@ public:
   void
   on_save_clicked()
   {
-    instrument->save ("/tmp/x.sminst");
+    save_file_dialog ("Select SpectMorph Instrument save filename", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
+      if (filename != "")
+        instrument->save (filename);
+    });
   }
   void
   on_load_clicked()
   {
-    instrument->load ("/tmp/x.sminst");
+    window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
+      if (filename != "")
+        instrument->load (filename);
+    });
   }
   void
   on_sample_changed()
