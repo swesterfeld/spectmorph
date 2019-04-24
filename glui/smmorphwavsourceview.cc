@@ -42,22 +42,17 @@ MorphWavSourceView::view_height()
 void
 MorphWavSourceView::on_load()
 {
+  /* create instrument in Project if WavSource doesn't have one */
+  if (morph_wav_source->instrument() == 0)
+    morph_wav_source->set_instrument (morph_wav_source->morph_plan()->project()->add_instrument());
+
   window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
     if (filename != "")
       {
-        Instrument *instrument = &morph_wav_source->morph_plan()->project()->instrument;
-        //morph_wav_source->set_instrument (filename);
+        Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source->instrument());
         instrument->load (filename);
-        morph_wav_source->morph_plan()->project()->rebuild();
-      /*
-        Error error = load (filename);
 
-        if (error != 0)
-          {
-            MessageBox::critical (this, "Error",
-                                  string_locale_printf ("Import failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
-          }
-          */
+        morph_wav_source->morph_plan()->project()->rebuild (morph_wav_source->instrument());
       }
   });
 }
@@ -65,10 +60,14 @@ MorphWavSourceView::on_load()
 void
 MorphWavSourceView::on_edit()
 {
+  /* create instrument in Project if WavSource doesn't have one */
+  if (morph_wav_source->instrument() == 0)
+    morph_wav_source->set_instrument (morph_wav_source->morph_plan()->project()->add_instrument());
+
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
   synth_interface->synth_inst_edit_update (true, nullptr, false);
 
-  Instrument *instrument = &morph_wav_source->morph_plan()->project()->instrument;
+  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source->instrument());
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
 
   inst_edit_window->show();
@@ -80,6 +79,6 @@ MorphWavSourceView::on_edit()
     {
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, false);
-      morph_wav_source->morph_plan()->project()->rebuild();
+      morph_wav_source->morph_plan()->project()->rebuild (morph_wav_source->instrument());
     });
 }
