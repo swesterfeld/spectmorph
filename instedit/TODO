@@ -26,11 +26,8 @@ STORAGE:
 - load/edit should actually show the instrument
 - morph plan attachments
 - store-as-zip with preset
-- sminstedit load / store instrument should work
 
 PROJECT:
-- migrate active, ... to Project
-- Project::set_mix_freq -> make Project own MidiSynth
 - support more than one Instrument
 - thread::join()
 - improve background rendering code
