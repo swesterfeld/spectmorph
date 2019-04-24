@@ -38,8 +38,7 @@ public:
     // FIXME update_window_title();
   }
 
-  MorphPlanWindow (EventLoop& event_loop, const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
-                   MorphPlanControl::Features f = MorphPlanControl::ALL_WIDGETS);
+  MorphPlanWindow (EventLoop& event_loop, const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
 
   void fill_preset_menu (Menu *menu);
   void on_load_preset (const std::string& rel_filename);

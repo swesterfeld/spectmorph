@@ -9,7 +9,7 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features f) :
+MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
   Frame (parent),
   morph_plan (plan)
 {
@@ -23,27 +23,24 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features 
 
   int voffset = 4;
 
-  if (f == ALL_WIDGETS)
-    {
-      volume_slider = new Slider (this, 0);
-      volume_value_label = new Label (this, "");
-      midi_led = new Led (this, false);
+  volume_slider = new Slider (this, 0);
+  volume_value_label = new Label (this, "");
+  midi_led = new Led (this, false);
 
-      connect (volume_slider->signal_value_changed, this, &MorphPlanControl::on_volume_changed);
+  connect (volume_slider->signal_value_changed, this, &MorphPlanControl::on_volume_changed);
 
-      grid.add_widget (new Label (this, "Volume"), 2, voffset, 7, 2);
-      grid.add_widget (volume_slider, 8, voffset, 23, 2);
-      grid.add_widget (volume_value_label, 32, voffset, 7, 2);
-      grid.add_widget (midi_led, 39, voffset, 2, 2);
+  grid.add_widget (new Label (this, "Volume"), 2, voffset, 7, 2);
+  grid.add_widget (volume_slider, 8, voffset, 23, 2);
+  grid.add_widget (volume_value_label, 32, voffset, 7, 2);
+  grid.add_widget (midi_led, 39, voffset, 2, 2);
 
-      // start at -6 dB
-      set_volume (-6.0);
+  // start at -6 dB
+  set_volume (-6.0);
 
-      // initial label
-      update_volume_label (volume_slider->value());
+  // initial label
+  update_volume_label (volume_slider->value());
 
-      voffset += 2;
-    }
+  voffset += 2;
 
   inst_status = new Label (this, "");
   grid.add_widget (inst_status, 2, voffset, 40, 2);

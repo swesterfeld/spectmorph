@@ -30,8 +30,7 @@ MorphPlanWindow::static_scaled_size (int *w, int *h)
 }
 
 MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
-                                  const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan,
-                                  MorphPlanControl::Features f) :
+                                  const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
   Window (event_loop, title, win_width, win_height, win_id, resize),
   m_morph_plan (morph_plan),
   m_synth_interface (morph_plan->project()->synth_interface())
@@ -80,7 +79,7 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view, &ScrollView::on_widget_size_changed);
 
   /* control widget */
-  m_control_widget = new MorphPlanControl (this, m_morph_plan, f);
+  m_control_widget = new MorphPlanControl (this, m_morph_plan);
   double cw_height = m_control_widget->view_height();
   grid.add_widget (m_control_widget, 49, height / 8 - cw_height - 1, 43, cw_height);
 }

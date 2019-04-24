@@ -25,12 +25,7 @@ class MorphPlanControl : public Frame
 
   void update_volume_label (double volume);
 public:
-  enum Features {
-    ALL_WIDGETS,
-    NO_VOLUME
-  };
-
-  MorphPlanControl (Widget *parent, MorphPlanPtr plan, Features f = ALL_WIDGETS);
+  MorphPlanControl (Widget *parent, MorphPlanPtr plan);
 
   double view_height();
 
