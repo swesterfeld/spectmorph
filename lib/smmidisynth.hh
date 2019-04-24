@@ -56,6 +56,7 @@ class MidiSynth
   std::vector<Voice *>  idle_voices;
   std::vector<Voice *>  active_voices;
   double                m_mix_freq;
+  double                m_gain = 1;
   bool                  pedal_down;
   size_t                audio_time_stamp;
   bool                  mono_enabled;
@@ -105,6 +106,7 @@ public:
   size_t active_voice_count() const;
 
   void set_inst_edit (bool inst_edit);
+  void set_gain (double gain);
   InstEditSynth *inst_edit_synth();
 };
 

@@ -337,6 +337,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
       voice->mp_voice->set_control_input (0, control[0]);
       voice->mp_voice->set_control_input (1, control[1]);
 
+      const float gain = voice->gain * m_gain;
       const float *freq_in = nullptr;
       float frequencies[n_values];
       if (fabs (voice->pitch_bend_freq - voice->freq) > 1e-3 || voice->pitch_bend_steps > 0)
@@ -362,7 +363,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * voice->gain;
+            output[i] += samples[i] * gain;
         }
       else if (voice->state == Voice::STATE_RELEASE)
         {
@@ -370,7 +371,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * voice->gain;
+            output[i] += samples[i] * gain;
 
           if (output_module->done())
             {
@@ -486,6 +487,12 @@ void
 MidiSynth::update_plan (MorphPlanPtr new_plan)
 {
   morph_plan_synth.update_plan (new_plan);
+}
+
+void
+MidiSynth::set_gain (double gain)
+{
+  m_gain = gain;
 }
 
 void
