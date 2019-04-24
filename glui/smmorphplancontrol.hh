@@ -31,10 +31,9 @@ public:
 
   void set_volume (double volume);
 
-  Signal<double> signal_volume_changed;
-
 /* slots */
   void on_volume_changed (double new_volume);
+  void on_project_volume_changed (double new_volume);
   void on_index_changed();
   void on_update_led();
 };

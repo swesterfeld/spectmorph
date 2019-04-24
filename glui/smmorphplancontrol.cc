@@ -34,11 +34,8 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
   grid.add_widget (volume_value_label, 32, voffset, 7, 2);
   grid.add_widget (midi_led, 39, voffset, 2, 2);
 
-  // start at -6 dB
-  set_volume (-6.0);
-
-  // initial label
-  update_volume_label (volume_slider->value());
+  // initial value
+  set_volume (plan->project()->volume());
 
   voffset += 2;
 
@@ -49,6 +46,7 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
   m_view_height = voffset + 1;
 
   connect (plan->signal_index_changed, this, &MorphPlanControl::on_index_changed);
+  connect (plan->project()->signal_volume_changed, this, &MorphPlanControl::on_project_volume_changed);
 
   /* --- update led each time process_events() is called: --- */
   // NOTE: this would be cleaner if Timers could be owned by widgets (rather than windows)
@@ -58,27 +56,32 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
   connect (led_timer->signal_timeout, this, &MorphPlanControl::on_update_led);
   led_timer->start (0);
 
+
   on_index_changed();
 }
 
 void
 MorphPlanControl::set_volume (double v_db)
 {
-  g_return_if_fail (volume_slider);
-
   volume_slider->set_value ((v_db + 48) / 60); // map [-48:12] -> [0:1]
   update_volume_label (v_db);
 }
 
 void
+MorphPlanControl::on_project_volume_changed (double new_volume)
+{
+  // Project volume changed (relevant: load)
+  set_volume (new_volume);
+}
+
+void
 MorphPlanControl::on_volume_changed (double new_volume)
 {
-  g_return_if_fail (volume_value_label);
-
+  // Gui slider changed
   double new_volume_f = new_volume * 60 - 48; // map [0:1] -> [-48:12]
   update_volume_label (new_volume_f);
 
-  signal_volume_changed (new_volume_f); // emit dB value
+  morph_plan->project()->set_volume (new_volume_f);
 }
 
 void
@@ -90,8 +93,6 @@ MorphPlanControl::update_volume_label (double volume)
 void
 MorphPlanControl::on_update_led()
 {
-  g_return_if_fail (midi_led);
-
   midi_led->set_on (morph_plan->project()->voices_active());
 }
 
