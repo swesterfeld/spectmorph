@@ -40,11 +40,6 @@ public:
     return instance->process (nframes);
   }
 
-  double
-  note_to_freq (int note)
-  {
-    return 440 * exp (log (2) * (note - 69) / 12.0);
-  }
   int
   process (jack_nframes_t nframes)
   {
