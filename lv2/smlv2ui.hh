@@ -16,9 +16,7 @@ class LV2UI : public SignalReceiver,
               public LV2Common
 {
   LV2Plugin            *plugin;
-  std::string           current_plan;
   LV2UI_Resize         *ui_resize;
-  std::vector<std::string>  notify_events;
   EventLoop             event_loop;
 
 public:
@@ -33,9 +31,7 @@ public:
   std::vector<std::string> notify_take_events();
 
 /* slots: */
-  void on_volume_changed (double new_volume);
   void on_update_window_size();
-  void on_post_load();
 };
 
 }

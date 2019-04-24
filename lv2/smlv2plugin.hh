@@ -36,12 +36,6 @@ public:
 
   // SpectMorph stuff
   Project         project;
-  double          mix_freq;
-  double          volume;
-
-  void set_volume (double new_volume);
-
-  Signal<> signal_post_load;
 };
 
 }

@@ -21,11 +21,8 @@ LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin
   ui_resize (ui_resize)
 {
   window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, plugin->project.morph_plan());
-  window->control_widget()->set_volume (plugin->volume);
 
-  connect (window->control_widget()->signal_volume_changed, this, &LV2UI::on_volume_changed);
   connect (window->signal_update_size, this, &LV2UI::on_update_window_size);
-  connect (plugin->signal_post_load, this, &LV2UI::on_post_load);
 
   window->show();
 }
@@ -52,18 +49,6 @@ void
 LV2UI::idle()
 {
   event_loop.process_events();
-}
-
-void
-LV2UI::on_volume_changed (double new_volume)
-{
-  plugin->set_volume (new_volume);
-}
-
-void
-LV2UI::on_post_load()
-{
-  window->control_widget()->set_volume (plugin->volume);
 }
 
 static LV2UI_Handle

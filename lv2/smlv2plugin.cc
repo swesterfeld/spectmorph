@@ -40,19 +40,9 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   right_out (NULL),
   notify_port (NULL),
   log (NULL),
-  schedule (NULL),
-  mix_freq (mix_freq)
+  schedule (NULL)
 {
   project.set_mix_freq (mix_freq);
-
-  volume = -6;              // default volume (dB)
-}
-
-void
-LV2Plugin::set_volume (double new_volume)
-{
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  volume = new_volume;
 }
 
 static LV2_Handle
@@ -158,11 +148,6 @@ run (LV2_Handle instance, uint32_t n_samples)
   midi_synth->set_control_input (1, control_2);
   midi_synth->process (left_out, n_samples);
 
-  // apply post volume
-  const float v = (self->volume > -90) ? db_to_factor (self->volume) : 0;
-  for (uint32_t i = 0; i < n_samples; i++)
-    left_out[i] *= v;
-
   // proper stereo support will be added later
   std::copy (left_out, left_out + n_samples, right_out);
 }
@@ -199,13 +184,13 @@ save(LV2_Handle                instance,
          self->uris.atom_String,
          LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE);
 
-  float f_volume = self->volume; // self->volume is double
+  float f_volume = self->project.volume();
   store (handle, self->uris.spectmorph_volume,
          (void*)&f_volume, sizeof (float),
          self->uris.atom_Float,
          LV2_STATE_IS_POD);
 
-  LV2_DEBUG ("state save called: %s\nstate volume: %f\n", plan_str.c_str(), self->volume);
+  LV2_DEBUG ("state save called: %s\nstate volume: %f\n", plan_str.c_str(), f_volume);
   return LV2_STATE_SUCCESS;
 }
 
@@ -236,10 +221,10 @@ restore(LV2_Handle                  instance,
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)
     {
-      self->volume = *((const float *) value);
-      LV2_DEBUG (" -> volume: %f\n", self->volume);
+      float volume = *((const float *) value);
+      self->project.set_volume (volume);
+      LV2_DEBUG (" -> volume: %f\n", volume);
     }
-  self->signal_post_load();
 
   return LV2_STATE_SUCCESS;
 }
