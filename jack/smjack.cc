@@ -104,30 +104,20 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
 }
 
 void
-JackSynth::change_plan (MorphPlanPtr plan)
-{
-  m_project->update_plan (plan);
-}
-
-void
 JackSynth::change_volume (double new_volume)
 {
   std::lock_guard<std::mutex> lg (m_project->synth_mutex());
   m_new_volume = new_volume;
 }
 
-JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
-  synth (synth),
-  morph_plan (plan)
+JackControl::JackControl (MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
+  synth (synth)
 {
   m_control_widget = control_widget;
   m_control_widget->set_volume (-6); // default volume
   on_volume_changed (-6);
 
   connect (m_control_widget->signal_volume_changed, this, &JackControl::on_volume_changed);
-  connect (plan->signal_plan_changed, this, &JackControl::on_plan_changed);
-
-  on_plan_changed();
 }
 
 void
@@ -135,12 +125,6 @@ JackControl::on_volume_changed (double new_volume)
 {
   double new_decoder_volume = db_to_factor (new_volume);
   synth->change_volume (new_decoder_volume);
-}
-
-void
-JackControl::on_plan_changed()
-{
-  synth->change_plan (morph_plan->clone());
 }
 
 int
@@ -155,7 +139,15 @@ main (int argc, char **argv)
     }
 
   Project project;
-  MorphPlanPtr morph_plan = new MorphPlan (project);
+
+  jack_client_t *client = jack_client_open ("smjack", JackNullOption, NULL);
+  if (!client)
+    {
+      fprintf (stderr, "%s: unable to connect to jack server\n", argv[0]);
+      exit (1);
+    }
+
+  JackSynth   synth (client, &project);
 
   string filename;
   if (argc == 2)
@@ -165,7 +157,7 @@ main (int argc, char **argv)
       GenericIn *file = GenericIn::open (argv[1]);
       if (file)
         {
-          error = morph_plan->load (file);
+          error = project.morph_plan()->load (file);
           delete file;
         }
       else
@@ -179,25 +171,12 @@ main (int argc, char **argv)
         }
       filename = argv[1];
     }
-  else
-    {
-      morph_plan->load_default();
-    }
-
-  jack_client_t *client = jack_client_open ("smjack", JackNullOption, NULL);
-  if (!client)
-    {
-      fprintf (stderr, "%s: unable to connect to jack server\n", argv[0]);
-      exit (1);
-    }
-
-  JackSynth   synth (client, &project);
 
   EventLoop event_loop;
-  MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, morph_plan);
+  MorphPlanWindow window (event_loop, "SpectMorph JACK Client", /* win_id */ 0, /* resize */ false, project.morph_plan());
   if (filename != "")
     window.set_filename (filename);
-  JackControl control (morph_plan, window, window.control_widget(), &synth);
+  JackControl control (window, window.control_widget(), &synth);
   window.show();
   bool quit = false;
 

@@ -31,7 +31,6 @@ protected:
 public:
   JackSynth (jack_client_t *client, Project *project);
 
-  void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
   int  process (jack_nframes_t nframes);
 };
@@ -40,13 +39,11 @@ class JackControl : public SignalReceiver
 {
   MorphPlanControl  *m_control_widget;
   JackSynth         *synth;
-  MorphPlanPtr       morph_plan;
 
 public:
-  JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth);
+  JackControl (MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth);
 
 /* slots: */
-  void on_plan_changed();
   void on_volume_changed (double d);
 };
 
