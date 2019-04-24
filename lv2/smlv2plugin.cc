@@ -41,10 +41,9 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   notify_port (NULL),
   log (NULL),
   schedule (NULL),
-  mix_freq (mix_freq),
-  midi_synth (mix_freq, 64)
+  mix_freq (mix_freq)
 {
-  project.change_midi_synth (&midi_synth);
+  project.set_mix_freq (mix_freq);
 
   MorphPlanPtr plan = new MorphPlan (project);
   plan->load_default();
@@ -55,7 +54,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   plan_str = HexString::encode (data);
 
   LV2_DEBUG ("SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-  midi_synth.update_plan (plan);
+  project.midi_synth()->update_plan (plan); // FIXME: remove me later
 
   volume = -6;              // default volume (dB)
 }
@@ -168,6 +167,8 @@ run (LV2_Handle instance, uint32_t n_samples)
   float* const       left_out   = self->left_out;
   float* const       right_out  = self->right_out;
 
+  MidiSynth         *midi_synth = self->project.midi_synth();
+
   // Set up forge to write directly to notify output port.
   const uint32_t notify_capacity = self->notify_port->atom.size;
   lv2_atom_forge_set_buffer(&self->forge,
@@ -183,12 +184,12 @@ run (LV2_Handle instance, uint32_t n_samples)
         {
           const uint8_t* msg = (const uint8_t*)(ev + 1);
 
-          self->midi_synth.add_midi_event (ev->time.frames, msg);
+          midi_synth->add_midi_event (ev->time.frames, msg);
         }
     }
-  self->midi_synth.set_control_input (0, control_1);
-  self->midi_synth.set_control_input (1, control_2);
-  self->midi_synth.process (left_out, n_samples);
+  midi_synth->set_control_input (0, control_1);
+  midi_synth->set_control_input (1, control_2);
+  midi_synth->process (left_out, n_samples);
 
   // apply post volume
   const float v = (self->volume > -90) ? db_to_factor (self->volume) : 0;

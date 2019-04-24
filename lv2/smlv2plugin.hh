@@ -43,7 +43,6 @@ public:
   Project         project;
   double          mix_freq;
   double          volume;
-  MidiSynth       midi_synth;
   std::string     plan_str;
 
   void update_plan (const std::string& new_plan_str);
