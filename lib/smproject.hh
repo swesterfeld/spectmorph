@@ -66,8 +66,9 @@ class Project
 
   std::mutex                m_synth_mutex;
   MidiSynth                *m_midi_synth = nullptr;
-  ControlEventVector        m_control_events;
-  std::vector<std::string>  m_out_events;
+  ControlEventVector        m_control_events;          // protected by synth mutex
+  std::vector<std::string>  m_out_events;              // protected by synth mutex
+  bool                      m_voices_active = false;   // protected by synth mutex
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 public:
@@ -107,6 +108,7 @@ public:
     m_midi_synth = midi_synth;
   }
   void update_plan (RefPtr<MorphPlan> plan);
+  bool voices_active();
 
   std::vector<std::string> notify_take_events();
   SynthInterface *synth_interface() const;

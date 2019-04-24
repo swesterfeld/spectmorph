@@ -45,6 +45,7 @@ Project::try_update_synth()
     {
       m_control_events.run_rt (this);
       m_out_events = m_midi_synth->inst_edit_synth()->take_out_events();
+      m_voices_active = m_midi_synth->active_voice_count() > 0;
 
       m_synth_mutex.unlock();
     }
@@ -123,4 +124,11 @@ Project::update_plan (MorphPlanPtr plan)
 
   // FIXME: refptr is locking (which is not too good)
   m_synth_interface->emit_update_plan (plan);
+}
+
+bool
+Project::voices_active()
+{
+  std::lock_guard<std::mutex> lg (m_synth_mutex);
+  return m_voices_active;
 }
