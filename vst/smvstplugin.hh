@@ -60,15 +60,11 @@ struct VstPlugin
 
   void  set_mix_freq (double mix_freq);
 
-  void  change_plan (MorphPlanPtr ptr);
-
   audioMasterCallback audioMaster;
   AEffect*            aeffect;
 
   Project             project;
-  MorphPlanPtr        plan;
   VstUI              *ui;
-  double              mix_freq;
 
   double              m_volume;
   double              rt_volume; // realtime thread only

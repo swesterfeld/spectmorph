@@ -17,8 +17,6 @@ VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
   morph_plan (plan),
   plugin (plugin)
 {
-  connect (morph_plan->signal_plan_changed, this, &VstUI::on_plan_changed);
-
   // some hosts ask for the window size before creating the window
   int width, height;
   MorphPlanWindow::static_scaled_size (&width, &height);
@@ -79,12 +77,6 @@ VstUI::idle()
 {
   if (widget)
     event_loop->process_events();
-}
-
-void
-VstUI::on_plan_changed()
-{
-  plugin->change_plan (morph_plan->clone());
 }
 
 void

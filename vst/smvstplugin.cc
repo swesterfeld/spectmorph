@@ -48,14 +48,11 @@ using std::vector;
 
 VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
-  aeffect (aeffect),
-  plan (new MorphPlan (project))
+  aeffect (aeffect)
 {
   audioMaster = master;
 
-  plan->load_default();
-
-  ui = new VstUI (plan->clone(), this);
+  ui = new VstUI (project.morph_plan(), this);
 
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
@@ -70,12 +67,6 @@ VstPlugin::~VstPlugin()
 {
   delete ui;
   ui = nullptr;
-}
-
-void
-VstPlugin::change_plan (MorphPlanPtr plan)
-{
-  project.update_plan (plan);
 }
 
 void
@@ -146,16 +137,12 @@ VstPlugin::set_parameter_value (Param param, float value)
 }
 
 void
-VstPlugin::set_mix_freq (double new_mix_freq)
+VstPlugin::set_mix_freq (double mix_freq)
 {
   /* this should only be called by the host if the plugin is suspended, so
    * we can alter variables that are used by process|processReplacing in the real time thread
    */
-
-  mix_freq = new_mix_freq;
-
   project.set_mix_freq (mix_freq);
-  project.midi_synth()->update_plan (plan); // FIXME: may be unnecessary
 }
 
 
