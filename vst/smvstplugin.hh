@@ -67,7 +67,6 @@ struct VstPlugin
 
   Project             project;
   MorphPlanPtr        plan;
-  MidiSynth          *midi_synth;
   VstUI              *ui;
   double              mix_freq;
 

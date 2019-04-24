@@ -49,8 +49,7 @@ using std::vector;
 VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
   aeffect (aeffect),
-  plan (new MorphPlan (project)),
-  midi_synth (nullptr)
+  plan (new MorphPlan (project))
 {
   audioMaster = master;
 
@@ -71,12 +70,6 @@ VstPlugin::~VstPlugin()
 {
   delete ui;
   ui = nullptr;
-
-  if (midi_synth)
-    {
-      delete midi_synth;
-      midi_synth = nullptr;
-    }
 }
 
 void
@@ -158,15 +151,11 @@ VstPlugin::set_mix_freq (double new_mix_freq)
   /* this should only be called by the host if the plugin is suspended, so
    * we can alter variables that are used by process|processReplacing in the real time thread
    */
-  if (midi_synth)
-    delete midi_synth;
 
   mix_freq = new_mix_freq;
 
-  midi_synth = new MidiSynth (mix_freq, 64);
-  midi_synth->update_plan (plan);
-
-  project.change_midi_synth (midi_synth);
+  project.set_mix_freq (mix_freq);
+  project.midi_synth()->update_plan (plan); // FIXME: may be unnecessary
 }
 
 
@@ -255,7 +244,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
             if (event->type != kVstMidiType)
               continue;
 
-            plugin->midi_synth->add_midi_event (event->deltaFrames, reinterpret_cast <unsigned char *> (&event->midiData[0]));
+            plugin->project.midi_synth()->add_midi_event (event->deltaFrames, reinterpret_cast <unsigned char *> (&event->midiData[0]));
           }
         return 1;
       }
@@ -313,7 +302,8 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
 static void
 processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampleFrames)
 {
-  VstPlugin *plugin = (VstPlugin *)effect->ptr3;
+  VstPlugin *plugin     = (VstPlugin *)effect->ptr3;
+  MidiSynth *midi_synth = plugin->project.midi_synth();
 
   // update plan with new parameters / new modules if necessary
   plugin->project.try_update_synth();
@@ -323,9 +313,9 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
       plugin->rt_volume = plugin->m_volume;
       plugin->project.synth_mutex().unlock();
     }
-  plugin->midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
-  plugin->midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
-  plugin->midi_synth->process (outputs[0], numSampleFrames);
+  midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
+  midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
+  midi_synth->process (outputs[0], numSampleFrames);
 
   // apply replay volume
   const float volume_factor = db_to_factor (plugin->rt_volume);
