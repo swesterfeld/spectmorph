@@ -76,14 +76,16 @@ class Project : public SignalReceiver
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 
+  std::map<int, std::unique_ptr<Instrument>> instrument_map;
   void on_plan_changed();
 
 public:
-  Instrument instrument;
-
   Project();
 
-  void rebuild();
+  void rebuild (int inst_id);
+  int add_instrument();
+  Instrument *get_instrument (int inst_id);
+
   std::shared_ptr<WavSet>
   get_wav_set()
   {

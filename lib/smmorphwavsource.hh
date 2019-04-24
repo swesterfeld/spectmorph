@@ -12,9 +12,7 @@ namespace SpectMorph
 
 class MorphWavSource : public MorphOperator
 {
-  std::string m_instrument;
-  int64       m_instrument_id = 0;
-  void update_instrument_and_id (const std::string& new_instrument);
+  int  m_instrument = 0;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -27,10 +25,8 @@ public:
   bool               load (InFile&  in_file);
   OutputType         output_type();
 
-  void        set_instrument (const std::string& instrument);
-  std::string instrument();
-
-  int64       instrument_id();
+  void        set_instrument (int id);
+  int         instrument();
 };
 
 }

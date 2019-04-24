@@ -59,9 +59,14 @@ Project::synth_take_control_event (SynthControlEvent *event)
 }
 
 void
-Project::rebuild()
+Project::rebuild (int inst_id)
 {
-  WavSetBuilder *builder = new WavSetBuilder (&instrument, /* keep_samples */ false);
+  Instrument *instrument = instrument_map[inst_id].get();
+
+  if (!instrument)
+    return;
+
+  WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
 
   new std::thread ([this, builder]() {
     struct Event : public SynthControlEvent {
@@ -79,6 +84,24 @@ Project::rebuild()
 
     synth_take_control_event (event);
   });
+}
+
+int
+Project::add_instrument()
+{
+  int inst_id = 1;
+
+  while (instrument_map[inst_id].get()) /* find first free slot */
+    inst_id++;
+
+  instrument_map[inst_id].reset (new Instrument());
+  return inst_id;
+}
+
+Instrument *
+Project::get_instrument (int inst_id)
+{
+  return instrument_map[inst_id].get();
 }
 
 vector<string>

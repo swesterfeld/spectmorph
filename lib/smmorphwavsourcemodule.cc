@@ -71,9 +71,9 @@ InstrumentSource::audio_block (size_t index)
 }
 
 void
-InstrumentSource::update_instrument (const string& instrument)
+InstrumentSource::update_instrument (int instrument_id)
 {
-  this->instrument = instrument;
+  this->instrument_id = instrument_id;
 }
 
 void

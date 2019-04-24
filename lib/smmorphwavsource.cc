@@ -22,32 +22,18 @@ MorphWavSource::~MorphWavSource()
 }
 
 void
-MorphWavSource::update_instrument_and_id (const string& instrument)
+MorphWavSource::set_instrument (int id)
 {
-  static int64 static_id = 1;
-
-  m_instrument    = instrument;
-  m_instrument_id = static_id++;
-}
-
-void
-MorphWavSource::set_instrument (const string& instrument)
-{
-  update_instrument_and_id (instrument);
+  // instrument id to use in Project
+  m_instrument = id;
 
   m_morph_plan->emit_plan_changed();
 }
 
-string
+int
 MorphWavSource::instrument()
 {
   return m_instrument;
-}
-
-int64
-MorphWavSource::instrument_id()
-{
-  return m_instrument_id;
 }
 
 const char *
@@ -65,7 +51,7 @@ MorphWavSource::insert_order()
 bool
 MorphWavSource::save (OutFile& out_file)
 {
-  out_file.write_string ("instrument", m_instrument);
+  out_file.write_int ("instrument", m_instrument);
 
   return true;
 }
@@ -75,15 +61,15 @@ MorphWavSource::load (InFile& ifile)
 {
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::STRING)
+      if (ifile.event() == InFile::INT)
         {
           if (ifile.event_name() == "instrument")
             {
-              update_instrument_and_id (ifile.event_data());
+              m_instrument = ifile.event_int();
             }
           else
             {
-              g_printerr ("bad string\n");
+              g_printerr ("bad int\n");
               return false;
             }
         }
