@@ -97,7 +97,7 @@ Project::synth_interface() const
 MidiSynth *
 Project::midi_synth() const
 {
-  return m_midi_synth;
+  return m_midi_synth.get();
 }
 
 Project::Project()
@@ -106,10 +106,18 @@ Project::Project()
 }
 
 void
+Project::set_mix_freq (double mix_freq)
+{
+  // not rt safe, needs to be called when synthesis thread is not running
+  m_midi_synth.reset (new MidiSynth (mix_freq, 64));
+  m_mix_freq = mix_freq;
+}
+
+void
 Project::update_plan (MorphPlanPtr plan)
 {
   // this might take a while, and cannot be done in synthesis thread
-  MorphPlanSynth mp_synth (m_midi_synth->mix_freq());
+  MorphPlanSynth mp_synth (m_mix_freq);
   MorphPlanVoice *mp_voice = mp_synth.add_voice();
   mp_synth.update_plan (plan);
 

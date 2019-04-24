@@ -64,11 +64,12 @@ class Project
 {
   std::shared_ptr<WavSet> wav_set;
 
-  std::mutex                m_synth_mutex;
-  MidiSynth                *m_midi_synth = nullptr;
-  ControlEventVector        m_control_events;          // protected by synth mutex
-  std::vector<std::string>  m_out_events;              // protected by synth mutex
-  bool                      m_voices_active = false;   // protected by synth mutex
+  std::mutex                  m_synth_mutex;
+  std::unique_ptr<MidiSynth>  m_midi_synth;
+  double                      m_mix_freq = 0;
+  ControlEventVector          m_control_events;          // protected by synth mutex
+  std::vector<std::string>    m_out_events;              // protected by synth mutex
+  bool                        m_voices_active = false;   // protected by synth mutex
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 public:
@@ -102,11 +103,7 @@ public:
     return m_synth_mutex;
   }
   void try_update_synth();
-  void
-  change_midi_synth (MidiSynth *midi_synth)
-  {
-    m_midi_synth = midi_synth;
-  }
+  void set_mix_freq (double mix_freq);
   void update_plan (RefPtr<MorphPlan> plan);
   bool voices_active();
 
