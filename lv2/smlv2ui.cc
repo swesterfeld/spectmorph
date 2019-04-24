@@ -55,7 +55,6 @@ LV2UI::~LV2UI()
 void
 LV2UI::idle()
 {
-  window->control_widget()->set_led (plugin->voices_active());
   event_loop.process_events();
 }
 

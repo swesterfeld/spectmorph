@@ -45,11 +45,9 @@ public:
   double          volume;
   MidiSynth       midi_synth;
   std::string     plan_str;
-  bool            m_voices_active;
 
   void update_plan (const std::string& new_plan_str);
   void set_volume (double new_volume);
-  bool voices_active();
 
   Signal<> signal_post_load;
 };

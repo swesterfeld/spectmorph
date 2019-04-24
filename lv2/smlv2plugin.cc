@@ -58,7 +58,6 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   midi_synth.update_plan (plan);
 
   volume = -6;              // default volume (dB)
-  m_voices_active = false;  // no note being played right now
 }
 
 void
@@ -78,13 +77,6 @@ LV2Plugin::set_volume (double new_volume)
 {
   std::lock_guard<std::mutex> locker (project.synth_mutex());
   volume = new_volume;
-}
-
-bool
-LV2Plugin::voices_active()
-{
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  return m_voices_active;
 }
 
 static LV2_Handle
@@ -170,12 +162,6 @@ run (LV2_Handle instance, uint32_t n_samples)
   LV2Plugin* self = (LV2Plugin*)instance;
 
   self->project.try_update_synth();
-
-  if (self->project.synth_mutex().try_lock())
-    {
-      self->m_voices_active = self->midi_synth.active_voice_count() > 0;
-      self->project.synth_mutex().unlock();
-    }
 
   const float        control_1  = *(self->control_1);
   const float        control_2  = *(self->control_2);
