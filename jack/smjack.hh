@@ -18,21 +18,18 @@ namespace SpectMorph
 class JackSynth
 {
 protected:
-  double                        jack_mix_freq;
   jack_port_t                  *input_port;
   std::vector<jack_port_t *>    output_ports;
   std::vector<jack_port_t *>    control_ports;
 
   double                        m_volume;
 
-  MidiSynth                    *midi_synth;
   Project                      *m_project;
 
   double                        m_new_volume;
 
 public:
   JackSynth (jack_client_t *client, Project *project);
-  ~JackSynth();
 
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);

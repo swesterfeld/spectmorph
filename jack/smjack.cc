@@ -47,6 +47,8 @@ JackSynth::process (jack_nframes_t nframes)
   const float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
+  MidiSynth   *midi_synth   = m_project->midi_synth();
+
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
 
@@ -83,10 +85,7 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
   m_volume = 1;
   m_new_volume = 1;
 
-  jack_mix_freq = jack_get_sample_rate (client);
-
-  midi_synth = new MidiSynth (jack_mix_freq, 64);
-  m_project->change_midi_synth (midi_synth);
+  m_project->set_mix_freq (jack_get_sample_rate (client));
 
   jack_set_process_callback (client, jack_process, this);
 
@@ -101,15 +100,6 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
     {
       fprintf (stderr, "cannot activate client");
       exit (1);
-    }
-}
-
-JackSynth::~JackSynth()
-{
-  if (midi_synth)
-    {
-      delete midi_synth;
-      midi_synth = NULL;
     }
 }
 
