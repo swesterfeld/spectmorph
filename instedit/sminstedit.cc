@@ -28,12 +28,10 @@ using pugi::xml_node;
 
 class JackSynth : public SignalReceiver
 {
-  double jack_mix_freq;
   jack_port_t *input_port;
   jack_port_t *output_port;
 
   Project project;
-  std::unique_ptr<MidiSynth> midi_synth;
 public:
   static int
   jack_process (jack_nframes_t nframes, void *arg)
@@ -52,8 +50,9 @@ public:
   {
     project.try_update_synth();
 
-    float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
-    void *port_buf = jack_port_get_buffer (input_port, nframes);
+    float     *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (output_port, nframes);
+    void      *port_buf = jack_port_get_buffer (input_port, nframes);
+    MidiSynth *midi_synth = project.midi_synth();
 
     jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
     for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
@@ -69,12 +68,8 @@ public:
 
   JackSynth (jack_client_t *client)
   {
-    jack_mix_freq = jack_get_sample_rate (client);
-
-    midi_synth.reset (new MidiSynth (jack_mix_freq, 64));
-    midi_synth->set_inst_edit (true);
-
-    project.change_midi_synth (midi_synth.get());
+    project.set_mix_freq (jack_get_sample_rate (client));
+    project.midi_synth()->set_inst_edit (true);
 
     jack_set_process_callback (client, jack_process, this);
 
