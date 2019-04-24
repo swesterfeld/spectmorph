@@ -53,9 +53,6 @@ struct VstPlugin
   float get_parameter_value (Param param) const;
   void  set_parameter_value (Param param, float value);
 
-  void  set_volume (double new_volume);
-  double volume();
-
   bool  voices_active();
 
   void  set_mix_freq (double mix_freq);
@@ -65,9 +62,6 @@ struct VstPlugin
 
   Project             project;
   VstUI              *ui;
-
-  double              m_volume;
-  double              rt_volume; // realtime thread only
 };
 
 }

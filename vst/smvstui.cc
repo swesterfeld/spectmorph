@@ -38,9 +38,6 @@ VstUI::open (PuglNativeWindow win_id)
   widget = new MorphPlanWindow (*event_loop, "SpectMorph VST", win_id, false, morph_plan);
   connect (widget->signal_update_size, this, &VstUI::on_update_window_size);
 
-  widget->control_widget()->set_volume (plugin->volume());
-  connect (widget->control_widget()->signal_volume_changed, this, &VstUI::on_volume_changed);
-
   widget->show();
 
   int width, height;
@@ -77,12 +74,6 @@ VstUI::idle()
 {
   if (widget)
     event_loop->process_events();
-}
-
-void
-VstUI::on_volume_changed (double new_volume)
-{
-  plugin->set_volume (new_volume);
 }
 
 void
@@ -123,7 +114,7 @@ public:
   {
     out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
     out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
-    out_file.write_float ("volume",    plugin->volume());
+    out_file.write_float ("volume",    plugin->project.volume());
   }
 
   void
@@ -138,7 +129,7 @@ public:
           plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
 
         if (in_file.event_name() == "volume")
-          plugin->set_volume (in_file.event_float());
+          plugin->project.set_volume (in_file.event_float());
       }
   }
 };
@@ -170,7 +161,4 @@ VstUI::load_state (char *buffer)
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
   morph_plan->load (in, &params);
   delete in;
-
-  if (widget)
-    widget->control_widget()->set_volume (plugin->volume());
 }

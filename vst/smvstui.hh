@@ -36,7 +36,6 @@ public:
 /* slots: */
   void on_plan_changed();
   void on_update_window_size();
-  void on_volume_changed (double new_volume);
 };
 
 }

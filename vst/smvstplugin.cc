@@ -57,8 +57,6 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
 
-  set_volume (-6); // default volume
-
   // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
   set_mix_freq (48000);
 }
@@ -67,20 +65,6 @@ VstPlugin::~VstPlugin()
 {
   delete ui;
   ui = nullptr;
-}
-
-void
-VstPlugin::set_volume (double new_volume)
-{
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  m_volume = new_volume;
-}
-
-double
-VstPlugin::volume()
-{
-  std::lock_guard<std::mutex> locker (project.synth_mutex());
-  return m_volume;
 }
 
 void
@@ -295,19 +279,9 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   // update plan with new parameters / new modules if necessary
   plugin->project.try_update_synth();
 
-  if (plugin->project.synth_mutex().try_lock())
-    {
-      plugin->rt_volume = plugin->m_volume;
-      plugin->project.synth_mutex().unlock();
-    }
   midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
   midi_synth->process (outputs[0], numSampleFrames);
-
-  // apply replay volume
-  const float volume_factor = db_to_factor (plugin->rt_volume);
-  for (int i = 0; i < numSampleFrames; i++)
-    outputs[0][i] *= volume_factor;
 
   std::copy (outputs[0], outputs[0] + numSampleFrames, outputs[1]);
 }
