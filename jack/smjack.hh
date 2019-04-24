@@ -29,7 +29,6 @@ protected:
   Project                      *m_project;
 
   double                        m_new_volume;
-  bool                          m_voices_active;
 
 public:
   JackSynth (jack_client_t *client, Project *project);
@@ -37,7 +36,6 @@ public:
 
   void change_plan (MorphPlanPtr plan);
   void change_volume (double new_volume);
-  bool voices_active();
   int  process (jack_nframes_t nframes);
 };
 
@@ -49,8 +47,6 @@ class JackControl : public SignalReceiver
 
 public:
   JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth);
-
-  void update_led();
 
 /* slots: */
   void on_plan_changed();

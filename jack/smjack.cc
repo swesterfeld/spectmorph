@@ -40,8 +40,6 @@ JackSynth::process (jack_nframes_t nframes)
     {
       m_volume = m_new_volume;
 
-      m_voices_active = midi_synth->active_voice_count() > 0;
-
       m_project->synth_mutex().unlock();
     }
 
@@ -80,8 +78,7 @@ jack_process (jack_nframes_t nframes, void *arg)
 }
 
 JackSynth::JackSynth (jack_client_t *client, Project *project) :
-  m_project (project),
-  m_voices_active (false)
+  m_project (project)
 {
   m_volume = 1;
   m_new_volume = 1;
@@ -129,13 +126,6 @@ JackSynth::change_volume (double new_volume)
   m_new_volume = new_volume;
 }
 
-bool
-JackSynth::voices_active()
-{
-  std::lock_guard<std::mutex> lg (m_project->synth_mutex());
-  return m_voices_active;
-}
-
 JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanControl *control_widget, JackSynth *synth) :
   synth (synth),
   morph_plan (plan)
@@ -148,12 +138,6 @@ JackControl::JackControl (MorphPlanPtr plan, MorphPlanWindow& window, MorphPlanC
   connect (plan->signal_plan_changed, this, &JackControl::on_plan_changed);
 
   on_plan_changed();
-}
-
-void
-JackControl::update_led()
-{
-  m_control_widget->set_led (synth->voices_active());
 }
 
 void
@@ -232,7 +216,6 @@ main (int argc, char **argv)
   while (!quit)
     {
       event_loop.wait_event_fps();
-      control.update_led();
       event_loop.process_events();
     }
   jack_deactivate (client);
