@@ -24,6 +24,29 @@ main (int argc, char **argv)
 {
   sm_init (&argc, &argv);
 
+  if (argc == 3 && strcmp (argv[1], "kill") == 0)
+    {
+      Instrument inst;
+      inst.load (argv[2]);
+
+      WavSetBuilder builder (&inst, /* keep_samples */ false);
+
+      auto kill_func = []() {
+        static double last_t = -1;
+        double t = gettime();
+        if (last_t > 0)
+          sm_printf ("%f\n", (t - last_t) * 1000); // ms
+        last_t = t;
+        return false;
+      };
+      builder.set_kill_function (kill_func);
+
+      kill_func(); // take time at start
+      std::unique_ptr<WavSet> wav_set (builder.run());
+      kill_func(); // take time at end
+
+      return 0;
+    }
   assert (argc == 2);
 
   vector<double> times;
