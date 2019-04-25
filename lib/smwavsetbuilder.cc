@@ -61,6 +61,12 @@ WavSetBuilder::add_sample (const Sample *sample)
   sample_data_vec.push_back (sd);
 }
 
+bool
+WavSetBuilder::killed()
+{
+  return kill_function && kill_function();
+}
+
 WavSet *
 WavSetBuilder::run()
 {
@@ -83,7 +89,10 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, wav_data, sd.shared->wav_data_hash(), sd.midi_note, iclipstart, iclipend, encoder_config);
+      new_wave.audio = InstEncCache::the()->encode (name, wav_data, sd.shared->wav_data_hash(), sd.midi_note, iclipstart, iclipend, encoder_config, kill_function);
+
+      if (!new_wave.audio) // killed?
+        return nullptr;
 
       if (keep_samples)
         new_wave.audio->original_samples = wav_data.samples(); // FIXME: clipping?
@@ -98,6 +107,12 @@ WavSetBuilder::run()
   wav_set = nullptr;
 
   return result;
+}
+
+void
+WavSetBuilder::set_kill_function (const std::function<bool()>& new_kill_function)
+{
+  kill_function = new_kill_function;
 }
 
 void

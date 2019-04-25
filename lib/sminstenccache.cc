@@ -122,7 +122,8 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
 }
 
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg)
+InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
+                      const std::function<bool()>& kill_function)
 {
   std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
@@ -165,7 +166,9 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
   WavData wav_data_clipped (clipped_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
 
   InstEncoder enc;
-  Audio *audio = enc.encode (wav_data_clipped, midi_note, cfg);
+  Audio *audio = enc.encode (wav_data_clipped, midi_note, cfg, kill_function);
+  if (!audio)
+    return nullptr;
 
   vector<unsigned char> data;
   MemOut                audio_mem_out (&data);

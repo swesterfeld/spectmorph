@@ -18,7 +18,7 @@ class InstEncoder
   void setup_params (const WavData& wd, int midi_note);
 
 public:
-  Audio *encode (const WavData& wd, int midi_note, Instrument::EncoderConfig& cfg);
+  Audio *encode (const WavData& wd, int midi_note, Instrument::EncoderConfig& cfg, const std::function<bool()>& kill_function);
 };
 
 }

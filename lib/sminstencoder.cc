@@ -15,7 +15,7 @@ freq_from_note (float note)
 }
 
 Audio *
-InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg)
+InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::EncoderConfig& cfg, const std::function<bool()>& kill_function)
 {
   if (cfg.enabled)
     {
@@ -29,10 +29,12 @@ InstEncoder::encode (const WavData& wav_data, int midi_note, Instrument::Encoder
     }
   enc_params.setup_params (wav_data, freq_from_note (midi_note));
   enc_params.enable_phases = false; // save some space
+  enc_params.set_kill_function (kill_function);
 
   Encoder encoder (enc_params);
 
-  encoder.encode (wav_data, /* channel */ 0, /* opt */ 1, /* attack */ true, /* sines */ true);
+  if (!encoder.encode (wav_data, /* channel */ 0, /* opt */ 1, /* attack */ true, /* sines */ true))
+    return nullptr;
 
   /* strip stuff we don't need (but keep everything that is needed if loop points are changed) */
   vector<EncoderBlock>& audio_blocks = encoder.audio_blocks;

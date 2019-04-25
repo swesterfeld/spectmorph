@@ -93,6 +93,10 @@ Project::rebuild (int inst_id)
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
 
+  builder->set_kill_function ([this]() {
+    std::lock_guard<std::mutex> lg (instrument_worker_mutex);
+    return instrument_worker_quit;
+  });
   instrument_worker_mutex.lock();
   instrument_worker_todo.emplace_back (new Job (this, builder, inst_id));
   instrument_worker_mutex.unlock();

@@ -26,6 +26,9 @@ class WavSetBuilder
   WavSet *wav_set;
   std::string name;
 
+  std::function<bool()>      kill_function;
+  bool killed();
+
   Instrument::AutoVolume     auto_volume;
   Instrument::AutoTune       auto_tune;
   Instrument::EncoderConfig  encoder_config;
@@ -40,6 +43,7 @@ public:
   WavSetBuilder (const Instrument *instrument, bool keep_samples);
   ~WavSetBuilder();
 
+  void set_kill_function (const std::function<bool()>& kill_function);
   WavSet *run();
 };
 
