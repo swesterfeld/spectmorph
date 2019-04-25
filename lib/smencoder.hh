@@ -58,6 +58,9 @@ public:
   /** window to be used for analysis (needs to have block_size entries) */
   std::vector<float> window;
 
+  /** allow termination during encode() */
+  std::function<bool()> kill_function;
+
   bool add_config_entry (const std::string& param, const std::string& value);
 
   bool load_config (const std::string& filename);
@@ -68,6 +71,9 @@ public:
 
   /** use sane defaults for every parameter: */
   void setup_params (const WavData& wav_data, double fundamental_freq);
+
+  /** to be able to terminate encoder before we are done */
+  void set_kill_function (const std::function<bool()>& kill_function);
 };
 
 struct Tracksel {
@@ -126,6 +132,7 @@ class Encoder
   void approx_noise();
   void compute_attack_params();
   void sort_freqs();
+  bool killed();
 
   Attack                               optimal_attack;
   size_t                               zero_values_at_start;
@@ -140,7 +147,7 @@ public:
   void debug_decode (const std::string& filename);
 
   // all-in-one encoding function:
-  void encode (const WavData& wav_data, int channel, int optimization_level,
+  bool encode (const WavData& wav_data, int channel, int optimization_level,
                bool attack, bool track_sines);
 
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);

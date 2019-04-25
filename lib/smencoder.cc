@@ -231,6 +231,12 @@ EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_fre
     }
 }
 
+void
+EncoderParams::set_kill_function (const std::function<bool()>& new_kill_function)
+{
+  kill_function = new_kill_function;
+}
+
 /**
  * Constructor which initializes the Encoders parameters.
  */
@@ -1330,28 +1336,49 @@ Encoder::sort_freqs()
  * \param optimization_level determines if fast (0), medium (1), or very slow (2) algorithm is used
  * \param attack whether to find the optimal attack parameters
  */
-void
+bool
 Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
                  bool attack, bool track_sines)
 {
   compute_stft (wav_data, channel);
+  if (killed())
+    return false;
 
   if (track_sines)
     {
       search_local_maxima();
+      if (killed())
+        return false;
+
       link_partials();
+      if (killed())
+        return false;
+
       validate_partials();
+      if (killed())
+        return false;
 
       optimize_partials (optimization_level);
+      if (killed())
+        return false;
 
       spectral_subtract();
+      if (killed())
+        return false;
     }
   approx_noise();
+  if (killed())
+    return false;
 
   if (attack)
     compute_attack_params();
 
+  if (killed())
+    return false;
+
   sort_freqs();
+
+  return true;
 }
 
 void
@@ -1360,6 +1387,12 @@ Encoder::set_loop (Audio::LoopType loop_type, int loop_start, int loop_end)
   this->loop_type = loop_type;
   this->loop_start = loop_start;
   this->loop_end = loop_end;
+}
+
+bool
+Encoder::killed()
+{
+  return enc_params.kill_function && enc_params.kill_function();
 }
 
 void
