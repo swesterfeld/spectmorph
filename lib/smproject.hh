@@ -60,6 +60,8 @@ public:
   void run_rt (Project *project);
 };
 
+class Job;
+
 class Project : public SignalReceiver
 {
   std::vector<std::shared_ptr<WavSet>> wav_sets;
@@ -77,12 +79,21 @@ class Project : public SignalReceiver
   std::unique_ptr<SynthInterface> m_synth_interface;
 
   std::map<int, std::unique_ptr<Instrument>> instrument_map;
+  bool                                       instrument_worker_quit = false;
+  std::vector<std::unique_ptr<Job>>          instrument_worker_todo;
+  std::thread                                instrument_worker;
+  std::mutex                                 instrument_worker_mutex;
+
+  void thread_main();
   void on_plan_changed();
 
 public:
   Project();
+  ~Project();
 
   void rebuild (int inst_id);
+  void add_rebuild_result (int inst_id, WavSet *wav_set);
+
   int add_instrument();
   Instrument *get_instrument (int inst_id);
 

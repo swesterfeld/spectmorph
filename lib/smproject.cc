@@ -4,6 +4,7 @@
 #include "smmidisynth.hh"
 #include "smsynthinterface.hh"
 #include "smmorphoutputmodule.hh"
+#include <unistd.h>
 
 using namespace SpectMorph;
 
@@ -58,6 +59,30 @@ Project::synth_take_control_event (SynthControlEvent *event)
   m_control_events.take (event);
 }
 
+class SpectMorph::Job
+{
+  Project                       *project;
+  std::unique_ptr<WavSetBuilder> builder;
+  int                            inst_id;
+public:
+  Job (Project *project, WavSetBuilder *builder, int inst_id) :
+    project (project),
+    builder (builder),
+    inst_id (inst_id)
+  {
+  }
+  void run()
+  {
+    printf ("start iid=%d\n", inst_id);
+
+    WavSet *wav_set = builder->run();
+
+    project->synth_interface()->emit_add_rebuild_result (inst_id, wav_set);
+
+    printf ("done iid=%d\n", inst_id);
+  }
+};
+
 void
 Project::rebuild (int inst_id)
 {
@@ -68,29 +93,19 @@ Project::rebuild (int inst_id)
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
 
-  // FIXME: improve rendering pipeline; this version can crash due to more than one rendering thread
-  new std::thread ([this, builder, inst_id]() {
-    struct Event : public SynthControlEvent {
-      std::shared_ptr<WavSet> wav_set;
-      int                     inst_id;
+  instrument_worker_mutex.lock();
+  instrument_worker_todo.emplace_back (new Job (this, builder, inst_id));
+  instrument_worker_mutex.unlock();
+}
 
-      void
-      run_rt (Project *project) // FIXME: EventData!
-      {
-        size_t s = inst_id + 1;
-        if (s > project->wav_sets.size())
-          project->wav_sets.resize (s);
+void
+Project::add_rebuild_result (int inst_id, WavSet *wav_set)
+{
+  size_t s = inst_id + 1;
+  if (s > wav_sets.size())
+    wav_sets.resize (s);
 
-        project->wav_sets[inst_id] = wav_set;
-      }
-    } *event = new Event();
-
-    event->wav_set = std::shared_ptr<WavSet> (builder->run());
-    event->inst_id = inst_id;
-    delete builder;
-
-    synth_take_control_event (event);
-  });
+  wav_sets[inst_id] = std::shared_ptr<WavSet> (wav_set);
 }
 
 int
@@ -139,7 +154,33 @@ Project::midi_synth() const
   return m_midi_synth.get();
 }
 
+void
+Project::thread_main()
+{
+  printf ("start\n");
+  bool quit;
+  while (!quit)
+    {
+      // FIXME: sleep on condition instead
+      usleep (100 * 1000);
+
+      instrument_worker_mutex.lock();
+      quit = instrument_worker_quit;
+      if (!quit && instrument_worker_todo.size())
+        {
+          Job *job = instrument_worker_todo[0].get();
+          instrument_worker_mutex.unlock();
+          job->run();
+          instrument_worker_mutex.lock();
+          instrument_worker_todo.erase (instrument_worker_todo.begin());
+        }
+      instrument_worker_mutex.unlock();
+    }
+  printf ("end\n");
+}
+
 Project::Project()
+  : instrument_worker (std::thread (&Project::thread_main, this))
 {
   m_morph_plan = new MorphPlan (*this);
   m_morph_plan->load_default();
@@ -147,6 +188,14 @@ Project::Project()
   connect (m_morph_plan->signal_plan_changed, this, &Project::on_plan_changed);
 
   m_synth_interface.reset (new SynthInterface (this));
+}
+
+Project::~Project()
+{
+  instrument_worker_mutex.lock();
+  instrument_worker_quit = true;
+  instrument_worker_mutex.unlock();
+  instrument_worker.join();
 }
 
 void

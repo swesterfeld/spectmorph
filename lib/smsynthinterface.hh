@@ -95,6 +95,24 @@ public:
           project->midi_synth()->set_gain (gain);
         });
   }
+  void
+  emit_add_rebuild_result (int inst_id, WavSet *take_wav_set)
+  {
+    /* ownership of take_wav_set is transferred to the event */
+    struct EventData
+    {
+      std::unique_ptr<WavSet> wav_set;
+    } *event_data = new EventData;
+
+    event_data->wav_set.reset (take_wav_set);
+
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->add_rebuild_result (inst_id, event_data->wav_set.release());
+        },
+        event_data);
+  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
