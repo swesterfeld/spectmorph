@@ -132,7 +132,17 @@ class Encoder
   void approx_noise();
   void compute_attack_params();
   void sort_freqs();
-  bool killed();
+
+  inline bool
+  killed (const char *where, uint64_t z = 0)
+  {
+    if (z != 0)  // inlined fast check
+      return false;
+
+    // debugging: printf ("%-10s ", where);
+
+    return enc_params.kill_function && enc_params.kill_function();
+  }
 
   Attack                               optimal_attack;
   size_t                               zero_values_at_start;

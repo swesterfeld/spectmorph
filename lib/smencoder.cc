@@ -330,6 +330,9 @@ Encoder::compute_stft (const WavData& multi_channel_wav_data, int channel)
       audio_block.debug_samples.assign (debug_samples.begin(), debug_samples.begin() + frame_size);
 
       audio_blocks.push_back (audio_block);
+
+      if (killed ("_stft", audio_blocks.size() & 63))
+        break; // break to avoid leaking fft_in, fft_out
     }
   FFT::free_array_float (fft_in);
   FFT::free_array_float (fft_out);
@@ -504,6 +507,9 @@ Encoder::search_local_maxima()
 #endif
             }
 	}
+
+      if (killed ("_maxima", n & 15))
+        return;
     }
 }
 
@@ -640,6 +646,8 @@ Encoder::validate_partials()
 		}
 	    }
 	}
+      if (killed ("_validate", n & 63))
+        return;
     }
 }
 
@@ -709,6 +717,9 @@ Encoder::spectral_subtract()
 	    }
 	  debug ("finalspectrum:%" PRId64 " %g\n", frame, mag);
 	}
+
+      if (killed ("_subtract", frame & 7))
+        return;
     }
   FFT::free_array_float (fft_in);
   FFT::free_array_float (fft_out);
@@ -923,6 +934,9 @@ Encoder::optimize_partials (int optimization_level)
         refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window);
 
       remove_small_partials (audio_blocks[frame]);
+
+      if (killed ("_optimize"))
+        return;
     }
 }
 
@@ -1113,6 +1127,9 @@ Encoder::approx_noise()
       debug ("noiseenergy:%" PRId64 " %f %f %f\n", frame, spect_energy, b4_energy, r_energy);
       /// } DEBUG_CODE
       audio_blocks[frame].noise.assign (noise_envelope.begin(), noise_envelope.end());
+
+      if (killed ("_noise", frame & 7))
+        return;
     }
 }
 
@@ -1188,6 +1205,8 @@ Encoder::attack_error (const vector< vector<double> >& unscaled_signal, const At
 void
 Encoder::compute_attack_params()
 {
+  int killed_iteration = 0;
+
   const double mix_freq   = enc_params.mix_freq;
   const size_t frame_size = enc_params.frame_size;
   const size_t frames = MIN (20, audio_blocks.size());
@@ -1211,6 +1230,9 @@ Encoder::compute_attack_params()
               frame_signal[n] += sin (phase) * mag;
               phase += f / mix_freq * 2.0 * M_PI;
             }
+
+          if (killed ("__attack", killed_iteration++ & 63))
+            return;
         }
       unscaled_signal.push_back (frame_signal);
     }
@@ -1271,6 +1293,8 @@ Encoder::compute_attack_params()
               no_modification++;
             }
         }
+      if (killed ("_attack", killed_iteration++ & 63))
+        return;
     }
   for (size_t f = 0; f < frames; f++)
     {
@@ -1341,42 +1365,44 @@ Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
                  bool attack, bool track_sines)
 {
   compute_stft (wav_data, channel);
-  if (killed())
+  if (killed ("stft"))
     return false;
 
   if (track_sines)
     {
       search_local_maxima();
-      if (killed())
+      if (killed ("maxima"))
         return false;
 
       link_partials();
-      if (killed())
+      if (killed ("link"))
         return false;
 
       validate_partials();
-      if (killed())
+      if (killed ("validate"))
         return false;
 
       optimize_partials (optimization_level);
-      if (killed())
+      if (killed ("optimize"))
         return false;
 
       spectral_subtract();
-      if (killed())
+      if (killed ("subtract"))
         return false;
     }
   approx_noise();
-  if (killed())
+  if (killed ("noise"))
     return false;
 
   if (attack)
     compute_attack_params();
 
-  if (killed())
+  if (killed ("attack"))
     return false;
 
   sort_freqs();
+  if (killed ("sort"))
+    return false;
 
   return true;
 }
@@ -1387,12 +1413,6 @@ Encoder::set_loop (Audio::LoopType loop_type, int loop_start, int loop_end)
   this->loop_type = loop_type;
   this->loop_start = loop_start;
   this->loop_end = loop_end;
-}
-
-bool
-Encoder::killed()
-{
-  return enc_params.kill_function && enc_params.kill_function();
 }
 
 void
