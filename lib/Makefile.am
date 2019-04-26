@@ -21,7 +21,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
 	 smmorphwavsource.hh smmorphwavsourcemodule.hh \
 	 smwavsetbuilder.hh sminstrument.hh sminsteditsynth.hh \
 	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh \
-	 smzip.hh smproject.hh smsynthinterface.hh
+	 smzip.hh smproject.hh smsynthinterface.hh smbuilderthread.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \
@@ -42,7 +42,8 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
                            smalignedarray.cc smeffectdecoder.cc smadsrenvelope.cc smconfig.cc \
 			   smmorphwavsource.cc smmorphwavsourcemodule.cc \
 			   smwavsetbuilder.cc sminsteditsynth.cc sminstencoder.cc \
-			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc smproject.cc
+			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc smproject.cc \
+			   smbuilderthread.cc
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
 libspectmorph_la_LDFLAGS = -no-undefined

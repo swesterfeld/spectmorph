@@ -7,6 +7,7 @@
 #include "smwavset.hh"
 #include "smwavsetbuilder.hh"
 #include "smobject.hh"
+#include "smbuilderthread.hh"
 
 #include <thread>
 #include <mutex>
@@ -78,18 +79,14 @@ class Project : public SignalReceiver
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 
-  std::map<int, std::unique_ptr<Instrument>> instrument_map;
-  bool                                       instrument_worker_quit = false;
-  std::vector<std::unique_ptr<Job>>          instrument_worker_todo;
-  std::thread                                instrument_worker;
-  std::mutex                                 instrument_worker_mutex;
+  BuilderThread               m_builder_thread;
 
-  void thread_main();
+  std::map<int, std::unique_ptr<Instrument>> instrument_map;
+
   void on_plan_changed();
 
 public:
   Project();
-  ~Project();
 
   void rebuild (int inst_id);
   void add_rebuild_result (int inst_id, WavSet *wav_set);
