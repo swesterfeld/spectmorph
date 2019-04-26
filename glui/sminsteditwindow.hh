@@ -12,6 +12,7 @@
 #include "smbutton.hh"
 #include "smcheckbox.hh"
 #include "smshortcut.hh"
+#include "smbuilderthread.hh"
 
 #include <thread>
 
@@ -28,86 +29,41 @@ enum class PlayMode
 class InstEditWindow;
 class InstEditBackend
 {
+  BuilderThread           builder_thread;
+
   std::mutex              result_mutex;
   std::unique_ptr<WavSet> result_wav_set;
   PlayMode                result_play_mode;
   SynthInterface         *synth_interface;
-
-  WavSetBuilder          *current_builder = nullptr;
-  WavSetBuilder          *next_builder = nullptr;
-
-  double
-  note_to_freq (int note)
-  {
-    return 440 * exp (log (2) * (note - 69) / 12.0);
-  }
 
 public:
   InstEditBackend (SynthInterface *synth_interface) :
     synth_interface (synth_interface)
   {
   }
-  void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument);
-
   void
-  add_builder (WavSetBuilder *builder, PlayMode play_mode)
+  switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
   {
-    std::lock_guard<std::mutex> lg (result_mutex);
+    WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
 
-    result_play_mode = play_mode;
-
-    if (current_builder)
-      {
-        if (next_builder) /* kill and overwrite obsolete next builder */
-          delete next_builder;
-
-        next_builder = builder;
-      }
-    else
-      {
-        start_as_current (builder);
-      }
-  }
-  void
-  start_as_current (WavSetBuilder *builder)
-  {
-    // must have result_mutex lock
-    current_builder = builder;
-    new std::thread ([this] () {
-      WavSet *wav_set = current_builder->run();
-
-      finish_current_builder (wav_set);
-      });
-  }
-  void
-  finish_current_builder (WavSet *wav_set)
-  {
-    std::lock_guard<std::mutex> lg (result_mutex);
-
-    result_wav_set.reset (wav_set);
-
-    delete current_builder;
-    current_builder = nullptr;
-
-    if (next_builder)
-      {
-        WavSetBuilder *builder = next_builder;
-
-        next_builder = nullptr;
-        start_as_current (builder);
-      }
+    builder_thread.add_job (builder,
+      [this, play_mode] (WavSet *wav_set)
+        {
+          std::lock_guard<std::mutex> lg (result_mutex);
+          result_wav_set.reset (wav_set);
+          result_play_mode = play_mode;
+        }
+      );
   }
   bool
   have_builder()
   {
-    std::lock_guard<std::mutex> lg (result_mutex);
-
-    return current_builder != nullptr;
+    printf ("job count = %zd\n", builder_thread.job_count());
+    return builder_thread.job_count() > 0;
   }
-  int current_midi_note() {return 69;}
+  void on_timer();
 
   Signal<int, Audio *> signal_have_audio;
-  void on_timer();
 };
 
 class InstEditWindow : public Window
@@ -677,14 +633,6 @@ InstEditBackend::on_timer()
       // delete
       result_wav_set.reset();
     }
-}
-
-inline void
-InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
-{
-  WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
-
-  add_builder (builder, play_mode);
 }
 
 }
