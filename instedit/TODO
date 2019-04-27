@@ -1,33 +1,25 @@
-- creator should thread::join()
 - avoid raw WavData pointer for WavSetBuilder (could be deleted) => shared pointer or similar
-- temp file handling
 - don't allow play if changes are to be made
 - fix error handling for WavSet::save() and others
 
 UI:
 - fix file dialog mask (allow .wav, .flac, ...)
 - fix file dialog in ardour
-- tuning and volume
 - plot tuning line
-- encoder parameters
 - better progress bar widget
 - combobox should support scroll wheel
 - allow removing sample from instrument
 - maybe upsample or interpolate waveform
 
-BUGS:
-- debug why lv2 ui sometimes starts without plan
-
 SVEN:
 - display total sample time
 
 STORAGE:
-- smjack should keep instrument in memory after load / edit
-- load/edit should actually show the instrument
 - morph plan attachments
 - store-as-zip with preset
 
 PROJECT:
 - support more than one Instrument
-- thread::join()
-- improve background rendering code
+- cache:
+  - better primary key
+  - cleanup old stuff automatically
