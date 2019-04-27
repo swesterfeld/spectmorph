@@ -7,8 +7,6 @@
 #include "smlabel.hh"
 #include "smbutton.hh"
 
-#include <sys/time.h>
-
 using namespace SpectMorph;
 
 using std::string;

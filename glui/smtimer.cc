@@ -3,8 +3,6 @@
 #include "smtimer.hh"
 #include "smleakdebugger.hh"
 
-#include <sys/time.h>
-
 using namespace SpectMorph;
 
 static LeakDebugger leak_debugger ("SpectMorph::Timer");
@@ -34,22 +32,13 @@ Timer::~Timer()
   leak_debugger.del (this);
 }
 
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
 void
 Timer::process_events()
 {
   if (interval_ms >= 0)
     {
       const double last_timestamp = timestamp;
-      timestamp = gettime();
+      timestamp = get_time();
 
       if (timestamp > last_timestamp && timestamp > 0 && last_timestamp > 0)
         {

@@ -12,7 +12,6 @@
 #include "smmorphplanwindow.hh"
 #include "smtoolbutton.hh"
 #include <functional>
-#include <sys/time.h>
 
 namespace SpectMorph
 {
@@ -22,16 +21,6 @@ class MorphOperatorTitle : public Label
   bool in_move = false;
   double last_press_time = 0;
 
-  /* FIXME: double click detection: move to toolkit */
-  static double
-  gettime()
-  {
-    timeval tv;
-    gettimeofday (&tv, 0);
-
-    return tv.tv_sec + tv.tv_usec / 1000000.0;
-  }
-
 public:
   MorphOperatorTitle (Widget *parent, const std::string& text) :
     Label (parent, text)
@@ -40,8 +29,8 @@ public:
   void
   mouse_press (double x, double y) override
   {
-    const bool double_click = gettime() - last_press_time < 0.3;
-    last_press_time = gettime();
+    const bool double_click = get_time() - last_press_time < 0.3;
+    last_press_time = get_time();
 
     if (double_click)
       {

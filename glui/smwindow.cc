@@ -16,7 +16,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <glib.h>
-#include <sys/time.h>
 
 using namespace SpectMorph;
 
@@ -499,11 +498,8 @@ Window::process_events()
 
   if (0)
     {
-      timeval tv;
-      gettimeofday (&tv, 0);
-
       static double last_time = -1;
-      const double time = tv.tv_sec + tv.tv_usec / 1000000.0;
+      const double time = get_time();
       const double delta_time = time - last_time;
 
       if (last_time > 0)
