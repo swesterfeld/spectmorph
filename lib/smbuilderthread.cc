@@ -4,6 +4,8 @@
 #include "smwavsetbuilder.hh"
 #include <unistd.h>
 
+#include <atomic>
+
 using namespace SpectMorph;
 
 BuilderThread::BuilderThread() :
@@ -13,6 +15,8 @@ BuilderThread::BuilderThread() :
 
 BuilderThread::~BuilderThread()
 {
+  kill_all_jobs();
+
   mutex.lock();
   thread_quit = true;
   mutex.unlock();
@@ -24,6 +28,7 @@ struct BuilderThread::Job
 {
   std::unique_ptr<WavSetBuilder>       builder;
   std::function<void(WavSet *wav_set)> done_func;
+  std::atomic<bool>                    atomic_quit { false };
 
   Job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func) :
     builder (builder),
@@ -44,13 +49,12 @@ struct BuilderThread::Job
 void
 BuilderThread::add_job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func)
 {
-  builder->set_kill_function ([this]() {
-    std::lock_guard<std::mutex> lg (mutex);
-    return thread_quit;
-  });
-  mutex.lock();
-  todo.emplace_back (new Job (builder, done_func));
-  mutex.unlock();
+  Job *job = new Job (builder, done_func);
+
+  builder->set_kill_function ([job]() { return job->atomic_quit.load(); });
+
+  std::lock_guard<std::mutex> lg (mutex);
+  todo.emplace_back (job);
 }
 
 size_t
@@ -61,26 +65,61 @@ BuilderThread::job_count()
 }
 
 void
+BuilderThread::kill_all_jobs()
+{
+  std::lock_guard<std::mutex> lg (mutex);
+  for (auto& job : todo)
+    job->atomic_quit.store (true);
+}
+
+BuilderThread::Job *
+BuilderThread::first_job()
+{
+  std::lock_guard<std::mutex> lg (mutex);
+
+  if (todo.empty())
+    return nullptr;
+  else
+    return todo[0].get();
+}
+
+void
+BuilderThread::pop_job()
+{
+  std::lock_guard<std::mutex> lg (mutex);
+
+  assert (!todo.empty());
+  todo.erase (todo.begin());
+}
+
+bool
+BuilderThread::check_quit()
+{
+  std::lock_guard<std::mutex> lg (mutex);
+
+  return thread_quit;
+}
+
+void
 BuilderThread::run()
 {
   printf ("BuilderThread: start\n");
-  bool quit;
-  while (!quit)
-    {
-      // FIXME: sleep on condition instead
-      usleep (100 * 1000);
 
-      mutex.lock();
-      quit = thread_quit;
-      if (!quit && todo.size())
+  while (!check_quit())
+    {
+      Job *job = first_job();
+      if (job)
         {
-          Job *job = todo[0].get();
-          mutex.unlock();
-          job->run();
-          mutex.lock();
-          todo.erase (todo.begin());
+          if (!job->atomic_quit.load())
+            job->run();
+
+          pop_job();
         }
-      mutex.unlock();
+      else
+        {
+          // FIXME: sleep on condition instead
+          usleep (100 * 1000);
+        }
     }
   printf ("BuilderThread: end\n");
 }

@@ -24,6 +24,9 @@ class BuilderThread
 
   std::vector<std::unique_ptr<Job>> todo;
 
+  bool check_quit();
+  Job *first_job();
+  void pop_job();
   void run();
 
 public:
@@ -32,6 +35,7 @@ public:
 
   void   add_job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func);
   size_t job_count();
+  void   kill_all_jobs();
 };
 
 }
