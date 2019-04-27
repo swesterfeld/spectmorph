@@ -7,6 +7,7 @@
 #include <mutex>
 #include <functional>
 #include <vector>
+#include <condition_variable>
 
 namespace SpectMorph
 {
@@ -16,9 +17,10 @@ class WavSetBuilder;
 
 class BuilderThread
 {
-  std::mutex  mutex;
-  std::thread thread;
-  bool        thread_quit = false;
+  std::mutex                mutex;
+  std::thread               thread;
+  std::condition_variable   cond;
+  bool                      thread_quit = false;
 
   struct Job;
 

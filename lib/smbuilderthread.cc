@@ -2,7 +2,6 @@
 
 #include "smbuilderthread.hh"
 #include "smwavsetbuilder.hh"
-#include <unistd.h>
 
 #include <atomic>
 
@@ -19,6 +18,7 @@ BuilderThread::~BuilderThread()
 
   mutex.lock();
   thread_quit = true;
+  cond.notify_all();
   mutex.unlock();
 
   thread.join();
@@ -55,6 +55,7 @@ BuilderThread::add_job (WavSetBuilder *builder, const std::function<void(WavSet 
 
   std::lock_guard<std::mutex> lg (mutex);
   todo.emplace_back (job);
+  cond.notify_all();
 }
 
 size_t
@@ -70,6 +71,8 @@ BuilderThread::kill_all_jobs()
   std::lock_guard<std::mutex> lg (mutex);
   for (auto& job : todo)
     job->atomic_quit.store (true);
+
+  cond.notify_all();
 }
 
 BuilderThread::Job *
@@ -103,8 +106,6 @@ BuilderThread::check_quit()
 void
 BuilderThread::run()
 {
-  printf ("BuilderThread: start\n");
-
   while (!check_quit())
     {
       Job *job = first_job();
@@ -117,9 +118,8 @@ BuilderThread::run()
         }
       else
         {
-          // FIXME: sleep on condition instead
-          usleep (100 * 1000);
+          std::unique_lock<std::mutex> lck (mutex);
+          cond.wait (lck);
         }
     }
-  printf ("BuilderThread: end\n");
 }
