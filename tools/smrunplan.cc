@@ -10,7 +10,6 @@
 #include "smsynthinterface.hh"
 #include "config.h"
 
-#include <sys/time.h>
 #include <assert.h>
 
 using namespace SpectMorph;
@@ -174,15 +173,6 @@ freq_from_note (float note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
 class Player
 {
   MorphLinear    *linear_op;
@@ -318,14 +308,14 @@ main (int argc, char **argv)
     {
       player.compute_samples (samples); // warmup
 
-      double start = gettime();
+      double start = get_time();
 
       // at 100 bogo-voices, test should run 10 seconds
       const size_t RUNS = max<int> (1, options.rate * 1000 / samples.size());
       for (size_t i = 0; i < RUNS; i++)
         player.compute_samples (samples);
 
-      double end = gettime();
+      double end = get_time();
 
       const double ns_per_sec = 1e9;
       sm_printf ("%6.2f ns/sample\n", (end - start) * ns_per_sec / (RUNS * samples.size()));

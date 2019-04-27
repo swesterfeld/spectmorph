@@ -9,7 +9,6 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <sys/time.h>
 #include <sys/resource.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -20,15 +19,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 using std::min;
-
-double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 int
 adjust_priority()
@@ -83,13 +73,13 @@ main (int argc, char **argv)
               double best_time = 1e7;
               for (int rep = 0; rep < 25; rep++)
                 {
-                  double start_t = gettime();
+                  double start_t = get_time();
                   for (int l = 0; l < runs; l++)
                     {
                       decoder.retrigger (0, freq, 127, 48000);
                       decoder.process (n, nullptr, &audio_out[0]);
                     }
-                  double end_t = gettime();
+                  double end_t = get_time();
                   best_time = min (best_time, (end_t - start_t));
                 }
               ns_per_sample[i] = best_time * ns_per_sec / n / runs;
@@ -118,13 +108,13 @@ main (int argc, char **argv)
       double best_time = 1e7;
       for (int rep = 0; rep < 25; rep++)
         {
-          double start_t = gettime();
+          double start_t = get_time();
           for (int l = 0; l < runs; l++)
             {
               decoder.retrigger (0, freq, 127, 48000);
               decoder.process (n, nullptr, audio_out);
             }
-          double end_t = gettime();
+          double end_t = get_time();
           best_time = min (best_time, (end_t - start_t));
         }
       const double ns_per_sample = best_time * ns_per_sec / n / runs;
@@ -154,14 +144,14 @@ main (int argc, char **argv)
       for (int n = 64; n <= 4096; n += 64)
         {
           vector<float> audio_out (n);
-          double start_t = gettime();
+          double start_t = get_time();
           const int runs = 40;
           for (int l = 0; l < runs; l++)
             {
               decoder.retrigger (0, freq, 127, 48000);
               decoder.process (n, nullptr, &audio_out[0]);
             }
-          double end_t = gettime();
+          double end_t = get_time();
           sm_printf ("%d %.17g\n", n, (end_t - start_t) * ns_per_sec / n / runs);
         }
     }
