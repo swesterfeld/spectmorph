@@ -1,6 +1,5 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-#include <sys/time.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -12,17 +11,6 @@
 
 using namespace SpectMorph;
 using std::vector;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
-using namespace SpectMorph;
 
 struct PData
 {
@@ -90,18 +78,18 @@ main (int argc, char **argv)
   const unsigned int runs = 1000000;
 
   // assignments are not cheap, so we measure them seperately and subtract the result
-  double xstart = gettime();
+  double xstart = get_time();
   for (unsigned int i = 0; i < runs; i++)
     {
       block_c = block_a;
       block_c = block_b;
     }
-  double xend = gettime();
+  double xend = get_time();
   double xtime = xend - xstart;
 
   printf ("%.2f assign_blocks/sec\n", runs / 2 / xtime);
 
-  double start = gettime();
+  double start = get_time();
   for (unsigned int i = 0; i < runs; i++)
     {
       block_c = block_a;
@@ -109,6 +97,6 @@ main (int argc, char **argv)
       block_c = block_b;
       block_c.sort_freqs();
     }
-  double end = gettime();
+  double end = get_time();
   printf ("%.2f sort_freqs/sec\n", runs / 2 / (end - start - xtime));
 }

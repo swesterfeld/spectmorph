@@ -5,19 +5,9 @@
 #include "sminstenccache.hh"
 
 #include <assert.h>
-#include <sys/time.h>
 
 using namespace SpectMorph;
 using std::vector;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 int
 main (int argc, char **argv)
@@ -33,7 +23,7 @@ main (int argc, char **argv)
 
       auto kill_func = []() {
         static double last_t = -1;
-        double t = gettime();
+        double t = get_time();
         if (last_t > 0)
           sm_printf ("%f\n", (t - last_t) * 1000); // ms
         last_t = t;
@@ -56,7 +46,7 @@ main (int argc, char **argv)
       // pretend that the just program started, and cache doesn't have in-memory entries
       InstEncCache::the()->clear();
 
-      double t = gettime();
+      double t = get_time();
 
       Instrument inst;
       inst.load (argv[1]);
@@ -64,7 +54,7 @@ main (int argc, char **argv)
       WavSetBuilder builder (&inst, /* keep_samples */ false);
       std::unique_ptr<WavSet> wav_set (builder.run());
 
-      times.push_back ((gettime() - t) * 1000);
+      times.push_back ((get_time() - t) * 1000);
     }
 
   // report times at end of test

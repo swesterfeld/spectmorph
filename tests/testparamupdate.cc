@@ -8,18 +8,7 @@
 #include "smproject.hh"
 #include "smsynthinterface.hh"
 
-#include <sys/time.h>
-
 using namespace SpectMorph;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 static void
 preinit_plan (MorphPlanPtr plan)
@@ -38,10 +27,10 @@ measure_update (MorphPlanPtr plan, size_t n_voices)
 
   size_t runs = 1000000 / n_voices;
 
-  double start = gettime();
+  double start = get_time();
   for (size_t j = 0; j < runs; j++)
     synth.update_plan (plan);
-  double end = gettime();
+  double end = get_time();
 
   printf ("update (%zd voices): %f updates per ms\n", n_voices, 1 / ((end - start) * 1000 / runs));
 }

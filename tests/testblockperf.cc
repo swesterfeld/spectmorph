@@ -7,20 +7,10 @@
 #include "smalignedarray.hh"
 
 #include <assert.h>
-#include <sys/time.h>
 
 using namespace SpectMorph;
 using std::max;
 using std::min;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 static void
 block_perf (bool add, bool aligned)
@@ -47,7 +37,7 @@ block_perf (bool add, bool aligned)
   const int RUNS = 20000, REPS = 13;
   for (int reps = 0; reps < REPS; reps++)
     {
-      double start = gettime();
+      double start = get_time();
       for (int r = 0; r < RUNS; r++)
         {
           if (add)
@@ -55,7 +45,7 @@ block_perf (bool add, bool aligned)
           else
             Block::mul (block_size, &a[aligned ? 0 : 1], &b[0]);
         }
-      double end = gettime();
+      double end = get_time();
       min_time = min (min_time, end - start);
     }
 

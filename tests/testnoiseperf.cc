@@ -7,21 +7,11 @@
 #include "smfft.hh"
 
 #include <assert.h>
-#include <sys/time.h>
 
 using namespace SpectMorph;
 using std::max;
 using std::min;
 using std::vector;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 int
 main (int argc, char **argv)
@@ -52,7 +42,7 @@ main (int argc, char **argv)
       sm_enable_sse (sse);
       for (int reps = 0; reps < REPS; reps++)
         {
-          double start = gettime();
+          double start = get_time();
           for (int r = 0; r < RUNS; r++)
             {
               ifft_synth.clear_partials();
@@ -60,7 +50,7 @@ main (int argc, char **argv)
               if (ifft)
                 ifft_synth.get_samples (&samples[0]);
             }
-          double end = gettime();
+          double end = get_time();
           min_time[mode] = min (min_time[mode], end - start);
         }
     }

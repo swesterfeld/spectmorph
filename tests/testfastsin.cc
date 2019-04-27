@@ -3,7 +3,6 @@
 #include "smmath.hh"
 #include <algorithm>
 #include <stdio.h>
-#include <sys/time.h>
 #include <assert.h>
 #include "smutils.hh"
 #include "smalignedarray.hh"
@@ -11,15 +10,6 @@
 
 using namespace SpectMorph;
 using std::string;
-
-double
-gettime ()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 void
 perftest()
@@ -41,7 +31,7 @@ perftest()
   params.mag = 0.73;
   params.mode = VectorSinParams::REPLACE;
 
-  start_time = gettime();
+  start_time = get_time();
   for (int reps = 0; reps < REPS; reps++)
     {
       for (size_t i = 0; i < TEST_SIZE; i++)
@@ -54,46 +44,46 @@ perftest()
         }
       yy += sin_vec[reps & 1023] + cos_vec[reps & 2047]; // do not optimize loop out
     }
-  end_time = gettime();
+  end_time = get_time();
 
   // assume 2Ghz processor and compute cycles per value
   printf ("libm sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
   REPS *= 20; // optimized versions are a lot faster
-  start_time = gettime();
+  start_time = get_time();
   for (int reps = 0; reps < REPS; reps++)
     {
       fast_vector_sincos (params, sin_vec, sin_vec + TEST_SIZE, cos_vec);
 
       yy += sin_vec[reps & 1023] + cos_vec[reps & 2047]; // do not optimize loop out
     }
-  end_time = gettime();
+  end_time = get_time();
 
   // assume 2Ghz processor and compute cycles per value
   printf ("fast double sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
-  start_time = gettime();
+  start_time = get_time();
   for (int reps = 0; reps < REPS; reps++)
     {
       fast_vector_sincosf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE], &cos_vecf[0]);
 
       yy += sin_vecf[reps & 1023] + cos_vecf[reps & 2047]; // do not optimize loop out
     }
-  end_time = gettime();
+  end_time = get_time();
 
   // assume 2Ghz processor and compute cycles per value
   printf ("fast float sincos: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));
 
   REPS *= 2; // sin version: even faster
 
-  start_time = gettime();
+  start_time = get_time();
   for (int reps = 0; reps < REPS; reps++)
     {
       fast_vector_sinf (params, &sin_vecf[0], &sin_vecf[TEST_SIZE]);
 
       yy += sin_vecf[reps & 1023]; // do not optimize loop out
     }
-  end_time = gettime();
+  end_time = get_time();
 
   // assume 2Ghz processor and compute cycles per value
   printf ("fast float sin: %f pseudocycles per value\n", (end_time - start_time) * 2.0 * 1000 * 1000 * 1000 / (TEST_SIZE * REPS));

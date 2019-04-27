@@ -3,7 +3,7 @@
 #include "smrandom.hh"
 #include "smfft.hh"
 #include "smmain.hh"
-#include <sys/time.h>
+#include "smutils.hh"
 #include <stdio.h>
 #include <string>
 
@@ -12,15 +12,6 @@ using std::string;
 
 unsigned int block_size;
 float *in, *out;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 static void
 time_fftar()
@@ -56,10 +47,10 @@ measure (const string& name, void (*func)(), bool is_complex)
   func();
 
   // timed runs:
-  double start = gettime();
+  double start = get_time();
   for (unsigned int i = 0; i < runs; i++)
     func();
-  double end = gettime();
+  double end = get_time();
   printf ("%s: %f clocks/sample\n", name.c_str(), clocks_per_sec * (end - start) / (is_complex ? (block_size / 2) : block_size) / runs);
 
   return (end - start);

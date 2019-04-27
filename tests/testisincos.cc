@@ -2,10 +2,10 @@
 
 #include "smmath.hh"
 #include "smmain.hh"
+#include "smutils.hh"
 
 #include <stdio.h>
 #include <assert.h>
-#include <sys/time.h>
 
 #include <algorithm>
 #include <string>
@@ -16,20 +16,11 @@ using std::string;
 
 static double acc[2] = { 0, 0 };
 
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
 void
 perf_test()
 {
   double clocks_per_sec = 2500.0 * 1000 * 1000;
-  double start = gettime();
+  double start = get_time();
   static int CALLS = 1000 * 1000 * 1000;
   for (int i = 0; i < CALLS; i++)
     {
@@ -39,7 +30,7 @@ perf_test()
       acc[0] += is;
       acc[1] += ic;
     }
-  double end = gettime();
+  double end = get_time();
   printf ("int_sincos: %f clocks/invocation\n", clocks_per_sec * (end - start) / CALLS);
 }
 

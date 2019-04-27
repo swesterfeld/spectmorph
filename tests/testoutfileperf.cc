@@ -5,11 +5,11 @@
 #include "sminfile.hh"
 #include "smgenericin.hh"
 #include "smmemout.hh"
+#include "smutils.hh"
 
 #include <glib.h>
 
 #include <stdlib.h>
-#include <sys/time.h>
 #include <assert.h>
 
 using namespace SpectMorph;
@@ -17,15 +17,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 using std::min;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 int
 main (int argc, char **argv)
@@ -47,12 +38,12 @@ main (int argc, char **argv)
 
       outfile.write_float_block ("foo", fblock); // warmup
 
-      double start = gettime();
+      double start = get_time();
       for (size_t i = 0; i < 10000; i++)
         {
           outfile.write_float_block ("foo", fblock);
         }
-      double end = gettime();
+      double end = get_time();
       total = min (total, end - start);
     }
 

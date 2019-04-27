@@ -10,7 +10,6 @@
 
 #include <stdio.h>
 #include <assert.h>
-#include <sys/time.h>
 
 #include <vector>
 
@@ -19,15 +18,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::max;
 using std::min;
-
-double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 void
 push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
@@ -67,10 +57,10 @@ perf_test()
   t = 1e30;
   for (int reps = 0; reps < 12; reps++)
     {
-      start = gettime();
+      start = get_time();
       for (int r = 0; r < RUNS; r++)
         synth.render_partial (freq_mag_phase[0], freq_mag_phase[1], freq_mag_phase[2]);
-      end = gettime();
+      end = get_time();
       t = min (t, end - start);
     }
 
@@ -81,10 +71,10 @@ perf_test()
   synth.get_samples (&sse_samples[0]);  // first run may be slower
 
   RUNS = 100000;
-  start = gettime();
+  start = get_time();
   for (int r = 0; r < RUNS; r++)
     synth.get_samples (&sse_samples[0]);
-  end = gettime();
+  end = get_time();
 
   printf ("get_samples: clocks per sample: %f\n", clocks_per_sec * (end - start) / RUNS / block_size);
 
@@ -97,19 +87,19 @@ perf_test()
   for (int i = 0; i < FREQS; i++)
     push_partial_f (b, (440 + i) / 440.0, 0.9, 0.5);
 
-  start = gettime();
+  start = get_time();
   for (int r = 0; r < RUNS; r++)
     sd.process (b, next_b, dwindow, samples);
-  end = gettime();
+  end = get_time();
   printf ("SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 
   SineDecoder sdo (440, mix_freq, block_size, block_size / 2, SineDecoder::MODE_PHASE_SYNC_OVERLAP);
   RUNS = 2000;
 
-  start = gettime();
+  start = get_time();
   for (int r = 0; r < RUNS; r++)
     sdo.process (b, next_b, dwindow, samples);
-  end = gettime();
+  end = get_time();
   printf ("Old SineDecoder (%d partials): clocks per sample: %f\n", FREQS, clocks_per_sec * (end - start) / FREQS / RUNS / block_size);
 }
 
@@ -354,10 +344,10 @@ test_saw_perf()
       t[i] = 1e30;
       for (int reps = 0; reps < 12; reps++)
         {
-          start = gettime();
+          start = get_time();
           for (int r = 0; r < RUNS; r++)
             live_decoder.process (samples.size(), nullptr, &samples[0]);
-          end = gettime();
+          end = get_time();
           t[i] = min (t[i], end - start);
         }
     }

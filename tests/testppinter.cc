@@ -8,7 +8,6 @@
 
 #include <vector>
 
-#include <sys/time.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -18,15 +17,6 @@ using std::vector;
 using std::string;
 using std::max;
 using std::min;
-
-double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 void
 sin_test (double freq, double db_bound)
@@ -235,19 +225,19 @@ speed_test()
 
   double start, end;
 
-  start = gettime();
+  start = get_time();
   const size_t RUNS = 300, PADDING = 16;
   for (size_t k = 0; k < RUNS; k++)
     for (size_t i = PADDING; i < result.size(); i++)
       result[i] = ppi->get_sample (signal, i * 0.987);
-  end = gettime();
+  end = get_time();
   t[1] = end - start;
 
-  start = gettime();
+  start = get_time();
   for (size_t k = 0; k < RUNS; k++)
     for (size_t i = PADDING; i < result.size(); i++)
       result[i] = ppi->get_sample_no_check (signal, i * 0.987);
-  end = gettime();
+  end = get_time();
   t[0] = end - start;
 
   for (int checks = 0; checks < 2; checks++)
