@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include <assert.h>
-#include <sys/time.h>
 #include <stdio.h>
 
 #include <vector>
@@ -20,15 +19,6 @@ using std::pair;
 using std::make_pair;
 
 using namespace SpectMorph;
-
-static double
-gettime()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
 
 void
 show_progress (double p)
@@ -78,10 +68,10 @@ main (int argc, char **argv)
       zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1, -96, 0);
 
       // timed runs:
-      double start = gettime();
+      double start = get_time();
       for (unsigned int i = 0; i < runs; i++)
         zimage = TimeFreqView::zoom_rect (image, 50, 50, 300, 300, hzoom, vzoom, -1, -96, 0);
-      double end = gettime();
+      double end = get_time();
 
       printf ("zoom_rect: %f clocks/pixel\n", clocks_per_sec * (end - start) / (300 * 300) / runs);
       printf ("zoom_rect: %f Mpixel/s\n", 1.0 / ((end - start) / (300 * 300) / runs) / 1000 / 1000);
@@ -101,10 +91,10 @@ main (int argc, char **argv)
       const double hz = double (width) / signal.size();
 
       const unsigned int runs = 100;
-      double start = gettime();
+      double start = get_time();
       for (unsigned int i = 0; i < runs; i++)
         SampleView::draw_signal (signal, dummy_painter, rect, height, vz, hz);
-      double end = gettime();
+      double end = get_time();
 
       printf ("draw_signal: %f clocks/value\n", clocks_per_sec * (end - start) / (signal.size()) / runs);
     }
@@ -125,10 +115,10 @@ main (int argc, char **argv)
       params.cwt_freq_resolution = 25;
       params.cwt_time_resolution = 5;
 
-      double start = gettime();
+      double start = get_time();
       cwt.connect (&cwt, &CWT::signal_progress, show_progress);
       results = cwt.analyze (signal, params);
-      double end = gettime();
+      double end = get_time();
       printf ("\n");
       cwt.make_png (results);
 
