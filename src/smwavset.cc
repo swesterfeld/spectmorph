@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <sys/time.h>
 
 #include "config.h"
 #include <smwavset.hh>
@@ -295,15 +294,6 @@ find_wave (WavSet& wset, int midi_note)
   return wi;
 }
 
-double
-gettime ()
-{
-  timeval tv;
-  gettimeofday (&tv, 0);
-
-  return tv.tv_sec + tv.tv_usec / 1000000.0;
-}
-
 string
 time2str (double t)
 {
@@ -361,7 +351,7 @@ load_or_die (WavSet& wset, string name)
 int
 main (int argc, char **argv)
 {
-  double start_time = gettime();
+  double start_time = get_time();
 
   sm_init (&argc, &argv);
 
@@ -454,7 +444,7 @@ main (int argc, char **argv)
         {
           string smpath = options.data_dir + "/" + int2str (wi->midi_note) + ".sm";
           string cmd = options.smenc + " -m " + int2str (wi->midi_note) + " \"" + wi->path.c_str() + "\" " + smpath + " " + options.args;
-          sm_printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
+          sm_printf ("[%s] ## %s\n", time2str (get_time() - start_time).c_str(), cmd.c_str());
           job_queue.run (cmd);
 
           WavSetWave new_wave = *wi;
@@ -486,7 +476,7 @@ main (int argc, char **argv)
 
           string wavpath = options.data_dir + "/" + int2str (si->midi_note) + ".wav";
           string cmd = "smplay --rate=" + int2str (audio.mix_freq) + " " +si->path.c_str() + " --export " + wavpath + " " + options.args;
-          sm_printf ("[%s] ## %s\n", time2str (gettime() - start_time).c_str(), cmd.c_str());
+          sm_printf ("[%s] ## %s\n", time2str (get_time() - start_time).c_str(), cmd.c_str());
           int rc = system (cmd.c_str());
           if (rc != 0)
             {
