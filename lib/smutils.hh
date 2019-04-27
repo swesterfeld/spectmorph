@@ -95,6 +95,8 @@ std::string sm_resolve_link (const std::string& link_file);
 std::string sha1_hash (const unsigned char *data, size_t len);
 std::string sha1_hash (const std::string& str);
 
+double get_time();
+
 } // namespace SpectMorph
 
 /* we want to be able to use sm_debug without extra includes */

@@ -6,6 +6,7 @@
 #include <string>
 #include <assert.h>
 #include <stdarg.h>
+#include <sys/time.h>
 #include <glib.h>
 
 #ifdef SM_OS_MACOS
@@ -365,5 +366,14 @@ sha1_hash (const string& str)
   return sha1_hash (reinterpret_cast<const unsigned char *> (str.data()), str.size());
 }
 
+double
+get_time()
+{
+  /* return timestamp in seconds as double */
+  timeval tv;
+  gettimeofday (&tv, 0);
+
+  return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
 
 }
