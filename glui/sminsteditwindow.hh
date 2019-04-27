@@ -46,6 +46,8 @@ public:
   {
     WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
 
+    builder_thread.kill_all_jobs();
+
     builder_thread.add_job (builder,
       [this, play_mode] (WavSet *wav_set)
         {
@@ -58,10 +60,50 @@ public:
   bool
   have_builder()
   {
-    printf ("job count = %zd\n", builder_thread.job_count());
     return builder_thread.job_count() > 0;
   }
-  void on_timer();
+  void
+  on_timer()
+  {
+    for (auto ev : synth_interface->get_project()->notify_take_events())
+      {
+        SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
+        if (sn_event)
+          {
+            synth_interface->signal_notify_event (sn_event);
+            delete sn_event;
+          }
+      }
+
+    std::lock_guard<std::mutex> lg (result_mutex);
+    if (result_wav_set)
+      {
+        for (const auto& wave : result_wav_set->waves)
+          signal_have_audio (wave.midi_note, wave.audio);
+
+        if (result_play_mode == PlayMode::SPECTMORPH)
+          {
+            synth_interface->synth_inst_edit_update (true, result_wav_set.release(), false);
+          }
+        else if (result_play_mode == PlayMode::SAMPLE)
+          {
+            synth_interface->synth_inst_edit_update (true, result_wav_set.release(), true);
+          }
+        else
+          {
+            Index index;
+            index.load_file ("instruments:standard");
+
+            WavSet *wav_set = new WavSet();
+            wav_set->load (index.smset_dir() + "/synth-saw.smset");
+
+            synth_interface->synth_inst_edit_update (true, wav_set, false);
+          }
+
+        // delete
+        result_wav_set.reset();
+      }
+  }
 
   Signal<int, Audio *> signal_have_audio;
 };
@@ -590,50 +632,6 @@ public:
     sample_widget->update();
   }
 };
-
-inline void
-InstEditBackend::on_timer()
-{
-  for (auto ev : synth_interface->get_project()->notify_take_events())
-    {
-      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
-      if (sn_event)
-        {
-          synth_interface->signal_notify_event (sn_event);
-          delete sn_event;
-        }
-    }
-
-  std::lock_guard<std::mutex> lg (result_mutex);
-  if (result_wav_set)
-    {
-      printf ("got result!\n");
-      for (const auto& wave : result_wav_set->waves)
-        signal_have_audio (wave.midi_note, wave.audio);
-
-      if (result_play_mode == PlayMode::SPECTMORPH)
-        {
-          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), false);
-        }
-      else if (result_play_mode == PlayMode::SAMPLE)
-        {
-          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), true);
-        }
-      else
-        {
-          Index index;
-          index.load_file ("instruments:standard");
-
-          WavSet *wav_set = new WavSet();
-          wav_set->load (index.smset_dir() + "/synth-saw.smset");
-
-          synth_interface->synth_inst_edit_update (true, wav_set, false);
-        }
-
-      // delete
-      result_wav_set.reset();
-    }
-}
 
 }
 
