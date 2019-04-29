@@ -47,8 +47,21 @@ main (int argc, char **argv)
       writer.add ("test2.txt", "Test II\n");
 
       if (writer.error())
-        {
-          printf ("ERR=%d\n", writer.error());
-        }
+        printf ("ERR=%d\n", writer.error());
+    }
+  if (argc == 3 && strcmp (argv[1], "create-mem") == 0)
+    {
+      ZipWriter writer (argv[2]);
+
+      writer.add ("test.txt", "Hello World!\n");
+      writer.add ("test2.txt", "Test II\n");
+
+      if (writer.error())
+        printf ("ERR=%d\n", writer.error());
+
+      FILE *f = fopen (argv[2], "w");
+      for (auto c : writer.data())
+        fputc (c, f);
+      fclose (f);
     }
 }
