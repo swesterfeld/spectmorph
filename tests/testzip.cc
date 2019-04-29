@@ -10,6 +10,30 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+void
+get (ZipReader& reader)
+{
+  for (auto name : reader.filenames())
+    {
+      auto data = reader.read (name);
+
+      printf ("%s [[[\n", name.c_str());
+      for (auto ch : data)
+        printf ("%c", ch);
+      printf ("]]]\n\n");
+    }
+}
+
+void
+create (ZipWriter& writer)
+{
+  writer.add ("test.txt", "Hello World!\n");
+  writer.add ("test2.txt", "Test II\n");
+
+  if (writer.error())
+    printf ("ERR=%d\n", writer.error());
+}
+
 int
 main (int argc, char **argv)
 {
@@ -29,39 +53,37 @@ main (int argc, char **argv)
     {
       ZipReader reader (argv[2]);
 
-      for (auto name : reader.filenames())
-        {
-          auto data = reader.read (name);
-
-          printf ("%s [[[\n", name.c_str());
-          for (auto ch : data)
-            printf ("%c", ch);
-          printf ("]]]\n\n");
-        }
+      get (reader);
     }
   if (argc == 3 && strcmp (argv[1], "create") == 0)
     {
       ZipWriter writer (argv[2]);
 
-      writer.add ("test.txt", "Hello World!\n");
-      writer.add ("test2.txt", "Test II\n");
-
-      if (writer.error())
-        printf ("ERR=%d\n", writer.error());
+      create (writer);
     }
   if (argc == 3 && strcmp (argv[1], "create-mem") == 0)
     {
-      ZipWriter writer (argv[2]);
+      ZipWriter writer;
 
-      writer.add ("test.txt", "Hello World!\n");
-      writer.add ("test2.txt", "Test II\n");
-
-      if (writer.error())
-        printf ("ERR=%d\n", writer.error());
+      create (writer);
 
       FILE *f = fopen (argv[2], "w");
       for (auto c : writer.data())
         fputc (c, f);
       fclose (f);
     }
+  if (argc == 3 && strcmp (argv[1], "get-mem") == 0)
+    {
+      vector<uint8_t> data;
+
+      FILE *f = fopen (argv[2], "r");
+      int c;
+      while ((c = fgetc (f)) >= 0)
+        data.push_back (c);
+      fclose (f);
+
+      ZipReader reader (data);
+
+      get (reader);
+          }
 }
