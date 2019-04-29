@@ -11,11 +11,14 @@ namespace SpectMorph
 
 class ZipReader
 {
-  void    *reader = nullptr;
-  bool     need_close = false;
-  int32_t  m_error = 0;
+  void                *reader = nullptr;
+  bool                 need_close = false;
+  int32_t              m_error = 0;
+  void                *read_mem_stream = nullptr;
+  std::vector<uint8_t> m_data;
 public:
   ZipReader (const std::string& filename);
+  ZipReader (const std::vector<uint8_t>& data);
   ~ZipReader();
 
   std::vector<std::string>  filenames();

@@ -31,6 +31,27 @@ ZipReader::ZipReader (const string& filename)
 
   need_close = true;
 }
+
+ZipReader::ZipReader (const std::vector<uint8_t>& data) :
+  m_data (data)
+{
+  mz_stream_mem_create (&read_mem_stream);
+  mz_stream_mem_set_buffer (read_mem_stream, (void *)&m_data[0], m_data.size());
+  mz_stream_open (read_mem_stream, NULL, MZ_OPEN_MODE_READ);
+
+  void *ptr = mz_zip_reader_create (&reader);
+  if (!ptr)
+    {
+      m_error = MZ_MEM_ERROR;
+      return;
+    }
+ m_error = mz_zip_reader_open (reader, read_mem_stream);
+ if (m_error)
+   return;
+
+  need_close = true;
+}
+
 ZipReader::~ZipReader()
 {
   if (need_close)
@@ -38,6 +59,13 @@ ZipReader::~ZipReader()
 
   if (reader)
     mz_zip_reader_delete (&reader);
+
+  if (read_mem_stream)
+    {
+      mz_stream_mem_close (read_mem_stream);
+      mz_stream_mem_delete (&read_mem_stream);
+      read_mem_stream = nullptr;
+    }
 }
 
 vector<string>
