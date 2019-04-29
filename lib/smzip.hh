@@ -25,15 +25,19 @@ public:
 
 class ZipWriter
 {
-  void    *writer = nullptr;
-  bool     need_close = false;
-  int32_t  m_error = 0;
+  void                 *writer = nullptr;
+  bool                  need_close = false;
+  int32_t               m_error = 0;
+  void                 *write_mem_stream = nullptr;
 public:
   ZipWriter (const std::string& filename);
+  ZipWriter();
   ~ZipWriter();
   void    add (const std::string& filename, const std::vector<uint8_t>& data);
   void    add (const std::string& filename, const std::string& text);
   int32_t error() const;
+
+  std::vector<uint8_t> data();
 };
 
 }

@@ -10,6 +10,7 @@
 #include "mz_strm_split.h"
 #include "mz_zip.h"
 #include "mz_zip_rw.h"
+#include "mz_strm_mem.h"
 
 using std::string;
 using std::vector;
@@ -129,6 +130,42 @@ ZipWriter::ZipWriter (const string& filename)
   need_close = true;
 }
 
+ZipWriter::ZipWriter()
+{
+  mz_stream_mem_create (&write_mem_stream);
+  mz_stream_mem_set_grow_size (write_mem_stream, 256 * 1024);
+  mz_stream_open (write_mem_stream, nullptr, MZ_OPEN_MODE_CREATE);
+
+  void *ptr = mz_zip_writer_create (&writer);
+  if (!ptr)
+    {
+      m_error = MZ_MEM_ERROR;
+      return;
+    }
+
+  m_error = mz_zip_writer_open (writer, write_mem_stream);
+  if (m_error)
+    return;
+
+  need_close = true;
+}
+
+vector<uint8_t>
+ZipWriter::data()
+{
+  if (write_mem_stream)
+    {
+      const uint8_t *buffer_ptr = NULL;
+
+      mz_stream_mem_get_buffer (write_mem_stream, (const void **)&buffer_ptr);
+      mz_stream_mem_seek (write_mem_stream, 0, MZ_SEEK_END);
+      size_t buffer_size = (int32_t) mz_stream_mem_tell (write_mem_stream);
+
+      return std::vector<uint8_t> (buffer_ptr, buffer_ptr + buffer_size);
+    }
+  return {};
+}
+
 ZipWriter::~ZipWriter()
 {
   if (need_close)
@@ -136,6 +173,13 @@ ZipWriter::~ZipWriter()
 
   if (writer)
     mz_zip_writer_delete (&writer);
+
+  if (write_mem_stream)
+    {
+      mz_stream_mem_close (write_mem_stream);
+      mz_stream_mem_delete (&write_mem_stream);
+      write_mem_stream = nullptr;
+    }
 }
 
 void
