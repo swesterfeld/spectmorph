@@ -145,19 +145,12 @@ MorphPlanWindow::load (const std::string& filename)
 Error
 MorphPlanWindow::save (const std::string& filename)
 {
-  GenericOut *out = StdioOut::open (filename);
+  Error error = m_morph_plan->project()->save (filename);
 
-  if (out)
-    {
-      Error error = m_morph_plan->save (out);
-      delete out; // close file
+  if (error == 0)
+    set_filename (filename);
 
-      if (error == 0)
-        set_filename (filename);
-
-      return error;
-    }
-  return Error::FILE_NOT_FOUND;
+  return error;
 }
 
 void
