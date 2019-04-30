@@ -354,14 +354,26 @@ Instrument::gen_short_name (const string& filename)
 }
 
 void
-Instrument::save (const string& filename, bool zip)
+Instrument::save (const string& filename)
+{
+  save (filename, nullptr);
+}
+
+void
+Instrument::save (ZipWriter& zip_writer)
+{
+  save ("", &zip_writer);
+}
+
+void
+Instrument::save (const string& filename, ZipWriter *zip_writer)
 {
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
   for (auto& sample : samples)
     {
       xml_node sample_node = inst_node.append_child ("sample");
-      if (zip)
+      if (zip_writer)
         sample_node.append_attribute ("filename").set_value ((sample->short_name + ".wav").c_str());
       else
         sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
@@ -430,7 +442,7 @@ Instrument::save (const string& filename, bool zip)
           conf_node.append_attribute ("value").set_value (entry.value.c_str());
         }
     }
-  if (zip)
+  if (zip_writer)
     {
       class VectorOut : public xml_writer
       {
@@ -446,8 +458,7 @@ Instrument::save (const string& filename, bool zip)
       } out;
       doc.save (out);
 
-      ZipWriter writer (filename);
-      writer.add ("instrument.xml", out.vec);
+      zip_writer->add ("instrument.xml", out.vec);
       for (size_t i = 0; i < samples.size(); i++)
         {
           /* we make a deep copy here, because save() is non-const */
@@ -458,7 +469,7 @@ Instrument::save (const string& filename, bool zip)
 
           vector<unsigned char> wav_file_vec;
           wav_data.save (wav_file_vec);
-          writer.add (samples[i]->short_name + ".wav", wav_file_vec);
+          zip_writer->add (samples[i]->short_name + ".wav", wav_file_vec);
         }
     }
   else
