@@ -85,5 +85,5 @@ main (int argc, char **argv)
       ZipReader reader (data);
 
       get (reader);
-          }
+    }
 }
