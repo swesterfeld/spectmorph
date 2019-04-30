@@ -4,6 +4,8 @@
 #include "smmidisynth.hh"
 #include "smsynthinterface.hh"
 #include "smmorphoutputmodule.hh"
+#include "smzip.hh"
+#include "smmemout.hh"
 
 using namespace SpectMorph;
 
@@ -201,4 +203,27 @@ Project::set_volume (double volume)
   m_synth_interface->emit_update_gain (db_to_factor (m_volume));
 
   signal_volume_changed (m_volume);
+}
+
+Error
+Project::save (const std::string& filename)
+{
+  ZipWriter zip (filename); // FIXME: handle I/O errors
+
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  m_morph_plan->save (&mo);
+
+  zip.add ("plan.smplan", data);
+  // FIXME: check if needed by current morph plan
+  for (const auto& inst : instrument_map)
+    {
+      ZipWriter mem_zip;
+
+      string inst_file = string_printf ("instrument%d.sminst", inst.first);
+      inst.second->save (mem_zip);
+      zip.add (inst_file, mem_zip.data());
+    }
+
+  return Error::NONE;
 }

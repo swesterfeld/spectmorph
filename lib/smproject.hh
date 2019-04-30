@@ -126,6 +126,8 @@ public:
   MidiSynth *midi_synth() const;
   RefPtr<MorphPlan> morph_plan() const;
 
+  Error save (const std::string& filename);
+
   Signal<double> signal_volume_changed;
 };
 
