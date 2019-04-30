@@ -181,6 +181,12 @@ ZipWriter::ZipWriter()
 vector<uint8_t>
 ZipWriter::data()
 {
+  if (need_close)
+    {
+      mz_zip_writer_close (writer);
+      need_close = false;
+    }
+
   if (write_mem_stream)
     {
       const uint8_t *buffer_ptr = NULL;
