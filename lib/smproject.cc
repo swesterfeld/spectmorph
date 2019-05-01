@@ -260,7 +260,7 @@ Project::save (const std::string& filename)
 
       string inst_file = string_printf ("instrument%d.sminst", inst.first);
       inst.second->save (mem_zip);
-      zip.add (inst_file, mem_zip.data());
+      zip.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
   return Error::NONE;

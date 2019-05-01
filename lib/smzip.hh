@@ -33,11 +33,13 @@ class ZipWriter
   int32_t               m_error = 0;
   void                 *write_mem_stream = nullptr;
 public:
+  enum class Compress { STORE = 0, DEFLATE };
+
   ZipWriter (const std::string& filename);
   ZipWriter();
   ~ZipWriter();
-  void    add (const std::string& filename, const std::vector<uint8_t>& data);
-  void    add (const std::string& filename, const std::string& text);
+  void    add (const std::string& filename, const std::vector<uint8_t>& data, Compress compress = Compress::DEFLATE);
+  void    add (const std::string& filename, const std::string& text, Compress compress = Compress::DEFLATE);
   int32_t error() const;
 
   std::vector<uint8_t> data();

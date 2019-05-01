@@ -501,7 +501,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
 
           vector<unsigned char> wav_file_vec;
           wav_data.save (wav_file_vec);
-          zip_writer->add (samples[i]->short_name + ".wav", wav_file_vec);
+          zip_writer->add (samples[i]->short_name + ".wav", wav_file_vec, ZipWriter::Compress::STORE);
         }
     }
   else

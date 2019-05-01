@@ -217,7 +217,7 @@ ZipWriter::~ZipWriter()
 }
 
 void
-ZipWriter::add (const string& filename, const vector<uint8_t>& data)
+ZipWriter::add (const string& filename, const vector<uint8_t>& data, Compress compress)
 {
   if (m_error)
     return;
@@ -225,7 +225,13 @@ ZipWriter::add (const string& filename, const vector<uint8_t>& data)
   mz_zip_file file_info = { 0, };
 
   file_info.version_madeby = MZ_VERSION_MADEBY;
-  file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+  switch (compress)
+  {
+    case Compress::STORE:   file_info.compression_method = MZ_COMPRESS_METHOD_STORE;
+                            break;
+    case Compress::DEFLATE: file_info.compression_method = MZ_COMPRESS_METHOD_DEFLATE;
+                            break;
+  }
   file_info.filename = filename.c_str();
   file_info.uncompressed_size = data.size();
 #ifdef SM_OS_LINUX
@@ -237,12 +243,12 @@ ZipWriter::add (const string& filename, const vector<uint8_t>& data)
 }
 
 void
-ZipWriter::add (const string& filename, const string& text)
+ZipWriter::add (const string& filename, const string& text, Compress compress)
 {
   const unsigned char *tbegin = reinterpret_cast<const unsigned char *> (text.data());
   const unsigned char *tend   = tbegin + text.size();
   vector<uint8_t> data (tbegin, tend);
-  add (filename, data);
+  add (filename, data, compress);
 }
 
 int32_t
