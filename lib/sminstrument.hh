@@ -25,6 +25,7 @@ enum MarkerType {
 
 class Instrument;
 class ZipWriter;
+class ZipReader;
 class Sample
 {
 public:
@@ -115,6 +116,7 @@ private:
   AutoTune      m_auto_tune;
   EncoderConfig m_encoder_config;
 
+  void        load (const std::string& filename, ZipReader *zip_reader);
   void        save (const std::string& filename, ZipWriter *zip_writer);
 public:
   Instrument();
@@ -130,6 +132,8 @@ public:
   void        set_selected (int sel);
 
   void        load (const std::string& filename);
+  void        load (ZipReader& zip_reader);
+
   void        save (const std::string& filename);
   void        save (ZipWriter& zip_writer);
 

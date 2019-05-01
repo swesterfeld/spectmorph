@@ -178,6 +178,18 @@ Instrument::set_selected (int sel)
 void
 Instrument::load (const string& filename)
 {
+  return load (filename, nullptr);
+}
+
+void
+Instrument::load (ZipReader& zip_reader)
+{
+  return load ("", &zip_reader);
+}
+
+void
+Instrument::load (const string& filename, ZipReader *zip_reader)
+{
   samples.clear();
 
   char *basename = g_path_get_basename (filename.c_str());
@@ -185,7 +197,16 @@ Instrument::load (const string& filename)
   g_free (basename);
 
   xml_document doc;
-  doc.load_file (filename.c_str());
+  if (zip_reader)
+    {
+      // FIXME: error handling
+      vector<uint8_t> xml = zip_reader->read ("instrument.xml");
+      doc.load_buffer (&xml[0], xml.size());
+    }
+  else
+    {
+      doc.load_file (filename.c_str());
+    }
   xml_node inst_node = doc.child ("instrument");
   for (xml_node sample_node : inst_node.children ("sample"))
     {
@@ -196,7 +217,18 @@ Instrument::load (const string& filename)
 
       /* try loading file */
       WavData wav_data;
-      if (wav_data.load_mono (filename))
+      bool load_ok;
+      if (zip_reader)
+        {
+          vector<uint8_t> wav = zip_reader->read (filename);
+          load_ok = wav_data.load (wav);
+          load_ok = load_ok && (wav_data.n_channels() == 1);
+        }
+      else
+        {
+          load_ok = wav_data.load_mono (filename);
+        }
+      if (load_ok)
         {
           Sample *sample = new Sample (this, wav_data);
           samples.emplace_back (sample);
