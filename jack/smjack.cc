@@ -114,18 +114,8 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      Error error;
+      Error error = project.load (argv[1]);
 
-      GenericIn *file = GenericIn::open (argv[1]);
-      if (file)
-        {
-          error = project.morph_plan()->load (file);
-          delete file;
-        }
-      else
-        {
-          error = Error::FILE_NOT_FOUND;
-        }
       if (error != 0)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], sm_error_blurb (error));
