@@ -6,6 +6,7 @@
 #include "smmorphoutputmodule.hh"
 #include "smzip.hh"
 #include "smmemout.hh"
+#include "smmorphwavsource.hh"
 
 using namespace SpectMorph;
 
@@ -216,6 +217,29 @@ Project::load (const std::string& filename)
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
   Error error = m_morph_plan->load (in); // FIXME:, &params);
   delete in;
+
+  instrument_map.clear();
+
+  // find instrument ids
+  for (auto op : m_morph_plan->operators())
+    {
+      string type = op->type();
+      if (type == "SpectMorph::MorphWavSource")
+        {
+          auto wav_source = static_cast<MorphWavSource *> (op);
+          int  inst_id = wav_source->instrument();
+
+          string inst_file = string_printf ("instrument%d.sminst", inst_id);
+          vector<uint8_t> inst_data = zip.read (inst_file);
+
+          ZipReader inst_zip (inst_data);
+          Instrument *inst = new Instrument();
+          inst->load (inst_zip); // FIXME: error handling
+          instrument_map[inst_id].reset (inst);
+
+          rebuild (inst_id);
+        }
+    }
   return error;
 }
 
