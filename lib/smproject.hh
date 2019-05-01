@@ -127,6 +127,7 @@ public:
   RefPtr<MorphPlan> morph_plan() const;
 
   Error save (const std::string& filename);
+  Error load (const std::string& filename);
 
   Signal<double> signal_volume_changed;
 };

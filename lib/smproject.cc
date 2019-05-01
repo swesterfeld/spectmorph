@@ -206,6 +206,20 @@ Project::set_volume (double volume)
 }
 
 Error
+Project::load (const std::string& filename)
+{
+  // FIXME: backward compat
+  ZipReader zip (filename); // FIXME: handle I/O errors
+
+  vector<uint8_t> plan = zip.read ("plan.smplan");
+
+  GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
+  Error error = m_morph_plan->load (in); // FIXME:, &params);
+  delete in;
+  return error;
+}
+
+Error
 Project::save (const std::string& filename)
 {
   ZipWriter zip (filename); // FIXME: handle I/O errors
