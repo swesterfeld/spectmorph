@@ -9,10 +9,11 @@
 #include "smaudio.hh"
 #include "smutils.hh"
 #include "smsignal.hh"
-#include "smproject.hh"
 
 namespace SpectMorph
 {
+
+class Project;
 
 class MorphPlan : public Object
 {

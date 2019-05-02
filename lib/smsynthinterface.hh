@@ -4,6 +4,7 @@
 #define SPECTMORPH_SYNTH_INTERFACE_HH
 
 #include "smmidisynth.hh"
+#include "smproject.hh"
 namespace SpectMorph
 {
 

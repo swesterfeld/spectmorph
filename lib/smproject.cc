@@ -7,6 +7,7 @@
 #include "smzip.hh"
 #include "smmemout.hh"
 #include "smmorphwavsource.hh"
+#include "smproject.hh"
 
 using namespace SpectMorph;
 
@@ -210,12 +211,21 @@ Error
 Project::load (const std::string& filename)
 {
   // FIXME: backward compat
-  ZipReader zip (filename); // FIXME: handle I/O errors
+  ZipReader zip_reader (filename); // FIXME: handle I/O errors
 
-  vector<uint8_t> plan = zip.read ("plan.smplan");
+  return load (zip_reader, nullptr);
+}
+
+Error
+Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
+{
+  // FIXME: backward compat
+  // FIXME: handle I/O errors (zip and other)
+
+  vector<uint8_t> plan = zip_reader.read ("plan.smplan");
 
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
-  Error error = m_morph_plan->load (in); // FIXME:, &params);
+  Error error = m_morph_plan->load (in, params);
   delete in;
 
   instrument_map.clear();
@@ -230,7 +240,7 @@ Project::load (const std::string& filename)
           int  inst_id = wav_source->instrument();
 
           string inst_file = string_printf ("instrument%d.sminst", inst_id);
-          vector<uint8_t> inst_data = zip.read (inst_file);
+          vector<uint8_t> inst_data = zip_reader.read (inst_file);
 
           ZipReader inst_zip (inst_data);
           Instrument *inst = new Instrument();
@@ -246,13 +256,20 @@ Project::load (const std::string& filename)
 Error
 Project::save (const std::string& filename)
 {
-  ZipWriter zip (filename); // FIXME: handle I/O errors
+  ZipWriter zip_writer (filename); // FIXME: handle I/O errors
 
+  return save (zip_writer, nullptr);
+}
+
+Error
+Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
+{
+  // FIXME: handle I/O errors (zip and other)
   vector<unsigned char> data;
   MemOut mo (&data);
-  m_morph_plan->save (&mo);
+  m_morph_plan->save (&mo, params);
 
-  zip.add ("plan.smplan", data);
+  zip_writer.add ("plan.smplan", data);
   // FIXME: check if needed by current morph plan
   for (const auto& inst : instrument_map)
     {
@@ -260,7 +277,7 @@ Project::save (const std::string& filename)
 
       string inst_file = string_printf ("instrument%d.sminst", inst.first);
       inst.second->save (mem_zip);
-      zip.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
+      zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
   return Error::NONE;

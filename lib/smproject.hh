@@ -8,6 +8,7 @@
 #include "smwavsetbuilder.hh"
 #include "smobject.hh"
 #include "smbuilderthread.hh"
+#include "smmorphplan.hh"
 
 #include <thread>
 #include <mutex>
@@ -15,10 +16,8 @@
 namespace SpectMorph
 {
 
-class Project;
 class MidiSynth;
 class SynthInterface;
-class MorphPlan;
 
 class SynthControlEvent
 {
@@ -60,8 +59,6 @@ public:
   void take (SynthControlEvent *ev);
   void run_rt (Project *project);
 };
-
-class Job;
 
 class Project : public SignalReceiver
 {
@@ -124,10 +121,12 @@ public:
   std::vector<std::string> notify_take_events();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
-  RefPtr<MorphPlan> morph_plan() const;
+  MorphPlanPtr morph_plan() const;
 
   Error save (const std::string& filename);
+  Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
   Error load (const std::string& filename);
+  Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
 
   Signal<double> signal_volume_changed;
 };
