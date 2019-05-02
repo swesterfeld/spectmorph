@@ -208,12 +208,41 @@ Project::set_volume (double volume)
 }
 
 Error
-Project::load (const std::string& filename)
+Project::load (const string& filename)
 {
-  // FIXME: backward compat
-  ZipReader zip_reader (filename); // FIXME: handle I/O errors
+  bool new_format = false;
 
-  return load (zip_reader, nullptr);
+  FILE *test_fmt_file = fopen (filename.c_str(), "r");
+  if (test_fmt_file)
+    {
+      int c1 = fgetc (test_fmt_file);
+      int c2 = fgetc (test_fmt_file);
+
+      new_format = (c1 == 'P' && c2 == 'K');
+
+      fclose (test_fmt_file);
+    }
+  if (new_format)
+    {
+      ZipReader zip_reader (filename); // FIXME: handle I/O errors
+
+      return load (zip_reader, nullptr);
+    }
+  else
+    {
+      GenericIn *file = GenericIn::open (filename);
+      if (file)
+        {
+          Error error = m_morph_plan->load (file);
+          delete file;
+
+          return error;
+        }
+      else
+        {
+          return Error::FILE_NOT_FOUND;
+        }
+    }
 }
 
 Error
