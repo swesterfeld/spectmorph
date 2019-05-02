@@ -21,6 +21,7 @@ class VstUI : public SignalReceiver
   EventLoop            *event_loop = nullptr;
   MorphPlanPtr          morph_plan;
   VstPlugin            *plugin = nullptr;
+  std::vector<uint8_t>  chunk_data;
 
 public:
   VstUI (MorphPlanPtr plan, VstPlugin *plugin);
@@ -31,7 +32,7 @@ public:
   void idle();
 
   int   save_state (char **ptr);
-  void  load_state (char *ptr);
+  void  load_state (char *ptr, size_t size);
 
 /* slots: */
   void on_plan_changed();

@@ -7,6 +7,7 @@
 #include "smutils.hh"
 #include "smvstresize.hh"
 #include "smeventloop.hh"
+#include "smzip.hh"
 
 using namespace SpectMorph;
 
@@ -139,26 +140,22 @@ VstUI::save_state (char **buffer)
 {
   VstExtraParameters params (plugin);
 
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  morph_plan->save (&mo, &params);
+  ZipWriter zip_writer;
+  plugin->project.save (zip_writer, &params);
+  chunk_data = zip_writer.data();
 
-  string s = HexString::encode (data);
-
-  *buffer = strdup (s.c_str()); // FIXME: leak
-  return s.size() + 1; // save trailing 0 byte
+  *buffer = reinterpret_cast<char *> (&chunk_data[0]);
+  return chunk_data.size();
 }
 
 void
-VstUI::load_state (char *buffer)
+VstUI::load_state (char *buffer, size_t size)
 {
   VstExtraParameters params (plugin);
 
-  vector<unsigned char> data;
-  if (!HexString::decode (buffer, data))
-    return;
+  vector<unsigned char> data (buffer, buffer + size);
 
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-  morph_plan->load (in, &params);
-  delete in;
+  ZipReader zip_reader (data);
+
+  plugin->project.load (zip_reader, &params);
 }
