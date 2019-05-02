@@ -4,6 +4,7 @@
 #include "smfixedgrid.hh"
 #include "smlabel.hh"
 #include "smtimer.hh"
+#include "smproject.hh"
 
 using namespace SpectMorph;
 
