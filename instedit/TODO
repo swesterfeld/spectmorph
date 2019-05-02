@@ -17,6 +17,9 @@ SVEN:
 STORAGE:
 - morph plan attachments
 - store-as-zip with preset
+- compat for old VST
+- compat for old JACK
+- compat for old LV2
 
 PROJECT:
 - support more than one Instrument
