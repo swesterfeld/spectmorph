@@ -23,6 +23,7 @@
 #include "smvstui.hh"
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
+#include "smzip.hh"
 
 #ifdef SM_OS_MACOS // need to include this before using namespace SpectMorph
 #include <CoreFoundation/CoreFoundation.h>
@@ -129,6 +130,82 @@ VstPlugin::set_mix_freq (double mix_freq)
   project.set_mix_freq (mix_freq);
 }
 
+/*----------------------- save/load ----------------------------*/
+class VstExtraParameters : public MorphPlan::ExtraParameters
+{
+  VstPlugin *plugin;
+public:
+  VstExtraParameters (VstPlugin *plugin) :
+    plugin (plugin)
+  {
+  }
+
+  string section() { return "vst_parameters"; }
+
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
+    out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
+    out_file.write_float ("volume",    plugin->project.volume());
+  }
+
+  void
+  handle_event (InFile& in_file)
+  {
+    if (in_file.event() == InFile::FLOAT)
+      {
+        if (in_file.event_name() == "control_1")
+          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_1, in_file.event_float());
+
+        if (in_file.event_name() == "control_2")
+          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
+
+        if (in_file.event_name() == "volume")
+          plugin->project.set_volume (in_file.event_float());
+      }
+  }
+};
+
+int
+VstPlugin::save_state (char **buffer)
+{
+  VstExtraParameters params (this);
+
+  ZipWriter zip_writer;
+  project.save (zip_writer, &params);
+  chunk_data = zip_writer.data();
+
+  *buffer = reinterpret_cast<char *> (&chunk_data[0]);
+  return chunk_data.size();
+}
+
+void
+VstPlugin::load_state (char *buffer, size_t size)
+{
+  VstExtraParameters params (this);
+
+  if (size > 2 && buffer[0] == 'P' && buffer[1] == 'K') // new format
+    {
+      vector<unsigned char> data (buffer, buffer + size);
+
+      ZipReader zip_reader (data);
+
+      project.load (zip_reader, &params);
+    }
+  else
+    {
+      vector<unsigned char> data;
+      if (!HexString::decode (buffer, data))
+        return;
+
+      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      project.load_compat (in, &params);
+      delete in;
+    }
+}
+
+/*----------------------- dispatcher ----------------------------*/
 
 static char hostProductString[64] = "";
 
@@ -195,14 +272,14 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
 
     case effGetChunk:
       {
-        int result = plugin->ui->save_state((char **)ptr);
+        int result = plugin->save_state((char **)ptr);
         VST_DEBUG ("get chunk returned: %d bytes\n", result);
         return result;
       }
 
     case effSetChunk:
       VST_DEBUG ("set chunk: size %d\n", int (val));
-      plugin->ui->load_state((char *)ptr, val);
+      plugin->load_state((char *)ptr, val);
       return 0;
 
     case effProcessEvents:

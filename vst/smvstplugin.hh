@@ -39,6 +39,7 @@ struct VstPlugin
     }
   };
   std::vector<Parameter> parameters;
+  std::vector<uint8_t>   chunk_data;
 
   VstPlugin (audioMasterCallback master, AEffect *aeffect);
   ~VstPlugin();
@@ -56,6 +57,9 @@ struct VstPlugin
   bool  voices_active();
 
   void  set_mix_freq (double mix_freq);
+
+  int   save_state (char **ptr);
+  void  load_state (char *ptr, size_t size);
 
   audioMasterCallback audioMaster;
   AEffect*            aeffect;

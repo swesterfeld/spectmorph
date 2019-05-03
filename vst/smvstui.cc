@@ -7,7 +7,6 @@
 #include "smutils.hh"
 #include "smvstresize.hh"
 #include "smeventloop.hh"
-#include "smzip.hh"
 
 using namespace SpectMorph;
 
@@ -96,79 +95,5 @@ VstUI::on_update_window_size()
         vst_manual_resize (widget, width, height);
 
       VST_DEBUG ("ui: audioMasterSizeWindow returned %d\n", rc);
-    }
-}
-
-class VstExtraParameters : public MorphPlan::ExtraParameters
-{
-  VstPlugin *plugin;
-public:
-  VstExtraParameters (VstPlugin *plugin) :
-    plugin (plugin)
-  {
-  }
-
-  string section() { return "vst_parameters"; }
-
-  void
-  save (OutFile& out_file)
-  {
-    out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
-    out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
-    out_file.write_float ("volume",    plugin->project.volume());
-  }
-
-  void
-  handle_event (InFile& in_file)
-  {
-    if (in_file.event() == InFile::FLOAT)
-      {
-        if (in_file.event_name() == "control_1")
-          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_1, in_file.event_float());
-
-        if (in_file.event_name() == "control_2")
-          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
-
-        if (in_file.event_name() == "volume")
-          plugin->project.set_volume (in_file.event_float());
-      }
-  }
-};
-
-int
-VstUI::save_state (char **buffer)
-{
-  VstExtraParameters params (plugin);
-
-  ZipWriter zip_writer;
-  plugin->project.save (zip_writer, &params);
-  chunk_data = zip_writer.data();
-
-  *buffer = reinterpret_cast<char *> (&chunk_data[0]);
-  return chunk_data.size();
-}
-
-void
-VstUI::load_state (char *buffer, size_t size)
-{
-  VstExtraParameters params (plugin);
-
-  if (size > 2 && buffer[0] == 'P' && buffer[1] == 'K') // new format
-    {
-      vector<unsigned char> data (buffer, buffer + size);
-
-      ZipReader zip_reader (data);
-
-      plugin->project.load (zip_reader, &params);
-    }
-  else
-    {
-      vector<unsigned char> data;
-      if (!HexString::decode (buffer, data))
-        return;
-
-      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-      plugin->project.load_compat (in, &params);
-      delete in;
     }
 }
