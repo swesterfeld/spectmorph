@@ -196,12 +196,12 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
     case effGetChunk:
       {
         int result = plugin->ui->save_state((char **)ptr);
-        VST_DEBUG ("get chunk returned: %d bytes\n", *(char **)ptr);
+        VST_DEBUG ("get chunk returned: %d bytes\n", result);
         return result;
       }
 
     case effSetChunk:
-      VST_DEBUG ("set chunk: size %d\n", val);
+      VST_DEBUG ("set chunk: size %d\n", int (val));
       plugin->ui->load_state((char *)ptr, val);
       return 0;
 
