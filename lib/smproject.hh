@@ -127,6 +127,7 @@ public:
   Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
   Error load (const std::string& filename);
   Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
+  Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
 
   Signal<double> signal_volume_changed;
 };

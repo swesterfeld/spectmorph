@@ -233,7 +233,7 @@ Project::load (const string& filename)
       GenericIn *file = GenericIn::open (filename);
       if (file)
         {
-          Error error = m_morph_plan->load (file);
+          Error error = load_compat (file, nullptr);
           delete file;
 
           return error;
@@ -248,7 +248,6 @@ Project::load (const string& filename)
 Error
 Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 {
-  // FIXME: backward compat
   // FIXME: handle I/O errors (zip and other)
 
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
@@ -279,6 +278,17 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
           rebuild (inst_id);
         }
     }
+  return error;
+}
+
+Error
+Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
+{
+  Error error = m_morph_plan->load (in, params);
+
+  if (error == 0)
+    instrument_map.clear();
+
   return error;
 }
 
