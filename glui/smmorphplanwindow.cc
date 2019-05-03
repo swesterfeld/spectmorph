@@ -128,18 +128,12 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 Error
 MorphPlanWindow::load (const std::string& filename)
 {
-  GenericIn *in = StdioIn::open (filename);
-  if (in)
-    {
-      Error error = m_morph_plan->load (in);
-      delete in; // close file
+  Error error = m_morph_plan->project()->load (filename);
 
-      if (error == 0)
-        set_filename (filename);
+  if (error == 0)
+    set_filename (filename);
 
-      return error;
-    }
-  return Error::FILE_NOT_FOUND;
+  return error;
 }
 
 Error
