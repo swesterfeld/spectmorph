@@ -153,9 +153,22 @@ VstUI::load_state (char *buffer, size_t size)
 {
   VstExtraParameters params (plugin);
 
-  vector<unsigned char> data (buffer, buffer + size);
+  if (size > 2 && buffer[0] == 'P' && buffer[1] == 'K') // new format
+    {
+      vector<unsigned char> data (buffer, buffer + size);
 
-  ZipReader zip_reader (data);
+      ZipReader zip_reader (data);
 
-  plugin->project.load (zip_reader, &params);
+      plugin->project.load (zip_reader, &params);
+    }
+  else
+    {
+      vector<unsigned char> data;
+      if (!HexString::decode (buffer, data))
+        return;
+
+      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      plugin->project.load_compat (in, &params);
+      delete in;
+    }
 }
