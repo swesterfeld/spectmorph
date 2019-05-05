@@ -55,7 +55,7 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
                                            "--attach", attach.c_str(), nullptr };
 #endif
   string attach = string_printf ("%ld", win_id);
-  string smfiledialog = sm_get_install_dir (INSTALL_DIR_BIN) + "/smfiledialog";
+  string smfiledialog = sm_get_install_dir (INSTALL_DIR_BIN) + "/smfiledialog.sh";
 
   vector<const char *> argv = { smfiledialog.c_str(), open ? "open" : "save",
                                 last_start_directory.c_str(), filter.c_str(), filter_title.c_str(), title.c_str(), attach.c_str(), nullptr };
