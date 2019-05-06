@@ -161,12 +161,12 @@ public:
     switch (theme_color)
       {
         case ThemeColor::FRAME:     set_rgb (0.8, 0.8, 0.8);  break;
-        case ThemeColor::MENU_BG:   set_rgb (0.3, 0.3, 0.3);  break;
+        case ThemeColor::MENU_BG:   set_rgb (0.4, 0.3, 0.3);  break;
         case ThemeColor::MENU_ITEM: set_rgb (1, 0.6, 0.0);    break;
         case ThemeColor::CHECKBOX:  set_rgb (0.1, 0.7, 0.1);  break;
         case ThemeColor::SLIDER:    set_rgb (0.1, 0.7, 0.1);  break;
-        case ThemeColor::WINDOW_BG: set_rgb (0.2, 0.2, 0.2);  break;
-        case ThemeColor::OPERATOR_BG: set_rgb (0.2, 0.2, 0.2); break;
+        case ThemeColor::WINDOW_BG: set_rgb (0.3, 0.2, 0.2);  break;
+        case ThemeColor::OPERATOR_BG: set_rgb (0.4, 0.2, 0.2); break;
         case ThemeColor::TEXT:      set_rgb (1.0, 1.0, 1.0);  break;
       }
   }
