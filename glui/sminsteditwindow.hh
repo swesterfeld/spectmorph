@@ -221,6 +221,8 @@ class InstEditWindow : public Window
   {
     update_auto_checkboxes();
 
+    name_line_edit->set_text (instrument->name());
+
     Sample *sample = instrument->sample (instrument->selected());
 
     if (sample)
@@ -235,6 +237,7 @@ class InstEditWindow : public Window
   ComboBox *loop_combobox;
   Led *led;
   Label *playing_label;
+  LineEdit *name_line_edit = nullptr;
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
   Button   *play_button = nullptr;
@@ -377,6 +380,15 @@ public:
     grid.add_widget (new Label (this, "Loop"), 1, 63, 10, 3);
     grid.add_widget (loop_combobox, 8, 63, 20, 3);
 
+    /*---- name ----*/
+
+    name_line_edit = new LineEdit (this, "untitled");
+    name_line_edit->set_click_to_focus (true);
+    connect (name_line_edit->signal_text_changed, [this] (const std::string& name) { instrument->set_name (name); });
+
+    grid.add_widget (new Label (this, "Name"), 1, 66, 10, 3);
+    grid.add_widget (name_line_edit, 8, 66, 20, 3);
+
     /*--- play mode ---*/
     play_mode_combobox = new ComboBox (this);
     connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
@@ -453,9 +465,8 @@ public:
     connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
     grid.add_widget (show_params_button, 60, 64, 25, 3);
 
-    update_auto_checkboxes();
-
     on_samples_changed();
+    on_global_changed();
 
     // show complete wave
     on_update_hzoom (0);
