@@ -66,6 +66,7 @@ public:
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
   void set_keyboard_focus (Widget *widget, bool release_on_click = false);
+  bool has_keyboard_focus (Widget *widget);
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   void set_popup_window (Window *window);

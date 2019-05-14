@@ -798,6 +798,12 @@ Window::set_keyboard_focus (Widget *widget, bool release_on_click)
   keyboard_focus_release_on_click = release_on_click;
 }
 
+bool
+Window::has_keyboard_focus (Widget *widget)
+{
+  return keyboard_focus_widget == widget;
+}
+
 void
 Window::set_dialog_widget (Widget *widget)
 {

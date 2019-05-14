@@ -5,6 +5,7 @@
 
 #include "smdrawutils.hh"
 #include "smmath.hh"
+#include "smwindow.hh"
 
 namespace SpectMorph
 {
@@ -14,6 +15,7 @@ struct LineEdit : public Widget
 protected:
   std::string m_text;
   bool highlight = false;
+  bool click_to_focus = false;
 
 public:
   void
@@ -29,6 +31,11 @@ public:
   text() const
   {
     return m_text;
+  }
+  void
+  set_click_to_focus (bool ctf)
+  {
+    click_to_focus = ctf;
   }
   LineEdit (Widget *parent, const std::string& start_text) :
     Widget (parent),
@@ -57,9 +64,14 @@ public:
 
     du.set_color (text_color);
     du.text (m_text, 10, 0, width - 10, height);
-    double w_ = du.text_width ("_");
-    double tw = du.text_width ("_" + m_text + "_") - 2 * w_; /* also count spaces at start/end */
-    du.round_box (10 + tw + 1, space * 2, w_, height - 4 * space, 1, 0, Color::null(), ThemeColor::SLIDER /* FIXME */ );
+
+    /* draw cursor */
+    if (window()->has_keyboard_focus (this))
+      {
+        double w_ = du.text_width ("_");
+        double tw = du.text_width ("_" + m_text + "_") - 2 * w_; /* also count spaces at start/end */
+        du.round_box (10 + tw + 1, space * 2, w_, height - 4 * space, 1, 0, Color::null(), ThemeColor::SLIDER /* FIXME */ );
+      }
   }
   bool
   is_control (uint32 u)
@@ -140,11 +152,22 @@ public:
     update();
   }
   void
+  focus_event() override
+  {
+    update();
+  }
+  void
   focus_out_event() override
   {
     signal_focus_out();
+    update();
   }
-
+  void
+  mouse_press (double x, double y) override
+  {
+    if (click_to_focus)
+      window()->set_keyboard_focus (this, true);
+  }
   Signal<std::string> signal_text_changed;
   Signal<>            signal_return_pressed;
   Signal<>            signal_esc_pressed;
