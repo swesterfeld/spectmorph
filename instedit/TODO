@@ -10,6 +10,7 @@ UI:
 - combobox should support scroll wheel
 - allow removing sample from instrument
 - maybe upsample or interpolate waveform
+- thread::join() sometimes blocks InstEditWindow close
 
 SVEN:
 - display total sample time
