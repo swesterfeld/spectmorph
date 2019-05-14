@@ -127,6 +127,7 @@ public:
 
   size_t      size() const;
   std::string name() const;
+  void        set_name (const std::string& name);
 
   int         selected() const;
   void        set_selected (int sel);

@@ -152,6 +152,14 @@ Instrument::name() const
   return m_name;
 }
 
+void
+Instrument::set_name (const string& name)
+{
+  m_name = name;
+
+  signal_global_changed();
+}
+
 Sample *
 Instrument::sample (size_t n) const
 {
@@ -192,10 +200,6 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
 {
   samples.clear();
 
-  char *basename = g_path_get_basename (filename.c_str());
-  m_name = basename;
-  g_free (basename);
-
   xml_document doc;
   if (zip_reader)
     {
@@ -208,6 +212,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
       doc.load_file (filename.c_str());
     }
   xml_node inst_node = doc.child ("instrument");
+  m_name = inst_node.attribute ("name").value();
   for (xml_node sample_node : inst_node.children ("sample"))
     {
       string filename = sample_node.attribute ("filename").value();
@@ -402,6 +407,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
 {
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
+  inst_node.append_attribute ("name").set_value (m_name.c_str());
   for (auto& sample : samples)
     {
       xml_node sample_node = inst_node.append_child ("sample");
