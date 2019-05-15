@@ -214,9 +214,21 @@ restore(LV2_Handle                  instance,
   if (value && type == self->uris.atom_String)
     {
       const char *plan_str = (const char *)value;
-
       LV2_DEBUG (" -> plan_str: %s\n", plan_str);
-      self->project.morph_plan()->set_plan_str (plan_str);
+
+      vector<unsigned char> data;
+      if (HexString::decode (plan_str, data))
+        {
+          GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+          self->project.load_compat (in, nullptr); // FIXME: handle errors
+          delete in;
+
+          self->project.load_instruments_lv2();
+        }
+      else
+        {
+          // FIXME: handle errors
+        }
     }
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)
