@@ -6,16 +6,21 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphwavsource.hh"
 #include "smmorphplanwindow.hh"
+#include "smcombobox.hh"
 
 namespace SpectMorph
 {
 
 class MorphWavSourceView : public MorphOperatorView
 {
-  MorphWavSource   *morph_wav_source;
+  MorphWavSource   *morph_wav_source = nullptr;
+  ComboBox         *instrument_combobox = nullptr;
 
   void on_load();
   void on_edit();
+  void on_instrument_changed();
+
+  void update_instrument_list();
 public:
   MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window);
 
