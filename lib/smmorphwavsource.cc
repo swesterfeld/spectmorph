@@ -36,6 +36,20 @@ MorphWavSource::instrument()
   return m_instrument;
 }
 
+void
+MorphWavSource::set_INST (int inst)
+{
+  m_INST = inst;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+int
+MorphWavSource::INST()
+{
+  return m_INST;
+}
+
 const char *
 MorphWavSource::type()
 {
@@ -52,6 +66,7 @@ bool
 MorphWavSource::save (OutFile& out_file)
 {
   out_file.write_int ("instrument", m_instrument);
+  out_file.write_int ("INST", m_INST);
 
   return true;
 }
@@ -66,6 +81,10 @@ MorphWavSource::load (InFile& ifile)
           if (ifile.event_name() == "instrument")
             {
               m_instrument = ifile.event_int();
+            }
+          else if (ifile.event_name() == "INST")
+            {
+              m_INST = ifile.event_int();
             }
           else
             {

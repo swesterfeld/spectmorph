@@ -13,6 +13,7 @@ namespace SpectMorph
 class MorphWavSource : public MorphOperator
 {
   int  m_instrument = 0;
+  int  m_INST = 1;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -27,6 +28,9 @@ public:
 
   void        set_instrument (int id);
   int         instrument();
+
+  void        set_INST (int inst);
+  int         INST();
 };
 
 }
