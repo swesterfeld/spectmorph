@@ -7,6 +7,7 @@
 #include "smzip.hh"
 #include "smmemout.hh"
 #include "smmorphwavsource.hh"
+#include "smuserinstrumentindex.hh"
 #include "smproject.hh"
 
 using namespace SpectMorph;
@@ -192,6 +193,12 @@ Project::morph_plan() const
   return m_morph_plan;
 }
 
+UserInstrumentIndex *
+Project::user_instrument_index()
+{
+  return &m_user_instrument_index;
+}
+
 double
 Project::volume() const
 {
@@ -290,6 +297,28 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
     instrument_map.clear();
 
   return error;
+}
+
+void
+Project::load_instruments_lv2()
+{
+  // LV2 doesn't include instruments
+  for (auto op : m_morph_plan->operators())
+    {
+      string type = op->type();
+      if (type == "SpectMorph::MorphWavSource")
+        {
+          auto wav_source = static_cast<MorphWavSource *> (op);
+          int inst_id = wav_source->instrument();
+          sm_debug ("loading %s=%d\n", type.c_str(), inst_id);
+
+          Instrument *inst = new Instrument();
+          inst->load (m_user_instrument_index.filename (wav_source->INST())); // FIXME: error handling
+          instrument_map[inst_id].reset (inst);
+
+          rebuild (inst_id);
+        }
+    }
 }
 
 Error

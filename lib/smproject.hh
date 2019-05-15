@@ -9,6 +9,7 @@
 #include "smobject.hh"
 #include "smbuilderthread.hh"
 #include "smmorphplan.hh"
+#include "smuserinstrumentindex.hh"
 
 #include <thread>
 #include <mutex>
@@ -76,6 +77,7 @@ class Project : public SignalReceiver
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 
+  UserInstrumentIndex         m_user_instrument_index;
   BuilderThread               m_builder_thread;
 
   std::map<int, std::unique_ptr<Instrument>> instrument_map;
@@ -122,12 +124,14 @@ public:
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
   MorphPlanPtr morph_plan() const;
+  UserInstrumentIndex *user_instrument_index();
 
   Error save (const std::string& filename);
   Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
   Error load (const std::string& filename);
   Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
   Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
+  void  load_instruments_lv2();
 
   Signal<double> signal_volume_changed;
 };
