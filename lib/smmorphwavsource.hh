@@ -12,8 +12,9 @@ namespace SpectMorph
 
 class MorphWavSource : public MorphOperator
 {
-  int  m_instrument = 0;
-  int  m_INST = 1;
+  int         m_instrument = 0;
+  int         m_INST = 1;
+  std::string m_lv2_filename;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -31,6 +32,9 @@ public:
 
   void        set_INST (int inst);
   int         INST();
+
+  void        set_lv2_filename (const std::string& filename);
+  std::string lv2_filename();
 };
 
 }

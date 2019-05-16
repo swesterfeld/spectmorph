@@ -50,6 +50,20 @@ MorphWavSource::INST()
   return m_INST;
 }
 
+void
+MorphWavSource::set_lv2_filename (const string& filename)
+{
+  m_lv2_filename = filename;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+string
+MorphWavSource::lv2_filename()
+{
+  return m_lv2_filename;
+}
+
 const char *
 MorphWavSource::type()
 {
@@ -67,6 +81,7 @@ MorphWavSource::save (OutFile& out_file)
 {
   out_file.write_int ("instrument", m_instrument);
   out_file.write_int ("INST", m_INST);
+  out_file.write_string ("lv2_filename", m_lv2_filename);
 
   return true;
 }
@@ -89,6 +104,18 @@ MorphWavSource::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::STRING)
+        {
+          if (ifile.event_name() == "lv2_filename")
+            {
+              m_lv2_filename = ifile.event_data();
+            }
+          else
+            {
+              g_printerr ("bad string\n");
               return false;
             }
         }

@@ -300,7 +300,7 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 }
 
 void
-Project::load_instruments_lv2()
+Project::load_instruments_lv2 (std::function<string(string)> map_path)
 {
   // LV2 doesn't include instruments
   for (auto op : m_morph_plan->operators())
@@ -313,7 +313,11 @@ Project::load_instruments_lv2()
           sm_debug ("loading %s=%d\n", type.c_str(), inst_id);
 
           Instrument *inst = new Instrument();
-          inst->load (m_user_instrument_index.filename (wav_source->INST())); // FIXME: error handling
+          string mapped_path = map_path (wav_source->lv2_filename());
+          sm_debug ("mapped path: %s\n", mapped_path.c_str());
+          inst->load (mapped_path);
+          // FIXME: else
+          // inst->load (m_user_instrument_index.filename (wav_source->INST())); // FIXME: error handling
           instrument_map[inst_id].reset (inst);
 
           rebuild (inst_id);

@@ -131,7 +131,7 @@ public:
   Error load (const std::string& filename);
   Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
   Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
-  void  load_instruments_lv2();
+  void  load_instruments_lv2 (std::function<std::string(std::string)> map_path);
 
   Signal<double> signal_volume_changed;
 };
