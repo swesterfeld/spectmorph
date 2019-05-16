@@ -228,7 +228,7 @@ Project::load (const string& filename)
       GenericIn *file = GenericIn::open (filename);
       if (file)
         {
-          Error error = load_compat (file, nullptr);
+          IError error = load_compat (file, nullptr);
           delete file;
 
           return error;
@@ -240,7 +240,7 @@ Project::load (const string& filename)
     }
 }
 
-Error
+IError
 Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 {
   // FIXME: handle I/O errors (zip and other)
@@ -276,7 +276,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   return error;
 }
 
-Error
+IError
 Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 {
   Error error = m_morph_plan->load (in, params);
