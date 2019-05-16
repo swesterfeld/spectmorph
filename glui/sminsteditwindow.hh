@@ -13,6 +13,7 @@
 #include "smcheckbox.hh"
 #include "smshortcut.hh"
 #include "smbuilderthread.hh"
+#include "smmessagebox.hh"
 
 #include <thread>
 
@@ -528,7 +529,14 @@ public:
   {
     window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
       if (filename != "")
-        instrument->load (filename);
+        {
+          IError error = instrument->load (filename);
+          if (error)
+            {
+              MessageBox::critical (this, "Error",
+                                    string_locale_printf ("Loading instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+            }
+        }
     });
   }
   void
