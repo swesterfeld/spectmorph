@@ -136,12 +136,12 @@ MorphPlanWindow::load (const std::string& filename)
   return error;
 }
 
-Error
+IError
 MorphPlanWindow::save (const std::string& filename)
 {
-  Error error = m_morph_plan->project()->save (filename);
+  IError error = m_morph_plan->project()->save (filename);
 
-  if (error == 0)
+  if (!error)
     set_filename (filename);
 
   return error;
@@ -183,12 +183,12 @@ MorphPlanWindow::on_file_export_clicked()
   save_file_dialog ("Select SpectMorph Preset export filename", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     if (filename != "")
       {
-        Error error = save (filename);
+        IError error = save (filename);
 
-        if (error != 0)
+        if (error)
           {
             MessageBox::critical (this, "Error",
-                                  string_locale_printf ("Export failed, unable to save to file:\n'%s'.\n%s", filename.c_str(), sm_error_blurb (error)));
+                                  string_locale_printf ("Export failed, unable to save to file:\n'%s'.\n%s", filename.c_str(), error.message()));
           }
       }
   });
