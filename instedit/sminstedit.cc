@@ -101,10 +101,16 @@ main (int argc, char **argv)
 
   bool quit = false;
 
-  string fn = (argc > 1) ? argv[1] : "test.sminst";
-
   Instrument instrument;
-  instrument.load (fn);
+  if (argc > 1)
+    {
+      IError error = instrument.load (argv[1]);
+      if (error)
+        {
+          fprintf (stderr, "%s: %s: %s.\n", argv[0], argv[1], error.message());
+          return 1;
+        }
+    }
 
   EventLoop event_loop;
   InstEditWindow window (event_loop, &instrument, jack_synth.get_project()->synth_interface());
