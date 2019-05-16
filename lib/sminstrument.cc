@@ -183,7 +183,7 @@ Instrument::set_selected (int sel)
   signal_samples_changed();
 }
 
-void
+IError
 Instrument::load (const string& filename)
 {
   if (ZipReader::is_zip (filename))
@@ -198,13 +198,13 @@ Instrument::load (const string& filename)
     }
 }
 
-void
+IError
 Instrument::load (ZipReader& zip_reader)
 {
   return load ("", &zip_reader);
 }
 
-void
+IError
 Instrument::load (const string& filename, ZipReader *zip_reader)
 {
   samples.clear();
@@ -214,11 +214,18 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
     {
       // FIXME: error handling
       vector<uint8_t> xml = zip_reader->read ("instrument.xml");
+
+      if (zip_reader->error())
+        return IError ("No 'instrument.xml' found in input file");
+
       doc.load_buffer (&xml[0], xml.size());
     }
   else
     {
-      doc.load_file (filename.c_str());
+      auto result = doc.load_file (filename.c_str());
+
+      if (!result)
+        return IError (result.description());
     }
   xml_node inst_node = doc.child ("instrument");
   m_name = inst_node.attribute ("name").value();
@@ -344,6 +351,8 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
     m_selected = 0;
   signal_samples_changed();
   signal_global_changed();
+
+  return IError::Code::NONE;
 }
 
 static bool
@@ -399,19 +408,19 @@ Instrument::gen_short_name (const string& filename)
     }
 }
 
-void
+IError
 Instrument::save (const string& filename)
 {
-  save (filename, nullptr);
+  return save (filename, nullptr);
 }
 
-void
+IError
 Instrument::save (ZipWriter& zip_writer)
 {
-  save ("", &zip_writer);
+  return save ("", &zip_writer);
 }
 
-void
+IError
 Instrument::save (const string& filename, ZipWriter *zip_writer)
 {
   xml_document doc;
@@ -523,6 +532,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
     {
       doc.save_file (filename.c_str());
     }
+  return IError::Code::NONE;
 }
 
 void
