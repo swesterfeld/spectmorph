@@ -24,6 +24,8 @@ public:
   std::vector<std::string>  filenames();
   int32_t                   error() const;
   std::vector<uint8_t>      read (const std::string& name);
+
+  static bool               is_zip (const std::string& name);
 };
 
 class ZipWriter

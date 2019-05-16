@@ -68,6 +68,25 @@ ZipReader::~ZipReader()
     }
 }
 
+bool
+ZipReader::is_zip (const string& filename)
+{
+  bool zip_format = false;
+
+  FILE *test_fmt_file = fopen (filename.c_str(), "r");
+  if (test_fmt_file)
+    {
+      int c1 = fgetc (test_fmt_file);
+      int c2 = fgetc (test_fmt_file);
+
+      zip_format = (c1 == 'P' && c2 == 'K');
+
+      fclose (test_fmt_file);
+    }
+
+  return zip_format;
+}
+
 vector<string>
 ZipReader::filenames()
 {
