@@ -643,7 +643,10 @@ Window::on_event (const PuglEvent* event)
           {
             Shortcut *shortcut = shortcuts[i];
             if (!key_handled && shortcut)
-              key_handled = shortcut->key_press_event (event->key);
+              {
+                if (!keyboard_focus_widget || !shortcut->focus_override())
+                  key_handled = shortcut->key_press_event (event->key);
+              }
           }
         if (!key_handled && keyboard_focus_widget)
           keyboard_focus_widget->key_press_event (event->key);

@@ -77,6 +77,13 @@ a_z_normalize (uint32_t c)
 }
 
 bool
+Shortcut::focus_override()
+{
+  /* special hack to allow SPACE as shortcut, but if a textedit is active, input goes there */
+  return !mod_check && character == ' ';
+}
+
+bool
 Shortcut::key_press_event (const PuglEventKey& key_event)
 {
   if (key_event.filter)

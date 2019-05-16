@@ -21,6 +21,7 @@ public:
 
   ~Shortcut();
 
+  bool focus_override();
   bool key_press_event (const PuglEventKey& key_event);
 
   static void test (Window *window);
