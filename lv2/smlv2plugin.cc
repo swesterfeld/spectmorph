@@ -7,6 +7,7 @@
 
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
+#include "smmorphwavsource.hh"
 #include "smmidisynth.hh"
 #include "smmain.hh"
 #include "smmemout.hh"
@@ -172,6 +173,27 @@ save(LV2_Handle                instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
+  LV2_State_Map_Path *map_path = nullptr;
+  for (int i = 0; features[i]; i++)
+    {
+      if (!strcmp (features[i]->URI, LV2_STATE__mapPath))
+        {
+          map_path = (LV2_State_Map_Path *)features[i]->data;
+        }
+    }
+  for (auto op : self->project.morph_plan()->operators())
+    {
+      string type = op->type();
+      if (type == "SpectMorph::MorphWavSource")
+        {
+          auto wav_source = static_cast<MorphWavSource *> (op);
+
+          char *path = map_path->abstract_path (map_path->handle, self->project.user_instrument_index()->filename (wav_source->INST()).c_str());
+          wav_source->set_lv2_filename (path);
+          free (path);
+        }
+    }
+
   vector<unsigned char> data;
   MemOut mo (&data);
   self->project.morph_plan()->save (&mo);
@@ -210,6 +232,15 @@ restore(LV2_Handle                  instance,
   uint32_t    valflags;
   const void* value;
 
+  LV2_State_Map_Path *map_path = nullptr;
+  for (int i = 0; features[i]; i++)
+    {
+      if (!strcmp (features[i]->URI, LV2_STATE__mapPath))
+        {
+          map_path = (LV2_State_Map_Path *)features[i]->data;
+        }
+    }
+
   value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
   if (value && type == self->uris.atom_String)
     {
@@ -223,7 +254,12 @@ restore(LV2_Handle                  instance,
           self->project.load_compat (in, nullptr); // FIXME: handle errors
           delete in;
 
-          self->project.load_instruments_lv2();
+          self->project.load_instruments_lv2 ([map_path](string path) {
+            char *mapped_path = map_path->absolute_path (map_path->handle, path.c_str());
+            path = mapped_path;
+            free (mapped_path);
+            return path;
+          });
         }
       else
         {
