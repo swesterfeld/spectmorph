@@ -124,8 +124,8 @@ load_or_die (Audio& audio, const string& filename, const string& mode)
       mode == "zero-values-at-start" || mode == "mix-freq")
     load_options = AUDIO_SKIP_DEBUG;
 
-  Error error = audio.load (filename, load_options);
-  if (error != 0)
+  IError error = audio.load (filename, load_options);
+  if (error)
     {
       fprintf (stderr, "can't load file: %s\n",filename.c_str());
       exit (1);

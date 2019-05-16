@@ -102,10 +102,10 @@ main (int argc, char **argv)
   for (int n = 1; n < argc; n++)
     {
       SpectMorph::Audio audio;
-      SpectMorph::Error error = audio.load (argv[n], SpectMorph::AUDIO_SKIP_DEBUG);
-      if (error != 0)
+      IError error = audio.load (argv[n], SpectMorph::AUDIO_SKIP_DEBUG);
+      if (error)
         {
-          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[n], sm_error_blurb (error));
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[n], error.message());
           exit (1);
         }
       for (size_t i = 0; i < audio.contents.size(); i++)
