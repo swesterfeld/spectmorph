@@ -30,20 +30,20 @@ static LeakDebugger leak_debugger ("SpectMorph::Audio", WavSetRepo::cleanup);
  * \param load_options specify whether to load or skip debug information
  * \returns a SpectMorph::Error indicating whether loading was successful
  */
-Error
+IError
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
   GenericIn *file = GenericIn::open (filename);
   if (!file)
     return Error::FILE_NOT_FOUND;
 
-  Error result = load (file, load_options);
+  IError result = load (file, load_options);
   delete file;
 
   return result;
 }
 
-Error
+IError
 SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
 {
   SpectMorph::AudioBlock *audio_block = NULL;
@@ -248,7 +248,7 @@ Audio::~Audio()
  * \param filename the name of the SM-File to be written
  * \returns a SpectMorph::Error indicating saving loading was successful
  */
-Error
+IError
 SpectMorph::Audio::save (const string& filename) const
 {
   GenericOut *out = StdioOut::open (filename);
@@ -257,13 +257,13 @@ SpectMorph::Audio::save (const string& filename) const
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
       exit (1);
     }
-  Error result = save (out);
+  IError result = save (out);
   delete out; // close file
 
   return result;
 }
 
-Error
+IError
 SpectMorph::Audio::save (GenericOut *file) const
 {
   OutFile of (file, "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);

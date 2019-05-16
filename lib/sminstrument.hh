@@ -75,52 +75,6 @@ public:
   std::unique_ptr<Audio> audio;
 };
 
-class IError
-{
-public:
-  enum class Code { NONE, STR };
-
-  IError (Code code) :
-    m_code (code)
-  {
-  }
-  IError (Error error)
-  {
-    if (error == Error::NONE)
-      {
-        m_code = Code::NONE;
-      }
-    else
-      {
-        m_code = Code::STR;
-        m_message = sm_error_blurb (error);
-      }
-  }
-  IError (const std::string& message) :
-    m_code (Code::STR),
-    m_message (message)
-  {
-  }
-
-  Code
-  code()
-  {
-    return m_code;
-  }
-  const char *
-  message()
-  {
-    return m_message.c_str();
-  }
-  operator bool()
-  {
-    return m_code != Code::NONE;
-  }
-private:
-  Code        m_code;
-  std::string m_message;
-};
-
 class Instrument
 {
 public:

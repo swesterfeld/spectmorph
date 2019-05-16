@@ -88,6 +88,52 @@ bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 
 const char *sm_error_blurb (Error error);
 
+class IError
+{
+public:
+  enum class Code { NONE, STR };
+
+  IError (Code code) :
+    m_code (code)
+  {
+  }
+  IError (Error error)
+  {
+    if (error == Error::NONE)
+      {
+        m_code = Code::NONE;
+      }
+    else
+      {
+        m_code = Code::STR;
+        m_message = sm_error_blurb (error);
+      }
+  }
+  IError (const std::string& message) :
+    m_code (Code::STR),
+    m_message (message)
+  {
+  }
+
+  Code
+  code()
+  {
+    return m_code;
+  }
+  const char *
+  message()
+  {
+    return m_message.c_str();
+  }
+  operator bool()
+  {
+    return m_code != Code::NONE;
+  }
+private:
+  Code        m_code;
+  std::string m_message;
+};
+
 #ifdef SM_OS_WINDOWS
 std::string sm_resolve_link (const std::string& link_file);
 #endif
