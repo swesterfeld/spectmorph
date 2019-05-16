@@ -156,7 +156,7 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
   if (error != 0)
     {
         MessageBox::critical (this, "Error",
-                              string_locale_printf ("Loading template failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
+                              string_locale_printf ("Loading preset failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
     }
 }
 
