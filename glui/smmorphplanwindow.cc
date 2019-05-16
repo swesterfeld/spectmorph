@@ -125,12 +125,12 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 }
 
 
-Error
+IError
 MorphPlanWindow::load (const std::string& filename)
 {
-  Error error = m_morph_plan->project()->load (filename);
+  IError error = m_morph_plan->project()->load (filename);
 
-  if (error == 0)
+  if (!error)
     set_filename (filename);
 
   return error;
@@ -152,11 +152,11 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 {
   std::string filename = sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/" + rel_filename;
 
-  Error error = load (filename);
-  if (error != 0)
+  IError error = load (filename);
+  if (error)
     {
         MessageBox::critical (this, "Error",
-                              string_locale_printf ("Loading preset failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
+                              string_locale_printf ("Loading preset failed, unable to open file:\n'%s'\n%s.", filename.c_str(), error.message()));
     }
 }
 
@@ -166,12 +166,12 @@ MorphPlanWindow::on_file_import_clicked()
   open_file_dialog ("Select SpectMorph Preset to import", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     if (filename != "")
       {
-        Error error = load (filename);
+        IError error = load (filename);
 
-        if (error != 0)
+        if (error)
           {
             MessageBox::critical (this, "Error",
-                                  string_locale_printf ("Import failed, unable to open file:\n'%s'\n%s.", filename.c_str(), sm_error_blurb (error)));
+                                  string_locale_printf ("Import failed, unable to open file:\n'%s'\n%s.", filename.c_str(), error.message()));
           }
       }
   });
