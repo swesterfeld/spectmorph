@@ -21,6 +21,7 @@ class MorphWavSourceView : public MorphOperatorView
   void on_instrument_changed();
 
   void update_instrument_list();
+  void write_instrument();
 public:
   MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window);
 

@@ -5,6 +5,7 @@
 #include "smmorphplan.hh"
 #include "smwavsetbuilder.hh"
 #include "smuserinstrumentindex.hh"
+#include "smzip.hh"
 
 #include "smlabel.hh"
 #include "smbutton.hh"
@@ -83,7 +84,8 @@ MorphWavSourceView::on_edit()
       auto project = morph_wav_source->morph_plan()->project();
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, false);
-      instrument->save (project->user_instrument_index()->filename (morph_wav_source->INST()));
+
+      write_instrument();
       update_instrument_list();
       project->rebuild (morph_wav_source->instrument());
     });
@@ -102,6 +104,17 @@ MorphWavSourceView::on_instrument_changed()
   morph_wav_source->set_INST (atoi (instrument_combobox->text().c_str()));
   instrument->load (project->user_instrument_index()->filename (morph_wav_source->INST()));
   project->rebuild (morph_wav_source->instrument());
+}
+
+
+void
+MorphWavSourceView::write_instrument()
+{
+  auto project = morph_wav_source->morph_plan()->project();
+
+  Instrument *instrument = project->get_instrument (morph_wav_source->instrument());
+  ZipWriter zip_writer (project->user_instrument_index()->filename (morph_wav_source->INST()));
+  instrument->save (zip_writer);
 }
 
 void
