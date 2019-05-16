@@ -217,19 +217,7 @@ Project::set_volume (double volume)
 Error
 Project::load (const string& filename)
 {
-  bool new_format = false;
-
-  FILE *test_fmt_file = fopen (filename.c_str(), "r");
-  if (test_fmt_file)
-    {
-      int c1 = fgetc (test_fmt_file);
-      int c2 = fgetc (test_fmt_file);
-
-      new_format = (c1 == 'P' && c2 == 'K');
-
-      fclose (test_fmt_file);
-    }
-  if (new_format)
+  if (ZipReader::is_zip (filename))
     {
       ZipReader zip_reader (filename); // FIXME: handle I/O errors
 

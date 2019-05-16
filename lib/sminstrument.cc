@@ -186,7 +186,16 @@ Instrument::set_selected (int sel)
 void
 Instrument::load (const string& filename)
 {
-  return load (filename, nullptr);
+  if (ZipReader::is_zip (filename))
+    {
+      ZipReader zip_reader (filename);
+
+      return load ("", &zip_reader);
+    }
+  else
+    {
+      return load (filename, nullptr);
+    }
 }
 
 void
