@@ -84,6 +84,11 @@ public:
     m_code (code)
   {
   }
+  IError (Error error) :
+    m_code (Code::STR)
+  {
+    m_message = sm_error_blurb (error);
+  }
   IError (const std::string& message) :
     m_code (Code::STR),
     m_message (message)

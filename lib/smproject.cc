@@ -214,7 +214,7 @@ Project::set_volume (double volume)
   signal_volume_changed (m_volume);
 }
 
-Error
+IError
 Project::load (const string& filename)
 {
   if (ZipReader::is_zip (filename))
