@@ -84,10 +84,17 @@ public:
     m_code (code)
   {
   }
-  IError (Error error) :
-    m_code (Code::STR)
+  IError (Error error)
   {
-    m_message = sm_error_blurb (error);
+    if (error == Error::NONE)
+      {
+        m_code = Code::NONE;
+      }
+    else
+      {
+        m_code = Code::STR;
+        m_message = sm_error_blurb (error);
+      }
   }
   IError (const std::string& message) :
     m_code (Code::STR),

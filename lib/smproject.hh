@@ -126,8 +126,8 @@ public:
   MorphPlanPtr morph_plan() const;
   UserInstrumentIndex *user_instrument_index();
 
-  Error save (const std::string& filename);
-  Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
+  IError save (const std::string& filename);
+  IError save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
   IError load (const std::string& filename);
   Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
   Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
