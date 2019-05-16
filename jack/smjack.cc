@@ -114,11 +114,11 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      Error error = project.load (argv[1]);
+      IError error = project.load (argv[1]);
 
-      if (error != 0)
+      if (error)
         {
-          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], sm_error_blurb (error));
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], error.message());
           exit (1);
         }
       filename = argv[1];
