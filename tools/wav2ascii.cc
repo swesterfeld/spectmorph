@@ -15,7 +15,6 @@ using std::vector;
 using SpectMorph::sm_init;
 using SpectMorph::sm_printf;
 using SpectMorph::WavData;
-using SpectMorph::Error;
 
 /// @cond
 struct Options

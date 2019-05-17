@@ -18,7 +18,6 @@ using std::string;
 using std::vector;
 using SpectMorph::sm_init;
 using SpectMorph::WavData;
-using SpectMorph::Error;
 
 int
 main (int argc, char **argv)
