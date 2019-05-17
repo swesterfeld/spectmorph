@@ -468,7 +468,7 @@ main (int argc, char **argv)
       for (vector<WavSetWave>::const_iterator si = smset.waves.begin(); si != smset.waves.end(); si++)
         {
           Audio audio;
-          if (audio.load (si->path, AUDIO_SKIP_DEBUG) != Error::NONE)
+          if (!audio.load (si->path, AUDIO_SKIP_DEBUG))
             {
               sm_printf ("can't load %s\n", si->path.c_str());
               exit (1);

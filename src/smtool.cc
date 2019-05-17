@@ -1324,12 +1324,12 @@ main (int argc, char **argv)
     }
   if (need_save)
     {
-      if (audio && audio->save (argv[1]) != Error::NONE)
+      if (audio && !audio->save (argv[1]))
         {
           fprintf (stderr, "error saving audio file: %s\n", argv[1]);
           return 1;
         }
-      if (wav_set && wav_set->save (argv[1]) != Error::NONE)
+      if (wav_set && !wav_set->save (argv[1]))
         {
           fprintf (stderr, "error saving wavset file: %s\n", argv[1]);
           return 1;
