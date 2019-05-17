@@ -104,7 +104,7 @@ main (int argc, char **argv)
   Instrument instrument;
   if (argc > 1)
     {
-      IError error = instrument.load (argv[1]);
+      Error error = instrument.load (argv[1]);
       if (error)
         {
           fprintf (stderr, "%s: %s: %s.\n", argv[0], argv[1], error.message());
