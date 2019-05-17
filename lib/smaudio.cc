@@ -196,7 +196,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
                   if (ib[i] < old_freq)
                     {
                       printf ("frequency data is not sorted, can't play file\n");
-                      return Error::PARSE_ERROR;
+                      return IError::Code::PARSE_ERROR;
                     }
                   old_freq = ib[i];
                 }
@@ -221,11 +221,11 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
-          return Error::PARSE_ERROR;
+          return IError::Code::PARSE_ERROR;
         }
       else
         {
-          return Error::PARSE_ERROR;
+          return IError::Code::PARSE_ERROR;
         }
       ifile.next_event();
     }

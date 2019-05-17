@@ -161,7 +161,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
   string         load_name;
   string         load_id;
   bool           load_folded = false;
-  Error          error = Error::NONE;
+  IError         error = Error::NONE;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -271,7 +271,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
       else if (ifile.event() == InFile::READ_ERROR)
         {
           g_printerr ("read error\n");
-          error = Error::PARSE_ERROR;
+          error = IError::Code::PARSE_ERROR;
           break;
         }
       ifile.next_event();

@@ -77,7 +77,6 @@ enum class Error
   NONE = 0,
   FILE_NOT_FOUND,
   FORMAT_INVALID,
-  PARSE_ERROR,
 };
 
 // convenience: provide comparision: (error == 0), (error != 0)
@@ -89,11 +88,38 @@ bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 class IError
 {
 public:
-  enum class Code { NONE, STR };
+  enum class Code {
+    NONE,
+    FILE_NOT_FOUND,
+    FORMAT_INVALID,
+    PARSE_ERROR,
+    STR
+  };
 
   IError (Code code) :
     m_code (code)
   {
+    switch (code)
+      {
+        case Code::NONE:
+          m_message = "OK";
+          break;
+
+        case Code::FILE_NOT_FOUND:
+          m_message = "No such file, device or directory";
+          break;
+
+        case Code::FORMAT_INVALID:
+          m_message = "Invalid format";
+          break;
+
+        case Code::PARSE_ERROR:
+          m_message = "Parsing error";
+          break;
+
+        default:
+          m_message = "Unknown error";
+      }
   }
   IError (Error error)
   {
@@ -111,8 +137,6 @@ public:
             case Error::FILE_NOT_FOUND:   m_message = "No such file, device or directory";
                                           break;
             case Error::FORMAT_INVALID:   m_message = "Invalid format";
-                                          break;
-            case Error::PARSE_ERROR:      m_message = "Parsing error";
                                           break;
             default:                      m_message = "Unknown error";
           }

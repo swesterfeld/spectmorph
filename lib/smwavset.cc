@@ -234,7 +234,7 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {
-          return Error::PARSE_ERROR;
+          return IError::Code::PARSE_ERROR;
         }
       else
         {
