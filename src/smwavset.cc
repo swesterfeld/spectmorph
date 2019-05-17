@@ -340,7 +340,7 @@ delta (vector<float>& d0, vector<float>& d1)
 void
 load_or_die (WavSet& wset, string name)
 {
-  IError error = wset.load (name);
+  Error error = wset.load (name);
   if (error)
     {
       fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), name.c_str(), error.message());

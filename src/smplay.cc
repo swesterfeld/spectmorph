@@ -185,7 +185,7 @@ main (int argc, char **argv)
 
   if (file_type == "SpectMorph::WavSet")    // load wavset
     {
-      IError error = wset.load (argv[1]);
+      Error error = wset.load (argv[1]);
       if (error)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], error.message());
@@ -205,7 +205,7 @@ main (int argc, char **argv)
   else                                     // load single audio file
     {
       audio_ptr = &audio_to_play;
-      IError error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
+      Error error = audio_ptr->load (argv[1], AUDIO_SKIP_DEBUG);
       if (error)
         {
           fprintf (stderr, "%s: can't open input file: %s: %s\n", argv[0], argv[1], error.message());
