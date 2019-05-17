@@ -208,7 +208,7 @@ Navigator::on_combo_changed()
   wset_filename = new_filename;
   wset_edit = false;
   wset_active_text = smset_combobox->currentText().toLatin1().data();
-  IError error = wset.load (wset_filename);
+  Error error = wset.load (wset_filename);
   if (error)
     {
       fprintf (stderr, "sminspector: can't open input file: %s: %s\n", wset_filename.c_str(), error.message());
@@ -344,7 +344,7 @@ Navigator::on_save_clicked()
 {
   if (wset_filename != "")
     {
-      IError error = wset.save (wset_filename);
+      Error error = wset.save (wset_filename);
       if (error)
         {
           fprintf (stderr, "sminspector: can't write output file: %s: %s\n", wset_filename.c_str(), error.message());
