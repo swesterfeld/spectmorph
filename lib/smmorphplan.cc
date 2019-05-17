@@ -143,7 +143,7 @@ MorphPlan::set_plan_str (const string& str)
   delete in;
 }
 
-Error
+IError
 MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
@@ -305,7 +305,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
  *
  * \returns Error::NONE if everything worked, an error otherwise
  */
-Error
+IError
 MorphPlan::load (GenericIn *in, ExtraParameters *params)
 {
   /* backup old plan */
@@ -313,10 +313,10 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   MemOut mo (&data);
   save (&mo);
 
-  Error error = load_internal (in, params);
+  IError error = load_internal (in, params);
 
   /* restore old plan if something went wrong */
-  if (error != 0)
+  if (error)
     {
       GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
       load_internal (old_in);
@@ -337,10 +337,10 @@ MorphPlan::load_default()
   GenericIn *in = StdioIn::open (filename);
   if (in)
     {
-      Error error = load (in);
+      IError error = load (in);
       delete in;
 
-      if (error == 0)
+      if (!error)
         return;
     }
 
@@ -425,7 +425,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   emit_plan_changed();
 }
 
-Error
+IError
 MorphPlan::save (GenericOut *file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);

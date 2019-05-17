@@ -248,7 +248,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
 
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
-  Error error = m_morph_plan->load (in, params);
+  IError error = m_morph_plan->load (in, params);
   delete in;
 
   instrument_map.clear();
@@ -279,9 +279,9 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 IError
 Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 {
-  Error error = m_morph_plan->load (in, params);
+  IError error = m_morph_plan->load (in, params);
 
-  if (error == 0)
+  if (!error)
     instrument_map.clear();
 
   return error;

@@ -35,7 +35,7 @@ protected:
   bool                         in_restore;
 
   void  clear();
-  Error load_internal (GenericIn *in, ExtraParameters *params = nullptr);
+  IError load_internal (GenericIn *in, ExtraParameters *params = nullptr);
 
 public:
   MorphPlan (Project& project);
@@ -59,8 +59,8 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
-  Error load (GenericIn *in, ExtraParameters *params = nullptr);
+  IError save (GenericOut *file, ExtraParameters *params = nullptr) const;
+  IError load (GenericIn *in, ExtraParameters *params = nullptr);
 
   void load_default();
 

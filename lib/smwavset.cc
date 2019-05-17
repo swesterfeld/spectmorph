@@ -15,12 +15,9 @@ using std::string;
 using std::map;
 using std::set;
 
-using SpectMorph::WavSet;
-using SpectMorph::WavSetWave;
-using SpectMorph::MemOut;
-using SpectMorph::Error;
+using namespace SpectMorph;
 
-Error
+IError
 WavSet::save (const string& filename, bool embed_models)
 {
   OutFile of (filename.c_str(), "SpectMorph::WavSet", SPECTMORPH_BINARY_FILE_VERSION);
@@ -86,7 +83,7 @@ WavSet::save (const string& filename, bool embed_models)
   return Error::NONE;
 }
 
-Error
+IError
 WavSet::load (const string& filename, AudioLoadOptions load_options)
 {
   clear();        // delete old contents (if any)
