@@ -74,7 +74,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   wav_set.save ("testaafilter.tmp.smset", true);
 
   wav_set = WavSet();
-  IError error = wav_set.load ("testaafilter.tmp.smset");
+  Error error = wav_set.load ("testaafilter.tmp.smset");
   assert (!error);
 
   decoder.enable_noise (false);

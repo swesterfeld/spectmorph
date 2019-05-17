@@ -77,7 +77,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   wav_set.save ("testnoise.tmp.smset", true);
 
   wav_set = WavSet();
-  IError error = wav_set.load ("testnoise.tmp.smset");
+  Error error = wav_set.load ("testnoise.tmp.smset");
   assert (!error);
 
   float freq = 440;
