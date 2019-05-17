@@ -530,7 +530,7 @@ public:
     window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
       if (filename != "")
         {
-          IError error = instrument->load (filename);
+          Error error = instrument->load (filename);
           if (error)
             {
               MessageBox::critical (this, "Error",

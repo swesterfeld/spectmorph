@@ -28,8 +28,8 @@ class MorphPlanWindow : public Window
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
 
-  IError load (const std::string& filename);
-  IError save (const std::string& filename);
+  Error load (const std::string& filename);
+  Error save (const std::string& filename);
 public:
   void
   set_filename (const std::string& filename)

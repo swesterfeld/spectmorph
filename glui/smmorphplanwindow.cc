@@ -125,10 +125,10 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 }
 
 
-IError
+Error
 MorphPlanWindow::load (const std::string& filename)
 {
-  IError error = m_morph_plan->project()->load (filename);
+  Error error = m_morph_plan->project()->load (filename);
 
   if (!error)
     set_filename (filename);
@@ -136,10 +136,10 @@ MorphPlanWindow::load (const std::string& filename)
   return error;
 }
 
-IError
+Error
 MorphPlanWindow::save (const std::string& filename)
 {
-  IError error = m_morph_plan->project()->save (filename);
+  Error error = m_morph_plan->project()->save (filename);
 
   if (!error)
     set_filename (filename);
@@ -152,7 +152,7 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 {
   std::string filename = sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/" + rel_filename;
 
-  IError error = load (filename);
+  Error error = load (filename);
   if (error)
     {
         MessageBox::critical (this, "Error",
@@ -166,7 +166,7 @@ MorphPlanWindow::on_file_import_clicked()
   open_file_dialog ("Select SpectMorph Preset to import", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     if (filename != "")
       {
-        IError error = load (filename);
+        Error error = load (filename);
 
         if (error)
           {
@@ -183,7 +183,7 @@ MorphPlanWindow::on_file_export_clicked()
   save_file_dialog ("Select SpectMorph Preset export filename", "SpectMorph Preset files", "*.smplan", [=](string filename) {
     if (filename != "")
       {
-        IError error = save (filename);
+        Error error = save (filename);
 
         if (error)
           {
