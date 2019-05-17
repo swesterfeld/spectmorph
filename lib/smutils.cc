@@ -336,20 +336,6 @@ sm_get_default_plan()
   return sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/2-instruments-linear-lfo.smplan";
 }
 
-const char *
-sm_error_blurb (Error error)
-{
-  /* FIXME: may need translation */
-  switch (error)
-    {
-      case Error::NONE:            return "OK";
-      case Error::FILE_NOT_FOUND:  return "No such file, device or directory";
-      case Error::FORMAT_INVALID:  return "Invalid format";
-      case Error::PARSE_ERROR:     return "Parsing error";
-    }
-  return "Unknown error";
-}
-
 string
 sha1_hash (const unsigned char *data, size_t len)
 {

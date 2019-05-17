@@ -86,8 +86,6 @@ bool constexpr operator== (int64_t n, Error v) { return n == int64_t (v); }
 bool constexpr operator!= (Error v, int64_t n) { return int64_t (v) != n; }
 bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
 
-const char *sm_error_blurb (Error error);
-
 class IError
 {
 public:
@@ -106,7 +104,18 @@ public:
     else
       {
         m_code = Code::STR;
-        m_message = sm_error_blurb (error);
+        switch (error)
+          {
+            case Error::NONE:             m_message = "OK";
+                                          break;
+            case Error::FILE_NOT_FOUND:   m_message = "No such file, device or directory";
+                                          break;
+            case Error::FORMAT_INVALID:   m_message = "Invalid format";
+                                          break;
+            case Error::PARSE_ERROR:      m_message = "Parsing error";
+                                          break;
+            default:                      m_message = "Unknown error";
+          }
       }
   }
   IError (const std::string& message) :
