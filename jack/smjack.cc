@@ -114,7 +114,7 @@ main (int argc, char **argv)
   string filename;
   if (argc == 2)
     {
-      IError error = project.load (argv[1]);
+      Error error = project.load (argv[1]);
 
       if (error)
         {
