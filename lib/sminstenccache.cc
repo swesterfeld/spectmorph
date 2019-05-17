@@ -141,11 +141,11 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
 
       GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
       Audio     *audio = new Audio;
-      bool       load_ok = (audio->load (in) == Error::NONE);
+      IError     error = audio->load (in);
 
       delete in;
 
-      if (load_ok)
+      if (!error)
         return audio;
 
       delete audio;

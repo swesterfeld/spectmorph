@@ -80,7 +80,7 @@ WavSet::save (const string& filename, bool embed_models)
         }
       of.end_section();
     }
-  return Error::NONE;
+  return IError::Code::NONE;
 }
 
 IError
@@ -96,13 +96,13 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
   string section;
 
   if (!ifile.open_ok())
-    return Error::FILE_NOT_FOUND;
+    return IError::Code::FILE_NOT_FOUND;
 
   if (ifile.file_type() != "SpectMorph::WavSet")
-    return Error::FORMAT_INVALID;
+    return IError::Code::FORMAT_INVALID;
 
   if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
-    return Error::FORMAT_INVALID;
+    return IError::Code::FORMAT_INVALID;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -242,7 +242,7 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
         }
       ifile.next_event();
     }
-  return Error::NONE;
+  return IError::Code::NONE;
 }
 
 WavSetWave::WavSetWave()

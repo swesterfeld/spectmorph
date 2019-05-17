@@ -161,7 +161,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
   string         load_name;
   string         load_id;
   bool           load_folded = false;
-  IError         error = Error::NONE;
+  IError         error = IError::Code::NONE;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -457,7 +457,7 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
       params->save (of);
       of.end_section();
     }
-  return Error::NONE;
+  return IError::Code::NONE;
 }
 
 void

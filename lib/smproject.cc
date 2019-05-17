@@ -235,7 +235,7 @@ Project::load (const string& filename)
         }
       else
         {
-          return Error::FILE_NOT_FOUND;
+          return IError::Code::FILE_NOT_FOUND;
         }
     }
 }
@@ -340,5 +340,5 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
-  return Error::NONE;
+  return IError::Code::NONE;
 }

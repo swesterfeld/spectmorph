@@ -35,7 +35,7 @@ SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
   GenericIn *file = GenericIn::open (filename);
   if (!file)
-    return Error::FILE_NOT_FOUND;
+    return IError::Code::FILE_NOT_FOUND;
 
   IError result = load (file, load_options);
   delete file;
@@ -54,13 +54,13 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
   size_t contents_pos = 0; /* init to get rid of gcc warning */
 
   if (!ifile.open_ok())
-    return Error::FILE_NOT_FOUND;
+    return IError::Code::FILE_NOT_FOUND;
 
   if (ifile.file_type() != "SpectMorph::Audio")
-    return Error::FORMAT_INVALID;
+    return IError::Code::FORMAT_INVALID;
 
   if (ifile.file_version() != SPECTMORPH_BINARY_FILE_VERSION)
-    return Error::FORMAT_INVALID;
+    return IError::Code::FORMAT_INVALID;
 
   if (load_options == AUDIO_SKIP_DEBUG)
     {
@@ -229,7 +229,7 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
         }
       ifile.next_event();
     }
-  return Error::NONE;
+  return IError::Code::NONE;
 }
 
 SpectMorph::Audio::Audio()
@@ -307,7 +307,7 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();
     }
-  return Error::NONE;
+  return IError::Code::NONE;
 }
 
 Audio *

@@ -72,19 +72,6 @@ std::string sm_get_user_dir (UserDir p);
 std::string sm_get_default_plan();
 std::string sm_get_cache_dir();
 
-enum class Error
-{
-  NONE = 0,
-  FILE_NOT_FOUND,
-  FORMAT_INVALID,
-};
-
-// convenience: provide comparision: (error == 0), (error != 0)
-bool constexpr operator== (Error v, int64_t n) { return int64_t (v) == n; }
-bool constexpr operator== (int64_t n, Error v) { return n == int64_t (v); }
-bool constexpr operator!= (Error v, int64_t n) { return int64_t (v) != n; }
-bool constexpr operator!= (int64_t n, Error v) { return n != int64_t (v); }
-
 class IError
 {
 public:
@@ -119,27 +106,6 @@ public:
 
         default:
           m_message = "Unknown error";
-      }
-  }
-  IError (Error error)
-  {
-    if (error == Error::NONE)
-      {
-        m_code = Code::NONE;
-      }
-    else
-      {
-        m_code = Code::STR;
-        switch (error)
-          {
-            case Error::NONE:             m_message = "OK";
-                                          break;
-            case Error::FILE_NOT_FOUND:   m_message = "No such file, device or directory";
-                                          break;
-            case Error::FORMAT_INVALID:   m_message = "Invalid format";
-                                          break;
-            default:                      m_message = "Unknown error";
-          }
       }
   }
   IError (const std::string& message) :
