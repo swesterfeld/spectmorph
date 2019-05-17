@@ -1257,8 +1257,8 @@ main (int argc, char **argv)
   else if (file_type == "SpectMorph::WavSet")
     {
       wav_set = new WavSet;
-      Error error = wav_set->load (argv[1]);
-      if (error != 0)
+      IError error = wav_set->load (argv[1]);
+      if (error)
         {
           fprintf (stderr, "smtool: can't load file: %s\n", argv[1]);
           return 1;
