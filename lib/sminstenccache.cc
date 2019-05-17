@@ -141,7 +141,7 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
 
       GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
       Audio     *audio = new Audio;
-      IError     error = audio->load (in);
+      Error      error = audio->load (in);
 
       delete in;
 

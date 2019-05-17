@@ -214,7 +214,7 @@ Project::set_volume (double volume)
   signal_volume_changed (m_volume);
 }
 
-IError
+Error
 Project::load (const string& filename)
 {
   if (ZipReader::is_zip (filename))
@@ -228,19 +228,19 @@ Project::load (const string& filename)
       GenericIn *file = GenericIn::open (filename);
       if (file)
         {
-          IError error = load_compat (file, nullptr);
+          Error error = load_compat (file, nullptr);
           delete file;
 
           return error;
         }
       else
         {
-          return IError::Code::FILE_NOT_FOUND;
+          return Error::Code::FILE_NOT_FOUND;
         }
     }
 }
 
-IError
+Error
 Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 {
   // FIXME: handle I/O errors (zip and other)
@@ -248,7 +248,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
 
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
-  IError error = m_morph_plan->load (in, params);
+  Error error = m_morph_plan->load (in, params);
   delete in;
 
   instrument_map.clear();
@@ -276,10 +276,10 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   return error;
 }
 
-IError
+Error
 Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 {
-  IError error = m_morph_plan->load (in, params);
+  Error error = m_morph_plan->load (in, params);
 
   if (!error)
     instrument_map.clear();
@@ -313,7 +313,7 @@ Project::load_instruments_lv2 (std::function<string(string)> map_path)
     }
 }
 
-IError
+Error
 Project::save (const std::string& filename)
 {
   ZipWriter zip_writer (filename); // FIXME: handle I/O errors
@@ -321,7 +321,7 @@ Project::save (const std::string& filename)
   return save (zip_writer, nullptr);
 }
 
-IError
+Error
 Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
 {
   // FIXME: handle I/O errors (zip and other)
@@ -340,5 +340,5 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
-  return IError::Code::NONE;
+  return Error::Code::NONE;
 }

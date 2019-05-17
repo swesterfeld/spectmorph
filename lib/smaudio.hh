@@ -107,10 +107,10 @@ public:
   float    original_samples_norm_db = 0;          //!< normalization factor to be applied to original samples
   std::vector<AudioBlock> contents;               //!< the actual frame data
 
-  IError load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  IError load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  IError save (const std::string& filename) const;
-  IError save (SpectMorph::GenericOut *file) const;
+  Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error save (const std::string& filename) const;
+  Error save (SpectMorph::GenericOut *file) const;
 
   Audio *clone() const; // create a deep copy
 

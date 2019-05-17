@@ -143,7 +143,7 @@ MorphPlan::set_plan_str (const string& str)
   delete in;
 }
 
-IError
+Error
 MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 {
   in_restore = true;
@@ -161,7 +161,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
   string         load_name;
   string         load_id;
   bool           load_folded = false;
-  IError         error = IError::Code::NONE;
+  Error          error = Error::Code::NONE;
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -271,7 +271,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
       else if (ifile.event() == InFile::READ_ERROR)
         {
           g_printerr ("read error\n");
-          error = IError::Code::PARSE_ERROR;
+          error = Error::Code::PARSE_ERROR;
           break;
         }
       ifile.next_event();
@@ -305,7 +305,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
  *
  * \returns Error::NONE if everything worked, an error otherwise
  */
-IError
+Error
 MorphPlan::load (GenericIn *in, ExtraParameters *params)
 {
   /* backup old plan */
@@ -313,7 +313,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   MemOut mo (&data);
   save (&mo);
 
-  IError error = load_internal (in, params);
+  Error error = load_internal (in, params);
 
   /* restore old plan if something went wrong */
   if (error)
@@ -337,7 +337,7 @@ MorphPlan::load_default()
   GenericIn *in = StdioIn::open (filename);
   if (in)
     {
-      IError error = load (in);
+      Error error = load (in);
       delete in;
 
       if (!error)
@@ -425,7 +425,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
   emit_plan_changed();
 }
 
-IError
+Error
 MorphPlan::save (GenericOut *file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
@@ -457,7 +457,7 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
       params->save (of);
       of.end_section();
     }
-  return IError::Code::NONE;
+  return Error::Code::NONE;
 }
 
 void

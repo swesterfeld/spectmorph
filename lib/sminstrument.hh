@@ -116,8 +116,8 @@ private:
   AutoTune      m_auto_tune;
   EncoderConfig m_encoder_config;
 
-  IError      load (const std::string& filename, ZipReader *zip_reader);
-  IError      save (const std::string& filename, ZipWriter *zip_writer);
+  Error       load (const std::string& filename, ZipReader *zip_reader);
+  Error       save (const std::string& filename, ZipWriter *zip_writer);
 public:
   Instrument();
 
@@ -132,11 +132,11 @@ public:
   int         selected() const;
   void        set_selected (int sel);
 
-  IError      load (const std::string& filename);
-  IError      load (ZipReader& zip_reader);
+  Error       load (const std::string& filename);
+  Error       load (ZipReader& zip_reader);
 
-  IError      save (const std::string& filename);
-  IError      save (ZipWriter& zip_writer);
+  Error       save (const std::string& filename);
+  Error       save (ZipWriter& zip_writer);
 
   void        update_order();
   void        marker_changed();

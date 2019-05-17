@@ -126,11 +126,11 @@ public:
   MorphPlanPtr morph_plan() const;
   UserInstrumentIndex *user_instrument_index();
 
-  IError save (const std::string& filename);
-  IError save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
-  IError load (const std::string& filename);
-  IError load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
-  IError load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
+  Error save (const std::string& filename);
+  Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
+  Error load (const std::string& filename);
+  Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
+  Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
   void  load_instruments_lv2 (std::function<std::string(std::string)> map_path);
 
   Signal<double> signal_volume_changed;

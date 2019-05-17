@@ -21,7 +21,7 @@ public:
   {
     Instrument inst;
 
-    IError error = inst.load (filename (number));
+    Error error = inst.load (filename (number));
     if (!error)
       return string_printf ("%03d %s", number, inst.name().c_str());
     else

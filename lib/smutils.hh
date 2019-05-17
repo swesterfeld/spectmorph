@@ -72,7 +72,7 @@ std::string sm_get_user_dir (UserDir p);
 std::string sm_get_default_plan();
 std::string sm_get_cache_dir();
 
-class IError
+class Error
 {
 public:
   enum class Code {
@@ -83,7 +83,7 @@ public:
     STR
   };
 
-  IError (Code code) :
+  Error (Code code) :
     m_code (code)
   {
     switch (code)
@@ -108,7 +108,8 @@ public:
           m_message = "Unknown error";
       }
   }
-  IError (const std::string& message) :
+  explicit
+  Error (const std::string& message) :
     m_code (Code::STR),
     m_message (message)
   {
