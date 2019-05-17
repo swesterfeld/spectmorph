@@ -74,8 +74,8 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   wav_set.save ("testaafilter.tmp.smset", true);
 
   wav_set = WavSet();
-  Error error = wav_set.load ("testaafilter.tmp.smset");
-  assert (error == 0);
+  IError error = wav_set.load ("testaafilter.tmp.smset");
+  assert (!error);
 
   decoder.enable_noise (false);
   for (double freq = 10; freq < 70000; freq = min (freq * 1.1, freq + 10))

@@ -181,8 +181,8 @@ void
 decode (vector<float>& audio_out, int sr)
 {
   WavSet wav_set;
-  Error error = wav_set.load ("testnoisesr.tmp.smset");
-  assert (error == 0);
+  IError error = wav_set.load ("testnoisesr.tmp.smset");
+  assert (!error);
 
   LiveDecoder decoder (&wav_set);
 
@@ -224,8 +224,8 @@ vector<float>
 get_noise_envelope()
 {
   WavSet wav_set;
-  Error error = wav_set.load ("testnoisesr.tmp.smset");
-  assert (error == 0);
+  IError error = wav_set.load ("testnoisesr.tmp.smset");
+  assert (!error);
 
   assert (wav_set.waves.size() == 1);
   Audio *audio = wav_set.waves[0].audio;
