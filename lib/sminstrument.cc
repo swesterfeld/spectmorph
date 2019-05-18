@@ -210,13 +210,15 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
   xml_document doc;
   if (zip_reader)
     {
-      // FIXME: error handling
       vector<uint8_t> xml = zip_reader->read ("instrument.xml");
 
       if (zip_reader->error())
         return Error ("No 'instrument.xml' found in input file");
 
-      doc.load_buffer (&xml[0], xml.size());
+      auto result = doc.load_buffer (&xml[0], xml.size());
+
+      if (!result)
+        return Error (result.description());
     }
   else
     {
@@ -243,6 +245,10 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
       if (zip_reader)
         {
           vector<uint8_t> wav = zip_reader->read (filename);
+
+          if (zip_reader->error())
+            return Error ("No '" + filename + "' found in input file");
+
           load_ok = wav_data.load (wav);
           load_ok = load_ok && (wav_data.n_channels() == 1);
         }
@@ -250,36 +256,37 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
         {
           load_ok = wav_data.load_mono (filename);
         }
-      if (load_ok)
+      if (!load_ok)
+        return Error ("Unable to load sample '" + filename + "'");
+
+      Sample *sample = new Sample (this, wav_data);
+      new_samples.emplace_back (sample);
+      sample->filename  = filename;
+      sample->short_name = gen_short_name (filename);
+      sample->set_midi_note (midi_note);
+
+      xml_node clip_node = sample_node.child ("clip");
+      if (clip_node)
         {
-          Sample *sample = new Sample (this, wav_data);
-          new_samples.emplace_back (sample);
-          sample->filename  = filename;
-          sample->short_name = gen_short_name (filename);
-          sample->set_midi_note (midi_note);
+          sample->set_marker (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
+          sample->set_marker (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
+        }
+      xml_node loop_node = sample_node.child ("loop");
+      if (loop_node)
+        {
+          string loop_type = loop_node.attribute ("type").value();
+          if (loop_type == "forward")
+            sample->set_loop (Sample::Loop::FORWARD);
+          if (loop_type == "ping-pong")
+            sample->set_loop (Sample::Loop::PING_PONG);
+          if (loop_type == "single-frame")
+            sample->set_loop (Sample::Loop::SINGLE_FRAME);
 
-          xml_node clip_node = sample_node.child ("clip");
-          if (clip_node)
-            {
-              sample->set_marker (MARKER_CLIP_START, sm_atof (clip_node.attribute ("start").value()));
-              sample->set_marker (MARKER_CLIP_END, sm_atof (clip_node.attribute ("end").value()));
-            }
-          xml_node loop_node = sample_node.child ("loop");
-          if (loop_node)
-            {
-              string loop_type = loop_node.attribute ("type").value();
-              if (loop_type == "forward")
-                sample->set_loop (Sample::Loop::FORWARD);
-              if (loop_type == "ping-pong")
-                sample->set_loop (Sample::Loop::PING_PONG);
-              if (loop_type == "single-frame")
-                sample->set_loop (Sample::Loop::SINGLE_FRAME);
-
-              sample->set_marker (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
-              sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
-            }
+          sample->set_marker (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
+          sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
         }
     }
+
   // auto tune
   AutoTune new_auto_tune;
   xml_node auto_tune_node = inst_node.child ("auto_tune");
