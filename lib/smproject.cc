@@ -298,14 +298,15 @@ Project::load_instruments_lv2 (std::function<string(string)> map_path)
         {
           auto wav_source = static_cast<MorphWavSource *> (op);
           int inst_id = wav_source->instrument();
-          sm_debug ("loading %s=%d\n", type.c_str(), inst_id);
 
           Instrument *inst = new Instrument();
-          string mapped_path = map_path (wav_source->lv2_filename());
-          sm_debug ("mapped path: %s\n", mapped_path.c_str());
-          inst->load (mapped_path);
-          // FIXME: else
-          // inst->load (m_user_instrument_index.filename (wav_source->INST())); // FIXME: error handling
+
+          // try load mapped path; if this fails, try user instrument dir
+          Error error = inst->load (map_path (wav_source->lv2_filename()));
+          if (error)
+            error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
+
+          // ignore error (if any): we still load preset if instrument is missing
           instrument_map[inst_id].reset (inst);
 
           rebuild (inst_id);
