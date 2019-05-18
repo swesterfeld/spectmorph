@@ -181,23 +181,17 @@ save(LV2_Handle                instance,
           map_path = (LV2_State_Map_Path *)features[i]->data;
         }
     }
-  for (auto op : self->project.morph_plan()->operators())
+  auto abstract_path = [map_path](string path)
     {
-      string type = op->type();
-      if (type == "SpectMorph::MorphWavSource")
+      if (map_path)
         {
-          auto wav_source = static_cast<MorphWavSource *> (op);
-
-          char *path = map_path->abstract_path (map_path->handle, self->project.user_instrument_index()->filename (wav_source->INST()).c_str());
-          wav_source->set_lv2_filename (path);
-          free (path);
+          char *abstract_path = map_path->abstract_path (map_path->handle, path.c_str());
+          path = abstract_path;
+          free (abstract_path);
         }
-    }
-
-  vector<unsigned char> data;
-  MemOut mo (&data);
-  self->project.morph_plan()->save (&mo);
-  string plan_str = HexString::encode (data);
+      return path;
+    };
+  string plan_str = self->project.save_plan_lv2 (abstract_path);
 
   store (handle,
          self->uris.spectmorph_plan,
@@ -240,6 +234,16 @@ restore(LV2_Handle                  instance,
           map_path = (LV2_State_Map_Path *)features[i]->data;
         }
     }
+  auto absolute_path = [map_path](string path)
+    {
+      if (map_path)
+        {
+          char *absolute_path = map_path->absolute_path (map_path->handle, path.c_str());
+          path = absolute_path;
+          free (absolute_path);
+        }
+      return path;
+    };
 
   value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
   if (value && type == self->uris.atom_String)
@@ -247,24 +251,7 @@ restore(LV2_Handle                  instance,
       const char *plan_str = (const char *)value;
       LV2_DEBUG (" -> plan_str: %s\n", plan_str);
 
-      vector<unsigned char> data;
-      if (HexString::decode (plan_str, data))
-        {
-          GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-          self->project.load_compat (in, nullptr); // FIXME: handle errors
-          delete in;
-
-          self->project.load_instruments_lv2 ([map_path](string path) {
-            char *mapped_path = map_path->absolute_path (map_path->handle, path.c_str());
-            path = mapped_path;
-            free (mapped_path);
-            return path;
-          });
-        }
-      else
-        {
-          // FIXME: handle errors
-        }
+      self->project.load_plan_lv2 (absolute_path, plan_str);
     }
   value = retrieve (handle, self->uris.spectmorph_volume, &size, &type, &valflags);
   if (value && size == sizeof (float) && type == self->uris.atom_Float)
