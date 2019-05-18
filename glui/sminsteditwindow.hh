@@ -521,7 +521,14 @@ public:
   {
     save_file_dialog ("Select SpectMorph Instrument save filename", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
       if (filename != "")
-        instrument->save (filename);
+        {
+          Error error = instrument->save (filename);
+          if (error)
+            {
+              MessageBox::critical (this, "Error",
+                                    string_locale_printf ("Saving instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+            }
+        }
     });
   }
   void
