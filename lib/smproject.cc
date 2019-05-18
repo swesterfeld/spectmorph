@@ -317,7 +317,7 @@ Project::load_instruments_lv2 (std::function<string(string)> map_path)
 Error
 Project::save (const std::string& filename)
 {
-  ZipWriter zip_writer (filename); // FIXME: handle I/O errors
+  ZipWriter zip_writer (filename);
 
   return save (zip_writer, nullptr);
 }
@@ -325,7 +325,6 @@ Project::save (const std::string& filename)
 Error
 Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
 {
-  // FIXME: handle I/O errors (zip and other)
   vector<unsigned char> data;
   MemOut mo (&data);
   m_morph_plan->save (&mo, params);
@@ -340,6 +339,10 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
       inst.second->save (mem_zip);
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
+
+  zip_writer.close();
+  if (zip_writer.error())
+    return zip_writer.error();
 
   return Error::Code::NONE;
 }
