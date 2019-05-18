@@ -31,7 +31,7 @@ create (ZipWriter& writer)
   writer.add ("test2.txt", "Test II\n");
 
   if (writer.error())
-    printf ("ERR=%d\n", writer.error());
+    printf ("ERR: %s\n", writer.error().message());
 }
 
 int
@@ -46,7 +46,7 @@ main (int argc, char **argv)
 
       if (reader.error())
         {
-          printf ("ERR=%d\n", reader.error());
+          printf ("ERR: %s\n", reader.error().message());
         }
     }
   if (argc == 3 && strcmp (argv[1], "get") == 0)
