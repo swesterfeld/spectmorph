@@ -527,10 +527,19 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
           wav_data.save (wav_file_vec);
           zip_writer->add (samples[i]->short_name + ".wav", wav_file_vec, ZipWriter::Compress::STORE);
         }
+
+      zip_writer->close(); // need to close this first to catch all errors
+
+      Error error = zip_writer->error();
+      if (error)
+        return error;
     }
   else
     {
-      doc.save_file (filename.c_str());
+      bool result = doc.save_file (filename.c_str());
+
+      if (!result)
+        return Error ("Error creating output file");
     }
   return Error::Code::NONE;
 }

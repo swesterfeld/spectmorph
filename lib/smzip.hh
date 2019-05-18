@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "smutils.hh"
+
 namespace SpectMorph
 {
 
@@ -22,7 +24,7 @@ public:
   ~ZipReader();
 
   std::vector<std::string>  filenames();
-  int32_t                   error() const;
+  Error                     error() const;
   std::vector<uint8_t>      read (const std::string& name);
 
   static bool               is_zip (const std::string& name);
@@ -42,7 +44,8 @@ public:
   ~ZipWriter();
   void    add (const std::string& filename, const std::vector<uint8_t>& data, Compress compress = Compress::DEFLATE);
   void    add (const std::string& filename, const std::string& text, Compress compress = Compress::DEFLATE);
-  int32_t error() const;
+  void    close();
+  Error   error() const;
 
   std::vector<uint8_t> data();
 };

@@ -17,6 +17,16 @@ using std::vector;
 
 using namespace SpectMorph;
 
+static string
+zip_error_to_string (int32_t error)
+{
+  switch (error)
+  {
+    case MZ_OPEN_ERROR: return "Open failed";
+    default:            return string_printf ("Error %d", error);
+  }
+}
+
 ZipReader::ZipReader (const string& filename)
 {
   void *ptr = mz_zip_reader_create (&reader);
@@ -124,10 +134,13 @@ ZipReader::filenames()
   return {}; // error while reading entries
 }
 
-int32_t
+Error
 ZipReader::error() const
 {
-  return m_error;
+  if (m_error)
+    return Error ("ZipReader: " + zip_error_to_string (m_error));
+
+  return Error::Code::NONE;
 }
 
 vector<uint8_t>
@@ -200,11 +213,7 @@ ZipWriter::ZipWriter()
 vector<uint8_t>
 ZipWriter::data()
 {
-  if (need_close)
-    {
-      mz_zip_writer_close (writer);
-      need_close = false;
-    }
+  close();
 
   if (write_mem_stream)
     {
@@ -217,6 +226,19 @@ ZipWriter::data()
       return std::vector<uint8_t> (buffer_ptr, buffer_ptr + buffer_size);
     }
   return {};
+}
+
+void
+ZipWriter::close()
+{
+  if (need_close)
+    {
+      int32_t close_error = mz_zip_writer_close (writer);
+      if (!m_error)
+        m_error = close_error;
+
+      need_close = false;
+    }
 }
 
 ZipWriter::~ZipWriter()
@@ -270,8 +292,11 @@ ZipWriter::add (const string& filename, const string& text, Compress compress)
   add (filename, data, compress);
 }
 
-int32_t
+Error
 ZipWriter::error() const
 {
-  return m_error;
+  if (m_error)
+    return Error ("ZipWriter: " + zip_error_to_string (m_error));
+
+  return Error::Code::NONE;
 }
