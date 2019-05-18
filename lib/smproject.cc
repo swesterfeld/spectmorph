@@ -288,8 +288,16 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 }
 
 void
-Project::load_instruments_lv2 (std::function<string(string)> map_path)
+Project::load_plan_lv2 (std::function<string(string)> absolute_path, const string& plan_str)
 {
+  vector<unsigned char> data;
+  if (!HexString::decode (plan_str, data))
+    return; // FIXME: errors?
+
+  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  load_compat (in, nullptr); // FIXME: handle errors
+  delete in;
+
   // LV2 doesn't include instruments
   for (auto op : m_morph_plan->operators())
     {
@@ -302,7 +310,7 @@ Project::load_instruments_lv2 (std::function<string(string)> map_path)
           Instrument *inst = new Instrument();
 
           // try load mapped path; if this fails, try user instrument dir
-          Error error = inst->load (map_path (wav_source->lv2_filename()));
+          Error error = inst->load (absolute_path (wav_source->lv2_filename()));
           if (error)
             error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
 
@@ -345,4 +353,27 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
     return zip_writer.error();
 
   return Error::Code::NONE;
+}
+
+string
+Project::save_plan_lv2 (std::function<string(string)> abstract_path)
+{
+  for (auto op : m_morph_plan->operators())
+    {
+      string type = op->type();
+      if (type == "SpectMorph::MorphWavSource")
+        {
+          auto wav_source = static_cast<MorphWavSource *> (op);
+
+          string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->INST()));
+          wav_source->set_lv2_filename (lv2_filename);
+        }
+    }
+
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  m_morph_plan->save (&mo);
+
+  string plan_str = HexString::encode (data);
+  return plan_str;
 }
