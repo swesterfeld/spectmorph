@@ -109,8 +109,8 @@ private:
   SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
 
   std::vector<std::unique_ptr<Sample>> samples;
-  int m_selected = -1;
-  std::string m_name = "untitled";
+  int           m_selected = -1;
+  std::string   m_name = "untitled";
 
   AutoVolume    m_auto_volume;
   AutoTune      m_auto_tune;

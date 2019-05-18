@@ -207,8 +207,6 @@ Instrument::load (ZipReader& zip_reader)
 Error
 Instrument::load (const string& filename, ZipReader *zip_reader)
 {
-  samples.clear();
-
   xml_document doc;
   if (zip_reader)
     {
@@ -228,7 +226,10 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
         return Error (result.description());
     }
   xml_node inst_node = doc.child ("instrument");
-  m_name = inst_node.attribute ("name").value();
+  string new_name = inst_node.attribute ("name").value();
+
+  vector<std::unique_ptr<Sample>> new_samples;
+
   for (xml_node sample_node : inst_node.children ("sample"))
     {
       string filename = sample_node.attribute ("filename").value();
@@ -252,7 +253,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
       if (load_ok)
         {
           Sample *sample = new Sample (this, wav_data);
-          samples.emplace_back (sample);
+          new_samples.emplace_back (sample);
           sample->filename  = filename;
           sample->short_name = gen_short_name (filename);
           sample->set_midi_note (midi_note);
@@ -280,7 +281,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
         }
     }
   // auto tune
-  m_auto_tune.enabled = false; // default
+  AutoTune new_auto_tune;
   xml_node auto_tune_node = inst_node.child ("auto_tune");
   if (auto_tune_node)
     {
@@ -288,27 +289,27 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
 
       if (method == "simple")
         {
-          m_auto_tune.method = AutoTune::SIMPLE;
-          m_auto_tune.enabled = true;
+          new_auto_tune.method = AutoTune::SIMPLE;
+          new_auto_tune.enabled = true;
         }
       else if (method == "all_frames")
         {
-          m_auto_tune.method   = AutoTune::ALL_FRAMES;
-          m_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
-          m_auto_tune.enabled  = true;
+          new_auto_tune.method   = AutoTune::ALL_FRAMES;
+          new_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
+          new_auto_tune.enabled  = true;
         }
       else if (method == "smooth")
         {
-          m_auto_tune.method   = AutoTune::SMOOTH;
-          m_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
-          m_auto_tune.time     = sm_atof (auto_tune_node.attribute ("time").value());
-          m_auto_tune.amount   = sm_atof (auto_tune_node.attribute ("amount").value());
-          m_auto_tune.enabled  = true;
+          new_auto_tune.method   = AutoTune::SMOOTH;
+          new_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
+          new_auto_tune.time     = sm_atof (auto_tune_node.attribute ("time").value());
+          new_auto_tune.amount   = sm_atof (auto_tune_node.attribute ("amount").value());
+          new_auto_tune.enabled  = true;
         }
     }
 
   // auto volume
-  m_auto_volume.enabled = false;
+  AutoVolume new_auto_volume;
   xml_node auto_volume_node = inst_node.child ("auto_volume");
   if (auto_volume_node)
     {
@@ -316,21 +317,21 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
 
       if (method == "from_loop")
         {
-          m_auto_volume.method  = AutoVolume::FROM_LOOP;
-          m_auto_volume.enabled = true;
+          new_auto_volume.method  = AutoVolume::FROM_LOOP;
+          new_auto_volume.enabled = true;
         }
       else if (method == "global")
         {
-          m_auto_volume.method  = AutoVolume::GLOBAL;
-          m_auto_volume.gain    = sm_atof (auto_volume_node.attribute ("gain").value());
-          m_auto_volume.enabled = true;
+          new_auto_volume.method  = AutoVolume::GLOBAL;
+          new_auto_volume.gain    = sm_atof (auto_volume_node.attribute ("gain").value());
+          new_auto_volume.enabled = true;
         }
       else
         {
           fprintf (stderr, "unknown auto volume method: %s\n", method.c_str());
         }
     }
-  m_encoder_config = EncoderConfig(); // reset
+  EncoderConfig new_encoder_config;
   for (xml_node enc_node : inst_node.children ("encoder_config"))
     {
       EncoderEntry entry;
@@ -339,10 +340,21 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
       if (entry.param != "")
         {
           entry.value = enc_node.attribute ("value").value();
-          m_encoder_config.entries.push_back (entry);
-          m_encoder_config.enabled = true;
+          new_encoder_config.entries.push_back (entry);
+          new_encoder_config.enabled = true;
         }
     }
+
+  /* if an error occurs while loading the instrument, the old state should
+   * be preserved; so here we copy the new data into the instrument
+   *
+   * all work that could possibly fail should be done above this line
+   */
+  samples          = std::move (new_samples);
+  m_name           = new_name;
+  m_auto_volume    = new_auto_volume;
+  m_auto_tune      = new_auto_tune;
+  m_encoder_config = new_encoder_config;
 
   /* select first sample if possible */
   if (samples.empty())
