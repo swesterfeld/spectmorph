@@ -65,7 +65,7 @@ MorphWavSourceView::on_edit()
 
       write_instrument();
       update_instrument_list();
-      project->rebuild (morph_wav_source->instrument());
+      project->rebuild (morph_wav_source);
     });
 }
 
@@ -77,7 +77,7 @@ MorphWavSourceView::on_instrument_changed()
   Instrument *instrument = project->get_instrument (morph_wav_source);
   morph_wav_source->set_INST (atoi (instrument_combobox->text().c_str()));
   instrument->load (project->user_instrument_index()->filename (morph_wav_source->INST()));
-  project->rebuild (morph_wav_source->instrument());
+  project->rebuild (morph_wav_source);
 }
 
 
