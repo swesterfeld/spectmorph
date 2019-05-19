@@ -347,13 +347,14 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
   m_morph_plan->save (&mo, params);
 
   zip_writer.add ("plan.smplan", data);
-  // FIXME: check if needed by current morph plan
-  for (const auto& inst : instrument_map)
+  for (auto wav_source : list_wav_sources())
     {
       ZipWriter mem_zip;
 
-      string inst_file = string_printf ("instrument%d.sminst", inst.first);
-      inst.second->save (mem_zip);
+      int    inst_id = wav_source->instrument();
+      string inst_file = string_printf ("instrument%d.sminst", inst_id);
+
+      instrument_map[inst_id]->save (mem_zip);
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
