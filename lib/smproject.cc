@@ -321,7 +321,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       // try load mapped path; if this fails, try user instrument dir
       Error error = inst->load (absolute_path (wav_source->lv2_filename()));
       if (error)
-        error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
+        error = inst->load (m_user_instrument_index.filename (wav_source->instrument()));
 
       // ignore error (if any): we still load preset if instrument is missing
       instrument_map[object_id].reset (inst);
@@ -371,7 +371,7 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 {
   for (auto wav_source : list_wav_sources())
     {
-      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->INST()));
+      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->instrument()));
       wav_source->set_lv2_filename (lv2_filename);
     }
 

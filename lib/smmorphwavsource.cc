@@ -37,17 +37,17 @@ MorphWavSource::object_id()
 }
 
 void
-MorphWavSource::set_INST (int inst)
+MorphWavSource::set_instrument (int instrument)
 {
-  m_INST = inst;
+  m_instrument = instrument;
 
   m_morph_plan->emit_plan_changed();
 }
 
 int
-MorphWavSource::INST()
+MorphWavSource::instrument()
 {
-  return m_INST;
+  return m_instrument;
 }
 
 void
@@ -80,7 +80,7 @@ bool
 MorphWavSource::save (OutFile& out_file)
 {
   out_file.write_int ("object_id", m_object_id);
-  out_file.write_int ("INST", m_INST);
+  out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
 
   return true;
@@ -97,9 +97,9 @@ MorphWavSource::load (InFile& ifile)
             {
               m_object_id = ifile.event_int();
             }
-          else if (ifile.event_name() == "INST")
+          else if (ifile.event_name() == "instrument")
             {
-              m_INST = ifile.event_int();
+              m_instrument = ifile.event_int();
             }
           else
             {
