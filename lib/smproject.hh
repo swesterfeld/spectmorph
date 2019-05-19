@@ -90,12 +90,12 @@ class Project : public SignalReceiver
 public:
   Project();
 
-  void rebuild (int inst_id);
-  void add_rebuild_result (int inst_id, WavSet *wav_set);
-
   Instrument *get_instrument (MorphWavSource *wav_source);
 
-  std::shared_ptr<WavSet> get_wav_set (int inst_id);
+  void rebuild (MorphWavSource *wav_source);
+  void add_rebuild_result (int object_id, WavSet *wav_set);
+
+  std::shared_ptr<WavSet> get_wav_set (int object_id);
 
   void synth_take_control_event (SynthControlEvent *event);
 

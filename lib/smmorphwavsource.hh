@@ -12,8 +12,8 @@ namespace SpectMorph
 
 class MorphWavSource : public MorphOperator
 {
-  int         m_instrument = 0;
-  int         m_INST = 1;
+  int         m_object_id = 0;
+  int         m_INST      = 1;
   std::string m_lv2_filename;
 
 public:
@@ -27,8 +27,8 @@ public:
   bool               load (InFile&  in_file);
   OutputType         output_type();
 
-  void        set_instrument (int id);
-  int         instrument();
+  void        set_object_id (int id);
+  int         object_id();
 
   void        set_INST (int inst);
   int         INST();

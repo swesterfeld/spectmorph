@@ -64,53 +64,54 @@ Project::synth_take_control_event (SynthControlEvent *event)
 }
 
 void
-Project::rebuild (int inst_id)
+Project::rebuild (MorphWavSource *wav_source)
 {
-  Instrument *instrument = instrument_map[inst_id].get();
+  const int   object_id  = wav_source->object_id();
+  Instrument *instrument = instrument_map[object_id].get();
 
   if (!instrument)
     return;
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
   m_builder_thread.add_job (builder,
-    [this, inst_id] (WavSet *wav_set)
+    [this, object_id] (WavSet *wav_set)
       {
-        synth_interface()->emit_add_rebuild_result (inst_id, wav_set);
+        synth_interface()->emit_add_rebuild_result (object_id, wav_set);
       });
 }
 
 void
-Project::add_rebuild_result (int inst_id, WavSet *wav_set)
+Project::add_rebuild_result (int object_id, WavSet *wav_set)
 {
-  size_t s = inst_id + 1;
+  size_t s = object_id + 1;
   if (s > wav_sets.size())
     wav_sets.resize (s);
 
-  wav_sets[inst_id] = std::shared_ptr<WavSet> (wav_set);
+  wav_sets[object_id] = std::shared_ptr<WavSet> (wav_set);
 }
 
 Instrument *
 Project::get_instrument (MorphWavSource *wav_source)
 {
-  if (wav_source->instrument() == 0) /* create if not used */
+  if (wav_source->object_id() == 0) /* create if not used */
     {
-      int inst_id = 1;
+      int object_id = 1;
 
-      while (instrument_map[inst_id]) /* find first free slot */
-        inst_id++;
+      while (instrument_map[object_id]) /* find first free slot */
+        object_id++;
 
-      wav_source->set_instrument (inst_id);
-      instrument_map[inst_id].reset (new Instrument());
+      wav_source->set_object_id (object_id);
+      instrument_map[object_id].reset (new Instrument());
     }
 
-  return instrument_map[wav_source->instrument()].get();
+  return instrument_map[wav_source->object_id()].get();
 }
 
 std::shared_ptr<WavSet>
-Project::get_wav_set (int inst_id)
+Project::get_wav_set (int object_id)
 {
-  if (size_t (inst_id) < wav_sets.size())
-    return wav_sets[inst_id];
+  if (size_t (object_id) < wav_sets.size())
+    return wav_sets[object_id];
   else
     return nullptr;
 }
@@ -271,20 +272,19 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 
   instrument_map.clear();
 
-  // find instrument ids
   for (auto wav_source : list_wav_sources())
     {
-      int  inst_id = wav_source->instrument();
+      const int object_id = wav_source->object_id();
 
-      string inst_file = string_printf ("instrument%d.sminst", inst_id);
+      string inst_file = string_printf ("instrument%d.sminst", object_id);
       vector<uint8_t> inst_data = zip_reader.read (inst_file);
 
       ZipReader inst_zip (inst_data);
       Instrument *inst = new Instrument();
       inst->load (inst_zip); // FIXME: error handling
-      instrument_map[inst_id].reset (inst);
+      instrument_map[object_id].reset (inst);
 
-      rebuild (inst_id);
+      rebuild (wav_source);
     }
   return Error::Code::NONE;
 }
@@ -314,7 +314,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   // LV2 doesn't include instruments
   for (auto wav_source : list_wav_sources())
     {
-      int inst_id = wav_source->instrument();
+      const int object_id = wav_source->object_id();
 
       Instrument *inst = new Instrument();
 
@@ -324,9 +324,9 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
         error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
 
       // ignore error (if any): we still load preset if instrument is missing
-      instrument_map[inst_id].reset (inst);
+      instrument_map[object_id].reset (inst);
 
-      rebuild (inst_id);
+      rebuild (wav_source);
     }
 }
 
@@ -348,11 +348,11 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
   zip_writer.add ("plan.smplan", data);
   for (auto wav_source : list_wav_sources())
     {
-      // must do this before using inst_id (lazy creation)
+      // must do this before using object_id (lazy creation)
       Instrument *instrument = get_instrument (wav_source);
 
-      int    inst_id = wav_source->instrument();
-      string inst_file = string_printf ("instrument%d.sminst", inst_id);
+      int    object_id = wav_source->object_id();
+      string inst_file = string_printf ("instrument%d.sminst", object_id);
 
       ZipWriter   mem_zip;
       instrument->save (mem_zip);

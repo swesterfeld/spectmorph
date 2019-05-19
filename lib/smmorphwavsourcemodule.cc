@@ -31,7 +31,7 @@ InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float m
 
   // we can not delete the old wav_set between retrigger() invocations
   //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
-  wav_set = project->get_wav_set (instrument_id);
+  wav_set = project->get_wav_set (object_id);
 
   if (wav_set)
     {
@@ -71,9 +71,9 @@ InstrumentSource::audio_block (size_t index)
 }
 
 void
-InstrumentSource::update_instrument (int instrument_id)
+InstrumentSource::update_object_id (int object_id)
 {
-  this->instrument_id = instrument_id;
+  this->object_id = object_id;
 }
 
 void
@@ -106,5 +106,5 @@ MorphWavSourceModule::set_config (MorphOperator *op)
   Project *project = op->morph_plan()->project();
 
   my_source.update_project (project);
-  my_source.update_instrument (source->instrument());
+  my_source.update_object_id (source->object_id());
 }

@@ -97,7 +97,7 @@ public:
         });
   }
   void
-  emit_add_rebuild_result (int inst_id, WavSet *take_wav_set)
+  emit_add_rebuild_result (int object_id, WavSet *take_wav_set)
   {
     /* ownership of take_wav_set is transferred to the event */
     struct EventData
@@ -110,7 +110,7 @@ public:
     send_control_event (
       [=] (Project *project)
         {
-          project->add_rebuild_result (inst_id, event_data->wav_set.release());
+          project->add_rebuild_result (object_id, event_data->wav_set.release());
         },
         event_data);
   }
