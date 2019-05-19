@@ -267,6 +267,9 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   Error error = m_morph_plan->load (in, params);
   delete in;
 
+  if (error)
+    return error;
+
   instrument_map.clear();
 
   // find instrument ids
@@ -284,7 +287,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 
       rebuild (inst_id);
     }
-  return error;
+  return Error::Code::NONE;
 }
 
 Error
