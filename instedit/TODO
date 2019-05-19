@@ -23,7 +23,7 @@ STORAGE:
 - compat for old LV2
 
 PROJECT:
-- support more than one Instrument
 - cache:
   - better primary key
   - cleanup old stuff automatically
+- wav source deletion doesn't delete corresponding instrument_map entry
