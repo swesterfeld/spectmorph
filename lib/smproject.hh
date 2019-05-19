@@ -19,6 +19,7 @@ namespace SpectMorph
 
 class MidiSynth;
 class SynthInterface;
+class MorphWavSource;
 
 class SynthControlEvent
 {
@@ -81,6 +82,8 @@ class Project : public SignalReceiver
   BuilderThread               m_builder_thread;
 
   std::map<int, std::unique_ptr<Instrument>> instrument_map;
+
+  std::vector<MorphWavSource *> list_wav_sources();
 
   void on_plan_changed();
 

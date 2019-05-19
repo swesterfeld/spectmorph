@@ -214,6 +214,22 @@ Project::set_volume (double volume)
   signal_volume_changed (m_volume);
 }
 
+vector<MorphWavSource *>
+Project::list_wav_sources()
+{
+  vector<MorphWavSource *> wav_sources;
+
+  // find instrument ids
+  for (auto op : m_morph_plan->operators())
+    {
+      string type = op->type();
+
+      if (type == "SpectMorph::MorphWavSource")
+        wav_sources.push_back (static_cast<MorphWavSource *> (op));
+    }
+  return wav_sources;
+}
+
 Error
 Project::load (const string& filename)
 {
@@ -254,24 +270,19 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   instrument_map.clear();
 
   // find instrument ids
-  for (auto op : m_morph_plan->operators())
+  for (auto wav_source : list_wav_sources())
     {
-      string type = op->type();
-      if (type == "SpectMorph::MorphWavSource")
-        {
-          auto wav_source = static_cast<MorphWavSource *> (op);
-          int  inst_id = wav_source->instrument();
+      int  inst_id = wav_source->instrument();
 
-          string inst_file = string_printf ("instrument%d.sminst", inst_id);
-          vector<uint8_t> inst_data = zip_reader.read (inst_file);
+      string inst_file = string_printf ("instrument%d.sminst", inst_id);
+      vector<uint8_t> inst_data = zip_reader.read (inst_file);
 
-          ZipReader inst_zip (inst_data);
-          Instrument *inst = new Instrument();
-          inst->load (inst_zip); // FIXME: error handling
-          instrument_map[inst_id].reset (inst);
+      ZipReader inst_zip (inst_data);
+      Instrument *inst = new Instrument();
+      inst->load (inst_zip); // FIXME: error handling
+      instrument_map[inst_id].reset (inst);
 
-          rebuild (inst_id);
-        }
+      rebuild (inst_id);
     }
   return error;
 }
@@ -299,26 +310,21 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   delete in;
 
   // LV2 doesn't include instruments
-  for (auto op : m_morph_plan->operators())
+  for (auto wav_source : list_wav_sources())
     {
-      string type = op->type();
-      if (type == "SpectMorph::MorphWavSource")
-        {
-          auto wav_source = static_cast<MorphWavSource *> (op);
-          int inst_id = wav_source->instrument();
+      int inst_id = wav_source->instrument();
 
-          Instrument *inst = new Instrument();
+      Instrument *inst = new Instrument();
 
-          // try load mapped path; if this fails, try user instrument dir
-          Error error = inst->load (absolute_path (wav_source->lv2_filename()));
-          if (error)
-            error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
+      // try load mapped path; if this fails, try user instrument dir
+      Error error = inst->load (absolute_path (wav_source->lv2_filename()));
+      if (error)
+        error = inst->load (m_user_instrument_index.filename (wav_source->INST()));
 
-          // ignore error (if any): we still load preset if instrument is missing
-          instrument_map[inst_id].reset (inst);
+      // ignore error (if any): we still load preset if instrument is missing
+      instrument_map[inst_id].reset (inst);
 
-          rebuild (inst_id);
-        }
+      rebuild (inst_id);
     }
 }
 
@@ -358,16 +364,10 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
 string
 Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 {
-  for (auto op : m_morph_plan->operators())
+  for (auto wav_source : list_wav_sources())
     {
-      string type = op->type();
-      if (type == "SpectMorph::MorphWavSource")
-        {
-          auto wav_source = static_cast<MorphWavSource *> (op);
-
-          string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->INST()));
-          wav_source->set_lv2_filename (lv2_filename);
-        }
+      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->INST()));
+      wav_source->set_lv2_filename (lv2_filename);
     }
 
   vector<unsigned char> data;
