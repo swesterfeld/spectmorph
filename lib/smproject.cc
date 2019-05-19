@@ -14,6 +14,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::set;
 
 void
 ControlEventVector::take (SynthControlEvent *ev)
@@ -95,9 +96,22 @@ Project::get_instrument (MorphWavSource *wav_source)
 {
   if (wav_source->object_id() == 0) /* create if not used */
     {
+      /* check which object ids are currently used */
+      set<int> used_object_ids;
+      for (auto wav_source : list_wav_sources())
+        {
+          const int object_id = wav_source->object_id();
+
+          if (object_id)
+            {
+              assert (instrument_map[object_id]); /* can only be used if it has a map entry */
+
+              used_object_ids.insert (object_id);
+            }
+        }
       int object_id = 1;
 
-      while (instrument_map[object_id]) /* find first free slot */
+      while (used_object_ids.count (object_id)) /* find first free slot */
         object_id++;
 
       wav_source->set_object_id (object_id);
