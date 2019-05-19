@@ -89,22 +89,21 @@ Project::add_rebuild_result (int inst_id, WavSet *wav_set)
   wav_sets[inst_id] = std::shared_ptr<WavSet> (wav_set);
 }
 
-int
-Project::add_instrument()
-{
-  int inst_id = 1;
-
-  while (instrument_map[inst_id].get()) /* find first free slot */
-    inst_id++;
-
-  instrument_map[inst_id].reset (new Instrument());
-  return inst_id;
-}
-
 Instrument *
-Project::get_instrument (int inst_id)
+Project::get_instrument (MorphWavSource *wav_source)
 {
-  return instrument_map[inst_id].get();
+  if (wav_source->instrument() == 0) /* create if not used */
+    {
+      int inst_id = 1;
+
+      while (instrument_map[inst_id]) /* find first free slot */
+        inst_id++;
+
+      wav_source->set_instrument (inst_id);
+      instrument_map[inst_id].reset (new Instrument());
+    }
+
+  return instrument_map[wav_source->instrument()].get();
 }
 
 std::shared_ptr<WavSet>
@@ -349,12 +348,14 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
   zip_writer.add ("plan.smplan", data);
   for (auto wav_source : list_wav_sources())
     {
-      ZipWriter mem_zip;
+      // must do this before using inst_id (lazy creation)
+      Instrument *instrument = get_instrument (wav_source);
 
       int    inst_id = wav_source->instrument();
       string inst_file = string_printf ("instrument%d.sminst", inst_id);
 
-      instrument_map[inst_id]->save (mem_zip);
+      ZipWriter   mem_zip;
+      instrument->save (mem_zip);
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 

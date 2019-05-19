@@ -93,8 +93,7 @@ public:
   void rebuild (int inst_id);
   void add_rebuild_result (int inst_id, WavSet *wav_set);
 
-  int add_instrument();
-  Instrument *get_instrument (int inst_id);
+  Instrument *get_instrument (MorphWavSource *wav_source);
 
   std::shared_ptr<WavSet> get_wav_set (int inst_id);
 
