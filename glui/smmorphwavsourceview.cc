@@ -75,8 +75,8 @@ MorphWavSourceView::on_instrument_changed()
   auto project = morph_wav_source->morph_plan()->project();
 
   Instrument *instrument = project->get_instrument (morph_wav_source);
-  morph_wav_source->set_INST (atoi (instrument_combobox->text().c_str()));
-  instrument->load (project->user_instrument_index()->filename (morph_wav_source->INST()));
+  morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
+  instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
   project->rebuild (morph_wav_source);
 }
 
@@ -87,7 +87,7 @@ MorphWavSourceView::write_instrument()
   auto project = morph_wav_source->morph_plan()->project();
 
   Instrument *instrument = project->get_instrument (morph_wav_source);
-  ZipWriter zip_writer (project->user_instrument_index()->filename (morph_wav_source->INST()));
+  ZipWriter zip_writer (project->user_instrument_index()->filename (morph_wav_source->instrument()));
   instrument->save (zip_writer);
 }
 
@@ -102,7 +102,7 @@ MorphWavSourceView::update_instrument_list()
       string item = user_instrument_index->label (i);
       instrument_combobox->add_item (item);
 
-      if (i == morph_wav_source->INST())
+      if (i == morph_wav_source->instrument())
         instrument_combobox->set_text (item);
     }
 }
