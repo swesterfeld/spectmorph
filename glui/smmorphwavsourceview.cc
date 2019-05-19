@@ -46,14 +46,10 @@ MorphWavSourceView::view_height()
 void
 MorphWavSourceView::on_edit()
 {
-  /* create instrument in Project if WavSource doesn't have one */
-  if (morph_wav_source->instrument() == 0)
-    morph_wav_source->set_instrument (morph_wav_source->morph_plan()->project()->add_instrument());
-
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
   synth_interface->synth_inst_edit_update (true, nullptr, false);
 
-  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source->instrument());
+  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
 
   inst_edit_window->show();
@@ -78,11 +74,7 @@ MorphWavSourceView::on_instrument_changed()
 {
   auto project = morph_wav_source->morph_plan()->project();
 
-  /* create instrument in Project if WavSource doesn't have one */
-  if (morph_wav_source->instrument() == 0)
-    morph_wav_source->set_instrument (project->add_instrument());
-
-  Instrument *instrument = project->get_instrument (morph_wav_source->instrument());
+  Instrument *instrument = project->get_instrument (morph_wav_source);
   morph_wav_source->set_INST (atoi (instrument_combobox->text().c_str()));
   instrument->load (project->user_instrument_index()->filename (morph_wav_source->INST()));
   project->rebuild (morph_wav_source->instrument());
@@ -94,7 +86,7 @@ MorphWavSourceView::write_instrument()
 {
   auto project = morph_wav_source->morph_plan()->project();
 
-  Instrument *instrument = project->get_instrument (morph_wav_source->instrument());
+  Instrument *instrument = project->get_instrument (morph_wav_source);
   ZipWriter zip_writer (project->user_instrument_index()->filename (morph_wav_source->INST()));
   instrument->save (zip_writer);
 }
