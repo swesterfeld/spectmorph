@@ -16,7 +16,6 @@ class MorphWavSourceView : public MorphOperatorView
   MorphWavSource   *morph_wav_source = nullptr;
   ComboBox         *instrument_combobox = nullptr;
 
-  void on_load();
   void on_edit();
   void on_instrument_changed();
 

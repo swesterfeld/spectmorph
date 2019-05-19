@@ -44,24 +44,6 @@ MorphWavSourceView::view_height()
 }
 
 void
-MorphWavSourceView::on_load()
-{
-  /* create instrument in Project if WavSource doesn't have one */
-  if (morph_wav_source->instrument() == 0)
-    morph_wav_source->set_instrument (morph_wav_source->morph_plan()->project()->add_instrument());
-
-  window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
-    if (filename != "")
-      {
-        Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source->instrument());
-        instrument->load (filename);
-
-        morph_wav_source->morph_plan()->project()->rebuild (morph_wav_source->instrument());
-      }
-  });
-}
-
-void
 MorphWavSourceView::on_edit()
 {
   /* create instrument in Project if WavSource doesn't have one */
