@@ -183,6 +183,20 @@ Instrument::set_selected (int sel)
   signal_samples_changed();
 }
 
+void
+Instrument::clear()
+{
+  samples.clear();
+  m_name           = "untitled";
+  m_auto_volume    = AutoVolume();
+  m_auto_tune      = AutoTune();
+  m_encoder_config = EncoderConfig();
+  m_selected       = -1;
+
+  signal_samples_changed();
+  signal_global_changed();
+}
+
 Error
 Instrument::load (const string& filename)
 {

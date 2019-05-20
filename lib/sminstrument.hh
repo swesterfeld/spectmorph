@@ -126,6 +126,7 @@ public:
   std::string gen_short_name (const std::string& filename);
 
   size_t      size() const;
+  void        clear();
   std::string name() const;
   void        set_name (const std::string& name);
 
