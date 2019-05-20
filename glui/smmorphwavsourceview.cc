@@ -76,7 +76,13 @@ MorphWavSourceView::on_instrument_changed()
 
   Instrument *instrument = project->get_instrument (morph_wav_source);
   morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
-  instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+
+  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+  if (error)
+    {
+      /* most likely cause of error: this user instrument doesn't exist yet */
+      instrument->clear();
+    }
   project->rebuild (morph_wav_source);
 }
 
