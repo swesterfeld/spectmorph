@@ -15,6 +15,7 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::set;
+using std::map;
 
 void
 ControlEventVector::take (SynthControlEvent *ev)
@@ -278,13 +279,19 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   MemOut mo (&data);
   m_morph_plan->save (&mo);
 
+  /* backup old instruments */
+  map<int, std::unique_ptr<Instrument>> old_instrument_map;
+  old_instrument_map.swap (instrument_map);
+
   Error error = load_internal (zip_reader, params);
   if (error)
     {
-      /* restore old plan if something went wrong */
+      /* restore old plan/instruments if something went wrong */
       GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
       m_morph_plan->load (old_in);
       delete old_in;
+
+      instrument_map.swap (old_instrument_map);
     }
   return error;
 }
@@ -303,8 +310,6 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
   if (error)
     return error;
 
-  instrument_map.clear();
-
   for (auto wav_source : list_wav_sources())
     {
       const int object_id = wav_source->object_id();
@@ -319,9 +324,12 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         return error;
 
       instrument_map[object_id].reset (inst);
-
-      rebuild (wav_source);
     }
+
+  /* only trigger rebuilds if we loaded everything without error */
+  for (auto wav_source : list_wav_sources())
+    rebuild (wav_source);
+
   return Error::Code::NONE;
 }
 
