@@ -273,6 +273,25 @@ Project::load (const string& filename)
 Error
 Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 {
+  /* backup old plan */
+  vector<unsigned char> data;
+  MemOut mo (&data);
+  m_morph_plan->save (&mo);
+
+  Error error = load_internal (zip_reader, params);
+  if (error)
+    {
+      /* restore old plan if something went wrong */
+      GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      m_morph_plan->load (old_in);
+      delete old_in;
+    }
+  return error;
+}
+
+Error
+Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
+{
   // FIXME: handle I/O errors (zip and other)
 
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
@@ -295,7 +314,10 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 
       ZipReader inst_zip (inst_data);
       Instrument *inst = new Instrument();
-      inst->load (inst_zip); // FIXME: error handling
+      error = inst->load (inst_zip);
+      if (error)
+        return error;
+
       instrument_map[object_id].reset (inst);
 
       rebuild (wav_source);
