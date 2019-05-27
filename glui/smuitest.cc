@@ -205,7 +205,7 @@ public:
     connect (timer->signal_timeout, [=] { timer_led->set_on (!timer_led->on()); });
 
     Button *toggle_timer = new Button (this, "Timer");
-    connect (toggle_timer->signal_clicked, [=] () { if (timer->active()) timer->stop(); else timer->start (10); });
+    connect (toggle_timer->signal_clicked, [=] () { if (timer->active()) timer->stop(); else timer->start (500); });
     grid.add_widget (toggle_timer, 27, 35, 10, 3);
 
     Shortcut::test (this);
