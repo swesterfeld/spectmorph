@@ -21,8 +21,8 @@ struct DrawUtils
   round_box (double x, double y, double width, double height, double line_width, double radius,
              Color frame_color, Color fill_color = Color::null())
   {
-    static const double degrees = 3.14159265 / 180.0;
-    static const double lw_2 = line_width / 2;
+    constexpr double degrees = 3.14159265 / 180.0;
+    const double lw_2 = line_width / 2;
 
     cairo_new_sub_path (cr);
     cairo_arc (cr,
