@@ -15,6 +15,7 @@ struct ProgressBar : public Widget
 protected:
   double m_value = 0.0; /* 0.0 ... 1.0 */
   double busy_pos = 0;
+  double last_time = 0;
   Timer *timer;
 
 public:
@@ -39,15 +40,7 @@ public:
     Widget (parent)
   {
     timer = new Timer (window());
-    connect (timer->signal_timeout, [this] {
-      if (m_value < 0)
-        {
-          busy_pos += 0.005;
-          if (busy_pos > 1)
-            busy_pos -= 1;
-          update();
-        }
-    });
+    connect (timer->signal_timeout, this, &ProgressBar::on_update_busy);
     timer->start (10);
   }
   ~ProgressBar()
@@ -89,6 +82,22 @@ public:
     else
       {
         draw_box (space, (width - 2 * space) * m_value);
+      }
+  }
+  void
+  on_update_busy()
+  {
+    if (m_value < 0)
+      {
+        const double time = get_time();
+        const double step = (time - last_time) * 0.4;
+        last_time = time;
+
+        if (step < 1)
+          busy_pos += step;
+        if (busy_pos > 1)
+          busy_pos -= 1;
+        update();
       }
   }
 };
