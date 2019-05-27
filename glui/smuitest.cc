@@ -30,6 +30,7 @@
 #include "smshortcut.hh"
 #include "smaboutdialog.hh"
 #include "smeventloop.hh"
+#include "smprogressbar.hh"
 
 using namespace SpectMorph;
 
@@ -89,7 +90,7 @@ public:
     grid.dx = 0;
     grid.dy = 4;
 
-    grid.add_widget (menu_label, 1, 30, 46, 5);
+    grid.add_widget (menu_label, 1, 31, 46, 5);
 
     grid.add_widget (new Frame (this), 1, 1, 43, sl_params.size() * 2 + 15);
 
@@ -192,11 +193,19 @@ public:
     Led *timer_led = new Led (this, true);
     grid.add_widget (timer_led, 30, 40, 3, 3);
 
+    ProgressBar *pbar = new ProgressBar (this);
+    grid.add_widget (pbar, 1, 29, 43, 3);
+    pbar->set_value (-1);
+
+    Slider *progress_slider = new Slider (this, 0);
+    grid.add_widget (progress_slider, 1, 26, 43, 3);
+    connect (progress_slider->signal_value_changed, [=] (double v) { pbar->set_value (v); });
+
     Timer *timer = new Timer (this);
     connect (timer->signal_timeout, [=] { timer_led->set_on (!timer_led->on()); });
 
     Button *toggle_timer = new Button (this, "Timer");
-    connect (toggle_timer->signal_clicked, [=] () { if (timer->active()) timer->stop(); else timer->start (500); });
+    connect (toggle_timer->signal_clicked, [=] () { if (timer->active()) timer->stop(); else timer->start (10); });
     grid.add_widget (toggle_timer, 27, 35, 10, 3);
 
     Shortcut::test (this);

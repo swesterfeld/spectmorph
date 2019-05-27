@@ -14,6 +14,7 @@
 #include "smshortcut.hh"
 #include "smbuilderthread.hh"
 #include "smmessagebox.hh"
+#include "smprogressbar.hh"
 
 #include <thread>
 
@@ -236,12 +237,13 @@ class InstEditWindow : public Window
   PlayMode play_mode = PlayMode::SPECTMORPH;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
-  Led *led;
   Label *playing_label;
   LineEdit *name_line_edit = nullptr;
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
   Button   *play_button = nullptr;
+  Label       *progress_label = nullptr;
+  ProgressBar *progress_bar = nullptr;
   bool      playing = false;
 
   InstEditParams *inst_edit_params = nullptr;
@@ -409,9 +411,10 @@ public:
     connect (play_shortcut->signal_activated, this, &InstEditWindow::on_toggle_play);
 
     /*--- led ---*/
-    led = new Led (this, false);
-    grid.add_widget (new Label (this, "Analyzing"), 60, 67, 10, 3);
-    grid.add_widget (led, 67, 67.5, 2, 2);
+    progress_bar = new ProgressBar (this);
+    progress_label = new Label (this, "Analyzing");
+    grid.add_widget (progress_label, 40, 67, 10, 3);
+    grid.add_widget (progress_bar, 47, 67.25, 20, 2.5);
 
     /*--- playing ---*/
     playing_label = new Label (this, "");
@@ -624,7 +627,16 @@ public:
   void
   on_update_led()
   {
-    led->set_on (m_backend.have_builder());
+    if (m_backend.have_builder())
+      {
+        progress_label->set_text ("Analyzing");
+        progress_bar->set_value (-1.0);
+      }
+    else
+      {
+        progress_label->set_text ("Ready.");
+        progress_bar->set_value (1.0);
+      }
   }
   void
   on_toggle_play()
