@@ -22,6 +22,10 @@ EventLoop::wait_event_fps()
 void
 EventLoop::process_events()
 {
+  assert (m_level == 0);
+
+  signal_before_process();
+
   m_level++;
   for (size_t i = 0; i < windows.size(); i++) /* avoid auto here */
     {

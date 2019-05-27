@@ -24,6 +24,8 @@ public:
 
   void add_delete_later (Widget *w);
   void on_widget_deleted (Widget *w);
+
+  Signal<> signal_before_process;
 };
 
 }

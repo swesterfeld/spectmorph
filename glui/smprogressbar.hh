@@ -6,6 +6,7 @@
 #include "smdrawutils.hh"
 #include "smmath.hh"
 #include "smwindow.hh"
+#include "smeventloop.hh"
 
 namespace SpectMorph
 {
@@ -16,7 +17,6 @@ protected:
   double m_value = 0.0; /* 0.0 ... 1.0 */
   double busy_pos = 0;
   double last_time = 0;
-  Timer *timer;
 
 public:
   void
@@ -39,15 +39,7 @@ public:
   ProgressBar (Widget *parent) :
     Widget (parent)
   {
-    timer = new Timer (window());
-    connect (timer->signal_timeout, this, &ProgressBar::on_update_busy);
-    timer->start (10);
-  }
-  ~ProgressBar()
-  {
-    // FIXME: this is hacky: if window was destroyed, then the timer also was destroyed
-    if (window())
-      delete timer;
+    connect (window()->event_loop()->signal_before_process, this, &ProgressBar::on_update_busy);
   }
   void
   draw (const DrawEvent& devent) override
