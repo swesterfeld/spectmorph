@@ -704,6 +704,7 @@ Window::open_file_dialog (const string& title, const string& filter_title, const
 
   native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, filter_title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
+  update_full();
 }
 
 void
@@ -716,6 +717,7 @@ Window::save_file_dialog (const string& title, const string& filter_title, const
 
   native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, filter_title, filter));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
+  update_full();
 }
 
 void
