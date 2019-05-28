@@ -165,6 +165,7 @@ Project::Project()
 
   connect (m_morph_plan->signal_plan_changed, this, &Project::on_plan_changed);
   connect (m_morph_plan->signal_operator_added, this, &Project::on_operator_added);
+  connect (m_morph_plan->signal_operator_removed, this, &Project::on_operator_removed);
 
   m_synth_interface.reset (new SynthInterface (this));
 }
@@ -207,7 +208,9 @@ Project::on_plan_changed()
 void
 Project::on_operator_added (MorphOperator *op)
 {
-  if (strcmp ("SpectMorph::MorphWavSource", op->type()) == 0)
+  string type = op->type();
+
+  if (type == "SpectMorph::MorphWavSource")
     {
       MorphWavSource *wav_source = static_cast<MorphWavSource *> (op);
 
@@ -222,6 +225,21 @@ Project::on_operator_added (MorphOperator *op)
           Error error = instrument->load (m_user_instrument_index.filename (wav_source->instrument()));
           rebuild (wav_source);
         }
+    }
+}
+
+void
+Project::on_operator_removed (MorphOperator *op)
+{
+  string type = op->type();
+
+  if (type == "SpectMorph::MorphWavSource")
+    {
+      MorphWavSource *wav_source = static_cast<MorphWavSource *> (op);
+
+      /* free instrument data */
+      if (wav_source->object_id())
+        instrument_map[wav_source->object_id()].reset (nullptr);
     }
 }
 

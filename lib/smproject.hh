@@ -89,6 +89,7 @@ class Project : public SignalReceiver
 
   void on_plan_changed();
   void on_operator_added (MorphOperator *op);
+  void on_operator_removed (MorphOperator *op);
 
 public:
   Project();
