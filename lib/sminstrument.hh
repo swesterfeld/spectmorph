@@ -123,6 +123,7 @@ public:
 
   Sample     *add_sample (const std::string& filename);
   Sample     *sample (size_t n) const;
+  void        remove_sample();
   std::string gen_short_name (const std::string& filename);
 
   size_t      size() const;

@@ -140,6 +140,22 @@ Instrument::add_sample (const string& filename)
   return sample;
 }
 
+void
+Instrument::remove_sample()
+{
+  if (m_selected >= 0 && unsigned (m_selected) < samples.size())
+    {
+      samples.erase (samples.begin() + m_selected);
+
+      if (samples.empty())
+        m_selected = -1;
+      else
+        m_selected = std::max (0, m_selected - 1);
+
+      signal_samples_changed();
+    }
+}
+
 size_t
 Instrument::size() const
 {
