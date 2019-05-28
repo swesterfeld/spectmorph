@@ -166,11 +166,6 @@ WavSetBuilder::apply_loop_settings()
           audio->loop_start = loop_start;
           audio->loop_end   = loop_start;
         }
-
-      string lt_string;
-      bool have_loop_type = Audio::loop_type_to_string (audio->loop_type, lt_string);
-      if (have_loop_type)
-        printf ("loop-type  = %s [%d..%d]\n", lt_string.c_str(), audio->loop_start, audio->loop_end);
     }
 }
 
