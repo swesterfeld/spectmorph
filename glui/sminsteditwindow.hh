@@ -129,7 +129,7 @@ class InstEditWindow : public Window
   load_sample (const std::string& filename)
   {
     if (filename != "")
-      instrument->add_sample (filename);
+      instrument->add_sample (filename); // FIXME: error handling
   }
   void
   on_samples_changed()
@@ -242,6 +242,8 @@ class InstEditWindow : public Window
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
   Button   *play_button = nullptr;
+  Button   *add_sample_button = nullptr;
+  Button   *remove_sample_button = nullptr;
   Label       *progress_label = nullptr;
   ProgressBar *progress_bar = nullptr;
   bool      playing = false;
@@ -281,6 +283,11 @@ public:
     open_file_dialog ("Select Sample to load", "Wav Files", "*.wav", [=](std::string filename) {
       load_sample (filename);
     });
+  }
+  void
+  on_remove_sample_clicked()
+  {
+    instrument->remove_sample();
   }
 // morph plan window size
   static const int win_width = 744;
@@ -322,7 +329,7 @@ public:
 
     /*----- sample combobox -----*/
     sample_combobox = new ComboBox (this);
-    grid.add_widget (sample_combobox, 1, 5, 91, 3);
+    grid.add_widget (sample_combobox, 1, 5, 72, 3);
 
     connect (sample_combobox->signal_item_changed, this, &InstEditWindow::on_sample_changed);
 
@@ -331,6 +338,15 @@ public:
 
     Shortcut *sample_down = new Shortcut (this, PUGL_KEY_DOWN);
     connect (sample_down->signal_activated, this, &InstEditWindow::on_sample_down);
+
+    /*----- add/remove ----- */
+    remove_sample_button = new Button (this, "Remove");
+    grid.add_widget (remove_sample_button, 74, 5, 9, 3);
+    connect (remove_sample_button->signal_clicked, this, &InstEditWindow::on_remove_sample_clicked);
+
+    add_sample_button = new Button (this, "Add...");
+    grid.add_widget (add_sample_button, 84, 5, 8, 3);
+    connect (add_sample_button->signal_clicked, this, &InstEditWindow::on_add_sample_clicked);
 
     /*----- sample view -----*/
     sample_scroll_view = new ScrollView (this);
