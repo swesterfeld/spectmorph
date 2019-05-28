@@ -42,6 +42,8 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   Timer *timer = new Timer (this);
   timer->start (500);
 
+  on_update_progress();
+
   connect (timer->signal_timeout, this, &MorphWavSourceView::on_update_progress);
   connect (instrument_combobox->signal_item_changed, this, &MorphWavSourceView::on_instrument_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
