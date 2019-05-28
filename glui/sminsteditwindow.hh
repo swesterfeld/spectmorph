@@ -129,7 +129,14 @@ class InstEditWindow : public Window
   load_sample (const std::string& filename)
   {
     if (filename != "")
-      instrument->add_sample (filename); // FIXME: error handling
+      {
+        Error error = instrument->add_sample (filename, nullptr);
+        if (error)
+          {
+            MessageBox::critical (this, "Error",
+                                  string_locale_printf ("Loading sample failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+          }
+      }
   }
   void
   on_samples_changed()
