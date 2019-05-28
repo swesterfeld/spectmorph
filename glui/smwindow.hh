@@ -14,7 +14,6 @@ namespace SpectMorph
 struct CairoGL;
 class NativeFileDialog;
 struct Menu;
-class Timer;
 class Shortcut;
 class EventLoop;
 
@@ -41,7 +40,6 @@ protected:
   bool                      debug_update_region = false;
   EventLoop                *m_event_loop = nullptr;
 
-  std::vector<Timer *>      timers;
   std::vector<Shortcut *>   shortcuts;
 
   std::function<void()>     m_close_callback;
@@ -70,8 +68,6 @@ public:
   void set_dialog_widget (Widget *widget);
   void set_close_callback (const std::function<void()>& callback);
   void set_popup_window (Window *window);
-  void add_timer (Timer *timer);
-  void remove_timer (Timer *timer);
   void add_shortcut (Shortcut *shortcut);
   void remove_shortcut (Shortcut *shortcut);
   Window *window() override;

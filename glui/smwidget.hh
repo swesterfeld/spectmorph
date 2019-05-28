@@ -21,6 +21,7 @@ enum class TextAlign {
 
 struct Window;
 class ScrollView;
+class Timer;
 
 class Rect
 {
@@ -228,6 +229,8 @@ private:
   bool m_visible = true;
   Color m_background_color;
 
+  std::vector<Timer *> timers;
+
 protected:
   void remove_child (Widget *child);
 
@@ -369,6 +372,8 @@ public:
   void   update_with_children();
   void   update_full();
   void   delete_later();
+  void   add_timer (Timer *timer);
+  void   remove_timer (Timer *timer);
 };
 
 }

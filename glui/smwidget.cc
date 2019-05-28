@@ -5,6 +5,7 @@
 #include "smwindow.hh"
 #include "smscrollview.hh"
 #include "smeventloop.hh"
+#include "smtimer.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -38,6 +39,9 @@ Widget::~Widget()
     {
       delete children.front();
     }
+
+  while (!timers.empty())
+    delete timers.front();
 
   Window *win = window();
   if (win)
@@ -157,6 +161,18 @@ Widget::delete_later()
   Window *win = window();
   if (win)
     win->event_loop()->add_delete_later (this);
+}
+
+void
+Widget::add_timer (Timer *timer)
+{
+  timers.push_back (timer);
+}
+
+void
+Widget::remove_timer (Timer *timer)
+{
+  timers.erase (std::remove (timers.begin(), timers.end(), timer), timers.end());
 }
 
 /* Color conversion from Rapicorn */

@@ -39,8 +39,10 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   instrument_label->width = progress_bar->width;
   instrument_label->height = progress_bar->height;
 
-  // FIXME: should have a 500ms interval to be more efficient
-  connect (window()->event_loop()->signal_before_process, this, &MorphWavSourceView::on_update_progress);
+  Timer *timer = new Timer (this);
+  timer->start (500);
+
+  connect (timer->signal_timeout, this, &MorphWavSourceView::on_update_progress);
   connect (instrument_combobox->signal_item_changed, this, &MorphWavSourceView::on_instrument_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
 }

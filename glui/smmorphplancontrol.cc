@@ -50,10 +50,7 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
   connect (plan->project()->signal_volume_changed, this, &MorphPlanControl::on_project_volume_changed);
 
   /* --- update led each time process_events() is called: --- */
-  // NOTE: this would be cleaner if Timers could be owned by widgets (rather than windows)
-  // however, as MorphPlanControl and MorphPlanWindow are created/destroyed together,
-  // everything is fine...
-  Timer *led_timer = new Timer (window());
+  Timer *led_timer = new Timer (this);
   connect (led_timer->signal_timeout, this, &MorphPlanControl::on_update_led);
   led_timer->start (0);
 

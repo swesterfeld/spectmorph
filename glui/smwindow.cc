@@ -9,7 +9,6 @@
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
 #include "smconfig.hh"
-#include "smtimer.hh"
 #include "smshortcut.hh"
 #include "smeventloop.hh"
 #include "pugl/cairo_gl.h"
@@ -198,15 +197,6 @@ Window::~Window()
 {
   m_event_loop->remove_window (this);
   puglDestroy (view);
-
-  /* this code needs to work if remove_timer & add_timer are called from one of the destructors */
-  for (size_t i = 0; i < timers.size(); i++)
-    {
-      if (timers[i])
-        delete timers[i];
-    }
-  for (size_t i = 0; i < timers.size(); i++)
-    assert (timers[i] == nullptr);
 
   /* cleanup shortcuts: this code needs to work if remove_shortcut & add_shortcut are called from one of the destructors */
   for (size_t i = 0; i < shortcuts.size(); i++)
@@ -485,16 +475,6 @@ Window::process_events()
           native_file_dialog.reset();
         }
     }
-
-  /* do not use auto here, since timers may get modified */
-  for (size_t i = 0; i < timers.size(); i++)
-    {
-      Timer *timer = timers[i];
-      if (timer)
-        timer->process_events();
-    }
-  /* timers array may have been modified - remove null entries */
-  cleanup_null (timers);
 
   if (0)
     {
@@ -904,22 +884,6 @@ Window::get_scaled_size (int *w, int *h)
 {
   *w = width * global_scale;
   *h = height * global_scale;
-}
-
-void
-Window::add_timer (Timer *timer)
-{
-  timers.push_back (timer);
-}
-
-void
-Window::remove_timer (Timer *timer)
-{
-  for (auto& t : timers)
-    {
-      if (t == timer)
-        t = nullptr;
-    }
 }
 
 void

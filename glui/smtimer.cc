@@ -2,32 +2,34 @@
 
 #include "smtimer.hh"
 #include "smleakdebugger.hh"
+#include "smeventloop.hh"
 
 using namespace SpectMorph;
 
 static LeakDebugger leak_debugger ("SpectMorph::Timer");
 
-/* In this implementation, timers belong to a window (not a widget).
+/* Each timer belongs to a widget.
  *
  * This means:
- *  - a timer will get deleted if the window gets deleted
+ *  - a timer will get deleted if the widget gets deleted
  *  - if you want to get rid of the timer earlier, then you can
  *    * use stop() to disable it
  *    * delete the timer object
  *
  * Using 0 as an interval will fire the timer at every single process_events() call.
  */
-Timer::Timer (Window *window) :
-  window (window)
+Timer::Timer (Widget *widget) :
+  widget (widget)
 {
   leak_debugger.add (this);
 
-  window->add_timer (this);
+  widget->add_timer (this);
+  connect (widget->window()->event_loop()->signal_before_process, this, &Timer::process_events);
 }
 
 Timer::~Timer()
 {
-  window->remove_timer (this);
+  widget->remove_timer (this);
 
   leak_debugger.del (this);
 }

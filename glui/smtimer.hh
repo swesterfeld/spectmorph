@@ -8,14 +8,14 @@
 namespace SpectMorph
 {
 
-class Timer
+class Timer : public SignalReceiver
 {
-  Window *window = nullptr;
+  Widget *widget = nullptr;
   int     interval_ms = -1;
   double  timestamp   = -1;
   double  running_ms  = 0;
 public:
-  Timer (Window *window);
+  Timer (Widget *widget);
   ~Timer();
 
   void start (int ms);
