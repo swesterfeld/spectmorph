@@ -121,7 +121,7 @@ private:
 public:
   Instrument();
 
-  Sample     *add_sample (const std::string& filename);
+  Error       add_sample (const std::string& filename, Sample **sample);
   Sample     *sample (size_t n) const;
   void        remove_sample();
   std::string gen_short_name (const std::string& filename);

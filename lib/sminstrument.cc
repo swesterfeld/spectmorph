@@ -114,13 +114,17 @@ Instrument::Instrument()
 {
 }
 
-Sample *
-Instrument::add_sample (const string& filename)
+Error
+Instrument::add_sample (const string& filename, Sample **out_sample)
 {
   /* try loading file */
   WavData wav_data;
   if (!wav_data.load_mono (filename))
-    return nullptr;
+    {
+      if (out_sample)
+        *out_sample = nullptr;
+      return Error (wav_data.error_blurb());
+    }
 
   /* new sample will be selected */
   m_selected = samples.size();
@@ -137,7 +141,9 @@ Instrument::add_sample (const string& filename)
 
   signal_samples_changed();
 
-  return sample;
+  if (out_sample)
+    *out_sample = sample;
+  return Error::Code::NONE;
 }
 
 void

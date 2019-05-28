@@ -11,6 +11,14 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+static string
+strip_dot (string s)
+{
+  if (!s.empty() && s[s.size() - 1] == '.')
+    s.erase (s.size() - 1);
+  return s;
+}
+
 WavData::WavData()
 {
   clear();
@@ -45,7 +53,7 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
   int error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_strerror (sndfile);
+      m_error_blurb = strip_dot (sf_strerror (sndfile));
       if (sndfile)
         sf_close (sndfile);
 
@@ -58,7 +66,7 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
   error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_strerror (sndfile);
+      m_error_blurb = strip_dot (sf_strerror (sndfile));
       sf_close (sndfile);
 
       return false;
@@ -66,7 +74,7 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
 
   if (count != sfinfo.frames)
     {
-      m_error_blurb = "reading sample data failed: short read";
+      m_error_blurb = "Reading sample data failed: short read";
       sf_close (sndfile);
 
       return false;
@@ -120,7 +128,7 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
   error = sf_close (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = strip_dot (sf_error_number (error));
       return false;
     }
   return true;
@@ -134,7 +142,7 @@ WavData::load_mono (const string& filename)
 
   if (m_n_channels != 1)
     {
-      m_error_blurb = "only mono files supported";
+      m_error_blurb = "Only mono files supported";
       return false;
     }
 
@@ -293,7 +301,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
   int error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_strerror (sndfile);
+      m_error_blurb = strip_dot (sf_strerror (sndfile));
       if (sndfile)
         sf_close (sndfile);
 
@@ -316,7 +324,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
   error = sf_error (sndfile);
   if (error)
     {
-      m_error_blurb = sf_strerror (sndfile);
+      m_error_blurb = strip_dot (sf_strerror (sndfile));
       sf_close (sndfile);
 
       return false;
@@ -324,7 +332,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
 
   if (count != frames)
     {
-      m_error_blurb = "writing sample data failed: short write";
+      m_error_blurb = "Writing sample data failed: short write";
       sf_close (sndfile);
 
       return false;
@@ -333,7 +341,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
   error = sf_close (sndfile);
   if (error)
     {
-      m_error_blurb = sf_error_number (error);
+      m_error_blurb = strip_dot (sf_error_number (error));
       return false;
     }
   return true;
