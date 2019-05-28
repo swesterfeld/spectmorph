@@ -50,7 +50,7 @@ public:
 
     builder_thread.kill_all_jobs();
 
-    builder_thread.add_job (builder,
+    builder_thread.add_job (builder, /* unused: object_id */ 0,
       [this, play_mode] (WavSet *wav_set)
         {
           std::lock_guard<std::mutex> lg (result_mutex);

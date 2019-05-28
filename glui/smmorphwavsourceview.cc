@@ -24,15 +24,23 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 {
   OperatorLayout op_layout;
 
-  Label *instrument_label = new Label (body_widget, "Instrument");
+  instrument_label = new Label (body_widget, "Instrument");
+  progress_bar = new ProgressBar (body_widget);
   instrument_combobox = new ComboBox (body_widget);
   Button *edit_button = new Button (body_widget, "Edit");
 
   update_instrument_list();
 
-  op_layout.add_row (3, instrument_label, instrument_combobox, edit_button);
+  op_layout.add_row (3, progress_bar, instrument_combobox, edit_button);
   op_layout.activate();
 
+  instrument_label->x = 0;
+  instrument_label->y = 0;
+  instrument_label->width = progress_bar->width;
+  instrument_label->height = progress_bar->height;
+
+  // FIXME: should have a 500ms interval to be more efficient
+  connect (window()->event_loop()->signal_before_process, this, &MorphWavSourceView::on_update_progress);
   connect (instrument_combobox->signal_item_changed, this, &MorphWavSourceView::on_instrument_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
 }
@@ -84,6 +92,21 @@ MorphWavSourceView::on_instrument_changed()
       instrument->clear();
     }
   project->rebuild (morph_wav_source);
+}
+
+void
+MorphWavSourceView::on_update_progress()
+{
+  auto project = morph_wav_source->morph_plan()->project();
+  bool rebuild_active = project->rebuild_active (morph_wav_source->object_id());
+
+  if (rebuild_active)
+    progress_bar->set_value (-1);
+  else
+    progress_bar->set_value (1);
+
+  instrument_label->set_visible (!rebuild_active);
+  progress_bar->set_visible (rebuild_active);
 }
 
 

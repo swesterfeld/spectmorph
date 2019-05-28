@@ -7,6 +7,7 @@
 #include "smmorphwavsource.hh"
 #include "smmorphplanwindow.hh"
 #include "smcombobox.hh"
+#include "smprogressbar.hh"
 
 namespace SpectMorph
 {
@@ -15,9 +16,12 @@ class MorphWavSourceView : public MorphOperatorView
 {
   MorphWavSource   *morph_wav_source = nullptr;
   ComboBox         *instrument_combobox = nullptr;
+  ProgressBar      *progress_bar = nullptr;
+  Label            *instrument_label = nullptr;
 
   void on_edit();
   void on_instrument_changed();
+  void on_update_progress();
 
   void update_instrument_list();
   void write_instrument();
