@@ -164,6 +164,7 @@ Project::Project()
   m_morph_plan->load_default();
 
   connect (m_morph_plan->signal_plan_changed, this, &Project::on_plan_changed);
+  connect (m_morph_plan->signal_operator_added, this, &Project::on_operator_added);
 
   m_synth_interface.reset (new SynthInterface (this));
 }
@@ -201,6 +202,27 @@ Project::on_plan_changed()
 
   // FIXME: refptr is locking (which is not too good)
   m_synth_interface->emit_update_plan (plan);
+}
+
+void
+Project::on_operator_added (MorphOperator *op)
+{
+  if (strcmp ("SpectMorph::MorphWavSource", op->type()) == 0)
+    {
+      MorphWavSource *wav_source = static_cast<MorphWavSource *> (op);
+
+      /*
+       * only MorphWavSource objects which have been newly created using the UI have object_id == 0
+       */
+      if (wav_source->object_id() == 0)
+        {
+          /* load default instrument */
+          Instrument *instrument = get_instrument (wav_source);
+
+          Error error = instrument->load (m_user_instrument_index.filename (wav_source->instrument()));
+          rebuild (wav_source);
+        }
+    }
 }
 
 bool

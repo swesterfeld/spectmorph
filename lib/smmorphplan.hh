@@ -73,6 +73,7 @@ public:
   Signal<>                signal_index_changed;
   Signal<>                signal_need_view_rebuild;
   Signal<MorphOperator *> signal_operator_removed;
+  Signal<MorphOperator *> signal_operator_added;
 };
 
 typedef RefPtr<MorphPlan> MorphPlanPtr;

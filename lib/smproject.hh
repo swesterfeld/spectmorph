@@ -88,6 +88,7 @@ class Project : public SignalReceiver
   Error load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
 
   void on_plan_changed();
+  void on_operator_added (MorphOperator *op);
 
 public:
   Project();

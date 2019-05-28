@@ -127,6 +127,7 @@ MorphPlan::add_operator (MorphOperator *op, AddPos add_pos, const string& load_n
       m_operators.push_back (op);
     }
 
+  signal_operator_added (op);
   signal_need_view_rebuild();
   emit_plan_changed();
 }
