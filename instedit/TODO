@@ -6,7 +6,6 @@ UI:
 - fix file dialog mask (allow .wav, .flac, ...)
 - fix file dialog in ardour
 - plot tuning line
-- better progress bar widget
 - combobox should support scroll wheel
 - allow removing sample from instrument
 - maybe upsample or interpolate waveform
@@ -15,15 +14,9 @@ UI:
 SVEN:
 - display total sample time
 
-STORAGE:
-- morph plan attachments
-- store-as-zip with preset
-- compat for old VST
-- compat for old JACK
-- compat for old LV2
-
 PROJECT:
 - cache:
   - better primary key
   - cleanup old stuff automatically
-- wav source deletion doesn't delete corresponding instrument_map entry
+- load LV2 via integer
+- somewhat better error handling
