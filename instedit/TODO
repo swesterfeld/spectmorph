@@ -1,15 +1,13 @@
-- avoid raw WavData pointer for WavSetBuilder (could be deleted) => shared pointer or similar
 - don't allow play if changes are to be made
 - fix error handling for WavSet::save() and others
 
 UI:
 - fix file dialog mask (allow .wav, .flac, ...)
-- fix file dialog in ardour
 - plot tuning line
 - combobox should support scroll wheel
-- allow removing sample from instrument
-- maybe upsample or interpolate waveform
 - thread::join() sometimes blocks InstEditWindow close
+- menu + play drawing looks bad
+- user index should shallow load
 
 SVEN:
 - display total sample time
