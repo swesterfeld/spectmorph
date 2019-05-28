@@ -35,8 +35,9 @@ public:
   BuilderThread();
   ~BuilderThread();
 
-  void   add_job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func);
+  void   add_job (WavSetBuilder *builder, int object_id, const std::function<void(WavSet *wav_set)>& done_func);
   size_t job_count();
+  bool   search_job (int object_id);
   void   kill_all_jobs();
 };
 

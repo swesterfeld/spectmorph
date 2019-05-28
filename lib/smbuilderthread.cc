@@ -27,11 +27,13 @@ BuilderThread::~BuilderThread()
 struct BuilderThread::Job
 {
   std::unique_ptr<WavSetBuilder>       builder;
+  int                                  object_id = 0;
   std::function<void(WavSet *wav_set)> done_func;
   std::atomic<bool>                    atomic_quit { false };
 
-  Job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func) :
+  Job (WavSetBuilder *builder, int object_id, const std::function<void(WavSet *wav_set)>& done_func) :
     builder (builder),
+    object_id (object_id),
     done_func (done_func)
   {
   }
@@ -47,9 +49,9 @@ struct BuilderThread::Job
 };
 
 void
-BuilderThread::add_job (WavSetBuilder *builder, const std::function<void(WavSet *wav_set)>& done_func)
+BuilderThread::add_job (WavSetBuilder *builder, int object_id, const std::function<void(WavSet *wav_set)>& done_func)
 {
-  Job *job = new Job (builder, done_func);
+  Job *job = new Job (builder, object_id, done_func);
 
   builder->set_kill_function ([job]() { return job->atomic_quit.load(); });
 
@@ -63,6 +65,16 @@ BuilderThread::job_count()
 {
   std::lock_guard<std::mutex> lg (mutex);
   return todo.size();
+}
+
+bool
+BuilderThread::search_job (int object_id)
+{
+  std::lock_guard<std::mutex> lg (mutex);
+  for (auto& job : todo)
+    if (job->object_id == object_id)
+      return true;
+  return false;
 }
 
 void
