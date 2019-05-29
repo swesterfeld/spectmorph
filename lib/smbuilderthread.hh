@@ -39,6 +39,7 @@ public:
   size_t job_count();
   bool   search_job (int object_id);
   void   kill_all_jobs();
+  void   kill_jobs_by_id (int object_id);
 };
 
 }

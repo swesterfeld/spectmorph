@@ -86,6 +86,7 @@ class Project : public SignalReceiver
   std::vector<MorphWavSource *> list_wav_sources();
 
   Error load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
+  void  post_load_rebuild();
 
   void on_plan_changed();
   void on_operator_added (MorphOperator *op);

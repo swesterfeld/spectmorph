@@ -75,6 +75,7 @@ Project::rebuild (MorphWavSource *wav_source)
     return;
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
+  m_builder_thread.kill_jobs_by_id (object_id);
   m_builder_thread.add_job (builder, object_id,
     [this, object_id] (WavSet *wav_set)
       {
@@ -293,6 +294,14 @@ Project::list_wav_sources()
   return wav_sources;
 }
 
+void
+Project::post_load_rebuild()
+{
+  m_builder_thread.kill_all_jobs();
+  for (auto wav_source : list_wav_sources())
+    rebuild (wav_source);
+}
+
 Error
 Project::load (const string& filename)
 {
@@ -375,8 +384,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
     }
 
   /* only trigger rebuilds if we loaded everything without error */
-  for (auto wav_source : list_wav_sources())
-    rebuild (wav_source);
+  post_load_rebuild();
 
   return Error::Code::NONE;
 }
@@ -387,7 +395,10 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
   Error error = m_morph_plan->load (in, params);
 
   if (!error)
-    instrument_map.clear();
+    {
+      instrument_map.clear();
+      post_load_rebuild();
+    }
 
   return error;
 }
@@ -417,9 +428,8 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
 
       // ignore error (if any): we still load preset if instrument is missing
       instrument_map[object_id].reset (inst);
-
-      rebuild (wav_source);
     }
+  post_load_rebuild();
 }
 
 Error

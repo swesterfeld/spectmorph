@@ -87,6 +87,17 @@ BuilderThread::kill_all_jobs()
   cond.notify_all();
 }
 
+void
+BuilderThread::kill_jobs_by_id (int object_id)
+{
+  std::lock_guard<std::mutex> lg (mutex);
+  for (auto& job : todo)
+    if (job->object_id == object_id)
+      job->atomic_quit.store (true);
+
+  cond.notify_all();
+}
+
 BuilderThread::Job *
 BuilderThread::first_job()
 {
