@@ -1,30 +1,19 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smmain.hh"
-#include "spectmorphglui.hh"
-#include "smpugixml.hh"
 #include "sminstrument.hh"
-#include "smsamplewidget.hh"
-#include "smwavsetbuilder.hh"
 #include "sminsteditwindow.hh"
 #include "smeventloop.hh"
-#include <thread>
+#include "smproject.hh"
+#include "smmidisynth.hh"
+#include "smsynthinterface.hh"
 
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
 #include <stdio.h>
-#include <glib.h>
 
 using namespace SpectMorph;
-
-using std::string;
-using std::max;
-using std::vector;
-using std::map;
-
-using pugi::xml_document;
-using pugi::xml_node;
 
 class JackSynth : public SignalReceiver
 {
