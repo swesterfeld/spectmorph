@@ -6,7 +6,6 @@ UI:
 - fix file dialog mask (allow .wav, .flac, ...)
 - plot tuning line
 - combobox should support scroll wheel
-- thread::join() sometimes blocks InstEditWindow close
 - menu + play drawing looks bad
 - user index should shallow load
 - implement revert
