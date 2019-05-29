@@ -1,5 +1,6 @@
 - don't allow play if changes are to be made
 - fix error handling for WavSet::save() and others
+- store flac data
 
 UI:
 - fix file dialog mask (allow .wav, .flac, ...)
@@ -8,6 +9,9 @@ UI:
 - thread::join() sometimes blocks InstEditWindow close
 - menu + play drawing looks bad
 - user index should shallow load
+- implement revert
+- eliminate load index
+- split insteditwindow in hdr + code
 
 SVEN:
 - display total sample time
@@ -18,3 +22,4 @@ PROJECT:
   - cleanup old stuff automatically
 - load LV2 via integer
 - somewhat better error handling
+- ensure never to play old insts
