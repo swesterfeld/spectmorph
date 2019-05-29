@@ -8,6 +8,9 @@
 #include "smbutton.hh"
 #include "smshortcut.hh"
 #include "smtoolbutton.hh"
+#include "smcombobox.hh"
+#include "smfixedgrid.hh"
+#include "smscrollview.hh"
 
 namespace SpectMorph
 {

@@ -4,18 +4,8 @@
 #define SPECTMORPH_INST_EDIT_WINDOW_HH
 
 #include "sminstrument.hh"
-#include "smsamplewidget.hh"
-#include "smcombobox.hh"
-#include "smtimer.hh"
-#include "smwavsetbuilder.hh"
-#include "smbutton.hh"
-#include "smcheckbox.hh"
-#include "smshortcut.hh"
 #include "smbuilderthread.hh"
-#include "smmessagebox.hh"
-#include "smprogressbar.hh"
-#include "smlineedit.hh"
-#include "smlabel.hh"
+#include "smwindow.hh"
 
 #include <thread>
 
@@ -28,6 +18,16 @@ enum class PlayMode
   SAMPLE,
   REFERENCE
 };
+
+class Label;
+class LineEdit;
+class ProgressBar;
+class CheckBox;
+class Button;
+class Timer;
+class ComboBox;
+class SampleWidget;
+class SynthInterface;
 
 class InstEditWindow;
 class InstEditParams;

@@ -9,6 +9,7 @@
 
 #include "smlabel.hh"
 #include "smbutton.hh"
+#include "smtimer.hh"
 #include "smoperatorlayout.hh"
 
 #include <unistd.h>

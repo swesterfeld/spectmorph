@@ -1,15 +1,17 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
-/* REMOVE ME */
-#include "smwindow.hh"
-#include "smscrollview.hh"
-#include "smfixedgrid.hh"
-#include "smsynthinterface.hh"
-#include "smslider.hh"
-#include "smmenubar.hh"
-
 #include "sminsteditwindow.hh"
 #include "sminsteditparams.hh"
+
+#include "smprogressbar.hh"
+#include "smmessagebox.hh"
+#include "smsamplewidget.hh"
+#include "smtimer.hh"
+#include "smmenubar.hh"
+#include "smslider.hh"
+#include "smwavsetbuilder.hh"
+#include "smsynthinterface.hh"
+#include "smscrollview.hh"
 
 using namespace SpectMorph;
 
