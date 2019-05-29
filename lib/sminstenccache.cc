@@ -125,32 +125,34 @@ Audio *
 InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function)
 {
-  std::lock_guard<std::mutex> lg (cache_mutex); // more optimal range possible
 
   string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
+  string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
-  string version = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
+  // LOCK cache, look for entry
+  {
+    std::lock_guard<std::mutex> lg (cache_mutex);
+    if (cache[cache_key].version != version)
+      {
+        cache_try_load (cache_key, version);
+      }
+    if (cache[cache_key].version == version) // cache hit (in memory)
+      {
+        vector<unsigned char>& data = cache[cache_key].data;
 
-  if (cache[cache_key].version != version)
-    {
-      cache_try_load (cache_key, version);
-    }
-  if (cache[cache_key].version == version) // cache hit (in memory)
-    {
-      vector<unsigned char>& data = cache[cache_key].data;
+        GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+        Audio     *audio = new Audio;
+        Error      error = audio->load (in);
 
-      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-      Audio     *audio = new Audio;
-      Error      error = audio->load (in);
+        delete in;
 
-      delete in;
+        if (!error)
+          return audio;
 
-      if (!error)
-        return audio;
-
-      delete audio;
-      return nullptr;
-    }
+        delete audio;
+        return nullptr;
+      }
+  }
 
   /* clip sample */
   vector<float> clipped_samples = wav_data.samples();
@@ -175,10 +177,15 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
 
   audio->save (&audio_mem_out);
 
-  cache[cache_key].version = version;
-  cache[cache_key].data    = data;
+  // LOCK cache: store entry
+  {
+    std::lock_guard<std::mutex> lg (cache_mutex);
 
-  cache_save (cache_key);
+    cache[cache_key].version = version;
+    cache[cache_key].data    = data;
+
+    cache_save (cache_key);
+  }
 
   return audio;
 }
