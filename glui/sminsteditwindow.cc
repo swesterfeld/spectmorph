@@ -7,14 +7,90 @@
 #include "smsynthinterface.hh"
 #include "smslider.hh"
 #include "smmenubar.hh"
-#include "smtoolbutton.hh"
 
 #include "sminsteditwindow.hh"
+#include "sminsteditparams.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 
+// ---------------- InstEditBackend ----------------
+//
+InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
+  synth_interface (synth_interface)
+{
+}
+
+void
+InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
+{
+  WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
+
+  builder_thread.kill_all_jobs();
+
+  builder_thread.add_job (builder, /* unused: object_id */ 0,
+    [this, play_mode] (WavSet *wav_set)
+      {
+        std::lock_guard<std::mutex> lg (result_mutex);
+        result_wav_set.reset (wav_set);
+        result_play_mode = play_mode;
+      }
+    );
+}
+
+bool
+InstEditBackend::have_builder()
+{
+  return builder_thread.job_count() > 0;
+}
+
+void
+InstEditBackend::on_timer()
+{
+  /* FIXME: event handling should probably not be done here */
+  for (auto ev : synth_interface->get_project()->notify_take_events())
+    {
+      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
+      if (sn_event)
+        {
+          synth_interface->signal_notify_event (sn_event);
+          delete sn_event;
+        }
+    }
+
+  std::lock_guard<std::mutex> lg (result_mutex);
+  if (result_wav_set)
+    {
+      for (const auto& wave : result_wav_set->waves)
+        signal_have_audio (wave.midi_note, wave.audio);
+
+      if (result_play_mode == PlayMode::SPECTMORPH)
+        {
+          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), false);
+        }
+      else if (result_play_mode == PlayMode::SAMPLE)
+        {
+          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), true);
+        }
+      else
+        {
+          Index index;
+          index.load_file ("instruments:standard");
+
+          WavSet *wav_set = new WavSet();
+          wav_set->load (index.smset_dir() + "/synth-saw.smset");
+
+          synth_interface->synth_inst_edit_update (true, wav_set, false);
+        }
+
+      // delete
+      result_wav_set.reset();
+    }
+}
+
+// ---------------- InstEditWindow ----------------
+//
 InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window) :
   Window (event_loop, "SpectMorph - Instrument Editor", win_width, win_height, 0, false, parent_window ? parent_window->native_window() : 0),
   m_backend (synth_interface),

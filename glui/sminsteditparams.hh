@@ -7,6 +7,7 @@
 #include "smparamlabel.hh"
 #include "smbutton.hh"
 #include "smshortcut.hh"
+#include "smtoolbutton.hh"
 
 namespace SpectMorph
 {
