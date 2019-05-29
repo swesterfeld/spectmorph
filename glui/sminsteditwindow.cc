@@ -16,6 +16,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 // ---------------- InstEditBackend ----------------
 //
@@ -247,7 +248,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
     auto iev = dynamic_cast<InstEditVoice *> (ne);
     if (iev)
       {
-        std::vector<float> play_pointers;
+        vector<float> play_pointers;
 
         Sample *sample = instrument->sample (instrument->selected());
         if (sample && play_mode != PlayMode::REFERENCE)
@@ -306,7 +307,7 @@ InstEditWindow::~InstEditWindow()
 string
 InstEditWindow::note_to_text (int i)
 {
-  std::vector<string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+  vector<string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
   return string_printf ("%d  :  %s%d", i, note_name[i % 12].c_str(), i / 12 - 2);
 }
 
@@ -457,7 +458,7 @@ InstEditWindow::loop_to_text (const Sample::Loop loop)
 void
 InstEditWindow::on_add_sample_clicked()
 {
-  open_file_dialog ("Select Sample to load", "Wav Files", "*.wav", [=](std::string filename) {
+  open_file_dialog ("Select Sample to load", "Wav Files", "*.wav", [=](string filename) {
     load_sample (filename);
   });
 }
@@ -508,7 +509,7 @@ InstEditWindow::on_show_hide_params()
 void
 InstEditWindow::on_save_clicked()
 {
-  save_file_dialog ("Select SpectMorph Instrument save filename", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
+  save_file_dialog ("Select SpectMorph Instrument save filename", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->save (filename);
@@ -524,7 +525,7 @@ InstEditWindow::on_save_clicked()
 void
 InstEditWindow::on_load_clicked()
 {
-  window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](std::string filename) {
+  window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->load (filename);
