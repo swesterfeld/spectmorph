@@ -11,6 +11,7 @@
 #include "smbutton.hh"
 #include "smoperatorlayout.hh"
 
+#include <unistd.h>
 #include <thread>
 
 using namespace SpectMorph;
@@ -117,11 +118,21 @@ MorphWavSourceView::on_update_progress()
 void
 MorphWavSourceView::write_instrument()
 {
-  auto project = morph_wav_source->morph_plan()->project();
+  auto   project  = morph_wav_source->morph_plan()->project();
+  string filename = project->user_instrument_index()->filename (morph_wav_source->instrument());
 
   Instrument *instrument = project->get_instrument (morph_wav_source);
-  ZipWriter zip_writer (project->user_instrument_index()->filename (morph_wav_source->instrument()));
-  instrument->save (zip_writer);
+  if (instrument->size())
+    {
+      ZipWriter zip_writer (filename);
+      instrument->save (zip_writer);
+    }
+  else
+    {
+      /* instrument without any samples -> remove */
+      unlink (filename.c_str());
+      instrument->clear();
+    }
 }
 
 void
