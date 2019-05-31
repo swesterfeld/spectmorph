@@ -33,15 +33,17 @@ public:
     m_project->synth_take_control_event (new InstFunc (func, []() {}));
   }
   void
-  synth_inst_edit_update (bool active, WavSet *take_wav_set, bool original_samples)
+  synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *take_ref_wav_set)
   {
     /* ownership of take_wav_set is transferred to the event */
     struct EventData
     {
       std::unique_ptr<WavSet> wav_set;
+      std::unique_ptr<WavSet> ref_wav_set;
     } *event_data = new EventData;
 
     event_data->wav_set.reset (take_wav_set);
+    event_data->ref_wav_set.reset (take_ref_wav_set);
 
     send_control_event (
       [=] (Project *project)
@@ -49,12 +51,12 @@ public:
           project->midi_synth()->set_inst_edit (active);
 
           if (active)
-            project->midi_synth()->inst_edit_synth()->take_wav_set (event_data->wav_set.release(), original_samples);
+            project->midi_synth()->inst_edit_synth()->take_wav_sets (event_data->wav_set.release(), event_data->ref_wav_set.release());
         },
       event_data);
   }
   void
-  synth_inst_edit_note (int note, bool on)
+  synth_inst_edit_note (int note, bool on, unsigned int layer)
   {
     send_control_event (
       [=] (Project *project)
@@ -65,7 +67,7 @@ public:
           event[1] = note;
           event[2] = on ? 100 : 0;
 
-          project->midi_synth()->add_midi_event (0, event);
+          project->midi_synth()->inst_edit_synth()->handle_midi_event (event, layer);
         });
   }
   void

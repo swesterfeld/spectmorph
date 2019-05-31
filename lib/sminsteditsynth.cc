@@ -15,7 +15,17 @@ InstEditSynth::InstEditSynth (float mix_freq) :
 {
   leak_debugger.add (this);
 
-  voices.resize (64);
+  unsigned int voices_per_layer = 64;
+  for (unsigned int v = 0; v < voices_per_layer; v++)
+    {
+      for (unsigned int layer = 0; layer < n_layers; layer++)
+        {
+          Voice voice;
+          voice.layer = layer;
+
+          voices.push_back (std::move (voice));
+        }
+    }
 }
 
 InstEditSynth::~InstEditSynth()
@@ -24,13 +34,25 @@ InstEditSynth::~InstEditSynth()
 }
 
 void
-InstEditSynth::take_wav_set (WavSet *new_wav_set, bool enable_original_samples)
+InstEditSynth::take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set)
 {
   wav_set.reset (new_wav_set);
+  ref_wav_set.reset (new_ref_wav_set);
   for (auto& voice : voices)
     {
-      voice.decoder.reset (new LiveDecoder (wav_set.get()));
-      voice.decoder->enable_original_samples (enable_original_samples);
+      if (voice.layer == 0)
+        {
+          voice.decoder.reset (new LiveDecoder (wav_set.get()));
+        }
+      if (voice.layer == 1)
+        {
+          voice.decoder.reset (new LiveDecoder (wav_set.get()));
+          voice.decoder->enable_original_samples (true);
+        }
+      if (voice.layer == 2)
+        {
+          voice.decoder.reset (new LiveDecoder (ref_wav_set.get()));
+        }
     }
 }
 
@@ -41,7 +63,7 @@ note_to_freq (int note)
 }
 
 void
-InstEditSynth::handle_midi_event (const unsigned char *midi_data)
+InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int layer)
 {
   const unsigned char status = (midi_data[0] & 0xf0);
   /* note on: */
@@ -49,7 +71,7 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data)
     {
       for (auto& voice : voices)
         {
-          if (voice.decoder && voice.state == State::IDLE)
+          if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
             {
               voice.decoder->retrigger (0, note_to_freq (midi_data[1]), 127, 48000);
               voice.decoder_factor = 1;
@@ -65,7 +87,7 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data)
     {
       for (auto& voice : voices)
         {
-          if (voice.state == State::ON && voice.note == midi_data[1])
+          if (voice.state == State::ON && voice.note == midi_data[1] && voice.layer == layer)
             voice.state = State::RELEASE;
         }
     }

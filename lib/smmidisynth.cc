@@ -295,7 +295,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 {
   if (inst_edit) // inst edit mode? -> delegate
     {
-      m_inst_edit_synth.handle_midi_event (midi_data);
+      m_inst_edit_synth.handle_midi_event (midi_data, 0);
       return;
     }
   unsigned char status = midi_data[0] & 0xf0;
