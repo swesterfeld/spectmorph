@@ -186,6 +186,10 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (new Label (this, "Midi Note"), 1, 60, 10, 3);
   grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
 
+  show_pitch_button = new Button (this, "Edit Note");
+  connect (show_pitch_button->signal_clicked, this, &InstEditWindow::on_show_hide_note);
+  grid.add_widget (show_pitch_button, 29, 60, 10, 3);
+
   /*---- loop mode ----*/
 
   loop_combobox = new ComboBox (this);
@@ -501,6 +505,24 @@ InstEditWindow::on_show_hide_params()
       inst_edit_params = new InstEditParams (this, instrument);
       connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_params->signal_closed, [this]() {
+        inst_edit_params = nullptr;
+      });
+    }
+}
+
+void
+InstEditWindow::on_show_hide_note()
+{
+  if (inst_edit_note)
+    {
+      inst_edit_note->delete_later();
+      inst_edit_note = nullptr;
+    }
+  else
+    {
+      inst_edit_note = new InstEditNote (this, instrument);
+      connect (inst_edit_note->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+      connect (inst_edit_note->signal_closed, [this]() {
         inst_edit_params = nullptr;
       });
     }

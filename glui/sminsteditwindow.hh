@@ -4,6 +4,7 @@
 #define SPECTMORPH_INST_EDIT_WINDOW_HH
 
 #include "sminstrument.hh"
+#include "sminsteditnote.hh"
 #include "smbuilderthread.hh"
 #include "smwindow.hh"
 
@@ -88,6 +89,8 @@ class InstEditWindow : public Window
 
   InstEditParams *inst_edit_params = nullptr;
   Button         *show_params_button = nullptr;
+  InstEditNote   *inst_edit_note = nullptr;
+  Button         *show_pitch_button = nullptr;
 
 public:
 
@@ -103,6 +106,7 @@ public:
   void on_update_hzoom (float value);
   void on_update_vzoom (float value);
   void on_show_hide_params();
+  void on_show_hide_note();
   void on_save_clicked();
   void on_load_clicked();
   void on_sample_changed();
