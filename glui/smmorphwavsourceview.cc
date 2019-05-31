@@ -61,7 +61,7 @@ void
 MorphWavSourceView::on_edit()
 {
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
-  synth_interface->synth_inst_edit_update (true, nullptr, false);
+  synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
 
   Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
@@ -75,7 +75,7 @@ MorphWavSourceView::on_edit()
     {
       auto project = morph_wav_source->morph_plan()->project();
       window()->set_popup_window (nullptr);
-      synth_interface->synth_inst_edit_update (false, nullptr, false);
+      synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
 
       write_instrument();
       update_instrument_list();

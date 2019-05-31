@@ -26,18 +26,17 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
 }
 
 void
-InstEditBackend::switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument)
+InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument)
 {
-  WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ play_mode == PlayMode::SAMPLE);
+  WavSetBuilder *builder = new WavSetBuilder (instrument, true);
 
   builder_thread.kill_all_jobs();
 
   builder_thread.add_job (builder, /* unused: object_id */ 0,
-    [this, play_mode] (WavSet *wav_set)
+    [this] (WavSet *wav_set)
       {
         std::lock_guard<std::mutex> lg (result_mutex);
         result_wav_set.reset (wav_set);
-        result_play_mode = play_mode;
       }
     );
 }
@@ -68,27 +67,13 @@ InstEditBackend::on_timer()
       for (const auto& wave : result_wav_set->waves)
         signal_have_audio (wave.midi_note, wave.audio);
 
-      if (result_play_mode == PlayMode::SPECTMORPH)
-        {
-          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), false);
-        }
-      else if (result_play_mode == PlayMode::SAMPLE)
-        {
-          synth_interface->synth_inst_edit_update (true, result_wav_set.release(), true);
-        }
-      else
-        {
-          Index index;
-          index.load_file ("instruments:standard");
+      Index index;
+      index.load_file ("instruments:standard");
 
-          WavSet *wav_set = new WavSet();
-          wav_set->load (index.smset_dir() + "/synth-saw.smset");
+      WavSet *ref_wav_set = new WavSet();
+      ref_wav_set->load (index.smset_dir() + "/synth-saw.smset");
 
-          synth_interface->synth_inst_edit_update (true, wav_set, false);
-        }
-
-      // delete
-      result_wav_set.reset();
+      synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set);
     }
 }
 
@@ -306,6 +291,11 @@ InstEditWindow::~InstEditWindow()
       delete inst_edit_params;
       inst_edit_params = nullptr;
     }
+  if (inst_edit_note)
+    {
+      delete inst_edit_note;
+      inst_edit_note = nullptr;
+    }
 }
 
 string
@@ -364,9 +354,7 @@ InstEditWindow::on_samples_changed()
       loop_combobox->set_text (loop_to_text (sample->loop()));
     }
   if (sample)
-    {
-      m_backend.switch_to_sample (sample, play_mode, instrument);
-    }
+    m_backend.switch_to_sample (sample, instrument);
 }
 
 void
@@ -375,7 +363,7 @@ InstEditWindow::on_marker_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, play_mode, instrument);
+    m_backend.switch_to_sample (sample, instrument);
 }
 
 void
@@ -429,7 +417,7 @@ InstEditWindow::on_global_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, play_mode, instrument);
+    m_backend.switch_to_sample (sample, instrument);
 }
 
 Sample::Loop
@@ -520,7 +508,7 @@ InstEditWindow::on_show_hide_note()
     }
   else
     {
-      inst_edit_note = new InstEditNote (this, instrument);
+      inst_edit_note = new InstEditNote (this, instrument, synth_interface);
       connect (inst_edit_note->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_note->signal_closed, [this]() {
         inst_edit_params = nullptr;
@@ -663,7 +651,15 @@ InstEditWindow::on_toggle_play()
 {
   Sample *sample = instrument->sample (instrument->selected());
   if (sample)
-    synth_interface->synth_inst_edit_note (sample->midi_note(), !playing);
+    {
+      uint layer = 0;
+      if (play_mode == PlayMode::SAMPLE)
+        layer = 1;
+      if (play_mode == PlayMode::REFERENCE)
+        layer = 2;
+
+      synth_interface->synth_inst_edit_note (sample->midi_note(), !playing, layer);
+    }
 }
 
 void

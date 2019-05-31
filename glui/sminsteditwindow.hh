@@ -38,13 +38,12 @@ class InstEditBackend
 
   std::mutex              result_mutex;
   std::unique_ptr<WavSet> result_wav_set;
-  PlayMode                result_play_mode;
   SynthInterface         *synth_interface;
 
 public:
   InstEditBackend (SynthInterface *synth_interface);
 
-  void switch_to_sample (const Sample *sample, PlayMode play_mode, const Instrument *instrument);
+  void switch_to_sample (const Sample *sample, const Instrument *instrument);
   bool have_builder();
   void on_timer();
 

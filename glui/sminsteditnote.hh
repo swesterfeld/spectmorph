@@ -11,6 +11,7 @@
 #include "smcombobox.hh"
 #include "smfixedgrid.hh"
 #include "smscrollview.hh"
+#include "smsynthinterface.hh"
 
 namespace SpectMorph
 {
@@ -45,10 +46,13 @@ class NoteWidget : public Widget
     return string_printf ("%s%d", note_name[i % 12].c_str(), i / 12 - 2);
   }
   int mouse_note = -1;
+  int pressed_note = -1;
+  SynthInterface *synth_interface = nullptr;
 
 public:
-  NoteWidget (Widget *parent)
-    : Widget (parent)
+  NoteWidget (Widget *parent, SynthInterface *synth_interface) :
+    Widget (parent),
+    synth_interface (synth_interface)
   {
   }
   void
@@ -80,13 +84,27 @@ public:
                 cairo_rectangle (cr, x, y, width / cols, height / rows);
                 cairo_fill (cr);
               }
-            if (n == mouse_note)
+            if (n == mouse_note || n == pressed_note)
               {
                 double xspace = width / cols / 10;
                 double yspace = height / rows / 10;
-                du.round_box (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace, 1, 5, Color (0.8, 0.8, 0.8), Color (0.9, 0.9, 0.9));
 
-                du.set_color (Color (0.5, 0.0, 0.0));
+                Color frame_color, fill_color, text_color;
+                if (n == pressed_note)
+                  {
+                    frame_color = Color::null();
+                    fill_color  = ThemeColor::SLIDER;
+                    text_color  = Color (0, 0, 0);
+                  }
+                else
+                  {
+                    frame_color = Color (0.8, 0.8, 0.8);
+                    fill_color  = Color (0.9, 0.9, 0.9);
+                    text_color  = Color (0.5, 0.0, 0.0);
+                  }
+                du.round_box (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace, 1, 5, frame_color, fill_color);
+
+                du.set_color (text_color);
                 du.text (note_to_text (n, true), x, y, width / cols, height / rows, TextAlign::CENTER);
               }
           }
@@ -111,7 +129,7 @@ public:
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4));
   }
   void
-  motion (double x, double y)
+  motion (double x, double y) override
   {
     for (auto note_rect : note_rects)
       if (note_rect.rect.contains (x, y))
@@ -123,13 +141,30 @@ public:
             }
         }
   }
+  void
+  mouse_press (double x, double y) override
+  {
+    pressed_note = mouse_note;
+    synth_interface->synth_inst_edit_note (pressed_note, true, 2);
+    update();
+  }
+  void
+  mouse_release (double x, double y) override
+  {
+    if (pressed_note == -1)
+      return;
+
+    synth_interface->synth_inst_edit_note (pressed_note, false, 2);
+    pressed_note = -1;
+    update();
+  }
 };
 
 class InstEditNote : public Window
 {
   Window     *parent_window = nullptr;
 public:
-  InstEditNote (Window *window, Instrument *instrument) :
+  InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
     Window (*window->event_loop(), "SpectMorph - Instrument Note", 524, 348, 0, false, window->native_window()),
     parent_window (window)
   {
@@ -142,7 +177,7 @@ public:
     connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
     FixedGrid grid;
-    grid.add_widget (new NoteWidget (this), 1, 1, width / 8 - 2, height / 8 - 2);
+    grid.add_widget (new NoteWidget (this, synth_interface), 1, 1, width / 8 - 2, height / 8 - 2);
 
     show();
   }
