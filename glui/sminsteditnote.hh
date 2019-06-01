@@ -47,13 +47,16 @@ class NoteWidget : public Widget
   }
   int mouse_note = -1;
   int pressed_note = -1;
+  Instrument     *instrument      = nullptr;
   SynthInterface *synth_interface = nullptr;
 
 public:
-  NoteWidget (Widget *parent, SynthInterface *synth_interface) :
+  NoteWidget (Widget *parent, Instrument *instrument, SynthInterface *synth_interface) :
     Widget (parent),
+    instrument (instrument),
     synth_interface (synth_interface)
   {
+    connect (instrument->signal_samples_changed, this, &NoteWidget::on_samples_changed);
   }
   void
   draw (const DrawEvent& devent) override
@@ -64,6 +67,14 @@ public:
 
     auto cr = devent.cr;
 
+    std::map<int, int> note_used;
+    for (size_t i = 0; i < instrument->size(); i++)
+      {
+        Sample *sample = instrument->sample (i);
+        if (sample)
+          note_used[sample->midi_note()]++;
+      }
+
     note_rects.clear();
     for (int xpos = 0; xpos < cols; xpos++)
       {
@@ -73,7 +84,8 @@ public:
             double y = ypos * height / rows;
             int n = first + xpos + (rows - 1 - ypos) * step;
             note_rects.push_back ({n, Rect (x, y, width / cols, height / rows)});
-            if (!note_to_text (n).empty())
+            bool white_key = !note_to_text (n).empty();
+            if (white_key)
               {
                 du.set_color (Color (0.0, 0.0, 0.0));
                 du.text (note_to_text (n), x, y, width / cols, height / rows, TextAlign::CENTER);
@@ -83,6 +95,35 @@ public:
                 cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
                 cairo_rectangle (cr, x, y, width / cols, height / rows);
                 cairo_fill (cr);
+              }
+            for (size_t i = 0; i < instrument->size(); i++)
+              {
+                Sample *sample = instrument->sample (i);
+                if (sample && n == sample->midi_note())
+                  {
+                    double xspace = width / cols / 15;
+                    double yspace = height / rows / 15;
+                    const Rect frame_rect (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace);
+
+                    Color frame_color;
+                    if (int (i) != instrument->selected())
+                      {
+                        if (white_key)
+                          frame_color = Color (0.3, 0.3, 0.3);
+                        else
+                          frame_color = Color (0.7, 0.7, 0.7);
+                        du.round_box (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace, 3, 5, white_key ? Color (0.3, 0.3, 0.3) : Color (0.7, 0.7, 0.7));
+                      }
+                    else
+                      {
+                        frame_color = ThemeColor::MENU_ITEM;
+                      }
+                    /* draw red frame if one note is assigned twice */
+                    if (note_used[n] > 1)
+                      frame_color = Color (0.7, 0.0, 0.0);
+
+                    du.round_box (frame_rect, 3, 5, frame_color);
+                  }
               }
             if (n == mouse_note || n == pressed_note)
               {
@@ -158,6 +199,11 @@ public:
     pressed_note = -1;
     update();
   }
+  void
+  on_samples_changed()
+  {
+    update();
+  }
 };
 
 class InstEditNote : public Window
@@ -177,7 +223,7 @@ public:
     connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
     FixedGrid grid;
-    grid.add_widget (new NoteWidget (this, synth_interface), 1, 1, width / 8 - 2, height / 8 - 2);
+    grid.add_widget (new NoteWidget (this, instrument, synth_interface), 1, 1, width / 8 - 2, height / 8 - 2);
 
     show();
   }
