@@ -575,6 +575,12 @@ Window::on_button_event (const PuglEventButton& event)
         {
           mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
         }
+      if (event.time - last_click_time < 300)
+        {
+          mouse_widget->mouse_double_click (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
+        }
+
+      last_click_time = event.time;
     }
   else /* event.type == PUGL_BUTTON_RELEASE */
     {

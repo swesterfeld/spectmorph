@@ -200,6 +200,16 @@ public:
     update();
   }
   void
+  mouse_double_click (double x, double y) override
+  {
+    Sample *sample = instrument->sample (instrument->selected());
+
+    if (!sample)
+      return;
+    sample->set_midi_note (mouse_note);
+    update();
+  }
+  void
   on_samples_changed()
   {
     update();

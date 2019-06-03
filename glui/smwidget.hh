@@ -278,6 +278,10 @@ public:
   {
   }
   virtual void
+  mouse_double_click (double x, double y)
+  {
+  }
+  virtual void
   mouse_release (double x, double y)
   {
   }
