@@ -45,13 +45,19 @@ protected:
   std::function<void()>     m_close_callback;
 
   Widget *find_widget_xy (double ex, double ey);
+  void on_button_event (const PuglEventButton& event);
+  void on_motion_event (const PuglEventMotion& event);
+  void on_scroll_event (const PuglEventScroll& event);
+  void on_key_event (const PuglEventKey& event);
+  void on_expose_event (const PuglEventExpose& event);
+  void on_close_event (const PuglEventClose& event);
+  void on_configure_event (const PuglEventConfigure& event);
 
 public:
   Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
   virtual ~Window();
 
   std::vector<Widget *> crawl_widgets();
-  void on_display();
   void on_event (const PuglEvent *event);
   void on_resize (int *width, int *height);
   void process_events();

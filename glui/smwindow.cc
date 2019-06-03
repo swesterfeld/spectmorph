@@ -311,7 +311,7 @@ struct IRect
 };
 
 void
-Window::on_display()
+Window::on_expose_event (const PuglEventExpose& event)
 {
   // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -532,9 +532,6 @@ Window::on_event (const PuglEvent* event)
   if (0)
     dump_event (event);
 
-  double ex, ey; /* global scale translated */
-  Widget *current_widget = nullptr;
-
   /* as long as the file dialog or popup window is open, ignore user input */
   const bool ignore_input = have_file_dialog || popup_window;
   if (ignore_input && event->type != PUGL_EXPOSE && event->type != PUGL_CONFIGURE)
@@ -542,128 +539,152 @@ Window::on_event (const PuglEvent* event)
 
   switch (event->type)
     {
-      bool key_handled;
-
       case PUGL_BUTTON_PRESS:
-        ex = event->button.x / global_scale;
-        ey = event->button.y / global_scale;
-
-        mouse_widget = find_widget_xy (ex, ey);
-        if (keyboard_focus_widget && keyboard_focus_release_on_click)
-          {
-            keyboard_focus_widget->focus_out_event();
-            keyboard_focus_widget = nullptr;
-          }
-        else
-          {
-            mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
-          }
-
-        if (auto_redraw)
-          update_full();
-        break;
-      case PUGL_BUTTON_RELEASE:
-        ex = event->button.x / global_scale;
-        ey = event->button.y / global_scale;
-        if (mouse_widget)
-          {
-            Widget *w = mouse_widget;
-            w->mouse_release (ex - w->abs_x(), ey - w->abs_y());
-            mouse_widget = nullptr;
-          }
-        if (auto_redraw)
-          update_full();
-        break;
-      case PUGL_MOTION_NOTIFY:
-        ex = event->motion.x / global_scale;
-        ey = event->motion.y / global_scale;
-        if (mouse_widget) /* user interaction with one widget */
-          {
-            current_widget = mouse_widget;
-          }
-        else
-          {
-            current_widget = find_widget_xy (ex, ey);
-            if (enter_widget != current_widget)
-              {
-                if (enter_widget)
-                  enter_widget->leave_event();
-
-                enter_widget = current_widget;
-                current_widget->enter_event();
-              }
-          }
-        current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
-        if (auto_redraw)
-          update_full();
-        break;
-      case PUGL_SCROLL:
-        ex = event->scroll.x / global_scale;
-        ey = event->scroll.y / global_scale;
-        if (mouse_widget)
-          current_widget = mouse_widget;
-        else
-          current_widget = find_widget_xy (ex, ey);
-
-        while (current_widget)
-          {
-            if (current_widget->scroll (event->scroll.dx, event->scroll.dy))
-              break;
-
-            current_widget = current_widget->parent;
-          }
-        if (auto_redraw)
-          update_full();
-        break;
-      case PUGL_KEY_PRESS:
-        key_handled = false;
-        /* do not use auto here, since shortcuts may get modified */
-        cleanup_null (shortcuts);
-        for (size_t i = 0; i < shortcuts.size(); i++)
-          {
-            Shortcut *shortcut = shortcuts[i];
-            if (!key_handled && shortcut)
-              {
-                if (!keyboard_focus_widget || !shortcut->focus_override())
-                  key_handled = shortcut->key_press_event (event->key);
-              }
-          }
-        if (!key_handled && keyboard_focus_widget)
-          keyboard_focus_widget->key_press_event (event->key);
-        else if (!key_handled)
-          {
-            if (event->key.character == 'g')
-              draw_grid = !draw_grid;
-            else if (event->key.character == 'u')
-              debug_update_region = !debug_update_region;
-          }
-        if (auto_redraw)
-          update_full();
-        break;
-      case PUGL_CLOSE:
-        if (m_close_callback)
-          m_close_callback();
-        break;
-      case PUGL_EXPOSE:
-        on_display();
-        break;
-      case PUGL_CONFIGURE:
-        {
-          int w, h;
-          get_scaled_size (&w, &h);
-          cairo_gl.reset (new CairoGL (w, h));
-
-          // on windows, the coordinates of the event often doesn't match actual size
-          // cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
-        }
-        puglEnterContext (view);
-        cairo_gl->configure();
-        puglLeaveContext (view, false);
-        update_full();
-        break;
+      case PUGL_BUTTON_RELEASE: on_button_event (event->button);
+                                break;
+      case PUGL_MOTION_NOTIFY:  on_motion_event (event->motion);
+                                break;
+      case PUGL_SCROLL:         on_scroll_event (event->scroll);
+                                break;
+      case PUGL_KEY_PRESS:      on_key_event (event->key);
+                                break;
+      case PUGL_EXPOSE:         on_expose_event (event->expose);
+                                break;
+      case PUGL_CLOSE:          on_close_event (event->close);
+                                break;
+      case PUGL_CONFIGURE:      on_configure_event (event->configure);
+                                break;
       default:
         break;
     }
+}
+
+void
+Window::on_button_event (const PuglEventButton& event)
+{
+  const double ex = event.x / global_scale;
+  const double ey = event.y / global_scale;
+
+  if (event.type == PUGL_BUTTON_PRESS)
+    {
+      mouse_widget = find_widget_xy (ex, ey);
+      if (keyboard_focus_widget && keyboard_focus_release_on_click)
+        {
+          keyboard_focus_widget->focus_out_event();
+          keyboard_focus_widget = nullptr;
+        }
+      else
+        {
+          mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
+        }
+    }
+  else /* event.type == PUGL_BUTTON_RELEASE */
+    {
+      if (mouse_widget)
+        {
+          Widget *w = mouse_widget;
+          w->mouse_release (ex - w->abs_x(), ey - w->abs_y());
+          mouse_widget = nullptr;
+        }
+    }
+  if (auto_redraw)
+    update_full();
+}
+
+void
+Window::on_motion_event (const PuglEventMotion& event)
+{
+  const double ex = event.x / global_scale;
+  const double ey = event.y / global_scale;
+  Widget *current_widget = mouse_widget;
+
+  if (!current_widget)
+    {
+      current_widget = find_widget_xy (ex, ey);
+      if (enter_widget != current_widget)
+        {
+          if (enter_widget)
+            enter_widget->leave_event();
+
+          enter_widget = current_widget;
+          current_widget->enter_event();
+        }
+    }
+  current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
+  if (auto_redraw)
+    update_full();
+}
+
+void
+Window::on_scroll_event (const PuglEventScroll& event)
+{
+  const double ex = event.x / global_scale;
+  const double ey = event.y / global_scale;
+  Widget *current_widget = mouse_widget;
+
+  if (!current_widget)
+    current_widget = find_widget_xy (ex, ey);
+
+  while (current_widget)
+    {
+      if (current_widget->scroll (event.dx, event.dy))
+        break;
+
+      current_widget = current_widget->parent;
+    }
+  if (auto_redraw)
+    update_full();
+}
+
+void
+Window::on_key_event (const PuglEventKey& event)
+{
+  bool key_handled = false;
+  /* do not use auto here, since shortcuts may get modified */
+  cleanup_null (shortcuts);
+  for (size_t i = 0; i < shortcuts.size(); i++)
+    {
+      Shortcut *shortcut = shortcuts[i];
+      if (!key_handled && shortcut)
+        {
+          if (!keyboard_focus_widget || !shortcut->focus_override())
+            key_handled = shortcut->key_press_event (event);
+        }
+    }
+  if (!key_handled && keyboard_focus_widget)
+    keyboard_focus_widget->key_press_event (event);
+  else if (!key_handled)
+    {
+      if (event.character == 'g') /* FIXME: only allow this in devel-mode */
+        draw_grid = !draw_grid;
+      else if (event.character == 'u')
+        debug_update_region = !debug_update_region;
+    }
+  if (auto_redraw)
+    update_full();
+}
+
+void
+Window::on_close_event (const PuglEventClose& event)
+{
+  if (m_close_callback)
+    m_close_callback();
+}
+
+void
+Window::on_configure_event (const PuglEventConfigure& event)
+{
+  int w, h;
+  get_scaled_size (&w, &h);
+  cairo_gl.reset (new CairoGL (w, h));
+
+  // on windows, the coordinates of the event often doesn't match actual size
+  // cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
+
+  puglEnterContext (view);
+  cairo_gl->configure();
+  puglLeaveContext (view, false);
+  update_full();
 }
 
 Widget *
