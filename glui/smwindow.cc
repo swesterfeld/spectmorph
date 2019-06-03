@@ -149,7 +149,6 @@ Window::Window (EventLoop& event_loop, const string& title, int width, int heigh
   Config cfg;
 
   global_scale = cfg.zoom() / 100.0;
-  auto_redraw = false;
 
   view = puglInit (nullptr, nullptr);
 
@@ -554,8 +553,7 @@ Window::on_event (const PuglEvent* event)
                                 break;
       case PUGL_CONFIGURE:      on_configure_event (event->configure);
                                 break;
-      default:
-        break;
+      default:                  break;
     }
 }
 
@@ -587,8 +585,6 @@ Window::on_button_event (const PuglEventButton& event)
           mouse_widget = nullptr;
         }
     }
-  if (auto_redraw)
-    update_full();
 }
 
 void
@@ -611,8 +607,6 @@ Window::on_motion_event (const PuglEventMotion& event)
         }
     }
   current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
-  if (auto_redraw)
-    update_full();
 }
 
 void
@@ -632,8 +626,6 @@ Window::on_scroll_event (const PuglEventScroll& event)
 
       current_widget = current_widget->parent;
     }
-  if (auto_redraw)
-    update_full();
 }
 
 void
@@ -660,8 +652,6 @@ Window::on_key_event (const PuglEventKey& event)
       else if (event.character == 'u')
         debug_update_region = !debug_update_region;
     }
-  if (auto_redraw)
-    update_full();
 }
 
 void

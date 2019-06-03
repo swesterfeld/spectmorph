@@ -34,7 +34,6 @@ protected:
   Widget                   *dialog_widget = nullptr;
   std::unique_ptr<Window>   popup_window;
   double                    global_scale;
-  bool                      auto_redraw;
   Rect                      update_region;
   bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
