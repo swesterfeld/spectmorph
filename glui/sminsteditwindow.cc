@@ -511,7 +511,7 @@ InstEditWindow::on_show_hide_note()
       inst_edit_note = new InstEditNote (this, instrument, synth_interface);
       connect (inst_edit_note->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_note->signal_closed, [this]() {
-        inst_edit_params = nullptr;
+        inst_edit_note = nullptr;
       });
     }
 }
