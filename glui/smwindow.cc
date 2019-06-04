@@ -577,7 +577,10 @@ Window::on_button_event (const PuglEventButton& event)
 
   if (event.type == PUGL_BUTTON_PRESS)
     {
-      mouse_widget = find_widget_xy (ex, ey);
+      if (!mouse_buttons_pressed)
+        mouse_widget = find_widget_xy (ex, ey);
+      mouse_buttons_pressed |= to_mouse_button (event.button);
+
       if (keyboard_focus_widget && keyboard_focus_release_on_click)
         {
           keyboard_focus_widget->focus_out_event();
@@ -589,6 +592,7 @@ Window::on_button_event (const PuglEventButton& event)
           mouse_event.x = ex - mouse_widget->abs_x();
           mouse_event.y = ey - mouse_widget->abs_y();
           mouse_event.button = to_mouse_button (event.button);
+          mouse_event.buttons = mouse_buttons_pressed;
           mouse_event.double_click = (event.time - last_click_time < 300 && event.button == last_click_button);
 
           last_click_time = event.time;
@@ -600,15 +604,18 @@ Window::on_button_event (const PuglEventButton& event)
     }
   else /* event.type == PUGL_BUTTON_RELEASE */
     {
+      mouse_buttons_pressed &= ~to_mouse_button (event.button);
       if (mouse_widget)
         {
           MouseEvent mouse_event;
           mouse_event.x = ex - mouse_widget->abs_x();
           mouse_event.y = ey - mouse_widget->abs_y();
           mouse_event.button = to_mouse_button (event.button);
+          mouse_event.buttons = mouse_buttons_pressed;
           mouse_widget->mouse_release (mouse_event);
 
-          mouse_widget = nullptr;
+          if (!mouse_buttons_pressed) /* last mouse button released nulls mouse_widget */
+            mouse_widget = nullptr;
         }
     }
 }
@@ -635,6 +642,7 @@ Window::on_motion_event (const PuglEventMotion& event)
   MouseEvent mouse_event;
   mouse_event.x = ex - current_widget->abs_x();
   mouse_event.y = ey - current_widget->abs_y();
+  mouse_event.buttons = mouse_buttons_pressed;
   current_widget->mouse_move (mouse_event);
 }
 

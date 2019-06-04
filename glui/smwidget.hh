@@ -272,6 +272,7 @@ public:
     double        x = 0;
     double        y = 0;
     MouseButton   button = NO_BUTTON;
+    unsigned      buttons = 0;
     bool          double_click = false;
   };
 
