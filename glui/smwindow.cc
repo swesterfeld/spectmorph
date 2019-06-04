@@ -557,6 +557,18 @@ Window::on_event (const PuglEvent* event)
     }
 }
 
+static MouseButton
+to_mouse_button (unsigned pugl_button)
+{
+  switch (pugl_button)
+  {
+    case 1: return LEFT_BUTTON;
+    case 2: return MIDDLE_BUTTON;
+    case 3: return RIGHT_BUTTON;
+  }
+  return NO_BUTTON;
+}
+
 void
 Window::on_button_event (const PuglEventButton& event)
 {
@@ -576,7 +588,7 @@ Window::on_button_event (const PuglEventButton& event)
           MouseEvent mouse_event;
           mouse_event.x = ex - mouse_widget->abs_x();
           mouse_event.y = ey - mouse_widget->abs_y();
-          mouse_event.button = event.button;
+          mouse_event.button = to_mouse_button (event.button);
           mouse_event.double_click = (event.time - last_click_time < 300 && event.button == last_click_button);
 
           last_click_time = event.time;
@@ -593,7 +605,7 @@ Window::on_button_event (const PuglEventButton& event)
           MouseEvent mouse_event;
           mouse_event.x = ex - mouse_widget->abs_x();
           mouse_event.y = ey - mouse_widget->abs_y();
-          mouse_event.button = event.button;
+          mouse_event.button = to_mouse_button (event.button);
           mouse_widget->mouse_release (mouse_event);
 
           mouse_widget = nullptr;

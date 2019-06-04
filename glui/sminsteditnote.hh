@@ -187,7 +187,7 @@ public:
   void
   mouse_press (const MouseEvent& event) override
   {
-    if (event.double_click && event.button == 1)
+    if (event.double_click && event.button == LEFT_BUTTON)
       {
         Sample *sample = instrument->sample (instrument->selected());
 
@@ -195,12 +195,12 @@ public:
           return;
         sample->set_midi_note (mouse_note);
       }
-    else if (event.button == 1)
+    else if (event.button == LEFT_BUTTON)
       {
         left_pressed_note = mouse_note;
         synth_interface->synth_inst_edit_note (left_pressed_note, true, 2);
       }
-    else if (event.button == 3)
+    else if (event.button == RIGHT_BUTTON)
       {
         right_pressed_note = mouse_note;
         synth_interface->synth_inst_edit_note (right_pressed_note, true, 0);
@@ -210,13 +210,13 @@ public:
   void
   mouse_release (const MouseEvent& event) override
   {
-    if (event.button == 1 && left_pressed_note >= 0)
+    if (event.button == LEFT_BUTTON && left_pressed_note >= 0)
       {
         synth_interface->synth_inst_edit_note (left_pressed_note, false, 2);
         left_pressed_note = -1;
         update();
       }
-    else if (event.button == 3)
+    else if (event.button == RIGHT_BUTTON)
       {
         synth_interface->synth_inst_edit_note (right_pressed_note, false, 0);
         right_pressed_note = -1;

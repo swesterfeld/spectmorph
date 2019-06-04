@@ -19,6 +19,13 @@ enum class TextAlign {
   RIGHT
 };
 
+enum MouseButton  {
+  NO_BUTTON = 0,
+  LEFT_BUTTON = 1,
+  MIDDLE_BUTTON = 2,
+  RIGHT_BUTTON = 4
+};
+
 struct Window;
 class ScrollView;
 class Timer;
@@ -262,10 +269,10 @@ public:
   };
   struct MouseEvent
   {
-    double    x = 0;
-    double    y = 0;
-    unsigned  button = 0;
-    bool      double_click = false;
+    double        x = 0;
+    double        y = 0;
+    MouseButton   button = NO_BUTTON;
+    bool          double_click = false;
   };
 
   virtual void draw (const DrawEvent& draw);
