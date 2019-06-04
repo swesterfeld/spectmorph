@@ -284,8 +284,14 @@ public:
     return true;
   }
 
-  virtual void motion (double x, double y)
+  virtual void
+  motion (double x, double y)
   {
+  }
+  virtual void
+  mouse_move (const MouseEvent& event)
+  {
+    motion (event.x, event.y); // compat
   }
   virtual void
   mouse_press (double x, double y)
@@ -294,7 +300,7 @@ public:
   virtual void
   mouse_press (const MouseEvent& event)
   {
-    mouse_press (event.x, event.y);
+    mouse_press (event.x, event.y); // compat
   }
   virtual void
   mouse_release (double x, double y)

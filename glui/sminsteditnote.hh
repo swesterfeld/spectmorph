@@ -172,10 +172,10 @@ public:
     du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4));
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     for (auto note_rect : note_rects)
-      if (note_rect.rect.contains (x, y))
+      if (note_rect.rect.contains (event.x, event.y))
         {
           if (note_rect.note != mouse_note)
             {

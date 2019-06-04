@@ -632,7 +632,10 @@ Window::on_motion_event (const PuglEventMotion& event)
           current_widget->enter_event();
         }
     }
-  current_widget->motion (ex - current_widget->abs_x(), ey - current_widget->abs_y());
+  MouseEvent mouse_event;
+  mouse_event.x = ex - current_widget->abs_x();
+  mouse_event.y = ey - current_widget->abs_y();
+  current_widget->mouse_move (mouse_event);
 }
 
 void
