@@ -19,7 +19,6 @@ namespace SpectMorph
 class MorphOperatorTitle : public Label
 {
   bool in_move = false;
-  double last_press_time = 0;
 
 public:
   MorphOperatorTitle (Widget *parent, const std::string& text) :
@@ -27,12 +26,9 @@ public:
   {
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    const bool double_click = get_time() - last_press_time < 0.3;
-    last_press_time = get_time();
-
-    if (double_click)
+    if (event.double_click)
       {
         signal_rename();
       }
@@ -50,14 +46,14 @@ public:
       signal_move (abs_y() + y);
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
     if (in_move)
       {
         in_move = false;
 
         // DELETION can occur here
-        signal_end_move (abs_y() + y);
+        signal_end_move (abs_y() + event.y);
       }
   }
   Signal<double> signal_move;
