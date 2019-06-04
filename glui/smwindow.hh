@@ -39,6 +39,7 @@ protected:
   bool                      debug_update_region = false;
   EventLoop                *m_event_loop = nullptr;
   unsigned long             last_click_time = 0;
+  unsigned                  last_click_button = 0;
 
   std::vector<Shortcut *>   shortcuts;
 

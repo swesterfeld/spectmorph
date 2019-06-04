@@ -573,21 +573,29 @@ Window::on_button_event (const PuglEventButton& event)
         }
       else
         {
-          mouse_widget->mouse_press (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
-        }
-      if (event.time - last_click_time < 300)
-        {
-          mouse_widget->mouse_double_click (ex - mouse_widget->abs_x(), ey - mouse_widget->abs_y());
+          MouseEvent mouse_event;
+          mouse_event.x = ex - mouse_widget->abs_x();
+          mouse_event.y = ey - mouse_widget->abs_y();
+          mouse_event.button = event.button;
+          mouse_event.double_click = (event.time - last_click_time < 300 && event.button == last_click_button);
+
+          last_click_time = event.time;
+          last_click_button = event.button;
+
+          mouse_widget->mouse_press (mouse_event);
         }
 
-      last_click_time = event.time;
     }
   else /* event.type == PUGL_BUTTON_RELEASE */
     {
       if (mouse_widget)
         {
-          Widget *w = mouse_widget;
-          w->mouse_release (ex - w->abs_x(), ey - w->abs_y());
+          MouseEvent mouse_event;
+          mouse_event.x = ex - mouse_widget->abs_x();
+          mouse_event.y = ey - mouse_widget->abs_y();
+          mouse_event.button = event.button;
+          mouse_widget->mouse_release (mouse_event);
+
           mouse_widget = nullptr;
         }
     }

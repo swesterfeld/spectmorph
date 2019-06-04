@@ -46,7 +46,8 @@ class NoteWidget : public Widget
     return string_printf ("%s%d", note_name[i % 12].c_str(), i / 12 - 2);
   }
   int mouse_note = -1;
-  int pressed_note = -1;
+  int left_pressed_note = -1;
+  int right_pressed_note = -1;
   Instrument     *instrument      = nullptr;
   SynthInterface *synth_interface = nullptr;
 
@@ -125,13 +126,14 @@ public:
                     du.round_box (frame_rect, 3, 5, frame_color);
                   }
               }
-            if (n == mouse_note || n == pressed_note)
+            const bool note_playing = n == left_pressed_note || n == right_pressed_note;
+            if (n == mouse_note || note_playing)
               {
                 double xspace = width / cols / 10;
                 double yspace = height / rows / 10;
 
                 Color frame_color, fill_color, text_color;
-                if (n == pressed_note)
+                if (note_playing)
                   {
                     frame_color = Color::null();
                     fill_color  = ThemeColor::SLIDER;
@@ -183,31 +185,43 @@ public:
         }
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    pressed_note = mouse_note;
-    synth_interface->synth_inst_edit_note (pressed_note, true, 2);
+    if (event.double_click && event.button == 1)
+      {
+        Sample *sample = instrument->sample (instrument->selected());
+
+        if (!sample)
+          return;
+        sample->set_midi_note (mouse_note);
+      }
+    else if (event.button == 1)
+      {
+        left_pressed_note = mouse_note;
+        synth_interface->synth_inst_edit_note (left_pressed_note, true, 2);
+      }
+    else if (event.button == 3)
+      {
+        right_pressed_note = mouse_note;
+        synth_interface->synth_inst_edit_note (right_pressed_note, true, 0);
+      }
     update();
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    if (pressed_note == -1)
-      return;
-
-    synth_interface->synth_inst_edit_note (pressed_note, false, 2);
-    pressed_note = -1;
-    update();
-  }
-  void
-  mouse_double_click (double x, double y) override
-  {
-    Sample *sample = instrument->sample (instrument->selected());
-
-    if (!sample)
-      return;
-    sample->set_midi_note (mouse_note);
-    update();
+    if (event.button == 1 && left_pressed_note >= 0)
+      {
+        synth_interface->synth_inst_edit_note (left_pressed_note, false, 2);
+        left_pressed_note = -1;
+        update();
+      }
+    else if (event.button == 3)
+      {
+        synth_interface->synth_inst_edit_note (right_pressed_note, false, 0);
+        right_pressed_note = -1;
+        update();
+      }
   }
   void
   on_samples_changed()

@@ -260,6 +260,13 @@ public:
 
     Rect     rect; // only valid for clipping() == true
   };
+  struct MouseEvent
+  {
+    double    x = 0;
+    double    y = 0;
+    unsigned  button = 0;
+    bool      double_click = false;
+  };
 
   virtual void draw (const DrawEvent& draw);
 
@@ -278,12 +285,18 @@ public:
   {
   }
   virtual void
-  mouse_double_click (double x, double y)
+  mouse_press (const MouseEvent& event)
   {
+    mouse_press (event.x, event.y);
   }
   virtual void
   mouse_release (double x, double y)
   {
+  }
+  virtual void
+  mouse_release (const MouseEvent& event)
+  {
+    mouse_release (event.x, event.y); // compat
   }
   virtual bool
   scroll (double dx, double dy)
