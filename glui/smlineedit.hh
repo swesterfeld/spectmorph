@@ -163,9 +163,9 @@ public:
     update();
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    if (click_to_focus)
+    if (event.button == LEFT_BUTTON && click_to_focus)
       window()->set_keyboard_focus (this, true);
   }
   Signal<std::string> signal_text_changed;
