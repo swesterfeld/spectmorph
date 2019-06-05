@@ -620,6 +620,18 @@ Instrument::update_order()
   signal_samples_changed();
 }
 
+map<int, int>
+Instrument::used_count() const
+{
+  map<int, int> note_used;
+  for (auto& sample : samples)
+    {
+      if (sample)
+        note_used[sample->midi_note()]++;
+    }
+  return note_used;
+}
+
 void
 Instrument::marker_changed()
 {

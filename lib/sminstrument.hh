@@ -143,6 +143,8 @@ public:
   void        update_order();
   void        marker_changed();
 
+  std::map<int, int> used_count() const;
+
   AutoVolume  auto_volume() const;
   void        set_auto_volume (const AutoVolume& new_value);
 
