@@ -262,7 +262,7 @@ public:
       }
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     if (mouse_down)
       {
@@ -270,7 +270,7 @@ public:
           return;
 
         const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
-        const double x_ms = sm_bound<double> (0, x / width * sample_len_ms, sample_len_ms);
+        const double x_ms = sm_bound<double> (0, event.x / width * sample_len_ms, sample_len_ms);
 
         update_marker (selected_marker);
         m_sample->set_marker (selected_marker, x_ms);
@@ -291,24 +291,28 @@ public:
     else
       {
         MarkerType old_marker = selected_marker;
-        selected_marker = find_marker_xy (x, y);
+        selected_marker = find_marker_xy (event.x, event.y);
 
         if (selected_marker != old_marker)
           update();
       }
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    mouse_down = true;
+    if (event.button == LEFT_BUTTON)
+      mouse_down = true;
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    mouse_down = false;
-    selected_marker = find_marker_xy (x, y);
+    if (event.button == LEFT_BUTTON)
+      {
+        mouse_down = false;
+        selected_marker = find_marker_xy (event.x, event.y);
 
-    update();
+        update();
+      }
   }
   void
   leave_event() override
