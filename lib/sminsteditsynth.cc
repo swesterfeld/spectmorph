@@ -97,6 +97,7 @@ void
 InstEditSynth::process (float *output, size_t n_values)
 {
   int   iev_note[voices.size()];
+  int   iev_layer[voices.size()];
   float iev_pos[voices.size()];
   float iev_fnote[voices.size()];
   int   iev_len = 0;
@@ -107,6 +108,7 @@ InstEditSynth::process (float *output, size_t n_values)
       if (voice.decoder && voice.state != State::IDLE)
         {
           iev_note[iev_len]  = voice.note;
+          iev_layer[iev_len] = voice.layer;
           iev_pos[iev_len]   = voice.decoder->current_pos();
           iev_fnote[iev_len] = voice.decoder->fundamental_note();
           iev_len++;
@@ -141,6 +143,7 @@ InstEditSynth::process (float *output, size_t n_values)
 
   notify_buffer.write_start ("InstEditVoice");
   notify_buffer.write_int_seq (iev_note, iev_len);
+  notify_buffer.write_int_seq (iev_layer, iev_len);
   notify_buffer.write_float_seq (iev_pos, iev_len);
   notify_buffer.write_float_seq (iev_fnote, iev_len);
   notify_buffer.write_end();

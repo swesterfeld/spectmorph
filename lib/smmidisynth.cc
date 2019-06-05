@@ -572,6 +572,7 @@ SynthNotifyEvent::create (const std::string& str)
       InstEditVoice *v = new InstEditVoice();
 
       buffer.read_int_seq (v->note);
+      buffer.read_int_seq (v->layer);
       buffer.read_float_seq (v->current_pos);
       buffer.read_float_seq (v->fundamental_note);
 

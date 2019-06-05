@@ -124,6 +124,7 @@ public:
 struct InstEditVoice : public SynthNotifyEvent
 {
   std::vector<int>   note;
+  std::vector<int>   layer;
   std::vector<float> current_pos;
   std::vector<float> fundamental_note;
 };
