@@ -140,7 +140,7 @@ struct MenuBar : public Widget
     return !menu_open;
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     const int old_menu = selected_menu, old_menu_item = selected_menu_item;
 
@@ -148,7 +148,7 @@ struct MenuBar : public Widget
 
     for (size_t i = 0; i < menus.size(); i++)
       {
-        if (x >= menus[i]->sx && x < menus[i]->ex && y >= 0 && y < height)
+        if (event.x >= menus[i]->sx && event.x < menus[i]->ex && event.y >= 0 && event.y < height)
           selected_menu = i;
       }
 
@@ -160,7 +160,7 @@ struct MenuBar : public Widget
           {
             MenuItem *item = menu->items[i].get();
 
-            if (x >= item->sx && x < item->ex && y >= item->sy && y < item->sy + 16)
+            if (event.x >= item->sx && event.x < item->ex && event.y >= item->sy && event.y < item->sy + 16)
               selected_menu_item = i;
           }
       }
@@ -173,8 +173,11 @@ struct MenuBar : public Widget
       }
   }
   void
-  mouse_press (double mx, double my) override
+  mouse_press (const MouseEvent& event) override
   {
+    if (event.button != LEFT_BUTTON)
+      return;
+
     if (selected_menu < 0 || (menu_open && selected_menu_item < 0))
       {
         window()->set_menu_widget (nullptr);
@@ -189,9 +192,9 @@ struct MenuBar : public Widget
     update_full();
   }
   void
-  mouse_release (double mx, double my) override
+  mouse_release (const MouseEvent& event) override
   {
-    if (menu_open && selected_menu_item >= 0)
+    if (event.button == LEFT_BUTTON && menu_open && selected_menu_item >= 0)
       {
         MenuItem *item = menus[selected_menu]->items[selected_menu_item].get();
 
