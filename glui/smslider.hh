@@ -95,26 +95,32 @@ public:
     signal_value_changed (m_value);
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     if (mouse_down)
       {
-        slider_value_from_x (x);
+        slider_value_from_x (event.x);
         update();
       }
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    slider_value_from_x (x);
-    mouse_down = true;
-    update();
+    if (event.button == LEFT_BUTTON)
+      {
+        slider_value_from_x (event.x);
+        mouse_down = true;
+        update();
+      }
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    mouse_down = false;
-    update();
+    if (event.button == LEFT_BUTTON)
+      {
+        mouse_down = false;
+        update();
+      }
   }
   void
   enter_event() override
