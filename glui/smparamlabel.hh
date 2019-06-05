@@ -141,14 +141,15 @@ public:
     set_text (model->display_text());
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    pressed = true;
+    if (event.button == LEFT_BUTTON)
+      pressed = true;
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    if (!pressed)
+    if (event.button != LEFT_BUTTON || !pressed)
       return;
     pressed = false;
 
