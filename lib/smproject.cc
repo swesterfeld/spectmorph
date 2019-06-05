@@ -184,6 +184,12 @@ Project::set_mix_freq (double mix_freq)
 }
 
 void
+Project::set_storage_model (StorageModel model)
+{
+  m_storage_model = model;
+}
+
+void
 Project::on_plan_changed()
 {
   MorphPlanPtr plan = m_morph_plan->clone();
@@ -373,21 +379,28 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
     {
       const int object_id = wav_source->object_id();
 
-      string inst_file = string_printf ("instrument%d.sminst", object_id);
-      vector<uint8_t> inst_data = zip_reader.read (inst_file);
-      if (zip_reader.error())
-        return Error (string_printf ("Unable to read '%s' from input file", inst_file.c_str()));
-
-      ZipReader inst_zip (inst_data);
-      if (inst_zip.error())
-        return inst_zip.error();
-
       Instrument *inst = new Instrument();
       instrument_map[object_id].reset (inst);
 
-      error = inst->load (inst_zip);
-      if (error)
-        return error;
+      if (m_storage_model == StorageModel::COPY)
+        {
+          string inst_file = string_printf ("instrument%d.sminst", object_id);
+          vector<uint8_t> inst_data = zip_reader.read (inst_file);
+          if (zip_reader.error())
+            return Error (string_printf ("Unable to read '%s' from input file", inst_file.c_str()));
+
+          ZipReader inst_zip (inst_data);
+          if (inst_zip.error())
+            return inst_zip.error();
+
+          error = inst->load (inst_zip);
+          if (error)
+            return error;
+        }
+      else
+        {
+          inst->load (m_user_instrument_index.filename (wav_source->instrument())); /* ignore errors */
+        }
     }
 
   // loading instruments changed the plan (FIXME: right way to do this?)

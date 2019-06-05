@@ -64,12 +64,20 @@ public:
 
 class Project : public SignalReceiver
 {
+public:
+  enum class StorageModel {
+    COPY,
+    REFERENCE
+  };
+
+private:
   std::vector<std::shared_ptr<WavSet>> wav_sets;
 
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
   double                      m_volume = -6;
   RefPtr<MorphPlan>           m_morph_plan;
+  StorageModel                m_storage_model = StorageModel::COPY;
 
   std::mutex                  m_synth_mutex;
   ControlEventVector          m_control_events;          // protected by synth mutex
@@ -123,6 +131,7 @@ public:
   }
   void try_update_synth();
   void set_mix_freq (double mix_freq);
+  void set_storage_model (StorageModel model);
   bool voices_active();
 
   void set_volume (double new_volume);
