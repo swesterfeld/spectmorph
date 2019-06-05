@@ -62,23 +62,26 @@ public:
     update();
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    pressed = true;
-    update();
-    signal_pressed();
+    if (event.button == LEFT_BUTTON)
+      {
+        pressed = true;
+        update();
+        signal_pressed();
+      }
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    if (!pressed)
+    if (event.button != LEFT_BUTTON || !pressed)
       return;
 
     pressed = false;
     update();
     signal_released();
 
-    if (x >= 0 && y >= 0 && x < width && y < height)
+    if (event.x >= 0 && event.y >= 0 && event.x < width && event.y < height)
       signal_clicked();  // this must be the last line, as deletion can occur afterwards
   }
   void
