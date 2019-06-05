@@ -77,13 +77,16 @@ public:
     du.round_box (clickable_rect, 1, 5, Color::null(), fg_color);
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    if (clickable_rect.contains (x, y)) /* drag scroll bar */
+    if (event.button != LEFT_BUTTON)
+      return;
+
+    if (clickable_rect.contains (event.x, event.y)) /* drag scroll bar */
       {
         mouse_down = true;
-        mouse_y = y;
-        mouse_x = x;
+        mouse_y = event.y;
+        mouse_x = event.x;
         old_pos = m_pos;
         update();
       }
@@ -93,16 +96,16 @@ public:
 
         if (orientation == Orientation::HORIZONTAL)
           {
-            if (x < clickable_rect.x())
+            if (event.x < clickable_rect.x())
               new_pos = m_pos - m_page_size;
-            else if (x > clickable_rect.x() + clickable_rect.width())
+            else if (event.x > clickable_rect.x() + clickable_rect.width())
               new_pos = m_pos + m_page_size;
           }
         else
           {
-            if (y < clickable_rect.y())
+            if (event.y < clickable_rect.y())
               new_pos = m_pos - m_page_size;
-            else if (y > clickable_rect.y() + clickable_rect.height())
+            else if (event.y > clickable_rect.y() + clickable_rect.height())
               new_pos = m_pos + m_page_size;
           }
 
@@ -116,9 +119,9 @@ public:
       }
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
-    bool new_highlight = clickable_rect.contains (x, y);
+    bool new_highlight = clickable_rect.contains (event.x, event.y);
     if (highlight != new_highlight)
       {
         highlight = new_highlight;
@@ -128,9 +131,9 @@ public:
     if (mouse_down)
       {
         if (orientation == Orientation::VERTICAL)
-          m_pos = old_pos + (y - mouse_y) / height;
+          m_pos = old_pos + (event.y - mouse_y) / height;
         else
-          m_pos = old_pos + (x - mouse_x) / width;
+          m_pos = old_pos + (event.x - mouse_x) / width;
 
         m_pos = sm_bound (0.0, m_pos, 1 - m_page_size);
         signal_position_changed (m_pos);
@@ -153,10 +156,13 @@ public:
     return true;
   }
   void
-  mouse_release (double mx, double my) override
+  mouse_release (const MouseEvent& event) override
   {
-    mouse_down = false;
-    update();
+    if (event.button == LEFT_BUTTON)
+      {
+        mouse_down = false;
+        update();
+      }
   }
   void
   leave_event() override
