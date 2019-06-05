@@ -75,9 +75,9 @@ public:
     end_x = du.text_width (text) + 16;
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
-    bool new_highlight = x < end_x;
+    bool new_highlight = event.x < end_x;
 
     if (new_highlight != highlight)
       {
@@ -86,9 +86,9 @@ public:
       }
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    if (highlight)
+    if (event.button == LEFT_BUTTON && highlight)
       {
         checked = !checked;
         signal_toggled (checked);
