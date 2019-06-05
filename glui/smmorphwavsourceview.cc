@@ -139,15 +139,18 @@ MorphWavSourceView::write_instrument()
 void
 MorphWavSourceView::update_instrument_list()
 {
-  auto user_instrument_index = morph_wav_source->morph_plan()->project()->user_instrument_index();
+  auto project  = morph_wav_source->morph_plan()->project();
+  auto user_instrument_index = project->user_instrument_index();
 
   instrument_combobox->clear();
   for (int i = 1; i <= 128; i++)
     {
       string item = user_instrument_index->label (i);
       instrument_combobox->add_item (item);
-
-      if (i == morph_wav_source->instrument())
-        instrument_combobox->set_text (item);
     }
+  Instrument *inst = project->get_instrument (morph_wav_source);
+  if (inst && inst->size())
+    instrument_combobox->set_text (string_printf ("%03d %s", morph_wav_source->instrument(), inst->name().c_str()));
+  else
+    instrument_combobox->set_text (string_printf ("%03d ---", morph_wav_source->instrument()));
 }
