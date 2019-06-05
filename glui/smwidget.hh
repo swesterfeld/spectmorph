@@ -6,6 +6,7 @@
 #include <vector>
 #include <cairo.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "pugl/pugl.h"
 #include "smsignal.hh"
@@ -138,6 +139,14 @@ public:
   y() const
   {
     return m_y;
+  }
+  double
+  distance (Point p) const
+  {
+    const double dx = m_x - p.x();
+    const double dy = m_y - p.y();
+
+    return sqrt (dx * dx + dy * dy);
   }
 };
 

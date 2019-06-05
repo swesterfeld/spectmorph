@@ -12,6 +12,7 @@
 #include "smshortcut.hh"
 #include "smeventloop.hh"
 #include "pugl/cairo_gl.h"
+#include <math.h>
 #include <string.h>
 #include <unistd.h>
 #include <glib.h>
@@ -593,10 +594,15 @@ Window::on_button_event (const PuglEventButton& event)
           mouse_event.y = ey - mouse_widget->abs_y();
           mouse_event.button = to_mouse_button (event.button);
           mouse_event.buttons = mouse_buttons_pressed;
-          mouse_event.double_click = (event.time - last_click_time < 300 && event.button == last_click_button);
+
+          Point pos (mouse_event.x, mouse_event.y);
+          mouse_event.double_click = (event.time - last_click_time < 400 &&
+                                      event.button == last_click_button &&
+                                      pos.distance (last_click_pos) < 15);
 
           last_click_time = event.time;
           last_click_button = event.button;
+          last_click_pos = pos;
 
           mouse_widget->mouse_press (mouse_event);
         }
