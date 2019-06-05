@@ -108,7 +108,7 @@ public:
   }
 
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     if (!mouse_down)
       {
@@ -119,7 +119,7 @@ public:
             // this ensures that the x-values of the points are a little bit different
             // (allows selecting one of two points with same x value)
             const double small_epsilon = 1e-5 * i;
-            const double dist = fabs (x - (ps[i].x() + small_epsilon));
+            const double dist = fabs (event.x - (ps[i].x() + small_epsilon));
 
             if (dist < min_dist)
               {
@@ -137,8 +137,8 @@ public:
 
         if (sel_point > 0)
           {
-            double new_x_percent = sm_bound (0.0, 100.0 * (x - ps[sel_point - 1].x()) / yspace, 100.0);
-            double new_y_percent = sm_bound (0.0, 100.0 * (1.0 - (y - pad) / yspace), 100.0);
+            double new_x_percent = sm_bound (0.0, 100.0 * (event.x - ps[sel_point - 1].x()) / yspace, 100.0);
+            double new_y_percent = sm_bound (0.0, 100.0 * (1.0 - (event.y - pad) / yspace), 100.0);
 
             if (sel_point == 1) // A
               morph_output->set_adsr_attack (new_x_percent);
@@ -163,16 +163,22 @@ public:
   }
 
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
-    mouse_down = true;
-    update();
+    if (event.button == LEFT_BUTTON)
+      {
+        mouse_down = true;
+        update();
+      }
   }
   void
-  mouse_release (double x, double y) override
+  mouse_release (const MouseEvent& event) override
   {
-    mouse_down = false;
-    update();
+    if (event.button == LEFT_BUTTON)
+      {
+        mouse_down = false;
+        update();
+      }
   }
 
   void
