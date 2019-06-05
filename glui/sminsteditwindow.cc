@@ -240,11 +240,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
         vector<float> play_pointers;
 
         Sample *sample = instrument->sample (instrument->selected());
-        if (sample && play_mode != PlayMode::REFERENCE)
+        if (sample)
           {
             for (size_t i = 0; i < iev->current_pos.size(); i++)
               {
-                if (fabs (iev->fundamental_note[i] - sample->midi_note()) < 0.1)
+                if (fabs (iev->fundamental_note[i] - sample->midi_note()) < 0.1 &&
+                    iev->layer[i] < 2) /* no play position pointer for reference */
                   play_pointers.push_back (iev->current_pos[i]);
               }
           }
