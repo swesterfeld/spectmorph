@@ -390,6 +390,10 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         return error;
     }
 
+  // loading instruments changed the plan (FIXME: right way to do this?)
+  m_morph_plan->signal_need_view_rebuild();
+  m_morph_plan->emit_plan_changed();
+
   /* only trigger rebuilds if we loaded everything without error */
   post_load_rebuild();
 
