@@ -145,7 +145,7 @@ public:
     on_accept();
   }
   void
-  mouse_press (double x, double y) override
+  mouse_press (const MouseEvent& event) override
   {
     on_accept();
   }

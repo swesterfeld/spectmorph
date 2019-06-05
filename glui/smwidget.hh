@@ -286,31 +286,16 @@ public:
   }
 
   virtual void
-  motion (double x, double y)
-  {
-  }
-  virtual void
   mouse_move (const MouseEvent& event)
-  {
-    motion (event.x, event.y); // compat
-  }
-  virtual void
-  mouse_press (double x, double y)
   {
   }
   virtual void
   mouse_press (const MouseEvent& event)
   {
-    mouse_press (event.x, event.y); // compat
-  }
-  virtual void
-  mouse_release (double x, double y)
-  {
   }
   virtual void
   mouse_release (const MouseEvent& event)
   {
-    mouse_release (event.x, event.y); // compat
   }
   virtual bool
   scroll (double dx, double dy)
