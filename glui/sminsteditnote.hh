@@ -50,6 +50,7 @@ class NoteWidget : public Widget
   int right_pressed_note = -1;
   Instrument     *instrument      = nullptr;
   SynthInterface *synth_interface = nullptr;
+  std::vector<int> active_notes;
 
 public:
   NoteWidget (Widget *parent, Instrument *instrument, SynthInterface *synth_interface) :
@@ -126,7 +127,10 @@ public:
                     du.round_box (frame_rect, 3, 5, frame_color);
                   }
               }
-            const bool note_playing = n == left_pressed_note || n == right_pressed_note;
+            bool note_playing = false;
+            for (auto note : active_notes)
+              if (n == note)
+                note_playing = true;
             if (n == mouse_note || note_playing)
               {
                 double xspace = width / cols / 10;
@@ -228,11 +232,21 @@ public:
   {
     update();
   }
+  void
+  set_active_notes (std::vector<int>& notes)
+  {
+    if (active_notes != notes)
+      {
+        active_notes = notes;
+        update();
+      }
+  }
 };
 
 class InstEditNote : public Window
 {
   Window     *parent_window = nullptr;
+  NoteWidget *note_widget = nullptr;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
     Window (*window->event_loop(), "SpectMorph - Instrument Note", 524, 348, 0, false, window->native_window()),
@@ -246,10 +260,16 @@ public:
     Shortcut *play_shortcut = new Shortcut (this, ' ');
     connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
+    note_widget = new NoteWidget (this, instrument, synth_interface);
     FixedGrid grid;
-    grid.add_widget (new NoteWidget (this, instrument, synth_interface), 1, 1, width / 8 - 2, height / 8 - 2);
+    grid.add_widget (note_widget, 1, 1, width / 8 - 2, height / 8 - 2);
 
     show();
+  }
+  void
+  set_active_notes (std::vector<int>& notes)
+  {
+    note_widget->set_active_notes (notes);
   }
   Signal<> signal_toggle_play;
   Signal<> signal_closed;

@@ -259,6 +259,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
         if (iev->note.size() > 0)
           text = note_to_text (iev->note[0]);
         playing_label->set_text (text);
+        if (inst_edit_note)
+          inst_edit_note->set_active_notes (iev->note);
       }
   });
 
