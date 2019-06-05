@@ -129,18 +129,21 @@ MorphGridWidget::draw (const DrawEvent& devent)
 }
 
 void
-MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
+MorphGridWidget::mouse_press (const MouseEvent& event)
 {
+  if (event.button != LEFT_BUTTON)
+    return;
+
   const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
   const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
 
-  double mdx = mx - mouse_x;
-  double mdy = my - mouse_y;
+  double mdx = mx - event.x;
+  double mdy = my - event.y;
   double mdist = sqrt (mdx * mdx + mdy * mdy);
   if (mdist < 11)
     {
       move_controller = true;
-      motion (mouse_x, mouse_y);
+      mouse_move (event);
     }
   int selected_x = -1;
   int selected_y = -1;
@@ -148,8 +151,8 @@ MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
     {
       for (int y = 0; y < morph_grid->height(); y++)
         {
-          double delta_x = x_coord[x] - mouse_x;
-          double delta_y = y_coord[y] - mouse_y;
+          double delta_x = x_coord[x] - event.x;
+          double delta_y = y_coord[y] - event.y;
           double dist = sqrt (delta_x * delta_x + delta_y * delta_y);
           if (dist < 11)
             {
@@ -166,17 +169,17 @@ MorphGridWidget::mouse_press (double mouse_x, double mouse_y)
   if (selected_x == -1 && selected_y == -1)
     {
       move_controller = true;
-      motion (mouse_x, mouse_y);
+      mouse_move (event);
     }
 }
 
 void
-MorphGridWidget::motion (double x, double y)
+MorphGridWidget::mouse_move (const MouseEvent& event)
 {
   if (move_controller)
     {
-      double dx = (x - start_x) / double (end_x - start_x) * 2.0 - 1.0;
-      double dy = (y - start_y) / double (end_y - start_y) * 2.0 - 1.0;
+      double dx = (event.x - start_x) / double (end_x - start_x) * 2.0 - 1.0;
+      double dy = (event.y - start_y) / double (end_y - start_y) * 2.0 - 1.0;
 
       morph_grid->set_x_morphing (sm_bound (-1.0, dx, 1.0));
       morph_grid->set_y_morphing (sm_bound (-1.0, dy, 1.0));
@@ -186,9 +189,10 @@ MorphGridWidget::motion (double x, double y)
 }
 
 void
-MorphGridWidget::mouse_release (double x, double y)
+MorphGridWidget::mouse_release (const MouseEvent& event)
 {
-  move_controller = false;
+  if (event.button == LEFT_BUTTON)
+    move_controller = false;
 }
 
 void

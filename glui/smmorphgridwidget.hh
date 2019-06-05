@@ -28,9 +28,9 @@ public:
 
   void draw (const DrawEvent& devent) override;
 
-  void mouse_press (double x, double y) override;
-  void mouse_release (double x, double y) override;
-  void motion (double x, double y) override;
+  void mouse_press (const MouseEvent& event) override;
+  void mouse_release (const MouseEvent& event) override;
+  void mouse_move (const MouseEvent& event) override;
 
 /* slots: */
   void on_grid_params_changed();
