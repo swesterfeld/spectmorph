@@ -69,13 +69,7 @@ public:
 
     auto cr = devent.cr;
 
-    std::map<int, int> note_used;
-    for (size_t i = 0; i < instrument->size(); i++)
-      {
-        Sample *sample = instrument->sample (i);
-        if (sample)
-          note_used[sample->midi_note()]++;
-      }
+    std::map<int, int> note_used = instrument->used_count();
 
     note_rects.clear();
     for (int xpos = 0; xpos < cols; xpos++)

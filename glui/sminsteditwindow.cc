@@ -330,10 +330,15 @@ InstEditWindow::on_samples_changed()
     {
       sample_combobox->set_text ("");
     }
+  auto used_count = instrument->used_count();
   for (size_t i = 0; i < instrument->size(); i++)
     {
       Sample *sample = instrument->sample (i);
       string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->short_name.c_str());
+
+      int c = used_count[sample->midi_note()];
+      if (c > 1)
+        text += string_printf ("  :  ** error: midi note used %d times **", c);
 
       sample_combobox->add_item (text);
 
