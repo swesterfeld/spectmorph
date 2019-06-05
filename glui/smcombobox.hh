@@ -124,10 +124,9 @@ struct ComboBoxMenu : public Widget
       }
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
-    y -= px_starty;
-    int new_selected_item = sm_bound<int> (0, first_item + y / 16, items.size() - 1);
+    int new_selected_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size() - 1);
 
     int best_item = -1;
     for (int i = 0; i < int (items.size()); i++)
@@ -155,7 +154,7 @@ struct ComboBoxMenu : public Widget
     return false;
   }
   inline void
-  mouse_release (double x, double y) override;
+  mouse_release (const MouseEvent& event) override;
 };
 
 struct ComboBox : public Widget
@@ -250,12 +249,15 @@ public:
     cairo_fill (cr);
   }
   void
-  mouse_press (double mx, double my) override
+  mouse_press (const MouseEvent& event) override
   {
-    menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, m_text));
-    menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
+    if (event.button == LEFT_BUTTON)
+      {
+        menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, m_text));
+        menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
-    window()->set_menu_widget (menu.get());
+        window()->set_menu_widget (menu.get());
+      }
   }
   void
   enter_event() override
@@ -283,11 +285,14 @@ public:
 };
 
 void
-ComboBoxMenu::mouse_release (double mx, double my)
+ComboBoxMenu::mouse_release (const MouseEvent& event)
 {
+  if (event.button != LEFT_BUTTON)
+    return;
+
   release_count++;
 
-  if (mx >= 0 && mx < width && my >= px_starty && my < height - px_starty)
+  if (event.x >= 0 && event.x < width && event.y >= px_starty && event.y < height - px_starty)
     {
       if (m_done_callback)
         m_done_callback (items[selected_item].text);
