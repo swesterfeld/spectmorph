@@ -44,6 +44,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   schedule (NULL)
 {
   project.set_mix_freq (mix_freq);
+  project.set_storage_model (Project::StorageModel::REFERENCE);
 }
 
 static LV2_Handle
