@@ -17,6 +17,5 @@ PROJECT:
 - cache:
   - better primary key
   - cleanup old stuff automatically
-- load LV2 via integer
 - somewhat better error handling
 - ensure never to play old insts
