@@ -28,27 +28,30 @@ public:
   void
   mouse_press (const MouseEvent& event) override
   {
-    if (event.double_click)
+    if (event.button == LEFT_BUTTON)
       {
-        signal_rename();
-      }
-    else
-      {
-        in_move = true;
+        if (event.double_click)
+          {
+            signal_rename();
+          }
+        else
+          {
+            in_move = true;
 
-        signal_move (abs_y() + y);
+            signal_move (abs_y() + event.y);
+          }
       }
   }
   void
-  motion (double x, double y) override
+  mouse_move (const MouseEvent& event) override
   {
     if (in_move)
-      signal_move (abs_y() + y);
+      signal_move (abs_y() + event.y);
   }
   void
   mouse_release (const MouseEvent& event) override
   {
-    if (in_move)
+    if (event.button == LEFT_BUTTON && in_move)
       {
         in_move = false;
 
