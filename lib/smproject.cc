@@ -307,7 +307,9 @@ Project::load (const string& filename)
 {
   if (ZipReader::is_zip (filename))
     {
-      ZipReader zip_reader (filename); // FIXME: handle I/O errors
+      ZipReader zip_reader (filename);
+      if (zip_reader.error())
+        return zip_reader.error();
 
       return load (zip_reader, nullptr);
     }
@@ -356,9 +358,9 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 Error
 Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 {
-  // FIXME: handle I/O errors (zip and other)
-
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
+  if (zip_reader.error())
+    return Error ("Unable to read 'plan.smplan' from input file");
 
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
   Error error = m_morph_plan->load (in, params);
@@ -373,14 +375,19 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
 
       string inst_file = string_printf ("instrument%d.sminst", object_id);
       vector<uint8_t> inst_data = zip_reader.read (inst_file);
+      if (zip_reader.error())
+        return Error (string_printf ("Unable to read '%s' from input file", inst_file.c_str()));
 
       ZipReader inst_zip (inst_data);
+      if (inst_zip.error())
+        return inst_zip.error();
+
       Instrument *inst = new Instrument();
+      instrument_map[object_id].reset (inst);
+
       error = inst->load (inst_zip);
       if (error)
         return error;
-
-      instrument_map[object_id].reset (inst);
     }
 
   /* only trigger rebuilds if we loaded everything without error */
