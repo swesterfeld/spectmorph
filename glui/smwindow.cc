@@ -355,7 +355,7 @@ Window::on_expose_event (const PuglEventExpose& event)
                   // only redraw changed parts
                   visible_rect = visible_rect.intersection (update_region_larger);
                 }
-              if (!visible_rect.empty())
+              if (!visible_rect.empty() || !w->clipping())
                 {
                   cairo_t *cr = cairo_gl->cr;
 
