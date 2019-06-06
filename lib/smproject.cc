@@ -301,11 +301,16 @@ Project::list_wav_sources()
 }
 
 void
-Project::post_load_rebuild()
+Project::post_load()
 {
   m_builder_thread.kill_all_jobs();
   for (auto wav_source : list_wav_sources())
     rebuild (wav_source);
+
+  // plan has changed due to instrument map initialization:
+  //  -> rebuild morph plan view (somewhat hacky)
+  m_morph_plan->signal_need_view_rebuild();
+  m_morph_plan->emit_plan_changed();
 }
 
 Error
@@ -403,12 +408,8 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         }
     }
 
-  // loading instruments changed the plan (FIXME: right way to do this?)
-  m_morph_plan->signal_need_view_rebuild();
-  m_morph_plan->emit_plan_changed();
-
   /* only trigger rebuilds if we loaded everything without error */
-  post_load_rebuild();
+  post_load();
 
   return Error::Code::NONE;
 }
@@ -421,7 +422,7 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
   if (!error)
     {
       instrument_map.clear();
-      post_load_rebuild();
+      post_load();
     }
 
   return error;
@@ -453,7 +454,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       // ignore error (if any): we still load preset if instrument is missing
       instrument_map[object_id].reset (inst);
     }
-  post_load_rebuild();
+  post_load();
 }
 
 Error
