@@ -1,4 +1,3 @@
-- don't allow play if changes are to be made
 - fix error handling for WavSet::save() and others
 - store flac data
 
@@ -18,4 +17,3 @@ PROJECT:
   - better primary key
   - cleanup old stuff automatically
 - somewhat better error handling
-- ensure never to play old insts
