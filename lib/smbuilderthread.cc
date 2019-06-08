@@ -37,15 +37,6 @@ struct BuilderThread::Job
     done_func (done_func)
   {
   }
-
-  void
-  run()
-  {
-    WavSet *wav_set = builder->run();
-
-    if (wav_set)
-      done_func (wav_set);
-  }
 };
 
 void
@@ -118,6 +109,20 @@ BuilderThread::pop_job()
   todo.erase (todo.begin());
 }
 
+void
+BuilderThread::run_job (Job *job)
+{
+  if (job->atomic_quit.load())
+    return;
+
+  std::unique_ptr<WavSet> wav_set (job->builder->run());
+
+  // use lock to ensure (race-free) that done_func is only executed if job was not killed
+  std::lock_guard<std::mutex> lg (mutex);
+  if (wav_set && !job->atomic_quit.load())
+    job->done_func (wav_set.release());
+}
+
 bool
 BuilderThread::check_quit()
 {
@@ -134,9 +139,7 @@ BuilderThread::run()
       Job *job = first_job();
       if (job)
         {
-          if (!job->atomic_quit.load())
-            job->run();
-
+          run_job (job);
           pop_job();
         }
       else

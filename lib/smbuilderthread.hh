@@ -29,6 +29,7 @@ class BuilderThread
   bool check_quit();
   Job *first_job();
   void pop_job();
+  void run_job (Job *job);
   void run();
 
 public:

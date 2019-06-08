@@ -76,6 +76,7 @@ Project::rebuild (MorphWavSource *wav_source)
 
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
   m_builder_thread.kill_jobs_by_id (object_id);
+  synth_interface()->emit_add_rebuild_result (object_id, nullptr);
   m_builder_thread.add_job (builder, object_id,
     [this, object_id] (WavSet *wav_set)
       {
