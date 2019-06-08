@@ -37,6 +37,7 @@ class InstEditBackend
   BuilderThread           builder_thread;
 
   std::mutex              result_mutex;
+  bool                    result_updated = false;
   std::unique_ptr<WavSet> result_wav_set;
   SynthInterface         *synth_interface;
 

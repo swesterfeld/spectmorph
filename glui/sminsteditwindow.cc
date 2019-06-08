@@ -32,10 +32,15 @@ InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instr
 
   builder_thread.kill_all_jobs();
 
+  std::lock_guard<std::mutex> lg (result_mutex);
+  result_updated = true;
+  result_wav_set.reset (nullptr);
+
   builder_thread.add_job (builder, /* unused: object_id */ 0,
     [this] (WavSet *wav_set)
       {
         std::lock_guard<std::mutex> lg (result_mutex);
+        result_updated = true;
         result_wav_set.reset (wav_set);
       }
     );
@@ -62,10 +67,14 @@ InstEditBackend::on_timer()
     }
 
   std::lock_guard<std::mutex> lg (result_mutex);
-  if (result_wav_set)
+  if (result_updated)
     {
-      for (const auto& wave : result_wav_set->waves)
-        signal_have_audio (wave.midi_note, wave.audio);
+      result_updated = false;
+      if (result_wav_set)
+        {
+          for (const auto& wave : result_wav_set->waves)
+            signal_have_audio (wave.midi_note, wave.audio);
+        }
 
       Index index;
       index.load_file ("instruments:standard");
