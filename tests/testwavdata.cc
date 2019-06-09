@@ -8,9 +8,10 @@
 using namespace SpectMorph;
 
 using std::vector;
+using std::string;
 
 void
-save_load_test()
+save_load_test (WavData::OutFormat format, string ext)
 {
   vector<float> signal;
 
@@ -18,10 +19,10 @@ save_load_test()
     signal.push_back (i / double (0x8000));
 
   WavData wav_data (signal, 1, 48000, 16);
-  wav_data.save ("testwd.wav");
+  wav_data.save ("testwd." + ext, format);
 
   WavData a;
-  bool ok = a.load ("testwd.wav");
+  bool ok = a.load ("testwd." + ext);
   assert (ok);
 
   int repeat_error = 0;
@@ -37,9 +38,9 @@ save_load_test()
         }
       last_sample = sample;
     }
-  a.save ("testwd2.wav");
+  a.save ("testwd2." + ext, format);
   WavData b;
-  if (b.load ("testwd2.wav"))
+  if (b.load ("testwd2." + ext))
     {
       assert (a.n_values() == b.n_values());
       for (size_t i = 0; i < a.n_values(); i++)
@@ -53,7 +54,7 @@ save_load_test()
 }
 
 void
-clip_test()
+clip_test (WavData::OutFormat format, string ext)
 {
   vector<float> signal;
   signal.push_back (1 + 0.0001);
@@ -70,10 +71,10 @@ clip_test()
   signal.push_back (-50);
 
   WavData wav_data (signal, 1, 48000, 16);
-  wav_data.save ("testwd.wav");
+  wav_data.save ("testwd." + ext, format);
 
   WavData a;
-  bool ok = a.load ("testwd.wav");
+  bool ok = a.load ("testwd." + ext);
   assert (ok);
 
   for (auto sample : a.samples())
@@ -81,7 +82,7 @@ clip_test()
 }
 
 void
-save_vec_test()
+save_vec_test (WavData::OutFormat format, string ext)
 {
   vector<float> signal;
   for (size_t i = 0; i < 48000; i++)
@@ -90,16 +91,16 @@ save_vec_test()
   WavData wav_data (signal, 1, 48000, 16);
 
   vector<unsigned char> out;
-  bool ok = wav_data.save (out);
+  bool ok = wav_data.save (out, format);
   assert (ok);
 
   printf ("save ok: %s - size: %zd\n", ok ? "OK" : "FAIL", out.size());
-  FILE *t = fopen ("testwd.wav", "w");
+  FILE *t = fopen (("testwd." + ext).c_str(), "w");
   fwrite (&out[0], 1, out.size(), t);
   fclose (t);
 
   WavData a;
-  ok = a.load ("testwd.wav");
+  ok = a.load ("testwd." + ext);
   assert (ok);
 
   assert (signal.size() == a.n_values());
@@ -119,10 +120,17 @@ save_vec_test()
     assert (a[i] == b[i]);
 }
 
+void
+run_tests (WavData::OutFormat format, string ext)
+{
+  save_load_test (format, ext);
+  clip_test (format, ext);
+  save_vec_test (format, ext);
+}
+
 int
 main()
 {
-  save_load_test();
-  clip_test();
-  save_vec_test();
+  run_tests (WavData::OutFormat::WAV, "wav");
+  run_tests (WavData::OutFormat::FLAC, "flac");
 }
