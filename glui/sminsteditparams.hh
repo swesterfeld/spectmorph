@@ -116,7 +116,7 @@ public:
     auto amount_mod = new ParamLabelModelDouble (instrument->auto_tune().amount, 0, 100, "%.1f", "%.1f %%");
     auto_tune_amount_param_label = new ParamLabel (scroll_widget, amount_mod);
 
-    connect (time_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_amount_changed);
+    connect (amount_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_amount_changed);
 
     /*--- encoder config ---*/
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
