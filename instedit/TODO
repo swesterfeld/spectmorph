@@ -17,3 +17,4 @@ PROJECT:
   - better primary key
   - cleanup old stuff automatically
 - somewhat better error handling
+- lv2 paths should not show up everywhere else
