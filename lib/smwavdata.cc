@@ -150,12 +150,12 @@ WavData::load_mono (const string& filename)
 }
 
 bool
-WavData::save (const string& filename)
+WavData::save (const string& filename, OutFormat out_format)
 {
   return save ([&] (SF_INFO *sfinfo)
     {
       return sf_open (filename.c_str(), SFM_WRITE, sfinfo);
-    });
+    }, out_format);
 }
 
 namespace {
@@ -245,7 +245,7 @@ virtual_tell (void *data)
 }
 
 bool
-WavData::save (vector<unsigned char>& out)
+WavData::save (vector<unsigned char>& out, OutFormat out_format)
 {
   VirtualData virtual_data;
 
@@ -258,9 +258,10 @@ WavData::save (vector<unsigned char>& out)
     virtual_write,
     virtual_tell
   };
-  return save ([&] (SF_INFO *sfinfo) {
-    return sf_open_virtual (&sfvirtual, SFM_WRITE, sfinfo, &virtual_data);
-  });
+  return save ([&] (SF_INFO *sfinfo)
+    {
+      return sf_open_virtual (&sfvirtual, SFM_WRITE, sfinfo, &virtual_data);
+    }, out_format);
 }
 
 bool
@@ -285,17 +286,25 @@ WavData::load (const vector<unsigned char>& in)
 }
 
 bool
-WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func)
+WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func, OutFormat out_format)
 {
   SF_INFO sfinfo = {0,};
 
   sfinfo.samplerate = sm_round_positive (m_mix_freq);
   sfinfo.channels   = m_n_channels;
 
+  switch (out_format)
+  {
+    case OutFormat::WAV:  sfinfo.format = SF_FORMAT_WAV;
+                          break;
+    case OutFormat::FLAC: sfinfo.format = SF_FORMAT_FLAC;
+                          break;
+    default:              assert (false);
+  }
   if (m_bit_depth > 16)
-    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_24;
+    sfinfo.format |= SF_FORMAT_PCM_24;
   else
-    sfinfo.format = SF_FORMAT_WAV | SF_FORMAT_PCM_16;
+    sfinfo.format |= SF_FORMAT_PCM_16;
 
   SNDFILE *sndfile = open_func (&sfinfo);
   int error = sf_error (sndfile);

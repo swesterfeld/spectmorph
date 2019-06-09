@@ -15,13 +15,17 @@ namespace SpectMorph
 
 class WavData
 {
+public:
+  enum class OutFormat { WAV, FLAC };
+
+private:
   std::vector<float> m_samples;
   float              m_mix_freq;
   int                m_n_channels;
   int                m_bit_depth;
   std::string        m_error_blurb;
 
-  bool save (std::function<SNDFILE* (SF_INFO *)> open_func);
+  bool save (std::function<SNDFILE* (SF_INFO *)> open_func, OutFormat out_format);
   bool load (std::function<SNDFILE* (SF_INFO *)> open_func);
 
 public:
@@ -34,8 +38,8 @@ public:
 
   void load (const std::vector<float>& samples, int n_channels, float mix_freq, int bit_depth);
 
-  bool save (const std::string& filename);
-  bool save (std::vector<unsigned char>& out);
+  bool save (const std::string& filename, OutFormat out_format = OutFormat::WAV);
+  bool save (std::vector<unsigned char>& out, OutFormat out_format = OutFormat::WAV);
 
   void clear();
   void prepend (const std::vector<float>& samples);
