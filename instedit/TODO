@@ -6,7 +6,6 @@ UI:
 - combobox should support scroll wheel
 - user index should shallow load
 - implement revert
-- eliminate load index
 
 PROJECT:
 - cache:
