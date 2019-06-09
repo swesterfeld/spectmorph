@@ -485,7 +485,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
     {
       xml_node sample_node = inst_node.append_child ("sample");
       if (zip_writer)
-        sample_node.append_attribute ("filename").set_value ((sample->short_name + ".wav").c_str());
+        sample_node.append_attribute ("filename").set_value ((sample->short_name + ".flac").c_str());
       else
         sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
       sample_node.append_attribute ("midi_note").set_value (sample->midi_note());
@@ -579,8 +579,8 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
                             samples[i]->wav_data().bit_depth());
 
           vector<unsigned char> wav_file_vec;
-          wav_data.save (wav_file_vec);
-          zip_writer->add (samples[i]->short_name + ".wav", wav_file_vec, ZipWriter::Compress::STORE);
+          wav_data.save (wav_file_vec, WavData::OutFormat::FLAC);
+          zip_writer->add (samples[i]->short_name + ".flac", wav_file_vec, ZipWriter::Compress::STORE);
         }
 
       zip_writer->close(); // need to close this first to catch all errors
