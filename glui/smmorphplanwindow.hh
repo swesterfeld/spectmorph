@@ -52,7 +52,6 @@ public:
 /* slots: */
   void on_file_import_clicked();
   void on_file_export_clicked();
-  void on_load_index_clicked();
   void on_about_clicked();
 };
 

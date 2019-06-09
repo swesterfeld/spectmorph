@@ -51,9 +51,6 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   MenuItem *export_item = file_menu->add_item ("Export Preset...");
   connect (export_item->signal_clicked, this, &MorphPlanWindow::on_file_export_clicked);
 
-  MenuItem *load_index_item = file_menu->add_item ("Load Index...");
-  connect (load_index_item->signal_clicked, this, &MorphPlanWindow::on_load_index_clicked);
-
   fill_preset_menu (preset_menu);
   add_op_menu_item (op_menu, "Source", "SpectMorph::MorphSource");
   add_op_menu_item (op_menu, "Wav Source", "SpectMorph::MorphWavSource");
@@ -190,17 +187,6 @@ MorphPlanWindow::on_file_export_clicked()
             MessageBox::critical (this, "Error",
                                   string_locale_printf ("Export failed, unable to save to file:\n'%s'.\n%s", filename.c_str(), error.message()));
           }
-      }
-  });
-}
-
-void
-MorphPlanWindow::on_load_index_clicked()
-{
-  open_file_dialog ("Select SpectMorph Instrument Index", "SpectMorph Index files", "*.smindex", [=](string filename) {
-    if (filename != "")
-      {
-        m_morph_plan->load_index (filename);
       }
   });
 }
