@@ -245,9 +245,16 @@ Project::on_operator_removed (MorphOperator *op)
     {
       MorphWavSource *wav_source = static_cast<MorphWavSource *> (op);
 
-      /* free instrument data */
-      if (wav_source->object_id())
-        instrument_map[wav_source->object_id()].reset (nullptr);
+      const int object_id = wav_source->object_id();
+      if (object_id)
+        {
+          /* free instrument data */
+          instrument_map[object_id].reset (nullptr);
+
+          /* stop rebuild jobs (if any) */
+          m_builder_thread.kill_jobs_by_id (object_id);
+          synth_interface()->emit_add_rebuild_result (object_id, nullptr);
+        }
     }
 }
 
