@@ -160,17 +160,17 @@ public:
       {
         Audio *audio = m_sample->audio.get();
 
-        cairo_move_to (cr, 0, height / 2);
+        cairo_move_to (cr, clip_start_x, height / 2);
         du.set_color (Color (0.8, 0.8, 0.8));
         for (size_t frame = 0; frame < audio->contents.size(); frame++)
           {
-            double pos = double (frame) / audio->contents.size() * width;
+            double pos = clip_start_x + double (frame * audio->frame_step_ms) / length_ms * width;
 
             const AudioBlock& block = audio->contents[frame];
             const int n_partials = 3;
             const double cent = freq_ratio_to_cent (block.estimate_fundamental (n_partials));
 
-            cairo_line_to (cr, pos, height / 2 - cent * height / 100);
+            cairo_line_to (cr, pos, height / 2 - cent / 100. * (height / 2));
           }
         cairo_stroke (cr);
       }
