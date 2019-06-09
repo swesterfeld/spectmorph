@@ -31,17 +31,16 @@ protected:
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
 
-  std::string                  index_filename;
   bool                         in_restore;
 
   void  clear();
+  bool  load_index();
   Error load_internal (GenericIn *in, ExtraParameters *params = nullptr);
 
 public:
   MorphPlan (Project& project);
   ~MorphPlan();
 
-  bool         load_index (const std::string& filename);
   const Index *index();
   Project     *project();
 

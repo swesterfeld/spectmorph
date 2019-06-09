@@ -54,19 +54,10 @@ MorphPlan::~MorphPlan()
   leak_debugger.del (this);
 }
 
-/**
- * Sets and loads instrument index to be used.
- * \returns true if the instrument index was loaded successfully, false otherwise
- */
 bool
-MorphPlan::load_index (const string& filename)
+MorphPlan::load_index()
 {
-  bool result = false;
-  if (filename != "")
-    {
-      result = m_index.load_file (filename);
-    }
-  index_filename = filename;
+  bool result = m_index.load_file ("instruments:standard"); // custom index no longer supported
   emit_index_changed();
   return result;
 }
@@ -154,8 +145,6 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
   clear();
   InFile ifile (in);
 
-  index_filename = "";
-
   map<string, vector<unsigned char> > blob_data_map;
   string section;
   MorphOperator *load_op = NULL;
@@ -188,7 +177,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
             {
               if (ifile.event_name() == "index")
                 {
-                  index_filename = ifile.event_data();
+                  // index_filename = ifile.event_data(); (index loading is disabled)
                 }
             }
           else if (section == "operator")
@@ -278,10 +267,17 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
       ifile.next_event();
     }
 
-  if (error == 0)
-    load_index (index_filename);
+  if (!error)
+    {
+      /* custom index loading is no longer available at the UI, so
+       * we disable it here; it can be removed in some later version
+       *
+       * load_index (index_filename);
+       */
+      load_index();
+    }
 
-  if (error == 0)
+  if (!error)
     {
       map<string, MorphOperator *> op_name2ptr;
       for (vector<MorphOperator *>::iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
@@ -360,8 +356,7 @@ MorphPlan::load_default()
   add_operator (op, MorphPlan::ADD_POS_AUTO);
 
   // load standard instrument set
-
-  load_index ("instruments:standard");
+  load_index();
 }
 
 /**
@@ -430,7 +425,7 @@ Error
 MorphPlan::save (GenericOut *file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
-  of.write_string ("index", index_filename);
+  // of.write_string ("index", index_filename); (index loading is disabled)
   for (vector<MorphOperator *>::const_iterator oi = m_operators.begin(); oi != m_operators.end(); oi++)
     {
       MorphOperator *op = *oi;
