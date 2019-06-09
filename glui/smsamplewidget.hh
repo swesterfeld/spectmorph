@@ -39,6 +39,11 @@ class SampleWidget : public Widget
           }
       }
   }
+  static double
+  freq_ratio_to_cent (double freq_ratio)
+  {
+    return log (freq_ratio) / log (2) * 1200;
+  }
   double        vzoom = 1;
   Sample       *m_sample = nullptr;
   MarkerType    selected_marker = MARKER_NONE;
@@ -151,6 +156,24 @@ public:
     cairo_line_to (cr, width, height/2);
     cairo_stroke (cr);
 
+    if (m_sample->audio)
+      {
+        Audio *audio = m_sample->audio.get();
+
+        cairo_move_to (cr, 0, height / 2);
+        du.set_color (Color (0.8, 0.8, 0.8));
+        for (size_t frame = 0; frame < audio->contents.size(); frame++)
+          {
+            double pos = double (frame) / audio->contents.size() * width;
+
+            const AudioBlock& block = audio->contents[frame];
+            const int n_partials = 3;
+            const double cent = freq_ratio_to_cent (block.estimate_fundamental (n_partials));
+
+            cairo_line_to (cr, pos, height / 2 - cent * height / 100);
+          }
+        cairo_stroke (cr);
+      }
     /* markers */
     for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
       {
