@@ -77,6 +77,7 @@ class InstEditWindow : public Window
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
   Label *playing_label;
+  Label *time_label = nullptr;
   LineEdit *name_line_edit = nullptr;
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;

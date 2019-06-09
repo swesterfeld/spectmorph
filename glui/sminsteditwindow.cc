@@ -207,6 +207,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (new Label (this, "Name"), 1, 66, 10, 3);
   grid.add_widget (name_line_edit, 8, 66, 20, 3);
 
+  /*--- time --- */
+  time_label = new Label (this, "");
+
+  grid.add_widget (new Label (this, "Time"), 30, 63, 10, 3);
+  grid.add_widget (time_label, 40, 63, 10, 3);
+
   /*--- play mode ---*/
   play_mode_combobox = new ComboBox (this);
   connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
@@ -364,11 +370,15 @@ InstEditWindow::on_samples_changed()
     {
       midi_note_combobox->set_text ("");
       loop_combobox->set_text ("");
+      time_label->set_text ("");
     }
   else
     {
       midi_note_combobox->set_text (note_to_text (sample->midi_note()));
       loop_combobox->set_text (loop_to_text (sample->loop()));
+
+      const double time_s = sample->wav_data().samples().size() / sample->wav_data().mix_freq();
+      time_label->set_text (string_printf ("%.3f s", time_s));
     }
   if (sample)
     m_backend.switch_to_sample (sample, instrument);
