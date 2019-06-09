@@ -107,6 +107,7 @@ public:
 
   void rebuild (MorphWavSource *wav_source);
   void add_rebuild_result (int object_id, WavSet *wav_set);
+  void clear_wav_sets();
   bool rebuild_active (int object_id);
 
   std::shared_ptr<WavSet> get_wav_set (int object_id);

@@ -102,6 +102,12 @@ Project::add_rebuild_result (int object_id, WavSet *wav_set)
   wav_sets[object_id] = std::shared_ptr<WavSet> (wav_set);
 }
 
+void
+Project::clear_wav_sets()
+{
+  wav_sets.clear();
+}
+
 Instrument *
 Project::get_instrument (MorphWavSource *wav_source)
 {
@@ -312,6 +318,7 @@ void
 Project::post_load()
 {
   m_builder_thread.kill_all_jobs();
+  synth_interface()->emit_clear_wav_sets();
   for (auto wav_source : list_wav_sources())
     rebuild (wav_source);
 

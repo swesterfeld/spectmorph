@@ -116,6 +116,15 @@ public:
         },
         event_data);
   }
+  void
+  emit_clear_wav_sets()
+  {
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->clear_wav_sets();
+        });
+  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
