@@ -68,11 +68,14 @@ class ParamLabelModelInt : public ParamLabelModel
   int min_value;
   int max_value;
 
+  std::string display_fmt;
+
 public:
-  ParamLabelModelInt (int i, int min_value, int max_value) :
+  ParamLabelModelInt (int i, int min_value, int max_value, const char *format = "%d") :
     value (i),
     min_value (min_value),
-    max_value (max_value)
+    max_value (max_value),
+    display_fmt (format)
   {
   }
 
@@ -84,7 +87,7 @@ public:
   std::string
   display_text()
   {
-    return string_locale_printf ("%d", value);
+    return string_locale_printf (display_fmt.c_str(), value);
   }
   void
   set_value_text (const std::string& t)

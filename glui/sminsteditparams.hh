@@ -144,7 +144,7 @@ public:
     /*--- display tuning range ---*/
     display_tuning_range_label = new Label (scroll_widget, "Range");
 
-    auto display_range_mod = new ParamLabelModelInt (sample_widget->display_tuning().range, 1, 400);
+    auto display_range_mod = new ParamLabelModelInt (sample_widget->display_tuning().range, 1, 400, "%d Cent");
     display_tuning_range_param_label = new ParamLabel (scroll_widget, display_range_mod);
 
     connect (display_range_mod->signal_value_changed, this, &InstEditParams::on_display_tuning_range_changed);
