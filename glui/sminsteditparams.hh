@@ -45,6 +45,9 @@ class InstEditParams : public Window
   Label      *display_tuning_partials_label = nullptr;
   ParamLabel *display_tuning_partials_param_label = nullptr;
 
+  Label      *display_tuning_range_label = nullptr;
+  ParamLabel *display_tuning_range_param_label = nullptr;
+
   CheckBox   *enc_cfg_checkbox = nullptr;
   std::vector<Widget *> enc_widgets;
 
@@ -130,13 +133,21 @@ public:
     display_tuning_checkbox = new CheckBox (scroll_widget, "Display Tuning");
     connect (display_tuning_checkbox->signal_toggled, this, &InstEditParams::on_display_tuning_changed);
 
-    /*--- display partials ---*/
+    /*--- display tuning partials ---*/
     display_tuning_partials_label = new Label (scroll_widget, "Partials");
 
     auto display_partials_mod = new ParamLabelModelInt (sample_widget->display_tuning().partials, 1, 3);
     display_tuning_partials_param_label = new ParamLabel (scroll_widget, display_partials_mod);
 
     connect (display_partials_mod->signal_value_changed, this, &InstEditParams::on_display_tuning_partials_changed);
+
+    /*--- display tuning range ---*/
+    display_tuning_range_label = new Label (scroll_widget, "Range");
+
+    auto display_range_mod = new ParamLabelModelInt (sample_widget->display_tuning().range, 1, 400);
+    display_tuning_range_param_label = new ParamLabel (scroll_widget, display_range_mod);
+
+    connect (display_range_mod->signal_value_changed, this, &InstEditParams::on_display_tuning_range_changed);
 
     /*--- encoder config ---*/
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
@@ -217,12 +228,17 @@ public:
     const auto display_tuning = sample_widget->display_tuning();
     display_tuning_partials_label->set_visible (display_tuning.enabled);
     display_tuning_partials_param_label->set_visible (display_tuning.enabled);
+    display_tuning_range_label->set_visible (display_tuning.enabled);
+    display_tuning_range_param_label->set_visible (display_tuning.enabled);
     grid.add_widget (display_tuning_checkbox, 0, y, 30, 2);
     y += 2;
     if (display_tuning.enabled)
       {
         grid.add_widget (display_tuning_partials_label, 2, y, 10, 3);
         grid.add_widget (display_tuning_partials_param_label, 11, y, 23, 3);
+        y += 3;
+        grid.add_widget (display_tuning_range_label, 2, y, 10, 3);
+        grid.add_widget (display_tuning_range_param_label, 11, y, 23, 3);
         y += 3;
       }
 
@@ -424,6 +440,14 @@ public:
   {
     auto dt = sample_widget->display_tuning();
     dt.partials = p;
+    sample_widget->set_display_tuning (dt);
+    on_global_changed(); // DisplayTuning is not part of Instrument
+  }
+  void
+  on_display_tuning_range_changed (int r)
+  {
+    auto dt = sample_widget->display_tuning();
+    dt.range = r;
     sample_widget->set_display_tuning (dt);
     on_global_changed(); // DisplayTuning is not part of Instrument
   }

@@ -178,7 +178,7 @@ public:
             const AudioBlock& block = audio->contents[frame];
             const double cent = freq_ratio_to_cent (block.estimate_fundamental (m_display_tuning.partials));
 
-            cairo_line_to (cr, pos, height / 2 - cent / 100. * (height / 2));
+            cairo_line_to (cr, pos, height / 2 - cent / m_display_tuning.range * (height / 2));
           }
         cairo_stroke (cr);
       }
