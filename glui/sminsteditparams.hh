@@ -11,6 +11,7 @@
 #include "smcombobox.hh"
 #include "smfixedgrid.hh"
 #include "smscrollview.hh"
+#include "smsamplewidget.hh"
 
 namespace SpectMorph
 {
@@ -18,6 +19,7 @@ namespace SpectMorph
 class InstEditParams : public Window
 {
   Instrument *instrument = nullptr;
+  SampleWidget *sample_widget = nullptr;
 
   CheckBox   *auto_volume_checkbox = nullptr;
   ComboBox   *auto_volume_method_combobox = nullptr;
@@ -38,6 +40,11 @@ class InstEditParams : public Window
   Label      *auto_tune_amount_label = nullptr;
   ParamLabel *auto_tune_amount_param_label = nullptr;
 
+  CheckBox   *display_tuning_checkbox = nullptr;
+
+  Label      *display_tuning_partials_label = nullptr;
+  ParamLabel *display_tuning_partials_param_label = nullptr;
+
   CheckBox   *enc_cfg_checkbox = nullptr;
   std::vector<Widget *> enc_widgets;
 
@@ -45,9 +52,10 @@ class InstEditParams : public Window
   Widget     *scroll_widget = nullptr;
   Window     *parent_window = nullptr;
 public:
-  InstEditParams (Window *window, Instrument *instrument) :
+  InstEditParams (Window *window, Instrument *instrument, SampleWidget *sample_widget) :
     Window (*window->event_loop(), "SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
     instrument (instrument),
+    sample_widget (sample_widget),
     parent_window (window)
   {
     set_close_callback ([this]() {
@@ -118,10 +126,21 @@ public:
 
     connect (amount_mod->signal_value_changed, this, &InstEditParams::on_auto_tune_amount_changed);
 
+    /*--- display tuning ---*/
+    display_tuning_checkbox = new CheckBox (scroll_widget, "Display Tuning");
+    connect (display_tuning_checkbox->signal_toggled, this, &InstEditParams::on_display_tuning_changed);
+
+    /*--- display partials ---*/
+    display_tuning_partials_label = new Label (scroll_widget, "Partials");
+
+    auto display_partials_mod = new ParamLabelModelInt (sample_widget->display_tuning().partials, 1, 3);
+    display_tuning_partials_param_label = new ParamLabel (scroll_widget, display_partials_mod);
+
+    connect (display_partials_mod->signal_value_changed, this, &InstEditParams::on_display_tuning_partials_changed);
+
     /*--- encoder config ---*/
     enc_cfg_checkbox = new CheckBox (scroll_widget, "Custom Analysis Parameters");
     connect (enc_cfg_checkbox->signal_toggled, this, &InstEditParams::on_enc_cfg_changed);
-
 
     connect (instrument->signal_global_changed, this, &InstEditParams::on_global_changed);
     on_global_changed();
@@ -194,6 +213,19 @@ public:
             y += 3;
           }
       }
+
+    const auto display_tuning = sample_widget->display_tuning();
+    display_tuning_partials_label->set_visible (display_tuning.enabled);
+    display_tuning_partials_param_label->set_visible (display_tuning.enabled);
+    grid.add_widget (display_tuning_checkbox, 0, y, 30, 2);
+    y += 2;
+    if (display_tuning.enabled)
+      {
+        grid.add_widget (display_tuning_partials_label, 2, y, 10, 3);
+        grid.add_widget (display_tuning_partials_param_label, 11, y, 23, 3);
+        y += 3;
+      }
+
     grid.add_widget (enc_cfg_checkbox, 0, y, 30, 2);
     y += 2;
 
@@ -211,6 +243,7 @@ public:
     }
 
     auto_tune_checkbox->set_checked (instrument->auto_tune().enabled);
+    display_tuning_checkbox->set_checked (display_tuning.enabled);
     enc_cfg_checkbox->set_checked (instrument->encoder_config().enabled);
 
     if (instrument->auto_volume().method == Instrument::AutoVolume::GLOBAL)
@@ -377,6 +410,22 @@ public:
       }
 
     instrument->set_encoder_config (enc_cfg);
+  }
+  void
+  on_display_tuning_changed (bool new_value)
+  {
+    auto dt = sample_widget->display_tuning();
+    dt.enabled = new_value;
+    sample_widget->set_display_tuning (dt);
+    on_global_changed(); // DisplayTuning is not part of Instrument
+  }
+  void
+  on_display_tuning_partials_changed (int p)
+  {
+    auto dt = sample_widget->display_tuning();
+    dt.partials = p;
+    sample_widget->set_display_tuning (dt);
+    on_global_changed(); // DisplayTuning is not part of Instrument
   }
   Signal<> signal_toggle_play;
   Signal<> signal_closed;

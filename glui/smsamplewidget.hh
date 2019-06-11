@@ -13,6 +13,14 @@ namespace SpectMorph
 
 class SampleWidget : public Widget
 {
+public:
+  struct DisplayTuning
+  {
+    bool enabled  = false;
+    int  partials = 3;
+    int  range    = 100;
+  };
+private:
   void
   draw_grid (const DrawEvent& devent)
   {
@@ -48,6 +56,7 @@ class SampleWidget : public Widget
   Sample       *m_sample = nullptr;
   MarkerType    selected_marker = MARKER_NONE;
   bool          mouse_down = false;
+  DisplayTuning m_display_tuning;
 
   std::map<MarkerType, Rect> marker_rect;
   std::vector<float>         m_play_pointers;
@@ -156,7 +165,7 @@ public:
     cairo_line_to (cr, width, height/2);
     cairo_stroke (cr);
 
-    if (m_sample->audio)
+    if (m_display_tuning.enabled && m_sample->audio)
       {
         Audio *audio = m_sample->audio.get();
 
@@ -167,8 +176,7 @@ public:
             double pos = clip_start_x + double (frame * audio->frame_step_ms) / length_ms * width;
 
             const AudioBlock& block = audio->contents[frame];
-            const int n_partials = 3;
-            const double cent = freq_ratio_to_cent (block.estimate_fundamental (n_partials));
+            const double cent = freq_ratio_to_cent (block.estimate_fundamental (m_display_tuning.partials));
 
             cairo_line_to (cr, pos, height / 2 - cent / 100. * (height / 2));
           }
@@ -354,6 +362,17 @@ public:
   {
     vzoom = factor;
     update();
+  }
+  void
+  set_display_tuning (const DisplayTuning& tuning)
+  {
+    m_display_tuning = tuning;
+    update();
+  }
+  DisplayTuning
+  display_tuning() const
+  {
+    return m_display_tuning;
   }
   double
   play_pos_to_pixels (double pos_ms)

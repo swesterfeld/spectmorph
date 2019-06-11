@@ -517,7 +517,7 @@ InstEditWindow::on_show_hide_params()
     }
   else
     {
-      inst_edit_params = new InstEditParams (this, instrument);
+      inst_edit_params = new InstEditParams (this, instrument, sample_widget);
       connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_params->signal_closed, [this]() {
         inst_edit_params = nullptr;
