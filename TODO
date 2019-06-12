@@ -14,6 +14,11 @@ insts:
  - tuba
  - double bass
  - flute
+ - sven ah/oh
+
+new operators:
+ - crossfade by midi note -> control (bass-trombone / trumpet inst)
+ - tremolo
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
