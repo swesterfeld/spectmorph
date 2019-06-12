@@ -308,6 +308,7 @@ sm_get_user_dir (UserDir p)
   switch (p)
     {
       case USER_DIR_INSTRUMENTS: return dot_spectmorph_dir() + "/instruments";
+      case USER_DIR_CACHE:       return dot_spectmorph_dir() + "/cache";
       case USER_DIR_DATA:        return dot_spectmorph_dir();
     }
   return "";

@@ -19,7 +19,7 @@ using std::map;
 static string
 tmpfile (const string& filename)
 {
-  return sm_get_user_dir (USER_DIR_DATA) + "/" + filename;
+  return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
 }
 
 InstEncCache::InstEncCache()

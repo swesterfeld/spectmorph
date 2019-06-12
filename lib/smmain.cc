@@ -52,6 +52,10 @@ sm_init_plugin()
   string user_data_dir = sm_get_user_dir (USER_DIR_DATA);
   g_mkdir_with_parents (user_data_dir.c_str(), 0775);
 
+  /* ensure that cache dir exists */
+  string cache_dir = sm_get_user_dir (USER_DIR_CACHE);
+  g_mkdir_with_parents (cache_dir.c_str(), 0775);
+
   Config cfg;
 
   for (auto area : cfg.debug())

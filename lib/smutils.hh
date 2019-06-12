@@ -65,6 +65,7 @@ void        sm_set_pkg_data_dir (const std::string& data_dir);
 enum UserDir
 {
   USER_DIR_INSTRUMENTS,
+  USER_DIR_CACHE, /* FIXME: unify with sm_get_cache_dir */
   USER_DIR_DATA
 };
 
