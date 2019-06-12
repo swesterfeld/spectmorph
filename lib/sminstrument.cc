@@ -220,28 +220,28 @@ Instrument::clear()
 }
 
 Error
-Instrument::load (const string& filename)
+Instrument::load (const string& filename, LoadOptions load_options)
 {
   if (ZipReader::is_zip (filename))
     {
       ZipReader zip_reader (filename);
 
-      return load ("", &zip_reader);
+      return load ("", &zip_reader, load_options);
     }
   else
     {
-      return load (filename, nullptr);
+      return load (filename, nullptr, load_options);
     }
 }
 
 Error
-Instrument::load (ZipReader& zip_reader)
+Instrument::load (ZipReader& zip_reader, LoadOptions load_options)
 {
-  return load ("", &zip_reader);
+  return load ("", &zip_reader, load_options);
 }
 
 Error
-Instrument::load (const string& filename, ZipReader *zip_reader)
+Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions load_options)
 {
   xml_document doc;
   if (zip_reader)
@@ -265,6 +265,14 @@ Instrument::load (const string& filename, ZipReader *zip_reader)
     }
   xml_node inst_node = doc.child ("instrument");
   string new_name = inst_node.attribute ("name").value();
+
+  if (load_options == LoadOptions::NAME_ONLY)
+    {
+      // required to build index of available instruments quickly: load name, nothing else
+      clear();
+      m_name = new_name;
+      return Error::Code::NONE;
+    }
 
   vector<std::unique_ptr<Sample>> new_samples;
 

@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_USER_INSTRUMENT_INDEX_HH
 #define SPECTMORPH_USER_INSTRUMENT_INDEX_HH
 
+#include "sminstrument.hh"
+
 namespace SpectMorph
 {
 
@@ -21,7 +23,7 @@ public:
   {
     Instrument inst;
 
-    Error error = inst.load (filename (number));
+    Error error = inst.load (filename (number), Instrument::LoadOptions::NAME_ONLY);
     if (!error)
       return string_printf ("%03d %s", number, inst.name().c_str());
     else

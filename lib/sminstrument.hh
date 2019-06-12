@@ -105,6 +105,12 @@ public:
     std::vector<EncoderEntry> entries;
   };
 
+  enum class LoadOptions
+  {
+    ALL,
+    NAME_ONLY
+  };
+
 private:
   SPECTMORPH_CLASS_NON_COPYABLE (Instrument);
 
@@ -116,7 +122,7 @@ private:
   AutoTune      m_auto_tune;
   EncoderConfig m_encoder_config;
 
-  Error       load (const std::string& filename, ZipReader *zip_reader);
+  Error       load (const std::string& filename, ZipReader *zip_reader, LoadOptions load_options = LoadOptions::ALL);
   Error       save (const std::string& filename, ZipWriter *zip_writer);
 public:
   Instrument();
@@ -134,8 +140,8 @@ public:
   int         selected() const;
   void        set_selected (int sel);
 
-  Error       load (const std::string& filename);
-  Error       load (ZipReader& zip_reader);
+  Error       load (const std::string& filename, LoadOptions load_options = LoadOptions::ALL);
+  Error       load (ZipReader& zip_reader, LoadOptions load_options = LoadOptions::ALL);
 
   Error       save (const std::string& filename);
   Error       save (ZipWriter& zip_writer);
