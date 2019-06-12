@@ -3,7 +3,6 @@
 UI:
 - fix file dialog mask (allow .wav, .flac, ...)
 - combobox should support scroll wheel
-- user index should shallow load
 - implement revert
 
 PROJECT:
