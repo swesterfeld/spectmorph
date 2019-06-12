@@ -381,10 +381,6 @@ public:
       return -1;
 
     const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
-    const double clip_start_ms = m_sample->get_marker (MARKER_CLIP_START);
-    if (clip_start_ms > 0)
-      pos_ms += clip_start_ms;
-
     const double pos_x = pos_ms / length_ms * width;
     return pos_x;
   }

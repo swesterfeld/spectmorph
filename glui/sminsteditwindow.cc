@@ -261,7 +261,16 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
               {
                 if (fabs (iev->fundamental_note[i] - sample->midi_note()) < 0.1 &&
                     iev->layer[i] < 2) /* no play position pointer for reference */
-                  play_pointers.push_back (iev->current_pos[i]);
+                  {
+                    double ppos = iev->current_pos[i];
+                    if (iev->layer[i] == 0)
+                      {
+                        const double clip_start_ms = sample->get_marker (MARKER_CLIP_START);
+                        if (clip_start_ms > 0)
+                          ppos += clip_start_ms;
+                      }
+                    play_pointers.push_back (ppos);
+                  }
               }
           }
         sample_widget->set_play_pointers (play_pointers);
