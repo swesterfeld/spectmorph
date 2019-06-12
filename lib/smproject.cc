@@ -317,6 +317,8 @@ Project::list_wav_sources()
 void
 Project::post_load()
 {
+  clear_lv2_filenames();
+
   m_builder_thread.kill_all_jobs();
   synth_interface()->emit_clear_wav_sets();
   for (auto wav_source : list_wav_sources())
@@ -521,6 +523,16 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
   MemOut mo (&data);
   m_morph_plan->save (&mo);
 
+  clear_lv2_filenames();
+
   string plan_str = HexString::encode (data);
   return plan_str;
+}
+
+void
+Project::clear_lv2_filenames()
+{
+  /* lv2 filenames should only be set for the morph plan saved during lv2 save */
+  for (auto wav_source : list_wav_sources())
+    wav_source->set_lv2_filename ("");
 }

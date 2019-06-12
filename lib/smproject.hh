@@ -152,6 +152,7 @@ public:
 
   std::string save_plan_lv2 (std::function<std::string(std::string)> abstract_path);
   void        load_plan_lv2 (std::function<std::string(std::string)> absolute_path, const std::string& plan);
+  void        clear_lv2_filenames();
 
   Signal<double> signal_volume_changed;
 };
