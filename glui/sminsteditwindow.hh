@@ -41,6 +41,8 @@ class InstEditBackend
   std::unique_ptr<WavSet> result_wav_set;
   SynthInterface         *synth_interface;
 
+  std::unique_ptr<InstEncCache::Group> cache_group;
+
 public:
   InstEditBackend (SynthInterface *synth_interface);
 

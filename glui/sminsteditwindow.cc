@@ -12,6 +12,7 @@
 #include "smwavsetbuilder.hh"
 #include "smsynthinterface.hh"
 #include "smscrollview.hh"
+#include "sminstenccache.hh"
 
 using namespace SpectMorph;
 
@@ -21,7 +22,8 @@ using std::vector;
 // ---------------- InstEditBackend ----------------
 //
 InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
-  synth_interface (synth_interface)
+  synth_interface (synth_interface),
+  cache_group (InstEncCache::the()->create_group())
 {
 }
 
@@ -29,6 +31,7 @@ void
 InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument)
 {
   WavSetBuilder *builder = new WavSetBuilder (instrument, true);
+  builder->set_cache_group (cache_group.get());
 
   builder_thread.kill_all_jobs();
 
