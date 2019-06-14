@@ -9,6 +9,7 @@
 #include <mutex>
 
 #include <assert.h>
+#include <unistd.h>
 
 using namespace SpectMorph;
 
@@ -17,7 +18,7 @@ using std::vector;
 using std::map;
 
 static string
-tmpfile (const string& filename)
+cache_filename (const string& filename)
 {
   return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
 }
@@ -36,6 +37,27 @@ InstEncCache::the()
   return instance;
 }
 
+static Error
+read_dir (const string& dirname, vector<string>& files)
+{
+  GError *gerror = nullptr;
+  const char *filename;
+
+  GDir *dir = g_dir_open (dirname.c_str(), 0, &gerror);
+  if (gerror)
+    {
+      Error error (gerror->message);
+      g_error_free (gerror);
+      return error;
+    }
+  files.clear();
+  while ((filename = g_dir_read_name (dir)))
+    files.push_back (filename);
+  g_dir_close (dir);
+
+  return Error::Code::NONE;
+}
+
 void
 InstEncCache::cache_save (const string& key)
 {
@@ -49,7 +71,17 @@ InstEncCache::cache_save (const string& key)
   buffer.write_string (sha1_hash (&cache_data.data[0], cache_data.data.size()).c_str());
   buffer.write_end();
 
-  string out_filename = tmpfile (key);
+  vector<string> files;
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  for (auto filename : files)
+    {
+      if (filename.size() > key.size() && filename.compare (0, key.size(), key) == 0)
+        {
+          unlink (cache_filename (filename).c_str());
+        }
+    }
+
+  string out_filename = cache_filename (key) + "_" + cache_data.version;
   FILE *outf = fopen (out_filename.c_str(), "wb");
   if (outf)
     {
@@ -62,10 +94,31 @@ InstEncCache::cache_save (const string& key)
     }
 }
 
+static bool
+ends_with (const string& value, const string& ending)
+{
+  if (ending.size() > value.size())
+    return false;
+
+  return std::equal (ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 void
 InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
 {
-  GenericIn *in_file = GenericIn::open (tmpfile (cache_key));
+  GenericIn *in_file = nullptr;
+
+  vector<string> files;
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  for (auto filename : files)
+    {
+      if (ends_with (filename, need_version))
+        {
+          in_file = GenericIn::open (cache_filename (filename));
+          if (in_file)
+            break;
+        }
+    }
 
   if (!in_file)  // no cache entry
     return;
@@ -122,11 +175,11 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
 }
 
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
+InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function)
 {
 
-  string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
+  string cache_key = string_printf ("%s_%d", group ? group->id.c_str() : "no_group", midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
   // LOCK cache, look for entry
@@ -196,4 +249,13 @@ InstEncCache::clear()
   std::lock_guard<std::mutex> lg (cache_mutex);
 
   cache.clear();
+}
+
+InstEncCache::Group *
+InstEncCache::create_group()
+{
+  Group *g = new Group();
+
+  g->id = string_printf ("%08x-%08x", g_random_int(), g_random_int());
+  return g;
 }

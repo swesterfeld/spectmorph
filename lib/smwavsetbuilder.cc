@@ -89,7 +89,7 @@ WavSetBuilder::run()
       new_wave.channel = 0;
       new_wave.velocity_range_min = 0;
       new_wave.velocity_range_max = 127;
-      new_wave.audio = InstEncCache::the()->encode (name, wav_data, sd.shared->wav_data_hash(), sd.midi_note, iclipstart, iclipend, encoder_config, kill_function);
+      new_wave.audio = InstEncCache::the()->encode (cache_group, wav_data, sd.shared->wav_data_hash(), sd.midi_note, iclipstart, iclipend, encoder_config, kill_function);
 
       if (!new_wave.audio) // killed?
         return nullptr;
@@ -228,4 +228,10 @@ WavSetBuilder::apply_auto_tune()
           AudioTool::auto_tune_smooth (audio, auto_tune.partials, auto_tune.time, auto_tune.amount);
         }
     }
+}
+
+void
+WavSetBuilder::set_cache_group (InstEncCache::Group *group)
+{
+  cache_group = group;
 }

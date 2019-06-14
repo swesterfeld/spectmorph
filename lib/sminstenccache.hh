@@ -28,14 +28,21 @@ class InstEncCache
 
   InstEncCache(); // Singleton -> private constructor
 public:
-  Audio      *encode (const std::string& inst_name, const WavData& wav_data, const std::string& wav_data_hash,
+  class Group
+  {
+  public:
+    std::string id;
+  };
+
+  Audio      *encode (Group *group, const WavData& wav_data, const std::string& wav_data_hash,
                       int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function);
   void        clear();
 
+  Group      *create_group();
+
   static InstEncCache *the(); // Singleton
 };
-
 
 }
 
