@@ -8,6 +8,7 @@
 #include "sminstrument.hh"
 
 #include <mutex>
+#include <regex>
 
 namespace SpectMorph
 {
@@ -22,6 +23,7 @@ class InstEncCache
 
   std::map<std::string, CacheData> cache;
   std::mutex                       cache_mutex;
+  const std::regex                 cache_file_re;
 
   void        cache_save (const std::string& key);
   void        cache_try_load (const std::string& key, const std::string& need_version);
@@ -38,7 +40,7 @@ public:
                       int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function);
   void        clear();
-
+  void        delete_old_files();
   Group      *create_group();
 
   static InstEncCache *the(); // Singleton

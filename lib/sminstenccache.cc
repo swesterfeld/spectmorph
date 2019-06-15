@@ -7,15 +7,21 @@
 #include "smmemout.hh"
 
 #include <mutex>
+#include <cinttypes>
+#include <regex>
 
 #include <assert.h>
 #include <unistd.h>
+#include <glib/gstdio.h>
+#include <utime.h>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 using std::map;
+using std::regex;
+using std::regex_search;
 
 static string
 cache_filename (const string& filename)
@@ -23,8 +29,10 @@ cache_filename (const string& filename)
   return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
 }
 
-InstEncCache::InstEncCache()
+InstEncCache::InstEncCache() :
+  cache_file_re ("[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
 {
+  delete_old_files();
 }
 
 InstEncCache*
@@ -75,9 +83,12 @@ InstEncCache::cache_save (const string& key)
   Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
   for (auto filename : files)
     {
-      if (filename.size() > key.size() && filename.compare (0, key.size(), key) == 0)
+      if (regex_search (filename, cache_file_re)) /* avoid unlink on something that we shouldn't delete */
         {
-          unlink (cache_filename (filename).c_str());
+          if (filename.size() > key.size() && filename.compare (0, key.size(), key) == 0)
+            {
+              unlink (cache_filename (filename).c_str());
+            }
         }
     }
 
@@ -107,6 +118,7 @@ void
 InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
 {
   GenericIn *in_file = nullptr;
+  string     abs_filename;
 
   vector<string> files;
   Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
@@ -114,7 +126,8 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
     {
       if (ends_with (filename, need_version))
         {
-          in_file = GenericIn::open (cache_filename (filename));
+          abs_filename = cache_filename (filename);
+          in_file = GenericIn::open (abs_filename);
           if (in_file)
             break;
         }
@@ -147,6 +160,11 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
             {
               cache[cache_key].version = version;
               cache[cache_key].data    = std::move (data);
+
+              /* bump mtime on successful load; this information is used during
+               * InstEncCache::delete_old_files() to remove the oldest cache files
+               */
+              g_utime (abs_filename.c_str(), nullptr);
             }
         }
     }
@@ -263,6 +281,57 @@ InstEncCache::create_group()
 {
   Group *g = new Group();
 
-  g->id = string_printf ("%08x-%08x", g_random_int(), g_random_int());
+  g->id = string_printf ("%08x_%08x", g_random_int(), g_random_int());
   return g;
+}
+
+void
+InstEncCache::delete_old_files()
+{
+  struct Status
+  {
+    string abs_filename;
+    uint64 mtime = 0;
+    size_t size = 0;
+  };
+  vector<string> files;
+  vector<Status> file_status;
+
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  if (error)
+    return;
+
+  for (auto filename : files)
+    {
+      Status status;
+      status.abs_filename = cache_filename (filename);
+      GStatBuf stbuf;
+      if (g_stat (status.abs_filename.c_str(), &stbuf) == 0)
+        {
+          status.mtime = stbuf.st_mtime;
+          status.size  = stbuf.st_size;;
+          file_status.push_back (status);
+        }
+    }
+  std::sort (file_status.begin(), file_status.end(),
+    [](const Status& st1, const Status& st2)
+      {
+        /* sort: start with newest entries */
+        return st1.mtime > st2.mtime;
+      });
+
+  const size_t max_total_size = 100 * 1000 * 1000; // 100 MB total cache size
+  size_t total_size = 0;
+  for (auto status : file_status)
+    {
+      /* using a regexp here avoids deleting unrelated files; even if something is
+       * misconfigured this should make calling unlink() relatively safe */
+      if (regex_search (status.abs_filename, cache_file_re))
+        {
+          total_size += status.size;
+          if (total_size > max_total_size)
+            unlink (status.abs_filename.c_str());
+          // printf ("%s %" PRIu64 " %zd %zd\n", status.abs_filename.c_str(), status.mtime, status.size, total_size);
+        }
+    }
 }
