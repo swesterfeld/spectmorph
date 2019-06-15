@@ -178,8 +178,15 @@ Audio *
 InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function)
 {
+  // if group is not specified we create a random group just for this one request
+  std::unique_ptr<Group> random_group;
+  if (!group)
+    {
+      random_group.reset (create_group());
+      group = random_group.get();
+    }
 
-  string cache_key = string_printf ("%s_%d", group ? group->id.c_str() : "no_group", midi_note);
+  string cache_key = string_printf ("%s_%d", group->id.c_str(), midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
   // LOCK cache, look for entry
