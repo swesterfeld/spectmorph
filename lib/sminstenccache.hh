@@ -19,11 +19,13 @@ class InstEncCache
   {
     std::string                version;
     std::vector<unsigned char> data;
+    uint64                     read_stamp = 0;
   };
 
   std::map<std::string, CacheData> cache;
   std::mutex                       cache_mutex;
   const std::regex                 cache_file_re;
+  uint64                           cache_read_stamp = 0;
 
   void        cache_save (const std::string& key);
   void        cache_try_load (const std::string& key, const std::string& need_version);
@@ -41,6 +43,7 @@ public:
                       const std::function<bool()>& kill_function);
   void        clear();
   void        delete_old_files();
+  void        delete_old_memory();
   Group      *create_group();
 
   static InstEncCache *the(); // Singleton

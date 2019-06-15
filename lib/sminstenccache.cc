@@ -217,6 +217,7 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
     if (cache[cache_key].version == version) // cache hit (in memory)
       {
         vector<unsigned char>& data = cache[cache_key].data;
+        cache[cache_key].read_stamp = cache_read_stamp++;
 
         GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
         Audio     *audio = new Audio;
@@ -259,10 +260,18 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   {
     std::lock_guard<std::mutex> lg (cache_mutex);
 
-    cache[cache_key].version = version;
-    cache[cache_key].data    = data;
+    cache[cache_key].version    = version;
+    cache[cache_key].data       = data;
+    cache[cache_key].read_stamp = cache_read_stamp++;
 
     cache_save (cache_key);
+
+    /* enforce size limits and expire cache data from time to time */
+    if ((cache_read_stamp % 10) == 0)
+      {
+        delete_old_files();
+        delete_old_memory();
+      }
   }
 
   return audio;
@@ -333,5 +342,52 @@ InstEncCache::delete_old_files()
             unlink (status.abs_filename.c_str());
           // printf ("%s %" PRIu64 " %zd %zd\n", status.abs_filename.c_str(), status.mtime, status.size, total_size);
         }
+    }
+}
+
+void
+InstEncCache::delete_old_memory()
+{
+  struct Status
+  {
+    string key;
+    uint64 read_stamp;
+    size_t size;
+  };
+  vector<Status> mem_status;
+
+  for (auto& entry : cache)
+    {
+      const string&     key = entry.first;
+      const CacheData&  cache_data = entry.second;
+
+      Status status;
+      status.key        = key;
+      status.size       = cache_data.data.size();
+      status.read_stamp = cache_data.read_stamp;
+
+      mem_status.push_back (status);
+    }
+  std::sort (mem_status.begin(), mem_status.end(),
+    [](const Status& st1, const Status& st2)
+      {
+        /* sort: start with newest entries */
+        return st1.read_stamp > st2.read_stamp;
+      });
+
+  const size_t max_total_size = 50 * 1000 * 1000; // 50 MB total cache size
+  size_t total_size = 0;
+  for (const auto& status : mem_status)
+    {
+      total_size += status.size;
+      if (total_size > max_total_size)
+        {
+          /* since there is also disk cache, deletion from memory cache
+           * will not affect performance much, as long as it can be reloaded
+           * from the files we have stored
+           */
+          cache.erase (status.key);
+        }
+      // printf ("%s %" PRIu64 " %zd %zd\n", status.key.c_str(), status.read_stamp, status.size, total_size);
     }
 }
