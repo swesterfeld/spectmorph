@@ -7,23 +7,32 @@
 #include "smmemout.hh"
 
 #include <mutex>
+#include <cinttypes>
+#include <regex>
 
 #include <assert.h>
+#include <unistd.h>
+#include <glib/gstdio.h>
+#include <utime.h>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 using std::map;
+using std::regex;
+using std::regex_search;
 
 static string
-tmpfile (const string& filename)
+cache_filename (const string& filename)
 {
   return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
 }
 
-InstEncCache::InstEncCache()
+InstEncCache::InstEncCache() :
+  cache_file_re ("[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
 {
+  delete_old_files();
 }
 
 InstEncCache*
@@ -34,6 +43,27 @@ InstEncCache::the()
     instance = new InstEncCache;
 
   return instance;
+}
+
+static Error
+read_dir (const string& dirname, vector<string>& files)
+{
+  GError *gerror = nullptr;
+  const char *filename;
+
+  GDir *dir = g_dir_open (dirname.c_str(), 0, &gerror);
+  if (gerror)
+    {
+      Error error (gerror->message);
+      g_error_free (gerror);
+      return error;
+    }
+  files.clear();
+  while ((filename = g_dir_read_name (dir)))
+    files.push_back (filename);
+  g_dir_close (dir);
+
+  return Error::Code::NONE;
 }
 
 void
@@ -49,7 +79,20 @@ InstEncCache::cache_save (const string& key)
   buffer.write_string (sha1_hash (&cache_data.data[0], cache_data.data.size()).c_str());
   buffer.write_end();
 
-  string out_filename = tmpfile (key);
+  vector<string> files;
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  for (auto filename : files)
+    {
+      if (regex_search (filename, cache_file_re)) /* avoid unlink on something that we shouldn't delete */
+        {
+          if (filename.size() > key.size() && filename.compare (0, key.size(), key) == 0)
+            {
+              unlink (cache_filename (filename).c_str());
+            }
+        }
+    }
+
+  string out_filename = cache_filename (key) + "_" + cache_data.version;
   FILE *outf = fopen (out_filename.c_str(), "wb");
   if (outf)
     {
@@ -62,10 +105,33 @@ InstEncCache::cache_save (const string& key)
     }
 }
 
+static bool
+ends_with (const string& value, const string& ending)
+{
+  if (ending.size() > value.size())
+    return false;
+
+  return std::equal (ending.rbegin(), ending.rend(), value.rbegin());
+}
+
 void
 InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
 {
-  GenericIn *in_file = GenericIn::open (tmpfile (cache_key));
+  GenericIn *in_file = nullptr;
+  string     abs_filename;
+
+  vector<string> files;
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  for (auto filename : files)
+    {
+      if (ends_with (filename, need_version))
+        {
+          abs_filename = cache_filename (filename);
+          in_file = GenericIn::open (abs_filename);
+          if (in_file)
+            break;
+        }
+    }
 
   if (!in_file)  // no cache entry
     return;
@@ -94,6 +160,11 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
             {
               cache[cache_key].version = version;
               cache[cache_key].data    = std::move (data);
+
+              /* bump mtime on successful load; this information is used during
+               * InstEncCache::delete_old_files() to remove the oldest cache files
+               */
+              g_utime (abs_filename.c_str(), nullptr);
             }
         }
     }
@@ -122,11 +193,18 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
 }
 
 Audio *
-InstEncCache::encode (const string& inst_name, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
+InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_data_hash, int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function)
 {
+  // if group is not specified we create a random group just for this one request
+  std::unique_ptr<Group> random_group;
+  if (!group)
+    {
+      random_group.reset (create_group());
+      group = random_group.get();
+    }
 
-  string cache_key = string_printf ("%s_%d", inst_name.c_str(), midi_note);
+  string cache_key = string_printf ("%s_%d", group->id.c_str(), midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
   // LOCK cache, look for entry
@@ -139,6 +217,7 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
     if (cache[cache_key].version == version) // cache hit (in memory)
       {
         vector<unsigned char>& data = cache[cache_key].data;
+        cache[cache_key].read_stamp = cache_read_stamp++;
 
         GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
         Audio     *audio = new Audio;
@@ -181,10 +260,18 @@ InstEncCache::encode (const string& inst_name, const WavData& wav_data, const st
   {
     std::lock_guard<std::mutex> lg (cache_mutex);
 
-    cache[cache_key].version = version;
-    cache[cache_key].data    = data;
+    cache[cache_key].version    = version;
+    cache[cache_key].data       = data;
+    cache[cache_key].read_stamp = cache_read_stamp++;
 
     cache_save (cache_key);
+
+    /* enforce size limits and expire cache data from time to time */
+    if ((cache_read_stamp % 10) == 0)
+      {
+        delete_old_files();
+        delete_old_memory();
+      }
   }
 
   return audio;
@@ -196,4 +283,111 @@ InstEncCache::clear()
   std::lock_guard<std::mutex> lg (cache_mutex);
 
   cache.clear();
+}
+
+InstEncCache::Group *
+InstEncCache::create_group()
+{
+  Group *g = new Group();
+
+  g->id = string_printf ("%08x_%08x", g_random_int(), g_random_int());
+  return g;
+}
+
+void
+InstEncCache::delete_old_files()
+{
+  struct Status
+  {
+    string abs_filename;
+    uint64 mtime = 0;
+    size_t size = 0;
+  };
+  vector<string> files;
+  vector<Status> file_status;
+
+  Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
+  if (error)
+    return;
+
+  for (auto filename : files)
+    {
+      Status status;
+      status.abs_filename = cache_filename (filename);
+      GStatBuf stbuf;
+      if (g_stat (status.abs_filename.c_str(), &stbuf) == 0)
+        {
+          status.mtime = stbuf.st_mtime;
+          status.size  = stbuf.st_size;;
+          file_status.push_back (status);
+        }
+    }
+  std::sort (file_status.begin(), file_status.end(),
+    [](const Status& st1, const Status& st2)
+      {
+        /* sort: start with newest entries */
+        return st1.mtime > st2.mtime;
+      });
+
+  const size_t max_total_size = 100 * 1000 * 1000; // 100 MB total cache size
+  size_t total_size = 0;
+  for (auto status : file_status)
+    {
+      /* using a regexp here avoids deleting unrelated files; even if something is
+       * misconfigured this should make calling unlink() relatively safe */
+      if (regex_search (status.abs_filename, cache_file_re))
+        {
+          total_size += status.size;
+          if (total_size > max_total_size)
+            unlink (status.abs_filename.c_str());
+          // printf ("%s %" PRIu64 " %zd %zd\n", status.abs_filename.c_str(), status.mtime, status.size, total_size);
+        }
+    }
+}
+
+void
+InstEncCache::delete_old_memory()
+{
+  struct Status
+  {
+    string key;
+    uint64 read_stamp;
+    size_t size;
+  };
+  vector<Status> mem_status;
+
+  for (auto& entry : cache)
+    {
+      const string&     key = entry.first;
+      const CacheData&  cache_data = entry.second;
+
+      Status status;
+      status.key        = key;
+      status.size       = cache_data.data.size();
+      status.read_stamp = cache_data.read_stamp;
+
+      mem_status.push_back (status);
+    }
+  std::sort (mem_status.begin(), mem_status.end(),
+    [](const Status& st1, const Status& st2)
+      {
+        /* sort: start with newest entries */
+        return st1.read_stamp > st2.read_stamp;
+      });
+
+  const size_t max_total_size = 50 * 1000 * 1000; // 50 MB total cache size
+  size_t total_size = 0;
+  for (const auto& status : mem_status)
+    {
+      total_size += status.size;
+      if (total_size > max_total_size)
+        {
+          /* since there is also disk cache, deletion from memory cache
+           * will not affect performance much, as long as it can be reloaded
+           * from the files we have stored
+           */
+          cache.erase (status.key);
+        }
+      // printf ("%s %" PRIu64 " %zd %zd\n", status.key.c_str(), status.read_stamp, status.size, total_size);
+    }
 }

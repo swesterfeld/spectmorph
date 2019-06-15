@@ -5,6 +5,7 @@
 
 #include "sminstrument.hh"
 #include "smwavset.hh"
+#include "sminstenccache.hh"
 
 namespace SpectMorph
 {
@@ -25,6 +26,7 @@ class WavSetBuilder
   std::vector<SampleData> sample_data_vec;
   WavSet *wav_set;
   std::string name;
+  InstEncCache::Group       *cache_group = nullptr;
 
   std::function<bool()>      kill_function;
   bool killed();
@@ -44,6 +46,7 @@ public:
   ~WavSetBuilder();
 
   void set_kill_function (const std::function<bool()>& kill_function);
+  void set_cache_group (InstEncCache::Group *group);
   WavSet *run();
 };
 
