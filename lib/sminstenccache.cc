@@ -286,7 +286,7 @@ InstEncCache::cache_add (const string& cache_key, const string& version, const A
   if ((cache_read_stamp % 10) == 0)
     {
       delete_old_files();
-      delete_old_memory();
+      delete_old_memory_L();
     }
 }
 
@@ -359,7 +359,7 @@ InstEncCache::delete_old_files()
 }
 
 void
-InstEncCache::delete_old_memory()
+InstEncCache::delete_old_memory_L()
 {
   struct Status
   {
