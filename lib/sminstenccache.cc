@@ -99,8 +99,8 @@ InstEncCache::cache_save_L (const string& key)
       for (auto ch : buffer.to_string())
         fputc (ch, outf);
       fputc (0, outf);
-      for (auto ch : cache_data.data)
-        fputc (ch, outf);
+      const unsigned char *ptr = cache_data.data.data();
+      fwrite (ptr, 1, cache_data.data.size(), outf);
       fclose (outf);
     }
 }
