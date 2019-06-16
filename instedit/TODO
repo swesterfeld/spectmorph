@@ -6,7 +6,4 @@ UI:
 - implement revert
 
 PROJECT:
-- cache:
-  - better primary key
-  - cleanup old stuff automatically
 - somewhat better error handling
