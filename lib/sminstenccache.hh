@@ -27,8 +27,13 @@ class InstEncCache
   const std::regex                 cache_file_re;
   uint64                           cache_read_stamp = 0;
 
-  void        cache_save (const std::string& key);
-  void        cache_try_load (const std::string& key, const std::string& need_version);
+  void        cache_save_L (const std::string& key);
+  void        cache_try_load_L (const std::string& key, const std::string& need_version);
+  Audio      *cache_lookup (const std::string& cache_key, const std::string& version);
+  void        cache_add (const std::string& cache_key, const std::string& version, const Audio *audio);
+
+  void        delete_old_files();
+  void        delete_old_memory_L();
 
   InstEncCache(); // Singleton -> private constructor
 public:
@@ -42,8 +47,6 @@ public:
                       int midi_note, int iclipstart, int iclipend, Instrument::EncoderConfig& cfg,
                       const std::function<bool()>& kill_function);
   void        clear();
-  void        delete_old_files();
-  void        delete_old_memory();
   Group      *create_group();
 
   static InstEncCache *the(); // Singleton

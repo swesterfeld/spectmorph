@@ -5,6 +5,7 @@
 #include "sminstencoder.hh"
 #include "smmmapin.hh"
 #include "smmemout.hh"
+#include "config.h"
 
 #include <mutex>
 #include <cinttypes>
@@ -30,7 +31,7 @@ cache_filename (const string& filename)
 }
 
 InstEncCache::InstEncCache() :
-  cache_file_re ("[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
+  cache_file_re ("inst_enc_[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
 {
   delete_old_files();
 }
@@ -67,7 +68,7 @@ read_dir (const string& dirname, vector<string>& files)
 }
 
 void
-InstEncCache::cache_save (const string& key)
+InstEncCache::cache_save_L (const string& key)
 {
   const CacheData& cache_data = cache[key];
 
@@ -99,8 +100,8 @@ InstEncCache::cache_save (const string& key)
       for (auto ch : buffer.to_string())
         fputc (ch, outf);
       fputc (0, outf);
-      for (auto ch : cache_data.data)
-        fputc (ch, outf);
+      const unsigned char *ptr = cache_data.data.data();
+      fwrite (ptr, 1, cache_data.data.size(), outf);
       fclose (outf);
     }
 }
@@ -115,7 +116,7 @@ ends_with (const string& value, const string& ending)
 }
 
 void
-InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
+InstEncCache::cache_try_load_L (const string& cache_key, const string& need_version)
 {
   GenericIn *in_file = nullptr;
   string     abs_filename;
@@ -124,12 +125,15 @@ InstEncCache::cache_try_load (const string& cache_key, const string& need_versio
   Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
   for (auto filename : files)
     {
-      if (ends_with (filename, need_version))
+      if (regex_search (filename, cache_file_re))
         {
-          abs_filename = cache_filename (filename);
-          in_file = GenericIn::open (abs_filename);
-          if (in_file)
-            break;
+          if (ends_with (filename, need_version))
+            {
+              abs_filename = cache_filename (filename);
+              in_file = GenericIn::open (abs_filename);
+              if (in_file)
+                break;
+            }
         }
     }
 
@@ -180,6 +184,7 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
   string depends;
 
   depends += wav_data_hash + "\n";
+  depends += string_printf ("%s\n", PACKAGE_VERSION);
   depends += string_printf ("%d\n", midi_note);
   depends += string_printf ("%d\n", iclipstart);
   depends += string_printf ("%d\n", iclipend);
@@ -204,34 +209,13 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
       group = random_group.get();
     }
 
-  string cache_key = string_printf ("%s_%d", group->id.c_str(), midi_note);
+  string cache_key = string_printf ("inst_enc_%s_%d", group->id.c_str(), midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
-  // LOCK cache, look for entry
-  {
-    std::lock_guard<std::mutex> lg (cache_mutex);
-    if (cache[cache_key].version != version)
-      {
-        cache_try_load (cache_key, version);
-      }
-    if (cache[cache_key].version == version) // cache hit (in memory)
-      {
-        vector<unsigned char>& data = cache[cache_key].data;
-        cache[cache_key].read_stamp = cache_read_stamp++;
-
-        GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-        Audio     *audio = new Audio;
-        Error      error = audio->load (in);
-
-        delete in;
-
-        if (!error)
-          return audio;
-
-        delete audio;
-        return nullptr;
-      }
-  }
+  // search disk cache and memory cache
+  Audio *audio = cache_lookup (cache_key, version);
+  if (audio)
+    return audio;
 
   /* clip sample */
   vector<float> clipped_samples = wav_data.samples();
@@ -247,34 +231,65 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   WavData wav_data_clipped (clipped_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
 
   InstEncoder enc;
-  Audio *audio = enc.encode (wav_data_clipped, midi_note, cfg, kill_function);
+  audio = enc.encode (wav_data_clipped, midi_note, cfg, kill_function);
   if (!audio)
     return nullptr;
 
+  cache_add (cache_key, version, audio);
+
+  return audio;
+}
+
+Audio *
+InstEncCache::cache_lookup (const string& cache_key, const string& version)
+{
+  std::lock_guard<std::mutex> lg (cache_mutex);
+  if (cache[cache_key].version != version)
+    {
+      cache_try_load_L (cache_key, version);
+    }
+  if (cache[cache_key].version == version) // cache hit (in memory)
+    {
+      vector<unsigned char>& data = cache[cache_key].data;
+      cache[cache_key].read_stamp = cache_read_stamp++;
+
+      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      Audio     *audio = new Audio;
+      Error      error = audio->load (in);
+
+      delete in;
+
+      if (!error)
+        return audio;
+
+      delete audio;
+    }
+  return nullptr;
+}
+
+void
+InstEncCache::cache_add (const string& cache_key, const string& version, const Audio *audio)
+{
   vector<unsigned char> data;
   MemOut                audio_mem_out (&data);
 
   audio->save (&audio_mem_out);
 
   // LOCK cache: store entry
-  {
-    std::lock_guard<std::mutex> lg (cache_mutex);
+  std::lock_guard<std::mutex> lg (cache_mutex);
 
-    cache[cache_key].version    = version;
-    cache[cache_key].data       = data;
-    cache[cache_key].read_stamp = cache_read_stamp++;
+  cache[cache_key].version    = version;
+  cache[cache_key].data       = data;
+  cache[cache_key].read_stamp = cache_read_stamp++;
 
-    cache_save (cache_key);
+  cache_save_L (cache_key);
 
-    /* enforce size limits and expire cache data from time to time */
-    if ((cache_read_stamp % 10) == 0)
-      {
-        delete_old_files();
-        delete_old_memory();
-      }
-  }
-
-  return audio;
+  /* enforce size limits and expire cache data from time to time */
+  if ((cache_read_stamp % 10) == 0)
+    {
+      delete_old_files();
+      delete_old_memory_L();
+    }
 }
 
 void
@@ -346,7 +361,7 @@ InstEncCache::delete_old_files()
 }
 
 void
-InstEncCache::delete_old_memory()
+InstEncCache::delete_old_memory_L()
 {
   struct Status
   {
