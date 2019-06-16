@@ -30,7 +30,7 @@ cache_filename (const string& filename)
 }
 
 InstEncCache::InstEncCache() :
-  cache_file_re ("[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
+  cache_file_re ("inst_enc_[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
 {
   delete_old_files();
 }
@@ -124,12 +124,15 @@ InstEncCache::cache_try_load_L (const string& cache_key, const string& need_vers
   Error error = read_dir (sm_get_user_dir (USER_DIR_CACHE), files);
   for (auto filename : files)
     {
-      if (ends_with (filename, need_version))
+      if (regex_search (filename, cache_file_re))
         {
-          abs_filename = cache_filename (filename);
-          in_file = GenericIn::open (abs_filename);
-          if (in_file)
-            break;
+          if (ends_with (filename, need_version))
+            {
+              abs_filename = cache_filename (filename);
+              in_file = GenericIn::open (abs_filename);
+              if (in_file)
+                break;
+            }
         }
     }
 
@@ -204,7 +207,7 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
       group = random_group.get();
     }
 
-  string cache_key = string_printf ("%s_%d", group->id.c_str(), midi_note);
+  string cache_key = string_printf ("inst_enc_%s_%d", group->id.c_str(), midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
   // search disk cache and memory cache
