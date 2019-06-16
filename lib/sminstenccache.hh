@@ -27,9 +27,10 @@ class InstEncCache
   const std::regex                 cache_file_re;
   uint64                           cache_read_stamp = 0;
 
-  void        cache_save (const std::string& key);
+  void        cache_save_L (const std::string& key);
   void        cache_try_load_L (const std::string& key, const std::string& need_version);
   Audio      *cache_lookup (const std::string& cache_key, const std::string& version);
+  void        cache_add (const std::string& cache_key, const std::string& version, const Audio *audio);
 
   InstEncCache(); // Singleton -> private constructor
 public:

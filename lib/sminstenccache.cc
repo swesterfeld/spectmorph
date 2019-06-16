@@ -67,7 +67,7 @@ read_dir (const string& dirname, vector<string>& files)
 }
 
 void
-InstEncCache::cache_save (const string& key)
+InstEncCache::cache_save_L (const string& key)
 {
   const CacheData& cache_data = cache[key];
 
@@ -230,28 +230,7 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   if (!audio)
     return nullptr;
 
-  vector<unsigned char> data;
-  MemOut                audio_mem_out (&data);
-
-  audio->save (&audio_mem_out);
-
-  // LOCK cache: store entry
-  {
-    std::lock_guard<std::mutex> lg (cache_mutex);
-
-    cache[cache_key].version    = version;
-    cache[cache_key].data       = data;
-    cache[cache_key].read_stamp = cache_read_stamp++;
-
-    cache_save (cache_key);
-
-    /* enforce size limits and expire cache data from time to time */
-    if ((cache_read_stamp % 10) == 0)
-      {
-        delete_old_files();
-        delete_old_memory();
-      }
-  }
+  cache_add (cache_key, version, audio);
 
   return audio;
 }
@@ -281,6 +260,31 @@ InstEncCache::cache_lookup (const string& cache_key, const string& version)
       delete audio;
     }
   return nullptr;
+}
+
+void
+InstEncCache::cache_add (const string& cache_key, const string& version, const Audio *audio)
+{
+  vector<unsigned char> data;
+  MemOut                audio_mem_out (&data);
+
+  audio->save (&audio_mem_out);
+
+  // LOCK cache: store entry
+  std::lock_guard<std::mutex> lg (cache_mutex);
+
+  cache[cache_key].version    = version;
+  cache[cache_key].data       = data;
+  cache[cache_key].read_stamp = cache_read_stamp++;
+
+  cache_save_L (cache_key);
+
+  /* enforce size limits and expire cache data from time to time */
+  if ((cache_read_stamp % 10) == 0)
+    {
+      delete_old_files();
+      delete_old_memory();
+    }
 }
 
 void
