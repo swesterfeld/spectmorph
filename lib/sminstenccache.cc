@@ -115,7 +115,7 @@ ends_with (const string& value, const string& ending)
 }
 
 void
-InstEncCache::cache_try_load (const string& cache_key, const string& need_version)
+InstEncCache::cache_try_load_L (const string& cache_key, const string& need_version)
 {
   GenericIn *in_file = nullptr;
   string     abs_filename;
@@ -207,31 +207,10 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   string cache_key = string_printf ("%s_%d", group->id.c_str(), midi_note);
   string version   = mk_version (wav_data_hash, midi_note, iclipstart, iclipend, cfg);
 
-  // LOCK cache, look for entry
-  {
-    std::lock_guard<std::mutex> lg (cache_mutex);
-    if (cache[cache_key].version != version)
-      {
-        cache_try_load (cache_key, version);
-      }
-    if (cache[cache_key].version == version) // cache hit (in memory)
-      {
-        vector<unsigned char>& data = cache[cache_key].data;
-        cache[cache_key].read_stamp = cache_read_stamp++;
-
-        GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-        Audio     *audio = new Audio;
-        Error      error = audio->load (in);
-
-        delete in;
-
-        if (!error)
-          return audio;
-
-        delete audio;
-        return nullptr;
-      }
-  }
+  // search disk cache and memory cache
+  Audio *audio = cache_lookup (cache_key, version);
+  if (audio)
+    return audio;
 
   /* clip sample */
   vector<float> clipped_samples = wav_data.samples();
@@ -247,7 +226,7 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   WavData wav_data_clipped (clipped_samples, 1, wav_data.mix_freq(), wav_data.bit_depth());
 
   InstEncoder enc;
-  Audio *audio = enc.encode (wav_data_clipped, midi_note, cfg, kill_function);
+  audio = enc.encode (wav_data_clipped, midi_note, cfg, kill_function);
   if (!audio)
     return nullptr;
 
@@ -275,6 +254,33 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   }
 
   return audio;
+}
+
+Audio *
+InstEncCache::cache_lookup (const string& cache_key, const string& version)
+{
+  std::lock_guard<std::mutex> lg (cache_mutex);
+  if (cache[cache_key].version != version)
+    {
+      cache_try_load_L (cache_key, version);
+    }
+  if (cache[cache_key].version == version) // cache hit (in memory)
+    {
+      vector<unsigned char>& data = cache[cache_key].data;
+      cache[cache_key].read_stamp = cache_read_stamp++;
+
+      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      Audio     *audio = new Audio;
+      Error      error = audio->load (in);
+
+      delete in;
+
+      if (!error)
+        return audio;
+
+      delete audio;
+    }
+  return nullptr;
 }
 
 void
