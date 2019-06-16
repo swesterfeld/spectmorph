@@ -5,6 +5,7 @@
 #include "sminstencoder.hh"
 #include "smmmapin.hh"
 #include "smmemout.hh"
+#include "config.h"
 
 #include <mutex>
 #include <cinttypes>
@@ -183,6 +184,7 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
   string depends;
 
   depends += wav_data_hash + "\n";
+  depends += string_printf ("%s\n", PACKAGE_VERSION);
   depends += string_printf ("%d\n", midi_note);
   depends += string_printf ("%d\n", iclipstart);
   depends += string_printf ("%d\n", iclipend);
