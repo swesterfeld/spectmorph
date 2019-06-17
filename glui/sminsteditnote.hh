@@ -239,12 +239,10 @@ public:
 
 class InstEditNote : public Window
 {
-  Window     *parent_window = nullptr;
   NoteWidget *note_widget = nullptr;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
-    Window (*window->event_loop(), "SpectMorph - Instrument Note", 524, 348, 0, false, window->native_window()),
-    parent_window (window)
+    Window (*window->event_loop(), "SpectMorph - Instrument Note", 524, 348, 0, false, window->native_window())
   {
     set_close_callback ([this]() {
       signal_closed();

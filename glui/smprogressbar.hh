@@ -11,7 +11,7 @@
 namespace SpectMorph
 {
 
-struct ProgressBar : public Widget
+class ProgressBar : public Widget
 {
 protected:
   double m_value = 0.0; /* 0.0 ... 1.0 */

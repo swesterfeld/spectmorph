@@ -10,7 +10,7 @@
 namespace SpectMorph
 {
 
-struct LineEdit : public Widget
+class LineEdit : public Widget
 {
 protected:
   std::string m_text;

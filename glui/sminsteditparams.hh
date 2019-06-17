@@ -53,13 +53,11 @@ class InstEditParams : public Window
 
   ScrollView *scroll_view = nullptr;
   Widget     *scroll_widget = nullptr;
-  Window     *parent_window = nullptr;
 public:
   InstEditParams (Window *window, Instrument *instrument, SampleWidget *sample_widget) :
     Window (*window->event_loop(), "SpectMorph - Instrument Parameters", 320, 320, 0, false, window->native_window()),
     instrument (instrument),
-    sample_widget (sample_widget),
-    parent_window (window)
+    sample_widget (sample_widget)
   {
     set_close_callback ([this]() {
       signal_closed();

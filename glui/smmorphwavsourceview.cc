@@ -71,7 +71,7 @@ MorphWavSourceView::on_edit()
   // after this line, inst edit window is owned by parent window
   window()->set_popup_window (inst_edit_window);
 
-  inst_edit_window->set_close_callback ([synth_interface,this,instrument]()
+  inst_edit_window->set_close_callback ([synth_interface,this]()
     {
       auto project = morph_wav_source->morph_plan()->project();
       window()->set_popup_window (nullptr);

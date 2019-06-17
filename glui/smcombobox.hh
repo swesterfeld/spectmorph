@@ -10,7 +10,7 @@
 namespace SpectMorph
 {
 
-struct ComboBox;
+class ComboBox;
 struct ComboBoxItem
 {
   std::string text;
@@ -157,7 +157,7 @@ struct ComboBoxMenu : public Widget
   mouse_release (const MouseEvent& event) override;
 };
 
-struct ComboBox : public Widget
+class ComboBox : public Widget
 {
 protected:
   std::unique_ptr<ComboBoxMenu> menu;
