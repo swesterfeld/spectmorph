@@ -113,8 +113,8 @@ public:
   void on_update_vzoom (float value);
   void on_show_hide_params();
   void on_show_hide_note();
-  void on_save_clicked();
-  void on_load_clicked();
+  void on_import_clicked();
+  void on_export_clicked();
   void on_sample_changed();
   void on_sample_up();
   void on_sample_down();

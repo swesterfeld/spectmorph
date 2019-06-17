@@ -120,20 +120,20 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   fill_zoom_menu (menu_bar->add_menu ("Zoom"));
   Menu *file_menu = menu_bar->add_menu ("File");
 
+  MenuItem *add_item = file_menu->add_item ("Add Sample...");
+  connect (add_item->signal_clicked, this, &InstEditWindow::on_add_sample_clicked);
+
+  MenuItem *import_item = file_menu->add_item ("Import Instrument...");
+  connect (import_item->signal_clicked, this, &InstEditWindow::on_import_clicked);
+
+  MenuItem *export_item = file_menu->add_item ("Export Instrument...");
+  connect (export_item->signal_clicked, this, &InstEditWindow::on_export_clicked);
+
   MenuItem *clear_item = file_menu->add_item ("Clear Instrument");
   connect (clear_item->signal_clicked, this, &InstEditWindow::on_clear);
 
   MenuItem *revert_item = file_menu->add_item ("Revert Instrument");
   connect (revert_item->signal_clicked, this, &InstEditWindow::on_revert);
-
-  MenuItem *add_item = file_menu->add_item ("Add Sample...");
-  connect (add_item->signal_clicked, this, &InstEditWindow::on_add_sample_clicked);
-
-  MenuItem *load_item = file_menu->add_item ("Load Instrument...");
-  connect (load_item->signal_clicked, this, &InstEditWindow::on_load_clicked);
-
-  MenuItem *save_item = file_menu->add_item ("Save Instrument...");
-  connect (save_item->signal_clicked, this, &InstEditWindow::on_save_clicked);
 
   grid.add_widget (menu_bar, 1, 1, 91, 3);
 
@@ -584,34 +584,34 @@ InstEditWindow::on_show_hide_note()
 }
 
 void
-InstEditWindow::on_save_clicked()
+InstEditWindow::on_export_clicked()
 {
   FileDialogFormats formats ("SpectMorph Instrument files", "sminst");
-  save_file_dialog ("Select SpectMorph Instrument save filename", formats, [=](string filename) {
+  save_file_dialog ("Select SpectMorph Instrument export filename", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->save (filename);
         if (error)
           {
             MessageBox::critical (this, "Error",
-                                  string_locale_printf ("Saving instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+                                  string_locale_printf ("Exporting instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
           }
       }
   });
 }
 
 void
-InstEditWindow::on_load_clicked()
+InstEditWindow::on_import_clicked()
 {
   FileDialogFormats formats ("SpectMorph Instrument files", "sminst");
-  window()->open_file_dialog ("Select SpectMorph Instrument to load", formats, [=](string filename) {
+  window()->open_file_dialog ("Select SpectMorph Instrument to import", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->load (filename);
         if (error)
           {
             MessageBox::critical (this, "Error",
-                                  string_locale_printf ("Loading instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+                                  string_locale_printf ("Importing instrument failed:\n'%s'\n%s.", filename.c_str(), error.message()));
           }
       }
   });
