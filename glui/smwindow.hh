@@ -5,6 +5,7 @@
 
 #include "smwidget.hh"
 #include "pugl/pugl.h"
+#include "smnativefiledialog.hh"
 #include <memory>
 #include <functional>
 
@@ -16,18 +17,6 @@ class NativeFileDialog;
 struct Menu;
 class Shortcut;
 class EventLoop;
-
-struct FileDialogFormats
-{
-  FileDialogFormats (const std::string& title, const std::string& ext)
-  {
-    filter_title = title;
-    filter       = "*." + ext;
-  }
-
-  std::string filter_title;
-  std::string filter;
-};
 
 struct Window : public Widget
 {

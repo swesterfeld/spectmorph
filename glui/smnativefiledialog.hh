@@ -10,6 +10,18 @@
 namespace SpectMorph
 {
 
+struct FileDialogFormats
+{
+  FileDialogFormats (const std::string& title, const std::string& ext)
+  {
+    filter_title = title;
+    filter       = "*." + ext;
+  }
+
+  std::string filter_title;
+  std::string filter;
+};
+
 class NativeFileDialog
 {
 protected:
@@ -32,7 +44,7 @@ protected:
     return ext;
   }
 public:
-  static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& title, const std::string& filter_title, const std::string& filter);
+  static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& title, const FileDialogFormats& formats);
 
   virtual void process_events() = 0;
   virtual ~NativeFileDialog() {}

@@ -756,7 +756,7 @@ Window::open_file_dialog (const string& title, const FileDialogFormats& formats,
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, formats.filter_title, formats.filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, formats));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }
@@ -769,7 +769,7 @@ Window::save_file_dialog (const string& title, const FileDialogFormats& formats,
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, formats.filter_title, formats.filter));
+  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, formats));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }
