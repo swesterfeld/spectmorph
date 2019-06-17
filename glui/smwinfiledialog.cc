@@ -28,10 +28,10 @@ class WinFileDialog : public NativeFileDialog
 
   string selected_filename;
 public:
-  WinFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+  WinFileDialog (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
   {
     state = State::running;
-    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, title, filter_title, filter); }));
+    dialog_thread.reset (new std::thread ([=]() { thread_run (win_id, open, title, formats); }));
   }
   ~WinFileDialog()
   {
@@ -39,14 +39,25 @@ public:
       dialog_thread->join();
   }
   void
-  thread_run (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
-  { 
+  thread_run (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
+  {
     OPENFILENAME ofn;
     char filename[1024] = "";
-
-    string filter_spec = filter_title;
+    string filter_spec;
+    for (auto format : formats.formats)
+      {
+        filter_spec += format.title;
+        filter_spec.push_back (0);
+        for (size_t i = 0; i < format.exts.size(); i++)
+          {
+            if (i)
+              filter_spec += ";";
+            filter_spec += "*." + format.exts[i];
+          }
+        filter_spec.push_back (0);
+      }
+    /* need double zero termination */
     filter_spec.push_back (0);
-    filter_spec += filter;
     filter_spec.push_back (0);
 
     ZeroMemory (&ofn, sizeof (OPENFILENAME));
@@ -60,7 +71,7 @@ public:
     // NOTE: if the current filter has an extension, this extension will
     // be used, rather than the default extension, so in most cases the
     // actual value given here is ignored
-    string def_ext = filter2ext (filter);
+    string def_ext = formats.formats[0].exts[0];
     ofn.lpstrDefExt = def_ext.c_str();
     ofn.Flags = OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
     if (open)
@@ -99,9 +110,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
 {
-  return new WinFileDialog (win_id, open, title, filter_title, filter);
+  return new WinFileDialog (win_id, open, title, formats);
 }
 
 }
