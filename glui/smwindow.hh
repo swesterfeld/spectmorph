@@ -5,6 +5,7 @@
 
 #include "smwidget.hh"
 #include "pugl/pugl.h"
+#include "smnativefiledialog.hh"
 #include <memory>
 #include <functional>
 
@@ -66,8 +67,8 @@ public:
   void process_events();
   EventLoop *event_loop() const;
   void show();
-  void open_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
-  void save_file_dialog (const std::string& title, const std::string& filter, const std::string& filter_title, std::function<void(std::string)> callback);
+  void open_file_dialog (const std::string& title, const FileDialogFormats& formats, std::function<void(std::string)> callback);
+  void save_file_dialog (const std::string& title, const FileDialogFormats& formats, std::function<void(std::string)> callback);
   void on_file_selected (const std::string& filename);
   void need_update (Widget *widget, const Rect *changed_rect = nullptr);
   void on_widget_deleted (Widget *widget);

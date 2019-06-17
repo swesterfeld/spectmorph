@@ -69,7 +69,7 @@ WinIdEmbedder::eventFilter (QObject *o, QEvent *e)
 }
 
 int
-show_dialog (bool open, QString dir, QString filter, QString filter_title, QString title, QString win_id_str)
+show_dialog (bool open, QString dir, QString filter_spec, QString title, QString win_id_str)
 {
   WId win_id = win_id_str.toLong();
   if (win_id)
@@ -88,7 +88,7 @@ show_dialog (bool open, QString dir, QString filter, QString filter_title, QStri
     }
 
   dlg.setDirectory (dir);
-  dlg.setNameFilter (filter_title + "(" + filter + ")");
+  dlg.setNameFilter (filter_spec.replace (QLatin1Char ('|'), QLatin1Char ('\n')));
   dlg.setWindowTitle (title);
 
   if (!dlg.exec())
@@ -108,19 +108,19 @@ main (int argc, char **argv)
 {
   QApplication app (argc, argv);
 
-  if (argc != 7)
+  if (argc != 6)
     {
-      fprintf (stderr, "smfiledialog: bad number of args, expect (argc == 7), got %d\n", argc);
+      fprintf (stderr, "smfiledialog: bad number of args, expect (argc == 6), got %d\n", argc);
       return 1;
     }
 
   if (strcmp (argv[1], "open") == 0)
     {
-      return show_dialog (true, argv[2], argv[3], argv[4], argv[5], argv[6]);
+      return show_dialog (true, argv[2], argv[3], argv[4], argv[5]);
     }
   else if (strcmp (argv[1], "save") == 0)
     {
-      return show_dialog (false, argv[2], argv[3], argv[4], argv[5], argv[6]);
+      return show_dialog (false, argv[2], argv[3], argv[4], argv[5]);
     }
   else
     {

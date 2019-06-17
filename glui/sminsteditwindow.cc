@@ -489,7 +489,10 @@ InstEditWindow::loop_to_text (const Sample::Loop loop)
 void
 InstEditWindow::on_add_sample_clicked()
 {
-  open_file_dialog ("Select Sample to load", "Wav Files", "*.wav", [=](string filename) {
+  FileDialogFormats formats;
+  formats.add ("Supported Audio Files", { "wav", "flac", "ogg", "aiff" });
+  formats.add ("All Files", { "*" });
+  open_file_dialog ("Select Sample to load", formats, [=](string filename) {
     load_sample (filename);
   });
 }
@@ -558,7 +561,8 @@ InstEditWindow::on_show_hide_note()
 void
 InstEditWindow::on_save_clicked()
 {
-  save_file_dialog ("Select SpectMorph Instrument save filename", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
+  FileDialogFormats formats ("SpectMorph Instrument files", "sminst");
+  save_file_dialog ("Select SpectMorph Instrument save filename", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->save (filename);
@@ -574,7 +578,8 @@ InstEditWindow::on_save_clicked()
 void
 InstEditWindow::on_load_clicked()
 {
-  window()->open_file_dialog ("Select SpectMorph Instrument to load", "SpectMorph Instrument files", "*.sminst", [=](string filename) {
+  FileDialogFormats formats ("SpectMorph Instrument files", "sminst");
+  window()->open_file_dialog ("Select SpectMorph Instrument to load", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = instrument->load (filename);

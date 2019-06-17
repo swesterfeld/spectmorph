@@ -25,7 +25,7 @@ class ExtFileDialog : public NativeFileDialog
   static string last_start_directory;
 
 public:
-  ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter);
+  ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats);
 
   void process_events();
 };
@@ -35,12 +35,12 @@ string ExtFileDialog::last_start_directory;
 }
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
 {
-  return new ExtFileDialog (win_id, open, title, filter_title, filter);
+  return new ExtFileDialog (win_id, open, title, formats);
 }
 
-ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
 {
   GError *err;
 
@@ -57,8 +57,28 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
   string attach = string_printf ("%ld", win_id);
   string smfiledialog = sm_get_install_dir (INSTALL_DIR_BIN) + "/smfiledialog.sh";
 
+  string filter_spec;
+  for (auto format : formats.formats)
+    {
+      string filter;
+      for (auto ext : format.exts)
+        {
+          if (!filter.empty())
+            filter += " ";
+
+          if (ext == "*") /* filter for all should be '*', not '*.*' */
+            filter += "*";
+          else
+            filter += "*." + ext;
+        }
+
+      if (!filter_spec.empty())
+        filter_spec += "|";
+      filter_spec += format.title + "(" + filter + ")";
+    }
+  /* example filter spec: Supported Audio Files(*.wav *.flac *.ogg *.aiff)|Wav Files(*.wav)|FLAC Files(*.flac)|All Files(*) */
   vector<const char *> argv = { smfiledialog.c_str(), open ? "open" : "save",
-                                last_start_directory.c_str(), filter.c_str(), filter_title.c_str(), title.c_str(), attach.c_str(), nullptr };
+                                last_start_directory.c_str(), filter_spec.c_str(), title.c_str(), attach.c_str(), nullptr };
 
   if (!g_spawn_async_with_pipes (NULL, /* working directory = current dir */
                                  (char **) &argv[0],
