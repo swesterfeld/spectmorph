@@ -489,7 +489,8 @@ InstEditWindow::loop_to_text (const Sample::Loop loop)
 void
 InstEditWindow::on_add_sample_clicked()
 {
-  FileDialogFormats formats ("Wav Files", "wav");
+  FileDialogFormats formats;
+  formats.add ("Supported Audio Files", { "wav", "flac", "ogg", "aiff" });
   open_file_dialog ("Select Sample to load", formats, [=](string filename) {
     load_sample (filename);
   });

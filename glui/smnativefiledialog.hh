@@ -12,14 +12,30 @@ namespace SpectMorph
 
 struct FileDialogFormats
 {
-  FileDialogFormats (const std::string& title, const std::string& ext)
+  struct Format
   {
-    filter_title = title;
-    filter       = "*." + ext;
+    std::string              title;
+    std::vector<std::string> exts;
+  };
+  std::vector<Format> formats;
+
+  FileDialogFormats()
+  {
   }
 
-  std::string filter_title;
-  std::string filter;
+  FileDialogFormats (const std::string& title, const std::string& ext)
+  {
+    add (title, { ext });
+  }
+
+  void
+  add (const std::string& title, const std::vector<std::string>& exts)
+  {
+    Format format;
+    format.title = title;
+    format.exts  = exts;
+    formats.push_back (format);
+  }
 };
 
 class NativeFileDialog
