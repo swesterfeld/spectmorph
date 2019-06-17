@@ -160,7 +160,8 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 void
 MorphPlanWindow::on_file_import_clicked()
 {
-  open_file_dialog ("Select SpectMorph Preset to import", "SpectMorph Preset files", "*.smplan", [=](string filename) {
+  FileDialogFormats formats ("SpectMorph Preset files", "smplan");
+  open_file_dialog ("Select SpectMorph Preset to import", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = load (filename);
@@ -177,7 +178,8 @@ MorphPlanWindow::on_file_import_clicked()
 void
 MorphPlanWindow::on_file_export_clicked()
 {
-  save_file_dialog ("Select SpectMorph Preset export filename", "SpectMorph Preset files", "*.smplan", [=](string filename) {
+  FileDialogFormats formats ("SpectMorph Preset files", "smplan");
+  save_file_dialog ("Select SpectMorph Preset export filename", formats, [=](string filename) {
     if (filename != "")
       {
         Error error = save (filename);
