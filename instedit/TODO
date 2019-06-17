@@ -2,7 +2,6 @@
 
 UI:
 - combobox should support scroll wheel
-- implement revert
 
 PROJECT:
 - somewhat better error handling
