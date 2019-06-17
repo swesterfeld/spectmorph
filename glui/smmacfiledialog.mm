@@ -19,17 +19,22 @@ class MacFileDialog : public NativeFileDialog
 
   string selected_filename;
 public:
-  MacFileDialog (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+  MacFileDialog (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
   {
     NSString* titleString = [[NSString alloc]
                              initWithBytes:title.c_str()
                              length:title.size()
                              encoding:NSUTF8StringEncoding];
 
-    string extension = filter2ext (filter);
-
     NSMutableArray *file_types_array = [NSMutableArray new];
-    [file_types_array addObject:[NSString stringWithUTF8String:extension.c_str()]];
+
+    // NSOpenPanel doesn't support multiple filters
+    //  -> we use only the extensions of the first format
+    //  -> to make this usable on macOS, the first format should contain all supported file extensions
+    for (auto extension : formats.formats[0].exts)
+      {
+        [file_types_array addObject:[NSString stringWithUTF8String:extension.c_str()]];
+      }
 
     if (open)
       {
@@ -96,9 +101,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const string& filter_title, const string& filter)
+NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
 {
-  return new MacFileDialog (win_id, open, title, filter_title, filter);
+  return new MacFileDialog (win_id, open, title, formats);
 }
 
 }
