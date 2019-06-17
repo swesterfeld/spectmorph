@@ -1,7 +1,6 @@
 - fix error handling for WavSet::save() and others
 
 UI:
-- fix file dialog mask (allow .wav, .flac, ...)
 - combobox should support scroll wheel
 - implement revert
 
