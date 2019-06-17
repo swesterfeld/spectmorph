@@ -491,10 +491,6 @@ InstEditWindow::on_add_sample_clicked()
 {
   FileDialogFormats formats;
   formats.add ("Supported Audio Files", { "wav", "flac", "ogg", "aiff" });
-  formats.add ("Wav Files", { "wav" });
-  formats.add ("FLAC Files", { "flac" });
-  formats.add ("Test Text", { "txt", "pdf", "lowriter" });
-  formats.add ("Test Source", { "c", "cc", "h", "hh", "py" });
   formats.add ("All Files", { "*" });
   open_file_dialog ("Select Sample to load", formats, [=](string filename) {
     load_sample (filename);
