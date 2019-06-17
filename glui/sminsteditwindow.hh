@@ -56,6 +56,7 @@ public:
 class InstEditWindow : public Window
 {
   Instrument *instrument;
+  std::vector<unsigned char> revert_instrument_data;
   InstEditBackend m_backend;
   SynthInterface *synth_interface;
 
@@ -104,6 +105,8 @@ public:
   InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window = nullptr);
   ~InstEditWindow();
 
+  void on_clear();
+  void on_revert();
   void on_add_sample_clicked();
   void on_remove_sample_clicked();
   void on_update_hzoom (float value);

@@ -13,6 +13,7 @@
 #include "smsynthinterface.hh"
 #include "smscrollview.hh"
 #include "sminstenccache.hh"
+#include "smzip.hh"
 
 using namespace SpectMorph;
 
@@ -99,6 +100,11 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   assert (edit_instrument != nullptr);
   instrument = edit_instrument;
 
+  /* make a backup to be able to revert */
+  ZipWriter writer;
+  instrument->save (writer);
+  revert_instrument_data = writer.data();
+
   /* attach to model */
   connect (instrument->signal_samples_changed, this, &InstEditWindow::on_samples_changed);
   connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_changed);
@@ -113,6 +119,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   fill_zoom_menu (menu_bar->add_menu ("Zoom"));
   Menu *file_menu = menu_bar->add_menu ("File");
+
+  MenuItem *clear_item = file_menu->add_item ("Clear Instrument");
+  connect (clear_item->signal_clicked, this, &InstEditWindow::on_clear);
+
+  MenuItem *revert_item = file_menu->add_item ("Revert Instrument");
+  connect (revert_item->signal_clicked, this, &InstEditWindow::on_revert);
 
   MenuItem *add_item = file_menu->add_item ("Add Sample...");
   connect (add_item->signal_clicked, this, &InstEditWindow::on_add_sample_clicked);
@@ -484,6 +496,19 @@ InstEditWindow::loop_to_text (const Sample::Loop loop)
       case Sample::Loop::SINGLE_FRAME:return "Single Frame";
     }
   return ""; /* not found */
+}
+
+void
+InstEditWindow::on_clear()
+{
+  instrument->clear();
+}
+
+void
+InstEditWindow::on_revert()
+{
+  ZipReader reader (revert_instrument_data);
+  instrument->load (reader);
 }
 
 void
