@@ -16,6 +16,7 @@ protected:
   std::string m_text;
   bool highlight = false;
   bool click_to_focus = false;
+  int cursor_pos = 3;
 
 public:
   void
@@ -68,9 +69,13 @@ public:
     /* draw cursor */
     if (window()->has_keyboard_focus (this))
       {
+        std::vector<uint32> uc = utf8_to_unicode (m_text);
+        if (int (uc.size()) > cursor_pos)
+          uc.resize (cursor_pos);
+        std::string b4 = utf8_from_unicode (uc);
         double w_ = du.text_width ("_");
-        double tw = du.text_width ("_" + m_text + "_") - 2 * w_; /* also count spaces at start/end */
-        du.round_box (10 + tw + 1, space * 2, w_, height - 4 * space, 1, 0, Color::null(), ThemeColor::SLIDER /* FIXME */ );
+        double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
+        du.rect_fill (10 + tw + 1, space * 2, 1, height - 4 * space, text_color);
       }
   }
   bool
@@ -132,6 +137,16 @@ public:
     else if (key_event.character == 27)
       {
         signal_esc_pressed();
+      }
+    else if (key_event.special == PUGL_KEY_LEFT)
+      {
+        cursor_pos = std::max (cursor_pos - 1, 0);
+        update();
+      }
+    else if (key_event.special == PUGL_KEY_RIGHT)
+      {
+        cursor_pos++;
+        update();
       }
     if (m_text != old_text)
       {

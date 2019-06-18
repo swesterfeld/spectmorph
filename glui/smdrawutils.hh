@@ -68,6 +68,13 @@ struct DrawUtils
     round_box (r.x(), r.y(), r.width(), r.height(), line_width, radius, frame_color, fill_color);
   }
   void
+  rect_fill (double x, double y, double width, double height, Color fill_color)
+  {
+    set_color (fill_color);
+    cairo_rectangle (cr, x, y, width, height);
+    cairo_fill (cr);
+  }
+  void
   text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)
   {
     // draw label
