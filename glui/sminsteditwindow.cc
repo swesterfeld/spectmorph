@@ -192,7 +192,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   for (int i = 127; i >= 0; i--)
     midi_note_combobox->add_item (note_to_text (i));
 
-  grid.add_widget (new Label (this, "Midi Note"), 1, 60, 10, 3);
+  grid.add_widget (new Label (this, "Midi Note"), 1, 60, 7, 3);
   grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
 
   show_pitch_button = new Button (this, "Edit Note");
@@ -210,7 +210,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   loop_combobox->add_item (loop_to_text (Sample::Loop::PING_PONG));
   loop_combobox->add_item (loop_to_text (Sample::Loop::SINGLE_FRAME));
 
-  grid.add_widget (new Label (this, "Loop"), 1, 63, 10, 3);
+  grid.add_widget (new Label (this, "Loop"), 1, 63, 7, 3);
   grid.add_widget (loop_combobox, 8, 63, 20, 3);
 
   /*---- name ----*/
@@ -219,7 +219,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   name_line_edit->set_click_to_focus (true);
   connect (name_line_edit->signal_text_changed, [this] (const string& name) { instrument->set_name (name); });
 
-  grid.add_widget (new Label (this, "Name"), 1, 66, 10, 3);
+  grid.add_widget (new Label (this, "Name"), 1, 66, 7, 3);
   grid.add_widget (name_line_edit, 8, 66, 20, 3);
 
   /*--- time --- */
