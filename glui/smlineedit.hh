@@ -21,6 +21,8 @@ protected:
   int  cursor_pos = 0;
   int  select_start = -1;
   std::vector<double> prefix_x;
+  MouseEvent last_press_event; /* triple click detection */
+  double last_press_time = 0;
 public:
   void
   set_text (const std::string& new_text)
@@ -294,6 +296,12 @@ public:
   void
   mouse_press (const MouseEvent& event) override
   {
+    const double time = get_time();
+    const bool triple_click = (event.double_click &&
+                               last_press_event.double_click &&
+                               get_time() - last_press_time < 0.4);
+    last_press_time = time;
+    last_press_event = event;
     if (event.button == LEFT_BUTTON)
       {
         if (click_to_focus)
@@ -301,8 +309,14 @@ public:
             window()->set_keyboard_focus (this, true);
             update();
           }
+        if (triple_click)
+          {
+            select_start = 0;
+            cursor_pos = text32.size();
 
-        if (event.double_click)
+            update();
+          }
+        else if (event.double_click)
           {
             /* get position, but avoid past-last-character cursor pos */
             const int pos = std::min (x_to_cursor_pos (event.x), int (text32.size()) - 1);
