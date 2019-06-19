@@ -17,6 +17,7 @@ protected:
   std::u32string text32;
   bool highlight = false;
   bool click_to_focus = false;
+  bool mouse_drag = false;
   bool cursor_blink = false;
   int  cursor_pos = 0;
   int  select_start = -1;
@@ -304,6 +305,7 @@ public:
     last_press_event = event;
     if (event.button == LEFT_BUTTON)
       {
+        mouse_drag = false;
         if (click_to_focus)
           {
             window()->set_keyboard_focus (this, true);
@@ -346,6 +348,7 @@ public:
               {
                 select_start = pos;
                 cursor_pos = pos;
+                mouse_drag = true;
               }
             update();
           }
@@ -354,7 +357,7 @@ public:
   void
   mouse_move (const MouseEvent& event) override
   {
-    if (event.buttons & LEFT_BUTTON)
+    if (mouse_drag) /* select by dragging */
       {
         const int pos = x_to_cursor_pos (event.x);
         if (pos >= 0)
@@ -362,6 +365,12 @@ public:
 
         update();
       }
+  }
+  void
+  mouse_release (const MouseEvent& event) override
+  {
+    if (event.button == LEFT_BUTTON)
+      mouse_drag = false;
   }
   Signal<std::string> signal_text_changed;
   Signal<>            signal_return_pressed;
