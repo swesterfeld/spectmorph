@@ -159,6 +159,7 @@ public:
     if (!line_edit)
       {
         line_edit = new LineEdit (this, model->value_text());
+        line_edit->select_all();
         line_edit->height = height;
         line_edit->width = width;
         line_edit->x = 0;

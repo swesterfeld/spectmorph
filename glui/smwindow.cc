@@ -582,7 +582,9 @@ Window::on_button_event (const PuglEventButton& event)
         mouse_widget = find_widget_xy (ex, ey);
       mouse_buttons_pressed |= to_mouse_button (event.button);
 
-      if (keyboard_focus_widget && keyboard_focus_release_on_click)
+      if (keyboard_focus_widget &&
+          keyboard_focus_release_on_click &&
+          mouse_widget != keyboard_focus_widget) /* we only release focus if the click is outside the widget */
         {
           keyboard_focus_widget->focus_out_event();
           keyboard_focus_widget = nullptr;

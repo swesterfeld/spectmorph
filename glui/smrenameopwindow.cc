@@ -31,6 +31,7 @@ RenameOpWindow::RenameOpWindow (Window *window, MorphOperator *op) :
   grid.add_widget (new Label (this, "Name"), 1, yoffset, 30, 3);
 
   line_edit = new LineEdit (this, op->name());
+  line_edit->select_all();
   grid.add_widget (line_edit, 7, yoffset, 31, 3);
   set_keyboard_focus (line_edit);
 
