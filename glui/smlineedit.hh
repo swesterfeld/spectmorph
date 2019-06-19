@@ -14,27 +14,28 @@ namespace SpectMorph
 class LineEdit : public Widget
 {
 protected:
-  std::string m_text;
+  std::u32string text32;
   bool highlight = false;
   bool click_to_focus = false;
   bool cursor_blink = false;
-  int  cursor_pos = 3;
+  int  cursor_pos = 0;
   std::vector<double> prefix_x;
-
 public:
   void
   set_text (const std::string& new_text)
   {
-    if (m_text == new_text)
+    auto new_text32 = to_utf32 (new_text);
+    if (text32 == new_text32)
       return;
 
-    m_text = new_text;
+    text32 = new_text32;
+    cursor_pos = text32.size();
     update();
   }
   std::string
   text() const
   {
-    return m_text;
+    return to_utf8 (text32);
   }
   void
   set_click_to_focus (bool ctf)
@@ -42,9 +43,11 @@ public:
     click_to_focus = ctf;
   }
   LineEdit (Widget *parent, const std::string& start_text) :
-    Widget (parent),
-    m_text (start_text)
+    Widget (parent)
   {
+    text32 = to_utf32 (start_text);
+    cursor_pos = text32.size();
+
     Timer *timer = new Timer (this);
     connect (timer->signal_timeout, this, &LineEdit::on_timer);
     timer->start (500);
@@ -75,18 +78,17 @@ public:
 
     du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color, fill_color);
 
+    std::string text = to_utf8 (text32);
     du.set_color (text_color);
-    du.text (m_text, 10, 0, width - 10, height);
+    du.text (text, 10, 0, width - 10, height);
 
     /* compute prefix width array */
-    std::vector<uint32> uc = utf8_to_unicode (m_text);
     prefix_x.clear();
-    for (size_t i = 0; i < uc.size() + 1; i++)
+    for (size_t i = 0; i < text32.size() + 1; i++)
       {
-        std::vector<uint32> prefix = uc;
-        prefix.resize (i);
+        auto prefix = text32.substr (0, i);
 
-        std::string b4 = utf8_from_unicode (prefix);
+        std::string b4 = to_utf8 (prefix);
         double w_ = du.text_width ("_");
         double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
         prefix_x.push_back (10 + tw);
@@ -103,10 +105,10 @@ public:
     return (u <= 0x1F) || (u >= 0x7F && u <= 0x9f);
   }
   static std::string
-  utf8_from_unicode (const std::vector<uint32>& unicode)
+  to_utf8 (const std::u32string& str)
   {
-    std::string utf8 = "";
-    for (auto c : unicode)
+    std::string utf8;
+    for (auto c : str)
       {
         char buffer[8] = { 0, };
         g_unichar_to_utf8 (c, buffer);
@@ -114,23 +116,23 @@ public:
       }
     return utf8;
   }
-  static std::vector<uint32>
-  utf8_to_unicode (const std::string& utf8)
+  static std::u32string
+  to_utf32 (const std::string& utf8)
   {
+    std::u32string utf32;
     gunichar *uc = g_utf8_to_ucs4 (utf8.c_str(), -1, NULL, NULL, NULL);
-    std::vector<uint32> chars;
     if (uc)
       {
         for (size_t i = 0; uc[i]; i++)
-          chars.push_back (uc[i]);
+          utf32.push_back (uc[i]);
       }
     g_free (uc);
-    return chars;
+    return utf32;
   }
   virtual void
   key_press_event (const PuglEventKey& key_event) override
   {
-    std::string old_text = m_text;
+    std::u32string old_text32 = text32;
 
     if (key_event.filter)
       {
@@ -139,30 +141,25 @@ public:
       }
     if (!is_control (key_event.character) && key_event.utf8[0])
       {
-        std::vector<uint32> input = utf8_to_unicode ((const char *) key_event.utf8);
-        std::vector<uint32> chars = utf8_to_unicode (m_text);
-        chars.insert (chars.begin() + cursor_pos, input.begin(), input.end());
-        m_text = utf8_from_unicode (chars);
+        std::u32string input = to_utf32 ((const char *) key_event.utf8);
+        text32.insert (cursor_pos, input);
         cursor_pos++;
       }
-    else if ((key_event.character == PUGL_CHAR_BACKSPACE || key_event.character == PUGL_CHAR_DELETE) && !m_text.empty())
+    else if ((key_event.character == PUGL_CHAR_BACKSPACE || key_event.character == PUGL_CHAR_DELETE) && !text32.empty())
       {
         // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
-        std::vector<uint32> chars = utf8_to_unicode (m_text);
 
         if (key_event.character == PUGL_CHAR_BACKSPACE)
           {
-            if (chars.size() && cursor_pos && cursor_pos <= int (chars.size()))
-              chars.erase (chars.begin() + cursor_pos - 1);
+            if (cursor_pos > 0 && cursor_pos <= int (text32.size()))
+              text32.erase (cursor_pos - 1, 1);
             cursor_pos--;
           }
         else /* DELETE */
           {
-            if (chars.size() && cursor_pos < int (chars.size()))
-              chars.erase (chars.begin() + cursor_pos);
+            if (cursor_pos < int (text32.size()))
+              text32.erase (cursor_pos, 1);
           }
-
-        m_text = utf8_from_unicode (chars);
       }
     else if (key_event.character == 13)
       {
@@ -179,13 +176,12 @@ public:
       }
     else if (key_event.special == PUGL_KEY_RIGHT)
       {
-        std::vector<uint32> chars = utf8_to_unicode (m_text);
-        cursor_pos = std::min<int> (cursor_pos + 1, chars.size());
+        cursor_pos = std::min<int> (cursor_pos + 1, text32.size());
         update();
       }
-    if (m_text != old_text)
+    if (text32 != old_text32)
       {
-        signal_text_changed (m_text);
+        signal_text_changed (to_utf8 (text32));
         update();
       }
   }
