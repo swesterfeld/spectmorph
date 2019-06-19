@@ -19,6 +19,7 @@ protected:
   bool click_to_focus = false;
   bool cursor_blink = false;
   int  cursor_pos = 0;
+  int  select_start = -1;
   std::vector<double> prefix_x;
 public:
   void
@@ -30,6 +31,7 @@ public:
 
     text32 = new_text32;
     cursor_pos = text32.size();
+    select_start = -1;
     update();
   }
   std::string
@@ -78,10 +80,6 @@ public:
 
     du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color, fill_color);
 
-    std::string text = to_utf8 (text32);
-    du.set_color (text_color);
-    du.text (text, 10, 0, width - 10, height);
-
     /* compute prefix width array */
     prefix_x.clear();
     for (size_t i = 0; i < text32.size() + 1; i++)
@@ -91,13 +89,23 @@ public:
         std::string b4 = to_utf8 (prefix);
         double w_ = du.text_width ("_");
         double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
-        prefix_x.push_back (10 + tw);
+        prefix_x.push_back (10 + tw + 1);
       }
+    if (select_start >= 0 && select_start != cursor_pos)
+      {
+        const int select_l = prefix_x[std::min (select_start, cursor_pos)];
+        const int select_r = prefix_x[std::max (select_start, cursor_pos)];
+
+        du.rect_fill (select_l, space * 3, select_r - select_l, height - 6 * space, Color (0, 0.5, 0));
+      }
+
+    std::string text = to_utf8 (text32);
+    du.set_color (text_color);
+    du.text (text, 10, 0, width - 10, height);
+
     /* draw cursor */
     if (window()->has_keyboard_focus (this) && cursor_blink)
-      {
-        du.rect_fill (prefix_x[cursor_pos], space * 2, 1, height - 4 * space, text_color);
-      }
+      du.rect_fill (prefix_x[cursor_pos] - 0.5, space * 3, 1, height - 6 * space, text_color);
   }
   bool
   is_control (uint32 u)
@@ -129,10 +137,21 @@ public:
     g_free (uc);
     return utf32;
   }
+  void
+  overwrite_selection()
+  {
+    int l = std::min (select_start, cursor_pos);
+    int r = std::max (select_start, cursor_pos);
+    text32.erase (l, r - l);
+    cursor_pos = l;
+
+    select_start = -1;
+  }
   virtual void
   key_press_event (const PuglEventKey& key_event) override
   {
     std::u32string old_text32 = text32;
+    const bool mod_shift = key_event.state & PUGL_MOD_SHIFT;
 
     if (key_event.filter)
       {
@@ -141,6 +160,9 @@ public:
       }
     if (!is_control (key_event.character) && key_event.utf8[0])
       {
+        if (select_start >= 0)
+          overwrite_selection();
+
         std::u32string input = to_utf32 ((const char *) key_event.utf8);
         text32.insert (cursor_pos, input);
         cursor_pos++;
@@ -149,7 +171,11 @@ public:
       {
         // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
 
-        if (key_event.character == PUGL_CHAR_BACKSPACE)
+        if (select_start >= 0)
+          {
+            overwrite_selection();
+          }
+        else if (key_event.character == PUGL_CHAR_BACKSPACE)
           {
             if (cursor_pos > 0 && cursor_pos <= int (text32.size()))
               text32.erase (cursor_pos - 1, 1);
@@ -171,11 +197,17 @@ public:
       }
     else if (key_event.special == PUGL_KEY_LEFT)
       {
+        if (mod_shift && select_start == -1)
+          select_start = cursor_pos;
+
         cursor_pos = std::max (cursor_pos - 1, 0);
         update();
       }
     else if (key_event.special == PUGL_KEY_RIGHT)
       {
+        if (mod_shift && select_start == -1)
+          select_start = cursor_pos;
+
         cursor_pos = std::min<int> (cursor_pos + 1, text32.size());
         update();
       }
