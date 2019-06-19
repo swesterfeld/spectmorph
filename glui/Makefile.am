@@ -33,7 +33,7 @@ SMSRCS = smwidget.cc smwindow.cc smmorphplanview.cc smmorphplanwindow.cc \
 	 smdialog.cc smaboutdialog.cc smmorphplancontrol.cc \
 	 smdrawutils.cc smrenameopwindow.cc smmorphwavsourceview.cc \
 	 smtimer.cc smshortcut.cc smparamlabel.cc smeventloop.cc \
-	 sminsteditwindow.cc
+	 sminsteditwindow.cc smlineedit.cc
 
 SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smcombobox.hh smdrawutils.hh smscrollbar.hh smmenubar.hh \
