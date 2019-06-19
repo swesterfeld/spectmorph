@@ -4,7 +4,12 @@
 
 using namespace SpectMorph;
 
-LineEdit::LineEdit (Widget *parent, const std::string& start_text) :
+using std::string;
+using std::u32string;
+using std::min;
+using std::max;
+
+LineEdit::LineEdit (Widget *parent, const string& start_text) :
   Widget (parent)
 {
   text32 = to_utf32 (start_text);
@@ -16,7 +21,7 @@ LineEdit::LineEdit (Widget *parent, const std::string& start_text) :
 }
 
 void
-LineEdit::set_text (const std::string& new_text)
+LineEdit::set_text (const string& new_text)
 {
   auto new_text32 = to_utf32 (new_text);
   if (text32 == new_text32)
@@ -28,7 +33,7 @@ LineEdit::set_text (const std::string& new_text)
   update();
 }
 
-std::string
+string
 LineEdit::text() const
 {
   return to_utf8 (text32);
@@ -73,20 +78,20 @@ LineEdit::draw (const DrawEvent& devent)
     {
       auto prefix = text32.substr (0, i);
 
-      std::string b4 = to_utf8 (prefix);
+      string b4 = to_utf8 (prefix);
       double w_ = du.text_width ("_");
       double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
       prefix_x.push_back (10 + tw + 1);
     }
   if (select_start >= 0 && select_start != cursor_pos)
     {
-      const int select_l = prefix_x[std::min (select_start, cursor_pos)];
-      const int select_r = prefix_x[std::max (select_start, cursor_pos)];
+      const int select_l = prefix_x[min (select_start, cursor_pos)];
+      const int select_r = prefix_x[max (select_start, cursor_pos)];
 
       du.rect_fill (select_l, space * 3, select_r - select_l, height - 6 * space, Color (0, 0.5, 0));
     }
 
-  std::string text = to_utf8 (text32);
+  string text = to_utf8 (text32);
   du.set_color (text_color);
   du.text (text, 10, 0, width - 10, height);
 
@@ -101,10 +106,10 @@ LineEdit::is_control (uint32 u)
   return (u <= 0x1F) || (u >= 0x7F && u <= 0x9f);
 }
 
-std::string
-LineEdit::to_utf8 (const std::u32string& str)
+string
+LineEdit::to_utf8 (const u32string& str)
 {
-  std::string utf8;
+  string utf8;
   for (auto c : str)
     {
       char buffer[8] = { 0, };
@@ -114,10 +119,10 @@ LineEdit::to_utf8 (const std::u32string& str)
   return utf8;
 }
 
-std::u32string
-LineEdit::to_utf32 (const std::string& utf8)
+u32string
+LineEdit::to_utf32 (const string& utf8)
 {
-  std::u32string utf32;
+  u32string utf32;
   gunichar *uc = g_utf8_to_ucs4 (utf8.c_str(), -1, NULL, NULL, NULL);
   if (uc)
     {
@@ -134,8 +139,8 @@ LineEdit::overwrite_selection()
   if (select_start < 0)
     return false;
 
-  int l = std::min (select_start, cursor_pos);
-  int r = std::max (select_start, cursor_pos);
+  int l = min (select_start, cursor_pos);
+  int r = max (select_start, cursor_pos);
   text32.erase (l, r - l);
   cursor_pos = l;
 
@@ -155,7 +160,7 @@ LineEdit::select_all()
 void
 LineEdit::key_press_event (const PuglEventKey& key_event)
 {
-  std::u32string old_text32 = text32;
+  u32string old_text32 = text32;
   const bool mod_shift = key_event.state & PUGL_MOD_SHIFT;
 
   if (key_event.filter)
@@ -171,7 +176,7 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
     {
       overwrite_selection();
 
-      std::u32string input = to_utf32 ((const char *) key_event.utf8);
+      u32string input = to_utf32 ((const char *) key_event.utf8);
       text32.insert (cursor_pos, input);
       cursor_pos++;
     }
@@ -209,12 +214,12 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
         select_start = cursor_pos;
       if (!mod_shift && select_start != -1)
         {
-          cursor_pos = std::min (select_start, cursor_pos);
+          cursor_pos = min (select_start, cursor_pos);
           select_start = -1;
         }
       else
         {
-          cursor_pos = std::max (cursor_pos - 1, 0);
+          cursor_pos = max (cursor_pos - 1, 0);
         }
       update();
     }
@@ -224,12 +229,12 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
         select_start = cursor_pos;
       if (!mod_shift && select_start != -1)
         {
-          cursor_pos = std::max (select_start, cursor_pos);
+          cursor_pos = max (select_start, cursor_pos);
           select_start = -1;
         }
       else
         {
-          cursor_pos = std::min<int> (cursor_pos + 1, text32.size());
+          cursor_pos = min<int> (cursor_pos + 1, text32.size());
         }
       update();
     }
@@ -327,7 +332,7 @@ LineEdit::mouse_press (const MouseEvent& event)
       else if (event.double_click)
         {
           /* get position, but avoid past-last-character cursor pos */
-          const int pos = std::min (x_to_cursor_pos (event.x), int (text32.size()) - 1);
+          const int pos = min (x_to_cursor_pos (event.x), int (text32.size()) - 1);
           if (pos >= 0)
             {
               if (!is_word_char (pos))
