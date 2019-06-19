@@ -37,6 +37,7 @@ public:
 
   void set_text (const std::string& new_text);
   std::string text() const;
+  void select_all();
   void set_click_to_focus (bool ctf);
 
   void draw (const DrawEvent& devent) override;

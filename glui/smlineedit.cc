@@ -144,6 +144,15 @@ LineEdit::overwrite_selection()
 }
 
 void
+LineEdit::select_all()
+{
+  select_start = 0;
+  cursor_pos = text32.size();
+
+  update();
+}
+
+void
 LineEdit::key_press_event (const PuglEventKey& key_event)
 {
   std::u32string old_text32 = text32;
@@ -154,7 +163,11 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
       /* multi key sequence -> ignore */
       return;
     }
-  if (!is_control (key_event.character) && key_event.utf8[0])
+  if (key_event.character == 1) /* Ctrl+A */
+    {
+      select_all();
+    }
+  else if (!is_control (key_event.character) && key_event.utf8[0])
     {
       overwrite_selection();
 
@@ -309,10 +322,7 @@ LineEdit::mouse_press (const MouseEvent& event)
         }
       if (triple_click)
         {
-          select_start = 0;
-          cursor_pos = text32.size();
-
-          update();
+          select_all();
         }
       else if (event.double_click)
         {
