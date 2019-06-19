@@ -120,14 +120,29 @@ public:
       }
     if (!is_control (key_event.character) && key_event.utf8[0])
       {
-        m_text += (const char *) key_event.utf8;
+        std::vector<uint32> input = utf8_to_unicode ((const char *) key_event.utf8);
+        std::vector<uint32> chars = utf8_to_unicode (m_text);
+        chars.insert (chars.begin() + cursor_pos, input.begin(), input.end());
+        m_text = utf8_from_unicode (chars);
+        cursor_pos++;
       }
     else if ((key_event.character == PUGL_CHAR_BACKSPACE || key_event.character == PUGL_CHAR_DELETE) && !m_text.empty())
       {
-        // Windows and Linux use backspace, macOS uses delete, so we support both
+        // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
         std::vector<uint32> chars = utf8_to_unicode (m_text);
-        if (chars.size())
-          chars.pop_back();
+
+        if (key_event.character == PUGL_CHAR_BACKSPACE)
+          {
+            if (chars.size() && cursor_pos && cursor_pos <= int (chars.size()))
+              chars.erase (chars.begin() + cursor_pos - 1);
+            cursor_pos--;
+          }
+        else /* DELETE */
+          {
+            if (chars.size() && cursor_pos < int (chars.size()))
+              chars.erase (chars.begin() + cursor_pos);
+          }
+
         m_text = utf8_from_unicode (chars);
       }
     else if (key_event.character == 13)
@@ -145,7 +160,8 @@ public:
       }
     else if (key_event.special == PUGL_KEY_RIGHT)
       {
-        cursor_pos++;
+        std::vector<uint32> chars = utf8_to_unicode (m_text);
+        cursor_pos = std::min<int> (cursor_pos + 1, chars.size());
         update();
       }
     if (m_text != old_text)
