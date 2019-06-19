@@ -137,15 +137,19 @@ public:
     g_free (uc);
     return utf32;
   }
-  void
+  bool
   overwrite_selection()
   {
+    if (select_start < 0)
+      return false;
+
     int l = std::min (select_start, cursor_pos);
     int r = std::max (select_start, cursor_pos);
     text32.erase (l, r - l);
     cursor_pos = l;
 
     select_start = -1;
+    return l != r;
   }
   virtual void
   key_press_event (const PuglEventKey& key_event) override
@@ -160,8 +164,7 @@ public:
       }
     if (!is_control (key_event.character) && key_event.utf8[0])
       {
-        if (select_start >= 0)
-          overwrite_selection();
+        overwrite_selection();
 
         std::u32string input = to_utf32 ((const char *) key_event.utf8);
         text32.insert (cursor_pos, input);
@@ -171,9 +174,9 @@ public:
       {
         // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
 
-        if (select_start >= 0)
+        if (overwrite_selection())
           {
-            overwrite_selection();
+            // if there was a selection, we just overwrite it
           }
         else if (key_event.character == PUGL_CHAR_BACKSPACE)
           {
@@ -199,16 +202,30 @@ public:
       {
         if (mod_shift && select_start == -1)
           select_start = cursor_pos;
-
-        cursor_pos = std::max (cursor_pos - 1, 0);
+        if (!mod_shift && select_start != -1)
+          {
+            cursor_pos = std::min (select_start, cursor_pos);
+            select_start = -1;
+          }
+        else
+          {
+            cursor_pos = std::max (cursor_pos - 1, 0);
+          }
         update();
       }
     else if (key_event.special == PUGL_KEY_RIGHT)
       {
         if (mod_shift && select_start == -1)
           select_start = cursor_pos;
-
-        cursor_pos = std::min<int> (cursor_pos + 1, text32.size());
+        if (!mod_shift && select_start != -1)
+          {
+            cursor_pos = std::max (select_start, cursor_pos);
+            select_start = -1;
+          }
+        else
+          {
+            cursor_pos = std::min<int> (cursor_pos + 1, text32.size());
+          }
         update();
       }
     if (text32 != old_text32)
