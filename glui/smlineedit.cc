@@ -259,6 +259,7 @@ void
 LineEdit::focus_out_event()
 {
   signal_focus_out();
+  select_start = -1; // clear selection
   update();
 }
 
