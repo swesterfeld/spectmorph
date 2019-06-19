@@ -273,20 +273,68 @@ public:
       }
     return pos;
   }
+  bool
+  is_word_char (int pos)
+  {
+    if (pos < 0 || pos >= int (text32.size()))
+      return false;
+
+    auto c = text32[pos];
+
+    if (c >= 'A' && c <= 'Z')
+      return true;
+    if (c >= 'a' && c <= 'z')
+      return true;
+    if (c >= '0' && c <= '9')
+      return true;
+    if (c == '-' || c == '_')
+      return true;
+    return false;
+  }
   void
   mouse_press (const MouseEvent& event) override
   {
-    if (event.button == LEFT_BUTTON && click_to_focus)
-      window()->set_keyboard_focus (this, true);
     if (event.button == LEFT_BUTTON)
       {
-        const int pos = x_to_cursor_pos (event.x);
-        if (pos >= 0)
+        if (click_to_focus)
           {
-            select_start = pos;
-            cursor_pos = pos;
+            window()->set_keyboard_focus (this, true);
+            update();
           }
-        update();
+
+        if (event.double_click)
+          {
+            /* get position, but avoid past-last-character cursor pos */
+            const int pos = std::min (x_to_cursor_pos (event.x), int (text32.size()) - 1);
+            if (pos >= 0)
+              {
+                if (!is_word_char (pos))
+                  {
+                    select_start = pos;
+                    cursor_pos = pos + 1;
+                  }
+                else
+                  {
+                    select_start = pos;
+                    while (is_word_char (select_start - 1))
+                      select_start--;
+                    cursor_pos = pos;
+                    while (is_word_char (cursor_pos))
+                      cursor_pos++;
+                  }
+              }
+            update();
+          }
+        else
+          {
+            const int pos = x_to_cursor_pos (event.x);
+            if (pos >= 0)
+              {
+                select_start = pos;
+                cursor_pos = pos;
+              }
+            update();
+          }
       }
   }
   void
