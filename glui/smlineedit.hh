@@ -6,6 +6,7 @@
 #include "smdrawutils.hh"
 #include "smmath.hh"
 #include "smwindow.hh"
+#include "smtimer.hh"
 
 namespace SpectMorph
 {
@@ -16,7 +17,9 @@ protected:
   std::string m_text;
   bool highlight = false;
   bool click_to_focus = false;
-  int cursor_pos = 3;
+  bool cursor_blink = false;
+  int  cursor_pos = 3;
+  std::vector<double> prefix_x;
 
 public:
   void
@@ -42,6 +45,15 @@ public:
     Widget (parent),
     m_text (start_text)
   {
+    Timer *timer = new Timer (this);
+    connect (timer->signal_timeout, this, &LineEdit::on_timer);
+    timer->start (500);
+  }
+  void
+  on_timer()
+  {
+    cursor_blink = !cursor_blink;
+    update();
   }
   void
   draw (const DrawEvent& devent) override
@@ -66,16 +78,23 @@ public:
     du.set_color (text_color);
     du.text (m_text, 10, 0, width - 10, height);
 
-    /* draw cursor */
-    if (window()->has_keyboard_focus (this))
+    /* compute prefix width array */
+    std::vector<uint32> uc = utf8_to_unicode (m_text);
+    prefix_x.clear();
+    for (size_t i = 0; i < uc.size() + 1; i++)
       {
-        std::vector<uint32> uc = utf8_to_unicode (m_text);
-        if (int (uc.size()) > cursor_pos)
-          uc.resize (cursor_pos);
-        std::string b4 = utf8_from_unicode (uc);
+        std::vector<uint32> prefix = uc;
+        prefix.resize (i);
+
+        std::string b4 = utf8_from_unicode (prefix);
         double w_ = du.text_width ("_");
         double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
-        du.rect_fill (10 + tw + 1, space * 2, 1, height - 4 * space, text_color);
+        prefix_x.push_back (10 + tw);
+      }
+    /* draw cursor */
+    if (window()->has_keyboard_focus (this) && cursor_blink)
+      {
+        du.rect_fill (prefix_x[cursor_pos], space * 2, 1, height - 4 * space, text_color);
       }
   }
   bool
@@ -198,6 +217,20 @@ public:
   {
     if (event.button == LEFT_BUTTON && click_to_focus)
       window()->set_keyboard_focus (this, true);
+    if (event.button == LEFT_BUTTON && prefix_x.size())
+      {
+        double min_dist = 1e10;
+        for (size_t i = 0; i < prefix_x.size(); i++)
+          {
+            double dist = fabs (prefix_x[i] - event.x);
+            if (dist < min_dist)
+              {
+                cursor_pos = i;
+                min_dist = dist;
+              }
+          }
+        update();
+      }
   }
   Signal<std::string> signal_text_changed;
   Signal<>            signal_return_pressed;
