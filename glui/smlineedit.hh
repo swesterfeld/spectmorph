@@ -240,23 +240,47 @@ public:
     signal_focus_out();
     update();
   }
+  int
+  x_to_cursor_pos (double x)
+  {
+    int pos = -1;
+    double min_dist = 1e10;
+    for (size_t i = 0; i < prefix_x.size(); i++)
+      {
+        double dist = fabs (prefix_x[i] - x);
+        if (dist < min_dist)
+          {
+            pos = i;
+            min_dist = dist;
+          }
+      }
+    return pos;
+  }
   void
   mouse_press (const MouseEvent& event) override
   {
     if (event.button == LEFT_BUTTON && click_to_focus)
       window()->set_keyboard_focus (this, true);
-    if (event.button == LEFT_BUTTON && prefix_x.size())
+    if (event.button == LEFT_BUTTON)
       {
-        double min_dist = 1e10;
-        for (size_t i = 0; i < prefix_x.size(); i++)
+        const int pos = x_to_cursor_pos (event.x);
+        if (pos >= 0)
           {
-            double dist = fabs (prefix_x[i] - event.x);
-            if (dist < min_dist)
-              {
-                cursor_pos = i;
-                min_dist = dist;
-              }
+            select_start = pos;
+            cursor_pos = pos;
           }
+        update();
+      }
+  }
+  void
+  mouse_move (const MouseEvent& event) override
+  {
+    if (event.buttons & LEFT_BUTTON)
+      {
+        const int pos = x_to_cursor_pos (event.x);
+        if (pos >= 0)
+          cursor_pos = pos;
+
         update();
       }
   }
