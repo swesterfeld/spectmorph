@@ -193,7 +193,7 @@ typedef struct {
 	PuglEventType type;        /**< PUGL_BUTTON_PRESS or PUGL_BUTTON_RELEASE. */
 	PuglView*     view;        /**< View that received this event. */
 	uint32_t      flags;       /**< Bitwise OR of PuglEventFlag values. */
-	uint32_t      time;        /**< Time in milliseconds. */
+	double        time;        /**< Time in seconds. */
 	double        x;           /**< View-relative X coordinate. */
 	double        y;           /**< View-relative Y coordinate. */
 	double        x_root;      /**< Root-relative X coordinate. */
@@ -263,7 +263,7 @@ typedef struct {
 	PuglEventType type;        /**< PUGL_KEY_PRESS or PUGL_KEY_RELEASE. */
 	PuglView*     view;        /**< View that received this event. */
 	uint32_t      flags;       /**< Bitwise OR of PuglEventFlag values. */
-	uint32_t      time;        /**< Time in milliseconds. */
+	double        time;        /**< Time in seconds. */
 	double        x;           /**< View-relative X coordinate. */
 	double        y;           /**< View-relative Y coordinate. */
 	double        x_root;      /**< Root-relative X coordinate. */
@@ -283,7 +283,7 @@ typedef struct {
 	PuglEventType    type;     /**< PUGL_ENTER_NOTIFY or PUGL_LEAVE_NOTIFY. */
 	PuglView*        view;     /**< View that received this event. */
 	uint32_t         flags;    /**< Bitwise OR of PuglEventFlag values. */
-	uint32_t         time;     /**< Time in milliseconds. */
+	double           time;     /**< Time in seconds. */
 	double           x;        /**< View-relative X coordinate. */
 	double           y;        /**< View-relative Y coordinate. */
 	double           x_root;   /**< Root-relative X coordinate. */
@@ -299,7 +299,7 @@ typedef struct {
 	PuglEventType type;        /**< PUGL_MOTION_NOTIFY. */
 	PuglView*     view;        /**< View that received this event. */
 	uint32_t      flags;       /**< Bitwise OR of PuglEventFlag values. */
-	uint32_t      time;        /**< Time in milliseconds. */
+	double        time;        /**< Time in seconds. */
 	double        x;           /**< View-relative X coordinate. */
 	double        y;           /**< View-relative Y coordinate. */
 	double        x_root;      /**< Root-relative X coordinate. */
@@ -322,7 +322,7 @@ typedef struct {
 	PuglEventType type;        /**< PUGL_SCROLL. */
 	PuglView*     view;        /**< View that received this event. */
 	uint32_t      flags;       /**< Bitwise OR of PuglEventFlag values. */
-	uint32_t      time;        /**< Time in milliseconds. */
+	double        time;        /**< Time in seconds. */
 	double        x;           /**< View-relative X coordinate. */
 	double        y;           /**< View-relative Y coordinate. */
 	double        x_root;      /**< Root-relative X coordinate. */
