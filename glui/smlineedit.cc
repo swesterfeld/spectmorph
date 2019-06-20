@@ -141,6 +141,7 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
       /* multi key sequence -> ignore */
       return;
     }
+  sm_debug ("got key: character = %d, special = %d\n", key_event.character, key_event.special);
   if (key_event.character == 1) /* Ctrl+A */
     {
       select_all();
@@ -153,7 +154,7 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
       text32.insert (cursor_pos, input);
       cursor_pos++;
     }
-  else if ((key_event.character == PUGL_CHAR_BACKSPACE || key_event.character == PUGL_CHAR_DELETE) && !text32.empty())
+  else if ((key_event.special == PUGL_KEY_BACKSPACE || key_event.special == PUGL_KEY_DELETE) && !text32.empty())
     {
       // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
 
@@ -161,7 +162,7 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
         {
           // if there was a selection, we just overwrite it
         }
-      else if (key_event.character == PUGL_CHAR_BACKSPACE)
+      else if (key_event.special == PUGL_KEY_BACKSPACE)
         {
           if (cursor_pos > 0 && cursor_pos <= int (text32.size()))
             text32.erase (cursor_pos - 1, 1);
