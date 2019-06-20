@@ -12,6 +12,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::u32string;
 using std::map;
 using std::pair;
 using std::make_pair;
@@ -441,8 +442,8 @@ MorphGrid::input_node_label (int x, int y)
     }
   else if (node.op)
     {
-      string result;
-      string name = node.op->name();
+      u32string result;
+      u32string name = to_utf32 (node.op->name());
 
       if (name.size() >= 1)
         result += name[0];
@@ -453,7 +454,7 @@ MorphGrid::input_node_label (int x, int y)
       if (name.size() >= 2)
         result += name[name.size() - 1];
 
-      return result;
+      return to_utf8 (result);
     }
   return "???";
 }
