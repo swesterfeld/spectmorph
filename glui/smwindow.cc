@@ -597,7 +597,7 @@ Window::on_button_event (const PuglEventButton& event)
       mouse_event.buttons = mouse_buttons_pressed;
 
       Point pos (mouse_event.x, mouse_event.y);
-      mouse_event.double_click = (event.time - last_click_time < 400 &&
+      mouse_event.double_click = (event.time - last_click_time < 0.4 &&
                                   event.button == last_click_button &&
                                   pos.distance (last_click_pos) < 15);
 
