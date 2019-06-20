@@ -144,6 +144,9 @@ std::string sha1_hash (const std::string& str);
 
 double get_time();
 
+std::string to_utf8 (const std::u32string& str);
+std::u32string to_utf32 (const std::string& utf8);
+
 } // namespace SpectMorph
 
 /* we want to be able to use sm_debug without extra includes */

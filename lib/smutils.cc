@@ -4,6 +4,9 @@
 #include "config.h"
 
 #include <string>
+#include <locale>
+#include <codecvt>
+
 #include <assert.h>
 #include <stdarg.h>
 #include <sys/time.h>
@@ -115,6 +118,7 @@ struct ScopedPosixLocale /* dummy - no locale support under windows */
 #endif
 
 using std::string;
+using std::u32string;
 
 static string
 string_current_vprintf (const char *format,
@@ -361,6 +365,20 @@ get_time()
   gettimeofday (&tv, 0);
 
   return tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+string
+to_utf8 (const u32string& str)
+{
+  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+  return conv.to_bytes (str);
+}
+
+u32string
+to_utf32 (const string& utf8)
+{
+  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+  return conv.from_bytes (utf8);
 }
 
 }
