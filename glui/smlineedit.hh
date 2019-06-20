@@ -29,9 +29,6 @@ protected:
   int  x_to_cursor_pos (double x);
   bool is_word_char (int pos);
   bool overwrite_selection();
-
-  static std::string to_utf8 (const std::u32string& str);
-  static std::u32string to_utf32 (const std::string& utf8);
 public:
   LineEdit (Widget *parent, const std::string& start_text);
 

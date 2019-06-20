@@ -2,9 +2,6 @@
 
 #include "smlineedit.hh"
 
-#include <locale>
-#include <codecvt>
-
 using namespace SpectMorph;
 
 using std::string;
@@ -107,20 +104,6 @@ bool
 LineEdit::is_control (uint32 u)
 {
   return (u <= 0x1F) || (u >= 0x7F && u <= 0x9f);
-}
-
-string
-LineEdit::to_utf8 (const u32string& str)
-{
-  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-  return conv.to_bytes (str);
-}
-
-u32string
-LineEdit::to_utf32 (const string& utf8)
-{
-  std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-  return conv.from_bytes (utf8);
 }
 
 bool
