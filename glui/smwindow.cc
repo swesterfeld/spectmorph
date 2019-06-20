@@ -589,26 +589,23 @@ Window::on_button_event (const PuglEventButton& event)
           keyboard_focus_widget->focus_out_event();
           keyboard_focus_widget = nullptr;
         }
-      else
-        {
-          MouseEvent mouse_event;
-          mouse_event.x = ex - mouse_widget->abs_x();
-          mouse_event.y = ey - mouse_widget->abs_y();
-          mouse_event.button = to_mouse_button (event.button);
-          mouse_event.buttons = mouse_buttons_pressed;
 
-          Point pos (mouse_event.x, mouse_event.y);
-          mouse_event.double_click = (event.time - last_click_time < 400 &&
-                                      event.button == last_click_button &&
-                                      pos.distance (last_click_pos) < 15);
+      MouseEvent mouse_event;
+      mouse_event.x = ex - mouse_widget->abs_x();
+      mouse_event.y = ey - mouse_widget->abs_y();
+      mouse_event.button = to_mouse_button (event.button);
+      mouse_event.buttons = mouse_buttons_pressed;
 
-          last_click_time = event.time;
-          last_click_button = event.button;
-          last_click_pos = pos;
+      Point pos (mouse_event.x, mouse_event.y);
+      mouse_event.double_click = (event.time - last_click_time < 400 &&
+                                  event.button == last_click_button &&
+                                  pos.distance (last_click_pos) < 15);
 
-          mouse_widget->mouse_press (mouse_event);
-        }
+      last_click_time = event.time;
+      last_click_button = event.button;
+      last_click_pos = pos;
 
+      mouse_widget->mouse_press (mouse_event);
     }
   else /* event.type == PUGL_BUTTON_RELEASE */
     {
