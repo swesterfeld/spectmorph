@@ -436,7 +436,8 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 	const NSPoint      rloc  = [NSEvent mouseLocation];
 	const NSString*    chars = [event characters];
 	const char*        str   = [chars UTF8String];
-	const uint32_t     code  = puglDecodeUTF8((const uint8_t*)str);
+        const PuglKey      special = keySymToSpecial(puglview, event);
+        const uint32_t     code  = special ? 0 : puglDecodeUTF8((const uint8_t*)str);
 	PuglEventKey       ev    =  {
 		PUGL_KEY_PRESS,
 		puglview,
@@ -449,7 +450,7 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 		getModifiers(puglview, event),
 		[event keyCode],
 		(code != 0xFFFD) ? code : 0,
-		keySymToSpecial(puglview, event),
+		special,
 		{ 0, 0, 0, 0, 0, 0, 0, 0 },
 		false
 	};
@@ -463,6 +464,8 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 	const NSPoint      rloc  = [NSEvent mouseLocation];
 	const NSString*    chars = [event characters];
 	const char*        str   = [chars UTF8String];
+        const PuglKey      special = keySymToSpecial(puglview, event);
+        const uint32_t     code  = special ? 0 : puglDecodeUTF8((const uint8_t*)str);
 	const PuglEventKey ev    =  {
 		PUGL_KEY_RELEASE,
 		puglview,
@@ -474,7 +477,7 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 		[[NSScreen mainScreen] frame].size.height - rloc.y,
 		getModifiers(puglview, event),
 		[event keyCode],
-		puglDecodeUTF8((const uint8_t*)str),
+		(code != 0xFFFD) ? code : 0,
 		keySymToSpecial(puglview, event),
 		{ 0, 0, 0, 0, 0, 0, 0, 0 },
 		false,
