@@ -76,12 +76,12 @@ LineEdit::draw (const DrawEvent& devent)
   prefix_x.clear();
   for (size_t i = 0; i < text32.size() + 1; i++)
     {
-      auto prefix = text32.substr (0, i);
-
+      // compute display width of the first i chars
+      auto   prefix = text32.substr (0, i);
       string b4 = to_utf8 (prefix);
-      double w_ = du.text_width ("_");
-      double tw = du.text_width ("_" + b4 + "_") - 2 * w_; /* also count spaces at start/end */
-      prefix_x.push_back (10 + tw + 1);
+
+      cairo_text_extents_t extents = du.text_extents (b4);
+      prefix_x.push_back (10 + extents.x_advance + 1);
     }
   if (select_start >= 0 && select_start != cursor_pos)
     {
