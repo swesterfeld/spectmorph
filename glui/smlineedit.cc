@@ -271,16 +271,7 @@ LineEdit::is_word_char (int pos)
     return false;
 
   auto c = text32[pos];
-
-  if (c >= 'A' && c <= 'Z')
-    return true;
-  if (c >= 'a' && c <= 'z')
-    return true;
-  if (c >= '0' && c <= '9')
-    return true;
-  if (c == '-' || c == '_')
-    return true;
-  return false;
+  return g_unichar_isalnum (c) || c == '-' || c == '_';
 }
 
 void
