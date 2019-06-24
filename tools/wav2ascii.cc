@@ -12,9 +12,7 @@
 using std::string;
 using std::vector;
 
-using SpectMorph::sm_init;
-using SpectMorph::sm_printf;
-using SpectMorph::WavData;
+using namespace SpectMorph;
 
 /// @cond
 struct Options
@@ -26,7 +24,7 @@ struct Options
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   options.program_name = "wav2ascii";
 

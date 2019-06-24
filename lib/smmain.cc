@@ -5,6 +5,8 @@
 #include "smmath.hh"
 #include "smutils.hh"
 #include "smconfig.hh"
+#include "sminstenccache.hh"
+#include "smwavsetrepo.hh"
 #include "config.h"
 #include <stdio.h>
 #include <assert.h>
@@ -18,6 +20,17 @@ using std::string;
 
 namespace SpectMorph
 {
+
+struct GlobalData
+{
+  GlobalData();
+  ~GlobalData();
+
+  InstEncCache inst_enc_cache;
+  WavSetRepo   wav_set_repo;
+};
+
+static GlobalData *global_data = nullptr;
 
 float *int_sincos_table;
 
@@ -35,19 +48,42 @@ sm_sse()
   return use_sse;
 }
 
-static bool sm_init_done_flag = false;
+static int sm_init_counter = 0;
 
 bool
 sm_init_done()
 {
-  return sm_init_done_flag;
+  return sm_init_counter > 0;
 }
 
 void
-sm_init_plugin()
+sm_plugin_init()
 {
-  assert (sm_init_done_flag == false);
+  if (sm_init_counter == 0)
+    {
+      assert (global_data == nullptr);
+      global_data = new GlobalData();
+    }
+  sm_init_counter++;
+  sm_debug ("sm_init_plugin: sm_init_counter = %d\n", sm_init_counter);
+}
 
+void
+sm_plugin_cleanup()
+{
+  assert (sm_init_counter > 0);
+
+  if (sm_init_counter == 1)
+    {
+      delete global_data;
+      global_data = nullptr;
+    }
+  sm_init_counter--;
+  sm_debug ("sm_cleanup_plugin: sm_init_counter = %d\n", sm_init_counter);
+}
+
+GlobalData::GlobalData()
+{
   /* ensure that user data dir exists */
   string user_data_dir = sm_get_user_dir (USER_DIR_DATA);
   g_mkdir_with_parents (user_data_dir.c_str(), 0775);
@@ -61,22 +97,44 @@ sm_init_plugin()
   for (auto area : cfg.debug())
     Debug::enable (area);
 
-  FFT::load_wisdom();
+  FFT::init();
   int_sincos_init();
   sm_math_init();
 
-  sm_init_done_flag = true;
+  sm_debug ("GlobalData instance created\n");
 }
 
-void
-sm_init (int *argc_p, char ***argv_p)
+GlobalData::~GlobalData()
+{
+  FFT::cleanup();
+  sm_debug ("GlobalData instance deleted\n");
+}
+
+Main::Main (int *argc_p, char ***argv_p)
 {
   /* internationalized string printf */
   setlocale (LC_ALL, "");
 #if SPECTMORPH_HAVE_BSE
   bse_init_inprocess (argc_p, *argv_p, NULL);
 #endif
-  sm_init_plugin();
+  sm_plugin_init();
+}
+
+Main::~Main()
+{
+  sm_plugin_cleanup();
+}
+
+InstEncCache *
+Global::inst_enc_cache()
+{
+  return &global_data->inst_enc_cache;
+}
+
+WavSetRepo *
+Global::wav_set_repo()
+{
+  return &global_data->wav_set_repo;
 }
 
 }

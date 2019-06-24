@@ -37,7 +37,7 @@ perf_test()
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc == 2 && string (argv[1]) == "perf")
     {

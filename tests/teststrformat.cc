@@ -8,7 +8,7 @@ using namespace SpectMorph;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   printf ("string_locale_printf:  %s", string_locale_printf ("%.2f\n", 3.14).c_str());
   printf ("string_printf          %s", string_printf ("%.2f\n", 3.14).c_str());

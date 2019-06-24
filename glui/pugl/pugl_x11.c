@@ -360,6 +360,12 @@ void
 puglDestroy(PuglView* view)
 {
 	if (view) {
+                if (view->impl->xic) {
+                        XDestroyIC (view->impl->xic);
+                }
+                if (view->impl->xim) {
+                        XCloseIM (view->impl->xim);
+                }
 		destroyContext(view);
 		XDestroyWindow(view->impl->display, view->impl->win);
 		XCloseDisplay(view->impl->display);

@@ -60,10 +60,9 @@ instantiate(const LV2UI_Descriptor*   descriptor,
             LV2UI_Widget*             widget,
             const LV2_Feature* const* features)
 {
-  LV2_DEBUG ("instantiate called for ui\n");
+  sm_plugin_init();
 
-  if (!sm_init_done())
-    sm_init_plugin();
+  LV2_DEBUG ("instantiate called for ui\n");
 
   LV2Plugin *plugin = nullptr;
   PuglNativeWindow parent_win_id = 0;
@@ -111,6 +110,8 @@ cleanup (LV2UI_Handle handle)
 
   LV2UI *ui = static_cast <LV2UI *> (handle);
   delete ui;
+
+  sm_plugin_cleanup();
 }
 
 void

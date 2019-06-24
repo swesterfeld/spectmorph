@@ -156,7 +156,7 @@ die (const string& reason)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (argc == 3)

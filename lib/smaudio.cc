@@ -18,10 +18,7 @@ using std::vector;
 
 using namespace SpectMorph;
 
-/* wav set repo by design only loads files but never deletes them, so we clean
- * the global audio files manually before printing LeakDebugger result
- */
-static LeakDebugger leak_debugger ("SpectMorph::Audio", WavSetRepo::cleanup);
+static LeakDebugger leak_debugger ("SpectMorph::Audio");
 
 /**
  * This function loads a SM-File.

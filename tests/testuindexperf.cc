@@ -12,7 +12,7 @@ using std::string;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double start = get_time();
 

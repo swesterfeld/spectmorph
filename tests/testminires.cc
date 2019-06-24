@@ -112,7 +112,7 @@ error_spectrum (int high_sr, int sr, double freq, bool use_ppi)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc == 4 && strcmp (argv[1], "scan") == 0)
     {

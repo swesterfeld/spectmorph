@@ -21,7 +21,7 @@ using std::min;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double total = 1e7;
   for (size_t rep = 0; rep < 10; rep++)

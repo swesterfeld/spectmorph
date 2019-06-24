@@ -31,7 +31,7 @@ int
 main (int argc, char **argv)
 {
   /* init */
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   assert (argc == 3 || argc == 4);
 

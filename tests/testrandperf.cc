@@ -18,7 +18,7 @@ main (int argc, char **argv)
 {
   SpectMorph::Random random;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double clocks_per_sec = 2500.0 * 1000 * 1000;
   double start = get_time();

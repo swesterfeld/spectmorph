@@ -152,7 +152,7 @@ struct DestroyEmit : public SignalReceiver
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   printf ("---- expect: nothing\n");
   signal_simple();

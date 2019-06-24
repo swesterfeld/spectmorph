@@ -91,7 +91,7 @@ Options::print_usage ()
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (argc < 2)

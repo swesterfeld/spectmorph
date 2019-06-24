@@ -2,6 +2,7 @@
 
 #include "smleakdebugger.hh"
 #include "smmain.hh"
+#include "smdebug.hh"
 #include <assert.h>
 #include <glib.h>
 
@@ -72,6 +73,7 @@ LeakDebugger::~LeakDebugger()
       if (alive)
         {
           g_printerr ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
+          sm_debug ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
         }
     }
 }

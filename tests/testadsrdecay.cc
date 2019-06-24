@@ -11,7 +11,7 @@ using namespace SpectMorph;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   ADSREnvelope adsr_envelope;
 

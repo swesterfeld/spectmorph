@@ -9,7 +9,7 @@ using namespace SpectMorph;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double vrange_db = (argc == 2) ? sm_atof (argv[1]) : 30;
 

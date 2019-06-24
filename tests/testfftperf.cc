@@ -72,7 +72,7 @@ compare (const string& name, void (*func)(), bool is_complex)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   for (block_size = 256; block_size < 8192; block_size *= 2)
     {

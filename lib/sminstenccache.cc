@@ -5,6 +5,8 @@
 #include "sminstencoder.hh"
 #include "smmmapin.hh"
 #include "smmemout.hh"
+#include "smmain.hh"
+#include "smleakdebugger.hh"
 #include "config.h"
 
 #include <mutex>
@@ -30,6 +32,18 @@ cache_filename (const string& filename)
   return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
 }
 
+static LeakDebugger leak_debugger ("SpectMorph::InstEncCache::CacheData");
+
+InstEncCache::CacheData::CacheData()
+{
+  leak_debugger.add (this);
+}
+
+InstEncCache::CacheData::~CacheData()
+{
+  leak_debugger.del (this);
+}
+
 InstEncCache::InstEncCache() :
   cache_file_re ("inst_enc_[0-9a-f]{8}_[0-9a-f]{8}_[0-9]+_[0-9a-f]{40}$")
 {
@@ -39,11 +53,7 @@ InstEncCache::InstEncCache() :
 InstEncCache*
 InstEncCache::the()
 {
-  static InstEncCache *instance = NULL;
-  if (!instance)
-    instance = new InstEncCache;
-
-  return instance;
+  return Global::inst_enc_cache();
 }
 
 static Error

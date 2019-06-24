@@ -284,7 +284,7 @@ rspectrum (double freq, double speed)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc == 2 && string (argv[1]) == "sweep")
     {

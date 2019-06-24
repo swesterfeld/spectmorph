@@ -20,6 +20,9 @@ class InstEncCache
     std::string                version;
     std::vector<unsigned char> data;
     uint64                     read_stamp = 0;
+
+    CacheData();
+    ~CacheData();
   };
 
   std::map<std::string, CacheData> cache;
@@ -35,7 +38,6 @@ class InstEncCache
   void        delete_old_files();
   void        delete_old_memory_L();
 
-  InstEncCache(); // Singleton -> private constructor
 public:
   class Group
   {
@@ -48,6 +50,8 @@ public:
                       const std::function<bool()>& kill_function);
   void        clear();
   Group      *create_group();
+
+  InstEncCache();
 
   static InstEncCache *the(); // Singleton
 };

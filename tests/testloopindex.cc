@@ -9,7 +9,7 @@ using namespace SpectMorph;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   Audio a;
   printf ("forward loop (5-10): ");

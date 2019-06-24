@@ -48,7 +48,7 @@ main (int argc, char **argv)
 {
   SpectMorph::Random random;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   for (int block_size = 8; block_size < 2048; block_size *= 2)
     {

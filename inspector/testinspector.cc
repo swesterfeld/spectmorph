@@ -51,7 +51,7 @@ struct DummyPainter
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 

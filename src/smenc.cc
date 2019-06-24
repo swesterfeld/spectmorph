@@ -350,7 +350,7 @@ main (int argc, char **argv)
   EncoderParams enc_params;
 
   /* init */
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (argc != 2 && argc != 3)

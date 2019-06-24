@@ -53,8 +53,7 @@ instantiate (const LV2_Descriptor*     descriptor,
              const char*               bundle_path,
              const LV2_Feature* const* features)
 {
-  if (!sm_init_done())
-    sm_init_plugin();
+  sm_plugin_init();
 
   LV2Plugin *self = new LV2Plugin (rate);
 
@@ -163,6 +162,7 @@ static void
 cleanup (LV2_Handle instance)
 {
   delete static_cast <LV2Plugin *> (instance);
+  sm_plugin_cleanup();
 }
 
 static LV2_State_Status

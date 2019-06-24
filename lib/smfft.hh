@@ -25,7 +25,8 @@ void   fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode = PLAN_P
 void   use_gsl_fft (bool enabled);
 void   debug_randomize_new_arrays (bool enabled);
 
-void   load_wisdom();
+void   init();
+void   cleanup();
 
 }
 

@@ -15,7 +15,7 @@ using std::min;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double emin = 0, emax = 0, econv = 0;
   for (size_t i = 0; i < 65536; i++)

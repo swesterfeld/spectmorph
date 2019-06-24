@@ -299,7 +299,7 @@ main (int argc, char **argv)
 {
   Random random;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
 // Debug::debug_enable ("encoder");
 

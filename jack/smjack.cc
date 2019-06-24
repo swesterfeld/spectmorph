@@ -92,7 +92,7 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc > 2)
     {
@@ -138,6 +138,6 @@ main (int argc, char **argv)
       event_loop.wait_event_fps();
       event_loop.process_events();
     }
-  jack_deactivate (client);
+  jack_client_close (client);
   return 0;
 }

@@ -427,7 +427,7 @@ MainWindow::clip (const string& export_pattern)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   QApplication app (argc, argv);
 
