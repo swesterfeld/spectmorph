@@ -186,7 +186,7 @@ SimpleJackPlayer::set_volume (double new_volume)
 
 SimpleJackPlayer::~SimpleJackPlayer()
 {
-  jack_deactivate (jack_client);
+  jack_client_close (jack_client);
 
   // delete old decoder objects (if any)
   update_decoder (NULL, NULL, NULL);

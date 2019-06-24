@@ -138,6 +138,6 @@ main (int argc, char **argv)
       event_loop.wait_event_fps();
       event_loop.process_events();
     }
-  jack_deactivate (client);
+  jack_client_close (client);
   return 0;
 }
