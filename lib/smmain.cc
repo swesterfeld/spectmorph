@@ -21,6 +21,12 @@ using std::string;
 namespace SpectMorph
 {
 
+struct GlobalData
+{
+  GlobalData();
+  ~GlobalData();
+} *global_data = nullptr;
+
 float *int_sincos_table;
 InstEncCache *singleton_inst_enc_cache = nullptr;
 WavSetRepo   *singleton_wav_set_repo = nullptr;
@@ -39,19 +45,42 @@ sm_sse()
   return use_sse;
 }
 
-static bool sm_init_done_flag = false;
+static int sm_init_counter = 0;
 
 bool
 sm_init_done()
 {
-  return sm_init_done_flag;
+  return sm_init_counter > 0;
 }
 
 void
 sm_init_plugin()
 {
-  assert (sm_init_done_flag == false);
+  if (sm_init_counter == 0)
+    {
+      assert (global_data == nullptr);
+      global_data = new GlobalData();
+    }
+  sm_init_counter++;
+  sm_debug ("sm_init_plugin: sm_init_counter = %d\n", sm_init_counter);
+}
 
+void
+sm_cleanup_plugin()
+{
+  assert (sm_init_counter > 0);
+
+  if (sm_init_counter == 1)
+    {
+      delete global_data;
+      global_data = nullptr;
+    }
+  sm_init_counter--;
+  sm_debug ("sm_cleanup_plugin: sm_init_counter = %d\n", sm_init_counter);
+}
+
+GlobalData::GlobalData()
+{
   /* ensure that user data dir exists */
   string user_data_dir = sm_get_user_dir (USER_DIR_DATA);
   g_mkdir_with_parents (user_data_dir.c_str(), 0775);
@@ -71,21 +100,19 @@ sm_init_plugin()
 
   singleton_inst_enc_cache = new InstEncCache();
   singleton_wav_set_repo = new WavSetRepo();
-  sm_init_done_flag = true;
+
+  sm_debug ("GlobalData instance created\n");
 }
 
-void
-sm_cleanup_plugin()
+GlobalData::~GlobalData()
 {
-  assert (sm_init_done_flag == true);
-
   delete singleton_inst_enc_cache;
   singleton_inst_enc_cache = nullptr;
 
   delete singleton_wav_set_repo;
   singleton_wav_set_repo = nullptr;
 
-  sm_init_done_flag = false;
+  sm_debug ("GlobalData instance deleted\n");
 }
 
 Main::Main (int *argc_p, char ***argv_p)
