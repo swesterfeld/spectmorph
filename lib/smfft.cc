@@ -234,8 +234,8 @@ save_wisdom()
     }
 }
 
-void
-FFT::load_wisdom()
+static void
+load_wisdom()
 {
   FILE *infile = fopen (wisdom_filename().c_str(), "r");
   if (infile)
@@ -243,6 +243,28 @@ FFT::load_wisdom()
       fftwf_import_wisdom_from_file (infile);
       fclose (infile);
     }
+}
+
+void
+FFT::init()
+{
+  load_wisdom();
+}
+
+void
+FFT::cleanup()
+{
+  auto cleanup_plans = [](auto& plan_map) {
+    for (auto& plan_entry : plan_map)
+      fftwf_destroy_plan (plan_entry.second);
+
+    plan_map.clear();
+  };
+  cleanup_plans (fftar_float_plan);
+  cleanup_plans (fftsr_float_plan);
+  cleanup_plans (fftsr_destructive_float_plan);
+  cleanup_plans (fftac_float_plan);
+  cleanup_plans (fftsc_float_plan);
 }
 
 #else

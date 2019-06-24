@@ -97,7 +97,7 @@ GlobalData::GlobalData()
   for (auto area : cfg.debug())
     Debug::enable (area);
 
-  FFT::load_wisdom();
+  FFT::init();
   int_sincos_init();
   sm_math_init();
 
@@ -106,6 +106,7 @@ GlobalData::GlobalData()
 
 GlobalData::~GlobalData()
 {
+  FFT::cleanup();
   sm_debug ("GlobalData instance deleted\n");
 }
 
