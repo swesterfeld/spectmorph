@@ -30,10 +30,8 @@ WavSetRepo::get (const string& filename)
   return wav_set;
 }
 
-void
-WavSetRepo::cleanup()
+WavSetRepo::~WavSetRepo()
 {
-  /* cleanup wave repo: this should only be called at program termination */
   for (auto w : WavSetRepo::the()->wav_set_map)
     delete w.second;
 }

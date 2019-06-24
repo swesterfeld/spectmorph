@@ -16,10 +16,11 @@ class WavSetRepo {
   std::mutex mutex;
   std::map<std::string, WavSet *> wav_set_map;
 public:
+  ~WavSetRepo();
+
   WavSet *get (const std::string& filename);
 
   static WavSetRepo *the(); // Singleton
-  static void cleanup();
 };
 
 }
