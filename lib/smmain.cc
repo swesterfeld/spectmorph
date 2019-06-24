@@ -54,7 +54,7 @@ sm_init_done()
 }
 
 void
-sm_init_plugin()
+sm_plugin_init()
 {
   if (sm_init_counter == 0)
     {
@@ -66,7 +66,7 @@ sm_init_plugin()
 }
 
 void
-sm_cleanup_plugin()
+sm_plugin_cleanup()
 {
   assert (sm_init_counter > 0);
 
@@ -122,12 +122,12 @@ Main::Main (int *argc_p, char ***argv_p)
 #if SPECTMORPH_HAVE_BSE
   bse_init_inprocess (argc_p, *argv_p, NULL);
 #endif
-  sm_init_plugin();
+  sm_plugin_init();
 }
 
 Main::~Main()
 {
-  sm_cleanup_plugin();
+  sm_plugin_cleanup();
 }
 
 InstEncCache *
