@@ -3,6 +3,7 @@ UI:
 - confirm revert/close dialog
 - rearrange all inst edit widgets
 - play/stop should have symbols
+- review file xml format
 
 PROJECT:
 - somewhat better error handling
