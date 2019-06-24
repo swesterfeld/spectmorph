@@ -32,6 +32,6 @@ WavSetRepo::get (const string& filename)
 
 WavSetRepo::~WavSetRepo()
 {
-  for (auto w : WavSetRepo::the()->wav_set_map)
+  for (auto w : wav_set_map)
     delete w.second;
 }
