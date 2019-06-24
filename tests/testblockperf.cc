@@ -58,7 +58,7 @@ block_perf (bool add, bool aligned)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   block_perf (true,  false);
   block_perf (false, false);

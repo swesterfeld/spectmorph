@@ -12,7 +12,7 @@ using std::vector;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   if (argc != 3)
     {
       fprintf (stderr, "usage: testmidisynth <plan> <note>\n");

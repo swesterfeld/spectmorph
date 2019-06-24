@@ -12,7 +12,7 @@ using namespace SpectMorph;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double mix_freq = sm_atof (argv[1]);
   double freq = sm_atof (argv[2]);

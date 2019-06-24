@@ -18,7 +18,7 @@ int global_int;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   const unsigned int runs = 10000000;
   const double clocks_per_sec = 2500.0 * 1000 * 1000;

@@ -112,7 +112,7 @@ run_test (int n_sines, int n_noise, int mix_freq)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   for (int n_sines = 0; n_sines <= 3; n_sines++)
     {

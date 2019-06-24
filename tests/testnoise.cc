@@ -158,7 +158,7 @@ main (int argc, char **argv)
 {
   Random random;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   vector<float> noise (44100 * 5);
   vector<float> audio_out (noise.size());

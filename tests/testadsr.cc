@@ -23,7 +23,7 @@ run (ADSREnvelope& adsr_envelope, size_t samples)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   float rate = 48000;
 

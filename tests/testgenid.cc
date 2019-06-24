@@ -11,7 +11,7 @@ using std::string;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   string id = MorphPlan::generate_id();
   string id_chars = MorphPlan::id_chars();

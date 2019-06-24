@@ -68,7 +68,7 @@ randomize_and_check (AudioBlock& block)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   AudioBlock block_a, block_b, block_c;
 

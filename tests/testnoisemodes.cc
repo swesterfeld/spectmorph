@@ -15,7 +15,7 @@ using std::vector;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double mix_freq = 48000;
   size_t block_size = 1024;

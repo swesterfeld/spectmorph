@@ -360,7 +360,7 @@ test_saw_perf()
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   FFT::debug_randomize_new_arrays (true); // catches uninitialized reads on newly allocated fft buffer
 
   if (argc == 2 && strcmp (argv[1], "perf") == 0)

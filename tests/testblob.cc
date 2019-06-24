@@ -86,7 +86,7 @@ read_testblob()
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   create_testblob();
   read_testblob();

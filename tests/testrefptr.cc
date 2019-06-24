@@ -30,7 +30,7 @@ typedef RefPtr<Foo> FooPtr;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   FooPtr f = new Foo (1);
   FooPtr x = f;

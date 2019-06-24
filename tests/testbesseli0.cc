@@ -134,7 +134,7 @@ kaiser (int N, double beta)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   double max_diff = 0;
   for (int i = 0; i < 100; i++)

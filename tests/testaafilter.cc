@@ -96,7 +96,7 @@ main (int argc, char **argv)
 {
   Random random;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   vector<float> audio_in (44100);
   vector<float> audio_out (audio_in.size());
