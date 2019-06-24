@@ -92,7 +92,7 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc > 2)
     {
