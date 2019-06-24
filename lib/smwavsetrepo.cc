@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smwavsetrepo.hh"
+#include "smmain.hh"
 
 using namespace SpectMorph;
 
@@ -9,11 +10,7 @@ using std::string;
 WavSetRepo*
 WavSetRepo::the()
 {
-  static WavSetRepo *instance = NULL;
-  if (!instance)
-    instance = new WavSetRepo;
-
-  return instance;
+  return Global::wav_set_repo();
 }
 
 WavSet*
