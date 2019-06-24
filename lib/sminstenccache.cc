@@ -5,6 +5,7 @@
 #include "sminstencoder.hh"
 #include "smmmapin.hh"
 #include "smmemout.hh"
+#include "smmain.hh"
 #include "config.h"
 
 #include <mutex>
@@ -39,11 +40,7 @@ InstEncCache::InstEncCache() :
 InstEncCache*
 InstEncCache::the()
 {
-  static InstEncCache *instance = NULL;
-  if (!instance)
-    instance = new InstEncCache;
-
-  return instance;
+  return Global::inst_enc_cache();
 }
 
 static Error

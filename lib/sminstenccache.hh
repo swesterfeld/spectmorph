@@ -35,7 +35,6 @@ class InstEncCache
   void        delete_old_files();
   void        delete_old_memory_L();
 
-  InstEncCache(); // Singleton -> private constructor
 public:
   class Group
   {
@@ -48,6 +47,8 @@ public:
                       const std::function<bool()>& kill_function);
   void        clear();
   Group      *create_group();
+
+  InstEncCache();
 
   static InstEncCache *the(); // Singleton
 };
