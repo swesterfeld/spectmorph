@@ -55,7 +55,7 @@ using std::vector;
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   bool quit = false;
 
