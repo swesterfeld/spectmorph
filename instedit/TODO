@@ -5,4 +5,3 @@ UI:
 
 PROJECT:
 - somewhat better error handling
-- avoid leaking inst enc cache entries on exit
