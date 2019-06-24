@@ -77,7 +77,7 @@ public:
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   jack_client_t *client = jack_client_open ("sminstedit", JackNullOption, NULL);
   if (!client)
