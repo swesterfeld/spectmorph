@@ -25,11 +25,14 @@ struct GlobalData
 {
   GlobalData();
   ~GlobalData();
-} *global_data = nullptr;
+
+  InstEncCache inst_enc_cache;
+  WavSetRepo   wav_set_repo;
+};
+
+static GlobalData *global_data = nullptr;
 
 float *int_sincos_table;
-InstEncCache *singleton_inst_enc_cache = nullptr;
-WavSetRepo   *singleton_wav_set_repo = nullptr;
 
 static bool use_sse = true;
 
@@ -98,20 +101,11 @@ GlobalData::GlobalData()
   int_sincos_init();
   sm_math_init();
 
-  singleton_inst_enc_cache = new InstEncCache();
-  singleton_wav_set_repo = new WavSetRepo();
-
   sm_debug ("GlobalData instance created\n");
 }
 
 GlobalData::~GlobalData()
 {
-  delete singleton_inst_enc_cache;
-  singleton_inst_enc_cache = nullptr;
-
-  delete singleton_wav_set_repo;
-  singleton_wav_set_repo = nullptr;
-
   sm_debug ("GlobalData instance deleted\n");
 }
 
@@ -133,13 +127,13 @@ Main::~Main()
 InstEncCache *
 Global::inst_enc_cache()
 {
-  return singleton_inst_enc_cache;
+  return &global_data->inst_enc_cache;
 }
 
 WavSetRepo *
 Global::wav_set_repo()
 {
-  return singleton_wav_set_repo;
+  return &global_data->wav_set_repo;
 }
 
 }
