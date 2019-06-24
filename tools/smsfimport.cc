@@ -36,9 +36,9 @@ using SpectMorph::JobQueue;
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
 using SpectMorph::WavData;
+using SpectMorph::Main;
 
 using SpectMorph::string_printf;
-using SpectMorph::sm_init;
 
 using std::string;
 using std::vector;
@@ -1295,7 +1295,7 @@ dump (const string& preset_name = "")
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (options.command == Options::LIST)

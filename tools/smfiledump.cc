@@ -228,7 +228,7 @@ display_file (GenericIn *in, int indent = 0)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   options.parse (&argc, &argv);
 

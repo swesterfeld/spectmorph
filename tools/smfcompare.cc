@@ -64,7 +64,7 @@ meta_comp (int& exit_code, const string& str, int old_value, int new_value)
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   WavSet smset_old;
   if (smset_old.load (argv[1]) != 0)

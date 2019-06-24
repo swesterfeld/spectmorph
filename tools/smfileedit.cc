@@ -209,7 +209,7 @@ main (int argc, char **argv)
 {
   vector<string> commands;
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   if (argc < 3)
     {

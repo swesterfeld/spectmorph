@@ -16,12 +16,14 @@
 
 using std::string;
 using std::vector;
-using SpectMorph::sm_init;
-using SpectMorph::WavData;
+using namespace SpectMorph;
 
 int
 main (int argc, char **argv)
 {
+  /* init */
+  Main main (&argc, &argv);
+
   char buffer[1024];
   vector<float> signal;
 
@@ -34,8 +36,6 @@ main (int argc, char **argv)
       printf ("cat waveform.txt | ascii2wav wavform.wav 96000 24\n");
       exit (1);
     }
-  /* init */
-  sm_init (&argc, &argv);
 
   string filename = argv[1];
   int    srate    = atoi (argv[2]);

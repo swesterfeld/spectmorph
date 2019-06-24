@@ -201,7 +201,7 @@ compute_peaks (int channel, int note_len, const vector<float>& input_data, vecto
 int
 main (int argc, char **argv)
 {
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
   options.parse (&argc, &argv);
 
   if (argc != 5)
