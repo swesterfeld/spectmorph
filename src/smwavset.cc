@@ -353,7 +353,7 @@ main (int argc, char **argv)
 {
   double start_time = get_time();
 
-  sm_init (&argc, &argv);
+  Main main (&argc, &argv);
 
   options.parse (&argc, &argv);
 
