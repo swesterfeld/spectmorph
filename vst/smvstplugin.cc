@@ -221,6 +221,7 @@ static intptr_t dispatcher(AEffect *effect, int opcode, int index, intptr_t val,
       delete plugin;
       memset(effect, 0, sizeof(AEffect));
       free(effect);
+      sm_plugin_cleanup();
       return 0;
 
     case effSetProgram:
@@ -478,8 +479,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 {
   Debug::set_filename ("smvstplugin.log");
 
-  if (!sm_init_done())
-    sm_init_plugin();
+  sm_plugin_init();
 
   VST_DEBUG ("VSTPluginMain called\n"); // debug statements are only visible after init
 
