@@ -20,6 +20,9 @@ class InstEncCache
     std::string                version;
     std::vector<unsigned char> data;
     uint64                     read_stamp = 0;
+
+    CacheData();
+    ~CacheData();
   };
 
   std::map<std::string, CacheData> cache;

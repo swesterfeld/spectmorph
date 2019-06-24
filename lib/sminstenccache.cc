@@ -6,6 +6,7 @@
 #include "smmmapin.hh"
 #include "smmemout.hh"
 #include "smmain.hh"
+#include "smleakdebugger.hh"
 #include "config.h"
 
 #include <mutex>
@@ -29,6 +30,18 @@ static string
 cache_filename (const string& filename)
 {
   return sm_get_user_dir (USER_DIR_CACHE) + "/" + filename;
+}
+
+static LeakDebugger leak_debugger ("SpectMorph::InstEncCache::CacheData");
+
+InstEncCache::CacheData::CacheData()
+{
+  leak_debugger.add (this);
+}
+
+InstEncCache::CacheData::~CacheData()
+{
+  leak_debugger.del (this);
 }
 
 InstEncCache::InstEncCache() :
