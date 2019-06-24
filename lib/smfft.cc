@@ -84,6 +84,8 @@ FFT::fftar_float (size_t N, float *in, float *out, PlanMode plan_mode)
           plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
+      free_array_float (plan_out);
+      free_array_float (plan_in);
     }
   fftwf_execute_dft_r2c (plan, in, (fftwf_complex *) out);
 
@@ -107,6 +109,8 @@ FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
           plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
+      free_array_float (plan_out);
+      free_array_float (plan_in);
     }
   in[N] = in[1];
   in[N+1] = 0;
@@ -136,6 +140,8 @@ FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mod
                                         xplan_flags & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
+      free_array_float (plan_out);
+      free_array_float (plan_in);
     }
   in[N] = in[1];
   in[N+1] = 0;
@@ -163,6 +169,8 @@ FFT::fftac_float (size_t N, float *in, float *out, PlanMode plan_mode)
                                     FFTW_FORWARD, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
+      free_array_float (plan_out);
+      free_array_float (plan_in);
     }
 
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
@@ -187,6 +195,8 @@ FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
                                     FFTW_BACKWARD, plan_flags (plan_mode) & ~FFTW_WISDOM_ONLY);
           save_wisdom();
         }
+      free_array_float (plan_out);
+      free_array_float (plan_in);
      }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
 }
