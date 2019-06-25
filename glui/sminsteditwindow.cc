@@ -20,6 +20,28 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+class VLine : public Widget
+{
+  Color color;
+public:
+  VLine (Widget *parent, Color color) :
+    Widget (parent),
+    color (color)
+  {
+  }
+  void
+  draw (const DrawEvent& devent) override
+  {
+    DrawUtils du (devent.cr);
+
+    du.set_color (color);
+    cairo_move_to (devent.cr, width / 2, 0);
+    cairo_line_to (devent.cr, width / 2, height);
+    cairo_stroke (devent.cr);
+  }
+};
+
+
 // ---------------- InstEditBackend ----------------
 //
 InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
@@ -168,22 +190,22 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   sample_scroll_view->set_scroll_widget (sample_widget, true, false, /* center_zoom */ true);
 
   /*----- hzoom -----*/
-  grid.add_widget (new Label (this, "HZoom"), 1, 54, 10, 3);
+  grid.add_widget (new Label (this, "HZoom"), 1, 54, 6, 3);
   Slider *hzoom_slider = new Slider (this, 0.0);
-  grid.add_widget (hzoom_slider, 8, 54, 30, 3);
+  grid.add_widget (hzoom_slider, 7, 54, 28, 3);
   connect (hzoom_slider->signal_value_changed, this, &InstEditWindow::on_update_hzoom);
 
   hzoom_label = new Label (this, "0");
-  grid.add_widget (hzoom_label, 40, 54, 10, 3);
+  grid.add_widget (hzoom_label, 36, 54, 10, 3);
 
   /*----- vzoom -----*/
-  grid.add_widget (new Label (this, "VZoom"), 1, 57, 10, 3);
+  grid.add_widget (new Label (this, "VZoom"), 51, 54, 6, 3);
   Slider *vzoom_slider = new Slider (this, 0.0);
-  grid.add_widget (vzoom_slider, 8, 57, 30, 3);
+  grid.add_widget (vzoom_slider, 57, 54, 28, 3);
   connect (vzoom_slider->signal_value_changed, this, &InstEditWindow::on_update_vzoom);
 
   vzoom_label = new Label (this, "0");
-  grid.add_widget (vzoom_label, 40, 57, 10, 3);
+  grid.add_widget (vzoom_label, 86, 54, 10, 3);
 
   /*---- midi_note ---- */
   midi_note_combobox = new ComboBox (this);
@@ -192,12 +214,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   for (int i = 127; i >= 0; i--)
     midi_note_combobox->add_item (note_to_text (i));
 
-  grid.add_widget (new Label (this, "Midi Note"), 1, 60, 7, 3);
-  grid.add_widget (midi_note_combobox, 8, 60, 20, 3);
+  grid.add_widget (new Label (this, "Midi Note"), 29, 60, 7, 3);
+  grid.add_widget (midi_note_combobox, 37, 60, 12, 3);
 
-  show_pitch_button = new Button (this, "Edit Note");
+  show_pitch_button = new Button (this, "Edit");
   connect (show_pitch_button->signal_clicked, this, &InstEditWindow::on_show_hide_note);
-  grid.add_widget (show_pitch_button, 29, 60, 10, 3);
+  grid.add_widget (show_pitch_button, 50, 60, 7, 3);
 
   /*---- loop mode ----*/
 
@@ -210,8 +232,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   loop_combobox->add_item (loop_to_text (Sample::Loop::PING_PONG));
   loop_combobox->add_item (loop_to_text (Sample::Loop::SINGLE_FRAME));
 
-  grid.add_widget (new Label (this, "Loop"), 1, 63, 7, 3);
-  grid.add_widget (loop_combobox, 8, 63, 20, 3);
+  grid.add_widget (new Label (this, "Loop"), 29, 63, 7, 3);
+  grid.add_widget (loop_combobox, 37, 63, 20, 3);
 
   /*---- name ----*/
 
@@ -219,20 +241,20 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   name_line_edit->set_click_to_focus (true);
   connect (name_line_edit->signal_text_changed, [this] (const string& name) { instrument->set_name (name); });
 
-  grid.add_widget (new Label (this, "Name"), 1, 66, 7, 3);
-  grid.add_widget (name_line_edit, 8, 66, 20, 3);
+  grid.add_widget (new Label (this, "Name"), 1, 60, 6, 3);
+  grid.add_widget (name_line_edit, 7, 60, 19, 3);
 
   /*--- time --- */
   time_label = new Label (this, "");
 
-  grid.add_widget (new Label (this, "Time"), 30, 63, 10, 3);
-  grid.add_widget (time_label, 40, 63, 10, 3);
+  grid.add_widget (new Label (this, "Time"), 29, 66, 10, 3);
+  grid.add_widget (time_label, 37, 66, 10, 3);
 
   /*--- play mode ---*/
   play_mode_combobox = new ComboBox (this);
   connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
-  grid.add_widget (new Label (this, "Play Mode"), 60, 54, 10, 3);
-  grid.add_widget (play_mode_combobox, 68, 54, 24, 3);
+  //grid.add_widget (new Label (this, "Play Mode"), 60, 60, 10, 3);
+  grid.add_widget (play_mode_combobox, 68, 60, 24, 3);
   play_mode_combobox->add_item ("SpectMorph Instrument"); // default
   play_mode_combobox->set_text ("SpectMorph Instrument");
   play_mode_combobox->add_item ("Original Sample");
@@ -241,7 +263,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   /*--- play button ---*/
   play_button = new Button (this, "Play");
   connect (play_button->signal_pressed, this, &InstEditWindow::on_toggle_play);
-  grid.add_widget (play_button, 51, 54, 8, 3);
+  grid.add_widget (play_button, 60, 60, 7, 3);
 
   Shortcut *play_shortcut = new Shortcut (this, ' ');
   connect (play_shortcut->signal_activated, this, &InstEditWindow::on_toggle_play);
@@ -249,13 +271,13 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   /*--- led ---*/
   progress_bar = new ProgressBar (this);
   progress_label = new Label (this, "Analyzing");
-  grid.add_widget (progress_label, 40, 67, 10, 3);
-  grid.add_widget (progress_bar, 47, 67.25, 20, 2.5);
+  grid.add_widget (progress_label, 60, 66, 10, 3);
+  grid.add_widget (progress_bar, 68, 66.25, 24, 2.5);
 
   /*--- playing ---*/
   playing_label = new Label (this, "");
-  grid.add_widget (new Label (this, "Playing"), 70, 67, 10, 3);
-  grid.add_widget (playing_label, 77, 67, 10, 3);
+  grid.add_widget (new Label (this, "Playing"), 60, 63, 10, 3);
+  grid.add_widget (playing_label, 68, 63, 10, 3);
 
   /* --- timer --- */
   Timer *timer = new Timer (this);
@@ -307,15 +329,42 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   /*--- auto volume ---*/
   auto_volume_checkbox = new CheckBox (this, "Auto Volume");
   connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
-  grid.add_widget (auto_volume_checkbox, 60, 58.5, 20, 2);
+  grid.add_widget (auto_volume_checkbox, 1, 63.5, 20, 2);
 
   auto_tune_checkbox = new CheckBox (this, "Auto Tune");
-  grid.add_widget (auto_tune_checkbox, 60, 61.5, 20, 2);
+  grid.add_widget (auto_tune_checkbox, 1, 66.5, 20, 2);
   connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
 
-  show_params_button = new Button (this, "Show All Parameters...");
+  show_params_button = new Button (this, "Edit");
   connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
-  grid.add_widget (show_params_button, 60, 64, 25, 3);
+  grid.add_widget (show_params_button, 20, 64.5, 6, 3);
+
+  const double vline1 = 27 + 0.5;
+  const double vline2 = 58 + 0.5;
+  const double vline3 = 93;
+
+  // need to be below other widgets
+  auto hdr_bg = new Widget (this);
+  hdr_bg->set_background_color (Color (0.3, 0.3, 0.3));
+  grid.add_widget (hdr_bg, 0, 57.25, 93, 2.5);
+
+  auto hdr_inst = new Label (this, "Instrument");
+  hdr_inst->set_align (TextAlign::CENTER);
+  hdr_inst->set_bold (true);
+  grid.add_widget (hdr_inst, 0, 57, vline1, 3);
+
+  auto hdr_sample = new Label (this, "Sample");
+  hdr_sample->set_align (TextAlign::CENTER);
+  hdr_sample->set_bold (true);
+  grid.add_widget (hdr_sample, vline1, 57, vline2 - vline1, 3);
+
+  auto hdr_play = new Label (this, "Playback");
+  hdr_play->set_align (TextAlign::CENTER);
+  hdr_play->set_bold (true);
+  grid.add_widget (hdr_play, vline2, 57, vline3 - vline2, 3);
+
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), 27, 57.25, 1, 12.75);
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), 58, 57.25, 1, 12.75);
 
   on_samples_changed();
   on_global_changed();
