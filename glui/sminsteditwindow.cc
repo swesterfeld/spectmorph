@@ -207,7 +207,32 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   vzoom_label = new Label (this, "0");
   grid.add_widget (vzoom_label, 86, 54, 10, 3);
 
-  /*---- midi_note ---- */
+  /*---- Instrument name ----*/
+
+  name_line_edit = new LineEdit (this, "untitled");
+  name_line_edit->set_click_to_focus (true);
+  connect (name_line_edit->signal_text_changed, [this] (const string& name) { instrument->set_name (name); });
+
+  grid.dy = 0.5;
+  grid.add_widget (new Label (this, "Name"), 1, 60, 6, 3);
+  grid.add_widget (name_line_edit, 7, 60, 19, 3);
+
+  /*--- Instrument: auto volume ---*/
+  auto_volume_checkbox = new CheckBox (this, "Auto Volume");
+  connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
+  grid.add_widget (auto_volume_checkbox, 1, 63.5, 20, 2);
+
+  /*--- Instrument: auto tune ---*/
+  auto_tune_checkbox = new CheckBox (this, "Auto Tune");
+  grid.add_widget (auto_tune_checkbox, 1, 66.5, 20, 2);
+  connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
+
+  /*--- Instrument: edit ---*/
+  show_params_button = new Button (this, "Edit");
+  connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
+  grid.add_widget (show_params_button, 20, 64.5, 6, 3);
+
+  /*---- Sample: midi_note ---- */
   midi_note_combobox = new ComboBox (this);
   connect (midi_note_combobox->signal_item_changed, this, &InstEditWindow::on_midi_note_changed);
 
@@ -217,11 +242,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (new Label (this, "Midi Note"), 29, 60, 7, 3);
   grid.add_widget (midi_note_combobox, 37, 60, 12, 3);
 
+  /*--- Sample: edit ---*/
   show_pitch_button = new Button (this, "Edit");
   connect (show_pitch_button->signal_clicked, this, &InstEditWindow::on_show_hide_note);
   grid.add_widget (show_pitch_button, 50, 60, 7, 3);
 
-  /*---- loop mode ----*/
+  /*---- Sample: loop mode ----*/
 
   loop_combobox = new ComboBox (this);
   connect (loop_combobox->signal_item_changed, this, &InstEditWindow::on_loop_changed);
@@ -235,22 +261,13 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (new Label (this, "Loop"), 29, 63, 7, 3);
   grid.add_widget (loop_combobox, 37, 63, 20, 3);
 
-  /*---- name ----*/
-
-  name_line_edit = new LineEdit (this, "untitled");
-  name_line_edit->set_click_to_focus (true);
-  connect (name_line_edit->signal_text_changed, [this] (const string& name) { instrument->set_name (name); });
-
-  grid.add_widget (new Label (this, "Name"), 1, 60, 6, 3);
-  grid.add_widget (name_line_edit, 7, 60, 19, 3);
-
-  /*--- time --- */
+  /*--- Sample: time --- */
   time_label = new Label (this, "");
 
   grid.add_widget (new Label (this, "Time"), 29, 66, 10, 3);
   grid.add_widget (time_label, 37, 66, 10, 3);
 
-  /*--- play mode ---*/
+  /*--- Playback: play mode ---*/
   play_mode_combobox = new ComboBox (this);
   connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
   //grid.add_widget (new Label (this, "Play Mode"), 60, 60, 10, 3);
@@ -260,7 +277,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   play_mode_combobox->add_item ("Original Sample");
   play_mode_combobox->add_item ("Reference Instrument");
 
-  /*--- play button ---*/
+  /*--- Playback: play button ---*/
   play_button = new Button (this, "Play");
   connect (play_button->signal_pressed, this, &InstEditWindow::on_toggle_play);
   grid.add_widget (play_button, 60, 60, 7, 3);
@@ -268,18 +285,19 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   Shortcut *play_shortcut = new Shortcut (this, ' ');
   connect (play_shortcut->signal_activated, this, &InstEditWindow::on_toggle_play);
 
-  /*--- led ---*/
+  /*--- Playback: playing ---*/
+  playing_label = new Label (this, "");
+  grid.add_widget (new Label (this, "Playing"), 60, 63, 10, 3);
+  grid.add_widget (playing_label, 68, 63, 10, 3);
+
+  /*--- Playback: progress ---*/
   progress_bar = new ProgressBar (this);
   progress_label = new Label (this, "Analyzing");
   grid.add_widget (progress_label, 60, 66, 10, 3);
   grid.add_widget (progress_bar, 68, 66.25, 24, 2.5);
 
-  /*--- playing ---*/
-  playing_label = new Label (this, "");
-  grid.add_widget (new Label (this, "Playing"), 60, 63, 10, 3);
-  grid.add_widget (playing_label, 68, 63, 10, 3);
 
-  /* --- timer --- */
+  /* --- Playback: timer --- */
   Timer *timer = new Timer (this);
   connect (timer->signal_timeout, &m_backend, &InstEditBackend::on_timer);
   connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
@@ -325,19 +343,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
           inst_edit_note->set_active_notes (iev->note);
       }
   });
-
-  /*--- auto volume ---*/
-  auto_volume_checkbox = new CheckBox (this, "Auto Volume");
-  connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
-  grid.add_widget (auto_volume_checkbox, 1, 63.5, 20, 2);
-
-  auto_tune_checkbox = new CheckBox (this, "Auto Tune");
-  grid.add_widget (auto_tune_checkbox, 1, 66.5, 20, 2);
-  connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
-
-  show_params_button = new Button (this, "Edit");
-  connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
-  grid.add_widget (show_params_button, 20, 64.5, 6, 3);
+  grid.dy = 0;
 
   const double vline1 = 27 + 0.5;
   const double vline2 = 58 + 0.5;
