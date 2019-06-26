@@ -218,25 +218,25 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   connect (name_line_edit->signal_text_changed, [this] (const string& name) { instrument->set_name (name); });
 
   grid.add_widget (new Label (this, "Name"), 0, 0, 6, 3);
-  grid.add_widget (name_line_edit, 6, 0, 19, 3);
+  grid.add_widget (name_line_edit, 6, 0, 21, 3);
 
   /*--- Instrument: auto volume ---*/
   auto_volume_checkbox = new CheckBox (this, "Auto Volume");
   connect (auto_volume_checkbox->signal_toggled, this, &InstEditWindow::on_auto_volume_changed);
-  grid.add_widget (auto_volume_checkbox, 0, 3.5, 20, 2);
+  grid.add_widget (auto_volume_checkbox, 0, 3.5, 21, 2);
 
   /*--- Instrument: auto tune ---*/
   auto_tune_checkbox = new CheckBox (this, "Auto Tune");
-  grid.add_widget (auto_tune_checkbox, 0, 6.5, 20, 2);
+  grid.add_widget (auto_tune_checkbox, 0, 6.5, 21, 2);
   connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
 
   /*--- Instrument: edit ---*/
   show_params_button = new Button (this, "Edit");
   connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
-  grid.add_widget (show_params_button, 19, 4, 6, 3);
+  grid.add_widget (show_params_button, 21, 4, 6, 3);
 
   /******************* SAMPLE *********************/
-  grid.dx = 29;
+  grid.dx = 31;
   grid.dy = 60.5;
 
   /*---- Sample: midi_note ---- */
@@ -274,15 +274,15 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (new Label (this, "Time"), 0, 6, 10, 3);
   grid.add_widget (time_label, 8, 6, 10, 3);
 
-  /******************* SAMPLE *********************/
-  grid.dx = 60;
+  /******************* PLAYBACK *********************/
+  grid.dx = 62;
   grid.dy = 60.5;
 
   /*--- Playback: play mode ---*/
   play_mode_combobox = new ComboBox (this);
   connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
   //grid.add_widget (new Label (this, "Play Mode"), 60, 60, 10, 3);
-  grid.add_widget (play_mode_combobox, 8, 0, 24, 3);
+  grid.add_widget (play_mode_combobox, 8, 0, 22, 3);
   play_mode_combobox->add_item ("SpectMorph Instrument"); // default
   play_mode_combobox->set_text ("SpectMorph Instrument");
   play_mode_combobox->add_item ("Original Sample");
@@ -305,7 +305,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   progress_bar = new ProgressBar (this);
   progress_label = new Label (this, "Analyzing");
   grid.add_widget (progress_label, 0, 6, 10, 3);
-  grid.add_widget (progress_bar, 8, 6.25, 24, 2.5);
+  grid.add_widget (progress_bar, 8, 6.25, 22, 2.5);
 
   /* --- Playback: timer --- */
   Timer *timer = new Timer (this);
@@ -358,8 +358,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.dx = 0;
   grid.dy = 0;
 
-  const double vline1 = 27 + 0.5;
-  const double vline2 = 58 + 0.5;
+  const double vline1 = 29 + 0.5;
+  const double vline2 = 60 + 0.5;
   const double vline3 = 93;
 
   // need to be below other widgets
@@ -382,8 +382,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   hdr_play->set_bold (true);
   grid.add_widget (hdr_play, vline2, 57, vline3 - vline2, 3);
 
-  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), 27, 57.25, 1, 12.75);
-  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), 58, 57.25, 1, 12.75);
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), vline1 - 0.5, 57.25, 1, 12.75);
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), vline2 - 0.5, 57.25, 1, 12.75);
 
   on_samples_changed();
   on_global_changed();
