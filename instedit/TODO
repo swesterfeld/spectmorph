@@ -1,7 +1,6 @@
 UI:
 - move user instruments to ~/SpectMorph
 - confirm revert/close dialog
-- rearrange all inst edit widgets
 - play/stop should have symbols
 - review file xml format
 
