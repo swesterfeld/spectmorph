@@ -18,13 +18,14 @@ class MorphWavSourceView : public MorphOperatorView
   ComboBox         *instrument_combobox = nullptr;
   ProgressBar      *progress_bar = nullptr;
   Label            *instrument_label = nullptr;
+  std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
 
   void on_edit();
   void on_instrument_changed();
   void on_update_progress();
 
   void update_instrument_list();
-  void write_instrument();
+  void on_edit_save_changes (bool save_changes);
 public:
   MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window);
 

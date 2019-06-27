@@ -11,6 +11,7 @@
 #include "smbutton.hh"
 #include "smtimer.hh"
 #include "smoperatorlayout.hh"
+#include "smmessagebox.hh"
 
 #include <unistd.h>
 #include <thread>
@@ -64,7 +65,15 @@ MorphWavSourceView::on_edit()
   synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
 
   Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
-  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), instrument, synth_interface, window());
+
+  /* clone instrument */
+  ZipWriter writer;
+  instrument->save (writer);
+  edit_instrument.reset (new Instrument);
+  ZipReader reader (writer.data());
+  edit_instrument->load (reader);
+
+  InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), edit_instrument.get(), synth_interface, window());
 
   inst_edit_window->show();
 
@@ -73,13 +82,17 @@ MorphWavSourceView::on_edit()
 
   inst_edit_window->set_close_callback ([synth_interface,this]()
     {
-      auto project = morph_wav_source->morph_plan()->project();
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
 
-      write_instrument();
-      update_instrument_list();
-      project->rebuild (morph_wav_source);
+      string name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
+      auto confirm_box = new MessageBox (window(), "Save Instrument",
+          "Instrument has been modified\n\n"
+          "Press \"Save\" to update:\n"
+          "  - WavSource  \"" + m_op->name() + "\"\n"
+          "  - Global User Instrument  \"" + name + "\"\n", MessageBox::SAVE | MessageBox::REVERT);
+
+      confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
     });
 }
 
@@ -117,12 +130,25 @@ MorphWavSourceView::on_update_progress()
 
 
 void
-MorphWavSourceView::write_instrument()
+MorphWavSourceView::on_edit_save_changes (bool save_changes)
 {
-  auto   project  = morph_wav_source->morph_plan()->project();
-  string filename = project->user_instrument_index()->filename (morph_wav_source->instrument());
+  if (!save_changes) /* do not save changes */
+    {
+      edit_instrument.reset();
+      return;
+    }
 
+  /* update copy in WavSource */
+  auto        project  = morph_wav_source->morph_plan()->project();
   Instrument *instrument = project->get_instrument (morph_wav_source);
+
+  ZipWriter edit_inst_writer;
+  edit_instrument->save (edit_inst_writer);
+  ZipReader edit_inst_reader (edit_inst_writer.data());
+  instrument->load (edit_inst_reader);
+
+  /* update on disk copy */
+  string filename = project->user_instrument_index()->filename (morph_wav_source->instrument());
   if (instrument->size())
     {
       ZipWriter zip_writer (filename);
@@ -134,6 +160,8 @@ MorphWavSourceView::write_instrument()
       unlink (filename.c_str());
       instrument->clear();
     }
+  update_instrument_list();
+  project->rebuild (morph_wav_source);
 }
 
 void
