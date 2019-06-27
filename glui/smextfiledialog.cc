@@ -113,7 +113,7 @@ ExtFileDialog::process_events()
 
       if (select_ret > 0 && FD_ISSET (child_stdout, &fds))
         {
-          char buffer[1024];
+          unsigned char buffer[1024]; // we expect utf8 encoded filenames
 
           int bytes = read (child_stdout, buffer, 1024);
           for (int i = 0; i < bytes; i++)
