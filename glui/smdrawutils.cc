@@ -24,3 +24,20 @@ DrawUtils::static_text_width (Window *window, const string& text)
   return w;
 }
 
+cairo_text_extents_t
+DrawUtils::static_text_extents (Window *window, const string& text)
+{
+  cairo_surface_t *dummy = cairo_image_surface_create (CAIRO_FORMAT_RGB24, 0, 0);
+  cairo_t *cr = cairo_create (dummy);
+
+  double global_scale = window ? window->gui_scaling() : 1.0;
+  cairo_scale (cr, global_scale, global_scale);
+
+  DrawUtils du (cr);
+  auto extents = du.text_extents (text);
+
+  cairo_surface_destroy (dummy);
+  cairo_destroy (cr);
+  return extents;
+}
+
