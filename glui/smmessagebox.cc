@@ -35,15 +35,46 @@ split (const string& text)
 }
 
 
-MessageBox::MessageBox (Window *window, const string& title, const string& text) :
+MessageBox::MessageBox (Window *window, const string& title, const string& text, Buttons buttons) :
   Dialog (window)
 {
   FixedGrid grid;
 
+  /* create buttons first to get width */
+  vector<Button *> bwidgets;
+  if (buttons & Buttons::OK)
+    {
+      auto button = new Button (this, "Ok");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_accept);
+    }
+
+  if (buttons & Buttons::CANCEL)
+    {
+      auto button = new Button (this, "Cancel");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_reject);
+    }
+
+  if (buttons & Buttons::SAVE)
+    {
+      auto button = new Button (this, "Save");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_accept);
+    }
+
+  if (buttons & Buttons::REVERT)
+    {
+      auto button = new Button (this, "Revert");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_reject);
+    }
+  const double button_width = 10 + (bwidgets.size() - 1) * 11;
+
   // window width
-  double w = 20;
+  double w = max (20.0, button_width);
   for (auto line : split (text))
-    w = max (w, DrawUtils::static_text_width (window, line) / 8);
+    w = max (w, DrawUtils::static_text_extents (window, line).x_advance / 8);
 
   auto title_label = new Label (this, title);
   title_label->set_bold (true);
@@ -59,15 +90,19 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text)
     {
       auto line_label = new Label (this, line);
 
-      line_label->set_align (TextAlign::CENTER);
+      line_label->set_align (TextAlign::LEFT);
       grid.add_widget (line_label, xframe, yoffset, w, 2);
       yoffset += 2;
     }
   yoffset += 1;
 
-  auto ok_button = new Button (this, "Ok");
-  grid.add_widget (ok_button, (w + 2 * xframe) / 2 - 5, yoffset, 10, 3);
-  connect (ok_button->signal_clicked, this, &Dialog::on_accept);
+  double xoffset = (w + 2 * xframe) / 2 - button_width / 2;
+  for (auto b : bwidgets)
+    {
+      grid.add_widget (b, xoffset, yoffset, 10, 3);
+      xoffset += 11;
+    }
+
   yoffset += 3;
 
   grid.add_widget (this, 0, 0, w + 2 * xframe, yoffset + 1);
@@ -77,7 +112,7 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text)
 void
 MessageBox::critical (Widget *parent, const string& title, const string& text)
 {
-  Dialog *dialog = new MessageBox (parent->window(), title, text);
+  Dialog *dialog = new MessageBox (parent->window(), title, text, Buttons::OK);
 
   dialog->run();
 }
