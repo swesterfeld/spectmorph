@@ -85,17 +85,27 @@ MorphWavSourceView::on_edit()
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
 
-      if (edit_instrument->version() != instrument->version())
+      auto project = morph_wav_source->morph_plan()->project();
+
+      Instrument user_instrument;
+      user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+
+      const bool wav_source_update = edit_instrument->version() != instrument->version();
+      const bool user_inst_update = edit_instrument->version() != user_instrument.version();
+      if (wav_source_update || user_inst_update)
         {
-          auto confirm_box = new MessageBox (window(), "Save Instrument",
-            string_printf (
+          string message = string_printf (
               "Instrument \"%03d %s\" has been modified.\n\n"
-              "Press \"Save\" to update:\n"
-              "  - WavSource: %s\n"
-              "  - User Instrument: %03d\n",
-              morph_wav_source->instrument(), edit_instrument->name().c_str(),
-              m_op->name().c_str(),
-              morph_wav_source->instrument()), MessageBox::SAVE | MessageBox::REVERT);
+              "Press \"Save\" to update:\n",
+              morph_wav_source->instrument(), edit_instrument->name().c_str());
+
+          if (wav_source_update)
+            message += string_printf ("  - WavSource: %s\n", m_op->name().c_str());
+
+          if (user_inst_update)
+            message += string_printf ( "  - User Instrument: %03d\n", morph_wav_source->instrument());
+
+          auto confirm_box = new MessageBox (window(), "Save Instrument", message, MessageBox::SAVE | MessageBox::REVERT);
 
           confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
         }
