@@ -80,19 +80,29 @@ MorphWavSourceView::on_edit()
   // after this line, inst edit window is owned by parent window
   window()->set_popup_window (inst_edit_window);
 
-  inst_edit_window->set_close_callback ([synth_interface,this]()
+  inst_edit_window->set_close_callback ([synth_interface,instrument,this]()
     {
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
 
-      string name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
-      auto confirm_box = new MessageBox (window(), "Save Instrument",
-          "Instrument has been modified.\n\n"
-          "Press \"Save\" to update:\n"
-          "  - WavSource  \"" + m_op->name() + "\"\n"
-          "  - Global User Instrument  \"" + name + "\"\n", MessageBox::SAVE | MessageBox::REVERT);
+      if (edit_instrument->version() != instrument->version())
+        {
+          auto confirm_box = new MessageBox (window(), "Save Instrument",
+            string_printf (
+              "Instrument \"%03d %s\" has been modified.\n\n"
+              "Press \"Save\" to update:\n"
+              "  - WavSource: %s\n"
+              "  - User Instrument: %03d\n",
+              morph_wav_source->instrument(), edit_instrument->name().c_str(),
+              m_op->name().c_str(),
+              morph_wav_source->instrument()), MessageBox::SAVE | MessageBox::REVERT);
 
-      confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
+          confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
+        }
+      else
+        {
+          on_edit_save_changes (false);
+        }
     });
 }
 
