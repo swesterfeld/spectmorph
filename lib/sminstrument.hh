@@ -123,19 +123,21 @@ private:
   EncoderConfig m_encoder_config;
 
   Error       load (const std::string& filename, ZipReader *zip_reader, LoadOptions load_options = LoadOptions::ALL);
-  Error       save (const std::string& filename, ZipWriter *zip_writer);
+  Error       save (const std::string& filename, ZipWriter *zip_writer) const;
 public:
   Instrument();
 
   Error       add_sample (const std::string& filename, Sample **sample);
   Sample     *sample (size_t n) const;
   void        remove_sample();
-  std::string gen_short_name (const std::string& filename);
+  std::string gen_short_name (std::vector<std::unique_ptr<Sample>>& samples, const std::string& filename);
 
   size_t      size() const;
   void        clear();
   std::string name() const;
   void        set_name (const std::string& name);
+
+  std::string version();
 
   int         selected() const;
   void        set_selected (int sel);
@@ -143,9 +145,10 @@ public:
   Error       load (const std::string& filename, LoadOptions load_options = LoadOptions::ALL);
   Error       load (ZipReader& zip_reader, LoadOptions load_options = LoadOptions::ALL);
 
-  Error       save (const std::string& filename);
-  Error       save (ZipWriter& zip_writer);
+  Error       save (const std::string& filename) const;
+  Error       save (ZipWriter& zip_writer) const;
 
+  Instrument *clone() const;
   void        update_order();
   void        marker_changed();
 

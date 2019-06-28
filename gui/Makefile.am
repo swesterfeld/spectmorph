@@ -15,7 +15,7 @@ SMSRCS = smzoomcontroller.cc smsampleview.cc
 lib_LTLIBRARIES = libspectmorphgui.la
 
 bin_PROGRAMS = smfiledialog
-bin_SCRIPTS  = smfiledialog.sh
+dist_bin_SCRIPTS  = smfiledialog.sh
 
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 nodist_libspectmorphgui_la_SOURCES = $(SMMOCS)

@@ -132,7 +132,7 @@ Instrument::add_sample (const string& filename, Sample **out_sample)
   Sample *sample = new Sample (this, wav_data);
   samples.emplace_back (sample);
   sample->filename  = filename;
-  sample->short_name = gen_short_name (filename);
+  sample->short_name = gen_short_name (samples, filename);
 
   sample->set_marker (MARKER_CLIP_START, 0.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
   sample->set_marker (MARKER_CLIP_END, 1.0 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
@@ -306,7 +306,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
       Sample *sample = new Sample (this, wav_data);
       new_samples.emplace_back (sample);
       sample->filename  = filename;
-      sample->short_name = gen_short_name (filename);
+      sample->short_name = gen_short_name (new_samples, filename);
       sample->set_midi_note (midi_note);
 
       xml_node clip_node = sample_node.child ("clip");
@@ -438,7 +438,7 @@ no_case_equal (const string& s1, const string& s2)
 }
 
 string
-Instrument::gen_short_name (const string& filename)
+Instrument::gen_short_name (vector<std::unique_ptr<Sample>>& current_samples, const string& filename)
 {
   char *gbasename = g_path_get_basename (filename.c_str());
   string basename = gbasename;
@@ -457,7 +457,7 @@ Instrument::gen_short_name (const string& filename)
 
       bool   used = false;
 
-      for (auto& sample : samples)
+      for (auto& sample : current_samples) /* samples need to be passed to deal with temporary load state */
         {
           /* some filesystems are case insensitive, so we avoid short names only differ in case */
           if (no_case_equal (sample->short_name, short_name))
@@ -472,19 +472,19 @@ Instrument::gen_short_name (const string& filename)
 }
 
 Error
-Instrument::save (const string& filename)
+Instrument::save (const string& filename) const
 {
   return save (filename, nullptr);
 }
 
 Error
-Instrument::save (ZipWriter& zip_writer)
+Instrument::save (ZipWriter& zip_writer) const
 {
   return save ("", &zip_writer);
 }
 
 Error
-Instrument::save (const string& filename, ZipWriter *zip_writer)
+Instrument::save (const string& filename, ZipWriter *zip_writer) const
 {
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
@@ -607,6 +607,19 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
   return Error::Code::NONE;
 }
 
+Instrument *
+Instrument::clone() const
+{
+  Instrument *instrument = new Instrument();
+
+  ZipWriter writer;
+  save (writer);
+  ZipReader reader (writer.data());
+  instrument->load (reader);
+
+  return instrument;
+}
+
 void
 Instrument::update_order()
 {
@@ -644,6 +657,14 @@ void
 Instrument::marker_changed()
 {
   signal_marker_changed();
+}
+
+string
+Instrument::version()
+{
+  ZipWriter writer;
+  save (writer);
+  return sha1_hash (&writer.data()[0], writer.data().size());
 }
 
 Instrument::AutoVolume
