@@ -472,19 +472,19 @@ Instrument::gen_short_name (const string& filename)
 }
 
 Error
-Instrument::save (const string& filename)
+Instrument::save (const string& filename) const
 {
   return save (filename, nullptr);
 }
 
 Error
-Instrument::save (ZipWriter& zip_writer)
+Instrument::save (ZipWriter& zip_writer) const
 {
   return save ("", &zip_writer);
 }
 
 Error
-Instrument::save (const string& filename, ZipWriter *zip_writer)
+Instrument::save (const string& filename, ZipWriter *zip_writer) const
 {
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
@@ -608,7 +608,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
 }
 
 Instrument *
-Instrument::clone()
+Instrument::clone() const
 {
   Instrument *instrument = new Instrument();
 

@@ -123,7 +123,7 @@ private:
   EncoderConfig m_encoder_config;
 
   Error       load (const std::string& filename, ZipReader *zip_reader, LoadOptions load_options = LoadOptions::ALL);
-  Error       save (const std::string& filename, ZipWriter *zip_writer);
+  Error       save (const std::string& filename, ZipWriter *zip_writer) const;
 public:
   Instrument();
 
@@ -145,10 +145,10 @@ public:
   Error       load (const std::string& filename, LoadOptions load_options = LoadOptions::ALL);
   Error       load (ZipReader& zip_reader, LoadOptions load_options = LoadOptions::ALL);
 
-  Error       save (const std::string& filename);
-  Error       save (ZipWriter& zip_writer);
+  Error       save (const std::string& filename) const;
+  Error       save (ZipWriter& zip_writer) const;
 
-  Instrument *clone();
+  Instrument *clone() const;
   void        update_order();
   void        marker_changed();
 
