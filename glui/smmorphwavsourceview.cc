@@ -84,14 +84,13 @@ MorphWavSourceView::on_edit()
     });
 }
 
-void
-MorphWavSourceView::on_edit_close()
+string
+MorphWavSourceView::modified_check (bool& wav_source_update, bool& user_inst_update)
 {
-  string full_name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
   const char *change_text = "modified";
   if (!edit_instrument->size()) /* detect deletion: instrument without samples => deleted */
     {
-      edit_instrument->clear();
+      edit_instrument->clear(); // ensure same version as other deleted instruments
       change_text = "deleted";
     }
 
@@ -99,16 +98,30 @@ MorphWavSourceView::on_edit_close()
 
   Instrument user_instrument;
   user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
-  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
 
-  const bool wav_source_update = edit_instrument->version() != instrument->version();
-  const bool user_inst_update = edit_instrument->version() != user_instrument.version();
+  string user_instrument_version = user_instrument.version();
+  string wav_source_version = project->get_instrument (morph_wav_source)->version();
+  string edit_instrument_version = edit_instrument->version();
+
+  wav_source_update = edit_instrument_version != wav_source_version;
+  user_inst_update = edit_instrument_version != user_instrument_version;
+
+  return change_text;
+}
+
+void
+MorphWavSourceView::on_edit_close()
+{
+  string full_name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
+
+  bool wav_source_update, user_inst_update;
+  string change_text = modified_check (wav_source_update, user_inst_update);
   if (wav_source_update || user_inst_update)
     {
       string message = string_printf (
           "Instrument \"%s\" has been %s.\n\n"
           "Press \"Save\" to update:\n",
-          full_name.c_str(), change_text);
+          full_name.c_str(), change_text.c_str());
 
       if (wav_source_update)
         message += string_printf ("  - WavSource: %s\n", m_op->name().c_str());
