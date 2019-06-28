@@ -80,48 +80,54 @@ MorphWavSourceView::on_edit()
   // after this line, inst edit window is owned by parent window
   window()->set_popup_window (inst_edit_window);
 
-  inst_edit_window->set_close_callback ([synth_interface,instrument,this]()
+  inst_edit_window->set_close_callback ([this,  synth_interface]()
     {
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
-
-      string full_name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
-      const char *change_text = "modified";
-      if (!edit_instrument->size()) /* detect deletion: instrument without samples => deleted */
-        {
-          edit_instrument->clear();
-          change_text = "deleted";
-        }
-
-      auto project = morph_wav_source->morph_plan()->project();
-
-      Instrument user_instrument;
-      user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
-
-      const bool wav_source_update = edit_instrument->version() != instrument->version();
-      const bool user_inst_update = edit_instrument->version() != user_instrument.version();
-      if (wav_source_update || user_inst_update)
-        {
-          string message = string_printf (
-              "Instrument \"%s\" has been %s.\n\n"
-              "Press \"Save\" to update:\n",
-              full_name.c_str(), change_text);
-
-          if (wav_source_update)
-            message += string_printf ("  - WavSource: %s\n", m_op->name().c_str());
-
-          if (user_inst_update)
-            message += string_printf ( "  - User Instrument: %03d\n", morph_wav_source->instrument());
-
-          auto confirm_box = new MessageBox (window(), "Save Instrument", message, MessageBox::SAVE | MessageBox::REVERT);
-
-          confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
-        }
-      else
-        {
-          on_edit_save_changes (false);
-        }
+      on_edit_close();
     });
+}
+
+void
+MorphWavSourceView::on_edit_close()
+{
+  string full_name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
+  const char *change_text = "modified";
+  if (!edit_instrument->size()) /* detect deletion: instrument without samples => deleted */
+    {
+      edit_instrument->clear();
+      change_text = "deleted";
+    }
+
+  auto project = morph_wav_source->morph_plan()->project();
+
+  Instrument user_instrument;
+  user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
+
+  const bool wav_source_update = edit_instrument->version() != instrument->version();
+  const bool user_inst_update = edit_instrument->version() != user_instrument.version();
+  if (wav_source_update || user_inst_update)
+    {
+      string message = string_printf (
+          "Instrument \"%s\" has been %s.\n\n"
+          "Press \"Save\" to update:\n",
+          full_name.c_str(), change_text);
+
+      if (wav_source_update)
+        message += string_printf ("  - WavSource: %s\n", m_op->name().c_str());
+
+      if (user_inst_update)
+        message += string_printf ( "  - User Instrument: %03d\n", morph_wav_source->instrument());
+
+      auto confirm_box = new MessageBox (window(), "Save Instrument", message, MessageBox::SAVE | MessageBox::REVERT);
+
+      confirm_box->run ([this](bool save_changes) { on_edit_save_changes (save_changes); });
+    }
+  else
+    {
+      on_edit_save_changes (false);
+    }
 }
 
 void
