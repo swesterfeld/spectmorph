@@ -137,6 +137,8 @@ public:
   std::string name() const;
   void        set_name (const std::string& name);
 
+  std::string version();
+
   int         selected() const;
   void        set_selected (int sel);
 

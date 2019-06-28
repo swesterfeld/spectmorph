@@ -646,6 +646,14 @@ Instrument::marker_changed()
   signal_marker_changed();
 }
 
+string
+Instrument::version()
+{
+  ZipWriter writer;
+  save (writer);
+  return sha1_hash (&writer.data()[0], writer.data().size());
+}
+
 Instrument::AutoVolume
 Instrument::auto_volume() const
 {
