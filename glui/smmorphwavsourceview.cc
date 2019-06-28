@@ -140,39 +140,6 @@ MorphWavSourceView::on_edit_close()
 }
 
 void
-MorphWavSourceView::on_instrument_changed()
-{
-  auto project = morph_wav_source->morph_plan()->project();
-
-  Instrument *instrument = project->get_instrument (morph_wav_source);
-  morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
-
-  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
-  if (error)
-    {
-      /* most likely cause of error: this user instrument doesn't exist yet */
-      instrument->clear();
-    }
-  project->rebuild (morph_wav_source);
-}
-
-void
-MorphWavSourceView::on_update_progress()
-{
-  auto project = morph_wav_source->morph_plan()->project();
-  bool rebuild_active = project->rebuild_active (morph_wav_source->object_id());
-
-  if (rebuild_active)
-    progress_bar->set_value (-1);
-  else
-    progress_bar->set_value (1);
-
-  instrument_label->set_visible (!rebuild_active);
-  progress_bar->set_visible (rebuild_active);
-}
-
-
-void
 MorphWavSourceView::on_edit_save_changes (bool save_changes)
 {
   if (!save_changes) /* do not save changes */
@@ -206,6 +173,39 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
   update_instrument_list();
   project->rebuild (morph_wav_source);
 }
+
+void
+MorphWavSourceView::on_instrument_changed()
+{
+  auto project = morph_wav_source->morph_plan()->project();
+
+  Instrument *instrument = project->get_instrument (morph_wav_source);
+  morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
+
+  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+  if (error)
+    {
+      /* most likely cause of error: this user instrument doesn't exist yet */
+      instrument->clear();
+    }
+  project->rebuild (morph_wav_source);
+}
+
+void
+MorphWavSourceView::on_update_progress()
+{
+  auto project = morph_wav_source->morph_plan()->project();
+  bool rebuild_active = project->rebuild_active (morph_wav_source->object_id());
+
+  if (rebuild_active)
+    progress_bar->set_value (-1);
+  else
+    progress_bar->set_value (1);
+
+  instrument_label->set_visible (!rebuild_active);
+  progress_bar->set_visible (rebuild_active);
+}
+
 
 void
 MorphWavSourceView::update_instrument_list()
