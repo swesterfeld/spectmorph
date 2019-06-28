@@ -65,12 +65,9 @@ MorphWavSourceView::on_edit()
   synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
 
   Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
-
-  /* clone instrument */
   edit_instrument.reset (instrument->clone());
 
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), edit_instrument.get(), synth_interface, window());
-
   inst_edit_window->show();
 
   // after this line, inst edit window is owned by parent window
@@ -127,7 +124,7 @@ MorphWavSourceView::on_edit_close()
         message += string_printf ("  - WavSource: %s\n", m_op->name().c_str());
 
       if (user_inst_update)
-        message += string_printf ( "  - User Instrument: %03d\n", morph_wav_source->instrument());
+        message += string_printf ("  - User Instrument: %03d\n", morph_wav_source->instrument());
 
       auto confirm_box = new MessageBox (window(), "Save Instrument", message, MessageBox::SAVE | MessageBox::REVERT);
 
@@ -170,6 +167,7 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
       unlink (filename.c_str());
       instrument->clear();
     }
+  edit_instrument.reset();
   update_instrument_list();
   project->rebuild (morph_wav_source);
 }
