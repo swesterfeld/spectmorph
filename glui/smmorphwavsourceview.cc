@@ -67,11 +67,7 @@ MorphWavSourceView::on_edit()
   Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
 
   /* clone instrument */
-  ZipWriter writer;
-  instrument->save (writer);
-  edit_instrument.reset (new Instrument);
-  ZipReader reader (writer.data());
-  edit_instrument->load (reader);
+  edit_instrument.reset (instrument->clone());
 
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), edit_instrument.get(), synth_interface, window());
 
