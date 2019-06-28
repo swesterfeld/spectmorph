@@ -148,6 +148,7 @@ public:
   Error       save (const std::string& filename);
   Error       save (ZipWriter& zip_writer);
 
+  Instrument *clone();
   void        update_order();
   void        marker_changed();
 

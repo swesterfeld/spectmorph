@@ -607,6 +607,19 @@ Instrument::save (const string& filename, ZipWriter *zip_writer)
   return Error::Code::NONE;
 }
 
+Instrument *
+Instrument::clone()
+{
+  Instrument *instrument = new Instrument();
+
+  ZipWriter writer;
+  save (writer);
+  ZipReader reader (writer.data());
+  instrument->load (reader);
+
+  return instrument;
+}
+
 void
 Instrument::update_order()
 {
