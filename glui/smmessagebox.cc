@@ -4,6 +4,7 @@
 #include "smfixedgrid.hh"
 #include "smlabel.hh"
 #include "smbutton.hh"
+#include "smsimplelines.hh"
 
 using std::vector;
 using std::string;
@@ -82,9 +83,12 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
 
   const double xframe = 2;
 
-  grid.add_widget (title_label, 0, 0, w + 2 * xframe, 4);
+  double yoffset = 1;
+  grid.add_widget (title_label, 0, yoffset, w + 2 * xframe, 2);
+  yoffset += 2;
 
-  double yoffset = 4;
+  grid.add_widget (new HLine (this, Color (0.6, 0.6, 0.6), 1), 0.5, yoffset, w + 2 * xframe - 1, 2);
+  yoffset += 2;
   /* put each line in one label */
   for (auto line : split (text))
     {
@@ -94,7 +98,8 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
       grid.add_widget (line_label, xframe, yoffset, w, 2);
       yoffset += 2;
     }
-  yoffset += 1;
+  grid.add_widget (new HLine (this, Color (0.6, 0.6, 0.6), 1), 0.5, yoffset, w + 2 * xframe - 1, 2);
+  yoffset += 2;
 
   double xoffset = (w + 2 * xframe) / 2 - button_width / 2;
   for (auto b : bwidgets)

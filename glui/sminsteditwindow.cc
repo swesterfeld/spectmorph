@@ -9,6 +9,7 @@
 #include "smtimer.hh"
 #include "smmenubar.hh"
 #include "smslider.hh"
+#include "smsimplelines.hh"
 #include "smwavsetbuilder.hh"
 #include "smsynthinterface.hh"
 #include "smscrollview.hh"
@@ -19,28 +20,6 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
-
-class VLine : public Widget
-{
-  Color color;
-public:
-  VLine (Widget *parent, Color color) :
-    Widget (parent),
-    color (color)
-  {
-  }
-  void
-  draw (const DrawEvent& devent) override
-  {
-    DrawUtils du (devent.cr);
-
-    du.set_color (color);
-    cairo_move_to (devent.cr, width / 2, 0);
-    cairo_line_to (devent.cr, width / 2, height);
-    cairo_stroke (devent.cr);
-  }
-};
-
 
 // ---------------- InstEditBackend ----------------
 //
@@ -382,8 +361,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   hdr_play->set_bold (true);
   grid.add_widget (hdr_play, vline2, 57, vline3 - vline2, 3);
 
-  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), vline1 - 0.5, 57.25, 1, 12.75);
-  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8)), vline2 - 0.5, 57.25, 1, 12.75);
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8), 2), vline1 - 0.5, 57.25, 1, 12.75);
+  grid.add_widget (new VLine (this, Color (0.8, 0.8, 0.8), 2), vline2 - 0.5, 57.25, 1, 12.75);
 
   on_samples_changed();
   on_global_changed();

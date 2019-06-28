@@ -87,7 +87,7 @@ MorphWavSourceView::on_edit()
 
       string name = string_printf ("%03d %s", morph_wav_source->instrument(), edit_instrument->name().c_str());
       auto confirm_box = new MessageBox (window(), "Save Instrument",
-          "Instrument has been modified\n\n"
+          "Instrument has been modified.\n\n"
           "Press \"Save\" to update:\n"
           "  - WavSource  \"" + m_op->name() + "\"\n"
           "  - Global User Instrument  \"" + name + "\"\n", MessageBox::SAVE | MessageBox::REVERT);
