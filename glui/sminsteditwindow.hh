@@ -30,6 +30,7 @@ class ComboBox;
 class SampleWidget;
 class SynthInterface;
 
+class IconButton;
 class InstEditWindow;
 class InstEditParams;
 class InstEditBackend
@@ -84,9 +85,9 @@ class InstEditWindow : public Window
   LineEdit *name_line_edit = nullptr;
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
-  Button   *play_button = nullptr;
-  Button   *add_sample_button = nullptr;
-  Button   *remove_sample_button = nullptr;
+  IconButton  *play_button = nullptr;
+  Button      *add_sample_button = nullptr;
+  Button      *remove_sample_button = nullptr;
   Label       *progress_label = nullptr;
   ProgressBar *progress_bar = nullptr;
   bool      playing = false;

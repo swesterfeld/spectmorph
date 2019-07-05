@@ -21,6 +21,60 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+namespace SpectMorph
+{
+
+class IconButton : public Button
+{
+public:
+  enum Icon { PLAY, STOP } m_icon;
+
+  IconButton (Widget *parent, Icon icon) :
+    Button (parent, ""),
+    m_icon (icon)
+  {
+  }
+  void
+  set_icon (Icon icon)
+  {
+    if (icon != m_icon)
+      {
+        m_icon = icon;
+        update();
+      }
+  }
+  void
+  draw (const DrawEvent& devent) override
+  {
+    Button::draw (devent);
+
+    cairo_t *cr = devent.cr;
+    DrawUtils du (cr);
+
+    double space = 4;
+    double size = std::min (width * 0.55, height * 0.55) - 2 * space;
+
+    if (m_icon == PLAY)
+      {
+        const double left = width / 2 - size / 2 + size * 0.1;
+        cairo_move_to (cr, left, height / 2 - size / 2);
+        cairo_line_to (cr, left, height / 2 + size / 2);
+        cairo_line_to (cr, left + size * 0.8, height / 2);
+        //cairo_line_to (cr, width / 2 - size / 2 + size, height / 2);
+
+        cairo_close_path (cr);
+        cairo_stroke_preserve (cr);
+        cairo_fill (cr);
+      }
+    else if (m_icon == STOP)
+      {
+        du.rect_fill (width / 2 - size / 2, height / 2 - size / 2, size, size, Color (1, 1, 1));
+      }
+  }
+};
+
+}
+
 // ---------------- InstEditBackend ----------------
 //
 InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
@@ -268,17 +322,17 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   play_mode_combobox->add_item ("Reference Instrument");
 
   /*--- Playback: play button ---*/
-  play_button = new Button (this, "Play");
+  play_button = new IconButton (this, IconButton::PLAY);
   connect (play_button->signal_pressed, this, &InstEditWindow::on_toggle_play);
-  grid.add_widget (play_button, 0, 0, 7, 3);
+  grid.add_widget (play_button, 0, 0, 6, 6);
 
   Shortcut *play_shortcut = new Shortcut (this, ' ');
   connect (play_shortcut->signal_activated, this, &InstEditWindow::on_toggle_play);
 
   /*--- Playback: playing ---*/
   playing_label = new Label (this, "");
-  grid.add_widget (new Label (this, "Playing"), 0, 3, 10, 3);
-  grid.add_widget (playing_label, 8, 3, 10, 3);
+  grid.add_widget (new Label (this, "Playing"), 8, 3, 10, 3);
+  grid.add_widget (playing_label, 15, 3, 10, 3);
 
   /*--- Playback: progress ---*/
   progress_bar = new ProgressBar (this);
@@ -785,7 +839,7 @@ InstEditWindow::set_playing (bool new_playing)
     return;
 
   playing = new_playing;
-  play_button->set_text (playing ? "Stop" : "Play");
+  play_button->set_icon (playing ? IconButton::STOP : IconButton::PLAY);
 }
 
 void
