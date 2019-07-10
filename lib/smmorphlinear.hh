@@ -43,6 +43,8 @@ public:
   void               post_load (OpNameMap& op_name_map);
   OutputType         output_type();
 
+  std::vector<MorphOperator *> dependencies() override;
+
   MorphOperator *left_op();
   void set_left_op (MorphOperator *op);
 

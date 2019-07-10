@@ -292,3 +292,9 @@ MorphLinear::set_db_linear (bool dbl)
 
   m_morph_plan->emit_plan_changed();
 }
+
+vector<MorphOperator *>
+MorphLinear::dependencies()
+{
+  return { m_left_op, m_right_op, m_control_type == CONTROL_OP ? m_control_op : nullptr };
+}

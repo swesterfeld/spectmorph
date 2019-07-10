@@ -75,6 +75,8 @@ public:
   void               post_load (OpNameMap& op_name_map);
   OutputType         output_type();
 
+  std::vector<MorphOperator *> dependencies() override;
+
   void           set_sines (bool es);
   bool           sines() const;
 
