@@ -47,7 +47,7 @@ MorphOperatorView::set_role (int role)
   if (m_role != role)
     {
       m_role = role;
-      on_operators_changed();
+      set_role_colors();
     }
 }
 
@@ -75,8 +75,6 @@ void
 MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
-
-  set_role_colors();
 
   title_label->set_text (title);
 }

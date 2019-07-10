@@ -71,7 +71,7 @@ protected:
   ToolButton         *fold_button;
   ToolButton         *close_button;
   MorphOperatorTitle *title_label;
-  int                 m_role = 0;
+  int                 m_role = -1;
 
   MorphPlanWindow *morph_plan_window;
   MorphOperator *m_op;
