@@ -2,6 +2,7 @@
 
 #include "smmorphoperatorview.hh"
 #include "smrenameopwindow.hh"
+#include "smoperatorrolemap.hh"
 
 using namespace SpectMorph;
 
@@ -41,6 +42,36 @@ MorphOperatorView::MorphOperatorView (Widget *parent, MorphOperator *op, MorphPl
 }
 
 void
+MorphOperatorView::set_role (int role)
+{
+  if (m_role != role)
+    {
+      m_role = role;
+      set_role_colors();
+    }
+}
+
+void
+MorphOperatorView::set_role_colors()
+{
+  if (m_role == 2) /* directly connected to output */
+    {
+      title_label->set_color (Color (0.3, 0.9, 0.3));
+      set_frame_color (ThemeColor::FRAME);
+    }
+  else if (m_role > 0) /* output or reachable */
+    {
+      title_label->set_color (ThemeColor::TEXT);
+      set_frame_color (ThemeColor::FRAME);
+    }
+  else /* unreachable */
+    {
+      title_label->set_color (Color (0.7, 0.7, 0.7));
+      set_frame_color (Color (0.7, 0.7, 0.7));
+    }
+}
+
+void
 MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
@@ -67,7 +98,7 @@ MorphOperatorView::on_end_move (double y)
   if (is_output()) // output operator: move not supported
     return;
 
-  set_frame_color (ThemeColor::FRAME);
+  set_role_colors();
 
   MorphOperator *op_next = morph_plan_window->where (m_op, y);
 

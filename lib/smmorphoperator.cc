@@ -109,6 +109,12 @@ MorphOperator::type_name()
   return string (type()).substr (string ("SpectMorph::Morph").size());
 }
 
+vector<MorphOperator *>
+MorphOperator::dependencies()
+{
+  return {}; /* default implementation -> no dependencies */
+}
+
 #include "smmorphoutput.hh"
 #include "smmorphlinear.hh"
 #include "smmorphgrid.hh"

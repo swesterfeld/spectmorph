@@ -42,6 +42,7 @@ public:
   virtual bool load (InFile& in_file) = 0;
   virtual void post_load (OpNameMap& op_name_map);
   virtual OutputType output_type() = 0;
+  virtual std::vector<MorphOperator *> dependencies();
 
   MorphPlan *morph_plan();
 

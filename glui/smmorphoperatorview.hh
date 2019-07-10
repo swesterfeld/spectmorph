@@ -71,6 +71,7 @@ protected:
   ToolButton         *fold_button;
   ToolButton         *close_button;
   MorphOperatorTitle *title_label;
+  int                 m_role = -1;
 
   MorphPlanWindow *morph_plan_window;
   MorphOperator *m_op;
@@ -120,6 +121,8 @@ public:
   {
     return m_op;
   }
+  void set_role (int role);
+  void set_role_colors();
 
   void on_move (double y);
   void on_end_move (double y);

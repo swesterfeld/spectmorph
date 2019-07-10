@@ -548,3 +548,9 @@ MorphOutput::on_operator_removed (MorphOperator *op)
         channel_ops[ch] = NULL;
     }
 }
+
+vector<MorphOperator *>
+MorphOutput::dependencies()
+{
+  return channel_ops;
+}

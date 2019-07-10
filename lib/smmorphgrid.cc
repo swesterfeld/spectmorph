@@ -459,6 +459,27 @@ MorphGrid::input_node_label (int x, int y)
   return "???";
 }
 
+vector<MorphOperator *>
+MorphGrid::dependencies()
+{
+  std::vector<MorphOperator *> deps;
+
+  if (m_x_control_type == CONTROL_OP)
+    deps.push_back (m_x_control_op);
+
+  if (m_y_control_type == CONTROL_OP)
+    deps.push_back (m_y_control_op);
+
+  for (int x = 0; x < m_width; x++)
+    {
+      for (int y = 0; y < m_height; y++)
+        {
+          deps.push_back (m_input_node[x][y].op);
+        }
+    }
+  return deps;
+}
+
 MorphGridNode::MorphGridNode() :
   op (NULL),
   delta_db (0)
