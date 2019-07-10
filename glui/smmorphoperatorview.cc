@@ -40,10 +40,64 @@ MorphOperatorView::MorphOperatorView (Widget *parent, MorphOperator *op, MorphPl
   on_operators_changed();
 }
 
+static int
+get_role (const std::vector<MorphOperator *>& deps, MorphOperator *search_op)
+{
+  for (auto dep : deps)
+    {
+      if (dep)
+        {
+          if (dep == search_op)
+            return 2;
+          int role = get_role (dep->dependencies(), search_op);
+          if (role)
+            return role + 1;
+        }
+    }
+  return 0; /* unreachable */
+}
+
+static int
+get_role (MorphPlan *plan, MorphOperator *search_op)
+{
+  for (auto op : plan->operators())
+    {
+      string type = op->type();
+      if (type == "SpectMorph::MorphOutput")
+        {
+          printf ("get role start: %s\n", search_op->name().c_str());
+          if (op == search_op)
+            return 1;
+
+          const int role = get_role (op->dependencies(), search_op);
+          if (role)
+            return role;
+        }
+    }
+  return 0;
+}
+
 void
 MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
+
+  int role = get_role (m_op->morph_plan(), m_op);
+  if (role == 2) /* directly connected to output */
+    {
+      title_label->set_color (Color (0.3, 0.9, 0.3));
+      set_frame_color (ThemeColor::FRAME);
+    }
+  else if (role > 0) /* output or reachable */
+    {
+      title_label->set_color (ThemeColor::TEXT);
+      set_frame_color (ThemeColor::FRAME);
+    }
+  else /* unreachable */
+    {
+      title_label->set_color (Color (0.7, 0.7, 0.7));
+      set_frame_color (Color (0.7, 0.7, 0.7));
+    }
 
   title_label->set_text (title);
 }
