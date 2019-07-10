@@ -52,17 +52,14 @@ MorphOperatorView::set_role (int role)
 }
 
 void
-MorphOperatorView::on_operators_changed()
+MorphOperatorView::set_role_colors()
 {
-  string title = m_op->type_name() + ": " + m_op->name();
-
-  int role = m_role;
-  if (role == 2) /* directly connected to output */
+  if (m_role == 2) /* directly connected to output */
     {
       title_label->set_color (Color (0.3, 0.9, 0.3));
       set_frame_color (ThemeColor::FRAME);
     }
-  else if (role > 0) /* output or reachable */
+  else if (m_role > 0) /* output or reachable */
     {
       title_label->set_color (ThemeColor::TEXT);
       set_frame_color (ThemeColor::FRAME);
@@ -72,6 +69,14 @@ MorphOperatorView::on_operators_changed()
       title_label->set_color (Color (0.7, 0.7, 0.7));
       set_frame_color (Color (0.7, 0.7, 0.7));
     }
+}
+
+void
+MorphOperatorView::on_operators_changed()
+{
+  string title = m_op->type_name() + ": " + m_op->name();
+
+  set_role_colors();
 
   title_label->set_text (title);
 }
@@ -95,7 +100,7 @@ MorphOperatorView::on_end_move (double y)
   if (is_output()) // output operator: move not supported
     return;
 
-  set_frame_color (ThemeColor::FRAME);
+  set_role_colors();
 
   MorphOperator *op_next = morph_plan_window->where (m_op, y);
 

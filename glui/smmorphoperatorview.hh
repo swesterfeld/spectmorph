@@ -122,6 +122,7 @@ public:
     return m_op;
   }
   void set_role (int role);
+  void set_role_colors();
 
   void on_move (double y);
   void on_end_move (double y);
