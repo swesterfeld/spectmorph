@@ -42,14 +42,21 @@ MorphOperatorView::MorphOperatorView (Widget *parent, MorphOperator *op, MorphPl
 }
 
 void
+MorphOperatorView::set_role (int role)
+{
+  if (m_role != role)
+    {
+      m_role = role;
+      on_operators_changed();
+    }
+}
+
+void
 MorphOperatorView::on_operators_changed()
 {
   string title = m_op->type_name() + ": " + m_op->name();
 
-  OperatorRoleMap op_role_map;
-  op_role_map.rebuild (m_op->morph_plan());
-
-  int role = op_role_map.get (m_op);
+  int role = m_role;
   if (role == 2) /* directly connected to output */
     {
       title_label->set_color (Color (0.3, 0.9, 0.3));

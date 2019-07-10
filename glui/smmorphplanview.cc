@@ -7,6 +7,7 @@
 #include "smmorphlinearview.hh"
 #include "smmorphlfoview.hh"
 #include "smmorphgridview.hh"
+#include "smoperatorrolemap.hh"
 
 using namespace SpectMorph;
 
@@ -30,7 +31,10 @@ void
 MorphPlanView::on_plan_changed()
 {
   if (!need_view_rebuild)
-    return; // nothing to do, view widgets should be fine
+    {
+      update_roles(); /* roles could have changed */
+      return; // nothing to do, view widgets should be fine
+    }
 
   need_view_rebuild = false;
 
@@ -73,6 +77,8 @@ MorphPlanView::on_plan_changed()
 
       m_op_views.push_back (op_view);
     }
+
+  update_roles();
   update_positions();
 }
 
@@ -136,6 +142,18 @@ const vector<MorphOperatorView *>&
 MorphPlanView::op_views()
 {
   return m_op_views;
+}
+
+void
+MorphPlanView::update_roles()
+{
+  op_role_map.rebuild (morph_plan);
+
+  for (auto op_view : m_op_views)
+    {
+      int role = op_role_map.get (op_view->op());
+      op_view->set_role (role);
+    }
 }
 
 void

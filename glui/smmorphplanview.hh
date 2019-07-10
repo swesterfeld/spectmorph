@@ -8,6 +8,7 @@
 #include "smfixedgrid.hh"
 #include "smmorphoperatorview.hh"
 #include "smscrollview.hh"
+#include "smoperatorrolemap.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -21,6 +22,7 @@ class MorphPlanView : public Widget
   MorphPlan       *morph_plan;
   MorphPlanWindow *morph_plan_window;
   bool             need_view_rebuild;
+  OperatorRoleMap  op_role_map;
 
   std::vector<MorphOperatorView *> m_op_views;
 
@@ -32,6 +34,7 @@ public:
 
   void update_positions();
   const std::vector<MorphOperatorView *>& op_views();
+  void update_roles();
 
   void on_plan_changed();
   void on_move_indication (MorphOperator *op, bool done);
