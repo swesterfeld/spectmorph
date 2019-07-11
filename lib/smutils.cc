@@ -226,6 +226,17 @@ dot_spectmorph_dir()
   else
     return "";
 }
+
+static string
+win_documents_dir()
+{
+  char buffer[MAX_PATH + 1];
+  if (SHGetSpecialFolderPath (NULL, buffer, CSIDL_MYDOCUMENTS, true))
+    return buffer;
+  else
+    return "";
+}
+
 string
 sm_resolve_link (const string& link_file)
 {
@@ -325,7 +336,10 @@ sm_get_documents_dir (DocumentsDir p)
   string documents = sm_mac_documents_dir(); // macOS -> "~/Documents/SpectMorph/Instruments/User"
 #endif
 #ifdef SM_OS_LINUX
-  string documents = g_get_home_dir();       // Linux -> "~/SpectMorph/Instrument/User"
+  string documents = g_get_home_dir();       // Linux -> "~/SpectMorph/Instruments/User"
+#endif
+#ifdef SM_OS_WINDOWS
+  string documents = win_documents_dir();    // Windows -> "C:/Users/Stefan/Documents/SpectMorph/Instruments/User"
 #endif
   switch (p)
     {
