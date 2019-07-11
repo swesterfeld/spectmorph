@@ -55,6 +55,13 @@ else
   libspectmorph_la_SOURCES += smjobqueue.cc
 endif
 
+if COND_MACOS
+  libspectmorph_la_SOURCES += smmacutils.mm
+  libspectmorph_la_OBJCXXFLAGS = $(AM_OBJCFLAGS) $(AM_CXXFLAGS) -std=gnu++11
+  libspectmorph_la_LIBTOOLFLAGS = --tag CXX
+  libspectmorph_la_LDFLAGS += -framework Foundation
+endif
+
 spectmorphincludedir = $(includedir)/spectmorph/smcore
 spectmorphinclude_HEADERS = $(SMHDRS) spectmorph.hh
 
