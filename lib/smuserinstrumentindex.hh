@@ -10,12 +10,20 @@ namespace SpectMorph
 
 class UserInstrumentIndex
 {
+private:
+  std::string user_bank_dir;
+
 public:
+  UserInstrumentIndex()
+  {
+    user_bank_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS) + "/User";
+
+    /* if user bank directory doesn't exist, create it */
+    g_mkdir_with_parents (user_bank_dir.c_str(), 0775);
+  }
   std::string
   filename (int number)
   {
-    std::string user_bank_dir = sm_get_user_dir (USER_DIR_DATA) + "/user"; // FIXME: test only
-    g_mkdir_with_parents (user_bank_dir.c_str(), 0775);
     return string_printf ("%s/%d.sminst", user_bank_dir.c_str(), number);
   }
   std::string
