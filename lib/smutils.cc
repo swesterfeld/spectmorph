@@ -319,6 +319,19 @@ sm_get_user_dir (UserDir p)
 }
 
 string
+sm_get_documents_dir (DocumentsDir p)
+{
+#ifdef SM_OS_MACOS
+  string documents = sm_mac_documents_dir();
+#endif
+  switch (p)
+    {
+      case DOCUMENTS_DIR_INSTRUMENTS: return documents + "/SpectMorph/Instruments";
+    }
+  return "";
+}
+
+string
 sm_get_cache_dir()   /* used by smenccache */
 {
 #ifdef SM_OS_LINUX
@@ -380,5 +393,6 @@ to_utf32 (const string& utf8)
   std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
   return conv.from_bytes (utf8);
 }
+
 
 }

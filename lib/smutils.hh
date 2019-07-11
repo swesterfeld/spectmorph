@@ -73,6 +73,17 @@ std::string sm_get_user_dir (UserDir p);
 std::string sm_get_default_plan();
 std::string sm_get_cache_dir();
 
+#ifdef SM_OS_MACOS
+std::string sm_mac_documents_dir();
+#endif
+
+enum DocumentsDir
+{
+  DOCUMENTS_DIR_INSTRUMENTS
+};
+
+std::string sm_get_documents_dir (DocumentsDir p);
+
 class Error
 {
 public:
