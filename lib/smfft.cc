@@ -264,7 +264,9 @@ FFT::init()
 void
 FFT::cleanup()
 {
-  auto cleanup_plans = [](auto& plan_map) {
+  typedef map<int, fftwf_plan> PlanMap;
+
+  auto cleanup_plans = [](PlanMap& plan_map) {
     for (auto& plan_entry : plan_map)
       fftwf_destroy_plan (plan_entry.second);
 
