@@ -36,12 +36,12 @@ public:
   ~MorphLinear();
 
   // inherited from MorphOperator
-  const char        *type();
-  int                insert_order();
-  bool               save (OutFile& out_file);
-  bool               load (InFile&  in_file);
-  void               post_load (OpNameMap& op_name_map);
-  OutputType         output_type();
+  const char        *type() override;
+  int                insert_order() override;
+  bool               save (OutFile& out_file) override;
+  bool               load (InFile&  in_file) override;
+  void               post_load (OpNameMap& op_name_map) override;
+  OutputType         output_type() override;
 
   std::vector<MorphOperator *> dependencies() override;
 
