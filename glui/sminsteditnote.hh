@@ -12,6 +12,7 @@
 #include "smfixedgrid.hh"
 #include "smscrollview.hh"
 #include "smsynthinterface.hh"
+#include "smsimplelines.hh"
 
 namespace SpectMorph
 {
@@ -242,7 +243,7 @@ class InstEditNote : public Window
   NoteWidget *note_widget = nullptr;
 public:
   InstEditNote (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
-    Window (*window->event_loop(), "SpectMorph - Instrument Note", 524, 348, 0, false, window->native_window())
+    Window (*window->event_loop(), "SpectMorph - Instrument Note", 13 * 40 + 2 * 8, 9 * 40 + 6 * 8, 0, false, window->native_window())
   {
     set_close_callback ([this]() {
       signal_closed();
@@ -254,7 +255,45 @@ public:
 
     note_widget = new NoteWidget (this, instrument, synth_interface);
     FixedGrid grid;
-    grid.add_widget (note_widget, 1, 1, width / 8 - 2, height / 8 - 2);
+    grid.add_widget (note_widget, 1, 1, width / 8 - 2, height / 8 - 6);
+
+    Label *left = new Label (this, "Left Click");
+    Label *left_txt = new Label (this, "Play Reference");
+    left->set_bold (true);
+
+    Label *right = new Label (this, "Right Click");
+    Label *right_txt = new Label (this, "Play Instrument");
+    right->set_bold (true);
+
+    Label *dbl = new Label (this, "Double Click");
+    Label *dbl_txt = new Label (this, "Set Midi Note");
+    dbl->set_bold (true);
+
+    Label *space = new Label (this, "Space");
+    Label *space_txt = new Label (this, "Play Selected Note");
+    space->set_bold (true);
+
+    grid.dx = 4;
+    grid.dy = height / 8 - 5;
+
+    double xw = 12;
+    grid.add_widget (dbl, 0, 2, xw, 3);
+    grid.add_widget (dbl_txt, xw, 2, 20, 3);
+    grid.add_widget (space, 0, 0, xw, 3);
+    grid.add_widget (space_txt, xw, 0, 20, 3);
+
+    grid.dx = width / 8 / 2;
+    grid.dy = height / 8 - 5;
+
+    grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 5);
+
+    grid.dx += 4;
+
+    xw = 13;
+    grid.add_widget (left, 0, 0, xw, 3);
+    grid.add_widget (left_txt, xw, 0, 20, 3);
+    grid.add_widget (right, 0, 2, xw, 3);
+    grid.add_widget (right_txt, xw, 2, 20, 3);
 
     show();
   }
