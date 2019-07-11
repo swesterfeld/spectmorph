@@ -322,7 +322,10 @@ string
 sm_get_documents_dir (DocumentsDir p)
 {
 #ifdef SM_OS_MACOS
-  string documents = sm_mac_documents_dir();
+  string documents = sm_mac_documents_dir(); // macOS -> "~/Documents/SpectMorph/Instruments/User"
+#endif
+#ifdef SM_OS_LINUX
+  string documents = g_get_home_dir();       // Linux -> "~/SpectMorph/Instrument/User"
 #endif
   switch (p)
     {

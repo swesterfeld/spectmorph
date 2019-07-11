@@ -48,6 +48,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
 
 libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
 libspectmorph_la_LDFLAGS = -no-undefined
+libspectmorph_la_LIBTOOLFLAGS = --tag CXX
 
 if COND_WINDOWS
   libspectmorph_la_LIBADD += -luuid
@@ -58,7 +59,6 @@ endif
 if COND_MACOS
   libspectmorph_la_SOURCES += smmacutils.mm
   libspectmorph_la_OBJCXXFLAGS = $(AM_OBJCFLAGS) $(AM_CXXFLAGS) -std=gnu++11
-  libspectmorph_la_LIBTOOLFLAGS = --tag CXX
   libspectmorph_la_LDFLAGS += -framework Foundation
 endif
 
