@@ -156,8 +156,6 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
     }
   else if ((key_event.special == PUGL_KEY_BACKSPACE || key_event.special == PUGL_KEY_DELETE) && !text32.empty())
     {
-      // Windows and Linux use backspace, macOS uses delete, so we support both (FIXME)
-
       if (overwrite_selection())
         {
           // if there was a selection, we just overwrite it
