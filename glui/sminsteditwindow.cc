@@ -315,7 +315,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   play_mode_combobox = new ComboBox (this);
   connect (play_mode_combobox->signal_item_changed, this, &InstEditWindow::on_play_mode_changed);
   //grid.add_widget (new Label (this, "Play Mode"), 60, 60, 10, 3);
-  grid.add_widget (play_mode_combobox, 8, 0, 22, 3);
+  grid.add_widget (play_mode_combobox, 7.5, 0, 22.5, 3);
   play_mode_combobox->add_item ("SpectMorph Instrument"); // default
   play_mode_combobox->set_text ("SpectMorph Instrument");
   play_mode_combobox->add_item ("Original Sample");
@@ -331,14 +331,14 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   /*--- Playback: playing ---*/
   playing_label = new Label (this, "");
-  grid.add_widget (new Label (this, "Playing"), 8, 3, 10, 3);
+  grid.add_widget (new Label (this, "Playing"), 7.5, 3, 10, 3);
   grid.add_widget (playing_label, 15, 3, 10, 3);
 
   /*--- Playback: progress ---*/
   progress_bar = new ProgressBar (this);
   progress_label = new Label (this, "Analyzing");
   grid.add_widget (progress_label, 0, 6, 10, 3);
-  grid.add_widget (progress_bar, 8, 6.25, 22, 2.5);
+  grid.add_widget (progress_bar, 7.5, 6.25, 22.5, 2.5);
 
   /* --- Playback: timer --- */
   Timer *timer = new Timer (this);
