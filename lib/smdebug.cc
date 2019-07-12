@@ -82,6 +82,14 @@ Debug::enable (const std::string& area)
   have_areas.store (1);
 }
 
+bool
+Debug::enabled (const std::string& area)
+{
+  std::lock_guard<std::mutex> locker (debug_mutex);
+
+  return active_areas.find (area) != active_areas.end();
+}
+
 void
 Debug::set_filename (const std::string& filename)
 {

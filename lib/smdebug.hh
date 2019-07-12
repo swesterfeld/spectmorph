@@ -16,6 +16,7 @@ namespace Debug
 void debug (const char *area, const char *fmt, ...) SPECTMORPH_PRINTF (2, 3);
 void enable (const std::string& area);
 void set_filename (const std::string& filename);
+bool enabled (const std::string& area);
 
 }
 
