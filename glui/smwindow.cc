@@ -689,10 +689,13 @@ Window::on_key_event (const PuglEventKey& event)
     keyboard_focus_widget->key_press_event (event);
   else if (!key_handled)
     {
-      if (event.character == 'g') /* FIXME: only allow this in devel-mode */
-        draw_grid = !draw_grid;
-      else if (event.character == 'u')
-        debug_update_region = !debug_update_region;
+      if (Debug::enabled ("global")) /* don't do this in production */
+        {
+          if (event.character == 'g')
+            draw_grid = !draw_grid;
+          else if (event.character == 'u')
+            debug_update_region = !debug_update_region;
+        }
     }
 }
 
