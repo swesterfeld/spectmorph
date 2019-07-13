@@ -51,21 +51,6 @@ JACK:
 The smjack program is a fully functional JACK Client using SpectMorph. You need
 to connect midi input and audio output (for instance with using QJackCtl).
 
-BEAST Plugin:
-=============
-
-Previous versions of SpectMorph included a BEAST plugin. Starting with
-SpectMorph 0.3.4, the plugin code has been removed from SpectMorph. Instead,
-new versions of BEAST will include the SpectMorph plugin, and new binary
-releases of BEAST should include SpectMorph, so as user once this integration
-is completed, SpectMorph should work out of the box in BEAST. See
-
-    https://github.com/tim-janik/beast/issues/12
-
-Since BEAST is modular, the SpectMorph plugin comes as an oscillator. So you
-can build your own instrument network with SpectMorph generating the sound, and
-combine SpectMorph with the other components from BEAST.
-
 Packaging Instruments:
 ======================
 
