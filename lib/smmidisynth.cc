@@ -466,17 +466,23 @@ MidiSynth::set_mono_enabled (bool new_value)
       mono_enabled = new_value;
 
       /* remove all active voices */
-      bool need_free = false;
+      kill_all_active_voices();
+    }
+}
 
-      for (auto voice : active_voices)
+void
+MidiSynth::kill_all_active_voices()
+{
+  bool need_free = false;
+
+  for (auto voice : active_voices)
+    {
+      if (voice->state != Voice::STATE_IDLE)
         {
-          if (voice->state != Voice::STATE_IDLE)
-            {
-              voice->state = Voice::STATE_IDLE;
-              voice->pedal = false;
+          voice->state = Voice::STATE_IDLE;
+          voice->pedal = false;
 
-              need_free = true;
-            }
+          need_free = true;
         }
       if (need_free)
         free_unused_voices();
@@ -498,7 +504,13 @@ MidiSynth::set_gain (double gain)
 void
 MidiSynth::set_inst_edit (bool iedit)
 {
-  inst_edit = iedit;
+  if (inst_edit != iedit)
+    {
+      inst_edit = iedit;
+
+      if (inst_edit)
+        kill_all_active_voices();
+    }
 }
 
 InstEditSynth *

@@ -79,6 +79,7 @@ class MidiSynth
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
+  void kill_all_active_voices();
 
   struct MidiEvent
   {
