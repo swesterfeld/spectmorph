@@ -484,9 +484,9 @@ MidiSynth::kill_all_active_voices()
 
           need_free = true;
         }
-      if (need_free)
-        free_unused_voices();
     }
+  if (need_free)
+    free_unused_voices();
 }
 
 void
