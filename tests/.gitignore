@@ -45,6 +45,9 @@ teststrformat
 testvelocity
 testautovol
 testinstbuild
+testuindexperf
+testwavdata
+testzip
 test*.exe
 .libs
 .deps
