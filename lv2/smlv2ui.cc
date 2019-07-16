@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include "smlv2common.hh"
 #include "smlv2ui.hh"
@@ -77,7 +78,7 @@ instantiate(const LV2UI_Descriptor*   descriptor,
       else if (!strcmp (features[i]->URI, LV2_UI__parent))
         {
           parent_win_id = (PuglNativeWindow)features[i]->data;
-          LV2_DEBUG ("Parent X11 ID %ld\n", parent_win_id);
+          LV2_DEBUG ("Parent X11 ID %" PRIuPTR "\n", parent_win_id);
         }
       else if (!strcmp (features[i]->URI, LV2_UI__resize))
         {
