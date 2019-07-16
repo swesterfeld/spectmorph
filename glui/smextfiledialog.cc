@@ -5,6 +5,7 @@
 
 #include <glib.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 
@@ -54,7 +55,7 @@ ExtFileDialog::ExtFileDialog (PuglNativeWindow win_id, bool open, const string& 
   vector<const char *> argv = { "kdialog", open ? "--getopenfilename" : "--getsavefilename", g_get_home_dir(), filter_spec.c_str(), "--title", title.c_str(),
                                            "--attach", attach.c_str(), nullptr };
 #endif
-  string attach = string_printf ("%ld", win_id);
+  string attach = string_printf ("%" PRIuPTR, win_id);
   string smfiledialog = sm_get_install_dir (INSTALL_DIR_BIN) + "/smfiledialog.sh";
 
   string filter_spec;
