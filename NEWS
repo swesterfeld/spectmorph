@@ -1,3 +1,42 @@
+Overview of Changes in spectmorph-0.5.0:
+
+* New WavSource operator for loading user defined instruments
+  - write user bank to user directory (i.e. ~/SpectMorph/Instruments/User)
+* New instrument editor
+  - graphical sample data display
+  - editor for loops, pitch and other analysis parameters
+  - background analysis thread
+  - xml/zip fileformat, flac storage for samples
+  - provide cache for analyzed samples
+  - support synthesis during editing (InstEditSynth)
+  - move all required analysis code to lib/ (WavSetBuilder & co)
+* LV2 now requires instance access feature
+* Graphical ADSR editor
+* Use different colors for active/used/unused operators
+* Make standard instrument set smaller (less download/disk usage)
+  - new command: smtool strip-all
+  - adapt morphing/playback code
+* UI Toolkit improvements:
+  - speedup partial updates
+  - Timer class
+  - Shortcut class for keyboard shortcut handling
+  - new EventLoop class to remove event handling from Window class
+  - new ProgressBar widget
+  - LineEdit widget improvements
+  - double click detection, left/right mouse button support (MouseEvent)
+  - file dialog: support multiple formats in filter (i.e *.wav, *.flac)
+  - add file dialog wrapper shell scripts to work with some ardour bundles
+* Integrate XML (pugixml) and ZIP (minizip) 3rd party code
+* Project API, SynthInterface API
+  - handle global shared state (i.e. wavsource instruments)
+  - new high-level API for LV2, VST and JACK (unify code)
+  - no longer support out-of-process UI (LV2)
+  - deliver events produced by the synthesis thread (playback position)
+  - support storing state including samples as zip for VST/JACK
+* Support sm_plugin_cleanup() in addition to sm_plugin_init()
+  - this allows to free memory global host memory if no longer needed
+* Minor fixes and cleanups
+
 Overview of Changes in spectmorph-0.4.1:
 
 * macOS is now supported: provide VST plugin for macOS >= 10.9
