@@ -75,7 +75,7 @@ lv2:
 - debian updates
 - pbuilder
 - make distcheck
-- instruments.tar.xz
+- instruments.tar.xz (in evaluation/: make-dist)
 - update NEWS
 - update spectmorph.org
   - rebuild docs
