@@ -9,19 +9,23 @@ DOCS_DIR = ~/spectmorph.org/docs-$(VERSION)
 
 rebuild-manpage:
 	for p in $(dist_man_MANS); do \
-          curl -sfS https://testbit.eu/wiki/$$p?action=render >$$p.web; \
-	  curl -sfS "https://testbit.eu/wiki.mw/index.php?title=$$p&action=raw" > $$p.wiki; \
-	  $(WIKIHTML2MAN) $$p.web >$$p; \
 	  groff -mandoc -Thtml < $$p >$$p.html; \
-	  rm $$p.web; \
 	done
+
+#  curl -sfS https://testbit.eu/wiki/$$p?action=render >$$p.web;
+#  curl -sfS "https://testbit.eu/wiki.mw/index.php?title=$$p&action=raw" > $$p.wiki;
+#  $(WIKIHTML2MAN) $$p.web >$$p;
+#  rm $$p.web;
 
 publish-docs:
 	mkdir -p $(DOCS_DIR)/api
 	for i in $(dist_man_MANS); do \
 	  cp $$i.html $(DOCS_DIR); \
         done
-	cp spectmorph.pdf $(DOCS_DIR)
+	asciidoctor manual.adoc
+	asciidoctor-pdf manual.adoc
+	cp manual.html $(DOCS_DIR)
+	cp manual.pdf $(DOCS_DIR)
 	cd $(top_srcdir); doxygen Doxyfile; cp -a html/* $(DOCS_DIR)/api
 	pandoc --base-header-level=3 -f markdown_github+pandoc_title_block-hard_line_breaks -t html --email-obfuscation=javascript $(top_srcdir)/README.md -o $(DOCS_DIR)/README.html
 	cp $(top_srcdir)/NEWS $(DOCS_DIR)
