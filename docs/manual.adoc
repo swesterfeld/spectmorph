@@ -1,0 +1,151 @@
+:sectnums:
+
+:toc: left
+:toc-title: Table of Contents
+:toclevels: 3
+
+= SpectMorph User Manual
+
+== Introduction
+
+== User Interface
+
+=== Operators
+
+At the left side, there is a list of operators that generate the sound.
+New operators can be added using the "Add Operator" menu.
+
+Each operator has a name, which must be unique. To change the name of an
+operator, double-click on the title. Operators can be folded with the
+triangle button at the left upper corner, to save screen space. The x at
+the upper right side deletes the operator.
+
+Operators can be moved upwards and downwards by clicking on the title and
+dragging the operator. The color of the title indicates the status of the
+operator:
+
+* green: this operator is selected as output
+* white: the operator is part of the output sound
+* grey: the operator is not used (not part of the output sound)
+
+The output operator at the right side contains global settings which
+control how the sound output is performed. There is always one output
+operator.
+
+// LINK: operators below
+// FIXME: add graph
+
+== Instrument Editor
+
+=== Instrument List
+
+In order to store user defined instruments, SpectMorph has a global list
+of 128 instruments. Each slot can contain one user defined instrument.
+
+The instrument number can be set from the WavSource operator. It is important
+that you use an empty position for each new instrument.  Suppose you assigned
+number 7 for an intrument based on a vocal sample.  Whenever you use
+SpectMorph, slot number 7 will contain this instrument. As long as you are
+experimenting with a new instrument, you can change it in any way you like.
+However, as soon as you start using the instrument in a song, you
+should never change it again.
+
+=== Samples
+
+An instrument is created based on one or more samples. For simple use cases,
+one sample is enough. However, if you play a sample with much higher frequency
+or lower frequency than the original recording, it will no longer sound
+natural. If this happens, you need to add more samples. For some instruments,
+two samples per octave could be enough, for others, you need 3 or 4 samples per
+octave to get a good quality. Many standard instruments that ship with
+SpectMorph even use 12 samples per octave.
+
+During playback, SpectMorph will pick the closest sample to the midi note it
+needs to play.
+
+=== Loop Modes
+
+For each sample, you need to define a loop. The loop markers are blue and
+have click/drag handles at the top of the window. Since your sample ends
+after some time, a loop is required to handle notes that are longer than
+this time.
+
+==== Single Frame
+
+A single frame loop will freeze the sound once it enters the loop. It does
+this by playing the same analysis frame again and again. This is good for
+sounds that don't change over time, like for instance organ sounds.
+
+For sounds that change over time, like sounds with vibrato/tremolo, this
+loop mode is not useful.
+
+==== Forward
+
+A forward loop will play from left to right loop marker and then jump back
+to left. Since the forward loop jumps back, this will only sound good if
+the sample sounds very similar at the left and right loop point.
+
+Note that to define a loop, you don‘t have to find the exactly right time
+points. The SpectMorph analysis/synthesis method only needs loop points that
+are approximately correct. This is different from samplers, that replay the
+sample data directly, where the loop points must be at the exactly perfect
+position to avoid clicks.
+
+==== Ping Pong
+
+A ping pong loop will play from left to right loop marker, then reverse
+play back to left, play to right, back to left...
+
+The advantage of a ping pong loop is that there are no jumps, which means
+that no matter how the sample sounds at the left/right marker, it will
+always sound good.
+
+As an example how to use ping pong loops: if you have recorded some
+instrument with vibrato, you select half a period of the vibrato:
+
+* set the left loop marker the point where the vibrato is down
+* set the right loop marker to the next point where the vibrato is up
+
+=== Midi Note (Pitch)
+
+For each sample, you need to assign the correct pitch. SpectMorph needs to know
+which pitch your sample has to transpose it correctly up and down during
+synthesis. If you click on "Edit" next to "Midi Note", a dialog will show up.
+This dialog has been designed to find the correct midi note in case you don't
+know it already.
+
+Using "Space" you can toggle playback of the selected sample. If you left click
+on one of the notes, you can hear the pitch of a reference instrument. By
+trying to click on some of the notes while your selected sample is played
+you can find the correct pitch. Once you are certain what the pitch should
+be, double-click and close the dialog.
+
+=== Volume Normalization
+
+==== From Loop
+
+==== Global
+
+=== Tuning
+
+==== Display Tuning
+
+==== Simple
+
+==== All Frames
+
+==== Smooth
+
+== Operators
+
+=== Source
+
+=== WavSource
+
+=== Linear Morph
+
+=== Grid Morph
+
+=== LFO
+
+=== Output
