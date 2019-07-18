@@ -237,7 +237,7 @@ mentioning.
 The "min-frame-size" parameter can be used to set the shortest possible
 analysis frame. In general, analysis frames need to be longer if the sound has
 a low midi note, and shorter if the sound has a high midi note. Normally
-SpectMorph uses 40ms frames as highest possible value.  In some cases setting
+SpectMorph uses 40ms frames as shortest possible value. In some cases setting
 "min-frame-size" to "10" produces better results for higher midi notes,
 possibly at the expense of larger data files.
 
