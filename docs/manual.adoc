@@ -10,7 +10,7 @@
 
 == User Interface
 
-=== Operators
+=== Main Window
 
 At the left side, there is a list of operators that generate the sound.  New
 operators can be added using the "Add Operator" menu.
@@ -34,6 +34,19 @@ how the sound output is performed. There is always one output operator.
 // LINK: operators below
 // FIXME: add graph
 
+== Operators
+
+=== Source
+
+=== WavSource
+
+=== Linear Morph
+
+=== Grid Morph
+
+=== LFO
+
+=== Output
 == Instrument Editor
 
 === User Instrument Storage
@@ -241,16 +254,4 @@ SpectMorph uses 40ms frames as shortest possible value. In some cases setting
 "min-frame-size" to "10" produces better results for higher midi notes,
 possibly at the expense of larger data files.
 
-== Operators
 
-=== Source
-
-=== WavSource
-
-=== Linear Morph
-
-=== Grid Morph
-
-=== LFO
-
-=== Output
