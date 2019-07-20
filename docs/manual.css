@@ -1,0 +1,51 @@
+body {
+  font-family: "Georgia", sans-serif;
+}
+
+.sidenav {
+  height: 100%;
+  width: 17em;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #ddd;
+  overflow-x: hidden;
+  /*padding-top: 20px;*/
+  /*padding-left: 1em;*/
+}
+
+.sidenav a {
+  color: #339;
+  text-decoration: none;
+}
+
+.sidenav a:hover {
+  color: #fff;
+}
+
+.sidenav ul {
+  padding-left: 0;
+}
+
+.sidenav li {
+  list-style: none;
+  padding-left: 1.25em;
+  position: relative;
+}
+
+.sidenav li::before {
+  left: 0;
+  position: absolute;
+}
+.main {
+  margin-left: 17em; /* Same as the width of the sidenav */
+  /* font-size: 28px; /* Increased text to enable scrolling */
+  /*padding 0px 10px;*/
+  padding-left: 3em;
+  padding-right: 3em;
+}
+
+.main h1,.main h2,.main h3,.main h4,.main h5,.main h6 {
+  color: #900;
+}
