@@ -1,16 +1,8 @@
-:sectnums:
+# Introduction
 
-:toc: left
-:toc-title: Table of Contents
-:toclevels: 3
+# User Interface
 
-= SpectMorph User Manual
-
-== Introduction
-
-== User Interface
-
-=== Main Window
+## Main Window
 
 At the left side, there is a list of operators that generate the sound.  New
 operators can be added using the "Add Operator" menu.
@@ -34,22 +26,22 @@ how the sound output is performed. There is always one output operator.
 // LINK: operators below
 // FIXME: add graph
 
-== Operators
+# Operators
 
-=== Source
+## Source
 
-=== WavSource
+## WavSource
 
-=== Linear Morph
+## Linear Morph
 
-=== Grid Morph
+## Grid Morph
 
-=== LFO
+## LFO
 
-=== Output
-== Instrument Editor
+## Output
+# Instrument Editor
 
-=== User Instrument Storage
+## User Instrument Storage
 
 In order to store user defined instruments, SpectMorph has a global list of 128
 instruments. Each slot can contain one user defined instrument.
@@ -62,7 +54,7 @@ experimenting with a new instrument, you can change it in any way you like.
 However, as soon as you start using the instrument in a song, you should never
 change it again.
 
-=== Samples
+## Samples
 
 An instrument is created based on one or more samples. For simple use cases,
 one sample is enough. However, if you play a sample with much higher frequency
@@ -99,13 +91,13 @@ have the regular partial structure SpectMorph needs.
 
 // FIXME: image
 
-=== Loop Modes
+## Loop Modes
 
 For each sample, you need to define a loop. The loop markers are blue and have
 click/drag handles at the top of the window. Since your sample ends after some
 time, a loop is required to handle notes that are longer than this time.
 
-==== Single Frame
+### Single Frame
 
 A single frame loop will freeze the sound once it enters the loop. It does this
 by playing the same analysis frame again and again. This is good for sounds
@@ -114,7 +106,7 @@ that don't change over time, like for instance organ sounds.
 For sounds that change over time, like sounds with vibrato/tremolo, this loop
 mode is not useful.
 
-==== Forward
+### Forward
 
 A forward loop will play from left to right loop marker and then jump back to
 left. Since the forward loop jumps back, this will only sound good if the
@@ -126,7 +118,7 @@ are approximately correct. This is different from samplers, that replay the
 sample data directly, where the loop points must be at the exactly perfect
 position to avoid clicks.
 
-==== Ping Pong
+### Ping Pong
 
 A ping pong loop will play from left to right loop marker, then reverse play
 back to left, play to right, back to left...
@@ -141,7 +133,7 @@ with vibrato, you select half a period of the vibrato:
 * set the left loop marker the point where the vibrato is down
 * set the right loop marker to the next point where the vibrato is up
 
-=== Midi Note (Pitch)
+## Midi Note (Pitch)
 
 For each sample, you need to assign the correct pitch. SpectMorph needs to know
 which pitch your sample has to transpose it correctly up and down during
@@ -155,7 +147,7 @@ trying to click on some of the notes while your selected sample is played you
 can find the correct pitch. Once you are certain what the pitch should be,
 double-click and close the dialog.
 
-=== Volume Normalization
+## Volume Normalization
 
 Usually, we want that all samples that a user instruments contains are played
 at the same volume. Which means that we want that all notes of a user
@@ -164,14 +156,14 @@ this. Since we usually want to morph with existing standard instruments, the
 volume normalization should also make the user defined instrument as loud as
 the existing instruments.
 
-==== From Loop
+### From Loop
 
 The typical volume normalization - which almost always works - computes the
 volume in the loop region, and normalizes the sounds based on this volume (we
 use energy to determine the volume, not peaks). So usually you check this and
 then the samples will be normalized properly.
 
-==== Global
+### Global
 
 There are some rare cases where the automatic volume normalization doesn't work
 well. In this case, it may be desirable to keep the relative volume of the
@@ -181,7 +173,7 @@ samples using some dB global dB level.
 
 This should only be used if "From Loop" did not produce a good result.
 
-=== Tuning
+## Tuning
 
 From the midi note, SpectMorph computes the frequency a recorded note has.  So
 if you select a midi note "69 : A3", this frequency would be 440 Hz.  The auto
@@ -193,7 +185,7 @@ Note that auto tuning only works for a narrow range around the selected note,
 so in our example, you can't take a recording of 600 Hz and expect auto tune to
 do the job.
 
-==== Partials
+### Partials
 
 SpectMorph uses the first few partials (1..3) to estimate the frequency from
 the analysis data. So all algorithms below allow you to specify how many
@@ -202,7 +194,7 @@ doesn't make a big difference, and 3 is a good value; however, there are a few
 cases where a lower value is a better choice, you can find this by trial and
 error.
 
-==== Display Tuning
+### Display Tuning
 
 If you work with auto tuning, it is helpful to display the tuning over time as
 estimated by SpectMorph. If you enable this option, the tuning will be drawn as
@@ -212,21 +204,21 @@ tuning line is at the top of the sample view, the sample is 1 semitone above
 the midi note, in the center that it is exactly the midi note, and at the
 bottom it is 1 semitone below the midi note.
 
-==== Simple
+### Simple
 
 Simple auto tuning is sufficient for cases where the whole sample is too high
 or too low. The auto tuning algorithm will adjust the frequency so that the
 sample will be correct on average. This doesn't work well if some parts of the
 sample are too low and others are too high.
 
-==== All Frames
+### All Frames
 
 This algorithm will correct each frame individually, and make the tuning
 effectively flat. This should work well if some parts of the sample are too low
 and some parts of the sample are too high. However, the approach may make the
 sound liveless, because it removes natural inexactness from the sample.
 
-==== Smooth
+### Smooth
 
 Original developed for vocal recordings, this is somewhat similar to the all
 frames tuning. However, instead of forcing all frames to the exact pitch
@@ -239,19 +231,23 @@ The "Amount" parameter specifies how much of the original tuning curve should
 be preserved, the "Time" parameter specifies a duration for estimating the
 average tuning.
 
-=== Custom Analysis Parameters
+## Custom Analysis Parameters
 
 It is possible to pass custom analysis parameters to the analysis process.
 This is an "expert only" feature, which is to say, if you don't know what this
-does, usually there is no problem. Analysis parameters take the "key"="value"
+does, usually there is no problem. Analysis parameters take the
+
+    key=value
+
 form, and although there are some possibilities here, there is only one worth
 mentioning.
 
-The "min-frame-size" parameter can be used to set the shortest possible
+The `min-frame-size` parameter can be used to set the shortest possible
 analysis frame. In general, analysis frames need to be longer if the sound has
 a low midi note, and shorter if the sound has a high midi note. Normally
 SpectMorph uses 40ms frames as shortest possible value. In some cases setting
-"min-frame-size" to "10" produces better results for higher midi notes,
-possibly at the expense of larger data files.
 
+    min-frame-size=10
 
+produces better results for higher midi notes, possibly at the expense of
+larger data files.
