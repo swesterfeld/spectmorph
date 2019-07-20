@@ -23,8 +23,10 @@ operator:
 The output operator at the right side contains global settings which control
 how the sound output is performed. There is always one output operator.
 
-// LINK: operators below
-// FIXME: add graph
+<!--
+- LINK: operators below
+- FIXME: add graph
+-->
 
 # Operators
 
@@ -89,7 +91,7 @@ sounds somewhat similar to one of the existing instruments, it should work
 well. Acoustic musical instruments like strings, brass or human voice usually
 have the regular partial structure SpectMorph needs.
 
-// FIXME: image
+<!-- FIXME: image -->
 
 ## Loop Modes
 
