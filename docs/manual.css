@@ -304,12 +304,12 @@ table td {
 }
 
 @media only screen and (min-width: 480px) {
-  body {
+  .text {
     font-size: 14px;
   }
 }
 @media only screen and (min-width: 768px) {
-  body {
+  .text {
     font-size: 16px;
   }
 }
@@ -321,7 +321,7 @@ table td {
     -ms-filter: none !important;
   }
 
-  body {
+  .text {
     font-size: 12pt;
     max-width: 100%;
   }

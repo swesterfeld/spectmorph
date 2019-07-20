@@ -22,8 +22,7 @@ publish-docs:
 	for i in $(dist_man_MANS); do \
 	  cp $$i.html $(DOCS_DIR); \
         done
-	asciidoctor manual.adoc
-	asciidoctor-pdf manual.adoc
+	manual.sh
 	cp manual.html $(DOCS_DIR)
 	cp manual.pdf $(DOCS_DIR)
 	cd $(top_srcdir); doxygen Doxyfile; cp -a html/* $(DOCS_DIR)/api
