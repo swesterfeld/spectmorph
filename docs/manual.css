@@ -12,7 +12,8 @@ body {
   background-color: #ddd;
   overflow-x: hidden;
   /*padding-top: 20px;*/
-  /*padding-left: 1em;*/
+  padding-left: 0em;
+  padding-right: 1em;
 }
 
 .sidenav a {
@@ -39,11 +40,9 @@ body {
   position: absolute;
 }
 .main {
-  margin-left: 17em; /* Same as the width of the sidenav */
-  /* font-size: 28px; /* Increased text to enable scrolling */
-  /*padding 0px 10px;*/
-  padding-left: 3em;
-  padding-right: 3em;
+  margin-left: 18.0em; /* Same as the width of the sidenav + sidenav padding-right */
+  padding-left: 1em;
+  padding-right: 1em;
 }
 
 .main h1,.main h2,.main h3,.main h4,.main h5,.main h6 {

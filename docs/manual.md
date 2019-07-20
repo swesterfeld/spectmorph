@@ -27,7 +27,6 @@ how the sound output is performed. There is always one output operator.
 - LINK: operators below
 - FIXME: add graph
 -->
-
 # Operators
 
 ## Source
