@@ -39,6 +39,7 @@ body {
   left: 0;
   position: absolute;
 }
+
 .main {
   margin-left: 18.0em; /* Same as the width of the sidenav + sidenav padding-right */
   padding-left: 1em;

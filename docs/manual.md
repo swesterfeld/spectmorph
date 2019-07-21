@@ -1,3 +1,7 @@
+---
+title:      SpectMorph User Manual
+---
+
 # Introduction
 
 ## About

@@ -37,6 +37,13 @@ $endfor$
 $for(include-before)$
 $include-before$
 $endfor$
+$if(toc)$
+<div id="$idprefix$TOC" class="sidenav">
+$toc$
+</div>
+$endif$
+<div class="main">
+<div class="text">
 $if(title)$
 <div id="$idprefix$header">
 <h1 class="title">$title$</h1>
@@ -51,13 +58,6 @@ $if(date)$
 $endif$
 </div>
 $endif$
-$if(toc)$
-<div id="$idprefix$TOC" class="sidenav">
-$toc$
-</div>
-$endif$
-<div class="main">
-<div class="text">
 $body$
 $for(include-after)$
 $include-after$
