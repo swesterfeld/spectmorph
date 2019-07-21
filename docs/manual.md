@@ -1,5 +1,27 @@
 # Introduction
 
+## About
+
+SpectMorph is a free software project which allows to analyze samples of
+musical instruments, and to combine them (morphing). It can be used to
+construct hybrid sounds, for instance a sound between a trumpet and a flute; or
+smooth transitions, for instance a sound that starts as a trumpet and then
+gradually changes to a flute.
+
+In its current version, SpectMorph ships with many ready-to-use instruments
+which can be combined using morphing. There is also an [Instrument
+Editor](#instrument-editor) which allows you to build your own instruments
+and create new sounds by morphing.
+
+SpectMorph can be used as a VST/LV2 plugin which can be loaded by many
+sequencers. It runs on pretty much every operating system:
+
+ * Linux (VST/LV2/JACK)
+ * macOS (64-bit VST)
+ * Windows (64-bit VST)
+
+SpectMorph is implemented in C++ and licensed under the GNU LGPL version 3.
+
 # User Interface
 
 ## Main Window
@@ -23,24 +45,164 @@ operator:
 The output operator at the right side contains global settings which control
 how the sound output is performed. There is always one output operator.
 
+See also: [List of all supported Operators](#operators)
+
 <!--
-- LINK: operators below
 - FIXME: add graph
 -->
 # Operators
 
 ## Source
 
+The **Source** operator generates the sound of one standard instrument, like
+_Trumpet_ or _Pan Flute_. Earlier versions of SpectMorph required using source
+operators fairly often: to morph a _Trumpet_ and a _Pan Flute_, one source was
+necessary for the _Trumpet_, one for the _Pan Flute_ and both sources
+were connected to one **Linear Morph**.
+
+However, in recent versions of SpectMorph, **Linear Morph** and **Grid Morph**
+can be used to morph standard instruments directly. So **Source** can be
+avoided in many cases.
+
 ## WavSource
+
+The **WavSource** operator generates the sound for a user defined instrument.
+It is called _WavSource_ because users often want to morph an audio file, for
+instance `example.wav` with something else. In order to use samples in the
+**WavSource** operator, some editing is required to provide informations
+necessary for morphing.
+
+User defined instruments are stored into one of 128 possible slots and
+can be created/edited using the [Instrument Editor](#instrument-editor).
 
 ## Linear Morph
 
+The **Linear Morph** operator produces morphing between two sources.
+
+Source A
+: Set the first source used for morphing. This can be any standard instrument,
+or another operator. A **WavSource** can be used for morphing with a user
+defined instrument, or **Linear Morph** can be used for morphing with the
+output of another linear morph.
+
+Source B
+: Set the second source used for morphing.
+
+Control Input
+: Specify how to control the morphing, can be **Gui Slider** for doing it
+manually, external **Control Signal #1/#2** or another source (typically
+[LFO](#lfo)).
+
+dB Linear Morphing
+: Select method of the morphing of the amplitude of the parials works. If
+selected, the amplitudes are converted to dB, morphed and converted back,
+otherwise the amplitudes are morphed with a linear method. This doesn't make
+much of a difference for many samples, but for some, enabling or disabling this
+produces a better result.
+
 ## Grid Morph
+
+The **Grid Morph** operator allows morphing instruments that are arranged on a
+plane.  For instance a **2 x 2** grid can morph four instruments which are
+placed on the corners of a square.
+
+Width
+: Set the width of the grid
+
+Height
+: Set the height of the grid
+
+X/Y Control
+: Specify how to control the morphing, can be **Gui Slider** for doing it
+manually, external **Control Signal #1/#2** or another source (typically
+[LFO](#lfo)).
+
+The instruments in the grid can be edited by clicking on one of the grid
+nodes. This will select the node, and the following options can be set
+for the node:
+
+Source
+: The source for this grid node. It can be any standard instrument or
+another operator.
+
+Volume
+: The relative volume of the grid node.
 
 ## LFO
 
+The **LFO** operator (low frequency oscillator) provides a control signal
+which slowly changes. It can for instance be used to control the morphing
+of other operators.
+
+The **LFO** parameters that control the wave type, frequency and so on are
+
+* Wave Type
+* Frequency
+* Depth
+* Center
+* Start Phase
+
+Normally, the **LFO** operator is computed for each voice separately, which
+means that each voice has its own phase. If the **Sync Phase for all voices**
+is selected, all voices share the same phase (i.e. all voices go up and down at
+the same time).
+
 ## Output
+
+The **Output** operator controls how the sound generated from the sources at
+the left side is post processed and played. The **Source** property selects
+which operator is played. The user interface displays the selected operator
+title in green.
+
+The **Velocity Sns** property specifies how much the note velocity of the
+midi input affects the volume SpectMorph uses for playback.
+
+The output sound is composed of a _sine_ and a _noise part_. **Enable
+Noise/Sine Synthesis** can be used to disable or enable them seperately.
+
+### Unison
+
+The unison effect makes the sound more fat by adding up multiple detuned
+versions of the sound. The parameters **Voices/Detune** can be used to
+configure the effect.
+
+### ADSR
+
+Normally SpectMorph tries to reproduce the volume envelope of an instrument
+as it was in the original sample. By using the ADSR envelope, you can change
+the shape of the volume envelope. The Parameters for the shape of the
+envelope are
+
+* Attack
+* Decay
+* Sustain
+* Release
+
+Since your desired attack may be sharper than the original instrument attack,
+the ADSR envelope skips a part of the original instrument. This is controlled
+using the **Skip** parameter. So if the ADSR is enabled, we play somewhere
+from the middle of the input, in order to be able to produce a sharp attack.
+
+<!-- FIXME: this probably could be done more elegantly -->
+
+### Portamento
+
+In portamento/mono mode, SpectMorph only has one single voice. Each time notes
+overlap, the pitch will glide from the old note to the new note. The speed
+can be controlled by the **Glide** parameter.
+
+### Vibrato
+
+This effect adds vibrato, controlled by the **Depth** and **Frequency**
+parameters. If **Attack** is set, the vibrato builds up slowly during
+the selected time.
+
 # Instrument Editor
+
+## Overview
+
+The instrument editor can be started from a [WavSource](#wav-source) operator
+by pressing the **Edit** button.
 
 ## User Instrument Storage
 
