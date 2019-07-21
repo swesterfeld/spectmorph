@@ -448,13 +448,19 @@ Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 void
 Project::load_plan_lv2 (std::function<string(string)> absolute_path, const string& plan_str)
 {
+  // we return silently if string decode or plan load fail:
+  //  -> as LV2 plugin we can't really do much if things go wrong
+
   vector<unsigned char> data;
   if (!HexString::decode (plan_str, data))
-    return; // FIXME: errors?
+    return;
 
   GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-  load_compat (in, nullptr); // FIXME: handle errors
+  Error error = load_compat (in, nullptr);
   delete in;
+
+  if (error)
+    return;
 
   // LV2 doesn't include instruments
   for (auto wav_source : list_wav_sources())
