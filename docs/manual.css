@@ -50,6 +50,11 @@ body {
   color: #900;
 }
 
+#header h1 {
+  color: #555;
+  text-align: center;
+}
+
 /*
  * https://gist.github.com/killercup/5917178
  * -----------------------------------------------------
@@ -380,3 +385,4 @@ table td {
     page-break-after: avoid;
   }
 }
+
