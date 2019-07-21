@@ -536,7 +536,7 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
   # technically, auto-volume-from-loop and auto_volume are different; however in
   # existing instruments, they have the same effect
   if config.auto_volume_from_loop_count > 0 or config.auto_volume_count > 0:
-    auto_volume_node = ET.SubElement (instrument_node, "auto_volume", method="from_loop")
+    auto_volume_node = ET.SubElement (instrument_node, "auto_volume", method="from-loop")
 
   if config.global_volume_count > 0:
     auto_volume_node = ET.SubElement (instrument_node, "auto_volume", method="global", gain=config.global_volume)
@@ -546,7 +546,7 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
     auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="simple")
 
   if config.tune_all_frames_count > 0:
-    auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="all_frames", partials=config.tune_all_frames)
+    auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="all-frames", partials=config.tune_all_frames)
 
   if config.smooth_tune_count > 0:
     auto_tune_node = ET.SubElement (instrument_node, "auto_tune", method="smooth", partials=config.smooth_tune[0], time=config.smooth_tune[1], amount=config.smooth_tune[2])
