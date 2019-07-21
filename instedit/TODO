@@ -5,6 +5,7 @@ PROJECT:
 - somewhat better error handling
 
 later:
+- auto-volume-from-loop gets lost in pan-flute instrument export
 - fix error handling for WavSet::save() and others
 - combobox should support scroll wheel
 - multiple bank support
