@@ -345,7 +345,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
           new_auto_tune.method = AutoTune::SIMPLE;
           new_auto_tune.enabled = true;
         }
-      else if (method == "all_frames")
+      else if (method == "all-frames")
         {
           new_auto_tune.method   = AutoTune::ALL_FRAMES;
           new_auto_tune.partials = atoi (auto_tune_node.attribute ("partials").value());
@@ -372,7 +372,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
     {
       string method = auto_volume_node.attribute ("method").value();
 
-      if (method == "from_loop")
+      if (method == "from-loop")
         {
           new_auto_volume.method  = AutoVolume::FROM_LOOP;
           new_auto_volume.enabled = true;
@@ -534,7 +534,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer) const
         }
       else if (m_auto_tune.method == AutoTune::ALL_FRAMES)
         {
-          auto_tune_node.append_attribute ("method").set_value ("all_frames");
+          auto_tune_node.append_attribute ("method").set_value ("all-frames");
           auto_tune_node.append_attribute ("partials") = m_auto_tune.partials;
         }
       else if (m_auto_tune.method == AutoTune::SMOOTH)
@@ -550,7 +550,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer) const
       xml_node auto_volume_node = inst_node.append_child ("auto_volume");
       if (m_auto_volume.method == AutoVolume::FROM_LOOP)
         {
-          auto_volume_node.append_attribute ("method").set_value ("from_loop");
+          auto_volume_node.append_attribute ("method").set_value ("from-loop");
         }
       if (m_auto_volume.method == AutoVolume::GLOBAL)
         {
