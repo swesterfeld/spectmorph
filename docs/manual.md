@@ -80,20 +80,24 @@ can be created/edited using the [Instrument Editor](#instrument-editor).
 The **Linear Morph** operator produces morphing between two sources.
 
 Source A
+
 : Set the first source used for morphing. This can be any standard instrument,
 or another operator. A **WavSource** can be used for morphing with a user
 defined instrument, or **Linear Morph** can be used for morphing with the
 output of another linear morph.
 
 Source B
+
 : Set the second source used for morphing.
 
 Control Input
+
 : Specify how to control the morphing, can be **Gui Slider** for doing it
 manually, external **Control Signal #1/#2** or another source (typically
 [LFO](#lfo)).
 
 dB Linear Morphing
+
 : Select method of the morphing of the amplitude of the parials works. If
 selected, the amplitudes are converted to dB, morphed and converted back,
 otherwise the amplitudes are morphed with a linear method. This doesn't make
@@ -107,12 +111,15 @@ plane.  For instance a **2 x 2** grid can morph four instruments which are
 placed on the corners of a square.
 
 Width
+
 : Set the width of the grid
 
 Height
+
 : Set the height of the grid
 
 X/Y Control
+
 : Specify how to control the morphing, can be **Gui Slider** for doing it
 manually, external **Control Signal #1/#2** or another source (typically
 [LFO](#lfo)).
@@ -122,10 +129,12 @@ nodes. This will select the node, and the following options can be set
 for the node:
 
 Source
+
 : The source for this grid node. It can be any standard instrument or
 another operator.
 
 Volume
+
 : The relative volume of the grid node.
 
 ## LFO
