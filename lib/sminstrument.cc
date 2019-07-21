@@ -321,10 +321,12 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
           string loop_type = loop_node.attribute ("type").value();
           if (loop_type == "forward")
             sample->set_loop (Sample::Loop::FORWARD);
-          if (loop_type == "ping-pong")
+          else if (loop_type == "ping-pong")
             sample->set_loop (Sample::Loop::PING_PONG);
-          if (loop_type == "single-frame")
+          else if (loop_type == "single-frame")
             sample->set_loop (Sample::Loop::SINGLE_FRAME);
+          else
+            fprintf (stderr, "unknown loop mode %s\n", loop_type.c_str());
 
           sample->set_marker (MARKER_LOOP_START, sm_atof (loop_node.attribute ("start").value()));
           sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
@@ -356,6 +358,10 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
           new_auto_tune.time     = sm_atof (auto_tune_node.attribute ("time").value());
           new_auto_tune.amount   = sm_atof (auto_tune_node.attribute ("amount").value());
           new_auto_tune.enabled  = true;
+        }
+      else
+        {
+          fprintf (stderr, "unknown auto tune method: %s\n", method.c_str());
         }
     }
 
