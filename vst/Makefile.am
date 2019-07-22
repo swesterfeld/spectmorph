@@ -4,6 +4,8 @@ SUBDIRS = vestige
 
 AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
+EXTRA_DIST += macos_export_symbols testlink.cc
+
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
