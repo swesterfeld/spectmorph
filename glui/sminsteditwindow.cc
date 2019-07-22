@@ -691,7 +691,9 @@ InstEditWindow::on_export_clicked()
   save_file_dialog ("Select SpectMorph Instrument export filename", formats, [=](string filename) {
     if (filename != "")
       {
-        Error error = instrument->save (filename);
+        ZipWriter zip_writer (filename);
+
+        Error error = instrument->save (zip_writer);
         if (error)
           {
             MessageBox::critical (this, "Error",
