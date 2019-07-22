@@ -1,0 +1,98 @@
+% This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
+
+% latex setup for pandoc PDF conversions
+
+% !TeX encoding   = UTF-8
+\usepackage[utf8]{inputenc}
+
+% allow colorization commands
+\usepackage{xcolor}
+\definecolor{darkblue}{HTML}{000080}
+
+% Configure TOC links
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linktoc=all,     	% link sections and subsections
+  urlcolor=darkblue,
+  linkcolor=darkblue,	% colorize links to stand out
+}
+
+% allow custom justification
+\usepackage{ragged2e}
+
+% Provide page titles
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+% Adjust Code sections
+% But --listings breaks utf-8: https://en.wikibooks.org/wiki/LaTeX/Source_Code_Listings#Encoding_issue
+%\lstset{basicstyle=\ttfamily,basicstyle=\ttfamily,breaklines=true}
+%\lstset{framextopmargin=50pt,frame=leftline}
+
+% Adjust Abstract width (and indent): https://tex.stackexchange.com/questions/151583/how-to-adjust-the-width-of-abstract/151589
+\renewenvironment{abstract}
+  {\small
+   \vspace{9em}% Abstract headspace
+   \begin{center}
+   \bfseries \abstractname\vspace{-.5em}\vspace{0pt}
+   \end{center}
+   \list{}{%
+     \setlength{\leftmargin}{3.5cm}% Abstract margin
+     \setlength{\rightmargin}{\leftmargin}%
+   }%
+   \item\relax}
+  {\endlist}
+
+% Turn fontfamily lookup / encoding errors into warnings
+\PassOptionsToPackage{warn}{textcomp}
+
+% Note, use of the 'titlesec' package requires: pandoc --variable=subparagraph
+\usepackage{titlesec}
+%\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+%\titleformat{\subsection}[runin]{}{}{}{}[]
+\newcommand{\sectionbreak}{\clearpage}
+% Prevent runin for 4th level "headings"
+\titleformat{\paragraph}{\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
+\titlespacing{\paragraph}{0pt}{*1}{-0.5ex}
+%\titlespacing*{\paragraph}{0pt}{3.25ex plus 1ex minus .2ex}{-1ex}
+% Fix Ubuntu messing up section numbers in titlesec.sty
+% https://tex.stackexchange.com/questions/299969/titlesec-loss-of-section-numbering-with-the-new-update-2016-03-15/300259#300259
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\ttlh@hang}{\parindent\z@}{\parindent\z@\leavevmode}{}{}
+\patchcmd{\ttlh@hang}{\noindent}{}{}{}
+\makeatother
+
+% Make document title bold
+\makeatletter
+\patchcmd{\@maketitle}{\@title}{\bfseries\@title}{}{}
+\patchcmd{\@maketitle}{\@author}{\bfseries\@author}{}{}
+\patchcmd{\@maketitle}{\@date}{\bfseries\@date}{}{}
+\makeatother
+
+\usepackage{flafter}		% Prevent figures floating up
+\usepackage[section]{placeins}	% Prevent tables floating out of section (only works with non-empty sections)
+
+\usepackage[font=small,labelfont=bf]{caption}
+\captionsetup[table]{position=below}
+
+% Prevent Figures floating out of sections
+% http://stackoverflow.com/questions/16626462/figure-position-in-markdown-when-converting-to-pdf-with-knitr-and-pandoc/33801326#33801326
+\usepackage{float}
+\floatstyle{boxed}
+\restylefloat{figure}
+\floatstyle{plaintop}
+\restylefloat{table}
+
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+% force newline after definition list items
+\usepackage{enumitem}
+\setlist[description]{style=nextline}
