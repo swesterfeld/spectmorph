@@ -86,6 +86,7 @@ lv2:
 - google+
 - facebook
 - release announcement mailing lists
+  - next time: fix Linux and Windows -> Linux and Windows and macOS
 - mail arch linux maintainer (AUR)
 - test builds on gentoo and ubuntu 17.04
 
