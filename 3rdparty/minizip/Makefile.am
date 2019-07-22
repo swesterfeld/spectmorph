@@ -1,5 +1,7 @@
 noinst_LTLIBRARIES = libminizip.la
 
+EXTRA_DIST = LICENSE
+
 MINIZIP_SRC = mz_crypt.c mz_os.c mz_strm.c mz_strm_buf.c mz_strm_mem.c mz_strm_split.c mz_zip.c mz_zip_rw.c mz_strm_zlib.c
 MINIZIP_HDRS = mz.h mz_os.h mz_crypt.h mz_strm.h mz_strm_buf.h mz_strm_mem.h mz_strm_split.h mz_strm_os.h mz_zip.h mz_zip_rw.h mz_strm_zlib.h
 
