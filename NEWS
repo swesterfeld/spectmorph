@@ -5,6 +5,7 @@ Overview of Changes in spectmorph-0.5.0:
   - new WavSource operator
 * Make standard instrument set smaller (less download/disk usage)
 * Graphical ADSR editor
+* Added "SpectMorph User Manual" (online: html/pdf)
 * Use different colors for active/used/unused operators
 * LV2 now requires instance access feature
 * Add file dialog wrapper shell scripts to work with some ardour bundles
