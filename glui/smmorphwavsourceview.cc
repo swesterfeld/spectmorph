@@ -170,6 +170,7 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
   edit_instrument.reset();
   update_instrument_list();
   project->rebuild (morph_wav_source);
+  project->state_changed();
 }
 
 void
