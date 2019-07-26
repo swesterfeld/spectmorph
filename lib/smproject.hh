@@ -77,12 +77,15 @@ private:
   double                      m_mix_freq = 0;
   double                      m_volume = -6;
   RefPtr<MorphPlan>           m_morph_plan;
+  std::vector<unsigned char>  m_last_plan_data;
+  bool                        m_state_changed_notify = false;
   StorageModel                m_storage_model = StorageModel::COPY;
 
   std::mutex                  m_synth_mutex;
   ControlEventVector          m_control_events;          // protected by synth mutex
   std::vector<std::string>    m_out_events;              // protected by synth mutex
   bool                        m_voices_active = false;   // protected by synth mutex
+  bool                        m_state_changed = false;   // protected by synth mutex
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 
@@ -130,9 +133,11 @@ public:
      */
     return m_synth_mutex;
   }
-  void try_update_synth();
+  bool try_update_synth();
   void set_mix_freq (double mix_freq);
   void set_storage_model (StorageModel model);
+  void set_state_changed_notify (bool notify);
+  void state_changed();
   bool voices_active();
 
   void set_volume (double new_volume);

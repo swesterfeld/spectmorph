@@ -42,9 +42,10 @@ ControlEventVector::run_rt (Project *project)
     }
 }
 
-void
+bool
 Project::try_update_synth()
 {
+  bool state_changed = false;
   // handle synth updates (if locking is possible without blocking)
   //  - apply new parameters
   //  - process events
@@ -53,9 +54,12 @@ Project::try_update_synth()
       m_control_events.run_rt (this);
       m_out_events = m_midi_synth->inst_edit_synth()->take_out_events();
       m_voices_active = m_midi_synth->active_voice_count() > 0;
+      state_changed = m_state_changed;
+      m_state_changed = false;
 
       m_synth_mutex.unlock();
     }
+  return state_changed;
 }
 
 void
@@ -197,9 +201,38 @@ Project::set_storage_model (StorageModel model)
 }
 
 void
+Project::set_state_changed_notify (bool notify)
+{
+  m_state_changed_notify = notify;
+}
+
+void
+Project::state_changed()
+{
+  if (m_state_changed_notify)
+    m_state_changed = true;
+}
+
+void
 Project::on_plan_changed()
 {
-  MorphPlanPtr plan = m_morph_plan->clone();
+  // create a deep copy (by saving/loading)
+  vector<unsigned char> plan_data;
+  MemOut                plan_mo (&plan_data);
+
+  m_morph_plan->save (&plan_mo);
+
+  if (plan_data != m_last_plan_data)
+    {
+      m_last_plan_data = plan_data;
+      state_changed();
+    }
+
+  // reload: plan is a deep copy
+  MorphPlanPtr plan = new MorphPlan (*this);
+  GenericIn *in = MMapIn::open_mem (&plan_data[0], &plan_data[plan_data.size()]);
+  plan->load (in);
+  delete in;
 
   // this might take a while, and cannot be done in synthesis thread
   MorphPlanSynth mp_synth (m_mix_freq);
