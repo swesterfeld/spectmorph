@@ -45,6 +45,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 {
   project.set_mix_freq (mix_freq);
   project.set_storage_model (Project::StorageModel::REFERENCE);
+  project.set_state_changed_notify (true);
 }
 
 static LV2_Handle
@@ -88,6 +89,7 @@ instantiate (const LV2_Descriptor*     descriptor,
 
   self->init_map (map);
 
+  lv2_atom_forge_init (&self->forge, self->map);
   lv2_log_logger_init (&self->logger, self->map, self->log);
 
   return (LV2_Handle)self;
@@ -122,12 +124,22 @@ activate (LV2_Handle instance)
 {
 }
 
+void
+LV2Plugin::write_state_changed()
+{
+  LV2_Atom_Forge_Frame frame;
+
+  lv2_atom_forge_frame_time (&forge, 0);
+  lv2_atom_forge_object (&forge, &frame, 0, uris.state_StateChanged);
+  lv2_atom_forge_pop (&forge, &frame);
+}
+
 static void
 run (LV2_Handle instance, uint32_t n_samples)
 {
   LV2Plugin* self = (LV2Plugin*)instance;
 
-  self->project.try_update_synth();
+  const bool state_changed = self->project.try_update_synth();
 
   const float        control_1  = *(self->control_1);
   const float        control_2  = *(self->control_2);
@@ -151,6 +163,24 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   // proper stereo support will be added later
   std::copy (left_out, left_out + n_samples, right_out);
+
+  // send LV2_STATE__StateChanged if project state was modified
+  if (state_changed)
+    {
+      // Set up forge to write directly to notify output port.
+      const uint32_t notify_capacity = self->notify_port->atom.size;
+      lv2_atom_forge_set_buffer (&self->forge,
+                                 (uint8_t*)self->notify_port,
+                                 notify_capacity);
+
+      LV2_Atom_Forge_Frame frame;
+      lv2_atom_forge_sequence_head (&self->forge, &frame, 0);
+
+      self->write_state_changed();
+
+      // Close off sequence
+      lv2_atom_forge_pop (&self->forge, &frame);
+    }
 }
 
 static void
@@ -192,7 +222,13 @@ save(LV2_Handle                instance,
         }
       return path;
     };
+
+  /* storing WavSource operators will temporarily modify the plan
+   *  -> ignore state changed events during save
+   */
+  self->project.set_state_changed_notify (false);
   string plan_str = self->project.save_plan_lv2 (abstract_path);
+  self->project.set_state_changed_notify (true);
 
   store (handle,
          self->uris.spectmorph_plan,
@@ -246,6 +282,9 @@ restore(LV2_Handle                  instance,
       return path;
     };
 
+  /* state changed notifications should not be sent if state was changed due to restore */
+  self->project.set_state_changed_notify (false);
+
   value = retrieve (handle, self->uris.spectmorph_plan, &size, &type, &valflags);
   if (value && type == self->uris.atom_String)
     {
@@ -262,6 +301,7 @@ restore(LV2_Handle                  instance,
       LV2_DEBUG (" -> volume: %f\n", volume);
     }
 
+  self->project.set_state_changed_notify (true);
   return LV2_STATE_SUCCESS;
 }
 

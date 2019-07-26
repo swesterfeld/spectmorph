@@ -26,6 +26,9 @@ public:
   float*       right_out;
   LV2_Atom_Sequence* notify_port;
 
+  // Forge
+  LV2_Atom_Forge        forge;
+
   // Logger
   LV2_Log_Log*          log;
   LV2_Log_Logger        logger;
@@ -33,6 +36,8 @@ public:
   LV2_Worker_Schedule*  schedule;
 
   LV2Plugin (double mix_freq);
+
+  void write_state_changed();
 
   // SpectMorph stuff
   Project         project;

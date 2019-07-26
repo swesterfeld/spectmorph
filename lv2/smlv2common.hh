@@ -10,6 +10,7 @@
 #include "lv2/lv2plug.in/ns/ext/midi/midi.h"
 #include "lv2/lv2plug.in/ns/ext/urid/urid.h"
 #include "lv2/lv2plug.in/ns/ext/patch/patch.h"
+#include "lv2/lv2plug.in/ns/ext/state/state.h"
 #include "lv2/lv2plug.in/ns/extensions/ui/ui.h"
 #include "lv2/lv2plug.in/ns/ext/instance-access/instance-access.h"
 
@@ -20,6 +21,10 @@
 
 #define SPECTMORPH__plan    SPECTMORPH_URI "#plan"
 #define SPECTMORPH__volume  SPECTMORPH_URI "#volume"
+
+#ifndef LV2_STATE__StateChanged
+#define LV2_STATE__StateChanged LV2_STATE_PREFIX "StateChanged"
+#endif
 
 namespace SpectMorph
 {
@@ -36,6 +41,7 @@ public:
     LV2_URID midi_MidiEvent;
     LV2_URID spectmorph_plan;
     LV2_URID spectmorph_volume;
+    LV2_URID state_StateChanged;
   } uris;
   LV2_URID_Map* map;
 
@@ -52,6 +58,7 @@ public:
     uris.midi_MidiEvent     = map->map (map->handle, LV2_MIDI__MidiEvent);
     uris.spectmorph_plan    = map->map (map->handle, SPECTMORPH__plan);
     uris.spectmorph_volume  = map->map (map->handle, SPECTMORPH__volume);
+    uris.state_StateChanged = map->map (map->handle, LV2_STATE__StateChanged);
   }
 };
 
