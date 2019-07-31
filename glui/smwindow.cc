@@ -716,9 +716,7 @@ Window::on_configure_event (const PuglEventConfigure& event)
   // on windows, the coordinates of the event often doesn't match actual size
   // cairo_gl.reset (new CairoGL (event->configure.width, event->configure.height));
 
-  puglEnterContext (view);
   cairo_gl->configure();
-  puglLeaveContext (view, false);
   update_full();
 }
 
