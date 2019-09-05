@@ -5,3 +5,6 @@ later:
 - multiple bank support
 - play pos using control
 - better indicator for outdated WavSources
+
+SVEN:
+- keep playing if only loop points are edited
