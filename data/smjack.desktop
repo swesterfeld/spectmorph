@@ -1,8 +1,11 @@
 [Desktop Entry]
 Type=Application
 Name=SpectMorph Jack Client
+Name[fr]=Client Jack SpectMorph
 GenericName=SpectMorph Instrument
+GenericName[fr]=Instrument SpectMorph
 Comment=SpectMorph Sound Morphing standalone Jack Client
+Comment[fr]=Client Jack autonome de morphose sonore SpectMorph
 Icon=smjack.png
 TryExec=smjack
 Exec=smjack %F
