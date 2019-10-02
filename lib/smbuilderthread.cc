@@ -7,9 +7,9 @@
 
 using namespace SpectMorph;
 
-BuilderThread::BuilderThread() :
-  thread (&BuilderThread::run, this)
+BuilderThread::BuilderThread()
 {
+  thread = std::thread (&BuilderThread::run, this);
 }
 
 BuilderThread::~BuilderThread()
