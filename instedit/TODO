@@ -8,3 +8,9 @@ later:
 
 SVEN:
 - keep playing if only loop points are edited
+- zoom center at zoom marker
+- continuation mode: either
+  - (1) on note off: store position, restart there
+  - (2) use control signal as offset into loop
+  -     use tempo mode
+  - (3) use control signal to send play position
