@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 import math
@@ -48,7 +48,6 @@ delta_power /= count
 #print 10 * math.log10 (s1_power), 10 * math.log10 (s2_power), 10 * math.log10 (delta_power),
 sn_db = (10 * math.log10 (s1_power / delta_power))
 if sn_db < bound:
-  print >> sys.stderr, "sn_delta.py: comparing %s and %s results in S/N %.3f (but should be at least %.3f)" % (filename1, filename2, sn_db, bound)
+  print ("sn_delta.py: comparing %s and %s results in S/N %.3f (but should be at least %.3f)" % (filename1, filename2, sn_db, bound), file=sys.stderr)
   sys.exit (1)
-print "%.3f" % sn_db
-
+print ("%.3f" % sn_db)
