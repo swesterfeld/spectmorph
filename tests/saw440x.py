@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from math import cos, sin, pi
 
@@ -28,4 +28,4 @@ for value in sig:
   minmax = max (abs (value), minmax)
 
 for value in sig:
-  print "%.17g" % (value / minmax)
+  print ("%.17g" % (value / minmax))
