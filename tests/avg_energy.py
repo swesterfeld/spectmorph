@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 import math
@@ -24,6 +24,6 @@ for x in signal:
 
 energy /= len (signal)
 if energy > 0:
-  print 10 * math.log10 (energy)
+  print (10 * math.log10 (energy))
 else:
-  print -200
+  print (-200)
