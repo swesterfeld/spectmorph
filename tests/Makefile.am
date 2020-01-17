@@ -181,10 +181,10 @@ TXT-sin440-4567-test:
 	@$(SMRESVALUE) TXT-sin440-4567.txt 2000 20000 44100 440
 
 sin440-4567.wav: Makefile
-	$(SINSIGNAL) 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav 96000
+	$(SINSIGNAL) 96000 440 0.4 4567 0.5 | $(ASCII2WAV) sin440-4567.wav -r 96000
 
 saw440x.wav: saw440x.py
-	$(top_srcdir)/tests/saw440x.py | $(ASCII2WAV) saw440x.wav 44100
+	$(top_srcdir)/tests/saw440x.py | $(ASCII2WAV) saw440x.wav -r 44100
 
 tune-test:
 	$(top_srcdir)/tests/tune-test.sh
