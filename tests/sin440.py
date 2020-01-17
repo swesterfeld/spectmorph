@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 from math import sin, pi
 
@@ -7,7 +7,7 @@ freq = 440.0
 phase = 0.0
 
 for i in range (20000):
-  print sin (phase) * 0.9
+  print (sin (phase) * 0.9)
   phase += freq * 2.0 * pi / rate
   while phase > 2.0 * pi:
     phase -= 2.0 *pi
