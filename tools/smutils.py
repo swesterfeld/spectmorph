@@ -60,11 +60,11 @@ def tokenize (input_str):
 # ^^^----------------- copypasted from sminstbuilder -------------------------
 
 def die (message):
-  print >> sys.stderr, "%s: %s" % (sys.argv[0], message)
+  print ("%s: %s" % (sys.argv[0], message), file=sys.stderr)
   exit (1)
 
 def system_or_die (command):
-  print "+++ %s" % command
+  print ("+++ %s" % command)
   sys.stdout.flush()
   return_code = subprocess.call (command, shell=True)
   if return_code != 0:

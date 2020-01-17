@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
@@ -14,7 +14,7 @@ import smutils
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 command = ["smevalplayer"]
-play_p = subprocess.Popen (command, stdin=subprocess.PIPE)
+play_p = subprocess.Popen (command, stdin=subprocess.PIPE, bufsize=1, universal_newlines=True)
 
 def play (wavfile):
   play_p.stdin.write ("play %s\n" % wavfile)
