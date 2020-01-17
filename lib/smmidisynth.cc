@@ -17,7 +17,8 @@ using std::string;
 
 #define MIDI_DEBUG(...) Debug::debug ("midi", __VA_ARGS__)
 
-#define SM_MIDI_CTL_SUSTAIN 0x40
+#define SM_MIDI_CTL_SUSTAIN       0x40
+#define SM_MIDI_CTL_ALL_NOTES_OFF 0x7b
 
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq),
@@ -272,6 +273,26 @@ MidiSynth::process_midi_controller (int controller, int value)
                   output_module->release();
                 }
             }
+        }
+    }
+  if (controller == SM_MIDI_CTL_ALL_NOTES_OFF)
+    {
+      /* release sustain pedal, otherwise note off events will have no effect */
+      process_midi_controller (SM_MIDI_CTL_SUSTAIN, 0);
+
+      /* check which notes are active */
+      int notes[128] = { 0, };
+      for (auto voice : active_voices)
+        {
+          if (voice->state == Voice::STATE_ON)
+            notes[voice->midi_note] = 1;
+        }
+
+      /* note off for all active voices */
+      for (int note = 0; note < 128; note++)
+        {
+          if (notes[note])
+            process_note_off (note);
         }
     }
 }
