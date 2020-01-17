@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 import math
@@ -19,4 +19,4 @@ for t in range (int (rate * 0.5)):                          # generate a 0.5 sec
   for p in range (len (partials)):
     value += sin (phases[p]) * partials[p][1]
     phases[p] += partials[p][0] * 2 * math.pi / rate
-  print value
+  print (value)
