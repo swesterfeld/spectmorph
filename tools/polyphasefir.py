@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # FIR design for polyphase filter
 
@@ -39,16 +39,16 @@ def design (WIDTH):
 
 def dump_coefficients():
  for WIDTH in range (1, 10):
-   print "static const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE - 1)
+   print ("static const double c_%d[%d] = {" % (WIDTH, WIDTH * 2 * OVERSAMPLE - 1))
    for d in design (WIDTH):
-     print "  %.17g," % (d * OVERSAMPLE)
-   print "};"
+     print ("  %.17g," % (d * OVERSAMPLE))
+   print ("};")
 
 def dump_plot (WIDTH):
   w, h = signal.freqz (design (WIDTH), worN=2**14)
 
   for p in range (len (h)):
-    print (OVERSAMPLE * 24000.0 * p) / len (h), abs (h[p])
+    print ((OVERSAMPLE * 24000.0 * p) / len (h), abs (h[p]))
 
 def test_filter (WIDTH, FREQ):
   # use filter for upsampling a sine signal, compute fft
@@ -63,14 +63,14 @@ def test_filter (WIDTH, FREQ):
   fft_in = []
   y = signal.convolve (x, design (WIDTH))
   for i in range (10 * OVERSAMPLE, len (x) - 10 * OVERSAMPLE):
-    #print "%d %.4f %.4f" % (i, x[i], y[i + WIDTH * OVERSAMPLE])
+    # print ("%d %.4f %.4f" % (i, x[i], y[i + WIDTH * OVERSAMPLE]))
     if len (fft_in) < len (window):
       fft_in.append (y[i + WIDTH * OVERSAMPLE] * window[len (fft_in)])
 
   fft_out = rfft (fft_in)
 
   for i in range (len (fft_out)):
-    print (i * SR * OVERSAMPLE) / len (fft_in), abs (fft_out[i])
+    print ((i * SR * OVERSAMPLE) / len (fft_in), abs (fft_out[i]))
 
 dump_plot (int (sys.argv[1]))
 # dump_coefficients()
