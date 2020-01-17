@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 import sys
 
@@ -19,4 +19,4 @@ for x in range (0, max (len (a_samples), len (b_samples))):
     diff += a_samples[x]
   if x < len (b_samples):
     diff -= b_samples[x]
-  print diff
+  print (diff)
