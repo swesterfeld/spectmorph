@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
 # Copyright (C) 2011 Stefan Westerfeld
 #
@@ -52,7 +52,7 @@ class BuilderConfig:
     self.have_encoder_config = False
 
 def die (message):
-  print >> sys.stderr, "sminstbuilder: " + message
+  print ("sminstbuilder: " + message, file=sys.stderr)
   exit (1)
 
 def tokenize (input_str):
@@ -292,7 +292,7 @@ def parse_builder_config():
   return builder_config
 
 def system_or_die (command):
-  print "+++ %s" % command
+  print ("+++ %s" % command)
   return_code = subprocess.call (command, shell=True)
   if return_code != 0:
     die ("executing command '%s' failed, return_code=%d" % (command, return_code))
@@ -378,7 +378,7 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
   if len (encoder_config) > 0:
     f = open ("%s/smenc.config" % config.dir, "w")
     for cfg in encoder_config:
-      print >>f, " ".join (cfg)
+      print (" ".join (cfg), file=f)
     f.close()
 
   final_smset = config.dir + "/instrument.smset"
@@ -389,19 +389,19 @@ def build_instrument (inst_dir, builder_config, cmdline_args):
 
   if (config.auto_tune_count > 0):
     if cmdline_args.untuned:
-      print "+++ skip smtool %s auto-tune (untuned version)" % final_smset
+      print ("+++ skip smtool %s auto-tune (untuned version)" % final_smset)
     else:
       system_or_die ("smtool %s auto-tune" % final_smset);
 
   if (config.tune_all_frames_count > 0):
     if cmdline_args.untuned:
-      print "+++ skip smtool %s tune-all-frames (untuned version)" % final_smset
+      print ("+++ skip smtool %s tune-all-frames (untuned version)" % final_smset)
     else:
       system_or_die ("smtool %s tune-all-frames %s" % (final_smset, config.tune_all_frames))
 
   if (config.smooth_tune_count > 0):
     if cmdline_args.untuned:
-      print "+++ skip smtool %s smooth-tune (untuned version)" % final_smset
+      print ("+++ skip smtool %s smooth-tune (untuned version)" % final_smset)
     else:
       system_or_die ("smtool %s smooth-tune %s" % (final_smset, " ".join (config.smooth_tune)))
 
@@ -453,7 +453,7 @@ def parse_markers (filename):
           markers[note] = dict()
         markers[note][marker] = float (time)
       else:
-        print "unsupported marker '%s'" % marker
+        print ("unsupported marker '%s'" % marker)
   except:
     die ("file '%s' missing" % filename)
   return markers
@@ -569,7 +569,7 @@ def main():
   parser.add_argument ('instruments', nargs='+', help='instrument directories to be processed')
   cmdline_args = parser.parse_args()
 
-  print "SpectMorph Instrument Builder, Version @VERSION@"
+  print ("SpectMorph Instrument Builder, Version @VERSION@")
   builder_config = parse_builder_config()
 
   for inst_dir in cmdline_args.instruments:
