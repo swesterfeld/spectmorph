@@ -10,6 +10,8 @@
 #include <QObject>
 #include <QMutex>
 
+#include <thread>
+
 namespace SpectMorph
 {
 
@@ -30,7 +32,7 @@ protected:
   int                     fft_thread_wakeup_pfds[2];
   int                     main_thread_wakeup_pfds[2];
 
-  pthread_t thread;
+  std::thread             thread;
 
 public:
   FFTThread();

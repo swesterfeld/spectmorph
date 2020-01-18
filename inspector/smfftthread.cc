@@ -88,14 +88,6 @@ FFTThread::set_command_progress (double progress)
     ;
 }
 
-void*
-thread_start (void *arg)
-{
-  FFTThread *instance = static_cast<FFTThread *> (arg);
-  instance->run();
-  return NULL;
-}
-
 static FFTThread *the_instance = NULL;
 
 FFTThread::FFTThread()
@@ -107,7 +99,8 @@ FFTThread::FFTThread()
   const int pipe2_rc = pipe (main_thread_wakeup_pfds);
   assert (pipe1_rc == 0 || pipe2_rc == 0);
 
-  pthread_create (&thread, NULL, thread_start, this);
+  // NOTE: this thread is never joined (as this object is never deleted)
+  thread = std::thread (&FFTThread::run, this);
 
   QSocketNotifier *socket_notifier = new QSocketNotifier (main_thread_wakeup_pfds[0], QSocketNotifier::Read, this);
   connect (socket_notifier, SIGNAL (activated (int)), this, SLOT (on_result_available()));
