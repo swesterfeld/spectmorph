@@ -31,7 +31,7 @@ dnl
 AC_DEFUN([AC_GLIB_REQUIREMENTS],
 [
     dnl We need GLib with friends
-    PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.6 gobject-2.0 gmodule-2.0 gthread-2.0, [:],[
+    PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.6, [:],[
       AC_MSG_ERROR([You need to install libglib-2.0 >= 2.0.6 to build this package.
 
 Debian users: aptitude install libglib2.0-dev
@@ -371,6 +371,10 @@ MC_PROG_CC_SUPPORTS_OPTION([-Wall], [
 MC_PROG_CC_SUPPORTS_OPTION([-fPIC], [
   AM_CFLAGS="$AM_CFLAGS -fPIC"
   AM_CXXFLAGS="$AM_CXXFLAGS -fPIC"
+])
+MC_PROG_CC_SUPPORTS_OPTION([-pthread], [
+  AM_CFLAGS="$AM_CFLAGS -pthread"
+  AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
 ])
 
 gcc_target_sse="-msse -msse2 -msse3 -mmmx"
