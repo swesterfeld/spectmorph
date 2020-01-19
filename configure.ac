@@ -410,7 +410,7 @@ lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefi
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile instedit/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
-windows/config.sh macos/config.sh macos/Info.plist
+windows/config.sh macos/config.sh macos/Info.plist static/config.sh
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
