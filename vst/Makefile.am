@@ -18,7 +18,7 @@ SMVSTHEADERS = smvstplugin.hh smvstui.hh smvstcommon.hh smvstresize.hh
 SMVSTSOURCES = smvstplugin.cc smvstui.cc
 
 spectmorph_vst_la_SOURCES = $(SMVSTSOURCES) $(SMVSTHEADERS)
-spectmorph_vst_la_LIBADD  = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
+spectmorph_vst_la_LIBADD  = $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 spectmorph_vst_la_LDFLAGS = -rpath $(spectmorph_vstdir) -avoid-version -module -no-undefined
 
 testlink: testlink.cc

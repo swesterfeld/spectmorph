@@ -8,7 +8,7 @@ SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 bin_PROGRAMS = smjack
 
 smjack_SOURCES = smjack.cc smjack.hh
-smjack_LDADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
+smjack_LDADD = $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 
 lib_LTLIBRARIES = libspectmorphjack.la
 
@@ -17,7 +17,7 @@ SMJHDRS = smsimplejackplayer.hh
 
 libspectmorphjack_la_SOURCES = $(SMJSRCS) $(SMJHDRS)
 libspectmorphjack_la_CXXFLAGS = $(AM_CXXFLAGS)
-libspectmorphjack_la_LIBADD = $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS)
+libspectmorphjack_la_LIBADD = $(JACK_LIBS) $(SPECTMORPH_LIBS)
 
 install-exec-hook: # libtool doesn't always set rpath, requiring ldconfig
 	test ! -x /sbin/ldconfig -o ! -w /etc/ld.so.cache || /sbin/ldconfig $(DESTDIR)$(libdir)
