@@ -87,9 +87,9 @@ autoconfbuild --disable-shared --with-harfbuzz=no --with-png=no --with-bzip2=no
 
 # FIXME: wget -> curl
 cd $SRCDIR
-wget https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
-tar xf cairo-1.15.10.tar.xz
-cd $SRCDIR/cairo-1.15.10
+wget https://cairographics.org/releases/cairo-1.16.0.tar.xz
+tar xf cairo-1.16.0.tar.xz
+cd $SRCDIR/cairo-1.16.0
 autoconfbuild --disable-shared
 
 # cairo 1.14.6 doesn't compile properly
