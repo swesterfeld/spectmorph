@@ -18,7 +18,6 @@ RUN apt-get install -y g++-9
 RUN apt-get install -y libtool-bin
 RUN apt-get install -y gettext
 RUN apt-get install -y quilt
-RUN apt-get install -y wget
 RUN apt-get install -y libx11-dev
 RUN apt-get install -y libxext-dev
 RUN apt-get install -y mesa-common-dev

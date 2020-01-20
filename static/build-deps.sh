@@ -85,9 +85,8 @@ debian/rules patch
 cd $SRCDIR/freetype-2.6.1/freetype-2.6.1
 autoconfbuild --disable-shared --with-harfbuzz=no --with-png=no --with-bzip2=no
 
-# FIXME: wget -> curl
 cd $SRCDIR
-wget https://cairographics.org/releases/cairo-1.16.0.tar.xz
+curl -L -o cairo-1.16.0.tar.xz https://cairographics.org/releases/cairo-1.16.0.tar.xz
 tar xf cairo-1.16.0.tar.xz
 cd $SRCDIR/cairo-1.16.0
 autoconfbuild --disable-shared
