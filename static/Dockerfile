@@ -22,6 +22,7 @@ RUN apt-get install -y wget
 RUN apt-get install -y libx11-dev
 RUN apt-get install -y libxext-dev
 RUN apt-get install -y mesa-common-dev
+RUN apt-get install -y libgl-dev
 
 ENV CC gcc-9
 ENV CXX g++-9
