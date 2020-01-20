@@ -13,6 +13,13 @@ NEXT RELEASE:
 0.5.1:
 - jack should get its control input from midi events
 
+static:
+- file dialog
+- presets
+- unified font
+- mz_ symbol exports
+- linker script
+
 insts:
  - tuba
  - double bass
