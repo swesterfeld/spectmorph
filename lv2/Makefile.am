@@ -30,3 +30,10 @@ install-data-hook:
 
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.so
+
+spectmorph_lv2.so.static:
+	$(CXX) -shared -o spectmorph_lv2.so.static $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+		$(top_builddir)/glui/.libs/libspectmorphglui.a \
+		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
+		$(top_builddir)/lib/.libs/libspectmorph.a \
+		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS)
