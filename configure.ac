@@ -310,6 +310,17 @@ fi
 AC_SUBST(INSTRUMENTS_ARCHIVE)
 dnl -------------------------------------------------------------------------
 
+dnl ----------- link c++ libs statically if requested -----------------------
+AC_ARG_WITH([static-cxx], AS_HELP_STRING([--with-static-cxx], [link libstdc++ statically]))
+
+if test "x$with_static_cxx" = "xyes"; then
+  STATIC_CXX_LDFLAGS="-static-libstdc++ -static-libgcc"
+else
+  STATIC_CXX_LDFLAGS=""
+fi
+AC_SUBST(STATIC_CXX_LDFLAGS)
+dnl -------------------------------------------------------------------------
+
 dnl detect host os
 AC_CANONICAL_HOST
 

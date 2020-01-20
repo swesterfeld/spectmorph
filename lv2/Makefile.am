@@ -36,4 +36,5 @@ spectmorph_lv2.so.static:
 		$(top_builddir)/glui/.libs/libspectmorphglui.a \
 		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
 		$(top_builddir)/lib/.libs/libspectmorph.a \
+		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS)
