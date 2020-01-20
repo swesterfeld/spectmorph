@@ -32,6 +32,13 @@ install-data-hook:
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.so
 
+spectmorph_vst.so.static:
+	$(CXX) -shared -o spectmorph_vst.so.static $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+		$(top_builddir)/glui/.libs/libspectmorphglui.a \
+		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
+		$(top_builddir)/lib/.libs/libspectmorph.a \
+		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS)
+
 if COND_WINDOWS
 STATIC_DLL_LIBS = \
   $(top_builddir)/glui/.libs/libspectmorphglui.a \
