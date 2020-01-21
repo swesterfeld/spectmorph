@@ -21,7 +21,7 @@ spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 CLEANFILES += spectmorph.ttl
 spectmorph.ttl: $(top_builddir)/config.status
 
-EXTRA_DIST += manifest.ttl
+EXTRA_DIST += manifest.ttl ldscript.map
 
 # we only want to install the .so file; not the .la file
 install-data-hook:
@@ -37,4 +37,5 @@ spectmorph_lv2.so.static:
 		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
 		$(top_builddir)/lib/.libs/libspectmorph.a \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
-		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS)
+		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
+		-Wl,--version-script=$(srcdir)/ldscript.map
