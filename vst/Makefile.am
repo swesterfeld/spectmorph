@@ -4,7 +4,7 @@ SUBDIRS = vestige
 
 AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
-EXTRA_DIST += macos_export_symbols testlink.cc
+EXTRA_DIST += macos_export_symbols testlink.cc ldscript.map
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
@@ -38,7 +38,8 @@ spectmorph_vst.so.static:
 		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
 		$(top_builddir)/lib/.libs/libspectmorph.a \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
-		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS)
+		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
+		-Wl,--version-script=$(srcdir)/ldscript.map
 
 if COND_WINDOWS
 STATIC_DLL_LIBS = \
