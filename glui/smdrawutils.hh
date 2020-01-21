@@ -79,7 +79,7 @@ struct DrawUtils
   {
     // draw label
     cairo_set_font_size (cr, 11.0);
-    cairo_select_font_face (cr, "sans", CAIRO_FONT_SLANT_NORMAL, bold ? CAIRO_FONT_WEIGHT_BOLD : CAIRO_FONT_WEIGHT_NORMAL);
+    select_font_face (bold);
 
     cairo_font_extents_t font_extents;
     cairo_font_extents (cr, &font_extents);
@@ -103,7 +103,7 @@ struct DrawUtils
   text_extents (const std::string& text)
   {
     cairo_set_font_size (cr, 11.0);
-    cairo_select_font_face (cr, "sans", CAIRO_FONT_SLANT_NORMAL, bold ? CAIRO_FONT_WEIGHT_BOLD : CAIRO_FONT_WEIGHT_NORMAL);
+    select_font_face (bold);
 
     cairo_text_extents_t extents;
     cairo_text_extents (cr, text.c_str(), &extents);
@@ -119,6 +119,7 @@ struct DrawUtils
   {
     cairo_set_source_rgb (cr, color.red(), color.green(), color.blue());
   }
+  void select_font_face (bool bold);
   static double static_text_width (Window *window, const std::string& text); /* static version: without instance */
   static cairo_text_extents_t static_text_extents (Window *window, const std::string& text); /* static version: without instance */
 };
