@@ -17,7 +17,6 @@ static:
 - file dialog
 - presets
 - unified font
-- mz_ symbol exports
 - linker script
 
 insts:
