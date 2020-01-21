@@ -211,6 +211,7 @@ sm_get_install_dir (InstallDir p)
       case INSTALL_DIR_BIN:         return bin_dir;
       case INSTALL_DIR_TEMPLATES:   return pkg_data_dir + "/templates";
       case INSTALL_DIR_INSTRUMENTS: return pkg_data_dir + "/instruments";
+      case INSTALL_DIR_FONTS:       return pkg_data_dir + "/fonts";
     }
   return "";
 }

@@ -54,7 +54,8 @@ enum InstallDir
 {
   INSTALL_DIR_BIN,
   INSTALL_DIR_TEMPLATES,
-  INSTALL_DIR_INSTRUMENTS
+  INSTALL_DIR_INSTRUMENTS,
+  INSTALL_DIR_FONTS
 };
 
 std::string sm_get_install_dir (InstallDir p);
