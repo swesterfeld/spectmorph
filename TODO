@@ -17,7 +17,6 @@ static:
 - file dialog
 - presets
 - unified font
-- linker script
 
 insts:
  - tuba
