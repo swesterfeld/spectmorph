@@ -34,6 +34,14 @@ Config::Config()
         {
           m_debug.push_back (s);
         }
+      else if (cfg_parser.command ("font", s))
+        {
+          m_font = s;
+        }
+      else if (cfg_parser.command ("font_bold", s))
+        {
+          m_font_bold = s;
+        }
       else
         {
           //cfg.die_if_unknown();
@@ -59,6 +67,18 @@ Config::debug()
   return m_debug;
 }
 
+string
+Config::font() const
+{
+  return m_font;
+}
+
+string
+Config::font_bold() const
+{
+  return m_font_bold;
+}
+
 void
 Config::store()
 {
@@ -73,6 +93,12 @@ Config::store()
 
   for (auto area : m_debug)
     fprintf (file, "debug %s\n", area.c_str());
+
+  if (m_font != "")
+    fprintf (file, "font \"%s\"", m_font.c_str());
+
+  if (m_font_bold != "")
+    fprintf (file, "font_bold \"%s\"", m_font_bold.c_str());
 
   fclose (file);
 }
