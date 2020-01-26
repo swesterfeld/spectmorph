@@ -8,9 +8,11 @@
 #include "smmenubar.hh"
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
+#include "smlinuxfiledialog.hh"
 #include "smconfig.hh"
 #include "smshortcut.hh"
 #include "smeventloop.hh"
+#include "smutils.hh"
 #include "pugl/cairo_gl.h"
 #include <math.h>
 #include <string.h>
@@ -755,8 +757,11 @@ Window::open_file_dialog (const string& title, const FileDialogFormats& formats,
 
   file_dialog_callback = callback;
   have_file_dialog = true;
-
+#ifdef SM_OS_LINUX
+  native_file_dialog.reset (new LinuxFileDialog (this, true, title, formats));
+#else
   native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, formats));
+#endif
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }
@@ -769,7 +774,11 @@ Window::save_file_dialog (const string& title, const FileDialogFormats& formats,
   file_dialog_callback = callback;
   have_file_dialog = true;
 
+#ifdef SM_OS_LINUX
+  native_file_dialog.reset (new LinuxFileDialog (this, false, title, formats));
+#else
   native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, formats));
+#endif
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }

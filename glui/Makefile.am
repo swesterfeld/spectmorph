@@ -4,7 +4,7 @@ SUBDIRS = pugl
 
 if COND_LINUX
   PUGL_LIBS = pugl/libspectmorphpugl.la -lX11 $(GL_LIBS)
-  SMFDIALOG = smextfiledialog.cc
+  SMFDIALOG = smlinuxfiledialog.cc
 endif
 
 if COND_MACOS
