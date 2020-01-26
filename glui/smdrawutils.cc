@@ -2,6 +2,7 @@
 
 #include "smdrawutils.hh"
 #include "smwindow.hh"
+#include "smconfig.hh"
 
 #include <map>
 
@@ -63,6 +64,21 @@ DrawUtils::select_font_face (bool bold)
     filename += "/Vera-Bold.ttf";
   else
     filename += "/Vera.ttf";
+
+  static std::unique_ptr<Config> cfg;
+  if (!cfg)
+    cfg.reset (new Config());
+
+  if (bold) /* config file overrides built-in defaults */
+    {
+      if (cfg->font_bold() != "")
+        filename = cfg->font_bold();
+    }
+  else
+    {
+      if (cfg->font() != "")
+        filename = cfg->font();
+    }
 
   if (ft_map.find (filename) == ft_map.end())
     {
