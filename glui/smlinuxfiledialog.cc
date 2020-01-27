@@ -7,6 +7,7 @@
 #include "smcombobox.hh"
 #include "smlistbox.hh"
 #include "smcheckbox.hh"
+#include "smmessagebox.hh"
 #include <glib/gstdio.h>
 
 using namespace SpectMorph;
@@ -157,13 +158,20 @@ public:
   void
   read_directory (const string& dir)
   {
+    vector<string> files;
+    Error error = read_dir (dir, files);
+    if (error)
+      {
+        MessageBox::critical (this, "Error", error.message());
+        /* preserve state on error */
+        dir_edit->set_text (current_directory);
+        return;
+      }
     current_directory = dir;
     dir_edit->set_text (current_directory);
     list_box->clear();
     items.clear();
 
-    vector<string> files;
-    read_dir (dir, files);
     for (auto file : files)
       {
         if (hidden_checkbox->checked() || (file.size() && file[0] != '.'))
