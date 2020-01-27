@@ -11,6 +11,9 @@ class ListBox : public Widget
   std::vector<std::string> items;
   int highlight_item = -1;
   int m_selected_item = -1;
+  int items_per_page = 0;
+  int first_item = 0;
+  ScrollBar *scroll_bar = nullptr;
   const double px_starty = 8;
 public:
   Signal<> signal_item_clicked;
@@ -19,6 +22,41 @@ public:
   ListBox (Widget *parent)
     : Widget (parent)
   {
+    scroll_bar = new ScrollBar (this, /* page_size */ 1, Orientation::VERTICAL);
+    connect (scroll_bar->signal_position_changed, [=] (double pos)
+      {
+        first_item = pos * items.size();
+        if (first_item < 0)
+          first_item = 0;
+        if (first_item > int (items.size()) - items_per_page)
+          first_item = items.size() - items_per_page;
+        update();
+      });
+    update_item_count();
+    /* FIXME: fix hard coded sizes */
+    scroll_bar->x = 224;
+    scroll_bar->y = 8;
+    scroll_bar->width = 16;
+    scroll_bar->height = 192;
+  }
+  void
+  update_item_count()
+  {
+    first_item = 0;
+    scroll_bar->set_pos (0);
+    const int items_on_screen = (height - 16) / 16;
+    if (items_on_screen < (int) items.size())
+      {
+        /* need to scroll items */
+        items_per_page = items_on_screen;
+        scroll_bar->set_page_size (items_per_page / double (items.size()));
+        scroll_bar->set_visible (true);
+      }
+    else
+      {
+        items_per_page = items.size();
+        scroll_bar->set_visible (false);
+      }
   }
   void
   draw (const DrawEvent& devent) override
@@ -29,13 +67,10 @@ public:
     double space = 2;
     du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME);
 
-    const int first_item = 0;
-    const int items_per_page = std::min<size_t> ((height - 16) / 16, items.size());
     double starty = px_starty;
     for (int i = first_item; i < first_item + items_per_page; i++)
       {
-        //const double box_width = scroll_bar ? width - 28 : width - 8;
-        const double box_width = width - 8;
+        const double box_width = scroll_bar->visible() ? width - 28 : width - 8;
 
         Color text_color (1, 1, 1);
         if (m_selected_item == i)
@@ -55,11 +90,11 @@ public:
   add_item (const std::string& item_text)
   {
     items.push_back (item_text);
+    update_item_count();
   }
   void
   mouse_move (const MouseEvent& event) override
   {
-    const int first_item = 0;
     int new_highlight_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size() - 1);
 
     if (new_highlight_item != highlight_item)
@@ -103,6 +138,7 @@ public:
     items.clear();
     m_selected_item = -1;
     highlight_item = -1;
+    update_item_count();
   }
 };
 
