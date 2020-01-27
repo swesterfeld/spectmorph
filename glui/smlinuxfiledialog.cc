@@ -48,7 +48,12 @@ class FileDialogWindow : public Window
   ComboBox *filter_combobox;
   CheckBox *hidden_checkbox;
 
-  vector<string> items;
+  struct Item
+  {
+    string filename;
+    bool is_dir;
+  };
+  vector<Item> items;
   std::string current_directory;
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
@@ -63,6 +68,10 @@ public:
     dir_edit->set_click_to_focus (true);
     grid.add_widget (dir_edit, 8, yoffset, 31, 3);
 
+    connect (dir_edit->signal_return_pressed, [this]() {
+      read_directory (dir_edit->text());
+    });
+
     auto dir_label = new Label (this, "Directory");
     grid.add_widget (dir_label, 1, yoffset, 8, 3);
     yoffset += 3;
@@ -70,6 +79,21 @@ public:
     list_box = new ListBox (this);
     grid.add_widget (list_box, 8, yoffset, 31, 26);
     yoffset += 26;
+
+    connect (list_box->signal_item_clicked, [this]() {
+      int i = list_box->selected_item();
+      if (i >= 0 && i < items.size())
+        if (!items[i].is_dir)
+          file_edit->set_text (items[i].filename);
+    });
+    connect (list_box->signal_item_double_clicked, [this,lfd]() {
+      int i = list_box->selected_item();
+      if (i >= 0 && i < items.size())
+        if (items[i].is_dir)
+          read_directory (current_directory + "/" + items[i].filename);
+        else
+          lfd->signal_file_selected (current_directory + "/" + items[i].filename);
+    });
 
     file_edit = new LineEdit (this, "");
     file_edit->set_click_to_focus (true);
@@ -148,19 +172,33 @@ public:
             GStatBuf stbuf;
             if (g_stat (abs_path.c_str(), &stbuf) == 0)
               {
-                if (S_ISDIR (stbuf.st_mode))
-                  list_box->add_item ("[" + file + "]");
-                else
-                  list_box->add_item (file);
-                items.push_back (file);
+                Item item;
+                item.filename = file;
+                item.is_dir = S_ISDIR (stbuf.st_mode);
+                items.push_back (item);
               }
           }
       }
-    connect (list_box->signal_item_clicked, [this]() {
-      int i = list_box->selected_item();
-      if (i >= 0 && i < items.size())
-        file_edit->set_text (items[i]);
+    std::sort (items.begin(), items.end(), [](Item& i1, Item& i2) {
+      int d1 = i1.is_dir;
+      int d2 = i2.is_dir;
+      if (d1 != d2)
+        return d1 > d2; // directories first
+
+      char *k1 = g_utf8_collate_key_for_filename (i1.filename.c_str(), i1.filename.size());
+      char *k2 = g_utf8_collate_key_for_filename (i2.filename.c_str(), i2.filename.size());
+      string ks1 = k1, ks2 = k2;
+      g_free (k1);
+      g_free (k2);
+      return ks1 < ks2;
     });
+    for (auto item : items)
+      {
+        if (item.is_dir)
+          list_box->add_item ("[" + item.filename + "]");
+        else
+          list_box->add_item (item.filename);
+      }
   }
 };
 
