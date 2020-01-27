@@ -93,15 +93,23 @@ public:
     update_item_count();
   }
   void
-  mouse_move (const MouseEvent& event) override
+  highlight_item_from_event (const MouseEvent& event)
   {
-    int new_highlight_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size() - 1);
+    int new_highlight_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size());
+
+    if (new_highlight_item == (int) items.size()) /* highlight nothing */
+      new_highlight_item = -1;
 
     if (new_highlight_item != highlight_item)
       {
         highlight_item = new_highlight_item;
         update();
       }
+  }
+  void
+  mouse_move (const MouseEvent& event) override
+  {
+    highlight_item_from_event (event);
   }
   void
   leave_event() override
@@ -112,6 +120,8 @@ public:
   void
   mouse_press (const MouseEvent& event) override
   {
+    highlight_item_from_event (event);
+
     if (event.button == LEFT_BUTTON)
       {
         if (event.double_click)
