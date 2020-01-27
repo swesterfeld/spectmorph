@@ -6,6 +6,7 @@
 #include "smbutton.hh"
 #include "smcombobox.hh"
 #include "smlistbox.hh"
+#include "smcheckbox.hh"
 #include <glib/gstdio.h>
 
 using namespace SpectMorph;
@@ -45,6 +46,7 @@ class FileDialogWindow : public Window
   Button *ok_button;
   Button *cancel_button;
   ComboBox *filter_combobox;
+  CheckBox *hidden_checkbox;
 
   vector<string> items;
   std::string current_directory;
@@ -97,8 +99,12 @@ public:
     cancel_button = new Button (this, "Cancel");
     connect (cancel_button->signal_clicked, [this, lfd]() { lfd->signal_file_selected (""); });
 
+    hidden_checkbox = new CheckBox (this, "Show Hidden");
+    connect (hidden_checkbox->signal_toggled, [this](bool) { read_directory (current_directory); });
+
     grid.add_widget (ok_button, 17, yoffset, 10, 3);
     grid.add_widget (cancel_button, 28, yoffset, 10, 3);
+    grid.add_widget (hidden_checkbox, 3, yoffset + 0.5, 16, 2);
 
     /* put buttons left */
     auto up_button = new Button (this, "Up");
@@ -136,15 +142,18 @@ public:
     read_dir (dir, files);
     for (auto file : files)
       {
-        string abs_path = dir + "/" + file;
-        GStatBuf stbuf;
-        if (g_stat (abs_path.c_str(), &stbuf) == 0)
+        if (hidden_checkbox->checked() || (file.size() && file[0] != '.'))
           {
-            if (S_ISDIR (stbuf.st_mode))
-              list_box->add_item ("[" + file + "]");
-            else
-              list_box->add_item (file);
-            items.push_back (file);
+            string abs_path = dir + "/" + file;
+            GStatBuf stbuf;
+            if (g_stat (abs_path.c_str(), &stbuf) == 0)
+              {
+                if (S_ISDIR (stbuf.st_mode))
+                  list_box->add_item ("[" + file + "]");
+                else
+                  list_box->add_item (file);
+                items.push_back (file);
+              }
           }
       }
     connect (list_box->signal_item_clicked, [this]() {
