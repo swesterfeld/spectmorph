@@ -25,7 +25,7 @@ public:
     scroll_bar = new ScrollBar (this, /* page_size */ 1, Orientation::VERTICAL);
     connect (scroll_bar->signal_position_changed, [=] (double pos)
       {
-        first_item = pos * items.size();
+        first_item = lrint (pos * items.size());
         if (first_item < 0)
           first_item = 0;
         if (first_item > int (items.size()) - items_per_page)
