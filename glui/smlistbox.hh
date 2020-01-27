@@ -127,6 +127,13 @@ public:
           }
       }
   }
+  bool
+  scroll (double dx, double dy) override
+  {
+    if (scroll_bar->visible())
+      return scroll_bar->scroll (dx, dy);
+    return false;
+  }
   int
   selected_item()
   {
