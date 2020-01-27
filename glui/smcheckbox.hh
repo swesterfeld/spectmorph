@@ -12,7 +12,7 @@ class CheckBox : public Widget
 {
   std::string text;
   bool highlight = false;
-  bool checked = false;
+  bool m_checked = false;
   double end_x = 0;
 
 public:
@@ -26,11 +26,16 @@ public:
   void
   set_checked (bool new_checked)
   {
-    if (checked != new_checked)
+    if (m_checked != new_checked)
       {
-        checked = new_checked;
+        m_checked = new_checked;
         update();
       }
+  }
+  bool
+  checked() const
+  {
+    return m_checked;
   }
   void
   set_text (const std::string& new_text)
@@ -51,7 +56,7 @@ public:
 
     Color frame_color, fill_color;
 
-    if (checked)
+    if (m_checked)
       {
         fill_color = ThemeColor::CHECKBOX;
       }
@@ -90,8 +95,8 @@ public:
   {
     if (event.button == LEFT_BUTTON && highlight)
       {
-        checked = !checked;
-        signal_toggled (checked);
+        m_checked = !m_checked;
+        signal_toggled (m_checked);
         update();
       }
   }
