@@ -8,6 +8,7 @@
 
 using std::vector;
 using std::string;
+using std::u32string;
 using std::max;
 
 using namespace SpectMorph;
@@ -15,33 +16,34 @@ using namespace SpectMorph;
 static void
 split_line (Window *window, vector<string>& lines, const string& line, double max_label_width)
 {
-  string part;
-  for (size_t i = 0; i < line.size(); i++)
+  u32string part32;
+  u32string line32 = to_utf32 (line);
+  for (auto c32 : line32)
     {
-      if (DrawUtils::static_text_extents (window, part + line[i]).x_advance > max_label_width)
+      if (DrawUtils::static_text_extents (window, to_utf8 (part32 + c32)).x_advance > max_label_width)
         {
           int word_boundary = -1;
-          for (size_t p = 0; p < part.size(); p++)
+          for (size_t p = 0; p < part32.size(); p++)
             {
-              if (part[p] == ' ')
+              if (part32[p] == ' ')
                 word_boundary = p;
             }
-          if (word_boundary > 0)
+          if (word_boundary > 0) // word boundary splitting
             {
-              lines.push_back (part.substr (0, word_boundary));
-              part = part.substr (word_boundary + 1);
+              lines.push_back (to_utf8 (part32.substr (0, word_boundary)));
+              part32 = part32.substr (word_boundary + 1);
             }
-          else
+          else // char splitting
             {
-              lines.push_back (part);
-              part = "";
+              lines.push_back (to_utf8 (part32));
+              part32.clear();
             }
         }
 
-      part += line[i];
+      part32 += c32;
     }
-  if (!part.empty())
-    lines.push_back (part);
+  if (!part32.empty())
+    lines.push_back (to_utf8 (part32));
 }
 
 static vector<string>
