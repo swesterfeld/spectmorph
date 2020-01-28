@@ -9,11 +9,13 @@
 #include "smcheckbox.hh"
 #include "smmessagebox.hh"
 #include <glib/gstdio.h>
+#include <map>
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::map;
 
 namespace
 {
@@ -39,6 +41,15 @@ read_dir (const string& dirname, vector<string>& files)
   return Error::Code::NONE;
 }
 
+static bool
+ends_with (const std::string& str, const std::string& suffix)
+{
+  /* if suffix is .wav, match foo.wav, foo.WAV, foo.Wav, ... */
+  return str.size() >= suffix.size() &&
+         std::equal (str.end() - suffix.size(), str.end(), suffix.begin(),
+                     [] (char c1, char c2) -> bool { return tolower (c1) == tolower (c2);});
+}
+
 class FileDialogWindow : public Window
 {
   LineEdit *dir_edit;
@@ -58,6 +69,8 @@ class FileDialogWindow : public Window
   std::string current_directory;
   bool is_open_dialog = false;
   LinuxFileDialog *lfd = nullptr;
+  FileDialogFormats::Format active_filter;
+  map<string, FileDialogFormats::Format> filter_map;
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
     Window (*parent_window->event_loop(), title, 320, 320, 0, false, parent_window->native_window()),
@@ -120,12 +133,15 @@ public:
     for (auto format : formats.formats)
       {
         filter_combobox->add_item (format.title);
+        filter_map[format.title] = format;
         if (first)
           {
             filter_combobox->set_text (format.title);
+            active_filter = format;
             first = false;
           }
       }
+    connect (filter_combobox->signal_item_changed, this, &FileDialogWindow::on_filter_changed);
 
     ok_button = new Button (this, open ? "Open" : "Save");
     connect (ok_button->signal_clicked, this, &FileDialogWindow::on_ok_clicked);
@@ -170,6 +186,12 @@ public:
     lfd->signal_file_selected (current_directory + "/" + file_edit->text());
   }
   void
+  on_filter_changed()
+  {
+    active_filter = filter_map[filter_combobox->text()];
+    read_directory (current_directory);
+  }
+  void
   read_directory (const string& dir)
   {
     vector<string> files;
@@ -197,7 +219,16 @@ public:
                 Item item;
                 item.filename = file;
                 item.is_dir = S_ISDIR (stbuf.st_mode);
-                items.push_back (item);
+
+                bool filter_ok = item.is_dir;
+                for (auto ext : active_filter.exts)
+                  {
+                    if (ext == "*" || ends_with (item.filename, ext))
+                      filter_ok = true;
+                  }
+
+                if (filter_ok)
+                  items.push_back (item);
               }
           }
       }
