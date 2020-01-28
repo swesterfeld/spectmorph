@@ -12,8 +12,40 @@ using std::max;
 
 using namespace SpectMorph;
 
+static void
+split_line (Window *window, vector<string>& lines, const string& line, double max_label_width)
+{
+  string part;
+  for (size_t i = 0; i < line.size(); i++)
+    {
+      if (DrawUtils::static_text_extents (window, part + line[i]).x_advance > max_label_width)
+        {
+          int word_boundary = -1;
+          for (size_t p = 0; p < part.size(); p++)
+            {
+              if (part[p] == ' ')
+                word_boundary = p;
+            }
+          if (word_boundary > 0)
+            {
+              lines.push_back (part.substr (0, word_boundary));
+              part = part.substr (word_boundary + 1);
+            }
+          else
+            {
+              lines.push_back (part);
+              part = "";
+            }
+        }
+
+      part += line[i];
+    }
+  if (!part.empty())
+    lines.push_back (part);
+}
+
 static vector<string>
-split (const string& text)
+split (Window *window, const string& text, double max_label_width)
 {
   vector<string> lines;
 
@@ -22,7 +54,7 @@ split (const string& text)
     {
       if (c == '\n')
         {
-          lines.push_back (s);
+          split_line (window, lines, s, max_label_width);
           s = "";
         }
       else
@@ -31,7 +63,7 @@ split (const string& text)
         }
     }
   if (s != "")
-    lines.push_back (s);
+    split_line (window, lines, s, max_label_width);
   return lines;
 }
 
@@ -71,17 +103,18 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
       connect (button->signal_clicked, this, &Dialog::on_reject);
     }
   const double button_width = 10 + (bwidgets.size() - 1) * 11;
+  const double xframe = 2;
+  const double max_label_width = window->width - 2 * xframe * 8 - 16;
 
   // window width
   double w = max (20.0, button_width);
-  for (auto line : split (text))
+  vector<string> lines = split (window, text, max_label_width);
+  for (const auto& line : lines)
     w = max (w, DrawUtils::static_text_extents (window, line).x_advance / 8);
 
   auto title_label = new Label (this, title);
   title_label->set_bold (true);
   title_label->set_align (TextAlign::CENTER);
-
-  const double xframe = 2;
 
   double yoffset = 1;
   grid.add_widget (title_label, 0, yoffset, w + 2 * xframe, 2);
@@ -90,7 +123,7 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
   grid.add_widget (new HLine (this, Color (0.6, 0.6, 0.6), 1), 0.5, yoffset, w + 2 * xframe - 1, 2);
   yoffset += 2;
   /* put each line in one label */
-  for (auto line : split (text))
+  for (const auto& line : lines)
     {
       auto line_label = new Label (this, line);
 
