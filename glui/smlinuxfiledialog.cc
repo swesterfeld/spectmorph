@@ -182,8 +182,21 @@ public:
   void
   on_ok_clicked()
   {
-    // FIXME: add extension from filter if any
-    lfd->signal_file_selected (current_directory + "/" + file_edit->text());
+    string filename = current_directory + "/" + file_edit->text();
+    if (!is_open_dialog)
+      {
+        if (active_filter.exts.size() == 1 && active_filter.exts[0] != "*")
+          {
+            if (!g_file_test (filename.c_str(), G_FILE_TEST_EXISTS))
+              {
+                string default_ext = active_filter.exts[0];
+                if (!ends_with (filename, "." + default_ext))
+                  filename += "." + default_ext;
+              }
+          }
+      }
+    // FIXME: overwrite warning
+    lfd->signal_file_selected (filename);
   }
   void
   on_filter_changed()
@@ -223,7 +236,7 @@ public:
                 bool filter_ok = item.is_dir;
                 for (auto ext : active_filter.exts)
                   {
-                    if (ext == "*" || ends_with (item.filename, ext))
+                    if (ext == "*" || ends_with (item.filename, "." + ext))
                       filter_ok = true;
                   }
 
