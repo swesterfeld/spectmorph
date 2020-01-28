@@ -56,9 +56,13 @@ class FileDialogWindow : public Window
   };
   vector<Item> items;
   std::string current_directory;
+  bool is_open_dialog = false;
+  LinuxFileDialog *lfd = nullptr;
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
-    Window (*parent_window->event_loop(), title, 320, 320, 0, false, parent_window->native_window())
+    Window (*parent_window->event_loop(), title, 320, 320, 0, false, parent_window->native_window()),
+    is_open_dialog (open),
+    lfd (lfd)
   {
     set_close_callback ([this, lfd]() { lfd->signal_file_selected (""); });
 
@@ -83,23 +87,26 @@ public:
 
     connect (list_box->signal_item_clicked, [this]() {
       int i = list_box->selected_item();
-      if (i >= 0 && i < items.size())
+      if (i >= 0 && i < int (items.size()))
         if (!items[i].is_dir)
           file_edit->set_text (items[i].filename);
     });
     connect (list_box->signal_item_double_clicked, [this,lfd]() {
       int i = list_box->selected_item();
-      if (i >= 0 && i < items.size())
-        if (items[i].is_dir)
-          read_directory (current_directory + "/" + items[i].filename);
-        else
-          lfd->signal_file_selected (current_directory + "/" + items[i].filename);
+      if (i >= 0 && i < int (items.size()))
+        {
+          if (items[i].is_dir)
+            read_directory (current_directory + "/" + items[i].filename);
+          else
+            lfd->signal_file_selected (current_directory + "/" + items[i].filename);
+        }
     });
 
     file_edit = new LineEdit (this, "");
     file_edit->set_click_to_focus (true);
     grid.add_widget (file_edit, 8, yoffset, 31, 3);
 
+    connect (file_edit->signal_return_pressed, this, &FileDialogWindow::on_ok_clicked);
     auto file_name = new Label (this, "Filename");
     grid.add_widget (file_name, 1, yoffset, 8, 3);
     yoffset += 3;
@@ -120,7 +127,9 @@ public:
           }
       }
 
-    ok_button = new Button (this, "Ok");
+    ok_button = new Button (this, open ? "Open" : "Save");
+    connect (ok_button->signal_clicked, this, &FileDialogWindow::on_ok_clicked);
+
     cancel_button = new Button (this, "Cancel");
     connect (cancel_button->signal_clicked, [this, lfd]() { lfd->signal_file_selected (""); });
 
@@ -154,7 +163,12 @@ public:
 
     read_directory (g_get_home_dir());
   }
-
+  void
+  on_ok_clicked()
+  {
+    // FIXME: add extension from filter if any
+    lfd->signal_file_selected (current_directory + "/" + file_edit->text());
+  }
   void
   read_directory (const string& dir)
   {
