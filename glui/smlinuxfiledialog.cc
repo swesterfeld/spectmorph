@@ -1,4 +1,3 @@
-#include "smlinuxfiledialog.hh"
 #include "smwindow.hh"
 #include "smlineedit.hh"
 #include "smfixedgrid.hh"
@@ -49,6 +48,15 @@ ends_with (const std::string& str, const std::string& suffix)
          std::equal (str.end() - suffix.size(), str.end(), suffix.begin(),
                      [] (char c1, char c2) -> bool { return tolower (c1) == tolower (c2);});
 }
+
+class LinuxFileDialog : public NativeFileDialog
+{
+  std::unique_ptr<Window> w;
+public:
+  LinuxFileDialog (Window *window, bool open, const std::string& title, const FileDialogFormats& formats);
+
+  void process_events();
+};
 
 class FileDialogWindow : public Window
 {
