@@ -114,8 +114,8 @@ MorphPlanView::update_positions()
         }
     }
 
-  height = (y - 1) * 8;
-  width  = 43 * 8;
+  set_height ((y - 1) * 8);
+  set_width (43 * 8);
   signal_widget_size_changed();
 
   /*
@@ -182,16 +182,16 @@ MorphPlanView::on_move_indication (MorphOperator *op, bool done)
   move_ind_widget.reset (new Widget (this));
 
   move_ind_widget->set_background_color (ThemeColor::MENU_ITEM);
-  move_ind_widget->x = view->x;
-  move_ind_widget->width = view->width;
-  move_ind_widget->height = 4;
+  move_ind_widget->set_x (view->x());
+  move_ind_widget->set_width (view->width());
+  move_ind_widget->set_height (4);
 
   if (op) // before view
     {
-      move_ind_widget->y = view->y - 6;
+      move_ind_widget->set_y (view->y() - 6);
     }
   else // after view
     {
-      move_ind_widget->y = view->y + view->height + 2;
+      move_ind_widget->set_y (view->y() + view->height() + 2);
     }
 }

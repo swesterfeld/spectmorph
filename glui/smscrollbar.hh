@@ -48,8 +48,8 @@ public:
 
     const double space = 2;
 
-    const double rwidth = width - 2 * space;
-    const double rheight = height - 2 * space;
+    const double rwidth = width() - 2 * space;
+    const double rheight = height() - 2 * space;
 
     Color bg_color;
     if (enabled())
@@ -131,9 +131,9 @@ public:
     if (mouse_down)
       {
         if (orientation == Orientation::VERTICAL)
-          m_pos = old_pos + (event.y - mouse_y) / height;
+          m_pos = old_pos + (event.y - mouse_y) / height();
         else
-          m_pos = old_pos + (event.x - mouse_x) / width;
+          m_pos = old_pos + (event.x - mouse_x) / width();
 
         m_pos = sm_bound (0.0, m_pos, 1 - m_page_size);
         signal_position_changed (m_pos);

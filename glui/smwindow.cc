@@ -342,7 +342,7 @@ Window::on_expose_event (const PuglEventExpose& event)
     {
       if (dialog_widget && layer == 2) /* draw rest of ui darker if dialog is open */
         {
-          cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
+          cairo_rectangle (cairo_gl->cr, 0, 0, width() * global_scale, height() * global_scale);
           cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
           cairo_fill (cairo_gl->cr);
         }
@@ -391,7 +391,7 @@ Window::on_expose_event (const PuglEventExpose& event)
 
   if (have_file_dialog || popup_window)
     {
-      cairo_rectangle (cairo_gl->cr, 0, 0, width * global_scale, height * global_scale);
+      cairo_rectangle (cairo_gl->cr, 0, 0, width() * global_scale, height() * global_scale);
       cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
       cairo_fill (cairo_gl->cr);
     }
@@ -406,9 +406,9 @@ Window::on_expose_event (const PuglEventExpose& event)
       cairo_set_source_rgb (cr, 0, 0, 0);
       cairo_set_line_width (cr, 0.5);
 
-      for (double x = 8; x < width; x += 8)
+      for (double x = 8; x < width(); x += 8)
         {
-          for (double y = 8; y < height; y += 8)
+          for (double y = 8; y < height(); y += 8)
             {
               cairo_move_to (cr, x - 2, y);
               cairo_line_to (cr, x + 2, y);
@@ -876,8 +876,8 @@ Window::fill_zoom_menu (Menu *menu)
 
   for (int z = 70; z <= 500; )
     {
-      int w = width * z / 100;
-      int h = height * z / 100;
+      int w = width() * z / 100;
+      int h = height() * z / 100;
 
       string text = string_locale_printf ("%d%%   -   %dx%d", z, w, h);
 
@@ -935,8 +935,8 @@ Window::on_resize (int *win_width, int *win_height)
 void
 Window::get_scaled_size (int *w, int *h)
 {
-  *w = width * global_scale;
-  *h = height * global_scale;
+  *w = width() * global_scale;
+  *h = height() * global_scale;
 }
 
 void

@@ -67,7 +67,7 @@ struct MenuBar : public Widget
     DrawUtils du (cr);
 
     double space = 2;
-    du.round_box (0, space, width, height - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_BG);
+    du.round_box (0, space, width(), height() - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_BG);
     cairo_set_source_rgba (cr, 1, 1, 1, 1);
 
     double tx = 16;
@@ -85,7 +85,7 @@ struct MenuBar : public Widget
 
         if (item == selected_menu)
           {
-            du.round_box (sx, space, ex - sx, height - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
+            du.round_box (sx, space, ex - sx, height() - 2 * space, 1, 5, Color::null(), ThemeColor::MENU_ITEM);
 
             cairo_set_source_rgba (cr, 0, 0, 0, 1); /* black text */
           }
@@ -94,7 +94,7 @@ struct MenuBar : public Widget
             cairo_set_source_rgba (cr, 1, 1, 1, 1); /* white text */
           }
 
-        du.text (menu_p->title, start, 0, width - 10, height);
+        du.text (menu_p->title, start, 0, width() - 10, height());
         menu_p->sx = sx;
         tx = end + 32;
         menu_p->ex = ex;
@@ -111,9 +111,9 @@ struct MenuBar : public Widget
 
             const double menu_height = menu->items.size() * 16 + 16;
 
-            du.round_box (sx, height + space, max_text_width + 32, menu_height, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
+            du.round_box (sx, height() + space, max_text_width + 32, menu_height, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
 
-            double starty = height + space + 8;
+            double starty = height() + space + 8;
             for (int i = 0; i < int (menu->items.size()); i++)
               {
                 if (selected_menu_item == i)
@@ -148,7 +148,7 @@ struct MenuBar : public Widget
 
     for (size_t i = 0; i < menus.size(); i++)
       {
-        if (event.x >= menus[i]->sx && event.x < menus[i]->ex && event.y >= 0 && event.y < height)
+        if (event.x >= menus[i]->sx && event.x < menus[i]->ex && event.y >= 0 && event.y < height())
           selected_menu = i;
       }
 

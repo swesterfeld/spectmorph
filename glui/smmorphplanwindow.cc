@@ -65,10 +65,10 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   grid.add_widget (menu_bar, 1, 1, 91, 3);
 
   ScrollView *scroll_view = new ScrollView (this);
-  grid.add_widget (scroll_view, 1, 5, 47, height / 8 - 6);
+  grid.add_widget (scroll_view, 1, 5, 47, height() / 8 - 6);
 
   Widget *output_parent = new Widget (this);
-  grid.add_widget (output_parent, 49, 5, 47, height / 8 - 6);
+  grid.add_widget (output_parent, 49, 5, 47, height() / 8 - 6);
 
   m_morph_plan_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
   scroll_view->set_scroll_widget (m_morph_plan_view, false, true);
@@ -78,7 +78,7 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   /* control widget */
   m_control_widget = new MorphPlanControl (this, m_morph_plan);
   double cw_height = m_control_widget->view_height();
-  grid.add_widget (m_control_widget, 49, height / 8 - cw_height - 1, 43, cw_height);
+  grid.add_widget (m_control_widget, 49, height() / 8 - cw_height - 1, 43, cw_height);
 }
 
 void
@@ -211,7 +211,7 @@ MorphPlanWindow::where (MorphOperator *op, double y)
           if (view->abs_y() < y)
             result = view->op();
 
-          end_y = view->abs_y() + view->height;
+          end_y = view->abs_y() + view->height();
         }
     }
 

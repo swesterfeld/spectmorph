@@ -31,18 +31,18 @@ private:
     cairo_set_line_width (cr, 1);
 
     const double pad = 8;
-    for (double y = pad; y < height - 4; y += pad)
+    for (double y = pad; y < height() - 4; y += pad)
       {
         cairo_move_to (cr, 0, y);
-        cairo_line_to (cr, width, y);
+        cairo_line_to (cr, width(), y);
         cairo_stroke (cr);
       }
-    for (double x = pad; x < width - 4; x += pad)
+    for (double x = pad; x < width() - 4; x += pad)
       {
         if (x >= devent.rect.x() && x <= devent.rect.x() + devent.rect.width())
           {
             cairo_move_to (cr, x, 0);
-            cairo_line_to (cr, x, height);
+            cairo_line_to (cr, x, height());
             cairo_stroke (cr);
           }
       }
@@ -71,12 +71,12 @@ public:
     cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
-    du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
+    du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
     draw_grid (devent);
 
     /* redraw border to overdraw line endings */
-    du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color::null());
+    du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color::null());
 
     if (!m_sample)
       return;
@@ -88,10 +88,10 @@ public:
       azoom = 1;
 
     const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
-    const double clip_start_x = m_sample->get_marker (MARKER_CLIP_START) / length_ms * width;
-    const double clip_end_x = m_sample->get_marker (MARKER_CLIP_END) / length_ms * width;
-    const double loop_start_x = m_sample->get_marker (MARKER_LOOP_START) / length_ms * width;
-    const double loop_end_x = m_sample->get_marker (MARKER_LOOP_END) / length_ms * width;
+    const double clip_start_x = m_sample->get_marker (MARKER_CLIP_START) / length_ms * width();
+    const double clip_end_x = m_sample->get_marker (MARKER_CLIP_END) / length_ms * width();
+    const double loop_start_x = m_sample->get_marker (MARKER_LOOP_START) / length_ms * width();
+    const double loop_end_x = m_sample->get_marker (MARKER_LOOP_END) / length_ms * width();
     const std::vector<float>& samples = m_sample->wav_data().samples();
 
     //du.set_color (Color (0.4, 0.4, 1.0));
@@ -101,19 +101,19 @@ public:
         int last_x_pixel = -1;
         float max_s = 0;
         float min_s = 0;
-        cairo_move_to (cr, 0, height / 2);
+        cairo_move_to (cr, 0, height() / 2);
 
-        const int samples_per_pixel = sm_round_positive (std::max (samples.size() / width, 1.0));
-        const int pixels_per_sample = sm_round_positive (std::max (width / samples.size(), 1.0));
+        const int samples_per_pixel = sm_round_positive (std::max (samples.size() / width(), 1.0));
+        const int pixels_per_sample = sm_round_positive (std::max (width() / samples.size(), 1.0));
 
-        int draw_start = (devent.rect.x() - 2 * pixels_per_sample) / width * samples.size();
-        int draw_end   = (devent.rect.x() + 2 * pixels_per_sample + devent.rect.width()) / width * samples.size();
+        int draw_start = (devent.rect.x() - 2 * pixels_per_sample) / width() * samples.size();
+        int draw_end   = (devent.rect.x() + 2 * pixels_per_sample + devent.rect.width()) / width() * samples.size();
 
         draw_start = std::max<int> (draw_start - 2 * samples_per_pixel, 0);
         draw_end   = std::min<int> (draw_end   + 2 * samples_per_pixel, samples.size());
         for (int i = draw_start; i < draw_end; i++)
           {
-            double dx = double (i) * width / samples.size();
+            double dx = double (i) * width() / samples.size();
 
             int x_pixel = dx;
             max_s = std::max (samples[i], max_s);
@@ -121,16 +121,16 @@ public:
             if (x_pixel != last_x_pixel)
               {
                 if (pass == 0)
-                  cairo_line_to (cr, last_x_pixel, height / 2 + min_s * height / 2 * vzoom * azoom);
+                  cairo_line_to (cr, last_x_pixel, height() / 2 + min_s * height() / 2 * vzoom * azoom);
                 else
-                  cairo_line_to (cr, last_x_pixel, height / 2 + max_s * height / 2 * vzoom * azoom);
+                  cairo_line_to (cr, last_x_pixel, height() / 2 + max_s * height() / 2 * vzoom * azoom);
 
                 last_x_pixel = x_pixel;
                 max_s = 0;
                 min_s = 0;
               }
           }
-        cairo_line_to (cr, last_x_pixel, height / 2);
+        cairo_line_to (cr, last_x_pixel, height() / 2);
         cairo_close_path (cr);
         cairo_set_line_width (cr, 1);
         cairo_stroke_preserve (cr);
@@ -140,13 +140,13 @@ public:
     /* lighten loop region */
     if (m_sample->loop() == Sample::Loop::FORWARD || m_sample->loop() == Sample::Loop::PING_PONG)
       {
-        cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height);
+        cairo_rectangle (cr, loop_start_x, 0, loop_end_x - loop_start_x, height());
         cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 0.25);
         cairo_fill (cr);
       }
 
     /* darken widget before and after clip region */
-    cairo_rectangle (cr, 0, 0, clip_start_x, height);
+    cairo_rectangle (cr, 0, 0, clip_start_x, height());
     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
     cairo_fill (cr);
 
@@ -156,29 +156,29 @@ public:
     if (m_sample->loop() == Sample::Loop::SINGLE_FRAME)
       effective_end_x = loop_start_x;
 
-    cairo_rectangle (cr, effective_end_x, 0, width - effective_end_x, height);
+    cairo_rectangle (cr, effective_end_x, 0, width() - effective_end_x, height());
     cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.25);
     cairo_fill (cr);
 
     du.set_color (Color (1.0, 0.3, 0.3));
-    cairo_move_to (cr, 0, height/2);
-    cairo_line_to (cr, width, height/2);
+    cairo_move_to (cr, 0, height()/2);
+    cairo_line_to (cr, width(), height()/2);
     cairo_stroke (cr);
 
     if (m_display_tuning.enabled && m_sample->audio)
       {
         Audio *audio = m_sample->audio.get();
 
-        cairo_move_to (cr, clip_start_x, height / 2);
+        cairo_move_to (cr, clip_start_x, height() / 2);
         du.set_color (Color (0.8, 0.8, 0.8));
         for (size_t frame = 0; frame < audio->contents.size(); frame++)
           {
-            double pos = clip_start_x + double (frame * audio->frame_step_ms) / length_ms * width;
+            double pos = clip_start_x + double (frame * audio->frame_step_ms) / length_ms * width();
 
             const AudioBlock& block = audio->contents[frame];
             const double cent = freq_ratio_to_cent (block.estimate_fundamental (m_display_tuning.partials));
 
-            cairo_line_to (cr, pos, height / 2 - cent / m_display_tuning.range * (height / 2));
+            cairo_line_to (cr, pos, height() / 2 - cent / m_display_tuning.range * (height() / 2));
           }
         cairo_stroke (cr);
       }
@@ -186,7 +186,7 @@ public:
     for (int m = MARKER_LOOP_START; m <= MARKER_CLIP_END; m++)
       {
         MarkerType marker = static_cast<MarkerType> (m);
-        double marker_x = m_sample->get_marker (marker) / length_ms * width;
+        double marker_x = m_sample->get_marker (marker) / length_ms * width();
 
         Rect  rect;
         Color color;
@@ -213,7 +213,7 @@ public:
           }
         else if (m == MARKER_CLIP_START)
           {
-            rect = Rect (marker_x, height - 10, 10, 10);
+            rect = Rect (marker_x, height() - 10, 10, 10);
             color = Color (0.4, 0.4, 1);
           }
         else if (m == MARKER_CLIP_END)
@@ -221,7 +221,7 @@ public:
             if (m_sample->loop() != Sample::Loop::NONE)
               continue;
 
-            rect = Rect (marker_x - 10, height - 10, 10, 10);
+            rect = Rect (marker_x - 10, height() - 10, 10, 10);
             color = Color (0.4, 0.4, 1);
           }
         marker_rect[marker] = rect;
@@ -233,7 +233,7 @@ public:
         cairo_rectangle (cr, rect.x(), rect.y(), rect.width(), rect.height());
         cairo_fill (cr);
         cairo_move_to (cr, marker_x, 0);
-        cairo_line_to (cr, marker_x, height);
+        cairo_line_to (cr, marker_x, height());
         cairo_stroke (cr);
       }
     for (auto p : m_play_pointers)
@@ -244,7 +244,7 @@ public:
 
             du.set_color (Color (1.0, 0.5, 0.0));
             cairo_move_to (cr, pos_x, 0);
-            cairo_line_to (cr, pos_x, height);
+            cairo_line_to (cr, pos_x, height());
             cairo_stroke (cr);
           }
       }
@@ -287,9 +287,9 @@ public:
     if (m_sample)
       {
         const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
-        const double marker_x = m_sample->get_marker (marker) / length_ms * width;
+        const double marker_x = m_sample->get_marker (marker) / length_ms * width();
 
-        update (marker_x - 11, 0, 22, height);
+        update (marker_x - 11, 0, 22, height());
       }
   }
   void
@@ -301,7 +301,7 @@ public:
           return;
 
         const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
-        const double x_ms = sm_bound<double> (0, event.x / width * sample_len_ms, sample_len_ms);
+        const double x_ms = sm_bound<double> (0, event.x / width() * sample_len_ms, sample_len_ms);
 
         update_marker (selected_marker);
         m_sample->set_marker (selected_marker, x_ms);
@@ -381,7 +381,7 @@ public:
       return -1;
 
     const double length_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000;
-    const double pos_x = pos_ms / length_ms * width;
+    const double pos_x = pos_ms / length_ms * width();
     return pos_x;
   }
   void
@@ -405,7 +405,7 @@ public:
         double max_x = *std::max_element (all_x.begin(), all_x.end()) + 1;
         double update_width = max_x - min_x;
 
-        update (min_x, 0, update_width, height);
+        update (min_x, 0, update_width, height());
       }
   }
   void

@@ -46,7 +46,7 @@ public:
 
     double H = 6; // height of slider thing
     double C = 6;
-    double value_pos = C + (width - C * 2) * m_value;
+    double value_pos = C + (width() - C * 2) * m_value;
 
     Color slider_color_l = ThemeColor::SLIDER;
     if (enabled())
@@ -56,12 +56,12 @@ public:
       }
     else
       slider_color_l.set_rgb (0.4, 0.4, 0.4);
-    du.round_box (0, height / 2 - H / 2, value_pos, H, 1, 2, slider_color_l.darker(), slider_color_l);
+    du.round_box (0, height() / 2 - H / 2, value_pos, H, 1, 2, slider_color_l.darker(), slider_color_l);
 
     Color slider_color_r (0.3, 0.3, 0.3);
     if (highlight)
       slider_color_r = slider_color_r.lighter();
-    du.round_box (value_pos, height / 2 - H / 2, (width - value_pos), H, 1, 2, slider_color_r.darker(), slider_color_r);
+    du.round_box (value_pos, height() / 2 - H / 2, (width() - value_pos), H, 1, 2, slider_color_r.darker(), slider_color_r);
 
     if (enabled())
       {
@@ -74,14 +74,14 @@ public:
       {
         cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
       }
-    cairo_arc (cr, value_pos, height / 2, C, 0, 2 * M_PI);
+    cairo_arc (cr, value_pos, height() / 2, C, 0, 2 * M_PI);
     cairo_fill (cr);
   }
   void
   slider_value_from_x (double x)
   {
     double C = 6;
-    m_value = sm_bound (0.0, (x - C) / (width - C * 2), 1.0);
+    m_value = sm_bound (0.0, (x - C) / (width() - C * 2), 1.0);
 
     /* optional: only allow discrete integer values */
     if (int_range_min != int_range_max)

@@ -52,28 +52,28 @@ public:
     if (!recursive_enabled())
       frame_color = frame_color.darker();
 
-    du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color);
+    du.round_box (0, space, width(), height() - 2 * space, 1, 5, frame_color);
 
     auto draw_box = [&] (double x, double w) {
       double radius = 5;
       if (radius > w / 2)
         radius = w / 2;
-      du.round_box (x, space * 2, w, height - 4 * space, 0.0, radius, Color::null(), ThemeColor::SLIDER);
+      du.round_box (x, space * 2, w, height() - 4 * space, 0.0, radius, Color::null(), ThemeColor::SLIDER);
     };
     if (m_value < -0.5)
       {
-        double x = space + busy_pos * (width - 2 * space);
+        double x = space + busy_pos * (width() - 2 * space);
         if (busy_pos > 0.75)
           {
-            draw_box (x, (width - 2 * space) * (1 - busy_pos));
-            draw_box (space, (width - 2 * space) * (busy_pos - 0.75));
+            draw_box (x, (width() - 2 * space) * (1 - busy_pos));
+            draw_box (space, (width() - 2 * space) * (busy_pos - 0.75));
           }
         else
-          draw_box (x, (width - 2 * space) * 0.25);
+          draw_box (x, (width() - 2 * space) * 0.25);
       }
     else
       {
-        draw_box (space, (width - 2 * space) * m_value);
+        draw_box (space, (width() - 2 * space) * m_value);
       }
   }
   void

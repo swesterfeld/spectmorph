@@ -69,14 +69,14 @@ public:
 
     frame_color = fill_color.darker();
 
-    du.round_box (0, space, 16 - 2 * space, height - 2 * space, 1, 2, frame_color, fill_color);
+    du.round_box (0, space, 16 - 2 * space, height() - 2 * space, 1, 2, frame_color, fill_color);
 
     if (enabled())
       cairo_set_source_rgba (cr, 1, 1, 1, 1);
     else
       cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 1);
 
-    du.text (text, 16, 0, width - 16, height);
+    du.text (text, 16, 0, width() - 16, height());
     end_x = du.text_width (text) + 16;
   }
   void

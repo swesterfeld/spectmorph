@@ -24,15 +24,15 @@ MorphGridWidget::draw (const DrawEvent& devent)
   cairo_t *cr = devent.cr;
   DrawUtils du (devent.cr);
 
-  du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
+  du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
   const double node_rect_width = 40;
   const double node_rect_height = 20;
 
   start_x = 10 + node_rect_width / 2;
-  end_x = width - node_rect_width / 2 - 10;
+  end_x = width() - node_rect_width / 2 - 10;
   start_y = 10 + node_rect_height / 2;
-  end_y = height - node_rect_height / 2 - 10;
+  end_y = height() - node_rect_height / 2 - 10;
 
   x_coord.resize (morph_grid->width());
   y_coord.resize (morph_grid->height());

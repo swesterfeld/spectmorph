@@ -25,7 +25,7 @@ public:
     const double line_width = 1.5;
 
     DrawUtils du (devent.cr);
-    du.round_box (0, 0, width, height, line_width, radius, m_frame_color, ThemeColor::OPERATOR_BG);
+    du.round_box (0, 0, width(), height(), line_width, radius, m_frame_color, ThemeColor::OPERATOR_BG);
   }
   void
   set_frame_color (Color color)

@@ -62,8 +62,8 @@ public:
 
     scroll_widget = new_scroll_widget;
 
-    view_width = width;
-    view_height = height;
+    view_width = width();
+    view_height = height();
 
     if (vscroll)
       view_width -= 16;
@@ -74,10 +74,10 @@ public:
     if (hscroll)
       {
         h_scroll_bar = new ScrollBar (this, 1, Orientation::HORIZONTAL);
-        h_scroll_bar->x = 0;
-        h_scroll_bar->y = view_height;
-        h_scroll_bar->height = 16;
-        h_scroll_bar->width = view_width;
+        h_scroll_bar->set_x (0);
+        h_scroll_bar->set_y (view_height);
+        h_scroll_bar->set_height (16);
+        h_scroll_bar->set_width (view_width);
 
         h_scroll_bar->set_scroll_factor (0.08);
         h_scroll_bar->set_center_zoom (center_zoom);
@@ -87,10 +87,10 @@ public:
     if (vscroll)
       {
         v_scroll_bar = new ScrollBar (this, 1, Orientation::VERTICAL);
-        v_scroll_bar->x = view_width;
-        v_scroll_bar->y = 0;
-        v_scroll_bar->height = view_height;
-        v_scroll_bar->width = 16;
+        v_scroll_bar->set_x (view_width);
+        v_scroll_bar->set_y (0);
+        v_scroll_bar->set_height (view_height);
+        v_scroll_bar->set_width (16);
 
         v_scroll_bar->set_scroll_factor (0.08);
         v_scroll_bar->set_center_zoom (center_zoom);
@@ -103,12 +103,16 @@ public:
   void
   on_scroll_bar_changed (double)
   {
-    scroll_widget->x = scroll_widget->y = 8;
+    double sx = 8;
+    double sy = 8;
 
     if (v_scroll_bar)
-      scroll_widget->y -= v_scroll_bar->pos() * (scroll_widget->height + 16);
+      sy -= v_scroll_bar->pos() * (scroll_widget->height() + 16);
     if (h_scroll_bar)
-      scroll_widget->x -= h_scroll_bar->pos() * (scroll_widget->width + 16);
+      sx -= h_scroll_bar->pos() * (scroll_widget->width() + 16);
+
+    scroll_widget->set_x (sx);
+    scroll_widget->set_y (sy);
     update();
   }
   bool
@@ -124,7 +128,7 @@ public:
   {
     if (h_scroll_bar)
       {
-        const double h_page_size = view_width / (scroll_widget->width + 16);
+        const double h_page_size = view_width / (scroll_widget->width() + 16);
 
         h_scroll_bar->set_enabled (h_page_size < 1.0);
         h_scroll_bar->set_page_size (h_page_size);
@@ -132,7 +136,7 @@ public:
 
     if (v_scroll_bar)
       {
-        const double v_page_size = view_height / (scroll_widget->height + 16);
+        const double v_page_size = view_height / (scroll_widget->height() + 16);
 
         v_scroll_bar->set_enabled (v_page_size < 1.0);
         v_scroll_bar->set_page_size (v_page_size);

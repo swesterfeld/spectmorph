@@ -110,7 +110,7 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
 
   const double button_width = 10 + (bwidgets.size() - 1) * 11;
   const double xframe = 2;
-  const double max_label_width = window->width - 2 * xframe * 8 - 16;
+  const double max_label_width = window->width() - 2 * xframe * 8 - 16;
 
   // window width
   double w = max (20.0, button_width);

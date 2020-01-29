@@ -38,8 +38,8 @@ public:
     if (symbol == 'v') /* draw triangle */
       {
         cairo_move_to (cr, space, space);
-        cairo_line_to (cr, width - space, space);
-        cairo_line_to (cr, width / 2, space + (width - 2 * space) * 0.8);
+        cairo_line_to (cr, width() - space, space);
+        cairo_line_to (cr, width() / 2, space + (width() - 2 * space) * 0.8);
 
         cairo_close_path (cr);
         cairo_stroke_preserve (cr);
@@ -48,8 +48,8 @@ public:
     else if (symbol == '>')
       {
         cairo_move_to (cr, space, space);
-        cairo_line_to (cr, space, height - space);
-        cairo_line_to (cr, space + (height - 2 * space) * 0.8, height / 2);
+        cairo_line_to (cr, space, height() - space);
+        cairo_line_to (cr, space + (height() - 2 * space) * 0.8, height() / 2);
 
         cairo_close_path (cr);
         cairo_stroke_preserve (cr);
@@ -58,10 +58,10 @@ public:
     else if (symbol == 'x')
       {
         cairo_move_to (cr, space, space);
-        cairo_line_to (cr, width - space, height - space);
+        cairo_line_to (cr, width() - space, height() - space);
 
-        cairo_move_to (cr, space, height - space);
-        cairo_line_to (cr, width - space, space);
+        cairo_move_to (cr, space, height() - space);
+        cairo_line_to (cr, width() - space, space);
 
         cairo_set_line_width (cr, 2.0);
         cairo_stroke (cr);
@@ -91,7 +91,7 @@ public:
     pressed = false;
     update();
 
-    if (event.x >= 0 && event.y >= 0 && event.x < width && event.y < height)
+    if (event.x >= 0 && event.y >= 0 && event.x < width() && event.y < height())
       signal_clicked();  // this must be the last line, as deletion can occur afterwards
   }
   void

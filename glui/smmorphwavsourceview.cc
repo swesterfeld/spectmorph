@@ -37,10 +37,10 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.add_row (3, progress_bar, instrument_combobox, edit_button);
   op_layout.activate();
 
-  instrument_label->x = 0;
-  instrument_label->y = 0;
-  instrument_label->width = progress_bar->width;
-  instrument_label->height = progress_bar->height;
+  instrument_label->set_x (0);
+  instrument_label->set_y (0);
+  instrument_label->set_width (progress_bar->width());
+  instrument_label->set_height (progress_bar->height());
 
   Timer *timer = new Timer (this);
   timer->start (500);

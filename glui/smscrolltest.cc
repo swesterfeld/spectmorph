@@ -43,8 +43,8 @@ public:
       }
     maxx *= 8;
     maxy *= 8;
-    scroll_widget->width  = maxx;
-    scroll_widget->height = maxy;
+    scroll_widget->set_width (maxx);
+    scroll_widget->set_height (maxy);
 
     scroll_view->set_scroll_widget (scroll_widget, true, true);
   }

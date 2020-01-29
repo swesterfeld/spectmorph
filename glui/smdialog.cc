@@ -13,8 +13,8 @@ void
 Dialog::run (std::function<void (bool)> done_callback)
 {
   /* center dialog on screen */
-  x = (window()->width - width) / 2;
-  y = (window()->height - height) / 2;
+  set_x ((window()->width() - width()) / 2);
+  set_y ((window()->height() - height()) / 2);
 
   window()->set_dialog_widget (this);
 

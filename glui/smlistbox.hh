@@ -34,17 +34,17 @@ public:
       });
     update_item_count();
     /* FIXME: fix hard coded sizes */
-    scroll_bar->x = 224;
-    scroll_bar->y = 8;
-    scroll_bar->width = 16;
-    scroll_bar->height = 192;
+    scroll_bar->set_x (224);
+    scroll_bar->set_y (8);
+    scroll_bar->set_width (16);
+    scroll_bar->set_height (192);
   }
   void
   update_item_count()
   {
     first_item = 0;
     scroll_bar->set_pos (0);
-    const int items_on_screen = (height - 16) / 16;
+    const int items_on_screen = (height() - 16) / 16;
     if (items_on_screen < (int) items.size())
       {
         /* need to scroll items */
@@ -65,12 +65,12 @@ public:
     DrawUtils du (cr);
 
     double space = 2;
-    du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME);
+    du.round_box (0, space, width(), height() - 2 * space, 1, 5, ThemeColor::FRAME);
 
     double starty = px_starty;
     for (int i = first_item; i < first_item + items_per_page; i++)
       {
-        const double box_width = scroll_bar->visible() ? width - 28 : width - 8;
+        const double box_width = scroll_bar->visible() ? width() - 28 : width() - 8;
 
         Color text_color (1, 1, 1);
         if (m_selected_item == i)

@@ -68,7 +68,7 @@ public:
     connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
     FixedGrid grid;
-    grid.add_widget (scroll_view = new ScrollView (this), 1, 1, width / 8 - 2, height / 8 - 2);
+    grid.add_widget (scroll_view = new ScrollView (this), 1, 1, width() / 8 - 2, height() / 8 - 2);
     scroll_widget = new Widget (scroll_view);
     scroll_view->set_scroll_widget (scroll_widget, false, true);
 
@@ -302,8 +302,8 @@ public:
         y += 3;
       }
 
-    scroll_widget->height = y * 8;
-    scroll_widget->width = 32 * 8;
+    scroll_widget->set_height (y * 8);
+    scroll_widget->set_width (32 * 8);
     scroll_view->on_widget_size_changed();
   }
   void

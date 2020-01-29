@@ -33,7 +33,7 @@ public:
 
     du.set_color (text_color);
     du.bold = m_bold;
-    du.text (m_text, 0, 0, width, height, m_align);
+    du.text (m_text, 0, 0, width(), height(), m_align);
   }
   void
   set_bold (bool bold)

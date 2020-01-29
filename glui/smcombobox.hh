@@ -62,19 +62,19 @@ struct ComboBoxMenu : public Widget
           first_item = std::max (0, first_item);
         }
 
-    this->height = items_per_page * 16 + 16;
+    set_height (items_per_page * 16 + 16);
 
     /* if there is not enough space below the combobox, display menu above the combobox */
     Window *win = window();
-    if (win && (abs_y() + this->height + 16) > win->height)
-      this->y = -this->height;
+    if (win && (abs_y() + this->height() + 16) > win->height())
+      set_y (-this->height());
 
     if (scroll_bar)
       {
-        scroll_bar->x = width - 20;
-        scroll_bar->y = 8;
-        scroll_bar->width = 16;
-        scroll_bar->height = items_per_page * 16;
+        scroll_bar->set_x (width - 20);
+        scroll_bar->set_y (8);
+        scroll_bar->set_width (16);
+        scroll_bar->set_height (items_per_page * 16);
         scroll_bar->set_pos (double (first_item) / items.size());
 
         connect (scroll_bar->signal_position_changed, [=] (double pos)
@@ -100,12 +100,12 @@ struct ComboBoxMenu : public Widget
     DrawUtils du (cr);
 
     double space = 2;
-    du.round_box (0, space, width, height - 2 * space, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
+    du.round_box (0, space, width(), height() - 2 * space, 1, 5, ThemeColor::FRAME, ThemeColor::MENU_BG);
 
     double starty = px_starty;
     for (int i = first_item; i < first_item + items_per_page; i++)
       {
-        const double box_width = scroll_bar ? width - 28 : width - 8;
+        const double box_width = scroll_bar ? width() - 28 : width() - 8;
 
         if (selected_item == i)
           {
@@ -231,14 +231,14 @@ public:
         frame_color = frame_color.darker();
       }
 
-    du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color, fill_color);
+    du.round_box (0, space, width(), height() - 2 * space, 1, 5, frame_color, fill_color);
 
     du.set_color (text_color);
-    du.text (m_text, 10, 0, width - 10, height);
+    du.text (m_text, 10, 0, width() - 10, height());
 
     /* triangle */
-    double tri_x = width - 20;
-    double tri_y = height / 2 - 3;
+    double tri_x = width() - 20;
+    double tri_y = height() / 2 - 3;
 
     cairo_move_to (cr, tri_x, tri_y);
     cairo_line_to (cr, tri_x + 8, tri_y);
@@ -253,7 +253,7 @@ public:
   {
     if (event.button == LEFT_BUTTON)
       {
-        menu.reset (new ComboBoxMenu (this, 0, height, width, 100, items, m_text));
+        menu.reset (new ComboBoxMenu (this, 0, height(), width(), 100, items, m_text));
         menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
         window()->set_menu_widget (menu.get());
@@ -292,7 +292,7 @@ ComboBoxMenu::mouse_release (const MouseEvent& event)
 
   release_count++;
 
-  if (event.x >= 0 && event.x < width && event.y >= px_starty && event.y < height - px_starty)
+  if (event.x >= 0 && event.x < width() && event.y >= px_starty && event.y < height() - px_starty)
     {
       if (m_done_callback)
         m_done_callback (items[selected_item].text);

@@ -21,12 +21,12 @@ public:
   {
     cairo_t *cr = devent.cr;
     DrawUtils du (cr);
-    double radius = std::min (width, height) / 2 - 2;
+    double radius = std::min (width(), height()) / 2 - 2;
 
     Color lcolor = m_on ? Color (0, 1, 0) : Color (0, 0.5, 0);
 
     // circle
-    cairo_arc (cr, width / 2, height / 2, radius, 0, 2 * M_PI);
+    cairo_arc (cr, width() / 2, height() / 2, radius, 0, 2 * M_PI);
     du.set_color (lcolor);
     cairo_fill_preserve (cr);
 

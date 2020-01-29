@@ -15,16 +15,16 @@ struct FixedGrid
   {
     if (relative_to)
       {
-        dx = relative_to->x / 8;
-        dy = relative_to->y / 8;
+        dx = relative_to->x() / 8;
+        dy = relative_to->y() / 8;
       }
   }
   void add_widget (Widget *w, double x, double y, double width, double height)
   {
-    w->x = (x + dx) * 8;
-    w->y = (y + dy) * 8;
-    w->width = width * 8;
-    w->height = height * 8;
+    w->set_x ((x + dx) * 8);
+    w->set_y ((y + dy) * 8);
+    w->set_width (width * 8);
+    w->set_height (height * 8);
   }
 };
 

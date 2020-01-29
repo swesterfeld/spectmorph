@@ -17,7 +17,7 @@ using std::min;
 static LeakDebugger leak_debugger ("SpectMorph::Widget");
 
 Widget::Widget (Widget *parent, double x, double y, double width, double height) :
-  parent (parent), x (x), y (y), width (width), height (height)
+  parent (parent), m_x (x), m_y (y), m_width (width), m_height (height)
 {
   leak_debugger.add (this);
 
@@ -64,23 +64,48 @@ Widget::remove_child (Widget *child)
   g_assert_not_reached();
 }
 
+void
+Widget::set_x (double x)
+{
+  m_x = x;
+}
+
+void
+Widget::set_y (double y)
+{
+  m_y = y;
+}
+
+void
+Widget::set_width (double width)
+{
+  m_width = width;
+}
+
+void
+Widget::set_height (double height)
+{
+  m_height = height;
+}
+
+
 /* map relative to absolute coordinates */
 double
 Widget::abs_x() const
 {
   if (!parent)
-    return x;
+    return x();
   else
-    return parent->abs_x() + x;
+    return parent->abs_x() + x();
 }
 
 double
 Widget::abs_y() const
 {
   if (!parent)
-    return y;
+    return y();
   else
-    return parent->abs_y() + y;
+    return parent->abs_y() + y();
 }
 
 Rect
@@ -88,7 +113,7 @@ Widget::abs_visible_rect()
 {
   ScrollView *sview = scroll_view();
 
-  Rect visible_rect (abs_x(), abs_y(), width, height);
+  Rect visible_rect (abs_x(), abs_y(), width(), height());
 
   if (sview && sview->is_scroll_child (this))
     {
@@ -109,7 +134,7 @@ Widget::draw (const DrawEvent& devent)
     {
       DrawUtils du (cr);
       du.set_color (m_background_color);
-      cairo_rectangle (cr, 0, 0, width, height);
+      cairo_rectangle (cr, 0, 0, width(), height());
       cairo_fill (cr);
     }
 }

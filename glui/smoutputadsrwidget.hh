@@ -26,16 +26,16 @@ class OutputADSRWidget : public Widget
     cairo_set_line_width (cr, 1);
 
     const double pad = 8;
-    for (double y = pad; y < height - 4; y += pad)
+    for (double y = pad; y < height() - 4; y += pad)
       {
         cairo_move_to (cr, 0, y);
-        cairo_line_to (cr, width, y);
+        cairo_line_to (cr, width(), y);
         cairo_stroke (cr);
       }
-    for (double x = pad; x < width - 4; x += pad)
+    for (double x = pad; x < width() - 4; x += pad)
       {
         cairo_move_to (cr, x, 0);
-        cairo_line_to (cr, x, height);
+        cairo_line_to (cr, x, height());
         cairo_stroke (cr);
       }
   }
@@ -52,11 +52,11 @@ public:
     cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
-    du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
+    du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
     draw_grid (cr);
     /* redraw border to overdraw line endings */
-    du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4), Color::null());
+    du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color::null());
 
     Color line_color (ThemeColor::SLIDER);
     line_color = line_color.lighter();
@@ -65,13 +65,13 @@ public:
     cairo_set_line_width (cr, 1);
 
     const double pad = 8;
-    const double yspace = (width - 2 * pad) / 4;
+    const double yspace = (width() - 2 * pad) / 4;
     ps.clear();
-    ps.push_back ({pad, height - pad});
+    ps.push_back ({pad, height() - pad});
     ps.push_back ({ps.back().x() + yspace * morph_output->adsr_attack() / 100, pad});
-    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_decay() / 100, pad + (height - 2 * pad) * (100 - morph_output->adsr_sustain()) / 100});
+    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_decay() / 100, pad + (height() - 2 * pad) * (100 - morph_output->adsr_sustain()) / 100});
     ps.push_back ({ps.back().x() + yspace, ps.back().y()});
-    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_release() / 100, height - pad});
+    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_release() / 100, height() - pad});
 
     for (size_t i = 0; i < ps.size(); i++)
       {
@@ -87,7 +87,7 @@ public:
         du.set_color (Color (0.5, 0.5, 0.5));
 
         cairo_move_to (cr, ps[sel_point].x(), 0);
-        cairo_line_to (cr, ps[sel_point].x(), height);
+        cairo_line_to (cr, ps[sel_point].x(), height());
         cairo_stroke (cr);
       }
     for (size_t i = 1; i < ps.size(); i++)
@@ -133,7 +133,7 @@ public:
       {
         // drag
         const double pad = 8;
-        const double yspace = (width - 2 * pad) / 4;
+        const double yspace = (width() - 2 * pad) / 4;
 
         if (sel_point > 0)
           {

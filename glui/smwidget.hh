@@ -243,7 +243,6 @@ private:
   bool m_enabled = true;
   bool m_visible = true;
   Color m_background_color;
-
   std::vector<Timer *> timers;
 
 protected:
@@ -251,13 +250,17 @@ protected:
 
 public:
   Widget *parent;
-  double x, y, width, height;
+
+  double m_x;
+  double m_y;
+  double m_width;
+  double m_height;
 
   std::vector<Widget *> children;
 
   void debug_fill (cairo_t *cr)
   {
-    cairo_rectangle (cr, 0, 0, width, height);
+    cairo_rectangle (cr, 0, 0, width(), height());
     cairo_set_source_rgb (cr, 0.6, 0.6, 0.6);
     cairo_fill (cr);
   }
@@ -387,8 +390,32 @@ public:
       return parent->recursive_enabled();
     return true;
   }
+  double
+  x() const
+  {
+    return m_x;
+  }
+  double
+  y() const
+  {
+    return m_y;
+  }
+  double
+  width() const
+  {
+    return m_width;
+  }
+  double
+  height() const
+  {
+    return m_height;
+  }
   double abs_x() const;
   double abs_y() const;
+  void set_x (double x);
+  void set_y (double y);
+  void set_width (double width);
+  void set_height (double height);
 
   Rect   abs_visible_rect();
   void   update (double x, double y, double width, double height);

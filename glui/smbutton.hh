@@ -46,14 +46,14 @@ public:
     if (!recursive_enabled())
       bg_color.set_rgb (0.3, 0.3, 0.3);
 
-    du.round_box (space, space, width - 2 * space, height - 2 * space, 1, 10, frame_color, bg_color);
+    du.round_box (space, space, width() - 2 * space, height() - 2 * space, 1, 10, frame_color, bg_color);
 
     Color text_color (1, 1, 1);
     if (!recursive_enabled())
       text_color = Color (0.7, 0.7, 0.7);
 
     du.set_color (text_color);
-    du.text (m_text, 0, 0, width, height, TextAlign::CENTER);
+    du.text (m_text, 0, 0, width(), height(), TextAlign::CENTER);
   }
   void
   enter_event() override
@@ -81,7 +81,7 @@ public:
     update();
     signal_released();
 
-    if (event.x >= 0 && event.y >= 0 && event.x < width && event.y < height)
+    if (event.x >= 0 && event.y >= 0 && event.x < width() && event.y < height())
       signal_clicked();  // this must be the last line, as deletion can occur afterwards
   }
   void

@@ -26,8 +26,8 @@ public:
 
     du.set_color (color);
     cairo_set_line_width (devent.cr, line_width);
-    cairo_move_to (devent.cr, width / 2, 0);
-    cairo_line_to (devent.cr, width / 2, height);
+    cairo_move_to (devent.cr, width() / 2, 0);
+    cairo_line_to (devent.cr, width() / 2, height());
     cairo_stroke (devent.cr);
   }
 };
@@ -51,8 +51,8 @@ public:
 
     du.set_color (color);
     cairo_set_line_width (devent.cr, line_width);
-    cairo_move_to (devent.cr, 0, height / 2);
-    cairo_line_to (devent.cr, width, height / 2);
+    cairo_move_to (devent.cr, 0, height() / 2);
+    cairo_line_to (devent.cr, width(), height() / 2);
     cairo_stroke (devent.cr);
   }
 };

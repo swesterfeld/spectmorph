@@ -70,7 +70,7 @@ LineEdit::draw (const DrawEvent& devent)
       frame_color = frame_color.darker();
     }
 
-  du.round_box (0, space, width, height - 2 * space, 1, 5, frame_color, fill_color);
+  du.round_box (0, space, width(), height() - 2 * space, 1, 5, frame_color, fill_color);
 
   /* compute prefix width array */
   prefix_x.clear();
@@ -88,16 +88,16 @@ LineEdit::draw (const DrawEvent& devent)
       const int select_l = prefix_x[min (select_start, cursor_pos)];
       const int select_r = prefix_x[max (select_start, cursor_pos)];
 
-      du.rect_fill (select_l, space * 3, select_r - select_l, height - 6 * space, Color (0, 0.5, 0));
+      du.rect_fill (select_l, space * 3, select_r - select_l, height() - 6 * space, Color (0, 0.5, 0));
     }
 
   string text = to_utf8 (text32);
   du.set_color (text_color);
-  du.text (text, 10, 0, width - 10, height);
+  du.text (text, 10, 0, width() - 10, height());
 
   /* draw cursor */
   if (window()->has_keyboard_focus (this) && cursor_blink)
-    du.rect_fill (prefix_x[cursor_pos] - 0.5, space * 3, 1, height - 6 * space, text_color);
+    du.rect_fill (prefix_x[cursor_pos] - 0.5, space * 3, 1, height() - 6 * space, text_color);
 }
 
 bool

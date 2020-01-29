@@ -66,7 +66,7 @@ public:
   {
     DrawUtils du (devent.cr);
 
-    du.round_box (0, 0, width, height, 1, 5, Color::null(), Color (0.7, 0.7, 0.7));
+    du.round_box (0, 0, width(), height(), 1, 5, Color::null(), Color (0.7, 0.7, 0.7));
 
     auto cr = devent.cr;
 
@@ -77,20 +77,20 @@ public:
       {
         for (int ypos = 0; ypos < rows; ypos++)
           {
-            double x = xpos * width / cols;
-            double y = ypos * height / rows;
+            double x = xpos * width() / cols;
+            double y = ypos * height() / rows;
             int n = first + xpos + (rows - 1 - ypos) * step;
-            note_rects.push_back ({n, Rect (x, y, width / cols, height / rows)});
+            note_rects.push_back ({n, Rect (x, y, width() / cols, height() / rows)});
             bool white_key = !note_to_text (n).empty();
             if (white_key)
               {
                 du.set_color (Color (0.0, 0.0, 0.0));
-                du.text (note_to_text (n), x, y, width / cols, height / rows, TextAlign::CENTER);
+                du.text (note_to_text (n), x, y, width() / cols, height() / rows, TextAlign::CENTER);
               }
             else
               {
                 cairo_set_source_rgb (cr, 0.3, 0.3, 0.3);
-                cairo_rectangle (cr, x, y, width / cols, height / rows);
+                cairo_rectangle (cr, x, y, width() / cols, height() / rows);
                 cairo_fill (cr);
               }
             for (size_t i = 0; i < instrument->size(); i++)
@@ -98,9 +98,9 @@ public:
                 Sample *sample = instrument->sample (i);
                 if (sample && n == sample->midi_note())
                   {
-                    double xspace = width / cols / 15;
-                    double yspace = height / rows / 15;
-                    const Rect frame_rect (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace);
+                    double xspace = width() / cols / 15;
+                    double yspace = height() / rows / 15;
+                    const Rect frame_rect (x + xspace, y + yspace, width() / cols - 2 * xspace, height() / rows - 2 * yspace);
 
                     Color frame_color;
                     if (int (i) != instrument->selected())
@@ -109,7 +109,7 @@ public:
                           frame_color = Color (0.3, 0.3, 0.3);
                         else
                           frame_color = Color (0.7, 0.7, 0.7);
-                        du.round_box (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace, 3, 5, white_key ? Color (0.3, 0.3, 0.3) : Color (0.7, 0.7, 0.7));
+                        du.round_box (x + xspace, y + yspace, width() / cols - 2 * xspace, height() / rows - 2 * yspace, 3, 5, white_key ? Color (0.3, 0.3, 0.3) : Color (0.7, 0.7, 0.7));
                       }
                     else
                       {
@@ -128,8 +128,8 @@ public:
                 note_playing = true;
             if (n == mouse_note || note_playing)
               {
-                double xspace = width / cols / 10;
-                double yspace = height / rows / 10;
+                double xspace = width() / cols / 10;
+                double yspace = height() / rows / 10;
 
                 Color frame_color, fill_color, text_color;
                 if (note_playing)
@@ -144,10 +144,10 @@ public:
                     fill_color  = Color (0.9, 0.9, 0.9);
                     text_color  = Color (0.5, 0.0, 0.0);
                   }
-                du.round_box (x + xspace, y + yspace, width / cols - 2 * xspace, height / rows - 2 * yspace, 1, 5, frame_color, fill_color);
+                du.round_box (x + xspace, y + yspace, width() / cols - 2 * xspace, height() / rows - 2 * yspace, 1, 5, frame_color, fill_color);
 
                 du.set_color (text_color);
-                du.text (note_to_text (n, true), x, y, width / cols, height / rows, TextAlign::CENTER);
+                du.text (note_to_text (n, true), x, y, width() / cols, height() / rows, TextAlign::CENTER);
               }
           }
       }
@@ -156,19 +156,19 @@ public:
     cairo_set_line_width (cr, 1);
     for (int r = 1; r < rows; r++)
       {
-        double y = r * height / rows;
+        double y = r * height() / rows;
         cairo_move_to (cr, 0, y);
-        cairo_line_to (cr, width, y);
+        cairo_line_to (cr, width(), y);
         cairo_stroke (cr);
       }
     for (int c = 1; c < cols; c++)
       {
-        double x = c * width / cols;
+        double x = c * width() / cols;
         cairo_move_to (cr, x, 0);
-        cairo_line_to (cr, x, height);
+        cairo_line_to (cr, x, height());
         cairo_stroke (cr);
       }
-    du.round_box (0, 0, width, height, 1, 5, Color (0.4, 0.4, 0.4));
+    du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4));
   }
   void
   mouse_move (const MouseEvent& event) override
@@ -255,7 +255,7 @@ public:
 
     note_widget = new NoteWidget (this, instrument, synth_interface);
     FixedGrid grid;
-    grid.add_widget (note_widget, 1, 1, width / 8 - 2, height / 8 - 6);
+    grid.add_widget (note_widget, 1, 1, width() / 8 - 2, height() / 8 - 6);
 
     Label *left = new Label (this, "Left Click");
     Label *left_txt = new Label (this, "Play Reference");
@@ -274,7 +274,7 @@ public:
     space->set_bold (true);
 
     grid.dx = 4;
-    grid.dy = height / 8 - 5;
+    grid.dy = height() / 8 - 5;
 
     double xw = 12;
     grid.add_widget (dbl, 0, 2, xw, 3);
@@ -282,8 +282,8 @@ public:
     grid.add_widget (space, 0, 0, xw, 3);
     grid.add_widget (space_txt, xw, 0, 20, 3);
 
-    grid.dx = width / 8 / 2;
-    grid.dy = height / 8 - 5;
+    grid.dx = width() / 8 / 2;
+    grid.dy = height() / 8 - 5;
 
     grid.add_widget (new VLine (this, Color (0.6, 0.6, 0.6), 2), 0, 0, 1, 5);
 

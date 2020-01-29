@@ -160,10 +160,10 @@ public:
       {
         line_edit = new LineEdit (this, model->value_text());
         line_edit->select_all();
-        line_edit->height = height;
-        line_edit->width = width;
-        line_edit->x = 0;
-        line_edit->y = 0;
+        line_edit->set_height (height());
+        line_edit->set_width (width());
+        line_edit->set_x (0);
+        line_edit->set_y (0);
 
         connect (line_edit->signal_return_pressed, this, &ParamLabel::on_return_pressed);
         connect (line_edit->signal_focus_out, this, &ParamLabel::on_return_pressed);

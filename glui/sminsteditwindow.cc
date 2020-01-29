@@ -52,14 +52,14 @@ public:
     DrawUtils du (cr);
 
     double space = 4;
-    double size = std::min (width * 0.55, height * 0.55) - 2 * space;
+    double size = std::min (width() * 0.55, height() * 0.55) - 2 * space;
 
     if (m_icon == PLAY)
       {
-        const double left = width / 2 - size / 2 + size * 0.1;
-        cairo_move_to (cr, left, height / 2 - size / 2);
-        cairo_line_to (cr, left, height / 2 + size / 2);
-        cairo_line_to (cr, left + size * 0.8, height / 2);
+        const double left = width() / 2 - size / 2 + size * 0.1;
+        cairo_move_to (cr, left, height() / 2 - size / 2);
+        cairo_line_to (cr, left, height() / 2 + size / 2);
+        cairo_line_to (cr, left + size * 0.8, height() / 2);
         //cairo_line_to (cr, width / 2 - size / 2 + size, height / 2);
 
         cairo_close_path (cr);
@@ -68,7 +68,7 @@ public:
       }
     else if (m_icon == STOP)
       {
-        du.rect_fill (width / 2 - size / 2, height / 2 - size / 2, size, size, Color (1, 1, 1));
+        du.rect_fill (width() / 2 - size / 2, height() / 2 - size / 2, size, size, Color (1, 1, 1));
       }
   }
 };
