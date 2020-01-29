@@ -204,9 +204,22 @@ public:
     active_filter = filter_map[filter_combobox->text()];
     read_directory (current_directory);
   }
-  void
-  read_directory (const string& dir)
+  string
+  canonicalize (const string& path)
   {
+    string result = path;
+
+    char *real_path = realpath (path.c_str(), nullptr);
+    if (real_path)
+      result = real_path;
+    free (real_path);
+
+    return result;
+  }
+  void
+  read_directory (const string& new_dir)
+  {
+    string dir = canonicalize (new_dir);
     vector<string> files;
     Error error = read_dir (dir, files);
     if (error)
@@ -245,6 +258,14 @@ public:
               }
           }
       }
+    if (dir != "/")
+      {
+        Item parent_item;
+        parent_item.filename = "..";
+        parent_item.is_dir = true;
+        items.push_back (parent_item);
+      }
+
     std::sort (items.begin(), items.end(), [](Item& i1, Item& i2) {
       int d1 = i1.is_dir;
       int d2 = i2.is_dir;
