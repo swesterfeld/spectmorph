@@ -624,7 +624,7 @@ Encoder::validate_partials()
   map<Tracksel *, bool> processed_tracksel;
   for (size_t n = 0; n < audio_blocks.size(); n++)
     {
-      vector<Tracksel>::iterator i, j;
+      vector<Tracksel>::iterator i;
       for (i = frame_tracksels[n].begin(); i != frame_tracksels[n].end(); i++)
 	{
 	  if (!processed_tracksel[&(*i)])
