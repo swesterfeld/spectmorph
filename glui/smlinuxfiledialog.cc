@@ -111,7 +111,7 @@ public:
           if (items[i].is_dir)
             read_directory (current_directory + "/" + items[i].filename);
           else
-            lfd->signal_file_selected (current_directory + "/" + items[i].filename);
+            handle_ok (items[i].filename);
         }
     });
 
@@ -177,26 +177,54 @@ public:
     grid.add_widget (root_button, 1, yoffset, 6, 3);
     yoffset += 3;
 
+    // FIXME: start in the previously selected directory
     read_directory (g_get_home_dir());
   }
   void
   on_ok_clicked()
   {
-    string filename = current_directory + "/" + file_edit->text();
-    if (!is_open_dialog)
+    handle_ok (file_edit->text());
+  }
+  void
+  handle_ok (const string& filename)
+  {
+    string path = current_directory + "/" + filename;
+
+    /* open dialog is easy */
+    if (is_open_dialog)
       {
-        if (active_filter.exts.size() == 1 && active_filter.exts[0] != "*")
+        lfd->signal_file_selected (path);
+        return;
+      }
+
+    /* save dialog */
+    if (active_filter.exts.size() == 1 && active_filter.exts[0] != "*")
+      {
+        /* append extension if necessary */
+        if (!g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
           {
-            if (!g_file_test (filename.c_str(), G_FILE_TEST_EXISTS))
-              {
-                string default_ext = active_filter.exts[0];
-                if (!ends_with (filename, "." + default_ext))
-                  filename += "." + default_ext;
-              }
+            string default_ext = active_filter.exts[0];
+            if (!ends_with (path, "." + default_ext))
+              path += "." + default_ext;
           }
       }
-    // FIXME: overwrite warning
-    lfd->signal_file_selected (filename);
+
+    if (g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
+      {
+        /* confirm overwrite */
+        string message = "File '" + filename + "' already exists.\n\nDo you wish to overwrite it?";
+
+        auto confirm_box = new MessageBox (window(), "Overwrite File?", message, MessageBox::SAVE | MessageBox::CANCEL);
+        confirm_box->run ([this, path](bool save_changes)
+          {
+            if (save_changes)
+              lfd->signal_file_selected (path);
+          });
+      }
+    else
+      {
+        lfd->signal_file_selected (path);
+      }
   }
   void
   on_filter_changed()

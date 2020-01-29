@@ -77,18 +77,13 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
 
   /* create buttons first to get width */
   vector<Button *> bwidgets;
+
+  // buttons for accept
   if (buttons & Buttons::OK)
     {
       auto button = new Button (this, "Ok");
       bwidgets.push_back (button);
       connect (button->signal_clicked, this, &Dialog::on_accept);
-    }
-
-  if (buttons & Buttons::CANCEL)
-    {
-      auto button = new Button (this, "Cancel");
-      bwidgets.push_back (button);
-      connect (button->signal_clicked, this, &Dialog::on_reject);
     }
 
   if (buttons & Buttons::SAVE)
@@ -98,12 +93,21 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
       connect (button->signal_clicked, this, &Dialog::on_accept);
     }
 
+  // buttons for reject (should appear on the right side)
   if (buttons & Buttons::REVERT)
     {
       auto button = new Button (this, "Revert");
       bwidgets.push_back (button);
       connect (button->signal_clicked, this, &Dialog::on_reject);
     }
+
+  if (buttons & Buttons::CANCEL)
+    {
+      auto button = new Button (this, "Cancel");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_reject);
+    }
+
   const double button_width = 10 + (bwidgets.size() - 1) * 11;
   const double xframe = 2;
   const double max_label_width = window->width - 2 * xframe * 8 - 16;
