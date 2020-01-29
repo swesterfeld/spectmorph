@@ -8,7 +8,6 @@
 #include "smmenubar.hh"
 #include "smscrollview.hh"
 #include "smnativefiledialog.hh"
-#include "smlinuxfiledialog.hh"
 #include "smconfig.hh"
 #include "smshortcut.hh"
 #include "smeventloop.hh"
