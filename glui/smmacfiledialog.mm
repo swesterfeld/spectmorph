@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smnativefiledialog.hh"
+#include "smwindow.hh"
 
 #import <Cocoa/Cocoa.h>
 
