@@ -76,6 +76,8 @@ public:
     ofn.Flags = OFN_ENABLESIZING | OFN_NONETWORKBUTTON | OFN_HIDEREADONLY | OFN_READONLY;
     if (open)
       ofn.Flags |= OFN_FILEMUSTEXIST;
+    else
+      ofn.Flags |= OFN_OVERWRITEPROMPT;
     ofn.hwndOwner = (HWND) win_id; // modal
 
     auto fn_result = open ? GetOpenFileName (&ofn) : GetSaveFileName (&ofn);
