@@ -5,7 +5,6 @@
 
 #include <string>
 #include "smsignal.hh"
-#include "pugl/pugl.h"
 
 namespace SpectMorph
 {
@@ -38,6 +37,7 @@ struct FileDialogFormats
   }
 };
 
+class Window;
 class NativeFileDialog
 {
 protected:
@@ -60,7 +60,7 @@ protected:
     return ext;
   }
 public:
-  static NativeFileDialog *create (PuglNativeWindow win_id, bool open, const std::string& title, const FileDialogFormats& formats);
+  static NativeFileDialog *create (Window *window, bool open, const std::string& title, const FileDialogFormats& formats);
 
   virtual void process_events() = 0;
   virtual ~NativeFileDialog() {}

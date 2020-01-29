@@ -112,9 +112,9 @@ public:
 };
 
 NativeFileDialog *
-NativeFileDialog::create (PuglNativeWindow win_id, bool open, const string& title, const FileDialogFormats& formats)
+NativeFileDialog::create (Window *window, bool open, const string& title, const FileDialogFormats& formats)
 {
-  return new WinFileDialog (win_id, open, title, formats);
+  return new WinFileDialog (window->native_window(), open, title, formats);
 }
 
 }

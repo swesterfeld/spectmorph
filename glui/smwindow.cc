@@ -753,15 +753,10 @@ Window::show()
 void
 Window::open_file_dialog (const string& title, const FileDialogFormats& formats, std::function<void(string)> callback)
 {
-  PuglNativeWindow win_id = puglGetNativeWindow (view);
-
   file_dialog_callback = callback;
   have_file_dialog = true;
-#ifdef SM_OS_LINUX
-  native_file_dialog.reset (new LinuxFileDialog (this, true, title, formats));
-#else
-  native_file_dialog.reset (NativeFileDialog::create (win_id, true, title, formats));
-#endif
+
+  native_file_dialog.reset (NativeFileDialog::create (this, true, title, formats));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }
@@ -769,16 +764,10 @@ Window::open_file_dialog (const string& title, const FileDialogFormats& formats,
 void
 Window::save_file_dialog (const string& title, const FileDialogFormats& formats, std::function<void(string)> callback)
 {
-  PuglNativeWindow win_id = puglGetNativeWindow (view);
-
   file_dialog_callback = callback;
   have_file_dialog = true;
 
-#ifdef SM_OS_LINUX
-  native_file_dialog.reset (new LinuxFileDialog (this, false, title, formats));
-#else
-  native_file_dialog.reset (NativeFileDialog::create (win_id, false, title, formats));
-#endif
+  native_file_dialog.reset (NativeFileDialog::create (this, false, title, formats));
   connect (native_file_dialog->signal_file_selected, this, &Window::on_file_selected);
   update_full();
 }

@@ -301,3 +301,9 @@ void
 LinuxFileDialog::process_events()
 {
 }
+
+NativeFileDialog *
+NativeFileDialog::create (Window *window, bool open, const string& title, const FileDialogFormats& formats)
+{
+  return new LinuxFileDialog (window, open, title, formats);
+}
