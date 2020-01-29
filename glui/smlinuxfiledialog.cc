@@ -66,11 +66,13 @@ class FileDialogWindow : public Window
     bool is_dir;
   };
   vector<Item> items;
-  std::string current_directory;
+  string current_directory;
   bool is_open_dialog = false;
   LinuxFileDialog *lfd = nullptr;
   FileDialogFormats::Format active_filter;
   map<string, FileDialogFormats::Format> filter_map;
+
+  static string last_start_directory;
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
     Window (*parent_window->event_loop(), title, 320, 320, 0, false, parent_window->native_window()),
@@ -177,8 +179,18 @@ public:
     grid.add_widget (root_button, 1, yoffset, 6, 3);
     yoffset += 3;
 
-    // FIXME: start in the previously selected directory
-    read_directory (g_get_home_dir());
+    if (last_start_directory != "" && can_read_dir (last_start_directory))
+      read_directory (last_start_directory);
+    else
+      read_directory (g_get_home_dir());
+  }
+  bool
+  can_read_dir (const string& dirname)
+  {
+    /* simple check if directory was deleted */
+    vector<string> files;
+    Error error = read_dir (dirname, files);
+    return !error;
   }
   void
   on_ok_clicked()
@@ -193,6 +205,7 @@ public:
     /* open dialog is easy */
     if (is_open_dialog)
       {
+        last_start_directory = current_directory;
         lfd->signal_file_selected (path);
         return;
       }
@@ -218,11 +231,15 @@ public:
         confirm_box->run ([this, path](bool save_changes)
           {
             if (save_changes)
-              lfd->signal_file_selected (path);
+              {
+                last_start_directory = current_directory;
+                lfd->signal_file_selected (path);
+              }
           });
       }
     else
       {
+        last_start_directory = current_directory;
         lfd->signal_file_selected (path);
       }
   }
@@ -316,6 +333,8 @@ public:
       }
   }
 };
+
+string FileDialogWindow::last_start_directory;
 
 }
 
