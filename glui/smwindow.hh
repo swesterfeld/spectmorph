@@ -18,7 +18,7 @@ struct Menu;
 class Shortcut;
 class EventLoop;
 
-struct Window : public Widget
+class Window : public Widget
 {
 protected:
   PuglView                 *view;

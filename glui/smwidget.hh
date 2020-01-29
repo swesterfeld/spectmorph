@@ -27,7 +27,7 @@ enum MouseButton  {
   RIGHT_BUTTON = 4
 };
 
-struct Window;
+class Window;
 class ScrollView;
 class Timer;
 
