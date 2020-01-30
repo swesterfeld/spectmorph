@@ -310,6 +310,11 @@ fi
 AC_SUBST(INSTRUMENTS_ARCHIVE)
 dnl -------------------------------------------------------------------------
 
+dnl -------------------------------------------------------------------------
+AC_ARG_WITH([fonts], [AS_HELP_STRING([--with-fonts], [include fonts in installation])],,with_fonts=no)
+AM_CONDITIONAL([COND_WITH_FONTS], [test "x$with_fonts" != "xno"])
+dnl -------------------------------------------------------------------------
+
 dnl ----------- link c++ libs statically if requested -----------------------
 AC_ARG_WITH([static-cxx], AS_HELP_STRING([--with-static-cxx], [link libstdc++ statically]))
 
@@ -427,7 +432,7 @@ AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
-vst/vestige/Makefile data/Makefile data/templates/Makefile instedit/Makefile
+vst/vestige/Makefile data/Makefile data/templates/Makefile data/fonts/Makefile instedit/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
 windows/config.sh macos/config.sh macos/Info.plist static/config.sh static/install.sh
 ])
@@ -443,6 +448,7 @@ echo "--------------------------------------------------------------------------
 echo "  LV2 plug-in support  . .: $with_lv2"
 echo "  JACK support   . . . . .: $with_jack"
 echo "  Qt5 available  . . . . .: $with_qt"
+echo "  Fonts . . . . . . . . . : $with_fonts"
 
 if test "x$with_instruments" != "xno"; then
   echo "  Instruments  . . . . . .: $INSTRUMENTS_ARCHIVE"
