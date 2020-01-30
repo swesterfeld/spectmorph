@@ -1,3 +1,5 @@
+// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+
 #include "smwindow.hh"
 #include "smlineedit.hh"
 #include "smfixedgrid.hh"
