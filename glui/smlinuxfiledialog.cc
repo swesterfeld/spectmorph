@@ -222,7 +222,9 @@ public:
     if (g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
       {
         /* confirm overwrite */
-        string message = "File '" + filename + "' already exists.\n\nDo you wish to overwrite it?";
+        char *fn = g_path_get_basename (path.c_str());
+        string message = string ("File '") + fn + "' already exists.\n\nDo you wish to overwrite it?";
+        g_free (fn);
 
         auto confirm_box = new MessageBox (window(), "Overwrite File?", message, MessageBox::SAVE | MessageBox::CANCEL);
         confirm_box->run ([this, path](bool save_changes)
