@@ -8,7 +8,7 @@ echo
 echo "   #### Installing Plugin"
 echo
 mkdir -p "$HOME/.spectmorph" "$HOME/.vst" "$HOME/.lv2"
-cp -av lv2 vst templates instruments "$HOME/.spectmorph"
+cp -av lv2 vst templates instruments fonts "$HOME/.spectmorph"
 
 echo
 echo "   #### Creating Symlinks - VST"

@@ -11,6 +11,7 @@ mkdir -p $OUT_DIR
 docker run -v $PWD/$OUT_DIR:/data -t spectmorph cp -av \
   /usr/local/spectmorph/share/spectmorph/templates \
   /usr/local/spectmorph/share/spectmorph/instruments \
+  /usr/local/spectmorph/share/spectmorph/fonts \
   /data
 
 # VST
