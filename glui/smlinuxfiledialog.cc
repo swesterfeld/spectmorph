@@ -83,7 +83,7 @@ class FileDialogWindow : public Window
   static string last_start_directory;
 public:
   FileDialogWindow (Window *parent_window, bool open, const string& title, const FileDialogFormats& formats, LinuxFileDialog *lfd) :
-    Window (*parent_window->event_loop(), title, 320, 320, 0, false, parent_window->native_window()),
+    Window (*parent_window->event_loop(), title, 480, 320, 0, false, parent_window->native_window()),
     is_open_dialog (open),
     lfd (lfd)
   {
@@ -94,7 +94,7 @@ public:
     double yoffset = 1;
     dir_edit = new LineEdit (this, "");
     dir_edit->set_click_to_focus (true);
-    grid.add_widget (dir_edit, 8, yoffset, 31, 3);
+    grid.add_widget (dir_edit, 8, yoffset, 51, 3);
 
     connect (dir_edit->signal_return_pressed, [this]() {
       read_directory (dir_edit->text());
@@ -105,7 +105,7 @@ public:
     yoffset += 3;
 
     list_box = new ListBox (this);
-    grid.add_widget (list_box, 8, yoffset, 31, 26);
+    grid.add_widget (list_box, 8, yoffset, 51, 26);
     yoffset += 26;
 
     connect (list_box->signal_item_clicked, [this]() {
@@ -127,7 +127,7 @@ public:
 
     file_edit = new LineEdit (this, "");
     file_edit->set_click_to_focus (true);
-    grid.add_widget (file_edit, 8, yoffset, 31, 3);
+    grid.add_widget (file_edit, 8, yoffset, 51, 3);
 
     connect (file_edit->signal_return_pressed, this, &FileDialogWindow::on_ok_clicked);
     auto file_name = new Label (this, "Filename");
@@ -136,7 +136,7 @@ public:
 
     grid.add_widget (new Label (this, "Filter"), 1, yoffset, 8, 3);
     filter_combobox = new ComboBox (this);
-    grid.add_widget (filter_combobox, 8, yoffset, 31, 3);
+    grid.add_widget (filter_combobox, 8, yoffset, 51, 3);
     yoffset += 3;
 
     bool first = true;
@@ -162,8 +162,8 @@ public:
     hidden_checkbox = new CheckBox (this, "Show Hidden");
     connect (hidden_checkbox->signal_toggled, [this](bool) { read_directory (current_directory); });
 
-    grid.add_widget (ok_button, 17, yoffset, 10, 3);
-    grid.add_widget (cancel_button, 28, yoffset, 10, 3);
+    grid.add_widget (ok_button, 37, yoffset, 10, 3);
+    grid.add_widget (cancel_button, 48, yoffset, 10, 3);
     grid.add_widget (hidden_checkbox, 3, yoffset + 0.5, 16, 2);
 
     /* put buttons left */
