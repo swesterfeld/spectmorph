@@ -2,6 +2,10 @@ include $(top_srcdir)/Makefile.decl
 
 SUBDIRS = templates
 
+if COND_WITH_FONTS
+  SUBDIRS += fonts
+endif
+
 # install smjack .desktop file
 dotdesktopdir = $(datarootdir)/applications
 dotdesktop_DATA = smjack.desktop
