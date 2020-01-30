@@ -19,27 +19,6 @@ using std::map;
 namespace
 {
 
-static Error
-read_dir (const string& dirname, vector<string>& files)
-{
-  GError *gerror = nullptr;
-  const char *filename;
-
-  GDir *dir = g_dir_open (dirname.c_str(), 0, &gerror);
-  if (gerror)
-    {
-      Error error (gerror->message);
-      g_error_free (gerror);
-      return error;
-    }
-  files.clear();
-  while ((filename = g_dir_read_name (dir)))
-    files.push_back (filename);
-  g_dir_close (dir);
-
-  return Error::Code::NONE;
-}
-
 static bool
 ends_with (const std::string& str, const std::string& suffix)
 {
