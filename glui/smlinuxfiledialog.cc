@@ -78,6 +78,7 @@ class FileDialogWindow : public Window
   bool is_open_dialog = false;
   LinuxFileDialog *lfd = nullptr;
   FileDialogFormats::Format active_filter;
+  string default_ext;
   map<string, FileDialogFormats::Format> filter_map;
 
   static string last_start_directory;
@@ -139,18 +140,25 @@ public:
     grid.add_widget (filter_combobox, 8, yoffset, 51, 3);
     yoffset += 3;
 
-    bool first = true;
-    for (auto format : formats.formats)
+    for (size_t i = 0; i < formats.formats.size(); i++)
       {
+        const auto& format = formats.formats[i];
+
         filter_combobox->add_item (format.title);
         filter_map[format.title] = format;
-        if (first)
+        if (i == 0)
           {
             filter_combobox->set_text (format.title);
             active_filter = format;
-            first = false;
+
+            // NOTE: if the current filter has an extension, this extension will
+            // be used, rather than the default extension, so in most cases the
+            // actual value given here is ignored
+            if (format.exts.size())
+              default_ext = format.exts[0];
           }
       }
+
     connect (filter_combobox->signal_item_changed, this, &FileDialogWindow::on_filter_changed);
 
     ok_button = new Button (this, open ? "Open" : "Save");
@@ -219,15 +227,15 @@ public:
       }
 
     /* save dialog */
-    if (active_filter.exts.size() == 1 && active_filter.exts[0] != "*")
+    if (!g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
       {
         /* append extension if necessary */
-        if (!g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
-          {
-            string default_ext = active_filter.exts[0];
-            if (!ends_with (path, "." + default_ext))
-              path += "." + default_ext;
-          }
+        string need_ext = default_ext;
+        if (active_filter.exts.size() == 1 && active_filter.exts[0] != "*")
+          need_ext = active_filter.exts[0];
+
+        if (need_ext != "" && !ends_with (path, "." + need_ext))
+          path += "." + need_ext;
       }
 
     if (g_file_test (path.c_str(), G_FILE_TEST_EXISTS))
