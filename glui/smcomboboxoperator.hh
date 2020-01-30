@@ -60,6 +60,7 @@ public:
   /* slots */
   void on_operators_changed();
   void on_combobox_changed();
+  void on_update_combobox_geometry();
 };
 
 }

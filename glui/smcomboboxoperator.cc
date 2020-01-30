@@ -18,11 +18,10 @@ ComboBoxOperator::ComboBoxOperator (Widget *parent, MorphPlan *morph_plan, const
   op (NULL)
 {
   combobox = new ComboBox (this);
-  /* FIXME: need elegant way to propagate size to child */
-  combobox->set_x (0);
-  combobox->set_y (0);
-  combobox->set_width (29 * 8);
-  combobox->set_height (24);
+
+  on_update_combobox_geometry();
+  connect (signal_width_changed, this, &ComboBoxOperator::on_update_combobox_geometry);
+  connect (signal_height_changed, this, &ComboBoxOperator::on_update_combobox_geometry);
 
   none_ok = true;
 
@@ -30,6 +29,15 @@ ComboBoxOperator::ComboBoxOperator (Widget *parent, MorphPlan *morph_plan, const
 
   connect (combobox->signal_item_changed, this, &ComboBoxOperator::on_combobox_changed);
   connect (morph_plan->signal_plan_changed, this, &ComboBoxOperator::on_operators_changed);
+}
+
+void
+ComboBoxOperator::on_update_combobox_geometry()
+{
+  combobox->set_x (0);
+  combobox->set_y (0);
+  combobox->set_width (width());
+  combobox->set_height (height());
 }
 
 void
