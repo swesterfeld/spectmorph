@@ -67,25 +67,41 @@ Widget::remove_child (Widget *child)
 void
 Widget::set_x (double x)
 {
-  m_x = x;
+  if (x != m_x)
+    {
+      m_x = x;
+      signal_x_changed();
+    }
 }
 
 void
 Widget::set_y (double y)
 {
-  m_y = y;
+  if (y != m_y)
+    {
+      m_y = y;
+      signal_y_changed();
+    }
 }
 
 void
 Widget::set_width (double width)
 {
-  m_width = width;
+  if (width != m_width)
+    {
+      m_width = width;
+      signal_width_changed();
+    }
 }
 
 void
 Widget::set_height (double height)
 {
-  m_height = height;
+  if (height != m_height)
+    {
+      m_height = height;
+      signal_height_changed();
+    }
 }
 
 

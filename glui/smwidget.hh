@@ -417,6 +417,11 @@ public:
   void set_width (double width);
   void set_height (double height);
 
+  Signal<> signal_x_changed;
+  Signal<> signal_y_changed;
+  Signal<> signal_width_changed;
+  Signal<> signal_height_changed;
+
   Rect   abs_visible_rect();
   void   update (double x, double y, double width, double height);
   void   update();
