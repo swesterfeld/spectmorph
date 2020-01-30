@@ -1,0 +1,38 @@
+#!/bin/bash
+
+cd $(dirname "$0")
+
+echo
+echo "==== SpectMorph @PACKAGE_VERSION@ Installation ===="
+echo
+echo "   #### Installing Plugin"
+echo
+mkdir -p "$HOME/.spectmorph" "$HOME/.vst" "$HOME/.lv2"
+cp -av lv2 vst templates instruments "$HOME/.spectmorph"
+
+echo
+echo "   #### Creating Symlinks - VST"
+echo
+rm -rvf "$HOME/.vst/spectmorph_vst.so"
+ln -sv "$HOME/.spectmorph/vst/spectmorph_vst.so" "$HOME/.vst"
+
+echo
+echo "   #### Creating Symlinks - LV2"
+echo
+rm -rvf "$HOME/.lv2/spectmorph.lv2"
+ln -sv "$HOME/.spectmorph/lv2/spectmorph.lv2" "$HOME/.lv2"
+
+echo
+echo "==== Installation Complete ===="
+echo
+
+if test -t 0 -a -t 1 ; then
+  TERMINAL=1
+else
+  TERMINAL=0
+fi
+
+# if we're run without terminal, at least try to inform user
+if [ "x$TERMINAL" = x0 ]; then
+  zenity --info --text "SpectMorph @PACKAGE_VERSION@ Installation Complete"
+fi

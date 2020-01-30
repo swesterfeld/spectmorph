@@ -37,5 +37,5 @@ RUN ./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt -
 RUN make clean
 RUN make -j16
 RUN make install
-RUN cd lv2 && rm spectmorph_lv2.so.static && make spectmorph_lv2.so.static
-RUN cd vst && rm spectmorph_vst.so.static && make spectmorph_vst.so.static
+RUN cd lv2 && rm -f spectmorph_lv2.so.static && make spectmorph_lv2.so.static
+RUN cd vst && rm -f spectmorph_vst.so.static && make spectmorph_vst.so.static
