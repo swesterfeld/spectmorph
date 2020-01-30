@@ -61,9 +61,9 @@ DrawUtils::select_font_face (bool bold)
 
   string filename = sm_get_install_dir (INSTALL_DIR_FONTS);
   if (bold)
-    filename += "/Vera-Bold.ttf";
+    filename += "/dejavu-lgc-sans-bold.ttf";
   else
-    filename += "/Vera.ttf";
+    filename += "/dejavu-lgc-sans.ttf";
 
   static std::unique_ptr<Config> cfg;
   if (!cfg)
