@@ -56,7 +56,10 @@ split (Window *window, const string& text, double max_label_width)
     {
       if (c == '\n')
         {
-          split_line (window, lines, s, max_label_width);
+          if (s == "")
+            lines.push_back ("");
+          else
+            split_line (window, lines, s, max_label_width);
           s = "";
         }
       else
