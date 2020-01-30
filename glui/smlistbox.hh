@@ -33,11 +33,18 @@ public:
         update();
       });
     update_item_count();
-    /* FIXME: fix hard coded sizes */
-    scroll_bar->set_x (224);
+
+    update_scrollbar_geometry();
+    connect (signal_width_changed, this, &ListBox::update_scrollbar_geometry);
+    connect (signal_height_changed, this, &ListBox::update_scrollbar_geometry);
+  }
+  void
+  update_scrollbar_geometry()
+  {
+    scroll_bar->set_x (width() - 24);
     scroll_bar->set_y (8);
     scroll_bar->set_width (16);
-    scroll_bar->set_height (192);
+    scroll_bar->set_height (height() - 16);
   }
   void
   update_item_count()
