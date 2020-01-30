@@ -4,6 +4,7 @@
 #define SPECTMORPH_UTIL_HH
 
 #include <string>
+#include <vector>
 
 // operating system: one of these three
 #if WIN32
@@ -158,6 +159,8 @@ double get_time();
 
 std::string to_utf8 (const std::u32string& str);
 std::u32string to_utf32 (const std::string& utf8);
+
+Error read_dir (const std::string& dirname, std::vector<std::string>& files);
 
 } // namespace SpectMorph
 
