@@ -425,6 +425,18 @@ set_macos_data_dir()
 }
 #endif
 
+#ifdef SM_STATIC_LINUX
+static void
+set_static_linux_data_dir()
+{
+  string pkg_data_dir = g_get_home_dir();
+  pkg_data_dir += "/.spectmorph";
+
+  VST_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
+#endif
+
 #ifdef SM_OS_WINDOWS
 #include "windows.h"
 
@@ -494,6 +506,9 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
 #endif
 #ifdef SM_OS_MACOS
   set_macos_data_dir();
+#endif
+#ifdef SM_STATIC_LINUX
+  set_static_linux_data_dir();
 #endif
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
