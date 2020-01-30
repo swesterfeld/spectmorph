@@ -18,7 +18,7 @@ spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static
 
 spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
-CLEANFILES += spectmorph.ttl
+CLEANFILES += spectmorph.ttl spectmorph_lv2.so.static
 spectmorph.ttl: $(top_builddir)/config.status
 
 EXTRA_DIST += manifest.ttl ldscript.map
@@ -32,7 +32,8 @@ uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.so
 
 spectmorph_lv2.so.static:
-	$(CXX) -shared -o spectmorph_lv2.so.static $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(CXX) -shared -o spectmorph_lv2.so.static $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+	        -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 		$(top_builddir)/glui/.libs/libspectmorphglui.a \
 		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
 		$(top_builddir)/lib/.libs/libspectmorph.a \
