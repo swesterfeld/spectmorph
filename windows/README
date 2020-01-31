@@ -1,3 +1,5 @@
+#### NATIVE BUILD ####
+
 Download installer
 
   https://www.msys2.org/
@@ -39,3 +41,10 @@ make install
 export PKG_CONFIG_PATH=~/cairo/lib/pkgconfig:$PKG_CONFIG_PATH
 
 ./autogen.sh --prefix=/usr/local/spectmorph --disable-shared --without-qt
+
+#### CROSS COMPILE ####
+
+unset CC
+unset CXX
+export PATH=~/src/mxe/usr/bin:$PATH
+./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --without-qt --with-fonts --host=x86_64-w64-mingw32.static

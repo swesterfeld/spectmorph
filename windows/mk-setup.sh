@@ -68,7 +68,7 @@ EOH
 
 (
   OUT_PATH="_none_"
-  find instruments templates -type f | while read FILE
+  find instruments templates fonts -type f | while read FILE
   do
     NEW_OUT_PATH="$(dirname $FILE)"
     if test "x$NEW_OUT_PATH" != "x$OUT_PATH"; then
