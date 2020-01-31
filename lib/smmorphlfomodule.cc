@@ -23,13 +23,18 @@ MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
 {
   leak_debugger.add (this);
 
-  phase = 0;
   shared_state = NULL;
 }
 
 MorphLFOModule::~MorphLFOModule()
 {
   leak_debugger.del (this);
+}
+
+static double
+normalize_phase (double phase)
+{
+  return fmod (phase + 1, 1);
 }
 
 void
@@ -51,8 +56,7 @@ MorphLFOModule::set_config (MorphOperator *op)
       if (!shared_state)
         {
           shared_state = new SharedState();
-          shared_state->phase = start_phase / 360;
-          shared_state->value = compute_value (shared_state->phase);
+          restart_lfo (shared_state->global_lfo_state);
           synth->set_shared_state (op, shared_state);
         }
     }
@@ -61,60 +65,95 @@ MorphLFOModule::set_config (MorphOperator *op)
 float
 MorphLFOModule::value()
 {
-  return sync_voices ? shared_state->value : m_value;
+  return sync_voices ? shared_state->global_lfo_state.value : local_lfo_state.value;
 }
 
 void
 MorphLFOModule::reset_value()
 {
-  phase = start_phase / 360;
+  restart_lfo (local_lfo_state);
 }
 
-double
-MorphLFOModule::compute_value (double phase)
+void
+MorphLFOModule::restart_lfo (LFOState& state)
 {
-  double value;
+  state.phase = normalize_phase (start_phase / 360);
+  state.last_random_value = g_random_double_range (-1, 1);
+  state.random_value = g_random_double_range (-1, 1);
+  /* compute initial value */
+  update_lfo_value (state, 0);
+}
+
+void
+MorphLFOModule::update_lfo_value (LFOState& state, double time_ms)
+{
+  state.phase += time_ms / 1000 * frequency;
+  if (state.phase > 1)
+    {
+      state.last_random_value = state.random_value;
+      state.random_value = g_random_double_range (-1, 1);
+    }
+  state.phase = normalize_phase (state.phase);
 
   if (wave_type == MorphLFO::WAVE_SINE)
     {
-      value = sin (phase * M_PI * 2);
+      state.value = sin (state.phase * M_PI * 2);
     }
   else if (wave_type == MorphLFO::WAVE_TRIANGLE)
     {
-      double phase_mod = fmod (phase + 1, 1);
-      if (phase_mod < 0.25)
+      if (state.phase < 0.25)
         {
-          value = 4 * phase_mod;
+          state.value = 4 * state.phase;
         }
-      else if (phase_mod < 0.75)
+      else if (state.phase < 0.75)
         {
-          value = (phase_mod - 0.5) * -4;
+          state.value = (state.phase - 0.5) * -4;
         }
       else
         {
-          value = 4 * (phase_mod - 1);
+          state.value = 4 * (state.phase - 1);
         }
+    }
+  else if (wave_type == MorphLFO::WAVE_SAW_UP)
+    {
+      state.value = -1 + 2 * state.phase;
+    }
+  else if (wave_type == MorphLFO::WAVE_SAW_DOWN)
+    {
+      state.value = 1 - 2 * state.phase;
+    }
+  else if (wave_type == MorphLFO::WAVE_SQUARE)
+    {
+      if (state.phase < 0.5)
+        state.value = -1;
+      else
+        state.value = 1;
+    }
+  else if (wave_type == MorphLFO::WAVE_RANDOM_SH)
+    {
+      state.value = state.random_value;
+    }
+  else if (wave_type == MorphLFO::WAVE_RANDOM_LINEAR)
+    {
+      state.value = state.last_random_value * (1 - state.phase) + state.random_value * state.phase;
     }
   else
     {
       g_assert_not_reached();
     }
 
-  value = value * depth + center;
-  return CLAMP (value, -1.0, 1.0);
+  state.value = state.value * depth + center;
+  state.value = CLAMP (state.value, -1.0, 1.0);
 }
 
 void
 MorphLFOModule::update_value (double time_ms)
 {
-  phase += time_ms / 1000 * frequency;
-
-  m_value = compute_value (phase);
+  update_lfo_value (local_lfo_state, time_ms);
 }
 
 void
 MorphLFOModule::update_shared_state (double time_ms)
 {
-  shared_state->phase += time_ms / 1000 * frequency;
-  shared_state->value = compute_value (shared_state->phase);
+  update_lfo_value (shared_state->global_lfo_state, time_ms);
 }

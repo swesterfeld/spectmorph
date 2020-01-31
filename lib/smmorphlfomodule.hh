@@ -20,17 +20,22 @@ class MorphLFOModule : public MorphOperatorModule
   float   start_phase;
   bool    sync_voices;
 
-  double  phase;
-  double  m_value;
+  struct LFOState
+  {
+    double phase              = 0;
+    double last_random_value  = 0;
+    double random_value       = 0;
+    double value              = 0;
+  } local_lfo_state;
 
   struct SharedState : public MorphModuleSharedState
   {
-    double  phase;
-    double  value;
+    LFOState global_lfo_state;
   };
   SharedState *shared_state;
 
-  double compute_value (double phase);
+  void update_lfo_value (LFOState& state, double time_ms);
+  void restart_lfo (LFOState& state);
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();

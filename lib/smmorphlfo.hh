@@ -27,8 +27,13 @@ class MorphLFO : public MorphOperator
 {
 public:
   enum WaveType {
-    WAVE_SINE        = 1,
-    WAVE_TRIANGLE    = 2,
+    WAVE_SINE           = 1,
+    WAVE_TRIANGLE       = 2,
+    WAVE_SAW_UP         = 3,
+    WAVE_SAW_DOWN       = 4,
+    WAVE_SQUARE         = 5,
+    WAVE_RANDOM_SH      = 6,
+    WAVE_RANDOM_LINEAR  = 7
   };
 protected:
   WaveType       m_wave_type;
