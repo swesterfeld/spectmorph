@@ -11,8 +11,13 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-#define WAVE_TEXT_SINE     "Sine"
-#define WAVE_TEXT_TRIANGLE "Triangle"
+#define WAVE_TEXT_SINE          "Sine"
+#define WAVE_TEXT_TRIANGLE      "Triangle"
+#define WAVE_TEXT_SAW_UP        "Saw Up"
+#define WAVE_TEXT_SAW_DOWN      "Saw Down"
+#define WAVE_TEXT_SQUARE        "Square"
+#define WAVE_TEXT_RANDOM_SH     "Random Sample & Hold"
+#define WAVE_TEXT_RANDOM_LINEAR "Random Linear"
 
 MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
@@ -29,11 +34,26 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   wave_type_combobox = new ComboBox (body_widget);
   wave_type_combobox->add_item (WAVE_TEXT_SINE);
   wave_type_combobox->add_item (WAVE_TEXT_TRIANGLE);
+  wave_type_combobox->add_item (WAVE_TEXT_SAW_UP);
+  wave_type_combobox->add_item (WAVE_TEXT_SAW_DOWN);
+  wave_type_combobox->add_item (WAVE_TEXT_SQUARE);
+  wave_type_combobox->add_item (WAVE_TEXT_RANDOM_SH);
+  wave_type_combobox->add_item (WAVE_TEXT_RANDOM_LINEAR);
 
   if (morph_lfo->wave_type() == MorphLFO::WAVE_SINE)
     wave_type_combobox->set_text (WAVE_TEXT_SINE);
   else if (morph_lfo->wave_type() == MorphLFO::WAVE_TRIANGLE)
     wave_type_combobox->set_text (WAVE_TEXT_TRIANGLE);
+  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SAW_UP)
+    wave_type_combobox->set_text (WAVE_TEXT_SAW_UP);
+  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SAW_DOWN)
+    wave_type_combobox->set_text (WAVE_TEXT_SAW_DOWN);
+  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SQUARE)
+    wave_type_combobox->set_text (WAVE_TEXT_SQUARE);
+  else if (morph_lfo->wave_type() == MorphLFO::WAVE_RANDOM_SH)
+    wave_type_combobox->set_text (WAVE_TEXT_RANDOM_SH);
+  else if (morph_lfo->wave_type() == MorphLFO::WAVE_RANDOM_LINEAR)
+    wave_type_combobox->set_text (WAVE_TEXT_RANDOM_LINEAR);
   else
     {
       g_assert_not_reached();
@@ -74,6 +94,16 @@ MorphLFOView::on_wave_type_changed()
     morph_lfo->set_wave_type (MorphLFO::WAVE_SINE);
   else if (text == WAVE_TEXT_TRIANGLE)
     morph_lfo->set_wave_type (MorphLFO::WAVE_TRIANGLE);
+  else if (text == WAVE_TEXT_SAW_UP)
+    morph_lfo->set_wave_type (MorphLFO::WAVE_SAW_UP);
+  else if (text == WAVE_TEXT_SAW_DOWN)
+    morph_lfo->set_wave_type (MorphLFO::WAVE_SAW_DOWN);
+  else if (text == WAVE_TEXT_SQUARE)
+    morph_lfo->set_wave_type (MorphLFO::WAVE_SQUARE);
+  else if (text == WAVE_TEXT_RANDOM_SH)
+    morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_SH);
+  else if (text == WAVE_TEXT_RANDOM_LINEAR)
+    morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_LINEAR);
   else
     {
       g_assert_not_reached();
