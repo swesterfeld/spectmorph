@@ -12,6 +12,10 @@ set -x
 make -j$(nproc) -C.. || die "make failed"
 make -C.. install || die "make install failed"
 cp -v $PREFIX/lib/vst/SpectMorph.dll . || die "error: cp SpectMorph.dll"
-mkdir -p ./templates
-rm ./templates/*
-cp -v $PREFIX/share/spectmorph/templates/* templates || die "error: cp templates"
+
+for DIR in templates fonts
+do
+  mkdir -p ./$DIR
+  rm ./$DIR/*
+  cp -v $PREFIX/share/spectmorph/$DIR/* $DIR || die "error: cp $DIR"
+done
