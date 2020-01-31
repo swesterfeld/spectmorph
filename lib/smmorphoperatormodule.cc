@@ -8,6 +8,7 @@
 #include "smmorphsourcemodule.hh"
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphlfomodule.hh"
+#include "smmorphplansynth.hh"
 #include "smleakdebugger.hh"
 
 using namespace SpectMorph;
@@ -87,6 +88,12 @@ int&
 MorphOperatorModule::update_value_tag()
 {
   return m_update_value_tag;
+}
+
+Random *
+MorphOperatorModule::random_gen() const
+{
+  return morph_plan_voice->morph_plan_synth()->random_gen();
 }
 
 MorphOperatorModule*

@@ -8,7 +8,6 @@
 #include "smmorphplanvoice.hh"
 #include "smmorphplansynth.hh"
 #include "smmath.hh"
-#include <glib.h>
 
 using namespace SpectMorph;
 
@@ -78,8 +77,8 @@ void
 MorphLFOModule::restart_lfo (LFOState& state)
 {
   state.phase = normalize_phase (start_phase / 360);
-  state.last_random_value = g_random_double_range (-1, 1);
-  state.random_value = g_random_double_range (-1, 1);
+  state.last_random_value = random_gen()->random_double_range (-1, 1);
+  state.random_value = random_gen()->random_double_range (-1, 1);
   /* compute initial value */
   update_lfo_value (state, 0);
 }
@@ -91,7 +90,7 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms)
   if (state.phase > 1)
     {
       state.last_random_value = state.random_value;
-      state.random_value = g_random_double_range (-1, 1);
+      state.random_value = random_gen()->random_double_range (-1, 1);
     }
   state.phase = normalize_phase (state.phase);
 

@@ -112,6 +112,12 @@ MorphPlanSynth::mix_freq() const
   return m_mix_freq;
 }
 
+Random *
+MorphPlanSynth::random_gen()
+{
+  return &m_random_gen;
+}
+
 bool
 MorphPlanSynth::have_output() const
 {

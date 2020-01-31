@@ -5,6 +5,7 @@
 
 #include "smmorphplan.hh"
 #include "smmorphoperator.hh"
+#include "smrandom.hh"
 #include <map>
 
 namespace SpectMorph {
@@ -19,6 +20,7 @@ protected:
 
   float        m_mix_freq;
   MorphPlanPtr plan;
+  Random       m_random_gen;
 
 public:
   MorphPlanSynth (float mix_freq);
@@ -33,8 +35,9 @@ public:
   void update_shared_state (double time_ms);
   void free_shared_state();
 
-  float mix_freq() const;
-  bool  have_output() const;
+  float   mix_freq() const;
+  bool    have_output() const;
+  Random *random_gen();
 };
 
 }

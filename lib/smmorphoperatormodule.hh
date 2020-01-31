@@ -5,6 +5,7 @@
 
 #include "smmorphoperator.hh"
 #include "smlivedecodersource.hh"
+#include "smrandom.hh"
 
 #include <string>
 
@@ -27,6 +28,7 @@ protected:
   std::vector<MorphOperatorModule *>  m_dependencies;
   int                                 m_update_value_tag;
 
+  Random *random_gen() const;
   void clear_dependencies();
   void add_dependency (MorphOperatorModule *dep_mod);
 public:
