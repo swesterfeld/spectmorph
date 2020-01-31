@@ -1,3 +1,16 @@
+Overview of Changes in spectmorph-0.5.1:
+
+* Add new LFO modes (saw, square, random)
+* Support generic 64-bit linux binaries
+  - new linux file selector (no longer needs Qt)
+  - ship font for static build
+* Ported all python2 code to python3
+* Support midi all notes off
+* Implement LV2 StateChanged
+* French translation for smjack desktop file (Olivier Humbert)
+* Thread race fix (JP Cimalando)
+* Minor fixes and cleanups
+
 Overview of Changes in spectmorph-0.5.0:
 
 * Support user defined instruments
