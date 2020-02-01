@@ -3,6 +3,7 @@ set -e
 source ./config.sh
 cd ..
 docker build -t spectmorph -f static/Dockerfile .
+cd static
 OUT_DIR=spectmorph-$PACKAGE_VERSION-x86_64
 rm -rf $OUT_DIR
 
