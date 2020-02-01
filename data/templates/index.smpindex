@@ -4,3 +4,4 @@ plan 2-instruments-unison.smplan         "2 Instruments Linear Morph with Unison
 plan 2x2-instruments-grid-gui.smplan     "2x2 Intruments Grid Morph using GUI"
 plan 1-instrument.smplan                 "1 Instrument (without morphing)"
 plan empty.smplan                        "Empty Plan"
+plan aurora.smplan                       "Aurora"

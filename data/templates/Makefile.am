@@ -7,6 +7,7 @@ templates_DATA = \
   2x2-instruments-grid-gui.smplan \
   1-instrument.smplan             \
   empty.smplan                    \
+  aurora.smplan                   \
   index.smpindex
 
 templatesdir = $(pkgdatadir)/templates
