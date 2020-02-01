@@ -107,6 +107,13 @@ Debian users: aptitude install libao-dev
     AC_SUBST(AO_LIBS)
 ])
 dnl
+dnl freetype
+dnl
+AC_DEFUN([AC_FREETYPE_REQUIREMENTS],
+[
+    PKG_CHECK_MODULES(FREETYPE, freetype2)
+])
+dnl
 dnl libcairo
 dnl
 AC_DEFUN([AC_CAIRO_REQUIREMENTS],
@@ -355,6 +362,7 @@ AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 
 AC_AO_REQUIREMENTS
+AC_FREETYPE_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
