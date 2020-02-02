@@ -40,7 +40,7 @@ make install
 
 export PKG_CONFIG_PATH=~/cairo/lib/pkgconfig:$PKG_CONFIG_PATH
 
-./autogen.sh --prefix=/usr/local/spectmorph --disable-shared --without-qt
+./autogen.sh --prefix=/usr/local/spectmorph --disable-shared --without-qt --with-fonts
 
 #### CROSS COMPILE ####
 

@@ -105,13 +105,13 @@ EOH
 
 (
   # remove files
-  find instruments templates -type f | while read FILE
+  find instruments templates fonts -type f | while read FILE
   do
     echo "  Delete \$INSTDIR/$FILE" | sed 's,/,\\,g'
   done
 
   # remove dirs in reverse order
-  find instruments templates -type d | tac | while read DIR
+  find instruments templates fonts -type d | tac | while read DIR
   do
     echo "  RMDir \$INSTDIR/$DIR" | sed 's,/,\\,g'
   done
