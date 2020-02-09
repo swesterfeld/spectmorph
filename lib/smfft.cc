@@ -8,6 +8,7 @@
 #include "config.h"
 
 #include <glib.h>
+#include <glib/gstdio.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -262,7 +263,7 @@ save_wisdom()
     {
       fftwf_export_wisdom_to_file (outfile);
       fclose (outfile);
-      rename (new_wisdom_filename.c_str(), wisdom_filename().c_str());
+      g_rename (new_wisdom_filename.c_str(), wisdom_filename().c_str());
     }
 }
 
