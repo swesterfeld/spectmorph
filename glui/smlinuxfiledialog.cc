@@ -316,11 +316,15 @@ public:
       if (d1 != d2)
         return d1 > d2; // directories first
 
-      char *k1 = g_utf8_collate_key_for_filename (i1.filename.c_str(), i1.filename.size());
-      char *k2 = g_utf8_collate_key_for_filename (i2.filename.c_str(), i2.filename.size());
-      string ks1 = k1, ks2 = k2;
-      g_free (k1);
-      g_free (k2);
+      char *filename1_nocase = g_utf8_casefold (i1.filename.c_str(), -1);
+      char *filename2_nocase = g_utf8_casefold (i2.filename.c_str(), -1);
+      char *key1 = g_utf8_collate_key_for_filename (filename1_nocase, -1);
+      char *key2 = g_utf8_collate_key_for_filename (filename2_nocase, -1);
+      string ks1 = key1, ks2 = key2;
+      g_free (key1);
+      g_free (key2);
+      g_free (filename1_nocase);
+      g_free (filename2_nocase);
       return ks1 < ks2;
     });
     for (auto item : items)
