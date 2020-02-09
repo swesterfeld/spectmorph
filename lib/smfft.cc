@@ -4,6 +4,7 @@
 #include "smutils.hh"
 #include <algorithm>
 #include <map>
+#include <mutex>
 #include "config.h"
 
 #include <glib.h>
@@ -34,6 +35,22 @@ FFT::debug_randomize_new_arrays (bool b)
 #include <fftw3.h>
 
 static void save_wisdom();
+
+/*
+ * we force that only one thread at a time will be in planning mode
+ *  - fftw planner is not threadsafe
+ *  - neither is our code that generates plans
+ */
+static std::mutex fftw_plan_mutex;
+static std::mutex plan_map_mutex;
+
+static fftwf_plan&
+read_plan_map_threadsafe (std::map<int, fftwf_plan>& plan_map, size_t N)
+{
+  /* std::map access is not threadsafe */
+  std::lock_guard<std::mutex> lg (plan_map_mutex);
+  return plan_map[N];
+}
 
 float *
 FFT::new_array_float (size_t N)
@@ -72,10 +89,11 @@ plan_flags (FFT::PlanMode plan_mode)
 void
 FFT::fftar_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = fftar_float_plan[N];
+  fftwf_plan& plan = read_plan_map_threadsafe (fftar_float_plan, N);
 
   if (!plan)
     {
+      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_r2c_1d (N, plan_in, (fftwf_complex *) plan_out, plan_flags (plan_mode));
@@ -97,10 +115,11 @@ static map<int, fftwf_plan> fftsr_float_plan;
 void
 FFT::fftsr_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = fftsr_float_plan[N];
+  fftwf_plan& plan = read_plan_map_threadsafe (fftsr_float_plan, N);
 
   if (!plan)
     {
+      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
       plan = fftwf_plan_dft_c2r_1d (N, (fftwf_complex *) plan_in, plan_out, plan_flags (plan_mode));
@@ -126,10 +145,11 @@ static map<int, fftwf_plan> fftsr_destructive_float_plan;
 void
 FFT::fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = fftsr_destructive_float_plan[N];
+  fftwf_plan& plan = read_plan_map_threadsafe (fftsr_destructive_float_plan, N);
 
   if (!plan)
     {
+      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
       int xplan_flags = plan_flags (plan_mode) & ~FFTW_PRESERVE_INPUT;
       float *plan_in = new_array_float (N);
       float *plan_out = new_array_float (N);
@@ -155,9 +175,10 @@ static map<int, fftwf_plan> fftac_float_plan;
 void
 FFT::fftac_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = fftac_float_plan[N];
+  fftwf_plan& plan = read_plan_map_threadsafe (fftac_float_plan, N);
   if (!plan)
     {
+      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
 
@@ -181,9 +202,10 @@ static map<int, fftwf_plan> fftsc_float_plan;
 void
 FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
 {
-  fftwf_plan& plan = fftsc_float_plan[N];
+  fftwf_plan& plan = read_plan_map_threadsafe (fftsc_float_plan, N);
   if (!plan)
     {
+      std::lock_guard<std::mutex> lg (fftw_plan_mutex);
       float *plan_in = new_array_float (N * 2);
       float *plan_out = new_array_float (N * 2);
 
@@ -197,7 +219,7 @@ FFT::fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode)
         }
       free_array_float (plan_out);
       free_array_float (plan_in);
-     }
+    }
   fftwf_execute_dft (plan, (fftwf_complex *)in, (fftwf_complex *)out);
 }
 
