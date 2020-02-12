@@ -4,7 +4,7 @@ Overview of Changes in spectmorph-0.5.1:
 * Support generic 64-bit linux binaries
   - new linux file selector (no longer needs Qt)
   - ship font for static build
-* Fix crashes caused my fftw planner being used from multiple threads
+* Fix crashes caused by fftw planner being used from multiple threads
 * Ported all python2 code to python3
 * Support midi all notes off
 * Implement LV2 StateChanged
