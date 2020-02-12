@@ -281,6 +281,14 @@ load_wisdom()
 void
 FFT::init()
 {
+  /* If an "application" is structured as a set of "plugins" which are unaware
+   * of each other, we need to force a thread-safe planner to avoid crashes.
+   *
+   * As SpectMorph is to be run as plugin in many situations, we need this:
+   */
+#if SPECTMORPH_HAVE_FFTW_THREADSAFE
+  fftwf_make_planner_thread_safe();
+#endif
   load_wisdom();
 }
 
