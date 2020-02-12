@@ -183,23 +183,37 @@ AC_DEFUN([AC_FFTW_CHECK],
 
     SPECTMORPH_HAVE_FFTW=1
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
-    fftw_save_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $FFTW_CFLAGS"
-    AC_MSG_CHECKING([whether FFTW is recent enough])
-      AC_COMPILE_IFELSE([
-        AC_LANG_SOURCE([
-          #include "fftw3.h"
-          int x = FFTW_WISDOM_ONLY;
+      fftw_save_CFLAGS="$CFLAGS"
+      CFLAGS="$CFLAGS $FFTW_CFLAGS"
+      AC_MSG_CHECKING([whether FFTW is recent enough])
+        AC_COMPILE_IFELSE([
+          AC_LANG_SOURCE([
+            #include "fftw3.h"
+            int x = FFTW_WISDOM_ONLY;
+          ])
+        ],[
+          AC_MSG_RESULT([yes])
+        ],[
+          AC_MSG_RESULT([no])
+          SPECTMORPH_HAVE_FFTW=0
         ])
-      ],[
-        AC_MSG_RESULT([yes])
-      ],[
-        AC_MSG_RESULT([no])
-        SPECTMORPH_HAVE_FFTW=0
-      ])
+      AC_MSG_CHECKING([whether FFTW has threadsafe planner API])
+        AC_COMPILE_IFELSE([
+          AC_LANG_SOURCE([
+            #include "fftw3.h"
+            void *p = fftwf_make_planner_thread_safe;
+          ])
+        ],[
+          AC_MSG_RESULT([yes])
+          SPECTMORPH_HAVE_FFTW_THREADSAFE=1
+        ],[
+          AC_MSG_RESULT([no])
+          SPECTMORPH_HAVE_FFTW_THREADSAFE=0
+        ])
+      CFLAGS="$fftw_save_CFLAGS"
     fi
-    CFLAGS="$fftw_save_CFLAGS"
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
+    AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW_THREADSAFE, $SPECTMORPH_HAVE_FFTW_THREADSAFE, [Whether fftw3 supports threadsafe planner api])
 ])
 
 AC_DEFUN([AC_MAN_REQUIREMENTS],
