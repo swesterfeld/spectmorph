@@ -133,7 +133,8 @@ on_event (PuglView* view, const PuglEvent* event)
 {
   Window *window = reinterpret_cast<Window *> (puglGetHandle (view));
 
-  window->on_event (event);
+  if (window->event_loop()->window_alive (window))
+    window->on_event (event);
 }
 
 static void
@@ -141,7 +142,8 @@ on_resize (PuglView *view, int *width, int *height, int *set_hints)
 {
   Window *window = reinterpret_cast<Window *> (puglGetHandle (view));
 
-  window->on_resize (width, height);
+  if (window->event_loop()->window_alive (window))
+    window->on_resize (width, height);
 }
 
 Window::Window (EventLoop& event_loop, const string& title, int width, int height, PuglNativeWindow win_id, bool resize, PuglNativeWindow transient_parent) :

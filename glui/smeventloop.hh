@@ -21,6 +21,7 @@ public:
 
   void add_window (Window *window);
   void remove_window (Window *window);
+  bool window_alive (Window *window) const;
 
   void add_delete_later (Widget *w);
   void on_widget_deleted (Widget *w);

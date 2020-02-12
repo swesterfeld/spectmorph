@@ -24,6 +24,12 @@ EventLoop::process_events()
 {
   assert (m_level == 0);
 
+  /*
+   * NOTE: on Windows OS, events can be generated and processed outside this
+   * event loop, via wndProc - so all code needs to be safe for this case (as
+   * well as X11/macOS which only have events in windows[i]->process_events())
+   */
+
   signal_before_process();
 
   m_level++;
@@ -50,6 +56,22 @@ int
 EventLoop::level() const
 {
   return m_level;
+}
+
+bool
+EventLoop::window_alive (Window *window) const
+{
+  /* windows that are about to be deleted are no longer considered alive */
+  for (auto w : delete_later_widgets)
+    if (w == window)
+      return false;
+
+  /* windows need to be on the windows list to be alive */
+  for (auto w : windows)
+    if (w == window)
+      return true;
+
+  return false;
 }
 
 void
