@@ -206,11 +206,14 @@ AC_DEFUN([AC_FFTW_CHECK],
         ],[
           AC_MSG_RESULT([yes])
           SPECTMORPH_HAVE_FFTW_THREADSAFE=1
-          FFTW_LIBS="-lfftw3f_threads $FFTW_LIBS"
         ],[
           AC_MSG_RESULT([no])
           SPECTMORPH_HAVE_FFTW_THREADSAFE=0
         ])
+      dnl do we need extra libs for fftwf_make_planner_thread_safe? (not on all platforms)
+      AC_CHECK_LIB([fftw3f_threads], [fftwf_make_planner_thread_safe], [
+        FFTW_LIBS="-lfftw3f_threads $FFTW_LIBS"
+      ])
       CFLAGS="$fftw_save_CFLAGS"
     fi
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
