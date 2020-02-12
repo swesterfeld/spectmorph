@@ -2,7 +2,7 @@ spectmorph (0.5.1) xenial; urgency=medium
 
   * new package for spectmorph 0.5.1
 
- -- Stefan Westerfeld <stefan@space.twc.de>  Sat, 01 Feb 2020 14:58:56 +0100
+ -- Stefan Westerfeld <stefan@space.twc.de>  Wed, 12 Feb 2020 17:47:40 +0100
 
 spectmorph (0.5.0) xenial; urgency=medium
 
