@@ -47,4 +47,7 @@ export PKG_CONFIG_PATH=~/cairo/lib/pkgconfig:$PKG_CONFIG_PATH
 unset CC
 unset CXX
 export PATH=~/src/mxe/usr/bin:$PATH
+mkdir -p /usr/local/spectmorph-win
 ./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --without-qt --with-fonts --host=x86_64-w64-mingw32.static
+cd windows
+./build.sh && ./mk-setup.sh
