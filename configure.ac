@@ -436,6 +436,17 @@ AC_ARG_ENABLE(debug-cxx,AS_HELP_STRING([--enable-debug-cxx], [setup compiler fla
   # CXXFLAGS="$CXXFLAGS -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
 ])
 
+asan_flags_ok="no"
+AC_ARG_ENABLE(asan,AS_HELP_STRING([--enable-asan], [enable address sanitizer]),
+[
+asan_flags="-fno-omit-frame-pointer -fstack-protector-all -fno-inline -g -DG_ENABLE_DEBUG -fsanitize=address -fno-common"
+MC_PROG_CC_SUPPORTS_OPTION([$asan_flags], [
+  AM_CFLAGS="$AM_CFLAGS $asan_flags"
+  AM_CXXFLAGS="$AM_CXXFLAGS $asan_flags"
+  asan_flags_ok="yes"
+])
+])
+
 AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
@@ -460,6 +471,10 @@ echo "  Fonts . . . . . . . . . : $with_fonts"
 
 if test "x$with_instruments" != "xno"; then
   echo "  Instruments  . . . . . .: $INSTRUMENTS_ARCHIVE"
+fi
+
+if test "x$asan_flags_ok" != "xno"; then
+  echo "  Address Sanitizer  . . .: $asan_flags"
 fi
 
 echo "  Install prefix . . . . .: $prefix"
