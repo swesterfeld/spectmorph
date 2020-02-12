@@ -206,6 +206,7 @@ AC_DEFUN([AC_FFTW_CHECK],
         ],[
           AC_MSG_RESULT([yes])
           SPECTMORPH_HAVE_FFTW_THREADSAFE=1
+          FFTW_LIBS="-lfftw3f_threads $FFTW_LIBS"
         ],[
           AC_MSG_RESULT([no])
           SPECTMORPH_HAVE_FFTW_THREADSAFE=0
