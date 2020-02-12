@@ -64,7 +64,7 @@ make $MAKEFLAGS
 make install
 
 src fftw-3.3.7 tar.gz http://www.fftw.org/fftw-3.3.7.tar.gz
-autoconfbuild --disable-fortran --enable-single
+autoconfbuild --disable-fortran --enable-single --enable-threads --with-combined-threads
 
 src libffi-3.2.1 tar.gz https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
 autoconfbuild
