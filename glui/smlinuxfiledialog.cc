@@ -192,7 +192,21 @@ public:
   void
   on_ok_clicked()
   {
-    handle_ok (file_edit->text());
+    if (file_edit->text() != "")
+      {
+        /* open file */
+        handle_ok (file_edit->text());
+      }
+    else
+      {
+        /* open selected dir (if any) */
+        int i = list_box->selected_item();
+        if (i >= 0 && i < int (items.size()))
+          {
+            if (items[i].is_dir)
+              read_directory (current_directory + "/" + items[i].filename);
+          }
+      }
   }
   void
   handle_ok (const string& filename)
