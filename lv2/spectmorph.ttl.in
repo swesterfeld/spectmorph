@@ -12,7 +12,6 @@
 @prefix atom:  <http://lv2plug.in/ns/ext/atom#> .
 @prefix urid:  <http://lv2plug.in/ns/ext/urid#> .
 @prefix ui:    <http://lv2plug.in/ns/extensions/ui#> .
-@prefix work:  <http://lv2plug.in/ns/ext/worker#> .
 @prefix rsz:   <http://lv2plug.in/ns/ext/resize-port#> .
 @prefix state: <http://lv2plug.in/ns/ext/state#> .
 
@@ -31,10 +30,8 @@
   lv2:microVersion @MICRO_VERSION@;
   lv2:minorVersion @MINOR_VERSION@;
 
-  lv2:requiredFeature urid:map,
-                      work:schedule;
-  lv2:extensionData work:interface,
-	            state:interface;
+  lv2:requiredFeature urid:map;
+  lv2:extensionData state:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
   lv2:port
     [

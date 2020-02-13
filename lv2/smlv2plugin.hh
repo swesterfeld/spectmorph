@@ -7,7 +7,6 @@
 
 #include "lv2/lv2plug.in/ns/ext/log/log.h"
 #include "lv2/lv2plug.in/ns/ext/log/logger.h"
-#include "lv2/lv2plug.in/ns/ext/worker/worker.h"
 #include "lv2/lv2plug.in/ns/ext/state/state.h"
 
 #define LV2_DEBUG(...) Debug::debug ("lv2", __VA_ARGS__)
@@ -32,8 +31,6 @@ public:
   // Logger
   LV2_Log_Log*          log;
   LV2_Log_Logger        logger;
-
-  LV2_Worker_Schedule*  schedule;
 
   LV2Plugin (double mix_freq);
 

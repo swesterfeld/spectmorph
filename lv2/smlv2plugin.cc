@@ -40,8 +40,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   left_out (NULL),
   right_out (NULL),
   notify_port (NULL),
-  log (NULL),
-  schedule (NULL)
+  log (NULL)
 {
   project.set_mix_freq (mix_freq);
   project.set_storage_model (Project::StorageModel::REFERENCE);
@@ -74,7 +73,6 @@ instantiate (const LV2_Descriptor*     descriptor,
   LV2Plugin *self = new LV2Plugin (rate);
 
   LV2_URID_Map* map = NULL;
-  self->schedule = NULL;
   for (int i = 0; features[i]; i++)
     {
       if (!strcmp (features[i]->URI, LV2_URID__map))
@@ -85,19 +83,9 @@ instantiate (const LV2_Descriptor*     descriptor,
         {
           self->log = (LV2_Log_Log*) features[i]->data;
         }
-      else if (!strcmp(features[i]->URI, LV2_WORKER__schedule))
-        {
-          self->schedule = (LV2_Worker_Schedule*)features[i]->data;
-        }
     }
   if (!map)
     {
-      delete self;
-      return NULL; // host bug, we need this feature
-    }
-  else if (!self->schedule)
-    {
-      lv2_log_error (&self->logger, "Missing feature work:schedule\n");
       delete self;
       return NULL; // host bug, we need this feature
     }
