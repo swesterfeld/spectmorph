@@ -32,6 +32,8 @@ pacman -S mingw-w64-x86_64-glib2
 pacman -S mingw-w64-x86_64-pixman
 pacman -S mingw-w64-x86_64-nsis
 
+[[ compile freetype before cairo ]]
+
 wget https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
 tar xf cairo-1.15.10.tar.xz
 configure --prefix ~/cairo
