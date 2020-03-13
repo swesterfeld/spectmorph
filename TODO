@@ -10,6 +10,7 @@ NEXT RELEASE:
 - better spectral subtract [1]
 - vibrato could have delay property
 - fix crash ~/smtest/12\ Glockenschläge\ um\ 12\ Uhr-fqKCnzYCdP4.mkv
+- fix crash close lfo ~/documents/spectmorph/crashcloselfo.*
 
 0.5.1:
 - jack should get its control input from midi events
