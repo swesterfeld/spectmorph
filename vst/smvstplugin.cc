@@ -354,9 +354,20 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
   VstPlugin *plugin     = (VstPlugin *)effect->ptr3;
   MidiSynth *midi_synth = plugin->project.midi_synth();
 
+  VstTimeInfo *time_info = (VstTimeInfo *) plugin->audioMaster (effect, audioMasterGetTime, 0, kVstPpqPosValid | kVstTempoValid | kVstTransportPlaying, 0, 0);
+  VST_DEBUG ("samplePos %f   ppqPos %f\n", time_info->samplePos, time_info->ppqPos);
   // update plan with new parameters / new modules if necessary
   plugin->project.try_update_synth();
 
+  if (time_info && time_info->flags & kVstTempoValid)
+    midi_synth->set_tempo (time_info->tempo);
+  else
+    midi_synth->set_tempo (120);
+  if (time_info && time_info->flags & kVstTransportPlaying)
+    {
+      if (time_info && time_info->flags & kVstPpqPosValid)
+        midi_synth->set_ppq_pos (time_info->ppqPos);
+    }
   midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
   midi_synth->process (outputs[0], numSampleFrames);
