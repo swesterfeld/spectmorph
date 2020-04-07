@@ -64,13 +64,32 @@ MorphLFOModule::set_config (MorphOperator *op)
 float
 MorphLFOModule::value()
 {
-  return sync_voices ? shared_state->global_lfo_state.value : local_lfo_state.value;
+  TimeInfo time = time_info();
+
+  if (!sync_voices)
+    {
+      auto lfo_state = shared_state->global_lfo_state;
+      if (time.time_ms > shared_state->time_ms)
+        update_lfo_value (lfo_state, time.time_ms - shared_state->time_ms);
+
+      return lfo_state.value;
+    }
+  else
+    {
+      if (time.time_ms > last_time_ms)
+        {
+          update_lfo_value (local_lfo_state, time.time_ms - last_time_ms);
+          last_time_ms = time.time_ms;
+        }
+      return local_lfo_state.value;
+    }
 }
 
 void
-MorphLFOModule::reset_value()
+MorphLFOModule::reset_value (const TimeInfo& time_info)
 {
   restart_lfo (local_lfo_state);
+  last_time_ms = time_info.time_ms;
 }
 
 void
@@ -146,13 +165,11 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms)
 }
 
 void
-MorphLFOModule::update_value (double time_ms)
-{
-  update_lfo_value (local_lfo_state, time_ms);
-}
-
-void
 MorphLFOModule::update_shared_state (double time_ms)
 {
-  update_lfo_value (shared_state->global_lfo_state, time_ms);
+  if (time_ms > shared_state->time_ms)
+    {
+      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->time_ms);
+      shared_state->time_ms = time_ms;
+    }
 }

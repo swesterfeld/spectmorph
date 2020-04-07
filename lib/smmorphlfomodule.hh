@@ -28,8 +28,11 @@ class MorphLFOModule : public MorphOperatorModule
     double value              = 0;
   } local_lfo_state;
 
+  double last_time_ms = 0;
+
   struct SharedState : public MorphModuleSharedState
   {
+    double   time_ms = 0;
     LFOState global_lfo_state;
   };
   SharedState *shared_state;
@@ -40,11 +43,10 @@ public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();
 
-  void  set_config (MorphOperator *op);
-  float value();
-  void  reset_value();
-  void  update_value (double time_ms);
-  void  update_shared_state (double time_ms);
+  void  set_config (MorphOperator *op) override;
+  float value() override;
+  void  reset_value (const TimeInfo& time_info) override;
+  void  update_shared_state (double time_ms) override;
 };
 }
 
