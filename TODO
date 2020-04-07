@@ -25,6 +25,23 @@ new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
 
+lfo beat-sync:
+ + random
+ + update when not rolling
+ + note trigger (per voice)
+ - start phase should act as phase offset and have an effect even after start
+ - switching note value or from/to beat-sync should resync ppq_pos
+ - elegant passing of tempo/ppq_pos to MorphLFOModule
+ - micro timing (in block, in live decoder)
+ - UI: more note value options
+ - UI: on/off toggle
+ - UI: display over freq
+ - VST: small cleanups
+ - LV2: cleanup code
+ - LV2: implement speed
+ - LV2: other time signatures
+ - JACK: check other time signatures (like 6/8 -> is it still quarter sync)
+
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
