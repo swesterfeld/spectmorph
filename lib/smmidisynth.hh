@@ -57,6 +57,8 @@ class MidiSynth
   std::vector<Voice *>  active_voices;
   double                m_mix_freq;
   double                m_gain = 1;
+  double                m_tempo = 120;
+  double                m_ppq_pos = 0;
   bool                  pedal_down;
   uint64                audio_time_stamp;
   bool                  mono_enabled;
@@ -101,6 +103,8 @@ public:
   void process (float *output, size_t n_values);
 
   void set_control_input (int i, float value);
+  void set_tempo (double tempo);
+  void set_ppq_pos (double ppq_pos);
   void update_plan (MorphPlanPtr new_plan);
   double mix_freq() const;
 
