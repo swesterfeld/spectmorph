@@ -66,7 +66,7 @@ MorphLFOModule::value()
 {
   TimeInfo time = time_info();
 
-  if (!sync_voices)
+  if (sync_voices)
     {
       auto lfo_state = shared_state->global_lfo_state;
       if (time.time_ms > shared_state->time_ms)
