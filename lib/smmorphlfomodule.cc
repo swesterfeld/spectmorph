@@ -47,6 +47,7 @@ MorphLFOModule::set_config (MorphOperator *op)
   start_phase = lfo->start_phase();
   sync_voices = lfo->sync_voices();
   wave_type = lfo->wave_type();
+  beat_sync = lfo->beat_sync();
 
   MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
   if (synth)
@@ -70,7 +71,7 @@ MorphLFOModule::value()
     {
       auto lfo_state = shared_state->global_lfo_state;
       if (time.time_ms > shared_state->time_ms)
-        update_lfo_value (lfo_state, time.time_ms - shared_state->time_ms);
+        update_lfo_value (lfo_state, time.time_ms - shared_state->time_ms, time.ppq_pos);
 
       return lfo_state.value;
     }
@@ -78,7 +79,7 @@ MorphLFOModule::value()
     {
       if (time.time_ms > last_time_ms)
         {
-          update_lfo_value (local_lfo_state, time.time_ms - last_time_ms);
+          update_lfo_value (local_lfo_state, time.time_ms - last_time_ms, time.ppq_pos);
           last_time_ms = time.time_ms;
         }
       return local_lfo_state.value;
@@ -99,13 +100,39 @@ MorphLFOModule::restart_lfo (LFOState& state)
   state.last_random_value = random_gen()->random_double_range (-1, 1);
   state.random_value = random_gen()->random_double_range (-1, 1);
   /* compute initial value */
-  update_lfo_value (state, 0);
+  update_lfo_value (state, 0, 0);
 }
 
 void
-MorphLFOModule::update_lfo_value (LFOState& state, double time_ms)
+MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_pos)
 {
-  state.phase += time_ms / 1000 * frequency;
+  if (beat_sync == MorphLFO::BEAT_SYNC_OFF)
+    {
+      state.phase += time_ms / 1000 * frequency;
+    }
+  else
+    {
+      double factor = 1;
+      switch (beat_sync)
+        {
+          case MorphLFO::BEAT_SYNC_1_1: factor = 1.0 / 1.0;
+                                        break;
+          case MorphLFO::BEAT_SYNC_1_2: factor = 1.0 / 2.0;
+                                        break;
+          case MorphLFO::BEAT_SYNC_1_4: factor = 1.0 / 4.0;
+                                        break;
+          case MorphLFO::BEAT_SYNC_OFF: g_assert_not_reached();
+        }
+      factor *= 4; // <- tempo is relative to quarter notes
+      if (state.last_ppq_pos > ppq_pos)
+        {
+          state.phase = ppq_pos / factor;
+          state.phase += 1; /* force random retrigger */
+        }
+      else
+        state.phase += (ppq_pos - state.last_ppq_pos) / factor;
+      state.last_ppq_pos = ppq_pos;
+    }
   if (state.phase > 1)
     {
       state.last_random_value = state.random_value;
@@ -169,7 +196,7 @@ MorphLFOModule::update_shared_state (double time_ms)
 {
   if (time_ms > shared_state->time_ms)
     {
-      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->time_ms);
+      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->time_ms, 0 /* FIXME: time.ppq_pos */);
       shared_state->time_ms = time_ms;
     }
 }
