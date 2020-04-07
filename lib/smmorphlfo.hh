@@ -35,6 +35,12 @@ public:
     WAVE_RANDOM_SH      = 6,
     WAVE_RANDOM_LINEAR  = 7
   };
+  enum BeatSync {
+    BEAT_SYNC_OFF = 1,
+    BEAT_SYNC_1_1 = 2,
+    BEAT_SYNC_1_2 = 3,
+    BEAT_SYNC_1_4 = 4
+  };
 protected:
   WaveType       m_wave_type;
   float          m_frequency;
@@ -42,6 +48,7 @@ protected:
   float          m_center;
   float          m_start_phase;
   bool           m_sync_voices;
+  BeatSync       m_beat_sync;
 
 public:
   MorphLFO (MorphPlan *morph_plan);
@@ -71,6 +78,9 @@ public:
 
   bool sync_voices() const;
   void set_sync_voices (float new_sync_voices);
+
+  BeatSync beat_sync() const;
+  void set_beat_sync (BeatSync beat_sync);
 };
 
 }

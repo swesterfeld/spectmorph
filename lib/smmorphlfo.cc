@@ -32,6 +32,7 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   m_center = 0;
   m_start_phase = 0;
   m_sync_voices = false;
+  m_beat_sync = BEAT_SYNC_OFF;
 
   leak_debugger.add (this);
 }
@@ -62,6 +63,7 @@ MorphLFO::save (OutFile& out_file)
   out_file.write_float ("center", m_center);
   out_file.write_float ("start_phase", m_start_phase);
   out_file.write_bool ("sync_voices", m_sync_voices);
+  out_file.write_int ("beat_sync", m_beat_sync);
 
   return true;
 }
@@ -76,6 +78,10 @@ MorphLFO::load (InFile& ifile)
           if (ifile.event_name() == "wave_type")
             {
               m_wave_type = static_cast<WaveType> (ifile.event_int());
+            }
+          else if (ifile.event_name() == "beat_sync")
+            {
+              m_beat_sync = static_cast<BeatSync> (ifile.event_int());
             }
           else
             {
@@ -215,6 +221,20 @@ void
 MorphLFO::set_sync_voices (float sync_voices)
 {
   m_sync_voices = sync_voices;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphLFO::BeatSync
+MorphLFO::beat_sync() const
+{
+  return m_beat_sync;
+}
+
+void
+MorphLFO::set_beat_sync (BeatSync beat_sync)
+{
+  m_beat_sync = beat_sync;
 
   m_morph_plan->emit_plan_changed();
 }
