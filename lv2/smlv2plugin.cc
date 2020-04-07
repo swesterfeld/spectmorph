@@ -159,6 +159,49 @@ run (LV2_Handle instance, uint32_t n_samples)
 
           midi_synth->add_midi_event (ev->time.frames, msg);
         }
+      if (ev->body.type == self->uris.atom_Blank || ev->body.type == self->uris.atom_Object)
+        {
+          const LV2_Atom_Object *obj = (LV2_Atom_Object *) &ev->body;
+          if (obj->body.otype == self->uris.time_Position)
+            {
+              LV2_Atom *beats_per_minute = nullptr;
+              LV2_Atom *beats_per_bar = nullptr;
+              LV2_Atom *bar = nullptr;
+              LV2_Atom *bar_beat = nullptr;
+              lv2_atom_object_get (obj,
+                                   self->uris.time_beatsPerMinute, &beats_per_minute,
+                                   self->uris.time_beatsPerBar, &beats_per_bar,
+                                   self->uris.time_bar, &bar,
+                                   self->uris.time_barBeat, &bar_beat,
+                                   nullptr);
+              if (beats_per_minute && beats_per_minute->type == self->uris.atom_Float)
+                {
+                  const float bpm = ((LV2_Atom_Float *) beats_per_minute)->body;
+                  midi_synth->set_tempo (bpm);
+                  LV2_DEBUG ("got bpm=%f\n", bpm);
+                }
+              double b = -1;
+              if (bar && bar->type == self->uris.atom_Long)
+                {
+                  b = ((LV2_Atom_Long *) bar)->body;
+                  LV2_DEBUG ("got bar=%f\n", b);
+                }
+              float bb = -1;
+              if (bar_beat && bar_beat->type == self->uris.atom_Float)
+                {
+                  bb = ((LV2_Atom_Float *) bar_beat)->body;
+                  LV2_DEBUG ("got bar_beat=%f\n", bb);
+                }
+              float bpb = -1;
+              if (beats_per_bar && beats_per_bar->type == self->uris.atom_Float)
+                {
+                  bpb = ((LV2_Atom_Float *) beats_per_bar)->body;
+                  LV2_DEBUG ("got bpb=%f\n", bpb);
+                }
+              if (b >= 0 && bpb >= 0 && bb >= 0)
+                midi_synth->set_ppq_pos (b * bpb + bb);
+            }
+        }
     }
   midi_synth->set_control_input (0, control_1);
   midi_synth->set_control_input (1, control_2);
