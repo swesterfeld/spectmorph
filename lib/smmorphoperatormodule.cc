@@ -98,7 +98,7 @@ MorphOperatorModule::time_info() const
   TimeInfo time;
 
   if (output)
-    time.time_ms = output->compute_time_offset_ms();
+    time = output->compute_time_info();
 
   return time;
 }
