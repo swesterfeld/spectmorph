@@ -382,6 +382,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
+          output_module->set_time_ms (audio_time_stamp / m_mix_freq * 1000);
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i] * gain;
@@ -390,6 +391,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
+          output_module->set_time_ms (audio_time_stamp / m_mix_freq * 1000);
           output_module->process (n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i] * gain;
