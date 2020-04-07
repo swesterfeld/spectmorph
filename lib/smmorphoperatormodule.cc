@@ -51,12 +51,7 @@ MorphOperatorModule::value()
 }
 
 void
-MorphOperatorModule::reset_value()
-{
-}
-
-void
-MorphOperatorModule::update_value (double time_ms)
+MorphOperatorModule::reset_value (const TimeInfo& time_info)
 {
 }
 
@@ -94,6 +89,18 @@ Random *
 MorphOperatorModule::random_gen() const
 {
   return morph_plan_voice->morph_plan_synth()->random_gen();
+}
+
+TimeInfo
+MorphOperatorModule::time_info() const
+{
+  MorphOutputModule *output = morph_plan_voice->output();
+  TimeInfo time;
+
+  if (output)
+    time.time_ms = output->compute_time_offset_ms();
+
+  return time;
 }
 
 MorphOperatorModule*

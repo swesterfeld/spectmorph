@@ -12,6 +12,13 @@
 namespace SpectMorph
 {
 
+class TimeInfo
+{
+public:
+  double time_ms = 0;
+  double ppq_pos = 0;
+};
+
 class MorphPlanVoice;
 
 class MorphModuleSharedState
@@ -31,6 +38,7 @@ protected:
   Random *random_gen() const;
   void clear_dependencies();
   void add_dependency (MorphOperatorModule *dep_mod);
+  TimeInfo time_info() const;
 public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();
@@ -38,8 +46,7 @@ public:
   virtual void set_config (MorphOperator *op) = 0;
   virtual LiveDecoderSource *source();
   virtual float value();
-  virtual void reset_value();
-  virtual void update_value (double time_ms);
+  virtual void reset_value (const TimeInfo& time_info);
   virtual void update_shared_state (double time_ms);
 
   const std::vector<MorphOperatorModule *>& dependencies() const;
