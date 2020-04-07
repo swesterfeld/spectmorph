@@ -13,6 +13,7 @@ class MorphOutputModule : public MorphOperatorModule
 {
   std::vector<MorphOperatorModule *> out_ops;
   std::vector<EffectDecoder *>       out_decoders;
+  double                             time_ms;
 
   bool  m_portamento;
   float m_portamento_glide;
@@ -23,6 +24,7 @@ public:
   ~MorphOutputModule();
 
   void set_config (MorphOperator *op);
+  void set_time_ms (double time_ms);
   void process (size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
   void retrigger (int channel, float freq, int midi_velocity);
   void release();
@@ -31,6 +33,7 @@ public:
   bool  portamento() const;
   float portamento_glide() const;
   float velocity_sensitivity() const;
+  double compute_time_offset_ms() const;
 };
 
 }

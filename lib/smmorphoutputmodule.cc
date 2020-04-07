@@ -116,35 +116,18 @@ recursive_reset_tag (MorphOperatorModule *module)
 }
 
 static void
-recursive_update_value (MorphOperatorModule *module, double time_ms)
+recursive_reset_value (MorphOperatorModule *module, const TimeInfo& time_info)
 {
   if (!module)
     return;
 
   const vector<MorphOperatorModule *>& deps = module->dependencies();
   for (size_t i = 0; i < deps.size(); i++)
-    recursive_update_value (deps[i], time_ms);
+    recursive_reset_value (deps[i], time_info);
 
   if (!module->update_value_tag())
     {
-      module->update_value (time_ms);
-      module->update_value_tag()++;
-    }
-}
-
-static void
-recursive_reset_value (MorphOperatorModule *module)
-{
-  if (!module)
-    return;
-
-  const vector<MorphOperatorModule *>& deps = module->dependencies();
-  for (size_t i = 0; i < deps.size(); i++)
-    recursive_reset_value (deps[i]);
-
-  if (!module->update_value_tag())
-    {
-      module->reset_value();
+      module->reset_value (time_info);
       module->update_value_tag()++;
     }
 }
@@ -187,12 +170,21 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, co
             }
         }
     }
+}
 
-  if (!have_cycle)
-    {
-      recursive_reset_tag (this);
-      recursive_update_value (this, n_samples / morph_plan_voice->mix_freq() * 1000);
-    }
+void
+MorphOutputModule::set_time_ms (double new_time_ms)
+{
+  time_ms = new_time_ms;
+}
+
+double
+MorphOutputModule::compute_time_offset_ms() const
+{
+  /* this is not really correct, but as long as we only have one decoder, it should work */
+  for (auto dec : out_decoders)
+    return dec->time_offset_ms() + time_ms;
+  return 0;
 }
 
 void
@@ -208,8 +200,11 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
+  TimeInfo time_info;
+  time_info.time_ms = time_ms;
+
   recursive_reset_tag (this);
-  recursive_reset_value (this);
+  recursive_reset_value (this, time_info);
 }
 
 void
