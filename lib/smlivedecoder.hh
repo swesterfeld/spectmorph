@@ -80,6 +80,10 @@ class LiveDecoder
   float               vibrato_phase;   // state
   float               vibrato_env;     // state
 
+  // timing related
+  double              start_env_pos = 0;
+  bool                in_process    = false;
+
   // active/done
   enum class DoneState {
     DONE,
@@ -130,6 +134,8 @@ public:
 
   static size_t compute_loop_frame_index (size_t index, Audio *audio);
   bool done() const;
+
+  double time_offset_ms() const;
 };
 
 }
