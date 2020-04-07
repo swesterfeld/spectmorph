@@ -18,6 +18,7 @@ namespace SpectMorph
 class JackSynth
 {
 protected:
+  jack_client_t                *client;
   jack_port_t                  *input_port;
   std::vector<jack_port_t *>    output_ports;
   std::vector<jack_port_t *>    control_ports;

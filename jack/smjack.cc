@@ -41,6 +41,23 @@ JackSynth::process (jack_nframes_t nframes)
 
   MidiSynth   *midi_synth   = m_project->midi_synth();
 
+  jack_position_t pos;
+  const bool rolling = (jack_transport_query (client, &pos) == JackTransportRolling);
+  if (pos.valid & JackPositionBBT)
+    {
+      /* use tempo from jack transport (if available) */
+      midi_synth->set_tempo (pos.beats_per_minute);
+
+      /* we try to synchronize the ppq position with the values available from JACK
+       * unfortunately, this doesn't work if beats_per_bar changes (i.e. time signature changes 4/4 -> 3/4)
+       */
+      if (rolling)
+        {
+          double ppq_pos = ((pos.bar - 1) * pos.beats_per_bar) + (pos.beat - 1) + pos.tick / pos.ticks_per_beat;
+          midi_synth->set_ppq_pos (ppq_pos);
+        }
+    }
+
   void* port_buf = jack_port_get_buffer (input_port, nframes);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
 
@@ -69,6 +86,7 @@ jack_process (jack_nframes_t nframes, void *arg)
 }
 
 JackSynth::JackSynth (jack_client_t *client, Project *project) :
+  client (client),
   m_project (project)
 {
   m_project->set_mix_freq (jack_get_sample_rate (client));
