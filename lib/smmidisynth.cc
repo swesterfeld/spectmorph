@@ -470,7 +470,7 @@ MidiSynth::process (float *output, size_t n_values)
 
   midi_events.clear();
 
-  morph_plan_synth.update_shared_state (n_values / m_mix_freq * 1000);
+  morph_plan_synth.update_shared_state (audio_time_stamp / m_mix_freq * 1000);
 }
 
 void

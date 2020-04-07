@@ -58,7 +58,7 @@ class MidiSynth
   double                m_mix_freq;
   double                m_gain = 1;
   bool                  pedal_down;
-  size_t                audio_time_stamp;
+  uint64                audio_time_stamp;
   bool                  mono_enabled;
   float                 portamento_glide;
   int                   portamento_note_id;
