@@ -19,6 +19,11 @@ using std::vector;
 #define WAVE_TEXT_RANDOM_SH     "Random Sample & Hold"
 #define WAVE_TEXT_RANDOM_LINEAR "Random Linear"
 
+#define BEAT_SYNC_TEXT_OFF      "Off"
+#define BEAT_SYNC_TEXT_1_1      "1/1"
+#define BEAT_SYNC_TEXT_1_2      "1/2"
+#define BEAT_SYNC_TEXT_1_4      "1/4"
+
 MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo),
@@ -76,13 +81,36 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
     morph_lfo->set_sync_voices (new_value);
   });
 
+  // BEAT SYNC
+  beat_sync_combobox = new ComboBox (body_widget);
+  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_OFF);
+  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_1);
+  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_2);
+  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_4);
+
+  if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_OFF)
+    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_OFF);
+  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_1)
+    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_1);
+  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_2)
+    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_2);
+  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_4)
+    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_4);
+  else
+    {
+      g_assert_not_reached();
+    }
+  connect (beat_sync_combobox->signal_item_changed, this, &MorphLFOView::on_beat_sync_changed);
+
+  op_layout.add_row (3, new Label (body_widget, "Beat Sync"), beat_sync_combobox);
+
   op_layout.activate();
 }
 
 double
 MorphLFOView::view_height()
 {
-  return 18;
+  return 21;
 }
 
 void
@@ -104,6 +132,25 @@ MorphLFOView::on_wave_type_changed()
     morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_SH);
   else if (text == WAVE_TEXT_RANDOM_LINEAR)
     morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_LINEAR);
+  else
+    {
+      g_assert_not_reached();
+    }
+}
+
+void
+MorphLFOView::on_beat_sync_changed()
+{
+  string text = beat_sync_combobox->text();
+
+  if (text == BEAT_SYNC_TEXT_OFF)
+    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_OFF);
+  else if (text == BEAT_SYNC_TEXT_1_1)
+    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_1);
+  else if (text == BEAT_SYNC_TEXT_1_2)
+    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_2);
+  else if (text == BEAT_SYNC_TEXT_1_4)
+    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_4);
   else
     {
       g_assert_not_reached();

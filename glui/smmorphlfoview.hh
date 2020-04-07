@@ -18,6 +18,7 @@ class MorphLFOView : public MorphOperatorView
   MorphLFOProperties       morph_lfo_properties;
 
   ComboBox  *wave_type_combobox;
+  ComboBox  *beat_sync_combobox;
 
   PropertyView pv_frequency;
   PropertyView pv_depth;
@@ -31,6 +32,7 @@ public:
 
 /* slots: */
   void on_wave_type_changed();
+  void on_beat_sync_changed();
 };
 
 }
