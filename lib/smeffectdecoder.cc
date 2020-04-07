@@ -225,3 +225,9 @@ EffectDecoder::done()
   else
     return simple_envelope->done();
 }
+
+double
+EffectDecoder::time_offset_ms() const
+{
+  return chain_decoder->time_offset_ms();
+}

@@ -38,6 +38,8 @@ public:
                 float       *audio_out);
   void release();
   bool done();
+
+  double time_offset_ms() const;
 };
 
 }
