@@ -173,18 +173,24 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, co
 }
 
 void
-MorphOutputModule::set_time_ms (double new_time_ms)
+MorphOutputModule::set_block_time (const TimeInfo& new_block_time)
 {
-  time_ms = new_time_ms;
+  block_time = new_block_time;
 }
 
-double
-MorphOutputModule::compute_time_offset_ms() const
+TimeInfo
+MorphOutputModule::compute_time_info() const
 {
   /* this is not really correct, but as long as we only have one decoder, it should work */
   for (auto dec : out_decoders)
-    return dec->time_offset_ms() + time_ms;
-  return 0;
+    {
+      TimeInfo time_info = block_time;
+
+      time_info.time_ms += dec->time_offset_ms();
+      /* FIXME: correct ppq_info, too */
+      return time_info;
+    }
+  return block_time;
 }
 
 void
@@ -200,11 +206,8 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
-  TimeInfo time_info;
-  time_info.time_ms = time_ms;
-
   recursive_reset_tag (this);
-  recursive_reset_value (this, time_info);
+  recursive_reset_value (this, block_time);
 }
 
 void
