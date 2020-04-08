@@ -87,11 +87,11 @@ MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
 }
 
 void
-MorphPlanSynth::update_shared_state (double time_ms)
+MorphPlanSynth::update_shared_state (const TimeInfo& time_info)
 {
   if (voices.empty())
     return;
-  voices[0]->update_shared_state (time_ms);
+  voices[0]->update_shared_state (time_info);
 }
 
 MorphModuleSharedState *

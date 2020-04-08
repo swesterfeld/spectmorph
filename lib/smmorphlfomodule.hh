@@ -49,7 +49,7 @@ public:
   void  set_config (MorphOperator *op) override;
   float value() override;
   void  reset_value (const TimeInfo& time_info) override;
-  void  update_shared_state (double time_ms) override;
+  void  update_shared_state (const TimeInfo& time_info) override;
 };
 }
 

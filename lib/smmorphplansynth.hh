@@ -12,6 +12,7 @@ namespace SpectMorph {
 
 class MorphPlanVoice;
 class MorphModuleSharedState;
+class TimeInfo;
 
 class MorphPlanSynth {
 protected:
@@ -32,7 +33,7 @@ public:
   MorphModuleSharedState *shared_state (MorphOperator *op);
   void set_shared_state (MorphOperator *op, MorphModuleSharedState *shared_state);
 
-  void update_shared_state (double time_ms);
+  void update_shared_state (const TimeInfo& time_info);
   void free_shared_state();
 
   float   mix_freq() const;

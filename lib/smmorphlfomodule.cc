@@ -192,11 +192,12 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_po
 }
 
 void
-MorphLFOModule::update_shared_state (double time_ms)
+MorphLFOModule::update_shared_state (const TimeInfo& time_info)
 {
+  double time_ms = time_info.time_ms;
   if (time_ms > shared_state->time_ms)
     {
-      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->time_ms, 0 /* FIXME: time.ppq_pos */);
+      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->time_ms, time_info.ppq_pos);
       shared_state->time_ms = time_ms;
     }
 }

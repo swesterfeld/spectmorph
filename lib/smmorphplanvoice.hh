@@ -45,7 +45,7 @@ public:
   MorphOutputModule *output();
   MorphPlanSynth *morph_plan_synth() const;
 
-  void update_shared_state (double time_ms);
+  void update_shared_state (const TimeInfo& time_info);
 };
 
 }

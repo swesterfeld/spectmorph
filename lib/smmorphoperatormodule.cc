@@ -56,7 +56,7 @@ MorphOperatorModule::reset_value (const TimeInfo& time_info)
 }
 
 void
-MorphOperatorModule::update_shared_state (double time_ms)
+MorphOperatorModule::update_shared_state (const TimeInfo& time_info)
 {
 }
 

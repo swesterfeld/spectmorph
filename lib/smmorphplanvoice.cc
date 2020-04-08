@@ -154,8 +154,8 @@ MorphPlanVoice::morph_plan_synth() const
 }
 
 void
-MorphPlanVoice::update_shared_state (double time_ms)
+MorphPlanVoice::update_shared_state (const TimeInfo& time_info)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    modules[i].module->update_shared_state (time_ms);
+    modules[i].module->update_shared_state (time_info);
 }

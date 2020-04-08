@@ -475,7 +475,10 @@ MidiSynth::process (float *output, size_t n_values)
   midi_events.clear();
 
   m_ppq_pos += n_values * m_tempo / (60. * m_mix_freq);
-  morph_plan_synth.update_shared_state (audio_time_stamp / m_mix_freq * 1000);
+  TimeInfo time_info;
+  time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
+  time_info.ppq_pos = m_ppq_pos;
+  morph_plan_synth.update_shared_state (time_info);
 }
 
 void

@@ -47,7 +47,7 @@ public:
   virtual LiveDecoderSource *source();
   virtual float value();
   virtual void reset_value (const TimeInfo& time_info);
-  virtual void update_shared_state (double time_ms);
+  virtual void update_shared_state (const TimeInfo& time_info);
 
   const std::vector<MorphOperatorModule *>& dependencies() const;
   int& update_value_tag();
