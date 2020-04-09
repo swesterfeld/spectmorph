@@ -70,13 +70,13 @@ MorphLFOModule::value()
   if (sync_voices)
     {
       auto lfo_state = shared_state->global_lfo_state;
-      update_lfo_value (lfo_state, time.time_ms, time.ppq_pos);
+      update_lfo_value (lfo_state, time);
 
       return lfo_state.value;
     }
   else
     {
-      update_lfo_value (local_lfo_state, time.time_ms, time.ppq_pos);
+      update_lfo_value (local_lfo_state, time);
       return local_lfo_state.value;
     }
 }
@@ -94,19 +94,20 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
   state.last_random_value = random_gen()->random_double_range (-1, 1);
   state.random_value = random_gen()->random_double_range (-1, 1);
   /* compute initial value */
-  update_lfo_value (state, 0, 0);
+  TimeInfo zero_time;
+  update_lfo_value (state, zero_time);
   state.last_ppq_pos = time_info.ppq_pos;
   state.last_time_ms = time_info.time_ms;
 }
 
 void
-MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_pos)
+MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
   if (beat_sync == MorphLFO::BEAT_SYNC_OFF)
     {
-      if (time_ms > state.last_time_ms)
-        state.phase += (time_ms - state.last_time_ms) / 1000 * frequency;
-      state.last_time_ms = time_ms;
+      if (time_info.time_ms > state.last_time_ms)
+        state.phase += (time_info.time_ms - state.last_time_ms) / 1000 * frequency;
+      state.last_time_ms = time_info.time_ms;
     }
   else
     {
@@ -122,14 +123,14 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_po
           case MorphLFO::BEAT_SYNC_OFF: g_assert_not_reached();
         }
       factor *= 4; // <- tempo is relative to quarter notes
-      if (state.last_ppq_pos > ppq_pos)
+      if (state.last_ppq_pos > time_info.ppq_pos)
         {
-          state.phase = ppq_pos / factor;
+          state.phase = time_info.ppq_pos / factor;
           state.phase += 1; /* force random retrigger */
         }
       else
-        state.phase += (ppq_pos - state.last_ppq_pos) / factor;
-      state.last_ppq_pos = ppq_pos;
+        state.phase += (time_info.ppq_pos - state.last_ppq_pos) / factor;
+      state.last_ppq_pos = time_info.ppq_pos;
     }
   if (state.phase > 1)
     {
@@ -192,5 +193,5 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_po
 void
 MorphLFOModule::update_shared_state (const TimeInfo& time_info)
 {
-  update_lfo_value (shared_state->global_lfo_state, time_info.time_ms, time_info.ppq_pos);
+  update_lfo_value (shared_state->global_lfo_state, time_info);
 }
