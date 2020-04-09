@@ -90,6 +90,7 @@ void
 MorphLFOModule::reset_value (const TimeInfo& time_info)
 {
   restart_lfo (local_lfo_state);
+  local_lfo_state.last_ppq_pos = time_info.ppq_pos;
   last_time_ms = time_info.time_ms;
 }
 
