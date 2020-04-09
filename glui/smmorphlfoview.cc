@@ -81,28 +81,26 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
     morph_lfo->set_sync_voices (new_value);
   });
 
-  // BEAT SYNC
-  beat_sync_combobox = new ComboBox (body_widget);
-  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_OFF);
-  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_1);
-  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_2);
-  beat_sync_combobox->add_item (BEAT_SYNC_TEXT_1_4);
+  // FLAG: BEAT SYNC
+  CheckBox *beat_sync_box = new CheckBox (body_widget, "Beat Sync");
+  beat_sync_box->set_checked (morph_lfo->beat_sync());
+  op_layout.add_row (2, beat_sync_box);
 
-  if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_OFF)
-    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_OFF);
-  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_1)
-    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_1);
-  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_2)
-    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_2);
-  else if (morph_lfo->beat_sync() == MorphLFO::BEAT_SYNC_1_4)
-    beat_sync_combobox->set_text (BEAT_SYNC_TEXT_1_4);
-  else
+  connect (beat_sync_box->signal_toggled, [morph_lfo] (bool new_value) {
+    morph_lfo->set_beat_sync (new_value);
+  });
+
+  // NOTE
+  note_combobox = new ComboBox (body_widget);
+  for (int i = MorphLFO::NOTE_32_1; i <= MorphLFO::NOTE_1_64; i++)
     {
-      g_assert_not_reached();
+      note_combobox->add_item (note2text (i));
+      if (morph_lfo->note() == i)
+        note_combobox->set_text (note2text (i));
     }
-  connect (beat_sync_combobox->signal_item_changed, this, &MorphLFOView::on_beat_sync_changed);
+  connect (note_combobox->signal_item_changed, this, &MorphLFOView::on_note_changed);
 
-  op_layout.add_row (3, new Label (body_widget, "Beat Sync"), beat_sync_combobox);
+  op_layout.add_row (3, new Label (body_widget, "Note"), note_combobox);
 
   op_layout.activate();
 }
@@ -110,7 +108,16 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
 double
 MorphLFOView::view_height()
 {
-  return 21;
+  return 23;
+}
+
+string
+MorphLFOView::note2text (int note)
+{
+  if (note <= MorphLFO::NOTE_1_1)
+    return string_printf ("%d/1", sm_round_positive (pow (2.0, MorphLFO::NOTE_32_1 - note + 5)));
+  else
+    return string_printf ("1/%d", sm_round_positive (pow (2.0, note - MorphLFO::NOTE_1_1)));
 }
 
 void
@@ -139,20 +146,13 @@ MorphLFOView::on_wave_type_changed()
 }
 
 void
-MorphLFOView::on_beat_sync_changed()
+MorphLFOView::on_note_changed()
 {
-  string text = beat_sync_combobox->text();
+  string text = note_combobox->text();
 
-  if (text == BEAT_SYNC_TEXT_OFF)
-    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_OFF);
-  else if (text == BEAT_SYNC_TEXT_1_1)
-    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_1);
-  else if (text == BEAT_SYNC_TEXT_1_2)
-    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_2);
-  else if (text == BEAT_SYNC_TEXT_1_4)
-    morph_lfo->set_beat_sync (MorphLFO::BEAT_SYNC_1_4);
-  else
+  for (int i = MorphLFO::NOTE_32_1; i <= MorphLFO::NOTE_1_64; i++)
     {
-      g_assert_not_reached();
+      if (note2text (i) == text)
+        morph_lfo->set_note (MorphLFO::Note (i));
     }
 }
