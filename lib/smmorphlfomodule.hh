@@ -41,7 +41,7 @@ class MorphLFOModule : public MorphOperatorModule
   SharedState *shared_state;
 
   void update_lfo_value (LFOState& state, double time_ms, double ppq_pos);
-  void restart_lfo (LFOState& state);
+  void restart_lfo (LFOState& state, const TimeInfo& time_info);
 public:
   MorphLFOModule (MorphPlanVoice *voice);
   ~MorphLFOModule();

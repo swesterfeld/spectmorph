@@ -56,7 +56,7 @@ MorphLFOModule::set_config (MorphOperator *op)
       if (!shared_state)
         {
           shared_state = new SharedState();
-          restart_lfo (shared_state->global_lfo_state);
+          restart_lfo (shared_state->global_lfo_state, /* start from zero time */ TimeInfo());
           synth->set_shared_state (op, shared_state);
         }
     }
@@ -89,19 +89,19 @@ MorphLFOModule::value()
 void
 MorphLFOModule::reset_value (const TimeInfo& time_info)
 {
-  restart_lfo (local_lfo_state);
-  local_lfo_state.last_ppq_pos = time_info.ppq_pos;
+  restart_lfo (local_lfo_state, time_info);
   last_time_ms = time_info.time_ms;
 }
 
 void
-MorphLFOModule::restart_lfo (LFOState& state)
+MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 {
   state.phase = normalize_phase (start_phase / 360);
   state.last_random_value = random_gen()->random_double_range (-1, 1);
   state.random_value = random_gen()->random_double_range (-1, 1);
   /* compute initial value */
   update_lfo_value (state, 0, 0);
+  state.last_ppq_pos = time_info.ppq_pos;
 }
 
 void
