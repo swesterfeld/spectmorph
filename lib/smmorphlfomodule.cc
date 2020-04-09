@@ -113,8 +113,19 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
     }
   else
     {
-      double factor = 1;
-      factor = pow (2, (MorphLFO::NOTE_1_1 - note));
+      double factor;
+      switch (note_mode)
+      {
+        case MorphLFO::NOTE_MODE_TRIPLET:
+          factor = 2.0 / 3.0;
+          break;
+        case MorphLFO::NOTE_MODE_DOTTED:
+          factor = 3.0 / 2.0;
+          break;
+        default:
+          factor = 1.0;
+      }
+      factor *= pow (2, (MorphLFO::NOTE_1_1 - note));
       factor *= 4; // <- tempo is relative to quarter notes
       if (state.last_ppq_pos > time_info.ppq_pos)
         {
