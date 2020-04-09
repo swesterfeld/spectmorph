@@ -32,7 +32,9 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   m_center = 0;
   m_start_phase = 0;
   m_sync_voices = false;
-  m_beat_sync = BEAT_SYNC_OFF;
+  m_beat_sync = false;
+  m_note = NOTE_1_4;
+  m_note_mode = NOTE_MODE_STRAIGHT;
 
   leak_debugger.add (this);
 }
@@ -63,7 +65,9 @@ MorphLFO::save (OutFile& out_file)
   out_file.write_float ("center", m_center);
   out_file.write_float ("start_phase", m_start_phase);
   out_file.write_bool ("sync_voices", m_sync_voices);
-  out_file.write_int ("beat_sync", m_beat_sync);
+  out_file.write_bool ("beat_sync", m_beat_sync);
+  out_file.write_int ("note", m_note);
+  out_file.write_int ("note_mode", m_note_mode);
 
   return true;
 }
@@ -79,9 +83,13 @@ MorphLFO::load (InFile& ifile)
             {
               m_wave_type = static_cast<WaveType> (ifile.event_int());
             }
-          else if (ifile.event_name() == "beat_sync")
+          else if (ifile.event_name() == "note")
             {
-              m_beat_sync = static_cast<BeatSync> (ifile.event_int());
+              m_note = static_cast<Note> (ifile.event_int());
+            }
+          else if (ifile.event_name() == "note_mode")
+            {
+              m_note_mode = static_cast<NoteMode> (ifile.event_int());
             }
           else
             {
@@ -118,6 +126,10 @@ MorphLFO::load (InFile& ifile)
           if (ifile.event_name() == "sync_voices")
             {
               m_sync_voices = ifile.event_bool();
+            }
+          else if (ifile.event_name() == "beat_sync")
+            {
+              m_beat_sync = ifile.event_bool();
             }
           else
             {
@@ -225,16 +237,44 @@ MorphLFO::set_sync_voices (float sync_voices)
   m_morph_plan->emit_plan_changed();
 }
 
-MorphLFO::BeatSync
+bool
 MorphLFO::beat_sync() const
 {
   return m_beat_sync;
 }
 
 void
-MorphLFO::set_beat_sync (BeatSync beat_sync)
+MorphLFO::set_beat_sync (bool beat_sync)
 {
   m_beat_sync = beat_sync;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphLFO::Note
+MorphLFO::note() const
+{
+  return m_note;
+}
+
+void
+MorphLFO::set_note (Note note)
+{
+  m_note = note;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphLFO::NoteMode
+MorphLFO::note_mode() const
+{
+  return m_note_mode;
+}
+
+void
+MorphLFO::set_note_mode (NoteMode mode)
+{
+  m_note_mode = mode;
 
   m_morph_plan->emit_plan_changed();
 }

@@ -35,11 +35,24 @@ public:
     WAVE_RANDOM_SH      = 6,
     WAVE_RANDOM_LINEAR  = 7
   };
-  enum BeatSync {
-    BEAT_SYNC_OFF = 1,
-    BEAT_SYNC_1_1 = 2,
-    BEAT_SYNC_1_2 = 3,
-    BEAT_SYNC_1_4 = 4
+  enum Note {
+    NOTE_32_1 = 1,
+    NOTE_16_1 = 2,
+    NOTE_8_1  = 3,
+    NOTE_4_1  = 4,
+    NOTE_2_1  = 5,
+    NOTE_1_1  = 6,
+    NOTE_1_2  = 7,
+    NOTE_1_4  = 8,
+    NOTE_1_8  = 9,
+    NOTE_1_16 = 10,
+    NOTE_1_32 = 11,
+    NOTE_1_64 = 12
+  };
+  enum NoteMode {
+    NOTE_MODE_STRAIGHT = 1,
+    NOTE_MODE_TRIPLET  = 2,
+    NOTE_MODE_DOTTED   = 3
   };
 protected:
   WaveType       m_wave_type;
@@ -48,7 +61,9 @@ protected:
   float          m_center;
   float          m_start_phase;
   bool           m_sync_voices;
-  BeatSync       m_beat_sync;
+  bool           m_beat_sync;
+  Note           m_note;
+  NoteMode       m_note_mode;
 
 public:
   MorphLFO (MorphPlan *morph_plan);
@@ -79,8 +94,14 @@ public:
   bool sync_voices() const;
   void set_sync_voices (float new_sync_voices);
 
-  BeatSync beat_sync() const;
-  void set_beat_sync (BeatSync beat_sync);
+  bool beat_sync() const;
+  void set_beat_sync (bool beat_sync);
+
+  Note note() const;
+  void set_note (Note note);
+
+  NoteMode note_mode() const;
+  void set_note_mode (NoteMode mode);
 };
 
 }

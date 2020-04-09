@@ -48,6 +48,8 @@ MorphLFOModule::set_config (MorphOperator *op)
   sync_voices = lfo->sync_voices();
   wave_type = lfo->wave_type();
   beat_sync = lfo->beat_sync();
+  note = lfo->note();
+  note_mode = lfo->note_mode();
 
   MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
   if (synth)
@@ -103,7 +105,7 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 void
 MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
-  if (beat_sync == MorphLFO::BEAT_SYNC_OFF)
+  if (!beat_sync)
     {
       if (time_info.time_ms > state.last_time_ms)
         state.phase += (time_info.time_ms - state.last_time_ms) / 1000 * frequency;
@@ -112,16 +114,7 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
   else
     {
       double factor = 1;
-      switch (beat_sync)
-        {
-          case MorphLFO::BEAT_SYNC_1_1: factor = 1.0 / 1.0;
-                                        break;
-          case MorphLFO::BEAT_SYNC_1_2: factor = 1.0 / 2.0;
-                                        break;
-          case MorphLFO::BEAT_SYNC_1_4: factor = 1.0 / 4.0;
-                                        break;
-          case MorphLFO::BEAT_SYNC_OFF: g_assert_not_reached();
-        }
+      factor = pow (2, (MorphLFO::NOTE_1_1 - note));
       factor *= 4; // <- tempo is relative to quarter notes
       if (state.last_ppq_pos > time_info.ppq_pos)
         {

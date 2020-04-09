@@ -12,15 +12,16 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
-  MorphLFO::WaveType wave_type;
+  MorphLFO::WaveType  wave_type;
+  MorphLFO::Note      note;
+  MorphLFO::NoteMode  note_mode;
 
   float   frequency;
   float   depth;
   float   center;
   float   start_phase;
   bool    sync_voices;
-
-  MorphLFO::BeatSync beat_sync;
+  bool    beat_sync;
 
   struct LFOState
   {
