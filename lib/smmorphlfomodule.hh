@@ -29,13 +29,11 @@ class MorphLFOModule : public MorphOperatorModule
     double random_value       = 0;
     double value              = 0;
     double last_ppq_pos       = 0;
+    double last_time_ms       = 0;
   } local_lfo_state;
-
-  double last_time_ms = 0;
 
   struct SharedState : public MorphModuleSharedState
   {
-    double   time_ms = 0;
     LFOState global_lfo_state;
   };
   SharedState *shared_state;
