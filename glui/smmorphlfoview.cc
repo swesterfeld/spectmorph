@@ -91,16 +91,31 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   });
 
   // NOTE
-  note_combobox = new ComboBox (body_widget);
-  for (int i = MorphLFO::NOTE_32_1; i <= MorphLFO::NOTE_1_64; i++)
+  for (int note = MorphLFO::NOTE_32_1; note <= MorphLFO::NOTE_1_64; note++)
     {
-      note_combobox->add_item (note2text (i));
-      if (morph_lfo->note() == i)
-        note_combobox->set_text (note2text (i));
+      string text;
+
+      if (note <= MorphLFO::NOTE_1_1)
+        text = string_printf ("%d/1", sm_round_positive (pow (2.0, MorphLFO::NOTE_32_1 - note + 5)));
+      else
+        text = string_printf ("1/%d", sm_round_positive (pow (2.0, note - MorphLFO::NOTE_1_1)));
+
+      ev_note.add_item (note, text);
     }
-  connect (note_combobox->signal_item_changed, this, &MorphLFOView::on_note_changed);
+
+  note_combobox = ev_note.create_combobox (body_widget, morph_lfo->note(),
+    [morph_lfo] (int i) { morph_lfo->set_note (MorphLFO::Note (i)); });
 
   op_layout.add_row (3, new Label (body_widget, "Note"), note_combobox);
+
+  // NOTE MODE
+  ev_note_mode.add_item (MorphLFO::NOTE_MODE_STRAIGHT, "straight");
+  ev_note_mode.add_item (MorphLFO::NOTE_MODE_TRIPLET, "triplet");
+  ev_note_mode.add_item (MorphLFO::NOTE_MODE_DOTTED, "dotted");
+
+  op_layout.add_row (3, new Label (body_widget, "NoteMode"),
+    ev_note_mode.create_combobox (body_widget, morph_lfo->note_mode(),
+                                  [morph_lfo] (int i) { morph_lfo->set_note_mode (MorphLFO::NoteMode (i)); }));
 
   op_layout.activate();
 }
@@ -108,16 +123,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
 double
 MorphLFOView::view_height()
 {
-  return 23;
-}
-
-string
-MorphLFOView::note2text (int note)
-{
-  if (note <= MorphLFO::NOTE_1_1)
-    return string_printf ("%d/1", sm_round_positive (pow (2.0, MorphLFO::NOTE_32_1 - note + 5)));
-  else
-    return string_printf ("1/%d", sm_round_positive (pow (2.0, note - MorphLFO::NOTE_1_1)));
+  return 26;
 }
 
 void
@@ -142,17 +148,5 @@ MorphLFOView::on_wave_type_changed()
   else
     {
       g_assert_not_reached();
-    }
-}
-
-void
-MorphLFOView::on_note_changed()
-{
-  string text = note_combobox->text();
-
-  for (int i = MorphLFO::NOTE_32_1; i <= MorphLFO::NOTE_1_64; i++)
-    {
-      if (note2text (i) == text)
-        morph_lfo->set_note (MorphLFO::Note (i));
     }
 }

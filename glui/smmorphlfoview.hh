@@ -7,6 +7,7 @@
 #include "smmorphlfo.hh"
 #include "smcomboboxoperator.hh"
 #include "smpropertyview.hh"
+#include "smenumview.hh"
 
 namespace SpectMorph
 {
@@ -25,7 +26,8 @@ class MorphLFOView : public MorphOperatorView
   PropertyView pv_center;
   PropertyView pv_start_phase;
 
-  std::string note2text (int note);
+  EnumView ev_note;
+  EnumView ev_note_mode;
 
 public:
   MorphLFOView (Widget *widget, MorphLFO *op, MorphPlanWindow *morph_plan_window);
@@ -34,7 +36,6 @@ public:
 
 /* slots: */
   void on_wave_type_changed();
-  void on_note_changed();
 };
 
 }
