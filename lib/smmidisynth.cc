@@ -94,7 +94,7 @@ MidiSynth::freq_from_note (float note)
 }
 
 void
-MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
+MidiSynth::process_note_on (const TimeInfo& time_info, int channel, int midi_note, int midi_velocity)
 {
   // prevent crash without output: ignore note on in this case
   if (!morph_plan_synth.have_output())
@@ -122,7 +122,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
 
           voice->mono_type = Voice::MonoType::POLY;
 
-          output->retrigger (0 /* channel */, voice->freq, midi_velocity);
+          output->retrigger (time_info, 0 /* channel */, voice->freq, midi_velocity);
         }
       else
         {
@@ -148,7 +148,7 @@ MidiSynth::process_note_on (int channel, int midi_note, int midi_velocity)
 
                   mono_voice->mono_type = Voice::MonoType::MONO;
 
-                  output->retrigger (0 /* channel */, voice->freq, midi_velocity);
+                  output->retrigger (time_info, 0 /* channel */, voice->freq, midi_velocity);
                 }
             }
         }
@@ -338,7 +338,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 }
 
 void
-MidiSynth::process_audio (float *output, size_t n_values)
+MidiSynth::process_audio (const TimeInfo& time_info, float *output, size_t n_values)
 {
   if (!n_values)    /* this can happen if multiple midi events occur at the same time */
     return;
@@ -352,10 +352,6 @@ MidiSynth::process_audio (float *output, size_t n_values)
   // prevent crash without output: just return zeros and don't do anything else
   if (!morph_plan_synth.have_output())
     return;
-
-  TimeInfo block_time;
-  block_time.time_ms = audio_time_stamp / m_mix_freq * 1000;
-  block_time.ppq_pos = m_ppq_pos;
 
   for (Voice *voice : active_voices)
     {
@@ -386,8 +382,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
-          output_module->set_block_time (block_time);
-          output_module->process (n_values, values, 1, freq_in);
+          output_module->process (time_info, n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i] * gain;
         }
@@ -395,8 +390,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
-          output_module->set_block_time (block_time);
-          output_module->process (n_values, values, 1, freq_in);
+          output_module->process (time_info, n_values, values, 1, freq_in);
           for (size_t i = 0; i < n_values; i++)
             output[i] += samples[i] * gain;
 
@@ -429,14 +423,18 @@ MidiSynth::process (float *output, size_t n_values)
       return;
     }
   uint32_t offset = 0;
+  TimeInfo time_info;
 
   for (const auto& midi_event : midi_events)
     {
       // ensure that new offset from midi event is not larger than n_values
       uint32_t new_offset = min <uint32_t> (midi_event.offset, n_values);
 
+      time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
+      time_info.ppq_pos = m_ppq_pos;
+
       // process any audio that is before the event
-      process_audio (output + offset, new_offset - offset);
+      process_audio (time_info, output + offset, new_offset - offset);
       offset = new_offset;
 
       if (midi_event.is_pitch_bend())
@@ -454,7 +452,7 @@ MidiSynth::process (float *output, size_t n_values)
           const int midi_velocity = midi_event.midi_data[2];
 
           MIDI_DEBUG ("%zd | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
-          process_note_on (midi_event.channel(), midi_note, midi_velocity);
+          process_note_on (time_info, midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
@@ -469,13 +467,16 @@ MidiSynth::process (float *output, size_t n_values)
           process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
         }
     }
+  time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
+  time_info.ppq_pos = m_ppq_pos;
+
   // process frames after last event
-  process_audio (output + offset, n_values - offset);
+  process_audio (time_info, output + offset, n_values - offset);
 
   midi_events.clear();
 
   m_ppq_pos += n_values * m_tempo / (60. * m_mix_freq);
-  TimeInfo time_info;
+
   time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
   time_info.ppq_pos = m_ppq_pos;
   morph_plan_synth.update_shared_state (time_info);

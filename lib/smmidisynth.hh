@@ -75,8 +75,8 @@ class MidiSynth
   float   freq_from_note (float note);
 
   void set_mono_enabled (bool new_value);
-  void process_audio (float *output, size_t n_values);
-  void process_note_on (int channel, int midi_note, int midi_velocity);
+  void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
+  void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);

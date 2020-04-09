@@ -242,10 +242,11 @@ Project::on_plan_changed()
   MorphOutputModule *om = mp_voice->output();
   if (om)
     {
-      om->retrigger (0, 440, 1);
+      TimeInfo ti; // not relevant
+      om->retrigger (ti, 0, 440, 1);
       float s;
       float *values[1] = { &s };
-      om->process (1, values, 1);
+      om->process (ti, 1, values, 1);
     }
 
   // FIXME: refptr is locking (which is not too good)

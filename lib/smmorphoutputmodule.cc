@@ -150,11 +150,12 @@ recursive_cycle_check (MorphOperatorModule *module, int depth = 0)
 }
 
 void
-MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, const float *freq_in)
+MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
   const bool have_cycle = recursive_cycle_check (this);
+  block_time = time_info;
 
   for (size_t port = 0; port < n_ports; port++)
     {
@@ -170,12 +171,6 @@ MorphOutputModule::process (size_t n_samples, float **values, size_t n_ports, co
             }
         }
     }
-}
-
-void
-MorphOutputModule::set_block_time (const TimeInfo& new_block_time)
-{
-  block_time = new_block_time;
 }
 
 TimeInfo
@@ -194,7 +189,7 @@ MorphOutputModule::compute_time_info() const
 }
 
 void
-MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
+MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity)
 {
   if (recursive_cycle_check (this))
     return;
@@ -207,7 +202,7 @@ MorphOutputModule::retrigger (int channel, float freq, int midi_velocity)
         }
     }
   recursive_reset_tag (this);
-  recursive_reset_value (this, block_time);
+  recursive_reset_value (this, time_info);
 }
 
 void
