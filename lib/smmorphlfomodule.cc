@@ -70,18 +70,13 @@ MorphLFOModule::value()
   if (sync_voices)
     {
       auto lfo_state = shared_state->global_lfo_state;
-      if (time.time_ms > lfo_state.last_time_ms)
-        update_lfo_value (lfo_state, time.time_ms - lfo_state.last_time_ms, time.ppq_pos);
+      update_lfo_value (lfo_state, time.time_ms, time.ppq_pos);
 
       return lfo_state.value;
     }
   else
     {
-      if (time.time_ms > local_lfo_state.last_time_ms)
-        {
-          update_lfo_value (local_lfo_state, time.time_ms - local_lfo_state.last_time_ms, time.ppq_pos);
-          local_lfo_state.last_time_ms = time.time_ms;
-        }
+      update_lfo_value (local_lfo_state, time.time_ms, time.ppq_pos);
       return local_lfo_state.value;
     }
 }
@@ -90,7 +85,6 @@ void
 MorphLFOModule::reset_value (const TimeInfo& time_info)
 {
   restart_lfo (local_lfo_state, time_info);
-  local_lfo_state.last_time_ms = time_info.time_ms;
 }
 
 void
@@ -102,6 +96,7 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
   /* compute initial value */
   update_lfo_value (state, 0, 0);
   state.last_ppq_pos = time_info.ppq_pos;
+  state.last_time_ms = time_info.time_ms;
 }
 
 void
@@ -109,7 +104,9 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_po
 {
   if (beat_sync == MorphLFO::BEAT_SYNC_OFF)
     {
-      state.phase += time_ms / 1000 * frequency;
+      if (time_ms > state.last_time_ms)
+        state.phase += (time_ms - state.last_time_ms) / 1000 * frequency;
+      state.last_time_ms = time_ms;
     }
   else
     {
@@ -195,10 +192,5 @@ MorphLFOModule::update_lfo_value (LFOState& state, double time_ms, double ppq_po
 void
 MorphLFOModule::update_shared_state (const TimeInfo& time_info)
 {
-  double time_ms = time_info.time_ms;
-  if (time_ms > shared_state->global_lfo_state.last_time_ms)
-    {
-      update_lfo_value (shared_state->global_lfo_state, time_ms - shared_state->global_lfo_state.last_time_ms, time_info.ppq_pos);
-      shared_state->global_lfo_state.last_time_ms = time_ms;
-    }
+  update_lfo_value (shared_state->global_lfo_state, time_info.time_ms, time_info.ppq_pos);
 }
