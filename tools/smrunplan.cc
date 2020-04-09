@@ -237,12 +237,13 @@ Player::retrigger()
   if (options.midi_note >= 0)
     freq = freq_from_note (options.midi_note);
 
-  voice->output()->retrigger (0, freq, 100);
+  voice->output()->retrigger (/* zero time */ TimeInfo(), 0, freq, 100);
 }
 
 void
 Player::compute_samples (vector<float>& samples)
 {
+  uint64 audio_time_stamp = 0;
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
     {
@@ -277,14 +278,16 @@ Player::compute_samples (vector<float>& samples)
           synth.update_plan (plan);
         }
 
-      size_t todo = min (STEP, samples.size());
-
-      float *audio_out[1] = { &samples[i] };
-      voice->output()->process (todo, audio_out, 1);
+      size_t todo = min (STEP, samples.size() - i);
 
       TimeInfo time_info;
-      time_info.time_ms = todo * 1000.0 / voice->mix_freq();
+      time_info.time_ms = audio_time_stamp * 1000.0 / voice->mix_freq();
+
+      float *audio_out[1] = { &samples[i] };
+      voice->output()->process (time_info, todo, audio_out, 1);
+
       synth.update_shared_state (time_info);
+      audio_time_stamp += todo;
     }
 }
 
