@@ -113,21 +113,20 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
     }
   else
     {
-      double factor;
+      double factor = pow (2, (MorphLFO::NOTE_1_4 - note)); // <- tempo is relative to quarter notes
       switch (note_mode)
       {
         case MorphLFO::NOTE_MODE_TRIPLET:
-          factor = 2.0 / 3.0;
+          factor *= 2.0 / 3.0;
           break;
         case MorphLFO::NOTE_MODE_DOTTED:
-          factor = 3.0 / 2.0;
+          factor *= 3.0 / 2.0;
           break;
         default:
-          factor = 1.0;
+          ;
       }
-      factor *= pow (2, (MorphLFO::NOTE_1_1 - note));
-      factor *= 4; // <- tempo is relative to quarter notes
-      if (state.last_ppq_pos > time_info.ppq_pos)
+      constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
+      if (state.last_ppq_pos > time_info.ppq_pos + epsilon)
         {
           state.phase = time_info.ppq_pos / factor;
           state.phase += 1; /* force random retrigger */
