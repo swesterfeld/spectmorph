@@ -109,23 +109,27 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   pv_start_phase.init_ui (body_widget, op_layout);
 
   // FLAG: SYNC PHASE
-  CheckBox *sync_voices_box = new CheckBox (body_widget, "Sync Phase for all voices");
+  Widget *flags_widget = new Widget (body_widget);
+  op_layout.add_row (2, flags_widget);
+
+  CheckBox *sync_voices_box = new CheckBox (flags_widget, "Sync Phase for all voices");
   sync_voices_box->set_checked (morph_lfo->sync_voices());
-  op_layout.add_row (2, sync_voices_box);
 
   connect (sync_voices_box->signal_toggled, [morph_lfo] (bool new_value) {
     morph_lfo->set_sync_voices (new_value);
   });
 
   // FLAG: BEAT SYNC
-  CheckBox *beat_sync_box = new CheckBox (body_widget, "Beat Sync");
+  CheckBox *beat_sync_box = new CheckBox (flags_widget, "Beat Sync");
   beat_sync_box->set_checked (morph_lfo->beat_sync());
-  op_layout.add_row (2, beat_sync_box);
 
   connect (beat_sync_box->signal_toggled, [this, morph_lfo] (bool new_value) {
     morph_lfo->set_beat_sync (new_value);
     update_visible();
   });
+
+  grid.add_widget (sync_voices_box, 0, 0, 20, 2);
+  grid.add_widget (beat_sync_box, 26, 0, 20, 2);
 
   op_layout.activate();
   update_visible();
