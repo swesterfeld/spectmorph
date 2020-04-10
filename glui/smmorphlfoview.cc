@@ -11,19 +11,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-#define WAVE_TEXT_SINE          "Sine"
-#define WAVE_TEXT_TRIANGLE      "Triangle"
-#define WAVE_TEXT_SAW_UP        "Saw Up"
-#define WAVE_TEXT_SAW_DOWN      "Saw Down"
-#define WAVE_TEXT_SQUARE        "Square"
-#define WAVE_TEXT_RANDOM_SH     "Random Sample & Hold"
-#define WAVE_TEXT_RANDOM_LINEAR "Random Linear"
-
-#define BEAT_SYNC_TEXT_OFF      "Off"
-#define BEAT_SYNC_TEXT_1_1      "1/1"
-#define BEAT_SYNC_TEXT_1_2      "1/2"
-#define BEAT_SYNC_TEXT_1_4      "1/4"
-
 MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo),
@@ -34,34 +21,17 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   pv_start_phase (morph_lfo_properties.start_phase)
 {
   // WAVE TYPE
-  wave_type_combobox = new ComboBox (body_widget);
-  wave_type_combobox->add_item (WAVE_TEXT_SINE);
-  wave_type_combobox->add_item (WAVE_TEXT_TRIANGLE);
-  wave_type_combobox->add_item (WAVE_TEXT_SAW_UP);
-  wave_type_combobox->add_item (WAVE_TEXT_SAW_DOWN);
-  wave_type_combobox->add_item (WAVE_TEXT_SQUARE);
-  wave_type_combobox->add_item (WAVE_TEXT_RANDOM_SH);
-  wave_type_combobox->add_item (WAVE_TEXT_RANDOM_LINEAR);
+  ev_wave_type.add_item (MorphLFO::WAVE_SINE,           "Sine");
+  ev_wave_type.add_item (MorphLFO::WAVE_TRIANGLE,       "Triangle");
+  ev_wave_type.add_item (MorphLFO::WAVE_SAW_UP,         "Saw Up");
+  ev_wave_type.add_item (MorphLFO::WAVE_SAW_DOWN,       "Saw Down");
+  ev_wave_type.add_item (MorphLFO::WAVE_SQUARE,         "Square");
+  ev_wave_type.add_item (MorphLFO::WAVE_RANDOM_SH,      "Random Sample & Hold");
+  ev_wave_type.add_item (MorphLFO::WAVE_RANDOM_LINEAR,  "Random Linear");
 
-  if (morph_lfo->wave_type() == MorphLFO::WAVE_SINE)
-    wave_type_combobox->set_text (WAVE_TEXT_SINE);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_TRIANGLE)
-    wave_type_combobox->set_text (WAVE_TEXT_TRIANGLE);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SAW_UP)
-    wave_type_combobox->set_text (WAVE_TEXT_SAW_UP);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SAW_DOWN)
-    wave_type_combobox->set_text (WAVE_TEXT_SAW_DOWN);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_SQUARE)
-    wave_type_combobox->set_text (WAVE_TEXT_SQUARE);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_RANDOM_SH)
-    wave_type_combobox->set_text (WAVE_TEXT_RANDOM_SH);
-  else if (morph_lfo->wave_type() == MorphLFO::WAVE_RANDOM_LINEAR)
-    wave_type_combobox->set_text (WAVE_TEXT_RANDOM_LINEAR);
-  else
-    {
-      g_assert_not_reached();
-    }
-  connect (wave_type_combobox->signal_item_changed, this, &MorphLFOView::on_wave_type_changed);
+  ComboBox *wave_type_combobox;
+  wave_type_combobox = ev_wave_type.create_combobox (body_widget, morph_lfo->wave_type(),
+    [morph_lfo] (int i) { morph_lfo->set_wave_type (MorphLFO::WaveType (i)); });
 
   op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
 
@@ -83,6 +53,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
       ev_note.add_item (note, text);
     }
 
+  ComboBox *note_combobox;
   note_combobox = ev_note.create_combobox (note_widget, morph_lfo->note(),
     [morph_lfo] (int i) { morph_lfo->set_note (MorphLFO::Note (i)); });
 
@@ -150,29 +121,4 @@ MorphLFOView::update_visible()
 
   op_layout_height = op_layout.activate();
   signal_size_changed();
-}
-
-void
-MorphLFOView::on_wave_type_changed()
-{
-  string text = wave_type_combobox->text();
-
-  if (text == WAVE_TEXT_SINE)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_SINE);
-  else if (text == WAVE_TEXT_TRIANGLE)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_TRIANGLE);
-  else if (text == WAVE_TEXT_SAW_UP)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_SAW_UP);
-  else if (text == WAVE_TEXT_SAW_DOWN)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_SAW_DOWN);
-  else if (text == WAVE_TEXT_SQUARE)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_SQUARE);
-  else if (text == WAVE_TEXT_RANDOM_SH)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_SH);
-  else if (text == WAVE_TEXT_RANDOM_LINEAR)
-    morph_lfo->set_wave_type (MorphLFO::WAVE_RANDOM_LINEAR);
-  else
-    {
-      g_assert_not_reached();
-    }
 }

@@ -19,8 +19,6 @@ class MorphLFOView : public MorphOperatorView
 
   MorphLFOProperties       morph_lfo_properties;
 
-  ComboBox  *wave_type_combobox;
-  ComboBox  *note_combobox;
   Label     *note_label;
   Widget    *note_widget;
 
@@ -29,6 +27,7 @@ class MorphLFOView : public MorphOperatorView
   PropertyView pv_center;
   PropertyView pv_start_phase;
 
+  EnumView ev_wave_type;
   EnumView ev_note;
   EnumView ev_note_mode;
 
@@ -40,9 +39,6 @@ public:
   MorphLFOView (Widget *widget, MorphLFO *op, MorphPlanWindow *morph_plan_window);
 
   double view_height() override;
-
-/* slots: */
-  void on_wave_type_changed();
 };
 
 }
