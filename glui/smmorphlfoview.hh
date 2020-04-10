@@ -8,6 +8,7 @@
 #include "smcomboboxoperator.hh"
 #include "smpropertyview.hh"
 #include "smenumview.hh"
+#include "smoperatorlayout.hh"
 
 namespace SpectMorph
 {
@@ -20,6 +21,8 @@ class MorphLFOView : public MorphOperatorView
 
   ComboBox  *wave_type_combobox;
   ComboBox  *note_combobox;
+  Label     *note_label;
+  Widget    *note_widget;
 
   PropertyView pv_frequency;
   PropertyView pv_depth;
@@ -29,6 +32,10 @@ class MorphLFOView : public MorphOperatorView
   EnumView ev_note;
   EnumView ev_note_mode;
 
+  OperatorLayout op_layout;
+  int            op_layout_height;
+
+  void update_visible();
 public:
   MorphLFOView (Widget *widget, MorphLFO *op, MorphPlanWindow *morph_plan_window);
 

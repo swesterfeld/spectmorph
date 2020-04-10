@@ -33,8 +33,6 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   pv_center (morph_lfo_properties.center),
   pv_start_phase (morph_lfo_properties.start_phase)
 {
-  OperatorLayout op_layout;
-
   // WAVE TYPE
   wave_type_combobox = new ComboBox (body_widget);
   wave_type_combobox->add_item (WAVE_TEXT_SINE);
@@ -86,11 +84,14 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   beat_sync_box->set_checked (morph_lfo->beat_sync());
   op_layout.add_row (2, beat_sync_box);
 
-  connect (beat_sync_box->signal_toggled, [morph_lfo] (bool new_value) {
+  connect (beat_sync_box->signal_toggled, [this, morph_lfo] (bool new_value) {
     morph_lfo->set_beat_sync (new_value);
+    update_visible();
   });
 
   // NOTE
+  note_widget = new Widget (body_widget);
+
   for (int note = MorphLFO::NOTE_32_1; note <= MorphLFO::NOTE_1_64; note++)
     {
       string text;
@@ -103,27 +104,44 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
       ev_note.add_item (note, text);
     }
 
-  note_combobox = ev_note.create_combobox (body_widget, morph_lfo->note(),
+  note_combobox = ev_note.create_combobox (note_widget, morph_lfo->note(),
     [morph_lfo] (int i) { morph_lfo->set_note (MorphLFO::Note (i)); });
-
-  op_layout.add_row (3, new Label (body_widget, "Note"), note_combobox);
 
   // NOTE MODE
   ev_note_mode.add_item (MorphLFO::NOTE_MODE_STRAIGHT, "straight");
   ev_note_mode.add_item (MorphLFO::NOTE_MODE_TRIPLET, "triplet");
   ev_note_mode.add_item (MorphLFO::NOTE_MODE_DOTTED, "dotted");
 
-  op_layout.add_row (3, new Label (body_widget, "NoteMode"),
-    ev_note_mode.create_combobox (body_widget, morph_lfo->note_mode(),
-                                  [morph_lfo] (int i) { morph_lfo->set_note_mode (MorphLFO::NoteMode (i)); }));
+  ComboBox *note_mode_combobox;
+  note_mode_combobox = ev_note_mode.create_combobox (note_widget, morph_lfo->note_mode(),
+    [morph_lfo] (int i) { morph_lfo->set_note_mode (MorphLFO::NoteMode (i)); });
 
+  FixedGrid grid;
+  grid.add_widget (note_combobox, 0, 0, 14, 3);
+  grid.add_widget (note_mode_combobox, 15, 0, 14, 3);
+
+  note_label = new Label (body_widget, "Note");
+
+  op_layout.add_row (3, note_label, note_widget);
   op_layout.activate();
+  update_visible();
 }
 
 double
 MorphLFOView::view_height()
 {
-  return 26;
+  return op_layout_height + 5;
+}
+
+void
+MorphLFOView::update_visible()
+{
+  pv_frequency.set_visible (!morph_lfo->beat_sync());
+  note_label->set_visible (morph_lfo->beat_sync());
+  note_widget->set_visible (morph_lfo->beat_sync());
+
+  op_layout_height = op_layout.activate();
+  signal_size_changed();
 }
 
 void
