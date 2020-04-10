@@ -31,6 +31,8 @@ class MorphLFOModule : public MorphOperatorModule
     double value              = 0;
     double last_ppq_pos       = 0;
     double last_time_ms       = 0;
+    MorphLFO::Note      last_note;
+    MorphLFO::NoteMode  last_note_mode;
   } local_lfo_state;
 
   struct SharedState : public MorphModuleSharedState

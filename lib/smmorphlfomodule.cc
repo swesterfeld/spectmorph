@@ -97,6 +97,8 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
   state.random_value = random_gen()->random_double_range (-1, 1);
   /* compute initial value */
   TimeInfo zero_time;
+  state.last_note = note;
+  state.last_note_mode = note_mode;
   update_lfo_value (state, zero_time);
   state.last_ppq_pos = time_info.ppq_pos;
   state.last_time_ms = time_info.time_ms;
@@ -125,8 +127,17 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
         default:
           ;
       }
+      bool resync = false;
+      if (state.last_note != note)
+        resync = true;
+      if (state.last_note_mode != note_mode)
+        resync = true;
+
       constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
       if (state.last_ppq_pos > time_info.ppq_pos + epsilon)
+        resync = true;
+
+      if (resync)
         {
           state.phase = time_info.ppq_pos / factor;
           state.phase += 1; /* force random retrigger */
