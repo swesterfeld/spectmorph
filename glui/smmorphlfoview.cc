@@ -65,29 +65,8 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
 
   op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
 
+  // FREQUENCY
   pv_frequency.init_ui (body_widget, op_layout);
-  pv_depth.init_ui (body_widget, op_layout);
-  pv_center.init_ui (body_widget, op_layout);
-  pv_start_phase.init_ui (body_widget, op_layout);
-
-  // FLAG: SYNC PHASE
-  CheckBox *sync_voices_box = new CheckBox (body_widget, "Sync Phase for all voices");
-  sync_voices_box->set_checked (morph_lfo->sync_voices());
-  op_layout.add_row (2, sync_voices_box);
-
-  connect (sync_voices_box->signal_toggled, [morph_lfo] (bool new_value) {
-    morph_lfo->set_sync_voices (new_value);
-  });
-
-  // FLAG: BEAT SYNC
-  CheckBox *beat_sync_box = new CheckBox (body_widget, "Beat Sync");
-  beat_sync_box->set_checked (morph_lfo->beat_sync());
-  op_layout.add_row (2, beat_sync_box);
-
-  connect (beat_sync_box->signal_toggled, [this, morph_lfo] (bool new_value) {
-    morph_lfo->set_beat_sync (new_value);
-    update_visible();
-  });
 
   // NOTE
   note_widget = new Widget (body_widget);
@@ -123,6 +102,31 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   note_label = new Label (body_widget, "Note");
 
   op_layout.add_row (3, note_label, note_widget);
+
+  // DEPTH / CENTER / START_PHASE
+  pv_depth.init_ui (body_widget, op_layout);
+  pv_center.init_ui (body_widget, op_layout);
+  pv_start_phase.init_ui (body_widget, op_layout);
+
+  // FLAG: SYNC PHASE
+  CheckBox *sync_voices_box = new CheckBox (body_widget, "Sync Phase for all voices");
+  sync_voices_box->set_checked (morph_lfo->sync_voices());
+  op_layout.add_row (2, sync_voices_box);
+
+  connect (sync_voices_box->signal_toggled, [morph_lfo] (bool new_value) {
+    morph_lfo->set_sync_voices (new_value);
+  });
+
+  // FLAG: BEAT SYNC
+  CheckBox *beat_sync_box = new CheckBox (body_widget, "Beat Sync");
+  beat_sync_box->set_checked (morph_lfo->beat_sync());
+  op_layout.add_row (2, beat_sync_box);
+
+  connect (beat_sync_box->signal_toggled, [this, morph_lfo] (bool new_value) {
+    morph_lfo->set_beat_sync (new_value);
+    update_visible();
+  });
+
   op_layout.activate();
   update_visible();
 }
