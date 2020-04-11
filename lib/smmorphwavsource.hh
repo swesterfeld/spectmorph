@@ -12,9 +12,16 @@ namespace SpectMorph
 
 class MorphWavSource : public MorphOperator
 {
+public:
+  enum PlayMode {
+    PLAY_MODE_STANDARD        = 1,
+    PLAY_MODE_CUSTOM_POSITION = 2
+  };
+protected:
   int         m_object_id  = 0;
   int         m_instrument = 1;
   std::string m_lv2_filename;
+  PlayMode    m_play_mode = PLAY_MODE_STANDARD;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -35,6 +42,9 @@ public:
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
+
+  void        set_play_mode (PlayMode play_mode);
+  PlayMode    play_mode() const;
 };
 
 }

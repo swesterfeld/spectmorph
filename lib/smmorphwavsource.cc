@@ -64,6 +64,20 @@ MorphWavSource::lv2_filename()
   return m_lv2_filename;
 }
 
+void
+MorphWavSource::set_play_mode (PlayMode play_mode)
+{
+  m_play_mode = play_mode;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphWavSource::PlayMode
+MorphWavSource::play_mode() const
+{
+  return m_play_mode;
+}
+
 const char *
 MorphWavSource::type()
 {
@@ -82,6 +96,7 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("object_id", m_object_id);
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
+  out_file.write_int ("play_mode", m_play_mode);
 
   return true;
 }
@@ -100,6 +115,10 @@ MorphWavSource::load (InFile& ifile)
           else if (ifile.event_name() == "instrument")
             {
               m_instrument = ifile.event_int();
+            }
+          else if (ifile.event_name() == "play_mode")
+            {
+              m_play_mode = static_cast<PlayMode> (ifile.event_int());
             }
           else
             {
