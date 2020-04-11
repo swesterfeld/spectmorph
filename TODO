@@ -27,15 +27,9 @@ new operators:
 
 lfo beat-sync:
  + random
- + update when not rolling
- + note trigger (per voice)
- - start phase should act as phase offset and have an effect even after start
- - switching note value or from/to beat-sync should resync ppq_pos
  - elegant passing of tempo/ppq_pos to MorphLFOModule
+ - micro timing for ppq pos
  - micro timing (in block, in live decoder)
- - UI: more note value options
- - UI: on/off toggle
- - UI: display over freq
  - VST: small cleanups
  - LV2: cleanup code
  - LV2: implement speed
