@@ -19,6 +19,7 @@ class OperatorLayout
     Widget *widget3 = nullptr;
   };
   std::vector<Row> rows;
+  uint m_height = 0;
 public:
 
   void
@@ -43,7 +44,7 @@ public:
     row.widget3 = widget3;
     rows.push_back (row);
   }
-  uint
+  void
   activate()
   {
     FixedGrid grid;
@@ -108,7 +109,12 @@ public:
             yoffset += row.height;
           }
       }
-    return yoffset;
+    m_height = yoffset;
+  }
+  uint
+  height() const
+  {
+    return m_height;
   }
 };
 

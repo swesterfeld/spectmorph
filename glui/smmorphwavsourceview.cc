@@ -102,7 +102,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 double
 MorphWavSourceView::view_height()
 {
-  return 5 + op_layout_height;
+  return 5 + op_layout.height();
 }
 
 void
@@ -280,7 +280,7 @@ MorphWavSourceView::update_visible()
   position_control_input_label->set_visible (custom_position);
   pv_position.set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);
 
-  op_layout_height = op_layout.activate();
+  op_layout.activate();
   signal_size_changed();
 }
 

@@ -44,7 +44,6 @@ class MorphOutputView : public MorphOperatorView
   OutputADSRWidget           *output_adsr_widget;
 
   OperatorLayout              op_layout;
-  int                         op_layout_height;
 
   void update_visible();
 

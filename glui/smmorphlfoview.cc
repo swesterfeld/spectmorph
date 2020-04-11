@@ -109,7 +109,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
 double
 MorphLFOView::view_height()
 {
-  return op_layout_height + 5;
+  return op_layout.height() + 5;
 }
 
 void
@@ -119,6 +119,6 @@ MorphLFOView::update_visible()
   note_label->set_visible (morph_lfo->beat_sync());
   note_widget->set_visible (morph_lfo->beat_sync());
 
-  op_layout_height = op_layout.activate();
+  op_layout.activate();
   signal_size_changed();
 }

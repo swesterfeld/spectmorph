@@ -32,7 +32,6 @@ class MorphLFOView : public MorphOperatorView
   EnumView ev_note_mode;
 
   OperatorLayout op_layout;
-  int            op_layout_height;
 
   void update_visible();
 public:

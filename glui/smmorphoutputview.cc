@@ -154,7 +154,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 double
 MorphOutputView::view_height()
 {
-  return op_layout_height + 5;
+  return op_layout.height() + 5;
 }
 
 bool
@@ -209,6 +209,6 @@ MorphOutputView::update_visible()
   pv_vibrato_frequency.set_visible (morph_output->vibrato());
   pv_vibrato_attack.set_visible (morph_output->vibrato());
 
-  op_layout_height = op_layout.activate();
+  op_layout.activate();
   signal_size_changed();
 }

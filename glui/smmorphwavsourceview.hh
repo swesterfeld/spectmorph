@@ -30,9 +30,7 @@ class MorphWavSourceView : public MorphOperatorView
   PropertyView      pv_position;
   EnumView          ev_play_mode;
   ComboBoxOperator *position_control_combobox;
-
   OperatorLayout    op_layout;
-  int               op_layout_height;
 
   void on_edit();
   void on_instrument_changed();
