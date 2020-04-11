@@ -21,12 +21,16 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+#define CONTROL_TEXT_GUI "Gui Slider"
+#define CONTROL_TEXT_1   "Control Signal #1"
+#define CONTROL_TEXT_2   "Control Signal #2"
+
 MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
-  morph_wav_source (morph_wav_source)
+  morph_wav_source (morph_wav_source),
+  morph_wav_source_properties (morph_wav_source),
+  pv_position (morph_wav_source_properties.position)
 {
-  OperatorLayout op_layout;
-
   instrument_label = new Label (body_widget, "Instrument");
   progress_bar = new ProgressBar (body_widget);
   instrument_combobox = new ComboBox (body_widget);
@@ -42,11 +46,43 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 
   ComboBox *play_mode_combobox;
   play_mode_combobox = ev_play_mode.create_combobox (body_widget, morph_wav_source->play_mode(),
-    [morph_wav_source] (int i) { morph_wav_source->set_play_mode (MorphWavSource::PlayMode (i)); });
+    [this, morph_wav_source] (int i) {
+      morph_wav_source->set_play_mode (MorphWavSource::PlayMode (i));
+      update_visible();
+    });
 
   op_layout.add_row (3, new Label (body_widget, "Play Mode"), play_mode_combobox);
 
-  op_layout.activate();
+  // POSITION CONTROL INPUT
+
+  auto control_operator_filter = ComboBoxOperator::make_filter (morph_wav_source, MorphOperator::OUTPUT_CONTROL);
+  position_control_combobox = new ComboBoxOperator (body_widget, morph_wav_source->morph_plan(), control_operator_filter);
+  position_control_combobox->add_str_choice (CONTROL_TEXT_GUI);
+  position_control_combobox->add_str_choice (CONTROL_TEXT_1);
+  position_control_combobox->add_str_choice (CONTROL_TEXT_2);
+  position_control_combobox->set_none_ok (false);
+
+  position_control_input_label = new Label (body_widget, "Position Ctrl");
+  op_layout.add_row (3, position_control_input_label, position_control_combobox);
+
+  connect (position_control_combobox->signal_item_changed, this, &MorphWavSourceView::on_position_control_changed);
+
+  if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI) /* restore value */
+    position_control_combobox->set_active_str_choice (CONTROL_TEXT_GUI);
+  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_SIGNAL_1)
+    position_control_combobox->set_active_str_choice (CONTROL_TEXT_1);
+  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_SIGNAL_2)
+    position_control_combobox->set_active_str_choice (CONTROL_TEXT_2);
+  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_OP)
+    ; // position_control_combobox->set_active (morph_wav_source->control_op()); FIXME
+  else
+    {
+      g_assert_not_reached();
+    }
+  // POSITION
+  pv_position.init_ui (body_widget, op_layout);
+
+  update_visible();
 
   instrument_label->set_x (0);
   instrument_label->set_y (0);
@@ -66,7 +102,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 double
 MorphWavSourceView::view_height()
 {
-  return 11;
+  return 5 + op_layout_height;
 }
 
 void
@@ -234,4 +270,43 @@ MorphWavSourceView::update_instrument_list()
     instrument_combobox->set_text (string_printf ("%03d %s", morph_wav_source->instrument(), inst->name().c_str()));
   else
     instrument_combobox->set_text (string_printf ("%03d ---", morph_wav_source->instrument()));
+}
+
+void
+MorphWavSourceView::update_visible()
+{
+  bool custom_position = morph_wav_source->play_mode() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION;
+  position_control_combobox->set_visible (custom_position);
+  position_control_input_label->set_visible (custom_position);
+  pv_position.set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);
+
+  op_layout_height = op_layout.activate();
+  signal_size_changed();
+}
+
+void
+MorphWavSourceView::on_position_control_changed()
+{
+  MorphOperator *op = position_control_combobox->active();
+  if (op)
+    {
+      // morph_wav_source->set_control_op (op); FIXME
+      morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_OP);
+    }
+  else
+    {
+      string text = position_control_combobox->active_str_choice();
+
+      if (text == CONTROL_TEXT_GUI)
+        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_GUI);
+      else if (text == CONTROL_TEXT_1)
+        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_SIGNAL_1);
+      else if (text == CONTROL_TEXT_2)
+        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_SIGNAL_2);
+      else
+        {
+          g_assert_not_reached();
+        }
+    }
+  update_visible();
 }

@@ -9,6 +9,9 @@
 #include "smcombobox.hh"
 #include "smprogressbar.hh"
 #include "smenumview.hh"
+#include "smpropertyview.hh"
+#include "smcomboboxoperator.hh"
+#include "smoperatorlayout.hh"
 
 namespace SpectMorph
 {
@@ -19,9 +22,17 @@ class MorphWavSourceView : public MorphOperatorView
   ComboBox         *instrument_combobox = nullptr;
   ProgressBar      *progress_bar = nullptr;
   Label            *instrument_label = nullptr;
+  Label            *position_control_input_label = nullptr;
   std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
 
+  MorphWavSourceProperties morph_wav_source_properties;
+
+  PropertyView      pv_position;
   EnumView          ev_play_mode;
+  ComboBoxOperator *position_control_combobox;
+
+  OperatorLayout    op_layout;
+  int               op_layout_height;
 
   void on_edit();
   void on_instrument_changed();
@@ -30,8 +41,10 @@ class MorphWavSourceView : public MorphOperatorView
   std::string modified_check (bool& wav_source_update, bool& user_int_update);
 
   void update_instrument_list();
+  void update_visible();
   void on_edit_close();
   void on_edit_save_changes (bool save_changes);
+  void on_position_control_changed();
 public:
   MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window);
 
