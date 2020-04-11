@@ -95,18 +95,18 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
   state.phase = normalize_phase (start_phase / 360);
   state.last_random_value = random_gen()->random_double_range (-1, 1);
   state.random_value = random_gen()->random_double_range (-1, 1);
+  state.ppq_count = 0;
   /* compute initial value */
   TimeInfo zero_time;
-  state.last_note = note;
-  state.last_note_mode = note_mode;
   update_lfo_value (state, zero_time);
-  state.last_ppq_pos = time_info.ppq_pos;
   state.last_time_ms = time_info.time_ms;
+  state.last_ppq_pos = time_info.ppq_pos;
 }
 
 void
 MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
+  const double old_phase = state.phase;
   if (!beat_sync)
     {
       if (time_info.time_ms > state.last_time_ms)
@@ -115,6 +115,19 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
     }
   else
     {
+      if (time_info.ppq_pos > state.last_ppq_pos)
+        {
+          /* If sync_voices is disabled, each note should have its own phase.
+           *
+           * To compute this we want to know how long the note has been playing,
+           * ppq_count tries to do this even in presence of backward jumps as
+           * they are caused by loops. There is a small error here, during
+           * jumps, but the result should be acceptable.
+           */
+          state.ppq_count += time_info.ppq_pos - state.last_ppq_pos;
+        }
+      state.last_ppq_pos = time_info.ppq_pos;
+
       double factor = pow (2, (MorphLFO::NOTE_1_4 - note)); // <- tempo is relative to quarter notes
       switch (note_mode)
       {
@@ -127,31 +140,19 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
         default:
           ;
       }
-      bool resync = false;
-      if (state.last_note != note)
-        resync = true;
-      if (state.last_note_mode != note_mode)
-        resync = true;
-
-      constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
-      if (state.last_ppq_pos > time_info.ppq_pos + epsilon)
-        resync = true;
-
-      if (resync)
-        {
-          state.phase = time_info.ppq_pos / factor;
-          state.phase += 1; /* force random retrigger */
-        }
+      if (sync_voices)
+        state.phase = time_info.ppq_pos / factor;
       else
-        state.phase += (time_info.ppq_pos - state.last_ppq_pos) / factor;
-      state.last_ppq_pos = time_info.ppq_pos;
+        state.phase = state.ppq_count / factor;
     }
-  if (state.phase > 1)
+  state.phase = normalize_phase (state.phase);
+  constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
+  if (state.phase + epsilon < old_phase)
     {
+      // retrigger random lfo
       state.last_random_value = state.random_value;
       state.random_value = random_gen()->random_double_range (-1, 1);
     }
-  state.phase = normalize_phase (state.phase);
 
   if (wave_type == MorphLFO::WAVE_SINE)
     {
