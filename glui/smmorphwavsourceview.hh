@@ -8,6 +8,7 @@
 #include "smmorphplanwindow.hh"
 #include "smcombobox.hh"
 #include "smprogressbar.hh"
+#include "smenumview.hh"
 
 namespace SpectMorph
 {
@@ -19,6 +20,8 @@ class MorphWavSourceView : public MorphOperatorView
   ProgressBar      *progress_bar = nullptr;
   Label            *instrument_label = nullptr;
   std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
+
+  EnumView          ev_play_mode;
 
   void on_edit();
   void on_instrument_changed();

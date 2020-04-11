@@ -35,6 +35,17 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   update_instrument_list();
 
   op_layout.add_row (3, progress_bar, instrument_combobox, edit_button);
+
+  // PLAY MODE
+  ev_play_mode.add_item (MorphWavSource::PLAY_MODE_STANDARD,        "Standard");
+  ev_play_mode.add_item (MorphWavSource::PLAY_MODE_CUSTOM_POSITION, "Custom Position");
+
+  ComboBox *play_mode_combobox;
+  play_mode_combobox = ev_play_mode.create_combobox (body_widget, morph_wav_source->play_mode(),
+    [morph_wav_source] (int i) { morph_wav_source->set_play_mode (MorphWavSource::PlayMode (i)); });
+
+  op_layout.add_row (3, new Label (body_widget, "Play Mode"), play_mode_combobox);
+
   op_layout.activate();
 
   instrument_label->set_x (0);
@@ -55,7 +66,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 double
 MorphWavSourceView::view_height()
 {
-  return 8;
+  return 11;
 }
 
 void
