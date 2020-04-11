@@ -26,6 +26,7 @@ class MorphLFOModule : public MorphOperatorModule
   struct LFOState
   {
     double phase              = 0;
+    double raw_phase          = 0;
     double last_random_value  = 0;
     double random_value       = 0;
     double value              = 0;

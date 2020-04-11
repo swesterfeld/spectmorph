@@ -92,10 +92,9 @@ MorphLFOModule::reset_value (const TimeInfo& time_info)
 void
 MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 {
-  state.phase = normalize_phase (start_phase / 360);
+  state = LFOState(); /* reset to defaults */
   state.last_random_value = random_gen()->random_double_range (-1, 1);
   state.random_value = random_gen()->random_double_range (-1, 1);
-  state.ppq_count = 0;
   /* compute initial value */
   TimeInfo zero_time;
   update_lfo_value (state, zero_time);
@@ -106,11 +105,10 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 void
 MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
-  const double old_phase = state.phase;
   if (!beat_sync)
     {
       if (time_info.time_ms > state.last_time_ms)
-        state.phase += (time_info.time_ms - state.last_time_ms) / 1000 * frequency;
+        state.raw_phase += (time_info.time_ms - state.last_time_ms) / 1000 * frequency;
       state.last_time_ms = time_info.time_ms;
     }
   else
@@ -119,7 +117,7 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
         {
           /* If sync_voices is disabled, each note should have its own phase.
            *
-           * To compute this we want to know how long the note has been playing,
+           * To compute this, we want to know how long the note has been playing.
            * ppq_count tries to do this even in presence of backward jumps as
            * they are caused by loops. There is a small error here, during
            * jumps, but the result should be acceptable.
@@ -141,11 +139,12 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
           ;
       }
       if (sync_voices)
-        state.phase = time_info.ppq_pos / factor;
+        state.raw_phase = time_info.ppq_pos / factor;
       else
-        state.phase = state.ppq_count / factor;
+        state.raw_phase = state.ppq_count / factor;
     }
-  state.phase = normalize_phase (state.phase);
+  const double old_phase = state.phase;
+  state.phase = normalize_phase (state.raw_phase + start_phase / 360);
   constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
   if (state.phase + epsilon < old_phase)
     {
