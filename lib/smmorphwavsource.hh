@@ -4,11 +4,21 @@
 #define SPECTMORPH_MORPH_WAV_SOURCE_HH
 
 #include "smmorphoperator.hh"
+#include "smproperty.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
+
+class MorphWavSource;
+
+struct MorphWavSourceProperties
+{
+  MorphWavSourceProperties (MorphWavSource *lfo);
+
+  LinearParamProperty<MorphWavSource> position;
+};
 
 class MorphWavSource : public MorphOperator
 {
@@ -17,11 +27,19 @@ public:
     PLAY_MODE_STANDARD        = 1,
     PLAY_MODE_CUSTOM_POSITION = 2
   };
+  enum ControlType {
+    CONTROL_GUI      = 1,
+    CONTROL_SIGNAL_1 = 2,
+    CONTROL_SIGNAL_2 = 3,
+    CONTROL_OP       = 4
+  };
 protected:
   int         m_object_id  = 0;
   int         m_instrument = 1;
   std::string m_lv2_filename;
-  PlayMode    m_play_mode = PLAY_MODE_STANDARD;
+  PlayMode    m_play_mode             = PLAY_MODE_STANDARD;
+  ControlType m_position_control_type = CONTROL_GUI;
+  double      m_position = 0;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -45,6 +63,12 @@ public:
 
   void        set_play_mode (PlayMode play_mode);
   PlayMode    play_mode() const;
+
+  void        set_position_control_type (ControlType new_control_type);
+  ControlType position_control_type() const;
+
+  void        set_position (double new_position);
+  double      position() const;
 };
 
 }

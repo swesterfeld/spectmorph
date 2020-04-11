@@ -10,6 +10,11 @@ using std::string;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSource");
 
+MorphWavSourceProperties::MorphWavSourceProperties (MorphWavSource *wav_source) :
+  position (wav_source, "Position", "%.2f", -1, 1, &MorphWavSource::position, &MorphWavSource::set_position)
+{
+}
+
 MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
@@ -78,6 +83,35 @@ MorphWavSource::play_mode() const
   return m_play_mode;
 }
 
+void
+MorphWavSource::set_position_control_type (ControlType new_control_type)
+{
+  m_position_control_type = new_control_type;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+MorphWavSource::ControlType
+MorphWavSource::position_control_type() const
+{
+  return m_position_control_type;
+}
+
+void
+MorphWavSource::set_position (double new_position)
+{
+  m_position = new_position;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+double
+MorphWavSource::position() const
+{
+  return m_position;
+}
+
+
 const char *
 MorphWavSource::type()
 {
@@ -97,6 +131,8 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
   out_file.write_int ("play_mode", m_play_mode);
+  out_file.write_int ("position_control_type", m_position_control_type);
+  out_file.write_float ("position", m_position);
 
   return true;
 }
@@ -120,9 +156,25 @@ MorphWavSource::load (InFile& ifile)
             {
               m_play_mode = static_cast<PlayMode> (ifile.event_int());
             }
+          else if (ifile.event_name() == "position_control_type")
+            {
+              m_position_control_type = static_cast<ControlType> (ifile.event_int());
+            }
           else
             {
               g_printerr ("bad int\n");
+              return false;
+            }
+        }
+      else if (ifile.event() == InFile::FLOAT)
+        {
+          if (ifile.event_name() == "position")
+            {
+              m_position = ifile.event_float();
+            }
+          else
+            {
+              g_printerr ("bad float\n");
               return false;
             }
         }
