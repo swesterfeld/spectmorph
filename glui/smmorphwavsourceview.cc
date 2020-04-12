@@ -74,7 +74,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_SIGNAL_2)
     position_control_combobox->set_active_str_choice (CONTROL_TEXT_2);
   else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_OP)
-    ; // position_control_combobox->set_active (morph_wav_source->control_op()); FIXME
+    position_control_combobox->set_active (morph_wav_source->position_op());
   else
     {
       g_assert_not_reached();
@@ -290,7 +290,7 @@ MorphWavSourceView::on_position_control_changed()
   MorphOperator *op = position_control_combobox->active();
   if (op)
     {
-      // morph_wav_source->set_control_op (op); FIXME
+      morph_wav_source->set_position_op (op);
       morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_OP);
     }
   else
