@@ -6,31 +6,41 @@
 #include "smmorphoperatormodule.hh"
 #include "smwavset.hh"
 #include "smproject.hh"
+#include "smmorphwavsource.hh"
 #include <memory>
 
 namespace SpectMorph
 {
 
-class InstrumentSource : public LiveDecoderSource
-{
-  Audio                  *active_audio = nullptr;
-  std::shared_ptr<WavSet> wav_set;
-  int                     object_id;
-  Project                *project;
-public:
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
-  Audio *audio() override;
-  AudioBlock *audio_block (size_t index) override;
-
-  void update_project (Project *project);
-  void update_object_id (int object_id);
-};
+class MorphWavSourceModule;
 
 class MorphWavSourceModule : public MorphOperatorModule
 {
+  class InstrumentSource : public LiveDecoderSource
+  {
+    Audio                  *active_audio = nullptr;
+    std::shared_ptr<WavSet> wav_set;
+    int                     object_id;
+    Project                *project;
+  public:
+    MorphWavSourceModule   *module = nullptr;
+
+    void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
+    Audio *audio() override;
+    AudioBlock *audio_block (size_t index) override;
+
+    void update_project (Project *project);
+    void update_object_id (int object_id);
+  };
+
+  float                       position = 0;
+  MorphWavSource::PlayMode    play_mode;
+  MorphWavSource::ControlType position_control_type;
+
   InstrumentSource my_source;
 
 public:
+
   MorphWavSourceModule (MorphPlanVoice *voice);
   ~MorphWavSourceModule();
 
