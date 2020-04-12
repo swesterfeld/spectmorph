@@ -34,12 +34,15 @@ public:
     CONTROL_OP       = 4
   };
 protected:
+  std::string load_position_op;
+
   int         m_object_id  = 0;
   int         m_instrument = 1;
   std::string m_lv2_filename;
   PlayMode    m_play_mode             = PLAY_MODE_STANDARD;
   ControlType m_position_control_type = CONTROL_GUI;
   float       m_position = 0;
+  MorphOperator *m_position_op = nullptr;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -51,6 +54,8 @@ public:
   bool        save (OutFile& out_file);
   bool        load (InFile&  in_file);
   OutputType  output_type();
+  void        post_load (OpNameMap& op_name_map);
+  std::vector<MorphOperator *> dependencies() override;
 
   void        set_object_id (int id);
   int         object_id();
@@ -69,6 +74,11 @@ public:
 
   void        set_position (float new_position);
   float       position() const;
+
+  void        set_position_op (MorphOperator *op);
+  MorphOperator *position_op() const;
+
+  void        on_operator_removed (MorphOperator *op);
 };
 
 }

@@ -7,6 +7,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSource");
 
@@ -19,6 +20,8 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   leak_debugger.add (this);
+
+  connect (morph_plan->signal_operator_removed, this, &MorphWavSource::on_operator_removed);
 }
 
 MorphWavSource::~MorphWavSource()
@@ -111,6 +114,19 @@ MorphWavSource::position() const
   return m_position;
 }
 
+MorphOperator *
+MorphWavSource::position_op() const
+{
+  return m_position_op;
+}
+
+void
+MorphWavSource::set_position_op (MorphOperator *op)
+{
+  m_position_op = op;
+
+  m_morph_plan->emit_plan_changed();
+}
 
 const char *
 MorphWavSource::type()
@@ -133,6 +149,7 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("play_mode", m_play_mode);
   out_file.write_int ("position_control_type", m_position_control_type);
   out_file.write_float ("position", m_position);
+  write_operator (out_file, "position_op", m_position_op);
 
   return true;
 }
@@ -140,6 +157,8 @@ MorphWavSource::save (OutFile& out_file)
 bool
 MorphWavSource::load (InFile& ifile)
 {
+  load_position_op = "";
+
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (ifile.event() == InFile::INT)
@@ -184,6 +203,10 @@ MorphWavSource::load (InFile& ifile)
             {
               m_lv2_filename = ifile.event_data();
             }
+          else if (ifile.event_name() == "position_op")
+            {
+              load_position_op = ifile.event_data();
+            }
           else
             {
               g_printerr ("bad string\n");
@@ -200,8 +223,32 @@ MorphWavSource::load (InFile& ifile)
   return true;
 }
 
+void
+MorphWavSource::post_load (OpNameMap& op_name_map)
+{
+  m_position_op = op_name_map[load_position_op];
+}
+
+void
+MorphWavSource::on_operator_removed (MorphOperator *op)
+{
+  // plan changed will be emitted automatically after remove, so we don't emit it here
+
+  if (m_position_control_type == CONTROL_OP && op == m_position_op)
+    {
+      m_position_op = nullptr;
+      m_position_control_type = CONTROL_GUI;
+    }
+}
+
 MorphOperator::OutputType
 MorphWavSource::output_type()
 {
   return OUTPUT_AUDIO;
+}
+
+vector<MorphOperator *>
+MorphWavSource::dependencies()
+{
+  return { (m_position_control_type == CONTROL_OP && m_play_mode == PLAY_MODE_CUSTOM_POSITION) ? m_position_op : nullptr };
 }
