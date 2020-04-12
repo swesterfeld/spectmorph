@@ -98,14 +98,14 @@ MorphWavSource::position_control_type() const
 }
 
 void
-MorphWavSource::set_position (double new_position)
+MorphWavSource::set_position (float new_position)
 {
   m_position = new_position;
 
   m_morph_plan->emit_plan_changed();
 }
 
-double
+float
 MorphWavSource::position() const
 {
   return m_position;

@@ -39,7 +39,7 @@ protected:
   std::string m_lv2_filename;
   PlayMode    m_play_mode             = PLAY_MODE_STANDARD;
   ControlType m_position_control_type = CONTROL_GUI;
-  double      m_position = 0;
+  float       m_position = 0;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -67,8 +67,8 @@ public:
   void        set_position_control_type (ControlType new_control_type);
   ControlType position_control_type() const;
 
-  void        set_position (double new_position);
-  double      position() const;
+  void        set_position (float new_position);
+  float       position() const;
 };
 
 }
