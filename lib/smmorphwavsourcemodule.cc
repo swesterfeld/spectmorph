@@ -77,8 +77,7 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
         position = module->morph_plan_voice->control_input (1);
       else if (module->position_control_type == MorphWavSource::CONTROL_OP)
         {
-          position = module->position;
-          // position = module->control_mod->value(); // FIXME
+          position = module->position_mod->value();
         }
       else
         g_assert_not_reached();
@@ -136,4 +135,13 @@ MorphWavSourceModule::set_config (MorphOperator *op)
   position = source->position();
   position_control_type = source->position_control_type();
   play_mode = source->play_mode();
+
+  MorphOperator *position_op = source->position_op();
+  if (position_op && play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
+    position_mod = morph_plan_voice->module (position_op);
+  else
+    position_mod = nullptr;
+
+  clear_dependencies();
+  add_dependency (position_mod);
 }

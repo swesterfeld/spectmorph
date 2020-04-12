@@ -36,11 +36,11 @@ class MorphWavSourceModule : public MorphOperatorModule
   float                       position = 0;
   MorphWavSource::PlayMode    play_mode;
   MorphWavSource::ControlType position_control_type;
+  MorphOperatorModule        *position_mod = nullptr;
 
   InstrumentSource my_source;
 
 public:
-
   MorphWavSourceModule (MorphPlanVoice *voice);
   ~MorphWavSourceModule();
 
