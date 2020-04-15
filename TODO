@@ -27,6 +27,7 @@ new operators:
 
 lfo beat-sync:
  + random
+ - compare dotted mode with other synths
  - elegant passing of tempo/ppq_pos to MorphLFOModule
  - micro timing for ppq pos
  - micro timing (in block, in live decoder)
