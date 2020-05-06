@@ -46,6 +46,8 @@ WavData::load (const string& filename)
 bool
 WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
 {
+  clear(); // get rid of old contents
+
   SF_INFO sfinfo = { 0, };
 
   SNDFILE *sndfile = open_func (&sfinfo);
