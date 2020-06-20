@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <glib.h>
 
 #ifdef SM_OS_MACOS
@@ -18,6 +19,7 @@
 
 #ifdef SM_OS_LINUX
 #include <locale.h>
+#include "smxdgdir.hh"
 #endif
 
 #ifndef SM_OS_WINDOWS
@@ -319,6 +321,18 @@ dot_spectmorph_dir()
 }
 #endif
 
+static bool
+dir_exists (const string& dirname)
+{
+  struct stat st;
+
+  if (stat (dirname.c_str(), &st) == 0)
+    {
+      return S_ISDIR (st.st_mode);
+    }
+  return false;
+}
+
 string
 sm_get_user_dir (UserDir p)
 {
@@ -338,7 +352,17 @@ sm_get_documents_dir (DocumentsDir p)
   string documents = sm_mac_documents_dir(); // macOS -> "~/Documents/SpectMorph/Instruments/User"
 #endif
 #ifdef SM_OS_LINUX
-  string documents = g_get_home_dir();       // Linux -> "~/SpectMorph/Instruments/User"
+  /*
+   * we want to use XDG_DOCUMENTS_DIR to store our documents
+   *
+   * however, since old versions of SpectMorph (0.5.0, 0.5.1) used ~/SpectMorph
+   * to store user defined instruments, we use this directory for backwards
+   * compatibility if it exists
+   */
+  string documents = g_get_home_dir();          // Linux (backwards compat) -> "~/SpectMorph/Instruments/User"
+
+  if (!dir_exists (documents + "/SpectMorph"))
+    documents = xdg_dir_lookup ("DOCUMENTS");   // Linux (modern) -> "~/Documents/SpectMorph/Instruments/User"
 #endif
 #ifdef SM_OS_WINDOWS
   string documents = win_documents_dir();    // Windows -> "C:/Users/Stefan/Documents/SpectMorph/Instruments/User"

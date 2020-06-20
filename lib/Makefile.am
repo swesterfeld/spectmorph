@@ -50,6 +50,10 @@ libspectmorph_la_LIBADD = $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS
 libspectmorph_la_LDFLAGS = -no-undefined
 libspectmorph_la_LIBTOOLFLAGS = --tag CXX
 
+if COND_LINUX
+  libspectmorph_la_SOURCES += smxdgdir.hh smxdgdir.cc
+endif
+
 if COND_WINDOWS
   libspectmorph_la_LIBADD += -luuid
 else
