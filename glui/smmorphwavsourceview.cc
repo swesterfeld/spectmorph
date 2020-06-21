@@ -205,6 +205,9 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
   string filename = project->user_instrument_index()->filename (morph_wav_source->instrument());
   if (instrument->size())
     {
+      // create directory only when needed (on write)
+      project->user_instrument_index()->create_instrument_dir();
+
       ZipWriter zip_writer (filename);
       instrument->save (zip_writer);
     }
