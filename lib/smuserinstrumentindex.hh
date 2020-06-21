@@ -17,7 +17,10 @@ public:
   UserInstrumentIndex()
   {
     user_bank_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS) + "/User";
-
+  }
+  void
+  create_instrument_dir()
+  {
     /* if user bank directory doesn't exist, create it */
     g_mkdir_with_parents (user_bank_dir.c_str(), 0775);
   }
