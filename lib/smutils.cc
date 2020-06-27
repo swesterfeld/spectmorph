@@ -221,7 +221,7 @@ sm_get_install_dir (InstallDir p)
 
 #ifdef SM_OS_WINDOWS
 static string
-dot_spectmorph_dir()
+spectmorph_user_data_dir()
 {
   /* Windows: use local app data dir */
   char buffer[MAX_PATH + 1];
@@ -314,17 +314,17 @@ sm_resolve_link (const string& link_file)
 #endif
 #ifdef SM_OS_MACOS
 static string
-dot_spectmorph_dir()
+spectmorph_user_data_dir()
 {
   return sm_mac_application_support_dir() + "/SpectMorph";
 }
 #endif
 #ifdef SM_OS_LINUX
 static string
-dot_spectmorph_dir()
+spectmorph_user_data_dir()
 {
-  const char *home = g_get_home_dir();
-  return home ? string (home) + "/.spectmorph" : "";
+  string dir = g_get_user_data_dir();
+  return dir + "/spectmorph";
 }
 #endif
 
@@ -345,9 +345,9 @@ sm_get_user_dir (UserDir p)
 {
   switch (p)
     {
-      case USER_DIR_INSTRUMENTS: return dot_spectmorph_dir() + "/instruments";
-      case USER_DIR_CACHE:       return dot_spectmorph_dir() + "/cache";
-      case USER_DIR_DATA:        return dot_spectmorph_dir();
+      case USER_DIR_INSTRUMENTS: return spectmorph_user_data_dir() + "/instruments";
+      case USER_DIR_CACHE:       return spectmorph_user_data_dir() + "/cache";
+      case USER_DIR_DATA:        return spectmorph_user_data_dir();
     }
   return "";
 }
@@ -394,7 +394,7 @@ sm_get_cache_dir()   /* used by smenccache */
 
   return string (home) + "/.cache";
 #else
-  return dot_spectmorph_dir() + "/cache";
+  return spectmorph_user_data_dir() + "/cache";
 #endif
 }
 
