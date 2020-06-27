@@ -49,12 +49,12 @@ public:
   ~MorphWavSource();
 
   // inherited from MorphOperator
-  const char *type();
-  int         insert_order();
-  bool        save (OutFile& out_file);
-  bool        load (InFile&  in_file);
-  OutputType  output_type();
-  void        post_load (OpNameMap& op_name_map);
+  const char *type() override;
+  int         insert_order() override;
+  bool        save (OutFile& out_file) override;
+  bool        load (InFile&  in_file) override;
+  OutputType  output_type() override;
+  void        post_load (OpNameMap& op_name_map) override;
   std::vector<MorphOperator *> dependencies() override;
 
   void        set_object_id (int id);
