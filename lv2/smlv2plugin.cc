@@ -51,8 +51,7 @@ LV2Plugin::LV2Plugin (double mix_freq) :
 static void
 set_static_linux_data_dir()
 {
-  string pkg_data_dir = g_get_home_dir();
-  pkg_data_dir += "/.spectmorph";
+  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
 
   LV2_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
   sm_set_pkg_data_dir (pkg_data_dir);
