@@ -311,11 +311,18 @@ sm_resolve_link (const string& link_file)
 
   return dest_path;
 }
-#else
+#endif
+#ifdef SM_OS_MACOS
 static string
 dot_spectmorph_dir()
 {
-  /* Linux/macOS */
+  return sm_mac_application_support_dir() + "/SpectMorph";
+}
+#endif
+#ifdef SM_OS_LINUX
+static string
+dot_spectmorph_dir()
+{
   const char *home = g_get_home_dir();
   return home ? string (home) + "/.spectmorph" : "";
 }

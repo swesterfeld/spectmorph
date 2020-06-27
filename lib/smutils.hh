@@ -77,6 +77,7 @@ std::string sm_get_cache_dir();
 
 #ifdef SM_OS_MACOS
 std::string sm_mac_documents_dir();
+std::string sm_mac_application_support_dir();
 #endif
 
 enum DocumentsDir
