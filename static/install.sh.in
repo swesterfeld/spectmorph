@@ -2,25 +2,27 @@
 
 cd $(dirname "$0")
 
+SPECTMORPH_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/spectmorph"
+
 echo
 echo "==== SpectMorph @PACKAGE_VERSION@ Installation ===="
 echo
 echo "   #### Installing Plugin"
 echo
-mkdir -p "$HOME/.spectmorph" "$HOME/.vst" "$HOME/.lv2"
-cp -av lv2 vst templates instruments fonts "$HOME/.spectmorph"
+mkdir -p "$SPECTMORPH_DIR" "$HOME/.vst" "$HOME/.lv2"
+cp -av lv2 vst templates instruments fonts "$SPECTMORPH_DIR"
 
 echo
 echo "   #### Creating Symlinks - VST"
 echo
 rm -rvf "$HOME/.vst/spectmorph_vst.so"
-ln -sv "$HOME/.spectmorph/vst/spectmorph_vst.so" "$HOME/.vst"
+ln -sv "$SPECTMORPH_DIR/vst/spectmorph_vst.so" "$HOME/.vst"
 
 echo
 echo "   #### Creating Symlinks - LV2"
 echo
 rm -rvf "$HOME/.lv2/spectmorph.lv2"
-ln -sv "$HOME/.spectmorph/lv2/spectmorph.lv2" "$HOME/.lv2"
+ln -sv "$SPECTMORPH_DIR/lv2/spectmorph.lv2" "$HOME/.lv2"
 
 echo
 echo "==== Installation Complete ===="
