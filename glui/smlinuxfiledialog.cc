@@ -69,7 +69,7 @@ public:
     is_open_dialog (open),
     lfd (lfd)
   {
-    set_close_callback ([this, lfd]() { lfd->signal_file_selected (""); });
+    set_close_callback ([lfd]() { lfd->signal_file_selected (""); });
 
     FixedGrid grid;
 
@@ -96,7 +96,7 @@ public:
         if (!items[i].is_dir)
           file_edit->set_text (items[i].filename);
     });
-    connect (list_box->signal_item_double_clicked, [this,lfd]() {
+    connect (list_box->signal_item_double_clicked, [this]() {
       int i = list_box->selected_item();
       if (i >= 0 && i < int (items.size()))
         {
@@ -146,7 +146,7 @@ public:
     connect (ok_button->signal_clicked, this, &FileDialogWindow::on_ok_clicked);
 
     cancel_button = new Button (this, "Cancel");
-    connect (cancel_button->signal_clicked, [this, lfd]() { lfd->signal_file_selected (""); });
+    connect (cancel_button->signal_clicked, [lfd]() { lfd->signal_file_selected (""); });
 
     hidden_checkbox = new CheckBox (this, "Show Hidden");
     connect (hidden_checkbox->signal_toggled, [this](bool) { read_directory (current_directory); });
