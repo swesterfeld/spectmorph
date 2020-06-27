@@ -439,8 +439,7 @@ set_macos_data_dir()
 static void
 set_static_linux_data_dir()
 {
-  string pkg_data_dir = g_get_home_dir();
-  pkg_data_dir += "/.spectmorph";
+  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
 
   VST_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
   sm_set_pkg_data_dir (pkg_data_dir);
