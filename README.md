@@ -78,9 +78,9 @@ be something like
 
     spectmorph-0.4.1/data/spectmorph-instruments-0.4.1.tar.xz
 
-You can either ensure that these instruments live in
+You can either ensure that these instruments live in (`$XDG_DATA_HOME/spectmorph`):
 
-    ~/.spectmorph/instruments/standard
+    ~/.local/share/spectmorph/instruments/standard
 
 or copy the instrment tarball to the data directory of your git checkout. In this
 case SpectMorph will automatically install the instruments to the system-wide
