@@ -234,10 +234,12 @@ MorphWavSource::on_operator_removed (MorphOperator *op)
 {
   // plan changed will be emitted automatically after remove, so we don't emit it here
 
-  if (m_position_control_type == CONTROL_OP && op == m_position_op)
+  if (op == m_position_op)
     {
       m_position_op = nullptr;
-      m_position_control_type = CONTROL_GUI;
+
+      if (m_position_control_type == CONTROL_OP)
+        m_position_control_type = CONTROL_GUI;
     }
 }
 

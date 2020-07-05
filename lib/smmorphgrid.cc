@@ -412,15 +412,19 @@ MorphGrid::on_operator_removed (MorphOperator *op)
             }
         }
     }
-  if (m_x_control_type == CONTROL_OP && op == m_x_control_op)
+  if (op == m_x_control_op)
     {
       m_x_control_op = nullptr;
-      m_x_control_type = CONTROL_GUI;
+
+      if (m_x_control_type == CONTROL_OP)
+        m_x_control_type = CONTROL_GUI;
     }
-  if (m_y_control_type == CONTROL_OP && op == m_y_control_op)
+  if (op == m_y_control_op)
     {
       m_y_control_op = nullptr;
-      m_y_control_type = CONTROL_GUI;
+
+      if (m_y_control_type == CONTROL_OP)
+        m_y_control_type = CONTROL_GUI;
     }
 }
 

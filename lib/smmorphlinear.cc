@@ -174,10 +174,12 @@ MorphLinear::on_operator_removed (MorphOperator *op)
   if (op == m_right_op)
     m_right_op = nullptr;
 
-  if (m_control_type == CONTROL_OP && op == m_control_op)
+  if (op == m_control_op)
     {
       m_control_op = nullptr;
-      m_control_type = CONTROL_GUI;
+
+      if (m_control_type == CONTROL_OP)
+        m_control_type = CONTROL_GUI;
     }
 }
 
