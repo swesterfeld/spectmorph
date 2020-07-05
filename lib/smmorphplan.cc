@@ -157,13 +157,20 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
     {
       if (ifile.event() == InFile::BEGIN_SECTION)
         {
-          assert (section == "");
+          if (section != "")
+            {
+              error = Error ("Parsing error: begin section with active section");
+              break;
+            }
           section = ifile.event_name();
-
         }
       else if (ifile.event() == InFile::END_SECTION)
         {
-          assert (section != "");
+          if (section == "")
+            {
+              error = Error ("Parsing error: end section without section");
+              break;
+            }
           section = "";
         }
       else if (params && section == params->section())
@@ -218,7 +225,11 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
             {
               if (ifile.event_name() == "data")
                 {
-                  assert (load_op != NULL);
+                  if (load_op == nullptr)
+                    {
+                      error = Error ("Parsing error: operator data without operator");
+                      break;
+                    }
 
                   GenericIn *blob_in = ifile.open_blob();
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
@@ -244,7 +255,11 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
             {
               if (ifile.event_name() == "data")
                 {
-                  assert (load_op != NULL);
+                  if (load_op == nullptr)
+                    {
+                      error = Error ("Parsing error: operator data without operator");
+                      break;
+                    }
 
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
 
