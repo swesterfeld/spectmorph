@@ -82,10 +82,21 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
       else
         g_assert_not_reached();
 
+      int start, end;
+      if (active_audio->loop_type == Audio::LOOP_NONE)
+        {
+          // play everything
+          start = 0;
+          end = active_audio->contents.size() - 1;
+        }
+      else
+        {
+          // play loop
+          start = active_audio->loop_start;
+          end = active_audio->loop_end;
+        }
       const double frac = (position + 1) / 2;
-      index = sm_bound (active_audio->loop_start,
-                        sm_round_positive ((1 - frac) * active_audio->loop_start + frac * active_audio->loop_end),
-                        active_audio->loop_end);
+      index = sm_bound (start, sm_round_positive ((1 - frac) * start + frac * end), end);
     }
   if (active_audio && index < active_audio->contents.size())
     return &active_audio->contents[index];
