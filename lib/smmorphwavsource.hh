@@ -78,6 +78,8 @@ public:
   void        set_position_op (MorphOperator *op);
   MorphOperator *position_op() const;
 
+  void        set_position_control_type_and_op (ControlType new_control_type, MorphOperator *op);
+
   void        on_operator_removed (MorphOperator *op);
 };
 

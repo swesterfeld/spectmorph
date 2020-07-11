@@ -128,6 +128,15 @@ MorphWavSource::set_position_op (MorphOperator *op)
   m_morph_plan->emit_plan_changed();
 }
 
+void
+MorphWavSource::set_position_control_type_and_op (ControlType control_type, MorphOperator *op)
+{
+  m_position_control_type = control_type;
+  m_position_op           = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 const char *
 MorphWavSource::type()
 {
