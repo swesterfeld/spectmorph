@@ -53,6 +53,8 @@ public:
   MorphOperator *control_op();
   void set_control_op (MorphOperator *op);
 
+  void set_control_type_and_op (ControlType control_type, MorphOperator *op);
+
   double morphing();
   void set_morphing (double new_morphing);
 

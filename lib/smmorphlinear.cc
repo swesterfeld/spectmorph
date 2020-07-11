@@ -225,6 +225,15 @@ MorphLinear::set_control_op (MorphOperator *op)
   m_morph_plan->emit_plan_changed();
 }
 
+void
+MorphLinear::set_control_type_and_op (ControlType control_type, MorphOperator *op)
+{
+  m_control_type = control_type;
+  m_control_op   = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 string
 MorphLinear::left_smset()
 {
