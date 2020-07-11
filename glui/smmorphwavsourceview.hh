@@ -12,6 +12,7 @@
 #include "smpropertyview.hh"
 #include "smcomboboxoperator.hh"
 #include "smoperatorlayout.hh"
+#include "smcontrolview.hh"
 
 namespace SpectMorph
 {
@@ -29,6 +30,7 @@ class MorphWavSourceView : public MorphOperatorView
 
   PropertyView      pv_position;
   EnumView          ev_play_mode;
+  ControlView       cv_position_control;
   ComboBoxOperator *position_control_combobox;
   OperatorLayout    op_layout;
 

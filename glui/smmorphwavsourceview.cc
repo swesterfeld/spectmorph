@@ -21,10 +21,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-#define CONTROL_TEXT_GUI "Gui Slider"
-#define CONTROL_TEXT_1   "Control Signal #1"
-#define CONTROL_TEXT_2   "Control Signal #2"
-
 MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
   morph_wav_source (morph_wav_source),
@@ -54,31 +50,15 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.add_row (3, new Label (body_widget, "Play Mode"), play_mode_combobox);
 
   // POSITION CONTROL INPUT
-
-  auto control_operator_filter = ComboBoxOperator::make_filter (morph_wav_source, MorphOperator::OUTPUT_CONTROL);
-  position_control_combobox = new ComboBoxOperator (body_widget, morph_wav_source->morph_plan(), control_operator_filter);
-  position_control_combobox->add_str_choice (CONTROL_TEXT_GUI);
-  position_control_combobox->add_str_choice (CONTROL_TEXT_1);
-  position_control_combobox->add_str_choice (CONTROL_TEXT_2);
-  position_control_combobox->set_none_ok (false);
+  position_control_combobox = cv_position_control.create_combobox (body_widget,
+    morph_wav_source,
+    morph_wav_source->position_control_type(),
+    morph_wav_source->position_op());
+  connect (cv_position_control.signal_control_changed, this, &MorphWavSourceView::on_position_control_changed);
 
   position_control_input_label = new Label (body_widget, "Position Ctrl");
   op_layout.add_row (3, position_control_input_label, position_control_combobox);
 
-  connect (position_control_combobox->signal_item_changed, this, &MorphWavSourceView::on_position_control_changed);
-
-  if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI) /* restore value */
-    position_control_combobox->set_active_str_choice (CONTROL_TEXT_GUI);
-  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_SIGNAL_1)
-    position_control_combobox->set_active_str_choice (CONTROL_TEXT_1);
-  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_SIGNAL_2)
-    position_control_combobox->set_active_str_choice (CONTROL_TEXT_2);
-  else if (morph_wav_source->position_control_type() == MorphWavSource::CONTROL_OP)
-    position_control_combobox->set_active (morph_wav_source->position_op());
-  else
-    {
-      g_assert_not_reached();
-    }
   // POSITION
   pv_position.init_ui (body_widget, op_layout);
 
@@ -290,26 +270,7 @@ MorphWavSourceView::update_visible()
 void
 MorphWavSourceView::on_position_control_changed()
 {
-  MorphOperator *op = position_control_combobox->active();
-  if (op)
-    {
-      morph_wav_source->set_position_op (op);
-      morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_OP);
-    }
-  else
-    {
-      string text = position_control_combobox->active_str_choice();
+  morph_wav_source->set_position_control_type_and_op (cv_position_control.control_type(), cv_position_control.op());
 
-      if (text == CONTROL_TEXT_GUI)
-        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_GUI);
-      else if (text == CONTROL_TEXT_1)
-        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_SIGNAL_1);
-      else if (text == CONTROL_TEXT_2)
-        morph_wav_source->set_position_control_type (MorphWavSource::CONTROL_SIGNAL_2);
-      else
-        {
-          g_assert_not_reached();
-        }
-    }
   update_visible();
 }
