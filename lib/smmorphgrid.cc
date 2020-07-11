@@ -353,6 +353,15 @@ MorphGrid::set_x_control_op (MorphOperator *op)
   m_morph_plan->emit_plan_changed();
 }
 
+void
+MorphGrid::set_x_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
+{
+  m_x_control_type = control_type;
+  m_x_control_op   = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
 double
 MorphGrid::y_morphing()
 {
@@ -391,6 +400,15 @@ void
 MorphGrid::set_y_control_op (MorphOperator *op)
 {
   m_y_control_op = op;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+void
+MorphGrid::set_y_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
+{
+  m_y_control_type = control_type;
+  m_y_control_op   = op;
 
   m_morph_plan->emit_plan_changed();
 }

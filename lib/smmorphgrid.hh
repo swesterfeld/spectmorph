@@ -79,6 +79,8 @@ public:
   void            set_y_control_type (ControlType new_control_type);
   void            set_x_control_op (MorphOperator *op);
   void            set_y_control_op (MorphOperator *op);
+  void            set_x_control_type_and_op (ControlType control_type, MorphOperator *op);
+  void            set_y_control_type_and_op (ControlType control_type, MorphOperator *op);
 
   void            set_input_node (int x, int y, const MorphGridNode& node);
   MorphGridNode   input_node (int x, int y);
