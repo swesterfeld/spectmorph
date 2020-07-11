@@ -12,49 +12,19 @@ using std::string;
 using std::vector;
 using std::set;
 
-#define CONTROL_TEXT_GUI "Gui Slider"
-#define CONTROL_TEXT_1   "Control Signal #1"
-#define CONTROL_TEXT_2   "Control Signal #2"
-
 MorphGridControlUI::MorphGridControlUI (MorphGridView *morph_grid_view, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy) :
   morph_grid (morph_grid),
   morph_grid_view (morph_grid_view),
   ctl_xy (ctl_xy)
 {
-  auto control_operator_filter = ComboBoxOperator::make_filter (morph_grid, MorphOperator::OUTPUT_CONTROL);
-  combobox = new ComboBoxOperator (body_widget, morph_grid->morph_plan(), control_operator_filter);
-  combobox->add_str_choice (CONTROL_TEXT_GUI);
-  combobox->add_str_choice (CONTROL_TEXT_1);
-  combobox->add_str_choice (CONTROL_TEXT_2);
-  combobox->set_none_ok (false);
-
-  /* restore initial combobox state */
   MorphGrid::ControlType control_type = (ctl_xy == CONTROL_X) ?
                                         morph_grid->x_control_type() :
                                         morph_grid->y_control_type();
 
+  MorphOperator *control_op = (ctl_xy == CONTROL_X) ? morph_grid->x_control_op() : morph_grid->y_control_op();
+  combobox = cv_control.create_combobox (body_widget, morph_grid, control_type, control_op);
 
-  if (control_type == MorphGrid::CONTROL_GUI)
-    combobox->set_active_str_choice (CONTROL_TEXT_GUI);
-  else if (control_type == MorphGrid::CONTROL_SIGNAL_1)
-    combobox->set_active_str_choice (CONTROL_TEXT_1);
-  else if (control_type == MorphGrid::CONTROL_SIGNAL_2)
-    combobox->set_active_str_choice (CONTROL_TEXT_2);
-  else if (control_type == MorphGrid::CONTROL_OP)
-    {
-      if (ctl_xy == CONTROL_X)
-        {
-          combobox->set_active (morph_grid->x_control_op());
-        }
-      else
-        {
-          combobox->set_active (morph_grid->y_control_op());
-        }
-    }
-  else
-    {
-      g_assert_not_reached();
-    }
+  connect (cv_control.signal_control_changed, this, &MorphGridControlUI::on_control_changed);
 
   title = new Label (body_widget, ctl_xy == CONTROL_X ? "X Value" : "Y Value");
   slider = new Slider (body_widget, 0);
@@ -67,10 +37,9 @@ MorphGridControlUI::MorphGridControlUI (MorphGridView *morph_grid_view, MorphGri
     slider->set_value ((morph_grid->y_morphing() + 1) / 2);
 
   connect (slider->signal_value_changed, this, &MorphGridControlUI::on_slider_changed);
-  connect (combobox->signal_item_changed, this, &MorphGridControlUI::on_combobox_changed);
 
   // initial slider state
-  on_combobox_changed();
+  on_control_changed();
 }
 
 void
@@ -87,48 +56,18 @@ MorphGridControlUI::on_slider_changed (double value)
 }
 
 void
-MorphGridControlUI::on_combobox_changed()
+MorphGridControlUI::on_control_changed()
 {
-  bool control_gui = false;
-
-  MorphOperator *op = combobox->active();
-  if (op)
+  if (ctl_xy == CONTROL_X)
     {
-      if (ctl_xy == CONTROL_X)
-        {
-          morph_grid->set_x_control_op (op);
-          morph_grid->set_x_control_type (MorphGrid::CONTROL_OP);
-        }
-      else
-        {
-          morph_grid->set_y_control_op (op);
-          morph_grid->set_y_control_type (MorphGrid::CONTROL_OP);
-        }
+      morph_grid->set_x_control_type_and_op (cv_control.control_type(), cv_control.op());
     }
   else
     {
-      string text = combobox->active_str_choice();
-      MorphGrid::ControlType new_type;
-
-      if (text == CONTROL_TEXT_GUI)
-        {
-          new_type = MorphGrid::CONTROL_GUI;
-
-          control_gui = true;
-        }
-      else if (text == CONTROL_TEXT_1)
-        new_type = MorphGrid::CONTROL_SIGNAL_1;
-      else if (text == CONTROL_TEXT_2)
-        new_type = MorphGrid::CONTROL_SIGNAL_2;
-      else
-        {
-          g_assert_not_reached();
-        }
-      if (ctl_xy == CONTROL_X)
-        morph_grid->set_x_control_type (new_type);
-      else
-        morph_grid->set_y_control_type (new_type);
+      morph_grid->set_y_control_type_and_op (cv_control.control_type(), cv_control.op());
     }
+  bool control_gui = cv_control.control_type() == MorphOperator::CONTROL_GUI;
+
   title->set_enabled (control_gui);
   label->set_enabled (control_gui);
   slider->set_enabled (control_gui);

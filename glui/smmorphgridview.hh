@@ -7,6 +7,7 @@
 #include "smmorphgrid.hh"
 #include "smcomboboxoperator.hh"
 #include "smmorphgridwidget.hh"
+#include "smcontrolview.hh"
 
 namespace SpectMorph
 {
@@ -16,6 +17,7 @@ class MorphGridControlUI : public SignalReceiver
 {
   MorphGrid          *morph_grid;
   MorphGridView      *morph_grid_view;
+  ControlView         cv_control;
 
 public:
   enum ControlXYType { CONTROL_X, CONTROL_Y } ctl_xy;
@@ -29,7 +31,7 @@ public:
 
 /* slots: */
   void on_slider_changed (double value);
-  void on_combobox_changed();
+  void on_control_changed();
 };
 
 class MorphGridView : public MorphOperatorView
