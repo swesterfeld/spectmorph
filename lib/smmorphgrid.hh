@@ -21,13 +21,6 @@ struct MorphGridNode
 
 class MorphGrid : public MorphOperator
 {
-public:
-  enum ControlType {
-    CONTROL_GUI      = 1,
-    CONTROL_SIGNAL_1 = 2,
-    CONTROL_SIGNAL_2 = 3,
-    CONTROL_OP       = 4
-  };
 protected:
   int             m_width;
   int             m_height;

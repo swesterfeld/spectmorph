@@ -12,13 +12,6 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
-public:
-  enum ControlType {
-    CONTROL_GUI      = 1,
-    CONTROL_SIGNAL_1 = 2,
-    CONTROL_SIGNAL_2 = 3,
-    CONTROL_OP       = 4
-  };
 protected:
   std::string    load_left, load_right, load_control;
 

@@ -33,6 +33,12 @@ public:
     OUTPUT_AUDIO,
     OUTPUT_CONTROL
   };
+  enum ControlType {
+    CONTROL_GUI      = 1,
+    CONTROL_SIGNAL_1 = 2,
+    CONTROL_SIGNAL_2 = 3,
+    CONTROL_OP       = 4
+  };
   MorphOperator (MorphPlan *morph_plan);
   virtual ~MorphOperator();
 
