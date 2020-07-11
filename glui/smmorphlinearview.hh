@@ -6,6 +6,7 @@
 #include "smmorphoperatorview.hh"
 #include "smmorphlinear.hh"
 #include "smcomboboxoperator.hh"
+#include "smcontrolview.hh"
 
 namespace SpectMorph
 {
@@ -22,6 +23,7 @@ protected:
   ComboBoxOperator                *left_combobox;
   ComboBoxOperator                *right_combobox;
   ComboBoxOperator                *control_combobox;
+  ControlView                      cv_control;
 
   void update_slider();
 

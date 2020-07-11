@@ -10,18 +10,18 @@ class ControlView : public SignalReceiver
 {
   struct Entry
   {
-    MorphWavSource::ControlType ctype;
-    std::string                 text;
+    MorphOperator::ControlType ctype;
+    std::string                text;
   };
   const std::vector<Entry> entries = {
-      { MorphWavSource::CONTROL_GUI, "Gui Slider"},
-      { MorphWavSource::CONTROL_SIGNAL_1, "Control Signal #1"},
-      { MorphWavSource::CONTROL_SIGNAL_2, "Control Signal #2"}
+      { MorphOperator::CONTROL_GUI, "Gui Slider"},
+      { MorphOperator::CONTROL_SIGNAL_1, "Control Signal #1"},
+      { MorphOperator::CONTROL_SIGNAL_2, "Control Signal #2"}
     };
   ComboBoxOperator *control_combobox = nullptr;
 public:
   ComboBoxOperator *
-  create_combobox (Widget *parent, MorphOperator *op, MorphWavSource::ControlType initial_type, MorphOperator *initial_op)
+  create_combobox (Widget *parent, MorphOperator *op, MorphOperator::ControlType initial_type, MorphOperator *initial_op)
   {
     auto control_operator_filter = ComboBoxOperator::make_filter (op, MorphOperator::OUTPUT_CONTROL);
     control_combobox = new ComboBoxOperator (parent, op->morph_plan(), control_operator_filter);
@@ -32,7 +32,7 @@ public:
         if (entry.ctype == initial_type)
           control_combobox->set_active_str_choice (entry.text);
       }
-    if (initial_type == MorphWavSource::CONTROL_OP)
+    if (initial_type == MorphOperator::CONTROL_OP)
       control_combobox->set_active (initial_op);
     control_combobox->set_none_ok (false);
 
@@ -44,11 +44,11 @@ public:
   {
     return control_combobox->active();
   }
-  MorphWavSource::ControlType
+  MorphOperator::ControlType
   control_type()
   {
     if (control_combobox->active())
-      return MorphWavSource::CONTROL_OP;
+      return MorphOperator::CONTROL_OP;
 
     std::string active_text = control_combobox->active_str_choice();
     for (auto entry : entries)
@@ -57,7 +57,7 @@ public:
           return entry.ctype;
       }
     /* in principle this cannot be reached but we want to fail gracefully */
-    return MorphWavSource::CONTROL_GUI;
+    return MorphOperator::CONTROL_GUI;
   }
   Signal<> signal_control_changed;
 };

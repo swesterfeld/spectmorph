@@ -12,10 +12,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-#define CONTROL_TEXT_GUI "Gui Slider"
-#define CONTROL_TEXT_1   "Control Signal #1"
-#define CONTROL_TEXT_2   "Control Signal #2"
-
 MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_linear, morph_plan_window),
   morph_linear (morph_linear)
@@ -23,7 +19,6 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   OperatorLayout op_layout;
 
   auto operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_AUDIO);
-  auto control_operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_CONTROL);
 
   // LEFT SOURCE
   left_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), operator_filter);
@@ -40,29 +35,13 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   connect (right_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
   // CONTROL INPUT
-
-  control_combobox = new ComboBoxOperator (body_widget, morph_linear->morph_plan(), control_operator_filter);
-  control_combobox->add_str_choice (CONTROL_TEXT_GUI);
-  control_combobox->add_str_choice (CONTROL_TEXT_1);
-  control_combobox->add_str_choice (CONTROL_TEXT_2);
-  control_combobox->set_none_ok (false);
+  control_combobox = cv_control.create_combobox (body_widget,
+    morph_linear,
+    morph_linear->control_type(),
+    morph_linear->control_op());
+  connect (cv_control.signal_control_changed, this, &MorphLinearView::on_control_changed);
 
   op_layout.add_row (3, new Label (body_widget, "Control Input"), control_combobox);
-
-  connect (control_combobox->signal_item_changed, this, &MorphLinearView::on_control_changed);
-
-  if (morph_linear->control_type() == MorphLinear::CONTROL_GUI) /* restore value */
-    control_combobox->set_active_str_choice (CONTROL_TEXT_GUI);
-  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_1)
-    control_combobox->set_active_str_choice (CONTROL_TEXT_1);
-  else if (morph_linear->control_type() == MorphLinear::CONTROL_SIGNAL_2)
-    control_combobox->set_active_str_choice (CONTROL_TEXT_2);
-  else if (morph_linear->control_type() == MorphLinear::CONTROL_OP)
-    control_combobox->set_active (morph_linear->control_op());
-  else
-    {
-      g_assert_not_reached();
-    }
 
   // MORPHING
   double morphing_slider_value = (morph_linear->morphing() + 1) / 2.0; /* restore value from operator */
@@ -109,27 +88,8 @@ MorphLinearView::on_morphing_changed (double new_value)
 void
 MorphLinearView::on_control_changed()
 {
-  MorphOperator *op = control_combobox->active();
-  if (op)
-    {
-      morph_linear->set_control_op (op);
-      morph_linear->set_control_type (MorphLinear::CONTROL_OP);
-    }
-  else
-    {
-      string text = control_combobox->active_str_choice();
+  morph_linear->set_control_type_and_op (cv_control.control_type(), cv_control.op());
 
-      if (text == CONTROL_TEXT_GUI)
-        morph_linear->set_control_type (MorphLinear::CONTROL_GUI);
-      else if (text == CONTROL_TEXT_1)
-        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_1);
-      else if (text == CONTROL_TEXT_2)
-        morph_linear->set_control_type (MorphLinear::CONTROL_SIGNAL_2);
-      else
-        {
-          g_assert_not_reached();
-        }
-    }
   update_slider();
 }
 
