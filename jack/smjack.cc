@@ -35,8 +35,6 @@ JackSynth::process (jack_nframes_t nframes)
 {
   m_project->try_update_synth();
 
-  const float *control_in_1 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[0], nframes);
-  const float *control_in_2 = (jack_default_audio_sample_t *) jack_port_get_buffer (control_ports[1], nframes);
   float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
 
   MidiSynth   *midi_synth   = m_project->midi_synth();
@@ -69,10 +67,6 @@ JackSynth::process (jack_nframes_t nframes)
       midi_synth->add_midi_event (in_event.time, in_event.buffer);
     }
 
-  // update control input values
-  midi_synth->set_control_input (0, control_in_1[0]);
-  midi_synth->set_control_input (1, control_in_2[0]);
-
   midi_synth->process (audio_out, nframes);
 
   return 0;
@@ -91,13 +85,12 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
 {
   m_project->set_mix_freq (jack_get_sample_rate (client));
 
+  // JACK version of SpectMorph exports its control signal by CC#16,...
+  m_project->midi_synth()->set_control_by_cc (true);
+
   jack_set_process_callback (client, jack_process, this);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-  control_ports.push_back (jack_port_register (client, "control_in_1", JACK_DEFAULT_AUDIO_TYPE,
-                                               JackPortIsInput, 0));
-  control_ports.push_back (jack_port_register (client, "control_in_2", JACK_DEFAULT_AUDIO_TYPE,
-                                               JackPortIsInput, 0));
   output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
 
   if (jack_activate (client))
