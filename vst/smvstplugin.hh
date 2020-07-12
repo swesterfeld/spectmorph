@@ -18,6 +18,8 @@ struct VstPlugin
   {
     PARAM_CONTROL_1 = 0,
     PARAM_CONTROL_2 = 1,
+    PARAM_CONTROL_3 = 2,
+    PARAM_CONTROL_4 = 3,
     PARAM_COUNT
   };
 

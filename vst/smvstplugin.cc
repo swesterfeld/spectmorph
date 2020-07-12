@@ -46,6 +46,7 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+using std::map;
 
 VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
   audioMaster (master),
@@ -57,6 +58,8 @@ VstPlugin::VstPlugin (audioMasterCallback master, AEffect *aeffect) :
 
   parameters.push_back (Parameter ("Control #1", 0, -1, 1));
   parameters.push_back (Parameter ("Control #2", 0, -1, 1));
+  parameters.push_back (Parameter ("Control #3", 0, -1, 1));
+  parameters.push_back (Parameter ("Control #4", 0, -1, 1));
 
   // initialize mix_freq with something, so that the plugin doesn't crash if the host never calls SetSampleRate
   set_mix_freq (48000);
@@ -133,7 +136,8 @@ VstPlugin::set_mix_freq (double mix_freq)
 /*----------------------- save/load ----------------------------*/
 class VstExtraParameters : public MorphPlan::ExtraParameters
 {
-  VstPlugin *plugin;
+  VstPlugin         *plugin;
+  map<string, float> load_value;
 public:
   VstExtraParameters (VstPlugin *plugin) :
     plugin (plugin)
@@ -147,6 +151,8 @@ public:
   {
     out_file.write_float ("control_1", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_1));
     out_file.write_float ("control_2", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_2));
+    out_file.write_float ("control_3", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_3));
+    out_file.write_float ("control_4", plugin->get_parameter_value (VstPlugin::PARAM_CONTROL_4));
     out_file.write_float ("volume",    plugin->project.volume());
   }
 
@@ -155,15 +161,18 @@ public:
   {
     if (in_file.event() == InFile::FLOAT)
       {
-        if (in_file.event_name() == "control_1")
-          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_1, in_file.event_float());
-
-        if (in_file.event_name() == "control_2")
-          plugin->set_parameter_value (VstPlugin::PARAM_CONTROL_2, in_file.event_float());
-
-        if (in_file.event_name() == "volume")
-          plugin->project.set_volume (in_file.event_float());
+        load_value[in_file.event_name()] = in_file.event_float();
       }
+  }
+
+  float
+  get_load_value (const string& name, float def_value) const
+  {
+    auto vi = load_value.find (name);
+    if (vi == load_value.end())
+      return def_value;
+    else
+      return vi->second;
   }
 };
 
@@ -183,6 +192,7 @@ VstPlugin::save_state (char **buffer)
 void
 VstPlugin::load_state (char *buffer, size_t size)
 {
+  Error error = Error::Code::NONE;
   VstExtraParameters params (this);
 
   if (size > 2 && buffer[0] == 'P' && buffer[1] == 'K') // new format
@@ -191,7 +201,7 @@ VstPlugin::load_state (char *buffer, size_t size)
 
       ZipReader zip_reader (data);
 
-      project.load (zip_reader, &params);
+      error = project.load (zip_reader, &params);
     }
   else
     {
@@ -200,8 +210,17 @@ VstPlugin::load_state (char *buffer, size_t size)
         return;
 
       GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
-      project.load_compat (in, &params);
+      error = project.load_compat (in, &params);
       delete in;
+    }
+
+  if (!error)  /* if loading failed, keep values as they are */
+    {
+      set_parameter_value (VstPlugin::PARAM_CONTROL_1, params.get_load_value ("control_1", 0));
+      set_parameter_value (VstPlugin::PARAM_CONTROL_2, params.get_load_value ("control_2", 0));
+      set_parameter_value (VstPlugin::PARAM_CONTROL_3, params.get_load_value ("control_3", 0));
+      set_parameter_value (VstPlugin::PARAM_CONTROL_4, params.get_load_value ("control_4", 0));
+      project.set_volume (params.get_load_value ("volume", -6));
     }
 }
 
@@ -369,6 +388,8 @@ processReplacing (AEffect *effect, float **inputs, float **outputs, int numSampl
     }
   midi_synth->set_control_input (0, plugin->parameters[VstPlugin::PARAM_CONTROL_1].value);
   midi_synth->set_control_input (1, plugin->parameters[VstPlugin::PARAM_CONTROL_2].value);
+  midi_synth->set_control_input (2, plugin->parameters[VstPlugin::PARAM_CONTROL_3].value);
+  midi_synth->set_control_input (3, plugin->parameters[VstPlugin::PARAM_CONTROL_4].value);
   midi_synth->process (outputs[0], numSampleFrames);
 
   std::copy (outputs[0], outputs[0] + numSampleFrames, outputs[1]);
