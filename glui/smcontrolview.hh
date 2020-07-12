@@ -13,10 +13,13 @@ class ControlView : public SignalReceiver
     MorphOperator::ControlType ctype;
     std::string                text;
   };
-  const std::vector<Entry> entries = {
+  const std::vector<Entry> entries =
+    {
       { MorphOperator::CONTROL_GUI, "Gui Slider"},
       { MorphOperator::CONTROL_SIGNAL_1, "Control Signal #1"},
-      { MorphOperator::CONTROL_SIGNAL_2, "Control Signal #2"}
+      { MorphOperator::CONTROL_SIGNAL_2, "Control Signal #2"},
+      { MorphOperator::CONTROL_SIGNAL_3, "Control Signal #3"},
+      { MorphOperator::CONTROL_SIGNAL_4, "Control Signal #4"}
     };
   ComboBoxOperator *control_combobox = nullptr;
 public:
