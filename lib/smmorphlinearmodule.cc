@@ -192,19 +192,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  double morphing;
-
-  if (module->control_type == MorphLinear::CONTROL_GUI)
-    morphing = module->morphing;
-  else if (module->control_type == MorphLinear::CONTROL_SIGNAL_1)
-    morphing = module->morph_plan_voice->control_input (0);
-  else if (module->control_type == MorphLinear::CONTROL_SIGNAL_2)
-    morphing = module->morph_plan_voice->control_input (1);
-  else if (module->control_type == MorphLinear::CONTROL_OP)
-    morphing = module->control_mod->value();
-  else
-    g_assert_not_reached();
-
+  const double morphing = module->morph_plan_voice->control_input (module->morphing, module->control_type, module->control_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 

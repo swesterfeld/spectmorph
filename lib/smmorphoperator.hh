@@ -37,7 +37,11 @@ public:
     CONTROL_GUI      = 1,
     CONTROL_SIGNAL_1 = 2,
     CONTROL_SIGNAL_2 = 3,
-    CONTROL_OP       = 4
+    CONTROL_OP       = 4,
+
+    /* note: don't reorder items here, as we need to be compatible with old files */
+    CONTROL_SIGNAL_3 = 5,
+    CONTROL_SIGNAL_4 = 6
   };
   MorphOperator (MorphPlan *morph_plan);
   virtual ~MorphOperator();

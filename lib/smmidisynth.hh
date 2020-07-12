@@ -67,7 +67,7 @@ class MidiSynth
   int                   next_note_id;
   bool                  inst_edit = false;
 
-  float                 control[2];
+  vector<float>         control = vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
   Voice  *alloc_voice();
   void    free_unused_voices();

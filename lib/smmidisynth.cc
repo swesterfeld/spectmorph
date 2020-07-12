@@ -28,8 +28,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   audio_time_stamp (0),
   mono_enabled (false),
   portamento_note_id (0),
-  next_note_id (1),
-  control {0, 0}
+  next_note_id (1)
 {
   voices.clear();
   voices.resize (n_voices);
@@ -357,6 +356,8 @@ MidiSynth::process_audio (const TimeInfo& time_info, float *output, size_t n_val
     {
       voice->mp_voice->set_control_input (0, control[0]);
       voice->mp_voice->set_control_input (1, control[1]);
+      voice->mp_voice->set_control_input (2, control[2]);
+      voice->mp_voice->set_control_input (3, control[3]);
 
       const float gain = voice->gain * m_gain;
       const float *freq_in = nullptr;
@@ -485,7 +486,7 @@ MidiSynth::process (float *output, size_t n_values)
 void
 MidiSynth::set_control_input (int i, float value)
 {
-  assert (i >= 0 && i < 2);
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS);
 
   control[i] = value;
 }

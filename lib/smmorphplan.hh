@@ -26,6 +26,8 @@ public:
     virtual void          handle_event (InFile& ifile) = 0;
   };
 
+  constexpr static int         N_CONTROL_INPUTS = 4;
+
 protected:
   Project                     *m_project = nullptr;
   Index                        m_index;

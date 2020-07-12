@@ -406,26 +406,7 @@ apply_delta_db (AudioBlock& block, double delta_db)
 static double
 get_morphing (MorphGrid::ControlType type, double gui_value, MorphOperatorModule *mod, MorphPlanVoice *voice)
 {
-  if (type == MorphGrid::CONTROL_GUI)
-    {
-      return gui_value;
-    }
-  else if (type == MorphGrid::CONTROL_OP)
-    {
-      return mod->value();
-    }
-  else if (type == MorphGrid::CONTROL_SIGNAL_1)
-    {
-      return voice->control_input (0);
-    }
-  else if (type == MorphGrid::CONTROL_SIGNAL_2)
-    {
-      return voice->control_input (1);
-    }
-  else
-    {
-      g_assert_not_reached();
-    }
+  return voice->control_input (gui_value, type, mod);
 }
 
 AudioBlock *

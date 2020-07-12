@@ -37,7 +37,7 @@ public:
 
   MorphOperatorModule *module (MorphOperator *op);
 
-  double control_input (int i);
+  double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);
 
   float mix_freq() const;

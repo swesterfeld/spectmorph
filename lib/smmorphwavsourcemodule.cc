@@ -67,20 +67,7 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
 {
   if (active_audio && module->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
-      double position;
-
-      if (module->position_control_type == MorphWavSource::CONTROL_GUI)
-        position = module->position;
-      else if (module->position_control_type == MorphWavSource::CONTROL_SIGNAL_1)
-        position = module->morph_plan_voice->control_input (0);
-      else if (module->position_control_type == MorphWavSource::CONTROL_SIGNAL_2)
-        position = module->morph_plan_voice->control_input (1);
-      else if (module->position_control_type == MorphWavSource::CONTROL_OP)
-        {
-          position = module->position_mod->value();
-        }
-      else
-        g_assert_not_reached();
+      const double position = module->morph_plan_voice->control_input (module->position, module->position_control_type, module->position_mod);
 
       int start, end;
       if (active_audio->loop_type == Audio::LOOP_NONE)

@@ -15,10 +15,8 @@ using std::max;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
-#define N_CONTROL_INPUTS 2
-
 MorphPlanVoice::MorphPlanVoice (float mix_freq, MorphPlanSynth *synth) :
-  m_control_input (N_CONTROL_INPUTS),
+  m_control_input (MorphPlan::N_CONTROL_INPUTS),
   m_output (NULL),
   m_mix_freq (mix_freq),
   m_morph_plan_synth (synth)
@@ -127,16 +125,24 @@ MorphPlanVoice::cheap_update (map<string, MorphOperator *>& op_map)
 }
 
 double
-MorphPlanVoice::control_input (int i)
+MorphPlanVoice::control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module)
 {
-  assert (i >= 0 && i < N_CONTROL_INPUTS);
-  return m_control_input[i];
+  switch (ctype)
+    {
+      case MorphOperator::CONTROL_GUI:      return value;
+      case MorphOperator::CONTROL_SIGNAL_1: return m_control_input[0];
+      case MorphOperator::CONTROL_SIGNAL_2: return m_control_input[1];
+      case MorphOperator::CONTROL_SIGNAL_3: return m_control_input[2];
+      case MorphOperator::CONTROL_SIGNAL_4: return m_control_input[3];
+      case MorphOperator::CONTROL_OP:       return module->value();
+      default:                              g_assert_not_reached();
+    }
 }
 
 void
 MorphPlanVoice::set_control_input (int i, double value)
 {
-  assert (i >= 0 && i < N_CONTROL_INPUTS);
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS);
 
   m_control_input[i] = value;
 }
