@@ -20,6 +20,12 @@ using std::string;
 #define SM_MIDI_CTL_SUSTAIN       0x40
 #define SM_MIDI_CTL_ALL_NOTES_OFF 0x7b
 
+/* control (jack) using General Purpose Controller 1..4 */
+#define SM_MIDI_CTL_CONTROL_1     16
+#define SM_MIDI_CTL_CONTROL_2     17
+#define SM_MIDI_CTL_CONTROL_3     18
+#define SM_MIDI_CTL_CONTROL_4     19
+
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq),
   m_inst_edit_synth (mix_freq),
@@ -294,6 +300,21 @@ MidiSynth::process_midi_controller (int controller, int value)
             process_note_off (note);
         }
     }
+  if (m_control_by_cc)
+    {
+      const float value_f = sm_bound (-1.0, (value / 127.) * 2 - 1, 1.0);
+      switch (controller)
+        {
+          case SM_MIDI_CTL_CONTROL_1: control[0] = value_f;
+                                      break;
+          case SM_MIDI_CTL_CONTROL_2: control[1] = value_f;
+                                      break;
+          case SM_MIDI_CTL_CONTROL_3: control[2] = value_f;
+                                      break;
+          case SM_MIDI_CTL_CONTROL_4: control[3] = value_f;
+                                      break;
+        }
+    }
 }
 
 void
@@ -486,7 +507,7 @@ MidiSynth::process (float *output, size_t n_values)
 void
 MidiSynth::set_control_input (int i, float value)
 {
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS);
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
   control[i] = value;
 }
@@ -613,6 +634,12 @@ int
 MidiSynth::MidiEvent::channel() const
 {
   return midi_data[0] & 0xf;
+}
+
+void
+MidiSynth::set_control_by_cc (bool control_by_cc)
+{
+  m_control_by_cc = control_by_cc;
 }
 
 // ----notify events----

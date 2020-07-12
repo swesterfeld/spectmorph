@@ -66,6 +66,7 @@ class MidiSynth
   int                   portamento_note_id;
   int                   next_note_id;
   bool                  inst_edit = false;
+  bool                  m_control_by_cc = false;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -112,6 +113,7 @@ public:
 
   void set_inst_edit (bool inst_edit);
   void set_gain (double gain);
+  void set_control_by_cc (bool control_by_cc);
   InstEditSynth *inst_edit_synth();
 };
 
