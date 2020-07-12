@@ -10,9 +10,6 @@ NEXT RELEASE:
 - better spectral subtract [1]
 - vibrato could have delay property
 
-0.5.1:
-- jack should get its control input from midi events
-
 insts:
  - tuba
  - double bass
