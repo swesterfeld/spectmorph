@@ -21,6 +21,8 @@ public:
   const LV2_Atom_Sequence* midi_in;
   const float* control_1;
   const float* control_2;
+  const float* control_3;
+  const float* control_4;
   float*       left_out;
   float*       right_out;
   LV2_Atom_Sequence* notify_port;

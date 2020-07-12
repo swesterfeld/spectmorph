@@ -28,15 +28,19 @@ enum PortIndex {
   SPECTMORPH_MIDI_IN    = 0,
   SPECTMORPH_CONTROL_1  = 1,
   SPECTMORPH_CONTROL_2  = 2,
-  SPECTMORPH_LEFT_OUT   = 3,
-  SPECTMORPH_RIGHT_OUT  = 4,
-  SPECTMORPH_NOTIFY     = 5
+  SPECTMORPH_CONTROL_3  = 3,
+  SPECTMORPH_CONTROL_4  = 4,
+  SPECTMORPH_LEFT_OUT   = 5,
+  SPECTMORPH_RIGHT_OUT  = 6,
+  SPECTMORPH_NOTIFY     = 7
 };
 
 LV2Plugin::LV2Plugin (double mix_freq) :
   midi_in (NULL),
   control_1 (NULL),
   control_2 (NULL),
+  control_3 (NULL),
+  control_4 (NULL),
   left_out (NULL),
   right_out (NULL),
   notify_port (NULL),
@@ -112,6 +116,10 @@ connect_port (LV2_Handle instance,
                                   break;
       case SPECTMORPH_CONTROL_2:  self->control_2 = (const float*)data;
                                   break;
+      case SPECTMORPH_CONTROL_3:  self->control_3 = (const float*)data;
+                                  break;
+      case SPECTMORPH_CONTROL_4:  self->control_4 = (const float*)data;
+                                  break;
       case SPECTMORPH_LEFT_OUT:   self->left_out = (float*)data;
                                   break;
       case SPECTMORPH_RIGHT_OUT:  self->right_out = (float*)data;
@@ -145,6 +153,8 @@ run (LV2_Handle instance, uint32_t n_samples)
 
   const float        control_1  = *(self->control_1);
   const float        control_2  = *(self->control_2);
+  const float        control_3  = *(self->control_3);
+  const float        control_4  = *(self->control_4);
   float* const       left_out   = self->left_out;
   float* const       right_out  = self->right_out;
 
@@ -204,6 +214,8 @@ run (LV2_Handle instance, uint32_t n_samples)
     }
   midi_synth->set_control_input (0, control_1);
   midi_synth->set_control_input (1, control_2);
+  midi_synth->set_control_input (2, control_3);
+  midi_synth->set_control_input (3, control_4);
   midi_synth->process (left_out, n_samples);
 
   // proper stereo support will be added later

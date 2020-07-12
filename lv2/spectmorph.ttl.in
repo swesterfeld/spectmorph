@@ -67,16 +67,36 @@
       lv2:maximum 1.0;
     ],
     [
+      a lv2:InputPort,
+        lv2:ControlPort;
+      lv2:index 3;
+      lv2:symbol "control_3";
+      lv2:name "Control #3";
+      lv2:default 0.0;
+      lv2:minimum -1.0;
+      lv2:maximum 1.0;
+    ],
+    [
+      a lv2:InputPort,
+        lv2:ControlPort;
+      lv2:index 4;
+      lv2:symbol "control_4";
+      lv2:name "Control #4";
+      lv2:default 0.0;
+      lv2:minimum -1.0;
+      lv2:maximum 1.0;
+    ],
+    [
       a lv2:AudioPort,
         lv2:OutputPort;
-      lv2:index 3;
+      lv2:index 5;
       lv2:symbol "left_out";
       lv2:name "Left Output"
     ],
     [
       a lv2:AudioPort,
         lv2:OutputPort;
-      lv2:index 4;
+      lv2:index 6;
       lv2:symbol "right_out";
       lv2:name "Right Output"
     ],
@@ -85,7 +105,7 @@
         atom:AtomPort ;
       atom:bufferType atom:Sequence;
       lv2:designation lv2:control;
-      lv2:index 5;
+      lv2:index 7;
       lv2:symbol "notify";
       lv2:name "Notify";
       rsz:minimumSize 65536;
