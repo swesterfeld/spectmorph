@@ -27,7 +27,6 @@ lfo beat-sync:
  - micro timing for ppq pos
  - micro timing (in block, in live decoder)
  - VST: small cleanups
- - JACK: check other time signatures (like 6/8 -> is it still quarter sync)
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
