@@ -27,9 +27,6 @@ lfo beat-sync:
  - micro timing for ppq pos
  - micro timing (in block, in live decoder)
  - VST: small cleanups
- - LV2: cleanup code
- - LV2: implement speed
- - LV2: other time signatures
  - JACK: check other time signatures (like 6/8 -> is it still quarter sync)
 
 smenc:
