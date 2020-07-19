@@ -1,12 +1,10 @@
 NEXT RELEASE:
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
-- maybe lv2 dirty
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
 - configurable midi synth semi tones (i.e jack)
-- support midi jack modulation
 - better spectral subtract [1]
 - vibrato could have delay property
 
@@ -26,7 +24,6 @@ lfo beat-sync:
  - elegant passing of tempo/ppq_pos to MorphLFOModule
  - micro timing for ppq pos
  - micro timing (in block, in live decoder)
- - VST: small cleanups
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
