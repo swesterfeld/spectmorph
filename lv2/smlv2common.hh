@@ -53,6 +53,7 @@ public:
     LV2_URID time_beatUnit;
     LV2_URID time_beatsPerBar;
     LV2_URID time_beatsPerMinute;
+    LV2_URID time_speed;
     LV2_URID time_Position;
   } uris;
   LV2_URID_Map* map;
@@ -81,7 +82,8 @@ public:
     uris.time_beatUnit      = map->map (map->handle, LV2_TIME__beatUnit);
     uris.time_beatsPerBar   = map->map (map->handle, LV2_TIME__beatsPerBar);
     uris.time_beatsPerMinute  = map->map (map->handle, LV2_TIME__beatsPerMinute);
-    uris.time_Position        = map->map (map->handle, LV2_TIME__Position);
+    uris.time_speed         = map->map (map->handle, LV2_TIME__speed);
+    uris.time_Position      = map->map (map->handle, LV2_TIME__Position);
   }
 };
 

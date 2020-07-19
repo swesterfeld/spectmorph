@@ -39,6 +39,8 @@ public:
   void write_state_changed();
 
   struct TimePos {
+    bool   have_speed    = false; // speed can be negative
+    double speed         = 0;
     double bpm           = -1;
     double bar           = -1;
     double beats_per_bar = -1;

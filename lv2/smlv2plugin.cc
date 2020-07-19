@@ -152,6 +152,7 @@ LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
   LV2_Atom *beat_unit = nullptr;
   LV2_Atom *bar = nullptr;
   LV2_Atom *bar_beat = nullptr;
+  LV2_Atom *speed = nullptr;
 
   lv2_atom_object_get (obj,
                        uris.time_beatsPerMinute, &beats_per_minute,
@@ -159,6 +160,7 @@ LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
                        uris.time_beatUnit, &beat_unit,
                        uris.time_bar, &bar,
                        uris.time_barBeat, &bar_beat,
+                       uris.time_speed, &speed,
                        nullptr);
 
   TimePos time_pos;
@@ -177,6 +179,12 @@ LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
 
   if (beat_unit && beat_unit->type == uris.atom_Int)
     time_pos.beat_unit = ((LV2_Atom_Int *) beat_unit)->body;
+
+  if (speed && speed->type == uris.atom_Float)
+    {
+      time_pos.have_speed = true;
+      time_pos.speed = ((LV2_Atom_Float *) speed)->body;
+    }
 
   return time_pos;
 }
@@ -212,17 +220,19 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               LV2Plugin::TimePos time_pos = self->time_pos_from_object (obj);
 
-              LV2_DEBUG ("TimePos [ bpm=%f, beats_per_bar=%f, beat_unit=%f bar=%f bar_beat=%f ]\n",
+              LV2_DEBUG ("TimePos [ bpm=%f, beats_per_bar=%f, beat_unit=%f bar=%f bar_beat=%f speed=%f ]\n",
                   time_pos.bpm,
                   time_pos.beats_per_bar,
                   time_pos.beat_unit,
                   time_pos.bar,
-                  time_pos.bar_beat);
+                  time_pos.bar_beat,
+                  time_pos.speed);
 
               if (time_pos.bpm >= 0)
                 midi_synth->set_tempo (time_pos.bpm);
 
-              if (time_pos.bar >= 0 && time_pos.beats_per_bar >= 0 && time_pos.bar_beat >= 0)
+              const bool playing = (time_pos.speed != 0) || !time_pos.have_speed;
+              if (playing && time_pos.bar >= 0 && time_pos.beats_per_bar >= 0 && time_pos.bar_beat >= 0)
                 {
                   double ppq_pos = time_pos.bar * time_pos.beats_per_bar + time_pos.bar_beat;
 
