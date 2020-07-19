@@ -38,6 +38,14 @@ public:
 
   void write_state_changed();
 
+  struct TimePos {
+    double bpm           = -1;
+    double bar           = -1;
+    double beats_per_bar = -1;
+    double bar_beat      = -1;
+  };
+  TimePos time_pos_from_object (const LV2_Atom_Object *obj);
+
   // SpectMorph stuff
   Project         project;
 };

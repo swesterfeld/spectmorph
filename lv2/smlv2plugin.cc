@@ -144,6 +144,38 @@ LV2Plugin::write_state_changed()
   lv2_atom_forge_pop (&forge, &frame);
 }
 
+LV2Plugin::TimePos
+LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
+{
+  LV2_Atom *beats_per_minute = nullptr;
+  LV2_Atom *beats_per_bar = nullptr;
+  LV2_Atom *bar = nullptr;
+  LV2_Atom *bar_beat = nullptr;
+
+  lv2_atom_object_get (obj,
+                       uris.time_beatsPerMinute, &beats_per_minute,
+                       uris.time_beatsPerBar, &beats_per_bar,
+                       uris.time_bar, &bar,
+                       uris.time_barBeat, &bar_beat,
+                       nullptr);
+
+  TimePos time_pos;
+
+  if (beats_per_minute && beats_per_minute->type == uris.atom_Float)
+    time_pos.bpm = ((LV2_Atom_Float *) beats_per_minute)->body;
+
+  if (bar && bar->type == uris.atom_Long)
+    time_pos.bar = ((LV2_Atom_Long *) bar)->body;
+
+  if (bar_beat && bar_beat->type == uris.atom_Float)
+    time_pos.bar_beat = ((LV2_Atom_Float *) bar_beat)->body;
+
+  if (beats_per_bar && beats_per_bar->type == uris.atom_Float)
+    time_pos.beats_per_bar = ((LV2_Atom_Float *) beats_per_bar)->body;
+
+  return time_pos;
+}
+
 static void
 run (LV2_Handle instance, uint32_t n_samples)
 {
@@ -173,42 +205,19 @@ run (LV2_Handle instance, uint32_t n_samples)
           const LV2_Atom_Object *obj = (LV2_Atom_Object *) &ev->body;
           if (obj->body.otype == self->uris.time_Position)
             {
-              LV2_Atom *beats_per_minute = nullptr;
-              LV2_Atom *beats_per_bar = nullptr;
-              LV2_Atom *bar = nullptr;
-              LV2_Atom *bar_beat = nullptr;
-              lv2_atom_object_get (obj,
-                                   self->uris.time_beatsPerMinute, &beats_per_minute,
-                                   self->uris.time_beatsPerBar, &beats_per_bar,
-                                   self->uris.time_bar, &bar,
-                                   self->uris.time_barBeat, &bar_beat,
-                                   nullptr);
-              if (beats_per_minute && beats_per_minute->type == self->uris.atom_Float)
-                {
-                  const float bpm = ((LV2_Atom_Float *) beats_per_minute)->body;
-                  midi_synth->set_tempo (bpm);
-                  LV2_DEBUG ("got bpm=%f\n", bpm);
-                }
-              double b = -1;
-              if (bar && bar->type == self->uris.atom_Long)
-                {
-                  b = ((LV2_Atom_Long *) bar)->body;
-                  LV2_DEBUG ("got bar=%f\n", b);
-                }
-              float bb = -1;
-              if (bar_beat && bar_beat->type == self->uris.atom_Float)
-                {
-                  bb = ((LV2_Atom_Float *) bar_beat)->body;
-                  LV2_DEBUG ("got bar_beat=%f\n", bb);
-                }
-              float bpb = -1;
-              if (beats_per_bar && beats_per_bar->type == self->uris.atom_Float)
-                {
-                  bpb = ((LV2_Atom_Float *) beats_per_bar)->body;
-                  LV2_DEBUG ("got bpb=%f\n", bpb);
-                }
-              if (b >= 0 && bpb >= 0 && bb >= 0)
-                midi_synth->set_ppq_pos (b * bpb + bb);
+              LV2Plugin::TimePos time_pos = self->time_pos_from_object (obj);
+
+              LV2_DEBUG ("TimePos [ bpm=%f, bar=%f, beats_per_bar=%f, bar_beat=%f ]\n",
+                  time_pos.bpm,
+                  time_pos.bar,
+                  time_pos.beats_per_bar,
+                  time_pos.bar_beat);
+
+              if (time_pos.bpm >= 0)
+                midi_synth->set_tempo (time_pos.bpm);
+
+              if (time_pos.bar >= 0 && time_pos.beats_per_bar >= 0 && time_pos.bar_beat >= 0)
+                midi_synth->set_ppq_pos (time_pos.bar * time_pos.beats_per_bar + time_pos.bar_beat);
             }
         }
     }
