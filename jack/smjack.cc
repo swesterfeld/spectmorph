@@ -52,6 +52,7 @@ JackSynth::process (jack_nframes_t nframes)
       if (rolling)
         {
           double ppq_pos = ((pos.bar - 1) * pos.beats_per_bar) + (pos.beat - 1) + pos.tick / pos.ticks_per_beat;
+          ppq_pos *= 4 / pos.beat_type; // convert position to quarter notes
           midi_synth->set_ppq_pos (ppq_pos);
         }
     }
