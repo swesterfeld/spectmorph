@@ -220,14 +220,6 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               LV2Plugin::TimePos time_pos = self->time_pos_from_object (obj);
 
-              LV2_DEBUG ("TimePos [ bpm=%f, beats_per_bar=%f, beat_unit=%f bar=%f bar_beat=%f speed=%f ]\n",
-                  time_pos.bpm,
-                  time_pos.beats_per_bar,
-                  time_pos.beat_unit,
-                  time_pos.bar,
-                  time_pos.bar_beat,
-                  time_pos.speed);
-
               if (time_pos.bpm >= 0)
                 midi_synth->set_tempo (time_pos.bpm);
 
