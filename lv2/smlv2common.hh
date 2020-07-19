@@ -40,6 +40,7 @@ public:
     LV2_URID atom_Bool;
     LV2_URID atom_Double;
     LV2_URID atom_Float;
+    LV2_URID atom_Int;
     LV2_URID atom_Long;
     LV2_URID atom_Object;
     LV2_URID atom_String;
@@ -49,6 +50,7 @@ public:
     LV2_URID state_StateChanged;
     LV2_URID time_bar;
     LV2_URID time_barBeat;
+    LV2_URID time_beatUnit;
     LV2_URID time_beatsPerBar;
     LV2_URID time_beatsPerMinute;
     LV2_URID time_Position;
@@ -66,6 +68,7 @@ public:
     uris.atom_Bool          = map->map (map->handle, LV2_ATOM__Bool);
     uris.atom_Double        = map->map (map->handle, LV2_ATOM__Double);
     uris.atom_Float         = map->map (map->handle, LV2_ATOM__Float);
+    uris.atom_Int           = map->map (map->handle, LV2_ATOM__Int);
     uris.atom_Long          = map->map (map->handle, LV2_ATOM__Long);
     uris.atom_Object        = map->map (map->handle, LV2_ATOM__Object);
     uris.atom_String        = map->map (map->handle, LV2_ATOM__String);
@@ -75,6 +78,7 @@ public:
     uris.state_StateChanged = map->map (map->handle, LV2_STATE__StateChanged);
     uris.time_bar           = map->map (map->handle, LV2_TIME__bar);
     uris.time_barBeat       = map->map (map->handle, LV2_TIME__barBeat);
+    uris.time_beatUnit      = map->map (map->handle, LV2_TIME__beatUnit);
     uris.time_beatsPerBar   = map->map (map->handle, LV2_TIME__beatsPerBar);
     uris.time_beatsPerMinute  = map->map (map->handle, LV2_TIME__beatsPerMinute);
     uris.time_Position        = map->map (map->handle, LV2_TIME__Position);

@@ -149,12 +149,14 @@ LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
 {
   LV2_Atom *beats_per_minute = nullptr;
   LV2_Atom *beats_per_bar = nullptr;
+  LV2_Atom *beat_unit = nullptr;
   LV2_Atom *bar = nullptr;
   LV2_Atom *bar_beat = nullptr;
 
   lv2_atom_object_get (obj,
                        uris.time_beatsPerMinute, &beats_per_minute,
                        uris.time_beatsPerBar, &beats_per_bar,
+                       uris.time_beatUnit, &beat_unit,
                        uris.time_bar, &bar,
                        uris.time_barBeat, &bar_beat,
                        nullptr);
@@ -172,6 +174,9 @@ LV2Plugin::time_pos_from_object (const LV2_Atom_Object* obj)
 
   if (beats_per_bar && beats_per_bar->type == uris.atom_Float)
     time_pos.beats_per_bar = ((LV2_Atom_Float *) beats_per_bar)->body;
+
+  if (beat_unit && beat_unit->type == uris.atom_Int)
+    time_pos.beat_unit = ((LV2_Atom_Int *) beat_unit)->body;
 
   return time_pos;
 }
@@ -207,17 +212,25 @@ run (LV2_Handle instance, uint32_t n_samples)
             {
               LV2Plugin::TimePos time_pos = self->time_pos_from_object (obj);
 
-              LV2_DEBUG ("TimePos [ bpm=%f, bar=%f, beats_per_bar=%f, bar_beat=%f ]\n",
+              LV2_DEBUG ("TimePos [ bpm=%f, beats_per_bar=%f, beat_unit=%f bar=%f bar_beat=%f ]\n",
                   time_pos.bpm,
-                  time_pos.bar,
                   time_pos.beats_per_bar,
+                  time_pos.beat_unit,
+                  time_pos.bar,
                   time_pos.bar_beat);
 
               if (time_pos.bpm >= 0)
                 midi_synth->set_tempo (time_pos.bpm);
 
               if (time_pos.bar >= 0 && time_pos.beats_per_bar >= 0 && time_pos.bar_beat >= 0)
-                midi_synth->set_ppq_pos (time_pos.bar * time_pos.beats_per_bar + time_pos.bar_beat);
+                {
+                  double ppq_pos = time_pos.bar * time_pos.beats_per_bar + time_pos.bar_beat;
+
+                  if (time_pos.beat_unit > 0)
+                    ppq_pos *= 4 / time_pos.beat_unit; // convert position to quarter notes
+
+                  midi_synth->set_ppq_pos (ppq_pos);
+                }
             }
         }
     }

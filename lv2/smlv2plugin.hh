@@ -43,6 +43,7 @@ public:
     double bar           = -1;
     double beats_per_bar = -1;
     double bar_beat      = -1;
+    double beat_unit     = -1;
   };
   TimePos time_pos_from_object (const LV2_Atom_Object *obj);
 
