@@ -48,6 +48,8 @@ JackSynth::process (jack_nframes_t nframes)
 
       /* we try to synchronize the ppq position with the values available from JACK
        * unfortunately, this doesn't work if beats_per_bar changes (i.e. time signature changes 4/4 -> 3/4)
+       *
+       * in principle it would be better to use pos.bar_start_tick, but Ardour doesn't set this
        */
       if (rolling)
         {
