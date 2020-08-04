@@ -8,6 +8,8 @@ templates_DATA = \
   1-instrument.smplan             \
   empty.smplan                    \
   aurora.smplan                   \
+  saturn.smplan                   \
+  mars.smplan                     \
   index.smpindex
 
 templatesdir = $(pkgdatadir)/templates
