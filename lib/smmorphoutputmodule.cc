@@ -182,7 +182,10 @@ MorphOutputModule::compute_time_info() const
       TimeInfo time_info = block_time;
 
       time_info.time_ms += dec->time_offset_ms();
-      /* FIXME: correct ppq_info, too */
+      /* we don't even try to correct time_info.ppq_pos here, because doing so might
+       * introduce backwards-jumps triggered by tempo changes; the resolution of
+       * ppq_pos (once per block) should be sufficient in practice
+       */
       return time_info;
     }
   return block_time;
