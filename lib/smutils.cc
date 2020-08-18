@@ -328,18 +328,6 @@ spectmorph_user_data_dir()
 }
 #endif
 
-static bool
-dir_exists (const string& dirname)
-{
-  struct stat st;
-
-  if (stat (dirname.c_str(), &st) == 0)
-    {
-      return S_ISDIR (st.st_mode);
-    }
-  return false;
-}
-
 string
 sm_get_user_dir (UserDir p)
 {
@@ -463,6 +451,30 @@ read_dir (const string& dirname, vector<string>& files)
   g_dir_close (dir);
 
   return Error::Code::NONE;
+}
+
+bool
+file_exists (const string& filename)
+{
+  struct stat st;
+
+  if (stat (filename.c_str(), &st) == 0)
+    {
+      return S_ISREG (st.st_mode);
+    }
+  return false;
+}
+
+bool
+dir_exists (const string& dirname)
+{
+  struct stat st;
+
+  if (stat (dirname.c_str(), &st) == 0)
+    {
+      return S_ISDIR (st.st_mode);
+    }
+  return false;
 }
 
 }

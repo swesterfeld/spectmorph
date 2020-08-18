@@ -34,18 +34,6 @@ Index::clear()
   m_load_ok = false;
 }
 
-static bool
-file_exists (const string& filename)
-{
-  struct stat st;
-
-  if (stat (filename.c_str(), &st) == 0)
-    {
-      return S_ISREG (st.st_mode);
-    }
-  return false;
-}
-
 // just check version, ignore rest
 static bool
 version_ok (const string& filename)
