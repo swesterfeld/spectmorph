@@ -5,6 +5,7 @@
 #include "smdebug.hh"
 
 #include <mutex>
+#include <cinttypes>
 
 #include <assert.h>
 
@@ -343,7 +344,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 
   if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
     {
-      MIDI_DEBUG ("%zd | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
+      MIDI_DEBUG ("%" PRIu64 " | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
       event.offset = offset;
       event.midi_data[0] = midi_data[0];
@@ -353,7 +354,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
     }
   else
     {
-      MIDI_DEBUG ("%zd | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
+      MIDI_DEBUG ("%" PRIu64 " | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
     }
 }
 
@@ -469,7 +470,7 @@ MidiSynth::process (float *output, size_t n_values)
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
           const float semi_tones = (value * (1./0x2000) - 1.0) * 48;
-          MIDI_DEBUG ("%zd | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
+          MIDI_DEBUG ("%" PRIu64 " | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
           process_pitch_bend (midi_event.channel(), semi_tones);
         }
       if (midi_event.is_note_on())
@@ -477,19 +478,19 @@ MidiSynth::process (float *output, size_t n_values)
           const int midi_note     = midi_event.midi_data[1];
           const int midi_velocity = midi_event.midi_data[2];
 
-          MIDI_DEBUG ("%zd | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
+          MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
           process_note_on (time_info, midi_event.channel(), midi_note, midi_velocity);
         }
       else if (midi_event.is_note_off())
         {
           const int midi_note     = midi_event.midi_data[1];
 
-          MIDI_DEBUG ("%zd | note off event, note %d\n", audio_time_stamp, midi_note);
+          MIDI_DEBUG ("%" PRIu64 " | note off event, note %d\n", audio_time_stamp, midi_note);
           process_note_off (midi_note);
         }
       else if (midi_event.is_controller())
         {
-          MIDI_DEBUG ("%zd | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
+          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
           process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
         }
     }
