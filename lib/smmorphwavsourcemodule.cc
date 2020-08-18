@@ -67,7 +67,7 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
 {
   if (active_audio && module->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
-      const double position = module->morph_plan_voice->control_input (module->position, module->position_control_type, module->position_mod);
+      const double position = module->morph_plan_voice->control_input ((module->position * 0.01) * 2 - 1, module->position_control_type, module->position_mod);
 
       int start, end;
       if (active_audio->loop_type == Audio::LOOP_NONE)

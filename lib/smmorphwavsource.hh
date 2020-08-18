@@ -35,7 +35,7 @@ protected:
   std::string m_lv2_filename;
   PlayMode    m_play_mode             = PLAY_MODE_STANDARD;
   ControlType m_position_control_type = CONTROL_GUI;
-  float       m_position = 0;
+  float       m_position = 50;
   MorphOperator *m_position_op = nullptr;
 
 public:

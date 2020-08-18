@@ -12,7 +12,7 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSource");
 
 MorphWavSourceProperties::MorphWavSourceProperties (MorphWavSource *wav_source) :
-  position (wav_source, "Position", "%.2f", -1, 1, &MorphWavSource::position, &MorphWavSource::set_position)
+  position (wav_source, "Position", "%.1f %%", 0, 100, &MorphWavSource::position, &MorphWavSource::set_position)
 {
 }
 
