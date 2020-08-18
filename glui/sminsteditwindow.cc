@@ -205,13 +205,13 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   connect (sample_down->signal_activated, this, &InstEditWindow::on_sample_down);
 
   /*----- add/remove ----- */
-  remove_sample_button = new Button (this, "Remove");
-  grid.add_widget (remove_sample_button, 74, 5, 9, 3);
-  connect (remove_sample_button->signal_clicked, this, &InstEditWindow::on_remove_sample_clicked);
-
   add_sample_button = new Button (this, "Add...");
-  grid.add_widget (add_sample_button, 84, 5, 8, 3);
+  grid.add_widget (add_sample_button, 74, 5, 8, 3);
   connect (add_sample_button->signal_clicked, this, &InstEditWindow::on_add_sample_clicked);
+
+  remove_sample_button = new Button (this, "Remove");
+  grid.add_widget (remove_sample_button, 83, 5, 9, 3);
+  connect (remove_sample_button->signal_clicked, this, &InstEditWindow::on_remove_sample_clicked);
 
   /*----- sample view -----*/
   sample_scroll_view = new ScrollView (this);
