@@ -675,7 +675,12 @@ main (int argc, char **argv)
       string out_filename = argv[2];
 
       Instrument inst;
-      inst.load (inst_filename);
+      Error error = inst.load (inst_filename);
+      if (error)
+        {
+          fprintf (stderr, "%s: can't open input file: %s: %s\n", options.program_name.c_str(), inst_filename.c_str(), error.message());
+          exit (1);
+        }
 
       WavSetBuilder builder (&inst, /* keep_samples */ false);
       std::unique_ptr<WavSet> smset (builder.run());
