@@ -1,3 +1,20 @@
+Overview of Changes in spectmorph-0.5.2:
+
+* Support bpm/beat synchronization for LFO
+  - new presets using beat sync LFO: Mars / Saturn
+* Add WavSource custom position playback mode
+* New Instruments: Sven Ah / Ih / Oh (another male human voice)
+* Store data in XDG directories on Linux:
+  - move ~/.spectmorph directory to $XDG_DATA_HOME/spectmorph
+  - move ~/SpectMorph directory to $XDG_DOCUMENTS_DIR/SpectMorph
+  - create $XDG_DOCUMENTS_DIR/SpectMorph directory when needed (on write)
+  - backward compatibility: use ~/SpectMorph if it already exists
+* Bump number of control inputs from 2 to 4
+* Implemented midi CC control for smjack (General Purpose Controller 1..4)
+* Fix crashes caused by dangling MorphOperator pointers
+* Fix loading floating point wav files
+* Minor fixes and cleanups
+
 Overview of Changes in spectmorph-0.5.1:
 
 * Add new LFO modes (saw, square, random)
