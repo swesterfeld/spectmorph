@@ -14,42 +14,44 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-DSC=../../spectmorph_0.5.1.dsc
+DSC=../../spectmorph_0.5.2.dsc
 
 unset CC
 unset CXX
 export DEB_BUILD_OPTIONS="parallel=$(nproc)"
 
-for DIST in xenial bionic
+for NAME in \
+  xenial-i386 xenial-amd64 \
+  bionic-i386 bionic-amd64 \
+  focal-amd64
 do
-  for ARCH in i386 amd64
-  do
-    NAME="$DIST-$ARCH"
-    BASETGZ="/var/cache/pbuilder/$NAME/base.tgz"
-    BUILDRESULT="/var/cache/pbuilder/$NAME/result/"
-    APTCACHE="/var/cache/pbuilder/$NAME/aptcache/"
-    mkdir -p "$BUILDRESULT" "$APTCACHE"
+  DIST=${NAME%%-*}
+  ARCH=${NAME#*-}
 
-    if test -f $BASETGZ; then
-      echo using existing basetgz $BASETGZ
-    else
-      pbuilder --create                \
-               --distribution $DIST    \
-               --architecture $ARCH    \
-               --basetgz $BASETGZ
-    fi
+  BASETGZ="/var/cache/pbuilder/$NAME/base.tgz"
+  BUILDRESULT="/var/cache/pbuilder/$NAME/result/"
+  APTCACHE="/var/cache/pbuilder/$NAME/aptcache/"
+  mkdir -p "$BUILDRESULT" "$APTCACHE"
 
-    echo "----------------------------------------------------------------"
-    echo "---- building from $DSC"
-    echo "---- dist $DIST, arch $ARCH"
-    echo "----------------------------------------------------------------"
+  if test -f $BASETGZ; then
+    echo using existing basetgz $BASETGZ
+  else
+    pbuilder --create                \
+             --distribution $DIST    \
+             --architecture $ARCH    \
+             --basetgz $BASETGZ
+  fi
 
-    pbuilder --build                \
-             --distribution $DIST   \
-             --architecture $ARCH   \
-             --basetgz $BASETGZ     \
-             --buildresult $BUILDRESULT  \
-             --aptcache $APTCACHE   \
-             $DSC
-  done
+  echo "----------------------------------------------------------------"
+  echo "---- building from $DSC"
+  echo "---- dist $DIST, arch $ARCH"
+  echo "----------------------------------------------------------------"
+
+  pbuilder --build                \
+           --distribution $DIST   \
+           --architecture $ARCH   \
+           --basetgz $BASETGZ     \
+           --buildresult $BUILDRESULT  \
+           --aptcache $APTCACHE   \
+           $DSC
 done
