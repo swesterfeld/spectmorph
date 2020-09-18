@@ -25,7 +25,6 @@ class WavSetBuilder
   };
   std::vector<SampleData> sample_data_vec;
   WavSet *wav_set;
-  std::string name;
   InstEncCache::Group       *cache_group = nullptr;
 
   std::function<bool()>      kill_function;

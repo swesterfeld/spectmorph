@@ -19,7 +19,9 @@ WavSetBuilder::WavSetBuilder (const Instrument *instrument, bool keep_samples) :
   keep_samples (keep_samples)
 {
   wav_set = new WavSet();
-  name = instrument->name();
+  wav_set->name = instrument->name();
+  wav_set->short_name = instrument->short_name();
+
   auto_volume = instrument->auto_volume();
   auto_tune = instrument->auto_tune();
   encoder_config = instrument->encoder_config();
