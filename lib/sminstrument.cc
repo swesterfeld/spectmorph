@@ -182,6 +182,20 @@ Instrument::set_name (const string& name)
   signal_global_changed();
 }
 
+string
+Instrument::short_name() const
+{
+  return m_short_name;
+}
+
+void
+Instrument::set_short_name (const string& short_name)
+{
+  m_short_name = short_name;
+
+  signal_global_changed();
+}
+
 Sample *
 Instrument::sample (size_t n) const
 {
@@ -210,6 +224,7 @@ Instrument::clear()
 {
   samples.clear();
   m_name           = "untitled";
+  m_short_name     = "";
   m_auto_volume    = AutoVolume();
   m_auto_tune      = AutoTune();
   m_encoder_config = EncoderConfig();
@@ -265,12 +280,14 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
     }
   xml_node inst_node = doc.child ("instrument");
   string new_name = inst_node.attribute ("name").value();
+  string new_short_name = inst_node.attribute ("short_name").value();
 
   if (load_options == LoadOptions::NAME_ONLY)
     {
       // required to build index of available instruments quickly: load name, nothing else
       clear();
       m_name = new_name;
+      m_short_name = new_short_name;
       return Error::Code::NONE;
     }
 
@@ -409,6 +426,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
    */
   samples          = std::move (new_samples);
   m_name           = new_name;
+  m_short_name     = new_short_name;
   m_auto_volume    = new_auto_volume;
   m_auto_tune      = new_auto_tune;
   m_encoder_config = new_encoder_config;
@@ -495,6 +513,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer) const
   xml_document doc;
   xml_node inst_node = doc.append_child ("instrument");
   inst_node.append_attribute ("name").set_value (m_name.c_str());
+  inst_node.append_attribute ("short_name").set_value (m_short_name.c_str());
   for (auto& sample : samples)
     {
       xml_node sample_node = inst_node.append_child ("sample");

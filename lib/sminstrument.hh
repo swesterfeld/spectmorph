@@ -117,6 +117,7 @@ private:
   std::vector<std::unique_ptr<Sample>> samples;
   int           m_selected = -1;
   std::string   m_name = "untitled";
+  std::string   m_short_name;
 
   AutoVolume    m_auto_volume;
   AutoTune      m_auto_tune;
@@ -136,6 +137,8 @@ public:
   void        clear();
   std::string name() const;
   void        set_name (const std::string& name);
+  std::string short_name() const;
+  void        set_short_name (const std::string& short_name);
 
   std::string version();
 
