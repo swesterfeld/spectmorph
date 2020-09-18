@@ -3,7 +3,6 @@ later:
 - fix error handling for WavSet::save() and others
 - combobox should support scroll wheel
 - multiple bank support
-- play pos using control
 - better indicator for outdated WavSources
 
 SVEN:
@@ -13,4 +12,3 @@ SVEN:
   - (1) on note off: store position, restart there
   - (2) use control signal as offset into loop
   -     use tempo mode
-  - (3) use control signal to send play position
