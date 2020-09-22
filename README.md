@@ -24,8 +24,8 @@ way of integration.
 
 Controlling Morphing with Automation:
 -------------------------------------
-The VST Plugin has two properties that can be automated by the host, called
-Control #1 and Control #2. To use these, for instance for linear morphing,
+The VST Plugin has four properties that can be automated by the host, called
+Control #1 ... Control #4. To use these, for instance for linear morphing,
 the Control Input can be set to "Control Signal #1" (or #2) in the UI. After
 that the host can change the morphing from left source to right source and
 back.
@@ -39,8 +39,8 @@ that support LV2, such as Ardour, Qtractor and others.
 Controlling Morphing with Automation:
 -------------------------------------
 
-The LV2 Plugin has two properties that can be automated by the host, called
-Control #1 and Control #2. To use these, for instance for linear morphing,
+The LV2 Plugin has four properties that can be automated by the host, called
+Control #1 ... Control #4. To use these, for instance for linear morphing,
 the Control Input can be set to "Control Signal #1" (or #2) in the UI. After
 that the host can change the morphing from left source to right source and
 back.
@@ -50,6 +50,11 @@ JACK:
 
 The smjack program is a fully functional JACK Client using SpectMorph. You need
 to connect midi input and audio output (for instance with using QJackCtl).
+
+Controlling Morphing with CCs:
+------------------------------
+The control inputs (Control Signal #1 ... Control Signal #4) are mapped to the
+midi CC controls (General Purpose Controller 1..4).
 
 Packaging Instruments:
 ======================
