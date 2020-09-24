@@ -12,14 +12,10 @@ insts:
  - tuba
  - double bass
  - flute
- - sven ah/oh
 
 new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
-
-lfo beat-sync:
- + random
 
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
@@ -57,11 +53,6 @@ documentation:
 sminspector:
 - figure out why mix_freq is 0 for inspect1 foo.wav
 
-gui:
-- die if parent process dies
-- object level file versioning
-- support unsetting operators
-
 morphing:
 - performance: use O(n) loop to associate each freq with the nearest freq of the
   other input -> less search cycles, since we already have the best match freq
@@ -86,7 +77,6 @@ lv2:
 - google+
 - facebook
 - release announcement mailing lists
-  - next time: fix Linux and Windows -> Linux and Windows and macOS
 - mail arch linux maintainer (AUR)
 - test builds on gentoo and ubuntu 17.04
 
