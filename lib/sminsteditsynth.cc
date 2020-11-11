@@ -73,7 +73,7 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int l
         {
           if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
             {
-              voice.decoder->retrigger (0, note_to_freq (midi_data[1]), 127, 48000);
+              voice.decoder->retrigger (0, note_to_freq (midi_data[1]), 127, mix_freq);
               voice.decoder_factor = 1;
               voice.state = State::ON;
               voice.note = midi_data[1];
