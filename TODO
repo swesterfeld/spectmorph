@@ -7,6 +7,7 @@ NEXT RELEASE:
 - configurable midi synth semi tones (i.e jack)
 - better spectral subtract [1]
 - vibrato could have delay property
+- possibly add MPE timbre
 
 insts:
  - tuba
