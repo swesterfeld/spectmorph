@@ -40,8 +40,38 @@ MorphOutputModule::~MorphOutputModule()
 }
 
 void
-MorphOutputModule::set_config (MorphOperator *op)
+MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
 {
+  const MorphOutput::Config *cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
+  g_return_if_fail (cfg != NULL);
+
+  clear_dependencies();
+  MorphOperatorModule *mod = NULL;
+  EffectDecoder *dec = nullptr;
+
+  mod = morph_plan_voice->module (cfg->channel_ops[0].id());
+  if (mod == out_ops[0])
+    {
+      dec = out_decoders[0];
+      // keep decoder as it is
+    }
+  else
+    {
+      if (out_decoders[0])
+        delete out_decoders[0];
+      if (mod)
+        dec = new EffectDecoder (mod->source());
+
+      out_decoders[0] = dec;
+    }
+  if (dec)
+    dec->set_config (nullptr /* FIXME */, morph_plan_voice->mix_freq());
+  out_ops[0] = mod;
+  out_decoders[0] = dec;
+
+  add_dependency (mod);
+  /* FIXME: CONFIG */
+#if 0
   MorphOutput *out_op = dynamic_cast <MorphOutput *> (op);
   g_return_if_fail (out_op != NULL);
 
@@ -82,6 +112,7 @@ MorphOutputModule::set_config (MorphOperator *op)
 
       add_dependency (mod);
     }
+#endif
 }
 
 bool

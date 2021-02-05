@@ -37,8 +37,10 @@ normalize_phase (double phase)
 }
 
 void
-MorphLFOModule::set_config (MorphOperator *op)
+MorphLFOModule::set_config (const MorphOperatorConfig *op_cfg)
 {
+  /* FIXME: CONFIG */
+#if 0
   MorphLFO *lfo = dynamic_cast<MorphLFO *> (op);
 
   frequency = lfo->frequency();
@@ -62,6 +64,9 @@ MorphLFOModule::set_config (MorphOperator *op)
           synth->set_shared_state (op, shared_state);
         }
     }
+#endif
+  if (!shared_state) // FIXME
+    shared_state = new SharedState();
 }
 
 float
@@ -105,6 +110,8 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 void
 MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
+  /* FIXME: CONFIG */
+#if 0
   if (!beat_sync)
     {
       if (time_info.time_ms > state.last_time_ms)
@@ -202,6 +209,7 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 
   state.value = state.value * depth + center;
   state.value = CLAMP (state.value, -1.0, 1.0);
+#endif
 }
 
 void

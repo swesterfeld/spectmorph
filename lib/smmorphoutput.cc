@@ -16,10 +16,11 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
-  MorphOperator (morph_plan),
-  channel_ops (CHANNEL_OP_COUNT)
+  MorphOperator (morph_plan)
 {
   connect (morph_plan->signal_operator_removed, this, &MorphOutput::on_operator_removed);
+
+  m_config.channel_ops.resize (CHANNEL_OP_COUNT);
 
   m_velocity_sensitivity = 24; /* dB */
 
@@ -82,12 +83,12 @@ MorphOutput::insert_order()
 bool
 MorphOutput::save (OutFile& out_file)
 {
-  for (size_t i = 0; i < channel_ops.size(); i++)
+  for (size_t i = 0; i < m_config.channel_ops.size(); i++)
     {
       string name;
 
-      if (channel_ops[i])   // NULL pointer => name = ""
-        name = channel_ops[i]->name();
+      if (m_config.channel_ops[i])   // NULL pointer => name = ""
+        name = m_config.channel_ops[i].get()->name();
 
       out_file.write_string ("channel", name);
     }
@@ -246,12 +247,12 @@ MorphOutput::load (InFile& ifile)
 void
 MorphOutput::post_load (OpNameMap& op_name_map)
 {
-  for (size_t i = 0; i < channel_ops.size(); i++)
+  for (size_t i = 0; i < m_config.channel_ops.size(); i++)
     {
       if (i < load_channel_op_names.size())
         {
           string name = load_channel_op_names[i];
-          channel_ops[i] = op_name_map[name];
+          m_config.channel_ops[i].set (op_name_map[name]);
         }
     }
 }
@@ -267,7 +268,7 @@ MorphOutput::set_channel_op (int ch, MorphOperator *op)
 {
   assert (ch >= 0 && ch < CHANNEL_OP_COUNT);
 
-  channel_ops[ch] = op;
+  m_config.channel_ops[ch].set (op);
   m_morph_plan->emit_plan_changed();
 }
 
@@ -276,7 +277,7 @@ MorphOutput::channel_op (int ch)
 {
   assert (ch >= 0 && ch < CHANNEL_OP_COUNT);
 
-  return channel_ops[ch];
+  return m_config.channel_ops[ch].get();
 }
 
 bool
@@ -542,15 +543,27 @@ MorphOutput::set_velocity_sensitivity (float velocity_sensitivity)
 void
 MorphOutput::on_operator_removed (MorphOperator *op)
 {
-  for (size_t ch = 0; ch < channel_ops.size(); ch++)
+  for (size_t ch = 0; ch < m_config.channel_ops.size(); ch++)
     {
-      if (channel_ops[ch] == op)
-        channel_ops[ch] = NULL;
+      if (m_config.channel_ops[ch].get() == op)
+        m_config.channel_ops[ch].set (nullptr);
     }
 }
 
 vector<MorphOperator *>
 MorphOutput::dependencies()
 {
-  return channel_ops;
+  vector<MorphOperator *> deps;
+
+  for (auto& ptr : m_config.channel_ops)
+    deps.push_back (ptr.get());
+
+  return deps;
+}
+
+MorphOperatorConfig *
+MorphOutput::clone_config()
+{
+  Config *cfg = new Config (m_config);
+  return cfg;
 }

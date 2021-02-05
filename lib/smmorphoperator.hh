@@ -12,6 +12,11 @@
 namespace SpectMorph
 {
 
+struct MorphOperatorConfig
+{
+  virtual ~MorphOperatorConfig();
+};
+
 class MorphOperatorView;
 class MorphPlan;
 
@@ -53,6 +58,7 @@ public:
   virtual void post_load (OpNameMap& op_name_map);
   virtual OutputType output_type() = 0;
   virtual std::vector<MorphOperator *> dependencies();
+  virtual MorphOperatorConfig *clone_config();
 
   MorphPlan *morph_plan();
 
@@ -70,6 +76,29 @@ public:
   void set_folded (bool folded);
 
   static MorphOperator *create (const std::string& type, MorphPlan *plan);
+};
+
+class MorphOperatorPtr
+{
+private:
+  MorphOperator *m_ptr = nullptr;
+  std::string    m_id;
+public:
+  operator bool() const { return m_ptr != nullptr; };
+  MorphOperator *get() const { return m_ptr; }
+
+  std::string
+  id() const
+  {
+    return m_id;
+  }
+
+  void
+  set (MorphOperator *ptr)
+  {
+    m_id = ptr ? ptr->id() : "";
+    m_ptr = ptr;
+  };
 };
 
 }

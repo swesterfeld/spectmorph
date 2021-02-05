@@ -34,6 +34,17 @@ MorphSource::smset()
   return m_smset;
 }
 
+MorphOperatorConfig *
+MorphSource::clone_config()
+{
+  Config *cfg = new Config (m_config);
+
+  string smset_dir = morph_plan()->index()->smset_dir();
+  cfg->path = smset_dir + "/" + m_smset;
+
+  return cfg;
+}
+
 const char *
 MorphSource::type()
 {

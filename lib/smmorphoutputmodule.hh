@@ -23,7 +23,7 @@ public:
   MorphOutputModule (MorphPlanVoice *voice);
   ~MorphOutputModule();
 
-  void set_config (MorphOperator *op);
+  void set_config (const MorphOperatorConfig *op_cfg);
   void process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
   void retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity);
   void release();

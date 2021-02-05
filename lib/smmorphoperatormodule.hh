@@ -43,7 +43,7 @@ public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();
 
-  virtual void set_config (MorphOperator *op) = 0;
+  virtual void set_config (const MorphOperatorConfig *op_cfg) = 0;
   virtual LiveDecoderSource *source();
   virtual float value();
   virtual void reset_value (const TimeInfo& time_info);

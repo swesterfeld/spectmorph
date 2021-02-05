@@ -44,8 +44,10 @@ MorphGridModule::~MorphGridModule()
 }
 
 void
-MorphGridModule::set_config (MorphOperator *op)
+MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
 {
+  /* FIXME: CONFIG */
+#if 0
   MorphGrid *grid = dynamic_cast<MorphGrid *> (op);
 
   width = grid->width();
@@ -112,6 +114,7 @@ MorphGridModule::set_config (MorphOperator *op)
     }
   add_dependency (x_control_mod);
   add_dependency (y_control_mod);
+#endif
 }
 
 void

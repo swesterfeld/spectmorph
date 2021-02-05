@@ -29,7 +29,9 @@ MorphPlanVoice::configure_modules()
 {
   for (size_t i = 0; i < modules.size(); i++)
     {
-      modules[i].module->set_config (modules[i].op);
+      auto config = modules[i].op->clone_config();
+      modules[i].module->set_config (config);
+      delete config;
     }
 }
 
@@ -90,10 +92,10 @@ MorphPlanVoice::output()
 }
 
 MorphOperatorModule *
-MorphPlanVoice::module (MorphOperator *op)
+MorphPlanVoice::module (const std::string& id)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    if (modules[i].op == op)
+    if (modules[i].op->id() == id)
       return modules[i].module;
 
   return NULL;

@@ -115,6 +115,16 @@ MorphOperator::dependencies()
   return {}; /* default implementation -> no dependencies */
 }
 
+MorphOperatorConfig *
+MorphOperator::clone_config()
+{
+  return nullptr; // FIXME: remove default impl
+}
+
+MorphOperatorConfig::~MorphOperatorConfig()
+{
+}
+
 #include "smmorphoutput.hh"
 #include "smmorphlinear.hh"
 #include "smmorphgrid.hh"

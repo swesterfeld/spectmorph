@@ -36,8 +36,14 @@ struct MorphOutputProperties
 
 class MorphOutput : public MorphOperator
 {
+public:
+  struct Config : public MorphOperatorConfig
+  {
+    std::vector<MorphOperatorPtr> channel_ops;
+  };
+  Config                       m_config;
+protected:
   std::vector<std::string>     load_channel_op_names;
-  std::vector<MorphOperator *> channel_ops;
 
   float                        m_velocity_sensitivity;
 
@@ -76,6 +82,7 @@ public:
   OutputType         output_type() override;
 
   std::vector<MorphOperator *> dependencies() override;
+  MorphOperatorConfig *clone_config() override;
 
   void           set_sines (bool es);
   bool           sines() const;

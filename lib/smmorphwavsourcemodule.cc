@@ -123,8 +123,10 @@ MorphWavSourceModule::source()
 }
 
 void
-MorphWavSourceModule::set_config (MorphOperator *op)
+MorphWavSourceModule::set_config (const MorphOperatorConfig *cfg)
 {
+  /* FIXME: CONFIG */
+#if 0
   MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
   Project *project = op->morph_plan()->project();
 
@@ -142,4 +144,5 @@ MorphWavSourceModule::set_config (MorphOperator *op)
 
   clear_dependencies();
   add_dependency (position_mod);
+#endif
 }

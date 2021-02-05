@@ -45,8 +45,10 @@ MorphLinearModule::~MorphLinearModule()
 }
 
 void
-MorphLinearModule::set_config (MorphOperator *op)
+MorphLinearModule::set_config (const MorphOperatorConfig *cfg)
 {
+  /* FIXME: CONFIG */
+#if 0
   MorphLinear *linear = dynamic_cast<MorphLinear *> (op);
   MorphOperator *left_op = linear->left_op();
   MorphOperator *right_op = linear->right_op();
@@ -96,6 +98,7 @@ MorphLinearModule::set_config (MorphOperator *op)
   morphing = linear->morphing();
   control_type = linear->control_type();
   db_linear = linear->db_linear();
+#endif
 }
 
 void

@@ -47,7 +47,7 @@ public:
   MorphLinearModule (MorphPlanVoice *voice);
   ~MorphLinearModule();
 
-  void set_config (MorphOperator *op);
+  void set_config (const MorphOperatorConfig *cfg);
   LiveDecoderSource *source();
 };
 

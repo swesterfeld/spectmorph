@@ -99,12 +99,9 @@ MorphSourceModule::source()
 }
 
 void
-MorphSourceModule::set_config (MorphOperator *op)
+MorphSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  MorphSource *source = dynamic_cast<MorphSource *> (op);
-  string smset = source->smset();
-  string smset_dir = source->morph_plan()->index()->smset_dir();
-  string path = smset_dir + "/" + smset;
+  auto cfg = dynamic_cast<const MorphSource::Config *> (op_cfg);
 
-  my_source.set_wav_set (path);
+  my_source.set_wav_set (cfg->path);
 }

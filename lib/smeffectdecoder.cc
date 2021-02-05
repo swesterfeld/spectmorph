@@ -137,6 +137,10 @@ EffectDecoder::~EffectDecoder()
 void
 EffectDecoder::set_config (MorphOutput *output, float mix_freq)
 {
+  /* FIXME: CONFIG */
+  if (!simple_envelope)
+    simple_envelope.reset (new SimpleEnvelope (mix_freq));
+#if 0
   if (output->adsr())
     {
       if (!use_skip_source) // enable skip source
@@ -178,6 +182,7 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
     chain_decoder->set_unison_voices (1, 0);
 
   chain_decoder->set_vibrato (output->vibrato(), output->vibrato_depth(), output->vibrato_frequency(), output->vibrato_attack());
+#endif
 }
 
 void

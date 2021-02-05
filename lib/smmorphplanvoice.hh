@@ -35,7 +35,7 @@ public:
   void cheap_update (std::map<std::string, MorphOperator *>& op_map);
   void full_update (MorphPlanPtr plan);
 
-  MorphOperatorModule *module (MorphOperator *op);
+  MorphOperatorModule *module (const std::string& id);
 
   double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);

@@ -12,6 +12,13 @@ namespace SpectMorph
 
 class MorphSource : public MorphOperator
 {
+public:
+  struct Config : public MorphOperatorConfig
+  {
+    std::string path;
+  };
+  Config      m_config;
+protected:
   std::string m_smset;
 public:
   MorphSource (MorphPlan *morph_plan);
@@ -23,6 +30,7 @@ public:
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
   OutputType         output_type();
+  MorphOperatorConfig *clone_config() override;
 
   void        set_smset (const std::string& smset);
   std::string smset();
