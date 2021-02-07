@@ -35,8 +35,10 @@ MorphPlanSynth::add_voice()
 {
   MorphPlanVoice *voice = new MorphPlanVoice (m_mix_freq, this);
 
+#if 0 /* FIXME: CONFIG */
   if (plan)
     voice->full_update (plan);
+#endif
 
   voices.push_back (voice);
   return voice;
@@ -62,6 +64,8 @@ sorted_id_list (MorphPlanPtr plan)
 void
 MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
 {
+  /* FIXME: CONFIG */
+#if 0
   vector<string> old_ids = sorted_id_list (plan);
   vector<string> new_ids = sorted_id_list (new_plan);
 
@@ -84,6 +88,57 @@ MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
         voices[i]->full_update (new_plan);
     }
   plan = new_plan;
+#endif
+  printf ("MorphPlanSynth::update_plan NOP\n");
+}
+
+MorphPlanSynth::UpdateP
+MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
+{
+  UpdateP update = std::make_shared<Update>();
+
+  for (auto o : plan->operators())
+    {
+      MorphOperatorConfig *config = o->clone_config();
+      Update::Op op = {
+        .id = o->id(),
+        .type = o->type(),
+        .config = config /* FIXME: CONFIG: need to delete this eventually */
+      };
+      update->ops.push_back (op);
+    }
+  sort (update->ops.begin(), update->ops.end(),
+        [](const Update::Op& a, const Update::Op& b) { return a.id < b.id; });
+
+  vector<string> update_ids = sorted_id_list (plan);
+
+  update->cheap = update_ids == m_last_update_ids;
+  m_last_update_ids = update_ids;
+
+  return update;
+}
+
+void
+MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
+{
+  printf ("--- %s update ---\n", update->cheap ? "cheap" : "full");
+  for (auto& op : update->ops)
+    {
+      printf ("I%s -> T%s : P%p\n", op.id.c_str(), op.type.c_str(), op.config);
+    }
+
+  if (update->cheap)
+    {
+      for (size_t i = 0; i < voices.size(); i++)
+        voices[i]->cheap_update (update);
+    }
+  else
+    {
+      free_shared_state();
+
+      for (size_t i = 0; i < voices.size(); i++)
+        voices[i]->full_update (update);
+    }
 }
 
 void

@@ -28,39 +28,32 @@ void
 MorphPlanVoice::configure_modules()
 {
   for (size_t i = 0; i < modules.size(); i++)
-    {
-      auto config = modules[i].op->clone_config();
-      modules[i].module->set_config (config);
-      delete config;
-    }
+    modules[i].module->set_config (modules[i].config);
 }
 
 void
-MorphPlanVoice::create_modules (MorphPlanPtr plan)
+MorphPlanVoice::create_modules (MorphPlanSynth::UpdateP update)
 {
-  if (!plan)
-    return;
-
-  const vector<MorphOperator *>& ops = plan->operators();
-  for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
+  for (auto& op : update->ops)
     {
-      MorphOperatorModule *module = MorphOperatorModule::create (*oi, this);
-      string type = (*oi)->type();
+      MorphOperatorModule *module = MorphOperatorModule::create (op.type, this);
 
       if (!module)
         {
-          g_warning ("operator type %s lacks MorphOperatorModule\n", type.c_str());
+          g_warning ("operator type %s lacks MorphOperatorModule\n", op.type.c_str());
         }
       else
         {
           OpModule op_module;
 
           op_module.module = module;
-          op_module.op     = (*oi);
+          /* FIXME: CONFIG: id not RT safe */
+          op_module.id     = op.id;
+          op_module.config = op.config;
 
           modules.push_back (op_module);
 
-          if (type == "SpectMorph::MorphOutput")
+          if (op.type == "SpectMorph::MorphOutput")
             m_output = dynamic_cast<MorphOutputModule *> (module);
         }
     }
@@ -95,33 +88,37 @@ MorphOperatorModule *
 MorphPlanVoice::module (const std::string& id)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    if (modules[i].op->id() == id)
+    if (modules[i].id == id)
       return modules[i].module;
 
   return NULL;
 }
 
 void
-MorphPlanVoice::full_update (MorphPlanPtr plan)
+MorphPlanVoice::full_update (MorphPlanSynth::UpdateP update)
 {
   /* This will loose the original state information which means the audio
    * will not transition smoothely. However, this should only occur for plan
    * changes, not parameter updates.
    */
   clear_modules();
-  create_modules (plan);
+  create_modules (update);
   configure_modules();
 }
 
 void
-MorphPlanVoice::cheap_update (map<string, MorphOperator *>& op_map)
+MorphPlanVoice::cheap_update (MorphPlanSynth::UpdateP update)
 {
+  g_return_if_fail (update->ops.size() == modules.size());
+
   // exchange old operators with new operators
   for (size_t i = 0; i < modules.size(); i++)
     {
-      modules[i].op = op_map[modules[i].op->id()];
-      assert (modules[i].op);
+      assert (modules[i].id == update->ops[i].id);
+      modules[i].config = update->ops[i].config;
+      assert (modules[i].config);
     }
+
   // reconfigure modules
   configure_modules();
 }

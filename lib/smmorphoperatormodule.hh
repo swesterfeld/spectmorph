@@ -52,7 +52,7 @@ public:
   const std::vector<MorphOperatorModule *>& dependencies() const;
   int& update_value_tag();
 
-  static MorphOperatorModule *create (MorphOperator *op, MorphPlanVoice *voice);
+  static MorphOperatorModule *create (const std::string& type, MorphPlanVoice *voice);
 };
 
 }

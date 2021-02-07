@@ -562,6 +562,18 @@ MidiSynth::update_plan (MorphPlanPtr new_plan)
   morph_plan_synth.update_plan (new_plan);
 }
 
+MorphPlanSynth::UpdateP
+MidiSynth::prepare_update (MorphPlanPtr plan)
+{
+  return morph_plan_synth.prepare_update (plan);
+}
+
+void
+MidiSynth::apply_update (MorphPlanSynth::UpdateP update)
+{
+  morph_plan_synth.apply_update (update);
+}
+
 void
 MidiSynth::set_gain (double gain)
 {

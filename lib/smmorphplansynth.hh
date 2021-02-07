@@ -7,6 +7,7 @@
 #include "smmorphoperator.hh"
 #include "smrandom.hh"
 #include <map>
+#include <memory>
 
 namespace SpectMorph {
 
@@ -18,17 +19,32 @@ class MorphPlanSynth {
 protected:
   std::vector<MorphPlanVoice *> voices;
   std::map<std::string, MorphModuleSharedState *> m_shared_state;
+  std::vector<std::string>                        m_last_update_ids;
 
-  float        m_mix_freq;
-  MorphPlanPtr plan;
-  Random       m_random_gen;
+  float           m_mix_freq;
+  Random          m_random_gen;
 
 public:
+  struct Update
+  {
+    struct Op
+    {
+      std::string          id;
+      std::string          type;
+      MorphOperatorConfig *config = nullptr;
+    };
+    bool            cheap = false; // cheap update: same set of operators
+    std::vector<Op> ops;
+  };
+  typedef std::shared_ptr<Update> UpdateP;
+
   MorphPlanSynth (float mix_freq);
   ~MorphPlanSynth();
 
   MorphPlanVoice *add_voice();
   void update_plan (MorphPlanPtr new_plan);
+  UpdateP prepare_update (MorphPlanPtr new_plan);
+  void apply_update (UpdateP update);
 
   MorphModuleSharedState *shared_state (MorphOperator *op);
   void set_shared_state (MorphOperator *op, MorphModuleSharedState *shared_state);

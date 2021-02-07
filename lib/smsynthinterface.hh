@@ -5,6 +5,8 @@
 
 #include "smmidisynth.hh"
 #include "smproject.hh"
+#include "smmorphplansynth.hh"
+
 namespace SpectMorph
 {
 
@@ -71,21 +73,19 @@ public:
         });
   }
   void
-  emit_update_plan (MorphPlanPtr new_plan)
+  emit_apply_update (MorphPlanSynth::UpdateP update)
   {
-    /* ownership of plan is transferred to the event */
+    /* ownership of update is transferred to the event */
     struct EventData
     {
-      MorphPlanPtr plan;
+      MorphPlanSynth::UpdateP update;
     } *event_data = new EventData;
 
-    // FIXME: refptr is locking (which is not too good)
-    event_data->plan = new_plan;
-
+    event_data->update = update;
     send_control_event (
       [=] (Project *project)
         {
-          project->midi_synth()->update_plan (event_data->plan);
+          project->midi_synth()->apply_update (event_data->update);
         },
       event_data);
   }

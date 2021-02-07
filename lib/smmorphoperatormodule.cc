@@ -104,10 +104,8 @@ MorphOperatorModule::time_info() const
 }
 
 MorphOperatorModule*
-MorphOperatorModule::create (MorphOperator *op, MorphPlanVoice *voice)
+MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
 {
-  string type = op->type();
-
   if (type == "SpectMorph::MorphLinear")    return new MorphLinearModule (voice);
   if (type == "SpectMorph::MorphGrid")      return new MorphGridModule (voice);
   if (type == "SpectMorph::MorphSource")    return new MorphSourceModule (voice);

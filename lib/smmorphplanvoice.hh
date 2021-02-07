@@ -5,6 +5,7 @@
 
 #include "smmorphplan.hh"
 #include "smmorphoperatormodule.hh"
+#include "smmorphplansynth.hh"
 
 namespace SpectMorph {
 
@@ -14,8 +15,9 @@ class MorphPlanSynth;
 class MorphPlanVoice {
 protected:
   struct OpModule {
-    MorphOperatorModule *module;
-    MorphOperator       *op;
+    MorphOperatorModule *module = nullptr;
+    std::string          id;
+    MorphOperatorConfig *config = nullptr;
   };
   std::vector<OpModule> modules;
 
@@ -25,15 +27,15 @@ protected:
   MorphPlanSynth               *m_morph_plan_synth;
 
   void clear_modules();
-  void create_modules (MorphPlanPtr plan);
+  void create_modules (MorphPlanSynth::UpdateP update);
   void configure_modules();
 
 public:
   MorphPlanVoice (float mix_freq, MorphPlanSynth *synth);
   ~MorphPlanVoice();
 
-  void cheap_update (std::map<std::string, MorphOperator *>& op_map);
-  void full_update (MorphPlanPtr plan);
+  void cheap_update (MorphPlanSynth::UpdateP update);
+  void full_update (MorphPlanSynth::UpdateP update);
 
   MorphOperatorModule *module (const std::string& id);
 

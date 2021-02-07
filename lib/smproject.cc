@@ -249,8 +249,8 @@ Project::on_plan_changed()
       om->process (ti, 1, values, 1);
     }
 
-  // FIXME: refptr is locking (which is not too good)
-  m_synth_interface->emit_update_plan (plan);
+  MorphPlanSynth::UpdateP update = m_midi_synth->prepare_update (plan);
+  m_synth_interface->emit_apply_update (update);
 }
 
 void
