@@ -123,6 +123,7 @@ MorphOperator::clone_config()
 
 MorphOperatorConfig::~MorphOperatorConfig()
 {
+  printf ("~MorphOperatorConfig()\n");
 }
 
 #include "smmorphoutput.hh"

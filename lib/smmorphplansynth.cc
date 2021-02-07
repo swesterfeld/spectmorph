@@ -99,11 +99,13 @@ MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 
   for (auto o : plan->operators())
     {
-      MorphOperatorConfig *config = o->clone_config();
+      MorphOperatorConfigP config (o->clone_config());
+      update->new_configs.push_back (config);
+
       Update::Op op = {
         .id = o->id(),
         .type = o->type(),
-        .config = config /* FIXME: CONFIG: need to delete this eventually */
+        .config = config.get()
       };
       update->ops.push_back (op);
     }
@@ -126,6 +128,13 @@ MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
     {
       printf ("I%s -> T%s : P%p\n", op.id.c_str(), op.type.c_str(), op.config);
     }
+
+  /* life time for configs:
+   *  - configs required for current update should be kept alive (m_active_configs)
+   *  - configs no longer needed should be freed, but not in audio thread
+   */
+  update->old_configs = std::move (m_active_configs);
+  m_active_configs = std::move (update->new_configs);
 
   if (update->cheap)
     {

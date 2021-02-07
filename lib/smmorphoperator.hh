@@ -8,6 +8,7 @@
 #include "smsignal.hh"
 
 #include <map>
+#include <memory>
 
 namespace SpectMorph
 {
@@ -16,6 +17,8 @@ struct MorphOperatorConfig
 {
   virtual ~MorphOperatorConfig();
 };
+
+typedef std::shared_ptr<MorphOperatorConfig> MorphOperatorConfigP;
 
 class MorphOperatorView;
 class MorphPlan;
