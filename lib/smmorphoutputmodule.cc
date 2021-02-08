@@ -49,7 +49,7 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
   MorphOperatorModule *mod = NULL;
   EffectDecoder *dec = nullptr;
 
-  mod = morph_plan_voice->module (cfg->channel_ops[0].id());
+  mod = morph_plan_voice->module (cfg->channel_ops[0].ptr_id());
   if (mod == out_ops[0])
     {
       dec = out_decoders[0];

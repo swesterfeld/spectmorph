@@ -47,8 +47,7 @@ MorphPlanVoice::create_modules (MorphPlanSynth::UpdateP update)
           OpModule op_module;
 
           op_module.module = module;
-          /* FIXME: CONFIG: id not RT safe */
-          op_module.id     = op.id;
+          op_module.ptr_id = op.ptr_id;
           op_module.config = op.config;
 
           modules.push_back (op_module);
@@ -85,10 +84,10 @@ MorphPlanVoice::output()
 }
 
 MorphOperatorModule *
-MorphPlanVoice::module (const std::string& id)
+MorphPlanVoice::module (MorphOperator::PtrID ptr_id)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    if (modules[i].id == id)
+    if (modules[i].ptr_id == ptr_id)
       return modules[i].module;
 
   return NULL;
@@ -114,7 +113,7 @@ MorphPlanVoice::cheap_update (MorphPlanSynth::UpdateP update)
   // exchange old operators with new operators
   for (size_t i = 0; i < modules.size(); i++)
     {
-      assert (modules[i].id == update->ops[i].id);
+      assert (modules[i].ptr_id == update->ops[i].ptr_id);
       modules[i].config = update->ops[i].config;
       assert (modules[i].config);
     }

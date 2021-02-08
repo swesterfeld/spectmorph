@@ -16,7 +16,7 @@ class MorphPlanVoice {
 protected:
   struct OpModule {
     MorphOperatorModule *module = nullptr;
-    std::string          id;
+    MorphOperator::PtrID ptr_id;
     MorphOperatorConfig *config = nullptr;
   };
   std::vector<OpModule> modules;
@@ -37,7 +37,7 @@ public:
   void cheap_update (MorphPlanSynth::UpdateP update);
   void full_update (MorphPlanSynth::UpdateP update);
 
-  MorphOperatorModule *module (const std::string& id);
+  MorphOperatorModule *module (MorphOperator::PtrID ptr_id);
 
   double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);

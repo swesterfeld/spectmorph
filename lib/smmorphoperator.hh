@@ -51,6 +51,8 @@ public:
     CONTROL_SIGNAL_3 = 5,
     CONTROL_SIGNAL_4 = 6
   };
+  typedef uintptr_t PtrID;
+
   MorphOperator (MorphPlan *morph_plan);
   virtual ~MorphOperator();
 
@@ -78,6 +80,16 @@ public:
   bool folded() const;
   void set_folded (bool folded);
 
+  PtrID
+  ptr_id() const
+  {
+    /* ptr_id is derived from MorphOperator*, which means that for a given
+     * MorphPlan, these ids never collide, but if the plan is modified,
+     * the same ptr_id can be taken by a new MorphOperator*
+     */
+    return PtrID (this);
+  }
+
   static MorphOperator *create (const std::string& type, MorphPlan *plan);
 };
 
@@ -94,6 +106,12 @@ public:
   id() const
   {
     return m_id;
+  }
+
+  MorphOperator::PtrID
+  ptr_id() const
+  {
+    return MorphOperator::PtrID (m_ptr);
   }
 
   void

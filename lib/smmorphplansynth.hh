@@ -30,7 +30,7 @@ public:
   {
     struct Op
     {
-      std::string          id;
+      MorphOperator::PtrID ptr_id;
       std::string          type;
       MorphOperatorConfig *config = nullptr;
     };

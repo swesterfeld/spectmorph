@@ -103,14 +103,14 @@ MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
       update->new_configs.push_back (config);
 
       Update::Op op = {
-        .id = o->id(),
-        .type = o->type(),
+        .ptr_id = o->ptr_id(),
+        .type   = o->type(),
         .config = config.get()
       };
       update->ops.push_back (op);
     }
   sort (update->ops.begin(), update->ops.end(),
-        [](const Update::Op& a, const Update::Op& b) { return a.id < b.id; });
+        [](const Update::Op& a, const Update::Op& b) { return a.ptr_id < b.ptr_id; });
 
   vector<string> update_ids = sorted_id_list (plan);
 
@@ -123,12 +123,6 @@ MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 void
 MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
 {
-  printf ("--- %s update ---\n", update->cheap ? "cheap" : "full");
-  for (auto& op : update->ops)
-    {
-      printf ("I%s -> T%s : P%p\n", op.id.c_str(), op.type.c_str(), op.config);
-    }
-
   /* life time for configs:
    *  - configs required for current update should be kept alive (m_active_configs)
    *  - configs no longer needed should be freed, but not in audio thread
