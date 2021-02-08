@@ -135,13 +135,9 @@ EffectDecoder::~EffectDecoder()
 }
 
 void
-EffectDecoder::set_config (MorphOutput *output, float mix_freq)
+EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 {
-  /* FIXME: CONFIG */
-  if (!simple_envelope)
-    simple_envelope.reset (new SimpleEnvelope (mix_freq));
-#if 0
-  if (output->adsr())
+  if (cfg->adsr)
     {
       if (!use_skip_source) // enable skip source
         {
@@ -149,15 +145,15 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
-      skip_source->set_skip (output->adsr_skip());
+      skip_source->set_skip (cfg->adsr_skip);
 
       if (!adsr_envelope)
         adsr_envelope.reset (new ADSREnvelope());
 
-      adsr_envelope->set_config (output->adsr_attack(),
-                                 output->adsr_decay(),
-                                 output->adsr_sustain(),
-                                 output->adsr_release(),
+      adsr_envelope->set_config (cfg->adsr_attack,
+                                 cfg->adsr_decay,
+                                 cfg->adsr_sustain,
+                                 cfg->adsr_release,
                                  mix_freq);
     }
   else
@@ -173,16 +169,15 @@ EffectDecoder::set_config (MorphOutput *output, float mix_freq)
         simple_envelope.reset (new SimpleEnvelope (mix_freq));
     }
 
-  chain_decoder->enable_noise (output->noise());
-  chain_decoder->enable_sines (output->sines());
+  chain_decoder->enable_noise (cfg->noise);
+  chain_decoder->enable_sines (cfg->sines);
 
-  if (output->unison()) // unison?
-    chain_decoder->set_unison_voices (output->unison_voices(), output->unison_detune());
+  if (cfg->unison) // unison?
+    chain_decoder->set_unison_voices (cfg->unison_voices, cfg->unison_detune);
   else
     chain_decoder->set_unison_voices (1, 0);
 
-  chain_decoder->set_vibrato (output->vibrato(), output->vibrato_depth(), output->vibrato_frequency(), output->vibrato_attack());
-#endif
+  chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
 }
 
 void

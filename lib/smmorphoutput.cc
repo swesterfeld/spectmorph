@@ -22,29 +22,29 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   m_config.channel_ops.resize (CHANNEL_OP_COUNT);
 
-  m_velocity_sensitivity = 24; /* dB */
+  m_config.velocity_sensitivity = 24; /* dB */
 
-  m_sines = true;
-  m_noise = true;
+  m_config.sines = true;
+  m_config.noise = true;
 
-  m_unison = false;
-  m_unison_voices = 2;
-  m_unison_detune = 6.0;
+  m_config.unison = false;
+  m_config.unison_voices = 2;
+  m_config.unison_detune = 6.0;
 
-  m_adsr = false;
-  m_adsr_skip     = 500;
-  m_adsr_attack   = 15;
-  m_adsr_decay    = 20;
-  m_adsr_sustain  = 70;
-  m_adsr_release  = 50;
+  m_config.adsr = false;
+  m_config.adsr_skip     = 500;
+  m_config.adsr_attack   = 15;
+  m_config.adsr_decay    = 20;
+  m_config.adsr_sustain  = 70;
+  m_config.adsr_release  = 50;
 
-  m_portamento = false;
-  m_portamento_glide = 200; /* ms */
+  m_config.portamento = false;
+  m_config.portamento_glide = 200; /* ms */
 
-  m_vibrato = false;
-  m_vibrato_depth = 10;    /* cent */
-  m_vibrato_frequency = 4; /* Hz */
-  m_vibrato_attack = 0;    /* ms */
+  m_config.vibrato = false;
+  m_config.vibrato_depth = 10;    /* cent */
+  m_config.vibrato_frequency = 4; /* Hz */
+  m_config.vibrato_attack = 0;    /* ms */
 
   leak_debugger.add (this);
 }
@@ -92,29 +92,29 @@ MorphOutput::save (OutFile& out_file)
 
       out_file.write_string ("channel", name);
     }
-  out_file.write_bool ("sines", m_sines);
-  out_file.write_bool ("noise", m_noise);
+  out_file.write_bool ("sines", m_config.sines);
+  out_file.write_bool ("noise", m_config.noise);
 
-  out_file.write_bool ("unison", m_unison);
-  out_file.write_int ("unison_voices", m_unison_voices);
-  out_file.write_float ("unison_detune", m_unison_detune);
+  out_file.write_bool ("unison", m_config.unison);
+  out_file.write_int ("unison_voices", m_config.unison_voices);
+  out_file.write_float ("unison_detune", m_config.unison_detune);
 
-  out_file.write_bool ("adsr", m_adsr);
-  out_file.write_float ("adsr_skip",    m_adsr_skip);
-  out_file.write_float ("adsr_attack",  m_adsr_attack);
-  out_file.write_float ("adsr_decay",   m_adsr_decay);
-  out_file.write_float ("adsr_sustain", m_adsr_sustain);
-  out_file.write_float ("adsr_release", m_adsr_release);
+  out_file.write_bool ("adsr", m_config.adsr);
+  out_file.write_float ("adsr_skip",    m_config.adsr_skip);
+  out_file.write_float ("adsr_attack",  m_config.adsr_attack);
+  out_file.write_float ("adsr_decay",   m_config.adsr_decay);
+  out_file.write_float ("adsr_sustain", m_config.adsr_sustain);
+  out_file.write_float ("adsr_release", m_config.adsr_release);
 
-  out_file.write_bool ("portamento", m_portamento);
-  out_file.write_float ("portamento_glide", m_portamento_glide);
+  out_file.write_bool ("portamento", m_config.portamento);
+  out_file.write_float ("portamento_glide", m_config.portamento_glide);
 
-  out_file.write_bool ("vibrato", m_vibrato);
-  out_file.write_float ("vibrato_depth", m_vibrato_depth);
-  out_file.write_float ("vibrato_frequency", m_vibrato_frequency);
-  out_file.write_float ("vibrato_attack", m_vibrato_attack);
+  out_file.write_bool ("vibrato", m_config.vibrato);
+  out_file.write_float ("vibrato_depth", m_config.vibrato_depth);
+  out_file.write_float ("vibrato_frequency", m_config.vibrato_frequency);
+  out_file.write_float ("vibrato_attack", m_config.vibrato_attack);
 
-  out_file.write_float ("velocity_sensitivity", m_velocity_sensitivity);
+  out_file.write_float ("velocity_sensitivity", m_config.velocity_sensitivity);
 
   return true;
 }
@@ -142,27 +142,27 @@ MorphOutput::load (InFile& ifile)
         {
           if (ifile.event_name() == "sines")
             {
-              m_sines = ifile.event_bool();
+              m_config.sines = ifile.event_bool();
             }
           else if (ifile.event_name() == "noise")
             {
-              m_noise = ifile.event_bool();
+              m_config.noise = ifile.event_bool();
             }
           else if (ifile.event_name() == "unison")
             {
-              m_unison = ifile.event_bool();
+              m_config.unison = ifile.event_bool();
             }
           else if (ifile.event_name() == "adsr")
             {
-              m_adsr = ifile.event_bool();
+              m_config.adsr = ifile.event_bool();
             }
           else if (ifile.event_name() == "portamento")
             {
-              m_portamento = ifile.event_bool();
+              m_config.portamento = ifile.event_bool();
             }
           else if (ifile.event_name() == "vibrato")
             {
-              m_vibrato = ifile.event_bool();
+              m_config.vibrato = ifile.event_bool();
             }
           else
             {
@@ -174,7 +174,7 @@ MorphOutput::load (InFile& ifile)
         {
           if (ifile.event_name() == "unison_voices")
             {
-              m_unison_voices = ifile.event_int();
+              m_config.unison_voices = ifile.event_int();
             }
           else
             {
@@ -186,47 +186,47 @@ MorphOutput::load (InFile& ifile)
         {
           if (ifile.event_name() == "unison_detune")
             {
-              m_unison_detune = ifile.event_float();
+              m_config.unison_detune = ifile.event_float();
             }
           else if (ifile.event_name() == "adsr_skip")
             {
-              m_adsr_skip = ifile.event_float();
+              m_config.adsr_skip = ifile.event_float();
             }
           else if (ifile.event_name() == "adsr_attack")
             {
-              m_adsr_attack = ifile.event_float();
+              m_config.adsr_attack = ifile.event_float();
             }
           else if (ifile.event_name() == "adsr_decay")
             {
-              m_adsr_decay = ifile.event_float();
+              m_config.adsr_decay = ifile.event_float();
             }
           else if (ifile.event_name() == "adsr_sustain")
             {
-              m_adsr_sustain = ifile.event_float();
+              m_config.adsr_sustain = ifile.event_float();
             }
           else if (ifile.event_name() == "adsr_release")
             {
-              m_adsr_release = ifile.event_float();
+              m_config.adsr_release = ifile.event_float();
             }
           else if (ifile.event_name() == "portamento_glide")
             {
-              m_portamento_glide = ifile.event_float();
+              m_config.portamento_glide = ifile.event_float();
             }
           else if (ifile.event_name() == "vibrato_depth")
             {
-              m_vibrato_depth = ifile.event_float();
+              m_config.vibrato_depth = ifile.event_float();
             }
           else if (ifile.event_name() == "vibrato_frequency")
             {
-              m_vibrato_frequency = ifile.event_float();
+              m_config.vibrato_frequency = ifile.event_float();
             }
           else if (ifile.event_name() == "vibrato_attack")
             {
-              m_vibrato_attack = ifile.event_float();
+              m_config.vibrato_attack = ifile.event_float();
             }
           else if (ifile.event_name() == "velocity_sensitivity")
             {
-              m_velocity_sensitivity = ifile.event_float();
+              m_config.velocity_sensitivity = ifile.event_float();
             }
           else
             {
@@ -283,13 +283,13 @@ MorphOutput::channel_op (int ch)
 bool
 MorphOutput::sines() const
 {
-  return m_sines;
+  return m_config.sines;
 }
 
 void
 MorphOutput::set_sines (bool es)
 {
-  m_sines = es;
+  m_config.sines = es;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -297,13 +297,13 @@ MorphOutput::set_sines (bool es)
 bool
 MorphOutput::noise() const
 {
-  return m_noise;
+  return m_config.noise;
 }
 
 void
 MorphOutput::set_noise (bool en)
 {
-  m_noise = en;
+  m_config.noise = en;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -313,13 +313,13 @@ MorphOutput::set_noise (bool en)
 bool
 MorphOutput::unison() const
 {
-  return m_unison;
+  return m_config.unison;
 }
 
 void
 MorphOutput::set_unison (bool eu)
 {
-  m_unison = eu;
+  m_config.unison = eu;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -327,13 +327,13 @@ MorphOutput::set_unison (bool eu)
 int
 MorphOutput::unison_voices() const
 {
-  return m_unison_voices;
+  return m_config.unison_voices;
 }
 
 void
 MorphOutput::set_unison_voices (int voices)
 {
-  m_unison_voices = voices;
+  m_config.unison_voices = voices;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -341,13 +341,13 @@ MorphOutput::set_unison_voices (int voices)
 float
 MorphOutput::unison_detune() const
 {
-  return m_unison_detune;
+  return m_config.unison_detune;
 }
 
 void
 MorphOutput::set_unison_detune (float detune)
 {
-  m_unison_detune = detune;
+  m_config.unison_detune = detune;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -357,13 +357,13 @@ MorphOutput::set_unison_detune (float detune)
 bool
 MorphOutput::adsr() const
 {
-  return m_adsr;
+  return m_config.adsr;
 }
 
 void
 MorphOutput::set_adsr (bool ea)
 {
-  m_adsr = ea;
+  m_config.adsr = ea;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -371,13 +371,13 @@ MorphOutput::set_adsr (bool ea)
 float
 MorphOutput::adsr_skip() const
 {
-  return m_adsr_skip;
+  return m_config.adsr_skip;
 }
 
 void
 MorphOutput::set_adsr_skip (float skip)
 {
-  m_adsr_skip = skip;
+  m_config.adsr_skip = skip;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -385,13 +385,13 @@ MorphOutput::set_adsr_skip (float skip)
 float
 MorphOutput::adsr_attack() const
 {
-  return m_adsr_attack;
+  return m_config.adsr_attack;
 }
 
 void
 MorphOutput::set_adsr_attack (float attack)
 {
-  m_adsr_attack = attack;
+  m_config.adsr_attack = attack;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -399,13 +399,13 @@ MorphOutput::set_adsr_attack (float attack)
 float
 MorphOutput::adsr_decay() const
 {
-  return m_adsr_decay;
+  return m_config.adsr_decay;
 }
 
 void
 MorphOutput::set_adsr_decay (float decay)
 {
-  m_adsr_decay = decay;
+  m_config.adsr_decay = decay;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -413,13 +413,13 @@ MorphOutput::set_adsr_decay (float decay)
 float
 MorphOutput::adsr_release() const
 {
-  return m_adsr_release;
+  return m_config.adsr_release;
 }
 
 void
 MorphOutput::set_adsr_release (float release)
 {
-  m_adsr_release = release;
+  m_config.adsr_release = release;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -427,13 +427,13 @@ MorphOutput::set_adsr_release (float release)
 float
 MorphOutput::adsr_sustain() const
 {
-  return m_adsr_sustain;
+  return m_config.adsr_sustain;
 }
 
 void
 MorphOutput::set_adsr_sustain (float sustain)
 {
-  m_adsr_sustain = sustain;
+  m_config.adsr_sustain = sustain;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -443,13 +443,13 @@ MorphOutput::set_adsr_sustain (float sustain)
 bool
 MorphOutput::portamento() const
 {
-  return m_portamento;
+  return m_config.portamento;
 }
 
 void
 MorphOutput::set_portamento (bool ep)
 {
-  m_portamento = ep;
+  m_config.portamento = ep;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -457,13 +457,13 @@ MorphOutput::set_portamento (bool ep)
 float
 MorphOutput::portamento_glide() const
 {
-  return m_portamento_glide;
+  return m_config.portamento_glide;
 }
 
 void
 MorphOutput::set_portamento_glide (float glide)
 {
-  m_portamento_glide = glide;
+  m_config.portamento_glide = glide;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -473,13 +473,13 @@ MorphOutput::set_portamento_glide (float glide)
 bool
 MorphOutput::vibrato() const
 {
-  return m_vibrato;
+  return m_config.vibrato;
 }
 
 void
 MorphOutput::set_vibrato (bool ev)
 {
-  m_vibrato = ev;
+  m_config.vibrato = ev;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -487,13 +487,13 @@ MorphOutput::set_vibrato (bool ev)
 float
 MorphOutput::vibrato_depth() const
 {
-  return m_vibrato_depth;
+  return m_config.vibrato_depth;
 }
 
 void
 MorphOutput::set_vibrato_depth (float depth)
 {
-  m_vibrato_depth = depth;
+  m_config.vibrato_depth = depth;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -501,13 +501,13 @@ MorphOutput::set_vibrato_depth (float depth)
 float
 MorphOutput::vibrato_frequency() const
 {
-  return m_vibrato_frequency;
+  return m_config.vibrato_frequency;
 }
 
 void
 MorphOutput::set_vibrato_frequency (float frequency)
 {
-  m_vibrato_frequency = frequency;
+  m_config.vibrato_frequency = frequency;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -515,13 +515,13 @@ MorphOutput::set_vibrato_frequency (float frequency)
 float
 MorphOutput::vibrato_attack() const
 {
-  return m_vibrato_attack;
+  return m_config.vibrato_attack;
 }
 
 void
 MorphOutput::set_vibrato_attack (float attack)
 {
-  m_vibrato_attack = attack;
+  m_config.vibrato_attack = attack;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -529,13 +529,13 @@ MorphOutput::set_vibrato_attack (float attack)
 float
 MorphOutput::velocity_sensitivity() const
 {
-  return m_velocity_sensitivity;
+  return m_config.velocity_sensitivity;
 }
 
 void
 MorphOutput::set_velocity_sensitivity (float velocity_sensitivity)
 {
-  m_velocity_sensitivity = velocity_sensitivity;
+  m_config.velocity_sensitivity = velocity_sensitivity;
 
   m_morph_plan->emit_plan_changed();
 }

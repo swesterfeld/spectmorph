@@ -21,7 +21,6 @@ MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
 {
   out_ops.resize (CHANNEL_OP_COUNT);
   out_decoders.resize (CHANNEL_OP_COUNT);
-  m_portamento = false;
 
   leak_debugger.add (this);
 }
@@ -42,48 +41,15 @@ MorphOutputModule::~MorphOutputModule()
 void
 MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  const MorphOutput::Config *cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
+  cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
-
-  clear_dependencies();
-  MorphOperatorModule *mod = NULL;
-  EffectDecoder *dec = nullptr;
-
-  mod = morph_plan_voice->module (cfg->channel_ops[0].ptr_id());
-  if (mod == out_ops[0])
-    {
-      dec = out_decoders[0];
-      // keep decoder as it is
-    }
-  else
-    {
-      if (out_decoders[0])
-        delete out_decoders[0];
-      if (mod)
-        dec = new EffectDecoder (mod->source());
-
-      out_decoders[0] = dec;
-    }
-  if (dec)
-    dec->set_config (nullptr /* FIXME */, morph_plan_voice->mix_freq());
-  out_ops[0] = mod;
-  out_decoders[0] = dec;
-
-  add_dependency (mod);
-  /* FIXME: CONFIG */
-#if 0
-  MorphOutput *out_op = dynamic_cast <MorphOutput *> (op);
-  g_return_if_fail (out_op != NULL);
 
   clear_dependencies();
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
-      MorphOperatorModule *mod = NULL;
       EffectDecoder *dec = NULL;
 
-      MorphOperator *op = out_op->channel_op (ch);
-      if (op)
-        mod = morph_plan_voice->module (op);
+      MorphOperatorModule *mod = morph_plan_voice->module (cfg->channel_ops[ch].ptr_id());
 
       if (mod == out_ops[ch]) // same source
         {
@@ -101,36 +67,31 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
         }
 
       if (dec)
-        dec->set_config (out_op, morph_plan_voice->mix_freq());
-
-      m_portamento            = out_op->portamento();
-      m_portamento_glide      = out_op->portamento_glide();
-      m_velocity_sensitivity  = out_op->velocity_sensitivity();
+        dec->set_config (cfg, morph_plan_voice->mix_freq());
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
 
       add_dependency (mod);
     }
-#endif
 }
 
 bool
 MorphOutputModule::portamento() const
 {
-  return m_portamento;
+  return cfg->portamento;
 }
 
 float
 MorphOutputModule::portamento_glide() const
 {
-  return m_portamento_glide;
+  return cfg->portamento_glide;
 }
 
 float
 MorphOutputModule::velocity_sensitivity() const
 {
-  return m_velocity_sensitivity;
+  return cfg->velocity_sensitivity;
 }
 
 static void

@@ -11,13 +11,10 @@ namespace SpectMorph {
 
 class MorphOutputModule : public MorphOperatorModule
 {
+  const MorphOutput::Config         *cfg;
   std::vector<MorphOperatorModule *> out_ops;
   std::vector<EffectDecoder *>       out_decoders;
   TimeInfo                           block_time;
-
-  bool  m_portamento;
-  float m_portamento_glide;
-  float m_velocity_sensitivity;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);

@@ -40,34 +40,34 @@ public:
   struct Config : public MorphOperatorConfig
   {
     std::vector<MorphOperatorPtr> channel_ops;
+
+    float                         velocity_sensitivity;
+
+    bool                          sines;
+    bool                          noise;
+
+    bool                          unison;
+    int                           unison_voices;
+    float                         unison_detune;
+
+    bool                          adsr;
+    float                         adsr_skip;
+    float                         adsr_attack;
+    float                         adsr_decay;
+    float                         adsr_sustain;
+    float                         adsr_release;
+
+    bool                          portamento;
+    float                         portamento_glide;
+
+    bool                          vibrato;
+    float                         vibrato_depth;
+    float                         vibrato_frequency;
+    float                         vibrato_attack;
   };
   Config                       m_config;
 protected:
   std::vector<std::string>     load_channel_op_names;
-
-  float                        m_velocity_sensitivity;
-
-  bool                         m_sines;
-  bool                         m_noise;
-
-  bool                         m_unison;
-  int                          m_unison_voices;
-  float                        m_unison_detune;
-
-  bool                         m_adsr;
-  float                        m_adsr_skip;
-  float                        m_adsr_attack;
-  float                        m_adsr_decay;
-  float                        m_adsr_sustain;
-  float                        m_adsr_release;
-
-  bool                         m_portamento;
-  float                        m_portamento_glide;
-
-  bool                         m_vibrato;
-  float                        m_vibrato_depth;
-  float                        m_vibrato_frequency;
-  float                        m_vibrato_attack;
 
 public:
   MorphOutput (MorphPlan *morph_plan);

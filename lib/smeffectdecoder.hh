@@ -30,7 +30,7 @@ public:
   EffectDecoder (LiveDecoderSource *source);
   ~EffectDecoder();
 
-  void set_config (MorphOutput *output, float mix_freq);
+  void set_config (const MorphOutput::Config *cfg, float mix_freq);
 
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
   void process (size_t       n_values,
