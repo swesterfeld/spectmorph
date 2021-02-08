@@ -44,6 +44,8 @@ MorphPlanVoice::create_modules (MorphPlanSynth::UpdateP update)
         }
       else
         {
+          module->set_ptr_id (op.ptr_id);
+
           OpModule op_module;
 
           op_module.module = module;

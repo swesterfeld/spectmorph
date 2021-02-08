@@ -34,6 +34,7 @@ protected:
   MorphPlanVoice                     *morph_plan_voice;
   std::vector<MorphOperatorModule *>  m_dependencies;
   int                                 m_update_value_tag;
+  MorphOperator::PtrID                m_ptr_id;
 
   Random *random_gen() const;
   void clear_dependencies();
@@ -51,6 +52,7 @@ public:
 
   const std::vector<MorphOperatorModule *>& dependencies() const;
   int& update_value_tag();
+  void set_ptr_id (MorphOperator::PtrID ptr_id);
 
   static MorphOperatorModule *create (const std::string& type, MorphPlanVoice *voice);
 };

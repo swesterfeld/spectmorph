@@ -54,17 +54,20 @@ public:
     NOTE_MODE_TRIPLET  = 2,
     NOTE_MODE_DOTTED   = 3
   };
+  struct Config : public MorphOperatorConfig
+  {
+    WaveType       wave_type;
+    float          frequency;
+    float          depth;
+    float          center;
+    float          start_phase;
+    bool           sync_voices;
+    bool           beat_sync;
+    Note           note;
+    NoteMode       note_mode;
+  };
 protected:
-  WaveType       m_wave_type;
-  float          m_frequency;
-  float          m_depth;
-  float          m_center;
-  float          m_start_phase;
-  bool           m_sync_voices;
-  bool           m_beat_sync;
-  Note           m_note;
-  NoteMode       m_note_mode;
-
+  Config      m_config;
 public:
   MorphLFO (MorphPlan *morph_plan);
   ~MorphLFO();
@@ -75,6 +78,7 @@ public:
   bool               save (OutFile& out_file);
   bool               load (InFile&  in_file);
   OutputType         output_type();
+  MorphOperatorConfig *clone_config() override;
 
   WaveType wave_type();
   void set_wave_type (WaveType new_wave_type);

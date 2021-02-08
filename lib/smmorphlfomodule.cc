@@ -39,34 +39,19 @@ normalize_phase (double phase)
 void
 MorphLFOModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  /* FIXME: CONFIG */
-#if 0
-  MorphLFO *lfo = dynamic_cast<MorphLFO *> (op);
-
-  frequency = lfo->frequency();
-  depth = lfo->depth();
-  center = lfo->center();
-  start_phase = lfo->start_phase();
-  sync_voices = lfo->sync_voices();
-  wave_type = lfo->wave_type();
-  beat_sync = lfo->beat_sync();
-  note = lfo->note();
-  note_mode = lfo->note_mode();
+  cfg = dynamic_cast<const MorphLFO::Config *> (op_cfg);
 
   MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
   if (synth)
     {
-      shared_state = dynamic_cast<SharedState *> (synth->shared_state (op));
+      shared_state = dynamic_cast<SharedState *> (synth->shared_state (m_ptr_id));
       if (!shared_state)
         {
           shared_state = new SharedState();
           restart_lfo (shared_state->global_lfo_state, /* start from zero time */ TimeInfo());
-          synth->set_shared_state (op, shared_state);
+          synth->set_shared_state (m_ptr_id, shared_state);
         }
     }
-#endif
-  if (!shared_state) // FIXME
-    shared_state = new SharedState();
 }
 
 float
@@ -74,7 +59,7 @@ MorphLFOModule::value()
 {
   TimeInfo time = time_info();
 
-  if (sync_voices)
+  if (cfg->sync_voices)
     {
       auto lfo_state = shared_state->global_lfo_state;
       update_lfo_value (lfo_state, time);
@@ -110,12 +95,10 @@ MorphLFOModule::restart_lfo (LFOState& state, const TimeInfo& time_info)
 void
 MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
 {
-  /* FIXME: CONFIG */
-#if 0
-  if (!beat_sync)
+  if (!cfg->beat_sync)
     {
       if (time_info.time_ms > state.last_time_ms)
-        state.raw_phase += (time_info.time_ms - state.last_time_ms) / 1000 * frequency;
+        state.raw_phase += (time_info.time_ms - state.last_time_ms) / 1000 * cfg->frequency;
       state.last_time_ms = time_info.time_ms;
     }
   else
@@ -133,8 +116,8 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
         }
       state.last_ppq_pos = time_info.ppq_pos;
 
-      double factor = pow (2, (MorphLFO::NOTE_1_4 - note)); // <- tempo is relative to quarter notes
-      switch (note_mode)
+      double factor = pow (2, (MorphLFO::NOTE_1_4 - cfg->note)); // <- tempo is relative to quarter notes
+      switch (cfg->note_mode)
       {
         case MorphLFO::NOTE_MODE_TRIPLET:
           factor *= 2.0 / 3.0;
@@ -145,13 +128,13 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
         default:
           ;
       }
-      if (sync_voices)
+      if (cfg->sync_voices)
         state.raw_phase = time_info.ppq_pos / factor;
       else
         state.raw_phase = state.ppq_count / factor;
     }
   const double old_phase = state.phase;
-  state.phase = normalize_phase (state.raw_phase + start_phase / 360);
+  state.phase = normalize_phase (state.raw_phase + cfg->start_phase / 360);
   constexpr double epsilon = 1 / 1000.;  // reliable comparision of floating point values
   if (state.phase + epsilon < old_phase)
     {
@@ -160,11 +143,11 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
       state.random_value = random_gen()->random_double_range (-1, 1);
     }
 
-  if (wave_type == MorphLFO::WAVE_SINE)
+  if (cfg->wave_type == MorphLFO::WAVE_SINE)
     {
       state.value = sin (state.phase * M_PI * 2);
     }
-  else if (wave_type == MorphLFO::WAVE_TRIANGLE)
+  else if (cfg->wave_type == MorphLFO::WAVE_TRIANGLE)
     {
       if (state.phase < 0.25)
         {
@@ -179,26 +162,26 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
           state.value = 4 * (state.phase - 1);
         }
     }
-  else if (wave_type == MorphLFO::WAVE_SAW_UP)
+  else if (cfg->wave_type == MorphLFO::WAVE_SAW_UP)
     {
       state.value = -1 + 2 * state.phase;
     }
-  else if (wave_type == MorphLFO::WAVE_SAW_DOWN)
+  else if (cfg->wave_type == MorphLFO::WAVE_SAW_DOWN)
     {
       state.value = 1 - 2 * state.phase;
     }
-  else if (wave_type == MorphLFO::WAVE_SQUARE)
+  else if (cfg->wave_type == MorphLFO::WAVE_SQUARE)
     {
       if (state.phase < 0.5)
         state.value = -1;
       else
         state.value = 1;
     }
-  else if (wave_type == MorphLFO::WAVE_RANDOM_SH)
+  else if (cfg->wave_type == MorphLFO::WAVE_RANDOM_SH)
     {
       state.value = state.random_value;
     }
-  else if (wave_type == MorphLFO::WAVE_RANDOM_LINEAR)
+  else if (cfg->wave_type == MorphLFO::WAVE_RANDOM_LINEAR)
     {
       state.value = state.last_random_value * (1 - state.phase) + state.random_value * state.phase;
     }
@@ -207,9 +190,8 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
       g_assert_not_reached();
     }
 
-  state.value = state.value * depth + center;
+  state.value = state.value * cfg->depth + cfg->center;
   state.value = CLAMP (state.value, -1.0, 1.0);
-#endif
 }
 
 void

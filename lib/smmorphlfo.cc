@@ -26,15 +26,15 @@ MorphLFOProperties::MorphLFOProperties (MorphLFO *lfo) :
 MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  m_wave_type = WAVE_SINE;
-  m_frequency = 1;
-  m_depth = 1;
-  m_center = 0;
-  m_start_phase = 0;
-  m_sync_voices = false;
-  m_beat_sync = false;
-  m_note = NOTE_1_4;
-  m_note_mode = NOTE_MODE_STRAIGHT;
+  m_config.wave_type = WAVE_SINE;
+  m_config.frequency = 1;
+  m_config.depth = 1;
+  m_config.center = 0;
+  m_config.start_phase = 0;
+  m_config.sync_voices = false;
+  m_config.beat_sync = false;
+  m_config.note = NOTE_1_4;
+  m_config.note_mode = NOTE_MODE_STRAIGHT;
 
   leak_debugger.add (this);
 }
@@ -59,15 +59,15 @@ MorphLFO::insert_order()
 bool
 MorphLFO::save (OutFile& out_file)
 {
-  out_file.write_int ("wave_type", m_wave_type);
-  out_file.write_float ("frequency", m_frequency);
-  out_file.write_float ("depth", m_depth);
-  out_file.write_float ("center", m_center);
-  out_file.write_float ("start_phase", m_start_phase);
-  out_file.write_bool ("sync_voices", m_sync_voices);
-  out_file.write_bool ("beat_sync", m_beat_sync);
-  out_file.write_int ("note", m_note);
-  out_file.write_int ("note_mode", m_note_mode);
+  out_file.write_int ("wave_type", m_config.wave_type);
+  out_file.write_float ("frequency", m_config.frequency);
+  out_file.write_float ("depth", m_config.depth);
+  out_file.write_float ("center", m_config.center);
+  out_file.write_float ("start_phase", m_config.start_phase);
+  out_file.write_bool ("sync_voices", m_config.sync_voices);
+  out_file.write_bool ("beat_sync", m_config.beat_sync);
+  out_file.write_int ("note", m_config.note);
+  out_file.write_int ("note_mode", m_config.note_mode);
 
   return true;
 }
@@ -81,15 +81,15 @@ MorphLFO::load (InFile& ifile)
         {
           if (ifile.event_name() == "wave_type")
             {
-              m_wave_type = static_cast<WaveType> (ifile.event_int());
+              m_config.wave_type = static_cast<WaveType> (ifile.event_int());
             }
           else if (ifile.event_name() == "note")
             {
-              m_note = static_cast<Note> (ifile.event_int());
+              m_config.note = static_cast<Note> (ifile.event_int());
             }
           else if (ifile.event_name() == "note_mode")
             {
-              m_note_mode = static_cast<NoteMode> (ifile.event_int());
+              m_config.note_mode = static_cast<NoteMode> (ifile.event_int());
             }
           else
             {
@@ -101,19 +101,19 @@ MorphLFO::load (InFile& ifile)
         {
           if (ifile.event_name() == "frequency")
             {
-              m_frequency = ifile.event_float();
+              m_config.frequency = ifile.event_float();
             }
           else if (ifile.event_name() == "depth")
             {
-              m_depth = ifile.event_float();
+              m_config.depth = ifile.event_float();
             }
           else if (ifile.event_name() == "center")
             {
-              m_center = ifile.event_float();
+              m_config.center = ifile.event_float();
             }
           else if (ifile.event_name() == "start_phase")
             {
-              m_start_phase = ifile.event_float();
+              m_config.start_phase = ifile.event_float();
             }
           else
             {
@@ -125,11 +125,11 @@ MorphLFO::load (InFile& ifile)
         {
           if (ifile.event_name() == "sync_voices")
             {
-              m_sync_voices = ifile.event_bool();
+              m_config.sync_voices = ifile.event_bool();
             }
           else if (ifile.event_name() == "beat_sync")
             {
-              m_beat_sync = ifile.event_bool();
+              m_config.beat_sync = ifile.event_bool();
             }
           else
             {
@@ -156,13 +156,13 @@ MorphLFO::output_type()
 MorphLFO::WaveType
 MorphLFO::wave_type()
 {
-  return m_wave_type;
+  return m_config.wave_type;
 }
 
 void
 MorphLFO::set_wave_type (WaveType new_wave_type)
 {
-  m_wave_type = new_wave_type;
+  m_config.wave_type = new_wave_type;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -170,13 +170,13 @@ MorphLFO::set_wave_type (WaveType new_wave_type)
 float
 MorphLFO::frequency() const
 {
-  return m_frequency;
+  return m_config.frequency;
 }
 
 void
 MorphLFO::set_frequency (float frequency)
 {
-  m_frequency = frequency;
+  m_config.frequency = frequency;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -184,13 +184,13 @@ MorphLFO::set_frequency (float frequency)
 float
 MorphLFO::depth() const
 {
-  return m_depth;
+  return m_config.depth;
 }
 
 void
 MorphLFO::set_depth (float depth)
 {
-  m_depth = depth;
+  m_config.depth = depth;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -198,13 +198,13 @@ MorphLFO::set_depth (float depth)
 float
 MorphLFO::center() const
 {
-  return m_center;
+  return m_config.center;
 }
 
 void
 MorphLFO::set_center (float center)
 {
-  m_center = center;
+  m_config.center = center;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -212,13 +212,13 @@ MorphLFO::set_center (float center)
 float
 MorphLFO::start_phase() const
 {
-  return m_start_phase;
+  return m_config.start_phase;
 }
 
 void
 MorphLFO::set_start_phase (float start_phase)
 {
-  m_start_phase = start_phase;
+  m_config.start_phase = start_phase;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -226,13 +226,13 @@ MorphLFO::set_start_phase (float start_phase)
 bool
 MorphLFO::sync_voices() const
 {
-  return m_sync_voices;
+  return m_config.sync_voices;
 }
 
 void
 MorphLFO::set_sync_voices (float sync_voices)
 {
-  m_sync_voices = sync_voices;
+  m_config.sync_voices = sync_voices;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -240,13 +240,13 @@ MorphLFO::set_sync_voices (float sync_voices)
 bool
 MorphLFO::beat_sync() const
 {
-  return m_beat_sync;
+  return m_config.beat_sync;
 }
 
 void
 MorphLFO::set_beat_sync (bool beat_sync)
 {
-  m_beat_sync = beat_sync;
+  m_config.beat_sync = beat_sync;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -254,13 +254,13 @@ MorphLFO::set_beat_sync (bool beat_sync)
 MorphLFO::Note
 MorphLFO::note() const
 {
-  return m_note;
+  return m_config.note;
 }
 
 void
 MorphLFO::set_note (Note note)
 {
-  m_note = note;
+  m_config.note = note;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -268,13 +268,19 @@ MorphLFO::set_note (Note note)
 MorphLFO::NoteMode
 MorphLFO::note_mode() const
 {
-  return m_note_mode;
+  return m_config.note_mode;
 }
 
 void
 MorphLFO::set_note_mode (NoteMode mode)
 {
-  m_note_mode = mode;
+  m_config.note_mode = mode;
 
   m_morph_plan->emit_plan_changed();
+}
+
+MorphOperatorConfig *
+MorphLFO::clone_config()
+{
+  return new Config (m_config);
 }

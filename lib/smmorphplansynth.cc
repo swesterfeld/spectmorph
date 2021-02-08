@@ -153,15 +153,15 @@ MorphPlanSynth::update_shared_state (const TimeInfo& time_info)
 }
 
 MorphModuleSharedState *
-MorphPlanSynth::shared_state (MorphOperator *op)
+MorphPlanSynth::shared_state (MorphOperator::PtrID ptr_id)
 {
-  return m_shared_state[op->id()];
+  return m_shared_state[ptr_id];
 }
 
 void
-MorphPlanSynth::set_shared_state (MorphOperator *op, MorphModuleSharedState *shared_state)
+MorphPlanSynth::set_shared_state (MorphOperator::PtrID ptr_id, MorphModuleSharedState *shared_state)
 {
-  m_shared_state[op->id()] = shared_state;
+  m_shared_state[ptr_id] = shared_state;
 }
 
 float
@@ -189,8 +189,7 @@ MorphPlanSynth::have_output() const
 void
 MorphPlanSynth::free_shared_state()
 {
-  map<string, MorphModuleSharedState *>::iterator si;
-  for (si = m_shared_state.begin(); si != m_shared_state.end(); si++)
+  for (auto si = m_shared_state.begin(); si != m_shared_state.end(); si++)
     delete si->second;
   m_shared_state.clear();
 }

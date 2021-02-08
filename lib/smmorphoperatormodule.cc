@@ -103,6 +103,12 @@ MorphOperatorModule::time_info() const
   return time;
 }
 
+void
+MorphOperatorModule::set_ptr_id (MorphOperator::PtrID ptr_id)
+{
+  m_ptr_id = ptr_id;
+}
+
 MorphOperatorModule*
 MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
 {

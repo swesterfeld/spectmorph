@@ -18,7 +18,7 @@ class TimeInfo;
 class MorphPlanSynth {
 protected:
   std::vector<MorphPlanVoice *> voices;
-  std::map<std::string, MorphModuleSharedState *> m_shared_state;
+  std::map<MorphOperator::PtrID, MorphModuleSharedState *> m_shared_state;
   std::vector<std::string>                        m_last_update_ids;
   std::vector<MorphOperatorConfigP>               m_active_configs;
 
@@ -49,8 +49,8 @@ public:
   UpdateP prepare_update (MorphPlanPtr new_plan);
   void apply_update (UpdateP update);
 
-  MorphModuleSharedState *shared_state (MorphOperator *op);
-  void set_shared_state (MorphOperator *op, MorphModuleSharedState *shared_state);
+  MorphModuleSharedState *shared_state (MorphOperator::PtrID ptr_id);
+  void set_shared_state (MorphOperator::PtrID ptr_id, MorphModuleSharedState *shared_state);
 
   void update_shared_state (const TimeInfo& time_info);
   void free_shared_state();
