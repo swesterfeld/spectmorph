@@ -216,6 +216,12 @@ Project::state_changed()
 void
 Project::on_plan_changed()
 {
+  /* FIXME: CONFIG
+   *
+   * we used to save here anyway, so state changed check could be done easily
+   * however now with fast config updates, we just save for state changed
+   * checks which is a waste of time
+   */
   // create a deep copy (by saving/loading)
   vector<unsigned char> plan_data;
   MemOut                plan_mo (&plan_data);
@@ -228,16 +234,10 @@ Project::on_plan_changed()
       state_changed();
     }
 
-  // reload: plan is a deep copy
-  MorphPlanPtr plan = new MorphPlan (*this);
-  GenericIn *in = MMapIn::open_mem (&plan_data[0], &plan_data[plan_data.size()]);
-  plan->load (in);
-  delete in;
-
   // this might take a while, and cannot be done in synthesis thread
   MorphPlanSynth mp_synth (m_mix_freq);
   MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (plan);
+  mp_synth.update_plan (m_morph_plan);
 
   MorphOutputModule *om = mp_voice->output();
   if (om)
@@ -249,7 +249,7 @@ Project::on_plan_changed()
       om->process (ti, 1, values, 1);
     }
 
-  MorphPlanSynth::UpdateP update = m_midi_synth->prepare_update (plan);
+  MorphPlanSynth::UpdateP update = m_midi_synth->prepare_update (m_morph_plan);
   m_synth_interface->emit_apply_update (update);
 }
 
