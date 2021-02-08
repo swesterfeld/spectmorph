@@ -12,17 +12,24 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
+public:
+  struct Config : public MorphOperatorConfig
+  {
+    MorphOperatorPtr left_op;
+    MorphOperatorPtr right_op;
+    MorphOperatorPtr control_op;
+    std::string      left_path;
+    std::string      right_path;
+
+    double           morphing;
+    ControlType      control_type;
+    bool             db_linear;
+  };
+  Config      m_config;
 protected:
   std::string    load_left, load_right, load_control;
-
-  MorphOperator *m_left_op;
   std::string    m_left_smset;
-  MorphOperator *m_right_op;
   std::string    m_right_smset;
-  MorphOperator *m_control_op;
-  double         m_morphing;
-  ControlType    m_control_type;
-  bool           m_db_linear;
 
 public:
   MorphLinear (MorphPlan *morph_plan);
@@ -35,6 +42,7 @@ public:
   bool               load (InFile&  in_file) override;
   void               post_load (OpNameMap& op_name_map) override;
   OutputType         output_type() override;
+  MorphOperatorConfig *clone_config() override;
 
   std::vector<MorphOperator *> dependencies() override;
 

@@ -45,60 +45,27 @@ MorphLinearModule::~MorphLinearModule()
 }
 
 void
-MorphLinearModule::set_config (const MorphOperatorConfig *cfg)
+MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  /* FIXME: CONFIG */
-#if 0
-  MorphLinear *linear = dynamic_cast<MorphLinear *> (op);
-  MorphOperator *left_op = linear->left_op();
-  MorphOperator *right_op = linear->right_op();
-  MorphOperator *control_op = linear->control_op();
+  cfg = dynamic_cast<const MorphLinear::Config *> (op_cfg);
+  g_return_if_fail (cfg != NULL);
 
-  if (left_op)
-    left_mod = morph_plan_voice->module (left_op);
-  else
-    left_mod = NULL;
+  left_mod = morph_plan_voice->module (cfg->left_op.ptr_id());
+  right_mod = morph_plan_voice->module (cfg->right_op.ptr_id());
+  control_mod = morph_plan_voice->module (cfg->control_op.ptr_id());
 
-  if (right_op)
-    right_mod = morph_plan_voice->module (right_op);
-  else
-    right_mod = NULL;
-
-  string left_smset = linear->left_smset();
-  string right_smset = linear->right_smset();
-
-  have_left_source = (left_smset != "");
+  have_left_source = (cfg->left_path != "");
   if (have_left_source)
-    {
-      string smset_dir = linear->morph_plan()->index()->smset_dir();
-      string path = smset_dir + "/" + left_smset;
+    left_source.set_wav_set (cfg->left_path);
 
-      left_source.set_wav_set (path);
-    }
-
-  have_right_source = (right_smset != "");
+  have_right_source = (cfg->right_path != "");
   if (have_right_source)
-    {
-      string smset_dir = linear->morph_plan()->index()->smset_dir();
-      string path = smset_dir + "/" + right_smset;
-
-      right_source.set_wav_set (path);
-    }
-
-  if (control_op)
-    control_mod = morph_plan_voice->module (control_op);
-  else
-    control_mod = NULL;
+    right_source.set_wav_set (cfg->right_path);
 
   clear_dependencies();
   add_dependency (left_mod);
   add_dependency (right_mod);
   add_dependency (control_mod);
-
-  morphing = linear->morphing();
-  control_type = linear->control_type();
-  db_linear = linear->db_linear();
-#endif
 }
 
 void
@@ -169,7 +136,7 @@ md_cmp (const MagData& m1, const MagData& m2)
 void
 MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 {
-  if (module->db_linear)
+  if (module->cfg->db_linear)
     {
       const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
       const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
@@ -195,7 +162,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  const double morphing = module->morph_plan_voice->control_input (module->morphing, module->control_type, module->control_mod);
+  const double morphing = module->morph_plan_voice->control_input (module->cfg->morphing, module->cfg->control_type, module->control_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 
@@ -305,7 +272,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
                 }
 
               double mag;
-              if (module->db_linear)
+              if (module->cfg->db_linear)
                 {
                   // FIXME: this could be faster if we avoided db conversion (see grid morph)
 

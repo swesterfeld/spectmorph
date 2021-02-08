@@ -18,12 +18,9 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
 {
   connect (morph_plan->signal_operator_removed, this, &MorphLinear::on_operator_removed);
 
-  m_left_op = NULL;
-  m_right_op = NULL;
-  m_control_op = NULL;
-  m_morphing = 0;
-  m_control_type = CONTROL_GUI;
-  m_db_linear = false;
+  m_config.morphing = 0;
+  m_config.control_type = CONTROL_GUI;
+  m_config.db_linear = false;
 
   leak_debugger.add (this);
 }
@@ -48,14 +45,15 @@ MorphLinear::insert_order()
 bool
 MorphLinear::save (OutFile& out_file)
 {
-  write_operator (out_file, "left", m_left_op);
-  write_operator (out_file, "right", m_right_op);
-  write_operator (out_file, "control", m_control_op);
+  /* FIXME: CONFIG: should probably make write_operator take a MorphOperatorPtr */
+  write_operator (out_file, "left", m_config.left_op.get());
+  write_operator (out_file, "right", m_config.right_op.get());
+  write_operator (out_file, "control", m_config.control_op.get());
   out_file.write_string ("left_smset", m_left_smset);
   out_file.write_string ("right_smset", m_right_smset);
-  out_file.write_float ("morphing", m_morphing);
-  out_file.write_int ("control_type", m_control_type);
-  out_file.write_bool ("db_linear", m_db_linear);
+  out_file.write_float ("morphing", m_config.morphing);
+  out_file.write_int ("control_type", m_config.control_type);
+  out_file.write_bool ("db_linear", m_config.db_linear);
 
   return true;
 }
@@ -101,7 +99,7 @@ MorphLinear::load (InFile& ifile)
         {
           if (ifile.event_name() == "morphing")
             {
-              m_morphing = ifile.event_float();
+              m_config.morphing = ifile.event_float();
             }
           else
             {
@@ -113,7 +111,7 @@ MorphLinear::load (InFile& ifile)
         {
           if (ifile.event_name() == "control_type")
             {
-              m_control_type = static_cast<ControlType> (ifile.event_int());
+              m_config.control_type = static_cast<ControlType> (ifile.event_int());
             }
           else
             {
@@ -125,7 +123,7 @@ MorphLinear::load (InFile& ifile)
         {
           if (ifile.event_name() == "db_linear")
             {
-              m_db_linear = ifile.event_bool();
+              m_config.db_linear = ifile.event_bool();
             }
           else if (ifile.event_name() == "use_lpc")
             {
@@ -152,9 +150,9 @@ MorphLinear::load (InFile& ifile)
 void
 MorphLinear::post_load (OpNameMap& op_name_map)
 {
-  m_left_op = op_name_map[load_left];
-  m_right_op = op_name_map[load_right];
-  m_control_op = op_name_map[load_control];
+  m_config.left_op.set (op_name_map[load_left]);
+  m_config.right_op.set (op_name_map[load_right]);
+  m_config.control_op.set (op_name_map[load_control]);
 }
 
 MorphOperator::OutputType
@@ -168,43 +166,43 @@ MorphLinear::on_operator_removed (MorphOperator *op)
 {
   // plan changed will be emitted automatically after remove, so we don't emit it here
 
-  if (op == m_left_op)
-    m_left_op = nullptr;
+  if (op == m_config.left_op.get())
+    m_config.left_op.set (nullptr);
 
-  if (op == m_right_op)
-    m_right_op = nullptr;
+  if (op == m_config.right_op.get())
+    m_config.right_op.set (nullptr);
 
-  if (op == m_control_op)
+  if (op == m_config.control_op.get())
     {
-      m_control_op = nullptr;
+      m_config.control_op.set (nullptr);
 
-      if (m_control_type == CONTROL_OP)
-        m_control_type = CONTROL_GUI;
+      if (m_config.control_type == CONTROL_OP)
+        m_config.control_type = CONTROL_GUI;
     }
 }
 
 MorphOperator *
 MorphLinear::left_op()
 {
-  return m_left_op;
+  return m_config.left_op.get();
 }
 
 MorphOperator *
 MorphLinear::right_op()
 {
-  return m_right_op;
+  return m_config.right_op.get();
 }
 
 MorphOperator *
 MorphLinear::control_op()
 {
-  return m_control_op;
+  return m_config.control_op.get();
 }
 
 void
 MorphLinear::set_left_op (MorphOperator *op)
 {
-  m_left_op = op;
+  m_config.left_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -212,7 +210,7 @@ MorphLinear::set_left_op (MorphOperator *op)
 void
 MorphLinear::set_right_op (MorphOperator *op)
 {
-  m_right_op = op;
+  m_config.right_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -220,7 +218,7 @@ MorphLinear::set_right_op (MorphOperator *op)
 void
 MorphLinear::set_control_op (MorphOperator *op)
 {
-  m_control_op = op;
+  m_config.control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -228,8 +226,8 @@ MorphLinear::set_control_op (MorphOperator *op)
 void
 MorphLinear::set_control_type_and_op (ControlType control_type, MorphOperator *op)
 {
-  m_control_type = control_type;
-  m_control_op   = op;
+  m_config.control_type = control_type;
+  m_config.control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -265,13 +263,13 @@ MorphLinear::set_right_smset (const string& smset)
 double
 MorphLinear::morphing()
 {
-  return m_morphing;
+  return m_config.morphing;
 }
 
 void
 MorphLinear::set_morphing (double new_morphing)
 {
-  m_morphing = new_morphing;
+  m_config.morphing = new_morphing;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -279,13 +277,13 @@ MorphLinear::set_morphing (double new_morphing)
 MorphLinear::ControlType
 MorphLinear::control_type()
 {
-  return m_control_type;
+  return m_config.control_type;
 }
 
 void
 MorphLinear::set_control_type (ControlType new_control_type)
 {
-  m_control_type = new_control_type;
+  m_config.control_type = new_control_type;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -293,13 +291,13 @@ MorphLinear::set_control_type (ControlType new_control_type)
 bool
 MorphLinear::db_linear()
 {
-  return m_db_linear;
+  return m_config.db_linear;
 }
 
 void
 MorphLinear::set_db_linear (bool dbl)
 {
-  m_db_linear = dbl;
+  m_config.db_linear = dbl;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -307,5 +305,27 @@ MorphLinear::set_db_linear (bool dbl)
 vector<MorphOperator *>
 MorphLinear::dependencies()
 {
-  return { m_left_op, m_right_op, m_control_type == CONTROL_OP ? m_control_op : nullptr };
+  return {
+    m_config.left_op.get(),
+    m_config.right_op.get(),
+    m_config.control_type == CONTROL_OP ? m_config.control_op.get() : nullptr
+  };
+}
+
+MorphOperatorConfig *
+MorphLinear::clone_config()
+{
+  Config *cfg = new Config (m_config);
+
+  string smset_dir = morph_plan()->index()->smset_dir();
+
+  cfg->left_path = "";
+  if (m_left_smset != "")
+    cfg->left_path = smset_dir + "/" + m_left_smset;
+
+  cfg->right_path = "";
+  if (m_right_smset != "")
+    cfg->right_path = smset_dir + "/" + m_right_smset;
+
+  return cfg;
 }

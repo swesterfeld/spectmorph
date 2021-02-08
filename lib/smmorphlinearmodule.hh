@@ -14,6 +14,8 @@ namespace SpectMorph
 
 class MorphLinearModule : public MorphOperatorModule
 {
+  const MorphLinear::Config *cfg = nullptr;
+
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
   MorphOperatorModule *control_mod;
@@ -21,10 +23,6 @@ class MorphLinearModule : public MorphOperatorModule
   bool                 have_left_source;
   SimpleWavSetSource   right_source;
   bool                 have_right_source;
-  float                morphing;
-  bool                 db_linear;
-
-  MorphLinear::ControlType control_type;
 
   Audio                audio;
   AudioBlock           audio_block;
