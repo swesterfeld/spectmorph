@@ -97,16 +97,9 @@ class MorphOperatorPtr
 {
 private:
   MorphOperator *m_ptr = nullptr;
-  std::string    m_id;
 public:
   operator bool() const { return m_ptr != nullptr; };
   MorphOperator *get() const { return m_ptr; }
-
-  std::string
-  id() const
-  {
-    return m_id;
-  }
 
   MorphOperator::PtrID
   ptr_id() const
@@ -117,7 +110,6 @@ public:
   void
   set (MorphOperator *ptr)
   {
-    m_id = ptr ? ptr->id() : "";
     m_ptr = ptr;
   };
 };
