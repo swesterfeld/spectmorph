@@ -55,7 +55,7 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
         {
           const MorphGridNode& node = cfg->input_node[x][y];
 
-          input_node[x][y].mod = morph_plan_voice->module (node.op.ptr_id());
+          input_node[x][y].mod = morph_plan_voice->module (node.op);
 
           if (node.path != "")
             {
@@ -71,8 +71,8 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
         }
     }
 
-  x_control_mod = morph_plan_voice->module (cfg->x_control_op.ptr_id());
-  y_control_mod = morph_plan_voice->module (cfg->y_control_op.ptr_id());
+  x_control_mod = morph_plan_voice->module (cfg->x_control_op);
+  y_control_mod = morph_plan_voice->module (cfg->y_control_op);
 
   clear_dependencies();
   for (int x = 0; x < cfg->width; x++)

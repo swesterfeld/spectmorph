@@ -65,9 +65,9 @@ MorphWavSourceModule::InstrumentSource::audio()
 AudioBlock *
 MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
 {
-  if (active_audio && module->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
+  if (active_audio && module->cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
-      const double position = module->morph_plan_voice->control_input ((module->position * 0.01) * 2 - 1, module->position_control_type, module->position_mod);
+      const double position = module->morph_plan_voice->control_input ((module->cfg->position * 0.01) * 2 - 1, module->cfg->position_control_type, module->position_mod);
 
       int start, end;
       if (active_audio->loop_type == Audio::LOOP_NONE)
@@ -123,26 +123,18 @@ MorphWavSourceModule::source()
 }
 
 void
-MorphWavSourceModule::set_config (const MorphOperatorConfig *cfg)
+MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  /* FIXME: CONFIG */
-#if 0
-  MorphWavSource *source = dynamic_cast<MorphWavSource *> (op);
-  Project *project = op->morph_plan()->project();
+  cfg = dynamic_cast<const MorphWavSource::Config *> (op_cfg);
 
-  my_source.update_project (project);
-  my_source.update_object_id (source->object_id());
-  position = source->position();
-  position_control_type = source->position_control_type();
-  play_mode = source->play_mode();
+  my_source.update_project (cfg->project);
+  my_source.update_object_id (cfg->object_id);
 
-  MorphOperator *position_op = source->position_op();
-  if (position_op && play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
-    position_mod = morph_plan_voice->module (position_op);
+  if (cfg->position_op && cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
+    position_mod = morph_plan_voice->module (cfg->position_op);
   else
     position_mod = nullptr;
 
   clear_dependencies();
   add_dependency (position_mod);
-#endif
 }

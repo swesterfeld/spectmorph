@@ -12,6 +12,7 @@ namespace SpectMorph
 {
 
 class MorphWavSource;
+class Project;
 
 struct MorphWavSourceProperties
 {
@@ -27,16 +28,22 @@ public:
     PLAY_MODE_STANDARD        = 1,
     PLAY_MODE_CUSTOM_POSITION = 2
   };
+  struct Config : public MorphOperatorConfig
+  {
+    Project          *project = nullptr;
+
+    int               object_id = 0;
+    PlayMode          play_mode             = PLAY_MODE_STANDARD;
+    ControlType       position_control_type = CONTROL_GUI;
+    float             position = 50;
+    MorphOperatorPtr  position_op;
+  };
 protected:
+  Config      m_config;
   std::string load_position_op;
 
-  int         m_object_id  = 0;
   int         m_instrument = 1;
   std::string m_lv2_filename;
-  PlayMode    m_play_mode             = PLAY_MODE_STANDARD;
-  ControlType m_position_control_type = CONTROL_GUI;
-  float       m_position = 50;
-  MorphOperator *m_position_op = nullptr;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -50,6 +57,7 @@ public:
   OutputType  output_type() override;
   void        post_load (OpNameMap& op_name_map) override;
   std::vector<MorphOperator *> dependencies() override;
+  MorphOperatorConfig *clone_config() override;
 
   void        set_object_id (int id);
   int         object_id();

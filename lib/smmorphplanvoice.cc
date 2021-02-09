@@ -86,8 +86,10 @@ MorphPlanVoice::output()
 }
 
 MorphOperatorModule *
-MorphPlanVoice::module (MorphOperator::PtrID ptr_id)
+MorphPlanVoice::module (const MorphOperatorPtr& ptr)
 {
+  MorphOperator::PtrID ptr_id = ptr.ptr_id();
+
   for (size_t i = 0; i < modules.size(); i++)
     if (modules[i].ptr_id == ptr_id)
       return modules[i].module;

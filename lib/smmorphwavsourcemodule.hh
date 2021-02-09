@@ -16,6 +16,8 @@ class MorphWavSourceModule;
 
 class MorphWavSourceModule : public MorphOperatorModule
 {
+  const MorphWavSource::Config *cfg = nullptr;
+
   class InstrumentSource : public LiveDecoderSource
   {
     Audio                  *active_audio = nullptr;
@@ -33,9 +35,6 @@ class MorphWavSourceModule : public MorphOperatorModule
     void update_object_id (int object_id);
   };
 
-  float                       position = 0;
-  MorphWavSource::PlayMode    play_mode;
-  MorphWavSource::ControlType position_control_type;
   MorphOperatorModule        *position_mod = nullptr;
 
   InstrumentSource my_source;

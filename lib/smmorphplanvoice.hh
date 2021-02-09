@@ -37,7 +37,7 @@ public:
   void cheap_update (MorphPlanSynth::UpdateP update);
   void full_update (MorphPlanSynth::UpdateP update);
 
-  MorphOperatorModule *module (MorphOperator::PtrID ptr_id);
+  MorphOperatorModule *module (const MorphOperatorPtr& ptr);
 
   double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);

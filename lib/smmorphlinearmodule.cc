@@ -50,9 +50,9 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphLinear::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
 
-  left_mod = morph_plan_voice->module (cfg->left_op.ptr_id());
-  right_mod = morph_plan_voice->module (cfg->right_op.ptr_id());
-  control_mod = morph_plan_voice->module (cfg->control_op.ptr_id());
+  left_mod = morph_plan_voice->module (cfg->left_op);
+  right_mod = morph_plan_voice->module (cfg->right_op);
+  control_mod = morph_plan_voice->module (cfg->control_op);
 
   have_left_source = (cfg->left_path != "");
   if (have_left_source)

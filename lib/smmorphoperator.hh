@@ -64,7 +64,7 @@ public:
   virtual void post_load (OpNameMap& op_name_map);
   virtual OutputType output_type() = 0;
   virtual std::vector<MorphOperator *> dependencies();
-  virtual MorphOperatorConfig *clone_config();
+  virtual MorphOperatorConfig *clone_config() = 0;
 
   MorphPlan *morph_plan();
 
