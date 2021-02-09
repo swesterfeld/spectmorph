@@ -25,9 +25,6 @@ MorphGridModule::MorphGridModule (MorphPlanVoice *voice) :
 {
   leak_debugger.add (this);
 
-  width = 0;
-  height = 0;
-
   my_source.module = this;
 
   audio.fundamental_freq     = 440;
@@ -46,37 +43,23 @@ MorphGridModule::~MorphGridModule()
 void
 MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
 {
-  /* FIXME: CONFIG */
-#if 0
-  MorphGrid *grid = dynamic_cast<MorphGrid *> (op);
+  cfg = dynamic_cast<const MorphGrid::Config *> (op_cfg);
+  g_return_if_fail (cfg != NULL);
 
-  width = grid->width();
-  height = grid->height();
+  input_node.resize (cfg->width);
 
-  input_node.resize (width);
-
-  for (size_t x = 0; x < width; x++)
+  for (int x = 0; x < cfg->width; x++)
     {
-      input_node[x].resize (height);
-      for (size_t y = 0; y < height; y++)
+      input_node[x].resize (cfg->height);
+      for (int y = 0; y < cfg->height; y++)
         {
-          MorphGridNode node = grid->input_node (x, y);
-          MorphOperator *input_op = node.op;
+          const MorphGridNode& node = cfg->input_node[x][y];
 
-          if (input_op)
-            {
-              input_node[x][y].mod = morph_plan_voice->module (input_op);
-            }
-          else
-            {
-              input_node[x][y].mod = NULL;
-            }
-          if (node.smset != "")
-            {
-              string smset_dir = grid->morph_plan()->index()->smset_dir();
-              string path = smset_dir + "/" + node.smset;
+          input_node[x][y].mod = morph_plan_voice->module (node.op.ptr_id());
 
-              input_node[x][y].source.set_wav_set (path);
+          if (node.path != "")
+            {
+              input_node[x][y].source.set_wav_set (node.path);
               input_node[x][y].has_source = true;
             }
           else
@@ -88,41 +71,25 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
         }
     }
 
-  x_morphing = grid->x_morphing();
-  y_morphing = grid->y_morphing();
-
-  x_control_type = grid->x_control_type();
-  y_control_type = grid->y_control_type();
-
-  MorphOperator *x_control_op = grid->x_control_op();
-  if (x_control_op)
-    x_control_mod = morph_plan_voice->module (x_control_op);
-  else
-    x_control_mod = NULL;
-
-  MorphOperator *y_control_op = grid->y_control_op();
-  if (y_control_op)
-    y_control_mod = morph_plan_voice->module (y_control_op);
-  else
-    y_control_mod = NULL;
+  x_control_mod = morph_plan_voice->module (cfg->x_control_op.ptr_id());
+  y_control_mod = morph_plan_voice->module (cfg->y_control_op.ptr_id());
 
   clear_dependencies();
-  for (size_t x = 0; x < width; x++)
+  for (int x = 0; x < cfg->width; x++)
     {
-      for (size_t y = 0; y < height; y++)
+      for (int y = 0; y < cfg->height; y++)
         add_dependency (input_node[x][y].mod);
     }
   add_dependency (x_control_mod);
   add_dependency (y_control_mod);
-#endif
 }
 
 void
 MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
-  for (size_t x = 0; x < module->width; x++)
+  for (int x = 0; x < module->cfg->width; x++)
     {
-      for (size_t y = 0; y < module->height; y++)
+      for (int y = 0; y < module->cfg->height; y++)
         {
           InputNode& node = module->input_node[x][y];
 
@@ -415,13 +382,13 @@ get_morphing (MorphGrid::ControlType type, double gui_value, MorphOperatorModule
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
-  const double x_morphing = get_morphing (module->x_control_type, module->x_morphing, module->x_control_mod, module->morph_plan_voice);
-  const double y_morphing = get_morphing (module->y_control_type, module->y_morphing, module->y_control_mod, module->morph_plan_voice);
+  const double x_morphing = get_morphing (module->cfg->x_control_type, module->cfg->x_morphing, module->x_control_mod, module->morph_plan_voice);
+  const double y_morphing = get_morphing (module->cfg->y_control_type, module->cfg->y_morphing, module->y_control_mod, module->morph_plan_voice);
 
-  const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->width);
-  const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->height);
+  const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->cfg->width);
+  const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->cfg->height);
 
-  if (module->height == 1)
+  if (module->cfg->height == 1)
     {
       /*
        *  A ---- B
@@ -442,7 +409,7 @@ MorphGridModule::MySource::audio_block (size_t index)
 
       return have_ab ? &module->audio_block : NULL;
     }
-  else if (module->width == 1)
+  else if (module->cfg->width == 1)
     {
       /*
        *  A

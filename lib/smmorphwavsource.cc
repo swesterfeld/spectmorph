@@ -158,7 +158,9 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("play_mode", m_play_mode);
   out_file.write_int ("position_control_type", m_position_control_type);
   out_file.write_float ("position", m_position);
-  write_operator (out_file, "position_op", m_position_op);
+  MorphOperatorPtr xpp; /* FIXME: CONFIG */
+  xpp.set (m_position_op);
+  write_operator (out_file, "position_op", xpp);
 
   return true;
 }

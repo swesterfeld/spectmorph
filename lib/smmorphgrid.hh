@@ -12,29 +12,38 @@ namespace SpectMorph
 
 struct MorphGridNode
 {
-  MorphOperator *op;                     // a node has either an operator (op) as input,
-  std::string    smset;                  // or an instrument (smset)
-  double         delta_db;
+  MorphOperatorPtr  op;                     // a node has either an operator (op) as input,
+  std::string       smset;                  // or an instrument (smset)
+  std::string       path;
+  double            delta_db;
 
   MorphGridNode();
 };
 
 class MorphGrid : public MorphOperator
 {
+public:
+  struct Config : public MorphOperatorConfig
+  {
+    int               width;
+    int               height;
+
+    double            x_morphing;
+    double            y_morphing;
+
+    ControlType       x_control_type;
+    ControlType       y_control_type;
+    MorphOperatorPtr  x_control_op;
+    MorphOperatorPtr  y_control_op;
+
+    std::vector< std::vector<MorphGridNode> > input_node;
+  };
 protected:
-  int             m_width;
-  int             m_height;
+  Config          m_config;
   int             m_zoom;
   int             m_selected_x;
   int             m_selected_y;
-  double          m_x_morphing;
-  double          m_y_morphing;
-  ControlType     m_x_control_type;
-  ControlType     m_y_control_type;
-  MorphOperator  *m_x_control_op;
-  MorphOperator  *m_y_control_op;
 
-  std::vector< std::vector<MorphGridNode> > m_input_node;
   std::map<std::string, std::string>        load_map;
 
   void update_size();
@@ -49,6 +58,7 @@ public:
   bool               load (InFile&  in_file) override;
   void               post_load (OpNameMap& op_name_map) override;
   OutputType         output_type() override;
+  MorphOperatorConfig *clone_config() override;
 
   std::vector<MorphOperator *> dependencies() override;
 

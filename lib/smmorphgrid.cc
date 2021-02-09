@@ -26,17 +26,15 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
 
   connect (morph_plan->signal_operator_removed, this, &MorphGrid::on_operator_removed);
 
-  m_width = 2;
-  m_height = 1;
+  m_config.width = 2;
+  m_config.height = 1;
   m_zoom = 5;
   m_selected_x = -1;
   m_selected_y = -1;
-  m_x_morphing = 0;
-  m_y_morphing = 0;
-  m_x_control_type = CONTROL_GUI;
-  m_y_control_type = CONTROL_GUI;
-  m_x_control_op = NULL;
-  m_y_control_op = NULL;
+  m_config.x_morphing = 0;
+  m_config.y_morphing = 0;
+  m_config.x_control_type = CONTROL_GUI;
+  m_config.y_control_type = CONTROL_GUI;
 
   update_size();
 }
@@ -61,30 +59,30 @@ MorphGrid::insert_order()
 bool
 MorphGrid::save (OutFile& out_file)
 {
-  out_file.write_int ("width", m_width);
-  out_file.write_int ("height", m_height);
+  out_file.write_int ("width", m_config.width);
+  out_file.write_int ("height", m_config.height);
   out_file.write_int ("zoom", m_zoom);
 
-  out_file.write_float ("x_morphing", m_x_morphing);
-  out_file.write_float ("y_morphing", m_y_morphing);
+  out_file.write_float ("x_morphing", m_config.x_morphing);
+  out_file.write_float ("y_morphing", m_config.y_morphing);
 
-  out_file.write_int ("x_control_type", m_x_control_type);
-  out_file.write_int ("y_control_type", m_y_control_type);
+  out_file.write_int ("x_control_type", m_config.x_control_type);
+  out_file.write_int ("y_control_type", m_config.y_control_type);
 
-  write_operator (out_file, "x_control_op", m_x_control_op);
-  write_operator (out_file, "y_control_op", m_y_control_op);
+  write_operator (out_file, "x_control_op", m_config.x_control_op);
+  write_operator (out_file, "y_control_op", m_config.y_control_op);
 
-  for (int x = 0; x < m_width; x++)
+  for (int x = 0; x < m_config.width; x++)
     {
-      for (int y = 0; y < m_height; y++)
+      for (int y = 0; y < m_config.height; y++)
         {
           string op_name = string_printf ("input_op_%d_%d", x, y);
           string delta_db_name = string_printf ("input_delta_db_%d_%d", x, y);
           string smset_name = string_printf ("input_smset_%d_%d", x, y);
 
-          write_operator (out_file, op_name, m_input_node[x][y].op);
-          out_file.write_float (delta_db_name, m_input_node[x][y].delta_db);
-          out_file.write_string (smset_name, m_input_node[x][y].smset);
+          write_operator (out_file, op_name, m_config.input_node[x][y].op);
+          out_file.write_float (delta_db_name, m_config.input_node[x][y].delta_db);
+          out_file.write_string (smset_name, m_config.input_node[x][y].smset);
         }
     }
 
@@ -104,12 +102,12 @@ MorphGrid::load (InFile& ifile)
         {
           if (ifile.event_name() == "width")
             {
-              m_width = ifile.event_int();
+              m_config.width = ifile.event_int();
               update_size();
             }
           else if (ifile.event_name() == "height")
             {
-              m_height = ifile.event_int();
+              m_config.height = ifile.event_int();
               update_size();
             }
           else if (ifile.event_name() == "zoom")
@@ -118,11 +116,11 @@ MorphGrid::load (InFile& ifile)
             }
           else if (ifile.event_name() == "x_control_type")
             {
-              m_x_control_type = static_cast<ControlType> (ifile.event_int());
+              m_config.x_control_type = static_cast<ControlType> (ifile.event_int());
             }
           else if (ifile.event_name() == "y_control_type")
             {
-              m_y_control_type = static_cast<ControlType> (ifile.event_int());
+              m_config.y_control_type = static_cast<ControlType> (ifile.event_int());
             }
           else
             {
@@ -134,19 +132,19 @@ MorphGrid::load (InFile& ifile)
         {
           if (ifile.event_name() == "x_morphing")
             {
-              m_x_morphing = ifile.event_float();
+              m_config.x_morphing = ifile.event_float();
             }
           else if (ifile.event_name() == "y_morphing")
             {
-              m_y_morphing = ifile.event_float();
+              m_config.y_morphing = ifile.event_float();
             }
           else
             {
               if (delta_db_map.empty())
                 {
-                  for (int x = 0; x < m_width; x++)
+                  for (int x = 0; x < m_config.width; x++)
                     {
-                      for (int y = 0; y < m_height; y++)
+                      for (int y = 0; y < m_config.height; y++)
                         {
                           string name = string_printf ("input_delta_db_%d_%d", x, y);
 
@@ -162,7 +160,7 @@ MorphGrid::load (InFile& ifile)
                 }
               const int x = it->second.first;
               const int y = it->second.second;
-              m_input_node[x][y].delta_db = ifile.event_float();
+              m_config.input_node[x][y].delta_db = ifile.event_float();
             }
         }
       else if (ifile.event() == InFile::STRING)
@@ -184,19 +182,19 @@ MorphGrid::load (InFile& ifile)
 void
 MorphGrid::post_load (OpNameMap& op_name_map)
 {
-  for (int x = 0; x < m_width; x++)
+  for (int x = 0; x < m_config.width; x++)
     {
-      for (int y = 0; y < m_height; y++)
+      for (int y = 0; y < m_config.height; y++)
         {
           string name = string_printf ("input_op_%d_%d", x, y);
           string smset_name = string_printf ("input_smset_%d_%d", x, y);
 
-          m_input_node[x][y].op = op_name_map[load_map[name]];
-          m_input_node[x][y].smset = load_map[smset_name];
+          m_config.input_node[x][y].op.set (op_name_map[load_map[name]]);
+          m_config.input_node[x][y].smset = load_map[smset_name];
         }
     }
-  m_x_control_op = op_name_map[load_map["x_control_op"]];
-  m_y_control_op = op_name_map[load_map["y_control_op"]];
+  m_config.x_control_op.set (op_name_map[load_map["x_control_op"]]);
+  m_config.y_control_op.set (op_name_map[load_map["y_control_op"]]);
 }
 
 
@@ -209,7 +207,7 @@ MorphGrid::output_type()
 void
 MorphGrid::set_width (int width)
 {
-  m_width = width;
+  m_config.width = width;
   update_size();
 
   m_morph_plan->emit_plan_changed();
@@ -218,13 +216,13 @@ MorphGrid::set_width (int width)
 int
 MorphGrid::width()
 {
-  return m_width;
+  return m_config.width;
 }
 
 void
 MorphGrid::set_height (int height)
 {
-  m_height = height;
+  m_config.height = height;
   update_size();
 
   m_morph_plan->emit_plan_changed();
@@ -233,7 +231,7 @@ MorphGrid::set_height (int height)
 int
 MorphGrid::height()
 {
-  return m_height;
+  return m_config.height;
 }
 
 void
@@ -273,28 +271,28 @@ MorphGrid::has_selection()
 void
 MorphGrid::update_size()
 {
-  m_input_node.resize (m_width);
-  for (int i = 0; i < m_width; i++)
-    m_input_node[i].resize (m_height);
+  m_config.input_node.resize (m_config.width);
+  for (int i = 0; i < m_config.width; i++)
+    m_config.input_node[i].resize (m_config.height);
 }
 
 MorphGridNode
 MorphGrid::input_node (int x, int y)
 {
-  g_return_val_if_fail (x >= 0 && x < m_width, MorphGridNode());
-  g_return_val_if_fail (y >= 0 && y < m_height, MorphGridNode());
+  g_return_val_if_fail (x >= 0 && x < m_config.width, MorphGridNode());
+  g_return_val_if_fail (y >= 0 && y < m_config.height, MorphGridNode());
 
-  return m_input_node[x][y];
+  return m_config.input_node[x][y];
 }
 
 void
 MorphGrid::set_input_node (int x, int y, const MorphGridNode& node)
 {
-  g_return_if_fail (x >= 0 && x < m_width);
-  g_return_if_fail (y >= 0 && y < m_height);
-  g_return_if_fail (node.smset == "" || node.op == NULL);  // should not set both
+  g_return_if_fail (x >= 0 && x < m_config.width);
+  g_return_if_fail (y >= 0 && y < m_config.height);
+  g_return_if_fail (node.smset == "" || !node.op);  // should not set both
 
-  m_input_node[x][y] = node;
+  m_config.input_node[x][y] = node;
   m_morph_plan->emit_plan_changed();
 }
 
@@ -314,13 +312,13 @@ MorphGrid::zoom()
 double
 MorphGrid::x_morphing()
 {
-  return m_x_morphing;
+  return m_config.x_morphing;
 }
 
 void
 MorphGrid::set_x_morphing (double new_morphing)
 {
-  m_x_morphing = new_morphing;
+  m_config.x_morphing = new_morphing;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -328,13 +326,13 @@ MorphGrid::set_x_morphing (double new_morphing)
 MorphGrid::ControlType
 MorphGrid::x_control_type()
 {
-  return m_x_control_type;
+  return m_config.x_control_type;
 }
 
 void
 MorphGrid::set_x_control_type (MorphGrid::ControlType control_type)
 {
-  m_x_control_type = control_type;
+  m_config.x_control_type = control_type;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -342,13 +340,13 @@ MorphGrid::set_x_control_type (MorphGrid::ControlType control_type)
 MorphOperator *
 MorphGrid::x_control_op()
 {
-  return m_x_control_op;
+  return m_config.x_control_op.get();
 }
 
 void
 MorphGrid::set_x_control_op (MorphOperator *op)
 {
-  m_x_control_op = op;
+  m_config.x_control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -356,8 +354,8 @@ MorphGrid::set_x_control_op (MorphOperator *op)
 void
 MorphGrid::set_x_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
 {
-  m_x_control_type = control_type;
-  m_x_control_op   = op;
+  m_config.x_control_type = control_type;
+  m_config.x_control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -365,13 +363,13 @@ MorphGrid::set_x_control_type_and_op (MorphGrid::ControlType control_type, Morph
 double
 MorphGrid::y_morphing()
 {
-  return m_y_morphing;
+  return m_config.y_morphing;
 }
 
 void
 MorphGrid::set_y_morphing (double new_morphing)
 {
-  m_y_morphing = new_morphing;
+  m_config.y_morphing = new_morphing;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -379,13 +377,13 @@ MorphGrid::set_y_morphing (double new_morphing)
 MorphGrid::ControlType
 MorphGrid::y_control_type()
 {
-  return m_y_control_type;
+  return m_config.y_control_type;
 }
 
 void
 MorphGrid::set_y_control_type (MorphGrid::ControlType control_type)
 {
-  m_y_control_type = control_type;
+  m_config.y_control_type = control_type;
 
   m_morph_plan->emit_plan_changed();
 }
@@ -393,13 +391,13 @@ MorphGrid::set_y_control_type (MorphGrid::ControlType control_type)
 MorphOperator *
 MorphGrid::y_control_op()
 {
-  return m_y_control_op;
+  return m_config.y_control_op.get();
 }
 
 void
 MorphGrid::set_y_control_op (MorphOperator *op)
 {
-  m_y_control_op = op;
+  m_config.y_control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -407,8 +405,8 @@ MorphGrid::set_y_control_op (MorphOperator *op)
 void
 MorphGrid::set_y_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
 {
-  m_y_control_type = control_type;
-  m_y_control_op   = op;
+  m_config.y_control_type = control_type;
+  m_config.y_control_op.set (op);
 
   m_morph_plan->emit_plan_changed();
 }
@@ -418,41 +416,41 @@ MorphGrid::on_operator_removed (MorphOperator *op)
 {
   // plan changed will be emitted automatically after remove, so we don't emit it here
 
-  for (int x = 0; x < m_width; x++)
+  for (int x = 0; x < m_config.width; x++)
     {
-      for (int y = 0; y < m_height; y++)
+      for (int y = 0; y < m_config.height; y++)
         {
-          if (m_input_node[x][y].op == op)
+          if (m_config.input_node[x][y].op.get() == op)
             {
-              assert (m_input_node[x][y].smset.empty());
+              assert (m_config.input_node[x][y].smset.empty());
 
-              m_input_node[x][y].op = nullptr;
+              m_config.input_node[x][y].op.set (nullptr);
             }
         }
     }
-  if (op == m_x_control_op)
+  if (op == m_config.x_control_op.get())
     {
-      m_x_control_op = nullptr;
+      m_config.x_control_op.set (nullptr);
 
-      if (m_x_control_type == CONTROL_OP)
-        m_x_control_type = CONTROL_GUI;
+      if (m_config.x_control_type == CONTROL_OP)
+        m_config.x_control_type = CONTROL_GUI;
     }
-  if (op == m_y_control_op)
+  if (op == m_config.y_control_op.get())
     {
-      m_y_control_op = nullptr;
+      m_config.y_control_op.set (nullptr);
 
-      if (m_y_control_type == CONTROL_OP)
-        m_y_control_type = CONTROL_GUI;
+      if (m_config.y_control_type == CONTROL_OP)
+        m_config.y_control_type = CONTROL_GUI;
     }
 }
 
 string
 MorphGrid::input_node_label (int x, int y)
 {
-  g_return_val_if_fail (x >= 0 && x < m_width, "XXX");
-  g_return_val_if_fail (y >= 0 && y < m_height, "XXX");
+  g_return_val_if_fail (x >= 0 && x < m_config.width, "XXX");
+  g_return_val_if_fail (y >= 0 && y < m_config.height, "XXX");
 
-  const MorphGridNode& node = m_input_node[x][y];
+  const MorphGridNode& node = m_config.input_node[x][y];
   if (node.smset != "")
     {
       string smset_dir = m_morph_plan->index()->smset_dir();
@@ -465,7 +463,7 @@ MorphGrid::input_node_label (int x, int y)
   else if (node.op)
     {
       u32string result;
-      u32string name = to_utf32 (node.op->name());
+      u32string name = to_utf32 (node.op.get()->name());
 
       if (name.size() >= 1)
         result += name[0];
@@ -486,24 +484,48 @@ MorphGrid::dependencies()
 {
   std::vector<MorphOperator *> deps;
 
-  if (m_x_control_type == CONTROL_OP)
-    deps.push_back (m_x_control_op);
+  if (m_config.x_control_type == CONTROL_OP)
+    deps.push_back (m_config.x_control_op.get());
 
-  if (m_y_control_type == CONTROL_OP)
-    deps.push_back (m_y_control_op);
+  if (m_config.y_control_type == CONTROL_OP)
+    deps.push_back (m_config.y_control_op.get());
 
-  for (int x = 0; x < m_width; x++)
+  for (int x = 0; x < m_config.width; x++)
     {
-      for (int y = 0; y < m_height; y++)
+      for (int y = 0; y < m_config.height; y++)
         {
-          deps.push_back (m_input_node[x][y].op);
+          deps.push_back (m_config.input_node[x][y].op.get());
         }
     }
   return deps;
 }
 
+MorphOperatorConfig *
+MorphGrid::clone_config()
+{
+  Config *cfg = new Config (m_config);
+
+  string smset_dir = morph_plan()->index()->smset_dir();
+
+  for (int x = 0; x < m_config.width; x++)
+    {
+      for (int y = 0; y < m_config.height; y++)
+        {
+          string smset = cfg->input_node[x][y].smset;
+          if (smset != "")
+            {
+              cfg->input_node[x][y].path = smset_dir + "/" + smset;
+            }
+          else
+            {
+              cfg->input_node[x][y].path = "";
+            }
+        }
+    }
+  return cfg;
+}
+
 MorphGridNode::MorphGridNode() :
-  op (NULL),
   delta_db (0)
 {
 }

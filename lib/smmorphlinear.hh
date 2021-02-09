@@ -25,8 +25,8 @@ public:
     ControlType      control_type;
     bool             db_linear;
   };
-  Config      m_config;
 protected:
+  Config         m_config;
   std::string    load_left, load_right, load_control;
   std::string    m_left_smset;
   std::string    m_right_smset;

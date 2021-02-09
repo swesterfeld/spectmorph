@@ -23,15 +23,9 @@ public:
   };
 
 private:
+  const MorphGrid::Config *cfg = nullptr;
+
   std::vector< std::vector<InputNode> > input_node;
-
-  size_t              width;
-  size_t              height;
-
-  double                  x_morphing;
-  MorphGrid::ControlType  x_control_type;
-  double                  y_morphing;
-  MorphGrid::ControlType  y_control_type;
 
   MorphOperatorModule    *x_control_mod;
   MorphOperatorModule    *y_control_mod;

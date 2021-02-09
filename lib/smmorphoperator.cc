@@ -76,12 +76,12 @@ MorphOperator::post_load (OpNameMap& op_name_map)
 }
 
 void
-MorphOperator::write_operator (OutFile& file, const std::string& name, MorphOperator *op)
+MorphOperator::write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op)
 {
   string op_name;
 
-  if (op) // (op == NULL) => (op_name == "")
-    op_name = op->name();
+  if (op.get()) // (op == NULL) => (op_name == "")
+    op_name = op.get()->name();
 
   file.write_string (name, op_name);
 }

@@ -45,10 +45,9 @@ MorphLinear::insert_order()
 bool
 MorphLinear::save (OutFile& out_file)
 {
-  /* FIXME: CONFIG: should probably make write_operator take a MorphOperatorPtr */
-  write_operator (out_file, "left", m_config.left_op.get());
-  write_operator (out_file, "right", m_config.right_op.get());
-  write_operator (out_file, "control", m_config.control_op.get());
+  write_operator (out_file, "left", m_config.left_op);
+  write_operator (out_file, "right", m_config.right_op);
+  write_operator (out_file, "control", m_config.control_op);
   out_file.write_string ("left_smset", m_left_smset);
   out_file.write_string ("right_smset", m_right_smset);
   out_file.write_float ("morphing", m_config.morphing);

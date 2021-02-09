@@ -22,6 +22,7 @@ typedef std::shared_ptr<MorphOperatorConfig> MorphOperatorConfigP;
 
 class MorphOperatorView;
 class MorphPlan;
+class MorphOperatorPtr;
 
 class MorphOperator : public SignalReceiver
 {
@@ -33,7 +34,7 @@ protected:
 
   typedef std::map<std::string, MorphOperator *> OpNameMap;
 
-  void write_operator (OutFile& file, const std::string& name, MorphOperator *op);
+  void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op);
 
 public:
   enum OutputType {
