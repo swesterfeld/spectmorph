@@ -186,7 +186,7 @@ MorphGridView::on_operator_changed()
     {
       MorphGridNode node = morph_grid->input_node (morph_grid->selected_x(), morph_grid->selected_y());
 
-      node.op = op_combobox->active();
+      node.op.set (op_combobox->active());
       node.smset = morph_grid->morph_plan()->index()->label_to_smset (op_combobox->active_str_choice());
 
       morph_grid->set_input_node (morph_grid->selected_x(), morph_grid->selected_y(), node);
@@ -233,13 +233,13 @@ MorphGridView::on_selection_changed()
 
       if (node.smset != "")
         {
-          g_assert (node.op == NULL);
+          g_assert (!node.op);
           string label = morph_grid->morph_plan()->index()->smset_to_label (node.smset);
           op_combobox->set_active_str_choice (label);
         }
       else
         {
-          op_combobox->set_active (node.op);
+          op_combobox->set_active (node.op.get());
         }
       delta_db_slider->set_value ((node.delta_db / 48 + 1) / 2);
       update_db_label (node.delta_db);
