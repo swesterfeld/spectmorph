@@ -190,7 +190,8 @@ Project::set_mix_freq (double mix_freq)
   m_mix_freq = mix_freq;
 
   // FIXME: can this cause problems if an old plan change control event remained
-  m_midi_synth->update_plan (m_morph_plan->clone());
+  auto update = m_midi_synth->prepare_update (m_morph_plan);
+  m_midi_synth->apply_update (update);
   m_midi_synth->set_gain (db_to_factor (m_volume));
 }
 
@@ -237,7 +238,10 @@ Project::on_plan_changed()
   // this might take a while, and cannot be done in synthesis thread
   MorphPlanSynth mp_synth (m_mix_freq);
   MorphPlanVoice *mp_voice = mp_synth.add_voice();
-  mp_synth.update_plan (m_morph_plan);
+  {
+    auto update = mp_synth.prepare_update (m_morph_plan);
+    mp_synth.apply_update (update);
+  }
 
   MorphOutputModule *om = mp_voice->output();
   if (om)
