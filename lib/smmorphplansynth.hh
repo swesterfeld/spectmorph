@@ -45,7 +45,6 @@ public:
   ~MorphPlanSynth();
 
   MorphPlanVoice *add_voice();
-  void update_plan (MorphPlanPtr new_plan);
   UpdateP prepare_update (MorphPlanPtr new_plan);
   void apply_update (UpdateP update);
 

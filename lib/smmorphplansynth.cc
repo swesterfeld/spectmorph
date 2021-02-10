@@ -61,37 +61,6 @@ sorted_id_list (MorphPlanPtr plan)
   return ids;
 }
 
-void
-MorphPlanSynth::update_plan (MorphPlanPtr new_plan)
-{
-  /* FIXME: CONFIG */
-#if 0
-  vector<string> old_ids = sorted_id_list (plan);
-  vector<string> new_ids = sorted_id_list (new_plan);
-
-  if (old_ids == new_ids)
-    {
-      map<string, MorphOperator *> op_map;
-
-      const vector<MorphOperator *>& ops = new_plan->operators();
-      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
-        op_map[(*oi)->id()] = *oi;
-
-      for (size_t i = 0; i < voices.size(); i++)
-        voices[i]->cheap_update (op_map);
-    }
-  else
-    {
-      free_shared_state();
-
-      for (size_t i = 0; i < voices.size(); i++)
-        voices[i]->full_update (new_plan);
-    }
-  plan = new_plan;
-#endif
-  printf ("MorphPlanSynth::update_plan NOP\n");
-}
-
 MorphPlanSynth::UpdateP
 MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 {

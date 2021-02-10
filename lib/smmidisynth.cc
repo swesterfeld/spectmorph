@@ -556,12 +556,6 @@ MidiSynth::kill_all_active_voices()
     free_unused_voices();
 }
 
-void
-MidiSynth::update_plan (MorphPlanPtr new_plan)
-{
-  morph_plan_synth.update_plan (new_plan);
-}
-
 MorphPlanSynth::UpdateP
 MidiSynth::prepare_update (MorphPlanPtr plan)
 {
