@@ -41,10 +41,9 @@ public:
   };
   typedef std::shared_ptr<Update> UpdateP;
 
-  MorphPlanSynth (float mix_freq);
+  MorphPlanSynth (float mix_freq, size_t n_voices);
   ~MorphPlanSynth();
 
-  MorphPlanVoice *add_voice();
   UpdateP prepare_update (MorphPlanPtr new_plan);
   void apply_update (UpdateP update);
 
@@ -53,6 +52,8 @@ public:
 
   void update_shared_state (const TimeInfo& time_info);
   void free_shared_state();
+
+  MorphPlanVoice *voice (size_t i) const;
 
   float   mix_freq() const;
   bool    have_output() const;

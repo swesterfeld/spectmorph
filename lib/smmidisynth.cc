@@ -28,7 +28,7 @@ using std::string;
 #define SM_MIDI_CTL_CONTROL_4     19
 
 MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
-  morph_plan_synth (mix_freq),
+  morph_plan_synth (mix_freq, n_voices),
   m_inst_edit_synth (mix_freq),
   m_mix_freq (mix_freq),
   pedal_down (false),
@@ -41,10 +41,10 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   voices.resize (n_voices);
   active_voices.reserve (n_voices);
 
-  for (auto& v : voices)
+  for (size_t i = 0; i < n_voices; i++)
     {
-      v.mp_voice = morph_plan_synth.add_voice();
-      idle_voices.push_back (&v);
+      voices[i].mp_voice = morph_plan_synth.voice (i);
+      idle_voices.push_back (&voices[i]);
     }
 }
 

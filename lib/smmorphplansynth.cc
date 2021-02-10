@@ -12,10 +12,13 @@ using std::string;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphPlanSynth");
 
-MorphPlanSynth::MorphPlanSynth (float mix_freq) :
+MorphPlanSynth::MorphPlanSynth (float mix_freq, size_t n_voices) :
   m_mix_freq (mix_freq)
 {
   leak_debugger.add (this);
+
+  for (size_t i = 0; i < n_voices; i++)
+    voices.push_back (new MorphPlanVoice (m_mix_freq, this));
 }
 
 MorphPlanSynth::~MorphPlanSynth()
@@ -31,17 +34,11 @@ MorphPlanSynth::~MorphPlanSynth()
 }
 
 MorphPlanVoice *
-MorphPlanSynth::add_voice()
+MorphPlanSynth::voice (size_t i) const
 {
-  MorphPlanVoice *voice = new MorphPlanVoice (m_mix_freq, this);
+  g_return_val_if_fail (i < voices.size(), nullptr);
 
-#if 0 /* FIXME: CONFIG */
-  if (plan)
-    voice->full_update (plan);
-#endif
-
-  voices.push_back (voice);
-  return voice;
+  return voices[i];
 }
 
 static vector<string>

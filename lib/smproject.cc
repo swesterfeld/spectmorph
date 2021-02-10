@@ -236,14 +236,13 @@ Project::on_plan_changed()
     }
 
   // this might take a while, and cannot be done in synthesis thread
-  MorphPlanSynth mp_synth (m_mix_freq);
-  MorphPlanVoice *mp_voice = mp_synth.add_voice();
+  MorphPlanSynth mp_synth (m_mix_freq, 1);
   {
     auto update = mp_synth.prepare_update (m_morph_plan);
     mp_synth.apply_update (update);
   }
 
-  MorphOutputModule *om = mp_voice->output();
+  MorphOutputModule *om = mp_synth.voice(0)->output();
   if (om)
     {
       TimeInfo ti; // not relevant
