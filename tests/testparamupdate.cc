@@ -13,8 +13,8 @@ using namespace SpectMorph;
 static void
 preinit_plan (MorphPlanPtr plan)
 {
-  MorphPlanSynth synth (44100);
-  synth.add_voice();
+  MorphPlanSynth synth (44100, 1);
+
   auto update = synth.prepare_update (plan);
   synth.apply_update (update);
 }
@@ -22,12 +22,9 @@ preinit_plan (MorphPlanPtr plan)
 static void
 measure_update (MorphPlanPtr plan, size_t n_voices)
 {
-  MorphPlanSynth synth (44100);
-  for (size_t i = 0; i < n_voices; i++)
-    synth.add_voice();
+  MorphPlanSynth synth (44100, n_voices);
 
   size_t runs = 1000000 / n_voices;
-
   double start = get_time();
   for (size_t j = 0; j < runs; j++)
     synth.apply_update (synth.prepare_update (plan));
