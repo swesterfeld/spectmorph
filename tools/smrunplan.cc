@@ -195,7 +195,7 @@ Player::Player() :
   grid_op (0),
   voice (0),
   plan (new MorphPlan (project)),
-  synth (options.rate)
+  synth (options.rate, 1)
 {
 }
 
@@ -213,7 +213,7 @@ Player::load_plan (const string& filename)
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
-  voice = synth.add_voice();
+  voice = synth.voice (0);
   auto update = synth.prepare_update (plan);
   synth.apply_update (update);
   assert (voice->output());
