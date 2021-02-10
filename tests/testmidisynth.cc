@@ -33,7 +33,8 @@ main (int argc, char **argv)
   plan->load (in);
   delete in;
 
-  midi_synth.update_plan (plan);
+  auto update = midi_synth.prepare_update (plan);
+  midi_synth.apply_update (update);
 
   const unsigned char note = atoi (argv[2]);
   vector<float> output (24000);

@@ -15,7 +15,8 @@ preinit_plan (MorphPlanPtr plan)
 {
   MorphPlanSynth synth (44100);
   synth.add_voice();
-  synth.update_plan (plan);
+  auto update = synth.prepare_update (plan);
+  synth.apply_update (update);
 }
 
 static void
@@ -29,7 +30,7 @@ measure_update (MorphPlanPtr plan, size_t n_voices)
 
   double start = get_time();
   for (size_t j = 0; j < runs; j++)
-    synth.update_plan (plan);
+    synth.apply_update (synth.prepare_update (plan));
   double end = get_time();
 
   printf ("update (%zd voices): %f updates per ms\n", n_voices, 1 / ((end - start) * 1000 / runs));
