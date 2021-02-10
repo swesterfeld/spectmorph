@@ -134,6 +134,23 @@ EffectDecoder::~EffectDecoder()
 {
 }
 
+static float
+exp_percent (float p, float min_out, float max_out, float slope)
+{
+  /* exponential curve from 0 to 1 with configurable slope */
+  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
+
+  /* rescale to interval [min_out, max_out] */
+  return x * (max_out - min_out) + min_out;
+}
+
+static float
+xparam_percent (float p, float min_out, float max_out, float slope)
+{
+  /* rescale xparam function to interval [min_out, max_out] */
+  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
+}
+
 void
 EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 {
@@ -178,6 +195,47 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     chain_decoder->set_unison_voices (1, 0);
 
   chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
+
+  // filter
+  float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
+  float decay   = exp_percent (cfg->filter_decay, 2, 1000, 5) / 1000;
+  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000;
+  float sustain = cfg->filter_sustain;
+
+  filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
+  filter_envelope.set_delay (0);
+  filter_envelope.set_attack (attack);
+  filter_envelope.set_hold (0);
+  filter_envelope.set_decay (decay);
+  filter_envelope.set_sustain (sustain);
+  filter_envelope.set_release (release);
+  filter_depth_octaves =  cfg->filter_depth / 12;
+
+  switch (cfg->filter_type)
+    {
+      case MorphOutput::FILTER_LP1:
+        filter.set_mode (LadderVCFMode::LP1);
+        break;
+      case MorphOutput::FILTER_LP2:
+        filter.set_mode (LadderVCFMode::LP2);
+        break;
+      case MorphOutput::FILTER_LP3:
+        filter.set_mode (LadderVCFMode::LP3);
+        break;
+      case MorphOutput::FILTER_LP4:
+        filter.set_mode (LadderVCFMode::LP4);
+        break;
+    }
+
+  filter_enabled = cfg->filter;
+  filter_cutoff = cfg->filter_cutoff;
+  filter_resonance = cfg->filter_resonance;
+}
+
+static float
+freq_to_note (float freq)
+{
+  return 69 + 12 * log (freq / 440) / log (2);
 }
 
 void
@@ -191,6 +249,14 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
     simple_envelope->retrigger();
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
+
+  filter.reset();
+  filter_envelope.start (mix_freq);
+
+  float note = freq_to_note (freq);
+  float keytrack = 100;
+  float delta_cent = (note - 60) * keytrack;
+  filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
 }
 
 void
@@ -206,6 +272,19 @@ EffectDecoder::process (size_t       n_values,
     adsr_envelope->process (n_values, audio_out);
   else
     simple_envelope->process (n_values, audio_out);
+
+  if (filter_enabled)
+    {
+      float junk[n_values];
+      const float *inputs[2] = { audio_out, junk };
+      float *outputs[2] = { audio_out, junk };
+
+      float freq[n_values];
+      for (uint i = 0; i < n_values; i++)
+        freq[i] = filter_cutoff * filter_keytrack_factor * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+
+      filter.run_block (n_values, filter_cutoff, filter_resonance * 0.01f, inputs, outputs, true, false, freq, nullptr, nullptr, nullptr);
+    }
 }
 
 void

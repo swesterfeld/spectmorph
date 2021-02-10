@@ -534,6 +534,13 @@ sm_bound (const T& min_value, const T& value, const T& max_value)
   return std::min (std::max (value, min_value), max_value);
 }
 
+template<typename T>
+inline const T&
+sm_clamp (const T& value, const T& min_value, const T& max_value)
+{
+  return std::min (std::max (value, min_value), max_value);
+}
+
 inline double
 sm_atof (const char *nptr)
 {

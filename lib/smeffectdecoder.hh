@@ -7,6 +7,8 @@
 #include "smlivedecodersource.hh"
 #include "smmorphoutput.hh"
 #include "smadsrenvelope.hh"
+#include "smfilterenvelope.hh"
+#include "smladdervcf.hh"
 
 #include <memory>
 
@@ -25,6 +27,14 @@ class EffectDecoder
   std::unique_ptr<LiveDecoder>          chain_decoder;
   std::unique_ptr<ADSREnvelope>         adsr_envelope;
   std::unique_ptr<SimpleEnvelope>       simple_envelope;
+
+  bool                                  filter_enabled;
+  FilterEnvelope                        filter_envelope;
+  float                                 filter_keytrack_factor = 1;
+  float                                 filter_cutoff;
+  float                                 filter_resonance;
+  float                                 filter_depth_octaves;
+  LadderVCFNonLinearCheap               filter;
 
 public:
   EffectDecoder (LiveDecoderSource *source);

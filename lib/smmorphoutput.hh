@@ -18,6 +18,12 @@ class MorphOutput;
 class MorphOutput : public MorphOperator
 {
 public:
+  enum FilterType {
+    FILTER_LP1 = 1,
+    FILTER_LP2 = 2,
+    FILTER_LP3 = 3,
+    FILTER_LP4 = 4
+  };
   struct Config : public MorphOperatorConfig
   {
     std::vector<MorphOperatorPtr> channel_ops;
@@ -37,6 +43,16 @@ public:
     float                         adsr_decay;
     float                         adsr_sustain;
     float                         adsr_release;
+
+    bool                          filter;
+    FilterType                    filter_type;
+    float                         filter_attack;
+    float                         filter_decay;
+    float                         filter_sustain;
+    float                         filter_release;
+    float                         filter_depth;
+    float                         filter_cutoff;
+    float                         filter_resonance;
 
     bool                          portamento;
     float                         portamento_glide;
@@ -94,6 +110,9 @@ public:
 
   void           set_adsr (bool eadsr);
   bool           adsr() const;
+
+  void           set_filter (bool efilter);
+  bool           filter() const;
 
   void           set_portamento (bool ep);
   bool           portamento() const;

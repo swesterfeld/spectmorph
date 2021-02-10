@@ -38,6 +38,16 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.adsr_sustain, P_ADSR_SUSTAIN, "Sustain", "%.1f %%", 70, 0, 100);
   add_property (&m_config.adsr_release, P_ADSR_RELEASE, "Release", "%.1f %%", 50, 0, 100);
 
+  m_config.filter        = false;
+  m_config.filter_attack = 15;
+  m_config.filter_decay  = 20;
+  m_config.filter_sustain = 70;
+  m_config.filter_release  = 50;
+  m_config.filter_depth  = 24;
+  m_config.filter_cutoff = 500;
+  m_config.filter_resonance = 0;
+  m_config.filter_type = FILTER_LP2;
+
   m_config.portamento = false;
   add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);
 
@@ -249,6 +259,22 @@ MorphOutput::set_adsr (bool ea)
   m_config.adsr = ea;
 
   m_morph_plan->emit_plan_changed();
+}
+
+//---- filter ----
+
+void
+MorphOutput::set_filter (bool efilter)
+{
+  m_config.filter = efilter;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphOutput::filter() const
+{
+  return m_config.filter;
 }
 
 //---- portamento/mono mode ----
