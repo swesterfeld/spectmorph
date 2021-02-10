@@ -214,7 +214,8 @@ Player::load_plan (const string& filename)
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
   voice = synth.add_voice();
-  synth.update_plan (plan);
+  auto update = synth.prepare_update (plan);
+  synth.apply_update (update);
   assert (voice->output());
 
   /* search operators for --fade, --fade-env */
@@ -275,7 +276,8 @@ Player::compute_samples (vector<float>& samples)
             {
               g_assert_not_reached();
             }
-          synth.update_plan (plan);
+          auto update = synth.prepare_update (plan);
+          synth.apply_update (update);
         }
 
       size_t todo = min (STEP, samples.size() - i);
