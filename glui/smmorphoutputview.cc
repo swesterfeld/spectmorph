@@ -63,6 +63,11 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_adsr_sustain = add_property_view (MorphOutput::P_ADSR_SUSTAIN, body_widget, op_layout);
   pv_adsr_release = add_property_view (MorphOutput::P_ADSR_RELEASE, body_widget, op_layout);
 
+  // Filter
+  CheckBox *filter_check_box = new CheckBox (body_widget, "Enable Filter");
+  filter_check_box->set_checked (morph_output->filter());
+  op_layout.add_row (2, filter_check_box);
+
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
   portamento_check_box->set_checked (morph_output->portamento());
@@ -91,6 +96,10 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   });
   connect (adsr_check_box->signal_toggled, [=] (bool new_value) {
     morph_output->set_adsr (new_value);
+    update_visible();
+  });
+  connect (filter_check_box->signal_toggled, [=] (bool new_value) {
+    morph_output->set_filter (new_value);
     update_visible();
   });
   connect (portamento_check_box->signal_toggled, [=] (bool new_value) {
