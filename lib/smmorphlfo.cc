@@ -17,14 +17,14 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   m_config.wave_type = WAVE_SINE;
-  add_property_log (&m_config.frequency, P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
+  add_property_log (&m_config.frequency, "frequency", P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
 
-  auto p_depth = add_property (&m_config.depth, P_DEPTH, "Depth", "-", 1, 0, 1);
+  auto p_depth = add_property (&m_config.depth, "depth", P_DEPTH, "Depth", "-", 1, 0, 1);
   /* FIXME: ideally the storage format should be changed -> store depth as percent */
   p_depth->set_custom_formatter ([](float f) -> string { return string_locale_printf ("%.1f %%", f * 100); });
 
-  add_property (&m_config.center, P_CENTER, "Center", "%.2f", 0, -1, 1);
-  add_property (&m_config.start_phase, P_START_PHASE, "Start Phase", "%.1f", 0, -180, 180);
+  add_property (&m_config.center, "center", P_CENTER, "Center", "%.2f", 0, -1, 1);
+  add_property (&m_config.start_phase, "start_phase", P_START_PHASE, "Start Phase", "%.1f", 0, -180, 180);
 
   m_config.sync_voices = false;
   m_config.beat_sync = false;
@@ -54,11 +54,8 @@ MorphLFO::insert_order()
 bool
 MorphLFO::save (OutFile& out_file)
 {
+  write_properties (out_file);
   out_file.write_int ("wave_type", m_config.wave_type);
-  out_file.write_float ("frequency", m_config.frequency);
-  out_file.write_float ("depth", m_config.depth);
-  out_file.write_float ("center", m_config.center);
-  out_file.write_float ("start_phase", m_config.start_phase);
   out_file.write_bool ("sync_voices", m_config.sync_voices);
   out_file.write_bool ("beat_sync", m_config.beat_sync);
   out_file.write_int ("note", m_config.note);
@@ -72,7 +69,11 @@ MorphLFO::load (InFile& ifile)
 {
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::INT)
+      if (read_property_event (ifile))
+        {
+          // property has been read, so we ignore the event
+        }
+      else if (ifile.event() == InFile::INT)
         {
           if (ifile.event_name() == "wave_type")
             {
@@ -89,30 +90,6 @@ MorphLFO::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
-              return false;
-            }
-        }
-      else if (ifile.event() == InFile::FLOAT)
-        {
-          if (ifile.event_name() == "frequency")
-            {
-              m_config.frequency = ifile.event_float();
-            }
-          else if (ifile.event_name() == "depth")
-            {
-              m_config.depth = ifile.event_float();
-            }
-          else if (ifile.event_name() == "center")
-            {
-              m_config.center = ifile.event_float();
-            }
-          else if (ifile.event_name() == "start_phase")
-            {
-              m_config.start_phase = ifile.event_float();
-            }
-          else
-            {
-              g_printerr ("bad float\n");
               return false;
             }
         }
