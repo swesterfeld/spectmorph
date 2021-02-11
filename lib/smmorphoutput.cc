@@ -44,7 +44,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_config.filter_sustain = 70;
   m_config.filter_release  = 50;
   m_config.filter_depth  = 24;
-  m_config.filter_cutoff = 500;
+  add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
   m_config.filter_resonance = 0;
   m_config.filter_type = FILTER_LP2;
 

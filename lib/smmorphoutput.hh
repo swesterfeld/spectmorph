@@ -75,6 +75,8 @@ public:
   static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
   static constexpr auto P_ADSR_RELEASE = "adsr_release";
 
+  static constexpr auto P_FILTER_CUTOFF = "filter_cutoff";
+
   static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";
 
   static constexpr auto P_VIBRATO_DEPTH     = "vibrato_depth";
