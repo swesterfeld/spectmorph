@@ -218,7 +218,6 @@ public:
 
 class LogProperty : public PropertyBase
 {
-  float        *m_value;
   double        m_min_value;
   double        m_max_value;
 public:
@@ -232,7 +231,7 @@ public:
     m_min_value (min_value),
     m_max_value (max_value)
   {
-    *m_value = def_value;
+    *value = def_value;
   }
 
   double
