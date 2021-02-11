@@ -20,6 +20,7 @@ protected:
   std::vector<MorphPlanVoice *> voices;
   std::map<MorphOperator::PtrID, MorphModuleSharedState *> m_shared_state;
   std::vector<std::string>                        m_last_update_ids;
+  std::string                                     m_last_plan_id;
   std::vector<MorphOperatorConfigP>               m_active_configs;
 
   float           m_mix_freq;

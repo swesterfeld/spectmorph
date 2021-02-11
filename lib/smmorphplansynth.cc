@@ -80,8 +80,9 @@ MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 
   vector<string> update_ids = sorted_id_list (plan);
 
-  update->cheap = update_ids == m_last_update_ids;
+  update->cheap = (update_ids == m_last_update_ids) && (plan->id() == m_last_plan_id);
   m_last_update_ids = update_ids;
+  m_last_plan_id = plan->id();
 
   return update;
 }
