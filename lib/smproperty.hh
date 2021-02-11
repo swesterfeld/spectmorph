@@ -169,14 +169,17 @@ public:
 class PropertyBase : public Property
 {
   float        *m_value;
+  std::string   m_identifier;
   std::string   m_label;
   std::string   m_format;
   std::function<std::string (float)> m_custom_formatter;
 public:
   PropertyBase (float *value,
+                const std::string& identifier,
                 const std::string& label,
                 const std::string& format) :
     m_value (value),
+    m_identifier (identifier),
     m_label (label),
     m_format (format)
   {
@@ -214,6 +217,24 @@ public:
   {
     m_custom_formatter = formatter;
   }
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_float (m_identifier, *m_value);
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::FLOAT)
+      {
+        if (in_file.event_name() == m_identifier)
+          {
+            *m_value = in_file.event_float();
+            return true;
+          }
+      }
+    return false;
+  }
 };
 
 class LogProperty : public PropertyBase
@@ -222,12 +243,13 @@ class LogProperty : public PropertyBase
   double        m_max_value;
 public:
   LogProperty (float *value,
+               const std::string& identifier,
                const std::string& label,
                const std::string& format,
                float def_value,
                float min_value,
                float max_value) :
-    PropertyBase (value, label, format),
+    PropertyBase (value, identifier, label, format),
     m_min_value (min_value),
     m_max_value (max_value)
   {
@@ -252,12 +274,13 @@ class LinearProperty : public PropertyBase
   double m_max_value;
 public:
   LinearProperty (float *value,
+                  const std::string& identifier,
                   const std::string& label,
                   const std::string& format,
                   float def_value,
                   double min_value,
                   double max_value) :
-    PropertyBase (value, label, format),
+    PropertyBase (value, identifier, label, format),
     m_min_value (min_value),
     m_max_value (max_value)
   {
