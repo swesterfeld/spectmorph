@@ -123,23 +123,51 @@ MorphOperator::property (int id)
 }
 
 LogProperty *
-MorphOperator::add_property_log (float *value, int id, const string& label, const string& value_label, float def, float mn, float mx)
+MorphOperator::add_property_log (float *value, const std::string& identifier, int id, const string& label, const string& value_label, float def, float mn, float mx)
 {
   assert (!m_properties[id]);
-  LogProperty *property = new LogProperty (value, label, value_label, def, mn, mx);
+  LogProperty *property = new LogProperty (value, identifier, label, value_label, def, mn, mx);
   m_properties[id].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   return property;
 }
 
 LinearProperty *
-MorphOperator::add_property (float *value, int id, const string& label, const string& value_label, float def, float mn, float mx)
+MorphOperator::add_property (float *value, const std::string& identifier, int id, const string& label, const string& value_label, float def, float mn, float mx)
 {
   assert (!m_properties[id]);
-  LinearProperty *property = new LinearProperty (value, label, value_label, def, mn, mx);
+  LinearProperty *property = new LinearProperty (value, identifier, label, value_label, def, mn, mx);
   m_properties[id].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   return property;
+}
+
+void
+MorphOperator::write_properties (OutFile& out_file)
+{
+  for (auto& kv : m_properties)
+    {
+      PropertyBase *pb = dynamic_cast<PropertyBase *> (kv.second.get());
+      if (pb)
+        {
+          pb->save (out_file);
+        }
+    }
+}
+
+bool
+MorphOperator::read_property_event (InFile& in_file)
+{
+  for (auto& kv : m_properties)
+    {
+      PropertyBase *pb = dynamic_cast<PropertyBase *> (kv.second.get());
+      if (pb)
+        {
+          if (pb->load (in_file))
+            return true;
+        }
+    }
+  return false;
 }
 
 MorphOperatorConfig *
