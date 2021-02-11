@@ -17,8 +17,6 @@ class MorphLFOView : public MorphOperatorView
 {
   MorphLFO  *morph_lfo;
 
-  MorphLFOProperties       morph_lfo_properties;
-
   Label     *note_label;
   Widget    *note_widget;
 

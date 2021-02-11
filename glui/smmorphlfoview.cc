@@ -14,11 +14,10 @@ using std::vector;
 MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo),
-  morph_lfo_properties (morph_lfo),
-  pv_frequency (morph_lfo_properties.frequency),
-  pv_depth (morph_lfo_properties.depth),
-  pv_center (morph_lfo_properties.center),
-  pv_start_phase (morph_lfo_properties.start_phase)
+  pv_frequency (*morph_lfo->property (MorphLFO::P_FREQUENCY)),
+  pv_depth (*morph_lfo->property (MorphLFO::P_DEPTH)),
+  pv_center (*morph_lfo->property (MorphLFO::P_CENTER)),
+  pv_start_phase (*morph_lfo->property (MorphLFO::P_START_PHASE))
 {
   // WAVE TYPE
   ev_wave_type.add_item (MorphLFO::WAVE_SINE,           "Sine");
