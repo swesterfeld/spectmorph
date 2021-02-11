@@ -28,6 +28,7 @@ MorphPlan::MorphPlan (Project& project) :
   m_project (&project)
 {
   in_restore = false;
+  m_id = generate_id();
 
   leak_debugger.add (this);
 }
@@ -43,6 +44,13 @@ MorphPlan::clear()
     delete (*oi);
   m_operators.clear();
   m_index.clear();
+
+  /*
+   * generate a new MorphPlan id; the id is used by MorphPlanSynth to detect the case
+   * that after a reload of the same .smplan, all operators have the same id, but still
+   * a full update of the modules is necessary
+   */
+  m_id = generate_id();
 }
 
 MorphPlan::~MorphPlan()
@@ -511,6 +519,12 @@ Project *
 MorphPlan::project()
 {
   return m_project;
+}
+
+std::string
+MorphPlan::id()
+{
+  return m_id;
 }
 
 MorphPlan *

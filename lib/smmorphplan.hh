@@ -32,6 +32,7 @@ protected:
   Project                     *m_project = nullptr;
   Index                        m_index;
   std::vector<MorphOperator *> m_operators;
+  std::string                  m_id;
 
   bool                         in_restore;
 
@@ -45,6 +46,7 @@ public:
 
   const Index *index();
   Project     *project();
+  std::string  id();
 
   enum AddPos {
     ADD_POS_AUTO,
