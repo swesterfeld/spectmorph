@@ -28,6 +28,8 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_adsr_sustain;
   PropertyView               *pv_adsr_release;
 
+  PropertyView               *pv_filter_cutoff;
+
   PropertyView               *pv_portamento_glide;
   PropertyView               *pv_vibrato_depth;
   PropertyView               *pv_vibrato_frequency;
