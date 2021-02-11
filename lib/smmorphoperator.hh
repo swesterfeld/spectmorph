@@ -23,6 +23,9 @@ typedef std::shared_ptr<MorphOperatorConfig> MorphOperatorConfigP;
 class MorphOperatorView;
 class MorphPlan;
 class MorphOperatorPtr;
+class Property;
+class LogProperty;
+class LinearProperty;
 
 class MorphOperator : public SignalReceiver
 {
@@ -31,10 +34,13 @@ protected:
   std::string m_name;
   std::string m_id;
   bool        m_folded;
+  std::map<int, std::unique_ptr<Property>> m_properties;
 
   typedef std::map<std::string, MorphOperator *> OpNameMap;
 
   void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op);
+  LogProperty *add_property_log (float *value, int id, const std::string& label, const std::string& value_label, float def, float mn, float mx);
+  LinearProperty *add_property (float *value, int id, const std::string& label, const std::string& value_label, float def, float mn, float mx);
 
 public:
   enum OutputType {
@@ -66,6 +72,7 @@ public:
   virtual std::vector<MorphOperator *> dependencies();
   virtual MorphOperatorConfig *clone_config() = 0;
 
+  Property *property (int id);
   MorphPlan *morph_plan();
 
   std::string type_name();

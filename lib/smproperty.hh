@@ -166,6 +166,116 @@ public:
   }
 };
 
+class PropertyBase : public Property
+{
+  float        *m_value;
+  std::string   m_label;
+  std::string   m_format;
+  std::function<std::string (float)> m_custom_formatter;
+public:
+  PropertyBase (float *value,
+                const std::string& label,
+                const std::string& format) :
+    m_value (value),
+    m_label (label),
+    m_format (format)
+  {
+  }
+  int min()         { return 0; }
+  int max()         { return 1000; }
+  int get()         { return lrint (value2ui (*m_value) * 1000); }
+
+  void
+  set (int v)
+  {
+    *m_value = ui2value (v / 1000.);
+    signal_value_changed();
+  }
+
+  Signal<> signal_value_changed;
+
+
+  virtual double value2ui (double value) = 0;
+  virtual double ui2value (double ui) = 0;
+
+  std::string label() { return m_label; }
+
+  std::string
+  value_label()
+  {
+    if (m_custom_formatter)
+      return m_custom_formatter (*m_value);
+    else
+      return string_locale_printf (m_format.c_str(), *m_value);
+  }
+
+  void
+  set_custom_formatter (const std::function<std::string (float)>& formatter)
+  {
+    m_custom_formatter = formatter;
+  }
+};
+
+class LogProperty : public PropertyBase
+{
+  float        *m_value;
+  double        m_min_value;
+  double        m_max_value;
+public:
+  LogProperty (float *value,
+               const std::string& label,
+               const std::string& format,
+               float def_value,
+               float min_value,
+               float max_value) :
+    PropertyBase (value, label, format),
+    m_min_value (min_value),
+    m_max_value (max_value)
+  {
+    *m_value = def_value;
+  }
+
+  double
+  value2ui (double v)
+  {
+    return (log (v) - log (m_min_value)) / (log (m_max_value) - log (m_min_value));
+  }
+  double
+  ui2value (double ui)
+  {
+    return exp (ui * (log (m_max_value) - log (m_min_value)) + log (m_min_value));
+  }
+};
+
+class LinearProperty : public PropertyBase
+{
+  double m_min_value;
+  double m_max_value;
+public:
+  LinearProperty (float *value,
+                  const std::string& label,
+                  const std::string& format,
+                  float def_value,
+                  double min_value,
+                  double max_value) :
+    PropertyBase (value, label, format),
+    m_min_value (min_value),
+    m_max_value (max_value)
+  {
+    *value = def_value;
+  }
+  double
+  value2ui (double v)
+  {
+    return (v - m_min_value) / (m_max_value - m_min_value);
+  }
+  double
+  ui2value (double ui)
+  {
+    return ui * (m_max_value - m_min_value) + m_min_value;
+  }
+};
+
 }
 
 #endif

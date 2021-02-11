@@ -2,6 +2,7 @@
 
 #include "smmorphoperator.hh"
 #include "smmorphplan.hh"
+#include "smproperty.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -113,6 +114,32 @@ vector<MorphOperator *>
 MorphOperator::dependencies()
 {
   return {}; /* default implementation -> no dependencies */
+}
+
+Property *
+MorphOperator::property (int id)
+{
+  return m_properties[id].get();
+}
+
+LogProperty *
+MorphOperator::add_property_log (float *value, int id, const string& label, const string& value_label, float def, float mn, float mx)
+{
+  assert (!m_properties[id]);
+  LogProperty *property = new LogProperty (value, label, value_label, def, mn, mx);
+  m_properties[id].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
+LinearProperty *
+MorphOperator::add_property (float *value, int id, const string& label, const string& value_label, float def, float mn, float mx)
+{
+  assert (!m_properties[id]);
+  LinearProperty *property = new LinearProperty (value, label, value_label, def, mn, mx);
+  m_properties[id].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
 }
 
 MorphOperatorConfig *

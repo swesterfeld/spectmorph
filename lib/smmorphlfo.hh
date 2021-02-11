@@ -13,16 +13,6 @@ namespace SpectMorph
 
 class MorphLFO;
 
-struct MorphLFOProperties
-{
-  MorphLFOProperties (MorphLFO *lfo);
-
-  LogParamProperty<MorphLFO>    frequency;
-  LinearParamProperty<MorphLFO> depth;
-  LinearParamProperty<MorphLFO> center;
-  LinearParamProperty<MorphLFO> start_phase;
-};
-
 class MorphLFO : public MorphOperator
 {
 public:
@@ -54,6 +44,12 @@ public:
     NOTE_MODE_TRIPLET  = 2,
     NOTE_MODE_DOTTED   = 3
   };
+  enum {
+    P_FREQUENCY = 1,
+    P_DEPTH,
+    P_CENTER,
+    P_START_PHASE
+  };
   struct Config : public MorphOperatorConfig
   {
     WaveType       wave_type;
@@ -82,18 +78,6 @@ public:
 
   WaveType wave_type();
   void set_wave_type (WaveType new_wave_type);
-
-  float frequency() const;
-  void set_frequency (float new_frequency);
-
-  float depth() const;
-  void set_depth (float new_depth);
-
-  float center() const;
-  void set_center (float new_center);
-
-  float start_phase() const;
-  void set_start_phase (float new_start_phase);
 
   bool sync_voices() const;
   void set_sync_voices (float new_sync_voices);

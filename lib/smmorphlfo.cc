@@ -13,24 +13,19 @@ using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphLFO");
 
-MorphLFOProperties::MorphLFOProperties (MorphLFO *lfo) :
-  frequency (lfo, "Frequency", "%.3f Hz", 0.01, 10, &MorphLFO::frequency, &MorphLFO::set_frequency),
-  depth (lfo, "Depth", "-", 0, 1, &MorphLFO::depth, &MorphLFO::set_depth),
-  center (lfo, "Center", "%.2f", -1, 1, &MorphLFO::center, &MorphLFO::set_center),
-  start_phase (lfo, "Start Phase", "%.1f", -180, 180, &MorphLFO::start_phase, &MorphLFO::set_start_phase)
-{
-  /* FIXME: ideally the storage format should be changed -> store depth as percent */
-  depth.set_custom_formatter ([](float f) -> string { return string_locale_printf ("%.1f %%", f * 100); });
-}
-
 MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   m_config.wave_type = WAVE_SINE;
-  m_config.frequency = 1;
-  m_config.depth = 1;
-  m_config.center = 0;
-  m_config.start_phase = 0;
+  add_property_log (&m_config.frequency, P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
+
+  auto p_depth = add_property (&m_config.depth, P_DEPTH, "Depth", "-", 1, 0, 1);
+  /* FIXME: ideally the storage format should be changed -> store depth as percent */
+  p_depth->set_custom_formatter ([](float f) -> string { return string_locale_printf ("%.1f %%", f * 100); });
+
+  add_property (&m_config.center, P_CENTER, "Center", "%.2f", 0, -1, 1);
+  add_property (&m_config.start_phase, P_START_PHASE, "Start Phase", "%.1f", 0, -180, 180);
+
   m_config.sync_voices = false;
   m_config.beat_sync = false;
   m_config.note = NOTE_1_4;
@@ -163,62 +158,6 @@ void
 MorphLFO::set_wave_type (WaveType new_wave_type)
 {
   m_config.wave_type = new_wave_type;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphLFO::frequency() const
-{
-  return m_config.frequency;
-}
-
-void
-MorphLFO::set_frequency (float frequency)
-{
-  m_config.frequency = frequency;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphLFO::depth() const
-{
-  return m_config.depth;
-}
-
-void
-MorphLFO::set_depth (float depth)
-{
-  m_config.depth = depth;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphLFO::center() const
-{
-  return m_config.center;
-}
-
-void
-MorphLFO::set_center (float center)
-{
-  m_config.center = center;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphLFO::start_phase() const
-{
-  return m_config.start_phase;
-}
-
-void
-MorphLFO::set_start_phase (float start_phase)
-{
-  m_config.start_phase = start_phase;
 
   m_morph_plan->emit_plan_changed();
 }
