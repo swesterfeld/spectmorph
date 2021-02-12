@@ -34,15 +34,15 @@ protected:
   std::string m_name;
   std::string m_id;
   bool        m_folded;
-  std::map<int, std::unique_ptr<Property>> m_properties;
+  std::map<std::string, std::unique_ptr<Property>> m_properties;
 
   typedef std::map<std::string, MorphOperator *> OpNameMap;
 
   void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op);
-  LogProperty *add_property_log (float *value, const std::string& identifier, int id,
+  LogProperty *add_property_log (float *value, const std::string& identifier,
                                  const std::string& label, const std::string& value_label,
                                  float def, float mn, float mx);
-  LinearProperty *add_property (float *value, const std::string& identifier, int id,
+  LinearProperty *add_property (float *value, const std::string& identifier,
                                 const std::string& label, const std::string& value_label,
                                 float def, float mn, float mx);
 
@@ -76,7 +76,7 @@ public:
   virtual std::vector<MorphOperator *> dependencies();
   virtual MorphOperatorConfig *clone_config() = 0;
 
-  Property *property (int id);
+  Property *property (const std::string& identifier);
   void write_properties (OutFile& out_file);
   bool read_property_event (InFile& in_file);
 

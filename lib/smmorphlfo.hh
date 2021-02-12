@@ -44,12 +44,11 @@ public:
     NOTE_MODE_TRIPLET  = 2,
     NOTE_MODE_DOTTED   = 3
   };
-  enum {
-    P_FREQUENCY = 1,
-    P_DEPTH,
-    P_CENTER,
-    P_START_PHASE
-  };
+  static constexpr auto P_FREQUENCY    = "frequency";
+  static constexpr auto P_DEPTH        = "depth";
+  static constexpr auto P_CENTER       = "center";
+  static constexpr auto P_START_PHASE  = "start_phase";
+
   struct Config : public MorphOperatorConfig
   {
     WaveType       wave_type;

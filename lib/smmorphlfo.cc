@@ -17,14 +17,14 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   m_config.wave_type = WAVE_SINE;
-  add_property_log (&m_config.frequency, "frequency", P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
+  add_property_log (&m_config.frequency, P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
 
-  auto p_depth = add_property (&m_config.depth, "depth", P_DEPTH, "Depth", "-", 1, 0, 1);
+  auto p_depth = add_property (&m_config.depth, P_DEPTH, "Depth", "-", 1, 0, 1);
   /* FIXME: ideally the storage format should be changed -> store depth as percent */
   p_depth->set_custom_formatter ([](float f) -> string { return string_locale_printf ("%.1f %%", f * 100); });
 
-  add_property (&m_config.center, "center", P_CENTER, "Center", "%.2f", 0, -1, 1);
-  add_property (&m_config.start_phase, "start_phase", P_START_PHASE, "Start Phase", "%.1f", 0, -180, 180);
+  add_property (&m_config.center, P_CENTER, "Center", "%.2f", 0, -1, 1);
+  add_property (&m_config.start_phase, P_START_PHASE, "Start Phase", "%.1f", 0, -180, 180);
 
   m_config.sync_voices = false;
   m_config.beat_sync = false;
