@@ -32,11 +32,11 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_config.unison_detune = 6.0;
 
   m_config.adsr = false;
-  m_config.adsr_skip     = 500;
-  m_config.adsr_attack   = 15;
-  m_config.adsr_decay    = 20;
-  m_config.adsr_sustain  = 70;
-  m_config.adsr_release  = 50;
+  add_property (&m_config.adsr_skip, P_ADSR_SKIP, "Skip", "%.1f ms", 500, 0, 1000);
+  add_property (&m_config.adsr_attack, P_ADSR_ATTACK, "Attack", "%.1f %%", 15, 0, 100);
+  add_property (&m_config.adsr_decay, P_ADSR_DECAY,"Decay", "%.1f %%", 20, 0, 100);
+  add_property (&m_config.adsr_sustain, P_ADSR_SUSTAIN, "Sustain", "%.1f %%", 70, 0, 100);
+  add_property (&m_config.adsr_release, P_ADSR_RELEASE, "Release", "%.1f %%", 50, 0, 100);
 
   m_config.portamento = false;
   m_config.portamento_glide = 200; /* ms */
@@ -50,11 +50,6 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 }
 
 MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
-  adsr_skip (output, "Skip", "%.1f ms", 0, 1000, &MorphOutput::adsr_skip, &MorphOutput::set_adsr_skip),
-  adsr_attack (output, "Attack", "%.1f %%", 0, 100, &MorphOutput::adsr_attack, &MorphOutput::set_adsr_attack),
-  adsr_decay (output, "Decay", "%.1f %%", 0, 100, &MorphOutput::adsr_decay, &MorphOutput::set_adsr_decay),
-  adsr_sustain (output, "Sustain", "%.1f %%", 0, 100, &MorphOutput::adsr_sustain, &MorphOutput::set_adsr_sustain),
-  adsr_release (output, "Release", "%.1f %%", 0, 100, &MorphOutput::adsr_release, &MorphOutput::set_adsr_release),
   portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
   velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 48, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
 {
@@ -99,11 +94,6 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("unison_detune", m_config.unison_detune);
 
   out_file.write_bool ("adsr", m_config.adsr);
-  out_file.write_float ("adsr_skip",    m_config.adsr_skip);
-  out_file.write_float ("adsr_attack",  m_config.adsr_attack);
-  out_file.write_float ("adsr_decay",   m_config.adsr_decay);
-  out_file.write_float ("adsr_sustain", m_config.adsr_sustain);
-  out_file.write_float ("adsr_release", m_config.adsr_release);
 
   out_file.write_bool ("portamento", m_config.portamento);
   out_file.write_float ("portamento_glide", m_config.portamento_glide);
@@ -187,26 +177,6 @@ MorphOutput::load (InFile& ifile)
           if (ifile.event_name() == "unison_detune")
             {
               m_config.unison_detune = ifile.event_float();
-            }
-          else if (ifile.event_name() == "adsr_skip")
-            {
-              m_config.adsr_skip = ifile.event_float();
-            }
-          else if (ifile.event_name() == "adsr_attack")
-            {
-              m_config.adsr_attack = ifile.event_float();
-            }
-          else if (ifile.event_name() == "adsr_decay")
-            {
-              m_config.adsr_decay = ifile.event_float();
-            }
-          else if (ifile.event_name() == "adsr_sustain")
-            {
-              m_config.adsr_sustain = ifile.event_float();
-            }
-          else if (ifile.event_name() == "adsr_release")
-            {
-              m_config.adsr_release = ifile.event_float();
             }
           else if (ifile.event_name() == "portamento_glide")
             {
@@ -352,76 +322,6 @@ void
 MorphOutput::set_adsr (bool ea)
 {
   m_config.adsr = ea;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::adsr_skip() const
-{
-  return m_config.adsr_skip;
-}
-
-void
-MorphOutput::set_adsr_skip (float skip)
-{
-  m_config.adsr_skip = skip;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::adsr_attack() const
-{
-  return m_config.adsr_attack;
-}
-
-void
-MorphOutput::set_adsr_attack (float attack)
-{
-  m_config.adsr_attack = attack;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::adsr_decay() const
-{
-  return m_config.adsr_decay;
-}
-
-void
-MorphOutput::set_adsr_decay (float decay)
-{
-  m_config.adsr_decay = decay;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::adsr_release() const
-{
-  return m_config.adsr_release;
-}
-
-void
-MorphOutput::set_adsr_release (float release)
-{
-  m_config.adsr_release = release;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::adsr_sustain() const
-{
-  return m_config.adsr_sustain;
-}
-
-void
-MorphOutput::set_adsr_sustain (float sustain)
-{
-  m_config.adsr_sustain = sustain;
 
   m_morph_plan->emit_plan_changed();
 }

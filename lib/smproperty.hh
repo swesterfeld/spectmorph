@@ -22,6 +22,10 @@ public:
 
   virtual std::string label() = 0;
   virtual std::string value_label() = 0;
+
+  /* specific types */
+  virtual float get_float() const { return 0; }
+  virtual void  set_float (float f) {}
 };
 
 template<class MorphOp>
@@ -165,8 +169,19 @@ public:
     signal_value_changed();
   }
 
-  Signal<> signal_value_changed;
+  float
+  get_float() const
+  {
+    return *m_value;
+  }
+  void
+  set_float (float f)
+  {
+    *m_value = f;
+    signal_value_changed();
+  }
 
+  Signal<> signal_value_changed;
 
   virtual double value2ui (double value) = 0;
   virtual double ui2value (double ui) = 0;

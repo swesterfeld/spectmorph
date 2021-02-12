@@ -19,12 +19,6 @@ struct MorphOutputProperties
 {
   MorphOutputProperties (MorphOutput *output);
 
-  LinearParamProperty<MorphOutput> adsr_skip;
-  LinearParamProperty<MorphOutput> adsr_attack;
-  LinearParamProperty<MorphOutput> adsr_decay;
-  LinearParamProperty<MorphOutput> adsr_sustain;
-  LinearParamProperty<MorphOutput> adsr_release;
-
   XParamProperty<MorphOutput>      portamento_glide;
 
   LinearParamProperty<MorphOutput> velocity_sensitivity;
@@ -63,10 +57,15 @@ public:
   };
   Config                       m_config;
 
+  static constexpr auto P_ADSR_SKIP    = "adsr_skip";
+  static constexpr auto P_ADSR_ATTACK  = "adsr_attack";
+  static constexpr auto P_ADSR_DECAY   = "adsr_decay";
+  static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
+  static constexpr auto P_ADSR_RELEASE = "adsr_release";
+
   static constexpr auto P_VIBRATO_DEPTH     = "vibrato_depth";
   static constexpr auto P_VIBRATO_FREQUENCY = "vibrato_frequency";
   static constexpr auto P_VIBRATO_ATTACK    = "vibrato_attack";
-
 
 protected:
   std::vector<std::string>     load_channel_op_names;
@@ -103,21 +102,6 @@ public:
 
   void           set_adsr (bool eadsr);
   bool           adsr() const;
-
-  void           set_adsr_skip (float skip);
-  float          adsr_skip() const;
-
-  void           set_adsr_attack (float attack);
-  float          adsr_attack() const;
-
-  void           set_adsr_decay (float decay);
-  float          adsr_decay() const;
-
-  void           set_adsr_sustain (float sustain);
-  float          adsr_sustain() const;
-
-  void           set_adsr_release (float release);
-  float          adsr_release() const;
 
   void           set_portamento (bool ep);
   bool           portamento() const;
