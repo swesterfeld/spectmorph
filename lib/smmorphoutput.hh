@@ -27,10 +27,6 @@ struct MorphOutputProperties
 
   XParamProperty<MorphOutput>      portamento_glide;
 
-  LinearParamProperty<MorphOutput> vibrato_depth;
-  LogParamProperty<MorphOutput>    vibrato_frequency;
-  LinearParamProperty<MorphOutput> vibrato_attack;
-
   LinearParamProperty<MorphOutput> velocity_sensitivity;
 };
 
@@ -66,6 +62,12 @@ public:
     float                         vibrato_attack;
   };
   Config                       m_config;
+
+  static constexpr auto P_VIBRATO_DEPTH     = "vibrato_depth";
+  static constexpr auto P_VIBRATO_FREQUENCY = "vibrato_frequency";
+  static constexpr auto P_VIBRATO_ATTACK    = "vibrato_attack";
+
+
 protected:
   std::vector<std::string>     load_channel_op_names;
 
@@ -125,15 +127,6 @@ public:
 
   void           set_vibrato (bool ev);
   bool           vibrato() const;
-
-  void           set_vibrato_depth (float depth);
-  float          vibrato_depth() const;
-
-  void           set_vibrato_frequency (float frequency);
-  float          vibrato_frequency() const;
-
-  void           set_vibrato_attack (float attack);
-  float          vibrato_attack() const;
 
   void           set_velocity_sensitivity (float vsense);
   float          velocity_sensitivity() const;

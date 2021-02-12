@@ -42,9 +42,9 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_config.portamento_glide = 200; /* ms */
 
   m_config.vibrato = false;
-  m_config.vibrato_depth = 10;    /* cent */
-  m_config.vibrato_frequency = 4; /* Hz */
-  m_config.vibrato_attack = 0;    /* ms */
+  add_property (&m_config.vibrato_depth, P_VIBRATO_DEPTH, "Depth", "%.2f Cent", 10, 0, 50);
+  add_property_log (&m_config.vibrato_frequency, P_VIBRATO_FREQUENCY, "Frequency", "%.3f Hz", 4, 1, 15);
+  add_property (&m_config.vibrato_attack, P_VIBRATO_ATTACK, "Attack", "%.2f ms", 0, 0, 1000);
 
   leak_debugger.add (this);
 }
@@ -56,9 +56,6 @@ MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
   adsr_sustain (output, "Sustain", "%.1f %%", 0, 100, &MorphOutput::adsr_sustain, &MorphOutput::set_adsr_sustain),
   adsr_release (output, "Release", "%.1f %%", 0, 100, &MorphOutput::adsr_release, &MorphOutput::set_adsr_release),
   portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
-  vibrato_depth (output, "Depth", "%.2f Cent", 0, 50, &MorphOutput::vibrato_depth, &MorphOutput::set_vibrato_depth),
-  vibrato_frequency (output, "Frequency", "%.3f Hz", 1.0, 15, &MorphOutput::vibrato_frequency, &MorphOutput::set_vibrato_frequency),
-  vibrato_attack (output, "Attack", "%.2f ms", 0, 1000, &MorphOutput::vibrato_attack, &MorphOutput::set_vibrato_attack),
   velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 48, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
 {
 }
@@ -83,6 +80,8 @@ MorphOutput::insert_order()
 bool
 MorphOutput::save (OutFile& out_file)
 {
+  write_properties (out_file);
+
   for (size_t i = 0; i < m_config.channel_ops.size(); i++)
     {
       string name;
@@ -110,9 +109,6 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("portamento_glide", m_config.portamento_glide);
 
   out_file.write_bool ("vibrato", m_config.vibrato);
-  out_file.write_float ("vibrato_depth", m_config.vibrato_depth);
-  out_file.write_float ("vibrato_frequency", m_config.vibrato_frequency);
-  out_file.write_float ("vibrato_attack", m_config.vibrato_attack);
 
   out_file.write_float ("velocity_sensitivity", m_config.velocity_sensitivity);
 
@@ -126,7 +122,11 @@ MorphOutput::load (InFile& ifile)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::STRING)
+      if (read_property_event (ifile))
+        {
+          // property has been read, so we ignore the event
+        }
+      else if (ifile.event() == InFile::STRING)
         {
           if (ifile.event_name() == "channel")
             {
@@ -211,18 +211,6 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "portamento_glide")
             {
               m_config.portamento_glide = ifile.event_float();
-            }
-          else if (ifile.event_name() == "vibrato_depth")
-            {
-              m_config.vibrato_depth = ifile.event_float();
-            }
-          else if (ifile.event_name() == "vibrato_frequency")
-            {
-              m_config.vibrato_frequency = ifile.event_float();
-            }
-          else if (ifile.event_name() == "vibrato_attack")
-            {
-              m_config.vibrato_attack = ifile.event_float();
             }
           else if (ifile.event_name() == "velocity_sensitivity")
             {
@@ -480,48 +468,6 @@ void
 MorphOutput::set_vibrato (bool ev)
 {
   m_config.vibrato = ev;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::vibrato_depth() const
-{
-  return m_config.vibrato_depth;
-}
-
-void
-MorphOutput::set_vibrato_depth (float depth)
-{
-  m_config.vibrato_depth = depth;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::vibrato_frequency() const
-{
-  return m_config.vibrato_frequency;
-}
-
-void
-MorphOutput::set_vibrato_frequency (float frequency)
-{
-  m_config.vibrato_frequency = frequency;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::vibrato_attack() const
-{
-  return m_config.vibrato_attack;
-}
-
-void
-MorphOutput::set_vibrato_attack (float attack)
-{
-  m_config.vibrato_attack = attack;
 
   m_morph_plan->emit_plan_changed();
 }
