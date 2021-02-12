@@ -22,7 +22,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   m_config.channel_ops.resize (CHANNEL_OP_COUNT);
 
-  m_config.velocity_sensitivity = 24; /* dB */
+  add_property (&m_config.velocity_sensitivity, P_VELOCITY_SENSITIVITY, "Velocity Sns", "%.2f dB", 24, 0, 48);
 
   m_config.sines = true;
   m_config.noise = true;
@@ -50,8 +50,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 }
 
 MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
-  portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide),
-  velocity_sensitivity (output, "Velocity Sns", "%.2f dB", 0, 48, &MorphOutput::velocity_sensitivity, &MorphOutput::set_velocity_sensitivity)
+  portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide)
 {
 }
 
@@ -99,8 +98,6 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("portamento_glide", m_config.portamento_glide);
 
   out_file.write_bool ("vibrato", m_config.vibrato);
-
-  out_file.write_float ("velocity_sensitivity", m_config.velocity_sensitivity);
 
   return true;
 }
@@ -181,10 +178,6 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "portamento_glide")
             {
               m_config.portamento_glide = ifile.event_float();
-            }
-          else if (ifile.event_name() == "velocity_sensitivity")
-            {
-              m_config.velocity_sensitivity = ifile.event_float();
             }
           else
             {
@@ -368,20 +361,6 @@ void
 MorphOutput::set_vibrato (bool ev)
 {
   m_config.vibrato = ev;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::velocity_sensitivity() const
-{
-  return m_config.velocity_sensitivity;
-}
-
-void
-MorphOutput::set_velocity_sensitivity (float velocity_sensitivity)
-{
-  m_config.velocity_sensitivity = velocity_sensitivity;
 
   m_morph_plan->emit_plan_changed();
 }

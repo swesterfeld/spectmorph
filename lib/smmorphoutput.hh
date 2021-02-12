@@ -20,8 +20,6 @@ struct MorphOutputProperties
   MorphOutputProperties (MorphOutput *output);
 
   XParamProperty<MorphOutput>      portamento_glide;
-
-  LinearParamProperty<MorphOutput> velocity_sensitivity;
 };
 
 class MorphOutput : public MorphOperator
@@ -56,6 +54,8 @@ public:
     float                         vibrato_attack;
   };
   Config                       m_config;
+
+  static constexpr auto P_VELOCITY_SENSITIVITY = "velocity_sensitivity";
 
   static constexpr auto P_ADSR_SKIP    = "adsr_skip";
   static constexpr auto P_ADSR_ATTACK  = "adsr_attack";
