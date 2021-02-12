@@ -24,7 +24,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_vibrato_depth (*morph_output->property (MorphOutput::P_VIBRATO_DEPTH)),
   pv_vibrato_frequency (*morph_output->property (MorphOutput::P_VIBRATO_FREQUENCY)),
   pv_vibrato_attack (*morph_output->property (MorphOutput::P_VIBRATO_ATTACK)),
-  pv_velocity_sensitivity (morph_output_properties.velocity_sensitivity)
+  pv_velocity_sensitivity (*morph_output->property (MorphOutput::P_VELOCITY_SENSITIVITY))
 {
   hide_tool_buttons(); // no fold/close for output
 
