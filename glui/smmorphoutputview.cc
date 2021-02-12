@@ -15,11 +15,11 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   MorphOperatorView (parent, morph_output, morph_plan_window),
   morph_output (morph_output),
   morph_output_properties (morph_output),
-  pv_adsr_skip (morph_output_properties.adsr_skip),
-  pv_adsr_attack (morph_output_properties.adsr_attack),
-  pv_adsr_decay (morph_output_properties.adsr_decay),
-  pv_adsr_sustain (morph_output_properties.adsr_sustain),
-  pv_adsr_release (morph_output_properties.adsr_release),
+  pv_adsr_skip (*morph_output->property (MorphOutput::P_ADSR_SKIP)),
+  pv_adsr_attack (*morph_output->property (MorphOutput::P_ADSR_ATTACK)),
+  pv_adsr_decay (*morph_output->property (MorphOutput::P_ADSR_DECAY)),
+  pv_adsr_sustain (*morph_output->property (MorphOutput::P_ADSR_SUSTAIN)),
+  pv_adsr_release (*morph_output->property (MorphOutput::P_ADSR_RELEASE)),
   pv_portamento_glide (morph_output_properties.portamento_glide),
   pv_vibrato_depth (*morph_output->property (MorphOutput::P_VIBRATO_DEPTH)),
   pv_vibrato_frequency (*morph_output->property (MorphOutput::P_VIBRATO_FREQUENCY)),
@@ -103,6 +103,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_adsr_release.init_ui (body_widget, op_layout);
 
   // link values for property views and adsr widget
+  // FIXME: this should no longer be necessary, as new properties have notifications
   for (auto pv_ptr : vector<PropertyView *> { &pv_adsr_attack, &pv_adsr_decay, &pv_adsr_sustain, &pv_adsr_release })
     {
       connect (pv_ptr->signal_value_changed, output_adsr_widget, &OutputADSRWidget::on_adsr_params_changed);

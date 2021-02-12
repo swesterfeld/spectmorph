@@ -11,8 +11,6 @@ namespace SpectMorph
 class MorphOutputView;
 class OutputADSRWidget : public Widget
 {
-  MorphOutput *morph_output;
-
   std::vector<Point> ps;
   int sel_point = -1;
   bool mouse_down = false;
@@ -40,10 +38,17 @@ class OutputADSRWidget : public Widget
       }
   }
 public:
+  Property *prop_attack;
+  Property *prop_decay;
+  Property *prop_sustain;
+  Property *prop_release;
   OutputADSRWidget (Widget *parent, MorphOutput *morph_output, MorphOutputView *morph_output_view)
-    : Widget (parent),
-      morph_output (morph_output)
+    : Widget (parent)
   {
+    prop_attack  = morph_output->property (MorphOutput::P_ADSR_ATTACK);
+    prop_decay   = morph_output->property (MorphOutput::P_ADSR_DECAY);
+    prop_sustain = morph_output->property (MorphOutput::P_ADSR_SUSTAIN);
+    prop_release = morph_output->property (MorphOutput::P_ADSR_RELEASE);
   }
 
   void
@@ -68,10 +73,10 @@ public:
     const double yspace = (width() - 2 * pad) / 4;
     ps.clear();
     ps.push_back ({pad, height() - pad});
-    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_attack() / 100, pad});
-    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_decay() / 100, pad + (height() - 2 * pad) * (100 - morph_output->adsr_sustain()) / 100});
+    ps.push_back ({ps.back().x() + yspace * prop_attack->get_float() / 100, pad});
+    ps.push_back ({ps.back().x() + yspace * prop_decay->get_float() / 100, pad + (height() - 2 * pad) * (100 - prop_sustain->get_float()) / 100});
     ps.push_back ({ps.back().x() + yspace, ps.back().y()});
-    ps.push_back ({ps.back().x() + yspace * morph_output->adsr_release() / 100, height() - pad});
+    ps.push_back ({ps.back().x() + yspace * prop_release->get_float() / 100, height() - pad});
 
     for (size_t i = 0; i < ps.size(); i++)
       {
@@ -141,19 +146,19 @@ public:
             double new_y_percent = sm_bound (0.0, 100.0 * (1.0 - (event.y - pad) / yspace), 100.0);
 
             if (sel_point == 1) // A
-              morph_output->set_adsr_attack (new_x_percent);
+              prop_attack->set_float (new_x_percent);
 
             if (sel_point == 2) // D
               {
-                morph_output->set_adsr_decay (new_x_percent);
-                morph_output->set_adsr_sustain (new_y_percent);
+                prop_decay->set_float (new_x_percent);
+                prop_sustain->set_float (new_y_percent);
               }
 
             if (sel_point == 3) // S
-                morph_output->set_adsr_sustain (new_y_percent);
+                prop_sustain->set_float (new_y_percent);
 
             if (sel_point == 4) // R
-              morph_output->set_adsr_release (new_x_percent);
+              prop_release->set_float (new_x_percent);
 
             signal_adsr_params_changed();
 
