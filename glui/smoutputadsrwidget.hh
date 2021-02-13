@@ -49,6 +49,11 @@ public:
     prop_decay   = morph_output->property (MorphOutput::P_ADSR_DECAY);
     prop_sustain = morph_output->property (MorphOutput::P_ADSR_SUSTAIN);
     prop_release = morph_output->property (MorphOutput::P_ADSR_RELEASE);
+
+    connect (prop_attack->signal_value_changed,  this, &OutputADSRWidget::on_adsr_params_changed);
+    connect (prop_decay->signal_value_changed,   this, &OutputADSRWidget::on_adsr_params_changed);
+    connect (prop_sustain->signal_value_changed, this, &OutputADSRWidget::on_adsr_params_changed);
+    connect (prop_release->signal_value_changed, this, &OutputADSRWidget::on_adsr_params_changed);
   }
 
   void
@@ -160,8 +165,6 @@ public:
             if (sel_point == 4) // R
               prop_release->set_float (new_x_percent);
 
-            signal_adsr_params_changed();
-
             update();
           }
       }
@@ -199,9 +202,6 @@ public:
   {
     update();
   }
-
-/* signals: */
-  Signal<> signal_adsr_params_changed;
 };
 
 }
