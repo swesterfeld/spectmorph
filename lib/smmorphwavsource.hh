@@ -14,13 +14,6 @@ namespace SpectMorph
 class MorphWavSource;
 class Project;
 
-struct MorphWavSourceProperties
-{
-  MorphWavSourceProperties (MorphWavSource *lfo);
-
-  LinearParamProperty<MorphWavSource> position;
-};
-
 class MorphWavSource : public MorphOperator
 {
 public:
@@ -35,9 +28,10 @@ public:
     int               object_id = 0;
     PlayMode          play_mode             = PLAY_MODE_STANDARD;
     ControlType       position_control_type = CONTROL_GUI;
-    float             position = 50;
+    float             position;
     MorphOperatorPtr  position_op;
   };
+  static constexpr auto P_POSITION = "position";
 protected:
   Config      m_config;
   std::string load_position_op;
@@ -73,9 +67,6 @@ public:
 
   void        set_position_control_type (ControlType new_control_type);
   ControlType position_control_type() const;
-
-  void        set_position (float new_position);
-  float       position() const;
 
   void        set_position_op (MorphOperator *op);
   MorphOperator *position_op() const;

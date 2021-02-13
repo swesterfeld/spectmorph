@@ -11,15 +11,12 @@ using std::vector;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSource");
 
-MorphWavSourceProperties::MorphWavSourceProperties (MorphWavSource *wav_source) :
-  position (wav_source, "Position", "%.1f %%", 0, 100, &MorphWavSource::position, &MorphWavSource::set_position)
-{
-}
-
 MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
   leak_debugger.add (this);
+
+  add_property (&m_config.position, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
 
   connect (morph_plan->signal_operator_removed, this, &MorphWavSource::on_operator_removed);
 }
@@ -100,20 +97,6 @@ MorphWavSource::position_control_type() const
   return m_config.position_control_type;
 }
 
-void
-MorphWavSource::set_position (float new_position)
-{
-  m_config.position = new_position;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphWavSource::position() const
-{
-  return m_config.position;
-}
-
 MorphOperator *
 MorphWavSource::position_op() const
 {
@@ -152,12 +135,13 @@ MorphWavSource::insert_order()
 bool
 MorphWavSource::save (OutFile& out_file)
 {
+  write_properties (out_file);
+
   out_file.write_int ("object_id", m_config.object_id);
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
   out_file.write_int ("play_mode", m_config.play_mode);
   out_file.write_int ("position_control_type", m_config.position_control_type);
-  out_file.write_float ("position", m_config.position);
   write_operator (out_file, "position_op", m_config.position_op);
 
   return true;
@@ -170,7 +154,11 @@ MorphWavSource::load (InFile& ifile)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::INT)
+      if (read_property_event (ifile))
+        {
+          // property has been read, so we ignore the event
+        }
+      else if (ifile.event() == InFile::INT)
         {
           if (ifile.event_name() == "object_id")
             {
@@ -191,18 +179,6 @@ MorphWavSource::load (InFile& ifile)
           else
             {
               g_printerr ("bad int\n");
-              return false;
-            }
-        }
-      else if (ifile.event() == InFile::FLOAT)
-        {
-          if (ifile.event_name() == "position")
-            {
-              m_config.position = ifile.event_float();
-            }
-          else
-            {
-              g_printerr ("bad float\n");
               return false;
             }
         }
