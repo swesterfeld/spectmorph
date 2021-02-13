@@ -24,8 +24,7 @@ using std::vector;
 MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
   morph_wav_source (morph_wav_source),
-  morph_wav_source_properties (morph_wav_source),
-  pv_position (morph_wav_source_properties.position)
+  pv_position (*morph_wav_source->property (MorphWavSource::P_POSITION))
 {
   instrument_label = new Label (body_widget, "Instrument");
   progress_bar = new ProgressBar (body_widget);
