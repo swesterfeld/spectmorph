@@ -27,8 +27,6 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
-  MorphOutputProperties       morph_output_properties;
-
   PropertyView                pv_adsr_skip;
   PropertyView                pv_adsr_attack;
   PropertyView                pv_adsr_decay;
