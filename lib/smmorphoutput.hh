@@ -15,13 +15,6 @@ namespace SpectMorph
 
 class MorphOutput;
 
-struct MorphOutputProperties
-{
-  MorphOutputProperties (MorphOutput *output);
-
-  XParamProperty<MorphOutput>      portamento_glide;
-};
-
 class MorphOutput : public MorphOperator
 {
 public:
@@ -62,6 +55,8 @@ public:
   static constexpr auto P_ADSR_DECAY   = "adsr_decay";
   static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
   static constexpr auto P_ADSR_RELEASE = "adsr_release";
+
+  static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";
 
   static constexpr auto P_VIBRATO_DEPTH     = "vibrato_depth";
   static constexpr auto P_VIBRATO_FREQUENCY = "vibrato_frequency";
@@ -106,14 +101,8 @@ public:
   void           set_portamento (bool ep);
   bool           portamento() const;
 
-  void           set_portamento_glide (float glide);
-  float          portamento_glide() const;
-
   void           set_vibrato (bool ev);
   bool           vibrato() const;
-
-  void           set_velocity_sensitivity (float vsense);
-  float          velocity_sensitivity() const;
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);

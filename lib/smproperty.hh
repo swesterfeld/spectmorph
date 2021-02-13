@@ -28,88 +28,6 @@ public:
   virtual void  set_float (float f) {}
 };
 
-template<class MorphOp>
-class IProperty : public Property
-{
-  MorphOp&      morph_op;
-  std::string   m_label;
-  std::string   m_format;
-  std::function<std::string (float)> m_custom_formatter;
-
-  std::function<float(const MorphOp&)> get_value;
-  std::function<void (MorphOp&, float)> set_value;
-public:
-  IProperty (MorphOp *morph_op,
-             const std::string& label,
-             const std::string& format,
-             std::function<float(const MorphOp&)> get_value,
-             std::function<void (MorphOp&, float)> set_value) :
-    morph_op (*morph_op),
-    m_label (label),
-    m_format (format),
-    get_value (get_value),
-    set_value (set_value)
-  {
-  }
-  int min()         { return 0; }
-  int max()         { return 1000; }
-  int get()         { return lrint (value2ui (get_value (morph_op)) * 1000); }
-  void set (int v)  { set_value (morph_op, ui2value (v / 1000.)); }
-
-  virtual double value2ui (double value) = 0;
-  virtual double ui2value (double ui) = 0;
-
-  std::string label() { return m_label; }
-
-  std::string
-  value_label()
-  {
-    if (m_custom_formatter)
-      return m_custom_formatter (get_value (morph_op));
-    else
-      return string_locale_printf (m_format.c_str(), get_value (morph_op));
-  }
-
-  void
-  set_custom_formatter (const std::function<std::string (float)>& formatter)
-  {
-    m_custom_formatter = formatter;
-  }
-};
-
-template<class MorphOp>
-class XParamProperty : public IProperty<MorphOp>
-{
-  double m_min_value;
-  double m_max_value;
-  double m_slope;
-public:
-  XParamProperty (MorphOp *morph_op,
-                  const std::string& label,
-                  const std::string& format,
-                  double min_value,
-                  double max_value,
-                  double slope,
-                  std::function<float(const MorphOp&)> get_value,
-                  std::function<void (MorphOp&, float)> set_value) :
-    IProperty<MorphOp> (morph_op, label, format, get_value, set_value),
-    m_min_value (min_value),
-    m_max_value (max_value),
-    m_slope (slope)
-  {
-  }
-  double
-  value2ui (double v)
-  {
-    return sm_xparam_inv ((v - m_min_value) / (m_max_value - m_min_value), m_slope);
-  }
-  double
-  ui2value (double ui)
-  {
-    return sm_xparam (ui, m_slope) * (m_max_value - m_min_value) + m_min_value;
-  }
-};
-
 class PropertyBase : public Property
 {
   float        *m_value;
@@ -250,6 +168,39 @@ public:
   ui2value (double ui)
   {
     return ui * (m_max_value - m_min_value) + m_min_value;
+  }
+};
+
+class XParamProperty : public PropertyBase
+{
+  double        m_min_value;
+  double        m_max_value;
+  double        m_slope;
+public:
+  XParamProperty (float *value,
+                  const std::string& identifier,
+                  const std::string& label,
+                  const std::string& format,
+                  float def_value,
+                  float min_value,
+                  float max_value,
+                  double slope) :
+    PropertyBase (value, identifier, label, format),
+    m_min_value (min_value),
+    m_max_value (max_value),
+    m_slope (slope)
+  {
+    *value = def_value;
+  }
+  double
+  value2ui (double v)
+  {
+    return sm_xparam_inv ((v - m_min_value) / (m_max_value - m_min_value), m_slope);
+  }
+  double
+  ui2value (double ui)
+  {
+    return sm_xparam (ui, m_slope) * (m_max_value - m_min_value) + m_min_value;
   }
 };
 

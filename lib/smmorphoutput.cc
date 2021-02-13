@@ -39,7 +39,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.adsr_release, P_ADSR_RELEASE, "Release", "%.1f %%", 50, 0, 100);
 
   m_config.portamento = false;
-  m_config.portamento_glide = 200; /* ms */
+  add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);
 
   m_config.vibrato = false;
   add_property (&m_config.vibrato_depth, P_VIBRATO_DEPTH, "Depth", "%.2f Cent", 10, 0, 50);
@@ -47,11 +47,6 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.vibrato_attack, P_VIBRATO_ATTACK, "Attack", "%.2f ms", 0, 0, 1000);
 
   leak_debugger.add (this);
-}
-
-MorphOutputProperties::MorphOutputProperties (MorphOutput *output) :
-  portamento_glide (output, "Glide", "%.2f ms", 0, 1000, 3, &MorphOutput::portamento_glide, &MorphOutput::set_portamento_glide)
-{
 }
 
 MorphOutput::~MorphOutput()
@@ -93,10 +88,7 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_float ("unison_detune", m_config.unison_detune);
 
   out_file.write_bool ("adsr", m_config.adsr);
-
   out_file.write_bool ("portamento", m_config.portamento);
-  out_file.write_float ("portamento_glide", m_config.portamento_glide);
-
   out_file.write_bool ("vibrato", m_config.vibrato);
 
   return true;
@@ -174,10 +166,6 @@ MorphOutput::load (InFile& ifile)
           if (ifile.event_name() == "unison_detune")
             {
               m_config.unison_detune = ifile.event_float();
-            }
-          else if (ifile.event_name() == "portamento_glide")
-            {
-              m_config.portamento_glide = ifile.event_float();
             }
           else
             {
@@ -331,20 +319,6 @@ void
 MorphOutput::set_portamento (bool ep)
 {
   m_config.portamento = ep;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-float
-MorphOutput::portamento_glide() const
-{
-  return m_config.portamento_glide;
-}
-
-void
-MorphOutput::set_portamento_glide (float glide)
-{
-  m_config.portamento_glide = glide;
 
   m_morph_plan->emit_plan_changed();
 }

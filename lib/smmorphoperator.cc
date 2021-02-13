@@ -132,6 +132,16 @@ MorphOperator::add_property_log (float *value, const string& identifier, const s
   return property;
 }
 
+XParamProperty *
+MorphOperator::add_property_xparam (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx, float slope)
+{
+  assert (!m_properties[identifier]);
+  XParamProperty *property = new XParamProperty (value, identifier, label, value_label, def, mn, mx, slope);
+  m_properties[identifier].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
 LinearProperty *
 MorphOperator::add_property (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx)
 {

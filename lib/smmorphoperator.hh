@@ -26,6 +26,7 @@ class MorphOperatorPtr;
 class Property;
 class LogProperty;
 class LinearProperty;
+class XParamProperty;
 
 class MorphOperator : public SignalReceiver
 {
@@ -42,6 +43,9 @@ protected:
   LogProperty *add_property_log (float *value, const std::string& identifier,
                                  const std::string& label, const std::string& value_label,
                                  float def, float mn, float mx);
+  XParamProperty *add_property_xparam (float *value, const std::string& identifier,
+                                 const std::string& label, const std::string& value_label,
+                                 float def, float mn, float mx, float slope);
   LinearProperty *add_property (float *value, const std::string& identifier,
                                 const std::string& label, const std::string& value_label,
                                 float def, float mn, float mx);
