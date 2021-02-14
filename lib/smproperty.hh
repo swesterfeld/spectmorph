@@ -23,6 +23,8 @@ public:
   virtual std::string label() = 0;
   virtual std::string value_label() = 0;
 
+  Signal<> signal_value_changed;
+
   /* specific types */
   virtual float get_float() const { return 0; }
   virtual void  set_float (float f) {}
@@ -68,8 +70,6 @@ public:
     *m_value = f;
     signal_value_changed();
   }
-
-  Signal<> signal_value_changed;
 
   virtual double value2ui (double value) = 0;
   virtual double ui2value (double ui) = 0;
