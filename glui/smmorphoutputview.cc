@@ -13,17 +13,7 @@ using std::vector;
 
 MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_output, morph_plan_window),
-  morph_output (morph_output),
-  pv_adsr_skip (*morph_output->property (MorphOutput::P_ADSR_SKIP)),
-  pv_adsr_attack (*morph_output->property (MorphOutput::P_ADSR_ATTACK)),
-  pv_adsr_decay (*morph_output->property (MorphOutput::P_ADSR_DECAY)),
-  pv_adsr_sustain (*morph_output->property (MorphOutput::P_ADSR_SUSTAIN)),
-  pv_adsr_release (*morph_output->property (MorphOutput::P_ADSR_RELEASE)),
-  pv_portamento_glide (*morph_output->property (MorphOutput::P_PORTAMENTO_GLIDE)),
-  pv_vibrato_depth (*morph_output->property (MorphOutput::P_VIBRATO_DEPTH)),
-  pv_vibrato_frequency (*morph_output->property (MorphOutput::P_VIBRATO_FREQUENCY)),
-  pv_vibrato_attack (*morph_output->property (MorphOutput::P_VIBRATO_ATTACK)),
-  pv_velocity_sensitivity (*morph_output->property (MorphOutput::P_VELOCITY_SENSITIVITY))
+  morph_output (morph_output)
 {
   hide_tool_buttons(); // no fold/close for output
 
@@ -39,7 +29,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   op_layout.add_row (3, new Label (body_widget, "Source"), source_combobox);
 
   // Velocity Sensitivity
-  pv_velocity_sensitivity.init_ui (body_widget, op_layout);
+  add_property_view (MorphOutput::P_VELOCITY_SENSITIVITY, body_widget, op_layout);
 
   // Sines + Noise
   CheckBox *sines_check_box = new CheckBox (body_widget, "Enable Sine Synthesis");
@@ -95,27 +85,27 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   output_adsr_widget = new OutputADSRWidget (body_widget, morph_output, this);
   op_layout.add_fixed (30, 8, output_adsr_widget);
 
-  pv_adsr_skip.init_ui (body_widget, op_layout);
-  pv_adsr_attack.init_ui (body_widget, op_layout);
-  pv_adsr_decay.init_ui (body_widget, op_layout);
-  pv_adsr_sustain.init_ui (body_widget, op_layout);
-  pv_adsr_release.init_ui (body_widget, op_layout);
+  pv_adsr_skip = add_property_view (MorphOutput::P_ADSR_SKIP, body_widget, op_layout);
+  pv_adsr_attack = add_property_view (MorphOutput::P_ADSR_ATTACK, body_widget, op_layout);
+  pv_adsr_decay = add_property_view (MorphOutput::P_ADSR_DECAY, body_widget, op_layout);
+  pv_adsr_sustain = add_property_view (MorphOutput::P_ADSR_SUSTAIN, body_widget, op_layout);
+  pv_adsr_release = add_property_view (MorphOutput::P_ADSR_RELEASE, body_widget, op_layout);
 
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
   portamento_check_box->set_checked (morph_output->portamento());
   op_layout.add_row (2, portamento_check_box);
 
-  pv_portamento_glide.init_ui (body_widget, op_layout);
+  pv_portamento_glide = add_property_view (MorphOutput::P_PORTAMENTO_GLIDE, body_widget, op_layout);
 
   // Vibrato
   CheckBox *vibrato_check_box = new CheckBox (body_widget, "Enable Vibrato");
   vibrato_check_box->set_checked (morph_output->vibrato());
   op_layout.add_row (2, vibrato_check_box);
 
-  pv_vibrato_depth.init_ui (body_widget, op_layout);
-  pv_vibrato_frequency.init_ui (body_widget, op_layout);
-  pv_vibrato_attack.init_ui (body_widget, op_layout);
+  pv_vibrato_depth = add_property_view (MorphOutput::P_VIBRATO_DEPTH, body_widget, op_layout);
+  pv_vibrato_frequency = add_property_view (MorphOutput::P_VIBRATO_FREQUENCY, body_widget, op_layout);
+  pv_vibrato_attack = add_property_view (MorphOutput::P_VIBRATO_ATTACK, body_widget, op_layout);
 
   connect (sines_check_box->signal_toggled, [morph_output] (bool new_value) {
     morph_output->set_sines (new_value);
@@ -189,17 +179,17 @@ MorphOutputView::update_visible()
 
   output_adsr_widget->set_visible (morph_output->adsr());
 
-  pv_adsr_skip.set_visible (morph_output->adsr());
-  pv_adsr_attack.set_visible (morph_output->adsr());
-  pv_adsr_decay.set_visible (morph_output->adsr());
-  pv_adsr_sustain.set_visible (morph_output->adsr());
-  pv_adsr_release.set_visible (morph_output->adsr());
+  pv_adsr_skip->set_visible (morph_output->adsr());
+  pv_adsr_attack->set_visible (morph_output->adsr());
+  pv_adsr_decay->set_visible (morph_output->adsr());
+  pv_adsr_sustain->set_visible (morph_output->adsr());
+  pv_adsr_release->set_visible (morph_output->adsr());
 
-  pv_portamento_glide.set_visible (morph_output->portamento());
+  pv_portamento_glide->set_visible (morph_output->portamento());
 
-  pv_vibrato_depth.set_visible (morph_output->vibrato());
-  pv_vibrato_frequency.set_visible (morph_output->vibrato());
-  pv_vibrato_attack.set_visible (morph_output->vibrato());
+  pv_vibrato_depth->set_visible (morph_output->vibrato());
+  pv_vibrato_frequency->set_visible (morph_output->vibrato());
+  pv_vibrato_attack->set_visible (morph_output->vibrato());
 
   op_layout.activate();
   signal_size_changed();

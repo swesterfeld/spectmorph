@@ -27,17 +27,17 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
-  PropertyView                pv_adsr_skip;
-  PropertyView                pv_adsr_attack;
-  PropertyView                pv_adsr_decay;
-  PropertyView                pv_adsr_sustain;
-  PropertyView                pv_adsr_release;
+  PropertyView               *pv_adsr_skip;
+  PropertyView               *pv_adsr_attack;
+  PropertyView               *pv_adsr_decay;
+  PropertyView               *pv_adsr_sustain;
+  PropertyView               *pv_adsr_release;
 
-  PropertyView                pv_portamento_glide;
-  PropertyView                pv_vibrato_depth;
-  PropertyView                pv_vibrato_frequency;
-  PropertyView                pv_vibrato_attack;
-  PropertyView                pv_velocity_sensitivity;
+  PropertyView               *pv_portamento_glide;
+  PropertyView               *pv_vibrato_depth;
+  PropertyView               *pv_vibrato_frequency;
+  PropertyView               *pv_vibrato_attack;
+  PropertyView               *pv_velocity_sensitivity;
 
   OutputADSRWidget           *output_adsr_widget;
 

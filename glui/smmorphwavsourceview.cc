@@ -23,8 +23,7 @@ using std::vector;
 
 MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wav_source, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
-  morph_wav_source (morph_wav_source),
-  pv_position (*morph_wav_source->property (MorphWavSource::P_POSITION))
+  morph_wav_source (morph_wav_source)
 {
   instrument_label = new Label (body_widget, "Instrument");
   progress_bar = new ProgressBar (body_widget);
@@ -59,7 +58,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.add_row (3, position_control_input_label, position_control_combobox);
 
   // POSITION
-  pv_position.init_ui (body_widget, op_layout);
+  pv_position = add_property_view (MorphWavSource::P_POSITION, body_widget, op_layout);
 
   update_visible();
 
@@ -260,7 +259,7 @@ MorphWavSourceView::update_visible()
   bool custom_position = morph_wav_source->play_mode() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION;
   position_control_combobox->set_visible (custom_position);
   position_control_input_label->set_visible (custom_position);
-  pv_position.set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);
+  pv_position->set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);
 
   op_layout.activate();
   signal_size_changed();

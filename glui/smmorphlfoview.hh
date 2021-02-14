@@ -20,10 +20,7 @@ class MorphLFOView : public MorphOperatorView
   Label     *note_label;
   Widget    *note_widget;
 
-  PropertyView pv_frequency;
-  PropertyView pv_depth;
-  PropertyView pv_center;
-  PropertyView pv_start_phase;
+  PropertyView *pv_frequency;
 
   EnumView ev_wave_type;
   EnumView ev_note;

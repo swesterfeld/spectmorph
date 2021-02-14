@@ -13,11 +13,7 @@ using std::vector;
 
 MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
-  morph_lfo (morph_lfo),
-  pv_frequency (*morph_lfo->property (MorphLFO::P_FREQUENCY)),
-  pv_depth (*morph_lfo->property (MorphLFO::P_DEPTH)),
-  pv_center (*morph_lfo->property (MorphLFO::P_CENTER)),
-  pv_start_phase (*morph_lfo->property (MorphLFO::P_START_PHASE))
+  morph_lfo (morph_lfo)
 {
   // WAVE TYPE
   ev_wave_type.add_item (MorphLFO::WAVE_SINE,           "Sine");
@@ -35,7 +31,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
 
   // FREQUENCY
-  pv_frequency.init_ui (body_widget, op_layout);
+  pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, body_widget, op_layout);
 
   // NOTE
   note_widget = new Widget (body_widget);
@@ -74,9 +70,9 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   op_layout.add_row (3, note_label, note_widget);
 
   // DEPTH / CENTER / START_PHASE
-  pv_depth.init_ui (body_widget, op_layout);
-  pv_center.init_ui (body_widget, op_layout);
-  pv_start_phase.init_ui (body_widget, op_layout);
+  add_property_view (MorphLFO::P_DEPTH, body_widget, op_layout);
+  add_property_view (MorphLFO::P_CENTER, body_widget, op_layout);
+  add_property_view (MorphLFO::P_START_PHASE, body_widget, op_layout);
 
   // FLAG: SYNC PHASE
   Widget *flags_widget = new Widget (body_widget);
@@ -114,7 +110,7 @@ MorphLFOView::view_height()
 void
 MorphLFOView::update_visible()
 {
-  pv_frequency.set_visible (!morph_lfo->beat_sync());
+  pv_frequency->set_visible (!morph_lfo->beat_sync());
   note_label->set_visible (morph_lfo->beat_sync());
   note_widget->set_visible (morph_lfo->beat_sync());
 

@@ -11,6 +11,7 @@
 #include "smmorphplan.hh"
 #include "smmorphplanwindow.hh"
 #include "smtoolbutton.hh"
+#include "smpropertyview.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -77,6 +78,8 @@ protected:
   MorphOperator *m_op;
   MorphOperator *move_start_next;
 
+  std::vector<std::unique_ptr<PropertyView>> property_views;
+
 public:
   Widget        *body_widget;
 
@@ -123,6 +126,8 @@ public:
   }
   void set_role (int role);
   void set_role_colors();
+
+  PropertyView *add_property_view (const std::string& identifier, Widget *parent, OperatorLayout& layout);
 
   void on_move (double y);
   void on_end_move (double y);
