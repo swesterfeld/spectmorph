@@ -45,36 +45,8 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   unison_check_box->set_checked (morph_output->unison());
   op_layout.add_row (2, unison_check_box);
 
-  // Unison Voices
-  unison_voices_title = new Label (body_widget, "Voices");
-  unison_voices_slider = new Slider (body_widget, 0);
-  unison_voices_slider->set_int_range (2, 7);
-  unison_voices_label = new Label (body_widget, "0");
-
-  op_layout.add_row (2, unison_voices_title, unison_voices_slider, unison_voices_label);
-
-  int unison_voices_value = morph_output->unison_voices();
-  unison_voices_slider->set_int_value (unison_voices_value);
-  on_unison_voices_changed (unison_voices_value);
-
-  connect (unison_voices_slider->signal_int_value_changed, this, &MorphOutputView::on_unison_voices_changed);
-
-
-  // Unison Detune
-  unison_detune_title = new Label (body_widget, "Detune");
-  unison_detune_slider = new Slider (body_widget, 0);
-  unison_detune_slider->set_int_range (5, 500);
-  connect (unison_detune_slider->signal_int_value_changed, this, &MorphOutputView::on_unison_detune_changed);
-  unison_detune_label = new Label (body_widget, "0");
-
-  op_layout.add_row (2, unison_detune_title, unison_detune_slider, unison_detune_label);
-
-  const int unison_detune_value = lrint (morph_output->unison_detune() * 10);
-  unison_detune_slider->set_int_value (unison_detune_value);
-  on_unison_detune_changed (unison_detune_value);
-
-  connect (unison_detune_slider->signal_int_value_changed, this, &MorphOutputView::on_unison_detune_changed);
-
+  pv_unison_voices = add_property_view (MorphOutput::P_UNISON_VOICES, body_widget, op_layout);
+  pv_unison_detune = add_property_view (MorphOutput::P_UNISON_DETUNE, body_widget, op_layout);
 
   // ADSR
   CheckBox *adsr_check_box = new CheckBox (body_widget, "Enable custom ADSR Envelope");
@@ -152,30 +124,10 @@ MorphOutputView::on_operator_changed()
 }
 
 void
-MorphOutputView::on_unison_voices_changed (int voices)
-{
-  unison_voices_label->set_text (string_locale_printf ("%d", voices));
-  morph_output->set_unison_voices (voices);
-}
-
-void
-MorphOutputView::on_unison_detune_changed (int new_value)
-{
-  const double detune = new_value / 10.0;
-  unison_detune_label->set_text (string_locale_printf ("%.1f Cent", detune));
-  morph_output->set_unison_detune (detune);
-}
-
-void
 MorphOutputView::update_visible()
 {
-  unison_voices_title->set_visible (morph_output->unison());
-  unison_voices_label->set_visible (morph_output->unison());
-  unison_voices_slider->set_visible (morph_output->unison());
-
-  unison_detune_title->set_visible (morph_output->unison());
-  unison_detune_label->set_visible (morph_output->unison());
-  unison_detune_slider->set_visible (morph_output->unison());
+  pv_unison_voices->set_visible (morph_output->unison());
+  pv_unison_detune->set_visible (morph_output->unison());
 
   output_adsr_widget->set_visible (morph_output->adsr());
 

@@ -17,15 +17,10 @@ class MorphOutputView : public MorphOperatorView
 {
   ComboBoxOperator           *source_combobox;
 
-  Label                      *unison_voices_title;
-  Label                      *unison_voices_label;
-  Slider                     *unison_voices_slider;
-
-  Label                      *unison_detune_title;
-  Label                      *unison_detune_label;
-  Slider                     *unison_detune_slider;
-
   MorphOutput                *morph_output;
+
+  PropertyView               *pv_unison_voices;
+  PropertyView               *pv_unison_detune;
 
   PropertyView               *pv_adsr_skip;
   PropertyView               *pv_adsr_attack;
@@ -53,8 +48,6 @@ public:
 
   /* slots */
   void on_operator_changed();
-  void on_unison_voices_changed (int voices);
-  void on_unison_detune_changed (int detune);
 };
 
 }
