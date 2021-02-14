@@ -30,26 +30,6 @@ PropertyView::set_visible (bool visible)
   label->set_visible (visible);
 }
 
-int
-PropertyView::init_ui (Widget *parent, FixedGrid& grid, int yoffset)
-{
-  slider = new Slider (parent, 0);
-
-  slider->set_int_range (property.min(), property.max());
-  label = new Label (parent, property.value_label());
-  title = new Label (parent, property.label());
-  slider->set_int_value (property.get());
-
-  connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
-  connect (property.signal_value_changed, this, &PropertyView::on_update_value);
-
-  grid.add_widget (title, 0, yoffset, 9, 2);
-  grid.add_widget (slider,  9, yoffset, 25, 2);
-  grid.add_widget (label, 35, yoffset, 5, 2);
-
-  return 2;
-}
-
 void
 PropertyView::init_ui (Widget *parent, OperatorLayout& op_layout)
 {

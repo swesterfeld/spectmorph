@@ -25,7 +25,6 @@ struct PropertyView : public SignalReceiver
 
 public:
   PropertyView (Property& property);
-  int init_ui (Widget *parent, FixedGrid& layout, int yoffset);
   void init_ui (Widget *parent, OperatorLayout& layout);
   void set_enabled (bool enabled);
   void set_visible (bool visible);
