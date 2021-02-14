@@ -50,6 +50,9 @@ public:
 
   static constexpr auto P_VELOCITY_SENSITIVITY = "velocity_sensitivity";
 
+  static constexpr auto P_UNISON_VOICES = "unison_voices";
+  static constexpr auto P_UNISON_DETUNE = "unison_detune";
+
   static constexpr auto P_ADSR_SKIP    = "adsr_skip";
   static constexpr auto P_ADSR_ATTACK  = "adsr_attack";
   static constexpr auto P_ADSR_DECAY   = "adsr_decay";
@@ -88,12 +91,6 @@ public:
 
   void           set_unison (bool eu);
   bool           unison() const;
-
-  void           set_unison_voices (int voices);
-  int            unison_voices() const;
-
-  void           set_unison_detune (float voices);
-  float          unison_detune() const;
 
   void           set_adsr (bool eadsr);
   bool           adsr() const;
