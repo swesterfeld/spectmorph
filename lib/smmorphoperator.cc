@@ -152,16 +152,25 @@ MorphOperator::add_property (float *value, const string& identifier, const strin
   return property;
 }
 
+IntProperty *
+MorphOperator::add_property (int *value, const std::string& identifier,
+                             const std::string& label, const std::string& value_label,
+                             int def, int mn, int mx)
+{
+  assert (!m_properties[identifier]);
+  IntProperty *property = new IntProperty (value, identifier, label, value_label, def, mn, mx);
+  m_properties[identifier].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
 void
 MorphOperator::write_properties (OutFile& out_file)
 {
   for (auto& kv : m_properties)
     {
-      PropertyBase *pb = dynamic_cast<PropertyBase *> (kv.second.get());
-      if (pb)
-        {
-          pb->save (out_file);
-        }
+      Property *p = kv.second.get();
+      p->save (out_file);
     }
 }
 
@@ -170,12 +179,9 @@ MorphOperator::read_property_event (InFile& in_file)
 {
   for (auto& kv : m_properties)
     {
-      PropertyBase *pb = dynamic_cast<PropertyBase *> (kv.second.get());
-      if (pb)
-        {
-          if (pb->load (in_file))
-            return true;
-        }
+      Property *p = kv.second.get();
+      if (p->load (in_file))
+        return true;
     }
   return false;
 }

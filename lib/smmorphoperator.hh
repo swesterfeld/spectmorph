@@ -27,6 +27,7 @@ class Property;
 class LogProperty;
 class LinearProperty;
 class XParamProperty;
+class IntProperty;
 
 class MorphOperator : public SignalReceiver
 {
@@ -49,6 +50,9 @@ protected:
   LinearProperty *add_property (float *value, const std::string& identifier,
                                 const std::string& label, const std::string& value_label,
                                 float def, float mn, float mx);
+  IntProperty *add_property (int *value, const std::string& identifier,
+                             const std::string& label, const std::string& value_label,
+                             int def, int mn, int mx);
 
 public:
   enum OutputType {

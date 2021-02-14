@@ -23,11 +23,72 @@ public:
   virtual std::string label() = 0;
   virtual std::string value_label() = 0;
 
+  virtual void save (OutFile& out_file) = 0;
+  virtual bool load (InFile& in_file) = 0;
+
   Signal<> signal_value_changed;
 
   /* specific types */
   virtual float get_float() const { return 0; }
   virtual void  set_float (float f) {}
+};
+
+class IntProperty : public Property
+{
+  int          *m_value;
+  std::string   m_identifier;
+  int           m_min_value;
+  int           m_max_value;
+  std::string   m_label;
+  std::string   m_format;
+public:
+  int min()         { return m_min_value; }
+  int max()         { return m_max_value; }
+  int get()         { return *m_value; }
+
+  IntProperty (int *value, const std::string& identifier, const std::string& label, const std::string& format,
+               int def, int mn, int mx) :
+    m_value (value),
+    m_identifier (identifier),
+    m_min_value (mn),
+    m_max_value (mx),
+    m_label (label),
+    m_format (format)
+  {
+    *value = def;
+  }
+  std::string label() { return m_label; }
+
+  std::string
+  value_label()
+  {
+    return string_locale_printf (m_format.c_str(), *m_value);
+  }
+
+  void
+  set (int v)
+  {
+    *m_value = v;
+    signal_value_changed();
+  }
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_int (m_identifier, *m_value);
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::INT)
+      {
+        if (in_file.event_name() == m_identifier)
+          {
+            *m_value = in_file.event_int();
+            return true;
+          }
+      }
+    return false;
+  }
 };
 
 class PropertyBase : public Property
