@@ -24,8 +24,7 @@ struct PropertyView : public SignalReceiver
   void on_value_changed (int new_value);
 
 public:
-  PropertyView (Property& property);
-  void init_ui (Widget *parent, OperatorLayout& layout);
+  PropertyView (Property& property, Widget *parent, OperatorLayout& layout);
   void set_enabled (bool enabled);
   void set_visible (bool visible);
 
