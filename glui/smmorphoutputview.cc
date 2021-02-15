@@ -68,7 +68,13 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   filter_check_box->set_checked (morph_output->filter());
   op_layout.add_row (2, filter_check_box);
 
+  pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, body_widget, op_layout);
+  pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, body_widget, op_layout);
+  pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, body_widget, op_layout);
+  pv_filter_release = add_property_view (MorphOutput::P_FILTER_RELEASE, body_widget, op_layout);
+  pv_filter_depth = add_property_view (MorphOutput::P_FILTER_DEPTH, body_widget, op_layout);
   pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, body_widget, op_layout);
+  pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, body_widget, op_layout);
 
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
@@ -148,7 +154,13 @@ MorphOutputView::update_visible()
   pv_adsr_sustain->set_visible (morph_output->adsr());
   pv_adsr_release->set_visible (morph_output->adsr());
 
+  pv_filter_attack->set_visible (morph_output->filter());
+  pv_filter_decay->set_visible (morph_output->filter());
+  pv_filter_sustain->set_visible (morph_output->filter());
+  pv_filter_release->set_visible (morph_output->filter());
+  pv_filter_depth->set_visible (morph_output->filter());
   pv_filter_cutoff->set_visible (morph_output->filter());
+  pv_filter_resonance->set_visible (morph_output->filter());
 
   pv_portamento_glide->set_visible (morph_output->portamento());
 
