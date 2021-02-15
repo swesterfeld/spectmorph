@@ -75,7 +75,13 @@ public:
   static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
   static constexpr auto P_ADSR_RELEASE = "adsr_release";
 
-  static constexpr auto P_FILTER_CUTOFF = "filter_cutoff";
+  static constexpr auto P_FILTER_ATTACK     = "filter_attack";
+  static constexpr auto P_FILTER_DECAY      = "filter_decay";
+  static constexpr auto P_FILTER_SUSTAIN    = "filter_sustain";
+  static constexpr auto P_FILTER_RELEASE    = "filter_release";
+  static constexpr auto P_FILTER_DEPTH      = "filter_depth";
+  static constexpr auto P_FILTER_CUTOFF     = "filter_cutoff";
+  static constexpr auto P_FILTER_RESONANCE  = "filter_resonance";
 
   static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";
 

@@ -39,13 +39,13 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.adsr_release, P_ADSR_RELEASE, "Release", "%.1f %%", 50, 0, 100);
 
   m_config.filter        = false;
-  m_config.filter_attack = 15;
-  m_config.filter_decay  = 20;
-  m_config.filter_sustain = 70;
-  m_config.filter_release  = 50;
-  m_config.filter_depth  = 24;
+  add_property (&m_config.filter_attack, P_FILTER_ATTACK, "Attack", "%.1f %%", 15, 0, 100);
+  add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 20, 0, 100);
+  add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 50, 0, 100);
+  add_property (&m_config.filter_release, P_FILTER_RELEASE, "Release", "%.1f %%", 50, 0, 100);
+  add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
   add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
-  m_config.filter_resonance = 0;
+  add_property (&m_config.filter_resonance, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
   m_config.filter_type = FILTER_LP2;
 
   m_config.portamento = false;
