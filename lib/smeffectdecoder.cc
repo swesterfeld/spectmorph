@@ -294,6 +294,9 @@ EffectDecoder::release()
     adsr_envelope->release();
   else
     simple_envelope->release();
+
+  if (filter_enabled)
+    filter_envelope.stop();
 }
 
 bool
