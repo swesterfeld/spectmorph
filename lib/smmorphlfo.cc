@@ -16,7 +16,18 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphLFO");
 MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  m_config.wave_type = WAVE_SINE;
+  EnumInfo wave_type_enum_info (
+    {
+      { MorphLFO::WAVE_SINE,           "Sine" },
+      { MorphLFO::WAVE_TRIANGLE,       "Triangle" },
+      { MorphLFO::WAVE_SAW_UP,         "Saw Up" },
+      { MorphLFO::WAVE_SAW_DOWN,       "Saw Down" },
+      { MorphLFO::WAVE_SQUARE,         "Square" },
+      { MorphLFO::WAVE_RANDOM_SH,      "Random Sample & Hold" },
+      { MorphLFO::WAVE_RANDOM_LINEAR,  "Random Linear" }
+    });
+
+  add_property_enum (&m_config.wave_type, P_WAVE_TYPE, "Wave Type", WAVE_SINE, wave_type_enum_info);
   add_property_log (&m_config.frequency, P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
 
   auto p_depth = add_property (&m_config.depth, P_DEPTH, "Depth", "-", 1, 0, 1);
@@ -55,7 +66,6 @@ bool
 MorphLFO::save (OutFile& out_file)
 {
   write_properties (out_file);
-  out_file.write_int ("wave_type", m_config.wave_type);
   out_file.write_bool ("sync_voices", m_config.sync_voices);
   out_file.write_bool ("beat_sync", m_config.beat_sync);
   out_file.write_int ("note", m_config.note);
@@ -75,11 +85,7 @@ MorphLFO::load (InFile& ifile)
         }
       else if (ifile.event() == InFile::INT)
         {
-          if (ifile.event_name() == "wave_type")
-            {
-              m_config.wave_type = static_cast<WaveType> (ifile.event_int());
-            }
-          else if (ifile.event_name() == "note")
+          if (ifile.event_name() == "note")
             {
               m_config.note = static_cast<Note> (ifile.event_int());
             }
@@ -123,20 +129,6 @@ MorphOperator::OutputType
 MorphLFO::output_type()
 {
   return OUTPUT_CONTROL;
-}
-
-MorphLFO::WaveType
-MorphLFO::wave_type()
-{
-  return m_config.wave_type;
-}
-
-void
-MorphLFO::set_wave_type (WaveType new_wave_type)
-{
-  m_config.wave_type = new_wave_type;
-
-  m_morph_plan->emit_plan_changed();
 }
 
 bool

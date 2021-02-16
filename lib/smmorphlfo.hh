@@ -44,6 +44,7 @@ public:
     NOTE_MODE_TRIPLET  = 2,
     NOTE_MODE_DOTTED   = 3
   };
+  static constexpr auto P_WAVE_TYPE    = "wave_type";
   static constexpr auto P_FREQUENCY    = "frequency";
   static constexpr auto P_DEPTH        = "depth";
   static constexpr auto P_CENTER       = "center";
@@ -74,9 +75,6 @@ public:
   bool               load (InFile&  in_file);
   OutputType         output_type();
   MorphOperatorConfig *clone_config() override;
-
-  WaveType wave_type();
-  void set_wave_type (WaveType new_wave_type);
 
   bool sync_voices() const;
   void set_sync_voices (float new_sync_voices);
