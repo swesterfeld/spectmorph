@@ -15,22 +15,8 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo)
 {
-  // WAVE TYPE
-  ev_wave_type.add_item (MorphLFO::WAVE_SINE,           "Sine");
-  ev_wave_type.add_item (MorphLFO::WAVE_TRIANGLE,       "Triangle");
-  ev_wave_type.add_item (MorphLFO::WAVE_SAW_UP,         "Saw Up");
-  ev_wave_type.add_item (MorphLFO::WAVE_SAW_DOWN,       "Saw Down");
-  ev_wave_type.add_item (MorphLFO::WAVE_SQUARE,         "Square");
-  ev_wave_type.add_item (MorphLFO::WAVE_RANDOM_SH,      "Random Sample & Hold");
-  ev_wave_type.add_item (MorphLFO::WAVE_RANDOM_LINEAR,  "Random Linear");
+  add_property_view (MorphLFO::P_WAVE_TYPE, op_layout);
 
-  ComboBox *wave_type_combobox;
-  wave_type_combobox = ev_wave_type.create_combobox (body_widget, morph_lfo->wave_type(),
-    [morph_lfo] (int i) { morph_lfo->set_wave_type (MorphLFO::WaveType (i)); });
-
-  op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
-
-  // FREQUENCY
   pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, op_layout);
 
   // NOTE
