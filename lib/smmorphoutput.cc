@@ -38,7 +38,15 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.adsr_sustain, P_ADSR_SUSTAIN, "Sustain", "%.1f %%", 70, 0, 100);
   add_property (&m_config.adsr_release, P_ADSR_RELEASE, "Release", "%.1f %%", 50, 0, 100);
 
+  EnumInfo filter_type_enum_info (
+    {
+      { FILTER_LP1, "Low-pass 6dB" },
+      { FILTER_LP2, "Low-pass 12dB" },
+      { FILTER_LP3, "Low-pass 18dB" },
+      { FILTER_LP4, "Low-pass 24dB" }
+    });
   m_config.filter        = false;
+  add_property_enum (&m_config.filter_type, P_FILTER_TYPE, "Filter Type", FILTER_LP2, filter_type_enum_info);
   add_property (&m_config.filter_attack, P_FILTER_ATTACK, "Attack", "%.1f %%", 15, 0, 100);
   add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 20, 0, 100);
   add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 50, 0, 100);
@@ -46,7 +54,6 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
   add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
   add_property (&m_config.filter_resonance, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
-  m_config.filter_type = FILTER_LP2;
 
   m_config.portamento = false;
   add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);

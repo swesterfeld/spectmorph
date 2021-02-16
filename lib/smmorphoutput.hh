@@ -75,6 +75,7 @@ public:
   static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
   static constexpr auto P_ADSR_RELEASE = "adsr_release";
 
+  static constexpr auto P_FILTER_TYPE       = "filter_type";
   static constexpr auto P_FILTER_ATTACK     = "filter_attack";
   static constexpr auto P_FILTER_DECAY      = "filter_decay";
   static constexpr auto P_FILTER_SUSTAIN    = "filter_sustain";
