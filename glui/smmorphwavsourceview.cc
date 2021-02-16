@@ -58,7 +58,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.add_row (3, position_control_input_label, position_control_combobox);
 
   // POSITION
-  pv_position = add_property_view (MorphWavSource::P_POSITION, body_widget, op_layout);
+  pv_position = add_property_view (MorphWavSource::P_POSITION, op_layout);
 
   update_visible();
 

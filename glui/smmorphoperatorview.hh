@@ -127,7 +127,7 @@ public:
   void set_role (int role);
   void set_role_colors();
 
-  PropertyView *add_property_view (const std::string& identifier, Widget *parent, OperatorLayout& layout);
+  PropertyView *add_property_view (const std::string& identifier, OperatorLayout& layout);
 
   void on_move (double y);
   void on_end_move (double y);

@@ -29,7 +29,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   op_layout.add_row (3, new Label (body_widget, "Source"), source_combobox);
 
   // Velocity Sensitivity
-  add_property_view (MorphOutput::P_VELOCITY_SENSITIVITY, body_widget, op_layout);
+  add_property_view (MorphOutput::P_VELOCITY_SENSITIVITY, op_layout);
 
   // Sines + Noise
   CheckBox *sines_check_box = new CheckBox (body_widget, "Enable Sine Synthesis");
@@ -45,8 +45,8 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   unison_check_box->set_checked (morph_output->unison());
   op_layout.add_row (2, unison_check_box);
 
-  pv_unison_voices = add_property_view (MorphOutput::P_UNISON_VOICES, body_widget, op_layout);
-  pv_unison_detune = add_property_view (MorphOutput::P_UNISON_DETUNE, body_widget, op_layout);
+  pv_unison_voices = add_property_view (MorphOutput::P_UNISON_VOICES, op_layout);
+  pv_unison_detune = add_property_view (MorphOutput::P_UNISON_DETUNE, op_layout);
 
   // ADSR
   CheckBox *adsr_check_box = new CheckBox (body_widget, "Enable custom ADSR Envelope");
@@ -57,40 +57,40 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   output_adsr_widget = new OutputADSRWidget (body_widget, morph_output, this);
   op_layout.add_fixed (30, 8, output_adsr_widget);
 
-  pv_adsr_skip = add_property_view (MorphOutput::P_ADSR_SKIP, body_widget, op_layout);
-  pv_adsr_attack = add_property_view (MorphOutput::P_ADSR_ATTACK, body_widget, op_layout);
-  pv_adsr_decay = add_property_view (MorphOutput::P_ADSR_DECAY, body_widget, op_layout);
-  pv_adsr_sustain = add_property_view (MorphOutput::P_ADSR_SUSTAIN, body_widget, op_layout);
-  pv_adsr_release = add_property_view (MorphOutput::P_ADSR_RELEASE, body_widget, op_layout);
+  pv_adsr_skip = add_property_view (MorphOutput::P_ADSR_SKIP, op_layout);
+  pv_adsr_attack = add_property_view (MorphOutput::P_ADSR_ATTACK, op_layout);
+  pv_adsr_decay = add_property_view (MorphOutput::P_ADSR_DECAY, op_layout);
+  pv_adsr_sustain = add_property_view (MorphOutput::P_ADSR_SUSTAIN, op_layout);
+  pv_adsr_release = add_property_view (MorphOutput::P_ADSR_RELEASE, op_layout);
 
   // Filter
   CheckBox *filter_check_box = new CheckBox (body_widget, "Enable Filter");
   filter_check_box->set_checked (morph_output->filter());
   op_layout.add_row (2, filter_check_box);
 
-  pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, body_widget, op_layout);
-  pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, body_widget, op_layout);
-  pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, body_widget, op_layout);
-  pv_filter_release = add_property_view (MorphOutput::P_FILTER_RELEASE, body_widget, op_layout);
-  pv_filter_depth = add_property_view (MorphOutput::P_FILTER_DEPTH, body_widget, op_layout);
-  pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, body_widget, op_layout);
-  pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, body_widget, op_layout);
+  pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, op_layout);
+  pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, op_layout);
+  pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, op_layout);
+  pv_filter_release = add_property_view (MorphOutput::P_FILTER_RELEASE, op_layout);
+  pv_filter_depth = add_property_view (MorphOutput::P_FILTER_DEPTH, op_layout);
+  pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, op_layout);
+  pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, op_layout);
 
   // Portamento (Mono): on/off
   CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
   portamento_check_box->set_checked (morph_output->portamento());
   op_layout.add_row (2, portamento_check_box);
 
-  pv_portamento_glide = add_property_view (MorphOutput::P_PORTAMENTO_GLIDE, body_widget, op_layout);
+  pv_portamento_glide = add_property_view (MorphOutput::P_PORTAMENTO_GLIDE, op_layout);
 
   // Vibrato
   CheckBox *vibrato_check_box = new CheckBox (body_widget, "Enable Vibrato");
   vibrato_check_box->set_checked (morph_output->vibrato());
   op_layout.add_row (2, vibrato_check_box);
 
-  pv_vibrato_depth = add_property_view (MorphOutput::P_VIBRATO_DEPTH, body_widget, op_layout);
-  pv_vibrato_frequency = add_property_view (MorphOutput::P_VIBRATO_FREQUENCY, body_widget, op_layout);
-  pv_vibrato_attack = add_property_view (MorphOutput::P_VIBRATO_ATTACK, body_widget, op_layout);
+  pv_vibrato_depth = add_property_view (MorphOutput::P_VIBRATO_DEPTH, op_layout);
+  pv_vibrato_frequency = add_property_view (MorphOutput::P_VIBRATO_FREQUENCY, op_layout);
+  pv_vibrato_attack = add_property_view (MorphOutput::P_VIBRATO_ATTACK, op_layout);
 
   connect (sines_check_box->signal_toggled, [morph_output] (bool new_value) {
     morph_output->set_sines (new_value);

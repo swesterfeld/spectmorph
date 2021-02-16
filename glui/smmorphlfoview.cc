@@ -31,7 +31,7 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   op_layout.add_row (3, new Label (body_widget, "Wave Type"), wave_type_combobox);
 
   // FREQUENCY
-  pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, body_widget, op_layout);
+  pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, op_layout);
 
   // NOTE
   note_widget = new Widget (body_widget);
@@ -70,9 +70,9 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   op_layout.add_row (3, note_label, note_widget);
 
   // DEPTH / CENTER / START_PHASE
-  add_property_view (MorphLFO::P_DEPTH, body_widget, op_layout);
-  add_property_view (MorphLFO::P_CENTER, body_widget, op_layout);
-  add_property_view (MorphLFO::P_START_PHASE, body_widget, op_layout);
+  add_property_view (MorphLFO::P_DEPTH, op_layout);
+  add_property_view (MorphLFO::P_CENTER, op_layout);
+  add_property_view (MorphLFO::P_START_PHASE, op_layout);
 
   // FLAG: SYNC PHASE
   Widget *flags_widget = new Widget (body_widget);
