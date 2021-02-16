@@ -134,6 +134,7 @@ EffectDecoder::~EffectDecoder()
 {
 }
 
+/* FIXME: FILTER: dedup */
 static float
 exp_percent (float p, float min_out, float max_out, float slope)
 {
@@ -144,6 +145,7 @@ exp_percent (float p, float min_out, float max_out, float slope)
   return x * (max_out - min_out) + min_out;
 }
 
+/* FIXME: FILTER: dedup */
 static float
 xparam_percent (float p, float min_out, float max_out, float slope)
 {
@@ -261,7 +263,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   filter_envelope.start (mix_freq);
 
   float note = freq_to_note (freq);
-  float keytrack = 100;
+  float keytrack = 100; /* FIXME: FILTER: should be configurable */
   float delta_cent = (note - 60) * keytrack;
   filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
 }
