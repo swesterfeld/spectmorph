@@ -161,8 +161,8 @@ public:
   int get() { return m_read_func(); }
   void set (int v)
   {
+    m_write_func (v);
     signal_value_changed();
-    return m_write_func (v);
   }
   std::string label() { return m_label; }
   std::string value_label() { return "-"; }
