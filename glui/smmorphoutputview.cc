@@ -68,6 +68,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   filter_check_box->set_checked (morph_output->filter());
   op_layout.add_row (2, filter_check_box);
 
+  pv_filter_type = add_property_view (MorphOutput::P_FILTER_TYPE, op_layout);
   pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, op_layout);
   pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, op_layout);
   pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, op_layout);
@@ -154,6 +155,7 @@ MorphOutputView::update_visible()
   pv_adsr_sustain->set_visible (morph_output->adsr());
   pv_adsr_release->set_visible (morph_output->adsr());
 
+  pv_filter_type->set_visible (morph_output->filter());
   pv_filter_attack->set_visible (morph_output->filter());
   pv_filter_decay->set_visible (morph_output->filter());
   pv_filter_sustain->set_visible (morph_output->filter());

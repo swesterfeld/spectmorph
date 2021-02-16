@@ -6,6 +6,7 @@
 #include "smdrawutils.hh"
 #include "smscrollbar.hh"
 #include "smmath.hh"
+#include "smwindow.hh"
 
 namespace SpectMorph
 {

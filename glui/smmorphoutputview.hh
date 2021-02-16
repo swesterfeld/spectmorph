@@ -28,6 +28,7 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_adsr_sustain;
   PropertyView               *pv_adsr_release;
 
+  PropertyView               *pv_filter_type;
   PropertyView               *pv_filter_attack;
   PropertyView               *pv_filter_decay;
   PropertyView               *pv_filter_sustain;
