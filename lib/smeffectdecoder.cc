@@ -198,9 +198,16 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 
   // filter
   float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
-  float decay   = exp_percent (cfg->filter_decay, 2, 1000, 5) / 1000;
-  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000;
+  float decay   = xparam_percent (cfg->filter_decay, 2, 5000, 3) / 1000;
+  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000; /* FIXME: FILTER: this may not be the best solution */
   float sustain = cfg->filter_sustain;
+  if (0)
+    {
+      printf ("%.2f ms -  %.2f ms  -  %.2f ms\n",
+          attack * 1000,
+          decay * 1000,
+          release * 1000);
+    }
 
   filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
   filter_envelope.set_delay (0);
