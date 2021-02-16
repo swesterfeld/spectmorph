@@ -6,6 +6,7 @@
 #include "smoutfile.hh"
 #include "sminfile.hh"
 #include "smsignal.hh"
+#include "smproperty.hh"
 
 #include <map>
 #include <memory>
@@ -23,11 +24,6 @@ typedef std::shared_ptr<MorphOperatorConfig> MorphOperatorConfigP;
 class MorphOperatorView;
 class MorphPlan;
 class MorphOperatorPtr;
-class Property;
-class LogProperty;
-class LinearProperty;
-class XParamProperty;
-class IntProperty;
 
 class MorphOperator : public SignalReceiver
 {
@@ -53,6 +49,21 @@ protected:
   IntProperty *add_property (int *value, const std::string& identifier,
                              const std::string& label, const std::string& value_label,
                              int def, int mn, int mx);
+  template<typename Enum>
+  EnumProperty *
+  add_property_enum (Enum *value, const std::string& identifier,
+                                  const std::string& label, int def, const EnumInfo& ei)
+  {
+    return add_property_enum (identifier, label, def, ei,
+      [value]() { return *value; },
+      [value](int new_value) { *value = static_cast<Enum> (new_value); });
+  }
+
+  EnumProperty *
+  add_property_enum (const std::string& identifier,
+                     const std::string& label, int def, const EnumInfo& ei,
+                     std::function<int()> read_func,
+                     std::function<void(int)> write_func);
 
 public:
   enum OutputType {

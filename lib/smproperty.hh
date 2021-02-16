@@ -12,9 +12,15 @@
 namespace SpectMorph
 {
 
+class EnumInfo;
+
 class Property
 {
 public:
+  enum class Type { INT, ENUM, FLOAT };
+
+  virtual Type        type() = 0;
+
   virtual int         min() = 0;
   virtual int         max() = 0;
   virtual int         get() = 0;
@@ -31,6 +37,8 @@ public:
   /* specific types */
   virtual float get_float() const { return 0; }
   virtual void  set_float (float f) {}
+
+  virtual const EnumInfo *enum_info() const { return nullptr; }
 };
 
 class IntProperty : public Property
@@ -42,6 +50,7 @@ class IntProperty : public Property
   std::string   m_label;
   std::string   m_format;
 public:
+  Type type()       { return Type::INT; }
   int min()         { return m_min_value; }
   int max()         { return m_max_value; }
   int get()         { return *m_value; }
@@ -91,6 +100,93 @@ public:
   }
 };
 
+class EnumInfo
+{
+public:
+  struct Item
+  {
+    int         value;
+    std::string text;
+  };
+  EnumInfo (const std::vector<Item>& items) :
+    m_items (items)
+  {
+  }
+
+  const std::vector<Item>
+  items() const
+  {
+    return m_items;
+  }
+private:
+  std::vector<Item> m_items;
+};
+
+class EnumProperty : public Property
+{
+  std::string               m_identifier;
+  std::string               m_label;
+  EnumInfo                  m_enum_info;
+  std::function<int()>      m_read_func;
+  std::function<void(int)>  m_write_func;
+  int                       m_min_value;
+  int                       m_max_value;
+public:
+  EnumProperty (const std::string& identifier,
+                const std::string& label,
+                int def,
+                const EnumInfo& ei,
+                std::function<int()> read_func,
+                std::function<void(int)> write_func) :
+    m_identifier (identifier),
+    m_label (label),
+    m_enum_info (ei),
+    m_read_func (read_func),
+    m_write_func (write_func)
+  {
+    m_write_func (def);
+
+    g_return_if_fail (ei.items().size());
+    m_min_value = ei.items()[0].value;
+    m_max_value = ei.items()[0].value;
+    for (auto item : ei.items())
+      {
+        m_min_value = std::min (item.value, m_min_value);
+        m_max_value = std::max (item.value, m_max_value);
+      }
+  }
+  Type type() { return Type::ENUM; }
+  int min() { return m_min_value; }
+  int max() { return m_max_value; }
+  int get() { return m_read_func(); }
+  void set (int v)
+  {
+    signal_value_changed();
+    return m_write_func (v);
+  }
+  std::string label() { return m_label; }
+  std::string value_label() { return "-"; }
+  virtual const EnumInfo *enum_info() const { return &m_enum_info; }
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_int (m_identifier, m_read_func());
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::INT)
+      {
+        if (in_file.event_name() == m_identifier)
+          {
+            m_write_func (in_file.event_int());
+            return true;
+          }
+      }
+    return false;
+  }
+};
+
 class PropertyBase : public Property
 {
   float        *m_value;
@@ -109,6 +205,8 @@ public:
     m_format (format)
   {
   }
+  Type type() { return Type::FLOAT; }
+
   int min()         { return 0; }
   int max()         { return 1000; }
   int get()         { return lrint (value2ui (*m_value) * 1000); }

@@ -164,6 +164,20 @@ MorphOperator::add_property (int *value, const std::string& identifier,
   return property;
 }
 
+EnumProperty *
+MorphOperator::add_property_enum (const std::string& identifier,
+                                  const std::string& label, int def, const EnumInfo& ei,
+                                  std::function<int()> read_func,
+                                  std::function<void(int)> write_func)
+{
+  assert (!m_properties[identifier]);
+  EnumProperty *property = new EnumProperty (identifier, label, def, ei, read_func, write_func);
+  m_properties[identifier].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
+
 void
 MorphOperator::write_properties (OutFile& out_file)
 {
