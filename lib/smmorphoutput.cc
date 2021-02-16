@@ -101,6 +101,7 @@ MorphOutput::save (OutFile& out_file)
   out_file.write_bool ("noise", m_config.noise);
   out_file.write_bool ("unison", m_config.unison);
   out_file.write_bool ("adsr", m_config.adsr);
+  out_file.write_bool ("filter", m_config.filter);
   out_file.write_bool ("portamento", m_config.portamento);
   out_file.write_bool ("vibrato", m_config.vibrato);
 
@@ -147,6 +148,10 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "adsr")
             {
               m_config.adsr = ifile.event_bool();
+            }
+          else if (ifile.event_name() == "filter")
+            {
+              m_config.filter = ifile.event_bool();
             }
           else if (ifile.event_name() == "portamento")
             {
