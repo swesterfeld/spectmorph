@@ -8,7 +8,6 @@
 #include "smmorphplanwindow.hh"
 #include "smcombobox.hh"
 #include "smprogressbar.hh"
-#include "smenumview.hh"
 #include "smpropertyview.hh"
 #include "smcomboboxoperator.hh"
 #include "smoperatorlayout.hh"

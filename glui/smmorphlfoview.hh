@@ -7,7 +7,6 @@
 #include "smmorphlfo.hh"
 #include "smcomboboxoperator.hh"
 #include "smpropertyview.hh"
-#include "smenumview.hh"
 #include "smoperatorlayout.hh"
 
 namespace SpectMorph

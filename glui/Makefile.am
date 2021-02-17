@@ -48,7 +48,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smmorphwavsourceview.hh smsamplewidget.hh sminsteditwindow.hh \
 	 smtimer.hh smshortcut.hh sminsteditparams.hh \
 	 smparamlabel.hh smeventloop.hh smprogressbar.hh sminsteditnote.hh \
-	 smsimplelines.hh smoperatorrolemap.hh smlistbox.hh smenumview.hh \
+	 smsimplelines.hh smoperatorrolemap.hh smlistbox.hh \
 	 smcontrolview.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
