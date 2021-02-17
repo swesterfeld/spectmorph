@@ -16,6 +16,13 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
 {
   leak_debugger.add (this);
 
+  EnumInfo play_mode_enum_info (
+    {
+      { PLAY_MODE_STANDARD,        "Standard" },
+      { PLAY_MODE_CUSTOM_POSITION, "Custom Position" }
+    });
+
+  add_property_enum (&m_config.play_mode, P_PLAY_MODE, "Play Mode", PLAY_MODE_STANDARD, play_mode_enum_info);
   add_property (&m_config.position, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
 
   connect (morph_plan->signal_operator_removed, this, &MorphWavSource::on_operator_removed);
@@ -67,20 +74,6 @@ string
 MorphWavSource::lv2_filename()
 {
   return m_lv2_filename;
-}
-
-void
-MorphWavSource::set_play_mode (PlayMode play_mode)
-{
-  m_config.play_mode = play_mode;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphWavSource::PlayMode
-MorphWavSource::play_mode() const
-{
-  return m_config.play_mode;
 }
 
 void
@@ -140,7 +133,6 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("object_id", m_config.object_id);
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
-  out_file.write_int ("play_mode", m_config.play_mode);
   out_file.write_int ("position_control_type", m_config.position_control_type);
   write_operator (out_file, "position_op", m_config.position_op);
 
@@ -167,10 +159,6 @@ MorphWavSource::load (InFile& ifile)
           else if (ifile.event_name() == "instrument")
             {
               m_instrument = ifile.event_int();
-            }
-          else if (ifile.event_name() == "play_mode")
-            {
-              m_config.play_mode = static_cast<PlayMode> (ifile.event_int());
             }
           else if (ifile.event_name() == "position_control_type")
             {

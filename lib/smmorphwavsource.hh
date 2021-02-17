@@ -31,7 +31,8 @@ public:
     float             position;
     MorphOperatorPtr  position_op;
   };
-  static constexpr auto P_POSITION = "position";
+  static constexpr auto P_PLAY_MODE = "play_mode";
+  static constexpr auto P_POSITION  = "position";
 protected:
   Config      m_config;
   std::string load_position_op;
@@ -61,9 +62,6 @@ public:
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
-
-  void        set_play_mode (PlayMode play_mode);
-  PlayMode    play_mode() const;
 
   void        set_position_control_type (ControlType new_control_type);
   ControlType position_control_type() const;
