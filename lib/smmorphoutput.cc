@@ -27,7 +27,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_config.sines = true;
   m_config.noise = true;
 
-  m_config.unison = false;
+  add_property (&m_config.unison, P_UNISON, "Enable Unison Effect", false);
   add_property (&m_config.unison_voices, P_UNISON_VOICES, "Voices", "%d", 2, 2, 7);
   add_property (&m_config.unison_detune, P_UNISON_DETUNE, "Detune", "%.1f Cent", 6, 0.5, 50);
 
@@ -99,7 +99,6 @@ MorphOutput::save (OutFile& out_file)
     }
   out_file.write_bool ("sines", m_config.sines);
   out_file.write_bool ("noise", m_config.noise);
-  out_file.write_bool ("unison", m_config.unison);
   out_file.write_bool ("adsr", m_config.adsr);
   out_file.write_bool ("filter", m_config.filter);
   out_file.write_bool ("portamento", m_config.portamento);
@@ -140,10 +139,6 @@ MorphOutput::load (InFile& ifile)
           else if (ifile.event_name() == "noise")
             {
               m_config.noise = ifile.event_bool();
-            }
-          else if (ifile.event_name() == "unison")
-            {
-              m_config.unison = ifile.event_bool();
             }
           else if (ifile.event_name() == "adsr")
             {
@@ -237,22 +232,6 @@ void
 MorphOutput::set_noise (bool en)
 {
   m_config.noise = en;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-//---- unison effect ----
-
-bool
-MorphOutput::unison() const
-{
-  return m_config.unison;
-}
-
-void
-MorphOutput::set_unison (bool eu)
-{
-  m_config.unison = eu;
 
   m_morph_plan->emit_plan_changed();
 }

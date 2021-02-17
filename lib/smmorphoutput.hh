@@ -66,6 +66,7 @@ public:
 
   static constexpr auto P_VELOCITY_SENSITIVITY = "velocity_sensitivity";
 
+  static constexpr auto P_UNISON        = "unison";
   static constexpr auto P_UNISON_VOICES = "unison_voices";
   static constexpr auto P_UNISON_DETUNE = "unison_detune";
 
@@ -113,9 +114,6 @@ public:
 
   void           set_noise (bool en);
   bool           noise() const;
-
-  void           set_unison (bool eu);
-  bool           unison() const;
 
   void           set_adsr (bool eadsr);
   bool           adsr() const;
