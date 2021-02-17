@@ -16,7 +16,7 @@ class OperatorLayout;
 
 struct PropertyView : public SignalReceiver
 {
-  Property& property;
+  Property& m_property;
 
   Label    *title  = nullptr;
   Slider   *slider = nullptr;
@@ -30,6 +30,7 @@ public:
   PropertyView (Property& property);
 
   ComboBox *create_combobox (Widget *parent);
+  Property *property() const;
 
   void set_enabled (bool enabled);
   void set_visible (bool visible);

@@ -11,13 +11,13 @@ using std::string;
 using std::vector;
 
 PropertyView::PropertyView (Property& property) :
-  property (property)
+  m_property (property)
 {
   /* minimal constructor, to support custom layouts by creating widgets manually */
 }
 
 PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& op_layout) :
-  property (property)
+  m_property (property)
 {
   if (property.type() == Property::Type::ENUM)
     {
@@ -44,10 +44,10 @@ PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& 
 ComboBox *
 PropertyView::create_combobox (Widget *parent)
 {
-  int initial_value = property.get();
+  int initial_value = m_property.get();
 
   combobox = new ComboBox (parent);
-  const EnumInfo *enum_info = property.enum_info();
+  const EnumInfo *enum_info = m_property.enum_info();
   for (auto item : enum_info->items())
     {
       combobox->add_item (item.text);
@@ -57,13 +57,19 @@ PropertyView::create_combobox (Widget *parent)
     }
   connect (combobox->signal_item_changed, [this]()
     {
-      const EnumInfo *enum_info = property.enum_info();
+      const EnumInfo *enum_info = m_property.enum_info();
       std::string text = combobox->text();
       for (auto item : enum_info->items())
         if (item.text == text)
-          property.set (item.value);
+          m_property.set (item.value);
     });
   return combobox;
+}
+
+Property *
+PropertyView::property() const
+{
+  return &m_property;
 }
 
 void
@@ -95,13 +101,13 @@ PropertyView::set_visible (bool visible)
 void
 PropertyView::on_value_changed (int value)
 {
-  property.set (value);
-  label->set_text (property.value_label());
+  m_property.set (value);
+  label->set_text (m_property.value_label());
 }
 
 void
 PropertyView::on_update_value()
 {
-  slider->set_int_value (property.get());
-  label->set_text (property.value_label());
+  slider->set_int_value (m_property.get());
+  label->set_text (m_property.value_label());
 }
