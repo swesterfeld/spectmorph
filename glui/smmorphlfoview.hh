@@ -22,9 +22,6 @@ class MorphLFOView : public MorphOperatorView
 
   PropertyView *pv_frequency;
 
-  EnumView ev_note;
-  EnumView ev_note_mode;
-
   OperatorLayout op_layout;
 
   void update_visible();

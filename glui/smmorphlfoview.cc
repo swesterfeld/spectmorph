@@ -19,39 +19,16 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
 
   pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, op_layout);
 
-  // NOTE
-  note_widget = new Widget (body_widget);
-
-  for (int note = MorphLFO::NOTE_32_1; note <= MorphLFO::NOTE_1_64; note++)
-    {
-      string text;
-
-      if (note <= MorphLFO::NOTE_1_1)
-        text = string_printf ("%d/1", sm_round_positive (pow (2.0, MorphLFO::NOTE_32_1 - note + 5)));
-      else
-        text = string_printf ("1/%d", sm_round_positive (pow (2.0, note - MorphLFO::NOTE_1_1)));
-
-      ev_note.add_item (note, text);
-    }
-
-  ComboBox *note_combobox;
-  note_combobox = ev_note.create_combobox (note_widget, morph_lfo->note(),
-    [morph_lfo] (int i) { morph_lfo->set_note (MorphLFO::Note (i)); });
-
-  // NOTE MODE
-  ev_note_mode.add_item (MorphLFO::NOTE_MODE_STRAIGHT, "straight");
-  ev_note_mode.add_item (MorphLFO::NOTE_MODE_TRIPLET, "triplet");
-  ev_note_mode.add_item (MorphLFO::NOTE_MODE_DOTTED, "dotted");
-
-  ComboBox *note_mode_combobox;
-  note_mode_combobox = ev_note_mode.create_combobox (note_widget, morph_lfo->note_mode(),
-    [morph_lfo] (int i) { morph_lfo->set_note_mode (MorphLFO::NoteMode (i)); });
-
+  // NOTE MODE / NOTE LABEL
   FixedGrid grid;
-  grid.add_widget (note_combobox, 0, 0, 14, 3);
-  grid.add_widget (note_mode_combobox, 15, 0, 14, 3);
+  auto pv_note = add_property_view (MorphLFO::P_NOTE);
+  auto pv_note_mode = add_property_view (MorphLFO::P_NOTE_MODE);
 
   note_label = new Label (body_widget, "Note");
+  note_widget = new Widget (body_widget);
+
+  grid.add_widget (pv_note->create_combobox (note_widget), 0, 0, 14, 3);
+  grid.add_widget (pv_note_mode->create_combobox (note_widget), 15, 0, 14, 3);
 
   op_layout.add_row (3, note_label, note_widget);
 

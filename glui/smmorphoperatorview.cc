@@ -81,6 +81,17 @@ MorphOperatorView::add_property_view (const std::string& identifier, OperatorLay
   return pv;
 }
 
+PropertyView *
+MorphOperatorView::add_property_view (const std::string& identifier)
+{
+  /* this constructor allows creating property view widgets manually (to do custom layouts) */
+  auto pv = new PropertyView (*m_op->property (identifier));
+
+  /* this ensures that the PropertyView object will be deleted when we're done */
+  property_views.emplace_back (pv);
+  return pv;
+}
+
 void
 MorphOperatorView::on_operators_changed()
 {

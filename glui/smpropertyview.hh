@@ -27,6 +27,10 @@ struct PropertyView : public SignalReceiver
 
 public:
   PropertyView (Property& property, Widget *parent, OperatorLayout& layout);
+  PropertyView (Property& property);
+
+  ComboBox *create_combobox (Widget *parent);
+
   void set_enabled (bool enabled);
   void set_visible (bool visible);
 

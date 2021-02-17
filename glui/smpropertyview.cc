@@ -10,30 +10,18 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
+PropertyView::PropertyView (Property& property) :
+  property (property)
+{
+  /* minimal constructor, to support custom layouts by creating widgets manually */
+}
+
 PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& op_layout) :
   property (property)
 {
   if (property.type() == Property::Type::ENUM)
     {
-      int initial_value = property.get();
-
-      combobox = new ComboBox (parent);
-      const EnumInfo *enum_info = property.enum_info();
-      for (auto item : enum_info->items())
-        {
-          combobox->add_item (item.text);
-
-          if (initial_value == item.value)
-            combobox->set_text (item.text);
-        }
-      connect (combobox->signal_item_changed, [this]()
-        {
-          const EnumInfo *enum_info = this->property.enum_info();
-          std::string text = combobox->text();
-          for (auto item : enum_info->items())
-            if (item.text == text)
-              this->property.set (item.value);
-        });
+      create_combobox (parent);
       title = new Label (parent, property.label());
       op_layout.add_row (3, title, combobox);
     }
@@ -51,6 +39,31 @@ PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& 
 
       op_layout.add_row (2, title, slider, label);
     }
+}
+
+ComboBox *
+PropertyView::create_combobox (Widget *parent)
+{
+  int initial_value = property.get();
+
+  combobox = new ComboBox (parent);
+  const EnumInfo *enum_info = property.enum_info();
+  for (auto item : enum_info->items())
+    {
+      combobox->add_item (item.text);
+
+      if (initial_value == item.value)
+        combobox->set_text (item.text);
+    }
+  connect (combobox->signal_item_changed, [this]()
+    {
+      const EnumInfo *enum_info = property.enum_info();
+      std::string text = combobox->text();
+      for (auto item : enum_info->items())
+        if (item.text == text)
+          property.set (item.value);
+    });
+  return combobox;
 }
 
 void
