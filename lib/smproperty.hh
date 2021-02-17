@@ -17,7 +17,7 @@ class EnumInfo;
 class Property
 {
 public:
-  enum class Type { INT, ENUM, FLOAT };
+  enum class Type { BOOL, INT, ENUM, FLOAT };
 
   virtual Type        type() = 0;
 
@@ -35,6 +35,9 @@ public:
   Signal<> signal_value_changed;
 
   /* specific types */
+  bool get_bool()         { return get() != 0; }
+  void set_bool (bool b)  { set (b ? 1 : 0); }
+
   virtual float get_float() const { return 0; }
   virtual void  set_float (float f) {}
 
@@ -93,6 +96,58 @@ public:
         if (in_file.event_name() == m_identifier)
           {
             *m_value = in_file.event_int();
+            return true;
+          }
+      }
+    return false;
+  }
+};
+
+class BoolProperty : public Property
+{
+  bool         *m_value;
+  std::string   m_identifier;
+  std::string   m_label;
+public:
+  Type type()       { return Type::BOOL; }
+  int min()         { return 0; }
+  int max()         { return 1; }
+  int get()         { return *m_value; }
+
+  BoolProperty (bool *value, const std::string& identifier, const std::string& label, bool def) :
+    m_value (value),
+    m_identifier (identifier),
+    m_label (label)
+  {
+    *value = def;
+  }
+  std::string label() { return m_label; }
+
+  std::string
+  value_label()
+  {
+    return "";
+  }
+
+  void
+  set (int v)
+  {
+    *m_value = v ? true : false;
+    signal_value_changed();
+  }
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_bool (m_identifier, *m_value);
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::BOOL)
+      {
+        if (in_file.event_name() == m_identifier)
+          {
+            *m_value = in_file.event_bool();
             return true;
           }
       }

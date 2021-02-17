@@ -49,6 +49,9 @@ protected:
   IntProperty *add_property (int *value, const std::string& identifier,
                              const std::string& label, const std::string& value_label,
                              int def, int mn, int mx);
+  BoolProperty *add_property (bool *value, const std::string& identifier,
+                              const std::string& label,
+                              bool def);
   template<typename Enum>
   EnumProperty *
   add_property_enum (Enum *value, const std::string& identifier,

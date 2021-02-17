@@ -164,6 +164,18 @@ MorphOperator::add_property (int *value, const std::string& identifier,
   return property;
 }
 
+BoolProperty *
+MorphOperator::add_property (bool *value, const std::string& identifier,
+                             const std::string& label,
+                             bool def)
+{
+  assert (!m_properties[identifier]);
+  BoolProperty *property = new BoolProperty (value, identifier, label, def);
+  m_properties[identifier].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
 EnumProperty *
 MorphOperator::add_property_enum (const std::string& identifier,
                                   const std::string& label, int def, const EnumInfo& ei,
