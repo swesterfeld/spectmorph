@@ -49,6 +49,8 @@ public:
   static constexpr auto P_DEPTH        = "depth";
   static constexpr auto P_CENTER       = "center";
   static constexpr auto P_START_PHASE  = "start_phase";
+  static constexpr auto P_NOTE         = "note";
+  static constexpr auto P_NOTE_MODE    = "note_mode";
 
   struct Config : public MorphOperatorConfig
   {
@@ -81,12 +83,6 @@ public:
 
   bool beat_sync() const;
   void set_beat_sync (bool beat_sync);
-
-  Note note() const;
-  void set_note (Note note);
-
-  NoteMode note_mode() const;
-  void set_note_mode (NoteMode mode);
 };
 
 }

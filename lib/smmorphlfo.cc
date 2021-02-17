@@ -18,14 +18,35 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
 {
   EnumInfo wave_type_enum_info (
     {
-      { MorphLFO::WAVE_SINE,           "Sine" },
-      { MorphLFO::WAVE_TRIANGLE,       "Triangle" },
-      { MorphLFO::WAVE_SAW_UP,         "Saw Up" },
-      { MorphLFO::WAVE_SAW_DOWN,       "Saw Down" },
-      { MorphLFO::WAVE_SQUARE,         "Square" },
-      { MorphLFO::WAVE_RANDOM_SH,      "Random Sample & Hold" },
-      { MorphLFO::WAVE_RANDOM_LINEAR,  "Random Linear" }
+      { WAVE_SINE,           "Sine" },
+      { WAVE_TRIANGLE,       "Triangle" },
+      { WAVE_SAW_UP,         "Saw Up" },
+      { WAVE_SAW_DOWN,       "Saw Down" },
+      { WAVE_SQUARE,         "Square" },
+      { WAVE_RANDOM_SH,      "Random Sample & Hold" },
+      { WAVE_RANDOM_LINEAR,  "Random Linear" }
     });
+  EnumInfo note_enum_info (
+    {
+      { NOTE_32_1, "32/1" },
+      { NOTE_16_1, "16/1" },
+      { NOTE_8_1,  "8/1" },
+      { NOTE_4_1,  "4/1" },
+      { NOTE_2_1,  "2/1" },
+      { NOTE_1_1,  "1/1" },
+      { NOTE_1_2,  "1/2" },
+      { NOTE_1_4,  "1/4" },
+      { NOTE_1_8,  "1/8" },
+      { NOTE_1_16, "1/16" },
+      { NOTE_1_32, "1/32" },
+      { NOTE_1_64, "1/64" }
+    });
+  EnumInfo note_mode_enum_info (
+    {
+      { NOTE_MODE_STRAIGHT, "straight" },
+      { NOTE_MODE_TRIPLET,  "triplet" },
+      { NOTE_MODE_DOTTED,   "dotted" }
+     });
 
   add_property_enum (&m_config.wave_type, P_WAVE_TYPE, "Wave Type", WAVE_SINE, wave_type_enum_info);
   add_property_log (&m_config.frequency, P_FREQUENCY, "Frequency", "%.3f Hz", 1, 0.01, 10);
@@ -39,8 +60,8 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
 
   m_config.sync_voices = false;
   m_config.beat_sync = false;
-  m_config.note = NOTE_1_4;
-  m_config.note_mode = NOTE_MODE_STRAIGHT;
+  add_property_enum (&m_config.note, P_NOTE, "Note", NOTE_1_4, note_enum_info);
+  add_property_enum (&m_config.note_mode, P_NOTE_MODE, "Note Mode", NOTE_MODE_STRAIGHT, note_mode_enum_info);
 
   leak_debugger.add (this);
 }
@@ -68,8 +89,6 @@ MorphLFO::save (OutFile& out_file)
   write_properties (out_file);
   out_file.write_bool ("sync_voices", m_config.sync_voices);
   out_file.write_bool ("beat_sync", m_config.beat_sync);
-  out_file.write_int ("note", m_config.note);
-  out_file.write_int ("note_mode", m_config.note_mode);
 
   return true;
 }
@@ -82,22 +101,6 @@ MorphLFO::load (InFile& ifile)
       if (read_property_event (ifile))
         {
           // property has been read, so we ignore the event
-        }
-      else if (ifile.event() == InFile::INT)
-        {
-          if (ifile.event_name() == "note")
-            {
-              m_config.note = static_cast<Note> (ifile.event_int());
-            }
-          else if (ifile.event_name() == "note_mode")
-            {
-              m_config.note_mode = static_cast<NoteMode> (ifile.event_int());
-            }
-          else
-            {
-              g_printerr ("bad int\n");
-              return false;
-            }
         }
       else if (ifile.event() == InFile::BOOL)
         {
@@ -155,34 +158,6 @@ void
 MorphLFO::set_beat_sync (bool beat_sync)
 {
   m_config.beat_sync = beat_sync;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphLFO::Note
-MorphLFO::note() const
-{
-  return m_config.note;
-}
-
-void
-MorphLFO::set_note (Note note)
-{
-  m_config.note = note;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphLFO::NoteMode
-MorphLFO::note_mode() const
-{
-  return m_config.note_mode;
-}
-
-void
-MorphLFO::set_note_mode (NoteMode mode)
-{
-  m_config.note_mode = mode;
 
   m_morph_plan->emit_plan_changed();
 }
