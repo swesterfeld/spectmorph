@@ -41,12 +41,11 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   op_layout.add_row (2, noise_check_box);
 
   // Unison
-  CheckBox *unison_check_box = new CheckBox (body_widget, "Enable Unison Effect");
-  unison_check_box->set_checked (morph_output->unison());
-  op_layout.add_row (2, unison_check_box);
-
+  pv_unison        = add_property_view (MorphOutput::P_UNISON, op_layout);
   pv_unison_voices = add_property_view (MorphOutput::P_UNISON_VOICES, op_layout);
   pv_unison_detune = add_property_view (MorphOutput::P_UNISON_DETUNE, op_layout);
+
+  connect (pv_unison->property()->signal_value_changed, this, &MorphOutputView::update_visible);
 
   // ADSR
   CheckBox *adsr_check_box = new CheckBox (body_widget, "Enable custom ADSR Envelope");
@@ -99,10 +98,6 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   connect (noise_check_box->signal_toggled, [morph_output] (bool new_value) {
     morph_output->set_noise (new_value);
   });
-  connect (unison_check_box->signal_toggled, [=] (bool new_value) {
-    morph_output->set_unison (new_value);
-    update_visible();
-  });
   connect (adsr_check_box->signal_toggled, [=] (bool new_value) {
     morph_output->set_adsr (new_value);
     update_visible();
@@ -144,8 +139,9 @@ MorphOutputView::on_operator_changed()
 void
 MorphOutputView::update_visible()
 {
-  pv_unison_voices->set_visible (morph_output->unison());
-  pv_unison_detune->set_visible (morph_output->unison());
+  bool unison = pv_unison->property()->get_bool();
+  pv_unison_voices->set_visible (unison);
+  pv_unison_detune->set_visible (unison);
 
   output_adsr_widget->set_visible (morph_output->adsr());
 

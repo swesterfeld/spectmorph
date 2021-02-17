@@ -7,6 +7,7 @@
 #include "smlabel.hh"
 #include "smslider.hh"
 #include "smcombobox.hh"
+#include "smcheckbox.hh"
 #include "smfixedgrid.hh"
 
 namespace SpectMorph
@@ -21,6 +22,7 @@ struct PropertyView : public SignalReceiver
   Label    *title  = nullptr;
   Slider   *slider = nullptr;
   ComboBox *combobox = nullptr;
+  CheckBox *check_box = nullptr;
   Label    *label  = nullptr;
 
   void on_value_changed (int new_value);

@@ -19,6 +19,7 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
+  PropertyView               *pv_unison;
   PropertyView               *pv_unison_voices;
   PropertyView               *pv_unison_detune;
 

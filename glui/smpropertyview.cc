@@ -25,6 +25,18 @@ PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& 
       title = new Label (parent, property.label());
       op_layout.add_row (3, title, combobox);
     }
+  else if (property.type() == Property::Type::BOOL)
+    {
+      check_box = new CheckBox (parent, property.label());
+      check_box->set_checked (property.get_bool());
+      op_layout.add_row (2, check_box);
+
+      connect (check_box->signal_toggled,
+        [this] (bool new_value)
+          {
+            m_property.set_bool (new_value);
+          });
+    }
   else
     {
       slider = new Slider (parent, 0);
@@ -81,6 +93,8 @@ PropertyView::set_enabled (bool enabled)
     slider->set_enabled (enabled);
   if (combobox)
     combobox->set_enabled (enabled);
+  if (check_box)
+    check_box->set_enabled (enabled);
   if (label)
     label->set_enabled (enabled);
 }
@@ -94,6 +108,8 @@ PropertyView::set_visible (bool visible)
     slider->set_visible (visible);
   if (combobox)
     combobox->set_visible (visible);
+  if (check_box)
+    check_box->set_visible (visible);
   if (label)
     label->set_visible (visible);
 }
