@@ -35,17 +35,9 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   op_layout.add_row (3, progress_bar, instrument_combobox, edit_button);
 
   // PLAY MODE
-  ev_play_mode.add_item (MorphWavSource::PLAY_MODE_STANDARD,        "Standard");
-  ev_play_mode.add_item (MorphWavSource::PLAY_MODE_CUSTOM_POSITION, "Custom Position");
-
-  ComboBox *play_mode_combobox;
-  play_mode_combobox = ev_play_mode.create_combobox (body_widget, morph_wav_source->play_mode(),
-    [this, morph_wav_source] (int i) {
-      morph_wav_source->set_play_mode (MorphWavSource::PlayMode (i));
-      update_visible();
-    });
-
-  op_layout.add_row (3, new Label (body_widget, "Play Mode"), play_mode_combobox);
+  auto pv_play_mode = add_property_view (MorphWavSource::P_PLAY_MODE, op_layout);
+  prop_play_mode = pv_play_mode->property();
+  connect (prop_play_mode->signal_value_changed, this, &MorphWavSourceView::update_visible);
 
   // POSITION CONTROL INPUT
   position_control_combobox = cv_position_control.create_combobox (body_widget,
@@ -256,7 +248,7 @@ MorphWavSourceView::update_instrument_list()
 void
 MorphWavSourceView::update_visible()
 {
-  bool custom_position = morph_wav_source->play_mode() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION;
+  bool custom_position = (prop_play_mode->get() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION);
   position_control_combobox->set_visible (custom_position);
   position_control_input_label->set_visible (custom_position);
   pv_position->set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);

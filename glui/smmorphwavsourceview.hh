@@ -26,8 +26,8 @@ class MorphWavSourceView : public MorphOperatorView
   Label            *position_control_input_label = nullptr;
   std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
 
+  Property         *prop_play_mode;
   PropertyView     *pv_position;
-  EnumView          ev_play_mode;
   ControlView       cv_position_control;
   ComboBoxOperator *position_control_combobox;
   OperatorLayout    op_layout;
