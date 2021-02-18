@@ -19,16 +19,20 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
+  PropertyView               *pv_velocity_sensitivity;
+
   PropertyView               *pv_unison;
   PropertyView               *pv_unison_voices;
   PropertyView               *pv_unison_detune;
 
+  PropertyView               *pv_adsr;
   PropertyView               *pv_adsr_skip;
   PropertyView               *pv_adsr_attack;
   PropertyView               *pv_adsr_decay;
   PropertyView               *pv_adsr_sustain;
   PropertyView               *pv_adsr_release;
 
+  PropertyView               *pv_filter;
   PropertyView               *pv_filter_type;
   PropertyView               *pv_filter_attack;
   PropertyView               *pv_filter_decay;
@@ -38,11 +42,13 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_filter_cutoff;
   PropertyView               *pv_filter_resonance;
 
+  PropertyView               *pv_portamento;
   PropertyView               *pv_portamento_glide;
+
+  PropertyView               *pv_vibrato;
   PropertyView               *pv_vibrato_depth;
   PropertyView               *pv_vibrato_frequency;
   PropertyView               *pv_vibrato_attack;
-  PropertyView               *pv_velocity_sensitivity;
 
   OutputADSRWidget           *output_adsr_widget;
 

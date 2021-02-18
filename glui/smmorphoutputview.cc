@@ -28,29 +28,18 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 
   op_layout.add_row (3, new Label (body_widget, "Source"), source_combobox);
 
-  // Velocity Sensitivity
   add_property_view (MorphOutput::P_VELOCITY_SENSITIVITY, op_layout);
 
-  // Sines + Noise
-  CheckBox *sines_check_box = new CheckBox (body_widget, "Enable Sine Synthesis");
-  sines_check_box->set_checked (morph_output->sines());
-  op_layout.add_row (2, sines_check_box);
-
-  CheckBox *noise_check_box = new CheckBox (body_widget, "Enable Noise Synthesis");
-  noise_check_box->set_checked (morph_output->noise());
-  op_layout.add_row (2, noise_check_box);
+  add_property_view (MorphOutput::P_SINES, op_layout);
+  add_property_view (MorphOutput::P_NOISE, op_layout);
 
   // Unison
   pv_unison        = add_property_view (MorphOutput::P_UNISON, op_layout);
   pv_unison_voices = add_property_view (MorphOutput::P_UNISON_VOICES, op_layout);
   pv_unison_detune = add_property_view (MorphOutput::P_UNISON_DETUNE, op_layout);
 
-  connect (pv_unison->property()->signal_value_changed, this, &MorphOutputView::update_visible);
-
   // ADSR
-  CheckBox *adsr_check_box = new CheckBox (body_widget, "Enable custom ADSR Envelope");
-  adsr_check_box->set_checked (morph_output->adsr());
-  op_layout.add_row (2, adsr_check_box);
+  pv_adsr = add_property_view (MorphOutput::P_ADSR, op_layout);
 
   // ADSR Widget
   output_adsr_widget = new OutputADSRWidget (body_widget, morph_output, this);
@@ -63,10 +52,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_adsr_release = add_property_view (MorphOutput::P_ADSR_RELEASE, op_layout);
 
   // Filter
-  CheckBox *filter_check_box = new CheckBox (body_widget, "Enable Filter");
-  filter_check_box->set_checked (morph_output->filter());
-  op_layout.add_row (2, filter_check_box);
-
+  pv_filter = add_property_view (MorphOutput::P_FILTER, op_layout);
   pv_filter_type = add_property_view (MorphOutput::P_FILTER_TYPE, op_layout);
   pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, op_layout);
   pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, op_layout);
@@ -77,43 +63,18 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, op_layout);
 
   // Portamento (Mono): on/off
-  CheckBox *portamento_check_box = new CheckBox (body_widget, "Enable Portamento (Mono)");
-  portamento_check_box->set_checked (morph_output->portamento());
-  op_layout.add_row (2, portamento_check_box);
-
+  pv_portamento = add_property_view (MorphOutput::P_PORTAMENTO, op_layout);
   pv_portamento_glide = add_property_view (MorphOutput::P_PORTAMENTO_GLIDE, op_layout);
 
   // Vibrato
-  CheckBox *vibrato_check_box = new CheckBox (body_widget, "Enable Vibrato");
-  vibrato_check_box->set_checked (morph_output->vibrato());
-  op_layout.add_row (2, vibrato_check_box);
-
+  pv_vibrato = add_property_view (MorphOutput::P_VIBRATO, op_layout);
   pv_vibrato_depth = add_property_view (MorphOutput::P_VIBRATO_DEPTH, op_layout);
   pv_vibrato_frequency = add_property_view (MorphOutput::P_VIBRATO_FREQUENCY, op_layout);
   pv_vibrato_attack = add_property_view (MorphOutput::P_VIBRATO_ATTACK, op_layout);
 
-  connect (sines_check_box->signal_toggled, [morph_output] (bool new_value) {
-    morph_output->set_sines (new_value);
-  });
-  connect (noise_check_box->signal_toggled, [morph_output] (bool new_value) {
-    morph_output->set_noise (new_value);
-  });
-  connect (adsr_check_box->signal_toggled, [=] (bool new_value) {
-    morph_output->set_adsr (new_value);
-    update_visible();
-  });
-  connect (filter_check_box->signal_toggled, [=] (bool new_value) {
-    morph_output->set_filter (new_value);
-    update_visible();
-  });
-  connect (portamento_check_box->signal_toggled, [=] (bool new_value) {
-    morph_output->set_portamento (new_value);
-    update_visible();
-  });
-  connect (vibrato_check_box->signal_toggled, [=] (bool new_value) {
-    morph_output->set_vibrato (new_value);
-    update_visible();
-  });
+  // visibility updates
+  for (auto pv : { pv_unison, pv_adsr, pv_filter, pv_portamento, pv_vibrato })
+    connect (pv->property()->signal_value_changed, this, &MorphOutputView::update_visible);
 
   update_visible();
 }
@@ -143,28 +104,32 @@ MorphOutputView::update_visible()
   pv_unison_voices->set_visible (unison);
   pv_unison_detune->set_visible (unison);
 
-  output_adsr_widget->set_visible (morph_output->adsr());
+  bool adsr = pv_adsr->property()->get_bool();
+  output_adsr_widget->set_visible (adsr);
 
-  pv_adsr_skip->set_visible (morph_output->adsr());
-  pv_adsr_attack->set_visible (morph_output->adsr());
-  pv_adsr_decay->set_visible (morph_output->adsr());
-  pv_adsr_sustain->set_visible (morph_output->adsr());
-  pv_adsr_release->set_visible (morph_output->adsr());
+  pv_adsr_skip->set_visible (adsr);
+  pv_adsr_attack->set_visible (adsr);
+  pv_adsr_decay->set_visible (adsr);
+  pv_adsr_sustain->set_visible (adsr);
+  pv_adsr_release->set_visible (adsr);
 
-  pv_filter_type->set_visible (morph_output->filter());
-  pv_filter_attack->set_visible (morph_output->filter());
-  pv_filter_decay->set_visible (morph_output->filter());
-  pv_filter_sustain->set_visible (morph_output->filter());
-  pv_filter_release->set_visible (morph_output->filter());
-  pv_filter_depth->set_visible (morph_output->filter());
-  pv_filter_cutoff->set_visible (morph_output->filter());
-  pv_filter_resonance->set_visible (morph_output->filter());
+  bool filter = pv_filter->property()->get_bool();
+  pv_filter_type->set_visible (filter);
+  pv_filter_attack->set_visible (filter);
+  pv_filter_decay->set_visible (filter);
+  pv_filter_sustain->set_visible (filter);
+  pv_filter_release->set_visible (filter);
+  pv_filter_depth->set_visible (filter);
+  pv_filter_cutoff->set_visible (filter);
+  pv_filter_resonance->set_visible (filter);
 
-  pv_portamento_glide->set_visible (morph_output->portamento());
+  bool portamento = pv_portamento->property()->get_bool();
+  pv_portamento_glide->set_visible (portamento);
 
-  pv_vibrato_depth->set_visible (morph_output->vibrato());
-  pv_vibrato_frequency->set_visible (morph_output->vibrato());
-  pv_vibrato_attack->set_visible (morph_output->vibrato());
+  bool vibrato = pv_vibrato->property()->get_bool();
+  pv_vibrato_depth->set_visible (vibrato);
+  pv_vibrato_frequency->set_visible (vibrato);
+  pv_vibrato_attack->set_visible (vibrato);
 
   op_layout.activate();
   signal_size_changed();
