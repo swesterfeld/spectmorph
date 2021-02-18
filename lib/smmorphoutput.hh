@@ -66,16 +66,21 @@ public:
 
   static constexpr auto P_VELOCITY_SENSITIVITY = "velocity_sensitivity";
 
+  static constexpr auto P_SINES  = "sines";
+  static constexpr auto P_NOISE  = "noise";
+
   static constexpr auto P_UNISON        = "unison";
   static constexpr auto P_UNISON_VOICES = "unison_voices";
   static constexpr auto P_UNISON_DETUNE = "unison_detune";
 
+  static constexpr auto P_ADSR         = "adsr";
   static constexpr auto P_ADSR_SKIP    = "adsr_skip";
   static constexpr auto P_ADSR_ATTACK  = "adsr_attack";
   static constexpr auto P_ADSR_DECAY   = "adsr_decay";
   static constexpr auto P_ADSR_SUSTAIN = "adsr_sustain";
   static constexpr auto P_ADSR_RELEASE = "adsr_release";
 
+  static constexpr auto P_FILTER            = "filter";
   static constexpr auto P_FILTER_TYPE       = "filter_type";
   static constexpr auto P_FILTER_ATTACK     = "filter_attack";
   static constexpr auto P_FILTER_DECAY      = "filter_decay";
@@ -85,8 +90,10 @@ public:
   static constexpr auto P_FILTER_CUTOFF     = "filter_cutoff";
   static constexpr auto P_FILTER_RESONANCE  = "filter_resonance";
 
+  static constexpr auto P_PORTAMENTO        = "portamento";
   static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";
 
+  static constexpr auto P_VIBRATO           = "vibrato";
   static constexpr auto P_VIBRATO_DEPTH     = "vibrato_depth";
   static constexpr auto P_VIBRATO_FREQUENCY = "vibrato_frequency";
   static constexpr auto P_VIBRATO_ATTACK    = "vibrato_attack";
@@ -108,24 +115,6 @@ public:
 
   std::vector<MorphOperator *> dependencies() override;
   MorphOperatorConfig *clone_config() override;
-
-  void           set_sines (bool es);
-  bool           sines() const;
-
-  void           set_noise (bool en);
-  bool           noise() const;
-
-  void           set_adsr (bool eadsr);
-  bool           adsr() const;
-
-  void           set_filter (bool efilter);
-  bool           filter() const;
-
-  void           set_portamento (bool ep);
-  bool           portamento() const;
-
-  void           set_vibrato (bool ev);
-  bool           vibrato() const;
 
   void           set_channel_op (int ch, MorphOperator *op);
   MorphOperator *channel_op (int ch);
