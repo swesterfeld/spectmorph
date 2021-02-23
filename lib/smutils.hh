@@ -36,7 +36,9 @@ typedef int64_t       int64;
 typedef uint64_t      uint64;
 typedef unsigned int  uint;
 
-#define SPECTMORPH_CLASS_NON_COPYABLE(Class)        private: Class (const Class&); Class& operator= (const Class&);
+#define SPECTMORPH_CLASS_NON_COPYABLE(Class) \
+  Class (const Class&) = delete; \
+  Class& operator= (const Class&) = delete
 
 #ifdef SM_COMP_GCC
   #define SPECTMORPH_PRINTF(format_idx, arg_idx)      __attribute__ ((__format__ (gnu_printf, format_idx, arg_idx)))
