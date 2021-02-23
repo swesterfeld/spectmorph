@@ -52,8 +52,12 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 50, 0, 100);
   add_property (&m_config.filter_release, P_FILTER_RELEASE, "Release", "%.1f %%", 50, 0, 100);
   add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
-  add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
-  add_property (&m_config.filter_resonance, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
+
+  auto cutoff = add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
+  cutoff->set_modulation_list (&m_config.filter_cutoff_mod);
+
+  auto resonance = add_property (&m_config.filter_resonance, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
+  resonance->set_modulation_list (&m_config.filter_resonance_mod);
 
   add_property (&m_config.portamento, P_PORTAMENTO, "Enable Portamento (Mono)", false);
   add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);

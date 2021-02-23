@@ -341,6 +341,9 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           if (audio_block_ptr)
             {
+              if (filter_callback) /* FIXME: FILTER */
+                filter_callback();
+
               const AudioBlock& audio_block = *audio_block_ptr;
 
               assert (audio_block.freqs.size() == audio_block.mags.size());
@@ -895,4 +898,10 @@ LiveDecoder::time_offset_ms() const
    */
   assert (in_process);
   return 1000 * (env_pos - start_env_pos) / current_mix_freq;
+}
+
+void
+LiveDecoder::set_filter_callback (const std::function<void()>& new_filter_callback)
+{
+  filter_callback = new_filter_callback;
 }

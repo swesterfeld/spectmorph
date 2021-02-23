@@ -122,11 +122,15 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.loop_type            = Audio::LOOP_NONE;
 }
 
-EffectDecoder::EffectDecoder (LiveDecoderSource *source) :
+EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source) :
+  output_module (output_module),
   original_source (source),
   skip_source (new EffectDecoderSource (source))
 {
+  filter_callback = [this]() { filter_cutoff = this->output_module->filter_cutoff_mod(); };
+
   chain_decoder.reset (new LiveDecoder (original_source));
+  chain_decoder->set_filter_callback (filter_callback);
   use_skip_source = false;
 }
 
@@ -161,6 +165,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (!use_skip_source) // enable skip source
         {
           chain_decoder.reset (new LiveDecoder (skip_source.get()));
+          chain_decoder->set_filter_callback (filter_callback);
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
@@ -180,6 +185,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (use_skip_source) // use original source (no skip)
         {
           chain_decoder.reset (new LiveDecoder (original_source));
+          chain_decoder->set_filter_callback (filter_callback);
           use_skip_source = false;
         }
       adsr_envelope.reset();
@@ -237,7 +243,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     }
 
   filter_enabled = cfg->filter;
-  filter_cutoff = cfg->filter_cutoff;
   filter_resonance = cfg->filter_resonance;
 }
 

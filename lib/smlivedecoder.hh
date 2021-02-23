@@ -10,6 +10,7 @@
 #include "smpolyphaseinter.hh"
 #include "smalignedarray.hh"
 #include <vector>
+#include <functional>
 
 namespace SpectMorph {
 
@@ -80,6 +81,9 @@ class LiveDecoder
   float               vibrato_phase;   // state
   float               vibrato_env;     // state
 
+  // filter
+  std::function<void()> filter_callback;
+
   // timing related
   double              start_env_pos = 0;
   bool                in_process    = false;
@@ -122,6 +126,7 @@ public:
   void set_noise_seed (int seed);
   void set_unison_voices (int voices, float detune);
   void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
+  void set_filter_callback (const std::function<void()>& filter_callback);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);

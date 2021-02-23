@@ -13,9 +13,12 @@ namespace SpectMorph
 {
 
 class EnumInfo;
+class ModulationList;
 
 class Property
 {
+protected:
+  ModulationList *m_modulation_list = nullptr;
 public:
   enum class Type { BOOL, INT, ENUM, FLOAT };
 
@@ -42,6 +45,17 @@ public:
   virtual void  set_float (float f) {}
 
   virtual const EnumInfo *enum_info() const { return nullptr; }
+
+  ModulationList *
+  modulation_list()
+  {
+    return m_modulation_list;
+  }
+  void
+  set_modulation_list (ModulationList *mod_list)
+  {
+    m_modulation_list = mod_list;
+  }
 };
 
 class IntProperty : public Property

@@ -29,6 +29,7 @@ public:
   bool  portamento() const;
   float portamento_glide() const;
   float velocity_sensitivity() const;
+  float filter_cutoff_mod() const;
   TimeInfo compute_time_info() const;
 };
 

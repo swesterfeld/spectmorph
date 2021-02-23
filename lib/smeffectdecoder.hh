@@ -19,6 +19,7 @@ class SimpleEnvelope;
 class EffectDecoderSource;
 class EffectDecoder
 {
+  MorphOutputModule   *output_module;
   LiveDecoderSource   *original_source;
 
   bool                 use_skip_source;
@@ -29,6 +30,7 @@ class EffectDecoder
   std::unique_ptr<SimpleEnvelope>       simple_envelope;
 
   bool                                  filter_enabled;
+  std::function<void()>                 filter_callback;
   FilterEnvelope                        filter_envelope;
   float                                 filter_keytrack_factor = 1;
   float                                 filter_cutoff;
@@ -37,7 +39,7 @@ class EffectDecoder
   LadderVCFNonLinearCheap               filter;
 
 public:
-  EffectDecoder (LiveDecoderSource *source);
+  EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);
   ~EffectDecoder();
 
   void set_config (const MorphOutput::Config *cfg, float mix_freq);

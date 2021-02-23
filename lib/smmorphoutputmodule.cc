@@ -62,7 +62,7 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
             delete out_decoders[ch];
           if (mod)
             {
-              dec = new EffectDecoder (mod->source());
+              dec = new EffectDecoder (this, mod->source());
             }
         }
 
@@ -92,6 +92,22 @@ float
 MorphOutputModule::velocity_sensitivity() const
 {
   return cfg->velocity_sensitivity;
+}
+
+float
+MorphOutputModule::filter_cutoff_mod() const
+{
+  float value = 0;
+  for (size_t i = 0; i < cfg->filter_cutoff_mod.size(); i++)
+    {
+      const auto& entry = cfg->filter_cutoff_mod[i];
+      if (entry.control_type == MorphOperator::CONTROL_OP)
+        {
+          auto mod = morph_plan_voice->module (entry.control_op);
+          value += mod->value();
+        }
+    }
+  return cfg->filter_cutoff * exp2f (value);
 }
 
 static void
