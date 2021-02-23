@@ -4,20 +4,24 @@
 #include "smlabel.hh"
 #include "smoperatorlayout.hh"
 #include "smcombobox.hh"
+#include "smpropertyviewedit.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
 
-PropertyView::PropertyView (Property& property) :
+PropertyView::PropertyView (MorphOperator *op, Property& property) :
+  m_op (op),
   m_property (property)
 {
   /* minimal constructor, to support custom layouts by creating widgets manually */
 }
 
-PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& op_layout) :
-  m_property (property)
+PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *parent, OperatorLayout& op_layout) :
+  m_op (op),
+  m_property (property),
+  window (parent->window())
 {
   if (property.type() == Property::Type::ENUM)
     {
@@ -42,10 +46,11 @@ PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& 
       slider = new Slider (parent, 0);
 
       slider->set_int_range (property.min(), property.max());
-      label = new Label (parent, property.value_label());
+      label = new PropertyViewLabel (parent, property.value_label());
       title = new Label (parent, property.label());
       slider->set_int_value (property.get());
 
+      connect (label->signal_clicked, this, &PropertyView::on_edit_details);
       connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
       connect (property.signal_value_changed, this, &PropertyView::on_update_value);
 
@@ -112,6 +117,12 @@ PropertyView::set_visible (bool visible)
     check_box->set_visible (visible);
   if (label)
     label->set_visible (visible);
+}
+
+void
+PropertyView::on_edit_details()
+{
+  PropertyViewEdit::create (window, m_op, m_property);
 }
 
 void

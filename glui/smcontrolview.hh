@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_CONTROL_VIEW_HH
 #define SPECTMORPH_CONTROL_VIEW_HH
 
+#include "smcomboboxoperator.hh"
+
 namespace SpectMorph
 {
 
