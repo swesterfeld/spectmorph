@@ -148,6 +148,8 @@ public:
 template<class... Args>
 class Signal : public SignalBase
 {
+  SPECTMORPH_CLASS_NON_COPYABLE(Signal);
+
   typedef std::function<void (Args...)> CbFunction;
 
   struct Connection
