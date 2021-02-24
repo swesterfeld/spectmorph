@@ -16,6 +16,10 @@ namespace SpectMorph
 class ModulationData
 {
 public:
+  float min_value = 0;
+  float max_value = 0;
+  float value_scale = 0;
+
   struct Entry
   {
     MorphOperator::ControlType  control_type = MorphOperator::CONTROL_SIGNAL_1;

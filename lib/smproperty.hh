@@ -29,6 +29,7 @@ public:
   virtual ~Property();
 
   enum class Type { BOOL, INT, ENUM, FLOAT };
+  enum class Scale { NONE, LINEAR, LOG };
 
   virtual Type        type() = 0;
 
@@ -76,6 +77,7 @@ public:
     }
   };
   virtual Range float_range() { return Range (min(), max()); }
+  virtual Scale float_scale() { return Scale::NONE; }
 };
 
 class IntProperty : public Property
@@ -281,6 +283,7 @@ class FloatProperty : public Property
 protected:
   float        *m_value;
   const Range   m_range;
+  const Scale   m_scale;
   std::string   m_identifier;
   std::string   m_label;
   std::string   m_format;
@@ -288,11 +291,13 @@ protected:
 public:
   FloatProperty (float *value,
                  const Range& range,
+                 Scale scale,
                  const std::string& identifier,
                  const std::string& label,
                  const std::string& format) :
     m_value (value),
     m_range (range),
+    m_scale (scale),
     m_identifier (identifier),
     m_label (label),
     m_format (format)
@@ -326,6 +331,11 @@ public:
   float_range() override
   {
     return m_range;
+  }
+  Scale
+  float_scale()
+  {
+    return m_scale;
   }
 
   virtual double value2ui (double value) = 0;
@@ -377,7 +387,7 @@ public:
                float def_value,
                float min_value,
                float max_value) :
-    FloatProperty (value, { min_value, max_value }, identifier, label, format)
+    FloatProperty (value, { min_value, max_value }, Scale::LOG, identifier, label, format)
   {
     *value = def_value;
   }
@@ -404,7 +414,7 @@ public:
                   float def_value,
                   double min_value,
                   double max_value) :
-    FloatProperty (value, { min_value, max_value }, identifier, label, format)
+    FloatProperty (value, { min_value, max_value }, Scale::LINEAR, identifier, label, format)
   {
     *value = def_value;
   }
@@ -432,7 +442,7 @@ public:
                   float min_value,
                   float max_value,
                   double slope) :
-    FloatProperty (value, { min_value, max_value }, identifier, label, format),
+    FloatProperty (value, { min_value, max_value }, /* FIXME: FILTER */ Scale::NONE, identifier, label, format),
     m_slope (slope)
   {
     *value = def_value;

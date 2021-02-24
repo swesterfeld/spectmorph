@@ -97,7 +97,7 @@ MorphOutputModule::velocity_sensitivity() const
 float
 MorphOutputModule::filter_cutoff_mod() const
 {
-  float value = 0;
+  double value = 0;
   for (const auto& entry : cfg->filter_cutoff_mod.entries)
     {
       double mod_value = 0;
@@ -109,7 +109,10 @@ MorphOutputModule::filter_cutoff_mod() const
 
       value += mod_value * entry.mod_amount;
     }
-  return cfg->filter_cutoff * exp2f (10 * value); // FIXME: FILTER: use range/factor from property
+  value = sm_clamp (cfg->filter_cutoff * exp2f (cfg->filter_cutoff_mod.value_scale * value),
+                    cfg->filter_cutoff_mod.min_value,
+                    cfg->filter_cutoff_mod.max_value);
+  return value;
 }
 
 static void

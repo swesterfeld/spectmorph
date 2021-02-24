@@ -16,6 +16,20 @@ Property::~Property()
 void
 Property::set_modulation_data (ModulationData *mod_data)
 {
+  Range r = float_range();
+  mod_data->min_value = r.min_value;
+  mod_data->max_value = r.max_value;
+
+  switch (float_scale())
+  {
+    case Scale::LOG:
+      mod_data->value_scale = log2f (r.max_value / r.min_value);
+      break;
+    default:
+      mod_data->value_scale = 0;
+      break;
+  }
+
   m_modulation_list = std::make_unique<ModulationList> (*mod_data);
 
   connect (m_modulation_list->signal_modulation_changed, [this] () { signal_modulation_changed(); });
