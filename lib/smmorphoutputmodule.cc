@@ -100,11 +100,14 @@ MorphOutputModule::filter_cutoff_mod() const
   float value = 0;
   for (const auto& entry : cfg->filter_cutoff_mod.entries)
     {
+      double mod_value = 0;
+
       if (entry.control_type == MorphOperator::CONTROL_OP)
-        {
-          auto mod = morph_plan_voice->module (entry.control_op);
-          value += mod->value() * entry.mod_amount;
-        }
+        mod_value = morph_plan_voice->module (entry.control_op)->value();
+      else
+        mod_value = morph_plan_voice->control_input (/* gui (not used) */ 0, entry.control_type, /* mod (not used) */ nullptr);
+
+      value += mod_value * entry.mod_amount;
     }
   return cfg->filter_cutoff * exp2f (10 * value); // FIXME: FILTER: use range/factor from property
 }
