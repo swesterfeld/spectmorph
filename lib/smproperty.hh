@@ -5,8 +5,12 @@
 
 #include "smmath.hh"
 #include "smutils.hh"
+#include "smoutfile.hh"
+#include "sminfile.hh"
+#include "smsignal.hh"
 
 #include <functional>
+#include <memory>
 #include <string>
 
 namespace SpectMorph
@@ -14,12 +18,16 @@ namespace SpectMorph
 
 class EnumInfo;
 class ModulationList;
+class ModulationData;
 
-class Property
+class Property : public SignalReceiver
 {
 protected:
-  ModulationList *m_modulation_list = nullptr;
+  std::unique_ptr<ModulationList> m_modulation_list;
 public:
+  Property();
+  virtual ~Property();
+
   enum class Type { BOOL, INT, ENUM, FLOAT };
 
   virtual Type        type() = 0;
@@ -36,6 +44,7 @@ public:
   virtual bool load (InFile& in_file) = 0;
 
   Signal<> signal_value_changed;
+  Signal<> signal_modulation_changed;
 
   /* specific types */
   bool get_bool()         { return get() != 0; }
@@ -46,16 +55,9 @@ public:
 
   virtual const EnumInfo *enum_info() const { return nullptr; }
 
-  ModulationList *
-  modulation_list()
-  {
-    return m_modulation_list;
-  }
-  void
-  set_modulation_list (ModulationList *mod_list)
-  {
-    m_modulation_list = mod_list;
-  }
+  ModulationList *modulation_list() { return m_modulation_list.get(); }
+
+  void set_modulation_data (ModulationData *mod_data);
 };
 
 class IntProperty : public Property

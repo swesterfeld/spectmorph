@@ -53,9 +53,9 @@ public:
     float                         filter_release;
     float                         filter_depth;
     float                         filter_cutoff;
-    ModulationList                filter_cutoff_mod;
+    ModulationData                filter_cutoff_mod;
     float                         filter_resonance;
-    ModulationList                filter_resonance_mod;
+    ModulationData                filter_resonance_mod;
 
     bool                          portamento;
     float                         portamento_glide;

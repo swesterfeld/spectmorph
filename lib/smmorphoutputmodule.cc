@@ -98,16 +98,15 @@ float
 MorphOutputModule::filter_cutoff_mod() const
 {
   float value = 0;
-  for (size_t i = 0; i < cfg->filter_cutoff_mod.size(); i++)
+  for (const auto& entry : cfg->filter_cutoff_mod.entries)
     {
-      const auto& entry = cfg->filter_cutoff_mod[i];
       if (entry.control_type == MorphOperator::CONTROL_OP)
         {
           auto mod = morph_plan_voice->module (entry.control_op);
-          value += mod->value();
+          value += mod->value() * entry.mod_amount;
         }
     }
-  return cfg->filter_cutoff * exp2f (value);
+  return cfg->filter_cutoff * exp2f (10 * value); // FIXME: FILTER: use range/factor from property
 }
 
 static void
