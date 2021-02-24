@@ -58,6 +58,24 @@ public:
   ModulationList *modulation_list() { return m_modulation_list.get(); }
 
   void set_modulation_data (ModulationData *mod_data);
+
+  struct Range
+  {
+    double min_value;
+    double max_value;
+
+    Range (double min_value, double max_value) :
+      min_value (min_value),
+      max_value (max_value)
+    {
+    }
+    double
+    clamp (double value) const
+    {
+      return sm_clamp (value, min_value, max_value);
+    }
+  };
+  virtual Range float_range() { return Range (min(), max()); }
 };
 
 class IntProperty : public Property
@@ -258,19 +276,23 @@ public:
   }
 };
 
-class PropertyBase : public Property
+class FloatProperty : public Property
 {
+protected:
   float        *m_value;
+  const Range   m_range;
   std::string   m_identifier;
   std::string   m_label;
   std::string   m_format;
   std::function<std::string (float)> m_custom_formatter;
 public:
-  PropertyBase (float *value,
-                const std::string& identifier,
-                const std::string& label,
-                const std::string& format) :
+  FloatProperty (float *value,
+                 const Range& range,
+                 const std::string& identifier,
+                 const std::string& label,
+                 const std::string& format) :
     m_value (value),
+    m_range (range),
     m_identifier (identifier),
     m_label (label),
     m_format (format)
@@ -285,7 +307,7 @@ public:
   void
   set (int v)
   {
-    *m_value = ui2value (v / 1000.);
+    *m_value = m_range.clamp (ui2value (v / 1000.));
     signal_value_changed();
   }
 
@@ -297,8 +319,13 @@ public:
   void
   set_float (float f)
   {
-    *m_value = f;
+    *m_value = m_range.clamp (f);
     signal_value_changed();
+  }
+  Range
+  float_range() override
+  {
+    return m_range;
   }
 
   virtual double value2ui (double value) = 0;
@@ -340,10 +367,8 @@ public:
   }
 };
 
-class LogProperty : public PropertyBase
+class LogProperty : public FloatProperty
 {
-  double        m_min_value;
-  double        m_max_value;
 public:
   LogProperty (float *value,
                const std::string& identifier,
@@ -352,9 +377,7 @@ public:
                float def_value,
                float min_value,
                float max_value) :
-    PropertyBase (value, identifier, label, format),
-    m_min_value (min_value),
-    m_max_value (max_value)
+    FloatProperty (value, { min_value, max_value }, identifier, label, format)
   {
     *value = def_value;
   }
@@ -362,19 +385,17 @@ public:
   double
   value2ui (double v)
   {
-    return (log (v) - log (m_min_value)) / (log (m_max_value) - log (m_min_value));
+    return (log (v) - log (m_range.min_value)) / (log (m_range.max_value) - log (m_range.min_value));
   }
   double
   ui2value (double ui)
   {
-    return exp (ui * (log (m_max_value) - log (m_min_value)) + log (m_min_value));
+    return exp (ui * (log (m_range.max_value) - log (m_range.min_value)) + log (m_range.min_value));
   }
 };
 
-class LinearProperty : public PropertyBase
+class LinearProperty : public FloatProperty
 {
-  double m_min_value;
-  double m_max_value;
 public:
   LinearProperty (float *value,
                   const std::string& identifier,
@@ -383,28 +404,24 @@ public:
                   float def_value,
                   double min_value,
                   double max_value) :
-    PropertyBase (value, identifier, label, format),
-    m_min_value (min_value),
-    m_max_value (max_value)
+    FloatProperty (value, { min_value, max_value }, identifier, label, format)
   {
     *value = def_value;
   }
   double
   value2ui (double v)
   {
-    return (v - m_min_value) / (m_max_value - m_min_value);
+    return (v - m_range.min_value) / (m_range.max_value - m_range.min_value);
   }
   double
   ui2value (double ui)
   {
-    return ui * (m_max_value - m_min_value) + m_min_value;
+    return ui * (m_range.max_value - m_range.min_value) + m_range.min_value;
   }
 };
 
-class XParamProperty : public PropertyBase
+class XParamProperty : public FloatProperty
 {
-  double        m_min_value;
-  double        m_max_value;
   double        m_slope;
 public:
   XParamProperty (float *value,
@@ -415,9 +432,7 @@ public:
                   float min_value,
                   float max_value,
                   double slope) :
-    PropertyBase (value, identifier, label, format),
-    m_min_value (min_value),
-    m_max_value (max_value),
+    FloatProperty (value, { min_value, max_value }, identifier, label, format),
     m_slope (slope)
   {
     *value = def_value;
@@ -425,12 +440,12 @@ public:
   double
   value2ui (double v)
   {
-    return sm_xparam_inv ((v - m_min_value) / (m_max_value - m_min_value), m_slope);
+    return sm_xparam_inv ((v - m_range.min_value) / (m_range.max_value - m_range.min_value), m_slope);
   }
   double
   ui2value (double ui)
   {
-    return sm_xparam (ui, m_slope) * (m_max_value - m_min_value) + m_min_value;
+    return sm_xparam (ui, m_slope) * (m_range.max_value - m_range.min_value) + m_range.min_value;
   }
 };
 
