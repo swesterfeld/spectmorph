@@ -16,6 +16,8 @@ namespace SpectMorph
 class ModulationData
 {
 public:
+  Property::Scale property_scale = Property::Scale::NONE;
+
   float min_value = 0;
   float max_value = 0;
   float value_scale = 0;

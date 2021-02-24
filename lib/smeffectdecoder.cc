@@ -127,7 +127,10 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   original_source (source),
   skip_source (new EffectDecoderSource (source))
 {
-  filter_callback = [this]() { filter_cutoff = this->output_module->filter_cutoff_mod(); };
+  filter_callback = [this]() {
+    filter_cutoff = this->output_module->filter_cutoff_mod();
+    filter_resonance = this->output_module->filter_resonance_mod();
+  };
 
   chain_decoder.reset (new LiveDecoder (original_source));
   chain_decoder->set_filter_callback (filter_callback);
@@ -243,7 +246,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     }
 
   filter_enabled = cfg->filter;
-  filter_resonance = cfg->filter_resonance;
 }
 
 static float

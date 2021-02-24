@@ -20,10 +20,16 @@ Property::set_modulation_data (ModulationData *mod_data)
   mod_data->min_value = r.min_value;
   mod_data->max_value = r.max_value;
 
-  switch (float_scale())
+  auto property_scale = float_scale();
+  mod_data->property_scale = property_scale;
+
+  switch (property_scale)
   {
     case Scale::LOG:
       mod_data->value_scale = log2f (r.max_value / r.min_value);
+      break;
+    case Scale::LINEAR:
+      mod_data->value_scale = r.max_value - r.min_value;
       break;
     default:
       mod_data->value_scale = 0;

@@ -97,22 +97,13 @@ MorphOutputModule::velocity_sensitivity() const
 float
 MorphOutputModule::filter_cutoff_mod() const
 {
-  double value = 0;
-  for (const auto& entry : cfg->filter_cutoff_mod.entries)
-    {
-      double mod_value = 0;
+  return apply_modulation (cfg->filter_cutoff, cfg->filter_cutoff_mod);
+}
 
-      if (entry.control_type == MorphOperator::CONTROL_OP)
-        mod_value = morph_plan_voice->module (entry.control_op)->value();
-      else
-        mod_value = morph_plan_voice->control_input (/* gui (not used) */ 0, entry.control_type, /* mod (not used) */ nullptr);
-
-      value += mod_value * entry.mod_amount;
-    }
-  value = sm_clamp (cfg->filter_cutoff * exp2f (cfg->filter_cutoff_mod.value_scale * value),
-                    cfg->filter_cutoff_mod.min_value,
-                    cfg->filter_cutoff_mod.max_value);
-  return value;
+float
+MorphOutputModule::filter_resonance_mod() const
+{
+  return apply_modulation (cfg->filter_resonance, cfg->filter_resonance_mod);
 }
 
 static void

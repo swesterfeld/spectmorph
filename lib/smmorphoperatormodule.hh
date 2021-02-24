@@ -40,6 +40,7 @@ protected:
   void clear_dependencies();
   void add_dependency (MorphOperatorModule *dep_mod);
   TimeInfo time_info() const;
+  float apply_modulation (float base, const ModulationData& mod_data) const;
 public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();

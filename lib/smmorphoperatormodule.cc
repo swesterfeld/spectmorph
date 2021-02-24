@@ -109,6 +109,32 @@ MorphOperatorModule::set_ptr_id (MorphOperator::PtrID ptr_id)
   m_ptr_id = ptr_id;
 }
 
+float
+MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_data) const
+{
+  double value = 0;
+  for (const auto& entry : mod_data.entries)
+    {
+      double mod_value = 0;
+
+      if (entry.control_type == MorphOperator::CONTROL_OP)
+        mod_value = morph_plan_voice->module (entry.control_op)->value();
+      else
+        mod_value = morph_plan_voice->control_input (/* gui (not used) */ 0, entry.control_type, /* mod (not used) */ nullptr);
+
+      value += mod_value * entry.mod_amount;
+    }
+  switch (mod_data.property_scale)
+    {
+      case Property::Scale::LOG:
+        value = sm_clamp (base * exp2f (mod_data.value_scale * value), mod_data.min_value, mod_data.max_value);
+        break;
+      default:
+        value = sm_clamp<float> (base + mod_data.value_scale * value, mod_data.min_value, mod_data.max_value);
+    }
+  return value;
+}
+
 MorphOperatorModule*
 MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
 {
