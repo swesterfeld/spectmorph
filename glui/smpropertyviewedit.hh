@@ -95,7 +95,7 @@ protected:
 
     for (size_t i = 0; i < mod_list->size(); i++)
       {
-        ModulationList::Entry e = (*mod_list)[i];
+        ModulationData::Entry e = (*mod_list)[i];
 
         ControlView *control_view = new ControlView();
         auto control_combobox = control_view->create_combobox (this,
@@ -107,10 +107,12 @@ protected:
         connect (control_view->signal_control_changed,
           [control_view, mod_list, i]()
             {
-              ModulationList::Entry& update_entry = (*mod_list)[i];
+              ModulationData::Entry entry = (*mod_list)[i];
 
-              update_entry.control_type = control_view->control_type();
-              update_entry.control_op.set (control_view->op());
+              entry.control_type = control_view->control_type();
+              entry.control_op.set (control_view->op());
+
+              mod_list->update_entry (i, entry);
             });
 
         grid.add_widget (control_combobox, 1, yoffset, 15, 3);
@@ -127,9 +129,10 @@ protected:
               update_modulation_widgets();
             });
         connect (slider->signal_value_changed, [label, slider, mod_list, i](double new_value) {
-          ModulationList::Entry& update_entry = (*mod_list)[i];
-          update_entry.mod_amount = new_value * 2 - 1;
-          label->set_text (string_printf ("%.3f", update_entry.mod_amount));
+          ModulationData::Entry entry = (*mod_list)[i];
+          entry.mod_amount = new_value * 2 - 1;
+          label->set_text (string_printf ("%.3f", entry.mod_amount));
+          mod_list->update_entry (i, entry);
         });
 
         mod_widgets.push_back (control_combobox);
