@@ -59,6 +59,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, op_layout);
   pv_filter_release = add_property_view (MorphOutput::P_FILTER_RELEASE, op_layout);
   pv_filter_depth = add_property_view (MorphOutput::P_FILTER_DEPTH, op_layout);
+  pv_filter_key_tracking = add_property_view (MorphOutput::P_FILTER_KEY_TRACKING, op_layout);
   pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, op_layout);
   pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, op_layout);
 
@@ -120,6 +121,7 @@ MorphOutputView::update_visible()
   pv_filter_sustain->set_visible (filter);
   pv_filter_release->set_visible (filter);
   pv_filter_depth->set_visible (filter);
+  pv_filter_key_tracking->set_visible (filter);
   pv_filter_cutoff->set_visible (filter);
   pv_filter_resonance->set_visible (filter);
 
