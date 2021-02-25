@@ -52,6 +52,7 @@ public:
     float                         filter_sustain;
     float                         filter_release;
     float                         filter_depth;
+    float                         filter_key_tracking;
     float                         filter_cutoff;
     ModulationData                filter_cutoff_mod;
     float                         filter_resonance;
@@ -90,6 +91,7 @@ public:
   static constexpr auto P_FILTER_SUSTAIN    = "filter_sustain";
   static constexpr auto P_FILTER_RELEASE    = "filter_release";
   static constexpr auto P_FILTER_DEPTH      = "filter_depth";
+  static constexpr auto P_FILTER_KEY_TRACKING = "filter_key_tracking";
   static constexpr auto P_FILTER_CUTOFF     = "filter_cutoff";
   static constexpr auto P_FILTER_RESONANCE  = "filter_resonance";
 
