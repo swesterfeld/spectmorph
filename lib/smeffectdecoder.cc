@@ -128,9 +128,10 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   skip_source (new EffectDecoderSource (source))
 {
   filter_callback = [this]() {
-    /* FIXME: FILTER: use set(..., true) for the first time this is called */
-    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod());
-    filter_resonance_smooth.set (this->output_module->filter_resonance_mod());
+    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod(), filter_smooth_first);
+    filter_resonance_smooth.set (this->output_module->filter_resonance_mod(), filter_smooth_first);
+
+    filter_smooth_first = false;
   };
 
   chain_decoder.reset (new LiveDecoder (original_source));
@@ -272,6 +273,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
 
   filter.reset();
   filter_envelope.start (mix_freq);
+  filter_smooth_first = true;
 
   float note = freq_to_note (freq);
   float keytrack = 100; /* FIXME: FILTER: should be configurable */

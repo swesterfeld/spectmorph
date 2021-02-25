@@ -38,6 +38,7 @@ class EffectDecoder
   float                                 filter_cutoff;
   float                                 filter_resonance;
 #endif
+  bool                                  filter_smooth_first;
   LinearSmooth                          filter_cutoff_smooth;
   LinearSmooth                          filter_resonance_smooth;
   float                                 filter_depth_octaves;
