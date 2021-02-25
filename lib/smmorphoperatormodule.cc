@@ -122,6 +122,12 @@ MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_dat
       else
         mod_value = morph_plan_voice->control_input (/* gui (not used) */ 0, entry.control_type, /* mod (not used) */ nullptr);
 
+      /* unipolar modulation: mod_value range [0..1]
+       *  bipolar modulation: mod_value range [-1..1]
+       */
+      if (!entry.bipolar)
+        mod_value = 0.5 * (mod_value + 1);
+
       value += mod_value * entry.mod_amount;
     }
   switch (mod_data.property_scale)
