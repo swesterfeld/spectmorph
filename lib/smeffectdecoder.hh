@@ -33,7 +33,8 @@ class EffectDecoder
   bool                                  filter_enabled;
   std::function<void()>                 filter_callback;
   FilterEnvelope                        filter_envelope;
-  float                                 filter_keytrack_factor = 1;
+  float                                 filter_key_tracking = 0;
+  float                                 filter_current_note = 60;
 #if 0
   float                                 filter_cutoff;
   float                                 filter_resonance;

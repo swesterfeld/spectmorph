@@ -128,7 +128,10 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   skip_source (new EffectDecoderSource (source))
 {
   filter_callback = [this]() {
-    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod(), filter_smooth_first);
+    float delta_cent = (filter_current_note - 60) * filter_key_tracking;
+    float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
+
+    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod() * filter_keytrack_factor, filter_smooth_first);
     filter_resonance_smooth.set (this->output_module->filter_resonance_mod(), filter_smooth_first);
 
     filter_smooth_first = false;
@@ -234,6 +237,8 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_envelope.set_release (release);
   filter_depth_octaves =  cfg->filter_depth / 12;
 
+  filter_key_tracking = cfg->filter_key_tracking;
+
   switch (cfg->filter_type)
     {
       case MorphOutput::FILTER_LP1:
@@ -274,11 +279,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   filter.reset();
   filter_envelope.start (mix_freq);
   filter_smooth_first = true;
-
-  float note = freq_to_note (freq);
-  float keytrack = 100; /* FIXME: FILTER: should be configurable */
-  float delta_cent = (note - 60) * keytrack;
-  filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
+  filter_current_note = freq_to_note (freq);
 }
 
 void
@@ -304,7 +305,7 @@ EffectDecoder::process (size_t       n_values,
       float freq[n_values], reso[n_values];
       for (uint i = 0; i < n_values; i++)
         {
-          freq[i] = filter_cutoff_smooth.get_next() * filter_keytrack_factor * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+          freq[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
           reso[i] = filter_resonance_smooth.get_next() * 0.01f;
         }
 
