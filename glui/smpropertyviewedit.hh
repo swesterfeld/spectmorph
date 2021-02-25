@@ -27,7 +27,7 @@ protected:
   std::vector<Widget *> mod_widgets;
 
   PropertyViewEdit (Window *parent, MorphOperator *op, Property& property) :
-    Window (*parent->event_loop(), "Edit Property", 320, 320, 0, false, parent->native_window()),
+    Window (*parent->event_loop(), "Edit Property", 520, 320, 0, false, parent->native_window()),
     parent_window (parent),
     op (op),
     property (property)
@@ -115,13 +115,34 @@ protected:
               mod_list->update_entry (i, entry);
             });
 
-        grid.add_widget (control_combobox, 1, yoffset, 15, 3);
+        grid.add_widget (control_combobox, 1, yoffset, 17, 3);
+
+        static constexpr auto CB_UNIPOLAR_TEXT = "unipolar";
+        static constexpr auto CB_BIPOLAR_TEXT = "bipolar";
+
+        ComboBox *polarity_combobox = new ComboBox (this);
+        polarity_combobox->add_item (CB_UNIPOLAR_TEXT);
+        polarity_combobox->add_item (CB_BIPOLAR_TEXT);
+        polarity_combobox->set_text (e.bipolar ? CB_BIPOLAR_TEXT : CB_UNIPOLAR_TEXT);
+
+        grid.add_widget (polarity_combobox, 19, yoffset, 14, 3);
+
+        connect (polarity_combobox->signal_item_changed,
+          [polarity_combobox, mod_list, i]()
+            {
+              ModulationData::Entry entry = (*mod_list)[i];
+              entry.bipolar = (polarity_combobox->text() == CB_BIPOLAR_TEXT);
+              mod_list->update_entry (i, entry);
+            });
+
         auto slider = new Slider (this, (e.mod_amount + 1) / 2);
-        grid.add_widget (slider, 20, yoffset, 15, 3);
+        grid.add_widget (slider, 34, yoffset, 22, 3);
+
         auto label = new Label (this, string_printf ("%.3f", e.mod_amount));
-        grid.add_widget (label, 32, yoffset, 15, 3);
+        grid.add_widget (label, 57, yoffset, 15, 3);
+
         ToolButton *tbutton = new ToolButton (this, 'x');
-        grid.add_widget (tbutton, 37.5, yoffset + 0.5, 2, 2);
+        grid.add_widget (tbutton, 60.5, yoffset + 0.5, 2, 2);
         connect (tbutton->signal_clicked,
           [mod_list, i, this] ()
             {
@@ -136,6 +157,7 @@ protected:
         });
 
         mod_widgets.push_back (control_combobox);
+        mod_widgets.push_back (polarity_combobox);
         mod_widgets.push_back (label);
         mod_widgets.push_back (slider);
         mod_widgets.push_back (tbutton);
