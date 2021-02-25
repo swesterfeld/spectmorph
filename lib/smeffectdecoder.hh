@@ -9,6 +9,7 @@
 #include "smadsrenvelope.hh"
 #include "smfilterenvelope.hh"
 #include "smladdervcf.hh"
+#include "smlinearsmooth.hh"
 
 #include <memory>
 
@@ -33,8 +34,12 @@ class EffectDecoder
   std::function<void()>                 filter_callback;
   FilterEnvelope                        filter_envelope;
   float                                 filter_keytrack_factor = 1;
+#if 0
   float                                 filter_cutoff;
   float                                 filter_resonance;
+#endif
+  LinearSmooth                          filter_cutoff_smooth;
+  LinearSmooth                          filter_resonance_smooth;
   float                                 filter_depth_octaves;
   LadderVCFNonLinearCheap               filter;
 

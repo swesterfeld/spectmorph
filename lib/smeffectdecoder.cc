@@ -128,8 +128,9 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   skip_source (new EffectDecoderSource (source))
 {
   filter_callback = [this]() {
-    filter_cutoff = this->output_module->filter_cutoff_mod();
-    filter_resonance = this->output_module->filter_resonance_mod();
+    /* FIXME: FILTER: use set(..., true) for the first time this is called */
+    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod());
+    filter_resonance_smooth.set (this->output_module->filter_resonance_mod());
   };
 
   chain_decoder.reset (new LiveDecoder (original_source));
@@ -220,6 +221,9 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
           release * 1000);
     }
 
+  filter_cutoff_smooth.reset (mix_freq, 0.010);
+  filter_resonance_smooth.reset (mix_freq, 0.010);
+
   filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
   filter_envelope.set_delay (0);
   filter_envelope.set_attack (attack);
@@ -295,11 +299,14 @@ EffectDecoder::process (size_t       n_values,
       const float *inputs[2] = { audio_out, junk };
       float *outputs[2] = { audio_out, junk };
 
-      float freq[n_values];
+      float freq[n_values], reso[n_values];
       for (uint i = 0; i < n_values; i++)
-        freq[i] = filter_cutoff * filter_keytrack_factor * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+        {
+          freq[i] = filter_cutoff_smooth.get_next() * filter_keytrack_factor * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+          reso[i] = filter_resonance_smooth.get_next() * 0.01f;
+        }
 
-      filter.run_block (n_values, filter_cutoff, filter_resonance * 0.01f, inputs, outputs, true, false, freq, nullptr, nullptr, nullptr);
+      filter.run_block (n_values, /* const cutoff */ 0, /* const reso */ 0, inputs, outputs, true, false, freq, reso);
     }
 }
 

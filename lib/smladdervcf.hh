@@ -24,12 +24,6 @@ class LadderVCF
   LadderVCFMode mode;
   double pre_scale, post_scale;
   double rate;
-  double freq_mod_octaves;
-  double key_tracking;
-  double resonance_mod;
-
-  double last_key_freq;
-  double last_key_tracking_factor;
 
 public:
   LadderVCF()
@@ -38,9 +32,6 @@ public:
     set_mode (LadderVCFMode::LP4);
     set_drive (0);
     set_rate (48000);
-    set_freq_mod_octaves (5);
-    set_key_tracking (0.5);
-    set_resonance_mod (0.1);
   }
   void
   set_mode (LadderVCFMode new_mode)
@@ -61,25 +52,6 @@ public:
     rate = r;
   }
   void
-  set_freq_mod_octaves (double octaves)
-  {
-    freq_mod_octaves = octaves;
-  }
-  void
-  set_key_tracking (double amount)
-  {
-    key_tracking = amount;
-
-    // force recomputing key tracking factor
-    last_key_freq = -1;
-    last_key_tracking_factor = 0;
-  }
-  void
-  set_resonance_mod (double amount)
-  {
-    resonance_mod = amount;
-  }
-  void
   reset()
   {
     for (auto& c : channels)
@@ -92,8 +64,6 @@ public:
         c.res_down.reset();
 #endif
       }
-    last_key_freq = -1;
-    last_key_tracking_factor = 0;
   }
   double
   distort (double x)
@@ -185,9 +155,7 @@ private:
                 const float **inputs,
                 float       **outputs,
                 const float  *freq_in,
-                const float  *freq_mod_in,
-                const float  *key_freq_in,
-                const float  *reso_mod_in)
+                const float  *reso_in)
   {
     float over_samples[2][2 * n_samples];
     float freq_scale = OVERSAMPLE ? 0.5 : 1.0;
@@ -212,25 +180,11 @@ private:
         if (freq_in)
           mod_fc = freq_in[i] * freq_scale / nyquist;
 
-        if (freq_mod_in)
-          mod_fc *= exp2f (freq_mod_in[i] * freq_mod_octaves);
+        if (reso_in)
+          mod_res = reso_in[i];
 
-        if (key_freq_in)
-          {
-            if (key_freq_in[i] != last_key_freq)
-              {
-                /* key tracking from frequency is expensive to compute; with this optimization
-                 * it should be fast, because the key frequency usually doesn't change
-                 */
-                last_key_freq = key_freq_in[i];
-                last_key_tracking_factor = exp (key_tracking * log (key_freq_in[i] / 261.63));
-              }
-            mod_fc *= last_key_tracking_factor;
-          }
-        if (reso_mod_in)
-          mod_res = sm_clamp (mod_res + resonance_mod * reso_mod_in[i], 0.0, 1.0);
-
-        mod_fc = sm_clamp (mod_fc, 0.0, 1.0);
+        mod_fc  = sm_clamp (mod_fc, 0.0, 1.0);
+        mod_res = sm_clamp (mod_res, 0.0, 1.0);
 
         if (OVERSAMPLE)
           {
@@ -276,19 +230,17 @@ private:
                   float       **outputs,
                   int           channel_mask,
                   const float  *freq_in,
-                  const float  *freq_mod_in,
-                  const float  *key_freq_in,
-                  const float  *reso_mod_in)
+                  const float  *reso_in)
   {
     switch (channel_mask)
       {
-        case 0: do_run_block<MODE, 0> (n_samples, fc, res, inputs, outputs, freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+        case 0: do_run_block<MODE, 0> (n_samples, fc, res, inputs, outputs, freq_in, reso_in);
                 break;
-        case 1: do_run_block<MODE, 1> (n_samples, fc, res, inputs, outputs, freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+        case 1: do_run_block<MODE, 1> (n_samples, fc, res, inputs, outputs, freq_in, reso_in);
                 break;
-        case 2: do_run_block<MODE, 2> (n_samples, fc, res, inputs, outputs, freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+        case 2: do_run_block<MODE, 2> (n_samples, fc, res, inputs, outputs, freq_in, reso_in);
                 break;
-        case 3: do_run_block<MODE, 3> (n_samples, fc, res, inputs, outputs, freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+        case 3: do_run_block<MODE, 3> (n_samples, fc, res, inputs, outputs, freq_in, reso_in);
                 break;
         default: g_assert_not_reached();
       }
@@ -303,9 +255,7 @@ public:
              bool           need_left,
              bool           need_right,
              const float   *freq_in,
-             const float   *freq_mod_in,
-             const float   *key_freq_in,
-             const float   *reso_mod_in)
+             const float   *reso_in)
   {
     int channel_mask = 0;
     if (need_left)
@@ -315,16 +265,16 @@ public:
     switch (mode)
     {
       case LadderVCFMode::LP4: run_block_mode<LadderVCFMode::LP4> (n_samples, fc, res, inputs, outputs, channel_mask,
-                                                                   freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+                                                                   freq_in, reso_in);
                                break;
       case LadderVCFMode::LP3: run_block_mode<LadderVCFMode::LP3> (n_samples, fc, res, inputs, outputs, channel_mask,
-                                                                   freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+                                                                   freq_in, reso_in);
                                break;
       case LadderVCFMode::LP2: run_block_mode<LadderVCFMode::LP2> (n_samples, fc, res, inputs, outputs, channel_mask,
-                                                                   freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+                                                                   freq_in, reso_in);
                                break;
       case LadderVCFMode::LP1: run_block_mode<LadderVCFMode::LP1> (n_samples, fc, res, inputs, outputs, channel_mask,
-                                                                   freq_in, freq_mod_in, key_freq_in, reso_mod_in);
+                                                                   freq_in, reso_in);
                                break;
     }
   }
