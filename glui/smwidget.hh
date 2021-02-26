@@ -284,6 +284,7 @@ public:
     double        y = 0;
     MouseButton   button = NO_BUTTON;
     unsigned      buttons = 0;
+    unsigned      state = 0;
     bool          double_click = false;
   };
 
