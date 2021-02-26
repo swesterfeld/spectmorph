@@ -16,6 +16,9 @@ class Slider : public Widget
   bool mouse_down = false;
   int int_range_min = 0;
   int int_range_max = 0;
+  bool shift_drag = false;
+  double shift_drag_start_value = 0;
+  double shift_drag_start_x = 0;
 
 public:
   Signal<double> signal_value_changed;
@@ -80,8 +83,13 @@ public:
   void
   slider_value_from_x (double x)
   {
-    double C = 6;
-    m_value = sm_bound (0.0, (x - C) / (width() - C * 2), 1.0);
+    constexpr double shift_drag_speed = 8;
+    constexpr double C = 6;
+
+    if (shift_drag)
+      m_value = sm_bound (0.0, shift_drag_start_value + (x - shift_drag_start_x) / (width() - C * 2) / shift_drag_speed, 1.0);
+    else
+      m_value = sm_bound (0.0, (x - C) / (width() - C * 2), 1.0);
 
     /* optional: only allow discrete integer values */
     if (int_range_min != int_range_max)
@@ -108,7 +116,16 @@ public:
   {
     if (event.button == LEFT_BUTTON)
       {
-        slider_value_from_x (event.x);
+        shift_drag = (event.state & PUGL_MOD_SHIFT);
+        if (shift_drag)
+          {
+            shift_drag_start_x = event.x;
+            shift_drag_start_value = m_value;
+          }
+        else
+          {
+            slider_value_from_x (event.x);
+          }
         mouse_down = true;
         update();
       }
