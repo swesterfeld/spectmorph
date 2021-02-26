@@ -2,7 +2,7 @@
 
 #include "smadsrenvelope.hh"
 #include "smmain.hh"
-#include "smmath.hh"
+#include "smutils.hh"
 
 #include <stdlib.h>
 

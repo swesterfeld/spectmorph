@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
 
 #include "smadsrenvelope.hh"
+#include "smutils.hh"
 #include "smmath.hh"
 #include "smmain.hh"
 

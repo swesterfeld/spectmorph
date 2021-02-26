@@ -2,6 +2,7 @@
 
 #include "smmain.hh"
 #include "smmath.hh"
+#include "smutils.hh"
 
 #include <assert.h>
 #include <stdio.h>
