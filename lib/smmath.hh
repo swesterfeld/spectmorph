@@ -542,13 +542,6 @@ sm_clamp (const T& value, const T& min_value, const T& max_value)
   return std::min (std::max (value, min_value), max_value);
 }
 
-inline double
-sm_atof (const char *nptr)
-{
-  /* do not use locale specific decimal separator */
-  return g_ascii_strtod (nptr, NULL);
-}
-
 } // namespace SpectMorph
 
 #endif

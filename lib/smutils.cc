@@ -477,4 +477,24 @@ dir_exists (const string& dirname)
   return false;
 }
 
+double
+sm_atof (const char *str)  // always use . as decimal seperator
+{
+  return g_ascii_strtod (str, NULL);
+}
+
+double
+sm_atof_any (const char *str) // allow . or locale as decimal separator
+{
+  char locale_ds = localeconv()->decimal_point[0];
+
+  string s;
+  while (*str)   // replace locale ds with '.'
+    {
+      s += (*str == locale_ds) ? '.' : *str;
+      str++;
+    }
+  return sm_atof (s.c_str());
+}
+
 }

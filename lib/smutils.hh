@@ -167,6 +167,9 @@ Error read_dir (const std::string& dirname, std::vector<std::string>& files);
 bool file_exists (const std::string& filename);
 bool dir_exists (const std::string& dirname);
 
+double sm_atof (const char *str);  // always use . as decimal seperator
+double sm_atof_any (const char *str);  // allow . or locale as decimal separator
+
 } // namespace SpectMorph
 
 /* we want to be able to use sm_debug without extra includes */
