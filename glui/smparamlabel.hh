@@ -53,7 +53,7 @@ public:
   void
   set_value_text (const std::string& t)
   {
-    value = atof (t.c_str());
+    value = sm_atof_any (t.c_str());
 
     value = sm_bound (min_value, value, max_value);
 

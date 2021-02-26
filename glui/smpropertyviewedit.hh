@@ -171,7 +171,7 @@ protected:
   on_accept()
   {
     if (line_edit_changed)
-      property.set_float (atof (line_edit->text().c_str()));
+      property.set_float (sm_atof_any (line_edit->text().c_str()));
 
     parent_window->set_popup_window (nullptr); // close this window
   }
