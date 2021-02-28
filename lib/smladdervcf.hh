@@ -3,6 +3,9 @@
 #define SPECTMORPH_LADDER_VCF_HH
 
 #include "smmath.hh"
+
+#include <array>
+
 namespace SpectMorph {
 
 enum class LadderVCFMode { LP1, LP2, LP3, LP4 };
@@ -98,7 +101,6 @@ private:
   {
     fc = M_PI * fc;
     const double g = 0.9892 * fc - 0.4342 * fc * fc + 0.1381 * fc * fc * fc - 0.0202 * fc * fc * fc * fc;
-    const double gg = g * g;
 
     res *= 1.0029 + 0.0526 * fc - 0.0926 * fc * fc + 0.0218 * fc * fc * fc;
 
@@ -112,30 +114,30 @@ private:
                 Channel& c = channels[i];
                 const double x = values[i] * pre_scale;
                 const double g_comp = 0.5; // passband gain correction
-                const double x0 = distort (x - (c.y4 - g_comp * x) * res * 4) * gg * gg * (1.0 / 1.3 / 1.3 / 1.3 / 1.3);
+                const double x0 = distort (x - (c.y4 - g_comp * x) * res * 4);
 
-                c.y1 = x0 + c.x1 * 0.3 + c.y1 * (1 - g);
+                c.y1 = (x0 * (1 / 1.3) + c.x1 * (0.3 / 1.3) - c.y1) * g + c.y1;
                 c.x1 = x0;
 
-                c.y2 = c.y1 + c.x2 * 0.3 + c.y2 * (1 - g);
+                c.y2 = (c.y1 * (1 / 1.3) + c.x2 * (0.3 / 1.3) - c.y2) * g + c.y2;
                 c.x2 = c.y1;
 
-                c.y3 = c.y2 + c.x3 * 0.3 + c.y3 * (1 - g);
+                c.y3 = (c.y2 * (1 / 1.3) + c.x3 * (0.3 / 1.3) - c.y3) * g + c.y3;
                 c.x3 = c.y2;
 
-                c.y4 = c.y3 + c.x4 * 0.3 + c.y4 * (1 - g);
+                c.y4 = (c.y3 * (1 / 1.3) + c.x4 * (0.3 / 1.3) - c.y4) * g + c.y4;
                 c.x4 = c.y3;
 
                 switch (MODE)
                   {
                     case LadderVCFMode::LP1:
-                      values[i] = c.y1 / (gg * g * (1.0 / (1.3 * 1.3 * 1.3))) * post_scale;
+                      values[i] = c.y1 * post_scale;
                       break;
                     case LadderVCFMode::LP2:
-                      values[i] = c.y2 / (gg * (1.0 / (1.3 * 1.3))) * post_scale;
+                      values[i] = c.y2 * post_scale;
                       break;
                     case LadderVCFMode::LP3:
-                      values[i] = c.y3 / (g * (1.0 / 1.3)) * post_scale;
+                      values[i] = c.y3 * post_scale;
                       break;
                     case LadderVCFMode::LP4:
                       values[i] = c.y4 * post_scale;
