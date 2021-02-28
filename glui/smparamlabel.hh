@@ -19,6 +19,8 @@ public:
   virtual std::string value_text() = 0;
   virtual std::string display_text() = 0;
   virtual void        set_value_text (const std::string& t) = 0;
+
+  Signal<> signal_update_display;
 };
 
 class ParamLabelModelDouble : public ParamLabelModel
@@ -59,6 +61,13 @@ public:
 
     signal_value_changed (value);
   }
+  void
+  set_value (double v)
+  {
+    value = sm_bound (min_value, v, max_value);
+
+    signal_update_display();
+  }
   Signal<double> signal_value_changed;
 };
 
@@ -97,6 +106,13 @@ public:
     value = sm_bound (min_value, value, max_value);
 
     signal_value_changed (value);
+  }
+  void
+  set_value (int i)
+  {
+    value = sm_bound (min_value, i, max_value);
+
+    signal_update_display();
   }
   Signal<int> signal_value_changed;
 };
@@ -141,7 +157,9 @@ public:
     Label (parent, ""),
     model (model)
   {
-    set_text (model->display_text());
+    connect (model->signal_update_display, this, &ParamLabel::on_update_display);
+
+    on_update_display();
   }
   void
   mouse_press (const MouseEvent& event) override
@@ -183,6 +201,11 @@ public:
     set_text (model->display_text());
     line_edit->delete_later();
     line_edit = nullptr;
+  }
+  void
+  on_update_display()
+  {
+    set_text (model->display_text());
   }
 };
 

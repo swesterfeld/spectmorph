@@ -7,6 +7,7 @@
 #include "smbutton.hh"
 #include "smlineedit.hh"
 #include "smcontrolview.hh"
+#include "smparamlabel.hh"
 
 namespace SpectMorph
 {
@@ -27,7 +28,7 @@ protected:
   std::vector<Widget *> mod_widgets;
 
   PropertyViewEdit (Window *parent, MorphOperator *op, Property& property) :
-    Window (*parent->event_loop(), "Edit Property", 520, 320, 0, false, parent->native_window()),
+    Window (*parent->event_loop(), "Edit Property", 560, 320, 0, false, parent->native_window()),
     parent_window (parent),
     op (op),
     property (property)
@@ -115,7 +116,7 @@ protected:
               mod_list->update_entry (i, entry);
             });
 
-        grid.add_widget (control_combobox, 1, yoffset, 17, 3);
+        grid.add_widget (control_combobox, 3, yoffset, 17, 3);
 
         static constexpr auto CB_UNIPOLAR_TEXT = "unipolar";
         static constexpr auto CB_BIPOLAR_TEXT = "bipolar";
@@ -125,7 +126,7 @@ protected:
         polarity_combobox->add_item (CB_BIPOLAR_TEXT);
         polarity_combobox->set_text (e.bipolar ? CB_BIPOLAR_TEXT : CB_UNIPOLAR_TEXT);
 
-        grid.add_widget (polarity_combobox, 19, yoffset, 14, 3);
+        grid.add_widget (polarity_combobox, 21, yoffset, 14, 3);
 
         connect (polarity_combobox->signal_item_changed,
           [polarity_combobox, mod_list, i]()
@@ -136,23 +137,31 @@ protected:
             });
 
         auto slider = new Slider (this, (e.mod_amount + 1) / 2);
-        grid.add_widget (slider, 34, yoffset, 22, 3);
+        grid.add_widget (slider, 36, yoffset, 22, 3);
 
-        auto label = new Label (this, string_printf ("%.3f", e.mod_amount));
-        grid.add_widget (label, 57, yoffset, 15, 3);
+        auto mod_amount_model = new ParamLabelModelDouble (e.mod_amount, -1, 1, "%.3f", "%.3f");
+        auto label = new ParamLabel (this, mod_amount_model);
+        grid.add_widget (label, 59, yoffset, 8, 3);
+
+        connect (mod_amount_model->signal_value_changed, [mod_list, i, slider](double new_value) {
+          ModulationData::Entry entry = (*mod_list)[i];
+          entry.mod_amount = new_value;
+          slider->set_value ((entry.mod_amount + 1) / 2);
+          mod_list->update_entry (i, entry);
+        });
 
         ToolButton *tbutton = new ToolButton (this, 'x');
-        grid.add_widget (tbutton, 60.5, yoffset + 0.5, 2, 2);
+        grid.add_widget (tbutton, 0.5, yoffset + 0.5, 2, 2);
         connect (tbutton->signal_clicked,
           [mod_list, i, this] ()
             {
               mod_list->remove_entry (i);
               update_modulation_widgets();
             });
-        connect (slider->signal_value_changed, [label, slider, mod_list, i](double new_value) {
+        connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
           entry.mod_amount = new_value * 2 - 1;
-          label->set_text (string_printf ("%.3f", entry.mod_amount));
+          mod_amount_model->set_value (entry.mod_amount);
           mod_list->update_entry (i, entry);
         });
 
