@@ -42,15 +42,30 @@ main (int argc, char **argv)
     }
 
   string cmd = argv[1];
-  if (argc == 4 && cmd == "sweep")
+  if (argc == 5 && cmd == "sweep")
     {
-      float cutoff = atof (argv[2]);
-      float resonance = atof (argv[3]);
+      float cutoff = atof (argv[3]);
+      float resonance = atof (argv[4]);
       vector<float> left;
       vector<float> right;
       vector<float> freq;
       gen_sweep (left, right, freq);
       LadderVCFLinear laddervcf;
+
+      string mode = argv[2];
+      if (mode == "lp1")
+        laddervcf.set_mode (LadderVCFMode::LP1);
+      else if (mode == "lp2")
+        laddervcf.set_mode (LadderVCFMode::LP2);
+      else if (mode == "lp3")
+        laddervcf.set_mode (LadderVCFMode::LP3);
+      else if (mode == "lp4")
+        laddervcf.set_mode (LadderVCFMode::LP4);
+      else
+        {
+          printf ("bad mode: %s\n", mode.c_str());
+          return 1;
+        }
 
       for (size_t i = 0; i < left.size(); i++)
         {
