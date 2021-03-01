@@ -18,6 +18,34 @@ new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
 
+FILTER:
+
+__ ui __
+
+- improve layout of property edit
+- support property editing for mere-float / mere int
+- semitones flag for filter cutoff
+- property edit window should scroll
+- main window should scroll morph output
+
+__ generic modulation __
+
+- base value
+- compatibility to old grid / linear / wav source modulation
+- handle XPARAM scaled parameters
+- serialization
+- simplify registration of modulatable properties
+
+__ dsp __
+
+- advanced smoothing (drive, subsampled polynomials)
+- try to get old performance from new inner loop
+- resampling for the filter
+- performance tests
+- smoothing should probably be log-scale based
+- support LinearSmooth<LinearSmooth::MUL>
+_________
+
 smenc:
 - move partial pruning step to seperate step to be performed after attack optimization
 - merge new-pruning-scaling branch somehow
