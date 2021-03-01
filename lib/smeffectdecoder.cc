@@ -238,6 +238,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_depth_octaves =  cfg->filter_depth / 12;
 
   filter_key_tracking = cfg->filter_key_tracking;
+  filter.set_drive (cfg->filter_drive);
 
   switch (cfg->filter_type)
     {
