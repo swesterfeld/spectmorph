@@ -42,6 +42,7 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_filter_key_tracking;
   PropertyView               *pv_filter_cutoff;
   PropertyView               *pv_filter_resonance;
+  PropertyView               *pv_filter_drive;
 
   PropertyView               *pv_portamento;
   PropertyView               *pv_portamento_glide;
