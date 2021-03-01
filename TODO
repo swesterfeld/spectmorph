@@ -44,6 +44,7 @@ __ dsp __
 - performance tests
 - smoothing should probably be log-scale based
 - support LinearSmooth<LinearSmooth::MUL>
+- tuning polynomials appear to be incorrect
 _________
 
 smenc:
