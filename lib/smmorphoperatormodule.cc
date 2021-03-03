@@ -113,6 +113,27 @@ float
 MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_data) const
 {
   double value = 0;
+
+  /* main value */
+  if (mod_data.main_control_type != MorphOperator::CONTROL_GUI)
+    {
+      /* to bind main value to operator or control signal, we
+       *  - perform unimodular modulation with range [0:1]
+       *  - set base value to minimum
+       */
+      base = mod_data.min_value;
+
+      if (mod_data.main_control_type == MorphOperator::CONTROL_OP)
+        {
+          value = (morph_plan_voice->module (mod_data.main_control_op)->value() + 1) * 0.5;
+        }
+      else
+        {
+          value = (morph_plan_voice->control_input (/* gui */ 0, mod_data.main_control_type, /* mod (not used) */ nullptr) + 1) * 0.5;
+        }
+    }
+
+  /* modulate main value */
   for (const auto& entry : mod_data.entries)
     {
       double mod_value = 0;

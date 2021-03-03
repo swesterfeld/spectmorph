@@ -22,6 +22,9 @@ public:
   float max_value = 0;
   float value_scale = 0;
 
+  MorphOperator::ControlType    main_control_type = MorphOperator::CONTROL_GUI;
+  MorphOperatorPtr              main_control_op;
+
   struct Entry
   {
     MorphOperator::ControlType  control_type = MorphOperator::CONTROL_SIGNAL_1;
@@ -41,6 +44,24 @@ public:
   ModulationList (ModulationData& data) :
     data (data)
   {
+  }
+
+  MorphOperator::ControlType
+  main_control_type() const
+  {
+    return data.main_control_type;
+  }
+  MorphOperator *
+  main_control_op() const
+  {
+    return data.main_control_op.get();
+  }
+  void
+  set_main_control_type_and_op (MorphOperator::ControlType type, MorphOperator *op)
+  {
+    data.main_control_type = type;
+    data.main_control_op.set (op);
+    signal_modulation_changed();
   }
 
   size_t
