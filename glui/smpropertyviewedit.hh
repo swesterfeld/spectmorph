@@ -55,13 +55,14 @@ protected:
     connect (add_mod_button->signal_clicked, [this]() {
       ModulationList *mod_list = this->property.modulation_list();
       if (mod_list)
-        {
-          mod_list->add_entry();
-          update_modulation_widgets();
-        }
+        mod_list->add_entry();
     });
 
     ok_button = new Button (this, "Close");
+
+    ModulationList *mod_list = this->property.modulation_list();
+    if (mod_list)
+      connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
 
     update_modulation_widgets();
 
@@ -98,6 +99,12 @@ protected:
       {
         ModulationData::Entry e = (*mod_list)[i];
 
+        // ===== remove entry button
+        ToolButton *tbutton = new ToolButton (this, 'x');
+        grid.add_widget (tbutton, 0.5, yoffset + 0.5, 2, 2);
+        connect (tbutton->signal_clicked, [mod_list, i, this] () { mod_list->remove_entry (i); });
+
+        // ===== modulation entry control op / type
         ControlView *control_view = new ControlView();
         auto control_combobox = control_view->create_combobox (this,
           op,
@@ -118,6 +125,8 @@ protected:
 
         grid.add_widget (control_combobox, 3, yoffset, 17, 3);
 
+        // ===== unipolar / bipolar combobox
+
         static constexpr auto CB_UNIPOLAR_TEXT = "unipolar";
         static constexpr auto CB_BIPOLAR_TEXT = "bipolar";
 
@@ -136,12 +145,20 @@ protected:
               mod_list->update_entry (i, entry);
             });
 
+        // ===== mod amount slider and value label
         auto slider = new Slider (this, (e.mod_amount + 1) / 2);
         grid.add_widget (slider, 36, yoffset, 22, 3);
 
         auto mod_amount_model = new ParamLabelModelDouble (e.mod_amount, -1, 1, "%.3f", "%.3f");
         auto label = new ParamLabel (this, mod_amount_model);
         grid.add_widget (label, 59, yoffset, 8, 3);
+
+        connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
+          ModulationData::Entry entry = (*mod_list)[i];
+          entry.mod_amount = new_value * 2 - 1;
+          mod_amount_model->set_value (entry.mod_amount);
+          mod_list->update_entry (i, entry);
+        });
 
         connect (mod_amount_model->signal_value_changed, [mod_list, i, slider](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
@@ -150,26 +167,11 @@ protected:
           mod_list->update_entry (i, entry);
         });
 
-        ToolButton *tbutton = new ToolButton (this, 'x');
-        grid.add_widget (tbutton, 0.5, yoffset + 0.5, 2, 2);
-        connect (tbutton->signal_clicked,
-          [mod_list, i, this] ()
-            {
-              mod_list->remove_entry (i);
-              update_modulation_widgets();
-            });
-        connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
-          ModulationData::Entry entry = (*mod_list)[i];
-          entry.mod_amount = new_value * 2 - 1;
-          mod_amount_model->set_value (entry.mod_amount);
-          mod_list->update_entry (i, entry);
-        });
-
+        mod_widgets.push_back (tbutton);
         mod_widgets.push_back (control_combobox);
         mod_widgets.push_back (polarity_combobox);
-        mod_widgets.push_back (label);
         mod_widgets.push_back (slider);
-        mod_widgets.push_back (tbutton);
+        mod_widgets.push_back (label);
         yoffset += 3;
       }
     grid.add_widget (add_mod_button, 7, yoffset, 31, 3);
