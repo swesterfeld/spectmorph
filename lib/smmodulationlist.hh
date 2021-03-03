@@ -52,6 +52,8 @@ public:
   add_entry()
   {
     data.entries.emplace_back();
+
+    signal_size_changed();
     signal_modulation_changed();
   }
   void
@@ -70,9 +72,12 @@ public:
   {
     g_return_if_fail (index >= 0 && index < data.entries.size());
     data.entries.erase (data.entries.begin() + index);
+
+    signal_size_changed();
     signal_modulation_changed();
   }
   Signal<> signal_modulation_changed;
+  Signal<> signal_size_changed;
 };
 
 }
