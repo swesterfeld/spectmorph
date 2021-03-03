@@ -23,6 +23,7 @@ protected:
   Button         *add_mod_button;
   LineEdit       *line_edit;
   bool            line_edit_changed = false;
+  ControlView     main_control_view;
 
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
@@ -36,6 +37,25 @@ protected:
     FixedGrid grid;
 
     double yoffset = 2;
+
+    ModulationList *mod_list = this->property.modulation_list();
+    if (mod_list)
+      {
+        auto control_combobox = main_control_view.create_combobox (this,
+          op,
+          mod_list->main_control_type(),
+          mod_list->main_control_op());
+
+        connect (main_control_view.signal_control_changed,
+          [mod_list, this]()
+            {
+              mod_list->set_main_control_type_and_op (main_control_view.control_type(), main_control_view.op());
+            });
+
+        grid.add_widget (control_combobox, 3, yoffset, 17, 3);
+        yoffset += 3;
+      }
+
     grid.add_widget (new Label (this, property.label()), 1, yoffset, 30, 3);
     if (property.type() == Property::Type::FLOAT)
       {
@@ -60,7 +80,6 @@ protected:
 
     ok_button = new Button (this, "Close");
 
-    ModulationList *mod_list = this->property.modulation_list();
     if (mod_list)
       connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
 
