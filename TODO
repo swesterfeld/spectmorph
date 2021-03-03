@@ -30,6 +30,7 @@ __ ui __
 
 __ generic modulation __
 
+- deleting operator should delete corresponding modulation entries
 - base value
 - compatibility to old grid / linear / wav source modulation
 - handle XPARAM scaled parameters
@@ -45,6 +46,8 @@ __ dsp __
 - smoothing should probably be log-scale based
 - support LinearSmooth<LinearSmooth::MUL>
 - tuning polynomials appear to be incorrect
+- remove need_left & need_right, replace by mono/stereo
+- move filter processing into live decoder processing (interface LiveDecoderFilter)
 _________
 
 smenc:
