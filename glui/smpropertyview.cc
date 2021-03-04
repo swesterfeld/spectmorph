@@ -23,6 +23,8 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
   m_property (property),
   window (parent->window())
 {
+  mod_list = property.modulation_list();
+
   if (property.type() == Property::Type::ENUM)
     {
       create_combobox (parent);
@@ -47,16 +49,25 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
 
       slider->set_int_range (property.min(), property.max());
       label = new PropertyViewLabel (parent, property.value_label());
-      title = new Label (parent, property.label());
       slider->set_int_value (property.get());
 
+      if (mod_list)
+        {
+          auto tlabel = new PropertyViewLabel (parent, property.label());
+          connect (tlabel->signal_clicked, this, &PropertyView::on_edit_details);
+
+          title = tlabel;
+        }
+      else
+        {
+          title = new Label (parent, property.label());
+        }
       connect (label->signal_clicked, this, &PropertyView::on_edit_details);
       connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
       connect (property.signal_value_changed, this, &PropertyView::on_update_value);
 
       op_layout.add_row (2, title, slider, label);
 
-      mod_list = property.modulation_list();
       if (mod_list)
         {
           control_combobox = control_view.create_combobox (parent,
@@ -75,7 +86,11 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
               signal_visibility_changed();
             });
 
-          control_combobox_title = new Label (parent, property.label());
+          auto tlabel = new PropertyViewLabel (parent, property.label());
+
+          connect (tlabel->signal_clicked, this, &PropertyView::on_edit_details);
+          control_combobox_title = tlabel;
+
           op_layout.add_row (3, control_combobox_title, control_combobox);
         }
     }
