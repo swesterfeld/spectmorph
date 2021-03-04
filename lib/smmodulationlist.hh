@@ -61,6 +61,8 @@ public:
   {
     data.main_control_type = type;
     data.main_control_op.set (op);
+
+    signal_main_control_changed();
     signal_modulation_changed();
   }
 
@@ -99,6 +101,7 @@ public:
   }
   Signal<> signal_modulation_changed;
   Signal<> signal_size_changed;
+  Signal<> signal_main_control_changed;
 };
 
 }
