@@ -53,7 +53,7 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
 
       if (mod_list)
         {
-          auto tlabel = new PropertyViewLabel (parent, property.label());
+          auto tlabel = new PropertyViewModLabel (parent, property.label(), mod_list);
           connect (tlabel->signal_clicked, this, &PropertyView::on_edit_details);
 
           title = tlabel;
@@ -86,7 +86,7 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
               signal_visibility_changed();
             });
 
-          auto tlabel = new PropertyViewLabel (parent, property.label());
+          auto tlabel = new PropertyViewModLabel (parent, property.label(), mod_list);
 
           connect (tlabel->signal_clicked, this, &PropertyView::on_edit_details);
           control_combobox_title = tlabel;

@@ -60,12 +60,103 @@ public:
   Signal<> signal_clicked;
 };
 
+class PropertyViewModLabel : public Widget
+{
+  bool            m_pressed = false;
+  std::string     m_text;
+  bool            m_bold = false;
+  Color           m_color = ThemeColor::TEXT;
+  ModulationList *m_mod_list;
+public:
+  PropertyViewModLabel (Widget *parent, const std::string& text, ModulationList *mod_list) :
+    Widget (parent),
+    m_text (text),
+    m_mod_list (mod_list)
+  {
+    connect (mod_list->signal_modulation_changed, this, &PropertyViewModLabel::on_update_active);
+    on_update_active();
+  }
+  void
+  draw (const DrawEvent& devent) override
+  {
+    cairo_t *cr = devent.cr;
+    DrawUtils du (cr);
+
+    Color text_color = m_color;
+
+    if (!enabled())
+      text_color = text_color.darker();
+
+    du.set_color (m_color);
+    double space = 6;
+    double yoffset = height() / 2 - 8;
+    cairo_move_to (cr, 2, yoffset + space);
+    cairo_line_to (cr, 2, yoffset + 16 - space);
+    cairo_line_to (cr, 2 + (16 - 2 * space) * 0.8, yoffset + 16 / 2);
+
+    cairo_close_path (cr);
+    cairo_stroke_preserve (cr);
+    cairo_fill (cr);
+    du.set_color (text_color);
+    du.bold = m_bold;
+    du.text (m_text, 10, 0, width(), height(), TextAlign::LEFT);
+  }
+  void
+  enter_event() override
+  {
+    m_bold = true;
+    update();
+  }
+  void
+  leave_event() override
+  {
+    m_bold = false;
+    update();
+  }
+  void
+  mouse_press (const MouseEvent& event) override
+  {
+    if (event.button == LEFT_BUTTON)
+      {
+        m_pressed = true;
+        update();
+      }
+  }
+  void
+  mouse_release (const MouseEvent& event) override
+  {
+    if (event.button != LEFT_BUTTON || !m_pressed)
+      return;
+
+    m_pressed = false;
+    update();
+
+    if (event.x >= 0 && event.y >= 0 && event.x < width() && event.y < height())
+      signal_clicked();
+  }
+  void
+  on_update_active()
+  {
+    if (m_mod_list->main_control_type() != MorphOperator::CONTROL_GUI || m_mod_list->size() != 0)
+      {
+        m_color = ThemeColor::SLIDER;
+        m_color = m_color.lighter (180);
+      }
+    else
+      {
+        m_color = ThemeColor::TEXT;
+      }
+    update();
+  }
+  Signal<> signal_clicked;
+};
+
 class PropertyView : public SignalReceiver
 {
   MorphOperator *m_op;
   Property& m_property;
 
-  Label    *title  = nullptr;
+  Widget   *title  = nullptr;
   Slider   *slider = nullptr;
   ComboBox *combobox = nullptr;
   CheckBox *check_box = nullptr;
@@ -73,7 +164,7 @@ class PropertyView : public SignalReceiver
 
   ControlView control_view;
   ComboBoxOperator *control_combobox = nullptr;
-  Label *control_combobox_title = nullptr;
+  Widget *control_combobox_title = nullptr;
 
   ModulationList *mod_list = nullptr;
 
