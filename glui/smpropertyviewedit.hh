@@ -8,6 +8,7 @@
 #include "smlineedit.hh"
 #include "smcontrolview.hh"
 #include "smparamlabel.hh"
+#include "smtoolbutton.hh"
 
 namespace SpectMorph
 {
@@ -18,6 +19,7 @@ protected:
   Window         *parent_window;
   MorphOperator  *op;
   Property&       property;
+  ModulationList *mod_list = nullptr;
 
   Button         *ok_button;
   Button         *add_mod_button;
@@ -38,7 +40,7 @@ protected:
 
     double yoffset = 2;
 
-    ModulationList *mod_list = this->property.modulation_list();
+    mod_list = property.modulation_list();
     if (mod_list)
       {
         auto control_combobox = main_control_view.create_combobox (this,
@@ -47,10 +49,15 @@ protected:
           mod_list->main_control_op());
 
         connect (main_control_view.signal_control_changed,
-          [mod_list, this]()
+          [this]()
             {
               mod_list->set_main_control_type_and_op (main_control_view.control_type(), main_control_view.op());
             });
+
+        connect (mod_list->signal_main_control_changed, [this]()
+          {
+            main_control_view.update_control_type_and_op (mod_list->main_control_type(), mod_list->main_control_op());
+          });
 
         grid.add_widget (control_combobox, 3, yoffset, 17, 3);
         yoffset += 3;

@@ -3,10 +3,8 @@
 #ifndef SPECTMORPH_COMBOBOX_OPERATOR_HH
 #define SPECTMORPH_COMBOBOX_OPERATOR_HH
 
-#include "smmorphoperatorview.hh"
-#include "smmorphlinear.hh"
-
 #include "smcombobox.hh"
+#include "smmorphoperator.hh"
 
 namespace SpectMorph
 {

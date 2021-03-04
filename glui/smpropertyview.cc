@@ -55,6 +55,29 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
       connect (property.signal_value_changed, this, &PropertyView::on_update_value);
 
       op_layout.add_row (2, title, slider, label);
+
+      mod_list = property.modulation_list();
+      if (mod_list)
+        {
+          control_combobox = control_view.create_combobox (parent,
+            op,
+            mod_list->main_control_type(),
+            mod_list->main_control_op());
+
+          connect (control_view.signal_control_changed,
+            [this]()
+               {
+                 mod_list->set_main_control_type_and_op (control_view.control_type(), control_view.op());
+               });
+          connect (mod_list->signal_main_control_changed, [this]()
+            {
+              control_view.update_control_type_and_op (mod_list->main_control_type(), mod_list->main_control_op());
+              signal_visibility_changed();
+            });
+
+          control_combobox_title = new Label (parent, property.label());
+          op_layout.add_row (3, control_combobox_title, control_combobox);
+        }
     }
 }
 
@@ -102,21 +125,35 @@ PropertyView::set_enabled (bool enabled)
     check_box->set_enabled (enabled);
   if (label)
     label->set_enabled (enabled);
+  if (control_combobox)
+    control_combobox->set_enabled (enabled);
+  if (control_combobox_title)
+    control_combobox_title->set_enabled (enabled);
 }
 
 void
 PropertyView::set_visible (bool visible)
 {
+  const bool show_control_combobox = mod_list && mod_list->main_control_type() != MorphOperator::CONTROL_GUI;
+
+  bool value_visible = visible && !show_control_combobox;
+  bool control_visible = visible && show_control_combobox;
+
   if (title)
-    title->set_visible (visible);
+    title->set_visible (value_visible);
   if (slider)
-    slider->set_visible (visible);
+    slider->set_visible (value_visible);
   if (combobox)
-    combobox->set_visible (visible);
+    combobox->set_visible (value_visible);
   if (check_box)
-    check_box->set_visible (visible);
+    check_box->set_visible (value_visible);
   if (label)
-    label->set_visible (visible);
+    label->set_visible (value_visible);
+
+  if (control_combobox)
+    control_combobox->set_visible (control_visible);
+  if (control_combobox_title)
+    control_combobox_title->set_visible (control_visible);
 }
 
 void

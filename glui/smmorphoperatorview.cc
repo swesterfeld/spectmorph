@@ -76,6 +76,8 @@ MorphOperatorView::add_property_view (const std::string& identifier, OperatorLay
 {
   auto pv = new PropertyView (m_op, *m_op->property (identifier), body_widget, layout);
 
+  connect (pv->signal_visibility_changed, this, &MorphOperatorView::update_visible);
+
   /* this ensures that the PropertyView object will be deleted when we're done */
   property_views.emplace_back (pv);
   return pv;

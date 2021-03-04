@@ -119,6 +119,10 @@ public:
   {
     return false;
   }
+  virtual void
+  update_visible()
+  {
+  }
   MorphOperator *
   op()
   {

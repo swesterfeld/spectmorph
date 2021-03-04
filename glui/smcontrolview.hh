@@ -64,6 +64,20 @@ public:
     /* in principle this cannot be reached but we want to fail gracefully */
     return MorphOperator::CONTROL_GUI;
   }
+  void
+  update_control_type_and_op (MorphOperator::ControlType type, MorphOperator *op)
+  {
+    if (type == MorphOperator::CONTROL_OP)
+      control_combobox->set_active (op);
+    else
+      {
+        for (auto entry : entries)
+          {
+            if (entry.ctype == type)
+              control_combobox->set_active_str_choice (entry.text);
+          }
+      }
+  }
   Signal<> signal_control_changed;
 };
 

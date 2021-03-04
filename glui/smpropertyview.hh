@@ -9,6 +9,7 @@
 #include "smcombobox.hh"
 #include "smcheckbox.hh"
 #include "smfixedgrid.hh"
+#include "smcontrolview.hh"
 
 namespace SpectMorph
 {
@@ -70,6 +71,12 @@ class PropertyView : public SignalReceiver
   CheckBox *check_box = nullptr;
   PropertyViewLabel *label  = nullptr;
 
+  ControlView control_view;
+  ComboBoxOperator *control_combobox = nullptr;
+  Label *control_combobox_title = nullptr;
+
+  ModulationList *mod_list = nullptr;
+
   Window *window = nullptr;
 
   void on_value_changed (int new_value);
@@ -83,6 +90,9 @@ public:
 
   void set_enabled (bool enabled);
   void set_visible (bool visible);
+
+/* signals: */
+  Signal<> signal_visibility_changed;
 
 /* slots: */
   void on_update_value();
