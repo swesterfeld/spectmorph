@@ -2,6 +2,7 @@
 
 #include "smmorphlinear.hh"
 #include "smmorphplan.hh"
+#include "smproperty.hh"
 #include "smleakdebugger.hh"
 
 #include <assert.h>
@@ -20,6 +21,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
 
   auto morphing = add_property (&m_config.morphing, P_MORPHING, "Morphing", "%.2f", 0, -1, 1);
   morphing->set_modulation_data (&m_config.morphing_mod);
+  morphing->modulation_list()->set_compat_type_and_op ("control_type", "control");
 
   m_config.db_linear = false;
 
@@ -46,6 +48,8 @@ MorphLinear::insert_order()
 bool
 MorphLinear::save (OutFile& out_file)
 {
+  write_properties (out_file);
+
   write_operator (out_file, "left", m_config.left_op);
   write_operator (out_file, "right", m_config.right_op);
   out_file.write_string ("left_smset", m_left_smset);
@@ -65,7 +69,11 @@ MorphLinear::load (InFile& ifile)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::STRING)
+      if (read_property_event (ifile))
+        {
+          // property has been read, so we ignore the event
+        }
+      else if (ifile.event() == InFile::STRING)
         {
           if (ifile.event_name() == "left")
             {
@@ -150,7 +158,6 @@ MorphLinear::post_load (OpNameMap& op_name_map)
 {
   m_config.left_op.set (op_name_map[load_left]);
   m_config.right_op.set (op_name_map[load_right]);
-  // FIXME: FILTER m_config.control_op.set (op_name_map[load_control]);
 }
 
 MorphOperator::OutputType

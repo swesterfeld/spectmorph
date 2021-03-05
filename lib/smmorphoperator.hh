@@ -27,14 +27,15 @@ class MorphOperatorPtr;
 
 class MorphOperator : public SignalReceiver
 {
+public:
+  typedef std::map<std::string, MorphOperator *> OpNameMap;
+
 protected:
   MorphPlan  *m_morph_plan;
   std::string m_name;
   std::string m_id;
   bool        m_folded;
   std::map<std::string, std::unique_ptr<Property>> m_properties;
-
-  typedef std::map<std::string, MorphOperator *> OpNameMap;
 
   void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op);
   LogProperty *add_property_log (float *value, const std::string& identifier,
@@ -101,6 +102,7 @@ public:
   Property *property (const std::string& identifier);
   void write_properties (OutFile& out_file);
   bool read_property_event (InFile& in_file);
+  void read_properties_post_load (OpNameMap& op_name_map);
 
   MorphPlan *morph_plan();
 

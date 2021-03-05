@@ -3,6 +3,7 @@
 #include "smmorphoperator.hh"
 #include "smmorphplan.hh"
 #include "smproperty.hh"
+#include "smmodulationlist.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -204,6 +205,10 @@ MorphOperator::write_properties (OutFile& out_file)
     {
       Property *p = kv.second.get();
       p->save (out_file);
+
+      ModulationList *mod_list = p->modulation_list();
+      if (mod_list)
+        mod_list->save (out_file);
     }
 }
 
@@ -215,8 +220,26 @@ MorphOperator::read_property_event (InFile& in_file)
       Property *p = kv.second.get();
       if (p->load (in_file))
         return true;
+
+      ModulationList *mod_list = p->modulation_list();
+      if (mod_list)
+        if (mod_list->load (in_file))
+          return true;
     }
   return false;
+}
+
+void
+MorphOperator::read_properties_post_load (OpNameMap& op_name_map)
+{
+  for (auto& kv : m_properties)
+    {
+      Property *p = kv.second.get();
+
+      ModulationList *mod_list = p->modulation_list();
+      if (mod_list)
+        mod_list->post_load (op_name_map);
+    }
 }
 
 MorphOperatorConfig *

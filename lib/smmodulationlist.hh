@@ -40,6 +40,15 @@ class ModulationList
 {
   ModulationData& data;
 
+  bool                        compat = false;
+  std::string                 compat_type_name;
+  std::string                 compat_op_name;
+
+  std::string                 compat_main_control_op;
+  MorphOperator::ControlType  compat_main_control_type;
+
+  bool                        have_compat_main_control_op = false;
+  bool                        have_compat_main_control_type = false;
 public:
   ModulationList (ModulationData& data) :
     data (data)
@@ -99,6 +108,53 @@ public:
     signal_size_changed();
     signal_modulation_changed();
   }
+  void
+  set_compat_type_and_op (const std::string& type, const std::string& op)
+  {
+    compat = true;
+
+    compat_type_name = type;
+    compat_op_name   = op;
+  }
+  void
+  save (OutFile& out_file)
+  {
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::STRING)
+      {
+        if (compat && in_file.event_name() == compat_op_name)
+          {
+            compat_main_control_op = in_file.event_data();
+            have_compat_main_control_op = true;
+
+            return true;
+          }
+      }
+    else if (in_file.event() == InFile::INT)
+      {
+        if (compat && in_file.event_name() == compat_type_name)
+          {
+            compat_main_control_type = static_cast<MorphOperator::ControlType> (in_file.event_int());
+            have_compat_main_control_type = true;
+
+            return true;
+          }
+      }
+    return false;
+  }
+  void
+  post_load (MorphOperator::OpNameMap& op_name_map)
+  {
+    if (have_compat_main_control_type && have_compat_main_control_type)
+      {
+        data.main_control_type = compat_main_control_type;
+        data.main_control_op.set (op_name_map [compat_main_control_op]);
+      }
+  }
+
   Signal<> signal_modulation_changed;
   Signal<> signal_size_changed;
   Signal<> signal_main_control_changed;

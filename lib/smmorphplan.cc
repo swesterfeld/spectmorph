@@ -312,6 +312,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
         {
           MorphOperator *op = *oi;
           op->post_load (op_name2ptr);
+          op->read_properties_post_load (op_name2ptr);
         }
     }
 
