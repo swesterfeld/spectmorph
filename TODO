@@ -36,6 +36,7 @@ __ generic modulation __
 - handle XPARAM scaled parameters
 - serialization
 - simplify registration of modulatable properties
+- dependencies are missing
 
 __ dsp __
 
