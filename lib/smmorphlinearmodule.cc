@@ -52,7 +52,6 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
 
   left_mod = morph_plan_voice->module (cfg->left_op);
   right_mod = morph_plan_voice->module (cfg->right_op);
-  control_mod = morph_plan_voice->module (cfg->control_op);
 
   have_left_source = (cfg->left_path != "");
   if (have_left_source)
@@ -65,7 +64,7 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
   clear_dependencies();
   add_dependency (left_mod);
   add_dependency (right_mod);
-  add_dependency (control_mod);
+  /* FIXME: FILTER: add_dependency (control_mod); */
 }
 
 void
@@ -162,7 +161,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  const double morphing = module->morph_plan_voice->control_input (module->cfg->morphing, module->cfg->control_type, module->control_mod);
+  const double morphing = module->apply_modulation (module->cfg->morphing, module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 

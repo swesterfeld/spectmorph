@@ -4,6 +4,7 @@
 #define SPECTMORPH_MORPH_LINEAR_HH
 
 #include "smmorphoperator.hh"
+#include "smmodulationlist.hh"
 
 #include <string>
 
@@ -17,14 +18,14 @@ public:
   {
     MorphOperatorPtr left_op;
     MorphOperatorPtr right_op;
-    MorphOperatorPtr control_op;
     std::string      left_path;
     std::string      right_path;
 
-    double           morphing;
-    ControlType      control_type;
+    float            morphing;
+    ModulationData   morphing_mod;
     bool             db_linear;
   };
+  static constexpr auto P_MORPHING = "morphing";
 protected:
   Config         m_config;
   std::string    load_left, load_right, load_control;
@@ -58,16 +59,7 @@ public:
   std::string right_smset();
   void set_right_smset (const std::string& smset);
 
-  MorphOperator *control_op();
-  void set_control_op (MorphOperator *op);
-
-  void set_control_type_and_op (ControlType control_type, MorphOperator *op);
-
-  double morphing();
   void set_morphing (double new_morphing);
-
-  ControlType control_type();
-  void set_control_type (ControlType new_control_type);
 
   bool db_linear();
   void set_db_linear (bool new_db_linear);
