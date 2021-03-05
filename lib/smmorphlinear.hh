@@ -28,7 +28,7 @@ public:
   static constexpr auto P_MORPHING = "morphing";
 protected:
   Config         m_config;
-  std::string    load_left, load_right, load_control;
+  std::string    load_left, load_right;
   std::string    m_left_smset;
   std::string    m_right_smset;
 

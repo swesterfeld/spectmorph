@@ -65,7 +65,6 @@ MorphLinear::load (InFile& ifile)
 {
   load_left    = "";
   load_right   = "";
-  load_control = "";
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
@@ -82,10 +81,6 @@ MorphLinear::load (InFile& ifile)
           else if (ifile.event_name() == "right")
             {
               load_right = ifile.event_data();
-            }
-          else if (ifile.event_name() == "control")
-            {
-              load_control = ifile.event_data();
             }
           else if (ifile.event_name() == "left_smset")
             {
@@ -110,18 +105,6 @@ MorphLinear::load (InFile& ifile)
           else
             {
               g_printerr ("bad float\n");
-              return false;
-            }
-        }
-      else if (ifile.event() == InFile::INT)
-        {
-          if (ifile.event_name() == "control_type")
-            {
-              // FIXME: FILTER: m_config.control_type = static_cast<ControlType> (ifile.event_int());
-            }
-          else
-            {
-              g_printerr ("bad int\n");
               return false;
             }
         }
