@@ -7,6 +7,7 @@
 #include "smmorphlinear.hh"
 #include "smcomboboxoperator.hh"
 #include "smcontrolview.hh"
+#include "smoperatorlayout.hh"
 
 namespace SpectMorph
 {
@@ -16,25 +17,19 @@ class MorphLinearView : public MorphOperatorView
 protected:
   MorphLinear                     *morph_linear;
 
-  Label                           *morphing_title;
-  Label                           *morphing_label;
-  Slider                          *morphing_slider;
+  PropertyView                    *pv_morphing;
+  OperatorLayout                   op_layout;
 
   ComboBoxOperator                *left_combobox;
   ComboBoxOperator                *right_combobox;
-  ComboBoxOperator                *control_combobox;
-  ControlView                      cv_control;
-
-  void update_slider();
 
 public:
   MorphLinearView (Widget *parent, MorphLinear *op, MorphPlanWindow *morph_plan_window);
 
   double view_height() override;
+  void update_visible() override;
 
 /* slots: */
-  void on_morphing_changed (double new_value);
-  void on_control_changed();
   void on_operator_changed();
   void on_db_linear_changed (bool new_value);
   void on_index_changed();

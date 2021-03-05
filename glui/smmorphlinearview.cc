@@ -16,8 +16,6 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
   MorphOperatorView (parent, morph_linear, morph_plan_window),
   morph_linear (morph_linear)
 {
-  OperatorLayout op_layout;
-
   auto operator_filter = ComboBoxOperator::make_filter (morph_linear, MorphOperator::OUTPUT_AUDIO);
 
   // LEFT SOURCE
@@ -34,27 +32,8 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   connect (right_combobox->signal_item_changed, this, &MorphLinearView::on_operator_changed);
 
-  // CONTROL INPUT
-  control_combobox = cv_control.create_combobox (body_widget,
-    morph_linear,
-    morph_linear->control_type(),
-    morph_linear->control_op());
-  connect (cv_control.signal_control_changed, this, &MorphLinearView::on_control_changed);
-
-  op_layout.add_row (3, new Label (body_widget, "Control Input"), control_combobox);
-
   // MORPHING
-  double morphing_slider_value = (morph_linear->morphing() + 1) / 2.0; /* restore value from operator */
-
-  morphing_title = new Label (body_widget, "Morphing");
-  morphing_slider = new Slider (body_widget, morphing_slider_value);
-  morphing_label = new Label (body_widget, "0");
-  op_layout.add_row (2, morphing_title, morphing_slider, morphing_label);
-
-  connect (morphing_slider->signal_value_changed, this, &MorphLinearView::on_morphing_changed);
-
-  on_morphing_changed (morphing_slider->value());
-  update_slider();
+  pv_morphing = add_property_view (MorphLinear::P_MORPHING, op_layout);
 
   // FLAG: DB LINEAR
   CheckBox *db_linear_box = new CheckBox (body_widget, "dB Linear Morphing");
@@ -67,40 +46,14 @@ MorphLinearView::MorphLinearView (Widget *parent, MorphLinear *morph_linear, Mor
 
   connect (morph_linear->morph_plan()->signal_index_changed, this, &MorphLinearView::on_index_changed);
 
-  op_layout.activate();
+  update_visible();
   on_index_changed();     // add instruments to left/right combobox
 }
 
 double
 MorphLinearView::view_height()
 {
-  return 18;
-}
-
-void
-MorphLinearView::on_morphing_changed (double new_value)
-{
-  double dvalue = (new_value * 2) - 1;
-  morphing_label->set_text (string_locale_printf ("%.2f", dvalue));
-  morph_linear->set_morphing (dvalue);
-}
-
-void
-MorphLinearView::on_control_changed()
-{
-  morph_linear->set_control_type_and_op (cv_control.control_type(), cv_control.op());
-
-  update_slider();
-}
-
-void
-MorphLinearView::update_slider()
-{
-  bool enabled = (morph_linear->control_type() == MorphLinear::CONTROL_GUI);
-
-  morphing_title->set_enabled (enabled);
-  morphing_slider->set_enabled (enabled);
-  morphing_label->set_enabled (enabled);
+  return op_layout.height() + 5;
 }
 
 void
@@ -157,4 +110,13 @@ MorphLinearView::on_index_changed()
       string label = morph_linear->morph_plan()->index()->smset_to_label (morph_linear->right_smset());
       right_combobox->set_active_str_choice (label);
     }
+}
+
+void
+MorphLinearView::update_visible()
+{
+  pv_morphing->set_visible (true);
+
+  op_layout.activate();
+  signal_size_changed();
 }
