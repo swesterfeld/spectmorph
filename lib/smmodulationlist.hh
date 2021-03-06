@@ -38,8 +38,8 @@ public:
 
 class ModulationList
 {
-  ModulationData& data;
-  Property&       property;
+  ModulationData&             data;
+  Property&                   property;
 
   bool                        compat = false;
   std::string                 compat_type_name;
@@ -50,6 +50,9 @@ class ModulationList
 
   bool                        have_compat_main_control_op = false;
   bool                        have_compat_main_control_type = false;
+
+  std::vector<std::string>    load_control_ops;
+  std::string                 m_main_control_op;
 public:
   ModulationList (ModulationData& data, Property& property) :
     data (data),
@@ -131,28 +134,66 @@ public:
   void
   save (OutFile& out_file)
   {
-    out_file.write_int (property.identifier() + ".modulation_main_control_type", data.main_control_type);
-    write_operator (out_file, property.identifier() + ".modulation_main_control_op", data.main_control_op);
-    out_file.write_int (property.identifier() + ".modulation_count", count());
+    out_file.write_int (event_name ("main_control_type"), data.main_control_type);
+    write_operator (out_file, event_name ("main_control_op"), data.main_control_op);
+    out_file.write_int (event_name ("count"), count());
     for (uint i = 0; i < data.entries.size(); i++)
       {
-        out_file.write_int (property.identifier() + string_printf (".modulation_control_type_%d", i), data.entries[i].control_type);
-        write_operator (out_file, property.identifier() + string_printf (".modulation_control_op_%d", i), data.entries[i].control_op);
-        out_file.write_bool (property.identifier() + string_printf (".modulation_bipolar_%d", i), data.entries[i].bipolar);
-        out_file.write_float (property.identifier() + string_printf (".modulation_amount_%d", i), data.entries[i].amount);
+        out_file.write_int (event_name ("control_type", i), data.entries[i].control_type);
+        write_operator (out_file, event_name ("control_op", i), data.entries[i].control_op);
+        out_file.write_bool (event_name ("bipolar", i), data.entries[i].bipolar);
+        out_file.write_float (event_name ("amount", i), data.entries[i].amount);
       }
+  }
+  std::string
+  event_name (const std::string& id, int index = -1)
+  {
+    std::string s = property.identifier() + ".modulation_" + id;
+
+    if (index >= 0)
+      s += string_printf ("_%d", index);
+
+    return s;
+  }
+  bool
+  starts_with (const std::string& key, const std::string& start) /* FIXME: FILTER: move starts_with and ends_with to smutils.cc */
+  {
+    return key.substr (0, start.size()) == start;
+  }
+  bool
+  split_event_name (const std::string& name, const std::string& start, int& index)
+  {
+    std::string prefix = event_name (start) + "_";
+
+    if (!starts_with (name, prefix))
+      return false;
+
+    index = atoi (name.substr (prefix.length()).c_str());
+    return true;
   }
   bool
   load (InFile& in_file)
   {
+    int i;
+
     if (in_file.event() == InFile::STRING)
       {
         if (compat && in_file.event_name() == compat_op_name)
           {
             compat_main_control_op = in_file.event_data();
             have_compat_main_control_op = true;
-
-            return true;
+          }
+        else if (in_file.event_name() == event_name ("main_control_op"))
+          {
+            m_main_control_op = in_file.event_data();
+          }
+        else if (split_event_name (in_file.event_name(), "control_op", i))
+          {
+            load_control_ops[i] = in_file.event_data();
+          }
+        else
+          {
+            return false;
           }
       }
     else if (in_file.event() == InFile::INT)
@@ -161,11 +202,52 @@ public:
           {
             compat_main_control_type = static_cast<MorphOperator::ControlType> (in_file.event_int());
             have_compat_main_control_type = true;
-
-            return true;
+          }
+        else if (in_file.event_name() == event_name ("main_control_type"))
+          {
+            data.main_control_type = static_cast<MorphOperator::ControlType> (in_file.event_int());
+          }
+        else if (in_file.event_name() == event_name ("count"))
+          {
+            data.entries.resize (in_file.event_int());
+            load_control_ops.resize (in_file.event_int());
+          }
+        else if (split_event_name (in_file.event_name(), "control_type", i))
+          {
+            data.entries[i].control_type = static_cast<MorphOperator::ControlType> (in_file.event_int());
+          }
+        else
+          {
+            return false;
           }
       }
-    return false;
+    else if (in_file.event() == InFile::BOOL)
+      {
+        if (split_event_name (in_file.event_name(), "bipolar", i))
+          {
+            data.entries[i].bipolar = in_file.event_bool();
+          }
+        else
+          {
+            return false;
+          }
+      }
+    else if (in_file.event() == InFile::FLOAT)
+      {
+        if (split_event_name (in_file.event_name(), "amount", i))
+          {
+            data.entries[i].amount = in_file.event_float();
+          }
+        else
+          {
+            return false;
+          }
+      }
+    else
+      {
+        return false;
+      }
+    return true;
   }
   void
   post_load (MorphOperator::OpNameMap& op_name_map)
@@ -173,8 +255,15 @@ public:
     if (have_compat_main_control_type && have_compat_main_control_type)
       {
         data.main_control_type = compat_main_control_type;
-        data.main_control_op.set (op_name_map [compat_main_control_op]);
+        data.main_control_op.set (op_name_map[compat_main_control_op]);
       }
+    else
+      {
+        data.main_control_op.set (op_name_map[m_main_control_op]);
+      }
+
+    for (uint i = 0; i < data.entries.size(); i++)
+      data.entries[i].control_op.set (op_name_map[load_control_ops[i]]);
   }
 
   Signal<> signal_modulation_changed;
