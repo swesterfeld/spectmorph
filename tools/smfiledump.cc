@@ -4,6 +4,7 @@
 #include "sminfile.hh"
 #include "smmain.hh"
 #include "smutils.hh"
+#include "smzip.hh"
 #include "config.h"
 
 #include <stdlib.h>
@@ -135,7 +136,7 @@ display_file (GenericIn *in, int indent = 0)
       else if (ifile.event() == InFile::FLOAT)
         {
           sm_printf ("%s", spaces (indent).c_str());
-          sm_printf ("float %s = %.7g\n", ifile.event_name().c_str(), ifile.event_float());
+          sm_printf ("float  %s = %.7g\n", ifile.event_name().c_str(), ifile.event_float());
         }
       else if (ifile.event() == InFile::FLOAT_BLOCK)
         {
@@ -176,12 +177,12 @@ display_file (GenericIn *in, int indent = 0)
       else if (ifile.event() == InFile::INT)
         {
           sm_printf ("%s", spaces (indent).c_str());
-          sm_printf ("int %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
+          sm_printf ("int    %s = %d\n", ifile.event_name().c_str(), ifile.event_int());
         }
       else if (ifile.event() == InFile::BOOL)
         {
           sm_printf ("%s", spaces (indent).c_str());
-          sm_printf ("bool %s = %s\n", ifile.event_name().c_str(), ifile.event_bool() ? "true" : "false");
+          sm_printf ("bool   %s = %s\n", ifile.event_name().c_str(), ifile.event_bool() ? "true" : "false");
         }
       else if (ifile.event() == InFile::BLOB)
         {
@@ -239,16 +240,32 @@ main (int argc, char **argv)
     }
 
   vector<unsigned char> data;
+  GenericIn *in;
 
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
+  if (ZipReader::is_zip (argv[1]))
     {
-      if (!HexString::decode (argv[1], data))
+      ZipReader zip_reader (argv[1]);
+
+      data = zip_reader.read ("plan.smplan");
+      if (zip_reader.error())
         {
-          fprintf (stderr, PROG_NAME ": error decoding string\n");
+          fprintf (stderr, "Unable to read 'plan.smplan' from input file");
           return 1;
         }
       in = MMapIn::open_mem (&data[0], &data[data.size()]);
+    }
+  else
+    {
+      in = StdioIn::open (argv[1]);
+      if (!in)
+        {
+          if (!HexString::decode (argv[1], data))
+            {
+              fprintf (stderr, PROG_NAME ": error decoding string\n");
+              return 1;
+            }
+          in = MMapIn::open_mem (&data[0], &data[data.size()]);
+        }
     }
   if (!in)
     {
