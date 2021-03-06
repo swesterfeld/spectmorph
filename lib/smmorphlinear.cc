@@ -50,8 +50,8 @@ MorphLinear::save (OutFile& out_file)
 {
   write_properties (out_file);
 
-  write_operator (out_file, "left", m_config.left_op);
-  write_operator (out_file, "right", m_config.right_op);
+  out_file.write_operator ("left", m_config.left_op);
+  out_file.write_operator ("right", m_config.right_op);
   out_file.write_string ("left_smset", m_left_smset);
   out_file.write_string ("right_smset", m_right_smset);
   out_file.write_bool ("db_linear", m_config.db_linear);

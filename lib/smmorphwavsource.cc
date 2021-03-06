@@ -134,7 +134,7 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
   out_file.write_int ("position_control_type", m_config.position_control_type);
-  write_operator (out_file, "position_op", m_config.position_op);
+  out_file.write_operator ("position_op", m_config.position_op);
 
   return true;
 }

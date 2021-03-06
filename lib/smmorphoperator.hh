@@ -37,7 +37,6 @@ protected:
   bool        m_folded;
   std::map<std::string, std::unique_ptr<Property>> m_properties;
 
-  void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op);
   LogProperty *add_property_log (float *value, const std::string& identifier,
                                  const std::string& label, const std::string& value_label,
                                  float def, float mn, float mx);

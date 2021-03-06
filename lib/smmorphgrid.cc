@@ -69,8 +69,8 @@ MorphGrid::save (OutFile& out_file)
   out_file.write_int ("x_control_type", m_config.x_control_type);
   out_file.write_int ("y_control_type", m_config.y_control_type);
 
-  write_operator (out_file, "x_control_op", m_config.x_control_op);
-  write_operator (out_file, "y_control_op", m_config.y_control_op);
+  out_file.write_operator ("x_control_op", m_config.x_control_op);
+  out_file.write_operator ("y_control_op", m_config.y_control_op);
 
   for (int x = 0; x < m_config.width; x++)
     {
@@ -80,7 +80,7 @@ MorphGrid::save (OutFile& out_file)
           string delta_db_name = string_printf ("input_delta_db_%d_%d", x, y);
           string smset_name = string_printf ("input_smset_%d_%d", x, y);
 
-          write_operator (out_file, op_name, m_config.input_node[x][y].op);
+          out_file.write_operator (op_name, m_config.input_node[x][y].op);
           out_file.write_float (delta_db_name, m_config.input_node[x][y].delta_db);
           out_file.write_string (smset_name, m_config.input_node[x][y].smset);
         }

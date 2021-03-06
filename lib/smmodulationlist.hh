@@ -67,7 +67,6 @@ public:
   const ModulationData::Entry& operator[] (size_t index) const;
   void remove_entry (size_t index);
   void set_compat_type_and_op (const std::string& type, const std::string& op);
-  void write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op); /* FIXME: FILTER: maybe merge into OutFile */
   void save (OutFile& out_file);
   std::string event_name (const std::string& id, int index = -1);
   bool starts_with (const std::string& key, const std::string& start); /* FIXME: FILTER: move starts_with and ends_with to smutils.cc */

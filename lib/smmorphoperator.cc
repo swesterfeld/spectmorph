@@ -77,17 +77,6 @@ MorphOperator::post_load (OpNameMap& op_name_map)
   // override this for post load notification
 }
 
-void
-MorphOperator::write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op)
-{
-  string op_name;
-
-  if (op.get()) // (op == NULL) => (op_name == "")
-    op_name = op.get()->name();
-
-  file.write_string (name, op_name);
-}
-
 bool
 MorphOperator::can_rename (const string& name)
 {

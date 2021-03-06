@@ -82,26 +82,15 @@ ModulationList::set_compat_type_and_op (const string& type, const string& op)
 }
 
 void
-ModulationList::write_operator (OutFile& file, const string& name, const MorphOperatorPtr& op) /* FIXME: FILTER: maybe merge into OutFile */
-{
-  string op_name;
-
-  if (op.get()) // (op == NULL) => (op_name == "")
-    op_name = op.get()->name();
-
-  file.write_string (name, op_name);
-}
-
-void
 ModulationList::save (OutFile& out_file)
 {
   out_file.write_int (event_name ("main_control_type"), data.main_control_type);
-  write_operator (out_file, event_name ("main_control_op"), data.main_control_op);
+  out_file.write_operator (event_name ("main_control_op"), data.main_control_op);
   out_file.write_int (event_name ("count"), count());
   for (uint i = 0; i < data.entries.size(); i++)
     {
       out_file.write_int (event_name ("control_type", i), data.entries[i].control_type);
-      write_operator (out_file, event_name ("control_op", i), data.entries[i].control_op);
+      out_file.write_operator (event_name ("control_op", i), data.entries[i].control_op);
       out_file.write_bool (event_name ("bipolar", i), data.entries[i].bipolar);
       out_file.write_float (event_name ("amount", i), data.entries[i].amount);
     }

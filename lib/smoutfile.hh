@@ -12,6 +12,8 @@
 namespace SpectMorph
 {
 
+class MorphOperatorPtr;
+
 class OutFile
 {
   GenericOut           *file;
@@ -44,6 +46,7 @@ public:
   void write_float_block (const std::string& s, const std::vector<float>& fb);
   void write_uint16_block (const std::string& s, const std::vector<uint16_t>& ib);
   void write_blob (const std::string& s, const void *data, size_t size);
+  void write_operator (const std::string& name, const MorphOperatorPtr& op);
 };
 
 }

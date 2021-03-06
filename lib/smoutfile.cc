@@ -3,6 +3,7 @@
 #include "smoutfile.hh"
 #include "smstdioout.hh"
 #include "smutils.hh"
+#include "smmorphoperator.hh"
 
 #include <assert.h>
 
@@ -193,4 +194,15 @@ OutFile::write_blob (const string& s,
 
       stored_blobs.insert (hash);
     }
+}
+
+void
+OutFile::write_operator (const string& name, const MorphOperatorPtr& op)
+{
+  string op_name;
+
+  if (op.get()) // (op == NULL) => (op_name == "")
+    op_name = op.get()->name();
+
+  write_string (name, op_name);
 }
