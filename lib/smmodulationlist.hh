@@ -31,7 +31,7 @@ public:
     MorphOperatorPtr            control_op;
 
     bool                        bipolar = false;
-    double                      mod_amount = 0;
+    double                      amount = 0;
   };
   std::vector<Entry> entries;
 };
@@ -39,6 +39,7 @@ public:
 class ModulationList
 {
   ModulationData& data;
+  Property&       property;
 
   bool                        compat = false;
   std::string                 compat_type_name;
@@ -50,8 +51,9 @@ class ModulationList
   bool                        have_compat_main_control_op = false;
   bool                        have_compat_main_control_type = false;
 public:
-  ModulationList (ModulationData& data) :
-    data (data)
+  ModulationList (ModulationData& data, Property& property) :
+    data (data),
+    property (property)
   {
   }
 
@@ -76,7 +78,7 @@ public:
   }
 
   size_t
-  size() const
+  count() const
   {
     return data.entries.size();
   }
@@ -117,8 +119,28 @@ public:
     compat_op_name   = op;
   }
   void
+  write_operator (OutFile& file, const std::string& name, const MorphOperatorPtr& op) /* FIXME: FILTER: maybe merge into OutFile */
+  {
+    std::string op_name;
+
+    if (op.get()) // (op == NULL) => (op_name == "")
+      op_name = op.get()->name();
+
+    file.write_string (name, op_name);
+  }
+  void
   save (OutFile& out_file)
   {
+    out_file.write_int (property.identifier() + ".modulation_main_control_type", data.main_control_type);
+    write_operator (out_file, property.identifier() + ".modulation_main_control_op", data.main_control_op);
+    out_file.write_int (property.identifier() + ".modulation_count", count());
+    for (uint i = 0; i < data.entries.size(); i++)
+      {
+        out_file.write_int (property.identifier() + string_printf (".modulation_control_type_%d", i), data.entries[i].control_type);
+        write_operator (out_file, property.identifier() + string_printf (".modulation_control_op_%d", i), data.entries[i].control_op);
+        out_file.write_bool (property.identifier() + string_printf (".modulation_bipolar_%d", i), data.entries[i].bipolar);
+        out_file.write_float (property.identifier() + string_printf (".modulation_amount_%d", i), data.entries[i].amount);
+      }
   }
   bool
   load (InFile& in_file)

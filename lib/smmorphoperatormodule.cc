@@ -149,7 +149,7 @@ MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_dat
       if (!entry.bipolar)
         mod_value = 0.5 * (mod_value + 1);
 
-      value += mod_value * entry.mod_amount;
+      value += mod_value * entry.amount;
     }
   switch (mod_data.property_scale)
     {

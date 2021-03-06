@@ -5,7 +5,10 @@
 
 using namespace SpectMorph;
 
-Property::Property()
+using std::string;
+
+Property::Property (const string& identifier)
+  : m_identifier (identifier)
 {
 }
 
@@ -36,7 +39,7 @@ Property::set_modulation_data (ModulationData *mod_data)
       break;
   }
 
-  m_modulation_list = std::make_unique<ModulationList> (*mod_data);
+  m_modulation_list = std::make_unique<ModulationList> (*mod_data, *this);
 
   connect (m_modulation_list->signal_modulation_changed, [this] () { signal_modulation_changed(); });
 }

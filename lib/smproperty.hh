@@ -24,9 +24,12 @@ class Property : public SignalReceiver
 {
 protected:
   std::unique_ptr<ModulationList> m_modulation_list;
+  std::string                     m_identifier;
 public:
-  Property();
+  Property (const std::string& identifier);
   virtual ~Property();
+
+  std::string identifier() { return m_identifier; }
 
   enum class Type { BOOL, INT, ENUM, FLOAT };
   enum class Scale { NONE, LINEAR, LOG };
@@ -83,7 +86,6 @@ public:
 class IntProperty : public Property
 {
   int          *m_value;
-  std::string   m_identifier;
   int           m_min_value;
   int           m_max_value;
   std::string   m_label;
@@ -96,8 +98,8 @@ public:
 
   IntProperty (int *value, const std::string& identifier, const std::string& label, const std::string& format,
                int def, int mn, int mx) :
+    Property (identifier),
     m_value (value),
-    m_identifier (identifier),
     m_min_value (mn),
     m_max_value (mx),
     m_label (label),
@@ -142,7 +144,6 @@ public:
 class BoolProperty : public Property
 {
   bool         *m_value;
-  std::string   m_identifier;
   std::string   m_label;
 public:
   Type type()       { return Type::BOOL; }
@@ -151,8 +152,8 @@ public:
   int get()         { return *m_value; }
 
   BoolProperty (bool *value, const std::string& identifier, const std::string& label, bool def) :
+    Property (identifier),
     m_value (value),
-    m_identifier (identifier),
     m_label (label)
   {
     *value = def;
@@ -215,7 +216,6 @@ private:
 
 class EnumProperty : public Property
 {
-  std::string               m_identifier;
   std::string               m_label;
   EnumInfo                  m_enum_info;
   std::function<int()>      m_read_func;
@@ -229,7 +229,7 @@ public:
                 const EnumInfo& ei,
                 std::function<int()> read_func,
                 std::function<void(int)> write_func) :
-    m_identifier (identifier),
+    Property (identifier),
     m_label (label),
     m_enum_info (ei),
     m_read_func (read_func),
@@ -284,7 +284,6 @@ protected:
   float        *m_value;
   const Range   m_range;
   const Scale   m_scale;
-  std::string   m_identifier;
   std::string   m_label;
   std::string   m_format;
   std::function<std::string (float)> m_custom_formatter;
@@ -295,10 +294,10 @@ public:
                  const std::string& identifier,
                  const std::string& label,
                  const std::string& format) :
+    Property (identifier),
     m_value (value),
     m_range (range),
     m_scale (scale),
-    m_identifier (identifier),
     m_label (label),
     m_format (format)
   {
