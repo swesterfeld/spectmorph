@@ -137,7 +137,7 @@ public:
   void
   on_update_active()
   {
-    if (m_mod_list->main_control_type() != MorphOperator::CONTROL_GUI || m_mod_list->size() != 0)
+    if (m_mod_list->main_control_type() != MorphOperator::CONTROL_GUI || m_mod_list->count() != 0)
       {
         m_color = ThemeColor::SLIDER;
         m_color = m_color.lighter (180);

@@ -121,7 +121,7 @@ protected:
       delete cv;
     control_views.clear();
 
-    for (size_t i = 0; i < mod_list->size(); i++)
+    for (size_t i = 0; i < mod_list->count(); i++)
       {
         ModulationData::Entry e = (*mod_list)[i];
 
@@ -172,24 +172,24 @@ protected:
             });
 
         // ===== mod amount slider and value label
-        auto slider = new Slider (this, (e.mod_amount + 1) / 2);
+        auto slider = new Slider (this, (e.amount + 1) / 2);
         grid.add_widget (slider, 36, yoffset, 22, 3);
 
-        auto mod_amount_model = new ParamLabelModelDouble (e.mod_amount, -1, 1, "%.3f", "%.3f");
+        auto mod_amount_model = new ParamLabelModelDouble (e.amount, -1, 1, "%.3f", "%.3f");
         auto label = new ParamLabel (this, mod_amount_model);
         grid.add_widget (label, 59, yoffset, 8, 3);
 
         connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
-          entry.mod_amount = new_value * 2 - 1;
-          mod_amount_model->set_value (entry.mod_amount);
+          entry.amount = new_value * 2 - 1;
+          mod_amount_model->set_value (entry.amount);
           mod_list->update_entry (i, entry);
         });
 
         connect (mod_amount_model->signal_value_changed, [mod_list, i, slider](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
-          entry.mod_amount = new_value;
-          slider->set_value ((entry.mod_amount + 1) / 2);
+          entry.amount = new_value;
+          slider->set_value ((entry.amount + 1) / 2);
           mod_list->update_entry (i, entry);
         });
 
