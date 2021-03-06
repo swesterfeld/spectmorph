@@ -107,8 +107,8 @@ ModulationList::event_name (const string& id, int index)
   return s;
 }
 
-bool
-ModulationList::starts_with (const string& key, const string& start) /* FIXME: FILTER: move starts_with and ends_with to smutils.cc */
+static bool
+starts_with (const string& key, const string& start)
 {
   return key.substr (0, start.size()) == start;
 }

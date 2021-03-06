@@ -69,7 +69,6 @@ public:
   void set_compat_type_and_op (const std::string& type, const std::string& op);
   void save (OutFile& out_file);
   std::string event_name (const std::string& id, int index = -1);
-  bool starts_with (const std::string& key, const std::string& start); /* FIXME: FILTER: move starts_with and ends_with to smutils.cc */
   bool split_event_name (const std::string& name, const std::string& start, int& index);
   bool load (InFile& in_file);
   void post_load (MorphOperator::OpNameMap& op_name_map);
