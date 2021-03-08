@@ -94,13 +94,13 @@ MorphOutputModule::velocity_sensitivity() const
 float
 MorphOutputModule::filter_cutoff_mod() const
 {
-  return apply_modulation (cfg->filter_cutoff, cfg->filter_cutoff_mod);
+  return apply_modulation (cfg->filter_cutoff_mod);
 }
 
 float
 MorphOutputModule::filter_resonance_mod() const
 {
-  return apply_modulation (cfg->filter_resonance, cfg->filter_resonance_mod);
+  return apply_modulation (cfg->filter_resonance_mod);
 }
 
 void

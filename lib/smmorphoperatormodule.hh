@@ -36,7 +36,7 @@ protected:
 
   Random *random_gen() const;
   TimeInfo time_info() const;
-  float apply_modulation (float base, const ModulationData& mod_data) const;
+  float apply_modulation (const ModulationData& mod_data) const;
 public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();

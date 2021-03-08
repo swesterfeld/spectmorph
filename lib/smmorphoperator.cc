@@ -143,6 +143,14 @@ MorphOperator::add_property_log (float *value, const string& identifier, const s
   return property;
 }
 
+LogProperty *
+MorphOperator::add_property_log (ModulationData *mod_data, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx)
+{
+  LogProperty *property = add_property_log (&mod_data->value, identifier, label, value_label, def, mn, mx);
+  property->set_modulation_data (mod_data);
+  return property;
+}
+
 XParamProperty *
 MorphOperator::add_property_xparam (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx, float slope)
 {
@@ -162,6 +170,14 @@ MorphOperator::add_property (float *value, const string& identifier, const strin
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
+LinearProperty *
+MorphOperator::add_property (ModulationData *mod_data, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx)
+{
+  LinearProperty *property = add_property (&mod_data->value, identifier, label, value_label, def, mn, mx);
+  property->set_modulation_data (mod_data);
   return property;
 }
 

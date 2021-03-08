@@ -156,7 +156,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  const double morphing = module->apply_modulation (module->cfg->morphing, module->cfg->morphing_mod);
+  const double morphing = module->apply_modulation (module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 

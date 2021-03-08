@@ -53,9 +53,7 @@ public:
     float                         filter_release;
     float                         filter_depth;
     float                         filter_key_tracking;
-    float                         filter_cutoff;
     ModulationData                filter_cutoff_mod;
-    float                         filter_resonance;
     ModulationData                filter_resonance_mod;
     float                         filter_drive;
 

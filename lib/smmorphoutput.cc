@@ -54,11 +54,8 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
   add_property (&m_config.filter_key_tracking, P_FILTER_KEY_TRACKING, "Key Tracking", "%.1f %%", 50, 0, 100);
 
-  auto cutoff = add_property_log (&m_config.filter_cutoff, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
-  cutoff->set_modulation_data (&m_config.filter_cutoff_mod);
-
-  auto resonance = add_property (&m_config.filter_resonance, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
-  resonance->set_modulation_data (&m_config.filter_resonance_mod);
+  add_property_log (&m_config.filter_cutoff_mod, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
+  add_property (&m_config.filter_resonance_mod, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
 
   add_property (&m_config.filter_drive, P_FILTER_DRIVE, "Drive", "%.1f dB", 0, 0, 60);
 

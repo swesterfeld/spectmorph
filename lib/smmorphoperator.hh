@@ -40,10 +40,16 @@ protected:
   LogProperty *add_property_log (float *value, const std::string& identifier,
                                  const std::string& label, const std::string& value_label,
                                  float def, float mn, float mx);
+  LogProperty *add_property_log (ModulationData *mod_data, const std::string& identifier,
+                                 const std::string& label, const std::string& value_label,
+                                 float def, float mn, float mx);
   XParamProperty *add_property_xparam (float *value, const std::string& identifier,
                                  const std::string& label, const std::string& value_label,
                                  float def, float mn, float mx, float slope);
   LinearProperty *add_property (float *value, const std::string& identifier,
+                                const std::string& label, const std::string& value_label,
+                                float def, float mn, float mx);
+  LinearProperty *add_property (ModulationData *mod_data, const std::string& identifier,
                                 const std::string& label, const std::string& value_label,
                                 float def, float mn, float mx);
   IntProperty *add_property (int *value, const std::string& identifier,

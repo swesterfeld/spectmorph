@@ -85,12 +85,17 @@ MorphOperatorModule::set_ptr_id (MorphOperator::PtrID ptr_id)
 }
 
 float
-MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_data) const
+MorphOperatorModule::apply_modulation (const ModulationData& mod_data) const
 {
+  double base;
   double value = 0;
 
   /* main value */
-  if (mod_data.main_control_type != MorphOperator::CONTROL_GUI)
+  if (mod_data.main_control_type == MorphOperator::CONTROL_GUI)
+    {
+      base = mod_data.value;
+    }
+  else
     {
       /* to bind main value to operator or control signal, we
        *  - perform unimodular modulation with range [0:1]
@@ -129,12 +134,12 @@ MorphOperatorModule::apply_modulation (float base, const ModulationData& mod_dat
   switch (mod_data.property_scale)
     {
       case Property::Scale::LOG:
-        value = sm_clamp (base * exp2f (mod_data.value_scale * value), mod_data.min_value, mod_data.max_value);
+        value = base * exp2f (mod_data.value_scale * value);
         break;
       default:
-        value = sm_clamp<float> (base + mod_data.value_scale * value, mod_data.min_value, mod_data.max_value);
+        value = base + mod_data.value_scale * value;
     }
-  return value;
+  return sm_clamp<float> (value, mod_data.min_value, mod_data.max_value);
 }
 
 MorphOperatorModule*

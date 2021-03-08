@@ -21,7 +21,6 @@ public:
     std::string      left_path;
     std::string      right_path;
 
-    float            morphing;
     ModulationData   morphing_mod;
     bool             db_linear;
   };
