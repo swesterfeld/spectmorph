@@ -73,15 +73,6 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
 
   x_control_mod = morph_plan_voice->module (cfg->x_control_op);
   y_control_mod = morph_plan_voice->module (cfg->y_control_op);
-
-  clear_dependencies();
-  for (int x = 0; x < cfg->width; x++)
-    {
-      for (int y = 0; y < cfg->height; y++)
-        add_dependency (input_node[x][y].mod);
-    }
-  add_dependency (x_control_mod);
-  add_dependency (y_control_mod);
 }
 
 void

@@ -60,25 +60,6 @@ MorphOperatorModule::update_shared_state (const TimeInfo& time_info)
 {
 }
 
-void
-MorphOperatorModule::clear_dependencies()
-{
-  m_dependencies.clear();
-}
-
-void
-MorphOperatorModule::add_dependency (MorphOperatorModule *dep_mod)
-{
-  if (dep_mod)
-    m_dependencies.push_back (dep_mod);
-}
-
-const vector<MorphOperatorModule *>&
-MorphOperatorModule::dependencies() const
-{
-  return m_dependencies;
-}
-
 Random *
 MorphOperatorModule::random_gen() const
 {

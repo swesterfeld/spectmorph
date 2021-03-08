@@ -32,12 +32,9 @@ class MorphOperatorModule
 {
 protected:
   MorphPlanVoice                     *morph_plan_voice;
-  std::vector<MorphOperatorModule *>  m_dependencies;
   MorphOperator::PtrID                m_ptr_id;
 
   Random *random_gen() const;
-  void clear_dependencies();
-  void add_dependency (MorphOperatorModule *dep_mod);
   TimeInfo time_info() const;
   float apply_modulation (float base, const ModulationData& mod_data) const;
 public:
@@ -50,7 +47,6 @@ public:
   virtual void reset_value (const TimeInfo& time_info);
   virtual void update_shared_state (const TimeInfo& time_info);
 
-  const std::vector<MorphOperatorModule *>& dependencies() const;
   void set_ptr_id (MorphOperator::PtrID ptr_id);
 
   static MorphOperatorModule *create (const std::string& type, MorphPlanVoice *voice);

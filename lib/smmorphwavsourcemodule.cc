@@ -134,7 +134,4 @@ MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
     position_mod = morph_plan_voice->module (cfg->position_op);
   else
     position_mod = nullptr;
-
-  clear_dependencies();
-  add_dependency (position_mod);
 }

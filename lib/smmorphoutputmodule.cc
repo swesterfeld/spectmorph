@@ -44,7 +44,6 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
 
-  clear_dependencies();
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       EffectDecoder *dec = NULL;
@@ -71,8 +70,6 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
-
-      add_dependency (mod);
     }
 }
 
@@ -106,29 +103,13 @@ MorphOutputModule::filter_resonance_mod() const
   return apply_modulation (cfg->filter_resonance, cfg->filter_resonance_mod);
 }
 
-static bool
-recursive_cycle_check (MorphOperatorModule *module, int depth = 0)
-{
-  /* check if processing would fail due to cycles
-   *
-   * this check should avoid crashes in this situation, although no audio will be produced
-   */
-  if (depth > 500)
-    return true;
-
-  for (auto mod : module->dependencies())
-    if (recursive_cycle_check (mod, depth + 1))
-      return true;
-
-  return false;
-}
-
 void
 MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
-  const bool have_cycle = recursive_cycle_check (this);
+  const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
+
   block_time = time_info;
 
   for (size_t port = 0; port < n_ports; port++)
@@ -168,7 +149,8 @@ MorphOutputModule::compute_time_info() const
 void
 MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity)
 {
-  if (recursive_cycle_check (this))
+  const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
+  if (have_cycle)
     return;
 
   for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)

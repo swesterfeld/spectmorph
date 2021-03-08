@@ -60,11 +60,6 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
   have_right_source = (cfg->right_path != "");
   if (have_right_source)
     right_source.set_wav_set (cfg->right_path);
-
-  clear_dependencies();
-  add_dependency (left_mod);
-  add_dependency (right_mod);
-  /* FIXME: FILTER: add_dependency (control_mod); */
 }
 
 void
