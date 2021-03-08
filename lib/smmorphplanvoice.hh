@@ -48,6 +48,7 @@ public:
   MorphPlanSynth *morph_plan_synth() const;
 
   void update_shared_state (const TimeInfo& time_info);
+  void reset_value (const TimeInfo& time_info);
 };
 
 }

@@ -79,12 +79,6 @@ MorphOperatorModule::dependencies() const
   return m_dependencies;
 }
 
-int&
-MorphOperatorModule::update_value_tag()
-{
-  return m_update_value_tag;
-}
-
 Random *
 MorphOperatorModule::random_gen() const
 {

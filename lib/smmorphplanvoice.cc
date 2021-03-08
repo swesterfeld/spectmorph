@@ -167,3 +167,10 @@ MorphPlanVoice::update_shared_state (const TimeInfo& time_info)
   for (size_t i = 0; i < modules.size(); i++)
     modules[i].module->update_shared_state (time_info);
 }
+
+void
+MorphPlanVoice::reset_value (const TimeInfo& time_info)
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    modules[i].module->reset_value (time_info);
+}

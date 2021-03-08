@@ -106,36 +106,6 @@ MorphOutputModule::filter_resonance_mod() const
   return apply_modulation (cfg->filter_resonance, cfg->filter_resonance_mod);
 }
 
-static void
-recursive_reset_tag (MorphOperatorModule *module)
-{
-  if (!module)
-    return;
-
-  const vector<MorphOperatorModule *>& deps = module->dependencies();
-  for (size_t i = 0; i < deps.size(); i++)
-    recursive_reset_tag (deps[i]);
-
-  module->update_value_tag() = 0;
-}
-
-static void
-recursive_reset_value (MorphOperatorModule *module, const TimeInfo& time_info)
-{
-  if (!module)
-    return;
-
-  const vector<MorphOperatorModule *>& deps = module->dependencies();
-  for (size_t i = 0; i < deps.size(); i++)
-    recursive_reset_value (deps[i], time_info);
-
-  if (!module->update_value_tag())
-    {
-      module->reset_value (time_info);
-      module->update_value_tag()++;
-    }
-}
-
 static bool
 recursive_cycle_check (MorphOperatorModule *module, int depth = 0)
 {
@@ -208,8 +178,7 @@ MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
-  recursive_reset_tag (this);
-  recursive_reset_value (this, time_info);
+  morph_plan_voice->reset_value (time_info);
 }
 
 void
