@@ -195,6 +195,8 @@ MorphOutput::dependencies()
   for (auto& ptr : m_config.channel_ops)
     deps.push_back (ptr.get());
 
+  if (m_config.filter)
+    get_property_dependencies (deps, { P_FILTER_CUTOFF, P_FILTER_RESONANCE });
   return deps;
 }
 

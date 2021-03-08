@@ -72,6 +72,7 @@ public:
   bool split_event_name (const std::string& name, const std::string& start, int& index);
   bool load (InFile& in_file);
   void post_load (MorphOperator::OpNameMap& op_name_map);
+  void get_dependencies (std::vector<MorphOperator *>& deps);
 
   Signal<> signal_modulation_changed;
   Signal<> signal_size_changed;

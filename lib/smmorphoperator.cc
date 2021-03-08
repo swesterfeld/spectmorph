@@ -106,6 +106,26 @@ MorphOperator::dependencies()
   return {}; /* default implementation -> no dependencies */
 }
 
+void
+MorphOperator::get_property_dependencies (vector<MorphOperator *>& deps, const vector<string>& identifiers)
+{
+  for (auto id : identifiers)
+    {
+      Property *property = m_properties[id].get();
+
+      if (property)
+        {
+          ModulationList *mod_list = property->modulation_list();
+          if (mod_list)
+            mod_list->get_dependencies (deps);
+        }
+      else
+        {
+          fprintf (stderr, "bad identifier %s in MorphOperator::get_property_dependencies\n", id.c_str());
+        }
+    }
+}
+
 Property *
 MorphOperator::property (const string& identifier)
 {

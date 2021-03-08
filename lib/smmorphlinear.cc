@@ -240,11 +240,10 @@ MorphLinear::set_db_linear (bool dbl)
 vector<MorphOperator *>
 MorphLinear::dependencies()
 {
-  return {
-    m_config.left_op.get(),
-    m_config.right_op.get(),
-    // FIXME: FILTER m_config.control_type == CONTROL_OP ? m_config.control_op.get() : nullptr
-  };
+  vector<MorphOperator *> deps = { m_config.left_op.get(), m_config.right_op.get() };
+
+  get_property_dependencies (deps, { P_MORPHING });
+  return deps;
 }
 
 MorphOperatorConfig *

@@ -5,6 +5,7 @@
 using namespace SpectMorph;
 
 using std::string;
+using std::vector;
 
 ModulationList::ModulationList (ModulationData& data, Property& property) :
     data (data),
@@ -219,4 +220,15 @@ ModulationList::post_load (MorphOperator::OpNameMap& op_name_map)
 
   for (uint i = 0; i < data.entries.size(); i++)
     data.entries[i].control_op.set (op_name_map[load_control_ops[i]]);
+}
+
+void
+ModulationList::get_dependencies (vector<MorphOperator *>& deps)
+{
+  if (data.main_control_type == MorphOperator::CONTROL_OP)
+    deps.push_back (data.main_control_op.get());
+
+  for (const auto& entry : data.entries)
+    if (entry.control_type == MorphOperator::CONTROL_OP)
+      deps.push_back (entry.control_op.get());
 }

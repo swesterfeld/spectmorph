@@ -98,6 +98,8 @@ public:
   virtual std::vector<MorphOperator *> dependencies();
   virtual MorphOperatorConfig *clone_config() = 0;
 
+  void get_property_dependencies (std::vector<MorphOperator *>& deps, const std::vector<std::string>& identifiers);
+
   Property *property (const std::string& identifier);
   void write_properties (OutFile& out_file);
   bool read_property_event (InFile& in_file);
