@@ -54,7 +54,12 @@ MorphOperatorView::set_role (int role)
 void
 MorphOperatorView::set_role_colors()
 {
-  if (m_role == 2) /* directly connected to output */
+  /* color coding
+   *  - "green": for audio operators that are directly connected to the output
+   *  - "white" for audio/control operators that are active
+   *  - "grey" for inactive operators
+   */
+  if (m_role == 2 && m_op->output_type() == MorphOperator::OUTPUT_AUDIO)
     {
       title_label->set_color (Color (0.3, 0.9, 0.3));
       set_frame_color (ThemeColor::FRAME);
