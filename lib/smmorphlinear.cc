@@ -94,18 +94,6 @@ MorphLinear::load (InFile& ifile)
               return false;
             }
         }
-      else if (ifile.event() == InFile::FLOAT)
-        {
-          if (ifile.event_name() == "morphing")
-            {
-              m_config.morphing = ifile.event_float();
-            }
-          else
-            {
-              g_printerr ("bad float\n");
-              return false;
-            }
-        }
       else if (ifile.event() == InFile::BOOL)
         {
           if (ifile.event_name() == "db_linear")
