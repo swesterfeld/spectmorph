@@ -20,6 +20,7 @@ new operators:
 
 FILTER:
 
+- remove morph plan ptr from API
 __ ui __
 
 - improve layout of property edit
