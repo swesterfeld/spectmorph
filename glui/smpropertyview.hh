@@ -153,7 +153,6 @@ public:
 
 class PropertyView : public SignalReceiver
 {
-  MorphOperator *m_op;
   Property& m_property;
 
   Widget   *title  = nullptr;
@@ -173,8 +172,8 @@ class PropertyView : public SignalReceiver
   void on_value_changed (int new_value);
 
 public:
-  PropertyView (MorphOperator *op, Property& property, Widget *parent, OperatorLayout& layout);
-  PropertyView (MorphOperator *op, Property& property);
+  PropertyView (Property& property, Widget *parent, OperatorLayout& layout);
+  PropertyView (Property& property);
 
   ComboBox *create_combobox (Widget *parent);
   Property *property() const;

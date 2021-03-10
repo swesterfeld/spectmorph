@@ -17,7 +17,6 @@ class PropertyViewEdit : public Window
 {
 protected:
   Window         *parent_window;
-  MorphOperator  *op;
   Property&       property;
   ModulationList *mod_list = nullptr;
 
@@ -30,10 +29,9 @@ protected:
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
 
-  PropertyViewEdit (Window *parent, MorphOperator *op, Property& property) :
+  PropertyViewEdit (Window *parent, Property& property) :
     Window (*parent->event_loop(), "Edit Property", 560, 320, 0, false, parent->native_window()),
     parent_window (parent),
-    op (op),
     property (property)
   {
     FixedGrid grid;
@@ -44,7 +42,7 @@ protected:
     if (mod_list)
       {
         auto control_combobox = main_control_view.create_combobox (this,
-          op,
+          property.op(),
           mod_list->main_control_type(),
           mod_list->main_control_op());
 
@@ -133,7 +131,7 @@ protected:
         // ===== modulation entry control op / type
         ControlView *control_view = new ControlView();
         auto control_combobox = control_view->create_combobox (this,
-          op,
+          property.op(),
           e.control_type,
           e.control_op.get());
         control_views.push_back (control_view);
@@ -221,9 +219,9 @@ protected:
 
 public:
   static void
-  create (Window *window, MorphOperator *op, Property& property)
+  create (Window *window, Property& property)
   {
-    Window *rwin = new PropertyViewEdit (window, op, property);
+    Window *rwin = new PropertyViewEdit (window, property);
 
     // after this line, rename window is owned by parent window
     window->set_popup_window (rwin);

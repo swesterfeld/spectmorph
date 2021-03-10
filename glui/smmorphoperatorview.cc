@@ -79,7 +79,7 @@ MorphOperatorView::set_role_colors()
 PropertyView *
 MorphOperatorView::add_property_view (const std::string& identifier, OperatorLayout& layout)
 {
-  auto pv = new PropertyView (m_op, *m_op->property (identifier), body_widget, layout);
+  auto pv = new PropertyView (*m_op->property (identifier), body_widget, layout);
 
   connect (pv->signal_visibility_changed, this, &MorphOperatorView::update_visible);
 
@@ -92,7 +92,7 @@ PropertyView *
 MorphOperatorView::add_property_view (const std::string& identifier)
 {
   /* this constructor allows creating property view widgets manually (to do custom layouts) */
-  auto pv = new PropertyView (m_op, *m_op->property (identifier));
+  auto pv = new PropertyView (*m_op->property (identifier));
 
   /* this ensures that the PropertyView object will be deleted when we're done */
   property_views.emplace_back (pv);
