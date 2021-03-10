@@ -37,7 +37,7 @@ public:
   std::vector<Entry> entries;
 };
 
-class ModulationList
+class ModulationList : public SignalReceiver
 {
   ModulationData&             data;
   Property&                   property;
@@ -75,6 +75,10 @@ public:
   void post_load (MorphOperator::OpNameMap& op_name_map);
   void get_dependencies (std::vector<MorphOperator *>& deps);
 
+/* slots: */
+  void on_operator_removed (MorphOperator *op);
+
+/* signals: */
   Signal<> signal_modulation_changed;
   Signal<> signal_size_changed;
   Signal<> signal_main_control_changed;
