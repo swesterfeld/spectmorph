@@ -4,6 +4,7 @@
 #define SPECTMORPH_MORPH_GRID_HH
 
 #include "smmorphoperator.hh"
+#include "smmodulationlist.hh"
 
 #include <map>
 
@@ -28,16 +29,13 @@ public:
     int               width;
     int               height;
 
-    double            x_morphing;
-    double            y_morphing;
-
-    ControlType       x_control_type;
-    ControlType       y_control_type;
-    MorphOperatorPtr  x_control_op;
-    MorphOperatorPtr  y_control_op;
+    ModulationData    x_morphing_mod;
+    ModulationData    y_morphing_mod;
 
     std::vector< std::vector<MorphGridNode> > input_node;
   };
+  static constexpr auto P_X_MORPHING = "x_morphing";
+  static constexpr auto P_Y_MORPHING = "y_morphing";
 protected:
   Config          m_config;
   int             m_zoom;
@@ -78,19 +76,10 @@ public:
   bool            has_selection();
 
   double          x_morphing();
-  ControlType     x_control_type();
-  MorphOperator  *x_control_op();
-  double          y_morphing();
-  ControlType     y_control_type();
-  MorphOperator  *y_control_op();
   void            set_x_morphing (double new_value);
+
+  double          y_morphing();
   void            set_y_morphing (double new_value);
-  void            set_x_control_type (ControlType new_control_type);
-  void            set_y_control_type (ControlType new_control_type);
-  void            set_x_control_op (MorphOperator *op);
-  void            set_y_control_op (MorphOperator *op);
-  void            set_x_control_type_and_op (ControlType control_type, MorphOperator *op);
-  void            set_y_control_type_and_op (ControlType control_type, MorphOperator *op);
 
   void            set_input_node (int x, int y, const MorphGridNode& node);
   MorphGridNode   input_node (int x, int y);

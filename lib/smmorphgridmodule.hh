@@ -27,9 +27,6 @@ private:
 
   std::vector< std::vector<InputNode> > input_node;
 
-  MorphOperatorModule    *x_control_mod;
-  MorphOperatorModule    *y_control_mod;
-
   // output
   Audio               audio;
   AudioBlock          audio_block;
