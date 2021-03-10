@@ -32,7 +32,6 @@ __ ui __
 __ generic modulation __
 
 - deleting operator should delete corresponding modulation entries
-- compatibility to old grid / linear / wav source modulation
 - handle XPARAM scaled parameters
 
 __ dsp __
