@@ -31,7 +31,6 @@ __ ui __
 
 __ generic modulation __
 
-- deleting operator should delete corresponding modulation entries
 - handle XPARAM scaled parameters
 
 __ dsp __
