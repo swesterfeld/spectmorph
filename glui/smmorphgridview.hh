@@ -8,31 +8,12 @@
 #include "smcomboboxoperator.hh"
 #include "smmorphgridwidget.hh"
 #include "smcontrolview.hh"
+#include "smoperatorlayout.hh"
 
 namespace SpectMorph
 {
 
 class MorphGridView;
-class MorphGridControlUI : public SignalReceiver
-{
-  MorphGrid          *morph_grid;
-  MorphGridView      *morph_grid_view;
-  ControlView         cv_control;
-
-public:
-  enum ControlXYType { CONTROL_X, CONTROL_Y } ctl_xy;
-  MorphGridControlUI (MorphGridView *parent, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy);
-
-  ComboBoxOperator *combobox;
-  Label            *title;
-  Slider           *slider;
-  Label            *label;
-  double            value;
-
-/* slots: */
-  void on_slider_changed (double value);
-  void on_control_changed();
-};
 
 class MorphGridView : public MorphOperatorView
 {
@@ -47,8 +28,9 @@ protected:
   Label              *delta_db_label;
   Slider             *delta_db_slider;
 
-  MorphGridControlUI *x_ui;
-  MorphGridControlUI *y_ui;
+  PropertyView       *pv_x_morphing;
+  PropertyView       *pv_y_morphing;
+  OperatorLayout      op_layout;
 
   void update_db_label (double db);
 
@@ -56,6 +38,7 @@ public:
   MorphGridView (Widget *parent, MorphGrid *op, MorphPlanWindow *morph_plan_window);
 
   double view_height() override;
+  void update_visible() override;
 
 /* signals: */
   Signal<> signal_grid_params_changed;
