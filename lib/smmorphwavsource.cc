@@ -23,7 +23,8 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
     });
 
   add_property_enum (&m_config.play_mode, P_PLAY_MODE, "Play Mode", PLAY_MODE_STANDARD, play_mode_enum_info);
-  add_property (&m_config.position, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
+  auto position = add_property (&m_config.position_mod, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
+  position->modulation_list()->set_compat_type_and_op ("position_control_type", "position_op");
 
   connect (morph_plan->signal_operator_removed, this, &MorphWavSource::on_operator_removed);
 }
@@ -76,43 +77,6 @@ MorphWavSource::lv2_filename()
   return m_lv2_filename;
 }
 
-void
-MorphWavSource::set_position_control_type (ControlType new_control_type)
-{
-  m_config.position_control_type = new_control_type;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphWavSource::ControlType
-MorphWavSource::position_control_type() const
-{
-  return m_config.position_control_type;
-}
-
-MorphOperator *
-MorphWavSource::position_op() const
-{
-  return m_config.position_op.get();
-}
-
-void
-MorphWavSource::set_position_op (MorphOperator *op)
-{
-  m_config.position_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
-}
-
-void
-MorphWavSource::set_position_control_type_and_op (ControlType control_type, MorphOperator *op)
-{
-  m_config.position_control_type = control_type;
-  m_config.position_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
-}
-
 const char *
 MorphWavSource::type()
 {
@@ -133,8 +97,6 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("object_id", m_config.object_id);
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
-  out_file.write_int ("position_control_type", m_config.position_control_type);
-  out_file.write_operator ("position_op", m_config.position_op);
 
   return true;
 }
@@ -142,8 +104,6 @@ MorphWavSource::save (OutFile& out_file)
 bool
 MorphWavSource::load (InFile& ifile)
 {
-  load_position_op = "";
-
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (read_property_event (ifile))
@@ -160,10 +120,6 @@ MorphWavSource::load (InFile& ifile)
             {
               m_instrument = ifile.event_int();
             }
-          else if (ifile.event_name() == "position_control_type")
-            {
-              m_config.position_control_type = static_cast<ControlType> (ifile.event_int());
-            }
           else
             {
               g_printerr ("bad int\n");
@@ -175,10 +131,6 @@ MorphWavSource::load (InFile& ifile)
           if (ifile.event_name() == "lv2_filename")
             {
               m_lv2_filename = ifile.event_data();
-            }
-          else if (ifile.event_name() == "position_op")
-            {
-              load_position_op = ifile.event_data();
             }
           else
             {
@@ -197,23 +149,8 @@ MorphWavSource::load (InFile& ifile)
 }
 
 void
-MorphWavSource::post_load (OpNameMap& op_name_map)
-{
-  m_config.position_op.set (op_name_map[load_position_op]);
-}
-
-void
 MorphWavSource::on_operator_removed (MorphOperator *op)
 {
-  // plan changed will be emitted automatically after remove, so we don't emit it here
-
-  if (op == m_config.position_op.get())
-    {
-      m_config.position_op.set (nullptr);
-
-      if (m_config.position_control_type == CONTROL_OP)
-        m_config.position_control_type = CONTROL_GUI;
-    }
 }
 
 MorphOperator::OutputType
@@ -225,7 +162,11 @@ MorphWavSource::output_type()
 vector<MorphOperator *>
 MorphWavSource::dependencies()
 {
-  return { (m_config.position_control_type == CONTROL_OP && m_config.play_mode == PLAY_MODE_CUSTOM_POSITION) ? m_config.position_op.get() : nullptr };
+  vector<MorphOperator *> deps;
+
+  if (m_config.play_mode == PLAY_MODE_CUSTOM_POSITION)
+    get_property_dependencies (deps, { P_POSITION });
+  return deps;
 }
 
 MorphOperatorConfig *

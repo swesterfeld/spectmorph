@@ -4,6 +4,7 @@
 #define SPECTMORPH_MORPH_WAV_SOURCE_HH
 
 #include "smmorphoperator.hh"
+#include "smmodulationlist.hh"
 #include "smproperty.hh"
 
 #include <string>
@@ -27,15 +28,12 @@ public:
 
     int               object_id = 0;
     PlayMode          play_mode             = PLAY_MODE_STANDARD;
-    ControlType       position_control_type = CONTROL_GUI;
-    float             position;
-    MorphOperatorPtr  position_op;
+    ModulationData    position_mod;
   };
   static constexpr auto P_PLAY_MODE = "play_mode";
   static constexpr auto P_POSITION  = "position";
 protected:
   Config      m_config;
-  std::string load_position_op;
 
   int         m_instrument = 1;
   std::string m_lv2_filename;
@@ -50,7 +48,6 @@ public:
   bool        save (OutFile& out_file) override;
   bool        load (InFile&  in_file) override;
   OutputType  output_type() override;
-  void        post_load (OpNameMap& op_name_map) override;
   std::vector<MorphOperator *> dependencies() override;
   MorphOperatorConfig *clone_config() override;
 
@@ -62,14 +59,6 @@ public:
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
-
-  void        set_position_control_type (ControlType new_control_type);
-  ControlType position_control_type() const;
-
-  void        set_position_op (MorphOperator *op);
-  MorphOperator *position_op() const;
-
-  void        set_position_control_type_and_op (ControlType new_control_type, MorphOperator *op);
 
   void        on_operator_removed (MorphOperator *op);
 };

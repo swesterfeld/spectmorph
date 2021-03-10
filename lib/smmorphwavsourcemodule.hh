@@ -35,8 +35,6 @@ class MorphWavSourceModule : public MorphOperatorModule
     void update_object_id (int object_id);
   };
 
-  MorphOperatorModule        *position_mod = nullptr;
-
   InstrumentSource my_source;
 
 public:
