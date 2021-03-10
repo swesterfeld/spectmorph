@@ -136,7 +136,7 @@ LogProperty *
 MorphOperator::add_property_log (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx)
 {
   assert (!m_properties[identifier]);
-  LogProperty *property = new LogProperty (value, identifier, label, value_label, def, mn, mx);
+  LogProperty *property = new LogProperty (this, value, identifier, label, value_label, def, mn, mx);
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
@@ -155,7 +155,7 @@ XParamProperty *
 MorphOperator::add_property_xparam (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx, float slope)
 {
   assert (!m_properties[identifier]);
-  XParamProperty *property = new XParamProperty (value, identifier, label, value_label, def, mn, mx, slope);
+  XParamProperty *property = new XParamProperty (this, value, identifier, label, value_label, def, mn, mx, slope);
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
@@ -166,7 +166,7 @@ LinearProperty *
 MorphOperator::add_property (float *value, const string& identifier, const string& label, const string& value_label, float def, float mn, float mx)
 {
   assert (!m_properties[identifier]);
-  LinearProperty *property = new LinearProperty (value, identifier, label, value_label, def, mn, mx);
+  LinearProperty *property = new LinearProperty (this, value, identifier, label, value_label, def, mn, mx);
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
@@ -187,7 +187,7 @@ MorphOperator::add_property (int *value, const std::string& identifier,
                              int def, int mn, int mx)
 {
   assert (!m_properties[identifier]);
-  IntProperty *property = new IntProperty (value, identifier, label, value_label, def, mn, mx);
+  IntProperty *property = new IntProperty (this, value, identifier, label, value_label, def, mn, mx);
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
@@ -200,7 +200,7 @@ MorphOperator::add_property (bool *value, const std::string& identifier,
                              bool def)
 {
   assert (!m_properties[identifier]);
-  BoolProperty *property = new BoolProperty (value, identifier, label, def);
+  BoolProperty *property = new BoolProperty (this, value, identifier, label, def);
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
   connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
@@ -214,7 +214,7 @@ MorphOperator::add_property_enum (const std::string& identifier,
                                   std::function<void(int)> write_func)
 {
   assert (!m_properties[identifier]);
-  EnumProperty *property = new EnumProperty (identifier, label, def, ei, read_func, write_func);
+  EnumProperty *property = new EnumProperty (this, identifier, label, def, ei, read_func, write_func);
   /* FIXME: FILTER: all the common code for adding properties should be centralized */
   m_properties[identifier].reset (property);
   connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });

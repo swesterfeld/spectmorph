@@ -2,13 +2,15 @@
 
 #include "smproperty.hh"
 #include "smmodulationlist.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 
-Property::Property (const string& identifier)
-  : m_identifier (identifier)
+Property::Property (MorphOperator *op, const string& identifier) :
+  m_op (op),
+  m_identifier (identifier)
 {
 }
 

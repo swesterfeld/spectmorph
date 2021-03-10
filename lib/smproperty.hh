@@ -19,16 +19,19 @@ namespace SpectMorph
 class EnumInfo;
 class ModulationList;
 class ModulationData;
+class MorphOperator;
 
 class Property : public SignalReceiver
 {
 protected:
   std::unique_ptr<ModulationList> m_modulation_list;
+  MorphOperator                  *m_op;
   std::string                     m_identifier;
 public:
-  Property (const std::string& identifier);
+  Property (MorphOperator *op, const std::string& identifier);
   virtual ~Property();
 
+  MorphOperator *op()      { return m_op; }
   std::string identifier() { return m_identifier; }
 
   enum class Type { BOOL, INT, ENUM, FLOAT };
@@ -96,9 +99,9 @@ public:
   int max()         { return m_max_value; }
   int get()         { return *m_value; }
 
-  IntProperty (int *value, const std::string& identifier, const std::string& label, const std::string& format,
+  IntProperty (MorphOperator *op, int *value, const std::string& identifier, const std::string& label, const std::string& format,
                int def, int mn, int mx) :
-    Property (identifier),
+    Property (op, identifier),
     m_value (value),
     m_min_value (mn),
     m_max_value (mx),
@@ -151,8 +154,8 @@ public:
   int max()         { return 1; }
   int get()         { return *m_value; }
 
-  BoolProperty (bool *value, const std::string& identifier, const std::string& label, bool def) :
-    Property (identifier),
+  BoolProperty (MorphOperator *op, bool *value, const std::string& identifier, const std::string& label, bool def) :
+    Property (op, identifier),
     m_value (value),
     m_label (label)
   {
@@ -223,13 +226,14 @@ class EnumProperty : public Property
   int                       m_min_value;
   int                       m_max_value;
 public:
-  EnumProperty (const std::string& identifier,
+  EnumProperty (MorphOperator *op,
+                const std::string& identifier,
                 const std::string& label,
                 int def,
                 const EnumInfo& ei,
                 std::function<int()> read_func,
                 std::function<void(int)> write_func) :
-    Property (identifier),
+    Property (op, identifier),
     m_label (label),
     m_enum_info (ei),
     m_read_func (read_func),
@@ -288,13 +292,14 @@ protected:
   std::string   m_format;
   std::function<std::string (float)> m_custom_formatter;
 public:
-  FloatProperty (float *value,
+  FloatProperty (MorphOperator *op,
+                 float *value,
                  const Range& range,
                  Scale scale,
                  const std::string& identifier,
                  const std::string& label,
                  const std::string& format) :
-    Property (identifier),
+    Property (op, identifier),
     m_value (value),
     m_range (range),
     m_scale (scale),
@@ -379,14 +384,15 @@ public:
 class LogProperty : public FloatProperty
 {
 public:
-  LogProperty (float *value,
+  LogProperty (MorphOperator *op,
+               float *value,
                const std::string& identifier,
                const std::string& label,
                const std::string& format,
                float def_value,
                float min_value,
                float max_value) :
-    FloatProperty (value, { min_value, max_value }, Scale::LOG, identifier, label, format)
+    FloatProperty (op, value, { min_value, max_value }, Scale::LOG, identifier, label, format)
   {
     *value = def_value;
   }
@@ -406,14 +412,15 @@ public:
 class LinearProperty : public FloatProperty
 {
 public:
-  LinearProperty (float *value,
+  LinearProperty (MorphOperator *op,
+                  float *value,
                   const std::string& identifier,
                   const std::string& label,
                   const std::string& format,
                   float def_value,
                   double min_value,
                   double max_value) :
-    FloatProperty (value, { min_value, max_value }, Scale::LINEAR, identifier, label, format)
+    FloatProperty (op, value, { min_value, max_value }, Scale::LINEAR, identifier, label, format)
   {
     *value = def_value;
   }
@@ -433,7 +440,8 @@ class XParamProperty : public FloatProperty
 {
   double        m_slope;
 public:
-  XParamProperty (float *value,
+  XParamProperty (MorphOperator *op,
+                  float *value,
                   const std::string& identifier,
                   const std::string& label,
                   const std::string& format,
@@ -441,7 +449,7 @@ public:
                   float min_value,
                   float max_value,
                   double slope) :
-    FloatProperty (value, { min_value, max_value }, /* FIXME: FILTER */ Scale::NONE, identifier, label, format),
+    FloatProperty (op, value, { min_value, max_value }, /* FIXME: FILTER */ Scale::NONE, identifier, label, format),
     m_slope (slope)
   {
     *value = def_value;
