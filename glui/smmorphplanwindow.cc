@@ -15,7 +15,7 @@ using std::vector;
 // so we provide a way to compute it without creating a window
 namespace
 {
-  static const int win_width = 744;
+  static const int win_width = 768;
   static const int win_height = 560;
 };
 
@@ -62,23 +62,24 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   MenuItem *about_item = help_menu->add_item ("About...");
   connect (about_item->signal_clicked, this, &MorphPlanWindow::on_about_clicked);
 
-  grid.add_widget (menu_bar, 1, 1, 91, 3);
+  grid.add_widget (menu_bar, 1, 1, 94, 3);
 
-  ScrollView *scroll_view = new ScrollView (this);
-  grid.add_widget (scroll_view, 1, 5, 47, height() / 8 - 6);
+  ScrollView *scroll_view_left = new ScrollView (this);
+  grid.add_widget (scroll_view_left, 1, 5, 47, height() / 8 - 6);
 
-  Widget *output_parent = new Widget (this);
-  grid.add_widget (output_parent, 49, 5, 47, height() / 8 - 6);
+  ScrollView *scroll_view_right = new ScrollView (this);
+  grid.add_widget (scroll_view_right, 48, 5, 47, height() / 8 - 6);
 
-  m_morph_plan_view = new MorphPlanView (scroll_view, output_parent, morph_plan.c_ptr(), this);
-  scroll_view->set_scroll_widget (m_morph_plan_view, false, true);
+  Widget *output_parent = new Widget (scroll_view_right);
+  Widget *plan_parent = new Widget (scroll_view_left);
 
-  connect (m_morph_plan_view->signal_widget_size_changed, scroll_view, &ScrollView::on_widget_size_changed);
+  m_morph_plan_view = new MorphPlanView (plan_parent, output_parent, morph_plan.c_ptr(), this);
+  scroll_view_left->set_scroll_widget (plan_parent, false, true);
+  scroll_view_right->set_scroll_widget (output_parent, false, true);
 
-  /* control widget */
-  m_control_widget = new MorphPlanControl (this, m_morph_plan);
-  double cw_height = m_control_widget->view_height();
-  grid.add_widget (m_control_widget, 49, height() / 8 - cw_height - 1, 43, cw_height);
+  connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_left, &ScrollView::on_widget_size_changed);
+  connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_right, &ScrollView::on_widget_size_changed);
+
 }
 
 void
@@ -227,12 +228,6 @@ MorphPlanWindow::on_about_clicked()
   auto dialog = new AboutDialog (this);
 
   dialog->run();
-}
-
-MorphPlanControl *
-MorphPlanWindow::control_widget()
-{
-  return m_control_widget;
 }
 
 SynthInterface*

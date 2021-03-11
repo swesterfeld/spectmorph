@@ -16,7 +16,7 @@ namespace SpectMorph
 
 class MorphPlanControl : public Frame
 {
-  MorphPlanPtr morph_plan;
+  MorphPlan   *morph_plan = nullptr;
   Label       *volume_value_label = nullptr;
   Slider      *volume_slider = nullptr;
   Led         *midi_led = nullptr;
@@ -25,7 +25,7 @@ class MorphPlanControl : public Frame
 
   void update_volume_label (double volume);
 public:
-  MorphPlanControl (Widget *parent, MorphPlanPtr plan);
+  MorphPlanControl (Widget *parent, MorphPlan *plan);
 
   double view_height();
 

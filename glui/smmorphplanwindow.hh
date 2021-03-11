@@ -44,7 +44,6 @@ public:
   void on_load_preset (const std::string& rel_filename);
   static void static_scaled_size (int *w, int *h);
 
-  MorphPlanControl *control_widget();
   SynthInterface   *synth_interface();
 
   MorphOperator *where (MorphOperator *op, double y);

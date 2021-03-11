@@ -10,7 +10,7 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
+MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlan *plan) :
   Frame (parent),
   morph_plan (plan)
 {
