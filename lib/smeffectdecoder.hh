@@ -43,7 +43,7 @@ class EffectDecoder
   LinearSmooth                          filter_cutoff_smooth;
   LinearSmooth                          filter_resonance_smooth;
   float                                 filter_depth_octaves;
-  LadderVCFNonLinearCheap               filter;
+  LadderVCFNonLinear                    filter;
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

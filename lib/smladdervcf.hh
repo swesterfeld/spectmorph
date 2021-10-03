@@ -3,10 +3,13 @@
 #define SPECTMORPH_LADDER_VCF_HH
 
 #include "smmath.hh"
+#include "smpandaresampler.hh"
 
 #include <array>
 
 namespace SpectMorph {
+
+using PandaResampler::Resampler2;
 
 enum class LadderVCFMode { LP1, LP2, LP3, LP4 };
 
@@ -17,11 +20,8 @@ class LadderVCF
     double x1, x2, x3, x4;
     double y1, y2, y3, y4;
 
-#if 0
-    // NOTE: Bse currently doesn't enforce SSE alignment so we force FPU resampling
-    Resampler2 res_up   { Resampler2::UP,   Resampler2::PREC_48DB, false };
-    Resampler2 res_down { Resampler2::DOWN, Resampler2::PREC_48DB, false };
-#endif
+    Resampler2 res_up   { Resampler2::UP,   2, Resampler2::PREC_72DB };
+    Resampler2 res_down { Resampler2::DOWN, 2, Resampler2::PREC_72DB };
   };
   std::array<Channel, 2> channels;
   LadderVCFMode mode;
@@ -62,10 +62,8 @@ public:
         c.x1 = c.x2 = c.x3 = c.x4 = 0;
         c.y1 = c.y2 = c.y3 = c.y4 = 0;
 
-#if 0
         c.res_up.reset();
         c.res_down.reset();
-#endif
       }
   }
   double
@@ -165,11 +163,9 @@ private:
 
     if (OVERSAMPLE)
       {
-#if 0
         for (size_t i = 0; i < channels.size(); i++)
           if (need_channel<CHANNEL_MASK> (i))
             channels[i].res_up.process_block (inputs[i], n_samples, over_samples[i]);
-#endif
       }
 
     fc *= freq_scale;
@@ -217,11 +213,9 @@ private:
       }
     if (OVERSAMPLE)
       {
-#if 0
         for (size_t i = 0; i < channels.size(); i++)
           if (need_channel<CHANNEL_MASK> (i))
             channels[i].res_down.process_block (over_samples[i], 2 * n_samples, outputs[i]);
-#endif
       }
   }
   template<LadderVCFMode MODE> inline void
