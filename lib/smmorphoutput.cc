@@ -58,6 +58,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_resonance_mod, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
 
   add_property (&m_config.filter_drive, P_FILTER_DRIVE, "Drive", "%.1f dB", 0, 0, 60);
+  add_property (&m_config.filter_mix_mod, P_FILTER_MIX, "Mix", "%.1f %%", 100, 0, 100);
 
   add_property (&m_config.portamento, P_PORTAMENTO, "Enable Portamento (Mono)", false);
   add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);

@@ -132,7 +132,8 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
     float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
 
     filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod() * filter_keytrack_factor, filter_smooth_first);
-    filter_resonance_smooth.set (this->output_module->filter_resonance_mod(), filter_smooth_first);
+    filter_resonance_smooth.set (this->output_module->filter_resonance_mod() * 0.01, filter_smooth_first);
+    filter_mix_smooth.set (this->output_module->filter_mix_mod() * 0.01, filter_smooth_first);
 
     filter_smooth_first = false;
   };
@@ -227,6 +228,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 
   filter_cutoff_smooth.reset (mix_freq, 0.010);
   filter_resonance_smooth.reset (mix_freq, 0.010);
+  filter_mix_smooth.reset (mix_freq, 0.010);
 
   filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
   filter_envelope.set_delay (0);
@@ -303,12 +305,14 @@ EffectDecoder::process (size_t       n_values,
       const float *inputs[2] = { audio_out, junk };
       float *outputs[2] = { audio_out, junk };
 
-      float freq[n_values], reso[n_values];
+      float freq[n_values], reso[n_values], mix[n_values];
       for (uint i = 0; i < n_values; i++)
         {
           freq[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
-          reso[i] = filter_resonance_smooth.get_next() * 0.01f;
+          reso[i] = filter_resonance_smooth.get_next();
+          mix[i]  = filter_mix_smooth.get_next();
         }
+      filter.set_mix_in (mix);
 
       filter.run_block (n_values, /* const cutoff */ 0, /* const reso */ 0, inputs, outputs, true, false, freq, reso);
     }

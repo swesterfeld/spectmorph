@@ -31,6 +31,7 @@ public:
   float velocity_sensitivity() const;
   float filter_cutoff_mod() const;
   float filter_resonance_mod() const;
+  float filter_mix_mod() const;
   TimeInfo compute_time_info() const;
 };
 

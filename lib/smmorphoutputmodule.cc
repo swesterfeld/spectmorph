@@ -103,6 +103,12 @@ MorphOutputModule::filter_resonance_mod() const
   return apply_modulation (cfg->filter_resonance_mod);
 }
 
+float
+MorphOutputModule::filter_mix_mod() const
+{
+  return apply_modulation (cfg->filter_mix_mod);
+}
+
 void
 MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
