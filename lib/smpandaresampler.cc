@@ -1242,20 +1242,10 @@ Resampler2::create_impl (uint stage_ratio)
   if (stage_ratio == 8 && precision_ == 8 && mode_ == DOWN)
     return create_impl_with_coeffs <Downsampler2<4, USE_SSE> > (coeffs8_8, 4, 1.0);
   // END generated code
-  if (mode_ == UP)
-    {
-      switch (precision_)
-	{
-	case PREC_LINEAR: return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 2.0);
-	}
-    }
-  else if (mode_ == DOWN)
-    {
-      switch (precision_)
-	{
-	case PREC_LINEAR: return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 1.0);
-	}
-    }
+  if (precision_ == PREC_LINEAR && mode_ == UP)
+    return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 2.0);
+  if (precision_ == PREC_LINEAR && mode_ == DOWN)
+    return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 1.0);
   return 0;
 }
 
