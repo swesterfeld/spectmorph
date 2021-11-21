@@ -8,6 +8,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <smmatharm.hh>
+
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
