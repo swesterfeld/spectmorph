@@ -15,7 +15,7 @@ inline __attribute__((always_inline)) __m128 _mm_set_ps(float e3, float e2, floa
   return r;
 }
 
-define _MM_SHUFFLE(z, y, x, w) (((z) << 6) | ((y) << 4) | ((x) << 2) | (w))
+#define _MM_SHUFFLE(z, y, x, w) (((z) << 6) | ((y) << 4) | ((x) << 2) | (w))
 
 inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
 {
