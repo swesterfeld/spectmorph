@@ -78,8 +78,10 @@ sm_math_init()
       MathTables::ifreq2f_low[i]  = sm_ifreq2freq_slow (ADD + i);
     }
 
+#if defined (__i386__) && defined (__GNUC__)
   // ensure proper rounding mode
   assert (sm_fpu_okround());
+#endif
 
   assert (sm_round_positive (42.51) == 43);
   assert (sm_round_positive (3.14) == 3);
@@ -88,6 +90,7 @@ sm_math_init()
   assert (sm_round_positive (0.2) == 0);
 }
 
+#if defined (__i386__) && defined (__GNUC__)
 int
 sm_fpu_okround()
 {
@@ -98,6 +101,7 @@ sm_fpu_okround()
            : "=m" (*&cv));
   return !(cv & 0x0c00);
 }
+#endif
 
 double
 sm_lowpass1_factor (double mix_freq, double freq)
