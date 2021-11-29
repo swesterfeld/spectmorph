@@ -313,12 +313,7 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   else
 #endif
     {
-#if defined(__riscv)
       alignas (16) float spectrum[block_size + 2]; // SSE alignment
-#else
-      __m128 out[(block_size + 2) / 4 + 1];   // SSE alignment (should be done by compiler)
-      float *spectrum = reinterpret_cast <float *> (&out[0]);
-#endif
       for (size_t i = 8; i < block_size + 2 + 8; i += 2)
         {
           float out_re = K0 * expand_in[i];
