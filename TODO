@@ -8,12 +8,6 @@ NEXT RELEASE:
 - better spectral subtract [1]
 - vibrato could have delay property
 - possibly add MPE timbre
-- rasberry pi alignment compile error lib/smnoisedecoder.cc
-
--      __m128 out[(block_size + 2) / 4 + 1];   // SSE alignment (should be done by compiler)
--      float *spectrum = reinterpret_cast <float *> (&out[0]);
-+      alignas (16) float spectrum[block_size + 2]; // SSE alignment
-
 
 insts:
  - tuba
