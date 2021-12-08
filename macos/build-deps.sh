@@ -21,7 +21,7 @@ set -e
 }
 
 function download {
-	echo "--- Downloading.. $2"
+	echo "--- Downloading.. ${SRCDIR}/$1 $2"
 	test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
@@ -66,7 +66,8 @@ make install
 src fftw-3.3.7 tar.gz http://www.fftw.org/fftw-3.3.7.tar.gz
 autoconfbuild --disable-fortran --enable-single --enable-threads --with-combined-threads
 
-src libffi-3.2.1 tar.gz https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
+src libffi-3.4.2 tar.gz https://github.com/libffi/libffi/archive/refs/tags/v3.4.2.tar.gz
+./autogen.sh
 autoconfbuild
 
 src gettext-0.19.8.1 tar.xz https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz

@@ -427,7 +427,7 @@ MC_PROG_CC_SUPPORTS_OPTION([-pthread], [
   AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
 ])
 
-gcc_target_sse="-msse -msse2 -msse3 -mmmx"
+gcc_target_sse=""
 MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
 
 gcc_optimize_extra="-funroll-loops -ftree-vectorize -finline-functions -ftracer -ftree-loop-distribution -ftree-loop-ivcanon -ftree-loop-im -minline-all-stringops"

@@ -4,7 +4,7 @@ $ xcode-select --install
 
 You also need these brew packages
 
-$ brew install autoconf-archive automake boost ccache cmake jack libao pkg-config libtool 
+$ brew install autoconf-archive automake boost ccache cmake jack libao pkg-config libtool
 
 Finally: edit macos/sdk-options.sh
 

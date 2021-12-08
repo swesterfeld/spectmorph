@@ -201,7 +201,7 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   const float K2 = 0.07064;   // a2 / 2
   const float K3 = 0.00584;   // a3 / 2
 
-#ifdef __SSE__ /* fast SSEified convolution */
+#if defined(__SSE__) || defined(SM_ARM_SSE) /* fast SSEified convolution */
   if (sm_sse())
     {
       const size_t K_ARRAY_SIZE = 4 * 2 * 4;
