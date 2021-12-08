@@ -22,7 +22,7 @@ set -e
 
 function download {
 	echo "--- Downloading.. $2"
-	test -f ${SRCDIR}/$1 || curl -L -o ${SRCDIR}/$1 $2
+	test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
 function src {
@@ -46,7 +46,7 @@ MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 
-src zlib-1.2.7 tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/history/zlib/zlib-1.2.7.tar.gz
+src zlib-1.2.11 tar.gz https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
 
 CFLAGS="${GLOBAL_CFLAGS}" \
 LDFLAGS="${GLOBAL_LDFLAGS}" \
@@ -75,9 +75,9 @@ autoconfbuild "--disable-silent-rules" "--disable-debug" \
               "--disable-java" "--disable-csharp" "--without-git" "--without-cvs" "--without-xz"
 
 src glib-2.56.1 tar.xz https://download.gnome.org/sources/glib/2.56/glib-2.56.1.tar.xz
-autoconfbuild --enable-static
+autoconfbuild --enable-static -enable-utf --enable-unicode-properties --with-pcre=internal
 
-src freetype-2.5.3 tar.gz http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
+src freetype-2.5.5 tar.gz https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz
 autoconfbuild --with-harfbuzz=no --with-png=no --with-bzip2=no
 
 src pixman-0.34.0 tar.gz https://www.cairographics.org/releases/pixman-0.34.0.tar.gz
