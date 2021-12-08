@@ -39,11 +39,6 @@ inline __attribute__((always_inline)) __m128 _mm_set_ss(float a)
   return vsetq_lane_f32(a, vdupq_n_f32(0.f), 0);
 }
 
-inline __attribute__((always_inline)) __m128 _mm_xor_ps(__m128 a, __m128 b)
-{
-  return veorq_s32(a, b);
-}
-
 #define _mm_shuffle_ps(a, b, imm8)                                                                             \
   __extension__({                                                                                              \
     float32x4_t ret;                                                                                           \
