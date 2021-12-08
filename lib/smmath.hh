@@ -207,7 +207,7 @@ fast_vector_sincos (const VectorSinParams& params, Iterator sin_begin, Iterator 
 union F4Vector
 {
   float f[4];
-#ifdef __SSE__
+#if defined(__SSE__) || defined(SM_ARM_SSE)
   __m128 v;   // vector of four single floats
 #endif
 };
@@ -217,7 +217,7 @@ template<bool NEED_COS, int MODE>
 inline void
 internal_fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, float *sin_end, float *cos_begin)
 {
-#ifdef __SSE__
+#if defined(__SSE__) || defined(SM_ARM_SSE)
   g_return_if_fail (params.mix_freq > 0 && params.freq > 0 && params.phase > -99 && params.mag > 0);
 
   const int TABLE_SIZE = 32;
