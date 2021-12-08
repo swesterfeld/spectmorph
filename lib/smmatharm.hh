@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
+// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 
 #ifndef SPECTMORPH_MATH_ARM_HH
 #define SPECTMORPH_MATH_ARM_HH
