@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphlinear.hh"
 #include "smmorphplan.hh"
@@ -19,8 +19,7 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
 {
   connect (morph_plan->signal_operator_removed, this, &MorphLinear::on_operator_removed);
 
-  auto morphing = add_property (&m_config.morphing, P_MORPHING, "Morphing", "%.2f", 0, -1, 1);
-  morphing->set_modulation_data (&m_config.morphing_mod);
+  auto morphing = add_property (&m_config.morphing_mod, P_MORPHING, "Morphing", "%.2f", 0, -1, 1);
   morphing->modulation_list()->set_compat_type_and_op ("control_type", "control");
 
   m_config.db_linear = false;
@@ -92,18 +91,6 @@ MorphLinear::load (InFile& ifile)
           else
             {
               g_printerr ("bad string\n");
-              return false;
-            }
-        }
-      else if (ifile.event() == InFile::FLOAT)
-        {
-          if (ifile.event_name() == "morphing")
-            {
-              m_config.morphing = ifile.event_float();
-            }
-          else
-            {
-              g_printerr ("bad float\n");
               return false;
             }
         }

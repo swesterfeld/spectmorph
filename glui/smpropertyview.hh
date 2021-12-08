@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_PROPERTY_VIEW_HH
 #define SPECTMORPH_PROPERTY_VIEW_HH
@@ -153,7 +153,6 @@ public:
 
 class PropertyView : public SignalReceiver
 {
-  MorphOperator *m_op;
   Property& m_property;
 
   Widget   *title  = nullptr;
@@ -173,8 +172,8 @@ class PropertyView : public SignalReceiver
   void on_value_changed (int new_value);
 
 public:
-  PropertyView (MorphOperator *op, Property& property, Widget *parent, OperatorLayout& layout);
-  PropertyView (MorphOperator *op, Property& property);
+  PropertyView (Property& property, Widget *parent, OperatorLayout& layout);
+  PropertyView (Property& property);
 
   ComboBox *create_combobox (Widget *parent);
   Property *property() const;

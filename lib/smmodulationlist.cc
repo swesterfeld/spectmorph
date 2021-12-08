@@ -1,6 +1,7 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmodulationlist.hh"
+#include "smmorphplan.hh"
 
 using namespace SpectMorph;
 
@@ -11,6 +12,7 @@ ModulationList::ModulationList (ModulationData& data, Property& property) :
     data (data),
     property (property)
 {
+  connect (property.op()->morph_plan()->signal_operator_removed, this, &ModulationList::on_operator_removed);
 }
 
 MorphOperator::ControlType
@@ -231,4 +233,29 @@ ModulationList::get_dependencies (vector<MorphOperator *>& deps)
   for (const auto& entry : data.entries)
     if (entry.control_type == MorphOperator::CONTROL_OP)
       deps.push_back (entry.control_op.get());
+}
+
+void
+ModulationList::on_operator_removed (MorphOperator *op)
+{
+  // plan changed will be emitted automatically after remove, so we don't emit it here
+
+  if (op == data.main_control_op.get())
+    {
+      data.main_control_op.set (nullptr);
+      if (data.main_control_type == MorphOperator::CONTROL_OP)
+        data.main_control_type = MorphOperator::CONTROL_GUI;
+    }
+  uint index = 0;
+  while (index < data.entries.size())
+    {
+      if (op == data.entries[index].control_op.get())
+        {
+          data.entries.erase (data.entries.begin() + index);
+        }
+      else
+        {
+          index++;
+        }
+    }
 }

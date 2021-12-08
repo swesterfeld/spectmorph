@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_PLAN_SYNTH_HH
 #define SPECTMORPH_MORPH_PLAN_SYNTH_HH
@@ -25,6 +25,7 @@ protected:
 
   float           m_mix_freq;
   Random          m_random_gen;
+  bool            m_have_cycle = false;
 
 public:
   struct Update
@@ -36,6 +37,7 @@ public:
       MorphOperatorConfig *config = nullptr;
     };
     bool            cheap = false; // cheap update: same set of operators
+    bool            have_cycle = false; // plan contains cycles?
     std::vector<Op> ops;
     std::vector<MorphOperatorConfigP> new_configs;
     std::vector<MorphOperatorConfigP> old_configs;
@@ -59,6 +61,7 @@ public:
   float   mix_freq() const;
   bool    have_output() const;
   Random *random_gen();
+  bool    have_cycle() const;
 };
 
 }

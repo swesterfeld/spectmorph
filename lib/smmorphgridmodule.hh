@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_GRID_MODULE_HH
 #define SPECTMORPH_MORPH_GRID_MODULE_HH
@@ -26,9 +26,6 @@ private:
   const MorphGrid::Config *cfg = nullptr;
 
   std::vector< std::vector<InputNode> > input_node;
-
-  MorphOperatorModule    *x_control_mod;
-  MorphOperatorModule    *y_control_mod;
 
   // output
   Audio               audio;

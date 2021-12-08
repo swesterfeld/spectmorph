@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphwavsourceview.hh"
 #include "sminsteditwindow.hh"
@@ -38,16 +38,6 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   auto pv_play_mode = add_property_view (MorphWavSource::P_PLAY_MODE, op_layout);
   prop_play_mode = pv_play_mode->property();
   connect (prop_play_mode->signal_value_changed, this, &MorphWavSourceView::update_visible);
-
-  // POSITION CONTROL INPUT
-  position_control_combobox = cv_position_control.create_combobox (body_widget,
-    morph_wav_source,
-    morph_wav_source->position_control_type(),
-    morph_wav_source->position_op());
-  connect (cv_position_control.signal_control_changed, this, &MorphWavSourceView::on_position_control_changed);
-
-  position_control_input_label = new Label (body_widget, "Position Ctrl");
-  op_layout.add_row (3, position_control_input_label, position_control_combobox);
 
   // POSITION
   pv_position = add_property_view (MorphWavSource::P_POSITION, op_layout);
@@ -249,18 +239,8 @@ void
 MorphWavSourceView::update_visible()
 {
   bool custom_position = (prop_play_mode->get() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION);
-  position_control_combobox->set_visible (custom_position);
-  position_control_input_label->set_visible (custom_position);
-  pv_position->set_visible (custom_position && morph_wav_source->position_control_type() == MorphWavSource::CONTROL_GUI);
+  pv_position->set_visible (custom_position);
 
   op_layout.activate();
   signal_size_changed();
-}
-
-void
-MorphWavSourceView::on_position_control_changed()
-{
-  morph_wav_source->set_position_control_type_and_op (cv_position_control.control_type(), cv_position_control.op());
-
-  update_visible();
 }

@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_OUTPUT_MODULE_HH
 #define SPECTMORPH_MORPH_OUTPUT_MODULE_HH
@@ -31,6 +31,7 @@ public:
   float velocity_sensitivity() const;
   float filter_cutoff_mod() const;
   float filter_resonance_mod() const;
+  float filter_mix_mod() const;
   TimeInfo compute_time_info() const;
 };
 

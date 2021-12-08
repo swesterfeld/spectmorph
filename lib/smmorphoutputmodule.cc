@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphoutputmodule.hh"
 #include "smmorphoutput.hh"
@@ -44,7 +44,6 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
 
-  clear_dependencies();
   for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
     {
       EffectDecoder *dec = NULL;
@@ -71,8 +70,6 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
 
       out_ops[ch] = mod;
       out_decoders[ch] = dec;
-
-      add_dependency (mod);
     }
 }
 
@@ -97,60 +94,19 @@ MorphOutputModule::velocity_sensitivity() const
 float
 MorphOutputModule::filter_cutoff_mod() const
 {
-  return apply_modulation (cfg->filter_cutoff, cfg->filter_cutoff_mod);
+  return apply_modulation (cfg->filter_cutoff_mod);
 }
 
 float
 MorphOutputModule::filter_resonance_mod() const
 {
-  return apply_modulation (cfg->filter_resonance, cfg->filter_resonance_mod);
+  return apply_modulation (cfg->filter_resonance_mod);
 }
 
-static void
-recursive_reset_tag (MorphOperatorModule *module)
+float
+MorphOutputModule::filter_mix_mod() const
 {
-  if (!module)
-    return;
-
-  const vector<MorphOperatorModule *>& deps = module->dependencies();
-  for (size_t i = 0; i < deps.size(); i++)
-    recursive_reset_tag (deps[i]);
-
-  module->update_value_tag() = 0;
-}
-
-static void
-recursive_reset_value (MorphOperatorModule *module, const TimeInfo& time_info)
-{
-  if (!module)
-    return;
-
-  const vector<MorphOperatorModule *>& deps = module->dependencies();
-  for (size_t i = 0; i < deps.size(); i++)
-    recursive_reset_value (deps[i], time_info);
-
-  if (!module->update_value_tag())
-    {
-      module->reset_value (time_info);
-      module->update_value_tag()++;
-    }
-}
-
-static bool
-recursive_cycle_check (MorphOperatorModule *module, int depth = 0)
-{
-  /* check if processing would fail due to cycles
-   *
-   * this check should avoid crashes in this situation, although no audio will be produced
-   */
-  if (depth > 500)
-    return true;
-
-  for (auto mod : module->dependencies())
-    if (recursive_cycle_check (mod, depth + 1))
-      return true;
-
-  return false;
+  return apply_modulation (cfg->filter_mix_mod);
 }
 
 void
@@ -158,7 +114,8 @@ MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float *
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
-  const bool have_cycle = recursive_cycle_check (this);
+  const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
+
   block_time = time_info;
 
   for (size_t port = 0; port < n_ports; port++)
@@ -198,7 +155,8 @@ MorphOutputModule::compute_time_info() const
 void
 MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity)
 {
-  if (recursive_cycle_check (this))
+  const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
+  if (have_cycle)
     return;
 
   for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)
@@ -208,8 +166,7 @@ MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq
           out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
         }
     }
-  recursive_reset_tag (this);
-  recursive_reset_value (this, time_info);
+  morph_plan_voice->reset_value (time_info);
 }
 
 void

@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_EFFECTDECODER_HH
 #define SPECTMORPH_EFFECTDECODER_HH
@@ -35,15 +35,12 @@ class EffectDecoder
   FilterEnvelope                        filter_envelope;
   float                                 filter_key_tracking = 0;
   float                                 filter_current_note = 60;
-#if 0
-  float                                 filter_cutoff;
-  float                                 filter_resonance;
-#endif
   bool                                  filter_smooth_first;
   LinearSmooth                          filter_cutoff_smooth;
   LinearSmooth                          filter_resonance_smooth;
+  LinearSmooth                          filter_mix_smooth;
   float                                 filter_depth_octaves;
-  LadderVCFNonLinearCheap               filter;
+  LadderVCFNonLinear                    filter;
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_OUTPUT_VIEW_HH
 #define SPECTMORPH_MORPH_OUTPUT_VIEW_HH
@@ -43,6 +43,7 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_filter_cutoff;
   PropertyView               *pv_filter_resonance;
   PropertyView               *pv_filter_drive;
+  PropertyView               *pv_filter_mix;
 
   PropertyView               *pv_portamento;
   PropertyView               *pv_portamento_glide;

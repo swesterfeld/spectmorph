@@ -3,10 +3,13 @@
 #define SPECTMORPH_LADDER_VCF_HH
 
 #include "smmath.hh"
+#include "smpandaresampler.hh"
 
 #include <array>
 
 namespace SpectMorph {
+
+using PandaResampler::Resampler2;
 
 enum class LadderVCFMode { LP1, LP2, LP3, LP4 };
 
@@ -17,16 +20,15 @@ class LadderVCF
     double x1, x2, x3, x4;
     double y1, y2, y3, y4;
 
-#if 0
-    // NOTE: Bse currently doesn't enforce SSE alignment so we force FPU resampling
-    Resampler2 res_up   { Resampler2::UP,   Resampler2::PREC_48DB, false };
-    Resampler2 res_down { Resampler2::DOWN, Resampler2::PREC_48DB, false };
-#endif
+    Resampler2 res_up   { Resampler2::UP,   2, Resampler2::PREC_72DB };
+    Resampler2 res_down { Resampler2::DOWN, 2, Resampler2::PREC_72DB };
   };
   std::array<Channel, 2> channels;
   LadderVCFMode mode;
   double pre_scale, post_scale;
   double rate;
+  float        mix;
+  const float *mix_in;
 
 public:
   LadderVCF()
@@ -35,6 +37,7 @@ public:
     set_mode (LadderVCFMode::LP4);
     set_drive (0);
     set_rate (48000);
+    set_mix (1);
   }
   void
   set_mode (LadderVCFMode new_mode)
@@ -55,6 +58,17 @@ public:
     rate = r;
   }
   void
+  set_mix (float f)
+  {
+    mix = f;
+    mix_in = nullptr;
+  }
+  void
+  set_mix_in (const float *mix_values)
+  {
+    mix_in = mix_values;
+  }
+  void
   reset()
   {
     for (auto& c : channels)
@@ -62,10 +76,8 @@ public:
         c.x1 = c.x2 = c.x3 = c.x4 = 0;
         c.y1 = c.y2 = c.y3 = c.y4 = 0;
 
-#if 0
         c.res_up.reset();
         c.res_down.reset();
-#endif
       }
   }
   double
@@ -97,7 +109,7 @@ private:
    * Computer Music Journal. 30. 19-31. 10.1162/comj.2006.30.2.19.
    */
   template<LadderVCFMode MODE, int CHANNEL_MASK> inline void
-  run (double *values, double fc, double res)
+  run (double *values, double fc, double res, double mix)
   {
     fc = M_PI * fc;
     const double g = 0.9892 * fc - 0.4342 * fc * fc + 0.1381 * fc * fc * fc - 0.0202 * fc * fc * fc * fc;
@@ -128,23 +140,25 @@ private:
                 c.y4 = (c.y3 * (1 / 1.3) + c.x4 * (0.3 / 1.3) - c.y4) * g + c.y4;
                 c.x4 = c.y3;
 
+                double out;
                 switch (MODE)
                   {
                     case LadderVCFMode::LP1:
-                      values[i] = c.y1 * post_scale;
+                      out = c.y1 * post_scale;
                       break;
                     case LadderVCFMode::LP2:
-                      values[i] = c.y2 * post_scale;
+                      out = c.y2 * post_scale;
                       break;
                     case LadderVCFMode::LP3:
-                      values[i] = c.y3 * post_scale;
+                      out = c.y3 * post_scale;
                       break;
                     case LadderVCFMode::LP4:
-                      values[i] = c.y4 * post_scale;
+                      out = c.y4 * post_scale;
                       break;
                     default:
                       g_assert_not_reached();
                   }
+                values[i] = out * mix + values[i] * (1 - mix);
               }
           }
         values += channels.size();
@@ -165,11 +179,9 @@ private:
 
     if (OVERSAMPLE)
       {
-#if 0
         for (size_t i = 0; i < channels.size(); i++)
           if (need_channel<CHANNEL_MASK> (i))
             channels[i].res_up.process_block (inputs[i], n_samples, over_samples[i]);
-#endif
       }
 
     fc *= freq_scale;
@@ -185,6 +197,8 @@ private:
         if (reso_in)
           mod_res = reso_in[i];
 
+        double mod_mix = mix_in ? mix_in[i] : mix; // caller needs to keep this in range [0;1]
+
         mod_fc  = sm_clamp (mod_fc, 0.0, 1.0);
         mod_res = sm_clamp (mod_res, 0.0, 1.0);
 
@@ -198,7 +212,7 @@ private:
               over_samples[1][over_pos + 1],
             };
 
-            run<MODE, CHANNEL_MASK> (values, mod_fc, mod_res);
+            run<MODE, CHANNEL_MASK> (values, mod_fc, mod_res, mod_mix);
 
             over_samples[0][over_pos] = values[0];
             over_samples[1][over_pos] = values[1];
@@ -209,7 +223,7 @@ private:
           {
             double values[2] = { inputs[0][i], inputs[1][i] };
 
-            run<MODE, CHANNEL_MASK> (values, mod_fc, mod_res);
+            run<MODE, CHANNEL_MASK> (values, mod_fc, mod_res, mod_mix);
 
             outputs[0][i] = values[0];
             outputs[1][i] = values[1];
@@ -217,11 +231,9 @@ private:
       }
     if (OVERSAMPLE)
       {
-#if 0
         for (size_t i = 0; i < channels.size(); i++)
           if (need_channel<CHANNEL_MASK> (i))
             channels[i].res_down.process_block (over_samples[i], 2 * n_samples, outputs[i]);
-#endif
       }
   }
   template<LadderVCFMode MODE> inline void

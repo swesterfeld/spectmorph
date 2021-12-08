@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_LINEAR_HH
 #define SPECTMORPH_MORPH_LINEAR_HH
@@ -21,7 +21,6 @@ public:
     std::string      left_path;
     std::string      right_path;
 
-    float            morphing;
     ModulationData   morphing_mod;
     bool             db_linear;
   };

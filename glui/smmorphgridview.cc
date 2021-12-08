@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphgridview.hh"
 #include "smmorphplan.hh"
@@ -12,75 +12,10 @@ using std::string;
 using std::vector;
 using std::set;
 
-MorphGridControlUI::MorphGridControlUI (MorphGridView *morph_grid_view, MorphGrid *morph_grid, Widget *body_widget, ControlXYType ctl_xy) :
-  morph_grid (morph_grid),
-  morph_grid_view (morph_grid_view),
-  ctl_xy (ctl_xy)
-{
-  MorphGrid::ControlType control_type = (ctl_xy == CONTROL_X) ?
-                                        morph_grid->x_control_type() :
-                                        morph_grid->y_control_type();
-
-  MorphOperator *control_op = (ctl_xy == CONTROL_X) ? morph_grid->x_control_op() : morph_grid->y_control_op();
-  combobox = cv_control.create_combobox (body_widget, morph_grid, control_type, control_op);
-
-  connect (cv_control.signal_control_changed, this, &MorphGridControlUI::on_control_changed);
-
-  title = new Label (body_widget, ctl_xy == CONTROL_X ? "X Value" : "Y Value");
-  slider = new Slider (body_widget, 0);
-  label = new Label (body_widget, "");
-
-  /* restore slider value from operator */
-  if (ctl_xy == CONTROL_X)
-    slider->set_value ((morph_grid->x_morphing() + 1) / 2);
-  else
-    slider->set_value ((morph_grid->y_morphing() + 1) / 2);
-
-  connect (slider->signal_value_changed, this, &MorphGridControlUI::on_slider_changed);
-
-  // initial slider state
-  on_control_changed();
-}
-
-void
-MorphGridControlUI::on_slider_changed (double value)
-{
-  value = value * 2 - 1;
-
-  if (ctl_xy == CONTROL_X)
-    morph_grid->set_x_morphing (value);
-  else
-    morph_grid->set_y_morphing (value);
-
-  morph_grid_view->signal_grid_params_changed();
-}
-
-void
-MorphGridControlUI::on_control_changed()
-{
-  if (ctl_xy == CONTROL_X)
-    {
-      morph_grid->set_x_control_type_and_op (cv_control.control_type(), cv_control.op());
-    }
-  else
-    {
-      morph_grid->set_y_control_type_and_op (cv_control.control_type(), cv_control.op());
-    }
-  bool control_gui = cv_control.control_type() == MorphOperator::CONTROL_GUI;
-
-  title->set_enabled (control_gui);
-  label->set_enabled (control_gui);
-  slider->set_enabled (control_gui);
-}
-
-
-
 MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWindow *morph_plan_window) :
   MorphOperatorView (parent, morph_grid, morph_plan_window),
   morph_grid (morph_grid)
 {
-  OperatorLayout op_layout;
-
   // Width
   Label *width_title   = new Label (body_widget, "Width");
   Slider *width_slider = new Slider (body_widget, 0);
@@ -111,19 +46,12 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
     signal_grid_params_changed();
   });
 
-  // X Control
-  x_ui = new MorphGridControlUI (this, morph_grid, body_widget, MorphGridControlUI::CONTROL_X);
-  op_layout.add_row (3, new Label (body_widget, "X Control"), x_ui->combobox);
+  // X / Y MORPHING
+  pv_x_morphing = add_property_view (MorphGrid::P_X_MORPHING, op_layout);
+  pv_y_morphing = add_property_view (MorphGrid::P_Y_MORPHING, op_layout);
 
-  // Y Control
-  y_ui = new MorphGridControlUI (this, morph_grid, body_widget, MorphGridControlUI::CONTROL_Y);
-  op_layout.add_row (3, new Label (body_widget, "Y Control"), y_ui->combobox);
-
-  // X Value
-  op_layout.add_row (2, x_ui->title, x_ui->slider, x_ui->label);
-
-  // Y Value
-  op_layout.add_row (2, y_ui->title, y_ui->slider, y_ui->label);
+  connect (pv_x_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
+  connect (pv_y_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
 
   // Grid
   grid_widget = new MorphGridWidget (body_widget, morph_grid, this);
@@ -159,13 +87,23 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   on_grid_params_changed(); // initial morphing slider/label setup
   on_selection_changed();   // initial selection
 
-  op_layout.activate();
+  update_visible();
 }
 
 double
 MorphGridView::view_height()
 {
-  return 56;
+  return op_layout.height() + 5;
+}
+
+void
+MorphGridView::update_visible()
+{
+  pv_x_morphing->set_visible (true);
+  pv_y_morphing->set_visible (true);
+
+  op_layout.activate();
+  signal_size_changed();
 }
 
 void
@@ -173,10 +111,6 @@ MorphGridView::on_grid_params_changed()
 {
   width_label->set_text (string_printf ("%d", morph_grid->width()));
   height_label->set_text (string_printf ("%d", morph_grid->height()));
-  x_ui->slider->set_value ((morph_grid->x_morphing() + 1) / 2);
-  y_ui->slider->set_value ((morph_grid->y_morphing() + 1) / 2);
-  x_ui->label->set_text (string_locale_printf ("%.2f", morph_grid->x_morphing()));
-  y_ui->label->set_text (string_locale_printf ("%.2f", morph_grid->y_morphing()));
 }
 
 void

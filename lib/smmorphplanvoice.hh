@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_PLAN_VOICE_HH
 #define SPECTMORPH_MORPH_PLAN_VOICE_HH
@@ -48,6 +48,7 @@ public:
   MorphPlanSynth *morph_plan_synth() const;
 
   void update_shared_state (const TimeInfo& time_info);
+  void reset_value (const TimeInfo& time_info);
 };
 
 }

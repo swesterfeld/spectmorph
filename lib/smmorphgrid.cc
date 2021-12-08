@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphgrid.hh"
 #include "smleakdebugger.hh"
@@ -31,10 +31,10 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   m_zoom = 5;
   m_selected_x = -1;
   m_selected_y = -1;
-  m_config.x_morphing = 0;
-  m_config.y_morphing = 0;
-  m_config.x_control_type = CONTROL_GUI;
-  m_config.y_control_type = CONTROL_GUI;
+  auto x_morphing = add_property (&m_config.x_morphing_mod, P_X_MORPHING, "X Morphing", "%.2f", 0, -1, 1);
+  auto y_morphing = add_property (&m_config.y_morphing_mod, P_Y_MORPHING, "Y Morphing", "%.2f", 0, -1, 1);
+  x_morphing->modulation_list()->set_compat_type_and_op ("x_control_type", "x_control_op");
+  y_morphing->modulation_list()->set_compat_type_and_op ("y_control_type", "y_control_op");
 
   update_size();
 }
@@ -59,18 +59,11 @@ MorphGrid::insert_order()
 bool
 MorphGrid::save (OutFile& out_file)
 {
+  write_properties (out_file);
+
   out_file.write_int ("width", m_config.width);
   out_file.write_int ("height", m_config.height);
   out_file.write_int ("zoom", m_zoom);
-
-  out_file.write_float ("x_morphing", m_config.x_morphing);
-  out_file.write_float ("y_morphing", m_config.y_morphing);
-
-  out_file.write_int ("x_control_type", m_config.x_control_type);
-  out_file.write_int ("y_control_type", m_config.y_control_type);
-
-  out_file.write_operator ("x_control_op", m_config.x_control_op);
-  out_file.write_operator ("y_control_op", m_config.y_control_op);
 
   for (int x = 0; x < m_config.width; x++)
     {
@@ -98,7 +91,11 @@ MorphGrid::load (InFile& ifile)
 
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (ifile.event() == InFile::INT)
+      if (read_property_event (ifile))
+        {
+          // property has been read, so we ignore the event
+        }
+      else if (ifile.event() == InFile::INT)
         {
           if (ifile.event_name() == "width")
             {
@@ -114,14 +111,6 @@ MorphGrid::load (InFile& ifile)
             {
               m_zoom = ifile.event_int();
             }
-          else if (ifile.event_name() == "x_control_type")
-            {
-              m_config.x_control_type = static_cast<ControlType> (ifile.event_int());
-            }
-          else if (ifile.event_name() == "y_control_type")
-            {
-              m_config.y_control_type = static_cast<ControlType> (ifile.event_int());
-            }
           else
             {
               g_printerr ("bad int\n");
@@ -130,38 +119,27 @@ MorphGrid::load (InFile& ifile)
         }
       else if (ifile.event() == InFile::FLOAT)
         {
-          if (ifile.event_name() == "x_morphing")
+          if (delta_db_map.empty())
             {
-              m_config.x_morphing = ifile.event_float();
-            }
-          else if (ifile.event_name() == "y_morphing")
-            {
-              m_config.y_morphing = ifile.event_float();
-            }
-          else
-            {
-              if (delta_db_map.empty())
+              for (int x = 0; x < m_config.width; x++)
                 {
-                  for (int x = 0; x < m_config.width; x++)
+                  for (int y = 0; y < m_config.height; y++)
                     {
-                      for (int y = 0; y < m_config.height; y++)
-                        {
-                          string name = string_printf ("input_delta_db_%d_%d", x, y);
+                      string name = string_printf ("input_delta_db_%d_%d", x, y);
 
-                          delta_db_map[name] = make_pair (x, y);
-                        }
+                      delta_db_map[name] = make_pair (x, y);
                     }
                 }
-              map<string, pair<int, int> >::const_iterator it = delta_db_map.find (ifile.event_name());
-              if (it == delta_db_map.end())
-                {
-                  g_printerr ("bad float\n");
-                  return false;
-                }
-              const int x = it->second.first;
-              const int y = it->second.second;
-              m_config.input_node[x][y].delta_db = ifile.event_float();
             }
+          map<string, pair<int, int> >::const_iterator it = delta_db_map.find (ifile.event_name());
+          if (it == delta_db_map.end())
+            {
+              g_printerr ("bad float\n");
+              return false;
+            }
+          const int x = it->second.first;
+          const int y = it->second.second;
+          m_config.input_node[x][y].delta_db = ifile.event_float();
         }
       else if (ifile.event() == InFile::STRING)
         {
@@ -193,8 +171,6 @@ MorphGrid::post_load (OpNameMap& op_name_map)
           m_config.input_node[x][y].smset = load_map[smset_name];
         }
     }
-  m_config.x_control_op.set (op_name_map[load_map["x_control_op"]]);
-  m_config.y_control_op.set (op_name_map[load_map["y_control_op"]]);
 }
 
 
@@ -312,103 +288,26 @@ MorphGrid::zoom()
 double
 MorphGrid::x_morphing()
 {
-  return m_config.x_morphing;
+  return property (P_X_MORPHING)->get_float();
 }
 
 void
 MorphGrid::set_x_morphing (double new_morphing)
 {
-  m_config.x_morphing = new_morphing;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphGrid::ControlType
-MorphGrid::x_control_type()
-{
-  return m_config.x_control_type;
-}
-
-void
-MorphGrid::set_x_control_type (MorphGrid::ControlType control_type)
-{
-  m_config.x_control_type = control_type;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphOperator *
-MorphGrid::x_control_op()
-{
-  return m_config.x_control_op.get();
-}
-
-void
-MorphGrid::set_x_control_op (MorphOperator *op)
-{
-  m_config.x_control_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
-}
-
-void
-MorphGrid::set_x_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
-{
-  m_config.x_control_type = control_type;
-  m_config.x_control_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
+  /* smrunplan test */
+  property (P_X_MORPHING)->set_float (new_morphing);
 }
 
 double
 MorphGrid::y_morphing()
 {
-  return m_config.y_morphing;
+  return property (P_Y_MORPHING)->get_float();
 }
 
 void
 MorphGrid::set_y_morphing (double new_morphing)
 {
-  m_config.y_morphing = new_morphing;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphGrid::ControlType
-MorphGrid::y_control_type()
-{
-  return m_config.y_control_type;
-}
-
-void
-MorphGrid::set_y_control_type (MorphGrid::ControlType control_type)
-{
-  m_config.y_control_type = control_type;
-
-  m_morph_plan->emit_plan_changed();
-}
-
-MorphOperator *
-MorphGrid::y_control_op()
-{
-  return m_config.y_control_op.get();
-}
-
-void
-MorphGrid::set_y_control_op (MorphOperator *op)
-{
-  m_config.y_control_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
-}
-
-void
-MorphGrid::set_y_control_type_and_op (MorphGrid::ControlType control_type, MorphOperator *op)
-{
-  m_config.y_control_type = control_type;
-  m_config.y_control_op.set (op);
-
-  m_morph_plan->emit_plan_changed();
+  property (P_Y_MORPHING)->set_float (new_morphing);
 }
 
 void
@@ -427,20 +326,6 @@ MorphGrid::on_operator_removed (MorphOperator *op)
               m_config.input_node[x][y].op.set (nullptr);
             }
         }
-    }
-  if (op == m_config.x_control_op.get())
-    {
-      m_config.x_control_op.set (nullptr);
-
-      if (m_config.x_control_type == CONTROL_OP)
-        m_config.x_control_type = CONTROL_GUI;
-    }
-  if (op == m_config.y_control_op.get())
-    {
-      m_config.y_control_op.set (nullptr);
-
-      if (m_config.y_control_type == CONTROL_OP)
-        m_config.y_control_type = CONTROL_GUI;
     }
 }
 
@@ -484,12 +369,7 @@ MorphGrid::dependencies()
 {
   std::vector<MorphOperator *> deps;
 
-  if (m_config.x_control_type == CONTROL_OP)
-    deps.push_back (m_config.x_control_op.get());
-
-  if (m_config.y_control_type == CONTROL_OP)
-    deps.push_back (m_config.y_control_op.get());
-
+  get_property_dependencies (deps, { P_X_MORPHING, P_Y_MORPHING });
   for (int x = 0; x < m_config.width; x++)
     {
       for (int y = 0; y < m_config.height; y++)

@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphplancontrol.hh"
 #include "smfixedgrid.hh"
@@ -10,7 +10,7 @@ using namespace SpectMorph;
 
 using std::string;
 
-MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlanPtr plan) :
+MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlan *plan) :
   Frame (parent),
   morph_plan (plan)
 {

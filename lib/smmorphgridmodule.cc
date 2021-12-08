@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphgridmodule.hh"
 #include "smmorphgrid.hh"
@@ -70,18 +70,6 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
           input_node[x][y].delta_db = node.delta_db;
         }
     }
-
-  x_control_mod = morph_plan_voice->module (cfg->x_control_op);
-  y_control_mod = morph_plan_voice->module (cfg->y_control_op);
-
-  clear_dependencies();
-  for (int x = 0; x < cfg->width; x++)
-    {
-      for (int y = 0; y < cfg->height; y++)
-        add_dependency (input_node[x][y].mod);
-    }
-  add_dependency (x_control_mod);
-  add_dependency (y_control_mod);
 }
 
 void
@@ -373,17 +361,11 @@ apply_delta_db (AudioBlock& block, double delta_db)
 
 }
 
-static double
-get_morphing (MorphGrid::ControlType type, double gui_value, MorphOperatorModule *mod, MorphPlanVoice *voice)
-{
-  return voice->control_input (gui_value, type, mod);
-}
-
 AudioBlock *
 MorphGridModule::MySource::audio_block (size_t index)
 {
-  const double x_morphing = get_morphing (module->cfg->x_control_type, module->cfg->x_morphing, module->x_control_mod, module->morph_plan_voice);
-  const double y_morphing = get_morphing (module->cfg->y_control_type, module->cfg->y_morphing, module->y_control_mod, module->morph_plan_voice);
+  const double x_morphing = module->apply_modulation (module->cfg->x_morphing_mod);
+  const double y_morphing = module->apply_modulation (module->cfg->y_morphing_mod);
 
   const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->cfg->width);
   const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->cfg->height);

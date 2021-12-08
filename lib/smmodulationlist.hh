@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MODULATION_LIST_HH
 #define SPECTMORPH_MODULATION_LIST_HH
@@ -18,6 +18,7 @@ class ModulationData
 public:
   Property::Scale property_scale = Property::Scale::NONE;
 
+  float value = 0;              // ui slider / base value
   float min_value = 0;
   float max_value = 0;
   float value_scale = 0;
@@ -36,7 +37,7 @@ public:
   std::vector<Entry> entries;
 };
 
-class ModulationList
+class ModulationList : public SignalReceiver
 {
   ModulationData&             data;
   Property&                   property;
@@ -74,6 +75,10 @@ public:
   void post_load (MorphOperator::OpNameMap& op_name_map);
   void get_dependencies (std::vector<MorphOperator *>& deps);
 
+/* slots: */
+  void on_operator_removed (MorphOperator *op);
+
+/* signals: */
   Signal<> signal_modulation_changed;
   Signal<> signal_size_changed;
   Signal<> signal_main_control_changed;

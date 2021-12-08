@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_OUTPUT_HH
 #define SPECTMORPH_MORPH_OUTPUT_HH
@@ -53,11 +53,10 @@ public:
     float                         filter_release;
     float                         filter_depth;
     float                         filter_key_tracking;
-    float                         filter_cutoff;
     ModulationData                filter_cutoff_mod;
-    float                         filter_resonance;
     ModulationData                filter_resonance_mod;
     float                         filter_drive;
+    ModulationData                filter_mix_mod;
 
     bool                          portamento;
     float                         portamento_glide;
@@ -96,6 +95,7 @@ public:
   static constexpr auto P_FILTER_CUTOFF     = "filter_cutoff";
   static constexpr auto P_FILTER_RESONANCE  = "filter_resonance";
   static constexpr auto P_FILTER_DRIVE      = "filter_drive";
+  static constexpr auto P_FILTER_MIX        = "filter_mix";
 
   static constexpr auto P_PORTAMENTO        = "portamento";
   static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";

@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphlinearmodule.hh"
 #include "smmorphlinear.hh"
@@ -60,11 +60,6 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
   have_right_source = (cfg->right_path != "");
   if (have_right_source)
     right_source.set_wav_set (cfg->right_path);
-
-  clear_dependencies();
-  add_dependency (left_mod);
-  add_dependency (right_mod);
-  /* FIXME: FILTER: add_dependency (control_mod); */
 }
 
 void
@@ -161,7 +156,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
 {
   bool have_left = false, have_right = false;
 
-  const double morphing = module->apply_modulation (module->cfg->morphing, module->cfg->morphing_mod);
+  const double morphing = module->apply_modulation (module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
 

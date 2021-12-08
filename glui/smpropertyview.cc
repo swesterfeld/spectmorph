@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smpropertyview.hh"
 #include "smlabel.hh"
@@ -11,15 +11,13 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-PropertyView::PropertyView (MorphOperator *op, Property& property) :
-  m_op (op),
+PropertyView::PropertyView (Property& property) :
   m_property (property)
 {
   /* minimal constructor, to support custom layouts by creating widgets manually */
 }
 
-PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *parent, OperatorLayout& op_layout) :
-  m_op (op),
+PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& op_layout) :
   m_property (property),
   window (parent->window())
 {
@@ -71,7 +69,7 @@ PropertyView::PropertyView (MorphOperator *op, Property& property, Widget *paren
       if (mod_list)
         {
           control_combobox = control_view.create_combobox (parent,
-            op,
+            property.op(),
             mod_list->main_control_type(),
             mod_list->main_control_op());
 
@@ -174,7 +172,7 @@ PropertyView::set_visible (bool visible)
 void
 PropertyView::on_edit_details()
 {
-  PropertyViewEdit::create (window, m_op, m_property);
+  PropertyViewEdit::create (window, m_property);
 }
 
 void

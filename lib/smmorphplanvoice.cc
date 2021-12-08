@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
@@ -166,4 +166,11 @@ MorphPlanVoice::update_shared_state (const TimeInfo& time_info)
 {
   for (size_t i = 0; i < modules.size(); i++)
     modules[i].module->update_shared_state (time_info);
+}
+
+void
+MorphPlanVoice::reset_value (const TimeInfo& time_info)
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    modules[i].module->reset_value (time_info);
 }

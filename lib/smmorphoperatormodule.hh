@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_OPERATOR_MODULE_HH
 #define SPECTMORPH_MORPH_OPERATOR_MODULE_HH
@@ -32,15 +32,11 @@ class MorphOperatorModule
 {
 protected:
   MorphPlanVoice                     *morph_plan_voice;
-  std::vector<MorphOperatorModule *>  m_dependencies;
-  int                                 m_update_value_tag;
   MorphOperator::PtrID                m_ptr_id;
 
   Random *random_gen() const;
-  void clear_dependencies();
-  void add_dependency (MorphOperatorModule *dep_mod);
   TimeInfo time_info() const;
-  float apply_modulation (float base, const ModulationData& mod_data) const;
+  float apply_modulation (const ModulationData& mod_data) const;
 public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();
@@ -51,8 +47,6 @@ public:
   virtual void reset_value (const TimeInfo& time_info);
   virtual void update_shared_state (const TimeInfo& time_info);
 
-  const std::vector<MorphOperatorModule *>& dependencies() const;
-  int& update_value_tag();
   void set_ptr_id (MorphOperator::PtrID ptr_id);
 
   static MorphOperatorModule *create (const std::string& type, MorphPlanVoice *voice);

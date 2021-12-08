@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphwavsource.hh"
@@ -67,7 +67,7 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
 {
   if (active_audio && module->cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
-      const double position = module->morph_plan_voice->control_input ((module->cfg->position * 0.01) * 2 - 1, module->cfg->position_control_type, module->position_mod);
+      const double position = module->apply_modulation (module->cfg->position_mod) * 0.01;
 
       int start, end;
       if (active_audio->loop_type == Audio::LOOP_NONE)
@@ -82,8 +82,7 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
           start = active_audio->loop_start;
           end = active_audio->loop_end;
         }
-      const double frac = (position + 1) / 2;
-      index = sm_bound (start, sm_round_positive ((1 - frac) * start + frac * end), end);
+      index = sm_bound (start, sm_round_positive ((1 - position) * start + position * end), end);
     }
   if (active_audio && index < active_audio->contents.size())
     return &active_audio->contents[index];
@@ -129,12 +128,4 @@ MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 
   my_source.update_project (cfg->project);
   my_source.update_object_id (cfg->object_id);
-
-  if (cfg->position_op && cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
-    position_mod = morph_plan_voice->module (cfg->position_op);
-  else
-    position_mod = nullptr;
-
-  clear_dependencies();
-  add_dependency (position_mod);
 }

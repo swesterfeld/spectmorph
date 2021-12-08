@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_PLAN_VIEW_HH
 #define SPECTMORPH_MORPH_PLAN_VIEW_HH
@@ -9,6 +9,7 @@
 #include "smmorphoperatorview.hh"
 #include "smscrollview.hh"
 #include "smoperatorrolemap.hh"
+#include "smmorphplancontrol.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -16,11 +17,13 @@ namespace SpectMorph
 
 class MorphPlanWindow;
 
-class MorphPlanView : public Widget
+class MorphPlanView : public SignalReceiver
 {
+  Widget          *plan_parent;
   Widget          *output_parent;
   MorphPlan       *morph_plan;
   MorphPlanWindow *morph_plan_window;
+  MorphPlanControl *control_widget;
   bool             need_view_rebuild;
   OperatorRoleMap  op_role_map;
 

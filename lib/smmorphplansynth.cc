@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
@@ -58,10 +58,34 @@ sorted_id_list (MorphPlanPtr plan)
   return ids;
 }
 
+static bool
+recursive_cycle_check (MorphOperator *start_op, int depth)
+{
+  /* check if processing would fail due to cycles
+   *
+   * this check should avoid crashes in this situation, although no audio will be produced
+   */
+  if (depth > 500)
+    return true;
+
+  for (auto op : start_op->dependencies())
+    if (op && recursive_cycle_check (op, depth + 1))
+      return true;
+
+  return false;
+}
+
 MorphPlanSynth::UpdateP
 MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 {
   UpdateP update = std::make_shared<Update>();
+
+  update->have_cycle = false;
+  for (auto op : plan->operators())
+    {
+      if (recursive_cycle_check (op, 0))
+        update->have_cycle = true;
+    }
 
   for (auto o : plan->operators())
     {
@@ -96,6 +120,7 @@ MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
    */
   update->old_configs = std::move (m_active_configs);
   m_active_configs = std::move (update->new_configs);
+  m_have_cycle = update->have_cycle;
 
   if (update->cheap)
     {
@@ -151,6 +176,12 @@ MorphPlanSynth::have_output() const
 
   // all voices are the same: either each of them contains an output module, or none of them
   return voices[0]->output() != nullptr;
+}
+
+bool
+MorphPlanSynth::have_cycle() const
+{
+  return m_have_cycle;
 }
 
 void

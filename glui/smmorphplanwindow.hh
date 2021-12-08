@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v3 or later: http://www.gnu.org/licenses/lgpl.html
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #ifndef SPECTMORPH_MORPH_PLAN_WINDOW_HH
 #define SPECTMORPH_MORPH_PLAN_WINDOW_HH
@@ -44,7 +44,6 @@ public:
   void on_load_preset (const std::string& rel_filename);
   static void static_scaled_size (int *w, int *h);
 
-  MorphPlanControl *control_widget();
   SynthInterface   *synth_interface();
 
   MorphOperator *where (MorphOperator *op, double y);
