@@ -1,0 +1,20 @@
+MacBook Air (M1, 2020)
+macOS 12.0.1
+Xcode 13.1
+
+$ ../tests/testnoiseperf
+noise decoder (spectrum gen): 1.208996 ns/sample
+noise decoder (convolve):     1.072558 ns/sample
+noise decoder (convolve/SSE): 0.855955 ns/sample
+noise decoder (ifft):         14.379877 ns/sample
+
+Mac Pro (Mid 2012)
+macOS 10.14.6
+Xcode 11.3.1
+
+$ ../tests/testnoiseperf
+noise decoder (spectrum gen): 2.905075 ns/sample
+noise decoder (convolve):     5.259574 ns/sample
+noise decoder (convolve/SSE): 1.506438 ns/sample
+noise decoder (ifft):         34.130667 ns/sample
+

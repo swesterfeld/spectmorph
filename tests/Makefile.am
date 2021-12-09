@@ -13,7 +13,7 @@ EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq testbesseli0
+        testidb testifreq testbesseli0 testsse
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testrefptr testparamupdate testloopindex testoutfileperf \
@@ -154,6 +154,9 @@ testsmdirs_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testladdervcf_SOURCES = testladdervcf.cc
 testladdervcf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testsse_SOURCES = testsse.cc
+testsse_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm
