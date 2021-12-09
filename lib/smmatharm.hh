@@ -39,8 +39,10 @@ inline __attribute__((always_inline)) __m128 _mm_set_ss(float a)
   return vsetq_lane_f32(a, vdupq_n_f32(0.f), 0);
 }
 
-#define _mm_shuffle_ps(a, b, imm8)                                                                             \
+#define _mm_shuffle_ps(ma, mb, imm8)                                                                           \
   __extension__({                                                                                              \
+    float32x4_t a = (ma);                                                                                      \
+    float32x4_t b = (mb);                                                                                      \
     float32x4_t ret;                                                                                           \
     ret = vmovq_n_f32(vgetq_lane_f32(a, (imm8) & (0x3)));                                                      \
     ret = vsetq_lane_f32(vgetq_lane_f32(a, ((imm8) >> 2) & 0x3), ret, 1);                                      \
