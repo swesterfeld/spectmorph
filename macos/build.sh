@@ -16,7 +16,7 @@ export SM_PREFIX=$PWD/spectmorph
 export PKG_CONFIG_PATH=$DEPS_PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 export MACOS_DIR=$PWD
 cd ..
-CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION" \
+CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION -I$DEPS_PREFIX/include" \
 CXXFLAGS="$CFLAGS" \
 OBJCFLAGS="$CFLAGS" \
 OBJCXXFLAGS="$CFLAGS" \

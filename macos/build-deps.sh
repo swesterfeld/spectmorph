@@ -21,8 +21,8 @@ set -e
 }
 
 function download {
-	echo "--- Downloading.. $2"
-	test -f ${SRCDIR}/$1 || curl -L -o ${SRCDIR}/$1 $2
+	echo "--- Downloading.. ${SRCDIR}/$1 $2"
+	test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
 }
 
 function src {
@@ -46,7 +46,7 @@ MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 
-src zlib-1.2.7 tar.gz ftp://ftp.simplesystems.org/pub/libpng/png/src/history/zlib/zlib-1.2.7.tar.gz
+src zlib-1.2.11 tar.gz https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
 
 CFLAGS="${GLOBAL_CFLAGS}" \
 LDFLAGS="${GLOBAL_LDFLAGS}" \
@@ -66,7 +66,7 @@ make install
 src fftw-3.3.7 tar.gz http://www.fftw.org/fftw-3.3.7.tar.gz
 autoconfbuild --disable-fortran --enable-single --enable-threads --with-combined-threads
 
-src libffi-3.2.1 tar.gz https://sourceware.org/pub/libffi/libffi-3.2.1.tar.gz
+src libffi-3.4.2 tar.gz https://github.com/libffi/libffi/releases/download/v3.4.2/libffi-3.4.2.tar.gz
 autoconfbuild
 
 src gettext-0.19.8.1 tar.xz https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz
@@ -75,9 +75,9 @@ autoconfbuild "--disable-silent-rules" "--disable-debug" \
               "--disable-java" "--disable-csharp" "--without-git" "--without-cvs" "--without-xz"
 
 src glib-2.56.1 tar.xz https://download.gnome.org/sources/glib/2.56/glib-2.56.1.tar.xz
-autoconfbuild --enable-static
+autoconfbuild --enable-static --with-pcre=internal
 
-src freetype-2.5.3 tar.gz http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz
+src freetype-2.5.5 tar.gz https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz
 autoconfbuild --with-harfbuzz=no --with-png=no --with-bzip2=no
 
 src pixman-0.34.0 tar.gz https://www.cairographics.org/releases/pixman-0.34.0.tar.gz
@@ -87,10 +87,10 @@ autoconfbuild
 src cairo-1.15.10 tar.xz https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
 autoconfbuild
 
-src libvorbis-1.3.6 tar.xz http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz
+src libogg-1.3.3 tar.xz http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz
 autoconfbuild
 
-src libogg-1.3.3 tar.xz http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz
+src libvorbis-1.3.6 tar.xz http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz
 autoconfbuild
 
 src flac-1.3.2 tar.xz https://ftp.osuosl.org/pub/xiph/releases/flac/flac-1.3.2.tar.xz

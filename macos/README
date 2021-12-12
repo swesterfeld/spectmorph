@@ -1,24 +1,13 @@
+Building statically linked VST Plugin:
+======================================
+
 Install devel tools:
 
 $ xcode-select --install
 
 You also need these brew packages
 
-$ brew leaves
-
-autoconf-archive
-automake
-boost
-ccache
-cmake
-fftw
-jack
-libao
-libtool
-pkg-config
-#lv2
-#qt
-#cairo
+$ brew install autoconf-archive automake ccache libao pkg-config libtool
 
 Finally: edit macos/sdk-options.sh
 
