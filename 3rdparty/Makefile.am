@@ -1,1 +1,1 @@
-SUBDIRS = minizip
+SUBDIRS = minizip hiir
