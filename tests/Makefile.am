@@ -20,7 +20,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testsortfreqs testconvperf testminires testnoisesr \
         testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity testinstbuild testautovol testwavdata testzip testuindexperf \
-	testlfo testsmdirs testladdervcf
+	testlfo testsmdirs testladdervcf testpandaperf
 
 if !COND_WINDOWS
 noinst_PROGRAMS += testjobqueue
@@ -157,6 +157,9 @@ testladdervcf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 testsse_SOURCES = testsse.cc
 testsse_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
+
+testpandaperf_SOURCES = testpandaperf.cc
+testpandaperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm
