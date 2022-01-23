@@ -466,7 +466,7 @@ MC_PROG_CC_SUPPORTS_OPTION([$asan_flags], [
 ])
 
 AC_CONFIG_FILES([Makefile
-3rdparty/Makefile 3rdparty/minizip/Makefile
+3rdparty/Makefile 3rdparty/minizip/Makefile 3rdparty/hiir/Makefile
 lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile data/fonts/Makefile instedit/Makefile
