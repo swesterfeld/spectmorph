@@ -1579,7 +1579,7 @@ template<class CArray>
 inline Resampler2::Impl*
 Resampler2::create_impl_iir_with_coeffs (const CArray& carray, double group_delay)
 {
-  constexpr uint n_coeffs = carray.size();
+  constexpr uint n_coeffs = std::tuple_size<CArray>::value;
 
 #ifdef __SSE__
   if (use_sse_if_available_)
