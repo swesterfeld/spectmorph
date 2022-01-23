@@ -3,7 +3,7 @@
 #ifndef SPECTMORPH_MATH_ARM_HH
 #define SPECTMORPH_MATH_ARM_HH
 
-#if defined(__arm64__) || defined(__aarch64__)
+#if defined(__ARM_NEON) || defined(__arm64__) || defined(__aarch64__)
 #define SM_ARM_SSE
 
 #include <arm_neon.h>
