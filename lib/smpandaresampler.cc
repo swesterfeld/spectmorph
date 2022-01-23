@@ -1,5 +1,11 @@
-// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
+// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 #include "smpandaresampler.hh"
+#include "hiir/Downsampler2xFpu.h"
+#include "hiir/Upsampler2xFpu.h"
+#ifdef __SSE__
+#include "hiir/Downsampler2xSse.h"
+#include "hiir/Upsampler2xSse.h"
+#endif
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
@@ -12,14 +18,34 @@
 #  define PANDA_RESAMPLER_FN
 #endif
 
+#if defined (__ARM_NEON) || defined(__arm64__) || defined(__aarch64__)
+#include <arm_neon.h>
+#define PANDA_RESAMPLER_NEON
+#endif
+
 namespace PandaResampler
 {
+
+#ifdef PANDA_RESAMPLER_NEON
+/* use NEON instructions for FIR resampler code written for SSE */
+typedef float32x4_t __m128;
+
+static inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
+{
+  return vmulq_f32(a, b);
+}
+
+static inline __attribute__((always_inline)) __m128 _mm_add_ps(__m128 a, __m128 b)
+{
+  return vaddq_f32(a, b);
+}
+#endif
 
 /* see: http://ds9a.nl/gcc-simd/ */
 union F4Vector
 {
   float f[4];
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   __m128 v;   // vector of four single floats
 #endif
 };
@@ -34,12 +60,14 @@ PANDA_RESAMPLER_FN
 Resampler2::Resampler2 (Mode      mode,
                         uint      ratio,
                         Precision precision,
-                        bool      use_sse_if_available)
+                        bool      use_sse_if_available,
+                        Filter    filter)
 {
   mode_ = mode;
   ratio_ = ratio;
   precision_ = precision;
   use_sse_if_available_ = use_sse_if_available;
+  filter_ = filter;
 
   init_stage (impl_x2, 2);
   init_stage (impl_x4, 4);
@@ -57,19 +85,33 @@ Resampler2::init_stage (std::unique_ptr<Impl>& impl,
 
   if (sse_available() && use_sse_if_available_)
     {
-      impl.reset (create_impl<true> (stage_ratio));
+      switch (filter_)
+        {
+          case FILTER_FIR: impl.reset (create_impl<true> (stage_ratio));
+                           break;
+          case FILTER_IIR: impl.reset (create_impl_iir<true> (stage_ratio));
+                           break;
+        }
     }
   else
     {
-      impl.reset (create_impl<false> (stage_ratio));
+      switch (filter_)
+        {
+          case FILTER_FIR: impl.reset (create_impl<false> (stage_ratio));
+                           break;
+          case FILTER_IIR: impl.reset (create_impl_iir<false> (stage_ratio));
+                           break;
+        }
     }
+  // should have created an implementation at this point
+  PANDA_RESAMPLER_CHECK (impl.get());
 }
 
 PANDA_RESAMPLER_FN
 bool
 Resampler2::sse_available()
 {
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   return true;
 #else
   return false;
@@ -176,18 +218,6 @@ static const double halfband_fir_96db_coeffs[32] =
   -0.00027896187837245,
   0.000112877490936177,
   -3.48616530827983e-05
-};
-
-static const double halfband_fir_96dbx8_coeffs[8] =
-{
- -0.0011434529019858912,
- 0.011917487731442971,
- -0.060022873045461347,
- 0.2992542831045874,
- 0.29925428310458746,
- -0.060022873045461431,
- 0.011917487731442963,
- -0.0011434529019858737,
 };
 
 /*   coefficients = 16
@@ -358,15 +388,6 @@ static const double halfband_fir_144db_coeffs[52] = {
   -1.841826652067372e-07,
 };
 
-/* linear interpolation coefficients; barely useful for actual audio use,
- * but useful for testing
- */
-static const double halfband_fir_linear_coeffs[2] = {
-  0.25,
-  /* here, a 0.5 coefficient will be used */
-  0.25,
-};
-
 /*
  * FIR filter routine
  *
@@ -412,7 +433,7 @@ fir_process_4samples_sse (const float *input,
 			  float       *out2,
 			  float       *out3)
 {
-#ifdef __SSE__
+#if defined (__SSE__) || defined (PANDA_RESAMPLER_NEON)
   /* input and taps must be 16-byte aligned */
   const F4Vector *input_v = reinterpret_cast<const F4Vector *> (input);
   const F4Vector *sse_taps_v = reinterpret_cast<const F4Vector *> (sse_taps);
@@ -1242,11 +1263,340 @@ Resampler2::create_impl (uint stage_ratio)
   if (stage_ratio == 8 && precision_ == 8 && mode_ == DOWN)
     return create_impl_with_coeffs <Downsampler2<4, USE_SSE> > (coeffs8_8, 4, 1.0);
   // END generated code
+
+  /* linear interpolation coefficients; barely useful for actual audio use,
+   * but useful for testing
+   */
+  static constexpr double coeffs_linear[2] = {
+    0.25,
+    /* here, a 0.5 coefficient will be used */
+    0.25,
+  };
+
   if (precision_ == PREC_LINEAR && mode_ == UP)
-    return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 2.0);
+    return create_impl_with_coeffs <Upsampler2<2, USE_SSE> > (coeffs_linear, 2, 2.0);
   if (precision_ == PREC_LINEAR && mode_ == DOWN)
-    return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (halfband_fir_linear_coeffs, 2, 1.0);
+    return create_impl_with_coeffs <Downsampler2<2, USE_SSE> > (coeffs_linear, 2, 1.0);
   return 0;
+}
+
+template<uint ORDER>
+class Resampler2::IIRDownsampler2 final : public Resampler2::Impl {
+  hiir::Downsampler2xFpu<ORDER> downs;
+  double delay_;
+public:
+  IIRDownsampler2 (const double *coeffs, double group_delay) :
+    delay_ ((group_delay - 1) / 2)
+  {
+    downs.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    const uint n_output_samples = n_input_samples / 2;
+
+    downs.process_block (output, input, n_output_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return delay_;
+  }
+  void
+  reset() override
+  {
+    downs.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return false;
+  }
+};
+
+template<uint ORDER>
+class Resampler2::IIRUpsampler2 final : public Resampler2::Impl {
+  hiir::Upsampler2xFpu<ORDER> ups;
+  double delay_;
+public:
+  IIRUpsampler2 (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
+  {
+    ups.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    ups.process_block (output, input, n_input_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return delay_;
+  }
+  void
+  reset() override
+  {
+    ups.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return false;
+  }
+};
+
+#ifdef __SSE__
+template<uint ORDER>
+class Resampler2::IIRDownsampler2SSE final : public Resampler2::Impl {
+  hiir::Downsampler2xSse<ORDER> downs;
+  double delay_;
+public:
+  IIRDownsampler2SSE (const double *coeffs, double group_delay) :
+    delay_ ((group_delay - 1) / 2)
+  {
+    downs.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    const uint n_output_samples = n_input_samples / 2;
+
+    downs.process_block (output, input, n_output_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return delay_;
+  }
+  void
+  reset() override
+  {
+    downs.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return true;
+  }
+};
+
+template<uint ORDER>
+class Resampler2::IIRUpsampler2SSE final : public Resampler2::Impl {
+  hiir::Upsampler2xSse<ORDER> ups;
+  double delay_;
+public:
+  IIRUpsampler2SSE (const double *coeffs, double group_delay) :
+    delay_ (group_delay)
+  {
+    ups.set_coefs (coeffs);
+  }
+  void
+  process_block (const float *input, uint n_input_samples, float *output) override
+  {
+    ups.process_block (output, input, n_input_samples);
+  }
+  uint
+  order() const override
+  {
+    return ORDER;
+  }
+  double
+  delay() const override
+  {
+    return delay_;
+  }
+  void
+  reset() override
+  {
+    ups.clear_buffers();
+  }
+  bool
+  sse_enabled() const override
+  {
+    return true;
+  }
+};
+#endif /* __SSE__ */
+
+template<bool USE_SSE> Resampler2::Impl*
+Resampler2::create_impl_iir (uint stage_ratio)
+{
+  // START generated code
+  constexpr std::array<double,3> coeffs2_8 = {
+    0.13533476491166646,
+    0.44459059808236606,
+    0.80006724816152464,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs2_8, 1.749694);
+
+  constexpr std::array<double,2> coeffs4_8 = {
+    0.12564829488677751,
+    0.56413565549879052,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs4_8, 1.554290);
+
+  constexpr std::array<double,1> coeffs8_8 = {
+    0.34210403268814876,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_48DB)
+    return create_impl_iir_with_coeffs (coeffs8_8, 0.980631);
+
+  constexpr std::array<double,5> coeffs2_12 = {
+    0.057369561854075074,
+    0.2095436081316879,
+    0.41352768544651608,
+    0.6351349011042412,
+    0.86943780167618079,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs2_12, 2.758511);
+
+  constexpr std::array<double,3> coeffs4_12 = {
+    0.063242386110162196,
+    0.26520245698601469,
+    0.66713594063634607,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs4_12, 2.162389);
+
+  constexpr std::array<double,2> coeffs8_12 = {
+    0.11010398332301433,
+    0.53640535169046299,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_72DB)
+    return create_impl_iir_with_coeffs (coeffs8_12, 1.603448);
+
+  constexpr std::array<double,6> coeffs2_16 = {
+    0.041451595119442179,
+    0.15510356876083609,
+    0.31565680487417447,
+    0.49770230748789734,
+    0.68754139898746236,
+    0.88864894857989574,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs2_16, 3.258518);
+
+  constexpr std::array<double,3> coeffs4_16 = {
+    0.063242386110162196,
+    0.26520245698601469,
+    0.66713594063634607,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs4_16, 2.162389);
+
+  constexpr std::array<double,2> coeffs8_16 = {
+    0.11010398332301433,
+    0.53640535169046299,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_96DB)
+    return create_impl_iir_with_coeffs (coeffs8_16, 1.603448);
+
+  constexpr std::array<double,8> coeffs2_20 = {
+    0.024474822059978408,
+    0.094054346501929856,
+    0.19872162695194262,
+    0.32597599445882591,
+    0.46482603848881743,
+    0.60862663328164524,
+    0.75647898374965283,
+    0.91392075106875681,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs2_20, 4.258575);
+
+  constexpr std::array<double,4> coeffs4_20 = {
+    0.03806054747623356,
+    0.15621232623983866,
+    0.37118048037198415,
+    0.73087698794653666,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs4_20, 2.771786);
+
+  constexpr std::array<double,3> coeffs8_20 = {
+    0.054591151801747943,
+    0.23954799102035762,
+    0.64335720472138391,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_120DB)
+    return create_impl_iir_with_coeffs (coeffs8_20, 2.227224);
+
+  constexpr std::array<double,9> coeffs2_24 = {
+    0.01964694276744065,
+    0.076088803821783499,
+    0.16263241326637887,
+    0.2704225137521028,
+    0.39083229614395837,
+    0.51740920918216626,
+    0.6470358330763375,
+    0.7804624622392915,
+    0.92268241849452293,
+  };
+  if (stage_ratio == 2 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs2_24, 4.758752);
+
+  constexpr std::array<double,5> coeffs4_24 = {
+    0.025414320818611134,
+    0.10332655701804375,
+    0.24011358015046655,
+    0.45161232259950512,
+    0.77416388521132473,
+  };
+  if (stage_ratio == 4 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs4_24, 3.382479);
+
+  constexpr std::array<double,3> coeffs8_24 = {
+    0.054591151801747943,
+    0.23954799102035762,
+    0.64335720472138391,
+  };
+  if (stage_ratio == 8 && precision_ == PREC_144DB)
+    return create_impl_iir_with_coeffs (coeffs8_24, 2.227224);
+  // END generated code
+  return 0;
+}
+
+template<class CArray>
+inline Resampler2::Impl*
+Resampler2::create_impl_iir_with_coeffs (const CArray& carray, double group_delay)
+{
+  constexpr uint n_coeffs = carray.size();
+
+#ifdef __SSE__
+  if (use_sse_if_available_)
+    {
+      if (mode_ == UP)
+        return new IIRUpsampler2SSE<n_coeffs> (carray.data(), group_delay);
+      else
+        return new IIRDownsampler2SSE<n_coeffs> (carray.data(), group_delay);
+    }
+  else
+#endif
+    {
+      if (mode_ == UP)
+        return new IIRUpsampler2<n_coeffs> (carray.data(), group_delay);
+      else
+        return new IIRDownsampler2<n_coeffs> (carray.data(), group_delay);
+    }
 }
 
 PANDA_RESAMPLER_FN

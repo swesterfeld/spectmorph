@@ -1,6 +1,7 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/3rdparty/minizip
+AM_CXXFLAGS += $(BSE_CFLAGS) $(FFTW_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/3rdparty/minizip \
+	       -I$(top_srcdir)/3rdparty
 
 SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
          smmath.hh smwavset.hh smoutfile.hh sminfile.hh \

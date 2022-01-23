@@ -1,4 +1,4 @@
-// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl.html
+// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 #ifndef __PANDA_RESAMPLER_HH__
 #define __PANDA_RESAMPLER_HH__
 
@@ -117,6 +117,14 @@ class Resampler2 {
   class Upsampler2;
   template<uint ORDER, bool USE_SSE>
   class Downsampler2;
+  template<uint ORDER>
+  class IIRUpsampler2;
+  template<uint ORDER>
+  class IIRDownsampler2;
+  template<uint ORDER>
+  class IIRUpsampler2SSE;
+  template<uint ORDER>
+  class IIRDownsampler2SSE;
 public:
   enum Mode {
     UP,
@@ -130,10 +138,15 @@ public:
     PREC_120DB = 20,
     PREC_144DB = 24
   };
+  enum Filter {
+    FILTER_IIR,
+    FILTER_FIR,
+  };
 protected:
   Mode      mode_;
   Precision precision_;
   bool      use_sse_if_available_;
+  Filter    filter_;
 public:
   /**
    * creates a resampler instance fulfilling a given specification
@@ -141,7 +154,8 @@ public:
   Resampler2 (Mode      mode,
               uint      ratio,
               Precision precision,
-              bool      use_sse_if_available = true);
+              bool      use_sse_if_available = true,
+              Filter    filter = FILTER_FIR);
   /**
    * returns true if an optimized SSE version of the Resampler is available
    */
@@ -223,7 +237,7 @@ public:
   uint
   order() const
   {
-    return impl_x2->order();
+    return impl_x2->order(); // FIXME
   }
   /**
    * Return the delay introduced by the resampler. This delay is guaranteed to
@@ -240,7 +254,26 @@ public:
   double
   delay() const
   {
-    return impl_x2->delay();
+    double d = 0;
+    if (mode_ == UP)
+      {
+        if (ratio_ >= 2)
+          d += impl_x2->delay();
+        if (ratio_ >= 4)
+          d += d + impl_x4->delay();
+        if (ratio_ >= 8)
+          d += d + impl_x8->delay();
+      }
+    else /* mode_ == DOWN */
+      {
+        if (ratio_ >= 2)
+          d += impl_x2->delay();
+        if (ratio_ >= 4)
+          d += impl_x4->delay() / 2;
+        if (ratio_ >= 8)
+          d += impl_x8->delay() / 4;
+      }
+    return d;
   }
   /**
    * clear internal history, reset resampler state to zero values
@@ -292,6 +325,13 @@ protected:
    */
   template<bool USE_SSE> inline Impl*
   create_impl (uint stage_ratio);
+
+  template<bool USE_SSE> inline Impl*
+  create_impl_iir (uint stage_ratio);
+
+  template<class CArray>
+  inline Impl*
+  create_impl_iir_with_coeffs (const CArray& carray, double group_delay);
 
   void
   init_stage (std::unique_ptr<Impl>& impl,
