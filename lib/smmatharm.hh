@@ -9,7 +9,7 @@
 #include <arm_neon.h>
 typedef float32x4_t __m128;
 
-inline __attribute__((always_inline)) __m128 _mm_set_ps(float e3, float e2, float e1, float e0)
+static inline __attribute__((always_inline)) __m128 _mm_set_ps(float e3, float e2, float e1, float e0)
 {
   __m128 r;
   alignas(16) float data[4] = {e0, e1, e2, e3};
@@ -19,22 +19,22 @@ inline __attribute__((always_inline)) __m128 _mm_set_ps(float e3, float e2, floa
 
 #define _MM_SHUFFLE(z, y, x, w) (((z) << 6) | ((y) << 4) | ((x) << 2) | (w))
 
-inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
+static inline __attribute__((always_inline)) __m128 _mm_mul_ps(__m128 a, __m128 b)
 {
   return vmulq_f32(a, b);
 }
 
-inline __attribute__((always_inline)) __m128 _mm_add_ps(__m128 a, __m128 b)
+static inline __attribute__((always_inline)) __m128 _mm_add_ps(__m128 a, __m128 b)
 {
   return vaddq_f32(a, b);
 }
 
-inline __attribute__((always_inline)) __m128 _mm_sub_ps(__m128 a, __m128 b)
+static inline __attribute__((always_inline)) __m128 _mm_sub_ps(__m128 a, __m128 b)
 {
   return vsubq_f32(a, b);
 }
 
-inline __attribute__((always_inline)) __m128 _mm_set_ss(float a)
+static inline __attribute__((always_inline)) __m128 _mm_set_ss(float a)
 {
   return vsetq_lane_f32(a, vdupq_n_f32(0.f), 0);
 }
