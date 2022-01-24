@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smpandaresampler.hh"
+#include "smalignedarray.hh"
 #include "smutils.hh"
 
 #include <vector>
@@ -12,8 +13,8 @@ using namespace SpectMorph;
 double
 perf (bool sse)
 {
-  vector<float> in (512);
-  vector<float> out (in.size() * 2);
+  AlignedArray<float, 16> in (512);
+  AlignedArray<float, 16> out (in.size() * 2);
 
   Resampler2 ups (Resampler2::UP, 2, Resampler2::PREC_72DB, sse);
   Resampler2 downs (Resampler2::DOWN, 2, Resampler2::PREC_72DB, sse);
