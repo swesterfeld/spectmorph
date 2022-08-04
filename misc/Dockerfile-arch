@@ -1,0 +1,13 @@
+FROM archlinux
+
+RUN echo foooo
+RUN pacman -Syu --noconfirm
+RUN pacman -S --noconfirm \
+    gcc clang make automake autoconf pkg-config \
+    libsndfile fftw autoconf-archive qt5-base libao \
+    jack2 cairo lv2lint
+
+ADD . /spectmorph
+WORKDIR /spectmorph
+
+RUN misc/build.sh
