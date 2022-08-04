@@ -1,6 +1,5 @@
 FROM archlinux
 
-RUN echo foooo
 RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm \
     gcc clang make automake autoconf pkg-config \
