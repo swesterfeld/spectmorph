@@ -4,6 +4,8 @@
 
 #include <vector>
 #include <memory>
+#include <cstdio>
+#include <cstdlib>
 
 /* ------------------------ configuration ---------------------------- */
 
