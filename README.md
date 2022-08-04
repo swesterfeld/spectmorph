@@ -1,3 +1,5 @@
+[![Test Build][testing-badge]][testing-url]
+
 Compiling SpectMorph:
 =====================
 
@@ -94,3 +96,6 @@ location (like the original release tarball does).
 Note that if incompatible changes happen to the file format, the git version will
 no longer work with the released instruments set. In that case, feel free to ask
 for a tarball for your git version.
+
+[testing-badge]: https://img.shields.io/github/workflow/status/swesterfeld/spectmorph/Testing?style=for-the-badge
+[testing-url]: https://github.com/swesterfeld/spectmorph/actions/workflows/testing.yml
