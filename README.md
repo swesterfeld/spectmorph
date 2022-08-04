@@ -1,3 +1,4 @@
+[![License][lgpl2.1-badge]][lgpl2.1-url]
 [![Test Build][testing-badge]][testing-url]
 
 Compiling SpectMorph:
@@ -97,5 +98,7 @@ Note that if incompatible changes happen to the file format, the git version wil
 no longer work with the released instruments set. In that case, feel free to ask
 for a tarball for your git version.
 
+[lgpl2.1-badge]: https://img.shields.io/github/license/swesterfeld/liquidsfz?style=for-the-badge
+[lgpl2.1-url]: https://github.com/swesterfeld/liquidsfz/blob/master/COPYING
 [testing-badge]: https://img.shields.io/github/workflow/status/swesterfeld/spectmorph/Testing?style=for-the-badge
 [testing-url]: https://github.com/swesterfeld/spectmorph/actions/workflows/testing.yml
