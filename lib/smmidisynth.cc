@@ -452,6 +452,17 @@ MidiSynth::process (float *output, size_t n_values)
   time_info.ppq_pos = m_ppq_pos;
   morph_plan_synth.update_shared_state (time_info);
 
+  auto offset_cmp = [] (const MidiEvent& a, const MidiEvent& b) { return a.offset < b.offset; };
+  if (!std::is_sorted (midi_events.begin(), midi_events.end(), offset_cmp))
+    {
+      /* Hosts should provide midi events sorted by offset. But if the events
+       * are not sorted by offset, we do it here to avoid problems in the event
+       * handling code below.
+       */
+      MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
+      std::stable_sort (midi_events.begin(), midi_events.end(), offset_cmp);
+    }
+
   for (const auto& midi_event : midi_events)
     {
       // ensure that new offset from midi event is not larger than n_values
