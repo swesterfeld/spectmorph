@@ -5,14 +5,12 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
-SMHDRS = smclapplugin.hh
-
 spectmorph_clapdir = $(libdir)/clap
 
 plugindir = $(spectmorph_clapdir)
 plugin_LTLIBRARIES = SpectMorph.la
 
-SpectMorph_la_SOURCES = smclapplugin.cc $(SMHDRS)
+SpectMorph_la_SOURCES = smclapplugin.cc
 SpectMorph_la_LIBADD  = $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 SpectMorph_la_LDFLAGS = -module -avoid-version -disable-static
 
