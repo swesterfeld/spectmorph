@@ -1,9 +1,12 @@
+// Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
+
 #include <clap/helpers/plugin.hh>
 #include <clap/helpers/plugin.hxx>
 #include <clap/helpers/host-proxy.hh>
 #include <clap/helpers/host-proxy.hxx>
 #include <cstring>
 #include <algorithm>
+#include <array>
 
 #include "smmain.hh"
 #include "smproject.hh"
