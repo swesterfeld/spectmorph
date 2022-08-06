@@ -14,8 +14,13 @@
 #include "smsynthinterface.hh"
 #include "smmorphplanwindow.hh"
 #include "smeventloop.hh"
+#include "smzip.hh"
 
 #define CLAP_DEBUG(...) Debug::debug ("clap", __VA_ARGS__)
+
+using std::string;
+using std::map;
+using std::vector;
 
 namespace SpectMorph
 {
@@ -68,6 +73,8 @@ public:
 class ClapPlugin final : public clap::helpers::Plugin<clap::helpers::MisbehaviourHandler::Terminate,
                                                       clap::helpers::CheckingLevel::Maximal>
 {
+  friend class ClapExtraParameters;
+
   Project project;
 public:
   ClapPlugin (const clap_host *host) :
@@ -80,6 +87,8 @@ public:
         paramsInfo (index, &info);
         parameters[index] = info.default_value;
       }
+    /* FIXME: we don't do implement collect & save */
+    project.set_storage_model (Project::StorageModel::REFERENCE);
   }
 
   /*--- ports --- */
@@ -198,9 +207,8 @@ public:
             if (isValidParamId (v->param_id))
               {
                 auto index = v->param_id - FIRST_PARAM_ID;
-                parameters[index] = v->value;
-                project.midi_synth()->set_control_input (index, v->value);
                 CLAP_DEBUG ("paramsFlush: set %d to %f\n", index, v->value);
+                parameters[index] = v->value;
               }
           }
       }
@@ -271,17 +279,29 @@ public:
                 /* FIXME: not sample accurate */
                 auto index = v->param_id - FIRST_PARAM_ID;
                 parameters[index] = v->value;
-                midi_synth->set_control_input (index, v->value);
                 CLAP_DEBUG ("process: set %d to %f\n", index, v->value);
               }
           }
       }
+    for (uint i = 0; i < PARAM_COUNT; i++)
+      midi_synth->set_control_input (i, parameters[i]);
+
     midi_synth->process (outputs[0], process->frames_count);
 
     std::copy (outputs[0], outputs[0] + process->frames_count, outputs[1]);
     /* this can be optimized */
     return CLAP_PROCESS_CONTINUE;
   }
+  /*--- state ---*/
+  bool
+  implementsState() const noexcept override
+  {
+    return true;
+  }
+
+  bool stateSave (const clap_ostream *stream) noexcept override;
+  bool stateLoad (const clap_istream *stream) noexcept override;
+
   /*--- gui --- */
   std::unique_ptr<ClapUI> ui;
   bool
@@ -362,6 +382,110 @@ ClapUI::on_update_window_size()
   window->get_scaled_size (&width, &height);
 
   plugin->updateWindowSize (width, height);
+}
+
+/*----------------------- save/load ----------------------------*/
+class ClapExtraParameters : public MorphPlan::ExtraParameters
+{
+  ClapPlugin        *plugin;
+  map<string, float> load_value;
+public:
+  ClapExtraParameters (ClapPlugin *plugin) :
+    plugin (plugin)
+  {
+  }
+
+  string section() { return "clap_parameters"; }
+
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_float ("control_1", plugin->parameters[0]);
+    out_file.write_float ("control_2", plugin->parameters[1]);
+    out_file.write_float ("control_3", plugin->parameters[2]);
+    out_file.write_float ("control_4", plugin->parameters[3]);
+    out_file.write_float ("volume",    plugin->project.volume());
+  }
+
+  void
+  handle_event (InFile& in_file)
+  {
+    if (in_file.event() == InFile::FLOAT)
+      {
+        load_value[in_file.event_name()] = in_file.event_float();
+      }
+  }
+
+  float
+  get_load_value (const string& name, float def_value) const
+  {
+    auto vi = load_value.find (name);
+    if (vi == load_value.end())
+      return def_value;
+    else
+      return vi->second;
+  }
+};
+
+bool
+ClapPlugin::stateSave (const clap_ostream *stream) noexcept
+{
+  ClapExtraParameters params (this);
+
+  ZipWriter zip_writer;
+  project.save (zip_writer, &params);
+
+  auto data = zip_writer.data();
+
+  size_t pos = 0;
+  while (pos < data.size())
+    {
+      auto w = stream->write (stream, &data[pos], data.size() - pos);
+      if (w < 0)
+        return false;
+
+      pos += w;
+    }
+  return true;
+}
+
+bool
+ClapPlugin::stateLoad (const clap_istream *stream) noexcept
+{
+  ClapExtraParameters params (this);
+
+  vector<unsigned char> data;
+
+  int64_t r;
+  do
+    {
+      unsigned char buffer[1024];
+      r = stream->read (stream, buffer, sizeof (buffer));
+      if (r < 0)
+        return false;
+
+      data.insert (data.end(), buffer, buffer + r);
+    }
+  while (r > 0);
+
+  ZipReader zip_reader (data);
+
+  Error error = project.load (zip_reader, &params);
+  if (error)
+    return false;
+
+  auto set_param = [&] (int index, const string& identifier)
+    {
+      auto value = params.get_load_value (identifier, /* default */ 0);
+      parameters[index] = value;
+    };
+  set_param (0, "control_1");
+  set_param (1, "control_2");
+  set_param (2, "control_3");
+  set_param (3, "control_4");
+  project.set_volume (params.get_load_value ("volume", -6));
+
+  return true;
 }
 
 uint32_t clap_get_plugin_count(const clap_plugin_factory *f) { return 1; }
