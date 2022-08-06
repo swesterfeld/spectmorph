@@ -87,8 +87,11 @@ public:
         paramsInfo (index, &info);
         parameters[index] = info.default_value;
       }
-    /* FIXME: we don't do implement collect & save */
+    /* FIXME: we don't implement collect & save */
     project.set_storage_model (Project::StorageModel::REFERENCE);
+
+    // initialize mix_freq with something to avoid crashes; can be overwritten later in activate
+    project.set_mix_freq (48000);
   }
 
   /*--- ports --- */
