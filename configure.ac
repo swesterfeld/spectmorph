@@ -1,8 +1,8 @@
-AC_INIT([spectmorph], [0.5.2])
+AC_INIT([spectmorph],[0.5.2])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_HEADER([config.h])
+AC_CONFIG_HEADERS([config.h])
 AM_INIT_AUTOMAKE([foreign])
 saved_CFLAGS="$CFLAGS" ; saved_CXXFLAGS="$CFLAGS" # the AC_PROG_C* macros mess up CFLAGS and CXXFLAGS
 AC_PROG_CXX
@@ -389,6 +389,7 @@ AC_ZLIB_REQUIREMENTS
 if test "$build_linux" = "yes"; then
   AC_GL_REQUIREMENTS
 fi
+AM_ICONV
 
 AM_CFLAGS=""
 AM_CXXFLAGS=""
