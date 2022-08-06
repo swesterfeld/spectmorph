@@ -15,6 +15,7 @@
 #include "smmorphplanwindow.hh"
 #include "smeventloop.hh"
 #include "smzip.hh"
+#include "config.h"
 
 #define CLAP_DEBUG(...) Debug::debug ("clap", __VA_ARGS__)
 
@@ -33,8 +34,8 @@ clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
                                             "https://www.spectmorph.org",
                                             "",
                                             "",
-                                            "XXX1.0.0",
-                                            "Spectral Audio Morphing.",
+                                            VERSION,
+                                            "Spectral Audio Morphing",
                                             features};
 
 class ClapPlugin;
