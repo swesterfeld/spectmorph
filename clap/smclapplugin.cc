@@ -12,6 +12,8 @@
 #include "smmorphplanwindow.hh"
 #include "smeventloop.hh"
 
+#define CLAP_DEBUG(...) Debug::debug ("clap", __VA_ARGS__)
+
 namespace SpectMorph
 {
 
@@ -29,7 +31,7 @@ clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
 
 class ClapPlugin;
 
-class ClapUI : public SignalReceiver
+class ClapUI final : public SignalReceiver
 {
   std::unique_ptr<EventLoop>       event_loop;
   std::unique_ptr<MorphPlanWindow> window;
@@ -60,8 +62,8 @@ public:
   }
 };
 
-class ClapPlugin : public clap::helpers::Plugin<clap::helpers::MisbehaviourHandler::Terminate,
-                                                clap::helpers::CheckingLevel::Maximal>
+class ClapPlugin final : public clap::helpers::Plugin<clap::helpers::MisbehaviourHandler::Terminate,
+                                                      clap::helpers::CheckingLevel::Maximal>
 {
   Project project;
 public:
@@ -69,6 +71,12 @@ public:
     clap::helpers::Plugin<clap::helpers::MisbehaviourHandler::Terminate,
     clap::helpers::CheckingLevel::Maximal> (&clap_plugin_desc, host)
   {
+    for (size_t index = 0; index < parameters.size(); index++)
+      {
+        clap_param_info info = { 0, };
+        paramsInfo (index, &info);
+        parameters[index] = info.default_value;
+      }
   }
 
   /*--- ports --- */
@@ -119,6 +127,82 @@ public:
       }
     return false;
   }
+  /*--- params --- */
+  static constexpr int FIRST_PARAM_ID = 100;
+  static constexpr int PARAM_COUNT = 4;
+  std::array<double, PARAM_COUNT> parameters;
+  bool
+  implementsParams() const noexcept override
+  {
+    return true;
+  }
+  uint32_t
+  paramsCount() const noexcept override
+  {
+    return parameters.size();
+  }
+  bool
+  isValidParamId (clap_id paramId) const noexcept override
+  {
+    return paramId >= FIRST_PARAM_ID && paramId < FIRST_PARAM_ID + parameters.size();
+  }
+  bool
+  paramsInfo (uint32_t paramIndex, clap_param_info *info) const noexcept override
+  {
+    if (paramIndex >= parameters.size())
+      return false;
+
+    info->flags = CLAP_PARAM_IS_AUTOMATABLE;
+    info->id = paramIndex + FIRST_PARAM_ID;
+    strncpy (info->name, string_printf ("Control #%d", paramIndex + 1).c_str(), CLAP_NAME_SIZE);
+    strncpy (info->module, "Controls", CLAP_NAME_SIZE);
+    info->min_value = -1;
+    info->max_value = 1;
+    info->default_value = 0;
+    return true;
+  }
+  bool
+  paramsValueToText (clap_id paramId, double value, char *display, uint32_t size) noexcept override
+  {
+    if (!isValidParamId (paramId))
+      return false;
+
+    strncpy (display, string_printf ("%.5f", value).c_str(), size);
+    return true;
+  }
+  bool
+  paramsValue (clap_id paramId, double *value) noexcept override
+  {
+    if (!isValidParamId (paramId))
+      return false;
+
+    *value = parameters[paramId - FIRST_PARAM_ID];
+    return true;
+  }
+  void
+  paramsFlush (const clap_input_events *in, const clap_output_events *out) noexcept override
+  {
+    auto sz = in->size (in);
+
+    for (uint index = 0; index < sz; index++)
+      {
+        auto event = in->get (in, index);
+
+        if (event->type == CLAP_EVENT_PARAM_VALUE)
+          {
+            auto v = reinterpret_cast<const clap_event_param_value *> (event);
+
+            if (isValidParamId (v->param_id))
+              {
+                auto index = v->param_id - FIRST_PARAM_ID;
+                parameters[index] = v->value;
+                project.midi_synth()->set_control_input (index, v->value);
+                CLAP_DEBUG ("paramsFlush: set %d to %f\n", index, v->value);
+              }
+          }
+      }
+  }
+  /*--- processing ---*/
   bool
   activate (double sampleRate, uint32_t minFrameCount, uint32_t maxFrameCount) noexcept override
   {
@@ -174,6 +258,19 @@ public:
             midi[2] = sm_clamp<int> (note_event->velocity * 127, 0, 127);
 
             midi_synth->add_midi_event (event->time, midi);
+          }
+        else if (event->type == CLAP_EVENT_PARAM_VALUE)
+          {
+            auto v = reinterpret_cast<const clap_event_param_value *> (event);
+
+            if (isValidParamId (v->param_id))
+              {
+                /* FIXME: not sample accurate */
+                auto index = v->param_id - FIRST_PARAM_ID;
+                parameters[index] = v->value;
+                midi_synth->set_control_input (index, v->value);
+                CLAP_DEBUG ("process: set %d to %f\n", index, v->value);
+              }
           }
       }
     midi_synth->process (outputs[0], process->frames_count);
@@ -296,6 +393,8 @@ static const void *get_factory(const char *factory_id) { return &clap_factory; }
 bool
 clap_init (const char *p)
 {
+  Debug::set_filename ("smclapplugin.log");
+
   sm_plugin_init();
 
 #ifdef SM_STATIC_LINUX
