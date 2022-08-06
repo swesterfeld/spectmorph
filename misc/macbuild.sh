@@ -1,7 +1,8 @@
 #!/bin/bash
 set -Eeuo pipefail -x
 
-brew install autoconf-archive automake libsndfile jack lv2 fftw libao
-./autogen.sh --without-qt
+brew install autoconf-archive automake libsndfile jack lv2 fftw libao qt5
+export PKG_CONFIG_PATH="$(brew --prefix qt@5)/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+./autogen.sh
 make
 make check
