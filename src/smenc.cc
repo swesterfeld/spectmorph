@@ -368,6 +368,12 @@ main (int argc, char **argv)
         }
     }
 
+  if (options.fundamental_freq < 1)
+    {
+      fprintf (stderr, "%s: fundamental frequency is required (can be set using -m or -f)\n", options.program_name.c_str());
+      exit (1);
+    }
+
   /* open input */
   string input_file = argv[1];
 
