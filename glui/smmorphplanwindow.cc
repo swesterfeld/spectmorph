@@ -73,13 +73,12 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   Widget *output_parent = new Widget (scroll_view_right);
   Widget *plan_parent = new Widget (scroll_view_left);
 
-  m_morph_plan_view = new MorphPlanView (plan_parent, output_parent, morph_plan.c_ptr(), this);
+  m_morph_plan_view = std::make_unique<MorphPlanView> (plan_parent, output_parent, morph_plan.c_ptr(), this);
   scroll_view_left->set_scroll_widget (plan_parent, false, true);
   scroll_view_right->set_scroll_widget (output_parent, false, true);
 
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_left, &ScrollView::on_widget_size_changed);
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_right, &ScrollView::on_widget_size_changed);
-
 }
 
 void

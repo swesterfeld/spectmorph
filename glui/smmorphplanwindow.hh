@@ -20,11 +20,11 @@ namespace SpectMorph
 class MorphPlanView;
 class MorphPlanWindow : public Window
 {
-  MorphPlanPtr      m_morph_plan;
-  MorphPlanView    *m_morph_plan_view = nullptr;
-  MorphPlanControl *m_control_widget = nullptr;
-  SynthInterface   *m_synth_interface = nullptr;
-  std::string       m_filename;
+  MorphPlanPtr                    m_morph_plan;
+  std::unique_ptr<MorphPlanView>  m_morph_plan_view;
+  MorphPlanControl               *m_control_widget = nullptr;
+  SynthInterface                 *m_synth_interface = nullptr;
+  std::string                     m_filename;
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
 
