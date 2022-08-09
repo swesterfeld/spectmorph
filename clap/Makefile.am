@@ -5,7 +5,7 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 spectmorph_clapdir = $(libdir)/clap
 
 CLEANFILES += SpectMorph.clap
-EXTRA_DIST += ldscript.map
+EXTRA_DIST += smclapplugin.cc ldscript.map
 
 all-local: SpectMorph.clap
 
