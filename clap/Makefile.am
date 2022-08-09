@@ -7,6 +7,7 @@ spectmorph_clapdir = $(libdir)/clap
 CLEANFILES += SpectMorph.clap
 EXTRA_DIST += smclapplugin.cc ldscript.map
 
+if COND_LINUX
 all-local: SpectMorph.clap
 
 install-exec-hook: SpectMorph.clap
@@ -22,3 +23,4 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
 	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
+endif
