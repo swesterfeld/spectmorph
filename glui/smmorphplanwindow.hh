@@ -22,7 +22,6 @@ class MorphPlanWindow : public Window
 {
   MorphPlanPtr                    m_morph_plan;
   std::unique_ptr<MorphPlanView>  m_morph_plan_view;
-  MorphPlanControl               *m_control_widget = nullptr;
   SynthInterface                 *m_synth_interface = nullptr;
   std::string                     m_filename;
 
