@@ -675,9 +675,13 @@ puglProcessEvents(PuglView* view)
 				}
 			}
 		} else if (xevent.type == FocusIn) {
-			XSetICFocus(view->impl->xic);
+			if (view->impl->xic) {
+				XSetICFocus(view->impl->xic);
+			}
 		} else if (xevent.type == FocusOut) {
-			XUnsetICFocus(view->impl->xic);
+			if (view->impl->xic) {
+				XUnsetICFocus(view->impl->xic);
+			}
 		}
 
 		// Translate X11 event to Pugl event
