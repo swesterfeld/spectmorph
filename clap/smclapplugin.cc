@@ -236,6 +236,24 @@ public:
 
     MidiSynth *midi_synth = project.midi_synth();
 
+    if (process->transport)
+      {
+        if (process->transport->flags & CLAP_TRANSPORT_HAS_TEMPO)
+          {
+            midi_synth->set_tempo (process->transport->tempo);
+          }
+        if (process->transport->flags & CLAP_TRANSPORT_IS_PLAYING)
+          {
+            if (process->transport->flags & CLAP_TRANSPORT_HAS_BEATS_TIMELINE)
+              {
+                double ppq_pos = process->transport->song_pos_beats;
+
+                // clap fixed point
+                ppq_pos *= (1.0 / CLAP_BEATTIME_FACTOR);
+                midi_synth->set_ppq_pos (ppq_pos);
+              }
+          }
+      }
     float **outputs = process->audio_outputs[0].data32;
     auto ev = process->in_events;
     auto sz = ev->size (ev);
@@ -286,6 +304,7 @@ public:
                 CLAP_DEBUG ("process: set %d to %f\n", index, v->value);
               }
           }
+        /* FIXME: handle transport events */
       }
     for (uint i = 0; i < PARAM_COUNT; i++)
       midi_synth->set_control_input (i, parameters[i]);
