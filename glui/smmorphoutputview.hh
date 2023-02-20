@@ -34,6 +34,10 @@ class MorphOutputView : public MorphOperatorView
 
   PropertyView               *pv_filter;
   PropertyView               *pv_filter_type;
+  PropertyView               *pv_filter_ladder_mode;
+  PropertyView               *pv_filter_sk_mode;
+  Label                      *filter_mode_label;
+  Widget                     *filter_mode_widget;
   PropertyView               *pv_filter_attack;
   PropertyView               *pv_filter_decay;
   PropertyView               *pv_filter_sustain;
@@ -53,6 +57,7 @@ class MorphOutputView : public MorphOperatorView
   PropertyView               *pv_vibrato_attack;
 
   OutputADSRWidget           *output_adsr_widget;
+
 
   OperatorLayout              op_layout;
 

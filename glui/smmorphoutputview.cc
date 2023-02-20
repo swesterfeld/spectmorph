@@ -53,7 +53,20 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
 
   // Filter
   pv_filter = add_property_view (MorphOutput::P_FILTER, op_layout);
-  pv_filter_type = add_property_view (MorphOutput::P_FILTER_TYPE, op_layout);
+  pv_filter_type = add_property_view (MorphOutput::P_FILTER_TYPE);
+  pv_filter_ladder_mode = add_property_view (MorphOutput::P_FILTER_LADDER_MODE);
+  pv_filter_sk_mode = add_property_view (MorphOutput::P_FILTER_SK_MODE);
+
+  // FilterMode is special
+  filter_mode_label = new Label (body_widget, "Mode");
+  filter_mode_widget = new Widget (body_widget);
+  op_layout.add_row (3, filter_mode_label, filter_mode_widget);
+
+  FixedGrid grid;
+  grid.add_widget (pv_filter_type->create_combobox (filter_mode_widget), 0, 0, 12, 3);
+  grid.add_widget (pv_filter_ladder_mode->create_combobox (filter_mode_widget), 13, 0, 16, 3);
+  grid.add_widget (pv_filter_sk_mode->create_combobox (filter_mode_widget), 13, 0, 16, 3);
+
   pv_filter_attack = add_property_view (MorphOutput::P_FILTER_ATTACK, op_layout);
   pv_filter_decay = add_property_view (MorphOutput::P_FILTER_DECAY, op_layout);
   pv_filter_sustain = add_property_view (MorphOutput::P_FILTER_SUSTAIN, op_layout);
@@ -63,6 +76,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, op_layout);
   pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, op_layout);
   pv_filter_drive = add_property_view (MorphOutput::P_FILTER_DRIVE, op_layout);
+
 
   // Portamento (Mono): on/off
   pv_portamento = add_property_view (MorphOutput::P_PORTAMENTO, op_layout);
@@ -75,7 +89,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_vibrato_attack = add_property_view (MorphOutput::P_VIBRATO_ATTACK, op_layout);
 
   // visibility updates
-  for (auto pv : { pv_unison, pv_adsr, pv_filter, pv_portamento, pv_vibrato })
+  for (auto pv : { pv_unison, pv_adsr, pv_filter, pv_filter_type, pv_portamento, pv_vibrato })
     connect (pv->property()->signal_value_changed, this, &MorphOutputView::update_visible);
 
   update_visible();
@@ -117,6 +131,12 @@ MorphOutputView::update_visible()
 
   bool filter = pv_filter->property()->get_bool();
   pv_filter_type->set_visible (filter);
+  bool filter_ladder = pv_filter_type->property()->get() == MorphOutput::FILTER_TYPE_LADDER;
+  bool filter_sk = pv_filter_type->property()->get() == MorphOutput::FILTER_TYPE_SALLEN_KEY;
+  pv_filter_ladder_mode->set_visible (filter && filter_ladder);
+  pv_filter_sk_mode->set_visible (filter && filter_sk);
+  filter_mode_label->set_visible (filter);
+  filter_mode_widget->set_visible (filter);
   pv_filter_attack->set_visible (filter);
   pv_filter_decay->set_visible (filter);
   pv_filter_sustain->set_visible (filter);
