@@ -10,6 +10,7 @@
 #include "smfilterenvelope.hh"
 #include "smladdervcf.hh"
 #include "smlinearsmooth.hh"
+#include "smskfilter.hh"
 
 #include <memory>
 
@@ -40,7 +41,10 @@ class EffectDecoder
   LinearSmooth                          filter_resonance_smooth;
   LinearSmooth                          filter_drive_smooth;
   float                                 filter_depth_octaves;
-  LadderVCF                             ladder_filter { /* oversample */ 4 };
+  MorphOutput::FilterType               filter_type;
+  static constexpr int FILTER_OVERSAMPLE = 4;
+  LadderVCF                             ladder_filter { FILTER_OVERSAMPLE };
+  SKFilter                              sk_filter { FILTER_OVERSAMPLE };
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

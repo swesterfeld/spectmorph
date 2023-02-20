@@ -20,10 +20,34 @@ class MorphOutput : public MorphOperator
 {
 public:
   enum FilterType {
-    FILTER_LP1 = 1,
-    FILTER_LP2 = 2,
-    FILTER_LP3 = 3,
-    FILTER_LP4 = 4
+    FILTER_TYPE_LADDER = 1,
+    FILTER_TYPE_SALLEN_KEY = 2
+  };
+  enum FilterLadderMode {
+    FILTER_LADDER_LP1 = 1,
+    FILTER_LADDER_LP2 = 2,
+    FILTER_LADDER_LP3 = 3,
+    FILTER_LADDER_LP4 = 4,
+  };
+  enum FilterSKMode {
+    FILTER_SK_LP1 = 1,
+    FILTER_SK_LP2 = 2,
+    FILTER_SK_LP3 = 3,
+    FILTER_SK_LP4 = 4,
+    FILTER_SK_LP6 = 5,
+    FILTER_SK_LP8 = 6,
+
+    FILTER_SK_BP2 = 7,
+    FILTER_SK_BP4 = 8,
+    FILTER_SK_BP6 = 9,
+    FILTER_SK_BP8 = 10,
+
+    FILTER_SK_HP1 = 11,
+    FILTER_SK_HP2 = 12,
+    FILTER_SK_HP3 = 13,
+    FILTER_SK_HP4 = 14,
+    FILTER_SK_HP6 = 15,
+    FILTER_SK_HP8 = 16,
   };
   struct Config : public MorphOperatorConfig
   {
@@ -47,6 +71,8 @@ public:
 
     bool                          filter;
     FilterType                    filter_type;
+    FilterLadderMode              filter_ladder_mode;
+    FilterSKMode                  filter_sk_mode;
     float                         filter_attack;
     float                         filter_decay;
     float                         filter_sustain;
@@ -85,6 +111,8 @@ public:
 
   static constexpr auto P_FILTER            = "filter";
   static constexpr auto P_FILTER_TYPE       = "filter_type";
+  static constexpr auto P_FILTER_LADDER_MODE = "filter_ladder_mode";
+  static constexpr auto P_FILTER_SK_MODE    = "filter_sk_mode";
   static constexpr auto P_FILTER_ATTACK     = "filter_attack";
   static constexpr auto P_FILTER_DECAY      = "filter_decay";
   static constexpr auto P_FILTER_SUSTAIN    = "filter_sustain";

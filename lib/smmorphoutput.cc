@@ -40,13 +40,39 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
 
   EnumInfo filter_type_enum_info (
     {
-      { FILTER_LP1, "Low-pass 6dB" },
-      { FILTER_LP2, "Low-pass 12dB" },
-      { FILTER_LP3, "Low-pass 18dB" },
-      { FILTER_LP4, "Low-pass 24dB" }
+      { FILTER_TYPE_LADDER, "Ladder" },
+      { FILTER_TYPE_SALLEN_KEY, "Sallen-Key" }
+    });
+  EnumInfo filter_ladder_mode_enum_info (
+    {
+      { FILTER_LADDER_LP1, "Low-pass 6dB" },
+      { FILTER_LADDER_LP2, "Low-pass 12dB" },
+      { FILTER_LADDER_LP3, "Low-pass 18dB" },
+      { FILTER_LADDER_LP4, "Low-pass 24dB" }
+    });
+  EnumInfo filter_sk_mode_enum_info (
+    {
+      { FILTER_SK_LP1, "Low-pass 6dB" },
+      { FILTER_SK_LP2, "Low-pass 12dB" },
+      { FILTER_SK_LP3, "Low-pass 18dB" },
+      { FILTER_SK_LP4, "Low-pass 24dB" },
+      { FILTER_SK_LP6, "Low-pass 36dB" },
+      { FILTER_SK_LP8, "Low-pass 48dB" },
+      { FILTER_SK_BP2, "Band-pass 6dB" },
+      { FILTER_SK_BP4, "Band-pass 12dB" },
+      { FILTER_SK_BP6, "Band-pass 18dB" },
+      { FILTER_SK_BP8, "Band-pass 24dB" },
+      { FILTER_SK_HP1, "High-pass 6dB" },
+      { FILTER_SK_HP2, "High-pass 12dB" },
+      { FILTER_SK_HP3, "High-pass 18dB" },
+      { FILTER_SK_HP4, "High-pass 24dB" },
+      { FILTER_SK_HP6, "High-pass 36dB" },
+      { FILTER_SK_HP8, "High-pass 48dB" },
     });
   add_property (&m_config.filter, P_FILTER, "Enable Filter", false);
-  add_property_enum (&m_config.filter_type, P_FILTER_TYPE, "Filter Type", FILTER_LP2, filter_type_enum_info);
+  add_property_enum (&m_config.filter_type, P_FILTER_TYPE, "Filter Type", FILTER_TYPE_LADDER, filter_type_enum_info);
+  add_property_enum (&m_config.filter_ladder_mode, P_FILTER_LADDER_MODE, "Filter Ladder Mode", FILTER_LADDER_LP2, filter_ladder_mode_enum_info);
+  add_property_enum (&m_config.filter_sk_mode, P_FILTER_SK_MODE, "Filter SK Mode", FILTER_SK_LP3, filter_sk_mode_enum_info);
   add_property (&m_config.filter_attack, P_FILTER_ATTACK, "Attack", "%.1f %%", 15, 0, 100);
   add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 20, 0, 100);
   add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 50, 0, 100);

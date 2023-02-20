@@ -239,21 +239,33 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_envelope.set_release (release);
   filter_depth_octaves =  cfg->filter_depth / 12;
   filter_key_tracking = cfg->filter_key_tracking;
+  filter_type = cfg->filter_type;
 
-  switch (cfg->filter_type)
+  switch (cfg->filter_ladder_mode)
     {
-      case MorphOutput::FILTER_LP1:
-        ladder_filter.set_mode (LadderVCF::LP1);
-        break;
-      case MorphOutput::FILTER_LP2:
-        ladder_filter.set_mode (LadderVCF::LP2);
-        break;
-      case MorphOutput::FILTER_LP3:
-        ladder_filter.set_mode (LadderVCF::LP3);
-        break;
-      case MorphOutput::FILTER_LP4:
-        ladder_filter.set_mode (LadderVCF::LP4);
-        break;
+      case MorphOutput::FILTER_LADDER_LP1: ladder_filter.set_mode (LadderVCF::LP1); break;
+      case MorphOutput::FILTER_LADDER_LP2: ladder_filter.set_mode (LadderVCF::LP2); break;
+      case MorphOutput::FILTER_LADDER_LP3: ladder_filter.set_mode (LadderVCF::LP3); break;
+      case MorphOutput::FILTER_LADDER_LP4: ladder_filter.set_mode (LadderVCF::LP4); break;
+    }
+  switch (cfg->filter_sk_mode)
+    {
+      case MorphOutput::FILTER_SK_LP1: sk_filter.set_mode (SKFilter::LP1); break;
+      case MorphOutput::FILTER_SK_LP2: sk_filter.set_mode (SKFilter::LP2); break;
+      case MorphOutput::FILTER_SK_LP3: sk_filter.set_mode (SKFilter::LP3); break;
+      case MorphOutput::FILTER_SK_LP4: sk_filter.set_mode (SKFilter::LP4); break;
+      case MorphOutput::FILTER_SK_LP6: sk_filter.set_mode (SKFilter::LP6); break;
+      case MorphOutput::FILTER_SK_LP8: sk_filter.set_mode (SKFilter::LP8); break;
+      case MorphOutput::FILTER_SK_BP2: sk_filter.set_mode (SKFilter::BP2); break;
+      case MorphOutput::FILTER_SK_BP4: sk_filter.set_mode (SKFilter::BP4); break;
+      case MorphOutput::FILTER_SK_BP6: sk_filter.set_mode (SKFilter::BP6); break;
+      case MorphOutput::FILTER_SK_BP8: sk_filter.set_mode (SKFilter::BP8); break;
+      case MorphOutput::FILTER_SK_HP1: sk_filter.set_mode (SKFilter::HP1); break;
+      case MorphOutput::FILTER_SK_HP2: sk_filter.set_mode (SKFilter::HP2); break;
+      case MorphOutput::FILTER_SK_HP3: sk_filter.set_mode (SKFilter::HP3); break;
+      case MorphOutput::FILTER_SK_HP4: sk_filter.set_mode (SKFilter::HP4); break;
+      case MorphOutput::FILTER_SK_HP6: sk_filter.set_mode (SKFilter::HP6); break;
+      case MorphOutput::FILTER_SK_HP8: sk_filter.set_mode (SKFilter::HP8); break;
     }
 
   filter_enabled = cfg->filter;
@@ -278,6 +290,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 
   ladder_filter.reset();
+  sk_filter.reset();
   filter_envelope.start (mix_freq);
   filter_smooth_first = true;
   filter_current_note = freq_to_note (freq);
@@ -302,7 +315,10 @@ EffectDecoder::process (size_t       n_values,
           drive[i] = filter_drive_smooth.get_next();
         }
 
-      ladder_filter.process_block (n_values, audio_out, nullptr, freq, reso, drive);
+      if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
+        ladder_filter.process_block (n_values, audio_out, nullptr, freq, reso, drive);
+      else
+        sk_filter.process_block (n_values, audio_out, nullptr, freq, reso, drive);
     }
 
   if (adsr_envelope)
