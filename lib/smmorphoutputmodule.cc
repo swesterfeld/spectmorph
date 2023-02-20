@@ -104,9 +104,9 @@ MorphOutputModule::filter_resonance_mod() const
 }
 
 float
-MorphOutputModule::filter_mix_mod() const
+MorphOutputModule::filter_drive_mod() const
 {
-  return apply_modulation (cfg->filter_mix_mod);
+  return apply_modulation (cfg->filter_drive_mod);
 }
 
 void

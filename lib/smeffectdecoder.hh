@@ -38,7 +38,7 @@ class EffectDecoder
   bool                                  filter_smooth_first;
   LinearSmooth                          filter_cutoff_smooth;
   LinearSmooth                          filter_resonance_smooth;
-  LinearSmooth                          filter_mix_smooth;
+  LinearSmooth                          filter_drive_smooth;
   float                                 filter_depth_octaves;
   LadderVCF                             ladder_filter { /* oversample */ 4 };
 

@@ -55,8 +55,7 @@ public:
     float                         filter_key_tracking;
     ModulationData                filter_cutoff_mod;
     ModulationData                filter_resonance_mod;
-    float                         filter_drive;
-    ModulationData                filter_mix_mod;
+    ModulationData                filter_drive_mod;
 
     bool                          portamento;
     float                         portamento_glide;
@@ -95,7 +94,6 @@ public:
   static constexpr auto P_FILTER_CUTOFF     = "filter_cutoff";
   static constexpr auto P_FILTER_RESONANCE  = "filter_resonance";
   static constexpr auto P_FILTER_DRIVE      = "filter_drive";
-  static constexpr auto P_FILTER_MIX        = "filter_mix";
 
   static constexpr auto P_PORTAMENTO        = "portamento";
   static constexpr auto P_PORTAMENTO_GLIDE  = "portamento_glide";
