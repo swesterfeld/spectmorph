@@ -50,30 +50,27 @@ main (int argc, char **argv)
       vector<float> right;
       vector<float> freq;
       gen_sweep (left, right, freq);
-      LadderVCFLinear laddervcf;
+      LadderVCF laddervcf (/* oversample */ 4);
+      laddervcf.set_test_linear (true);
 
       string mode = argv[2];
       if (mode == "lp1")
-        laddervcf.set_mode (LadderVCFMode::LP1);
+        laddervcf.set_mode (LadderVCF::LP1);
       else if (mode == "lp2")
-        laddervcf.set_mode (LadderVCFMode::LP2);
+        laddervcf.set_mode (LadderVCF::LP2);
       else if (mode == "lp3")
-        laddervcf.set_mode (LadderVCFMode::LP3);
+        laddervcf.set_mode (LadderVCF::LP3);
       else if (mode == "lp4")
-        laddervcf.set_mode (LadderVCFMode::LP4);
+        laddervcf.set_mode (LadderVCF::LP4);
       else
         {
           printf ("bad mode: %s\n", mode.c_str());
           return 1;
         }
 
-      for (size_t i = 0; i < left.size(); i++)
-        {
-          const float *inputs[2]  = { &left[i], &right[i] };
-          float       *outputs[2] = { &left[i], &right[i] };
-
-          laddervcf.run_block (1, cutoff / 24000., resonance, inputs, outputs, true, true, nullptr, nullptr);
-        }
+      laddervcf.set_freq (cutoff);
+      laddervcf.set_reso (resonance);
+      laddervcf.process_block (left.size(), left.data(), right.data());
 
       for (size_t i = 0; i < left.size(); i++)
         printf ("%f %.17g\n", freq[i], sqrt (left[i] * left[i] + right[i] * right[i]));
