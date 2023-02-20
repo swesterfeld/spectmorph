@@ -63,7 +63,6 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   pv_filter_cutoff = add_property_view (MorphOutput::P_FILTER_CUTOFF, op_layout);
   pv_filter_resonance = add_property_view (MorphOutput::P_FILTER_RESONANCE, op_layout);
   pv_filter_drive = add_property_view (MorphOutput::P_FILTER_DRIVE, op_layout);
-  pv_filter_mix = add_property_view (MorphOutput::P_FILTER_MIX, op_layout);
 
   // Portamento (Mono): on/off
   pv_portamento = add_property_view (MorphOutput::P_PORTAMENTO, op_layout);
@@ -127,7 +126,6 @@ MorphOutputView::update_visible()
   pv_filter_cutoff->set_visible (filter);
   pv_filter_resonance->set_visible (filter);
   pv_filter_drive->set_visible (filter);
-  pv_filter_mix->set_visible (filter);
 
   bool portamento = pv_portamento->property()->get_bool();
   pv_portamento_glide->set_visible (portamento);
