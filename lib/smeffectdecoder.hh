@@ -40,7 +40,7 @@ class EffectDecoder
   LinearSmooth                          filter_resonance_smooth;
   LinearSmooth                          filter_mix_smooth;
   float                                 filter_depth_octaves;
-  LadderVCFNonLinear                    filter;
+  LadderVCF                             ladder_filter { /* oversample */ 4 };
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

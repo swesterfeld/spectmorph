@@ -240,21 +240,21 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_depth_octaves =  cfg->filter_depth / 12;
 
   filter_key_tracking = cfg->filter_key_tracking;
-  filter.set_drive (cfg->filter_drive);
+  ladder_filter.set_drive (cfg->filter_drive);
 
   switch (cfg->filter_type)
     {
       case MorphOutput::FILTER_LP1:
-        filter.set_mode (LadderVCFMode::LP1);
+        ladder_filter.set_mode (LadderVCF::LP1);
         break;
       case MorphOutput::FILTER_LP2:
-        filter.set_mode (LadderVCFMode::LP2);
+        ladder_filter.set_mode (LadderVCF::LP2);
         break;
       case MorphOutput::FILTER_LP3:
-        filter.set_mode (LadderVCFMode::LP3);
+        ladder_filter.set_mode (LadderVCF::LP3);
         break;
       case MorphOutput::FILTER_LP4:
-        filter.set_mode (LadderVCFMode::LP4);
+        ladder_filter.set_mode (LadderVCF::LP4);
         break;
     }
 
@@ -279,7 +279,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 
-  filter.reset();
+  ladder_filter.reset();
   filter_envelope.start (mix_freq);
   filter_smooth_first = true;
   filter_current_note = freq_to_note (freq);
@@ -294,28 +294,22 @@ EffectDecoder::process (size_t       n_values,
 
   chain_decoder->process (n_values, freq_in, audio_out);
 
-  if (adsr_envelope)
-    adsr_envelope->process (n_values, audio_out);
-  else
-    simple_envelope->process (n_values, audio_out);
-
   if (filter_enabled)
     {
-      float junk[n_values];
-      const float *inputs[2] = { audio_out, junk };
-      float *outputs[2] = { audio_out, junk };
-
-      float freq[n_values], reso[n_values], mix[n_values];
+      float freq[n_values], reso[n_values];
       for (uint i = 0; i < n_values; i++)
         {
           freq[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
           reso[i] = filter_resonance_smooth.get_next();
-          mix[i]  = filter_mix_smooth.get_next();
         }
-      filter.set_mix_in (mix);
 
-      filter.run_block (n_values, /* const cutoff */ 0, /* const reso */ 0, inputs, outputs, true, false, freq, reso);
+      ladder_filter.process_block (n_values, audio_out, nullptr, freq, reso);
     }
+
+  if (adsr_envelope)
+    adsr_envelope->process (n_values, audio_out);
+  else
+    simple_envelope->process (n_values, audio_out);
 }
 
 void
