@@ -394,8 +394,8 @@ AM_ICONV
 AM_CFLAGS=""
 AM_CXXFLAGS=""
 
-# need c++14 mode
-AX_CXX_COMPILE_STDCXX_14(ext)
+# need c++17 mode
+AX_CXX_COMPILE_STDCXX_17(ext)
 
 # == Debug flags ==
 AC_ARG_ENABLE(debug, [  --enable-debug=[no/min/yes] turn on debugging, default=minimum],,enable_debug=min)
