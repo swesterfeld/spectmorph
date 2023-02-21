@@ -100,5 +100,5 @@ for a tarball for your git version.
 
 [lgpl2.1-badge]: https://img.shields.io/github/license/swesterfeld/spectmorph?style=for-the-badge
 [lgpl2.1-url]: https://github.com/swesterfeld/spectmorph/blob/master/COPYING
-[testing-badge]: https://img.shields.io/github/workflow/status/swesterfeld/spectmorph/testing.yml?style=for-the-badge
+[testing-badge]: https://img.shields.io/github/actions/workflow/status/swesterfeld/spectmorph/testing.yml?style=for-the-badge
 [testing-url]: https://github.com/swesterfeld/spectmorph/actions/workflows/testing.yml
