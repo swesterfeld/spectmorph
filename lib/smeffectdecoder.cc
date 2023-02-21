@@ -310,18 +310,46 @@ EffectDecoder::process (size_t       n_values,
 
   if (filter_enabled && filter_active)
     {
-      float freq[n_values], reso[n_values], drive[n_values];
-      for (uint i = 0; i < n_values; i++)
+      auto filter_process_block = [&] (auto& filter)
         {
-          freq[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
-          reso[i] = filter_resonance_smooth.get_next();
-          drive[i] = filter_drive_smooth.get_next();
-        }
+          auto gen_filter_input = [&] (float *freq_in, float *reso_in, float *drive_in, uint count)
+            {
+              for (uint i = 0; i < count; i++)
+                {
+                  freq_in[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+                  reso_in[i] = filter_resonance_smooth.get_next();
+                  drive_in[i] = filter_drive_smooth.get_next();
+                }
+            };
+          const bool const_freq = filter_cutoff_smooth.is_constant() && filter_envelope.is_constant();
+          const bool const_reso = filter_resonance_smooth.is_constant();
+          const bool const_drive = filter_drive_smooth.is_constant();
+
+          if (const_freq && const_reso && const_drive)
+            {
+              /* use more efficient version of the filter computation if all parameters are constants */
+              float freq, reso, drive;
+              gen_filter_input (&freq, &reso, &drive, 1);
+
+              filter.set_freq (freq);
+              filter.set_reso (reso);
+              filter.set_drive (drive);
+              filter.process_block (n_values, audio_out);
+            }
+          else
+            {
+              /* generic version: pass per-sample values for freq, reso and drive */
+              float freq_in[n_values], reso_in[n_values], drive_in[n_values];
+              gen_filter_input (freq_in, reso_in, drive_in, n_values);
+
+              filter.process_block (n_values, audio_out, nullptr, freq_in, reso_in, drive_in);
+            }
+        };
 
       if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
-        ladder_filter.process_block (n_values, audio_out, nullptr, freq, reso, drive);
+        filter_process_block (ladder_filter);
       else
-        sk_filter.process_block (n_values, audio_out, nullptr, freq, reso, drive);
+        filter_process_block (sk_filter);
     }
 
   if (adsr_envelope)
