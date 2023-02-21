@@ -8,6 +8,7 @@
 #include "smmath.hh"
 
 #include <algorithm>
+#include <random>
 
 using namespace SpectMorph;
 using std::vector;
@@ -25,7 +26,7 @@ something()
 }
 
 void
-randomize_and_check (AudioBlock& block)
+randomize_and_check (AudioBlock& block, std::mt19937& rand_gen)
 {
   vector<PData> partials;
 
@@ -38,7 +39,7 @@ randomize_and_check (AudioBlock& block)
       partials.push_back (pd);
     }
   vector<PData> partials_shuffle = partials;
-  std::random_shuffle (partials_shuffle.begin(), partials_shuffle.end());
+  std::shuffle (partials_shuffle.begin(), partials_shuffle.end(), rand_gen);
 
   assert (partials.size() == partials_shuffle.size());
 
@@ -68,8 +69,11 @@ main (int argc, char **argv)
 
   AudioBlock block_a, block_b, block_c;
 
-  randomize_and_check (block_a);
-  randomize_and_check (block_b);
+  std::random_device rd;
+  std::mt19937 rand_gen (rd());
+
+  randomize_and_check (block_a, rand_gen);
+  randomize_and_check (block_b, rand_gen);
 
   const unsigned int runs = 1000000;
 
