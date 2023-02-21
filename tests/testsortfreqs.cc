@@ -16,7 +16,6 @@ struct PData
 {
   uint16_t freq;
   uint16_t mag;
-  uint16_t phase;
 };
 
 float
@@ -35,7 +34,6 @@ randomize_and_check (AudioBlock& block)
       PData pd;
       pd.freq = sm_freq2ifreq (i + something());
       pd.mag = sm_factor2idb (i * 0.1 + something());
-      pd.phase = g_random_int_range (0, 65536);
 
       partials.push_back (pd);
     }
@@ -52,7 +50,6 @@ randomize_and_check (AudioBlock& block)
     {
       block.freqs.push_back (partials_shuffle[i].freq);
       block.mags.push_back (partials_shuffle[i].mag);
-      block.phases.push_back (partials_shuffle[i].phase);
     }
 
   AudioBlock check_block = block;
@@ -61,7 +58,6 @@ randomize_and_check (AudioBlock& block)
     {
       assert (check_block.freqs[i] == partials[i].freq);
       assert (check_block.mags[i] == partials[i].mag);
-      assert (check_block.phases[i] == partials[i].phase);
     }
 }
 
