@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include "smutils.hh"
 #include "smladdervcf.hh"
 
 using std::vector;
