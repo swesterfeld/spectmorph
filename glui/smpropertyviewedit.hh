@@ -35,20 +35,34 @@ protected:
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
 
+  int
+  window_height (Property& property)
+  {
+    if (property.modulation_list())
+      return 296;
+    else
+      return 72;
+  }
   PropertyViewEdit (Window *parent, Property& property) :
-    Window (*parent->event_loop(), "Edit Property", 600, 296, 0, false, parent->native_window()),
+    Window (*parent->event_loop(), "Edit Property", 600, window_height (property), 0, false, parent->native_window()),
     parent_window (parent),
     property (property)
   {
-    FixedGrid grid;
+    mod_list = property.modulation_list();
 
+    FixedGrid grid;
     double yoffset = 1;
 
     auto hdr_pbg = new Widget (this);
     hdr_pbg->set_background_color (Color (0.4, 0.4, 0.4));
     grid.add_widget (hdr_pbg, 0, yoffset, 75, 3);
 
-    auto hdr_prop = new Label (this, string_printf ("%s : Main Controller", property.label().c_str()));
+    std::string hdr_text = property.label();
+    if (mod_list)
+      hdr_text += " : Main Controller";
+    else
+      hdr_text += " : Value";
+    auto hdr_prop = new Label (this, hdr_text);
     hdr_prop->set_align (TextAlign::CENTER);
     hdr_prop->set_bold (true);
     grid.add_widget (hdr_prop, 0, yoffset, 75, 3);
@@ -69,10 +83,11 @@ protected:
         connect (slider->signal_int_value_changed, [this] (int i) {
           this->property.set (i);
           line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
+          line_edit->select_all();
+          set_keyboard_focus (line_edit, true);
         });
       }
 
-    mod_list = property.modulation_list();
     if (mod_list)
       {
         auto control_combobox = main_control_view.create_combobox (this,
@@ -106,15 +121,14 @@ protected:
 
         scroll_view = new ScrollView (this);
         scroll_widget = new Widget (scroll_view);
+
+        add_mod_button = new Button (this, "Add Modulation");
+        connect (add_mod_button->signal_clicked, [this]() {
+          ModulationList *mod_list = this->property.modulation_list();
+          if (mod_list)
+            mod_list->add_entry();
+        });
       }
-
-
-    add_mod_button = new Button (this, "Add Modulation");
-    connect (add_mod_button->signal_clicked, [this]() {
-      ModulationList *mod_list = this->property.modulation_list();
-      if (mod_list)
-        mod_list->add_entry();
-    });
 
     if (mod_list)
       connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
@@ -125,6 +139,8 @@ protected:
     connect (line_edit->signal_return_pressed,  [&]() {
       property.set_float (sm_atof_any (line_edit->text().c_str()));
       line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
+      line_edit->select_all();
+      set_keyboard_focus (line_edit, true);
       slider->set_int_value (property.get());
     });
 
@@ -137,13 +153,17 @@ protected:
   {
     FixedGrid grid;
 
-    bool gui_slider_controller = (mod_list->main_control_type() == MorphOperator::CONTROL_GUI);
+    bool gui_slider_controller = !mod_list || (mod_list->main_control_type() == MorphOperator::CONTROL_GUI);
     line_edit->set_visible (gui_slider_controller);
     value_label->set_visible (gui_slider_controller);
     slider->set_visible (gui_slider_controller);
 
-    double yoffset = 8;
-    grid.add_widget (add_mod_button, 29, 5, 11, 3);
+    double yoffset = 5;
+    if (mod_list)
+      {
+        grid.add_widget (add_mod_button, 29, 5, 11, 3);
+        yoffset += 3;
+      }
 
     if (gui_slider_controller)
       {
@@ -154,12 +174,12 @@ protected:
       }
 
     yoffset++;
-    grid.add_widget (mod_list_hdr, 0, yoffset, 75, 3);
-    grid.add_widget (mod_list_label, 0, yoffset, 75, 3);
-    yoffset += 4;
-
-    if (scroll_view)
+    if (mod_list)
       {
+        grid.add_widget (mod_list_hdr, 0, yoffset, 75, 3);
+        grid.add_widget (mod_list_label, 0, yoffset, 75, 3);
+        yoffset += 4;
+
         double h = 19;
         if (!gui_slider_controller)
           h += 4;
