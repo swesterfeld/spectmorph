@@ -37,10 +37,11 @@ struct ComboBoxMenu : public Widget
 
   std::vector<ComboBoxItem> items;
 
-  ComboBoxMenu (Widget *parent, double x, double y, double width, double height, const std::vector<ComboBoxItem>& items, const std::string& text) :
-    Widget (parent, x, y, width, height),
+  ComboBoxMenu (Widget *combo_box, const std::vector<ComboBoxItem>& items, const std::string& text) :
+    Widget (combo_box->window(), combo_box->abs_x(), combo_box->abs_y() + combo_box->height(), combo_box->width(), 100),
     items (items)
   {
+    const double width = combo_box->width();
     if (items.size() > 10)
       {
         /* need scroll bar */
@@ -67,8 +68,8 @@ struct ComboBoxMenu : public Widget
 
     /* if there is not enough space below the combobox, display menu above the combobox */
     Window *win = window();
-    if (win && (abs_y() + this->height() + 16) > win->height())
-      set_y (-this->height());
+    if (win && (abs_y() + this->height()) > win->height())
+      set_y (combo_box->abs_y() - this->height());
 
     if (scroll_bar)
       {
@@ -254,7 +255,7 @@ public:
   {
     if (event.button == LEFT_BUTTON)
       {
-        menu.reset (new ComboBoxMenu (this, 0, height(), width(), 100, items, m_text));
+        menu.reset (new ComboBoxMenu (this, items, m_text));
         menu->set_done_callback ([=](const std::string& new_text){ close_menu (new_text); });
 
         window()->set_menu_widget (menu.get());
