@@ -18,6 +18,16 @@ new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
 
+NEWER TODOS:
+
+__ dsp __
+- filter latency compensation
+- should filter envelope be exponential?
+
+__ clap __
+- modulation
+- per voice modulation
+
 FILTER:
 
 - remove morph plan ptr from API
@@ -27,7 +37,6 @@ __ ui __
 - support property editing for mere-float / mere int
 - semitones flag for filter cutoff
 - property edit window should scroll
-- main window should scroll morph output
 
 __ generic modulation __
 
@@ -37,12 +46,10 @@ __ dsp __
 
 - advanced smoothing (drive, subsampled polynomials)
 - try to get old performance from new inner loop
-- resampling for the filter
 - performance tests
 - smoothing should probably be log-scale based
 - support LinearSmooth<LinearSmooth::MUL>
 - tuning polynomials appear to be incorrect
-- remove need_left & need_right, replace by mono/stereo
 - move filter processing into live decoder processing (interface LiveDecoderFilter)
 _________
 
