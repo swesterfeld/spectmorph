@@ -9,6 +9,7 @@
 #include "smcontrolview.hh"
 #include "smparamlabel.hh"
 #include "smtoolbutton.hh"
+#include "smscrollview.hh"
 
 namespace SpectMorph
 {
@@ -20,23 +21,56 @@ protected:
   Property&       property;
   ModulationList *mod_list = nullptr;
 
-  Button         *ok_button;
   Button         *add_mod_button;
+  Label          *value_label = nullptr;
+  Slider         *slider = nullptr;
   LineEdit       *line_edit;
   bool            line_edit_changed = false;
   ControlView     main_control_view;
+  Widget         *mod_list_hdr = nullptr;
+  Label          *mod_list_label = nullptr;
+  ScrollView     *scroll_view;
+  Widget         *scroll_widget;
 
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
 
   PropertyViewEdit (Window *parent, Property& property) :
-    Window (*parent->event_loop(), "Edit Property", 560, 320, 0, false, parent->native_window()),
+    Window (*parent->event_loop(), "Edit Property", 600, 296, 0, false, parent->native_window()),
     parent_window (parent),
     property (property)
   {
     FixedGrid grid;
 
-    double yoffset = 2;
+    double yoffset = 1;
+
+    auto hdr_pbg = new Widget (this);
+    hdr_pbg->set_background_color (Color (0.4, 0.4, 0.4));
+    grid.add_widget (hdr_pbg, 0, yoffset, 75, 3);
+
+    auto hdr_prop = new Label (this, string_printf ("%s : Main Controller", property.label().c_str()));
+    hdr_prop->set_align (TextAlign::CENTER);
+    hdr_prop->set_bold (true);
+    grid.add_widget (hdr_prop, 0, yoffset, 75, 3);
+
+    yoffset += 4;
+
+    value_label = new Label (this, property.label());
+    if (property.type() == Property::Type::FLOAT)
+      {
+        line_edit = new LineEdit (this, string_locale_printf ("%.3f", property.get_float()));
+        line_edit->select_all();
+        line_edit->set_click_to_focus (true);
+        connect (line_edit->signal_text_changed, [this](std::string s) { line_edit_changed = true; });
+        set_keyboard_focus (line_edit, true);
+        slider = new Slider (this, 0);
+        slider->set_int_range (property.min(), property.max());
+        slider->set_int_value (property.get());
+        connect (slider->signal_int_value_changed, [this] (int i) {
+          this->property.set (i);
+          line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
+        });
+      }
 
     mod_list = property.modulation_list();
     if (mod_list)
@@ -54,26 +88,25 @@ protected:
 
         connect (mod_list->signal_main_control_changed, [this]()
           {
+            update_layout();
+
             main_control_view.update_control_type_and_op (mod_list->main_control_type(), mod_list->main_control_op());
           });
 
-        grid.add_widget (control_combobox, 3, yoffset, 17, 3);
+        grid.add_widget (new Label (this, "Controller"), 1, yoffset, 14, 3);
+        grid.add_widget (control_combobox, 11, yoffset, 17, 3);
         yoffset += 3;
-      }
 
-    grid.add_widget (new Label (this, property.label()), 1, yoffset, 30, 3);
-    if (property.type() == Property::Type::FLOAT)
-      {
-        grid.add_widget (new Label (this, property.label()), 1, yoffset, 30, 3);
-        line_edit = new LineEdit (this, string_locale_printf ("%.3f", property.get_float()));
-        line_edit->select_all();
-        grid.add_widget (line_edit, 10, yoffset, 20, 3);
-        line_edit->set_click_to_focus (true);
-        connect (line_edit->signal_text_changed, [this](std::string s) { line_edit_changed = true; });
-        set_keyboard_focus (line_edit, true);
-      }
+        mod_list_hdr = new Widget (this);
+        mod_list_hdr->set_background_color (Color (0.4, 0.4, 0.4));
 
-    yoffset += 3;
+        mod_list_label = new Label (this, "Modulation List");
+        mod_list_label->set_align (TextAlign::CENTER);
+        mod_list_label->set_bold (true);
+
+        scroll_view = new ScrollView (this);
+        scroll_widget = new Widget (scroll_view);
+      }
 
 
     add_mod_button = new Button (this, "Add Modulation");
@@ -83,22 +116,57 @@ protected:
         mod_list->add_entry();
     });
 
-    ok_button = new Button (this, "Close");
-
     if (mod_list)
       connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
 
+    update_layout();
     update_modulation_widgets();
 
-    connect (line_edit->signal_return_pressed,  [=]() {
-      if (ok_button->enabled())
-        on_accept();
+    connect (line_edit->signal_return_pressed,  [&]() {
+      property.set_float (sm_atof_any (line_edit->text().c_str()));
+      line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
+      slider->set_int_value (property.get());
     });
-    connect (ok_button->signal_clicked,     this, &PropertyViewEdit::on_accept);
 
     set_close_callback ([this]() { on_accept(); });
 
     show();
+  }
+  void
+  update_layout()
+  {
+    FixedGrid grid;
+
+    bool gui_slider_controller = (mod_list->main_control_type() == MorphOperator::CONTROL_GUI);
+    line_edit->set_visible (gui_slider_controller);
+    value_label->set_visible (gui_slider_controller);
+    slider->set_visible (gui_slider_controller);
+
+    double yoffset = 8;
+    grid.add_widget (add_mod_button, 29, 5, 11, 3);
+
+    if (gui_slider_controller)
+      {
+        grid.add_widget (value_label, 1, yoffset, 10, 3);
+        grid.add_widget (slider, 11, yoffset, 50, 3);
+        grid.add_widget (line_edit, 62, yoffset, 12, 3);
+        yoffset += 3;
+      }
+
+    yoffset++;
+    grid.add_widget (mod_list_hdr, 0, yoffset, 75, 3);
+    grid.add_widget (mod_list_label, 0, yoffset, 75, 3);
+    yoffset += 4;
+
+    if (scroll_view)
+      {
+        double h = 19;
+        if (!gui_slider_controller)
+          h += 4;
+
+        grid.add_widget (scroll_view, 1, yoffset, 74, h);
+        scroll_view->set_scroll_widget (scroll_widget, false, true);
+      }
   }
 
   void
@@ -110,7 +178,7 @@ protected:
     if (!mod_list)
       return;
 
-    int yoffset = 10;
+    int yoffset = 0;
     // remove old modulation widgets created before
     for (auto w : mod_widgets)
       w->delete_later();
@@ -124,13 +192,15 @@ protected:
         ModulationData::Entry e = (*mod_list)[i];
 
         // ===== remove entry button
-        ToolButton *tbutton = new ToolButton (this, 'x');
-        grid.add_widget (tbutton, 0.5, yoffset + 0.5, 2, 2);
+        double xoffset = 0;
+        ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
+        grid.add_widget (tbutton, xoffset, yoffset + 0.5, 2, 2);
+        xoffset += 2.5;
         connect (tbutton->signal_clicked, [mod_list, i, this] () { mod_list->remove_entry (i); });
 
         // ===== modulation entry control op / type
         ControlView *control_view = new ControlView();
-        auto control_combobox = control_view->create_combobox (this,
+        auto control_combobox = control_view->create_combobox (scroll_widget,
           property.op(),
           e.control_type,
           e.control_op.get());
@@ -147,19 +217,21 @@ protected:
               mod_list->update_entry (i, entry);
             });
 
-        grid.add_widget (control_combobox, 3, yoffset, 17, 3);
+        grid.add_widget (control_combobox, xoffset, yoffset, 17, 3);
+        xoffset += 18;
 
         // ===== unipolar / bipolar combobox
 
         static constexpr auto CB_UNIPOLAR_TEXT = "unipolar";
         static constexpr auto CB_BIPOLAR_TEXT = "bipolar";
 
-        ComboBox *polarity_combobox = new ComboBox (this);
+        ComboBox *polarity_combobox = new ComboBox (scroll_widget);
         polarity_combobox->add_item (CB_UNIPOLAR_TEXT);
         polarity_combobox->add_item (CB_BIPOLAR_TEXT);
         polarity_combobox->set_text (e.bipolar ? CB_BIPOLAR_TEXT : CB_UNIPOLAR_TEXT);
 
-        grid.add_widget (polarity_combobox, 21, yoffset, 14, 3);
+        grid.add_widget (polarity_combobox, xoffset, yoffset, 11, 3);
+        xoffset += 12;
 
         connect (polarity_combobox->signal_item_changed,
           [polarity_combobox, mod_list, i]()
@@ -170,12 +242,14 @@ protected:
             });
 
         // ===== mod amount slider and value label
-        auto slider = new Slider (this, (e.amount + 1) / 2);
-        grid.add_widget (slider, 36, yoffset, 22, 3);
+        auto slider = new Slider (scroll_widget, (e.amount + 1) / 2);
+        grid.add_widget (slider, xoffset, yoffset, 28, 3);
+        xoffset += 29;
 
         auto mod_amount_model = new ParamLabelModelDouble (e.amount, -1, 1, "%.3f", "%.3f");
-        auto label = new ParamLabel (this, mod_amount_model);
-        grid.add_widget (label, 59, yoffset, 8, 3);
+        auto label = new ParamLabel (scroll_widget, mod_amount_model);
+        grid.add_widget (label, xoffset, yoffset, 8, 3);
+        xoffset += 9;
 
         connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
@@ -198,9 +272,9 @@ protected:
         mod_widgets.push_back (label);
         yoffset += 3;
       }
-    grid.add_widget (add_mod_button, 7, yoffset, 31, 3);
+    scroll_widget->set_height (yoffset * 8);
+    scroll_view->on_widget_size_changed();
     yoffset += 3;
-    grid.add_widget (ok_button, 17, yoffset, 10, 3);
   }
   void
   on_accept()
