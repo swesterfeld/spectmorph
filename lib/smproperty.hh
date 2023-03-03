@@ -121,7 +121,7 @@ public:
   void
   set (int v)
   {
-    *m_value = v;
+    *m_value = std::clamp (v, min(), max());
     signal_value_changed();
   }
   void
