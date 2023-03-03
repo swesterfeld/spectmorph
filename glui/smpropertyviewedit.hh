@@ -70,23 +70,24 @@ protected:
     yoffset += 4;
 
     value_label = new Label (this, property.label());
-    if (property.type() == Property::Type::FLOAT)
-      {
-        line_edit = new LineEdit (this, string_locale_printf ("%.3f", property.get_float()));
-        line_edit->select_all();
-        line_edit->set_click_to_focus (true);
-        connect (line_edit->signal_text_changed, [this](std::string s) { line_edit_changed = true; });
-        set_keyboard_focus (line_edit, true);
-        slider = new Slider (this, 0);
-        slider->set_int_range (property.min(), property.max());
-        slider->set_int_value (property.get());
-        connect (slider->signal_int_value_changed, [this] (int i) {
-          this->property.set (i);
-          line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
-          line_edit->select_all();
-          set_keyboard_focus (line_edit, true);
-        });
-      }
+
+    /* INT / FLOAT property */
+    line_edit = new LineEdit (this, "");
+    line_edit->set_click_to_focus (true);
+    slider = new Slider (this, 0);
+    slider->set_int_range (property.min(), property.max());
+    slider->set_int_value (property.get());
+    update_line_edit_text();
+    connect (line_edit->signal_text_changed, [this](std::string s) { line_edit_changed = true; });
+    connect (slider->signal_int_value_changed, [this] (int i) {
+      this->property.set (i);
+      update_line_edit_text();
+    });
+    connect (line_edit->signal_return_pressed, [&]() {
+      property_set_from_string (line_edit->text().c_str());
+      slider->set_int_value (property.get());
+      update_line_edit_text();
+    });
 
     if (mod_list)
       {
@@ -135,14 +136,6 @@ protected:
 
     update_layout();
     update_modulation_widgets();
-
-    connect (line_edit->signal_return_pressed,  [&]() {
-      property.set_float (sm_atof_any (line_edit->text().c_str()));
-      line_edit->set_text (string_locale_printf ("%.3f", this->property.get_float()));
-      line_edit->select_all();
-      set_keyboard_focus (line_edit, true);
-      slider->set_int_value (property.get());
-    });
 
     set_close_callback ([this]() { on_accept(); });
 
@@ -297,10 +290,30 @@ protected:
     yoffset += 3;
   }
   void
+  update_line_edit_text()
+  {
+    if (property.type() == Property::Type::FLOAT)
+      line_edit->set_text (string_locale_printf ("%.3f", property.get_float()));
+    else
+      line_edit->set_text (string_locale_printf ("%d", property.get()));
+
+    set_keyboard_focus (line_edit, true);
+    line_edit->select_all();
+    line_edit_changed = false;
+  }
+  void
+  property_set_from_string (const std::string& s)
+  {
+    if (property.type() == Property::Type::FLOAT)
+      property.set_float (sm_atof_any (s.c_str()));
+    else
+      property.set (atoi (s.c_str()));
+  }
+  void
   on_accept()
   {
     if (line_edit_changed)
-      property.set_float (sm_atof_any (line_edit->text().c_str()));
+      property_set_from_string (line_edit->text().c_str());
 
     parent_window->set_popup_window (nullptr); // close this window
   }
