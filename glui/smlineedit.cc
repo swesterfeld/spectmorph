@@ -175,10 +175,12 @@ LineEdit::key_press_event (const PuglEventKey& key_event)
   else if (key_event.character == 13)
     {
       signal_return_pressed();
+      return;
     }
   else if (key_event.character == 27)
     {
       signal_esc_pressed();
+      return;
     }
   else if (key_event.special == PUGL_KEY_LEFT)
     {
