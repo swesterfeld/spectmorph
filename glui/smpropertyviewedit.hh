@@ -84,7 +84,7 @@ protected:
       update_line_edit_text();
     });
     connect (line_edit->signal_return_pressed, [&]() {
-      property_set_from_string (line_edit->text().c_str());
+      property.set_edit_str (line_edit->text());
       slider->set_int_value (property.get());
       update_line_edit_text();
     });
@@ -292,28 +292,17 @@ protected:
   void
   update_line_edit_text()
   {
-    if (property.type() == Property::Type::FLOAT)
-      line_edit->set_text (string_locale_printf ("%.3f", property.get_float()));
-    else
-      line_edit->set_text (string_locale_printf ("%d", property.get()));
+    line_edit->set_text (property.get_edit_str());
 
     set_keyboard_focus (line_edit, true);
     line_edit->select_all();
     line_edit_changed = false;
   }
   void
-  property_set_from_string (const std::string& s)
-  {
-    if (property.type() == Property::Type::FLOAT)
-      property.set_float (sm_atof_any (s.c_str()));
-    else
-      property.set (atoi (s.c_str()));
-  }
-  void
   on_accept()
   {
     if (line_edit_changed)
-      property_set_from_string (line_edit->text().c_str());
+      property.set_edit_str (line_edit->text());
 
     parent_window->set_popup_window (nullptr); // close this window
   }
