@@ -47,6 +47,9 @@ public:
   virtual std::string label() = 0;
   virtual std::string value_label() = 0;
 
+  virtual std::string get_edit_str() { return "<none>"; }
+  virtual void        set_edit_str (const std::string& s) {}
+
   virtual void save (OutFile& out_file) = 0;
   virtual bool load (InFile& in_file) = 0;
 
@@ -117,7 +120,16 @@ public:
   {
     return string_locale_printf (m_format.c_str(), *m_value);
   }
-
+  std::string
+  get_edit_str()
+  {
+    return string_locale_printf ("%d", get());
+  }
+  void
+  set_edit_str (const std::string& s) override
+  {
+    set (atoi (s.c_str()));
+  }
   void
   set (int v)
   {
@@ -177,7 +189,23 @@ public:
   {
     return string_locale_printf (m_format.c_str(), *m_value);
   }
-
+  std::string
+  get_edit_str()
+  {
+    return string_locale_printf ("%d", *m_value);
+  }
+  void
+  set_edit_str (const std::string& s)
+  {
+    int i = atoi (s.c_str());
+    size_t best_idx = 0;
+    for (size_t idx = 0; idx < m_valid_values.size(); idx++)
+      {
+        if (std::abs (m_valid_values[idx] - i) < std::abs (m_valid_values[best_idx] - i))
+          best_idx = idx;
+      }
+    set (best_idx);
+  }
   IntVecProperty (MorphOperator *op, int *value, const std::string& identifier, const std::string& label, const std::string& format,
                   int def, const std::vector<int>& valid_values) :
     Property (op, identifier),
@@ -394,6 +422,16 @@ public:
   {
     *m_value = m_range.clamp (f);
     signal_value_changed();
+  }
+  std::string
+  get_edit_str() override
+  {
+    return string_locale_printf ("%.3f", get_float());
+  }
+  void
+  set_edit_str (const std::string& s) override
+  {
+    set_float (sm_atof_any (s.c_str()));
   }
   Range
   float_range() override
