@@ -23,6 +23,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   m_config.channel_ops.resize (CHANNEL_OP_COUNT);
 
   add_property (&m_config.velocity_sensitivity, P_VELOCITY_SENSITIVITY, "Velocity Sns", "%.2f dB", 24, 0, 48);
+  add_property (&m_config.pitch_bend_range, P_PITCH_BEND_RANGE, "Pitch Bend", "%d", 48, { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 36, 48 });
 
   add_property (&m_config.sines, P_SINES, "Enable Sine Synthesis", true);
   add_property (&m_config.noise, P_NOISE, "Enable Noise Synthesis", true);

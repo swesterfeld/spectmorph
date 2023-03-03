@@ -144,6 +144,70 @@ public:
   }
 };
 
+class IntVecProperty : public Property
+{
+  int *m_value;
+  std::vector<int> m_valid_values;
+  std::string   m_label;
+  std::string   m_format;
+public:
+  Type type() { return Type::INT; }
+  int min()   { return 0; }
+  int max()   { return m_valid_values.size() - 1; }
+  int
+  get()
+  {
+    for (size_t i = 0; i < m_valid_values.size(); i++)
+      if (*m_value == m_valid_values[i])
+        return i;
+
+    // should never happen
+    return 0;
+  }
+  void
+  set (int v)
+  {
+    *m_value = m_valid_values[std::clamp (v, min(), max())];
+    signal_value_changed();
+  }
+  std::string label() { return m_label; }
+
+  std::string
+  value_label()
+  {
+    return string_locale_printf (m_format.c_str(), *m_value);
+  }
+
+  IntVecProperty (MorphOperator *op, int *value, const std::string& identifier, const std::string& label, const std::string& format,
+                  int def, const std::vector<int>& valid_values) :
+    Property (op, identifier),
+    m_value (value),
+    m_valid_values (valid_values),
+    m_label (label),
+    m_format (format)
+  {
+    *value = def;
+  }
+  void
+  save (OutFile& out_file)
+  {
+    out_file.write_int (m_identifier, *m_value);
+  }
+  bool
+  load (InFile& in_file)
+  {
+    if (in_file.event() == InFile::INT)
+      {
+        if (in_file.event_name() == m_identifier)
+          {
+            *m_value = in_file.event_int();
+            return true;
+          }
+      }
+    return false;
+  }
+};
+
 class BoolProperty : public Property
 {
   bool         *m_value;

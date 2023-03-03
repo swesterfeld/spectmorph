@@ -29,6 +29,7 @@ public:
   bool  portamento() const;
   float portamento_glide() const;
   float velocity_sensitivity() const;
+  int   pitch_bend_range() const;
   float filter_cutoff_mod() const;
   float filter_resonance_mod() const;
   float filter_drive_mod() const;

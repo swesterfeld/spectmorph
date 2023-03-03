@@ -477,10 +477,11 @@ MidiSynth::process (float *output, size_t n_values)
 
       if (midi_event.is_pitch_bend())
         {
+          const MorphOutputModule *output = voices[0].mp_voice->output();
           const unsigned int lsb = midi_event.midi_data[1];
           const unsigned int msb = midi_event.midi_data[2];
           const unsigned int value = lsb + msb * 128;
-          const float semi_tones = (value * (1./0x2000) - 1.0) * 48;
+          const float semi_tones = (value * (1./0x2000) - 1.0) * output->pitch_bend_range();
           MIDI_DEBUG ("%" PRIu64 " | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
           process_pitch_bend (midi_event.channel(), semi_tones);
         }

@@ -194,6 +194,19 @@ MorphOperator::add_property (int *value, const std::string& identifier,
   return property;
 }
 
+IntVecProperty *
+MorphOperator::add_property (int *value, const std::string& identifier,
+                             const std::string& label, const std::string& value_label,
+                             int def, const vector<int>& vec)
+{
+  assert (!m_properties[identifier]);
+  IntVecProperty *property = new IntVecProperty (this, value, identifier, label, value_label, def, vec);
+  m_properties[identifier].reset (property);
+  connect (property->signal_value_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  connect (property->signal_modulation_changed, [this]() { m_morph_plan->emit_plan_changed(); });
+  return property;
+}
+
 BoolProperty *
 MorphOperator::add_property (bool *value, const std::string& identifier,
                              const std::string& label,

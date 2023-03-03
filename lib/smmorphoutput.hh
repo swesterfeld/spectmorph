@@ -54,6 +54,7 @@ public:
     std::vector<MorphOperatorPtr> channel_ops;
 
     float                         velocity_sensitivity;
+    int                           pitch_bend_range;
 
     bool                          sines;
     bool                          noise;
@@ -94,6 +95,7 @@ public:
   Config                       m_config;
 
   static constexpr auto P_VELOCITY_SENSITIVITY = "velocity_sensitivity";
+  static constexpr auto P_PITCH_BEND_RANGE     = "pitch_bend_range";
 
   static constexpr auto P_SINES  = "sines";
   static constexpr auto P_NOISE  = "noise";

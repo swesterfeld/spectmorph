@@ -55,6 +55,9 @@ protected:
   IntProperty *add_property (int *value, const std::string& identifier,
                              const std::string& label, const std::string& value_label,
                              int def, int mn, int mx);
+  IntVecProperty *add_property (int *value, const std::string& identifier,
+                                const std::string& label, const std::string& value_label,
+                                int def, const std::vector<int>& vec);
   BoolProperty *add_property (bool *value, const std::string& identifier,
                               const std::string& label,
                               bool def);

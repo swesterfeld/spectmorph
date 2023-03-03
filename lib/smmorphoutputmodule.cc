@@ -91,6 +91,12 @@ MorphOutputModule::velocity_sensitivity() const
   return cfg->velocity_sensitivity;
 }
 
+int
+MorphOutputModule::pitch_bend_range() const
+{
+  return cfg->pitch_bend_range;
+}
+
 float
 MorphOutputModule::filter_cutoff_mod() const
 {
