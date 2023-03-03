@@ -4,7 +4,6 @@ NEXT RELEASE:
 - we may want to publish spectmorph vs. crossfade results
 - why does white noise not sound like white noise?
 - panning per note
-- configurable midi synth semi tones (i.e jack)
 - better spectral subtract [1]
 - vibrato could have delay property
 - possibly add MPE timbre
@@ -33,10 +32,7 @@ FILTER:
 - remove morph plan ptr from API
 __ ui __
 
-- improve layout of property edit
-- support property editing for mere-float / mere int
 - semitones flag for filter cutoff
-- property edit window should scroll
 
 __ generic modulation __
 
