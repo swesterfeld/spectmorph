@@ -29,6 +29,7 @@ MorphOutputView::MorphOutputView (Widget *parent, MorphOutput *morph_output, Mor
   op_layout.add_row (3, new Label (body_widget, "Source"), source_combobox);
 
   add_property_view (MorphOutput::P_VELOCITY_SENSITIVITY, op_layout);
+  add_property_view (MorphOutput::P_PITCH_BEND_RANGE, op_layout);
 
   add_property_view (MorphOutput::P_SINES, op_layout);
   add_property_view (MorphOutput::P_NOISE, op_layout);
