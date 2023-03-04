@@ -97,10 +97,10 @@ class IntProperty : public Property
   std::string   m_label;
   std::string   m_format;
 public:
-  Type type()       { return Type::INT; }
-  int min()         { return m_min_value; }
-  int max()         { return m_max_value; }
-  int get()         { return *m_value; }
+  Type type() override { return Type::INT; }
+  int min() override   { return m_min_value; }
+  int max() override   { return m_max_value; }
+  int get() override   { return *m_value; }
 
   IntProperty (MorphOperator *op, int *value, const std::string& identifier, const std::string& label, const std::string& format,
                int def, int mn, int mx) :
@@ -113,15 +113,18 @@ public:
   {
     *value = def;
   }
-  std::string label() { return m_label; }
-
   std::string
-  value_label()
+  label() override
+  {
+    return m_label;
+  }
+  std::string
+  value_label() override
   {
     return string_locale_printf (m_format.c_str(), *m_value);
   }
   std::string
-  get_edit_str()
+  get_edit_str() override
   {
     return string_locale_printf ("%d", get());
   }
@@ -131,18 +134,18 @@ public:
     set (atoi (s.c_str()));
   }
   void
-  set (int v)
+  set (int v) override
   {
     *m_value = std::clamp (v, min(), max());
     signal_value_changed();
   }
   void
-  save (OutFile& out_file)
+  save (OutFile& out_file) override
   {
     out_file.write_int (m_identifier, *m_value);
   }
   bool
-  load (InFile& in_file)
+  load (InFile& in_file) override
   {
     if (in_file.event() == InFile::INT)
       {
@@ -399,26 +402,25 @@ public:
     m_format (format)
   {
   }
-  Type type() { return Type::FLOAT; }
-
-  int min()         { return 0; }
-  int max()         { return 1000; }
-  int get()         { return lrint (value2ui (*m_value) * 1000); }
+  Type type() override { return Type::FLOAT; }
+  int min() override   { return 0; }
+  int max() override   { return 1000; }
+  int get() override   { return lrint (value2ui (*m_value) * 1000); }
 
   void
-  set (int v)
+  set (int v) override
   {
     *m_value = m_range.clamp (ui2value (v / 1000.));
     signal_value_changed();
   }
 
   float
-  get_float() const
+  get_float() const override
   {
     return *m_value;
   }
   void
-  set_float (float f)
+  set_float (float f) override
   {
     *m_value = m_range.clamp (f);
     signal_value_changed();
@@ -439,7 +441,7 @@ public:
     return m_range;
   }
   Scale
-  float_scale()
+  float_scale() override
   {
     return m_scale;
   }
@@ -447,10 +449,13 @@ public:
   virtual double value2ui (double value) = 0;
   virtual double ui2value (double ui) = 0;
 
-  std::string label() { return m_label; }
-
   std::string
-  value_label()
+  label() override
+  {
+    return m_label;
+  }
+  std::string
+  value_label() override
   {
     if (m_custom_formatter)
       return m_custom_formatter (*m_value);
@@ -464,12 +469,12 @@ public:
     m_custom_formatter = formatter;
   }
   void
-  save (OutFile& out_file)
+  save (OutFile& out_file) override
   {
     out_file.write_float (m_identifier, *m_value);
   }
   bool
-  load (InFile& in_file)
+  load (InFile& in_file) override
   {
     if (in_file.event() == InFile::FLOAT)
       {
