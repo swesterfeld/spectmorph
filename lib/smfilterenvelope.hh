@@ -47,7 +47,6 @@ private:
   int decay_len_ = 0;
   int release_len_ = 0;
   int stop_len_ = 0;
-  int off_time_len_ = 0;
   float sustain_level_ = 0;
 
   enum class State { START, DELAY, ATTACK, HOLD, DECAY, SUSTAIN, RELEASE, DONE };

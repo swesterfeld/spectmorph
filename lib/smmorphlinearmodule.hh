@@ -18,7 +18,6 @@ class MorphLinearModule : public MorphOperatorModule
 
   MorphOperatorModule *left_mod;
   MorphOperatorModule *right_mod;
-  MorphOperatorModule *control_mod;
   SimpleWavSetSource   left_source;
   bool                 have_left_source;
   SimpleWavSetSource   right_source;
