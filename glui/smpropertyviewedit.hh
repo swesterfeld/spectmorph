@@ -209,7 +209,7 @@ protected:
         ToolButton *tbutton = new ToolButton (scroll_widget, 'x');
         grid.add_widget (tbutton, xoffset, yoffset + 0.5, 2, 2);
         xoffset += 2.5;
-        connect (tbutton->signal_clicked, [mod_list, i, this] () { mod_list->remove_entry (i); });
+        connect (tbutton->signal_clicked, [mod_list, i] () { mod_list->remove_entry (i); });
 
         // ===== modulation entry control op / type
         ControlView *control_view = new ControlView();
@@ -264,7 +264,7 @@ protected:
         grid.add_widget (label, xoffset, yoffset, 8, 3);
         xoffset += 9;
 
-        connect (slider->signal_value_changed, [label, slider, mod_amount_model, mod_list, i](double new_value) {
+        connect (slider->signal_value_changed, [mod_amount_model, mod_list, i](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
           entry.amount = new_value * 2 - 1;
           mod_amount_model->set_value (entry.amount);

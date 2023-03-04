@@ -23,7 +23,7 @@ class MorphLFOView : public MorphOperatorView
 
   OperatorLayout op_layout;
 
-  void update_visible();
+  void update_visible() override;
 public:
   MorphLFOView (Widget *widget, MorphLFO *op, MorphPlanWindow *morph_plan_window);
 

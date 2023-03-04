@@ -35,7 +35,7 @@ class MorphWavSourceView : public MorphOperatorView
   std::string modified_check (bool& wav_source_update, bool& user_int_update);
 
   void update_instrument_list();
-  void update_visible();
+  void update_visible() override;
   void on_edit_close();
   void on_edit_save_changes (bool save_changes);
 public:

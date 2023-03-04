@@ -19,8 +19,6 @@ class MorphOutputView : public MorphOperatorView
 
   MorphOutput                *morph_output;
 
-  PropertyView               *pv_velocity_sensitivity;
-
   PropertyView               *pv_unison;
   PropertyView               *pv_unison_voices;
   PropertyView               *pv_unison_detune;
@@ -61,7 +59,7 @@ class MorphOutputView : public MorphOperatorView
 
   OperatorLayout              op_layout;
 
-  void update_visible();
+  void update_visible() override;
 
 public:
   MorphOutputView (Widget *parent, MorphOutput *morph_morph_output, MorphPlanWindow *morph_plan_window);
