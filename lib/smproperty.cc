@@ -12,6 +12,7 @@ Property::Property (MorphOperator *op, const string& identifier) :
   m_op (op),
   m_identifier (identifier)
 {
+  m_op->register_property (this);
 }
 
 Property::~Property()
