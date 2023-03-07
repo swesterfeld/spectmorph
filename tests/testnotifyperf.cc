@@ -15,6 +15,16 @@ using std::string;
 
 static int VOICE_OP_VALUES_EVENT = 642137; // just some random number
 
+struct MyVoiceOpValuesEvent : public SynthNotifyEvent
+{
+  struct Voice {
+    uintptr_t voice;
+    uintptr_t op;
+    float     value;
+  };
+  std::vector<Voice> voices;
+};
+
 class NotifyBuffer
 {
   std::vector<unsigned char> data;
@@ -76,33 +86,32 @@ void
 fill_notify_buffer (NotifyBuffer& buffer)
 {
   static constexpr int N = 3;
-  uintptr_t voice_seq[N];
-  uintptr_t op_seq[N];
-  float value_seq[N];
+  struct S
+  {
+    uintptr_t voice, op;
+    float value;
+  };
+  S seq[N];
 
   for (int n = 0; n < N; n++)
     {
-      voice_seq[n] = (uintptr_t) &n;
-      op_seq[n] = (uintptr_t) &n;
-      value_seq[n] = n;
+      seq[n].voice = (uintptr_t) &n;
+      seq[n].op = (uintptr_t) &n;
+      seq[n].value = n;
     }
   buffer.write_int (VOICE_OP_VALUES_EVENT);
-  buffer.write_seq (voice_seq, N);
-  buffer.write_seq (op_seq, N);
-  buffer.write_seq (value_seq, N);
+  buffer.write_seq (seq, N);
 }
 
-VoiceOpValuesEvent *
+MyVoiceOpValuesEvent *
 create_event (NotifyBuffer& buffer)
 {
   int type = buffer.read_int();
   if (type == VOICE_OP_VALUES_EVENT)
     {
-      VoiceOpValuesEvent *v = new VoiceOpValuesEvent();
+      MyVoiceOpValuesEvent *v = new MyVoiceOpValuesEvent();
 
-      buffer.read_seq (v->voice);
-      buffer.read_seq (v->op);
-      buffer.read_seq (v->value);
+      buffer.read_seq (v->voices);
 
       return v;
     }
