@@ -114,17 +114,6 @@ InstEditBackend::have_builder()
 void
 InstEditBackend::on_timer()
 {
-  /* FIXME: event handling should probably not be done here */
-  for (auto ev : synth_interface->get_project()->notify_take_events())
-    {
-      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
-      if (sn_event)
-        {
-          synth_interface->signal_notify_event (sn_event);
-          delete sn_event;
-        }
-    }
-
   std::lock_guard<std::mutex> lg (result_mutex);
   if (result_updated)
     {
@@ -347,7 +336,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   timer->start (0);
 
   connect (synth_interface->signal_notify_event, [this](SynthNotifyEvent *ne) {
-    auto iev = dynamic_cast<InstEditVoice *> (ne);
+    auto iev = dynamic_cast<InstEditVoiceEvent *> (ne);
     if (iev)
       {
         vector<float> play_pointers;

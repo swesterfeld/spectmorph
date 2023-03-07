@@ -10,6 +10,8 @@
 #include "smparamlabel.hh"
 #include "smtoolbutton.hh"
 #include "smscrollview.hh"
+#include "smmorphplanwindow.hh"
+#include "smcontrolstatus.hh"
 
 namespace SpectMorph
 {
@@ -17,11 +19,12 @@ namespace SpectMorph
 class PropertyViewEdit : public Window
 {
 protected:
-  Window         *parent_window;
+  MorphPlanWindow *parent_window;
   Property&       property;
   ModulationList *mod_list = nullptr;
 
   Button         *add_mod_button;
+  ControlStatus  *control_status = nullptr;
   Label          *value_label = nullptr;
   Slider         *slider = nullptr;
   LineEdit       *line_edit;
@@ -34,6 +37,7 @@ protected:
 
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
+  std::map<uintptr_t, float> control_value_map;
 
   int
   window_height (Property& property)
@@ -43,7 +47,7 @@ protected:
     else
       return 72;
   }
-  PropertyViewEdit (Window *parent, Property& property) :
+  PropertyViewEdit (MorphPlanWindow *parent, Property& property) :
     Window (*parent->event_loop(), "Edit Property", 600, window_height (property), 0, false, parent->native_window()),
     parent_window (parent),
     property (property)
@@ -113,6 +117,10 @@ protected:
         grid.add_widget (control_combobox, 11, yoffset, 17, 3);
         yoffset += 3;
 
+        control_status = new ControlStatus (this);
+        grid.add_widget (control_status, 1, yoffset, 70, 3);
+        yoffset += 3;
+
         mod_list_hdr = new Widget (this);
         mod_list_hdr->set_background_color (Color (0.4, 0.4, 0.4));
 
@@ -129,10 +137,10 @@ protected:
           if (mod_list)
             mod_list->add_entry();
         });
-      }
 
-    if (mod_list)
-      connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
+        connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
+        connect (parent->synth_interface()->signal_notify_event, this, &PropertyViewEdit::on_synth_notify_event);
+      }
 
     update_layout();
     update_modulation_widgets();
@@ -155,7 +163,7 @@ protected:
     if (mod_list)
       {
         grid.add_widget (add_mod_button, 29, 5, 11, 3);
-        yoffset += 3;
+        yoffset += 6;
       }
 
     if (gui_slider_controller)
@@ -299,6 +307,54 @@ protected:
     line_edit_changed = false;
   }
   void
+  on_synth_notify_event (SynthNotifyEvent *ne)
+  {
+    auto vo_values = dynamic_cast<VoiceOpValuesEvent *> (ne);
+    if (vo_values)
+      {
+        for (size_t i = 0; i < vo_values->voice.size(); i++)
+          {
+            control_value_map[vo_values->voice[i]] = vo_values->value[i];
+          }
+      }
+    auto av_status = dynamic_cast<ActiveVoiceStatusEvent *> (ne);
+    if (av_status)
+      {
+        control_status->reset_voices();
+        for (size_t i = 0; i < av_status->voice.size(); i++)
+          {
+            auto v = av_status->voice[i];
+
+            if (mod_list->main_control_type() == MorphOperator::CONTROL_GUI)
+              {
+                control_status->add_voice (2 * (this->property.get() - this->property.min()) / double (this->property.max() - this->property.min()) - 1);
+              }
+            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_1)
+              {
+                control_status->add_voice (av_status->control[0][i]);
+              }
+            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_2)
+              {
+                control_status->add_voice (av_status->control[1][i]);
+              }
+            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_3)
+              {
+                control_status->add_voice (av_status->control[2][i]);
+              }
+            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_4)
+              {
+                control_status->add_voice (av_status->control[3][i]);
+              }
+            else
+              {
+                control_status->add_voice (control_value_map[v]);
+              }
+          }
+
+        control_value_map.clear();
+      }
+  }
+  void
   on_accept()
   {
     if (line_edit_changed)
@@ -315,7 +371,7 @@ protected:
 
 public:
   static void
-  create (Window *window, Property& property)
+  create (MorphPlanWindow *window, Property& property)
   {
     Window *rwin = new PropertyViewEdit (window, property);
 
