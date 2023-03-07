@@ -13,18 +13,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
-static int VOICE_OP_VALUES_EVENT = 642137; // just some random number
-
-struct MyVoiceOpValuesEvent : public SynthNotifyEvent
-{
-  struct Voice {
-    uintptr_t voice;
-    uintptr_t op;
-    float     value;
-  };
-  std::vector<Voice> voices;
-};
-
 class NotifyBuffer
 {
   std::vector<unsigned char> data;
@@ -73,13 +61,30 @@ public:
     read_simple (&i, sizeof (i));
     return i;
   }
-  template<class T> void
-  read_seq (std::vector<T>& result)
+  template<class T> std::vector<T>
+  read_seq()
   {
-    size_t seqlen = read_int();
-    result.resize (seqlen);
-    read_simple (result.data(), seqlen * sizeof (T));
+    int seq_len = read_int();
+    std::vector<T> result (seq_len);
+    read_simple (result.data(), seq_len * sizeof (T));
+    return result;
   }
+};
+
+static int VOICE_OP_VALUES_EVENT = 642137; // just some random number
+
+struct MyVoiceOpValuesEvent : public SynthNotifyEvent
+{
+  struct Voice {
+    uintptr_t voice;
+    uintptr_t op;
+    float     value;
+  };
+  MyVoiceOpValuesEvent (NotifyBuffer& notify_buffer) :
+    voices (notify_buffer.read_seq<Voice>())
+  {
+  }
+  std::vector<Voice> voices;
 };
 
 void
@@ -109,11 +114,7 @@ create_event (NotifyBuffer& buffer)
   int type = buffer.read_int();
   if (type == VOICE_OP_VALUES_EVENT)
     {
-      MyVoiceOpValuesEvent *v = new MyVoiceOpValuesEvent();
-
-      buffer.read_seq (v->voices);
-
-      return v;
+      return new MyVoiceOpValuesEvent (buffer);
     }
   return nullptr;
 }
