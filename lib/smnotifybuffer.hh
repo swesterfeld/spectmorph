@@ -15,6 +15,7 @@ class NotifyBuffer
   void
   write_simple (const void *ptr, size_t size)
   {
+    // FIXME: this *may* occasionally allocate memory
     const unsigned char *raw_ptr = reinterpret_cast<const unsigned char *> (ptr);
     data.insert (data.end(), raw_ptr, raw_ptr + size);
   }
@@ -26,6 +27,12 @@ class NotifyBuffer
     rpos += size;
   }
 public:
+  void
+  assign (NotifyBuffer& other)
+  {
+    data = other.data;
+    rpos = 0;
+  }
   void
   clear()
   {

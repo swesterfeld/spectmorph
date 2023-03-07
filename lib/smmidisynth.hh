@@ -5,6 +5,7 @@
 
 #include "smmorphplansynth.hh"
 #include "sminsteditsynth.hh"
+#include "smnotifybuffer.hh"
 
 namespace SpectMorph {
 
@@ -67,8 +68,7 @@ class MidiSynth
   int                   next_note_id;
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
-  BinBuffer             notify_buffer;
-  std::vector<std::string> out_events;
+  NotifyBuffer          m_notify_buffer;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -119,8 +119,7 @@ public:
   void set_gain (double gain);
   void set_control_by_cc (bool control_by_cc);
   InstEditSynth *inst_edit_synth();
-
-  std::vector<std::string> take_out_events();
+  NotifyBuffer *notify_buffer();
 };
 
 class SynthNotifyEvent
@@ -131,11 +130,25 @@ public:
   {
   }
   static SynthNotifyEvent *
-  create (const std::string& str);
+  create (NotifyBuffer& buffer);
+};
+
+enum NotifyEventType
+{
+  INST_EDIT_VOICE_EVENT = 748293, // some random number
+  VOICE_OP_VALUES_EVENT,
+  ACTIVE_VOICE_STATUS_EVENT
 };
 
 struct InstEditVoiceEvent : public SynthNotifyEvent
 {
+  InstEditVoiceEvent (NotifyBuffer& buffer) :
+    note (buffer.read_seq<int>()),
+    layer (buffer.read_seq<int>()),
+    current_pos (buffer.read_seq<float>()),
+    fundamental_note (buffer.read_seq<float>())
+  {
+  }
   std::vector<int>   note;
   std::vector<int>   layer;
   std::vector<float> current_pos;
@@ -144,6 +157,12 @@ struct InstEditVoiceEvent : public SynthNotifyEvent
 
 struct VoiceOpValuesEvent : public SynthNotifyEvent
 {
+  VoiceOpValuesEvent (NotifyBuffer& buffer) :
+    voice (buffer.read_seq<uintptr_t>()),
+    op (buffer.read_seq<uintptr_t>()),
+    value (buffer.read_seq<float>())
+  {
+  }
   std::vector<uintptr_t> voice;
   std::vector<uintptr_t> op;
   std::vector<float>     value;
@@ -151,6 +170,12 @@ struct VoiceOpValuesEvent : public SynthNotifyEvent
 
 struct ActiveVoiceStatusEvent : public SynthNotifyEvent
 {
+  ActiveVoiceStatusEvent (NotifyBuffer& buffer) :
+    voice (buffer.read_seq<uintptr_t>())
+  {
+    for (auto& ctrl : control)
+      ctrl = buffer.read_seq<float>();
+  }
   std::vector<uintptr_t> voice;
   std::vector<float>     control[MorphPlan::N_CONTROL_INPUTS];
 };

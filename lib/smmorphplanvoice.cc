@@ -3,6 +3,7 @@
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
 #include "smleakdebugger.hh"
+#include "smmidisynth.hh"
 #include <assert.h>
 #include <map>
 
@@ -176,7 +177,7 @@ MorphPlanVoice::reset_value (const TimeInfo& time_info)
 }
 
 void
-MorphPlanVoice::fill_notify_buffer (BinBuffer& buffer)
+MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
 {
   uintptr_t voice_seq[modules.size()];
   uintptr_t op_seq[modules.size()];
@@ -197,10 +198,9 @@ MorphPlanVoice::fill_notify_buffer (BinBuffer& buffer)
     }
   if (n)
     {
-      buffer.write_start ("VoiceOpValuesEvent");
-      buffer.write_ptr_seq (voice_seq, n);
-      buffer.write_ptr_seq (op_seq, n);
-      buffer.write_float_seq (value_seq, n);
-      buffer.write_end();
+      buffer.write_int (VOICE_OP_VALUES_EVENT);
+      buffer.write_seq (voice_seq, n);
+      buffer.write_seq (op_seq, n);
+      buffer.write_seq (value_seq, n);
     }
 }

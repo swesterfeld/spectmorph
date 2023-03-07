@@ -2,6 +2,7 @@
 
 #include "sminsteditsynth.hh"
 #include "smleakdebugger.hh"
+#include "smmidisynth.hh"
 
 using namespace SpectMorph;
 
@@ -94,7 +95,7 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int l
 }
 
 void
-InstEditSynth::process (float *output, size_t n_values)
+InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buffer)
 {
   int   iev_note[voices.size()];
   int   iev_layer[voices.size()];
@@ -141,18 +142,10 @@ InstEditSynth::process (float *output, size_t n_values)
         }
     }
 
-  notify_buffer.write_start ("InstEditVoiceEvent");
-  notify_buffer.write_int_seq (iev_note, iev_len);
-  notify_buffer.write_int_seq (iev_layer, iev_len);
-  notify_buffer.write_float_seq (iev_pos, iev_len);
-  notify_buffer.write_float_seq (iev_fnote, iev_len);
-  notify_buffer.write_end();
-
-  out_events.push_back (notify_buffer.to_string());
-}
-
-vector<string>
-InstEditSynth::take_out_events()
-{
-  return std::move (out_events);
+  notify_buffer.clear();
+  notify_buffer.write_int (INST_EDIT_VOICE_EVENT);
+  notify_buffer.write_seq (iev_note, iev_len);
+  notify_buffer.write_seq (iev_layer, iev_len);
+  notify_buffer.write_seq (iev_pos, iev_len);
+  notify_buffer.write_seq (iev_fnote, iev_len);
 }

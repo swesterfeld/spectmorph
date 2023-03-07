@@ -6,7 +6,7 @@
 #include "smmorphplan.hh"
 #include "smmorphoperatormodule.hh"
 #include "smmorphplansynth.hh"
-#include "smbinbuffer.hh"
+#include "smnotifybuffer.hh"
 
 namespace SpectMorph {
 
@@ -50,7 +50,7 @@ public:
 
   void update_shared_state (const TimeInfo& time_info);
   void reset_value (const TimeInfo& time_info);
-  void fill_notify_buffer (BinBuffer& notify_buffer);
+  void fill_notify_buffer (NotifyBuffer& notify_buffer);
 };
 
 }
