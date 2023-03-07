@@ -6,6 +6,7 @@
 #include "smhexstring.hh"
 
 #include <vector>
+#include <cstring>
 
 namespace SpectMorph
 {
