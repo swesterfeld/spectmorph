@@ -84,9 +84,10 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   Timer *timer = new Timer (this);
   /* FIXME: should event handling be done here */
   connect (timer->signal_timeout, [this]() {
-    for (auto ev : synth_interface()->get_project()->notify_take_events())
+    NotifyBuffer notify_buffer = synth_interface()->get_project()->notify_take_buffer();
+    while (notify_buffer.remaining())
       {
-        SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
+        SynthNotifyEvent *sn_event = SynthNotifyEvent::create (notify_buffer);
         synth_interface()->signal_notify_event (sn_event);
         delete sn_event;
       }
