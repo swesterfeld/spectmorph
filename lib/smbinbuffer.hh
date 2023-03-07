@@ -18,6 +18,11 @@ class BinBuffer
   bool   m_read_error = false;
 public:
   void
+  clear()
+  {
+    data.clear();
+  }
+  void
   write_start (const char *id)
   {
     data.clear();
@@ -42,6 +47,13 @@ public:
     write_byte (i >> 16);
     write_byte (i >> 8);
     write_byte (i);
+  }
+  void
+  write_ptr (uintptr_t ptr)
+  {
+    /* this is not endian independent, but this is a pointer anyway */
+    const unsigned char *raw_ptr = reinterpret_cast<const unsigned char *> (&ptr);
+    data.insert (data.end(), raw_ptr, raw_ptr + sizeof (ptr));
   }
   void
   write_float (float f)
@@ -79,6 +91,14 @@ public:
 
     for (size_t i = 0; i < length; i++)
       write_int (ints[i]);
+  }
+  void
+  write_ptr_seq (const uintptr_t* ptrs, size_t length)
+  {
+    write_int (length);
+
+    for (size_t i = 0; i < length; i++)
+      write_ptr (ptrs[i]);
   }
   void
   write_float_seq (const float* floats, size_t length)
@@ -129,6 +149,25 @@ public:
         rpos += 4;
 
         return result;
+      }
+    else
+      {
+        m_read_error = true;
+        return 0;
+      }
+  }
+  uintptr_t
+  read_ptr()
+  {
+    uintptr_t ptr;
+    if (remaining() >= sizeof (ptr))
+      {
+        /* this is not endian independent, but this is a pointer anyway */
+        unsigned char *raw_ptr = reinterpret_cast<unsigned char *> (&ptr);
+        std::copy (data.begin() + rpos, data.begin() + rpos + sizeof (ptr), raw_ptr);
+        rpos += sizeof (ptr);
+
+        return ptr;
       }
     else
       {
@@ -191,6 +230,25 @@ public:
 
         for (size_t i = 0; i < seqlen; i++)
           result[i] = read_int();
+      }
+    else
+      {
+        m_read_error = true;
+        result.clear();
+      }
+  }
+  void
+  read_ptr_seq (std::vector<uintptr_t>& result)
+  {
+    // might be optimizable a bit
+    size_t seqlen = read_int();
+
+    if (remaining() >= seqlen * sizeof (uintptr_t))
+      {
+        result.resize (seqlen);
+
+        for (size_t i = 0; i < seqlen; i++)
+          result[i] = read_ptr();
       }
     else
       {
