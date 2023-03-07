@@ -141,7 +141,7 @@ InstEditSynth::process (float *output, size_t n_values)
         }
     }
 
-  notify_buffer.write_start ("InstEditVoice");
+  notify_buffer.write_start ("InstEditVoiceEvent");
   notify_buffer.write_int_seq (iev_note, iev_len);
   notify_buffer.write_int_seq (iev_layer, iev_len);
   notify_buffer.write_float_seq (iev_pos, iev_len);

@@ -67,6 +67,8 @@ class MidiSynth
   int                   next_note_id;
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
+  BinBuffer             notify_buffer;
+  std::vector<std::string> out_events;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -74,6 +76,7 @@ class MidiSynth
   void    free_unused_voices();
   bool    update_mono_voice();
   float   freq_from_note (float note);
+  void    notify_active_voice_status();
 
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
@@ -116,6 +119,8 @@ public:
   void set_gain (double gain);
   void set_control_by_cc (bool control_by_cc);
   InstEditSynth *inst_edit_synth();
+
+  std::vector<std::string> take_out_events();
 };
 
 class SynthNotifyEvent
@@ -129,12 +134,25 @@ public:
   create (const std::string& str);
 };
 
-struct InstEditVoice : public SynthNotifyEvent
+struct InstEditVoiceEvent : public SynthNotifyEvent
 {
   std::vector<int>   note;
   std::vector<int>   layer;
   std::vector<float> current_pos;
   std::vector<float> fundamental_note;
+};
+
+struct VoiceOpValuesEvent : public SynthNotifyEvent
+{
+  std::vector<uintptr_t> voice;
+  std::vector<uintptr_t> op;
+  std::vector<float>     value;
+};
+
+struct ActiveVoiceStatusEvent : public SynthNotifyEvent
+{
+  std::vector<uintptr_t> voice;
+  std::vector<float>     control[MorphPlan::N_CONTROL_INPUTS];
 };
 
 }

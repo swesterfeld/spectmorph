@@ -33,10 +33,13 @@ class MorphOperatorModule
 protected:
   MorphPlanVoice                     *morph_plan_voice;
   MorphOperator::PtrID                m_ptr_id;
+  float                               m_notify_value = 0;
+  bool                                m_have_notify_value = false;
 
   Random *random_gen() const;
   TimeInfo time_info() const;
   float apply_modulation (const ModulationData& mod_data) const;
+  void set_notify_value (float value);
 public:
   MorphOperatorModule (MorphPlanVoice *voice);
   virtual ~MorphOperatorModule();
@@ -48,6 +51,7 @@ public:
   virtual void update_shared_state (const TimeInfo& time_info);
 
   void set_ptr_id (MorphOperator::PtrID ptr_id);
+  bool get_notify_value (float& value);
 
   static MorphOperatorModule *create (const std::string& type, MorphPlanVoice *voice);
 };

@@ -515,6 +515,8 @@ MidiSynth::process (float *output, size_t n_values)
   midi_events.clear();
 
   m_ppq_pos += n_values * m_tempo / (60. * m_mix_freq);
+
+  notify_active_voice_status();
 }
 
 void
@@ -661,7 +663,61 @@ MidiSynth::set_control_by_cc (bool control_by_cc)
   m_control_by_cc = control_by_cc;
 }
 
+void
+MidiSynth::notify_active_voice_status()
+{
+  for (auto voice : active_voices)
+    {
+      voice->mp_voice->fill_notify_buffer (notify_buffer);
+      if (notify_buffer.remaining())
+        {
+          out_events.push_back (notify_buffer.to_string());
+          notify_buffer.clear();
+        }
+    }
+
+  notify_buffer.write_start ("ActiveVoiceStatusEvent");
+
+  uintptr_t voice_seq[active_voices.size()];
+  for (size_t i = 0; i < active_voices.size(); i++)
+    voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
+
+  notify_buffer.write_ptr_seq (voice_seq, active_voices.size());
+
+  for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
+    {
+      float control_input_seq[active_voices.size()];
+
+      for (size_t v = 0; v < active_voices.size(); v++)
+        control_input_seq[v] = control[i]; // FIXME: CLAP modulation
+
+      notify_buffer.write_float_seq (control_input_seq, active_voices.size());
+    }
+  notify_buffer.write_end();
+
+  out_events.push_back (notify_buffer.to_string()); // FIXME: allocates memory
+  notify_buffer.clear();
+}
+
 // ----notify events----
+
+std::vector<std::string>
+MidiSynth::take_out_events()
+{
+  if (inst_edit) // inst edit mode? -> delegate
+    {
+      out_events.clear();
+
+      return m_inst_edit_synth.take_out_events();
+    }
+  else
+    {
+      m_inst_edit_synth.take_out_events();
+
+      return std::move (out_events);
+    }
+}
+
 SynthNotifyEvent *
 SynthNotifyEvent::create (const std::string& str)
 {
@@ -670,9 +726,9 @@ SynthNotifyEvent::create (const std::string& str)
 
   buffer.read_int();
   const char *type = buffer.read_string_inplace();
-  if (strcmp (type, "InstEditVoice") == 0)
+  if (strcmp (type, "InstEditVoiceEvent") == 0)
     {
-      InstEditVoice *v = new InstEditVoice();
+      InstEditVoiceEvent *v = new InstEditVoiceEvent();
 
       buffer.read_int_seq (v->note);
       buffer.read_int_seq (v->layer);
@@ -681,10 +737,47 @@ SynthNotifyEvent::create (const std::string& str)
 
       if (buffer.read_error())
         {
+          printf ("error reading %s event\n", type);
           delete v;
           return nullptr;
         }
       return v;
+    }
+  else if (strcmp (type, "VoiceOpValuesEvent") == 0)
+    {
+      VoiceOpValuesEvent *v = new VoiceOpValuesEvent();
+
+      buffer.read_ptr_seq (v->voice);
+      buffer.read_ptr_seq (v->op);
+      buffer.read_float_seq (v->value);
+
+      if (buffer.read_error())
+        {
+          printf ("error reading %s event\n", type);
+          delete v;
+          return nullptr;
+        }
+      return v;
+    }
+  else if (strcmp (type, "ActiveVoiceStatusEvent") == 0)
+    {
+      ActiveVoiceStatusEvent *v = new ActiveVoiceStatusEvent();
+
+      buffer.read_ptr_seq (v->voice);
+      for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
+        buffer.read_float_seq (v->control[i]);
+
+      if (buffer.read_error())
+        {
+          printf ("error reading %s event\n", type);
+          delete v;
+          return nullptr;
+        }
+      return v;
+    }
+  else
+    {
+      printf ("unsupported event type %s\n", type);
     }
   return nullptr;
 }

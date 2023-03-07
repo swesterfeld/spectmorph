@@ -56,6 +56,27 @@ MorphOperatorModule::reset_value (const TimeInfo& time_info)
 }
 
 void
+MorphOperatorModule::set_notify_value (float value)
+{
+  m_notify_value = value;
+  m_have_notify_value = true;
+}
+
+bool
+MorphOperatorModule::get_notify_value (float& value)
+{
+  if (m_have_notify_value)
+    {
+      value = m_notify_value;
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
+
+void
 MorphOperatorModule::update_shared_state (const TimeInfo& time_info)
 {
 }

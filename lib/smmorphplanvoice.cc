@@ -174,3 +174,33 @@ MorphPlanVoice::reset_value (const TimeInfo& time_info)
   for (size_t i = 0; i < modules.size(); i++)
     modules[i].module->reset_value (time_info);
 }
+
+void
+MorphPlanVoice::fill_notify_buffer (BinBuffer& buffer)
+{
+  uintptr_t voice_seq[modules.size()];
+  uintptr_t op_seq[modules.size()];
+  float value_seq[modules.size()];
+  int n = 0;
+
+  for (const OpModule& m : modules)
+    {
+      float notify_value;
+
+      if (m.module->get_notify_value (notify_value))
+        {
+          voice_seq[n] = (uintptr_t) this;
+          op_seq[n] = m.ptr_id;
+          value_seq[n] = notify_value;
+          n++;
+        }
+    }
+  if (n)
+    {
+      buffer.write_start ("VoiceOpValuesEvent");
+      buffer.write_ptr_seq (voice_seq, n);
+      buffer.write_ptr_seq (op_seq, n);
+      buffer.write_float_seq (value_seq, n);
+      buffer.write_end();
+    }
+}
