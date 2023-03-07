@@ -13,8 +13,67 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
+static int VOICE_OP_VALUES_EVENT = 642137; // just some random number
+
+class NotifyBuffer
+{
+  std::vector<unsigned char> data;
+  size_t rpos = 0;
+
+  void
+  write_simple (const void *ptr, size_t size)
+  {
+    const unsigned char *raw_ptr = reinterpret_cast<const unsigned char *> (ptr);
+    data.insert (data.end(), raw_ptr, raw_ptr + size);
+  }
+  void
+  read_simple (void *ptr, size_t size)
+  {
+    unsigned char *raw_ptr = reinterpret_cast<unsigned char *> (ptr);
+    std::copy (data.begin() + rpos, data.begin() + rpos + size, raw_ptr);
+    rpos += size;
+  }
+public:
+  void
+  clear()
+  {
+    data.clear();
+    rpos = 0;
+  }
+  void
+  write_int (int i)
+  {
+    write_simple (&i, sizeof (i));
+  }
+  template<class T> void
+  write_seq (const T* items, size_t length)
+  {
+    write_int (length);
+    write_simple (items, length * sizeof (T));
+  }
+  size_t
+  remaining()
+  {
+    return data.size() - rpos;
+  }
+  int
+  read_int()
+  {
+    int i;
+    read_simple (&i, sizeof (i));
+    return i;
+  }
+  template<class T> void
+  read_seq (std::vector<T>& result)
+  {
+    size_t seqlen = read_int();
+    result.resize (seqlen);
+    read_simple (result.data(), seqlen * sizeof (T));
+  }
+};
+
 void
-fill_notify_buffer (BinBuffer& buffer)
+fill_notify_buffer (NotifyBuffer& buffer)
 {
   static constexpr int N = 3;
   uintptr_t voice_seq[N];
@@ -27,35 +86,24 @@ fill_notify_buffer (BinBuffer& buffer)
       op_seq[n] = (uintptr_t) &n;
       value_seq[n] = n;
     }
-  buffer.write_start ("VoiceOpValuesEvent");
-  buffer.write_ptr_seq (voice_seq, N);
-  buffer.write_ptr_seq (op_seq, N);
-  buffer.write_float_seq (value_seq, N);
-  buffer.write_end();
+  buffer.write_int (VOICE_OP_VALUES_EVENT);
+  buffer.write_seq (voice_seq, N);
+  buffer.write_seq (op_seq, N);
+  buffer.write_seq (value_seq, N);
 }
 
 VoiceOpValuesEvent *
-create_event (const std::string& str)
+create_event (NotifyBuffer& buffer)
 {
-  BinBuffer buffer;
-  buffer.from_string (str);
-
-  buffer.read_int();
-  const char *type = buffer.read_string_inplace();
-  if (strcmp (type, "VoiceOpValuesEvent") == 0)
+  int type = buffer.read_int();
+  if (type == VOICE_OP_VALUES_EVENT)
     {
       VoiceOpValuesEvent *v = new VoiceOpValuesEvent();
 
-      buffer.read_ptr_seq (v->voice);
-      buffer.read_ptr_seq (v->op);
-      buffer.read_float_seq (v->value);
+      buffer.read_seq (v->voice);
+      buffer.read_seq (v->op);
+      buffer.read_seq (v->value);
 
-      if (buffer.read_error())
-        {
-          printf ("error reading %s event\n", type);
-          delete v;
-          return nullptr;
-        }
       return v;
     }
   return nullptr;
@@ -65,24 +113,23 @@ void
 perf (bool decode)
 {
   vector<string> events;
-  BinBuffer notify_buffer;
+  NotifyBuffer notify_buffer;
 
-  const int RUNS = 100000;
+  const int RUNS = 10'000'000;
   const int EVENTS = 3;
   double t = get_time();
   for (int r = 0; r < RUNS; r++)
     {
-      events.clear();
+      notify_buffer.clear();
       for (int i = 0; i < EVENTS; i++)
         {
           fill_notify_buffer (notify_buffer);
-          events.push_back (notify_buffer.to_string());
         }
       if (decode)
         {
-          for (const auto& str : events)
+          while (notify_buffer.remaining())
             {
-              auto *e = create_event (str);
+              auto *e = create_event (notify_buffer);
               assert (e);
               delete e;
             }
