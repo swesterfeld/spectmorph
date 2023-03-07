@@ -13,8 +13,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::string;
 
-static int VOICE_OP_VALUES_EVENT = 642137; // just some random number
-
 struct MyVoiceOpValuesEvent : public SynthNotifyEvent
 {
   struct Voice {
