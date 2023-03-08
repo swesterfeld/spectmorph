@@ -139,7 +139,10 @@ InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buf
         }
     }
 
-  notify_buffer.clear();
-  notify_buffer.write_int (INST_EDIT_VOICE_EVENT);
-  notify_buffer.write_seq (iev, iev_len);
+  /* only update notify buffer if GUI has fetched events */
+  if (notify_buffer.remaining() == 0)
+    {
+      notify_buffer.write_int (INST_EDIT_VOICE_EVENT);
+      notify_buffer.write_seq (iev, iev_len);
+    }
 }

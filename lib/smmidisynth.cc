@@ -666,7 +666,10 @@ MidiSynth::set_control_by_cc (bool control_by_cc)
 void
 MidiSynth::notify_active_voice_status()
 {
-  m_notify_buffer.clear();
+  /* only update notify buffer if GUI has fetched events */
+  if (m_notify_buffer.remaining())
+    return;
+
   for (auto voice : active_voices)
     voice->mp_voice->fill_notify_buffer (m_notify_buffer);
 

@@ -53,7 +53,8 @@ Project::try_update_synth()
   if (m_synth_mutex.try_lock())
     {
       m_control_events.run_rt (this);
-      m_notify_buffer.assign (*m_midi_synth->notify_buffer());
+      if (!m_notify_buffer.remaining())
+        m_notify_buffer.take (*m_midi_synth->notify_buffer());
       m_voices_active = m_midi_synth->active_voice_count() > 0;
       state_changed = m_state_changed;
       m_state_changed = false;
@@ -157,8 +158,7 @@ Project::notify_take_buffer()
 {
   std::lock_guard<std::mutex> lg (m_synth_mutex);
   NotifyBuffer result;
-  result.assign (m_notify_buffer);
-  m_notify_buffer.clear();
+  result.take (m_notify_buffer);
   return result;
 }
 

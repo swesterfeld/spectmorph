@@ -28,10 +28,11 @@ class NotifyBuffer
   }
 public:
   void
-  assign (NotifyBuffer& other)
+  take (NotifyBuffer& other)
   {
-    data = other.data;
+    data.swap (other.data);
     rpos = 0;
+    other.clear();
   }
   void
   clear()
