@@ -37,7 +37,7 @@ protected:
 
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
-  std::map<uintptr_t, float> control_value_map;
+  std::map<uintptr_t, std::vector<VoiceOpValuesEvent::Voice>> control_value_map;
 
   int
   window_height (Property& property)
@@ -312,10 +312,8 @@ protected:
     auto vo_values = dynamic_cast<VoiceOpValuesEvent *> (ne);
     if (vo_values)
       {
-        for (size_t i = 0; i < vo_values->voices.size(); i++)
-          {
-            control_value_map[vo_values->voices[i].voice] = vo_values->voices[i].value;
-          }
+        if (vo_values->voices.size())
+          control_value_map[vo_values->voices[0].voice] = vo_values->voices;
       }
     auto av_status = dynamic_cast<ActiveVoiceStatusEvent *> (ne);
     if (av_status)
@@ -347,7 +345,11 @@ protected:
               }
             else
               {
-                control_status->add_voice (control_value_map[v]);
+                float value = 0;
+                for (const auto& op_entry : control_value_map[v])
+                  if (op_entry.op == (uintptr_t) mod_list->main_control_op())
+                    value = op_entry.value;
+                control_status->add_voice (value);
               }
           }
 
