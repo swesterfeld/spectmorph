@@ -157,15 +157,17 @@ struct InstEditVoiceEvent : public SynthNotifyEvent
 
 struct VoiceOpValuesEvent : public SynthNotifyEvent
 {
+  struct Voice
+  {
+    uintptr_t voice;
+    uintptr_t op;
+    float value;
+  };
   VoiceOpValuesEvent (NotifyBuffer& buffer) :
-    voice (buffer.read_seq<uintptr_t>()),
-    op (buffer.read_seq<uintptr_t>()),
-    value (buffer.read_seq<float>())
+    voices (buffer.read_seq<Voice>())
   {
   }
-  std::vector<uintptr_t> voice;
-  std::vector<uintptr_t> op;
-  std::vector<float>     value;
+  std::vector<Voice> voices;
 };
 
 struct ActiveVoiceStatusEvent : public SynthNotifyEvent

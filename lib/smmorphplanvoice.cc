@@ -179,9 +179,7 @@ MorphPlanVoice::reset_value (const TimeInfo& time_info)
 void
 MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
 {
-  uintptr_t voice_seq[modules.size()];
-  uintptr_t op_seq[modules.size()];
-  float value_seq[modules.size()];
+  VoiceOpValuesEvent::Voice voices[modules.size()];
   int n = 0;
 
   for (const OpModule& m : modules)
@@ -190,17 +188,15 @@ MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
 
       if (m.module->get_notify_value (notify_value))
         {
-          voice_seq[n] = (uintptr_t) this;
-          op_seq[n] = m.ptr_id;
-          value_seq[n] = notify_value;
+          voices[n].voice = (uintptr_t) this;
+          voices[n].op    = m.ptr_id;
+          voices[n].value = notify_value;
           n++;
         }
     }
   if (n)
     {
       buffer.write_int (VOICE_OP_VALUES_EVENT);
-      buffer.write_seq (voice_seq, n);
-      buffer.write_seq (op_seq, n);
-      buffer.write_seq (value_seq, n);
+      buffer.write_seq (voices, n);
     }
 }
