@@ -125,6 +125,17 @@ public:
           project->clear_wav_sets();
         });
   }
+  void
+  generate_notify_events()
+  {
+    NotifyBuffer notify_buffer = m_project->notify_take_buffer();
+    while (notify_buffer.remaining())
+      {
+        SynthNotifyEvent *sn_event = SynthNotifyEvent::create (notify_buffer);
+        signal_notify_event (sn_event);
+        delete sn_event;
+      }
+  }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
 
