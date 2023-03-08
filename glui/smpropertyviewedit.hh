@@ -312,9 +312,9 @@ protected:
     auto vo_values = dynamic_cast<VoiceOpValuesEvent *> (ne);
     if (vo_values)
       {
-        for (size_t i = 0; i < vo_values->voice.size(); i++)
+        for (size_t i = 0; i < vo_values->voices.size(); i++)
           {
-            control_value_map[vo_values->voice[i]] = vo_values->value[i];
+            control_value_map[vo_values->voices[i].voice] = vo_values->voices[i].value;
           }
       }
     auto av_status = dynamic_cast<ActiveVoiceStatusEvent *> (ne);
