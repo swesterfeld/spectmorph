@@ -142,17 +142,18 @@ enum NotifyEventType
 
 struct InstEditVoiceEvent : public SynthNotifyEvent
 {
+  struct Voice
+  {
+    int   note;
+    int   layer;
+    float current_pos;
+    float fundamental_note;
+  };
   InstEditVoiceEvent (NotifyBuffer& buffer) :
-    note (buffer.read_seq<int>()),
-    layer (buffer.read_seq<int>()),
-    current_pos (buffer.read_seq<float>()),
-    fundamental_note (buffer.read_seq<float>())
+    voices (buffer.read_seq<Voice>())
   {
   }
-  std::vector<int>   note;
-  std::vector<int>   layer;
-  std::vector<float> current_pos;
-  std::vector<float> fundamental_note;
+  std::vector<Voice> voices;
 };
 
 struct VoiceOpValuesEvent : public SynthNotifyEvent
