@@ -24,7 +24,6 @@ __ notify __
 - fix modulation range
 - sub should display state
 - allocations
-- sminstedit is now broken
 
 - multiple update regions
 - non-linear modulation mapping
