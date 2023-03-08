@@ -82,18 +82,8 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_right, &ScrollView::on_widget_size_changed);
 
   Timer *timer = new Timer (this);
-  /* FIXME: should event handling be done here */
-  connect (timer->signal_timeout, [this]() {
-    NotifyBuffer notify_buffer = synth_interface()->get_project()->notify_take_buffer();
-    while (notify_buffer.remaining())
-      {
-        SynthNotifyEvent *sn_event = SynthNotifyEvent::create (notify_buffer);
-        synth_interface()->signal_notify_event (sn_event);
-        delete sn_event;
-      }
-  });
+  connect (timer->signal_timeout, synth_interface(), &SynthInterface::generate_notify_events);
   timer->start (0);
-
 }
 
 void
