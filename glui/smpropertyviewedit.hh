@@ -321,40 +321,55 @@ protected:
         control_status->reset_voices();
         for (size_t i = 0; i < av_status->voice.size(); i++)
           {
-            auto v = av_status->voice[i];
+            float value = get_control_value (av_status, i, mod_list->main_control_type(), mod_list->main_control_op());
 
-            if (mod_list->main_control_type() == MorphOperator::CONTROL_GUI)
+            for (size_t index = 0; index < mod_list->count(); index++)
               {
-                control_status->add_voice (2 * (this->property.get() - this->property.min()) / double (this->property.max() - this->property.min()) - 1);
+                const auto& mod_entry = (*mod_list)[index];
+
+                float mod_value = get_control_value (av_status, i, mod_entry.control_type, mod_entry.control_op.get());
+                if (!mod_entry.bipolar)
+                  mod_value = 0.5 * (mod_value + 1);
+
+                value += mod_value * mod_entry.amount;
               }
-            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_1)
-              {
-                control_status->add_voice (av_status->control[0][i]);
-              }
-            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_2)
-              {
-                control_status->add_voice (av_status->control[1][i]);
-              }
-            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_3)
-              {
-                control_status->add_voice (av_status->control[2][i]);
-              }
-            else if (mod_list->main_control_type() == MorphOperator::CONTROL_SIGNAL_4)
-              {
-                control_status->add_voice (av_status->control[3][i]);
-              }
-            else
-              {
-                float value = 0;
-                for (const auto& op_entry : control_value_map[v])
-                  if (op_entry.op == (uintptr_t) mod_list->main_control_op())
-                    value = op_entry.value;
-                control_status->add_voice (value);
-              }
+
+            control_status->add_voice (std::clamp (value, -1.f, 1.f));
           }
 
         control_value_map.clear();
       }
+  }
+  float
+  get_control_value (ActiveVoiceStatusEvent *av_status, int i, MorphOperator::ControlType control_type, MorphOperator *control_op)
+  {
+    if (control_type == MorphOperator::CONTROL_GUI)
+      {
+        return 2 * (this->property.get() - this->property.min()) / double (this->property.max() - this->property.min()) - 1;
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_1)
+      {
+        return av_status->control[0][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_2)
+      {
+        return av_status->control[1][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_3)
+      {
+        return av_status->control[2][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_4)
+      {
+        return av_status->control[3][i];
+      }
+    if (control_type == MorphOperator::CONTROL_OP)
+      {
+        for (const auto& op_entry : control_value_map[av_status->voice[i]])
+          if (op_entry.op == (uintptr_t) mod_list->main_control_op())
+            return op_entry.value;
+      }
+    return 0;
   }
   void
   on_accept()
