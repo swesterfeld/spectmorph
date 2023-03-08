@@ -366,7 +366,7 @@ protected:
     if (control_type == MorphOperator::CONTROL_OP)
       {
         for (const auto& op_entry : control_value_map[av_status->voice[i]])
-          if (op_entry.op == (uintptr_t) mod_list->main_control_op())
+          if (op_entry.op == (uintptr_t) control_op)
             return op_entry.value;
       }
     return 0;
