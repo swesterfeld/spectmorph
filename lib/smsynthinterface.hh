@@ -139,6 +139,11 @@ public:
           }
         notify_buffer->end_read();
       }
+    else
+      {
+        // this allocates memory, but it is OK because we are in the UI thread
+        notify_buffer->resize_if_necessary();
+      }
   }
   Signal<SynthNotifyEvent *> signal_notify_event;
 };
