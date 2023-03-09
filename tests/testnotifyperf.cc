@@ -70,11 +70,16 @@ perf (bool decode)
   double t = get_time();
   for (int r = 0; r < RUNS; r++)
     {
-      notify_buffer.clear();
+      bool write_ok = notify_buffer.start_write();
+      assert (write_ok);
       for (int i = 0; i < EVENTS; i++)
         {
           fill_notify_buffer (notify_buffer);
         }
+      notify_buffer.end_write();
+
+      bool read_ok = notify_buffer.start_read();
+      assert (read_ok);
       if (decode)
         {
           while (notify_buffer.remaining())
@@ -84,6 +89,7 @@ perf (bool decode)
               delete e;
             }
         }
+      notify_buffer.end_read();
     }
   printf ("%.2f events/sec (decode = %s)\n", (EVENTS * RUNS) / (get_time() - t), decode ? "TRUE" : "FALSE");
 }
