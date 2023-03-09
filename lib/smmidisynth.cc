@@ -666,29 +666,29 @@ MidiSynth::set_control_by_cc (bool control_by_cc)
 void
 MidiSynth::notify_active_voice_status()
 {
-  /* only update notify buffer if GUI has fetched events */
-  if (m_notify_buffer.remaining())
-    return;
-
-  for (auto voice : active_voices)
-    voice->mp_voice->fill_notify_buffer (m_notify_buffer);
-
-  m_notify_buffer.write_int (ACTIVE_VOICE_STATUS_EVENT);
-
-  uintptr_t voice_seq[active_voices.size()];
-  for (size_t i = 0; i < active_voices.size(); i++)
-    voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
-
-  m_notify_buffer.write_seq (voice_seq, active_voices.size());
-
-  for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
+  if (m_notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
-      float control_input_seq[active_voices.size()];
+      for (auto voice : active_voices)
+        voice->mp_voice->fill_notify_buffer (m_notify_buffer);
 
-      for (size_t v = 0; v < active_voices.size(); v++)
-        control_input_seq[v] = control[i]; // FIXME: CLAP modulation
+      m_notify_buffer.write_int (ACTIVE_VOICE_STATUS_EVENT);
 
-      m_notify_buffer.write_seq (control_input_seq, active_voices.size());
+      uintptr_t voice_seq[active_voices.size()];
+      for (size_t i = 0; i < active_voices.size(); i++)
+        voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
+
+      m_notify_buffer.write_seq (voice_seq, active_voices.size());
+
+      for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
+        {
+          float control_input_seq[active_voices.size()];
+
+          for (size_t v = 0; v < active_voices.size(); v++)
+            control_input_seq[v] = control[i]; // FIXME: CLAP modulation
+
+          m_notify_buffer.write_seq (control_input_seq, active_voices.size());
+        }
+      m_notify_buffer.end_write();
     }
 }
 

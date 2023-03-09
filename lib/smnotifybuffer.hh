@@ -3,12 +3,19 @@
 #pragma once
 
 #include <vector>
+#include <atomic>
+#include <cassert>
 
 namespace SpectMorph
 {
 
 class NotifyBuffer
 {
+  enum {
+    STATE_EMPTY,
+    STATE_DATA_VALID
+  };
+  std::atomic<int> state { STATE_EMPTY };
   std::vector<unsigned char> data;
   size_t rpos = 0;
 
@@ -27,18 +34,31 @@ class NotifyBuffer
     rpos += size;
   }
 public:
-  void
-  take (NotifyBuffer& other)
+  bool
+  start_write()
   {
-    data.swap (other.data);
-    rpos = 0;
-    other.clear();
+    return state.load() == STATE_EMPTY;
   }
   void
-  clear()
+  end_write()
+  {
+    state.store (STATE_DATA_VALID);
+  }
+  bool
+  start_read()
+  {
+    if (state.load() == STATE_DATA_VALID)
+      {
+        rpos = 0;
+        return true;
+      }
+    return false;
+  }
+  void
+  end_read()
   {
     data.clear();
-    rpos = 0;
+    state.store (STATE_EMPTY);
   }
   void
   write_int (int i)

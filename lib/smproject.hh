@@ -144,7 +144,7 @@ public:
   void set_volume (double new_volume);
   double volume() const;
 
-  NotifyBuffer notify_take_buffer();
+  NotifyBuffer *notify_buffer();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
   MorphPlanPtr morph_plan() const;
