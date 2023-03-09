@@ -23,7 +23,6 @@ __ notify __
 - fix layout
 - fix modulation range
 - sub should display state
-- allocations
 
 - multiple update regions
 - non-linear modulation mapping
