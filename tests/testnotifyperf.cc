@@ -67,6 +67,7 @@ perf (bool decode)
 
   const int RUNS = 10'000'000;
   const int EVENTS = 3;
+  int received_events = 0;
   double t = get_time();
   for (int r = 0; r < RUNS; r++)
     {
@@ -79,18 +80,28 @@ perf (bool decode)
       notify_buffer.end_write();
 
       bool read_ok = notify_buffer.start_read();
-      assert (read_ok);
-      if (decode)
+      if (read_ok)
         {
-          while (notify_buffer.remaining())
+          if (decode)
             {
-              auto *e = create_event (notify_buffer);
-              assert (e);
-              delete e;
+              while (notify_buffer.remaining())
+                {
+                  auto *e = create_event (notify_buffer);
+                  assert (e);
+                  assert (e->voices.size() == 3);
+                  received_events++;
+                  delete e;
+                }
             }
+          notify_buffer.end_read();
         }
-      notify_buffer.end_read();
+      else
+        {
+          notify_buffer.resize_if_necessary();
+        }
     }
+  if (decode)
+    assert (received_events >= 100000);
   printf ("%.2f events/sec (decode = %s)\n", (EVENTS * RUNS) / (get_time() - t), decode ? "TRUE" : "FALSE");
 }
 
