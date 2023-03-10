@@ -20,10 +20,7 @@ new operators:
 NEWER TODOS:
 
 __ notify __
-- fix layout
 - fix modulation range
-- sub should display state
-
 - multiple update regions
 - non-linear modulation mapping
 - display modulation state in MorphPlanWindow
