@@ -90,6 +90,14 @@ PropertyView::PropertyView (Property& property, Widget *parent, MorphPlanWindow 
           control_combobox_title = tlabel;
 
           op_layout.add_row (3, control_combobox_title, control_combobox);
+
+          control_status = new ControlStatus (parent, property);
+          connect (window->synth_interface()->signal_notify_event, control_status, &ControlStatus::on_synth_notify_event);
+          connect (mod_list->signal_size_changed, [this]()
+            {
+              signal_visibility_changed();
+            });
+          op_layout.add_row (3, control_status);
         }
     }
 }
@@ -142,6 +150,8 @@ PropertyView::set_enabled (bool enabled)
     control_combobox->set_enabled (enabled);
   if (control_combobox_title)
     control_combobox_title->set_enabled (enabled);
+  if (control_status)
+    control_status->set_enabled (enabled);
 }
 
 void
@@ -167,6 +177,13 @@ PropertyView::set_visible (bool visible)
     control_combobox->set_visible (control_visible);
   if (control_combobox_title)
     control_combobox_title->set_visible (control_visible);
+
+  if (mod_list)
+    {
+      bool control_status_visible = (mod_list->main_control_type() != MorphOperator::CONTROL_GUI || mod_list->count());
+      if (control_status)
+        control_status->set_visible (control_status_visible);
+    }
 }
 
 void

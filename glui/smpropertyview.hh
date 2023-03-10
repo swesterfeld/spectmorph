@@ -16,6 +16,7 @@ namespace SpectMorph
 
 class OperatorLayout;
 class MorphPlanWindow;
+class ControlStatus;
 
 class PropertyViewLabel : public Label
 {
@@ -165,6 +166,7 @@ class PropertyView : public SignalReceiver
   ControlView control_view;
   ComboBoxOperator *control_combobox = nullptr;
   Widget *control_combobox_title = nullptr;
+  ControlStatus *control_status = nullptr;
 
   ModulationList *mod_list = nullptr;
 
