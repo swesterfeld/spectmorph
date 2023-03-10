@@ -324,12 +324,13 @@ protected:
             for (size_t index = 0; index < mod_list->count(); index++)
               {
                 const auto& mod_entry = (*mod_list)[index];
+                const float mod_value_scale = 2; /* range [-1:1] */
 
                 float mod_value = get_control_value (av_status, i, mod_entry.control_type, mod_entry.control_op.get());
                 if (!mod_entry.bipolar)
                   mod_value = 0.5 * (mod_value + 1);
 
-                value += mod_value * mod_entry.amount;
+                value += mod_value * mod_entry.amount * mod_value_scale;
               }
 
             control_status->add_voice (std::clamp (value, -1.f, 1.f));
