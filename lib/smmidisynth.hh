@@ -5,6 +5,7 @@
 
 #include "smmorphplansynth.hh"
 #include "sminsteditsynth.hh"
+#include "smnotifybuffer.hh"
 
 namespace SpectMorph {
 
@@ -67,6 +68,7 @@ class MidiSynth
   int                   next_note_id;
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
+  NotifyBuffer          m_notify_buffer;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -74,6 +76,7 @@ class MidiSynth
   void    free_unused_voices();
   bool    update_mono_voice();
   float   freq_from_note (float note);
+  void    notify_active_voice_status();
 
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
@@ -116,6 +119,7 @@ public:
   void set_gain (double gain);
   void set_control_by_cc (bool control_by_cc);
   InstEditSynth *inst_edit_synth();
+  NotifyBuffer *notify_buffer();
 };
 
 class SynthNotifyEvent
@@ -126,15 +130,57 @@ public:
   {
   }
   static SynthNotifyEvent *
-  create (const std::string& str);
+  create (NotifyBuffer& buffer);
 };
 
-struct InstEditVoice : public SynthNotifyEvent
+enum NotifyEventType
 {
-  std::vector<int>   note;
-  std::vector<int>   layer;
-  std::vector<float> current_pos;
-  std::vector<float> fundamental_note;
+  INST_EDIT_VOICE_EVENT = 748293, // some random number
+  VOICE_OP_VALUES_EVENT,
+  ACTIVE_VOICE_STATUS_EVENT
+};
+
+struct InstEditVoiceEvent : public SynthNotifyEvent
+{
+  struct Voice
+  {
+    int   note;
+    int   layer;
+    float current_pos;
+    float fundamental_note;
+  };
+  InstEditVoiceEvent (NotifyBuffer& buffer) :
+    voices (buffer.read_seq<Voice>())
+  {
+  }
+  std::vector<Voice> voices;
+};
+
+struct VoiceOpValuesEvent : public SynthNotifyEvent
+{
+  struct Voice
+  {
+    uintptr_t voice;
+    uintptr_t op;
+    float value;
+  };
+  VoiceOpValuesEvent (NotifyBuffer& buffer) :
+    voices (buffer.read_seq<Voice>())
+  {
+  }
+  std::vector<Voice> voices;
+};
+
+struct ActiveVoiceStatusEvent : public SynthNotifyEvent
+{
+  ActiveVoiceStatusEvent (NotifyBuffer& buffer) :
+    voice (buffer.read_seq<uintptr_t>())
+  {
+    for (auto& ctrl : control)
+      ctrl = buffer.read_seq<float>();
+  }
+  std::vector<uintptr_t> voice;
+  std::vector<float>     control[MorphPlan::N_CONTROL_INPUTS];
 };
 
 }

@@ -9,6 +9,7 @@
 #include "smmorphwavsource.hh"
 #include "smuserinstrumentindex.hh"
 #include "smproject.hh"
+#include "smhexstring.hh"
 
 using namespace SpectMorph;
 
@@ -52,7 +53,6 @@ Project::try_update_synth()
   if (m_synth_mutex.try_lock())
     {
       m_control_events.run_rt (this);
-      m_out_events = m_midi_synth->inst_edit_synth()->take_out_events();
       m_voices_active = m_midi_synth->active_voice_count() > 0;
       state_changed = m_state_changed;
       m_state_changed = false;
@@ -151,11 +151,10 @@ Project::get_wav_set (int object_id)
     return nullptr;
 }
 
-vector<string>
-Project::notify_take_events()
+NotifyBuffer *
+Project::notify_buffer()
 {
-  std::lock_guard<std::mutex> lg (m_synth_mutex);
-  return std::move (m_out_events);
+  return m_midi_synth->notify_buffer();
 }
 
 SynthInterface *

@@ -17,9 +17,9 @@ PropertyView::PropertyView (Property& property) :
   /* minimal constructor, to support custom layouts by creating widgets manually */
 }
 
-PropertyView::PropertyView (Property& property, Widget *parent, OperatorLayout& op_layout) :
+PropertyView::PropertyView (Property& property, Widget *parent, MorphPlanWindow *window, OperatorLayout& op_layout) :
   m_property (property),
-  window (parent->window())
+  window (window)
 {
   mod_list = property.modulation_list();
 

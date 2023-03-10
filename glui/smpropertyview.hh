@@ -15,6 +15,7 @@ namespace SpectMorph
 {
 
 class OperatorLayout;
+class MorphPlanWindow;
 
 class PropertyViewLabel : public Label
 {
@@ -167,12 +168,12 @@ class PropertyView : public SignalReceiver
 
   ModulationList *mod_list = nullptr;
 
-  Window *window = nullptr;
+  MorphPlanWindow *window = nullptr;
 
   void on_value_changed (int new_value);
 
 public:
-  PropertyView (Property& property, Widget *parent, OperatorLayout& layout);
+  PropertyView (Property& property, Widget *parent, MorphPlanWindow *window, OperatorLayout& layout);
   PropertyView (Property& property);
 
   ComboBox *create_combobox (Widget *parent);

@@ -4,7 +4,7 @@
 #define SPECTMORPH_INST_EDIT_SYNTH_HH
 
 #include "smlivedecoder.hh"
-#include "smbinbuffer.hh"
+#include "smnotifybuffer.hh"
 
 #include <string>
 #include <memory>
@@ -32,9 +32,6 @@ class InstEditSynth
   std::unique_ptr<WavSet>      wav_set;
   std::unique_ptr<WavSet>      ref_wav_set;
   std::vector<Voice>           voices;
-  BinBuffer                    notify_buffer;
-
-  std::vector<std::string>     out_events;
 public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
@@ -42,9 +39,7 @@ public:
   void take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set);
 
   void handle_midi_event (const unsigned char *midi_data, unsigned int layer);
-  void process (float *output, size_t n_values);
-
-  std::vector<std::string> take_out_events();
+  void process (float *output, size_t n_values, NotifyBuffer& notify_buffer);
 };
 
 }

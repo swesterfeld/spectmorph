@@ -114,17 +114,6 @@ InstEditBackend::have_builder()
 void
 InstEditBackend::on_timer()
 {
-  /* FIXME: event handling should probably not be done here */
-  for (auto ev : synth_interface->get_project()->notify_take_events())
-    {
-      SynthNotifyEvent *sn_event = SynthNotifyEvent::create (ev);
-      if (sn_event)
-        {
-          synth_interface->signal_notify_event (sn_event);
-          delete sn_event;
-        }
-    }
-
   std::lock_guard<std::mutex> lg (result_mutex);
   if (result_updated)
     {
@@ -347,7 +336,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   timer->start (0);
 
   connect (synth_interface->signal_notify_event, [this](SynthNotifyEvent *ne) {
-    auto iev = dynamic_cast<InstEditVoice *> (ne);
+    auto iev = dynamic_cast<InstEditVoiceEvent *> (ne);
     if (iev)
       {
         vector<float> play_pointers;
@@ -355,13 +344,13 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
         Sample *sample = instrument->sample (instrument->selected());
         if (sample)
           {
-            for (size_t i = 0; i < iev->current_pos.size(); i++)
+            for (const auto& voice : iev->voices)
               {
-                if (fabs (iev->fundamental_note[i] - sample->midi_note()) < 0.1 &&
-                    iev->layer[i] < 2) /* no play position pointer for reference */
+                if (fabs (voice.fundamental_note - sample->midi_note()) < 0.1 &&
+                    voice.layer < 2) /* no play position pointer for reference */
                   {
-                    double ppos = iev->current_pos[i];
-                    if (iev->layer[i] == 0)
+                    double ppos = voice.current_pos;
+                    if (voice.layer == 0)
                       {
                         const double clip_start_ms = sample->get_marker (MARKER_CLIP_START);
                         if (clip_start_ms > 0)
@@ -375,15 +364,20 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
         /* this is not 100% accurate if external midi events also affect
          * the state, but it should be good enough */
-        bool new_playing = iev->note.size() > 0;
+        bool new_playing = iev->voices.size() > 0;
         set_playing (new_playing);
 
         string text = "---";
-        if (iev->note.size() > 0)
-          text = note_to_text (iev->note[0]);
+        if (iev->voices.size() > 0)
+          text = note_to_text (iev->voices[0].note);
         playing_label->set_text (text);
         if (inst_edit_note)
-          inst_edit_note->set_active_notes (iev->note);
+          {
+            vector<int> active_notes;
+            for (const auto& voice : iev->voices)
+              active_notes.push_back (voice.note);
+            inst_edit_note->set_active_notes (active_notes);
+          }
       }
   });
 

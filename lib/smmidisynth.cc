@@ -442,7 +442,7 @@ MidiSynth::process (float *output, size_t n_values)
 {
   if (inst_edit) // inst edit mode? -> delegate
     {
-      m_inst_edit_synth.process (output, n_values);
+      m_inst_edit_synth.process (output, n_values, m_notify_buffer);
       return;
     }
   uint32_t offset = 0;
@@ -515,6 +515,8 @@ MidiSynth::process (float *output, size_t n_values)
   midi_events.clear();
 
   m_ppq_pos += n_values * m_tempo / (60. * m_mix_freq);
+
+  notify_active_voice_status();
 }
 
 void
@@ -661,30 +663,53 @@ MidiSynth::set_control_by_cc (bool control_by_cc)
   m_control_by_cc = control_by_cc;
 }
 
-// ----notify events----
-SynthNotifyEvent *
-SynthNotifyEvent::create (const std::string& str)
+void
+MidiSynth::notify_active_voice_status()
 {
-  BinBuffer buffer;
-  buffer.from_string (str);
-
-  buffer.read_int();
-  const char *type = buffer.read_string_inplace();
-  if (strcmp (type, "InstEditVoice") == 0)
+  if (m_notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
-      InstEditVoice *v = new InstEditVoice();
+      for (auto voice : active_voices)
+        voice->mp_voice->fill_notify_buffer (m_notify_buffer);
 
-      buffer.read_int_seq (v->note);
-      buffer.read_int_seq (v->layer);
-      buffer.read_float_seq (v->current_pos);
-      buffer.read_float_seq (v->fundamental_note);
+      m_notify_buffer.write_int (ACTIVE_VOICE_STATUS_EVENT);
 
-      if (buffer.read_error())
+      uintptr_t voice_seq[active_voices.size()];
+      for (size_t i = 0; i < active_voices.size(); i++)
+        voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
+
+      m_notify_buffer.write_seq (voice_seq, active_voices.size());
+
+      for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
         {
-          delete v;
-          return nullptr;
+          float control_input_seq[active_voices.size()];
+
+          for (size_t v = 0; v < active_voices.size(); v++)
+            control_input_seq[v] = control[i]; // FIXME: CLAP modulation
+
+          m_notify_buffer.write_seq (control_input_seq, active_voices.size());
         }
-      return v;
+      m_notify_buffer.end_write();
+    }
+}
+
+NotifyBuffer *
+MidiSynth::notify_buffer()
+{
+  return &m_notify_buffer;
+}
+
+// ----notify events----
+
+SynthNotifyEvent *
+SynthNotifyEvent::create (NotifyBuffer& buffer)
+{
+  NotifyEventType type = NotifyEventType (buffer.read_int());
+  switch (type)
+    {
+      case INST_EDIT_VOICE_EVENT:     return new InstEditVoiceEvent (buffer);
+      case VOICE_OP_VALUES_EVENT:     return new VoiceOpValuesEvent (buffer);
+      case ACTIVE_VOICE_STATUS_EVENT: return new ActiveVoiceStatusEvent (buffer);
+      default:                        printf ("unsupported SynthNotifyEvent %d\n", type);
     }
   return nullptr;
 }

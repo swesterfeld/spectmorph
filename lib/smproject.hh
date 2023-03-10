@@ -10,6 +10,7 @@
 #include "smbuilderthread.hh"
 #include "smmorphplan.hh"
 #include "smuserinstrumentindex.hh"
+#include "smnotifybuffer.hh"
 
 #include <thread>
 #include <mutex>
@@ -83,7 +84,7 @@ private:
 
   std::mutex                  m_synth_mutex;
   ControlEventVector          m_control_events;          // protected by synth mutex
-  std::vector<std::string>    m_out_events;              // protected by synth mutex
+  NotifyBuffer                m_notify_buffer;           // protected by synth mutex
   bool                        m_voices_active = false;   // protected by synth mutex
   bool                        m_state_changed = false;   // protected by synth mutex
 
@@ -143,7 +144,7 @@ public:
   void set_volume (double new_volume);
   double volume() const;
 
-  std::vector<std::string> notify_take_events();
+  NotifyBuffer *notify_buffer();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
   MorphPlanPtr morph_plan() const;

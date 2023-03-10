@@ -104,6 +104,11 @@ main (int argc, char **argv)
   EventLoop event_loop;
   InstEditWindow window (event_loop, &instrument, jack_synth.get_project()->synth_interface());
 
+  // notification events (play position pointer,...)
+  Timer *timer = new Timer (&window);
+  timer->connect (timer->signal_timeout, jack_synth.get_project()->synth_interface(), &SynthInterface::generate_notify_events);
+  timer->start (0);
+
   window.show();
   window.set_close_callback ([&]() { quit = true; });
 

@@ -10,6 +10,8 @@
 #include "smparamlabel.hh"
 #include "smtoolbutton.hh"
 #include "smscrollview.hh"
+#include "smmorphplanwindow.hh"
+#include "smcontrolstatus.hh"
 
 namespace SpectMorph
 {
@@ -17,11 +19,12 @@ namespace SpectMorph
 class PropertyViewEdit : public Window
 {
 protected:
-  Window         *parent_window;
+  MorphPlanWindow *parent_window;
   Property&       property;
   ModulationList *mod_list = nullptr;
 
   Button         *add_mod_button;
+  ControlStatus  *control_status = nullptr;
   Label          *value_label = nullptr;
   Slider         *slider = nullptr;
   LineEdit       *line_edit;
@@ -34,6 +37,7 @@ protected:
 
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
+  std::map<uintptr_t, std::vector<VoiceOpValuesEvent::Voice>> control_value_map;
 
   int
   window_height (Property& property)
@@ -43,7 +47,7 @@ protected:
     else
       return 72;
   }
-  PropertyViewEdit (Window *parent, Property& property) :
+  PropertyViewEdit (MorphPlanWindow *parent, Property& property) :
     Window (*parent->event_loop(), "Edit Property", 600, window_height (property), 0, false, parent->native_window()),
     parent_window (parent),
     property (property)
@@ -111,6 +115,10 @@ protected:
 
         grid.add_widget (new Label (this, "Controller"), 1, yoffset, 14, 3);
         grid.add_widget (control_combobox, 11, yoffset, 17, 3);
+
+        control_status = new ControlStatus (this);
+        grid.add_widget (control_status, 29, yoffset, 45, 3);
+
         yoffset += 3;
 
         mod_list_hdr = new Widget (this);
@@ -123,16 +131,16 @@ protected:
         scroll_view = new ScrollView (this);
         scroll_widget = new Widget (scroll_view);
 
-        add_mod_button = new Button (this, "Add Modulation");
+        add_mod_button = new Button (scroll_widget, "Add Modulation");
         connect (add_mod_button->signal_clicked, [this]() {
           ModulationList *mod_list = this->property.modulation_list();
           if (mod_list)
             mod_list->add_entry();
         });
-      }
 
-    if (mod_list)
-      connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
+        connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
+        connect (parent->synth_interface()->signal_notify_event, this, &PropertyViewEdit::on_synth_notify_event);
+      }
 
     update_layout();
     update_modulation_widgets();
@@ -153,10 +161,7 @@ protected:
 
     double yoffset = 5;
     if (mod_list)
-      {
-        grid.add_widget (add_mod_button, 29, 5, 11, 3);
-        yoffset += 3;
-      }
+      yoffset += 3;
 
     if (gui_slider_controller)
       {
@@ -216,7 +221,8 @@ protected:
         auto control_combobox = control_view->create_combobox (scroll_widget,
           property.op(),
           e.control_type,
-          e.control_op.get());
+          e.control_op.get(),
+          /* gui_slider_ok */ false);
         control_views.push_back (control_view);
 
         connect (control_view->signal_control_changed,
@@ -285,9 +291,10 @@ protected:
         mod_widgets.push_back (label);
         yoffset += 3;
       }
+    grid.add_widget (add_mod_button, 0, yoffset, 11, 3);
+    yoffset += 3;
     scroll_widget->set_height (yoffset * 8);
     scroll_view->on_widget_size_changed();
-    yoffset += 3;
   }
   void
   update_line_edit_text()
@@ -297,6 +304,72 @@ protected:
     set_keyboard_focus (line_edit, true);
     line_edit->select_all();
     line_edit_changed = false;
+  }
+  void
+  on_synth_notify_event (SynthNotifyEvent *ne)
+  {
+    auto vo_values = dynamic_cast<VoiceOpValuesEvent *> (ne);
+    if (vo_values)
+      {
+        if (vo_values->voices.size())
+          control_value_map[vo_values->voices[0].voice] = vo_values->voices;
+      }
+    auto av_status = dynamic_cast<ActiveVoiceStatusEvent *> (ne);
+    if (av_status)
+      {
+        control_status->reset_voices();
+        for (size_t i = 0; i < av_status->voice.size(); i++)
+          {
+            float value = get_control_value (av_status, i, mod_list->main_control_type(), mod_list->main_control_op());
+
+            for (size_t index = 0; index < mod_list->count(); index++)
+              {
+                const auto& mod_entry = (*mod_list)[index];
+                const float mod_value_scale = 2; /* range [-1:1] */
+
+                float mod_value = get_control_value (av_status, i, mod_entry.control_type, mod_entry.control_op.get());
+                if (!mod_entry.bipolar)
+                  mod_value = 0.5 * (mod_value + 1);
+
+                value += mod_value * mod_entry.amount * mod_value_scale;
+              }
+
+            control_status->add_voice (std::clamp (value, -1.f, 1.f));
+          }
+
+        control_value_map.clear();
+      }
+  }
+  float
+  get_control_value (ActiveVoiceStatusEvent *av_status, int i, MorphOperator::ControlType control_type, MorphOperator *control_op)
+  {
+    if (control_type == MorphOperator::CONTROL_GUI)
+      {
+        return 2 * (this->property.get() - this->property.min()) / double (this->property.max() - this->property.min()) - 1;
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_1)
+      {
+        return av_status->control[0][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_2)
+      {
+        return av_status->control[1][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_3)
+      {
+        return av_status->control[2][i];
+      }
+    if (control_type == MorphOperator::CONTROL_SIGNAL_4)
+      {
+        return av_status->control[3][i];
+      }
+    if (control_type == MorphOperator::CONTROL_OP)
+      {
+        for (const auto& op_entry : control_value_map[av_status->voice[i]])
+          if (op_entry.op == (uintptr_t) control_op)
+            return op_entry.value;
+      }
+    return 0;
   }
   void
   on_accept()
@@ -315,7 +388,7 @@ protected:
 
 public:
   static void
-  create (Window *window, Property& property)
+  create (MorphPlanWindow *window, Property& property)
   {
     Window *rwin = new PropertyViewEdit (window, property);
 

@@ -6,6 +6,7 @@
 #include "smmessagebox.hh"
 #include "smeventloop.hh"
 #include "smconfig.hh"
+#include "smtimer.hh"
 
 using namespace SpectMorph;
 using std::string;
@@ -79,6 +80,10 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
 
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_left, &ScrollView::on_widget_size_changed);
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_right, &ScrollView::on_widget_size_changed);
+
+  Timer *timer = new Timer (this);
+  connect (timer->signal_timeout, synth_interface(), &SynthInterface::generate_notify_events);
+  timer->start (0);
 }
 
 void

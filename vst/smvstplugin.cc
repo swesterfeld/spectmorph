@@ -24,6 +24,7 @@
 #include "smvstplugin.hh"
 #include "smmorphoutputmodule.hh"
 #include "smzip.hh"
+#include "smhexstring.hh"
 
 #ifdef SM_OS_MACOS // need to include this before using namespace SpectMorph
 #include <CoreFoundation/CoreFoundation.h>
