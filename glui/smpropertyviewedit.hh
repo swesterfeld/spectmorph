@@ -115,10 +115,10 @@ protected:
 
         grid.add_widget (new Label (this, "Controller"), 1, yoffset, 14, 3);
         grid.add_widget (control_combobox, 11, yoffset, 17, 3);
-        yoffset += 3;
 
         control_status = new ControlStatus (this);
-        grid.add_widget (control_status, 1, yoffset, 70, 3);
+        grid.add_widget (control_status, 29, yoffset, 45, 3);
+
         yoffset += 3;
 
         mod_list_hdr = new Widget (this);
@@ -131,7 +131,7 @@ protected:
         scroll_view = new ScrollView (this);
         scroll_widget = new Widget (scroll_view);
 
-        add_mod_button = new Button (this, "Add Modulation");
+        add_mod_button = new Button (scroll_widget, "Add Modulation");
         connect (add_mod_button->signal_clicked, [this]() {
           ModulationList *mod_list = this->property.modulation_list();
           if (mod_list)
@@ -161,10 +161,7 @@ protected:
 
     double yoffset = 5;
     if (mod_list)
-      {
-        grid.add_widget (add_mod_button, 29, 5, 11, 3);
-        yoffset += 6;
-      }
+      yoffset += 3;
 
     if (gui_slider_controller)
       {
@@ -293,9 +290,10 @@ protected:
         mod_widgets.push_back (label);
         yoffset += 3;
       }
+    grid.add_widget (add_mod_button, 0, yoffset, 11, 3);
+    yoffset += 3;
     scroll_widget->set_height (yoffset * 8);
     scroll_view->on_widget_size_changed();
-    yoffset += 3;
   }
   void
   update_line_edit_text()
