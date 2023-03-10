@@ -158,6 +158,9 @@ Widget::draw (const DrawEvent& devent)
 void
 Widget::update()
 {
+  if (!m_visible)
+    return;
+
   Window *win = window();
 
   if (win)
@@ -186,6 +189,9 @@ Widget::update_full()
 void
 Widget::update (double x, double y, double width, double height)
 {
+  if (!m_visible)
+    return;
+
   Window *win = window();
 
   if (win)
