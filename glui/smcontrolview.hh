@@ -26,14 +26,17 @@ class ControlView : public SignalReceiver
   ComboBoxOperator *control_combobox = nullptr;
 public:
   ComboBoxOperator *
-  create_combobox (Widget *parent, MorphOperator *op, MorphOperator::ControlType initial_type, MorphOperator *initial_op)
+  create_combobox (Widget *parent, MorphOperator *op, MorphOperator::ControlType initial_type, MorphOperator *initial_op, bool gui_slider_ok = true)
   {
     auto control_operator_filter = ComboBoxOperator::make_filter (op, MorphOperator::OUTPUT_CONTROL);
     control_combobox = new ComboBoxOperator (parent, op->morph_plan(), control_operator_filter);
 
     for (auto entry : entries)
       {
-        control_combobox->add_str_choice (entry.text);
+        if (entry.ctype != MorphOperator::CONTROL_GUI || gui_slider_ok)
+          {
+            control_combobox->add_str_choice (entry.text);
+          }
         if (entry.ctype == initial_type)
           control_combobox->set_active_str_choice (entry.text);
       }

@@ -221,7 +221,8 @@ protected:
         auto control_combobox = control_view->create_combobox (scroll_widget,
           property.op(),
           e.control_type,
-          e.control_op.get());
+          e.control_op.get(),
+          /* gui_slider_ok */ false);
         control_views.push_back (control_view);
 
         connect (control_view->signal_control_changed,
