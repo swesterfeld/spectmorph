@@ -251,5 +251,11 @@ MorphGridWidget::on_voice_status_changed (VoiceStatus *voice_status)
   redraw_voices();
   x_voice_values = voice_status->get_values (prop_x_morphing);
   y_voice_values = voice_status->get_values (prop_y_morphing);
+
+  if (morph_grid->width() == 1)
+    std::fill (x_voice_values.begin(), x_voice_values.end(), 0);
+  if (morph_grid->height() == 1)
+    std::fill (y_voice_values.begin(), y_voice_values.end(), 0);
+
   redraw_voices();
 }

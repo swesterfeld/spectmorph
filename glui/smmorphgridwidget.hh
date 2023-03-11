@@ -5,7 +5,6 @@
 
 #include "smmorphgrid.hh"
 #include "smwidget.hh"
-#include "smmidisynth.hh"
 #include "smvoicestatus.hh"
 
 namespace SpectMorph

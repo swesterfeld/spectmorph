@@ -192,7 +192,6 @@ PropertyView::set_show_control_status (bool show)
   show_control_status = show;
 }
 
-
 void
 PropertyView::on_edit_details()
 {
