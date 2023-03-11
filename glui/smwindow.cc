@@ -13,6 +13,7 @@
 #include "smeventloop.hh"
 #include "smutils.hh"
 #include "pugl/cairo_gl.h"
+#include <map>
 #include <math.h>
 #include <string.h>
 #include <unistd.h>
@@ -22,6 +23,7 @@ using namespace SpectMorph;
 
 using std::vector;
 using std::string;
+using std::map;
 using std::min;
 using std::max;
 
@@ -316,17 +318,48 @@ struct IRect
 void
 Window::on_expose_event (const PuglEventExpose& event)
 {
-  // glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  std::map<Widget *, Rect> merged_regions;
 
+  if (update_full_redraw)
+    {
+      redraw_update_region (Rect(), true, merged_regions);
+    }
+  else
+    {
+      for (const auto& update_region : update_regions)
+        {
+          Widget *widget = update_region.update_strategy == UPDATE_LOCAL ? update_region.widget : nullptr;
+
+          Rect& rect = merged_regions[widget];
+          rect = rect.rect_union (update_region.region);
+        }
+
+      if (debug_update_region)
+        {
+          redraw_update_region (Rect(), false, merged_regions);
+        }
+      else
+        {
+          for (const auto& [widget, rect] : merged_regions)
+            redraw_update_region (rect, false, merged_regions);
+        }
+    }
+  update_full_redraw = false;
+  update_regions.clear();
+}
+
+void
+Window::redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions)
+{
   cairo_save (cairo_gl->cr);
 
   /* for debugging, we want a rectangle around the area we would normally update */
   const bool draw_update_region_rect = debug_update_region && !update_full_redraw;
   if (draw_update_region_rect)
-    update_full_redraw = true;   // always draw full frames in debug mode
+    full_redraw = true;   // always draw full frames in debug mode
 
   Rect update_region_larger;
-  if (!update_full_redraw)
+  if (!full_redraw)
     {
       // setup clipping - only need to redraw part of the screen
       IRect r (update_region, global_scale);
@@ -353,7 +386,7 @@ Window::on_expose_event (const PuglEventExpose& event)
           if (get_layer (w, menu_widget, dialog_widget) == layer && get_visible_recursive (w))
             {
               Rect visible_rect = w->abs_visible_rect();
-              if (!update_full_redraw)
+              if (!full_redraw)
                 {
                   // only redraw changed parts
                   visible_rect = visible_rect.intersection (update_region_larger);
@@ -425,18 +458,21 @@ Window::on_expose_event (const PuglEventExpose& event)
 
   if (draw_update_region_rect)
     {
-      cairo_t *cr = cairo_gl->cr;
+      for (const auto& [widget, region] : merged_regions)
+        {
+          cairo_t *cr = cairo_gl->cr;
 
-      cairo_save (cr);
-      cairo_scale (cr, global_scale, global_scale);
-      cairo_rectangle (cr, update_region.x(), update_region.y(), update_region.width(), update_region.height());
-      cairo_set_source_rgb (cr, 1.0, 0.4, 0.4);
-      cairo_set_line_width (cr, 3.0);
-      cairo_stroke (cr);
-      cairo_restore (cr);
+          cairo_save (cr);
+          cairo_scale (cr, global_scale, global_scale);
+          cairo_rectangle (cr, region.x(), region.y(), region.width(), region.height());
+          cairo_set_source_rgb (cr, 1.0, 0.4, 0.4);
+          cairo_set_line_width (cr, 3.0);
+          cairo_stroke (cr);
+          cairo_restore (cr);
+        }
     }
 
-  if (update_full_redraw)
+  if (full_redraw)
     {
       cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
     }
@@ -457,9 +493,6 @@ Window::on_expose_event (const PuglEventExpose& event)
 
       cairo_gl->draw (draw_region.x, draw_region.y, draw_region.w, draw_region.h);
     }
-  // clear update region (will be assigned by update[_full] before next redraw)
-  update_region = Rect();
-  update_full_redraw = false;
 }
 
 void
@@ -698,9 +731,15 @@ Window::on_key_event (const PuglEventKey& event)
       if (Debug::enabled ("global")) /* don't do this in production */
         {
           if (event.character == 'g')
-            draw_grid = !draw_grid;
+            {
+              draw_grid = !draw_grid;
+              need_update (nullptr, nullptr, UPDATE_MERGE);
+            }
           else if (event.character == 'u')
-            debug_update_region = !debug_update_region;
+            {
+              debug_update_region = !debug_update_region;
+              need_update (nullptr, nullptr, UPDATE_MERGE);
+            }
         }
     }
 }
@@ -789,7 +828,7 @@ Window::on_file_selected (const std::string& filename)
 }
 
 void
-Window::need_update (Widget *widget, const Rect *changed_rect)
+Window::need_update (Widget *widget, const Rect *changed_rect, UpdateStrategy update_strategy)
 {
   if (widget)
     {
@@ -804,7 +843,11 @@ Window::need_update (Widget *widget, const Rect *changed_rect)
                                    changed_rect->height());
           widget_rect = widget_rect.intersection (abs_changed_rect);
         }
-      update_region = update_region.rect_union (widget_rect);
+      UpdateRegion region;
+      region.widget = widget;
+      region.update_strategy = update_strategy;
+      region.region = widget_rect;
+      update_regions.push_back (region);
     }
   else
     update_full_redraw = true;

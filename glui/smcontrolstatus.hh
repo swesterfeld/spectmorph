@@ -30,7 +30,7 @@ public:
   redraw_voices()
   {
     for (auto v : voices)
-      update (value_pos (v) - RADIUS - 1, height() / 2 - RADIUS - 1, RADIUS * 2 + 2, RADIUS * 2 + 2);
+      update (value_pos (v) - RADIUS - 1, height() / 2 - RADIUS - 1, RADIUS * 2 + 2, RADIUS * 2 + 2, UPDATE_LOCAL);
   }
   void
   reset_voices()

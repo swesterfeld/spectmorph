@@ -8,6 +8,7 @@
 #include "smnativefiledialog.hh"
 #include <memory>
 #include <functional>
+#include <map>
 
 namespace SpectMorph
 {
@@ -21,6 +22,12 @@ class EventLoop;
 class Window : public Widget
 {
 protected:
+  struct UpdateRegion
+  {
+    Widget         *widget = nullptr;
+    Rect            region;
+    UpdateStrategy  update_strategy = UPDATE_MERGE;
+  };
   PuglView                 *view;
   std::unique_ptr<CairoGL>  cairo_gl;
   bool                      draw_grid;
@@ -35,7 +42,7 @@ protected:
   Widget                   *dialog_widget = nullptr;
   std::unique_ptr<Window>   popup_window;
   double                    global_scale;
-  Rect                      update_region;
+  std::vector<UpdateRegion> update_regions;
   bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
   EventLoop                *m_event_loop = nullptr;
@@ -57,6 +64,8 @@ protected:
   void on_close_event (const PuglEventClose& event);
   void on_configure_event (const PuglEventConfigure& event);
 
+  void redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions);
+
 public:
   Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
   virtual ~Window();
@@ -70,7 +79,7 @@ public:
   void open_file_dialog (const std::string& title, const FileDialogFormats& formats, std::function<void(std::string)> callback);
   void save_file_dialog (const std::string& title, const FileDialogFormats& formats, std::function<void(std::string)> callback);
   void on_file_selected (const std::string& filename);
-  void need_update (Widget *widget, const Rect *changed_rect = nullptr);
+  void need_update (Widget *widget, const Rect *changed_rect, UpdateStrategy update_strategy);
   void on_widget_deleted (Widget *widget);
   void set_menu_widget (Widget *widget);
   void set_keyboard_focus (Widget *widget, bool release_on_click = false);

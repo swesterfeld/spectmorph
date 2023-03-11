@@ -27,6 +27,11 @@ enum MouseButton  {
   RIGHT_BUTTON = 4
 };
 
+enum UpdateStrategy {
+  UPDATE_MERGE,
+  UPDATE_LOCAL
+};
+
 class Window;
 class ScrollView;
 class Timer;
@@ -424,8 +429,8 @@ public:
   Signal<> signal_height_changed;
 
   Rect   abs_visible_rect();
-  void   update (double x, double y, double width, double height);
-  void   update();
+  void   update (double x, double y, double width, double height, UpdateStrategy update_strategy = UPDATE_MERGE);
+  void   update (UpdateStrategy update_strategy = UPDATE_MERGE);
   void   update_with_children();
   void   update_full();
   void   delete_later();

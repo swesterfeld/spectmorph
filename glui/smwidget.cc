@@ -156,7 +156,7 @@ Widget::draw (const DrawEvent& devent)
 }
 
 void
-Widget::update()
+Widget::update (UpdateStrategy update_strategy)
 {
   if (!m_visible)
     return;
@@ -164,7 +164,7 @@ Widget::update()
   Window *win = window();
 
   if (win)
-    win->need_update (this);
+    win->need_update (this, /* rect */ nullptr, update_strategy);
 }
 
 void
@@ -183,11 +183,11 @@ Widget::update_full()
   Window *win = window();
 
   if (win)
-    win->need_update (nullptr);
+    win->need_update (nullptr, nullptr, UPDATE_MERGE);
 }
 
 void
-Widget::update (double x, double y, double width, double height)
+Widget::update (double x, double y, double width, double height, UpdateStrategy update_strategy)
 {
   if (!m_visible)
     return;
@@ -198,7 +198,7 @@ Widget::update (double x, double y, double width, double height)
     {
       const Rect r (x, y, width, height);
 
-      win->need_update (this, &r);
+      win->need_update (this, &r, update_strategy);
     }
 }
 
