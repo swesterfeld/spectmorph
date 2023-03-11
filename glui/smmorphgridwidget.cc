@@ -13,7 +13,9 @@ using std::min;
 
 MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view) :
   Widget (parent),
-  morph_grid (morph_grid)
+  morph_grid (morph_grid),
+  prop_x_morphing (*morph_grid->property (MorphGrid::P_X_MORPHING)),
+  prop_y_morphing (*morph_grid->property (MorphGrid::P_Y_MORPHING))
 {
   connect (morph_grid_view->signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
   connect (signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
@@ -123,8 +125,7 @@ MorphGridWidget::draw (const DrawEvent& devent)
       const double vy = start_x + (end_x - start_x) * (y_voice_values[v] + 1) / 2.0;
 
       // circle
-      static constexpr double RADIUS = 6;
-      cairo_arc (cr, vx, vy, RADIUS, 0, 2 * M_PI);
+      cairo_arc (cr, vx, vy, VOICE_RADIUS, 0, 2 * M_PI);
       du.set_color (vcolor);
       cairo_fill (cr);
     }
@@ -225,12 +226,22 @@ MorphGridWidget::on_grid_params_changed()
 }
 
 void
+MorphGridWidget::redraw_voices()
+{
+  for (size_t v = 0; v < x_voice_values.size(); v++)
+    {
+      const double vx = start_x + (end_x - start_x) * (x_voice_values[v] + 1) / 2.0;
+      const double vy = start_x + (end_x - start_x) * (y_voice_values[v] + 1) / 2.0;
+
+      update (vx - VOICE_RADIUS - 1, vy - VOICE_RADIUS - 1, VOICE_RADIUS * 2 + 2, VOICE_RADIUS * 2 + 2, UPDATE_LOCAL);
+    }
+}
+
+void
 MorphGridWidget::on_voice_status_changed (VoiceStatus *voice_status)
 {
-  Property *x_morphing = morph_grid->property (MorphGrid::P_X_MORPHING);
-  Property *y_morphing = morph_grid->property (MorphGrid::P_Y_MORPHING);
-
-  x_voice_values = voice_status->get_values (*x_morphing);
-  y_voice_values = voice_status->get_values (*y_morphing);
-  update();
+  redraw_voices();
+  x_voice_values = voice_status->get_values (prop_x_morphing);
+  y_voice_values = voice_status->get_values (prop_y_morphing);
+  redraw_voices();
 }

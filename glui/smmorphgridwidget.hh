@@ -25,12 +25,18 @@ class MorphGridWidget : public Widget
   double end_x = 0;
   double end_y = 0;
 
+  Property& prop_x_morphing;
+  Property& prop_y_morphing;
+
   bool move_controller = false;
+
+  static constexpr double VOICE_RADIUS = 6;
 
 public:
   MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view);
 
   void draw (const DrawEvent& devent) override;
+  void redraw_voices();
 
   void mouse_press (const MouseEvent& event) override;
   void mouse_release (const MouseEvent& event) override;
