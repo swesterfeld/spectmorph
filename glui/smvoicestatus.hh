@@ -3,6 +3,7 @@
 #pragma once
 
 #include "smmodulationlist.hh"
+#include "smmidisynth.hh"
 
 namespace SpectMorph
 {
