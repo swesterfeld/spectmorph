@@ -57,6 +57,7 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   grid_widget = new MorphGridWidget (body_widget, morph_grid, this);
   op_layout.add_fixed (30, 30, grid_widget);
 
+  connect (morph_plan_window->synth_interface()->signal_notify_event, grid_widget, &MorphGridWidget::on_synth_notify_event);
   connect (grid_widget->signal_selection_changed, this, &MorphGridView::on_selection_changed);
 
   // Source

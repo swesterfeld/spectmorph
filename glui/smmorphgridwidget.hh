@@ -5,6 +5,7 @@
 
 #include "smmorphgrid.hh"
 #include "smwidget.hh"
+#include "smmidisynth.hh"
 
 namespace SpectMorph
 {
@@ -16,6 +17,8 @@ class MorphGridWidget : public Widget
 
   std::vector<int> x_coord;
   std::vector<int> y_coord;
+  std::vector<float> x_voice_values;
+  std::vector<float> y_voice_values;
   double start_x = 0;
   double start_y = 0;
   double end_x = 0;
@@ -34,6 +37,7 @@ public:
 
 /* slots: */
   void on_grid_params_changed();
+  void on_synth_notify_event (SynthNotifyEvent *ne);
 
 /* signals: */
   Signal<> signal_selection_changed;
