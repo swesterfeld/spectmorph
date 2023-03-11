@@ -8,14 +8,24 @@
 
 using namespace SpectMorph;
 
+using std::vector;
 using std::min;
 
 MorphGridWidget::MorphGridWidget (Widget *parent, MorphGrid *morph_grid, MorphGridView *morph_grid_view) :
   Widget (parent),
-  morph_grid (morph_grid)
+  morph_grid (morph_grid),
+  prop_x_morphing (*morph_grid->property (MorphGrid::P_X_MORPHING)),
+  prop_y_morphing (*morph_grid->property (MorphGrid::P_Y_MORPHING))
 {
   connect (morph_grid_view->signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
   connect (signal_grid_params_changed, this, &MorphGridWidget::on_grid_params_changed);
+}
+
+Point
+MorphGridWidget::prop_to_pixel (double x, double y)
+{
+  return Point (start_x + (end_x - start_x) * (x + 1) / 2.0,
+                start_y + (end_y - start_y) * (y + 1) / 2.0);
 }
 
 void
@@ -114,18 +124,32 @@ MorphGridWidget::draw (const DrawEvent& devent)
         }
     }
 
+  Color vcolor = Color (0.7, 0.7, 0.7);
 
-  const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
-  const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
+  for (size_t v = 0; v < x_voice_values.size(); v++)
+    {
+      const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
 
-  cairo_set_source_rgb (cr, 0.5, 0.5, 1.0);
-  cairo_set_line_width (cr, 3);
+      // circle
+      cairo_arc (cr, p.x(), p.y(), VOICE_RADIUS, 0, 2 * M_PI);
+      du.set_color (vcolor);
+      cairo_fill (cr);
+    }
 
-  cairo_move_to (cr, mx - 10, my - 10);
-  cairo_line_to (cr, mx + 10, my + 10);
-  cairo_move_to (cr, mx - 10, my + 10);
-  cairo_line_to (cr, mx + 10, my - 10);
-  cairo_stroke (cr);
+  if (prop_x_morphing.modulation_list()->main_control_type() == MorphOperator::CONTROL_GUI
+  ||  prop_y_morphing.modulation_list()->main_control_type() == MorphOperator::CONTROL_GUI)
+    {
+      const auto pm = prop_to_pixel (morph_grid->x_morphing(), morph_grid->y_morphing());
+
+      cairo_set_source_rgb (cr, 0.5, 0.5, 1.0);
+      cairo_set_line_width (cr, 3);
+
+      cairo_move_to (cr, pm.x() - 10, pm.y() - 10);
+      cairo_line_to (cr, pm.x() + 10, pm.y() + 10);
+      cairo_move_to (cr, pm.x() - 10, pm.y() + 10);
+      cairo_line_to (cr, pm.x() + 10, pm.y() - 10);
+      cairo_stroke (cr);
+    }
 }
 
 void
@@ -134,11 +158,10 @@ MorphGridWidget::mouse_press (const MouseEvent& event)
   if (event.button != LEFT_BUTTON)
     return;
 
-  const double mx = start_x + (end_x - start_x) * (morph_grid->x_morphing() + 1) / 2.0;
-  const double my = start_y + (end_y - start_y) * (morph_grid->y_morphing() + 1) / 2.0;
+  const auto pm = prop_to_pixel (morph_grid->x_morphing(), morph_grid->y_morphing());
 
-  double mdx = mx - event.x;
-  double mdy = my - event.y;
+  double mdx = pm.x() - event.x;
+  double mdy = pm.y() - event.y;
   double mdist = sqrt (mdx * mdx + mdy * mdy);
   if (mdist < 11)
     {
@@ -209,4 +232,30 @@ MorphGridWidget::on_grid_params_changed()
       signal_selection_changed();
     }
   update();
+}
+
+void
+MorphGridWidget::redraw_voices()
+{
+  for (size_t v = 0; v < x_voice_values.size(); v++)
+    {
+      const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
+
+      update (p.x() - VOICE_RADIUS - 1, p.y() - VOICE_RADIUS - 1, VOICE_RADIUS * 2 + 2, VOICE_RADIUS * 2 + 2, UPDATE_LOCAL);
+    }
+}
+
+void
+MorphGridWidget::on_voice_status_changed (VoiceStatus *voice_status)
+{
+  redraw_voices();
+  x_voice_values = voice_status->get_values (prop_x_morphing);
+  y_voice_values = voice_status->get_values (prop_y_morphing);
+
+  if (morph_grid->width() == 1)
+    std::fill (x_voice_values.begin(), x_voice_values.end(), 0);
+  if (morph_grid->height() == 1)
+    std::fill (y_voice_values.begin(), y_voice_values.end(), 0);
+
+  redraw_voices();
 }

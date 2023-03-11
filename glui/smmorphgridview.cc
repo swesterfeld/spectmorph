@@ -50,6 +50,9 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   pv_x_morphing = add_property_view (MorphGrid::P_X_MORPHING, op_layout);
   pv_y_morphing = add_property_view (MorphGrid::P_Y_MORPHING, op_layout);
 
+  pv_x_morphing->set_show_control_status (false);
+  pv_y_morphing->set_show_control_status (false);
+
   connect (pv_x_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
   connect (pv_y_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
 
@@ -57,6 +60,7 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   grid_widget = new MorphGridWidget (body_widget, morph_grid, this);
   op_layout.add_fixed (30, 30, grid_widget);
 
+  connect (morph_plan_window->signal_voice_status_changed, grid_widget, &MorphGridWidget::on_voice_status_changed);
   connect (grid_widget->signal_selection_changed, this, &MorphGridView::on_selection_changed);
 
   // Source

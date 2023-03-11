@@ -92,7 +92,7 @@ PropertyView::PropertyView (Property& property, Widget *parent, MorphPlanWindow 
           op_layout.add_row (3, control_combobox_title, control_combobox);
 
           control_status = new ControlStatus (parent, property);
-          connect (window->synth_interface()->signal_notify_event, control_status, &ControlStatus::on_synth_notify_event);
+          connect (window->signal_voice_status_changed, control_status, &ControlStatus::on_voice_status_changed);
           connect (mod_list->signal_size_changed, [this]()
             {
               signal_visibility_changed();
@@ -182,8 +182,14 @@ PropertyView::set_visible (bool visible)
     {
       bool control_status_visible = (mod_list->main_control_type() != MorphOperator::CONTROL_GUI || mod_list->count());
       if (control_status)
-        control_status->set_visible (control_status_visible);
+        control_status->set_visible (control_status_visible && show_control_status);
     }
+}
+
+void
+PropertyView::set_show_control_status (bool show)
+{
+  show_control_status = show;
 }
 
 void

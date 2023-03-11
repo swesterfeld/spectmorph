@@ -84,6 +84,8 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   Timer *timer = new Timer (this);
   connect (timer->signal_timeout, synth_interface(), &SynthInterface::generate_notify_events);
   timer->start (0);
+
+  connect (synth_interface()->signal_notify_event, this, &MorphPlanWindow::on_synth_notify_event);
 }
 
 void
@@ -238,4 +240,11 @@ SynthInterface*
 MorphPlanWindow::synth_interface()
 {
   return m_synth_interface;
+}
+
+void
+MorphPlanWindow::on_synth_notify_event (SynthNotifyEvent *ne)
+{
+  if (m_voice_status.process_notify_event (ne))
+    signal_voice_status_changed (&m_voice_status);
 }
