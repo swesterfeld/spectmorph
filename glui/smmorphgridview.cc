@@ -50,6 +50,9 @@ MorphGridView::MorphGridView (Widget *parent, MorphGrid *morph_grid, MorphPlanWi
   pv_x_morphing = add_property_view (MorphGrid::P_X_MORPHING, op_layout);
   pv_y_morphing = add_property_view (MorphGrid::P_Y_MORPHING, op_layout);
 
+  pv_x_morphing->set_show_control_status (false);
+  pv_y_morphing->set_show_control_status (false);
+
   connect (pv_x_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
   connect (pv_y_morphing->property()->signal_value_changed, [this]() { signal_grid_params_changed(); });
 

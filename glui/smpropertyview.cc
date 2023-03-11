@@ -182,9 +182,16 @@ PropertyView::set_visible (bool visible)
     {
       bool control_status_visible = (mod_list->main_control_type() != MorphOperator::CONTROL_GUI || mod_list->count());
       if (control_status)
-        control_status->set_visible (control_status_visible);
+        control_status->set_visible (control_status_visible && show_control_status);
     }
 }
+
+void
+PropertyView::set_show_control_status (bool show)
+{
+  show_control_status = show;
+}
+
 
 void
 PropertyView::on_edit_details()

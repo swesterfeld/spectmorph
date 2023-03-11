@@ -167,6 +167,7 @@ class PropertyView : public SignalReceiver
   ComboBoxOperator *control_combobox = nullptr;
   Widget *control_combobox_title = nullptr;
   ControlStatus *control_status = nullptr;
+  bool show_control_status = true;
 
   ModulationList *mod_list = nullptr;
 
@@ -183,6 +184,7 @@ public:
 
   void set_enabled (bool enabled);
   void set_visible (bool visible);
+  void set_show_control_status (bool show_control_view);
 
 /* signals: */
   Signal<> signal_visibility_changed;
