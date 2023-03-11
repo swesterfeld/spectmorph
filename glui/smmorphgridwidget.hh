@@ -6,6 +6,7 @@
 #include "smmorphgrid.hh"
 #include "smwidget.hh"
 #include "smmidisynth.hh"
+#include "smvoicestatus.hh"
 
 namespace SpectMorph
 {
@@ -23,6 +24,7 @@ class MorphGridWidget : public Widget
   double start_y = 0;
   double end_x = 0;
   double end_y = 0;
+  VoiceStatus voice_status;
 
   bool move_controller = false;
 
