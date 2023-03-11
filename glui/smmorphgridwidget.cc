@@ -225,18 +225,12 @@ MorphGridWidget::on_grid_params_changed()
 }
 
 void
-MorphGridWidget::on_synth_notify_event (SynthNotifyEvent *ne)
+MorphGridWidget::on_voice_status_changed (VoiceStatus *voice_status)
 {
-  voice_status.on_synth_notify_event (ne);
-  if (voice_status.changed)
-    {
-      Property *x_morphing = morph_grid->property (MorphGrid::P_X_MORPHING);
-      Property *y_morphing = morph_grid->property (MorphGrid::P_Y_MORPHING);
+  Property *x_morphing = morph_grid->property (MorphGrid::P_X_MORPHING);
+  Property *y_morphing = morph_grid->property (MorphGrid::P_Y_MORPHING);
 
-      x_voice_values = voice_status.get_values (*x_morphing);
-      y_voice_values = voice_status.get_values (*y_morphing);
-      update();
-
-      voice_status.changed = false;
-    }
+  x_voice_values = voice_status->get_values (*x_morphing);
+  y_voice_values = voice_status->get_values (*y_morphing);
+  update();
 }

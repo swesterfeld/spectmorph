@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "smmodulationlist.hh"
+
 namespace SpectMorph
 {
 
@@ -44,11 +46,11 @@ class VoiceStatus
     return 0;
   }
 public:
-  bool changed = false;
-
-  void
-  on_synth_notify_event (SynthNotifyEvent *ne)
+  bool
+  process_notify_event (SynthNotifyEvent *ne)
   {
+    bool changed = false;
+
     auto vo_values = dynamic_cast<VoiceOpValuesEvent *> (ne);
     if (vo_values)
       {
@@ -69,6 +71,7 @@ public:
         control_value_map_clear = true;
         changed = true;
       }
+    return changed;
   }
   std::vector<float>
   get_values (Property& property)

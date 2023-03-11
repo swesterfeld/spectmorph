@@ -24,7 +24,6 @@ class MorphGridWidget : public Widget
   double start_y = 0;
   double end_x = 0;
   double end_y = 0;
-  VoiceStatus voice_status;
 
   bool move_controller = false;
 
@@ -39,7 +38,7 @@ public:
 
 /* slots: */
   void on_grid_params_changed();
-  void on_synth_notify_event (SynthNotifyEvent *ne);
+  void on_voice_status_changed (VoiceStatus *voice_status);
 
 /* signals: */
   Signal<> signal_selection_changed;

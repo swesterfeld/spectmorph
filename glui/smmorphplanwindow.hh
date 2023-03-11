@@ -12,6 +12,7 @@
 #include "smmicroconf.hh"
 #include "smmorphplancontrol.hh"
 #include "smsynthinterface.hh"
+#include "smvoicestatus.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -23,6 +24,7 @@ class MorphPlanWindow : public Window
   MorphPlanPtr                    m_morph_plan;
   std::unique_ptr<MorphPlanView>  m_morph_plan_view;
   SynthInterface                 *m_synth_interface = nullptr;
+  VoiceStatus                     m_voice_status;
   std::string                     m_filename;
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
@@ -47,10 +49,14 @@ public:
 
   MorphOperator *where (MorphOperator *op, double y);
 
+/* signals: */
+  Signal<VoiceStatus *> signal_voice_status_changed;
+
 /* slots: */
   void on_file_import_clicked();
   void on_file_export_clicked();
   void on_about_clicked();
+  void on_synth_notify_event (SynthNotifyEvent *ne);
 };
 
 }

@@ -11,7 +11,6 @@ class ControlStatus : public Widget
 {
   std::vector<float> voices;
   Property& property;
-  VoiceStatus voice_status;
 
   static constexpr double RADIUS = 6;
   double
@@ -51,17 +50,11 @@ public:
       }
   }
   void
-  on_synth_notify_event (SynthNotifyEvent *ne)
+  on_voice_status_changed (VoiceStatus *voice_status)
   {
-    voice_status.on_synth_notify_event (ne);
-    if (voice_status.changed)
-      {
-        redraw_voices();
-        voices = voice_status.get_values (property);
-        redraw_voices();
-
-        voice_status.changed = false;
-      }
+    redraw_voices();
+    voices = voice_status->get_values (property);
+    redraw_voices();
   }
 };
 

@@ -138,7 +138,7 @@ protected:
         });
 
         connect (mod_list->signal_size_changed, this, &PropertyViewEdit::update_modulation_widgets);
-        connect (parent->synth_interface()->signal_notify_event, control_status, &ControlStatus::on_synth_notify_event);
+        connect (parent->signal_voice_status_changed, control_status, &ControlStatus::on_voice_status_changed);
       }
 
     update_layout();
