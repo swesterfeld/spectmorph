@@ -318,17 +318,17 @@ public:
         else if (event->type == CLAP_EVENT_PARAM_MOD)
           {
             auto mod_event = reinterpret_cast<const clap_event_param_mod *> (event);
-            /* FIXME: not sample accurate */
+
             if (isValidParamId (mod_event->param_id))
               {
                 auto index = mod_event->param_id - FIRST_PARAM_ID;
 
                 if (mod_event->note_id >= 0)
-                  midi_synth->set_modulation_clap_id (index, mod_event->amount, mod_event->note_id);
+                  midi_synth->add_modulation_clap_id_event (event->time, index, mod_event->amount, mod_event->note_id);
                 else if (mod_event->key >= 0 && mod_event->channel >= 0 && mod_event->port_index >= 0)
-                  midi_synth->set_modulation_key (index, mod_event->amount, mod_event->key, mod_event->channel);
+                  midi_synth->add_modulation_key_event (event->time, index, mod_event->amount, mod_event->key, mod_event->channel);
                 else
-                  midi_synth->set_modulation (index, mod_event->amount);
+                  midi_synth->add_modulation_event (event->time, index, mod_event->amount);
               }
             }
         /* FIXME: handle transport events */
