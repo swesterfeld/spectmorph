@@ -11,6 +11,19 @@ namespace SpectMorph {
 
 class MidiSynth
 {
+public:
+  struct TerminatedVoice
+  {
+    int key;
+    int channel;
+    int clap_id;
+  };
+  struct ProcessCallbacks
+  {
+    virtual void terminated_voice (TerminatedVoice& voice) = 0;
+  };
+
+private:
   class Voice
   {
   public:
@@ -37,12 +50,16 @@ class MidiSynth
     double       pitch_bend_factor;
     int          pitch_bend_steps;
     int          note_id;
+    int          clap_id;
+
+    std::array<float, MorphPlan::N_CONTROL_INPUTS> modulation;
 
     Voice() :
       mp_voice (NULL),
       state (STATE_IDLE),
       pedal (false)
     {
+      modulation.fill (0);
     }
     ~Voice()
     {
@@ -69,6 +86,7 @@ class MidiSynth
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
   NotifyBuffer          m_notify_buffer;
+  ProcessCallbacks     *m_process_callbacks = nullptr;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -80,7 +98,7 @@ class MidiSynth
 
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
-  void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity);
+  void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity, int clap_id);
   void process_note_off (int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
@@ -90,6 +108,14 @@ class MidiSynth
   struct MidiEvent
   {
     unsigned int  offset;
+
+    /* this block is only used if key != -1 */
+    int           clap_id;
+    int           port_index;
+    int           xchannel;
+    int           key = -1;
+    double        velocity;
+
     char          midi_data[3];
 
     bool is_note_on() const;
@@ -104,9 +130,15 @@ public:
   MidiSynth (double mix_freq, size_t n_voices);
 
   void add_midi_event (size_t offset, const unsigned char *midi_data);
-  void process (float *output, size_t n_values);
+  void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
+
+  void add_note_on_event (size_t offset, int clap_id, int channel, int key, double velocity);
 
   void set_control_input (int i, float value);
+  void set_modulation (int i, float value);
+  void set_modulation_clap_id (int i, float value, int clap_id);
+  void set_modulation_key (int i, float value, int key, int channel);
+
   void set_tempo (double tempo);
   void set_ppq_pos (double ppq_pos);
   MorphPlanSynth::UpdateP prepare_update (MorphPlanPtr plan);
