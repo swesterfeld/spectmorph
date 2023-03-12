@@ -258,6 +258,13 @@ public:
               }
           }
       }
+
+    for (uint i = 0; i < PARAM_COUNT; i++)
+      {
+        /* these can be overwritten by sample accurate updates below */
+        midi_synth->set_control_input (i, parameters[i]);
+      }
+
     float **outputs = process->audio_outputs[0].data32;
     auto ev = process->in_events;
     auto sz = ev->size (ev);
@@ -301,10 +308,11 @@ public:
 
             if (isValidParamId (v->param_id))
               {
-                /* FIXME: not sample accurate */
                 auto index = v->param_id - FIRST_PARAM_ID;
+
+                CLAP_DEBUG ("process: time %d, set %d to %f\n", event->time, index, v->value);
+                midi_synth->add_control_input_event (event->time, index, v->value);
                 parameters[index] = v->value;
-                CLAP_DEBUG ("process: set %d to %f\n", index, v->value);
               }
           }
         else if (event->type == CLAP_EVENT_PARAM_MOD)
@@ -325,8 +333,6 @@ public:
             }
         /* FIXME: handle transport events */
       }
-    for (uint i = 0; i < PARAM_COUNT; i++)
-      midi_synth->set_control_input (i, parameters[i]);
 
     struct TerminatedVoiceHandler : public MidiSynth::ProcessCallbacks
     {
