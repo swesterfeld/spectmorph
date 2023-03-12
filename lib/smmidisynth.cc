@@ -347,6 +347,7 @@ void
 MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity)
 {
   MidiEvent event;
+  event.type = EVENT_NOTE_ON;
   event.offset = offset;
   event.key = key;
   event.clap_id = clap_id;
@@ -359,9 +360,61 @@ void
 MidiSynth::add_control_input_event (uint offset, int control_input, float value)
 {
   MidiEvent event;
+  event.type = EVENT_CONTROL_VALUE;
   event.offset = offset;
   event.control_input = control_input;
   event.value = value;
+  midi_events.push_back (event);
+}
+
+void
+MidiSynth::add_modulation_event (uint offset, int i, float value)
+{
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
+
+  MidiEvent event;
+  event.type = EVENT_MOD_VALUE;
+  event.offset = offset;
+  event.clap_id = -1;
+  event.key = -1;
+  event.xchannel = -1;
+  event.control_input = i;
+  event.value = value;
+
+  midi_events.push_back (event);
+}
+
+void
+MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int clap_id)
+{
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
+
+  MidiEvent event;
+  event.type = EVENT_MOD_VALUE;
+  event.offset = offset;
+  event.clap_id = clap_id;
+  event.key = -1;
+  event.xchannel = -1;
+  event.control_input = i;
+  event.value = value;
+
+  midi_events.push_back (event);
+}
+
+void
+MidiSynth::add_modulation_key_event (uint offset, int i, float value, int key, int channel)
+{
+  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
+
+  MidiEvent event;
+  event.type = EVENT_MOD_VALUE;
+  event.offset = offset;
+  event.clap_id = -1;
+  event.key = key;
+  event.xchannel = channel;
+  event.control_input = i;
+  event.value = value;
+
   midi_events.push_back (event);
 }
 
@@ -512,11 +565,31 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
       process_audio (time_info, output + offset, new_offset - offset);
       offset = new_offset;
 
-      if (midi_event.key != -1)
+      if (midi_event.type == EVENT_MOD_VALUE)
+        {
+          for (Voice *voice : active_voices)
+            {
+              if (midi_event.clap_id != -1)
+                {
+                  if (voice->clap_id == midi_event.clap_id)
+                    voice->modulation[midi_event.control_input] = midi_event.value;
+                }
+              else if (midi_event.key != -1 && midi_event.xchannel != -1)
+                {
+                  if (voice->midi_note == midi_event.key && voice->channel == midi_event.xchannel)
+                    voice->modulation[midi_event.control_input] = midi_event.value;
+                }
+              else
+                {
+                  voice->modulation[midi_event.control_input] = midi_event.value;
+                }
+            }
+        }
+      else if (midi_event.type == EVENT_NOTE_ON)
         {
           process_note_on (time_info, midi_event.xchannel, midi_event.key, midi_event.velocity * 127, midi_event.clap_id);
         }
-      else if (midi_event.control_input != -1)
+      else if (midi_event.type == EVENT_CONTROL_VALUE)
         {
           MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.control_input, midi_event.value);
           set_control_input (midi_event.control_input, midi_event.value);
@@ -572,36 +645,6 @@ MidiSynth::set_control_input (int i, float value)
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
   control[i] = value;
-}
-
-void
-MidiSynth::set_modulation (int i, float value)
-{
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
-
-  for (Voice *voice : active_voices)
-    voice->modulation[i] = value;
-}
-
-void
-MidiSynth::set_modulation_clap_id (int i, float value, int clap_id)
-{
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
-
-  for (Voice *voice : active_voices)
-    if (voice->clap_id == clap_id)
-      voice->modulation[i] = value;
-}
-
-void
-MidiSynth::set_modulation_key (int i, float value, int key, int channel)
-{
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
-
-  /* FIXME: not tested */
-  for (Voice *voice : active_voices)
-    if (voice->midi_note == key && voice->channel == channel)
-      voice->modulation[i] = value;
 }
 
 void

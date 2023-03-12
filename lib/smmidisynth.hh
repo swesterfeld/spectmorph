@@ -105,17 +105,26 @@ private:
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
 
+  enum MidiEventType {
+    EVENT_NOTE_ON,
+    EVENT_CONTROL_VALUE,
+    EVENT_MOD_VALUE,
+    EVENT_MIDI
+  };
+
   struct MidiEvent
   {
+    MidiEventType type = EVENT_MIDI;
+
     unsigned int  offset;
 
-    /* this block is only used if key != -1 */
+    /* this block is only used if event_type == EVENT_NOTE_ON */
     int           clap_id;
     int           xchannel;
     int           key = -1;
     double        velocity;
 
-    /* this block is only used if i != -1 */
+    /* this block is only used if event_type == EVENT_CONTROL_VALUE || event_type == EVENT_MOD_VALUE */
     int           control_input = -1;
     float         value;
 
@@ -139,9 +148,9 @@ public:
   void add_control_input_event (uint offset, int i, float value);
 
   void set_control_input (int i, float value);
-  void set_modulation (int i, float value);
-  void set_modulation_clap_id (int i, float value, int clap_id);
-  void set_modulation_key (int i, float value, int key, int channel);
+  void add_modulation_event (uint offset, int i, float value);
+  void add_modulation_clap_id_event (uint offset, int i, float value, int clap_id);
+  void add_modulation_key_event (uint offset, int i, float value, int key, int channel);
 
   void set_tempo (double tempo);
   void set_ppq_pos (double ppq_pos);
