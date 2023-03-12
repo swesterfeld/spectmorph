@@ -168,7 +168,11 @@ public:
     if (paramIndex >= parameters.size())
       return false;
 
-    info->flags = CLAP_PARAM_IS_AUTOMATABLE;
+    info->flags = CLAP_PARAM_IS_AUTOMATABLE |
+                  CLAP_PARAM_IS_MODULATABLE |
+                  CLAP_PARAM_IS_MODULATABLE_PER_NOTE_ID |
+                  CLAP_PARAM_IS_MODULATABLE_PER_KEY;
+
     info->id = paramIndex + FIRST_PARAM_ID;
     strncpy (info->name, string_printf ("Control #%d", paramIndex + 1).c_str(), CLAP_NAME_SIZE);
     strncpy (info->module, "Controls", CLAP_NAME_SIZE);
@@ -274,12 +278,11 @@ public:
           {
             auto note_event = reinterpret_cast<const clap_event_note *>(event);
 
-            unsigned char midi[3];
-            midi[0] = 0x90 + note_event->channel;
-            midi[1] = note_event->key;
-            midi[2] = sm_clamp<int> (note_event->velocity * 127, 0, 127);
-
-            midi_synth->add_midi_event (event->time, midi);
+            CLAP_DEBUG ("add note on event, note_id=%d\n", note_event->note_id);
+            CLAP_DEBUG ("add note on event, port_index=%d\n", note_event->port_index);
+            CLAP_DEBUG ("add note on event, channel=%d\n", note_event->channel);
+            CLAP_DEBUG ("add note on event, key=%d\n", note_event->key);
+            midi_synth->add_note_on_event (event->time, note_event->note_id, note_event->channel, note_event->key, note_event->velocity);
           }
         else if (event->type == CLAP_EVENT_NOTE_OFF)
           {
@@ -304,12 +307,59 @@ public:
                 CLAP_DEBUG ("process: set %d to %f\n", index, v->value);
               }
           }
+        else if (event->type == CLAP_EVENT_PARAM_MOD)
+          {
+            auto mod_event = reinterpret_cast<const clap_event_param_mod *> (event);
+            /* FIXME: not sample accurate */
+            if (isValidParamId (mod_event->param_id))
+              {
+                auto index = mod_event->param_id - FIRST_PARAM_ID;
+
+                if (mod_event->note_id >= 0)
+                  midi_synth->set_modulation_clap_id (index, mod_event->amount, mod_event->note_id);
+                else if (mod_event->key >= 0 && mod_event->channel >= 0 && mod_event->port_index >= 0)
+                  midi_synth->set_modulation_key (index, mod_event->amount, mod_event->key, mod_event->channel);
+                else
+                  midi_synth->set_modulation (index, mod_event->amount);
+              }
+            }
         /* FIXME: handle transport events */
       }
     for (uint i = 0; i < PARAM_COUNT; i++)
       midi_synth->set_control_input (i, parameters[i]);
 
-    midi_synth->process (outputs[0], process->frames_count);
+    struct TerminatedVoiceHandler : public MidiSynth::ProcessCallbacks
+    {
+      const clap_output_events_t *out_events = nullptr;
+      uint time = 0;
+
+      void
+      terminated_voice (MidiSynth::TerminatedVoice& tvoice) override
+      {
+        auto event = clap_event_note();
+        event.header.size = sizeof (clap_event_note);
+        event.header.type = CLAP_EVENT_NOTE_END;
+        event.header.time = time;
+        event.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
+        event.header.flags = 0;
+
+        event.port_index  = 0;
+        event.channel     = tvoice.channel;
+        event.key         = tvoice.key;
+        event.note_id     = tvoice.clap_id;
+        event.velocity    = 0.0;
+
+        CLAP_DEBUG ("terminated voice: channel %d key %d clap_id %d\n", tvoice.channel, tvoice.key, tvoice.clap_id);
+
+        if (out_events)
+          out_events->try_push (out_events, &(event.header));
+      }
+    } terminated_voice_handler;
+
+    terminated_voice_handler.time = process->frames_count - 1;
+    terminated_voice_handler.out_events = process->out_events;
+
+    midi_synth->process (outputs[0], process->frames_count, &terminated_voice_handler);
 
     std::copy (outputs[0], outputs[0] + process->frames_count, outputs[1]);
     /* this can be optimized */
@@ -564,10 +614,10 @@ void clap_deinit()
 extern "C" {
 
 const CLAP_EXPORT struct clap_plugin_entry clap_entry = {
-   CLAP_VERSION,
-   SpectMorph::clap_init,
-   SpectMorph::clap_deinit,
-   SpectMorph::get_factory
+  CLAP_VERSION,
+  SpectMorph::clap_init,
+  SpectMorph::clap_deinit,
+  SpectMorph::get_factory
 };
 
 }
