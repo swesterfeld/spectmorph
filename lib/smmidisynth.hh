@@ -111,10 +111,13 @@ private:
 
     /* this block is only used if key != -1 */
     int           clap_id;
-    int           port_index;
     int           xchannel;
     int           key = -1;
     double        velocity;
+
+    /* this block is only used if i != -1 */
+    int           control_input = -1;
+    float         value;
 
     char          midi_data[3];
 
@@ -132,7 +135,8 @@ public:
   void add_midi_event (size_t offset, const unsigned char *midi_data);
   void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
 
-  void add_note_on_event (size_t offset, int clap_id, int channel, int key, double velocity);
+  void add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity);
+  void add_control_input_event (uint offset, int i, float value);
 
   void set_control_input (int i, float value);
   void set_modulation (int i, float value);

@@ -344,7 +344,7 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
 }
 
 void
-MidiSynth::add_note_on_event (size_t offset, int clap_id, int channel, int key, double velocity)
+MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity)
 {
   MidiEvent event;
   event.offset = offset;
@@ -352,6 +352,16 @@ MidiSynth::add_note_on_event (size_t offset, int clap_id, int channel, int key, 
   event.clap_id = clap_id;
   event.xchannel = channel;
   event.velocity = velocity;
+  midi_events.push_back (event);
+}
+
+void
+MidiSynth::add_control_input_event (uint offset, int control_input, float value)
+{
+  MidiEvent event;
+  event.offset = offset;
+  event.control_input = control_input;
+  event.value = value;
   midi_events.push_back (event);
 }
 
@@ -505,6 +515,11 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
       if (midi_event.key != -1)
         {
           process_note_on (time_info, midi_event.xchannel, midi_event.key, midi_event.velocity * 127, midi_event.clap_id);
+        }
+      else if (midi_event.control_input != -1)
+        {
+          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.control_input, midi_event.value);
+          set_control_input (midi_event.control_input, midi_event.value);
         }
       else if (midi_event.is_pitch_bend())
         {
