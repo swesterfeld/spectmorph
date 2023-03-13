@@ -348,48 +348,48 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
 void
 MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity)
 {
-  MidiEvent event;
+  Event event;
   event.type = EVENT_NOTE_ON;
   event.offset = offset;
   event.note.key = key;
   event.note.clap_id = clap_id;
   event.note.channel = channel;
   event.note.velocity = velocity;
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
 MidiSynth::add_note_off_event (uint offset, int channel, int key)
 {
-  MidiEvent event;
+  Event event;
   event.type = EVENT_NOTE_OFF;
   event.offset = offset;
   event.note.key = key;
   event.note.channel = channel;
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
 MidiSynth::add_control_input_event (uint offset, int control_input, float value)
 {
-  MidiEvent event;
+  Event event;
   event.type = EVENT_CONTROL_VALUE;
   event.offset = offset;
   event.value.control_input = control_input;
   event.value.value = value;
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
 MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key)
 {
-  MidiEvent event;
+  Event event;
   event.type = EVENT_PITCH_EXPRESSION;
   event.offset = offset;
   event.expr.channel = channel;
   event.expr.key = key;
   event.expr.value = value;
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
@@ -397,7 +397,7 @@ MidiSynth::add_modulation_event (uint offset, int i, float value)
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
-  MidiEvent event;
+  Event event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
   event.mod.clap_id = -1;
@@ -406,7 +406,7 @@ MidiSynth::add_modulation_event (uint offset, int i, float value)
   event.mod.control_input = i;
   event.mod.value = value;
 
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
@@ -414,7 +414,7 @@ MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int cl
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
-  MidiEvent event;
+  Event event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
   event.mod.clap_id = clap_id;
@@ -423,7 +423,7 @@ MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int cl
   event.mod.control_input = i;
   event.mod.value = value;
 
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
@@ -431,7 +431,7 @@ MidiSynth::add_modulation_key_event (uint offset, int i, float value, int key, i
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
-  MidiEvent event;
+  Event event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
   event.mod.clap_id = -1;
@@ -440,7 +440,7 @@ MidiSynth::add_modulation_key_event (uint offset, int i, float value, int key, i
   event.mod.control_input = i;
   event.mod.value = value;
 
-  midi_events.push_back (event);
+  events.push_back (event);
 }
 
 void
@@ -471,21 +471,21 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
       const unsigned int msb = midi_data[2];
       const unsigned int value = lsb + msb * 128;
 
-      MidiEvent event;
+      Event event;
       event.offset = offset;
       event.type = EVENT_PITCH_BEND;
       event.pitch_bend.channel = channel;
       event.pitch_bend.value = value * (1./0x2000) - 1.0;
-      midi_events.push_back (event);
+      events.push_back (event);
     }
   else if (status == 0xb0)
     {
-      MidiEvent event;
+      Event event;
       event.offset = offset;
       event.type = EVENT_CC;
       event.cc.controller = midi_data[1];
       event.cc.value = midi_data[2];
-      midi_events.push_back (event);
+      events.push_back (event);
     }
   else // we don't support anything else
     {
@@ -591,21 +591,21 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
   time_info.ppq_pos = m_ppq_pos;
   morph_plan_synth.update_shared_state (time_info);
 
-  auto offset_cmp = [] (const MidiEvent& a, const MidiEvent& b) { return a.offset < b.offset; };
-  if (!std::is_sorted (midi_events.begin(), midi_events.end(), offset_cmp))
+  auto offset_cmp = [] (const Event& a, const Event& b) { return a.offset < b.offset; };
+  if (!std::is_sorted (events.begin(), events.end(), offset_cmp))
     {
       /* Hosts should provide midi events sorted by offset. But if the events
        * are not sorted by offset, we do it here to avoid problems in the event
        * handling code below.
        */
       MIDI_DEBUG ("** got midi events not sorted by offset (this should not happen) **\n");
-      std::stable_sort (midi_events.begin(), midi_events.end(), offset_cmp);
+      std::stable_sort (events.begin(), events.end(), offset_cmp);
     }
 
-  for (const auto& midi_event : midi_events)
+  for (const auto& event : events)
     {
       // ensure that new offset from midi event is not larger than n_values
-      uint32_t new_offset = min <uint32_t> (midi_event.offset, n_values);
+      uint32_t new_offset = min <uint32_t> (event.offset, n_values);
 
       time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
       time_info.ppq_pos = m_ppq_pos;
@@ -614,68 +614,68 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
       process_audio (time_info, output + offset, new_offset - offset);
       offset = new_offset;
 
-      if (midi_event.type == EVENT_MOD_VALUE)
+      if (event.type == EVENT_MOD_VALUE)
         {
           for (Voice *voice : active_voices)
             {
-              if (midi_event.mod.clap_id != -1)
+              if (event.mod.clap_id != -1)
                 {
-                  if (voice->clap_id == midi_event.mod.clap_id)
-                    voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
+                  if (voice->clap_id == event.mod.clap_id)
+                    voice->modulation[event.mod.control_input] = event.mod.value;
                 }
-              else if (midi_event.mod.key != -1 && midi_event.mod.channel != -1)
+              else if (event.mod.key != -1 && event.mod.channel != -1)
                 {
-                  if (voice->midi_note == midi_event.mod.key && voice->channel == midi_event.mod.channel)
-                    voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
+                  if (voice->midi_note == event.mod.key && voice->channel == event.mod.channel)
+                    voice->modulation[event.mod.control_input] = event.mod.value;
                 }
               else
                 {
-                  voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
+                  voice->modulation[event.mod.control_input] = event.mod.value;
                 }
             }
         }
-      else if (midi_event.type == EVENT_NOTE_ON)
+      else if (event.type == EVENT_NOTE_ON)
         {
           MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %f, clap_id=%d\n",
-                      audio_time_stamp, midi_event.note.key, midi_event.note.velocity, midi_event.note.clap_id);
+                      audio_time_stamp, event.note.key, event.note.velocity, event.note.clap_id);
 
-          process_note_on (time_info, midi_event.note);
+          process_note_on (time_info, event.note);
         }
-      else if (midi_event.type == EVENT_NOTE_OFF)
+      else if (event.type == EVENT_NOTE_OFF)
         {
-          MIDI_DEBUG ("%" PRIu64 " | note off event, channel %d, note %d\n", audio_time_stamp, midi_event.note.channel, midi_event.note.key);
+          MIDI_DEBUG ("%" PRIu64 " | note off event, channel %d, note %d\n", audio_time_stamp, event.note.channel, event.note.key);
 
-          process_note_off (midi_event.note.channel, midi_event.note.key);
+          process_note_off (event.note.channel, event.note.key);
         }
-      else if (midi_event.type == EVENT_CONTROL_VALUE)
+      else if (event.type == EVENT_CONTROL_VALUE)
         {
-          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.value.control_input, midi_event.value.value);
-          set_control_input (midi_event.value.control_input, midi_event.value.value);
+          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", event.offset, event.value.control_input, event.value.value);
+          set_control_input (event.value.control_input, event.value.value);
         }
-      else if (midi_event.type == EVENT_PITCH_EXPRESSION)
+      else if (event.type == EVENT_PITCH_EXPRESSION)
         {
           for (auto voice : active_voices)
             {
-              if (voice->state == Voice::STATE_ON && voice->channel == midi_event.expr.channel && voice->midi_note == midi_event.expr.key)
+              if (voice->state == Voice::STATE_ON && voice->channel == event.expr.channel && voice->midi_note == event.expr.key)
                 {
                   const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
 
-                  start_pitch_bend (voice, voice->freq * pow (2, midi_event.expr.value / 12), glide_ms);
+                  start_pitch_bend (voice, voice->freq * pow (2, event.expr.value / 12), glide_ms);
                 }
             }
         }
-      else if (midi_event.type == EVENT_PITCH_BEND)
+      else if (event.type == EVENT_PITCH_BEND)
         {
           const MorphOutputModule *output = voices[0].mp_voice->output();
-          float semi_tones = midi_event.pitch_bend.value * output->pitch_bend_range();
+          float semi_tones = event.pitch_bend.value * output->pitch_bend_range();
 
           MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
-          process_pitch_bend (midi_event.pitch_bend.channel, semi_tones);
+          process_pitch_bend (event.pitch_bend.channel, semi_tones);
         }
-      else if (midi_event.type == EVENT_CC)
+      else if (event.type == EVENT_CC)
         {
-          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, midi_event.cc.controller, midi_event.cc.value);
-          process_midi_controller (midi_event.cc.controller, midi_event.cc.value);
+          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, event.cc.controller, event.cc.value);
+          process_midi_controller (event.cc.controller, event.cc.value);
         }
     }
   time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
@@ -684,7 +684,7 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
   // process frames after last event
   process_audio (time_info, output + offset, n_values - offset);
 
-  midi_events.clear();
+  events.clear();
 
   m_ppq_pos += n_values * m_tempo / (60. * m_mix_freq);
   m_process_callbacks = nullptr;

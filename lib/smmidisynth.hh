@@ -24,7 +24,7 @@ public:
   };
 
 private:
-  enum MidiEventType {
+  enum EventType {
     EVENT_NOTE_ON,
     EVENT_NOTE_OFF,
     EVENT_CONTROL_VALUE,
@@ -70,11 +70,10 @@ private:
     int   controller;
     int   value;
   };
-  struct MidiEvent
+  struct Event
   {
-    MidiEventType type;
-
-    unsigned int  offset;
+    EventType         type;
+    unsigned int      offset;
 
     union {
       NoteEvent       note;       // EVENT_NOTE_ON, EVENT_NOTE_OFF
@@ -85,7 +84,7 @@ private:
       CCEvent         cc;         // EVENT_CC
     };
   };
-  std::vector<MidiEvent>  midi_events;
+  std::vector<Event>  events;
 
   class Voice
   {
