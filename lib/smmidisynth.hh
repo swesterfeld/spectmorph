@@ -114,21 +114,44 @@ private:
     EVENT_MIDI
   };
 
+  struct NoteEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    float velocity;
+  };
+  struct ExpressionEvent
+  {
+    int   channel;
+    int   key;
+    float value;
+  };
+  struct ValueEvent
+  {
+    int   control_input;
+    float value;
+  };
+  struct ModValueEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    int   control_input;
+    float value;
+  };
   struct MidiEvent
   {
     MidiEventType type = EVENT_MIDI;
 
     unsigned int  offset;
 
-    /* this block is only used if event_type == EVENT_NOTE_ON */
-    int           clap_id;
-    int           xchannel;
-    int           key = -1;
-    double        velocity;
-
-    /* this block is only used if event_type == EVENT_CONTROL_VALUE || event_type == EVENT_MOD_VALUE */
-    int           control_input = -1;
-    float         value;
+    union {
+      NoteEvent       note;   // EVENT_NOTE_ON, EVENT_NOTE_OFF
+      ExpressionEvent expr;   // EVENT_PITCH_EXPRESSION
+      ValueEvent      value;  // EVENT_CONTROL_VALUE
+      ModValueEvent   mod;    // EVENT_MOD_VALUE
+    };
 
     char          midi_data[3];
 

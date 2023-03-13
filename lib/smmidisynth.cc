@@ -350,10 +350,10 @@ MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, do
   MidiEvent event;
   event.type = EVENT_NOTE_ON;
   event.offset = offset;
-  event.key = key;
-  event.clap_id = clap_id;
-  event.xchannel = channel;
-  event.velocity = velocity;
+  event.note.key = key;
+  event.note.clap_id = clap_id;
+  event.note.channel = channel;
+  event.note.velocity = velocity;
   midi_events.push_back (event);
 }
 
@@ -363,8 +363,8 @@ MidiSynth::add_note_off_event (uint offset, int channel, int key)
   MidiEvent event;
   event.type = EVENT_NOTE_OFF;
   event.offset = offset;
-  event.key = key;
-  event.xchannel = channel;
+  event.note.key = key;
+  event.note.channel = channel;
   midi_events.push_back (event);
 }
 
@@ -374,8 +374,8 @@ MidiSynth::add_control_input_event (uint offset, int control_input, float value)
   MidiEvent event;
   event.type = EVENT_CONTROL_VALUE;
   event.offset = offset;
-  event.control_input = control_input;
-  event.value = value;
+  event.value.control_input = control_input;
+  event.value.value = value;
   midi_events.push_back (event);
 }
 
@@ -385,9 +385,9 @@ MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, in
   MidiEvent event;
   event.type = EVENT_PITCH_EXPRESSION;
   event.offset = offset;
-  event.xchannel = channel;
-  event.key = key;
-  event.value = value;
+  event.expr.channel = channel;
+  event.expr.key = key;
+  event.expr.value = value;
   midi_events.push_back (event);
 }
 
@@ -399,11 +399,11 @@ MidiSynth::add_modulation_event (uint offset, int i, float value)
   MidiEvent event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
-  event.clap_id = -1;
-  event.key = -1;
-  event.xchannel = -1;
-  event.control_input = i;
-  event.value = value;
+  event.mod.clap_id = -1;
+  event.mod.key = -1;
+  event.mod.channel = -1;
+  event.mod.control_input = i;
+  event.mod.value = value;
 
   midi_events.push_back (event);
 }
@@ -416,11 +416,11 @@ MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int cl
   MidiEvent event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
-  event.clap_id = clap_id;
-  event.key = -1;
-  event.xchannel = -1;
-  event.control_input = i;
-  event.value = value;
+  event.mod.clap_id = clap_id;
+  event.mod.key = -1;
+  event.mod.channel = -1;
+  event.mod.control_input = i;
+  event.mod.value = value;
 
   midi_events.push_back (event);
 }
@@ -433,11 +433,11 @@ MidiSynth::add_modulation_key_event (uint offset, int i, float value, int key, i
   MidiEvent event;
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
-  event.clap_id = -1;
-  event.key = key;
-  event.xchannel = channel;
-  event.control_input = i;
-  event.value = value;
+  event.mod.clap_id = -1;
+  event.mod.key = key;
+  event.mod.channel = channel;
+  event.mod.control_input = i;
+  event.mod.value = value;
 
   midi_events.push_back (event);
 }
@@ -593,44 +593,44 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
         {
           for (Voice *voice : active_voices)
             {
-              if (midi_event.clap_id != -1)
+              if (midi_event.mod.clap_id != -1)
                 {
-                  if (voice->clap_id == midi_event.clap_id)
-                    voice->modulation[midi_event.control_input] = midi_event.value;
+                  if (voice->clap_id == midi_event.mod.clap_id)
+                    voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
                 }
-              else if (midi_event.key != -1 && midi_event.xchannel != -1)
+              else if (midi_event.mod.key != -1 && midi_event.mod.channel != -1)
                 {
-                  if (voice->midi_note == midi_event.key && voice->channel == midi_event.xchannel)
-                    voice->modulation[midi_event.control_input] = midi_event.value;
+                  if (voice->midi_note == midi_event.mod.key && voice->channel == midi_event.mod.channel)
+                    voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
                 }
               else
                 {
-                  voice->modulation[midi_event.control_input] = midi_event.value;
+                  voice->modulation[midi_event.mod.control_input] = midi_event.mod.value;
                 }
             }
         }
       else if (midi_event.type == EVENT_NOTE_ON)
         {
-          process_note_on (time_info, midi_event.xchannel, midi_event.key, midi_event.velocity * 127, midi_event.clap_id);
+          process_note_on (time_info, midi_event.note.channel, midi_event.note.key, midi_event.note.velocity * 127, midi_event.note.clap_id);
         }
       else if (midi_event.type == EVENT_NOTE_OFF)
         {
-          process_note_off (midi_event.xchannel, midi_event.key);
+          process_note_off (midi_event.note.channel, midi_event.note.key);
         }
       else if (midi_event.type == EVENT_CONTROL_VALUE)
         {
-          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.control_input, midi_event.value);
-          set_control_input (midi_event.control_input, midi_event.value);
+          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.value.control_input, midi_event.value.value);
+          set_control_input (midi_event.value.control_input, midi_event.value.value);
         }
       else if (midi_event.type == EVENT_PITCH_EXPRESSION)
         {
           for (auto voice : active_voices)
             {
-              if (voice->state == Voice::STATE_ON && voice->channel == midi_event.xchannel && voice->midi_note == midi_event.key)
+              if (voice->state == Voice::STATE_ON && voice->channel == midi_event.expr.channel && voice->midi_note == midi_event.expr.key)
                 {
                   const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
 
-                  start_pitch_bend (voice, voice->freq * pow (2, midi_event.value / 12), glide_ms);
+                  start_pitch_bend (voice, voice->freq * pow (2, midi_event.expr.value / 12), glide_ms);
                 }
             }
         }
