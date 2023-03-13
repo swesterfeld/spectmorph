@@ -464,7 +464,21 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
       else
         add_note_off_event (offset, channel, key);
     }
-  else if (status == 0xb0 || status == 0xe0) // we don't support anything else
+  else if (status == 0xe0)
+    {
+      const int channel  = midi_data[0] & 0xf;
+      const unsigned int lsb = midi_data[1];
+      const unsigned int msb = midi_data[2];
+      const unsigned int value = lsb + msb * 128;
+
+      MidiEvent event;
+      event.offset = offset;
+      event.type = EVENT_PITCH_BEND;
+      event.pitch_bend.channel = channel;
+      event.pitch_bend.value = value * (1./0x2000) - 1.0;
+      midi_events.push_back (event);
+    }
+  else if (status == 0xb0) // we don't support anything else
     {
       MIDI_DEBUG ("%" PRIu64 " | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
@@ -651,15 +665,13 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
                 }
             }
         }
-      else if (midi_event.is_pitch_bend())
+      else if (midi_event.type == EVENT_PITCH_BEND)
         {
           const MorphOutputModule *output = voices[0].mp_voice->output();
-          const unsigned int lsb = midi_event.midi_data[1];
-          const unsigned int msb = midi_event.midi_data[2];
-          const unsigned int value = lsb + msb * 128;
-          const float semi_tones = (value * (1./0x2000) - 1.0) * output->pitch_bend_range();
-          MIDI_DEBUG ("%" PRIu64 " | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
-          process_pitch_bend (midi_event.channel(), semi_tones);
+          float semi_tones = midi_event.pitch_bend.value * output->pitch_bend_range();
+
+          MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
+          process_pitch_bend (midi_event.pitch_bend.channel, semi_tones);
         }
       else if (midi_event.is_controller())
         {
@@ -778,12 +790,6 @@ bool
 MidiSynth::MidiEvent::is_controller() const
 {
   return (midi_data[0] & 0xf0) == 0xb0;
-}
-
-bool
-MidiSynth::MidiEvent::is_pitch_bend() const
-{
-  return (midi_data[0] & 0xf0) == 0xe0;
 }
 
 int
