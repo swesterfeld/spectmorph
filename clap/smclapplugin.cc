@@ -285,10 +285,7 @@ public:
           {
             auto note_event = reinterpret_cast<const clap_event_note *>(event);
 
-            CLAP_DEBUG ("add note on event, note_id=%d\n", note_event->note_id);
-            CLAP_DEBUG ("add note on event, port_index=%d\n", note_event->port_index);
-            CLAP_DEBUG ("add note on event, channel=%d\n", note_event->channel);
-            CLAP_DEBUG ("add note on event, key=%d\n", note_event->key);
+            CLAP_DEBUG ("add note on event, note_id=%d channel=%d key=%d velocity=%f\n", note_event->note_id, note_event->channel, note_event->key, note_event->velocity);
             midi_synth->add_note_on_event (event->time, note_event->note_id, note_event->channel, note_event->key, note_event->velocity);
           }
         else if (event->type == CLAP_EVENT_NOTE_OFF)
