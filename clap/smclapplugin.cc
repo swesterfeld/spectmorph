@@ -295,12 +295,8 @@ public:
           {
             auto note_event = reinterpret_cast<const clap_event_note *>(event);
 
-            unsigned char midi[3];
-            midi[0] = 0x80 + note_event->channel;
-            midi[1] = note_event->key;
-            midi[2] = sm_clamp<int> (note_event->velocity * 127, 0, 127);
-
-            midi_synth->add_midi_event (event->time, midi);
+            CLAP_DEBUG ("add note off event, time %d, channel=%d key=%d\n", event->time, note_event->channel, note_event->key);
+            midi_synth->add_note_off_event (event->time, note_event->channel, note_event->key);
           }
         else if (event->type == CLAP_EVENT_PARAM_VALUE)
           {
