@@ -320,11 +320,16 @@ struct IRect
 void
 Window::on_expose_event (const PuglEventExpose& event)
 {
+  std::vector<Widget *> visible_widgets;
+  for (auto w : crawl_widgets())
+    if (get_visible_recursive (w))
+      visible_widgets.push_back (w);
+
   std::map<Widget *, Rect> merged_regions;
 
   if (update_full_redraw)
     {
-      redraw_update_region (Rect(), true, merged_regions);
+      redraw_update_region (Rect(), true, merged_regions, visible_widgets);
     }
   else
     {
@@ -338,12 +343,12 @@ Window::on_expose_event (const PuglEventExpose& event)
 
       if (debug_update_region)
         {
-          redraw_update_region (Rect(), false, merged_regions);
+          redraw_update_region (Rect(), false, merged_regions, visible_widgets);
         }
       else
         {
           for (const auto& [widget, rect] : merged_regions)
-            redraw_update_region (rect, false, merged_regions);
+            redraw_update_region (rect, false, merged_regions, visible_widgets);
         }
     }
   update_full_redraw = false;
@@ -351,7 +356,7 @@ Window::on_expose_event (const PuglEventExpose& event)
 }
 
 void
-Window::redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions)
+Window::redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions, const std::vector<Widget *>& visible_widgets)
 {
   cairo_save (cairo_gl->cr);
 
@@ -383,9 +388,9 @@ Window::redraw_update_region (const Rect& update_region, bool full_redraw, const
           cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
           cairo_fill (cairo_gl->cr);
         }
-      for (auto w : crawl_widgets())
+      for (auto w : visible_widgets)
         {
-          if (get_layer (w, menu_widget, dialog_widget) == layer && get_visible_recursive (w))
+          if (get_layer (w, menu_widget, dialog_widget) == layer)
             {
               Rect visible_rect = w->abs_visible_rect();
               if (!full_redraw)
