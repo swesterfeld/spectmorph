@@ -327,6 +327,16 @@ public:
                   midi_synth->add_modulation_event (event->time, index, mod_event->amount);
               }
             }
+        else if (event->type == CLAP_EVENT_NOTE_EXPRESSION)
+          {
+            auto expr_event = reinterpret_cast<const clap_event_note_expression *> (event);
+
+            if (expr_event->expression_id == CLAP_NOTE_EXPRESSION_TUNING)
+              {
+                CLAP_DEBUG ("process: time %d, expression channel %d key %d to %f\n", event->time, expr_event->channel, expr_event->key, expr_event->value);
+                midi_synth->add_pitch_expression_event (event->time, expr_event->value, expr_event->channel, expr_event->key);
+              }
+          }
         /* FIXME: handle transport events */
       }
 
