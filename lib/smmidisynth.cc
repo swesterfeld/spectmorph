@@ -273,6 +273,28 @@ MidiSynth::process_note_off (int channel, int midi_note)
 }
 
 void
+MidiSynth::process_mod_value (const ModValueEvent& mod)
+{
+  for (Voice *voice : active_voices)
+    {
+     if (mod.clap_id != -1)
+        {
+          if (voice->clap_id == mod.clap_id)
+            voice->modulation[mod.control_input] = mod.value;
+        }
+      else if (mod.key != -1 && mod.channel != -1)
+        {
+          if (voice->midi_note == mod.key && voice->channel == mod.channel)
+            voice->modulation[mod.control_input] = mod.value;
+        }
+      else
+        {
+          voice->modulation[mod.control_input] = mod.value;
+        }
+    }
+}
+
+void
 MidiSynth::process_midi_controller (int controller, int value)
 {
   if (controller == SM_MIDI_CTL_SUSTAIN)
@@ -616,27 +638,6 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
 
       switch (event.type)
         {
-          case EVENT_MOD_VALUE:
-            {
-              for (Voice *voice : active_voices)
-                {
-                  if (event.mod.clap_id != -1)
-                    {
-                      if (voice->clap_id == event.mod.clap_id)
-                        voice->modulation[event.mod.control_input] = event.mod.value;
-                    }
-                  else if (event.mod.key != -1 && event.mod.channel != -1)
-                    {
-                      if (voice->midi_note == event.mod.key && voice->channel == event.mod.channel)
-                        voice->modulation[event.mod.control_input] = event.mod.value;
-                    }
-                  else
-                    {
-                      voice->modulation[event.mod.control_input] = event.mod.value;
-                    }
-                }
-            }
-            break;
           case EVENT_NOTE_ON:
             {
               MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %f, clap_id=%d\n",
@@ -654,12 +655,24 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
             break;
           case EVENT_CONTROL_VALUE:
             {
-              MIDI_DEBUG ("offset=%d, control input %d -> %f\n", event.offset, event.value.control_input, event.value.value);
+              MIDI_DEBUG ("%" PRIu64 " | control input %d -> %f\n", audio_time_stamp, event.value.control_input, event.value.value);
+
               set_control_input (event.value.control_input, event.value.value);
+            }
+            break;
+          case EVENT_MOD_VALUE:
+            {
+              MIDI_DEBUG ("%" PRIu64 " | mod event, clap_id %d, channel %d, note %d | control input %d -> %f\n",
+                          audio_time_stamp, event.mod.clap_id, event.mod.channel, event.mod.key, event.mod.control_input, event.mod.value);
+
+              process_mod_value (event.mod);
             }
             break;
           case EVENT_PITCH_EXPRESSION:
             {
+              MIDI_DEBUG ("%" PRIu64 " | pitch expression event: channel %d, note %d, %.2f semi tones\n",
+                          audio_time_stamp, event.expr.channel, event.expr.key, event.expr.value);
+
               for (auto voice : active_voices)
                 {
                   if (voice->state == Voice::STATE_ON && voice->channel == event.expr.channel && voice->midi_note == event.expr.key)

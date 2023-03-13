@@ -164,6 +164,7 @@ private:
   void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
+  void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
 
