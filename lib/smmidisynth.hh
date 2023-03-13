@@ -168,7 +168,6 @@ private:
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
 
-
 public:
   MidiSynth (double mix_freq, size_t n_voices);
 
@@ -179,11 +178,9 @@ public:
   void add_note_off_event (uint offset, int channel, int key);
   void add_control_input_event (uint offset, int i, float value);
   void add_pitch_expression_event (uint offset, float value, int channel, int key);
+  void add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key);
 
   void set_control_input (int i, float value);
-  void add_modulation_event (uint offset, int i, float value);
-  void add_modulation_clap_id_event (uint offset, int i, float value, int clap_id);
-  void add_modulation_key_event (uint offset, int i, float value, int key, int channel);
 
   void set_tempo (double tempo);
   void set_ppq_pos (double ppq_pos);

@@ -415,24 +415,7 @@ MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, in
 }
 
 void
-MidiSynth::add_modulation_event (uint offset, int i, float value)
-{
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
-
-  Event event;
-  event.type = EVENT_MOD_VALUE;
-  event.offset = offset;
-  event.mod.clap_id = -1;
-  event.mod.key = -1;
-  event.mod.channel = -1;
-  event.mod.control_input = i;
-  event.mod.value = value;
-
-  events.push_back (event);
-}
-
-void
-MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int clap_id)
+MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key)
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
 
@@ -440,25 +423,8 @@ MidiSynth::add_modulation_clap_id_event (uint offset, int i, float value, int cl
   event.type = EVENT_MOD_VALUE;
   event.offset = offset;
   event.mod.clap_id = clap_id;
-  event.mod.key = -1;
-  event.mod.channel = -1;
-  event.mod.control_input = i;
-  event.mod.value = value;
-
-  events.push_back (event);
-}
-
-void
-MidiSynth::add_modulation_key_event (uint offset, int i, float value, int key, int channel)
-{
-  assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
-
-  Event event;
-  event.type = EVENT_MOD_VALUE;
-  event.offset = offset;
-  event.mod.clap_id = -1;
-  event.mod.key = key;
   event.mod.channel = channel;
+  event.mod.key = key;
   event.mod.control_input = i;
   event.mod.value = value;
 
