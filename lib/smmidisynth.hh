@@ -99,7 +99,7 @@ private:
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
   void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity, int clap_id);
-  void process_note_off (int midi_note);
+  void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
@@ -107,6 +107,7 @@ private:
 
   enum MidiEventType {
     EVENT_NOTE_ON,
+    EVENT_NOTE_OFF,
     EVENT_CONTROL_VALUE,
     EVENT_MOD_VALUE,
     EVENT_MIDI
@@ -145,6 +146,7 @@ public:
   void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
 
   void add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity);
+  void add_note_off_event (uint offset, int channel, int key);
   void add_control_input_event (uint offset, int i, float value);
 
   void set_control_input (int i, float value);

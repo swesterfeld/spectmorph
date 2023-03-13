@@ -229,7 +229,7 @@ MidiSynth::start_pitch_bend (Voice *voice, double dest_freq, double time_ms)
 }
 
 void
-MidiSynth::process_note_off (int midi_note)
+MidiSynth::process_note_off (int channel, int midi_note)
 {
   if (mono_enabled)
     {
@@ -237,7 +237,7 @@ MidiSynth::process_note_off (int midi_note)
 
       for (auto voice : active_voices)
         {
-          if (voice->state == Voice::STATE_ON && voice->midi_note == midi_note && voice->mono_type == Voice::MonoType::SHADOW)
+          if (voice->state == Voice::STATE_ON && voice->channel == channel && voice->midi_note == midi_note && voice->mono_type == Voice::MonoType::SHADOW)
             {
               voice->state = Voice::STATE_IDLE;
               voice->pedal = false; /* pedal not supported in mono mode */
@@ -254,7 +254,7 @@ MidiSynth::process_note_off (int midi_note)
 
   for (auto voice : active_voices)
     {
-      if (voice->state == Voice::STATE_ON && voice->midi_note == midi_note)
+      if (voice->state == Voice::STATE_ON && voice->channel == channel && voice->midi_note == midi_note)
         {
           if (pedal_down)
             {
@@ -298,18 +298,19 @@ MidiSynth::process_midi_controller (int controller, int value)
       process_midi_controller (SM_MIDI_CTL_SUSTAIN, 0);
 
       /* check which notes are active */
-      int notes[128] = { 0, };
+      std::set<std::pair<int, int>> channel_note_set;
       for (auto voice : active_voices)
         {
           if (voice->state == Voice::STATE_ON)
-            notes[voice->midi_note] = 1;
+            {
+              channel_note_set.insert (std::make_pair (voice->channel, voice->midi_note));
+            }
         }
 
       /* note off for all active voices */
-      for (int note = 0; note < 128; note++)
+      for (auto& cn : channel_note_set)
         {
-          if (notes[note])
-            process_note_off (note);
+          process_note_off (cn.first, cn.second);
         }
     }
   if (m_control_by_cc)
@@ -353,6 +354,17 @@ MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, do
   event.clap_id = clap_id;
   event.xchannel = channel;
   event.velocity = velocity;
+  midi_events.push_back (event);
+}
+
+void
+MidiSynth::add_note_off_event (uint offset, int channel, int key)
+{
+  MidiEvent event;
+  event.type = EVENT_NOTE_OFF;
+  event.offset = offset;
+  event.key = key;
+  event.xchannel = channel;
   midi_events.push_back (event);
 }
 
@@ -589,6 +601,10 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
         {
           process_note_on (time_info, midi_event.xchannel, midi_event.key, midi_event.velocity * 127, midi_event.clap_id);
         }
+      else if (midi_event.type == EVENT_NOTE_OFF)
+        {
+          process_note_off (midi_event.xchannel, midi_event.key);
+        }
       else if (midi_event.type == EVENT_CONTROL_VALUE)
         {
           MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.control_input, midi_event.value);
@@ -617,7 +633,7 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
           const int midi_note     = midi_event.midi_data[1];
 
           MIDI_DEBUG ("%" PRIu64 " | note off event, note %d\n", audio_time_stamp, midi_note);
-          process_note_off (midi_note);
+          process_note_off (midi_event.channel(), midi_note);
         }
       else if (midi_event.is_controller())
         {
