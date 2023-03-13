@@ -108,7 +108,7 @@ MidiSynth::freq_from_note (float note)
 }
 
 void
-MidiSynth::process_note_on (const TimeInfo& time_info, int channel, int midi_note, int midi_velocity, int clap_id)
+MidiSynth::process_note_on (const TimeInfo& time_info, const NoteEvent& note)
 {
   // prevent crash without output: ignore note on in this case
   if (!morph_plan_synth.have_output())
@@ -121,18 +121,19 @@ MidiSynth::process_note_on (const TimeInfo& time_info, int channel, int midi_not
   Voice *voice = alloc_voice();
   if (voice)
     {
-      voice->freq              = freq_from_note (midi_note);
+      voice->freq              = freq_from_note (note.key);
       voice->pitch_bend_freq   = voice->freq;
       voice->pitch_bend_factor = 0;
       voice->pitch_bend_steps  = 0;
       voice->state             = Voice::STATE_ON;
-      voice->midi_note         = midi_note;
-      voice->gain              = velocity_to_gain (midi_velocity / 127., output->velocity_sensitivity());
-      voice->channel           = channel;
-      voice->clap_id           = clap_id;
+      voice->midi_note         = note.key;
+      voice->gain              = velocity_to_gain (note.velocity, output->velocity_sensitivity());
+      voice->channel           = note.channel;
+      voice->clap_id           = note.clap_id;
 
       voice->modulation.fill (0);
 
+      const int midi_velocity = std::clamp<int> (note.velocity * 127, 0, 127);
       if (!mono_enabled)
         {
           MorphOutputModule *output = voice->mp_voice->output();
@@ -452,7 +453,18 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
     }
   unsigned char status = midi_data[0] & 0xf0;
 
-  if (status == 0x80 || status == 0x90 || status == 0xb0 || status == 0xe0) // we don't support anything else
+  if (status == 0x80 || status == 0x90)
+    {
+      const int channel  = midi_data[0] & 0xf;
+      const int key      = midi_data[1];
+      const int velocity = midi_data[2];
+
+      if (status == 0x90 && velocity != 0)
+        add_note_on_event (offset, /*  clap_id */ -1, channel, key, velocity / 127.);
+      else
+        add_note_off_event (offset, channel, key);
+    }
+  else if (status == 0xb0 || status == 0xe0) // we don't support anything else
     {
       MIDI_DEBUG ("%" PRIu64 " | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
@@ -611,10 +623,15 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
         }
       else if (midi_event.type == EVENT_NOTE_ON)
         {
-          process_note_on (time_info, midi_event.note.channel, midi_event.note.key, midi_event.note.velocity * 127, midi_event.note.clap_id);
+          MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %f, clap_id=%d\n",
+                      audio_time_stamp, midi_event.note.key, midi_event.note.velocity, midi_event.note.clap_id);
+
+          process_note_on (time_info, midi_event.note);
         }
       else if (midi_event.type == EVENT_NOTE_OFF)
         {
+          MIDI_DEBUG ("%" PRIu64 " | note off event, channel %d, note %d\n", audio_time_stamp, midi_event.note.channel, midi_event.note.key);
+
           process_note_off (midi_event.note.channel, midi_event.note.key);
         }
       else if (midi_event.type == EVENT_CONTROL_VALUE)
@@ -643,21 +660,6 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
           const float semi_tones = (value * (1./0x2000) - 1.0) * output->pitch_bend_range();
           MIDI_DEBUG ("%" PRIu64 " | pitch bend event %d => %.2f semi tones\n", audio_time_stamp, value, semi_tones);
           process_pitch_bend (midi_event.channel(), semi_tones);
-        }
-      else if (midi_event.is_note_on())
-        {
-          const int midi_note     = midi_event.midi_data[1];
-          const int midi_velocity = midi_event.midi_data[2];
-
-          MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %d\n", audio_time_stamp, midi_note, midi_velocity);
-          process_note_on (time_info, midi_event.channel(), midi_note, midi_velocity, /* note_id */ -1);
-        }
-      else if (midi_event.is_note_off())
-        {
-          const int midi_note     = midi_event.midi_data[1];
-
-          MIDI_DEBUG ("%" PRIu64 " | note off event, note %d\n", audio_time_stamp, midi_note);
-          process_note_off (midi_event.channel(), midi_note);
         }
       else if (midi_event.is_controller())
         {
@@ -770,33 +772,6 @@ double
 MidiSynth::mix_freq() const
 {
   return m_mix_freq;
-}
-
-// midi event classification functions
-bool
-MidiSynth::MidiEvent::is_note_on() const
-{
-  if ((midi_data[0] & 0xf0) == 0x90)
-    {
-      if (midi_data[2] != 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  return false;
-}
-
-bool
-MidiSynth::MidiEvent::is_note_off() const
-{
-  if ((midi_data[0] & 0xf0) == 0x90)
-    {
-      if (midi_data[2] == 0) /* note on with velocity 0 => note off */
-        return true;
-    }
-  else if ((midi_data[0] & 0xf0) == 0x80)
-    {
-      return true;
-    }
-  return false;
 }
 
 bool

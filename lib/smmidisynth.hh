@@ -24,6 +24,62 @@ public:
   };
 
 private:
+  enum MidiEventType {
+    EVENT_NOTE_ON,
+    EVENT_NOTE_OFF,
+    EVENT_CONTROL_VALUE,
+    EVENT_MOD_VALUE,
+    EVENT_PITCH_EXPRESSION,
+    EVENT_MIDI
+  };
+
+  struct NoteEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    float velocity;
+  };
+  struct ExpressionEvent
+  {
+    int   channel;
+    int   key;
+    float value;
+  };
+  struct ValueEvent
+  {
+    int   control_input;
+    float value;
+  };
+  struct ModValueEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    int   control_input;
+    float value;
+  };
+  struct MidiEvent
+  {
+    MidiEventType type = EVENT_MIDI;
+
+    unsigned int  offset;
+
+    union {
+      NoteEvent       note;   // EVENT_NOTE_ON, EVENT_NOTE_OFF
+      ExpressionEvent expr;   // EVENT_PITCH_EXPRESSION
+      ValueEvent      value;  // EVENT_CONTROL_VALUE
+      ModValueEvent   mod;    // EVENT_MOD_VALUE
+    };
+
+    char          midi_data[3];
+
+    bool is_controller() const;
+    bool is_pitch_bend() const;
+    int  channel() const;
+  };
+  std::vector<MidiEvent>  midi_events;
+
   class Voice
   {
   public:
@@ -98,70 +154,13 @@ private:
 
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
-  void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity, int clap_id);
+  void process_note_on (const TimeInfo& block_time, const NoteEvent& note);
   void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
 
-  enum MidiEventType {
-    EVENT_NOTE_ON,
-    EVENT_NOTE_OFF,
-    EVENT_CONTROL_VALUE,
-    EVENT_MOD_VALUE,
-    EVENT_PITCH_EXPRESSION,
-    EVENT_MIDI
-  };
-
-  struct NoteEvent
-  {
-    int   clap_id;
-    int   channel;
-    int   key;
-    float velocity;
-  };
-  struct ExpressionEvent
-  {
-    int   channel;
-    int   key;
-    float value;
-  };
-  struct ValueEvent
-  {
-    int   control_input;
-    float value;
-  };
-  struct ModValueEvent
-  {
-    int   clap_id;
-    int   channel;
-    int   key;
-    int   control_input;
-    float value;
-  };
-  struct MidiEvent
-  {
-    MidiEventType type = EVENT_MIDI;
-
-    unsigned int  offset;
-
-    union {
-      NoteEvent       note;   // EVENT_NOTE_ON, EVENT_NOTE_OFF
-      ExpressionEvent expr;   // EVENT_PITCH_EXPRESSION
-      ValueEvent      value;  // EVENT_CONTROL_VALUE
-      ModValueEvent   mod;    // EVENT_MOD_VALUE
-    };
-
-    char          midi_data[3];
-
-    bool is_note_on() const;
-    bool is_note_off() const;
-    bool is_controller() const;
-    bool is_pitch_bend() const;
-    int  channel() const;
-  };
-  std::vector<MidiEvent>  midi_events;
 
 public:
   MidiSynth (double mix_freq, size_t n_voices);
