@@ -22,15 +22,16 @@ NEWER TODOS:
 __ notify __
 - fix modulation range
 - non-linear modulation mapping
-- display modulation state in MorphPlanWindow
 
 __ dsp __
 - filter latency compensation
 - should filter envelope be exponential?
 
 __ clap __
-- modulation
-- per voice modulation
+- fix instrument edit synth
+
+__ ui __
+- fix resizing for Window cairo draw to tmp_buffer
 
 FILTER:
 
