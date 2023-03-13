@@ -452,10 +452,11 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
       return;
     }
   unsigned char status = midi_data[0] & 0xf0;
+  const int channel  = midi_data[0] & 0xf;
 
+  MIDI_DEBUG ("%" PRIu64 " | raw event: status %02x, channel %02x, %02x, %02x\n", audio_time_stamp + offset, status, channel, midi_data[1], midi_data[2]);
   if (status == 0x80 || status == 0x90)
     {
-      const int channel  = midi_data[0] & 0xf;
       const int key      = midi_data[1];
       const int velocity = midi_data[2];
 
@@ -466,7 +467,6 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
     }
   else if (status == 0xe0)
     {
-      const int channel  = midi_data[0] & 0xf;
       const unsigned int lsb = midi_data[1];
       const unsigned int msb = midi_data[2];
       const unsigned int value = lsb + msb * 128;
@@ -478,19 +478,18 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
       event.pitch_bend.value = value * (1./0x2000) - 1.0;
       midi_events.push_back (event);
     }
-  else if (status == 0xb0) // we don't support anything else
+  else if (status == 0xb0)
     {
-      MIDI_DEBUG ("%" PRIu64 " | raw event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
       MidiEvent event;
       event.offset = offset;
-      event.midi_data[0] = midi_data[0];
-      event.midi_data[1] = midi_data[1];
-      event.midi_data[2] = midi_data[2];
+      event.type = EVENT_CC;
+      event.cc.controller = midi_data[1];
+      event.cc.value = midi_data[2];
       midi_events.push_back (event);
     }
-  else
+  else // we don't support anything else
     {
-      MIDI_DEBUG ("%" PRIu64 " | unhandled event: status %02x, %02x, %02x\n", audio_time_stamp + offset, status, midi_data[1], midi_data[2]);
+      MIDI_DEBUG ("%" PRIu64 " | unhandled event: status %02x, channel %d, %02x, %02x\n", audio_time_stamp + offset, status, channel, midi_data[1], midi_data[2]);
     }
 }
 
@@ -673,10 +672,10 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
           MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
           process_pitch_bend (midi_event.pitch_bend.channel, semi_tones);
         }
-      else if (midi_event.is_controller())
+      else if (midi_event.type == EVENT_CC)
         {
-          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, midi_event.midi_data[1], midi_event.midi_data[2]);
-          process_midi_controller (midi_event.midi_data[1], midi_event.midi_data[2]);
+          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, midi_event.cc.controller, midi_event.cc.value);
+          process_midi_controller (midi_event.cc.controller, midi_event.cc.value);
         }
     }
   time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
@@ -784,18 +783,6 @@ double
 MidiSynth::mix_freq() const
 {
   return m_mix_freq;
-}
-
-bool
-MidiSynth::MidiEvent::is_controller() const
-{
-  return (midi_data[0] & 0xf0) == 0xb0;
-}
-
-int
-MidiSynth::MidiEvent::channel() const
-{
-  return midi_data[0] & 0xf;
 }
 
 void

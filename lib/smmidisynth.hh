@@ -31,7 +31,7 @@ private:
     EVENT_MOD_VALUE,
     EVENT_PITCH_EXPRESSION,
     EVENT_PITCH_BEND,
-    EVENT_MIDI
+    EVENT_CC
   };
 
   struct NoteEvent
@@ -65,9 +65,14 @@ private:
     int   channel;
     float value;
   };
+  struct CCEvent
+  {
+    int   controller;
+    int   value;
+  };
   struct MidiEvent
   {
-    MidiEventType type = EVENT_MIDI;
+    MidiEventType type;
 
     unsigned int  offset;
 
@@ -77,12 +82,8 @@ private:
       ValueEvent      value;      // EVENT_CONTROL_VALUE
       ModValueEvent   mod;        // EVENT_MOD_VALUE
       PitchBendEvent  pitch_bend; // EVENT_PITCH_BEND
+      CCEvent         cc;         // EVENT_CC
     };
-
-    char          midi_data[3];
-
-    bool is_controller() const;
-    int  channel() const;
   };
   std::vector<MidiEvent>  midi_events;
 
