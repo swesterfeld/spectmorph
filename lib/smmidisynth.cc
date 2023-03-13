@@ -380,6 +380,18 @@ MidiSynth::add_control_input_event (uint offset, int control_input, float value)
 }
 
 void
+MidiSynth::add_pitch_expression_event (uint offset, float value, int channel, int key)
+{
+  MidiEvent event;
+  event.type = EVENT_PITCH_EXPRESSION;
+  event.offset = offset;
+  event.xchannel = channel;
+  event.key = key;
+  event.value = value;
+  midi_events.push_back (event);
+}
+
+void
 MidiSynth::add_modulation_event (uint offset, int i, float value)
 {
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS && !m_control_by_cc);
@@ -609,6 +621,18 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
         {
           MIDI_DEBUG ("offset=%d, control input %d -> %f\n", midi_event.offset, midi_event.control_input, midi_event.value);
           set_control_input (midi_event.control_input, midi_event.value);
+        }
+      else if (midi_event.type == EVENT_PITCH_EXPRESSION)
+        {
+          for (auto voice : active_voices)
+            {
+              if (voice->state == Voice::STATE_ON && voice->channel == midi_event.xchannel && voice->midi_note == midi_event.key)
+                {
+                  const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
+
+                  start_pitch_bend (voice, voice->freq * pow (2, midi_event.value / 12), glide_ms);
+                }
+            }
         }
       else if (midi_event.is_pitch_bend())
         {

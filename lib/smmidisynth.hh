@@ -110,6 +110,7 @@ private:
     EVENT_NOTE_OFF,
     EVENT_CONTROL_VALUE,
     EVENT_MOD_VALUE,
+    EVENT_PITCH_EXPRESSION,
     EVENT_MIDI
   };
 
@@ -148,6 +149,7 @@ public:
   void add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity);
   void add_note_off_event (uint offset, int channel, int key);
   void add_control_input_event (uint offset, int i, float value);
+  void add_pitch_expression_event (uint offset, float value, int channel, int key);
 
   void set_control_input (int i, float value);
   void add_modulation_event (uint offset, int i, float value);
