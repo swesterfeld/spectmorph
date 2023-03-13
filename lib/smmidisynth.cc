@@ -614,68 +614,78 @@ MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_ca
       process_audio (time_info, output + offset, new_offset - offset);
       offset = new_offset;
 
-      if (event.type == EVENT_MOD_VALUE)
+      switch (event.type)
         {
-          for (Voice *voice : active_voices)
+          case EVENT_MOD_VALUE:
             {
-              if (event.mod.clap_id != -1)
+              for (Voice *voice : active_voices)
                 {
-                  if (voice->clap_id == event.mod.clap_id)
-                    voice->modulation[event.mod.control_input] = event.mod.value;
-                }
-              else if (event.mod.key != -1 && event.mod.channel != -1)
-                {
-                  if (voice->midi_note == event.mod.key && voice->channel == event.mod.channel)
-                    voice->modulation[event.mod.control_input] = event.mod.value;
-                }
-              else
-                {
-                  voice->modulation[event.mod.control_input] = event.mod.value;
+                  if (event.mod.clap_id != -1)
+                    {
+                      if (voice->clap_id == event.mod.clap_id)
+                        voice->modulation[event.mod.control_input] = event.mod.value;
+                    }
+                  else if (event.mod.key != -1 && event.mod.channel != -1)
+                    {
+                      if (voice->midi_note == event.mod.key && voice->channel == event.mod.channel)
+                        voice->modulation[event.mod.control_input] = event.mod.value;
+                    }
+                  else
+                    {
+                      voice->modulation[event.mod.control_input] = event.mod.value;
+                    }
                 }
             }
-        }
-      else if (event.type == EVENT_NOTE_ON)
-        {
-          MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %f, clap_id=%d\n",
-                      audio_time_stamp, event.note.key, event.note.velocity, event.note.clap_id);
-
-          process_note_on (time_info, event.note);
-        }
-      else if (event.type == EVENT_NOTE_OFF)
-        {
-          MIDI_DEBUG ("%" PRIu64 " | note off event, channel %d, note %d\n", audio_time_stamp, event.note.channel, event.note.key);
-
-          process_note_off (event.note.channel, event.note.key);
-        }
-      else if (event.type == EVENT_CONTROL_VALUE)
-        {
-          MIDI_DEBUG ("offset=%d, control input %d -> %f\n", event.offset, event.value.control_input, event.value.value);
-          set_control_input (event.value.control_input, event.value.value);
-        }
-      else if (event.type == EVENT_PITCH_EXPRESSION)
-        {
-          for (auto voice : active_voices)
+            break;
+          case EVENT_NOTE_ON:
             {
-              if (voice->state == Voice::STATE_ON && voice->channel == event.expr.channel && voice->midi_note == event.expr.key)
-                {
-                  const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
+              MIDI_DEBUG ("%" PRIu64 " | note on event, note %d, velocity %f, clap_id=%d\n",
+                          audio_time_stamp, event.note.key, event.note.velocity, event.note.clap_id);
 
-                  start_pitch_bend (voice, voice->freq * pow (2, event.expr.value / 12), glide_ms);
+              process_note_on (time_info, event.note);
+            }
+            break;
+          case EVENT_NOTE_OFF:
+            {
+              MIDI_DEBUG ("%" PRIu64 " | note off event, channel %d, note %d\n", audio_time_stamp, event.note.channel, event.note.key);
+
+              process_note_off (event.note.channel, event.note.key);
+            }
+            break;
+          case EVENT_CONTROL_VALUE:
+            {
+              MIDI_DEBUG ("offset=%d, control input %d -> %f\n", event.offset, event.value.control_input, event.value.value);
+              set_control_input (event.value.control_input, event.value.value);
+            }
+            break;
+          case EVENT_PITCH_EXPRESSION:
+            {
+              for (auto voice : active_voices)
+                {
+                  if (voice->state == Voice::STATE_ON && voice->channel == event.expr.channel && voice->midi_note == event.expr.key)
+                    {
+                      const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
+
+                      start_pitch_bend (voice, voice->freq * pow (2, event.expr.value / 12), glide_ms);
+                    }
                 }
             }
-        }
-      else if (event.type == EVENT_PITCH_BEND)
-        {
-          const MorphOutputModule *output = voices[0].mp_voice->output();
-          float semi_tones = event.pitch_bend.value * output->pitch_bend_range();
+            break;
+          case EVENT_PITCH_BEND:
+            {
+              const MorphOutputModule *output = voices[0].mp_voice->output();
+              float semi_tones = event.pitch_bend.value * output->pitch_bend_range();
 
-          MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
-          process_pitch_bend (event.pitch_bend.channel, semi_tones);
-        }
-      else if (event.type == EVENT_CC)
-        {
-          MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, event.cc.controller, event.cc.value);
-          process_midi_controller (event.cc.controller, event.cc.value);
+              MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
+              process_pitch_bend (event.pitch_bend.channel, semi_tones);
+            }
+            break;
+          case EVENT_CC:
+            {
+              MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, event.cc.controller, event.cc.value);
+              process_midi_controller (event.cc.controller, event.cc.value);
+            }
+            break;
         }
     }
   time_info.time_ms = audio_time_stamp / m_mix_freq * 1000;
