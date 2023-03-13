@@ -41,7 +41,8 @@ public:
   cairo_t *cr;
 
   CairoGL (int width, int height) :
-    m_width (width), m_height (height)
+    m_width (width), m_height (height),
+    tmp_buffer (width * height)
   {
     memset (&pugl_cairo_gl, 0, sizeof (pugl_cairo_gl));
 
@@ -87,7 +88,8 @@ public:
     else
       {
         uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
-        tmp_buffer.resize (w * h);
+        size_t  size = w * h;
+        assert (tmp_buffer.size() >= size);
 
         for (int by = 0; by < h; by++)
           {
