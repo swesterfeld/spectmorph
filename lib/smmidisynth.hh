@@ -174,7 +174,7 @@ public:
   void add_midi_event (size_t offset, const unsigned char *midi_data);
   void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
 
-  void add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity);
+  void add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity);
   void add_note_off_event (uint offset, int channel, int key);
   void add_control_input_event (uint offset, int i, float value);
   void add_pitch_expression_event (uint offset, float value, int channel, int key);

@@ -368,7 +368,7 @@ MidiSynth::process_pitch_bend (int channel, double semi_tones)
 }
 
 void
-MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, double velocity)
+MidiSynth::add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity)
 {
   Event event;
   event.type = EVENT_NOTE_ON;
