@@ -7,6 +7,8 @@
 #include "sminsteditsynth.hh"
 #include "smnotifybuffer.hh"
 
+#include <array>
+
 namespace SpectMorph {
 
 class MidiSynth
