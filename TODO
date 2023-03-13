@@ -26,6 +26,9 @@ __ notify __
 __ dsp __
 - filter latency compensation
 - should filter envelope be exponential?
+- fix filter ranges
+- possibly fix filter pre-amplification
+- is reso/drive mapping good enough?
 
 __ clap __
 - fix instrument edit synth
