@@ -34,7 +34,7 @@ debugv (const char *area, const char *format, va_list vargs)
           g_free (abs_filename);
         }
 
-      fprintf (debug_file, "%s", string_vprintf (format, vargs).c_str());
+      fprintf (debug_file, "%8s | %s", area, string_vprintf (format, vargs).c_str());
 
       // hack: avoid fflush for encoder (since it writes lots of lines)
       if (strcmp (area, "encoder") != 0)

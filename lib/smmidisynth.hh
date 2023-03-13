@@ -11,6 +11,81 @@ namespace SpectMorph {
 
 class MidiSynth
 {
+public:
+  struct TerminatedVoice
+  {
+    int key;
+    int channel;
+    int clap_id;
+  };
+  struct ProcessCallbacks
+  {
+    virtual void terminated_voice (TerminatedVoice& voice) = 0;
+  };
+
+private:
+  enum EventType {
+    EVENT_NOTE_ON,
+    EVENT_NOTE_OFF,
+    EVENT_CONTROL_VALUE,
+    EVENT_MOD_VALUE,
+    EVENT_PITCH_EXPRESSION,
+    EVENT_PITCH_BEND,
+    EVENT_CC
+  };
+
+  struct NoteEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    float velocity;
+  };
+  struct ExpressionEvent
+  {
+    int   channel;
+    int   key;
+    float value;
+  };
+  struct ValueEvent
+  {
+    int   control_input;
+    float value;
+  };
+  struct ModValueEvent
+  {
+    int   clap_id;
+    int   channel;
+    int   key;
+    int   control_input;
+    float value;
+  };
+  struct PitchBendEvent
+  {
+    int   channel;
+    float value;
+  };
+  struct CCEvent
+  {
+    int   controller;
+    int   value;
+  };
+  struct Event
+  {
+    EventType         type;
+    unsigned int      offset;
+
+    union {
+      NoteEvent       note;       // EVENT_NOTE_ON, EVENT_NOTE_OFF
+      ExpressionEvent expr;       // EVENT_PITCH_EXPRESSION
+      ValueEvent      value;      // EVENT_CONTROL_VALUE
+      ModValueEvent   mod;        // EVENT_MOD_VALUE
+      PitchBendEvent  pitch_bend; // EVENT_PITCH_BEND
+      CCEvent         cc;         // EVENT_CC
+    };
+  };
+  std::vector<Event>  events;
+
   class Voice
   {
   public:
@@ -37,12 +112,16 @@ class MidiSynth
     double       pitch_bend_factor;
     int          pitch_bend_steps;
     int          note_id;
+    int          clap_id;
+
+    std::array<float, MorphPlan::N_CONTROL_INPUTS> modulation;
 
     Voice() :
       mp_voice (NULL),
       state (STATE_IDLE),
       pedal (false)
     {
+      modulation.fill (0);
     }
     ~Voice()
     {
@@ -69,6 +148,7 @@ class MidiSynth
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
   NotifyBuffer          m_notify_buffer;
+  ProcessCallbacks     *m_process_callbacks = nullptr;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -80,33 +160,28 @@ class MidiSynth
 
   void set_mono_enabled (bool new_value);
   void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
-  void process_note_on (const TimeInfo& block_time, int channel, int midi_note, int midi_velocity);
-  void process_note_off (int midi_note);
+  void process_note_on (const TimeInfo& block_time, const NoteEvent& note);
+  void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
+  void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();
-
-  struct MidiEvent
-  {
-    unsigned int  offset;
-    char          midi_data[3];
-
-    bool is_note_on() const;
-    bool is_note_off() const;
-    bool is_controller() const;
-    bool is_pitch_bend() const;
-    int  channel() const;
-  };
-  std::vector<MidiEvent>  midi_events;
 
 public:
   MidiSynth (double mix_freq, size_t n_voices);
 
   void add_midi_event (size_t offset, const unsigned char *midi_data);
-  void process (float *output, size_t n_values);
+  void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
+
+  void add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity);
+  void add_note_off_event (uint offset, int channel, int key);
+  void add_control_input_event (uint offset, int i, float value);
+  void add_pitch_expression_event (uint offset, float value, int channel, int key);
+  void add_modulation_event (uint offset, int i, float value, int clap_id, int channel, int key);
 
   void set_control_input (int i, float value);
+
   void set_tempo (double tempo);
   void set_ppq_pos (double ppq_pos);
   MorphPlanSynth::UpdateP prepare_update (MorphPlanPtr plan);
