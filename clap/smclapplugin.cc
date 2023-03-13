@@ -315,13 +315,7 @@ public:
             if (isValidParamId (mod_event->param_id))
               {
                 auto index = mod_event->param_id - FIRST_PARAM_ID;
-
-                if (mod_event->note_id >= 0)
-                  midi_synth->add_modulation_clap_id_event (event->time, index, mod_event->amount, mod_event->note_id);
-                else if (mod_event->key >= 0 && mod_event->channel >= 0 && mod_event->port_index >= 0)
-                  midi_synth->add_modulation_key_event (event->time, index, mod_event->amount, mod_event->key, mod_event->channel);
-                else
-                  midi_synth->add_modulation_event (event->time, index, mod_event->amount);
+                midi_synth->add_modulation_event (event->time, index, mod_event->amount, mod_event->note_id, mod_event->channel, mod_event->key);
               }
             }
         else if (event->type == CLAP_EVENT_NOTE_EXPRESSION)
