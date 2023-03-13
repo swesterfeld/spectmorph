@@ -133,7 +133,7 @@ MidiSynth::process_note_on (const TimeInfo& time_info, const NoteEvent& note)
 
       voice->modulation.fill (0);
 
-      const int midi_velocity = std::clamp<int> (note.velocity * 127, 0, 127);
+      const int midi_velocity = std::clamp<int> (lrint (note.velocity * 127), 0, 127);
       if (!mono_enabled)
         {
           MorphOutputModule *output = voice->mp_voice->output();
