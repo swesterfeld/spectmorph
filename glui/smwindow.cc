@@ -320,16 +320,17 @@ struct IRect
 void
 Window::on_expose_event (const PuglEventExpose& event)
 {
-  std::vector<Widget *> visible_widgets;
+  RedrawParams redraw_params;
+  redraw_params.visible_widgets_by_layer.resize (3);
+
   for (auto w : crawl_widgets())
     if (get_visible_recursive (w))
-      visible_widgets.push_back (w);
-
-  std::map<Widget *, Rect> merged_regions;
+      redraw_params.visible_widgets_by_layer[get_layer (w, menu_widget, dialog_widget)].push_back (w);
 
   if (update_full_redraw)
     {
-      redraw_update_region (Rect(), true, merged_regions, visible_widgets);
+      redraw_params.full_redraw = true;
+      redraw_update_region (redraw_params);
     }
   else
     {
@@ -337,18 +338,21 @@ Window::on_expose_event (const PuglEventExpose& event)
         {
           Widget *widget = update_region.update_strategy == UPDATE_LOCAL ? update_region.widget : nullptr;
 
-          Rect& rect = merged_regions[widget];
+          Rect& rect = redraw_params.merged_regions[widget];
           rect = rect.rect_union (update_region.region);
         }
 
       if (debug_update_region)
         {
-          redraw_update_region (Rect(), false, merged_regions, visible_widgets);
+          redraw_update_region (redraw_params);
         }
       else
         {
-          for (const auto& [widget, rect] : merged_regions)
-            redraw_update_region (rect, false, merged_regions, visible_widgets);
+          for (const auto& [widget, rect] : redraw_params.merged_regions)
+            {
+              redraw_params.update_region = rect;
+              redraw_update_region (redraw_params);
+            }
         }
     }
   update_full_redraw = false;
@@ -356,8 +360,10 @@ Window::on_expose_event (const PuglEventExpose& event)
 }
 
 void
-Window::redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions, const std::vector<Widget *>& visible_widgets)
+Window::redraw_update_region (const RedrawParams& redraw_params)
 {
+  bool full_redraw = redraw_params.full_redraw;
+
   cairo_save (cairo_gl->cr);
 
   /* for debugging, we want a rectangle around the area we would normally update */
@@ -369,7 +375,7 @@ Window::redraw_update_region (const Rect& update_region, bool full_redraw, const
   if (!full_redraw)
     {
       // setup clipping - only need to redraw part of the screen
-      IRect r (update_region, global_scale);
+      IRect r (redraw_params.update_region, global_scale);
 
       // since we have to convert double coordinates to integer, we add a bit of extra space
       r.grow (4);
@@ -388,45 +394,42 @@ Window::redraw_update_region (const Rect& update_region, bool full_redraw, const
           cairo_set_source_rgba (cairo_gl->cr, 0.0, 0, 0, 0.5);
           cairo_fill (cairo_gl->cr);
         }
-      for (auto w : visible_widgets)
+      for (auto w : redraw_params.visible_widgets_by_layer[layer])
         {
-          if (get_layer (w, menu_widget, dialog_widget) == layer)
+          Rect visible_rect = w->abs_visible_rect();
+          if (!full_redraw)
             {
-              Rect visible_rect = w->abs_visible_rect();
-              if (!full_redraw)
+              // only redraw changed parts
+              visible_rect = visible_rect.intersection (update_region_larger);
+            }
+          if (!visible_rect.empty() || !w->clipping())
+            {
+              cairo_t *cr = cairo_gl->cr;
+
+              cairo_save (cr);
+              cairo_scale (cr, global_scale, global_scale);
+
+              DrawEvent devent;
+
+              // local coordinates
+              cairo_translate (cr, w->abs_x(), w->abs_y());
+              if (w->clipping())
                 {
-                  // only redraw changed parts
-                  visible_rect = visible_rect.intersection (update_region_larger);
+                  // translate to widget local coordinates
+                  visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
+
+                  cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
+                  cairo_clip (cr);
+
+                  devent.rect = visible_rect;
                 }
-              if (!visible_rect.empty() || !w->clipping())
-                {
-                  cairo_t *cr = cairo_gl->cr;
 
-                  cairo_save (cr);
-                  cairo_scale (cr, global_scale, global_scale);
+              if (draw_grid && w == enter_widget)
+                w->debug_fill (cr);
 
-                  DrawEvent devent;
-
-                  // local coordinates
-                  cairo_translate (cr, w->abs_x(), w->abs_y());
-                  if (w->clipping())
-                    {
-                      // translate to widget local coordinates
-                      visible_rect.move_to (visible_rect.x() - w->abs_x(), visible_rect.y() - w->abs_y());
-
-                      cairo_rectangle (cr, visible_rect.x(), visible_rect.y(), visible_rect.width(), visible_rect.height());
-                      cairo_clip (cr);
-
-                      devent.rect = visible_rect;
-                    }
-
-                  if (draw_grid && w == enter_widget)
-                    w->debug_fill (cr);
-
-                  devent.cr = cr;
-                  w->draw (devent);
-                  cairo_restore (cr);
-                }
+              devent.cr = cr;
+              w->draw (devent);
+              cairo_restore (cr);
             }
         }
     }
@@ -465,7 +468,7 @@ Window::redraw_update_region (const Rect& update_region, bool full_redraw, const
 
   if (draw_update_region_rect)
     {
-      for (const auto& [widget, region] : merged_regions)
+      for (const auto& [widget, region] : redraw_params.merged_regions)
         {
           cairo_t *cr = cairo_gl->cr;
 
@@ -485,7 +488,7 @@ Window::redraw_update_region (const Rect& update_region, bool full_redraw, const
     }
   else
     {
-      IRect draw_region (update_region, global_scale);
+      IRect draw_region (redraw_params.update_region, global_scale);
 
       /* the number of pixels we blit is somewhat smaller than "update_region_larger", so we have
        *

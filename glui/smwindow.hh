@@ -64,7 +64,13 @@ protected:
   void on_close_event (const PuglEventClose& event);
   void on_configure_event (const PuglEventConfigure& event);
 
-  void redraw_update_region (const Rect& update_region, bool full_redraw, const std::map<Widget *, Rect>& merged_regions, const std::vector<Widget *>& visible_widgets);
+  struct RedrawParams {
+    Rect                                update_region;
+    bool                                full_redraw;
+    std::map<Widget *, Rect>            merged_regions;
+    std::vector<std::vector<Widget *>>  visible_widgets_by_layer;
+  };
+  void redraw_update_region (const RedrawParams& params);
 
 public:
   Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
