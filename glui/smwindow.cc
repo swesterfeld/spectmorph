@@ -35,14 +35,11 @@ private:
   int  m_width;
   int  m_height;
 
-  vector<uint32> tmp_buffer;
-
 public:
   cairo_t *cr;
 
   CairoGL (int width, int height) :
-    m_width (width), m_height (height),
-    tmp_buffer (width * height)
+    m_width (width), m_height (height)
   {
     memset (&pugl_cairo_gl, 0, sizeof (pugl_cairo_gl));
 
@@ -79,28 +76,23 @@ public:
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
     glEnable(GL_TEXTURE_2D);
 
-    void *draw_buffer;
     if (x == 0 && y == 0 && w == m_width && h == m_height)
       {
         // draw full frame
-        draw_buffer = pugl_cairo_gl.buffer;
+        glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
+                         x, y, w, h,
+                         GL_BGRA, GL_UNSIGNED_BYTE, pugl_cairo_gl.buffer);
       }
     else
       {
+        // update only a part of the texture
         uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
-        size_t  size = w * h;
-        assert (tmp_buffer.size() >= size);
 
-        for (int by = 0; by < h; by++)
-          {
-            memcpy (&tmp_buffer[by * w], &src_buffer[(by + y) * m_width + x], w * 4);
-          }
-        draw_buffer = tmp_buffer.data();
+        glPixelStorei (GL_UNPACK_ROW_LENGTH, m_width);
+        glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
+                         x, y, w, h,
+                         GL_BGRA, GL_UNSIGNED_BYTE, src_buffer + y * m_width + x);
       }
-
-    glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
-                     x, y, w, h,
-                     GL_BGRA, GL_UNSIGNED_BYTE, draw_buffer);
 
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, (GLfloat)m_height);
