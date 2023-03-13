@@ -339,8 +339,7 @@ public:
 
     struct TerminatedVoiceHandler : public MidiSynth::ProcessCallbacks
     {
-      const clap_output_events_t *out_events = nullptr;
-      uint time = 0;
+      const clap_process *process = nullptr;
 
       void
       terminated_voice (MidiSynth::TerminatedVoice& tvoice) override
@@ -348,7 +347,7 @@ public:
         auto event = clap_event_note();
         event.header.size = sizeof (clap_event_note);
         event.header.type = CLAP_EVENT_NOTE_END;
-        event.header.time = time;
+        event.header.time = process->frames_count - 1;
         event.header.space_id = CLAP_CORE_EVENT_SPACE_ID;
         event.header.flags = 0;
 
@@ -360,13 +359,11 @@ public:
 
         CLAP_DEBUG ("terminated voice: channel %d key %d clap_id %d\n", tvoice.channel, tvoice.key, tvoice.clap_id);
 
-        if (out_events)
-          out_events->try_push (out_events, &(event.header));
+        process->out_events->try_push (process->out_events, &(event.header));
       }
     } terminated_voice_handler;
 
-    terminated_voice_handler.time = process->frames_count - 1;
-    terminated_voice_handler.out_events = process->out_events;
+    terminated_voice_handler.process = process;
 
     midi_synth->process (outputs[0], process->frames_count, &terminated_voice_handler);
 
