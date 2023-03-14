@@ -70,6 +70,7 @@ protected:
     std::map<Widget *, Rect>            merged_regions;
     std::vector<std::vector<Widget *>>  visible_widgets_by_layer;
   };
+  void collect_widgets_for_redraw (RedrawParams& redraw_params, Widget *widget, int layer);
   void redraw_update_region (const RedrawParams& params);
 
 public:

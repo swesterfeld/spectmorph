@@ -310,14 +310,27 @@ struct IRect
 };
 
 void
+Window::collect_widgets_for_redraw (RedrawParams& redraw_params, Widget *widget, int layer)
+{
+  if (widget->visible())
+    {
+      if (widget == menu_widget)
+        layer = 1;
+      if (widget == dialog_widget)
+        layer = 2;
+
+      redraw_params.visible_widgets_by_layer[layer].push_back (widget);
+      for (Widget *child : widget->children)
+        collect_widgets_for_redraw (redraw_params, child, layer);
+    }
+}
+
+void
 Window::on_expose_event (const PuglEventExpose& event)
 {
   RedrawParams redraw_params;
   redraw_params.visible_widgets_by_layer.resize (3);
-
-  for (auto w : crawl_widgets())
-    if (get_visible_recursive (w))
-      redraw_params.visible_widgets_by_layer[get_layer (w, menu_widget, dialog_widget)].push_back (w);
+  collect_widgets_for_redraw (redraw_params, this, 0);
 
   if (update_full_redraw)
     {

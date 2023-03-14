@@ -34,10 +34,6 @@ __ clap __
 - fix instrument edit synth
 - test: is modulation applied before values are used for the first time?
 
-__ ui __
-- fix resizing for Window cairo draw to tmp_buffer
-- fix junk on first show
-
 FILTER:
 
 - remove morph plan ptr from API
