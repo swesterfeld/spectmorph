@@ -122,6 +122,11 @@ public:
   {
     return m_height;
   }
+  uint32 *
+  buffer()
+  {
+    return reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
+  }
 };
 
 static void
@@ -507,6 +512,78 @@ Window::redraw_update_region (const RedrawParams& redraw_params)
       draw_region.clip (cairo_gl->width(), cairo_gl->height());
 
       cairo_gl->draw (draw_region.x, draw_region.y, draw_region.w, draw_region.h);
+    }
+}
+
+void
+Window::init_sprite()
+{
+  const int RADIUS = 6;
+  int spr_width = (RADIUS * 2 + 2) * global_scale;
+  int spr_height = (RADIUS * 2 + 2) * global_scale;
+
+  if (sprite.width == spr_width && sprite.height == spr_height)
+    return;
+
+  sprite.width = spr_width;
+  sprite.height = spr_height;
+  sprite.data.resize (spr_width * spr_height);
+
+  cairo_surface_t *surface = cairo_image_surface_create_for_data (reinterpret_cast<unsigned char *> (sprite.data.data()),
+                                                                  CAIRO_FORMAT_ARGB32, spr_width, spr_height, spr_width * 4);
+  cairo_t *cr = cairo_create (surface);
+
+  cairo_set_antialias (cr, CAIRO_ANTIALIAS_NONE);
+  cairo_scale (cr, global_scale, global_scale);
+  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+  cairo_arc (cr, RADIUS + 1, RADIUS + 1, RADIUS, 0, 2 * M_PI);
+  cairo_fill (cr);
+
+  cairo_destroy (cr);
+  cairo_surface_destroy (surface);
+}
+
+void
+Window::get_sprite_size (double& w, double& h)
+{
+  init_sprite();
+
+  w = sprite.width / global_scale;
+  h = sprite.height / global_scale;
+}
+
+/*
+ * software sprites: drawing lots of circles using plain cairo is really slow,
+ * so we prepare a circle once, so that drawing it can be done quickly
+ *
+ * other sprite shapes could be added as needed
+ */
+void
+Window::draw_sprite (Widget *widget, double x, double y)
+{
+  init_sprite();
+
+  int sx = (x + widget->abs_x()) * global_scale;
+  int sy = (y + widget->abs_y()) * global_scale;
+  uint32 *src_buffer = cairo_gl->buffer();
+
+  const int spr_width = sprite.width;
+  const int spr_height = sprite.height;
+  const uint32* spr_data = sprite.data.data();
+
+  for (int dx = 0; dx < spr_width; dx++)
+    {
+      for (int dy = 0; dy < spr_height; dy++)
+        {
+          if (sy + dy >= 0 && sy + dy < cairo_gl->height())
+            {
+              if (sx + dx >= 0 && sx + dx < cairo_gl->width())
+                {
+                  if (spr_data[dy * spr_width + dx])
+                    src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
+                }
+            }
+        }
     }
 }
 

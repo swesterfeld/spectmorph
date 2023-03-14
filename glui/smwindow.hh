@@ -73,6 +73,13 @@ protected:
   void collect_widgets_for_redraw (RedrawParams& redraw_params, Widget *widget, int layer);
   void redraw_update_region (const RedrawParams& params);
 
+  struct Sprite {
+    int width = 0;
+    int height = 0;
+    std::vector<uint32> data;
+  } sprite;
+  void init_sprite();
+
 public:
   Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
   virtual ~Window();
@@ -98,6 +105,8 @@ public:
   void remove_shortcut (Shortcut *shortcut);
   Window *window() override;
   PuglNativeWindow native_window();
+  void get_sprite_size (double& width, double& height);
+  void draw_sprite (Widget *widget, double x, double y);
 
   void fill_zoom_menu (Menu *menu);
   void set_gui_scaling (double s);
