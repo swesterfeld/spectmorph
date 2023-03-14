@@ -58,6 +58,7 @@ public:
   {
     pugl_cairo_gl_configure (&pugl_cairo_gl, m_width, m_height);
 
+    glPixelStorei (GL_UNPACK_ROW_LENGTH, m_width);
     glTexImage2D (GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA8,
                   m_width, m_height, 0,
                   GL_BGRA, GL_UNSIGNED_BYTE, pugl_cairo_gl.buffer);
@@ -528,6 +529,7 @@ Window::init_sprite()
   sprite.width = spr_width;
   sprite.height = spr_height;
   sprite.data.resize (spr_width * spr_height);
+  std::fill (sprite.data.begin(), sprite.data.end(), 0);
 
   cairo_surface_t *surface = cairo_image_surface_create_for_data (reinterpret_cast<unsigned char *> (sprite.data.data()),
                                                                   CAIRO_FORMAT_ARGB32, spr_width, spr_height, spr_width * 4);
