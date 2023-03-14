@@ -563,6 +563,12 @@ Window::draw_sprite (Widget *widget, double x, double y)
 {
   init_sprite();
 
+  auto vrect = widget->abs_visible_rect();
+  int startx = max<int> (0, vrect.x() * global_scale);
+  int starty = max<int> (0, vrect.y() * global_scale);
+  int endx = min<int> (cairo_gl->width(), (vrect.x() + vrect.width()) * global_scale);
+  int endy = min<int> (cairo_gl->height(), (vrect.y() + vrect.height()) * global_scale);
+
   int sx = (x + widget->abs_x()) * global_scale;
   int sy = (y + widget->abs_y()) * global_scale;
   uint32 *src_buffer = cairo_gl->buffer();
@@ -575,9 +581,9 @@ Window::draw_sprite (Widget *widget, double x, double y)
     {
       for (int dy = 0; dy < spr_height; dy++)
         {
-          if (sy + dy >= 0 && sy + dy < cairo_gl->height())
+          if (sy + dy >= starty && sy + dy < endy)
             {
-              if (sx + dx >= 0 && sx + dx < cairo_gl->width())
+              if (sx + dx >= startx && sx + dx < endx)
                 {
                   if (spr_data[dy * spr_width + dx])
                     src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
