@@ -46,7 +46,7 @@ public:
       {
         cairo_arc (cr, value_pos (v), height() / 2 , RADIUS, 0, 2 * M_PI);
         du.set_color (vcolor);
-        cairo_fill_preserve (cr);
+        cairo_fill (cr);
       }
   }
   void
