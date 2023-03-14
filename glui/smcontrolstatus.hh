@@ -12,18 +12,23 @@ class ControlStatus : public Widget
   std::vector<float> voices;
   Property& property;
 
-  static constexpr double RADIUS = 6;
   double
   value_pos (double v)
   {
-    double X = 8;
-    return RADIUS + X + (width() - (RADIUS + X) * 2) * (v + 1) / 2;
+    const int BORDER = 4;
+    double spr_w, spr_h;
+    window()->get_sprite_size (spr_w, spr_h);
+
+    return spr_w / 2 + BORDER + (width() - spr_w - 2 * BORDER) * (v + 1) / 2;
   }
   void
   redraw_voices()
   {
+    double spr_w, spr_h;
+    window()->get_sprite_size (spr_w, spr_h);
+
     for (auto v : voices)
-      update (value_pos (v) - RADIUS - 1, height() / 2 - RADIUS - 1, RADIUS * 2 + 2, RADIUS * 2 + 2, UPDATE_LOCAL);
+      update (value_pos (v) - spr_w / 2, height() / 2 - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
   }
 public:
   ControlStatus (Widget *parent, Property& property) :
@@ -39,15 +44,11 @@ public:
     double space = 2;
     du.round_box (0, space, width(), height() - 2 * space, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
-    Color vcolor = Color (0.7, 0.7, 0.7);
+    double spr_w, spr_h;
+    window()->get_sprite_size (spr_w, spr_h);
 
-    // circle
     for (auto v : voices)
-      {
-        cairo_arc (cr, value_pos (v), height() / 2 , RADIUS, 0, 2 * M_PI);
-        du.set_color (vcolor);
-        cairo_fill (cr);
-      }
+      window()->draw_sprite (this, value_pos (v) - spr_w / 2, height() / 2 - spr_h / 2);
   }
   void
   on_voice_status_changed (VoiceStatus *voice_status)

@@ -124,16 +124,14 @@ MorphGridWidget::draw (const DrawEvent& devent)
         }
     }
 
-  Color vcolor = Color (0.7, 0.7, 0.7);
+  double spr_w, spr_h;
+  window()->get_sprite_size (spr_w, spr_h);
 
   for (size_t v = 0; v < x_voice_values.size(); v++)
     {
       const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
 
-      // circle
-      cairo_arc (cr, p.x(), p.y(), VOICE_RADIUS, 0, 2 * M_PI);
-      du.set_color (vcolor);
-      cairo_fill (cr);
+      window()->draw_sprite (this, p.x() - spr_w / 2, p.y() - spr_h / 2);
     }
 
   if (prop_x_morphing.modulation_list()->main_control_type() == MorphOperator::CONTROL_GUI
@@ -237,11 +235,14 @@ MorphGridWidget::on_grid_params_changed()
 void
 MorphGridWidget::redraw_voices()
 {
+  double spr_w, spr_h;
+  window()->get_sprite_size (spr_w, spr_h);
+
   for (size_t v = 0; v < x_voice_values.size(); v++)
     {
       const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
 
-      update (p.x() - VOICE_RADIUS - 1, p.y() - VOICE_RADIUS - 1, VOICE_RADIUS * 2 + 2, VOICE_RADIUS * 2 + 2, UPDATE_LOCAL);
+      update (p.x() - spr_w / 2, p.y() - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
     }
 }
 

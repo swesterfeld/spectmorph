@@ -29,7 +29,6 @@ class MorphGridWidget : public Widget
 
   bool move_controller = false;
 
-  static constexpr double VOICE_RADIUS = 6;
   Point prop_to_pixel (double x, double y);
 
 public:
