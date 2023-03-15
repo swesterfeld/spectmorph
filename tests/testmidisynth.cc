@@ -19,22 +19,15 @@ main (int argc, char **argv)
       return 1;
     }
 
-  Project   project;
-  MidiSynth midi_synth (48000, 16 /* voices */);
+  Project project;
+  project.set_mix_freq (48000);
 
-  MorphPlanPtr plan (new MorphPlan (project));
+  Error error = project.load (argv[1]);
+  assert (!error);
 
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", argv[1]);
-      exit (1);
-    }
-  plan->load (in);
-  delete in;
+  project.try_update_synth();
 
-  auto update = midi_synth.prepare_update (plan);
-  midi_synth.apply_update (update);
+  MidiSynth& midi_synth = *project.midi_synth();
 
   const unsigned char note = atoi (argv[2]);
   vector<float> output (24000);
@@ -43,7 +36,7 @@ main (int argc, char **argv)
   midi_synth.add_midi_event (0, note_on);
   midi_synth.process (&output[0], output.size());
   for (auto f: output)
-    printf ("%.17g\n", f);
+    sm_printf ("%.17g\n", f);
 
   unsigned char note_off[3] = { 0x80, note, 0 };
   midi_synth.add_midi_event (0, note_off);
@@ -51,6 +44,6 @@ main (int argc, char **argv)
     {
       midi_synth.process (&output[0], output.size());
       for (auto f: output)
-        printf ("%.17g\n", f);
+        sm_printf ("%.17g\n", f);
     }
 }
