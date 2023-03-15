@@ -31,7 +31,7 @@ MorphPlanWindow::static_scaled_size (int *w, int *h)
 }
 
 MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
-                                  const string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan) :
+                                  const string& title, PuglNativeWindow win_id, bool resize, MorphPlan *morph_plan) :
   Window (event_loop, title, win_width, win_height, win_id, resize),
   m_morph_plan (morph_plan),
   m_synth_interface (morph_plan->project()->synth_interface())
@@ -74,7 +74,7 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   Widget *output_parent = new Widget (scroll_view_right);
   Widget *plan_parent = new Widget (scroll_view_left);
 
-  m_morph_plan_view = std::make_unique<MorphPlanView> (plan_parent, output_parent, morph_plan.c_ptr(), this);
+  m_morph_plan_view = std::make_unique<MorphPlanView> (plan_parent, output_parent, morph_plan, this);
   scroll_view_left->set_scroll_widget (plan_parent, false, true);
   scroll_view_right->set_scroll_widget (output_parent, false, true);
 
@@ -120,7 +120,7 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 
   connect (item->signal_clicked, [=]()
     {
-      MorphOperator *op = MorphOperator::create (type, m_morph_plan.c_ptr());
+      MorphOperator *op = MorphOperator::create (type, m_morph_plan);
 
       g_return_if_fail (op != NULL);
 

@@ -47,7 +47,7 @@ public:
   MorphPlanSynth (float mix_freq, size_t n_voices);
   ~MorphPlanSynth();
 
-  UpdateP prepare_update (MorphPlanPtr new_plan);
+  UpdateP prepare_update (const MorphPlan& new_plan);
   void apply_update (UpdateP update);
 
   MorphModuleSharedState *shared_state (MorphOperator::PtrID ptr_id);

@@ -6,7 +6,6 @@
 #include "sminstrument.hh"
 #include "smwavset.hh"
 #include "smwavsetbuilder.hh"
-#include "smobject.hh"
 #include "smbuilderthread.hh"
 #include "smmorphplan.hh"
 #include "smuserinstrumentindex.hh"
@@ -77,7 +76,7 @@ private:
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
   double                      m_volume = -6;
-  RefPtr<MorphPlan>           m_morph_plan;
+  MorphPlan                   m_morph_plan;
   std::vector<unsigned char>  m_last_plan_data;
   bool                        m_state_changed_notify = false;
   StorageModel                m_storage_model = StorageModel::COPY;
@@ -147,7 +146,7 @@ public:
   NotifyBuffer *notify_buffer();
   SynthInterface *synth_interface() const;
   MidiSynth *midi_synth() const;
-  MorphPlanPtr morph_plan() const;
+  MorphPlan *morph_plan();
   UserInstrumentIndex *user_instrument_index();
 
   Error save (const std::string& filename);

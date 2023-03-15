@@ -19,11 +19,11 @@ class VstUI : public SignalReceiver
   ERect                 rectangle;
   MorphPlanWindow      *widget = nullptr;
   EventLoop            *event_loop = nullptr;
-  MorphPlanPtr          morph_plan;
+  MorphPlan            *morph_plan = nullptr;
   VstPlugin            *plugin = nullptr;
 
 public:
-  VstUI (MorphPlanPtr plan, VstPlugin *plugin);
+  VstUI (MorphPlan *plan, VstPlugin *plugin);
 
   bool open (PuglNativeWindow win_id);
   bool getRect (ERect** rect);
