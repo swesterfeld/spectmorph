@@ -554,12 +554,18 @@ Window::draw_sprite (Widget *widget, double x, double y)
 {
   init_sprite();
 
+  /* compute visible area of the widget in screen pixels (after global scaling):
+   *  x_range = [beginx, endx) ; y_range in [beginy, endy)
+   */
   auto vrect = widget->abs_visible_rect();
-  int startx = max<int> (0, vrect.x() * global_scale);
-  int starty = max<int> (0, vrect.y() * global_scale);
+  int beginx = max<int> (0, vrect.x() * global_scale);
+  int beginy = max<int> (0, vrect.y() * global_scale);
   int endx = min<int> (cairo_gl->width(), (vrect.x() + vrect.width()) * global_scale);
   int endy = min<int> (cairo_gl->height(), (vrect.y() + vrect.height()) * global_scale);
 
+  /*
+   * compute point (sx, sy) that marks the start of the sprite in screen pixels
+   */
   int sx = (x + widget->abs_x()) * global_scale;
   int sy = (y + widget->abs_y()) * global_scale;
   uint32 *src_buffer = cairo_gl->buffer();
@@ -568,19 +574,30 @@ Window::draw_sprite (Widget *widget, double x, double y)
   const int spr_height = sprite.height;
   const uint32* spr_data = sprite.data.data();
 
-  for (int dx = 0; dx < spr_width; dx++)
+  auto draw = [&] (bool draw_full_sprite) {
+    for (int dx = 0; dx < spr_width; dx++)
+      {
+        for (int dy = 0; dy < spr_height; dy++)
+          {
+            if (draw_full_sprite || (sy + dy >= beginy && sy + dy < endy))
+              {
+                if (draw_full_sprite || (sx + dx >= beginx && sx + dx < endx))
+                  {
+                    if (spr_data[dy * spr_width + dx])
+                      src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
+                  }
+              }
+          }
+      }
+  };
+
+  if (sy < beginy || sx < beginx || sx + spr_width >= endx || sy + spr_height >= endy)
     {
-      for (int dy = 0; dy < spr_height; dy++)
-        {
-          if (sy + dy >= starty && sy + dy < endy)
-            {
-              if (sx + dx >= startx && sx + dx < endx)
-                {
-                  if (spr_data[dy * spr_width + dx])
-                    src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
-                }
-            }
-        }
+      draw (false); // slow version: a part of the sprite gets cropped so we do range checks in the inner loop
+    }
+  else
+    {
+      draw (true); // fast version: draw the complete shape, no range checks
     }
 }
 
