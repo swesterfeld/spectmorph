@@ -532,6 +532,31 @@ Window::init_sprite()
 
   cairo_destroy (cr);
   cairo_surface_destroy (surface);
+
+  /* for fast drawing, we represent the sprite as a vector of horizontal lines:
+   *   - start position
+   *   - number of pixels in this line
+   */
+  sprite.rle_data.clear();
+  for (int y = 0; y < spr_height; y++)
+    {
+      int start = spr_width;
+      int end = 0;
+      for (int x = 0; x < spr_width; x++)
+        {
+          int pos = x + y * spr_width;
+          if (sprite.data[pos])
+            {
+              start = min (start, x);
+              end = max (end, x);
+            }
+        }
+      sprite.rle_data.push_back (start);
+      if (end >= start)
+        sprite.rle_data.push_back (end - start + 1);
+      else
+        sprite.rle_data.push_back (0);
+    }
 }
 
 void
@@ -574,30 +599,36 @@ Window::draw_sprite (Widget *widget, double x, double y)
   const int spr_height = sprite.height;
   const uint32* spr_data = sprite.data.data();
 
-  auto draw = [&] (bool draw_full_sprite) {
-    for (int dx = 0; dx < spr_width; dx++)
-      {
-        for (int dy = 0; dy < spr_height; dy++)
-          {
-            if (draw_full_sprite || (sy + dy >= beginy && sy + dy < endy))
-              {
-                if (draw_full_sprite || (sx + dx >= beginx && sx + dx < endx))
-                  {
-                    if (spr_data[dy * spr_width + dx])
-                      src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
-                  }
-              }
-          }
-      }
-  };
-
   if (sy < beginy || sx < beginx || sx + spr_width >= endx || sy + spr_height >= endy)
     {
-      draw (false); // slow version: a part of the sprite gets cropped so we do range checks in the inner loop
+      // slow version: a part of the sprite gets cropped so we do range checks in the inner loop
+      for (int dy = 0; dy < spr_height; dy++)
+        {
+          for (int dx = 0; dx < spr_width; dx++)
+            {
+              if (sy + dy >= beginy && sy + dy < endy)
+                {
+                  if (sx + dx >= beginx && sx + dx < endx)
+                    {
+                      if (spr_data[dy * spr_width + dx])
+                        src_buffer[sx + dx + (sy + dy) * cairo_gl->width()] = 0xffaaaaaa;
+                    }
+                }
+            }
+        }
     }
   else
     {
-      draw (true); // fast version: draw the complete shape, no range checks
+      // fast version: draw the complete shape, no range checks
+      for (int dy = 0; dy < spr_height; dy++)
+        {
+          uint32 *dest = src_buffer + sx + (sy + dy) * cairo_gl->width();
+
+          int start = sprite.rle_data[dy * 2];
+          int count = sprite.rle_data[dy * 2 + 1];
+          for (int dx = start; dx < start + count; dx++)
+            dest[dx] = 0xffaaaaaa;
+        }
     }
 }
 

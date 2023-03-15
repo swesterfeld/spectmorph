@@ -77,6 +77,7 @@ protected:
     int width = 0;
     int height = 0;
     std::vector<uint32> data;
+    std::vector<uint32> rle_data;
   } sprite;
   void init_sprite();
 
