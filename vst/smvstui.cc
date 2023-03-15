@@ -13,7 +13,7 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-VstUI::VstUI (MorphPlanPtr plan, VstPlugin *plugin) :
+VstUI::VstUI (MorphPlan *plan, VstPlugin *plugin) :
   morph_plan (plan),
   plugin (plugin)
 {
