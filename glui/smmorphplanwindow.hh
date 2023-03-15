@@ -21,7 +21,7 @@ namespace SpectMorph
 class MorphPlanView;
 class MorphPlanWindow : public Window
 {
-  MorphPlanPtr                    m_morph_plan;
+  MorphPlan                      *m_morph_plan = nullptr;
   std::unique_ptr<MorphPlanView>  m_morph_plan_view;
   SynthInterface                 *m_synth_interface = nullptr;
   VoiceStatus                     m_voice_status;
@@ -39,7 +39,7 @@ public:
     // FIXME update_window_title();
   }
 
-  MorphPlanWindow (EventLoop& event_loop, const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlanPtr morph_plan);
+  MorphPlanWindow (EventLoop& event_loop, const std::string& title, PuglNativeWindow win_id, bool resize, MorphPlan *morph_plan);
 
   void fill_preset_menu (Menu *menu);
   void on_load_preset (const std::string& rel_filename);
