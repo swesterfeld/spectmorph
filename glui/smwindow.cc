@@ -512,11 +512,12 @@ Window::init_sprite()
   int spr_width = (RADIUS * 2 + 2) * global_scale;
   int spr_height = (RADIUS * 2 + 2) * global_scale;
 
-  if (sprite.width == spr_width && sprite.height == spr_height)
+  if (sprite.width == spr_width && sprite.height == spr_height && sprite.window_width == cairo_gl->width())
     return;
 
   sprite.width = spr_width;
   sprite.height = spr_height;
+  sprite.window_width = cairo_gl->width();
   sprite.data.resize (spr_width * spr_height);
   std::fill (sprite.data.begin(), sprite.data.end(), 0);
 
@@ -551,7 +552,7 @@ Window::init_sprite()
               end = max (end, x);
             }
         }
-      sprite.rle_data.push_back (start);
+      sprite.rle_data.push_back (start + y * sprite.window_width);
       if (end >= start)
         sprite.rle_data.push_back (end - start + 1);
       else
@@ -620,12 +621,12 @@ Window::draw_sprite (Widget *widget, double x, double y)
   else
     {
       // fast version: draw the complete shape, no range checks
-      for (int dy = 0; dy < spr_height; dy++)
-        {
-          uint32 *dest = src_buffer + sx + (sy + dy) * cairo_gl->width();
+      uint32 *dest = src_buffer + sx + sy * cairo_gl->width();
 
-          int start = sprite.rle_data[dy * 2];
-          int count = sprite.rle_data[dy * 2 + 1];
+      for (size_t line = 0; line < sprite.rle_data.size(); line += 2)
+        {
+          int start = sprite.rle_data[line];
+          int count = sprite.rle_data[line + 1];
           for (int dx = start; dx < start + count; dx++)
             dest[dx] = 0xffaaaaaa;
         }
