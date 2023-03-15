@@ -11,7 +11,7 @@
 using namespace SpectMorph;
 
 static void
-preinit_plan (MorphPlanPtr plan)
+preinit_plan (MorphPlan& plan)
 {
   MorphPlanSynth synth (44100, 1);
 
@@ -20,7 +20,7 @@ preinit_plan (MorphPlanPtr plan)
 }
 
 static void
-measure_update (MorphPlanPtr plan, size_t n_voices)
+measure_update (MorphPlan& plan, size_t n_voices)
 {
   MorphPlanSynth synth (44100, n_voices);
 
@@ -44,18 +44,15 @@ main (int argc, char **argv)
     }
 
   Project      project;
-  MorphPlanPtr plan = new MorphPlan (project);
-  GenericIn *in = StdioIn::open (argv[1]);
-  if (!in)
-    {
-      g_printerr ("Error opening '%s'.\n", argv[1]);
-      exit (1);
-    }
-  plan->load (in);
-  delete in;
+  project.set_mix_freq (48000);
+
+  Error error = project.load (argv[1]);
+  assert (!error);
+
+  MorphPlan *plan = project.morph_plan();
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
-  preinit_plan (plan);
-  measure_update (plan, 1);
-  measure_update (plan, 10);
+  preinit_plan (*plan);
+  measure_update (*plan, 1);
+  measure_update (*plan, 10);
 }
