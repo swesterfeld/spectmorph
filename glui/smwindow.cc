@@ -77,23 +77,12 @@ public:
     glEnable(GL_TEXTURE_RECTANGLE_ARB);
     glEnable(GL_TEXTURE_2D);
 
-    if (x == 0 && y == 0 && w == m_width && h == m_height)
-      {
-        // draw full frame
-        glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
-                         x, y, w, h,
-                         GL_BGRA, GL_UNSIGNED_BYTE, pugl_cairo_gl.buffer);
-      }
-    else
-      {
-        // update only a part of the texture
-        uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
+    // update modified part of the texture from cairo buffer
+    uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
 
-        glPixelStorei (GL_UNPACK_ROW_LENGTH, m_width);
-        glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
-                         x, y, w, h,
-                         GL_BGRA, GL_UNSIGNED_BYTE, src_buffer + y * m_width + x);
-      }
+    glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
+                     x, y, w, h,
+                     GL_BGRA, GL_UNSIGNED_BYTE, src_buffer + y * m_width + x);
 
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, (GLfloat)m_height);
