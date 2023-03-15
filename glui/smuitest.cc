@@ -55,6 +55,25 @@ public:
   }
 };
 
+class SpritePerf : public Widget
+{
+public:
+  SpritePerf (Widget *parent) :
+    Widget (parent)
+  {
+  }
+  void
+  draw (const DrawEvent& devent) override
+  {
+    auto t = get_time();
+    int reps = 1'000'000;
+    for (int i = 0; i < reps; i++)
+      window()->draw_sprite (this, 10, 10);
+    printf ("%.2f Msprites/sec\n", reps / (get_time() - t) / /* Msprites */ 1'000'000);
+    exit (0);
+  }
+};
+
 class MainWindow : public Window
 {
 public:
@@ -211,6 +230,13 @@ public:
 
     Shortcut::test (this);
   }
+  void
+  set_sprite_perf()
+  {
+    FixedGrid grid;
+    auto sprite_perf = new SpritePerf (this);
+    grid.add_widget (sprite_perf, 36, 40, 5, 5);
+  }
 };
 
 using std::vector;
@@ -227,6 +253,9 @@ main (int argc, char **argv)
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });
+
+  if (argc == 2 && string (argv[1]) == "spriteperf")
+    window.set_sprite_perf();
 
   while (!quit) {
     event_loop.wait_event_fps();
