@@ -36,7 +36,6 @@ __ clap __
 
 FILTER:
 
-- remove morph plan ptr from API
 __ ui __
 
 - semitones flag for filter cutoff
