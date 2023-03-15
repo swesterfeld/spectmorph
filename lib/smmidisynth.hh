@@ -186,7 +186,7 @@ public:
 
   void set_tempo (double tempo);
   void set_ppq_pos (double ppq_pos);
-  MorphPlanSynth::UpdateP prepare_update (MorphPlanPtr plan);
+  MorphPlanSynth::UpdateP prepare_update (const MorphPlan& plan);
   void apply_update (MorphPlanSynth::UpdateP update);
   double mix_freq() const;
 

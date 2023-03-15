@@ -169,14 +169,14 @@ Project::midi_synth() const
   return m_midi_synth.get();
 }
 
-Project::Project()
+Project::Project() :
+  m_morph_plan (*this)
 {
-  m_morph_plan = new MorphPlan (*this);
-  m_morph_plan->load_default();
+  m_morph_plan.load_default();
 
-  connect (m_morph_plan->signal_plan_changed, this, &Project::on_plan_changed);
-  connect (m_morph_plan->signal_operator_added, this, &Project::on_operator_added);
-  connect (m_morph_plan->signal_operator_removed, this, &Project::on_operator_removed);
+  connect (m_morph_plan.signal_plan_changed, this, &Project::on_plan_changed);
+  connect (m_morph_plan.signal_operator_added, this, &Project::on_operator_added);
+  connect (m_morph_plan.signal_operator_removed, this, &Project::on_operator_removed);
 
   m_synth_interface.reset (new SynthInterface (this));
 }
@@ -226,7 +226,7 @@ Project::on_plan_changed()
   vector<unsigned char> plan_data;
   MemOut                plan_mo (&plan_data);
 
-  m_morph_plan->save (&plan_mo);
+  m_morph_plan.save (&plan_mo);
 
   if (plan_data != m_last_plan_data)
     {
@@ -307,10 +307,10 @@ Project::voices_active()
   return m_voices_active;
 }
 
-MorphPlanPtr
-Project::morph_plan() const
+MorphPlan *
+Project::morph_plan()
 {
-  return m_morph_plan;
+  return &m_morph_plan;
 }
 
 UserInstrumentIndex *
@@ -340,7 +340,7 @@ Project::list_wav_sources()
   vector<MorphWavSource *> wav_sources;
 
   // find instrument ids
-  for (auto op : m_morph_plan->operators())
+  for (auto op : m_morph_plan.operators())
     {
       string type = op->type();
 
@@ -362,8 +362,8 @@ Project::post_load()
 
   // plan has changed due to instrument map initialization:
   //  -> rebuild morph plan view (somewhat hacky)
-  m_morph_plan->signal_need_view_rebuild();
-  m_morph_plan->emit_plan_changed();
+  m_morph_plan.signal_need_view_rebuild();
+  m_morph_plan.emit_plan_changed();
 }
 
 Error
@@ -400,7 +400,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   /* backup old plan */
   vector<unsigned char> data;
   MemOut mo (&data);
-  m_morph_plan->save (&mo);
+  m_morph_plan.save (&mo);
 
   /* backup old instruments */
   map<int, std::unique_ptr<Instrument>> old_instrument_map;
@@ -411,7 +411,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
     {
       /* restore old plan/instruments if something went wrong */
       GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
-      m_morph_plan->load (old_in);
+      m_morph_plan.load (old_in);
       delete old_in;
 
       instrument_map.swap (old_instrument_map);
@@ -427,7 +427,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
     return Error ("Unable to read 'plan.smplan' from input file");
 
   GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
-  Error error = m_morph_plan->load (in, params);
+  Error error = m_morph_plan.load (in, params);
   delete in;
 
   if (error)
@@ -470,7 +470,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
 Error
 Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
 {
-  Error error = m_morph_plan->load (in, params);
+  Error error = m_morph_plan.load (in, params);
 
   if (!error)
     {
@@ -529,7 +529,7 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
 {
   vector<unsigned char> data;
   MemOut mo (&data);
-  m_morph_plan->save (&mo, params);
+  m_morph_plan.save (&mo, params);
 
   zip_writer.add ("plan.smplan", data);
   for (auto wav_source : list_wav_sources())
@@ -563,7 +563,7 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 
   vector<unsigned char> data;
   MemOut mo (&data);
-  m_morph_plan->save (&mo);
+  m_morph_plan.save (&mo);
 
   clear_lv2_filenames();
 

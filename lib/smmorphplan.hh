@@ -5,7 +5,6 @@
 
 #include "smindex.hh"
 #include "smmorphoperator.hh"
-#include "smobject.hh"
 #include "smaudio.hh"
 #include "smutils.hh"
 #include "smsignal.hh"
@@ -15,7 +14,7 @@ namespace SpectMorph
 
 class Project;
 
-class MorphPlan : public Object
+class MorphPlan : public SignalReceiver
 {
 public:
   class ExtraParameters
@@ -46,7 +45,7 @@ public:
 
   const Index *index();
   Project     *project();
-  std::string  id();
+  std::string  id() const;
 
   enum AddPos {
     ADD_POS_AUTO,
@@ -54,7 +53,7 @@ public:
   };
 
   void add_operator (MorphOperator *op, AddPos = ADD_POS_END, const std::string& name = "", const std::string& id = "", bool load_folded = false);
-  const std::vector<MorphOperator *>& operators();
+  const std::vector<MorphOperator *>& operators() const;
   void remove (MorphOperator *op);
   void move (MorphOperator *op, MorphOperator *op_next);
 
@@ -78,8 +77,6 @@ public:
   Signal<MorphOperator *> signal_operator_removed;
   Signal<MorphOperator *> signal_operator_added;
 };
-
-typedef RefPtr<MorphPlan> MorphPlanPtr;
 
 }
 

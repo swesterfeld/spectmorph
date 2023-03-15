@@ -389,7 +389,7 @@ MorphPlan::load_default()
  * \returns a read-only reference to the vector containing the operators.
  */
 const vector<MorphOperator*>&
-MorphPlan::operators()
+MorphPlan::operators() const
 {
   return m_operators;
 }
@@ -523,7 +523,7 @@ MorphPlan::project()
 }
 
 std::string
-MorphPlan::id()
+MorphPlan::id() const
 {
   return m_id;
 }

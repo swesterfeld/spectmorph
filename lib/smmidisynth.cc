@@ -733,7 +733,7 @@ MidiSynth::kill_all_active_voices()
 }
 
 MorphPlanSynth::UpdateP
-MidiSynth::prepare_update (MorphPlanPtr plan)
+MidiSynth::prepare_update (const MorphPlan& plan)
 {
   return morph_plan_synth.prepare_update (plan);
 }

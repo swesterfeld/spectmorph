@@ -42,19 +42,15 @@ MorphPlanSynth::voice (size_t i) const
 }
 
 static vector<string>
-sorted_id_list (MorphPlanPtr plan)
+sorted_id_list (const MorphPlan& plan)
 {
   vector<string> ids;
 
-  if (plan)
+  for (auto op : plan.operators())
     {
-      const vector<MorphOperator *>& ops = plan->operators();
-      for (vector<MorphOperator *>::const_iterator oi = ops.begin(); oi != ops.end(); oi++)
-        {
-          ids.push_back ((*oi)->id());
-        }
-      sort (ids.begin(), ids.end());
+      ids.push_back (op->id());
     }
+  sort (ids.begin(), ids.end());
   return ids;
 }
 
@@ -76,18 +72,18 @@ recursive_cycle_check (MorphOperator *start_op, int depth)
 }
 
 MorphPlanSynth::UpdateP
-MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
+MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
 {
   UpdateP update = std::make_shared<Update>();
 
   update->have_cycle = false;
-  for (auto op : plan->operators())
+  for (auto op : plan.operators())
     {
       if (recursive_cycle_check (op, 0))
         update->have_cycle = true;
     }
 
-  for (auto o : plan->operators())
+  for (auto o : plan.operators())
     {
       MorphOperatorConfigP config (o->clone_config());
       update->new_configs.push_back (config);
@@ -104,9 +100,9 @@ MorphPlanSynth::prepare_update (MorphPlanPtr plan) /* main thread */
 
   vector<string> update_ids = sorted_id_list (plan);
 
-  update->cheap = (update_ids == m_last_update_ids) && (plan->id() == m_last_plan_id);
+  update->cheap = (update_ids == m_last_update_ids) && (plan.id() == m_last_plan_id);
   m_last_update_ids = update_ids;
-  m_last_plan_id = plan->id();
+  m_last_plan_id = plan.id();
 
   return update;
 }
