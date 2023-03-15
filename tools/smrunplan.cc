@@ -180,7 +180,7 @@ class Player
   MorphPlanVoice *voice;
 
   Project         project;
-  MorphPlanPtr    plan;
+  MorphPlan      *plan;
   MorphPlanSynth  synth;
 public:
   Player();
@@ -194,7 +194,7 @@ Player::Player() :
   linear_op (0),
   grid_op (0),
   voice (0),
-  plan (new MorphPlan (project)),
+  plan (project.morph_plan()),
   synth (options.rate, 1)
 {
 }
@@ -202,19 +202,19 @@ Player::Player() :
 void
 Player::load_plan (const string& filename)
 {
-  GenericIn *in = StdioIn::open (filename);
-  if (!in)
+  project.set_mix_freq (options.rate);
+
+  Error error = project.load (filename);
+  if (error)
     {
-      g_printerr ("Error opening '%s'.\n", filename.c_str());
+      fprintf (stderr, "%s: loading file '%s' failed: %s\n", options.program_name.c_str(), filename.c_str(), error.message());
       exit (1);
     }
-  plan->load (in);
-  delete in;
 
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
 
   voice = synth.voice (0);
-  auto update = synth.prepare_update (plan);
+  auto update = synth.prepare_update (*plan);
   synth.apply_update (update);
   assert (voice->output());
 
@@ -276,7 +276,7 @@ Player::compute_samples (vector<float>& samples)
             {
               g_assert_not_reached();
             }
-          auto update = synth.prepare_update (plan);
+          auto update = synth.prepare_update (*plan);
           synth.apply_update (update);
         }
 
