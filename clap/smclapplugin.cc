@@ -44,10 +44,10 @@ class ClapUI final : public SignalReceiver
 {
   std::unique_ptr<EventLoop>       event_loop;
   std::unique_ptr<MorphPlanWindow> window;
-  MorphPlanPtr                     morph_plan;
+  MorphPlan                       *morph_plan;
   ClapPlugin                      *plugin;
 public:
-  ClapUI (MorphPlanPtr plan, ClapPlugin *plugin) :
+  ClapUI (MorphPlan *plan, ClapPlugin *plugin) :
     morph_plan (plan),
     plugin (plugin)
   {
