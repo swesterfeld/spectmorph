@@ -427,6 +427,10 @@ MC_PROG_CC_SUPPORTS_OPTION([-pthread], [
   AM_CFLAGS="$AM_CFLAGS -pthread"
   AM_CXXFLAGS="$AM_CXXFLAGS -pthread"
 ])
+MC_PROG_CC_SUPPORTS_OPTION([-ffast-math], [
+  AM_CFLAGS="$AM_CFLAGS -ffast-math"
+  AM_CXXFLAGS="$AM_CXXFLAGS -ffast-math"
+])
 
 gcc_target_sse="-msse -msse2 -msse3 -mmmx"
 MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
