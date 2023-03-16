@@ -41,8 +41,6 @@ public:
     std::vector<Op> ops;
     std::vector<MorphOperatorConfigP> new_configs;
     std::vector<MorphOperatorConfigP> old_configs;
-
-    bool is_full_update() { return !cheap; }
   };
   typedef std::shared_ptr<Update> UpdateP;
 
