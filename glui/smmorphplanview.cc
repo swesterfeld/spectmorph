@@ -21,6 +21,7 @@ MorphPlanView::MorphPlanView (Widget *plan_parent, Widget *output_parent, MorphP
   morph_plan_window (morph_plan_window)
 {
   control_widget = new MorphPlanControl (output_parent, morph_plan);
+  connect (morph_plan_window->signal_voice_status_changed, control_widget, &MorphPlanControl::on_voice_status_changed);
 
   connect (morph_plan->signal_plan_changed, this, &MorphPlanView::on_plan_changed);
   connect (morph_plan->signal_need_view_rebuild, this, &MorphPlanView::on_need_view_rebuild);

@@ -49,12 +49,6 @@ MorphPlanControl::MorphPlanControl (Widget *parent, MorphPlan *plan) :
   connect (plan->signal_index_changed, this, &MorphPlanControl::on_index_changed);
   connect (plan->project()->signal_volume_changed, this, &MorphPlanControl::on_project_volume_changed);
 
-  /* --- update led each time process_events() is called: --- */
-  Timer *led_timer = new Timer (this);
-  connect (led_timer->signal_timeout, this, &MorphPlanControl::on_update_led);
-  led_timer->start (0);
-
-
   on_index_changed();
 }
 
@@ -89,9 +83,9 @@ MorphPlanControl::update_volume_label (double volume)
 }
 
 void
-MorphPlanControl::on_update_led()
+MorphPlanControl::on_voice_status_changed (VoiceStatus *voice_status)
 {
-  midi_led->set_on (morph_plan->project()->voices_active());
+  midi_led->set_on (voice_status->n_voices() != 0);
 }
 
 void

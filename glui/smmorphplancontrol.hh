@@ -9,6 +9,7 @@
 #include "smlabel.hh"
 #include "smslider.hh"
 #include "smled.hh"
+#include "smvoicestatus.hh"
 #include <functional>
 
 namespace SpectMorph
@@ -35,7 +36,7 @@ public:
   void on_volume_changed (double new_volume);
   void on_project_volume_changed (double new_volume);
   void on_index_changed();
-  void on_update_led();
+  void on_voice_status_changed (VoiceStatus *voice_status);
 };
 
 }

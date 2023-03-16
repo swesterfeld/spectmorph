@@ -102,6 +102,11 @@ public:
 
     return property_values;
   }
+  uint
+  n_voices()
+  {
+    return voices.size();
+  }
 };
 
 }
