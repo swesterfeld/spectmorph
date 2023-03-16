@@ -39,7 +39,7 @@ main (int argc, char **argv)
   const double bound = 0.0009;
   printf ("representation error%%: [%.6f, %.6f] bound %.6f\n", emin * 100, emax * 100, bound * 100);
 
-  const double small_bound = 1.1e-25;
+  const double small_bound = 3e-17;
   for (int exp = -1;; exp--)
     {
       double small = pow (10, exp);
