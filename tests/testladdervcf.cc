@@ -8,6 +8,7 @@
 
 #include "smutils.hh"
 #include "smladdervcf.hh"
+#include "smskfilter.hh"
 
 using std::vector;
 using std::string;
@@ -75,6 +76,42 @@ main (int argc, char **argv)
 
       for (size_t i = 0; i < left.size(); i++)
         printf ("%f %.17g\n", freq[i], sqrt (left[i] * left[i] + right[i] * right[i]));
+
+      return 0;
+    }
+  if (argc == 2 && cmd == "perf")
+    {
+      auto test_perf = [] (auto& filter, const char *label)
+        {
+          int RUNS = 10000;
+          int SAMPLES = 512;
+
+          vector<float> samples (SAMPLES);
+
+          auto t = get_time();
+          for (int i = 0; i < RUNS; i++)
+            filter.process_block (samples.size(), samples.data());
+          t = get_time() - t;
+          printf ("%s: %.2f voices, %.2f ns/sample\n", label, (samples.size() * RUNS) / 48000 / t, t / (samples.size() * RUNS) * 1e9);
+        };
+
+
+      LadderVCF laddervcf (/* oversample */ 4);
+
+      laddervcf.set_mode (LadderVCF::LP4);
+      laddervcf.set_freq (440);
+      laddervcf.set_reso (0.3);
+      test_perf (laddervcf, "LadderVCF");
+
+      SKFilter sk_filter (/* oversample */ 4);
+
+      sk_filter.set_mode (SKFilter::LP2);
+      sk_filter.set_freq (440);
+      sk_filter.set_reso (0.3);
+      test_perf (sk_filter, "SKFilter LP2");
+
+      sk_filter.set_mode (SKFilter::LP4);
+      test_perf (sk_filter, "SKFilter LP4");
 
       return 0;
     }
