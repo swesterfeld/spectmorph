@@ -741,6 +741,14 @@ MidiSynth::prepare_update (const MorphPlan& plan)
 void
 MidiSynth::apply_update (MorphPlanSynth::UpdateP update)
 {
+  if (update->is_full_update())
+    {
+      /* full updates destroy voice state anyway, so since there will be no
+       * audio output after the full update, we also kill our voices here
+       */
+      kill_all_active_voices();
+    }
+
   morph_plan_synth.apply_update (update);
 }
 
