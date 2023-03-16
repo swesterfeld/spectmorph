@@ -64,12 +64,13 @@ note_to_freq (int note)
 }
 
 void
-InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int layer)
+InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int layer, int clap_id)
 {
   const unsigned char status = (midi_data[0] & 0xf0);
   /* note on: */
   if (status == 0x90 && midi_data[2] != 0) /* note on with velocity 0 => note off */
     {
+      int channel = midi_data[0] & 0xf;
       for (auto& voice : voices)
         {
           if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
@@ -77,7 +78,9 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int l
               voice.decoder->retrigger (0, note_to_freq (midi_data[1]), 127, mix_freq);
               voice.decoder_factor = 1;
               voice.state = State::ON;
+              voice.channel = channel;
               voice.note = midi_data[1];
+              voice.clap_id = clap_id;
               return; /* found free voice */
             }
         }
@@ -86,16 +89,17 @@ InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int l
   /* note off */
   if (status == 0x80 || (status == 0x90 && midi_data[2] == 0))
     {
+      int channel = midi_data[0] & 0xf;
       for (auto& voice : voices)
         {
-          if (voice.state == State::ON && voice.note == midi_data[1] && voice.layer == layer)
+          if (voice.state == State::ON && voice.channel == channel && voice.note == midi_data[1] && voice.layer == layer)
             voice.state = State::RELEASE;
         }
     }
 }
 
 void
-InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buffer)
+InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks)
 {
   InstEditVoiceEvent::Voice iev[voices.size()];
   int                       iev_len = 0;
@@ -136,6 +140,16 @@ InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buf
             }
           if (voice.decoder->done())
             voice.state = State::IDLE;
+
+          if (voice.state == State::IDLE && process_callbacks)
+            {
+              MidiSynthCallbacks::TerminatedVoice tv {
+                .key = voice.note,
+                .channel = voice.channel,
+                .clap_id = voice.clap_id
+              };
+              process_callbacks->terminated_voice (tv);
+            }
         }
     }
 

@@ -69,7 +69,7 @@ public:
           event[1] = note;
           event[2] = on ? 100 : 0;
 
-          project->midi_synth()->inst_edit_synth()->handle_midi_event (event, layer);
+          project->midi_synth()->inst_edit_synth()->handle_midi_event (event, layer, -1);
         });
   }
   void

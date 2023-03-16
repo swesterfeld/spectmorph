@@ -77,7 +77,7 @@ MidiSynth::free_unused_voices()
 
       if (voice->state == Voice::STATE_IDLE)    // voice used?
         {
-          TerminatedVoice tv {
+          MidiSynthCallbacks::TerminatedVoice tv {
             .key = voice->midi_note,
             .channel = voice->channel,
             .clap_id = voice->clap_id
@@ -434,11 +434,6 @@ MidiSynth::add_modulation_event (uint offset, int i, float value, int clap_id, i
 void
 MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
 {
-  if (inst_edit) // inst edit mode? -> delegate
-    {
-      m_inst_edit_synth.handle_midi_event (midi_data, 0);
-      return;
-    }
   unsigned char status = midi_data[0] & 0xf0;
   const int channel  = midi_data[0] & 0xf;
 
@@ -560,11 +555,32 @@ MidiSynth::process_audio (const TimeInfo& time_info, float *output, size_t n_val
 }
 
 void
-MidiSynth::process (float *output, size_t n_values, ProcessCallbacks *process_callbacks)
+MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks)
 {
   if (inst_edit) // inst edit mode? -> delegate
     {
-      m_inst_edit_synth.process (output, n_values, m_notify_buffer);
+      for (const auto& event : events)
+        {
+          if (event.type == EVENT_NOTE_ON)
+            {
+              unsigned char midi_data[3] = { 0x90, 0, 0 };
+              midi_data[0] += event.note.channel;
+              midi_data[1] = event.note.key;
+              midi_data[2] = std::clamp<int> (event.note.velocity * 127, 1, 127);
+              m_inst_edit_synth.handle_midi_event (midi_data, 0, event.note.clap_id);
+            }
+          else if (event.type == EVENT_NOTE_OFF)
+            {
+              unsigned char midi_data[3] = { 0x80, 0, 0 };
+              midi_data[0] += event.note.channel;
+              midi_data[1] = event.note.key;
+              midi_data[2] = 0;
+              m_inst_edit_synth.handle_midi_event (midi_data, 0, event.note.clap_id);
+            }
+        }
+      events.clear();
+
+      m_inst_edit_synth.process (output, n_values, m_notify_buffer, process_callbacks);
       return;
     }
 

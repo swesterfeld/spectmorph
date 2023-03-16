@@ -4,27 +4,26 @@
 #define SPECTMORPH_MIDI_SYNTH_HH
 
 #include "smmorphplansynth.hh"
-#include "sminsteditsynth.hh"
 #include "smnotifybuffer.hh"
+#include "sminsteditsynth.hh"
 
 #include <array>
 
 namespace SpectMorph {
 
-class MidiSynth
+struct MidiSynthCallbacks
 {
-public:
   struct TerminatedVoice
   {
     int key;
     int channel;
     int clap_id;
   };
-  struct ProcessCallbacks
-  {
-    virtual void terminated_voice (TerminatedVoice& voice) = 0;
-  };
+  virtual void terminated_voice (TerminatedVoice& voice) = 0;
+};
 
+class MidiSynth
+{
 private:
   enum EventType {
     EVENT_NOTE_ON,
@@ -150,7 +149,7 @@ private:
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
   NotifyBuffer          m_notify_buffer;
-  ProcessCallbacks     *m_process_callbacks = nullptr;
+  MidiSynthCallbacks   *m_process_callbacks = nullptr;
 
   std::vector<float>    control = std::vector<float> (MorphPlan::N_CONTROL_INPUTS);
 
@@ -174,7 +173,7 @@ public:
   MidiSynth (double mix_freq, size_t n_voices);
 
   void add_midi_event (size_t offset, const unsigned char *midi_data);
-  void process (float *output, size_t n_values, ProcessCallbacks *process_callbacks = nullptr);
+  void process (float *output, size_t n_values, MidiSynthCallbacks *process_callbacks = nullptr);
 
   void add_note_on_event (uint offset, int clap_id, int channel, int key, float velocity);
   void add_note_off_event (uint offset, int channel, int key);
