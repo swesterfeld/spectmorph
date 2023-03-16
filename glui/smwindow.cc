@@ -243,20 +243,6 @@ Window::crawl_widgets()
   return ::crawl_widgets ({ this });
 }
 
-static int
-get_layer (Widget *w, Widget *menu_widget, Widget *dialog_widget)
-{
-  if (w == menu_widget)
-    return 1;
-  if (w == dialog_widget)
-    return 2;
-
-  if (w->parent)
-    return get_layer (w->parent, menu_widget, dialog_widget);
-  else
-    return 0; // no parent
-}
-
 static bool
 get_visible_recursive (Widget *w)
 {
