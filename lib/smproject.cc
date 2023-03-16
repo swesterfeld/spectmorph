@@ -53,7 +53,6 @@ Project::try_update_synth()
   if (m_synth_mutex.try_lock())
     {
       m_control_events.run_rt (this);
-      m_voices_active = m_midi_synth->active_voice_count() > 0;
       state_changed = m_state_changed;
       m_state_changed = false;
 
@@ -298,13 +297,6 @@ Project::on_operator_removed (MorphOperator *op)
           synth_interface()->emit_add_rebuild_result (object_id, nullptr);
         }
     }
-}
-
-bool
-Project::voices_active()
-{
-  std::lock_guard<std::mutex> lg (m_synth_mutex);
-  return m_voices_active;
 }
 
 MorphPlan *

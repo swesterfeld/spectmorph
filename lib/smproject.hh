@@ -84,7 +84,6 @@ private:
   std::mutex                  m_synth_mutex;
   ControlEventVector          m_control_events;          // protected by synth mutex
   NotifyBuffer                m_notify_buffer;           // protected by synth mutex
-  bool                        m_voices_active = false;   // protected by synth mutex
   bool                        m_state_changed = false;   // protected by synth mutex
 
   std::unique_ptr<SynthInterface> m_synth_interface;
@@ -138,7 +137,6 @@ public:
   void set_storage_model (StorageModel model);
   void set_state_changed_notify (bool notify);
   void state_changed();
-  bool voices_active();
 
   void set_volume (double new_volume);
   double volume() const;
