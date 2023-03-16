@@ -524,15 +524,7 @@ MidiSynth::process_audio (const TimeInfo& time_info, float *output, size_t n_val
         {
           /* skip: shadow voices are not rendered */
         }
-      else if (voice->state == Voice::STATE_ON)
-        {
-          MorphOutputModule *output_module = voice->mp_voice->output();
-
-          output_module->process (time_info, n_values, values, 1, freq_in);
-          for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * gain;
-        }
-      else if (voice->state == Voice::STATE_RELEASE)
+      else if (voice->state == Voice::STATE_ON || voice->state == Voice::STATE_RELEASE)
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
