@@ -528,9 +528,16 @@ MidiSynth::process_audio (const TimeInfo& time_info, float *output, size_t n_val
         {
           MorphOutputModule *output_module = voice->mp_voice->output();
 
-          output_module->process (time_info, n_values, values, 1, freq_in);
-          for (size_t i = 0; i < n_values; i++)
-            output[i] += samples[i] * gain;
+          /* need to check done because in some cases voices jump to done state
+           * (i.e. full updates, adsr envelope toggled...) and we don't want
+           * to process these
+           */
+          if (!output_module->done())
+            {
+              output_module->process (time_info, n_values, values, 1, freq_in);
+              for (size_t i = 0; i < n_values; i++)
+                output[i] += samples[i] * gain;
+            }
 
           if (output_module->done())
             {

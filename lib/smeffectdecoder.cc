@@ -295,9 +295,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   filter_envelope.start (mix_freq);
   filter_smooth_first = true;
   filter_current_note = freq_to_note (freq);
-  // handle the case that process() can be called without retrigger()
-  // FIXME: FILTER: is there a more elegant solution?
-  filter_active = true;
   filter_first = true;
 }
 
@@ -308,7 +305,7 @@ EffectDecoder::process_with_filter (size_t       n_values,
 {
   chain_decoder->process (n_values, freq_in, audio_out);
 
-  if (filter_enabled && filter_active)
+  if (filter_enabled)
     {
       auto filter_process_block = [&] (auto& filter)
         {
@@ -360,7 +357,7 @@ EffectDecoder::process (size_t       n_values,
 {
   g_assert (chain_decoder);
 
-  if (filter_enabled && filter_active && filter_first && n_values)
+  if (filter_enabled && filter_first && n_values)
     {
       // latency compensation for filter oversampling: throw away a few samples at the start
       int idelay = 0;

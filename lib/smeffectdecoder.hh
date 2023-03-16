@@ -42,7 +42,6 @@ class EffectDecoder
   LinearSmooth                          filter_drive_smooth;
   float                                 filter_depth_octaves;
   MorphOutput::FilterType               filter_type;
-  bool                                  filter_active = false;
   bool                                  filter_first = false;
   static constexpr int FILTER_OVERSAMPLE = 4;
   LadderVCF                             ladder_filter { FILTER_OVERSAMPLE };
