@@ -18,7 +18,6 @@ using std::vector;
 using std::string;
 
 LV2UI::LV2UI (PuglNativeWindow parent_win_id, LV2UI_Resize *ui_resize, LV2Plugin *plugin) :
-  plugin (plugin),
   ui_resize (ui_resize)
 {
   window = new MorphPlanWindow (event_loop, "SpectMorph LV2", parent_win_id, /* resize */ false, plugin->project.morph_plan());

@@ -15,7 +15,6 @@ namespace SpectMorph
 class LV2UI : public SignalReceiver,
               public LV2Common
 {
-  LV2Plugin            *plugin;
   LV2UI_Resize         *ui_resize;
   EventLoop             event_loop;
 
