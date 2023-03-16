@@ -1,4 +1,39 @@
+NEWER TODOS:
+
+__ notify __
+- modulation range correct?
+
+__ dsp __
+- filter latency compensation
+- should filter envelope be exponential?
+- fix filter ranges
+- possibly fix filter pre-amplification
+- is reso/drive mapping good enough?
+- advanced smoothing (drive, subsampled polynomials)
+- try to get old performance from new inner loop
+- performance tests
+- smoothing should probably be log-scale based
+- support LinearSmooth<LinearSmooth::MUL>
+- tuning polynomials appear to be incorrect
+- move filter processing into live decoder processing (interface LiveDecoderFilter)
+
+__ clap __
+- fix instrument edit synth
+- test: is modulation applied before values are used for the first time?
+- ui for macos / windows
+- serialization
+
+__ ui __
+
+- semitones flag for filter cutoff
+
+__ generic modulation __
+
+- handle XPARAM scaled parameters
+
 NEXT RELEASE:
+- non-linear modulation mapping
+- visual feedback for adsr envelope
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
 - we may want to publish spectmorph vs. crossfade results
@@ -16,43 +51,6 @@ insts:
 new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
-
-NEWER TODOS:
-
-__ notify __
-- fix modulation range
-- non-linear modulation mapping
-
-__ dsp __
-- filter latency compensation
-- should filter envelope be exponential?
-- fix filter ranges
-- possibly fix filter pre-amplification
-- is reso/drive mapping good enough?
-
-__ clap __
-- fix instrument edit synth
-- test: is modulation applied before values are used for the first time?
-
-FILTER:
-
-__ ui __
-
-- semitones flag for filter cutoff
-
-__ generic modulation __
-
-- handle XPARAM scaled parameters
-
-__ dsp __
-
-- advanced smoothing (drive, subsampled polynomials)
-- try to get old performance from new inner loop
-- performance tests
-- smoothing should probably be log-scale based
-- support LinearSmooth<LinearSmooth::MUL>
-- tuning polynomials appear to be incorrect
-- move filter processing into live decoder processing (interface LiveDecoderFilter)
 _________
 
 smenc:
