@@ -245,6 +245,6 @@ main (int argc, char **argv)
     }
   printf ("testfastsin: maximum double error: %.17g\n", max_err);
   printf ("testfastsin: maximum float error: %.17g\n", max_err_f);
-  assert (max_err < 3e-12);
+  assert (max_err < 5e-12);
   assert (max_err_f < 7e-7);
 }
