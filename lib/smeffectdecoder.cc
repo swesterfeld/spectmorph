@@ -16,7 +16,7 @@ class SimpleEnvelope
     ON,
     RELEASE,
     DONE
-  } state;
+  } state = State::DONE;
 
 public:
   SimpleEnvelope (float mix_freq)
@@ -180,6 +180,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
         }
       skip_source->set_skip (cfg->adsr_skip);
 
+      simple_envelope.reset();
       if (!adsr_envelope)
         adsr_envelope.reset (new ADSREnvelope());
 

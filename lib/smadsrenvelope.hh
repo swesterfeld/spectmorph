@@ -11,7 +11,7 @@ class ADSREnvelope
 {
   enum class State { ATTACK, DECAY, SUSTAIN, RELEASE, DONE };
 
-  State state;
+  State state = State::DONE;
   double level;
   int attack_len;
   int decay_len;
