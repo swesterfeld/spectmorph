@@ -331,12 +331,12 @@ public:
         /* FIXME: handle transport events */
       }
 
-    struct TerminatedVoiceHandler : public MidiSynth::ProcessCallbacks
+    struct TerminatedVoiceHandler : public MidiSynthCallbacks
     {
       const clap_process *process = nullptr;
 
       void
-      terminated_voice (MidiSynth::TerminatedVoice& tvoice) override
+      terminated_voice (TerminatedVoice& tvoice) override
       {
         auto event = clap_event_note();
         event.header.size = sizeof (clap_event_note);
