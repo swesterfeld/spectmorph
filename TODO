@@ -1,5 +1,7 @@
 NEWER TODOS:
 
+- code signing for macOS
+
 __ notify __
 - modulation range correct?
 - debug remaining voice bug when adding operator (regression?)
