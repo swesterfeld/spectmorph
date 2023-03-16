@@ -64,37 +64,30 @@ note_to_freq (int note)
 }
 
 void
-InstEditSynth::handle_midi_event (const unsigned char *midi_data, unsigned int layer, int clap_id)
+InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int layer)
 {
-  const unsigned char status = (midi_data[0] & 0xf0);
-  /* note on: */
-  if (status == 0x90 && midi_data[2] != 0) /* note on with velocity 0 => note off */
+  for (auto& voice : voices)
     {
-      int channel = midi_data[0] & 0xf;
-      for (auto& voice : voices)
+      if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
         {
-          if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
-            {
-              voice.decoder->retrigger (0, note_to_freq (midi_data[1]), 127, mix_freq);
-              voice.decoder_factor = 1;
-              voice.state = State::ON;
-              voice.channel = channel;
-              voice.note = midi_data[1];
-              voice.clap_id = clap_id;
-              return; /* found free voice */
-            }
+          voice.decoder->retrigger (0, note_to_freq (note), 127, mix_freq);
+          voice.decoder_factor = 1;
+          voice.state = State::ON;
+          voice.channel = channel;
+          voice.note = note;
+          voice.clap_id = clap_id;
+          return; /* found free voice */
         }
     }
+}
 
-  /* note off */
-  if (status == 0x80 || (status == 0x90 && midi_data[2] == 0))
+void
+InstEditSynth::process_note_off (int channel, int note, unsigned int layer)
+{
+  for (auto& voice : voices)
     {
-      int channel = midi_data[0] & 0xf;
-      for (auto& voice : voices)
-        {
-          if (voice.state == State::ON && voice.channel == channel && voice.note == midi_data[1] && voice.layer == layer)
-            voice.state = State::RELEASE;
-        }
+      if (voice.state == State::ON && voice.channel == channel && voice.note == note && voice.layer == layer)
+        voice.state = State::RELEASE;
     }
 }
 

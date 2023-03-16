@@ -42,7 +42,9 @@ public:
 
   void take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set);
 
-  void handle_midi_event (const unsigned char *midi_data, unsigned int layer, int clap_id);
+  void process_note_on (int channel, int note, int clap_id, unsigned int layer);
+  void process_note_off (int channel, int note, unsigned int layer);
+
   void process (float *output, size_t n_values, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks);
 };
 

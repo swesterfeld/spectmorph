@@ -563,19 +563,11 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
         {
           if (event.type == EVENT_NOTE_ON)
             {
-              unsigned char midi_data[3] = { 0x90, 0, 0 };
-              midi_data[0] += event.note.channel;
-              midi_data[1] = event.note.key;
-              midi_data[2] = std::clamp<int> (event.note.velocity * 127, 1, 127);
-              m_inst_edit_synth.handle_midi_event (midi_data, 0, event.note.clap_id);
+              m_inst_edit_synth.process_note_on (event.note.channel, event.note.key, event.note.clap_id, /* layer */ 0);
             }
           else if (event.type == EVENT_NOTE_OFF)
             {
-              unsigned char midi_data[3] = { 0x80, 0, 0 };
-              midi_data[0] += event.note.channel;
-              midi_data[1] = event.note.key;
-              midi_data[2] = 0;
-              m_inst_edit_synth.handle_midi_event (midi_data, 0, event.note.clap_id);
+              m_inst_edit_synth.process_note_off (event.note.channel, event.note.key, /* layer */ 0);
             }
         }
       events.clear();

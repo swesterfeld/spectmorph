@@ -63,13 +63,10 @@ public:
     send_control_event (
       [=] (Project *project)
         {
-          unsigned char event[3];
-
-          event[0] = on ? 0x90 : 0x80;
-          event[1] = note;
-          event[2] = on ? 100 : 0;
-
-          project->midi_synth()->inst_edit_synth()->handle_midi_event (event, layer, -1);
+          if (on)
+            project->midi_synth()->inst_edit_synth()->process_note_on (/* channel */ 0, note, /* clap id */ -1, layer);
+          else
+            project->midi_synth()->inst_edit_synth()->process_note_off (/* channel */ 0, note, layer);
         });
   }
   void
