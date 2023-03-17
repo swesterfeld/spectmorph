@@ -26,6 +26,10 @@
   #error "unsupported compiler"
 #endif
 
+#ifdef SM_OS_WINDOWS
+#include "windows.h"
+#endif
+
 namespace SpectMorph
 {
 
@@ -153,6 +157,15 @@ private:
 
 #ifdef SM_OS_WINDOWS
 std::string sm_resolve_link (const std::string& link_file);
+void set_windows_data_dir (HMODULE hInstance);
+#endif
+
+#ifdef SM_OS_WINDOWS
+#define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
+#endif
+
+#ifdef SM_STATIC_LINUX
+#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
 #endif
 
 std::string sha1_hash (const unsigned char *data, size_t len);

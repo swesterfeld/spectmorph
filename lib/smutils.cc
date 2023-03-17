@@ -311,7 +311,40 @@ sm_resolve_link (const string& link_file)
 
   return dest_path;
 }
+
+void
+set_windows_data_dir (HMODULE hInstance)
+{
+  char path[MAX_PATH];
+
+  if (!GetModuleFileName (hInstance, path, MAX_PATH))
+    {
+      sm_debug ("windows data dir: GetModuleFileName failed\n");
+      return;
+    }
+  sm_debug ("windows data dir: dll path is '%s'\n", path);
+
+  char *last_backslash = strrchr (path, '\\');
+  if (!last_backslash)
+    {
+      sm_debug ("windows data dir: no backslash found\n");
+      return;
+    }
+  *last_backslash = 0;
+
+  string link = string (path) + "\\SpectMorph.data.lnk";
+  string pkg_data_dir = sm_resolve_link (link);
+  if (pkg_data_dir == "")
+    {
+      sm_debug ("windows data dir: error resolving link '%s'\n", link.c_str());
+      return;
+    }
+
+  sm_debug ("windows data dir: link points to '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
 #endif
+
 #ifdef SM_OS_MACOS
 static string
 spectmorph_user_data_dir()
