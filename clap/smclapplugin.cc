@@ -40,17 +40,58 @@ clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
 
 class ClapPlugin;
 
+#ifdef SM_OS_WINDOWS
+class OSTimer
+{
+  UINT_PTR timer = 0;
+
+  static OSTimer*&
+  timer_map (UINT_PTR id)
+  {
+    static std::map<UINT_PTR, OSTimer *> map;
+    return map[id];
+  }
+  static void
+  TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+  {
+    OSTimer *os_timer = timer_map (idEvent);
+    if (os_timer)
+      os_timer->signal_timer();
+  };
+public:
+  OSTimer()
+  {
+    timer = SetTimer (nullptr, (UINT_PTR)0, 16, TimerProc);
+    CLAP_DEBUG ("register timer %lld\n", timer);
+    timer_map (timer) = this;
+  }
+  ~OSTimer()
+  {
+    KillTimer (nullptr, timer);
+    CLAP_DEBUG ("unregister timer %lld\n", timer);
+    timer_map (timer) = nullptr;
+  }
+  Signal<> signal_timer;
+};
+#endif
+
 class ClapUI final : public SignalReceiver
 {
   std::unique_ptr<EventLoop>       event_loop;
   std::unique_ptr<MorphPlanWindow> window;
   MorphPlan                       *morph_plan;
   ClapPlugin                      *plugin;
+#ifdef SM_OS_WINDOWS
+  OSTimer                          os_timer;
+#endif
 public:
   ClapUI (MorphPlan *plan, ClapPlugin *plugin) :
     morph_plan (plan),
     plugin (plugin)
   {
+#ifdef SM_OS_WINDOWS
+    connect (os_timer.signal_timer, this, &ClapUI::idle);
+#endif
   }
   void
   set_parent (PuglNativeWindow win_id)
@@ -404,6 +445,7 @@ public:
   bool
   guiCreate (const char *api, bool isFloating) noexcept override
   {
+    CLAP_DEBUG ("host can use timer : %d\n", _host.canUseTimerSupport());
 #ifdef SM_OS_LINUX
     if (!ui)
       {
