@@ -616,7 +616,7 @@ BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
 } // extern "C"
 
 static void
-set_windows_data_dir()
+set_windows_data_dir (HMODULE hInstance)
 {
   char path[MAX_PATH];
 
@@ -648,6 +648,14 @@ set_windows_data_dir()
 }
 #endif
 
+#ifdef SM_OS_WINDOWS
+#define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
+#endif
+
+#ifdef SM_STATIC_LINUX
+#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
+#endif
+
 bool
 clap_init (const char *p)
 {
@@ -655,12 +663,7 @@ clap_init (const char *p)
 
   sm_plugin_init();
 
-#ifdef SM_OS_WINDOWS
-  set_windows_data_dir();
-#endif
-#ifdef SM_STATIC_LINUX
-  set_static_linux_data_dir();
-#endif
+  SM_SET_OS_DATA_DIR ("clap");
 
   return true;
 }
