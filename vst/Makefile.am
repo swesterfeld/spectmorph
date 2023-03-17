@@ -35,9 +35,7 @@ uninstall-hook:
 spectmorph_vst.so.static:
 	$(CXX) -shared -o spectmorph_vst.so.static $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc \
 	       -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
-		$(top_builddir)/glui/.libs/libspectmorphglui.a \
-		$(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
-		$(top_builddir)/lib/.libs/libspectmorph.a \
+	        $(STATIC_PLUGIN_SM_LIBS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
