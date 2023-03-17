@@ -603,8 +603,6 @@ const struct clap_plugin_factory clap_factory = {
 static const void *get_factory(const char *factory_id) { return &clap_factory; }
 
 #ifdef SM_OS_WINDOWS
-#include "windows.h"
-
 HMODULE hInstance;
 
 extern "C" {
