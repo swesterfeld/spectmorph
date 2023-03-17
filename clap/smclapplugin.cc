@@ -392,18 +392,25 @@ public:
     if (strcmp (api, CLAP_WINDOW_API_X11) == 0)
       return true;
 #endif
-    /* FIXME: non-linux support */
+#ifdef SM_OS_WINDOWS
+    if (strcmp (api, CLAP_WINDOW_API_WIN32) == 0)
+      return true;
+#endif
+    /* FIXME: macOS support */
+    CLAP_DEBUG ("gui API %s not supported\n", api);
 
     return false;
   }
   bool
   guiCreate (const char *api, bool isFloating) noexcept override
   {
+#ifdef SM_OS_LINUX
     if (!ui)
       {
         clap_id id;
         _host.timerSupportRegister (16, &id);
       }
+#endif
     ui.reset (new ClapUI (project.morph_plan(), this));
     return ui != nullptr;
   }
@@ -415,7 +422,12 @@ public:
   bool
   guiSetParent (const clap_window *window) noexcept override
   {
+#ifdef SM_OS_LINUX
     ui->set_parent (window->x11);
+#endif
+#ifdef SM_OS_WINDOWS
+    ui->set_parent ((PuglNativeWindow) window->win32);
+#endif
     return true;
   }
   bool
@@ -590,6 +602,52 @@ const struct clap_plugin_factory clap_factory = {
 
 static const void *get_factory(const char *factory_id) { return &clap_factory; }
 
+#ifdef SM_OS_WINDOWS
+#include "windows.h"
+
+HMODULE hInstance;
+
+extern "C" {
+BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
+{
+  hInstance = hInst;
+  return 1;
+}
+} // extern "C"
+
+static void
+set_windows_data_dir()
+{
+  char path[MAX_PATH];
+
+  if (!GetModuleFileName (hInstance, path, MAX_PATH))
+    {
+      CLAP_DEBUG ("windows data dir: GetModuleFileName failed\n");
+      return;
+    }
+  CLAP_DEBUG ("windows data dir: dll path is '%s'\n", path);
+
+  char *last_backslash = strrchr (path, '\\');
+  if (!last_backslash)
+    {
+      CLAP_DEBUG ("windows data dir: no backslash found\n");
+      return;
+    }
+  *last_backslash = 0;
+
+  string link = string (path) + "\\SpectMorph.data.lnk";
+  string pkg_data_dir = sm_resolve_link (link);
+  if (pkg_data_dir == "")
+    {
+      CLAP_DEBUG ("windows data dir: error resolving link '%s'\n", link.c_str());
+      return;
+    }
+
+  CLAP_DEBUG ("windows data dir: link points to '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
+#endif
+
 bool
 clap_init (const char *p)
 {
@@ -597,6 +655,9 @@ clap_init (const char *p)
 
   sm_plugin_init();
 
+#ifdef SM_OS_WINDOWS
+  set_windows_data_dir();
+#endif
 #ifdef SM_STATIC_LINUX
   set_static_linux_data_dir();
 #endif
@@ -613,7 +674,7 @@ void clap_deinit()
 
 extern "C" {
 
-const CLAP_EXPORT struct clap_plugin_entry clap_entry = {
+const CLAP_EXPORT extern struct clap_plugin_entry clap_entry = {
   CLAP_VERSION,
   SpectMorph::clap_init,
   SpectMorph::clap_deinit,
