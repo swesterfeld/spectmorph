@@ -30,7 +30,7 @@ all-local: SpectMorph.clap
 
 install-exec-hook: SpectMorph.clap
 	mkdir -p $(spectmorph_clapdir)
-	cp SpectMorph.clap $(clapspectmorph_clapdir)
+	cp SpectMorph.clap $(spectmorph_clapdir)
 
 SpectMorph.clap: $(srcdir)/smclapplugin.cc
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
