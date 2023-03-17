@@ -164,6 +164,11 @@ void set_windows_data_dir (HMODULE hInstance);
 #define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
 #endif
 
+#ifdef SM_OS_LINUX
+// on linux (not statically linked), plugin data directory is defined during build
+#define SM_SET_OS_DATA_DIR(plugin_format)
+#endif
+
 #ifdef SM_STATIC_LINUX
 #define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
 #endif
