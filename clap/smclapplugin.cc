@@ -614,46 +614,6 @@ BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
   return 1;
 }
 } // extern "C"
-
-static void
-set_windows_data_dir (HMODULE hInstance)
-{
-  char path[MAX_PATH];
-
-  if (!GetModuleFileName (hInstance, path, MAX_PATH))
-    {
-      CLAP_DEBUG ("windows data dir: GetModuleFileName failed\n");
-      return;
-    }
-  CLAP_DEBUG ("windows data dir: dll path is '%s'\n", path);
-
-  char *last_backslash = strrchr (path, '\\');
-  if (!last_backslash)
-    {
-      CLAP_DEBUG ("windows data dir: no backslash found\n");
-      return;
-    }
-  *last_backslash = 0;
-
-  string link = string (path) + "\\SpectMorph.data.lnk";
-  string pkg_data_dir = sm_resolve_link (link);
-  if (pkg_data_dir == "")
-    {
-      CLAP_DEBUG ("windows data dir: error resolving link '%s'\n", link.c_str());
-      return;
-    }
-
-  CLAP_DEBUG ("windows data dir: link points to '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
-}
-#endif
-
-#ifdef SM_OS_WINDOWS
-#define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
-#endif
-
-#ifdef SM_STATIC_LINUX
-#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
 #endif
 
 bool
