@@ -82,6 +82,7 @@ EOH
 cat >> $SETUP_NSI << EOH
   SetOutPath \$pluginDir
   File SpectMorph.dll
+  File SpectMorph.clap
   CreateShortCut "\$pluginDir\\SpectMorph.data.lnk" "\$INSTDIR"
 
   WriteUninstaller "\$INSTDIR\\Uninstall.exe"
