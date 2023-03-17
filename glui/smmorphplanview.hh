@@ -25,7 +25,7 @@ class MorphPlanView : public SignalReceiver
   MorphPlanWindow *morph_plan_window;
   MorphPlanControl *control_widget;
   bool             need_view_rebuild;
-  OperatorRoleMap  op_role_map;
+  OperatorRoleMap  m_op_role_map;
 
   std::vector<MorphOperatorView *> m_op_views;
 
@@ -38,6 +38,7 @@ public:
   void update_positions();
   const std::vector<MorphOperatorView *>& op_views();
   void update_roles();
+  const OperatorRoleMap *op_role_map() const;
 
   void on_plan_changed();
   void on_move_indication (MorphOperator *op, bool done);

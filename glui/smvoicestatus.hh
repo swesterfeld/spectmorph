@@ -4,16 +4,19 @@
 
 #include "smmodulationlist.hh"
 #include "smmidisynth.hh"
+#include "smoperatorrolemap.hh"
 
 namespace SpectMorph
 {
 
+class MorphPlanView;
 class VoiceStatus
 {
   std::map<uintptr_t, std::vector<VoiceOpValuesEvent::Voice>> control_value_map;
   bool                   control_value_map_clear = false;
   std::vector<uintptr_t> voices;
   std::vector<float>     controls[MorphPlan::N_CONTROL_INPUTS];
+  const OperatorRoleMap *op_role_map;
 
   float
   get_control_value (Property& property, int i, MorphOperator::ControlType control_type, MorphOperator *control_op)
@@ -47,6 +50,11 @@ class VoiceStatus
     return 0;
   }
 public:
+  void
+  set_op_role_map (const OperatorRoleMap *map)
+  {
+    op_role_map = map;
+  }
   bool
   process_notify_event (SynthNotifyEvent *ne)
   {
@@ -78,6 +86,8 @@ public:
   get_values (Property& property)
   {
     std::vector<float> property_values;
+    if (op_role_map->get (property.op()) == 0) // ignore inactive operators
+      return property_values;
 
     ModulationList *mod_list = property.modulation_list();
 

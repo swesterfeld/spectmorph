@@ -39,9 +39,13 @@ public:
   }
 
   int
-  get (MorphOperator *op)
+  get (MorphOperator *op) const
   {
-    return op_map[op];
+    auto it = op_map.find (op);
+    if (it != op_map.end())
+      return it->second;
+    else
+      return 0;
   }
 };
 

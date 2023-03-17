@@ -161,13 +161,19 @@ MorphPlanView::op_views()
 void
 MorphPlanView::update_roles()
 {
-  op_role_map.rebuild (morph_plan);
+  m_op_role_map.rebuild (morph_plan);
 
   for (auto op_view : m_op_views)
     {
-      int role = op_role_map.get (op_view->op());
+      int role = m_op_role_map.get (op_view->op());
       op_view->set_role (role);
     }
+}
+
+const OperatorRoleMap *
+MorphPlanView::op_role_map() const
+{
+  return &m_op_role_map;
 }
 
 void

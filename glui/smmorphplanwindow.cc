@@ -77,6 +77,7 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   m_morph_plan_view = std::make_unique<MorphPlanView> (plan_parent, output_parent, morph_plan, this);
   scroll_view_left->set_scroll_widget (plan_parent, false, true);
   scroll_view_right->set_scroll_widget (output_parent, false, true);
+  m_voice_status.set_op_role_map (m_morph_plan_view->op_role_map());
 
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_left, &ScrollView::on_widget_size_changed);
   connect (m_morph_plan_view->signal_widget_size_changed, scroll_view_right, &ScrollView::on_widget_size_changed);
