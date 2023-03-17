@@ -43,17 +43,13 @@ spectmorph_vst.so.static:
 		-Wl,--version-script=$(srcdir)/ldscript.map
 
 if COND_WINDOWS
-STATIC_DLL_LIBS = \
-  $(top_builddir)/glui/.libs/libspectmorphglui.a \
-  $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
-  $(top_builddir)/lib/.libs/libspectmorph.a
-
 install-exec-hook: SpectMorph.dll
 	mkdir -p $(libdir)/vst
 	cp SpectMorph.dll $(libdir)/vst
 
 SpectMorph.dll: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
 endif
 if COND_MACOS
 STATIC_DLL_LIBS = \

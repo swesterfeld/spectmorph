@@ -26,17 +26,13 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 endif
 
 if COND_WINDOWS
-STATIC_DLL_LIBS = \
-  $(top_builddir)/glui/.libs/libspectmorphglui.a \
-  $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
-  $(top_builddir)/lib/.libs/libspectmorph.a
-
 all-local: SpectMorph.clap
 
 install-exec-hook: SpectMorph.clap
 	mkdir -p $(spectmorph_clapdir)
 	cp SpectMorph.clap $(clapspectmorph_clapdir)
 
-SpectMorph.clap: $(srcdir)/smclapplugin.cc $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+SpectMorph.clap: $(srcdir)/smclapplugin.cc
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
 endif
