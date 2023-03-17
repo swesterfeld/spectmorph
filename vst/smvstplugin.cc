@@ -481,38 +481,6 @@ BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
 }
 } // extern "C"
 
-static void
-set_windows_data_dir()
-{
-  char path[MAX_PATH];
-
-  if (!GetModuleFileName (hInstance, path, MAX_PATH))
-    {
-      VST_DEBUG ("windows data dir: GetModuleFileName failed\n");
-      return;
-    }
-  VST_DEBUG ("windows data dir: dll path is '%s'\n", path);
-
-  char *last_backslash = strrchr (path, '\\');
-  if (!last_backslash)
-    {
-      VST_DEBUG ("windows data dir: no backslash found\n");
-      return;
-    }
-  *last_backslash = 0;
-
-  string link = string (path) + "\\SpectMorph.data.lnk";
-  string pkg_data_dir = sm_resolve_link (link);
-  if (pkg_data_dir == "")
-    {
-      VST_DEBUG ("windows data dir: error resolving link '%s'\n", link.c_str());
-      return;
-    }
-
-  VST_DEBUG ("windows data dir: link points to '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
-}
-
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __declspec(dllexport);
 #else
 extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster) __attribute__((visibility("default")));
@@ -533,7 +501,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
     }
 
 #ifdef SM_OS_WINDOWS
-  set_windows_data_dir();
+  set_windows_data_dir (hInstance);
 #endif
 #ifdef SM_OS_MACOS
   set_macos_data_dir();

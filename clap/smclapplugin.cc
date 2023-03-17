@@ -40,17 +40,58 @@ clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
 
 class ClapPlugin;
 
+#ifdef SM_OS_WINDOWS
+class OSTimer
+{
+  UINT_PTR timer = 0;
+
+  static OSTimer*&
+  timer_map (UINT_PTR id)
+  {
+    static std::map<UINT_PTR, OSTimer *> map;
+    return map[id];
+  }
+  static void
+  TimerProc (HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+  {
+    OSTimer *os_timer = timer_map (idEvent);
+    if (os_timer)
+      os_timer->signal_timer();
+  };
+public:
+  OSTimer()
+  {
+    timer = SetTimer (nullptr, (UINT_PTR)0, 16, TimerProc);
+    CLAP_DEBUG ("register timer %lld\n", timer);
+    timer_map (timer) = this;
+  }
+  ~OSTimer()
+  {
+    KillTimer (nullptr, timer);
+    CLAP_DEBUG ("unregister timer %lld\n", timer);
+    timer_map (timer) = nullptr;
+  }
+  Signal<> signal_timer;
+};
+#endif
+
 class ClapUI final : public SignalReceiver
 {
   std::unique_ptr<EventLoop>       event_loop;
   std::unique_ptr<MorphPlanWindow> window;
   MorphPlan                       *morph_plan;
   ClapPlugin                      *plugin;
+#ifdef SM_OS_WINDOWS
+  OSTimer                          os_timer;
+#endif
 public:
   ClapUI (MorphPlan *plan, ClapPlugin *plugin) :
     morph_plan (plan),
     plugin (plugin)
   {
+#ifdef SM_OS_WINDOWS
+    connect (os_timer.signal_timer, this, &ClapUI::idle);
+#endif
   }
   void
   set_parent (PuglNativeWindow win_id)
@@ -392,18 +433,26 @@ public:
     if (strcmp (api, CLAP_WINDOW_API_X11) == 0)
       return true;
 #endif
-    /* FIXME: non-linux support */
+#ifdef SM_OS_WINDOWS
+    if (strcmp (api, CLAP_WINDOW_API_WIN32) == 0)
+      return true;
+#endif
+    /* FIXME: macOS support */
+    CLAP_DEBUG ("gui API %s not supported\n", api);
 
     return false;
   }
   bool
   guiCreate (const char *api, bool isFloating) noexcept override
   {
+    CLAP_DEBUG ("host can use timer : %d\n", _host.canUseTimerSupport());
+#ifdef SM_OS_LINUX
     if (!ui)
       {
         clap_id id;
         _host.timerSupportRegister (16, &id);
       }
+#endif
     ui.reset (new ClapUI (project.morph_plan(), this));
     return ui != nullptr;
   }
@@ -415,7 +464,12 @@ public:
   bool
   guiSetParent (const clap_window *window) noexcept override
   {
+#ifdef SM_OS_LINUX
     ui->set_parent (window->x11);
+#endif
+#ifdef SM_OS_WINDOWS
+    ui->set_parent ((PuglNativeWindow) window->win32);
+#endif
     return true;
   }
   bool
@@ -590,6 +644,18 @@ const struct clap_plugin_factory clap_factory = {
 
 static const void *get_factory(const char *factory_id) { return &clap_factory; }
 
+#ifdef SM_OS_WINDOWS
+HMODULE hInstance;
+
+extern "C" {
+BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
+{
+  hInstance = hInst;
+  return 1;
+}
+} // extern "C"
+#endif
+
 bool
 clap_init (const char *p)
 {
@@ -597,9 +663,7 @@ clap_init (const char *p)
 
   sm_plugin_init();
 
-#ifdef SM_STATIC_LINUX
-  set_static_linux_data_dir();
-#endif
+  SM_SET_OS_DATA_DIR ("clap");
 
   return true;
 }
@@ -613,7 +677,7 @@ void clap_deinit()
 
 extern "C" {
 
-const CLAP_EXPORT struct clap_plugin_entry clap_entry = {
+const CLAP_EXPORT extern struct clap_plugin_entry clap_entry = {
   CLAP_VERSION,
   SpectMorph::clap_init,
   SpectMorph::clap_deinit,

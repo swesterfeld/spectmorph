@@ -24,3 +24,15 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 endif
+
+if COND_WINDOWS
+all-local: SpectMorph.clap
+
+install-exec-hook: SpectMorph.clap
+	mkdir -p $(spectmorph_clapdir)
+	cp SpectMorph.clap $(spectmorph_clapdir)
+
+SpectMorph.clap: $(srcdir)/smclapplugin.cc
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
+endif

@@ -2,3 +2,13 @@
 
 EXTRA_DIST =
 CLEANFILES =
+
+#### libraries for statically linked plugins
+STATIC_PLUGIN_SM_LIBS = \
+  $(top_builddir)/glui/.libs/libspectmorphglui.a \
+  $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
+  $(top_builddir)/lib/.libs/libspectmorph.a
+
+#if COND_WINDOWS
+STATIC_PLUGIN_LIBS = $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+#endif
