@@ -36,3 +36,31 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
 endif
+
+if COND_MACOS
+
+STATIC_DEPS_DIR = $(top_builddir)/macos/prefix
+STATIC_DEPS = \
+  $(STATIC_DEPS_DIR)/lib/libsndfile.a \
+  $(STATIC_DEPS_DIR)/lib/libvorbisenc.a \
+  $(STATIC_DEPS_DIR)/lib/libvorbis.a \
+  $(STATIC_DEPS_DIR)/lib/libogg.a \
+  $(STATIC_DEPS_DIR)/lib/libFLAC.a \
+  $(STATIC_DEPS_DIR)/lib/libcairo.a \
+  $(STATIC_DEPS_DIR)/lib/libpixman-1.a \
+  $(STATIC_DEPS_DIR)/lib/libglib-2.0.a \
+  $(STATIC_DEPS_DIR)/lib/libintl.a \
+  $(STATIC_DEPS_DIR)/lib/libfftw3f.a \
+  $(STATIC_DEPS_DIR)/lib/libfreetype.a \
+  $(STATIC_DEPS_DIR)/lib/libpng16.a \
+  $(STATIC_DEPS_DIR)/lib/libz.a
+
+SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
+
+install-exec-hook: SpectMorph.so
+	mkdir -p $(libdir)/clap
+	cp SpectMorph.so $(libdir)/clap
+
+SpectMorph.so: $(plugin_LTLIBRARIES)
+	$(CXX) -shared -o SpectMorph.so -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
+endif
