@@ -35,7 +35,7 @@ uninstall-hook:
 spectmorph_vst.so.static:
 	$(CXX) -shared -o spectmorph_vst.so.static $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc \
 	       -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
-	        $(STATIC_PLUGIN_SM_LIBS) \
+	        $(STATIC_PLUGIN_LIBS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
@@ -47,29 +47,9 @@ install-exec-hook: SpectMorph.dll
 
 SpectMorph.dll: $(plugin_LTLIBRARIES)
 	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static \
-		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
 if COND_MACOS
-STATIC_DLL_LIBS = \
-  $(top_builddir)/glui/.libs/libspectmorphglui.a \
-  $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
-  $(top_builddir)/lib/.libs/libspectmorph.a
-
-STATIC_DEPS_DIR = $(top_builddir)/macos/prefix
-STATIC_DEPS = \
-  $(STATIC_DEPS_DIR)/lib/libsndfile.a \
-  $(STATIC_DEPS_DIR)/lib/libvorbisenc.a \
-  $(STATIC_DEPS_DIR)/lib/libvorbis.a \
-  $(STATIC_DEPS_DIR)/lib/libogg.a \
-  $(STATIC_DEPS_DIR)/lib/libFLAC.a \
-  $(STATIC_DEPS_DIR)/lib/libcairo.a \
-  $(STATIC_DEPS_DIR)/lib/libpixman-1.a \
-  $(STATIC_DEPS_DIR)/lib/libglib-2.0.a \
-  $(STATIC_DEPS_DIR)/lib/libintl.a \
-  $(STATIC_DEPS_DIR)/lib/libfftw3f.a \
-  $(STATIC_DEPS_DIR)/lib/libfreetype.a \
-  $(STATIC_DEPS_DIR)/lib/libpng16.a \
-  $(STATIC_DEPS_DIR)/lib/libz.a
 
 SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
 
@@ -78,5 +58,5 @@ install-exec-hook: SpectMorph.so
 	cp SpectMorph.so $(libdir)/vst
 
 SpectMorph.so: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_DLL_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
+	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(SYS_DEPS)
 endif

@@ -4,11 +4,29 @@ EXTRA_DIST =
 CLEANFILES =
 
 #### libraries for statically linked plugins
-STATIC_PLUGIN_SM_LIBS = \
+STATIC_PLUGIN_LIBS = \
   $(top_builddir)/glui/.libs/libspectmorphglui.a \
   $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
   $(top_builddir)/lib/.libs/libspectmorph.a
 
-#if COND_WINDOWS
-STATIC_PLUGIN_LIBS = $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
-#endif
+if COND_WINDOWS
+STATIC_PLUGIN_LIBS += $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+endif
+
+if COND_MACOS
+STATIC_PLUGIN_LIBS_DIR = $(top_builddir)/macos/prefix
+STATIC_PLUGIN_LIBS += \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libsndfile.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libvorbisenc.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libvorbis.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libogg.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libFLAC.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libcairo.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libpixman-1.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libglib-2.0.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libintl.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libfftw3f.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libfreetype.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libpng16.a \
+  $(STATIC_PLUGIN_LIBS_DIR)/lib/libz.a
+endif
