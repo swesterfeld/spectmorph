@@ -84,6 +84,7 @@ std::string sm_get_cache_dir();
 #ifdef SM_OS_MACOS
 std::string sm_mac_documents_dir();
 std::string sm_mac_application_support_dir();
+void set_macos_data_dir (const std::string& plugin_format);
 #endif
 
 enum DocumentsDir
@@ -162,6 +163,10 @@ void set_windows_data_dir (HMODULE hInstance);
 
 #ifdef SM_OS_WINDOWS
 #define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
+#endif
+
+#ifdef SM_OS_MACOS
+#define SM_SET_OS_DATA_DIR(plugin_format) set_macos_data_dir (plugin_format)
 #endif
 
 #ifdef SM_OS_LINUX

@@ -17,6 +17,10 @@
 #include "smzip.hh"
 #include "config.h"
 
+#ifdef SM_OS_MACOS
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #define CLAP_DEBUG(...) Debug::debug ("clap", __VA_ARGS__)
 
 using std::string;
@@ -74,6 +78,38 @@ public:
   Signal<> signal_timer;
 };
 #endif
+#ifdef SM_OS_MACOS
+class OSTimer
+{
+  static void
+  timer_callback (CFRunLoopTimerRef timer, void *info)
+  {
+    OSTimer *os_timer = (OSTimer *) info;
+    if (os_timer)
+      os_timer->signal_timer();
+  }
+  CFRunLoopTimerRef timer;
+public:
+  OSTimer()
+  {
+    CFRunLoopTimerContext context = { 0, };
+    context.info = this;
+    double interval = 1 / 60.; // 60 fps
+    timer = CFRunLoopTimerCreate (kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + interval, interval, 0, 0, timer_callback, &context);
+    if (timer)
+      CFRunLoopAddTimer (CFRunLoopGetCurrent(), timer, kCFRunLoopCommonModes);
+  }
+  ~OSTimer()
+  {
+    if (timer)
+      {
+        CFRunLoopTimerInvalidate (timer);
+        CFRelease (timer);
+      }
+  }
+  Signal<> signal_timer;
+};
+#endif
 
 class ClapUI final : public SignalReceiver
 {
@@ -81,7 +117,7 @@ class ClapUI final : public SignalReceiver
   std::unique_ptr<MorphPlanWindow> window;
   MorphPlan                       *morph_plan;
   ClapPlugin                      *plugin;
-#ifdef SM_OS_WINDOWS
+#if defined (SM_OS_WINDOWS) || defined (SM_OS_MACOS)
   OSTimer                          os_timer;
 #endif
 public:
@@ -89,7 +125,7 @@ public:
     morph_plan (plan),
     plugin (plugin)
   {
-#ifdef SM_OS_WINDOWS
+#if defined (SM_OS_WINDOWS) || defined (SM_OS_MACOS)
     connect (os_timer.signal_timer, this, &ClapUI::idle);
 #endif
   }
@@ -437,7 +473,10 @@ public:
     if (strcmp (api, CLAP_WINDOW_API_WIN32) == 0)
       return true;
 #endif
-    /* FIXME: macOS support */
+#ifdef SM_OS_MACOS
+    if (strcmp (api, CLAP_WINDOW_API_COCOA) == 0)
+      return true;
+#endif
     CLAP_DEBUG ("gui API %s not supported\n", api);
 
     return false;
@@ -469,6 +508,9 @@ public:
 #endif
 #ifdef SM_OS_WINDOWS
     ui->set_parent ((PuglNativeWindow) window->win32);
+#endif
+#ifdef SM_OS_MACOS
+    ui->set_parent ((PuglNativeWindow) window->cocoa);
 #endif
     return true;
   }

@@ -34,5 +34,17 @@ install-exec-hook: SpectMorph.clap
 
 SpectMorph.clap: $(srcdir)/smclapplugin.cc
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
-		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_SM_LIBS) $(STATIC_PLUGIN_LIBS)
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
+endif
+
+if COND_MACOS
+
+SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
+
+install-exec-hook: SpectMorph.so
+	mkdir -p $(libdir)/clap
+	cp SpectMorph.so $(libdir)/clap
+
+SpectMorph.so: $(plugin_LTLIBRARIES)
+	$(CXX) -shared -o SpectMorph.so -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
 endif
