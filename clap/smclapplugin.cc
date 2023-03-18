@@ -437,7 +437,10 @@ public:
     if (strcmp (api, CLAP_WINDOW_API_WIN32) == 0)
       return true;
 #endif
-    /* FIXME: macOS support */
+#ifdef SM_OS_MACOS
+    if (strcmp (api, CLAP_WINDOW_API_COCOA) == 0)
+      return true;
+#endif
     CLAP_DEBUG ("gui API %s not supported\n", api);
 
     return false;
@@ -469,6 +472,9 @@ public:
 #endif
 #ifdef SM_OS_WINDOWS
     ui->set_parent ((PuglNativeWindow) window->win32);
+#endif
+#ifdef SM_OS_MACOS
+    ui->set_parent ((PuglNativeWindow) window->cocoa);
 #endif
     return true;
   }
