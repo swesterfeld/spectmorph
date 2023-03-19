@@ -170,12 +170,14 @@ void set_windows_data_dir (HMODULE hInstance);
 #endif
 
 #ifdef SM_OS_LINUX
+
+#ifdef SM_STATIC_LINUX
+#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
+#else
 // on linux (not statically linked), plugin data directory is defined during build
 #define SM_SET_OS_DATA_DIR(plugin_format)
 #endif
 
-#ifdef SM_STATIC_LINUX
-#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
 #endif
 
 std::string sha1_hash (const unsigned char *data, size_t len);
