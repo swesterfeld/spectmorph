@@ -5,8 +5,8 @@ RUN apt-get -y install wget build-essential autoconf automake \
                libtool-bin pkg-config gettext autoconf-archive \
                xz-utils
 
-RUN wget -q https://space.twc.de/~stefan/download/mxe.tar.xz
-RUN tar xf mxe.tar.xz
+RUN wget -q https://github.com/swesterfeld/spectmorph-mxe/releases/download/2023-03-19/spectmorph-mxe-2023-03-19.tar.xz
+RUN tar xf spectmorph-mxe-2023-03-19.tar.xz
 
 ADD . /spectmorph
 WORKDIR /spectmorph
