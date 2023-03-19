@@ -500,15 +500,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
       VST_DEBUG ("Host: %s\n", hostProductString);
     }
 
-#ifdef SM_OS_WINDOWS
-  set_windows_data_dir (hInstance);
-#endif
-#ifdef SM_OS_MACOS
-  set_macos_data_dir();
-#endif
-#ifdef SM_STATIC_LINUX
-  set_static_linux_data_dir();
-#endif
+  SM_SET_OS_DATA_DIR ("vst");
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
   effect->magic = kEffectMagic;
