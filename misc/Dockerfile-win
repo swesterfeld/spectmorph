@@ -1,0 +1,19 @@
+FROM ubuntu:22.04
+
+RUN true && apt-get update
+RUN apt-get -y install wget build-essential autoconf automake \
+               libtool-bin pkg-config gettext autoconf-archive \
+               xz-utils
+
+RUN wget -q https://space.twc.de/~stefan/download/mxe.tar.xz
+RUN tar xf mxe.tar.xz
+
+ADD . /spectmorph
+WORKDIR /spectmorph
+
+ENV PATH /mxe/usr/bin:$PATH
+RUN mkdir -p /usr/local/spectmorph-win
+RUN ./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --without-qt --with-fonts --host=x86_64-w64-mingw32.static
+RUN make -j$(nproc)
+RUN make -Cvst install
+RUN make -Cclap install
