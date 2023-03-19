@@ -686,6 +686,17 @@ const struct clap_plugin_factory clap_factory = {
 
 static const void *get_factory(const char *factory_id) { return &clap_factory; }
 
+#ifdef SM_STATIC_LINUX
+static void
+set_static_linux_data_dir()
+{
+  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
+
+  CLAP_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
+#endif
+
 #ifdef SM_OS_WINDOWS
 HMODULE hInstance;
 

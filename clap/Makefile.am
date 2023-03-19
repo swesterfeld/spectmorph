@@ -23,6 +23,14 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
 	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
+
+SpectMorph.clap.static:
+	$(CXX) -shared -o SpectMorph.clap.static -I$(top_builddir) $(srcdir)/smclapplugin.cc \
+	       -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	        $(STATIC_PLUGIN_LIBS) \
+		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
+		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
+		-Wl,--version-script=$(srcdir)/ldscript.map
 endif
 
 if COND_WINDOWS
