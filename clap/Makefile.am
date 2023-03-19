@@ -7,7 +7,6 @@ spectmorph_clapdir = $(libdir)/clap
 CLEANFILES += SpectMorph.clap
 EXTRA_DIST += smclapplugin.cc ldscript.map
 
-if COND_LINUX
 all-local: SpectMorph.clap
 
 install-exec-hook: SpectMorph.clap
@@ -17,6 +16,7 @@ install-exec-hook: SpectMorph.clap
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_clapdir)/SpectMorph.clap
 
+if COND_LINUX
 SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
 	$(CXX) -fPIC -DPIC -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc $(CXXFLAGS) $(AM_CXXFLAGS) \
 	$(top_builddir)/lib/.libs/libspectmorph.so \
@@ -26,12 +26,6 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 endif
 
 if COND_WINDOWS
-all-local: SpectMorph.clap
-
-install-exec-hook: SpectMorph.clap
-	mkdir -p $(spectmorph_clapdir)
-	cp SpectMorph.clap $(spectmorph_clapdir)
-
 SpectMorph.clap: $(srcdir)/smclapplugin.cc
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
@@ -41,10 +35,6 @@ if COND_MACOS
 
 SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
 
-install-exec-hook: SpectMorph.so
-	mkdir -p $(libdir)/clap
-	cp SpectMorph.so $(libdir)/clap
-
-SpectMorph.so: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.so -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(STATIC_DEPS) $(SYS_DEPS)
+SpectMorph.clap: $(plugin_LTLIBRARIES)
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(SYS_DEPS)
 endif
