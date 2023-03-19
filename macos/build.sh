@@ -39,7 +39,7 @@ cp -rv Info.plist PkgInfo SpectMorph.vst/Contents || die "error: cp ...info"
 ### CLAP
 rm -rf ./SpectMorph.clap/*
 mkdir -p SpectMorph.clap/Contents/MacOS SpectMorph.clap/Contents/Resources || die "error: mkdir SpectMorph.clap/..."
-cp -v $PREFIX/lib/clap/SpectMorph.so SpectMorph.clap/Contents/MacOS/SpectMorph || die "error: cp SpectMorph.so"
+cp -v $PREFIX/lib/clap/SpectMorph.clap SpectMorph.clap/Contents/MacOS/SpectMorph || die "error: cp SpectMorph.clap"
 cp -rv $PREFIX/share/spectmorph/templates SpectMorph.clap/Contents/Resources || die "error: cp templates"
 cp -rv instruments SpectMorph.clap/Contents/Resources || die "error: cp instruments"
 cp -rv PkgInfo SpectMorph.clap/Contents || die "error: cp ...pkginfo"
