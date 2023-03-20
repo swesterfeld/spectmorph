@@ -64,18 +64,9 @@ public:
                   GL_BGRA, GL_UNSIGNED_BYTE, pugl_cairo_gl.buffer);
   }
   void
-  draw (int x, int y, int w, int h)
+  update_rect (int x, int y, int w, int h)
   {
-    (void) pugl_cairo_gl_draw; // reimplement this:
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    glViewport(0, 0, m_width, m_height);
-    glClear(GL_COLOR_BUFFER_BIT);
-
-    glPushMatrix();
-    glEnable(GL_TEXTURE_RECTANGLE_ARB);
-    glEnable(GL_TEXTURE_2D);
+    (void) pugl_cairo_gl_draw; // reimplemented
 
     // update modified part of the texture from cairo buffer
     uint32 *src_buffer = reinterpret_cast<uint32 *> (pugl_cairo_gl.buffer);
@@ -83,6 +74,16 @@ public:
     glTexSubImage2D (GL_TEXTURE_RECTANGLE_ARB, 0,
                      x, y, w, h,
                      GL_BGRA, GL_UNSIGNED_BYTE, src_buffer + y * m_width + x);
+  }
+  void
+  draw()
+  {
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glViewport(0, 0, m_width, m_height);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glPushMatrix();
 
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, (GLfloat)m_height);
@@ -98,8 +99,6 @@ public:
     glVertex2f(-1.0f, 1.0f);
     glEnd();
 
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_TEXTURE_RECTANGLE_ARB);
     glPopMatrix();
   }
   int
@@ -343,6 +342,8 @@ Window::on_expose_event (const PuglEventExpose& event)
     }
   update_full_redraw = false;
   update_regions.clear();
+
+  cairo_gl->draw();
 }
 
 void
@@ -470,7 +471,7 @@ Window::redraw_update_region (const RedrawParams& redraw_params)
 
   if (full_redraw)
     {
-      cairo_gl->draw (0, 0, cairo_gl->width(), cairo_gl->height());
+      cairo_gl->update_rect (0, 0, cairo_gl->width(), cairo_gl->height());
     }
   else
     {
@@ -487,7 +488,7 @@ Window::redraw_update_region (const RedrawParams& redraw_params)
 
       draw_region.clip (cairo_gl->width(), cairo_gl->height());
 
-      cairo_gl->draw (draw_region.x, draw_region.y, draw_region.w, draw_region.h);
+      cairo_gl->update_rect (draw_region.x, draw_region.y, draw_region.w, draw_region.h);
     }
 }
 

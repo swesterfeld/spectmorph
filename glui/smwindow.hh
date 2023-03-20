@@ -43,7 +43,7 @@ protected:
   std::unique_ptr<Window>   popup_window;
   double                    global_scale;
   std::vector<UpdateRegion> update_regions;
-  bool                      update_full_redraw = true;
+  bool                      update_full_redraw = false;
   bool                      debug_update_region = false;
   EventLoop                *m_event_loop = nullptr;
   double                    last_click_time = 0;
