@@ -123,6 +123,7 @@ cat >> $SETUP_NSI << EOH
   Delete "\$INSTDIR\\PluginDir.txt"
   RMDir "\$INSTDIR"
   Delete "\$pluginDir\\SpectMorph.dll"
+  Delete "\$pluginDir\\SpectMorph.clap"
   Delete "\$pluginDir\\SpectMorph.data.lnk"
 SectionEnd
 

@@ -1,3 +1,12 @@
+#### DOCKER BUILD ####
+
+To create the installer, run
+
+  misc/winbuild.sh setup
+
+in the main directory of SpectMorph. Ensure that you have the instruments tarball in
+the data directory.
+
 #### NATIVE BUILD ####
 
 Download installer
