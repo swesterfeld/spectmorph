@@ -9,8 +9,8 @@ echo "==== SpectMorph @PACKAGE_VERSION@ Installation ===="
 echo
 echo "   #### Installing Plugin"
 echo
-mkdir -p "$SPECTMORPH_DIR" "$HOME/.vst" "$HOME/.lv2"
-cp -av lv2 vst templates instruments fonts "$SPECTMORPH_DIR"
+mkdir -p "$SPECTMORPH_DIR" "$HOME/.vst" "$HOME/.lv2" "$HOME/.clap"
+cp -av lv2 vst clap templates instruments fonts "$SPECTMORPH_DIR"
 
 echo
 echo "   #### Creating Symlinks - VST"
@@ -23,6 +23,12 @@ echo "   #### Creating Symlinks - LV2"
 echo
 rm -rvf "$HOME/.lv2/spectmorph.lv2"
 ln -sv "$SPECTMORPH_DIR/lv2/spectmorph.lv2" "$HOME/.lv2"
+
+echo
+echo "   #### Creating Symlinks - CLAP"
+echo
+rm -rvf "$HOME/.clap/SpectMorph.clap"
+ln -sv "$SPECTMORPH_DIR/clap/SpectMorph.clap" "$HOME/.clap"
 
 echo
 echo "==== Installation Complete ===="

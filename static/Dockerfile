@@ -39,3 +39,4 @@ RUN make -j16
 RUN make install
 RUN cd lv2 && rm -f spectmorph_lv2.so.static && make spectmorph_lv2.so.static
 RUN cd vst && rm -f spectmorph_vst.so.static && make spectmorph_vst.so.static
+RUN cd clap && rm -f SpectMorph.clap.static && make SpectMorph.clap.static
