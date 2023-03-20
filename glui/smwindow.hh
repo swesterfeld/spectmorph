@@ -66,7 +66,7 @@ protected:
 
   struct RedrawParams {
     Rect                                update_region;
-    bool                                full_redraw;
+    bool                                full_redraw = false;
     std::map<Widget *, Rect>            merged_regions;
     std::vector<std::vector<Widget *>>  visible_widgets_by_layer;
   };
