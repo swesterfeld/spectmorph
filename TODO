@@ -20,7 +20,6 @@ __ dsp __
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
-- ui for macos / windows
 - serialization
 
 __ ui __
