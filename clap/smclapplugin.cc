@@ -32,7 +32,7 @@ namespace SpectMorph
 
 const char *features[] = {CLAP_PLUGIN_FEATURE_INSTRUMENT, CLAP_PLUGIN_FEATURE_SYNTHESIZER, nullptr};
 clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
-                                            "org.spectmorph.spectmorph",
+                                            "org.spectmorph.clap.SpectMorph",
                                             "SpectMorph",
                                             "Stefan Westerfeld",
                                             "https://www.spectmorph.org",
