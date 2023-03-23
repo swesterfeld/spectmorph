@@ -40,9 +40,7 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc
 endif
 
 if COND_MACOS
-
-SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
-
 SpectMorph.clap: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(SYS_DEPS)
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif

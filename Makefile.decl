@@ -14,19 +14,5 @@ STATIC_PLUGIN_LIBS += $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -lo
 endif
 
 if COND_MACOS
-STATIC_PLUGIN_LIBS_DIR = $(top_builddir)/macos/prefix
-STATIC_PLUGIN_LIBS += \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libsndfile.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libvorbisenc.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libvorbis.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libogg.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libFLAC.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libcairo.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libpixman-1.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libglib-2.0.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libintl.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libfftw3f.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libfreetype.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libpng16.a \
-  $(STATIC_PLUGIN_LIBS_DIR)/lib/libz.a
+STATIC_PLUGIN_LIBS += $(FFTW_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(FREETYPE_LIBS) $(SNDFILE_LIBS) -liconv -lm -framework Cocoa -framework OpenGL
 endif

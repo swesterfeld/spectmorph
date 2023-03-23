@@ -50,13 +50,11 @@ SpectMorph.dll: $(plugin_LTLIBRARIES)
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
 if COND_MACOS
-
-SYS_DEPS = -liconv -lm -framework Cocoa -framework OpenGL
-
 install-exec-hook: SpectMorph.so
 	mkdir -p $(libdir)/vst
 	cp SpectMorph.so $(libdir)/vst
 
 SpectMorph.so: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS) $(SYS_DEPS)
+	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static \
+	       $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
