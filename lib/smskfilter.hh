@@ -323,6 +323,14 @@ private:
 
     return x * (c1 + c2 * x2) / (c3 + x2);
   }
+  static float
+  tanh_approx (float x)
+  {
+    // https://www.musicdsp.org/en/latest/Other/238-rational-tanh-approximation.html
+    x = std::clamp (x, -3.0f, 3.0f);
+
+    return x * (27.0f + x * x) / (27.0f + 9.0f * x * x);
+  }
   template<Mode MODE, bool STEREO>
   [[gnu::flatten]]
   void
@@ -373,14 +381,6 @@ private:
              }
           };
 
-        auto distort = [] (float x)
-          {
-            /* shaped somewhat similar to tanh() and others, but faster */
-            x = std::clamp (x, -1.0f, 1.0f);
-
-            return x - x * x * x * (1.0f / 3);
-          };
-
         float s1l, s1r, s2l, s2r;
 
         s1l = channels_[0].s1[stage];
@@ -409,8 +409,8 @@ private:
 
             if (last_stage)
               {
-                            { y0l = distort (y0l); }
-                if (STEREO) { y0r = distort (y0r); }
+                            { y0l = tanh_approx (y0l); }
+                if (STEREO) { y0r = tanh_approx (y0r); }
               }
                         { y1l = lowpass (y0l, s1l); }
             if (STEREO) { y1r = lowpass (y0r, s1r); }
