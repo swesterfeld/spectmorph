@@ -454,6 +454,7 @@ public:
 
   /*--- gui --- */
   std::unique_ptr<ClapUI> ui;
+  clap_id                 ui_timer_id = CLAP_INVALID_ID;
   bool
   implementsGui() const noexcept override
   {
@@ -486,10 +487,11 @@ public:
   {
     CLAP_DEBUG ("host can use timer : %d\n", _host.canUseTimerSupport());
 #ifdef SM_OS_LINUX
-    if (!ui)
+    if (ui_timer_id == CLAP_INVALID_ID)
       {
         clap_id id;
-        _host.timerSupportRegister (16, &id);
+        if (_host.timerSupportRegister (16, &id))
+          ui_timer_id = id;
       }
 #endif
     ui.reset (new ClapUI (project.morph_plan(), this));
@@ -498,6 +500,13 @@ public:
   void
   guiDestroy() noexcept override
   {
+#ifdef SM_OS_LINUX
+    if (ui_timer_id != CLAP_INVALID_ID)
+      {
+        _host.timerSupportUnregister (ui_timer_id);
+        ui_timer_id = CLAP_INVALID_ID;
+      }
+#endif
     ui.reset (nullptr);
   }
   bool
@@ -537,9 +546,9 @@ public:
     return true;
   }
   void
-  onTimer (clap_id timerId) noexcept override
+  onTimer (clap_id timer_id) noexcept override
   {
-    if (ui)
+    if (ui && timer_id == ui_timer_id)
       ui->idle();
   }
 };
