@@ -47,6 +47,17 @@ fmatch (double f1, double f2)
   return f2 < (f1 * 1.05) && f2 > (f1 * 0.95);
 }
 
+static inline double
+truncate_phase (double phase)
+{
+  // truncate phase to interval [0:2*pi]; like fmod (phase, 2 * M_PI) but faster
+  phase *= 1 / (2 * M_PI);
+  phase -= int (phase);
+  phase *= 2 * M_PI;
+
+  return phase;
+}
+
 LiveDecoder::LiveDecoder() :
   smset (NULL),
   audio (NULL),
@@ -445,7 +456,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                               const double lfreq = old_pstate[old_partial].freq;
                               const double lphase = old_pstate[old_partial].phase;
 
-                              phase = fmod (lphase + lfreq * phase_factor, 2 * M_PI);
+                              phase = truncate_phase (lphase + lfreq * phase_factor);
 
                               if (DEBUG)
                                 printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
@@ -463,7 +474,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                                   const double lfreq = old_pstate[old_partial].freq;
                                   const double lphase = unison_old_phases[old_partial * unison_voices + i];
 
-                                  phase = fmod (lphase + lfreq * phase_factor * unison_freq_factor[i], 2 * M_PI);
+                                  phase = truncate_phase (lphase + lfreq * phase_factor * unison_freq_factor[i]);
                                 }
                               else
                                 {
