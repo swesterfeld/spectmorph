@@ -118,17 +118,38 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
 
   auto filter_process_block = [&] (auto& filter)
     {
-      float freq_in[n_values];
-      float reso_in[n_values];
-      float drive_in[n_values];
-
-      for (uint i = 0; i < n_values; i++)
+      auto gen_filter_input = [&] (float *freq_in, float *reso_in, float *drive_in, uint count)
         {
-          freq_in[i] = cutoff_smooth.get_next() * exp2f (envelope.get_next() * depth_octaves);
-          reso_in[i] = resonance_smooth.get_next();
-          drive_in[i] = drive_smooth.get_next();
+          for (uint i = 0; i < count; i++)
+            {
+              freq_in[i] = cutoff_smooth.get_next() * exp2f (envelope.get_next() * depth_octaves);
+              reso_in[i] = resonance_smooth.get_next();
+              drive_in[i] = drive_smooth.get_next();
+            }
+        };
+      const bool const_freq = cutoff_smooth.is_constant() && envelope.is_constant();
+      const bool const_reso = resonance_smooth.is_constant();
+      const bool const_drive = drive_smooth.is_constant();
+
+      if (const_freq && const_reso && const_drive)
+        {
+          /* use more efficient version of the filter computation if all parameters are constants */
+          float freq, reso, drive;
+          gen_filter_input (&freq, &reso, &drive, 1);
+
+          filter.set_freq (freq);
+          filter.set_reso (reso);
+          filter.set_drive (drive);
+          filter.process_block (n_values, audio);
         }
-      filter.process_block (n_values, audio, nullptr, freq_in, reso_in, drive_in);
+      else
+        {
+          /* generic version: pass per-sample values for freq, reso and drive */
+          float freq_in[n_values], reso_in[n_values], drive_in[n_values];
+          gen_filter_input (freq_in, reso_in, drive_in, n_values);
+
+          filter.process_block (n_values, audio, nullptr, freq_in, reso_in, drive_in);
+        }
     };
 
   if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
