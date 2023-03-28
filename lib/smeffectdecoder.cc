@@ -127,17 +127,6 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   original_source (source),
   skip_source (new EffectDecoderSource (source))
 {
-  filter_callback = [this]() {
-    float delta_cent = (filter_current_note - 60) * filter_key_tracking;
-    float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
-
-    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod() * filter_keytrack_factor, filter_smooth_first);
-    filter_resonance_smooth.set (this->output_module->filter_resonance_mod() * 0.01, filter_smooth_first);
-    filter_drive_smooth.set (this->output_module->filter_drive_mod(), filter_smooth_first);
-
-    filter_smooth_first = false;
-  };
-
   chain_decoder.reset (new LiveDecoder (original_source));
   use_skip_source = false;
 }
@@ -224,10 +213,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
           release * 1000);
     }
 
-  filter_cutoff_smooth.reset (mix_freq, 0.010);
-  filter_resonance_smooth.reset (mix_freq, 0.010);
-  filter_drive_smooth.reset (mix_freq, 0.010);
-
   filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
   filter_envelope.set_delay (0);
   filter_envelope.set_attack (attack);
@@ -236,22 +221,15 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_envelope.set_sustain (sustain);
   filter_envelope.set_release (release);
   filter_depth_octaves =  cfg->filter_depth / 12;
-  filter_key_tracking = cfg->filter_key_tracking;
 
   filter_enabled = cfg->filter;
   if (filter_enabled)
     {
-      live_decoder_filter.set_config (cfg, mix_freq);
+      live_decoder_filter.set_config (output_module, cfg, mix_freq);
       chain_decoder->set_filter (&live_decoder_filter);
     }
   else
     chain_decoder->set_filter (nullptr);
-}
-
-static float
-freq_to_note (float freq)
-{
-  return 69 + 12 * log (freq / 440) / log (2);
 }
 
 void
@@ -267,8 +245,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 
   filter_envelope.start (mix_freq);
-  filter_smooth_first = true;
-  filter_current_note = freq_to_note (freq);
   filter_first = true;
 }
 
@@ -277,6 +253,7 @@ EffectDecoder::process_with_filter (size_t       n_values,
                                     const float *freq_in,
                                     float       *audio_out)
 {
+#if 0
   if (filter_enabled)
     {
       auto filter_process_block = [&] (auto& filter)
@@ -316,6 +293,7 @@ EffectDecoder::process_with_filter (size_t       n_values,
         };
 
     }
+#endif
 }
 
 void

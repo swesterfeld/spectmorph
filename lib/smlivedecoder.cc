@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smlivedecoder.hh"
+#include "smlivedecoderfilter.hh"
 #include "smmath.hh"
 #include "smleakdebugger.hh"
 #include "smutils.hh"
@@ -213,7 +214,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       vibrato_env = 0;
     }
   if (filter)
-    filter->reset();
+    filter->retrigger (freq_to_note (freq));
 
   current_freq = freq;
   current_mix_freq = mix_freq;

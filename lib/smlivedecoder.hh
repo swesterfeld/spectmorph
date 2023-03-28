@@ -7,7 +7,6 @@
 #include "smsinedecoder.hh"
 #include "smnoisedecoder.hh"
 #include "smlivedecodersource.hh"
-#include "smlivedecoderfilter.hh"
 #include "smpolyphaseinter.hh"
 #include "smalignedarray.hh"
 #include <vector>
@@ -15,6 +14,7 @@
 
 namespace SpectMorph {
 
+class LiveDecoderFilter;
 class LiveDecoder
 {
   struct PartialState

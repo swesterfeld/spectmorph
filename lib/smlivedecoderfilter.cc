@@ -1,20 +1,31 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smlivedecoderfilter.hh"
+#include "smmorphoutputmodule.hh"
 
 using namespace SpectMorph;
 
 void
-LiveDecoderFilter::reset()
+LiveDecoderFilter::retrigger (float note)
 {
   ladder_filter.reset();
   sk_filter.reset();
+
+  smooth_first = true;
+  current_note = note;
 }
 
 void
-LiveDecoderFilter::set_config (const MorphOutput::Config *cfg, float mix_freq)
+LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutput::Config *cfg, float mix_freq)
 {
+  this->output_module = output_module;
+
+  cutoff_smooth.reset (mix_freq, 0.010);
+  resonance_smooth.reset (mix_freq, 0.010);
+  drive_smooth.reset (mix_freq, 0.010);
+
   filter_type = cfg->filter_type;
+  key_tracking = cfg->filter_key_tracking;
 
   switch (cfg->filter_ladder_mode)
     {
@@ -47,15 +58,28 @@ LiveDecoderFilter::set_config (const MorphOutput::Config *cfg, float mix_freq)
 void
 LiveDecoderFilter::process (size_t n_values, float *audio)
 {
-  float freq = 1000;
-  float reso = 0.8;
-  float drive = 0;
+  float delta_cent = (current_note - 60) * key_tracking;
+  float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
+
+  cutoff_smooth.set (output_module->filter_cutoff_mod() * filter_keytrack_factor, smooth_first);
+  resonance_smooth.set (output_module->filter_resonance_mod() * 0.01, smooth_first);
+  drive_smooth.set (output_module->filter_drive_mod(), smooth_first);
+
+  smooth_first = false;
+
   auto filter_process_block = [&] (auto& filter)
     {
-      filter.set_freq (freq);
-      filter.set_reso (reso);
-      filter.set_drive (drive);
-      filter.process_block (n_values, audio);
+      float freq_in[n_values];
+      float reso_in[n_values];
+      float drive_in[n_values];
+
+      for (uint i = 0; i < n_values; i++)
+        {
+          freq_in[i] = cutoff_smooth.get_next(); // FIXME * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+          reso_in[i] = resonance_smooth.get_next();
+          drive_in[i] = drive_smooth.get_next();
+        }
+      filter.process_block (n_values, audio, nullptr, freq_in, reso_in, drive_in);
     };
 
   if (filter_type == MorphOutput::FILTER_TYPE_LADDER)

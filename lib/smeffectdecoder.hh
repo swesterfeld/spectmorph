@@ -9,8 +9,8 @@
 #include "smadsrenvelope.hh"
 #include "smfilterenvelope.hh"
 #include "smladdervcf.hh"
-#include "smlinearsmooth.hh"
 #include "smskfilter.hh"
+#include "smlivedecoderfilter.hh"
 
 #include <memory>
 
@@ -34,12 +34,6 @@ class EffectDecoder
   bool                                  filter_enabled;
   std::function<void()>                 filter_callback;
   FilterEnvelope                        filter_envelope;
-  float                                 filter_key_tracking = 0;
-  float                                 filter_current_note = 60;
-  bool                                  filter_smooth_first;
-  LinearSmooth                          filter_cutoff_smooth;
-  LinearSmooth                          filter_resonance_smooth;
-  LinearSmooth                          filter_drive_smooth;
   float                                 filter_depth_octaves;
   bool                                  filter_first = false;
 

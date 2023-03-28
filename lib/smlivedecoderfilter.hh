@@ -5,13 +5,24 @@
 #include "smladdervcf.hh"
 #include "smskfilter.hh"
 #include "smmorphoutput.hh"
+#include "smlinearsmooth.hh"
 
 namespace SpectMorph
 {
 
+class MorphOutputModule;
+
 class LiveDecoderFilter
 {
+  LinearSmooth              cutoff_smooth;
+  LinearSmooth              resonance_smooth;
+  LinearSmooth              drive_smooth;
+  bool                      smooth_first;
+  float                     current_note = 60;
+  float                     key_tracking = 0;
+
   MorphOutput::FilterType   filter_type;
+  MorphOutputModule        *output_module = nullptr;
 
   static constexpr int FILTER_OVERSAMPLE = 4;
 
@@ -19,9 +30,9 @@ class LiveDecoderFilter
   SKFilter                  sk_filter { FILTER_OVERSAMPLE };
 
 public:
-  void reset();
+  void retrigger (float note);
   void process (size_t n_values, float *audio);
-  void set_config (const MorphOutput::Config *cfg, float mix_freq);
+  void set_config (MorphOutputModule *output_module, const MorphOutput::Config *cfg, float mix_freq);
 };
 
 }
