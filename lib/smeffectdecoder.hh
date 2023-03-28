@@ -7,7 +7,6 @@
 #include "smlivedecodersource.hh"
 #include "smmorphoutput.hh"
 #include "smadsrenvelope.hh"
-#include "smfilterenvelope.hh"
 #include "smladdervcf.hh"
 #include "smskfilter.hh"
 #include "smlivedecoderfilter.hh"
@@ -33,8 +32,6 @@ class EffectDecoder
 
   bool                                  filter_enabled;
   std::function<void()>                 filter_callback;
-  FilterEnvelope                        filter_envelope;
-  float                                 filter_depth_octaves;
   bool                                  filter_first = false;
 
   LiveDecoderFilter                     live_decoder_filter;

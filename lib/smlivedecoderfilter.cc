@@ -11,14 +11,42 @@ LiveDecoderFilter::retrigger (float note)
   ladder_filter.reset();
   sk_filter.reset();
 
+  envelope.start (mix_freq);
+
   smooth_first = true;
   current_note = note;
+}
+
+void
+LiveDecoderFilter::release()
+{
+  envelope.stop();
+}
+
+/* FIXME: FILTER: dedup */
+static float
+exp_percent (float p, float min_out, float max_out, float slope)
+{
+  /* exponential curve from 0 to 1 with configurable slope */
+  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
+
+  /* rescale to interval [min_out, max_out] */
+  return x * (max_out - min_out) + min_out;
+}
+
+/* FIXME: FILTER: dedup */
+static float
+xparam_percent (float p, float min_out, float max_out, float slope)
+{
+  /* rescale xparam function to interval [min_out, max_out] */
+  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
 }
 
 void
 LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutput::Config *cfg, float mix_freq)
 {
   this->output_module = output_module;
+  this->mix_freq = mix_freq;
 
   cutoff_smooth.reset (mix_freq, 0.010);
   resonance_smooth.reset (mix_freq, 0.010);
@@ -26,6 +54,27 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
 
   filter_type = cfg->filter_type;
   key_tracking = cfg->filter_key_tracking;
+
+  float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
+  float decay   = xparam_percent (cfg->filter_decay, 2, 5000, 3) / 1000;
+  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000; /* FIXME: FILTER: this may not be the best solution */
+  float sustain = cfg->filter_sustain;
+  if (0)
+    {
+      printf ("%.2f ms -  %.2f ms  -  %.2f ms\n",
+          attack * 1000,
+          decay * 1000,
+          release * 1000);
+    }
+
+  envelope.set_shape (FilterEnvelope::Shape::LINEAR);
+  envelope.set_delay (0);
+  envelope.set_attack (attack);
+  envelope.set_hold (0);
+  envelope.set_decay (decay);
+  envelope.set_sustain (sustain);
+  envelope.set_release (release);
+  depth_octaves = cfg->filter_depth / 12;
 
   switch (cfg->filter_ladder_mode)
     {
@@ -75,7 +124,7 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
 
       for (uint i = 0; i < n_values; i++)
         {
-          freq_in[i] = cutoff_smooth.get_next(); // FIXME * exp2f (filter_envelope.get_next() * filter_depth_octaves);
+          freq_in[i] = cutoff_smooth.get_next() * exp2f (envelope.get_next() * depth_octaves);
           reso_in[i] = resonance_smooth.get_next();
           drive_in[i] = drive_smooth.get_next();
         }

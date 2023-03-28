@@ -135,25 +135,6 @@ EffectDecoder::~EffectDecoder()
 {
 }
 
-/* FIXME: FILTER: dedup */
-static float
-exp_percent (float p, float min_out, float max_out, float slope)
-{
-  /* exponential curve from 0 to 1 with configurable slope */
-  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
-
-  /* rescale to interval [min_out, max_out] */
-  return x * (max_out - min_out) + min_out;
-}
-
-/* FIXME: FILTER: dedup */
-static float
-xparam_percent (float p, float min_out, float max_out, float slope)
-{
-  /* rescale xparam function to interval [min_out, max_out] */
-  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
-}
-
 void
 EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 {
@@ -200,28 +181,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 
   chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
 
-  // filter
-  float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
-  float decay   = xparam_percent (cfg->filter_decay, 2, 5000, 3) / 1000;
-  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000; /* FIXME: FILTER: this may not be the best solution */
-  float sustain = cfg->filter_sustain;
-  if (0)
-    {
-      printf ("%.2f ms -  %.2f ms  -  %.2f ms\n",
-          attack * 1000,
-          decay * 1000,
-          release * 1000);
-    }
-
-  filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
-  filter_envelope.set_delay (0);
-  filter_envelope.set_attack (attack);
-  filter_envelope.set_hold (0);
-  filter_envelope.set_decay (decay);
-  filter_envelope.set_sustain (sustain);
-  filter_envelope.set_release (release);
-  filter_depth_octaves =  cfg->filter_depth / 12;
-
   filter_enabled = cfg->filter;
   if (filter_enabled)
     {
@@ -244,7 +203,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 
-  filter_envelope.start (mix_freq);
   filter_first = true;
 }
 
@@ -353,8 +311,8 @@ EffectDecoder::release()
   else
     simple_envelope->release();
 
-  if (filter_enabled)
-    filter_envelope.stop();
+  /* FIXME: is it a good idea to do this here? */
+  live_decoder_filter.release();
 }
 
 bool
