@@ -139,7 +139,6 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   };
 
   chain_decoder.reset (new LiveDecoder (original_source));
-  chain_decoder->set_filter_callback (filter_callback);
   use_skip_source = false;
 }
 
@@ -174,7 +173,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (!use_skip_source) // enable skip source
         {
           chain_decoder.reset (new LiveDecoder (skip_source.get()));
-          chain_decoder->set_filter_callback (filter_callback);
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
@@ -195,7 +193,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (use_skip_source) // use original source (no skip)
         {
           chain_decoder.reset (new LiveDecoder (original_source));
-          chain_decoder->set_filter_callback (filter_callback);
           use_skip_source = false;
         }
       adsr_envelope.reset();
@@ -240,36 +237,15 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
   filter_envelope.set_release (release);
   filter_depth_octaves =  cfg->filter_depth / 12;
   filter_key_tracking = cfg->filter_key_tracking;
-  filter_type = cfg->filter_type;
-
-  switch (cfg->filter_ladder_mode)
-    {
-      case MorphOutput::FILTER_LADDER_LP1: ladder_filter.set_mode (LadderVCF::LP1); break;
-      case MorphOutput::FILTER_LADDER_LP2: ladder_filter.set_mode (LadderVCF::LP2); break;
-      case MorphOutput::FILTER_LADDER_LP3: ladder_filter.set_mode (LadderVCF::LP3); break;
-      case MorphOutput::FILTER_LADDER_LP4: ladder_filter.set_mode (LadderVCF::LP4); break;
-    }
-  switch (cfg->filter_sk_mode)
-    {
-      case MorphOutput::FILTER_SK_LP1: sk_filter.set_mode (SKFilter::LP1); break;
-      case MorphOutput::FILTER_SK_LP2: sk_filter.set_mode (SKFilter::LP2); break;
-      case MorphOutput::FILTER_SK_LP3: sk_filter.set_mode (SKFilter::LP3); break;
-      case MorphOutput::FILTER_SK_LP4: sk_filter.set_mode (SKFilter::LP4); break;
-      case MorphOutput::FILTER_SK_LP6: sk_filter.set_mode (SKFilter::LP6); break;
-      case MorphOutput::FILTER_SK_LP8: sk_filter.set_mode (SKFilter::LP8); break;
-      case MorphOutput::FILTER_SK_BP2: sk_filter.set_mode (SKFilter::BP2); break;
-      case MorphOutput::FILTER_SK_BP4: sk_filter.set_mode (SKFilter::BP4); break;
-      case MorphOutput::FILTER_SK_BP6: sk_filter.set_mode (SKFilter::BP6); break;
-      case MorphOutput::FILTER_SK_BP8: sk_filter.set_mode (SKFilter::BP8); break;
-      case MorphOutput::FILTER_SK_HP1: sk_filter.set_mode (SKFilter::HP1); break;
-      case MorphOutput::FILTER_SK_HP2: sk_filter.set_mode (SKFilter::HP2); break;
-      case MorphOutput::FILTER_SK_HP3: sk_filter.set_mode (SKFilter::HP3); break;
-      case MorphOutput::FILTER_SK_HP4: sk_filter.set_mode (SKFilter::HP4); break;
-      case MorphOutput::FILTER_SK_HP6: sk_filter.set_mode (SKFilter::HP6); break;
-      case MorphOutput::FILTER_SK_HP8: sk_filter.set_mode (SKFilter::HP8); break;
-    }
 
   filter_enabled = cfg->filter;
+  if (filter_enabled)
+    {
+      live_decoder_filter.set_config (cfg, mix_freq);
+      chain_decoder->set_filter (&live_decoder_filter);
+    }
+  else
+    chain_decoder->set_filter (nullptr);
 }
 
 static float
@@ -290,8 +266,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
 
-  ladder_filter.reset();
-  sk_filter.reset();
   filter_envelope.start (mix_freq);
   filter_smooth_first = true;
   filter_current_note = freq_to_note (freq);
@@ -303,8 +277,6 @@ EffectDecoder::process_with_filter (size_t       n_values,
                                     const float *freq_in,
                                     float       *audio_out)
 {
-  chain_decoder->process (n_values, freq_in, audio_out);
-
   if (filter_enabled)
     {
       auto filter_process_block = [&] (auto& filter)
@@ -343,10 +315,6 @@ EffectDecoder::process_with_filter (size_t       n_values,
             }
         };
 
-      if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
-        filter_process_block (ladder_filter);
-      else
-        filter_process_block (sk_filter);
     }
 }
 
@@ -356,6 +324,9 @@ EffectDecoder::process (size_t       n_values,
                         float       *audio_out)
 {
   g_assert (chain_decoder);
+  chain_decoder->process (n_values, freq_in, audio_out);
+
+#if 0
 
   if (filter_enabled && filter_first && n_values)
     {
@@ -388,6 +359,7 @@ EffectDecoder::process (size_t       n_values,
     }
 
   process_with_filter (n_values, freq_in, audio_out);
+#endif
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);

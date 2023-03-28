@@ -212,6 +212,9 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       vibrato_phase = 0;
       vibrato_env = 0;
     }
+  if (filter)
+    filter->reset();
+
   current_freq = freq;
   current_mix_freq = mix_freq;
 }
@@ -352,9 +355,6 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           if (audio_block_ptr)
             {
-              if (filter_callback) /* FIXME: FILTER */
-                filter_callback();
-
               const AudioBlock& audio_block = *audio_block_ptr;
 
               assert (audio_block.freqs.size() == audio_block.mags.size());
@@ -717,6 +717,8 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
           process_portamento (todo_values, freq_in, audio_out);
         }
 
+      if (filter)
+        filter->process (todo_values, audio_out);
 
       if (freq_in)
         freq_in += todo_values;
@@ -912,7 +914,7 @@ LiveDecoder::time_offset_ms() const
 }
 
 void
-LiveDecoder::set_filter_callback (const std::function<void()>& new_filter_callback)
+LiveDecoder::set_filter (LiveDecoderFilter *new_filter)
 {
-  filter_callback = new_filter_callback;
+  filter = new_filter;
 }

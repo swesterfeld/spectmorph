@@ -7,6 +7,7 @@
 #include <array>
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 
 namespace SpectMorph {
 

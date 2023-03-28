@@ -41,11 +41,9 @@ class EffectDecoder
   LinearSmooth                          filter_resonance_smooth;
   LinearSmooth                          filter_drive_smooth;
   float                                 filter_depth_octaves;
-  MorphOutput::FilterType               filter_type;
   bool                                  filter_first = false;
-  static constexpr int FILTER_OVERSAMPLE = 4;
-  LadderVCF                             ladder_filter { FILTER_OVERSAMPLE };
-  SKFilter                              sk_filter { FILTER_OVERSAMPLE };
+
+  LiveDecoderFilter                     live_decoder_filter;
 
   void process_with_filter (size_t n_values, const float *freq_in, float *audio_out);
 
