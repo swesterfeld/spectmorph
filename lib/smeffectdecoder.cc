@@ -202,21 +202,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
     simple_envelope->retrigger();
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
-
-  filter_first = true;
-}
-
-void
-EffectDecoder::process_with_filter (size_t       n_values,
-                                    const float *freq_in,
-                                    float       *audio_out)
-{
-#if 0
-  if (filter_enabled)
-    {
-
-    }
-#endif
 }
 
 void
@@ -228,7 +213,6 @@ EffectDecoder::process (size_t       n_values,
   chain_decoder->process (n_values, freq_in, audio_out);
 
 #if 0
-
   if (filter_enabled && filter_first && n_values)
     {
       // latency compensation for filter oversampling: throw away a few samples at the start

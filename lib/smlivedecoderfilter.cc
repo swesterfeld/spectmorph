@@ -107,6 +107,8 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
 void
 LiveDecoderFilter::process (size_t n_values, float *audio)
 {
+  /* FIXME: latency compensation */
+
   float delta_cent = (current_note - 60) * key_tracking;
   float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
 

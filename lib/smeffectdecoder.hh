@@ -30,13 +30,8 @@ class EffectDecoder
   std::unique_ptr<ADSREnvelope>         adsr_envelope;
   std::unique_ptr<SimpleEnvelope>       simple_envelope;
 
-  bool                                  filter_enabled;
-  std::function<void()>                 filter_callback;
-  bool                                  filter_first = false;
-
+  bool                                  filter_enabled = false;
   LiveDecoderFilter                     live_decoder_filter;
-
-  void process_with_filter (size_t n_values, const float *freq_in, float *audio_out);
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);
