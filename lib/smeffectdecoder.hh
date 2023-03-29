@@ -7,10 +7,7 @@
 #include "smlivedecodersource.hh"
 #include "smmorphoutput.hh"
 #include "smadsrenvelope.hh"
-#include "smfilterenvelope.hh"
-#include "smladdervcf.hh"
-#include "smlinearsmooth.hh"
-#include "smskfilter.hh"
+#include "smlivedecoderfilter.hh"
 
 #include <memory>
 
@@ -31,23 +28,8 @@ class EffectDecoder
   std::unique_ptr<ADSREnvelope>         adsr_envelope;
   std::unique_ptr<SimpleEnvelope>       simple_envelope;
 
-  bool                                  filter_enabled;
-  std::function<void()>                 filter_callback;
-  FilterEnvelope                        filter_envelope;
-  float                                 filter_key_tracking = 0;
-  float                                 filter_current_note = 60;
-  bool                                  filter_smooth_first;
-  LinearSmooth                          filter_cutoff_smooth;
-  LinearSmooth                          filter_resonance_smooth;
-  LinearSmooth                          filter_drive_smooth;
-  float                                 filter_depth_octaves;
-  MorphOutput::FilterType               filter_type;
-  bool                                  filter_first = false;
-  static constexpr int FILTER_OVERSAMPLE = 4;
-  LadderVCF                             ladder_filter { FILTER_OVERSAMPLE };
-  SKFilter                              sk_filter { FILTER_OVERSAMPLE };
-
-  void process_with_filter (size_t n_values, const float *freq_in, float *audio_out);
+  bool                                  filter_enabled = false;
+  LiveDecoderFilter                     live_decoder_filter;
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

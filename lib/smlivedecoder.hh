@@ -14,6 +14,7 @@
 
 namespace SpectMorph {
 
+class LiveDecoderFilter;
 class LiveDecoder
 {
   struct PartialState
@@ -38,6 +39,8 @@ class LiveDecoder
   NoiseDecoder       *noise_decoder;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
+  LiveDecoderFilter  *filter = nullptr;
+  bool                filter_latency_compensation;
 
   bool                sines_enabled;
   bool                noise_enabled;
@@ -111,6 +114,10 @@ class LiveDecoder
   void process_vibrato (size_t       n_values,
                         const float *freq_in,
                         float       *audio_out);
+  void process_with_filter (size_t n_values,
+                            const float *freq_in,
+                            float *audio_out);
+
   LiveDecoder();
 public:
   LiveDecoder (WavSet *smset);
@@ -126,7 +133,7 @@ public:
   void set_noise_seed (int seed);
   void set_unison_voices (int voices, float detune);
   void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
-  void set_filter_callback (const std::function<void()>& filter_callback);
+  void set_filter (LiveDecoderFilter *filter);
 
   void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);

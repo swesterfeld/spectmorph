@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smlivedecoder.hh"
+#include "smlivedecoderfilter.hh"
 #include "smmath.hh"
 #include "smleakdebugger.hh"
 #include "smutils.hh"
@@ -212,6 +213,12 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       vibrato_phase = 0;
       vibrato_env = 0;
     }
+  if (filter)
+    {
+      filter->retrigger (freq_to_note (freq));
+      filter_latency_compensation = true;
+    }
+
   current_freq = freq;
   current_mix_freq = mix_freq;
 }
@@ -352,9 +359,6 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           if (audio_block_ptr)
             {
-              if (filter_callback) /* FIXME: FILTER */
-                filter_callback();
-
               const AudioBlock& audio_block = *audio_block_ptr;
 
               assert (audio_block.freqs.size() == audio_block.mags.size());
@@ -684,6 +688,22 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
 }
 
 void
+LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *audio_out)
+{
+  if (vibrato_enabled)
+    {
+      process_vibrato (n_values, freq_in, audio_out);
+    }
+  else
+    {
+      process_portamento (n_values, freq_in, audio_out);
+    }
+
+  if (filter)
+    filter->process (n_values, audio_out);
+}
+
+void
 LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
 {
   if (!audio)   // nothing loaded
@@ -704,19 +724,35 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   const size_t orig_n_values = n_values;
   const float *orig_audio_out = audio_out;
 
+  if (n_values && filter && filter_latency_compensation)
+    {
+      // latency compensation for filter oversampling: throw away a few samples at the start
+
+      int idelay = filter->idelay();
+      assert (idelay > 0);
+
+      float junk_audio_out[idelay];
+      float junk_freq_in[idelay];
+      if (freq_in)
+        {
+          for (int i = 0; i < idelay; i++)
+            junk_freq_in[i] = freq_in[0];
+
+          process_with_filter (idelay, junk_freq_in, junk_audio_out);
+        }
+      else
+        {
+          process_with_filter (idelay, nullptr, junk_audio_out);
+        }
+
+      filter_latency_compensation = false;
+    }
+
   while (n_values > 0)
     {
       size_t todo_values = min (n_values, max_n_values);
 
-      if (vibrato_enabled)
-        {
-          process_vibrato (todo_values, freq_in, audio_out);
-        }
-      else
-        {
-          process_portamento (todo_values, freq_in, audio_out);
-        }
-
+      process_with_filter (todo_values, freq_in, audio_out);
 
       if (freq_in)
         freq_in += todo_values;
@@ -912,7 +948,7 @@ LiveDecoder::time_offset_ms() const
 }
 
 void
-LiveDecoder::set_filter_callback (const std::function<void()>& new_filter_callback)
+LiveDecoder::set_filter (LiveDecoderFilter *new_filter)
 {
-  filter_callback = new_filter_callback;
+  filter = new_filter;
 }

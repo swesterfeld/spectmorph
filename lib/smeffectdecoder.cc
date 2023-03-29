@@ -127,43 +127,12 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSourc
   original_source (source),
   skip_source (new EffectDecoderSource (source))
 {
-  filter_callback = [this]() {
-    float delta_cent = (filter_current_note - 60) * filter_key_tracking;
-    float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
-
-    filter_cutoff_smooth.set (this->output_module->filter_cutoff_mod() * filter_keytrack_factor, filter_smooth_first);
-    filter_resonance_smooth.set (this->output_module->filter_resonance_mod() * 0.01, filter_smooth_first);
-    filter_drive_smooth.set (this->output_module->filter_drive_mod(), filter_smooth_first);
-
-    filter_smooth_first = false;
-  };
-
   chain_decoder.reset (new LiveDecoder (original_source));
-  chain_decoder->set_filter_callback (filter_callback);
   use_skip_source = false;
 }
 
 EffectDecoder::~EffectDecoder()
 {
-}
-
-/* FIXME: FILTER: dedup */
-static float
-exp_percent (float p, float min_out, float max_out, float slope)
-{
-  /* exponential curve from 0 to 1 with configurable slope */
-  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
-
-  /* rescale to interval [min_out, max_out] */
-  return x * (max_out - min_out) + min_out;
-}
-
-/* FIXME: FILTER: dedup */
-static float
-xparam_percent (float p, float min_out, float max_out, float slope)
-{
-  /* rescale xparam function to interval [min_out, max_out] */
-  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
 }
 
 void
@@ -174,7 +143,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (!use_skip_source) // enable skip source
         {
           chain_decoder.reset (new LiveDecoder (skip_source.get()));
-          chain_decoder->set_filter_callback (filter_callback);
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
@@ -195,7 +163,6 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (use_skip_source) // use original source (no skip)
         {
           chain_decoder.reset (new LiveDecoder (original_source));
-          chain_decoder->set_filter_callback (filter_callback);
           use_skip_source = false;
         }
       adsr_envelope.reset();
@@ -214,68 +181,14 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 
   chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
 
-  // filter
-  float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
-  float decay   = xparam_percent (cfg->filter_decay, 2, 5000, 3) / 1000;
-  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000; /* FIXME: FILTER: this may not be the best solution */
-  float sustain = cfg->filter_sustain;
-  if (0)
-    {
-      printf ("%.2f ms -  %.2f ms  -  %.2f ms\n",
-          attack * 1000,
-          decay * 1000,
-          release * 1000);
-    }
-
-  filter_cutoff_smooth.reset (mix_freq, 0.010);
-  filter_resonance_smooth.reset (mix_freq, 0.010);
-  filter_drive_smooth.reset (mix_freq, 0.010);
-
-  filter_envelope.set_shape (FilterEnvelope::Shape::LINEAR);
-  filter_envelope.set_delay (0);
-  filter_envelope.set_attack (attack);
-  filter_envelope.set_hold (0);
-  filter_envelope.set_decay (decay);
-  filter_envelope.set_sustain (sustain);
-  filter_envelope.set_release (release);
-  filter_depth_octaves =  cfg->filter_depth / 12;
-  filter_key_tracking = cfg->filter_key_tracking;
-  filter_type = cfg->filter_type;
-
-  switch (cfg->filter_ladder_mode)
-    {
-      case MorphOutput::FILTER_LADDER_LP1: ladder_filter.set_mode (LadderVCF::LP1); break;
-      case MorphOutput::FILTER_LADDER_LP2: ladder_filter.set_mode (LadderVCF::LP2); break;
-      case MorphOutput::FILTER_LADDER_LP3: ladder_filter.set_mode (LadderVCF::LP3); break;
-      case MorphOutput::FILTER_LADDER_LP4: ladder_filter.set_mode (LadderVCF::LP4); break;
-    }
-  switch (cfg->filter_sk_mode)
-    {
-      case MorphOutput::FILTER_SK_LP1: sk_filter.set_mode (SKFilter::LP1); break;
-      case MorphOutput::FILTER_SK_LP2: sk_filter.set_mode (SKFilter::LP2); break;
-      case MorphOutput::FILTER_SK_LP3: sk_filter.set_mode (SKFilter::LP3); break;
-      case MorphOutput::FILTER_SK_LP4: sk_filter.set_mode (SKFilter::LP4); break;
-      case MorphOutput::FILTER_SK_LP6: sk_filter.set_mode (SKFilter::LP6); break;
-      case MorphOutput::FILTER_SK_LP8: sk_filter.set_mode (SKFilter::LP8); break;
-      case MorphOutput::FILTER_SK_BP2: sk_filter.set_mode (SKFilter::BP2); break;
-      case MorphOutput::FILTER_SK_BP4: sk_filter.set_mode (SKFilter::BP4); break;
-      case MorphOutput::FILTER_SK_BP6: sk_filter.set_mode (SKFilter::BP6); break;
-      case MorphOutput::FILTER_SK_BP8: sk_filter.set_mode (SKFilter::BP8); break;
-      case MorphOutput::FILTER_SK_HP1: sk_filter.set_mode (SKFilter::HP1); break;
-      case MorphOutput::FILTER_SK_HP2: sk_filter.set_mode (SKFilter::HP2); break;
-      case MorphOutput::FILTER_SK_HP3: sk_filter.set_mode (SKFilter::HP3); break;
-      case MorphOutput::FILTER_SK_HP4: sk_filter.set_mode (SKFilter::HP4); break;
-      case MorphOutput::FILTER_SK_HP6: sk_filter.set_mode (SKFilter::HP6); break;
-      case MorphOutput::FILTER_SK_HP8: sk_filter.set_mode (SKFilter::HP8); break;
-    }
-
   filter_enabled = cfg->filter;
-}
-
-static float
-freq_to_note (float freq)
-{
-  return 69 + 12 * log (freq / 440) / log (2);
+  if (filter_enabled)
+    {
+      live_decoder_filter.set_config (output_module, cfg, mix_freq);
+      chain_decoder->set_filter (&live_decoder_filter);
+    }
+  else
+    chain_decoder->set_filter (nullptr);
 }
 
 void
@@ -289,65 +202,6 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
     simple_envelope->retrigger();
 
   chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
-
-  ladder_filter.reset();
-  sk_filter.reset();
-  filter_envelope.start (mix_freq);
-  filter_smooth_first = true;
-  filter_current_note = freq_to_note (freq);
-  filter_first = true;
-}
-
-void
-EffectDecoder::process_with_filter (size_t       n_values,
-                                    const float *freq_in,
-                                    float       *audio_out)
-{
-  chain_decoder->process (n_values, freq_in, audio_out);
-
-  if (filter_enabled)
-    {
-      auto filter_process_block = [&] (auto& filter)
-        {
-          auto gen_filter_input = [&] (float *freq_in, float *reso_in, float *drive_in, uint count)
-            {
-              for (uint i = 0; i < count; i++)
-                {
-                  freq_in[i] = filter_cutoff_smooth.get_next() * exp2f (filter_envelope.get_next() * filter_depth_octaves);
-                  reso_in[i] = filter_resonance_smooth.get_next();
-                  drive_in[i] = filter_drive_smooth.get_next();
-                }
-            };
-          const bool const_freq = filter_cutoff_smooth.is_constant() && filter_envelope.is_constant();
-          const bool const_reso = filter_resonance_smooth.is_constant();
-          const bool const_drive = filter_drive_smooth.is_constant();
-
-          if (const_freq && const_reso && const_drive)
-            {
-              /* use more efficient version of the filter computation if all parameters are constants */
-              float freq, reso, drive;
-              gen_filter_input (&freq, &reso, &drive, 1);
-
-              filter.set_freq (freq);
-              filter.set_reso (reso);
-              filter.set_drive (drive);
-              filter.process_block (n_values, audio_out);
-            }
-          else
-            {
-              /* generic version: pass per-sample values for freq, reso and drive */
-              float freq_in[n_values], reso_in[n_values], drive_in[n_values];
-              gen_filter_input (freq_in, reso_in, drive_in, n_values);
-
-              filter.process_block (n_values, audio_out, nullptr, freq_in, reso_in, drive_in);
-            }
-        };
-
-      if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
-        filter_process_block (ladder_filter);
-      else
-        filter_process_block (sk_filter);
-    }
 }
 
 void
@@ -356,38 +210,7 @@ EffectDecoder::process (size_t       n_values,
                         float       *audio_out)
 {
   g_assert (chain_decoder);
-
-  if (filter_enabled && filter_first && n_values)
-    {
-      // latency compensation for filter oversampling: throw away a few samples at the start
-      int idelay = 0;
-
-      if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
-        idelay = ladder_filter.delay();
-      else if (filter_type == MorphOutput::FILTER_TYPE_SALLEN_KEY)
-        idelay = sk_filter.delay();
-
-      assert (idelay > 0);
-
-      float junk_audio_out[idelay];
-      float junk_freq_in[idelay];
-
-      if (freq_in)
-        {
-          for (int i = 0; i < idelay; i++)
-            junk_freq_in[i] = freq_in[0];
-
-          process_with_filter (idelay, junk_freq_in, junk_audio_out);
-        }
-      else
-        {
-          process_with_filter (idelay, nullptr, junk_audio_out);
-        }
-
-      filter_first = false;
-    }
-
-  process_with_filter (n_values, freq_in, audio_out);
+  chain_decoder->process (n_values, freq_in, audio_out);
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);
@@ -403,8 +226,8 @@ EffectDecoder::release()
   else
     simple_envelope->release();
 
-  if (filter_enabled)
-    filter_envelope.stop();
+  /* FIXME: is it a good idea to do this here? */
+  live_decoder_filter.release();
 }
 
 bool
