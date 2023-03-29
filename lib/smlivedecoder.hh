@@ -40,6 +40,7 @@ class LiveDecoder
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
   LiveDecoderFilter  *filter = nullptr;
+  bool                filter_latency_compensation;
 
   bool                sines_enabled;
   bool                noise_enabled;
@@ -113,6 +114,10 @@ class LiveDecoder
   void process_vibrato (size_t       n_values,
                         const float *freq_in,
                         float       *audio_out);
+  void process_with_filter (size_t n_values,
+                            const float *freq_in,
+                            float *audio_out);
+
   LiveDecoder();
 public:
   LiveDecoder (WavSet *smset);

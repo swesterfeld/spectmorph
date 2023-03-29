@@ -39,6 +39,8 @@ public:
   void process (size_t n_values, float *audio);
 
   void set_config (MorphOutputModule *output_module, const MorphOutput::Config *cfg, float mix_freq);
+
+  int idelay();
 };
 
 }

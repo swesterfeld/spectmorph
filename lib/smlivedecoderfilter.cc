@@ -159,3 +159,14 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
   else
     filter_process_block (sk_filter);
 }
+
+int
+LiveDecoderFilter::idelay()
+{
+  switch (filter_type)
+    {
+      case MorphOutput::FILTER_TYPE_LADDER:     return ladder_filter.delay();
+      case MorphOutput::FILTER_TYPE_SALLEN_KEY: return sk_filter.delay();
+    }
+  g_assert_not_reached();
+}

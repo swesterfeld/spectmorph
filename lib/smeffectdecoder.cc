@@ -212,40 +212,6 @@ EffectDecoder::process (size_t       n_values,
   g_assert (chain_decoder);
   chain_decoder->process (n_values, freq_in, audio_out);
 
-#if 0
-  if (filter_enabled && filter_first && n_values)
-    {
-      // latency compensation for filter oversampling: throw away a few samples at the start
-      int idelay = 0;
-
-      if (filter_type == MorphOutput::FILTER_TYPE_LADDER)
-        idelay = ladder_filter.delay();
-      else if (filter_type == MorphOutput::FILTER_TYPE_SALLEN_KEY)
-        idelay = sk_filter.delay();
-
-      assert (idelay > 0);
-
-      float junk_audio_out[idelay];
-      float junk_freq_in[idelay];
-
-      if (freq_in)
-        {
-          for (int i = 0; i < idelay; i++)
-            junk_freq_in[i] = freq_in[0];
-
-          process_with_filter (idelay, junk_freq_in, junk_audio_out);
-        }
-      else
-        {
-          process_with_filter (idelay, nullptr, junk_audio_out);
-        }
-
-      filter_first = false;
-    }
-
-  process_with_filter (n_values, freq_in, audio_out);
-#endif
-
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);
   else
