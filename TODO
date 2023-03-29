@@ -15,7 +15,6 @@ __ dsp __
 - smoothing should probably be log-scale based
 - support LinearSmooth<LinearSmooth::MUL>
 - tuning polynomials appear to be incorrect
-- move filter processing into live decoder processing (interface LiveDecoderFilter)
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
