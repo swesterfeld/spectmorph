@@ -7,8 +7,6 @@
 #include "smlivedecodersource.hh"
 #include "smmorphoutput.hh"
 #include "smadsrenvelope.hh"
-#include "smladdervcf.hh"
-#include "smskfilter.hh"
 #include "smlivedecoderfilter.hh"
 
 #include <memory>
