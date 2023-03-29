@@ -48,7 +48,7 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
   this->output_module = output_module;
   this->mix_freq = mix_freq;
 
-  cutoff_smooth.reset (mix_freq, 0.010);
+  log_cutoff_smooth.reset (mix_freq, 0.010);
   resonance_smooth.reset (mix_freq, 0.010);
   drive_smooth.reset (mix_freq, 0.010);
 
@@ -108,9 +108,9 @@ void
 LiveDecoderFilter::process (size_t n_values, float *audio)
 {
   float delta_cent = (current_note - 60) * key_tracking;
-  float filter_keytrack_factor = exp2f (delta_cent * (1 / 1200.f));
+  float filter_keytrack_octaves = delta_cent * (1 / 1200.f);
 
-  cutoff_smooth.set (output_module->filter_cutoff_mod() * filter_keytrack_factor, smooth_first);
+  log_cutoff_smooth.set (log2f (output_module->filter_cutoff_mod()) + filter_keytrack_octaves, smooth_first);
   resonance_smooth.set (output_module->filter_resonance_mod() * 0.01, smooth_first);
   drive_smooth.set (output_module->filter_drive_mod(), smooth_first);
 
@@ -122,12 +122,12 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
         {
           for (uint i = 0; i < count; i++)
             {
-              freq_in[i] = cutoff_smooth.get_next() * exp2f (envelope.get_next() * depth_octaves);
+              freq_in[i] = exp2f (log_cutoff_smooth.get_next() + envelope.get_next() * depth_octaves);
               reso_in[i] = resonance_smooth.get_next();
               drive_in[i] = drive_smooth.get_next();
             }
         };
-      const bool const_freq = cutoff_smooth.is_constant() && envelope.is_constant();
+      const bool const_freq = log_cutoff_smooth.is_constant() && envelope.is_constant();
       const bool const_reso = resonance_smooth.is_constant();
       const bool const_drive = drive_smooth.is_constant();
 

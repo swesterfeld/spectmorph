@@ -16,7 +16,7 @@ class MorphOutputModule;
 
 class LiveDecoderFilter
 {
-  LinearSmooth              cutoff_smooth;
+  LinearSmooth              log_cutoff_smooth;
   LinearSmooth              resonance_smooth;
   LinearSmooth              drive_smooth;
   bool                      smooth_first = false;
