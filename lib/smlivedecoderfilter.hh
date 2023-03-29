@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "smutils.hh"
 #include "smladdervcf.hh"
 #include "smskfilter.hh"
 #include "smmorphoutput.hh"
