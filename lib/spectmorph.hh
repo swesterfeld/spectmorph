@@ -26,6 +26,7 @@
 #include "smladdervcf.hh"
 #include "smleakdebugger.hh"
 #include "smlinearsmooth.hh"
+#include "smlivedecoderfilter.hh"
 #include "smlivedecoder.hh"
 #include "smlivedecodersource.hh"
 #include "smmain.hh"
