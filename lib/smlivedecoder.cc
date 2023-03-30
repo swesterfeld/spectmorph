@@ -717,10 +717,11 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
   in_process = true;
   start_env_pos = env_pos;
   /*
-   * split processing into small blocks, max 10 ms
+   * split processing into small blocks
    *  -> limit n_values to keep portamento stretch settings up-to-date
+   *  -> provide accurate modulation data to filter
    */
-  const size_t max_n_values = current_mix_freq * 0.010;
+  const size_t max_n_values = 64;
   const size_t orig_n_values = n_values;
   const float *orig_audio_out = audio_out;
 
