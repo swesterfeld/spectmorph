@@ -282,13 +282,16 @@ Player::compute_samples (vector<float>& samples)
 
       size_t todo = min (STEP, samples.size() - i);
 
-      TimeInfo time_info;
-      time_info.time_ms = audio_time_stamp * 1000.0 / voice->mix_freq();
+      double ppq_pos = 0; // FIXME
+      TimeInfoGenerator time_info_gen;
+
+      time_info_gen.start_block (audio_time_stamp * 1000.0 / voice->mix_freq(), ppq_pos);
+
+      synth.update_shared_state (time_info_gen.time_info (0));
 
       float *audio_out[1] = { &samples[i] };
-      voice->output()->process (time_info, todo, audio_out, 1);
+      voice->output()->process (time_info_gen, todo, audio_out, 1);
 
-      synth.update_shared_state (time_info);
       audio_time_stamp += todo;
     }
 }
