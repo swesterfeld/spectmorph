@@ -5,6 +5,9 @@
 
 using namespace SpectMorph;
 
+using std::max;
+using std::min;
+
 void
 LiveDecoderFilter::retrigger (float note)
 {
@@ -48,7 +51,6 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
   this->output_module = output_module;
   this->mix_freq = mix_freq;
 
-  log_cutoff_smooth.reset (mix_freq, 0.010);
   resonance_smooth.reset (mix_freq, 0.010);
   drive_smooth.reset (mix_freq, 0.010);
 
@@ -107,10 +109,31 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
 void
 LiveDecoderFilter::process (size_t n_values, float *audio)
 {
+  if (!n_values)
+    return;
+
   float delta_cent = (current_note - 60) * key_tracking;
   float filter_keytrack_octaves = delta_cent * (1 / 1200.f);
+  float new_log_cutoff = log2f (output_module->filter_cutoff_mod()) + filter_keytrack_octaves;
 
-  log_cutoff_smooth.set (log2f (output_module->filter_cutoff_mod()) + filter_keytrack_octaves, smooth_first);
+  float log_cutoff_delta = 0;
+  int   log_cutoff_steps = 0;
+
+  if (smooth_first || std::abs (log_cutoff - new_log_cutoff) < 1e-5)
+    log_cutoff = new_log_cutoff;
+  else
+    {
+      /* we want at least 0.5ms per octave */
+      float oct_delta = std::abs (log_cutoff - new_log_cutoff);
+      int min_steps_slope = oct_delta * (mix_freq * 0.001f * 0.5f);
+
+      /* typically we get modulation updates every 64 samples, so using this magic number provides optimal smoothing */
+      int min_steps_time = min<int> (n_values, 64);
+
+      log_cutoff_steps = max (min_steps_slope, min_steps_time);
+      log_cutoff_delta = (new_log_cutoff - log_cutoff) / log_cutoff_steps;
+    }
+
   resonance_smooth.set (output_module->filter_resonance_mod() * 0.01, smooth_first);
   drive_smooth.set (output_module->filter_drive_mod(), smooth_first);
 
@@ -122,12 +145,18 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
         {
           for (uint i = 0; i < count; i++)
             {
-              freq_in[i] = exp2f (log_cutoff_smooth.get_next() + envelope.get_next() * depth_octaves);
+              if (log_cutoff_steps)
+                {
+                  log_cutoff += log_cutoff_delta;
+                  log_cutoff_steps--;
+                }
+
+              freq_in[i] = exp2f (log_cutoff + envelope.get_next() * depth_octaves);
               reso_in[i] = resonance_smooth.get_next();
               drive_in[i] = drive_smooth.get_next();
             }
         };
-      const bool const_freq = log_cutoff_smooth.is_constant() && envelope.is_constant();
+      const bool const_freq = !log_cutoff_steps && envelope.is_constant();
       const bool const_reso = resonance_smooth.is_constant();
       const bool const_drive = drive_smooth.is_constant();
 
