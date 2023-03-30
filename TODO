@@ -14,6 +14,7 @@ __ dsp __
 - advanced smoothing (drive, subsampled polynomials)
 - support LinearSmooth<LinearSmooth::MUL>
 - tuning polynomials appear to be incorrect
+- increase time resolution for beat lfos
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
