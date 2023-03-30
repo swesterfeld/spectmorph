@@ -6,6 +6,7 @@
 #include "smmorphplan.hh"
 #include "smmorphoperator.hh"
 #include "smrandom.hh"
+#include "smtimeinfo.hh"
 #include <map>
 #include <memory>
 
@@ -13,7 +14,6 @@ namespace SpectMorph {
 
 class MorphPlanVoice;
 class MorphModuleSharedState;
-class TimeInfo;
 
 class MorphPlanSynth {
 protected:

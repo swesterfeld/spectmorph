@@ -140,6 +140,7 @@ private:
   double                m_gain = 1;
   double                m_tempo = 120;
   double                m_ppq_pos = 0;
+  TimeInfoGenerator     m_time_info_gen;
   bool                  pedal_down;
   uint64                audio_time_stamp;
   bool                  mono_enabled;
@@ -160,8 +161,8 @@ private:
   void    notify_active_voice_status();
 
   void set_mono_enabled (bool new_value);
-  void process_audio (const TimeInfo& block_time, float *output, size_t n_values);
-  void process_note_on (const TimeInfo& block_time, const NoteEvent& note);
+  void process_audio (float *output, size_t n_values);
+  void process_note_on (const NoteEvent& note);
   void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
   void process_pitch_bend (int channel, double semi_tones);
