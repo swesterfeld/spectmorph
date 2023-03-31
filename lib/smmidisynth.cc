@@ -555,6 +555,7 @@ MidiSynth::process_audio (float *output, size_t n_values)
     free_unused_voices();
 
   audio_time_stamp += n_values;
+  m_time_info_gen.update_time_stamp (audio_time_stamp);
 }
 
 void
@@ -603,8 +604,6 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
     {
       // ensure that new offset from midi event is not larger than n_values
       uint32_t new_offset = min <uint32_t> (event.offset, n_values);
-
-      m_time_info_gen.update_time_stamp (audio_time_stamp);
 
       // process any audio that is before the event
       process_audio (output + offset, new_offset - offset);
@@ -675,7 +674,6 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
             break;
         }
     }
-  m_time_info_gen.update_time_stamp (audio_time_stamp);
 
   // process frames after last event
   process_audio (output + offset, n_values - offset);
