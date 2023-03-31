@@ -14,14 +14,14 @@ class MorphOutputModule : public MorphOperatorModule
   const MorphOutput::Config         *cfg;
   std::vector<MorphOperatorModule *> out_ops;
   std::vector<EffectDecoder *>       out_decoders;
-  TimeInfo                           block_time;
+  const TimeInfoGenerator           *time_info_gen;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
   ~MorphOutputModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
-  void process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
+  void process (const TimeInfoGenerator& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
   void retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity);
   void release();
   bool done();

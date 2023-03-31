@@ -243,11 +243,11 @@ Project::on_plan_changed()
   MorphOutputModule *om = mp_synth.voice(0)->output();
   if (om)
     {
-      TimeInfo ti; // not relevant
-      om->retrigger (ti, 0, 440, 1);
+      TimeInfoGenerator time_info_gen (m_mix_freq); // not relevant
+      om->retrigger (time_info_gen.time_info (0), 0, 440, 1);
       float s;
       float *values[1] = { &s };
-      om->process (ti, 1, values, 1);
+      om->process (time_info_gen, 1, values, 1);
     }
 
   MorphPlanSynth::UpdateP update = m_midi_synth->prepare_update (m_morph_plan);

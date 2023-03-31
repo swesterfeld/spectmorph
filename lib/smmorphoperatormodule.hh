@@ -6,18 +6,12 @@
 #include "smmorphoperator.hh"
 #include "smlivedecodersource.hh"
 #include "smrandom.hh"
+#include "smtimeinfo.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
-
-class TimeInfo
-{
-public:
-  double time_ms = 0;
-  double ppq_pos = 0;
-};
 
 class MorphPlanVoice;
 

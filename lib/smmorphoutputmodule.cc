@@ -116,13 +116,13 @@ MorphOutputModule::filter_drive_mod() const
 }
 
 void
-MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
+MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
   const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
 
-  block_time = time_info;
+  this->time_info_gen = &time_info_gen;
 
   for (size_t port = 0; port < n_ports; port++)
     {
@@ -138,6 +138,8 @@ MorphOutputModule::process (const TimeInfo& time_info, size_t n_samples, float *
             }
         }
     }
+
+  this->time_info_gen = nullptr;
 }
 
 TimeInfo
@@ -146,16 +148,10 @@ MorphOutputModule::compute_time_info() const
   /* this is not really correct, but as long as we only have one decoder, it should work */
   for (auto dec : out_decoders)
     {
-      TimeInfo time_info = block_time;
-
-      time_info.time_ms += dec->time_offset_ms();
-      /* we don't even try to correct time_info.ppq_pos here, because doing so might
-       * introduce backwards-jumps triggered by tempo changes; the resolution of
-       * ppq_pos (once per block) should be sufficient in practice
-       */
-      return time_info;
+      assert (time_info_gen);
+      return time_info_gen->time_info (dec->time_offset_ms());
     }
-  return block_time;
+  return time_info_gen->time_info (0);
 }
 
 void
