@@ -18,7 +18,6 @@ class TimeInfoGenerator
 {
   double   m_tempo = 120;
   double   m_ppq_pos = 0;
-  double   m_last_block_ppq_pos = 0;
   double   m_mix_freq = 0;
   double   m_max_ppq_pos = 0;
   double   m_min_ppq_pos = 0;
@@ -26,7 +25,11 @@ class TimeInfoGenerator
   double   m_max_time_ms = 0;
 
   uint64   m_audio_time_stamp = 0;
-  uint     m_n_samples = 0;
+  uint     m_position = 0;
+
+  double samples_to_beats (double samples) const;
+  double samples_to_ms (double samples) const;
+
 public:
   TimeInfoGenerator (double mix_freq);
 
