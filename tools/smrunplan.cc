@@ -244,6 +244,9 @@ Player::retrigger()
 void
 Player::compute_samples (vector<float>& samples)
 {
+  double ppq_pos = 0;
+  TimeInfoGenerator time_info_gen (voice->mix_freq());
+
   uint64 audio_time_stamp = 0;
   const size_t STEP = 100;
   for (size_t i = 0; i < samples.size(); i += STEP)
@@ -282,10 +285,7 @@ Player::compute_samples (vector<float>& samples)
 
       size_t todo = min (STEP, samples.size() - i);
 
-      double ppq_pos = 0; // FIXME
-      double tempo = 120; // FIXME
-      TimeInfoGenerator time_info_gen (voice->mix_freq());
-
+      double tempo = 120;
       time_info_gen.start_block (audio_time_stamp, todo, ppq_pos, tempo);
 
       synth.update_shared_state (time_info_gen.time_info (0));
@@ -294,6 +294,7 @@ Player::compute_samples (vector<float>& samples)
       voice->output()->process (time_info_gen, todo, audio_out, 1);
 
       audio_time_stamp += todo;
+      ppq_pos += todo / voice->mix_freq() * (tempo / 60);
     }
 }
 
