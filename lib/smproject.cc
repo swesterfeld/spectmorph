@@ -243,7 +243,7 @@ Project::on_plan_changed()
   MorphOutputModule *om = mp_synth.voice(0)->output();
   if (om)
     {
-      TimeInfoGenerator time_info_gen; // not relevant
+      TimeInfoGenerator time_info_gen (m_mix_freq); // not relevant
       om->retrigger (time_info_gen.time_info (0), 0, 440, 1);
       float s;
       float *values[1] = { &s };

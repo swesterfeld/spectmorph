@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "smutils.hh"
+
 namespace SpectMorph
 {
 
@@ -14,12 +16,20 @@ public:
 
 class TimeInfoGenerator
 {
-  TimeInfo m_time_info;
   double   m_tempo = 120;
+  double   m_ppq_pos = 0;
+  double   m_last_block_ppq_pos = 0;
+  double   m_mix_freq = 0;
+  double   m_max_ppq_pos = 0;
+  double   m_max_time_ms = 0;
+
+  uint64   m_audio_time_stamp = 0;
+  uint     m_n_samples = 0;
 public:
-  void start_block (double time_ms, double ppq_pos);
-  void set_time_ms (double time_ms);
-  void set_tempo (double tempo);
+  TimeInfoGenerator (double mix_freq);
+
+  void start_block (uint64 audio_time_stamp, uint n_samples, double ppq_pos, double tempo);
+  void update_time_stamp (uint64 audio_time_stamp);
 
   TimeInfo time_info (double offset_ms) const;
 };

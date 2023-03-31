@@ -31,6 +31,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   morph_plan_synth (mix_freq, n_voices),
   m_inst_edit_synth (mix_freq),
   m_mix_freq (mix_freq),
+  m_time_info_gen (mix_freq),
   pedal_down (false),
   audio_time_stamp (0),
   mono_enabled (false),
@@ -583,8 +584,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
 
   uint32_t offset = 0;
 
-  m_time_info_gen.start_block (audio_time_stamp / m_mix_freq * 1000, m_ppq_pos);
-  m_time_info_gen.set_tempo (m_tempo);
+  m_time_info_gen.start_block (audio_time_stamp, n_values, m_ppq_pos, m_tempo);
 
   morph_plan_synth.update_shared_state (m_time_info_gen.time_info (0));
 
@@ -604,7 +604,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
       // ensure that new offset from midi event is not larger than n_values
       uint32_t new_offset = min <uint32_t> (event.offset, n_values);
 
-      m_time_info_gen.set_time_ms (audio_time_stamp / m_mix_freq * 1000);
+      m_time_info_gen.update_time_stamp (audio_time_stamp);
 
       // process any audio that is before the event
       process_audio (output + offset, new_offset - offset);
@@ -675,7 +675,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
             break;
         }
     }
-  m_time_info_gen.set_time_ms (audio_time_stamp / m_mix_freq * 1000);
+  m_time_info_gen.update_time_stamp (audio_time_stamp);
 
   // process frames after last event
   process_audio (output + offset, n_values - offset);
