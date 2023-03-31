@@ -21,6 +21,8 @@ class TimeInfoGenerator
   double   m_last_block_ppq_pos = 0;
   double   m_mix_freq = 0;
   double   m_max_ppq_pos = 0;
+  double   m_min_ppq_pos = 0;
+  double   m_next_min_ppq_pos = 0;
   double   m_max_time_ms = 0;
 
   uint64   m_audio_time_stamp = 0;

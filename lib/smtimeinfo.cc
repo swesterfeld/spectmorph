@@ -26,7 +26,11 @@ TimeInfoGenerator::start_block (uint64 audio_time_stamp, uint n_samples, double 
 {
   /* detect backwards jumps; in this case our ppq pos should also not be monotonic */
   if (ppq_pos < m_last_block_ppq_pos)
-    m_max_ppq_pos = ppq_pos;
+    {
+      m_max_ppq_pos = ppq_pos;
+      m_min_ppq_pos = ppq_pos;
+      m_next_min_ppq_pos = ppq_pos;
+    }
   m_last_block_ppq_pos = ppq_pos;
 
   m_audio_time_stamp = audio_time_stamp;
@@ -40,6 +44,9 @@ TimeInfoGenerator::start_block (uint64 audio_time_stamp, uint n_samples, double 
 
   m_max_ppq_pos = std::max (m_ppq_pos + (block_size_ms / 1000) * (m_tempo / 60), m_max_ppq_pos);
   m_max_time_ms = m_audio_time_stamp / m_mix_freq * 1000 + block_size_ms;
+
+  m_min_ppq_pos = std::max (m_next_min_ppq_pos, m_min_ppq_pos);
+  m_next_min_ppq_pos = std::max (m_min_ppq_pos, m_ppq_pos + m_n_samples / m_mix_freq * (m_tempo / 60));
 }
 
 void
@@ -54,7 +61,6 @@ TimeInfoGenerator::update_time_stamp (uint64 audio_time_stamp)
   m_ppq_pos += (delta_ms / 1000) * (m_tempo / 60);
 }
 
-/* read only accessor */
 TimeInfo
 TimeInfoGenerator::time_info (double offset_ms) const
 {
@@ -67,6 +73,7 @@ TimeInfoGenerator::time_info (double offset_ms) const
   ti.ppq_pos = m_ppq_pos;
   ti.ppq_pos += (offset_ms / 1000) * (m_tempo / 60);
   ti.ppq_pos = std::min (ti.ppq_pos, m_max_ppq_pos);
+  ti.ppq_pos = std::max (ti.ppq_pos, m_min_ppq_pos);
 
   return ti;
 }
