@@ -16,9 +16,14 @@ class MorphOutputModule;
 
 class LiveDecoderFilter
 {
-  float                     log_cutoff;
-  LinearSmooth              resonance_smooth;
-  LinearSmooth              drive_smooth;
+  struct SmoothValue {
+    float value;
+    float delta;
+    bool  constant;
+  };
+  SmoothValue               log_cutoff_smooth;
+  SmoothValue               resonance_smooth;
+  SmoothValue               drive_smooth;
   bool                      smooth_first = false;
   float                     current_note = 60;
   float                     key_tracking = 0;

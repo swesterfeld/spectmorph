@@ -51,9 +51,6 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
   this->output_module = output_module;
   this->mix_freq = mix_freq;
 
-  resonance_smooth.reset (mix_freq, 0.010);
-  drive_smooth.reset (mix_freq, 0.010);
-
   filter_type = cfg->filter_type;
   key_tracking = cfg->filter_key_tracking;
 
@@ -112,30 +109,38 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
   if (!n_values)
     return;
 
+  auto start_smoothing = [&] (SmoothValue& smooth_value, float new_value, float speed_ms) {
+    float abs_diff = std::abs (smooth_value.value - new_value);
+
+    if (smooth_first || abs_diff < 1e-5)
+      {
+        smooth_value.value = new_value;
+        smooth_value.delta = 0;
+        smooth_value.constant = true;
+      }
+    else
+      {
+        int min_steps = abs_diff * mix_freq * 0.001f * speed_ms;
+        int steps = max<int> (min_steps, n_values);
+        smooth_value.delta = (new_value - smooth_value.value) / steps;
+        smooth_value.constant = false;
+      }
+  };
+
   float delta_cent = (current_note - 60) * key_tracking;
   float filter_keytrack_octaves = delta_cent * (1 / 1200.f);
+
+  /* setup cutoff smoothing: at least 0.5ms per octave */
   float new_log_cutoff = log2f (output_module->filter_cutoff_mod()) + filter_keytrack_octaves;
+  start_smoothing (log_cutoff_smooth, new_log_cutoff, 0.5f);
 
-  float log_cutoff_delta = 0;
-  int   log_cutoff_steps = 0;
+  /* setup reso smoothing: we want at least 5ms for the whole resonance range */
+  float new_resonance = output_module->filter_resonance_mod() * 0.01f;
+  start_smoothing (resonance_smooth, new_resonance, 5.0f);
 
-  if (smooth_first || std::abs (log_cutoff - new_log_cutoff) < 1e-5)
-    log_cutoff = new_log_cutoff;
-  else
-    {
-      /* we want at least 0.5ms per octave */
-      float oct_delta = std::abs (log_cutoff - new_log_cutoff);
-      int min_steps_slope = oct_delta * (mix_freq * 0.001f * 0.5f);
-
-      /* typically we get modulation updates every 64 samples, so using this magic number provides optimal smoothing */
-      int min_steps_time = min<int> (n_values, 64);
-
-      log_cutoff_steps = max (min_steps_slope, min_steps_time);
-      log_cutoff_delta = (new_log_cutoff - log_cutoff) / log_cutoff_steps;
-    }
-
-  resonance_smooth.set (output_module->filter_resonance_mod() * 0.01, smooth_first);
-  drive_smooth.set (output_module->filter_drive_mod(), smooth_first);
+  /* setup drive smoothing: we want 10ms for 36 dB */
+  float new_drive = output_module->filter_drive_mod();
+  start_smoothing (drive_smooth, new_drive, 10.f / 36);
 
   smooth_first = false;
 
@@ -145,20 +150,18 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
         {
           for (uint i = 0; i < count; i++)
             {
-              if (log_cutoff_steps)
-                {
-                  log_cutoff += log_cutoff_delta;
-                  log_cutoff_steps--;
-                }
+              log_cutoff_smooth.value += log_cutoff_smooth.delta;
+              resonance_smooth.value += resonance_smooth.delta;
+              drive_smooth.value += drive_smooth.delta;
 
-              freq_in[i] = exp2f (log_cutoff + envelope.get_next() * depth_octaves);
-              reso_in[i] = resonance_smooth.get_next();
-              drive_in[i] = drive_smooth.get_next();
+              freq_in[i] = exp2f (log_cutoff_smooth.value + envelope.get_next() * depth_octaves);
+              reso_in[i] = resonance_smooth.value;
+              drive_in[i] = drive_smooth.value;
             }
         };
-      const bool const_freq = !log_cutoff_steps && envelope.is_constant();
-      const bool const_reso = resonance_smooth.is_constant();
-      const bool const_drive = drive_smooth.is_constant();
+      const bool const_freq = log_cutoff_smooth.constant && envelope.is_constant();
+      const bool const_reso = resonance_smooth.constant;
+      const bool const_drive = drive_smooth.constant;
 
       if (const_freq && const_reso && const_drive)
         {
