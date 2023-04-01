@@ -14,7 +14,8 @@ LiveDecoderFilter::retrigger (float note)
   ladder_filter.reset();
   sk_filter.reset();
 
-  envelope.start (mix_freq);
+  envelope.set_rate (mix_freq);
+  envelope.start();
 
   smooth_first = true;
   current_note = note;
@@ -66,10 +67,8 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
           release * 1000);
     }
 
-  envelope.set_shape (FilterEnvelope::Shape::LINEAR);
-  envelope.set_delay (0);
+  envelope.set_shape (FlexADSR::Shape::EXPONENTIAL);
   envelope.set_attack (attack);
-  envelope.set_hold (0);
   envelope.set_decay (decay);
   envelope.set_sustain (sustain);
   envelope.set_release (release);
@@ -148,18 +147,19 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
     {
       auto gen_filter_input = [&] (float *freq_in, float *reso_in, float *drive_in, uint count)
         {
+          envelope.process (freq_in, count);
           for (uint i = 0; i < count; i++)
             {
               log_cutoff_smooth.value += log_cutoff_smooth.delta;
               resonance_smooth.value += resonance_smooth.delta;
               drive_smooth.value += drive_smooth.delta;
 
-              freq_in[i] = exp2f (log_cutoff_smooth.value + envelope.get_next() * depth_octaves);
+              freq_in[i] = exp2f (log_cutoff_smooth.value + freq_in[i] * depth_octaves);
               reso_in[i] = resonance_smooth.value;
               drive_in[i] = drive_smooth.value;
             }
         };
-      const bool const_freq = log_cutoff_smooth.constant && envelope.is_constant();
+      const bool const_freq = log_cutoff_smooth.constant && false; //envelope.is_constant();
       const bool const_reso = resonance_smooth.constant;
       const bool const_drive = drive_smooth.constant;
 

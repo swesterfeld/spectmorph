@@ -7,7 +7,7 @@
 #include "smskfilter.hh"
 #include "smmorphoutput.hh"
 #include "smlinearsmooth.hh"
-#include "smfilterenvelope.hh"
+#include "smflexadsr.hh"
 
 namespace SpectMorph
 {
@@ -27,7 +27,7 @@ class LiveDecoderFilter
   bool                      smooth_first = false;
   float                     current_note = 60;
   float                     key_tracking = 0;
-  FilterEnvelope            envelope;
+  FlexADSR                  envelope;
   float                     depth_octaves = 0;
   float                     mix_freq = 0;
 
