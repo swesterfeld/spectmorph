@@ -148,7 +148,7 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
               drive_in[i] = drive_smooth.value;
             }
         };
-      const bool const_freq = log_cutoff_smooth.constant && false; //envelope.is_constant();
+      const bool const_freq = log_cutoff_smooth.constant && envelope.is_constant();
       const bool const_reso = resonance_smooth.constant;
       const bool const_drive = drive_smooth.constant;
 

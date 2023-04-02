@@ -213,7 +213,7 @@ private:
             params_changed_ = true;
             break;
           }
-        if (STATE == State::RELEASE && level_ < 0)
+        if (STATE == State::RELEASE && level_ < 1e-5)
           {
             state_ = State::DONE;
             level_ = 0;
@@ -287,6 +287,15 @@ public:
         while (i < n_samples)
           samples[i++] = 0;
       }
+  }
+  bool
+  is_constant() const
+  {
+    if (state_ == State::SUSTAIN)
+      {
+        return !params_changed_ && sustain_steps_ == 0;
+      }
+    return state_ == State::DONE;
   }
   bool
   done() const
