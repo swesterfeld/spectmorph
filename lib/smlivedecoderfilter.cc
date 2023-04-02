@@ -13,8 +13,6 @@ LiveDecoderFilter::retrigger (float note)
 {
   ladder_filter.reset();
   sk_filter.reset();
-
-  envelope.set_rate (mix_freq);
   envelope.start();
 
   smooth_first = true;
@@ -27,12 +25,11 @@ LiveDecoderFilter::release()
   envelope.stop();
 }
 
-/* FIXME: FILTER: dedup */
 static float
-xparam_percent (float p, float min_out, float max_out, float slope)
+env_time_ms (float p, float min_ms, float max_ms)
 {
-  /* rescale xparam function to interval [min_out, max_out] */
-  return sm_xparam (p / 100.0, slope) * (max_out - min_out) + min_out;
+  p *= 0.01f; // percent -> factor
+  return p * p * p * (max_ms - min_ms) + min_ms;
 }
 
 void
@@ -44,9 +41,9 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
   filter_type = cfg->filter_type;
   key_tracking = cfg->filter_key_tracking;
 
-  float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
-  float decay   = xparam_percent (cfg->filter_decay, 20, 20000, 3) / 1000;
-  float release = xparam_percent (cfg->filter_release, 20, 8000, 3) / 1000;
+  float attack  = env_time_ms (cfg->filter_attack, 2, 5000) / 1000;
+  float decay   = env_time_ms (cfg->filter_decay, 20, 20000) / 1000;
+  float release = env_time_ms (cfg->filter_release, 20, 8000) / 1000;
   float sustain = cfg->filter_sustain;
   if (0)
     {
@@ -57,6 +54,7 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
     }
 
   envelope.set_shape (FlexADSR::Shape::EXPONENTIAL);
+  envelope.set_rate (mix_freq);
   envelope.set_attack (attack);
   envelope.set_decay (decay);
   envelope.set_sustain (sustain);
