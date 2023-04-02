@@ -23,7 +23,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
 	 smwavsetbuilder.hh sminstrument.hh sminsteditsynth.hh \
 	 sminstencoder.hh smbinbuffer.hh sminstenccache.hh smaudiotool.hh \
 	 smzip.hh smproject.hh smsynthinterface.hh smbuilderthread.hh \
-	 smuserinstrumentindex.hh smladdervcf.hh smfilterenvelope.hh \
+	 smuserinstrumentindex.hh smladdervcf.hh smflexadsr.hh \
 	 smmodulationlist.hh smlinearsmooth.hh smpandaresampler.hh \
 	 smmatharm.hh smskfilter.hh smnotifybuffer.hh smlivedecoderfilter.hh \
 	 smtimeinfo.hh

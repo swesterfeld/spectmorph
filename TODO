@@ -7,7 +7,6 @@ __ notify __
 
 __ dsp __
 - should we warm up the filter to avoid initial clickiness?
-- should filter envelope be exponential?
 - fix filter ranges
 - possibly fix filter pre-amplification
 - is reso/drive mapping good enough?
