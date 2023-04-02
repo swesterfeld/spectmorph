@@ -29,17 +29,6 @@ LiveDecoderFilter::release()
 
 /* FIXME: FILTER: dedup */
 static float
-exp_percent (float p, float min_out, float max_out, float slope)
-{
-  /* exponential curve from 0 to 1 with configurable slope */
-  const double x = (pow (2, (p / 100.) * slope) - 1) / (pow (2, slope) - 1);
-
-  /* rescale to interval [min_out, max_out] */
-  return x * (max_out - min_out) + min_out;
-}
-
-/* FIXME: FILTER: dedup */
-static float
 xparam_percent (float p, float min_out, float max_out, float slope)
 {
   /* rescale xparam function to interval [min_out, max_out] */
@@ -56,8 +45,8 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
   key_tracking = cfg->filter_key_tracking;
 
   float attack  = xparam_percent (cfg->filter_attack, 2, 5000, 3) / 1000;
-  float decay   = xparam_percent (cfg->filter_decay, 2, 5000, 3) / 1000;
-  float release = exp_percent (cfg->filter_release, 2, 200, 3) / 1000; /* FIXME: FILTER: this may not be the best solution */
+  float decay   = xparam_percent (cfg->filter_decay, 20, 20000, 3) / 1000;
+  float release = xparam_percent (cfg->filter_release, 20, 8000, 3) / 1000;
   float sustain = cfg->filter_sustain;
   if (0)
     {
