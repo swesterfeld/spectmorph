@@ -54,6 +54,16 @@ private:
     a_ *= time_factor;
     b_ *= time_factor;
     c_ *= time_factor;
+
+    /* abc so far is for:
+     *
+     *   y += a * y * y + b * y + c
+     *
+     * now to save one addition later on, we add one to b, and update y using
+     *
+     *   y = a * y * y + b * y + c
+     */
+    b_ += 1;
   }
 
   void
@@ -68,7 +78,7 @@ private:
       {
         // linear
         a_ = 0;
-        b_ = 0;
+        b_ = 1;
         c_ = (end_x - start_x) / steps;
       }
     else if (shape_ == Shape::EXPONENTIAL)
@@ -81,7 +91,7 @@ private:
         const double f = -log ((RATIO + 1) / RATIO) / steps;
         double factor = exp (f);
         c_ = (end_x - RATIO * (start_x - end_x)) * (1 - factor);
-        b_ = factor - 1;
+        b_ = factor;
         a_ = 0;
       }
     else if (shape_ == Shape::FLEXIBLE)
@@ -186,40 +196,48 @@ private:
   {
     uint i = *iptr;
 
+    const float a = a_;
+    const float b = b_;
+    const float c = c_;
+    const float sustain_level = sustain_level_;
+
+    float level = level_;
+
     while (i < n_samples)
       {
-        samples[i++] = level_;
+        samples[i++] = level;
 
         if (SHAPE == Shape::FLEXIBLE)
-          level_ += (a_ * level_ + b_) * level_ + c_;
+          level = (a * level + b) * level + c;
 
         if (SHAPE == Shape::EXPONENTIAL)
-          level_ += b_ * level_ + c_;
+          level = b * level + c;
 
         if (SHAPE == Shape::LINEAR)
-          level_ += c_;
+          level += c;
 
-        if (STATE == State::ATTACK && level_ > 1)
+        if (STATE == State::ATTACK && level > 1)
           {
-            level_          = 1;
+            level           = 1;
             state_          = State::DECAY;
             params_changed_ = true;
             break;
           }
-        if (STATE == State::DECAY && level_ < sustain_level_)
+        if (STATE == State::DECAY && level < sustain_level)
           {
             state_          = State::SUSTAIN;
-            level_          = sustain_level_;
+            level           = sustain_level;
             params_changed_ = true;
             break;
           }
-        if (STATE == State::RELEASE && level_ < 1e-5)
+        if (STATE == State::RELEASE && level < 1e-5f)
           {
             state_ = State::DONE;
-            level_ = 0;
+            level = 0;
             break;
           }
       }
+    level_ = level;
 
     *iptr = i;
   }
