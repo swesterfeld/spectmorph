@@ -15,10 +15,6 @@ __ clap __
 - test: is modulation applied before values are used for the first time?
 - serialization
 
-__ ui __
-
-- semitones flag for filter cutoff
-
 __ generic modulation __
 
 - handle XPARAM scaled parameters
