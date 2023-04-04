@@ -7,11 +7,6 @@ __ notify __
 
 __ dsp __
 - should we warm up the filter to avoid initial clickiness?
-- fix filter ranges
-- possibly fix filter pre-amplification
-- is reso/drive mapping good enough?
-- advanced smoothing (drive, subsampled polynomials)
-- support LinearSmooth<LinearSmooth::MUL>
 - tuning polynomials appear to be incorrect
 
 __ clap __
