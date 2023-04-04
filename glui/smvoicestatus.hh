@@ -15,6 +15,7 @@ class VoiceStatus
   std::map<uintptr_t, std::vector<VoiceOpValuesEvent::Voice>> control_value_map;
   bool                   control_value_map_clear = false;
   std::vector<uintptr_t> voices;
+  std::vector<float>     velocities;
   std::vector<float>     controls[MorphPlan::N_CONTROL_INPUTS];
   const OperatorRoleMap *op_role_map;
 
@@ -40,6 +41,10 @@ class VoiceStatus
     if (control_type == MorphOperator::CONTROL_SIGNAL_4)
       {
         return controls[3][i];
+      }
+    if (control_type == MorphOperator::CONTROL_VELOCITY)
+      {
+        return velocities[i] * 2 - 1; // for modulation, this is considered signed
       }
     if (control_type == MorphOperator::CONTROL_OP)
       {
@@ -75,6 +80,7 @@ public:
     if (av_status)
       {
         voices = av_status->voice;
+        velocities = av_status->velocity;
         for (size_t i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
           controls[i] = av_status->control[i];
         control_value_map_clear = true;
