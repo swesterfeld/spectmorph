@@ -8,8 +8,8 @@ __ notify __
 __ dsp __
 - should we warm up the filter to avoid initial clickiness?
 - tuning polynomials appear to be incorrect
-- support velocity as modulation source
 - maybe use different defaults for filter
+- fix mono voice status
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
