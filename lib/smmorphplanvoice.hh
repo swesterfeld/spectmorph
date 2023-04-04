@@ -25,6 +25,7 @@ protected:
   std::vector<double>           m_control_input;
   MorphOutputModule            *m_output;
   float                         m_mix_freq;
+  float                         m_velocity;
   MorphPlanSynth               *m_morph_plan_synth;
 
   void clear_modules();
@@ -42,7 +43,9 @@ public:
 
   double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);
+  void   set_velocity (float velocity);
 
+  float velocity() const;
   float mix_freq() const;
 
   MorphOutputModule *output();

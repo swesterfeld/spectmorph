@@ -91,7 +91,9 @@ public:
 
     /* note: don't reorder items here, as we need to be compatible with old files */
     CONTROL_SIGNAL_3 = 5,
-    CONTROL_SIGNAL_4 = 6
+    CONTROL_SIGNAL_4 = 6,
+
+    CONTROL_VELOCITY = 7
   };
   typedef uintptr_t PtrID;
 

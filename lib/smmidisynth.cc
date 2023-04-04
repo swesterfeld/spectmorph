@@ -141,6 +141,7 @@ MidiSynth::process_note_on (const NoteEvent& note)
         {
           MorphOutputModule *output = voice->mp_voice->output();
 
+          voice->mp_voice->set_velocity (note.velocity);
           voice->mono_type = Voice::MonoType::POLY;
 
           output->retrigger (time_info, 0 /* channel */, voice->freq, midi_velocity);
@@ -800,6 +801,12 @@ MidiSynth::notify_active_voice_status()
         voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
 
       m_notify_buffer.write_seq (voice_seq, active_voices.size());
+
+      float velocity_seq[active_voices.size()];
+      for (size_t v = 0; v < active_voices.size(); v++)
+        velocity_seq[v] = active_voices[v]->mp_voice->velocity();
+
+      m_notify_buffer.write_seq (velocity_seq, active_voices.size());
 
       for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
         {

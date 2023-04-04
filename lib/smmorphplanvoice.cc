@@ -137,6 +137,7 @@ MorphPlanVoice::control_input (double value, MorphOperator::ControlType ctype, M
       case MorphOperator::CONTROL_SIGNAL_2: return m_control_input[1];
       case MorphOperator::CONTROL_SIGNAL_3: return m_control_input[2];
       case MorphOperator::CONTROL_SIGNAL_4: return m_control_input[3];
+      case MorphOperator::CONTROL_VELOCITY: return m_velocity * 2 - 1; // for modulation, this has to be signed
       case MorphOperator::CONTROL_OP:       return module->value();
       default:                              g_assert_not_reached();
     }
@@ -148,6 +149,18 @@ MorphPlanVoice::set_control_input (int i, double value)
   assert (i >= 0 && i < MorphPlan::N_CONTROL_INPUTS);
 
   m_control_input[i] = value;
+}
+
+void
+MorphPlanVoice::set_velocity (float velocity)
+{
+  m_velocity = velocity;
+}
+
+float
+MorphPlanVoice::velocity() const
+{
+  return m_velocity;
 }
 
 float

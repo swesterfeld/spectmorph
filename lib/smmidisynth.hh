@@ -251,12 +251,14 @@ struct VoiceOpValuesEvent : public SynthNotifyEvent
 struct ActiveVoiceStatusEvent : public SynthNotifyEvent
 {
   ActiveVoiceStatusEvent (NotifyBuffer& buffer) :
-    voice (buffer.read_seq<uintptr_t>())
+    voice (buffer.read_seq<uintptr_t>()),
+    velocity (buffer.read_seq<float>())
   {
     for (auto& ctrl : control)
       ctrl = buffer.read_seq<float>();
   }
   std::vector<uintptr_t> voice;
+  std::vector<float>     velocity;
   std::vector<float>     control[MorphPlan::N_CONTROL_INPUTS];
 };
 
