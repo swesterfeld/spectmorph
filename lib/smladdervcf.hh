@@ -177,9 +177,8 @@ private:
       reso += drive * sqrt (reso) * reso * 0.03f;
 
     float vol = exp2f ((drive + -12 * sqrt (reso)) * db_x2_factor);
-    vol *= global_volume_;
-    fparams.pre_scale = negative_drive_vol * vol;
-    fparams.post_scale = std::max (1 / vol, 1.0f);
+    fparams.pre_scale = negative_drive_vol * vol * global_volume_;
+    fparams.post_scale = std::max (1 / vol, 1.0f) / global_volume_;
     fparams.reso = sqrt (reso) * 4;
   }
   static float

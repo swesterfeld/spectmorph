@@ -207,9 +207,8 @@ private:
         reso = 1 - (1-0.9f)*(1-0.9f)*(1-sqrt2/4) + (reso-0.9f)*0.1f;
       }
 
-    vol *= global_volume_;
-    fparams.pre_scale = negative_drive_vol * vol;
-    fparams.post_scale = std::max (1 / vol, 1.0f);
+    fparams.pre_scale = negative_drive_vol * vol * global_volume_;
+    fparams.post_scale = std::max (1 / vol, 1.0f) / global_volume_;
     setup_k (fparams, reso);
   }
   void
