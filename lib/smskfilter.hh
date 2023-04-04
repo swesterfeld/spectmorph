@@ -24,6 +24,7 @@ private:
   float freq_ = 440;
   float reso_ = 0;
   float drive_ = 0;
+  float global_volume_ = 1;
   bool test_linear_ = false;
   int over_ = 1;
   float freq_warp_factor_ = 0;
@@ -206,6 +207,7 @@ private:
         reso = 1 - (1-0.9f)*(1-0.9f)*(1-sqrt2/4) + (reso-0.9f)*0.1f;
       }
 
+    vol *= global_volume_;
     fparams.pre_scale = negative_drive_vol * vol;
     fparams.post_scale = std::max (1 / vol, 1.0f);
     setup_k (fparams, reso);
@@ -259,6 +261,17 @@ public:
   set_drive (float drive)
   {
     drive_ = drive;
+    fparams_valid_ = false;
+  }
+  void
+  set_global_volume (float global_volume)
+  {
+    /* every samples that is processed by the filter is
+     *  - multiplied with global_volume before processing
+     *  - divided by global_volume after processing
+     * which has an effect on the non-linear part of the filter (drive)
+     */
+    global_volume_ = global_volume;
     fparams_valid_ = false;
   }
   void

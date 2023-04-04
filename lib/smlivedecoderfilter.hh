@@ -40,6 +40,8 @@ class LiveDecoderFilter
   SKFilter                  sk_filter { FILTER_OVERSAMPLE };
 
 public:
+  LiveDecoderFilter();
+
   void retrigger (float note);
   void release();
   void process (size_t n_values, float *audio);

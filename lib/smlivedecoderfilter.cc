@@ -8,6 +8,15 @@ using namespace SpectMorph;
 using std::max;
 using std::min;
 
+LiveDecoderFilter::LiveDecoderFilter()
+{
+  /* The filters have been designed for input in range [-1:1], but SpectMorph
+   * is usually in a smaller range due to normalization.
+   */
+  ladder_filter.set_global_volume (1.5);
+  sk_filter.set_global_volume (1.5);
+}
+
 void
 LiveDecoderFilter::retrigger (float note)
 {
