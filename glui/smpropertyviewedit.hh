@@ -264,21 +264,22 @@ protected:
         grid.add_widget (slider, xoffset, yoffset, 28, 3);
         xoffset += 29;
 
-        auto mod_amount_model = new ParamLabelModelDouble (e.amount, -1, 1, "%.3f", "%.3f");
+        double mod_range_ui = property.modulation_range_ui();
+        auto mod_amount_model = new ParamLabelModelDouble (e.amount * mod_range_ui, -mod_range_ui, mod_range_ui, "%.3f", "%.3f");
         auto label = new ParamLabel (scroll_widget, mod_amount_model);
         grid.add_widget (label, xoffset, yoffset, 8, 3);
         xoffset += 9;
 
-        connect (slider->signal_value_changed, [mod_amount_model, mod_list, i](double new_value) {
+        connect (slider->signal_value_changed, [mod_amount_model, mod_list, mod_range_ui, i](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
           entry.amount = new_value * 2 - 1;
-          mod_amount_model->set_value (entry.amount);
+          mod_amount_model->set_value (entry.amount * mod_range_ui);
           mod_list->update_entry (i, entry);
         });
 
-        connect (mod_amount_model->signal_value_changed, [mod_list, i, slider](double new_value) {
+        connect (mod_amount_model->signal_value_changed, [mod_list, mod_range_ui, i, slider](double new_value) {
           ModulationData::Entry entry = (*mod_list)[i];
-          entry.amount = new_value;
+          entry.amount = std::clamp (new_value / mod_range_ui, -1.0, 1.0);
           slider->set_value ((entry.amount + 1) / 2);
           mod_list->update_entry (i, entry);
         });
