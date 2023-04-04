@@ -174,6 +174,7 @@ MorphOperator::add_property (ModulationData *mod_data, const string& identifier,
 {
   LinearProperty *property = add_property (&mod_data->value, identifier, label, value_label, def, mn, mx);
   property->set_modulation_data (mod_data);
+  property->set_modulation_range_ui (mx - mn);
   return property;
 }
 

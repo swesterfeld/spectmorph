@@ -27,6 +27,7 @@ protected:
   std::unique_ptr<ModulationList> m_modulation_list;
   MorphOperator                  *m_op;
   std::string                     m_identifier;
+  double                          m_modulation_range_ui = 1;
 public:
   Property (MorphOperator *op, const std::string& identifier);
   virtual ~Property();
@@ -68,6 +69,9 @@ public:
   ModulationList *modulation_list() { return m_modulation_list.get(); }
 
   void set_modulation_data (ModulationData *mod_data);
+
+  void set_modulation_range_ui (double range_ui) { m_modulation_range_ui = range_ui; }
+  double modulation_range_ui() const             { return m_modulation_range_ui; }
 
   struct Range
   {
