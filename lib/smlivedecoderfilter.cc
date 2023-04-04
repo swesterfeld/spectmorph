@@ -15,6 +15,9 @@ LiveDecoderFilter::LiveDecoderFilter()
    */
   ladder_filter.set_global_volume (1.5);
   sk_filter.set_global_volume (1.5);
+
+  ladder_filter.set_frequency_range (20, 30000);
+  sk_filter.set_frequency_range (20, 30000);
 }
 
 void

@@ -81,9 +81,9 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
   add_property (&m_config.filter_key_tracking, P_FILTER_KEY_TRACKING, "Key Tracking", "%.1f %%", 50, 0, 100);
 
-  add_property_log (&m_config.filter_cutoff_mod, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 20000);
+  add_property_log (&m_config.filter_cutoff_mod, P_FILTER_CUTOFF, "Cutoff", "%.1f Hz", 500, 20, 30000);
   add_property (&m_config.filter_resonance_mod, P_FILTER_RESONANCE, "Resonance", "%.1f %%", 30, 0, 100);
-  add_property (&m_config.filter_drive_mod, P_FILTER_DRIVE, "Drive", "%.1f dB", 0, -24, 60);
+  add_property (&m_config.filter_drive_mod, P_FILTER_DRIVE, "Drive", "%.1f dB", 0, -24, 36);
 
   add_property (&m_config.portamento, P_PORTAMENTO, "Enable Portamento (Mono)", false);
   add_property_xparam (&m_config.portamento_glide, P_PORTAMENTO_GLIDE, "Glide", "%.2f ms", 200, 0, 1000, 3);
