@@ -5,6 +5,8 @@
 #include <cmath>
 #include <cassert>
 
+namespace SpectMorph {
+
 /* 1st/2nd order IIR high pass filter to block DC offset; this is a biquad
  * filter, however, the b0, b1, b2 are omitted in the design and simplified
  * in the evaluation of the filter because they are close to integers
@@ -115,3 +117,5 @@ public:
       process_impl<1> (n_samples, left, nullptr);
   }
 };
+
+} // SpectMorph
