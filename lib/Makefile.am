@@ -26,7 +26,7 @@ SMHDRS = smaudio.hh smencoder.hh smnoisedecoder.hh smsinedecoder.hh \
 	 smuserinstrumentindex.hh smladdervcf.hh smflexadsr.hh \
 	 smmodulationlist.hh smlinearsmooth.hh smpandaresampler.hh \
 	 smmatharm.hh smskfilter.hh smnotifybuffer.hh smlivedecoderfilter.hh \
-	 smtimeinfo.hh
+	 smtimeinfo.hh smdcblocker.hh
 
 lib_LTLIBRARIES = libspectmorph.la
 libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecoder.cc \

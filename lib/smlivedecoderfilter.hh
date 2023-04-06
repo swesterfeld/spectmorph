@@ -8,6 +8,7 @@
 #include "smmorphoutput.hh"
 #include "smlinearsmooth.hh"
 #include "smflexadsr.hh"
+#include "smdcblocker.hh"
 
 namespace SpectMorph
 {
@@ -38,6 +39,7 @@ class LiveDecoderFilter
 
   LadderVCF                 ladder_filter { FILTER_OVERSAMPLE };
   SKFilter                  sk_filter { FILTER_OVERSAMPLE };
+  DCBlocker                 dc_blocker;
 
 public:
   LiveDecoderFilter();

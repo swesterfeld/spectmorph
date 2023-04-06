@@ -26,6 +26,7 @@ LiveDecoderFilter::retrigger (float note)
   ladder_filter.reset();
   sk_filter.reset();
   envelope.start();
+  dc_blocker.reset (20, mix_freq, 2);
 
   smooth_first = true;
   current_note = note;
@@ -187,6 +188,8 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
     filter_process_block (ladder_filter);
   else
     filter_process_block (sk_filter);
+
+  dc_blocker.process (n_values, audio);
 }
 
 int
