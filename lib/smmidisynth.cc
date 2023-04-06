@@ -166,7 +166,7 @@ MidiSynth::process_note_on (const NoteEvent& note)
                   mono_voice->midi_note         = voice->midi_note;
                   mono_voice->gain              = voice->gain;
                   mono_voice->channel           = voice->channel;
-
+                  mono_voice->clap_id           = voice->clap_id;
 
                   mono_voice->mono_type = Voice::MonoType::MONO;
 
@@ -791,31 +791,41 @@ MidiSynth::notify_active_voice_status()
 {
   if (m_notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
+      // only report status for voices which are not SHADOW voices (mono)
+      Voice *voices[active_voices.size()];
+      uint   n_voices = 0;
+
       for (auto voice : active_voices)
-        voice->mp_voice->fill_notify_buffer (m_notify_buffer);
+        {
+          if (voice->mono_type != Voice::MonoType::SHADOW)
+            {
+              voice->mp_voice->fill_notify_buffer (m_notify_buffer);
+              voices[n_voices++] = voice;
+            }
+        }
 
       m_notify_buffer.write_int (ACTIVE_VOICE_STATUS_EVENT);
 
-      uintptr_t voice_seq[active_voices.size()];
-      for (size_t i = 0; i < active_voices.size(); i++)
-        voice_seq[i] = (uintptr_t) active_voices[i]->mp_voice;
+      uintptr_t voice_seq[n_voices];
+      for (uint i = 0; i < n_voices; i++)
+        voice_seq[i] = (uintptr_t) voices[i]->mp_voice;
 
-      m_notify_buffer.write_seq (voice_seq, active_voices.size());
+      m_notify_buffer.write_seq (voice_seq, n_voices);
 
-      float velocity_seq[active_voices.size()];
-      for (size_t v = 0; v < active_voices.size(); v++)
-        velocity_seq[v] = active_voices[v]->mp_voice->velocity();
+      float velocity_seq[n_voices];
+      for (uint v = 0; v < n_voices; v++)
+        velocity_seq[v] = voices[v]->mp_voice->velocity();
 
-      m_notify_buffer.write_seq (velocity_seq, active_voices.size());
+      m_notify_buffer.write_seq (velocity_seq, n_voices);
 
       for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
         {
-          float control_input_seq[active_voices.size()];
+          float control_input_seq[n_voices];
 
-          for (size_t v = 0; v < active_voices.size(); v++)
-            control_input_seq[v] = std::clamp (control[i] + active_voices[v]->modulation[i], -1.f, 1.f);
+          for (uint v = 0; v < n_voices; v++)
+            control_input_seq[v] = std::clamp (control[i] + voices[v]->modulation[i], -1.f, 1.f);
 
-          m_notify_buffer.write_seq (control_input_seq, active_voices.size());
+          m_notify_buffer.write_seq (control_input_seq, n_voices);
         }
       m_notify_buffer.end_write();
     }
