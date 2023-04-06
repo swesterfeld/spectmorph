@@ -37,12 +37,6 @@ init_aa_filter()
     }
 }
 
-static float
-freq_to_note (float freq)
-{
-  return 69 + 12 * log (freq / 440) / log (2);
-}
-
 static inline double
 fmatch (double f1, double f2)
 {
@@ -128,7 +122,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
     {
       if (smset)
         {
-          float note = freq_to_note (freq);
+          float note = sm_freq_to_note (freq);
 
           // find best audio candidate
           for (vector<WavSetWave>::iterator wi = smset->waves.begin(); wi != smset->waves.end(); wi++)
@@ -138,7 +132,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
                            wi->velocity_range_min <= midi_velocity &&
                            wi->velocity_range_max >= midi_velocity)
                 {
-                  float audio_note = freq_to_note (audio->fundamental_freq);
+                  float audio_note = sm_freq_to_note (audio->fundamental_freq);
 
                   if (fabs (audio_note - note) < best_diff)
                     {
@@ -922,7 +916,7 @@ LiveDecoder::fundamental_note() const
   if (!audio)
     return -1;
 
-  return freq_to_note (audio->fundamental_freq);
+  return sm_freq_to_note (audio->fundamental_freq);
 }
 
 bool

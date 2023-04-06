@@ -525,6 +525,7 @@ sm_factor2idb (double factor)
 double sm_lowpass1_factor (double mix_freq, double freq);
 double sm_xparam (double x, double slope);
 double sm_xparam_inv (double x, double slope);
+float  sm_freq_to_note (float freq);
 
 double sm_bessel_i0 (double x);
 double velocity_to_gain (double velocity, double vrange_db);

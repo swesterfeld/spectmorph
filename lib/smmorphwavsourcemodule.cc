@@ -18,12 +18,6 @@ using std::max;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSourceModule");
 
-static float
-freq_to_note (float freq)
-{
-  return 69 + 12 * log (freq / 440) / log (2);
-}
-
 void
 MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
@@ -36,7 +30,7 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
 
   if (wav_set)
     {
-      float note = freq_to_note (freq);
+      float note = sm_freq_to_note (freq);
       for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
         {
           Audio *audio = wi->audio;
@@ -44,7 +38,7 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
                        wi->velocity_range_min <= midi_velocity &&
                        wi->velocity_range_max >= midi_velocity)
             {
-              float audio_note = freq_to_note (audio->fundamental_freq);
+              float audio_note = sm_freq_to_note (audio->fundamental_freq);
               if (fabs (audio_note - note) < best_diff)
                 {
                   best_diff = fabs (audio_note - note);

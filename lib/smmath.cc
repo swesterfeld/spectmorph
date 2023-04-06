@@ -103,6 +103,12 @@ sm_fpu_okround()
 }
 #endif
 
+float
+sm_freq_to_note (float freq)
+{
+  return 69 + 12 * std::log2 (freq / 440);
+}
+
 double
 sm_lowpass1_factor (double mix_freq, double freq)
 {

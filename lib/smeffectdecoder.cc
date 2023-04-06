@@ -135,12 +135,6 @@ EffectDecoder::~EffectDecoder()
 {
 }
 
-static float
-freq_to_note (float freq)
-{
-  return 69 + 12 * log (freq / 440) / log (2);
-}
-
 void
 EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 {
@@ -191,7 +185,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     {
       live_decoder_filter.set_config (output_module, cfg, mix_freq);
       if (!filter_enabled)
-        live_decoder_filter.retrigger (freq_to_note (current_freq));
+        live_decoder_filter.retrigger (sm_freq_to_note (current_freq));
 
       chain_decoder->set_filter (&live_decoder_filter);
     }
@@ -207,7 +201,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   g_assert (chain_decoder);
 
   if (filter_enabled)
-    live_decoder_filter.retrigger (freq_to_note (freq));
+    live_decoder_filter.retrigger (sm_freq_to_note (freq));
 
   current_freq = freq;
 
