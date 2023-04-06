@@ -165,8 +165,9 @@ public:
         paramsInfo (index, &info);
         parameters[index] = info.default_value;
       }
-    /* FIXME: we don't implement collect & save */
-    project.set_storage_model (Project::StorageModel::REFERENCE);
+    // since there is no official clap extension for storing extra files, do the same thing
+    // the VST plugin does: store everything inside the plugin state
+    project.set_storage_model (Project::StorageModel::COPY);
 
     // initialize mix_freq with something to avoid crashes; can be overwritten later in activate
     project.set_mix_freq (48000);
@@ -614,6 +615,7 @@ ClapPlugin::stateSave (const clap_ostream *stream) noexcept
   project.save (zip_writer, &params);
 
   auto data = zip_writer.data();
+  CLAP_DEBUG ("save to zip produced %zd bytes\n", data.size());
 
   size_t pos = 0;
   while (pos < data.size())
@@ -645,6 +647,8 @@ ClapPlugin::stateLoad (const clap_istream *stream) noexcept
       data.insert (data.end(), buffer, buffer + r);
     }
   while (r > 0);
+
+  CLAP_DEBUG ("loaded %zd bytes from clap stream\n", data.size());
 
   ZipReader zip_reader (data);
 
