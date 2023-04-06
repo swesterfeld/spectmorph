@@ -30,6 +30,7 @@ class EffectDecoder
 
   bool                                  filter_enabled = false;
   LiveDecoderFilter                     live_decoder_filter;
+  float                                 current_freq = 440;
 
 public:
   EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);

@@ -42,6 +42,7 @@ freq_to_note (float freq)
 {
   return 69 + 12 * log (freq / 440) / log (2);
 }
+
 static inline double
 fmatch (double f1, double f2)
 {
@@ -213,12 +214,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       vibrato_phase = 0;
       vibrato_env = 0;
     }
-  if (filter)
-    {
-      filter->retrigger (freq_to_note (freq));
-      filter_latency_compensation = true;
-    }
-
+  filter_latency_compensation = true;
   current_freq = freq;
   current_mix_freq = mix_freq;
 }

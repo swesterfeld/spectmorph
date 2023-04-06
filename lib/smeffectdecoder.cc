@@ -135,6 +135,12 @@ EffectDecoder::~EffectDecoder()
 {
 }
 
+static float
+freq_to_note (float freq)
+{
+  return 69 + 12 * log (freq / 440) / log (2);
+}
+
 void
 EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 {
@@ -181,20 +187,29 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 
   chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
 
-  filter_enabled = cfg->filter;
-  if (filter_enabled)
+  if (cfg->filter)
     {
       live_decoder_filter.set_config (output_module, cfg, mix_freq);
+      if (!filter_enabled)
+        live_decoder_filter.retrigger (freq_to_note (current_freq));
+
       chain_decoder->set_filter (&live_decoder_filter);
     }
   else
     chain_decoder->set_filter (nullptr);
+
+  filter_enabled = cfg->filter;
 }
 
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
 {
   g_assert (chain_decoder);
+
+  if (filter_enabled)
+    live_decoder_filter.retrigger (freq_to_note (freq));
+
+  current_freq = freq;
 
   if (adsr_envelope)
     adsr_envelope->retrigger();
