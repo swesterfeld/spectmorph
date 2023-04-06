@@ -256,12 +256,6 @@ MorphOperator::read_properties_post_load (OpNameMap& op_name_map)
     }
 }
 
-MorphOperatorConfig *
-MorphOperator::clone_config()
-{
-  return nullptr; // FIXME: remove default impl
-}
-
 MorphOperatorConfig::~MorphOperatorConfig()
 {
 }
