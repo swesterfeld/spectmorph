@@ -12,7 +12,6 @@ __ dsp __
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
-- serialization
 
 __ generic modulation __
 
