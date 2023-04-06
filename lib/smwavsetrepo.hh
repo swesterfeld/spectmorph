@@ -7,14 +7,14 @@
 
 #include <mutex>
 
-#include <map>
+#include <unordered_map>
 
 namespace SpectMorph
 {
 
 class WavSetRepo {
   std::mutex mutex;
-  std::map<std::string, WavSet *> wav_set_map;
+  std::unordered_map<std::string, WavSet *> wav_set_map;
 public:
   ~WavSetRepo();
 
