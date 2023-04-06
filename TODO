@@ -9,7 +9,6 @@ __ dsp __
 - should we warm up the filter to avoid initial clickiness?
 - tuning polynomials appear to be incorrect
 - maybe use different defaults for filter
-- fix mono voice status
 
 __ clap __
 - test: is modulation applied before values are used for the first time?
@@ -20,6 +19,7 @@ __ generic modulation __
 - handle XPARAM scaled parameters
 
 NEXT RELEASE:
+- does mono work well with clap / clap ids?
 - non-linear modulation mapping
 - visual feedback for adsr envelope
 - try to get old performance from new inner loop
