@@ -57,9 +57,9 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
 
           input_node[x][y].mod = morph_plan_voice->module (node.op);
 
-          if (node.path != "")
+          if (node.wav_set)
             {
-              input_node[x][y].source.set_wav_set (node.path);
+              input_node[x][y].source.set_wav_set (node.wav_set);
               input_node[x][y].has_source = true;
             }
           else

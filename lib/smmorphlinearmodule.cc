@@ -53,13 +53,13 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
   left_mod = morph_plan_voice->module (cfg->left_op);
   right_mod = morph_plan_voice->module (cfg->right_op);
 
-  have_left_source = (cfg->left_path != "");
+  have_left_source = cfg->left_wav_set != nullptr;
   if (have_left_source)
-    left_source.set_wav_set (cfg->left_path);
+    left_source.set_wav_set (cfg->left_wav_set);
 
-  have_right_source = (cfg->right_path != "");
+  have_right_source = cfg->right_wav_set != nullptr;
   if (have_right_source)
-    right_source.set_wav_set (cfg->right_path);
+    right_source.set_wav_set (cfg->right_wav_set);
 }
 
 void

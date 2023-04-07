@@ -18,7 +18,7 @@ private:
 public:
   SimpleWavSetSource();
 
-  void        set_wav_set (const std::string& path);
+  void        set_wav_set (WavSet *wav_set);
 
   void        retrigger (int channel, float freq, int midi_velocity, float mix_freq);
   Audio      *audio();

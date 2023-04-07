@@ -5,6 +5,7 @@
 
 #include "smmorphoperator.hh"
 #include "smmodulationlist.hh"
+#include "smwavset.hh"
 
 #include <string>
 
@@ -18,8 +19,8 @@ public:
   {
     MorphOperatorPtr left_op;
     MorphOperatorPtr right_op;
-    std::string      left_path;
-    std::string      right_path;
+    WavSet          *left_wav_set = nullptr;
+    WavSet          *right_wav_set = nullptr;
 
     ModulationData   morphing_mod;
     bool             db_linear;

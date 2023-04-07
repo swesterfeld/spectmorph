@@ -4,6 +4,7 @@
 #include "smmorphplan.hh"
 #include "smproperty.hh"
 #include "smleakdebugger.hh"
+#include "smwavsetrepo.hh"
 
 #include <assert.h>
 
@@ -240,13 +241,15 @@ MorphLinear::clone_config()
 
   string smset_dir = morph_plan()->index()->smset_dir();
 
-  cfg->left_path = "";
   if (m_left_smset != "")
-    cfg->left_path = smset_dir + "/" + m_left_smset;
+    cfg->left_wav_set = WavSetRepo::the()->get (smset_dir + "/" + m_left_smset);
+  else
+    cfg->left_wav_set = nullptr;
 
-  cfg->right_path = "";
   if (m_right_smset != "")
-    cfg->right_path = smset_dir + "/" + m_right_smset;
+    cfg->right_wav_set = WavSetRepo::the()->get (smset_dir + "/" + m_right_smset);
+  else
+    cfg->right_wav_set = nullptr;
 
   return cfg;
 }

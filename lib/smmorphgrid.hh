@@ -5,6 +5,7 @@
 
 #include "smmorphoperator.hh"
 #include "smmodulationlist.hh"
+#include "smwavset.hh"
 
 #include <map>
 
@@ -15,7 +16,7 @@ struct MorphGridNode
 {
   MorphOperatorPtr  op;                     // a node has either an operator (op) as input,
   std::string       smset;                  // or an instrument (smset)
-  std::string       path;
+  WavSet           *wav_set = nullptr;
   double            delta_db;
 
   MorphGridNode();
