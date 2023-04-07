@@ -22,13 +22,6 @@ SimpleWavSetSource::SimpleWavSetSource() :
 }
 
 void
-SimpleWavSetSource::set_wav_set (const string& path)
-{
-  // FIXME: remove me
-  set_wav_set (WavSetRepo::the()->get (path));
-}
-
-void
 SimpleWavSetSource::set_wav_set (WavSet *new_wav_set)
 {
   if (new_wav_set != wav_set)
