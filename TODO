@@ -2,9 +2,6 @@ NEWER TODOS:
 
 - code signing for macOS
 
-__ notify __
-- modulation range correct?
-
 __ dsp __
 - should we warm up the filter to avoid initial clickiness?
 - tuning polynomials appear to be incorrect
