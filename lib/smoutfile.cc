@@ -66,9 +66,7 @@ OutFile::end_section()
 void
 OutFile::write_raw_string (const string& s)
 {
-  for (size_t i = 0; i < s.size(); i++)
-    file->put_byte (s[i]);
-  file->put_byte (0);
+  file->write (s.c_str(), s.size() + 1);
 }
 
 void
