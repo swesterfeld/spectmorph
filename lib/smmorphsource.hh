@@ -10,12 +10,14 @@
 namespace SpectMorph
 {
 
+class WavSet;
+
 class MorphSource : public MorphOperator
 {
 public:
   struct Config : public MorphOperatorConfig
   {
-    std::string path;
+    WavSet *wav_set = nullptr;
   };
   Config      m_config;
 protected:

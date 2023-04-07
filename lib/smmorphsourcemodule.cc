@@ -24,11 +24,17 @@ SimpleWavSetSource::SimpleWavSetSource() :
 void
 SimpleWavSetSource::set_wav_set (const string& path)
 {
-  WavSet *new_wav_set = WavSetRepo::the()->get (path);
+  // FIXME: remove me
+  set_wav_set (WavSetRepo::the()->get (path));
+}
+
+void
+SimpleWavSetSource::set_wav_set (WavSet *new_wav_set)
+{
   if (new_wav_set != wav_set)
     {
       wav_set = new_wav_set;
-      active_audio = NULL;
+      active_audio = nullptr;
     }
 }
 
@@ -97,5 +103,5 @@ MorphSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 {
   auto cfg = dynamic_cast<const MorphSource::Config *> (op_cfg);
 
-  my_source.set_wav_set (cfg->path);
+  my_source.set_wav_set (cfg->wav_set);
 }
