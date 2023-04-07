@@ -13,6 +13,10 @@ __ dsp __
 __ clap __
 - test: is modulation applied before values are used for the first time?
 
+__ other release stuff __
+- spectmorph-instruments-0.6.0
+- build binaries
+
 NEXT RELEASE:
 - handle XPARAM scaled parameters for modulation
 - does mono work well with clap / clap ids?
