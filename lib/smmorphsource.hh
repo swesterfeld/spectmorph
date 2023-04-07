@@ -4,13 +4,12 @@
 #define SPECTMORPH_MORPH_SOURCE_HH
 
 #include "smmorphoperator.hh"
+#include "smwavset.hh"
 
 #include <string>
 
 namespace SpectMorph
 {
-
-class WavSet;
 
 class MorphSource : public MorphOperator
 {
