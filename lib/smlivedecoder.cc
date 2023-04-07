@@ -819,6 +819,8 @@ LiveDecoder::precompute_tables (float mix_freq)
 
   noise_decoder.precompute_tables();
   ifft_synth.precompute_tables();
+
+  init_aa_filter();
 }
 
 void
