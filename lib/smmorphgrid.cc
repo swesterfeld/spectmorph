@@ -394,11 +394,11 @@ MorphGrid::clone_config()
           string smset = cfg->input_node[x][y].smset;
           if (smset != "")
             {
-              cfg->input_node[x][y].path = smset_dir + "/" + smset;
+              cfg->input_node[x][y].wav_set = WavSetRepo::the()->get (smset_dir + "/" + smset);
             }
           else
             {
-              cfg->input_node[x][y].path = "";
+              cfg->input_node[x][y].wav_set = nullptr;
             }
         }
     }
