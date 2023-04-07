@@ -187,6 +187,9 @@ Project::set_mix_freq (double mix_freq)
   m_midi_synth.reset (new MidiSynth (mix_freq, 64));
   m_mix_freq = mix_freq;
 
+  // not rt safe either
+  LiveDecoder::precompute_tables (mix_freq);
+
   // FIXME: can this cause problems if an old plan change control event remained
   auto update = m_midi_synth->prepare_update (m_morph_plan);
   m_midi_synth->apply_update (update);
@@ -231,23 +234,6 @@ Project::on_plan_changed()
     {
       m_last_plan_data = plan_data;
       state_changed();
-    }
-
-  // this might take a while, and cannot be done in synthesis thread
-  MorphPlanSynth mp_synth (m_mix_freq, 1);
-  {
-    auto update = mp_synth.prepare_update (m_morph_plan);
-    mp_synth.apply_update (update);
-  }
-
-  MorphOutputModule *om = mp_synth.voice(0)->output();
-  if (om)
-    {
-      TimeInfoGenerator time_info_gen (m_mix_freq); // not relevant
-      om->retrigger (time_info_gen.time_info (0), 0, 440, 1);
-      float s;
-      float *values[1] = { &s };
-      om->process (time_info_gen, 1, values, 1);
     }
 
   MorphPlanSynth::UpdateP update = m_midi_synth->prepare_update (m_morph_plan);
