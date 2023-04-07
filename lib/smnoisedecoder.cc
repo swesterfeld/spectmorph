@@ -151,6 +151,17 @@ NoiseDecoder::process (const AudioBlock& audio_block,
   FFT::free_array_float (interpolated_spectrum - 8);
 }
 
+void
+NoiseDecoder::precompute_tables()
+{
+  // trigger FFT planning which can be slow
+  float *in = FFT::new_array_float (block_size);
+  float *out = FFT::new_array_float (block_size);
+  FFT::fftsr_float (block_size, &in[0], &out[0]);
+  FFT::free_array_float (in);
+  FFT::free_array_float (out);
+}
+
 size_t
 NoiseDecoder::preferred_block_size (double mix_freq)
 {
