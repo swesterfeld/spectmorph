@@ -10,9 +10,6 @@ __ dsp __
 - tuning polynomials appear to be incorrect
 - maybe use different defaults for filter
 
-__ clap __
-- test: is modulation applied before values are used for the first time?
-
 __ other release stuff __
 - spectmorph-instruments-0.6.0
 - build binaries
