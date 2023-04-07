@@ -54,5 +54,5 @@ main (int argc, char **argv)
   fprintf (stderr, "SUCCESS: plan loaded, %zd operators found.\n", plan->operators().size());
   preinit_plan (*plan);
   measure_update (*plan, 1);
-  measure_update (*plan, 10);
+  measure_update (*plan, 64);
 }
