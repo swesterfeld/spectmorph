@@ -26,7 +26,7 @@ class IFFTSynth
   float             *fft_out;
   float             *win_scale;
 
-  enum { 
+  enum {
     SIN_TABLE_SIZE = 4096,
     SIN_TABLE_MASK = 4095
   };
@@ -54,6 +54,7 @@ public:
 
   inline void render_partial (double freq, double mag, double phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
+  void precompute_tables();
 
   double quantized_freq (double freq);
 };

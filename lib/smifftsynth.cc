@@ -126,3 +126,10 @@ IFFTSynth::quantized_freq (double mf_freq)
 
   return mf_qfreq;
 }
+
+void
+IFFTSynth::precompute_tables()
+{
+  // trigger fftw planning which can be slow
+  FFT::fftsr_destructive_float (block_size, fft_in, fft_out);
+}
