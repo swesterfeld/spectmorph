@@ -11,6 +11,10 @@ void sm_plugin_cleanup();
 bool sm_init_done();
 bool sm_sse();
 void sm_enable_sse (bool sse);
+void sm_set_ui_thread();
+void sm_set_dsp_thread();
+bool sm_ui_thread();
+bool sm_dsp_thread();
 
 class InstEncCache;
 class WavSetRepo;

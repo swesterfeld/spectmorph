@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <locale.h>
+#include <thread>
 
 #if SPECTMORPH_HAVE_BSE
 #include <bse/bsemain.hh>
@@ -28,6 +29,9 @@ struct GlobalData
 
   InstEncCache inst_enc_cache;
   WavSetRepo   wav_set_repo;
+
+  std::thread::id ui_thread;
+  std::thread::id dsp_thread;
 };
 
 static GlobalData *global_data = nullptr;
@@ -135,6 +139,30 @@ WavSetRepo *
 Global::wav_set_repo()
 {
   return &global_data->wav_set_repo;
+}
+
+void
+sm_set_ui_thread()
+{
+  global_data->ui_thread = std::this_thread::get_id();
+}
+
+void
+sm_set_dsp_thread()
+{
+  global_data->dsp_thread = std::this_thread::get_id();
+}
+
+bool
+sm_ui_thread()
+{
+  return std::this_thread::get_id() == global_data->ui_thread;
+}
+
+bool
+sm_dsp_thread()
+{
+  return std::this_thread::get_id() == global_data->dsp_thread;
 }
 
 }
