@@ -135,7 +135,7 @@ public:
   void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
   void set_filter (LiveDecoderFilter *filter);
 
-  void precompute_tables (float mix_freq);
+  static void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
   void process (size_t       n_values,
                 const float *freq_in,

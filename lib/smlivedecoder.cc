@@ -812,14 +812,13 @@ LiveDecoder::enable_start_skip (bool ess)
 void
 LiveDecoder::precompute_tables (float mix_freq)
 {
-  /* computing one sample (from the source) will ensure that tables (like
-   * anti-alias filter table and IFFTSynth window table and FFTW plan) will be
-   * available once RT synthesis is needed
-   */
-  float out;
+  size_t block_size = NoiseDecoder::preferred_block_size (mix_freq);
 
-  retrigger (0, 440, 127, mix_freq);
-  process (1, nullptr, &out);
+  NoiseDecoder noise_decoder (mix_freq, block_size);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+
+  noise_decoder.precompute_tables();
+  ifft_synth.precompute_tables();
 }
 
 void
