@@ -79,6 +79,13 @@ JackSynth::process (jack_nframes_t nframes)
 int
 jack_process (jack_nframes_t nframes, void *arg)
 {
+  static bool first = true;
+  if (first)
+    {
+      sm_set_dsp_thread();
+      first = false;
+    }
+
   JackSynth *instance = reinterpret_cast<JackSynth *> (arg);
   return instance->process (nframes);
 }
@@ -108,6 +115,8 @@ int
 main (int argc, char **argv)
 {
   Main main (&argc, &argv);
+
+  sm_set_ui_thread();
 
   if (argc > 2)
     {
