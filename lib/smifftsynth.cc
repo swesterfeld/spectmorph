@@ -8,12 +8,14 @@
 #include <stdio.h>
 
 #include <map>
+#include <mutex>
 
 using namespace SpectMorph;
 
 using std::vector;
 using std::map;
 
+static std::mutex table_mutex;
 static map<size_t, IFFTSynthTable *> table_for_block_size;
 
 namespace SpectMorph {
@@ -24,6 +26,8 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   block_size (block_size),
   mix_freq (mix_freq)
 {
+  std::lock_guard lg (table_mutex);
+
   zero_padding = 256;
 
   table = table_for_block_size[block_size];
@@ -64,7 +68,6 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
       for (size_t i = 0; i < block_size; i++)
         table->win_scale[(i + block_size / 2) % block_size] = window_cos (2.0 * i / block_size - 1.0) / window_blackman_harris_92 (2.0 * i / block_size - 1.0);
 
-      // we only need to do this once per block size (FIXME: not thread safe yet)
       table_for_block_size[block_size] = table;
     }
   if (sin_table.empty())

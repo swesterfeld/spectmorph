@@ -22,10 +22,13 @@ static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");
 #define DEBUG (0)
 
 static vector<float> antialias_filter_table;
+static std::mutex aa_mutex;
 
 static void
 init_aa_filter()
 {
+  std::lock_guard lg (aa_mutex);
+
   if (antialias_filter_table.empty())
     {
       antialias_filter_table.resize (ANTIALIAS_FILTER_TABLE_SIZE);

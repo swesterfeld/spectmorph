@@ -9,12 +9,14 @@
 #include <math.h>
 #include <assert.h>
 #include <map>
+#include <mutex>
 
 using std::vector;
 using SpectMorph::NoiseDecoder;
 using std::map;
 using SpectMorph::sm_sse;
 
+static std::mutex cos_window_mutex;
 static map<size_t, float *> cos_window_for_block_size;
 
 static size_t
@@ -35,6 +37,8 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
   mix_freq (mix_freq),
   block_size (block_size)
 {
+  std::lock_guard lg (cos_window_mutex);
+
   noise_band_partition = 0;
 
   float*& win = cos_window_for_block_size[block_size];
