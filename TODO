@@ -15,7 +15,6 @@ __ clap __
 
 NEXT RELEASE:
 - handle XPARAM scaled parameters for modulation
-- store WavSet * instead of strings in config records (performance)
 - does mono work well with clap / clap ids?
 - non-linear modulation mapping
 - visual feedback for adsr envelope
