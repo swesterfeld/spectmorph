@@ -303,6 +303,9 @@ public:
   bool
   activate (double sampleRate, uint32_t minFrameCount, uint32_t maxFrameCount) noexcept override
   {
+    // this will create a new MidiSynth instance:
+    //  -> kill all active voices
+    //  -> reset global modulation state
     project.set_mix_freq (sampleRate);
     return true;
   }
