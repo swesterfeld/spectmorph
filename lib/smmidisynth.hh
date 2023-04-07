@@ -87,6 +87,8 @@ private:
   };
   std::vector<Event>  events;
 
+  typedef std::array<float, MorphPlan::N_CONTROL_INPUTS> ModArray;
+
   class Voice
   {
   public:
@@ -115,7 +117,7 @@ private:
     int          note_id;
     int          clap_id;
 
-    std::array<float, MorphPlan::N_CONTROL_INPUTS> modulation;
+    ModArray     modulation;
 
     Voice() :
       mp_voice (NULL),
@@ -136,6 +138,7 @@ private:
   std::vector<Voice>    voices;
   std::vector<Voice *>  idle_voices;
   std::vector<Voice *>  active_voices;
+  ModArray              global_modulation;
   double                m_mix_freq;
   double                m_gain = 1;
   double                m_tempo = 120;

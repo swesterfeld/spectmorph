@@ -47,6 +47,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
       voices[i].mp_voice = morph_plan_synth.voice (i);
       idle_voices.push_back (&voices[i]);
     }
+  global_modulation.fill (0);
 }
 
 MidiSynth::Voice *
@@ -133,8 +134,7 @@ MidiSynth::process_note_on (const NoteEvent& note)
       voice->gain              = velocity_to_gain (note.velocity, output->velocity_sensitivity());
       voice->channel           = note.channel;
       voice->clap_id           = note.clap_id;
-
-      voice->modulation.fill (0);
+      voice->modulation        = global_modulation;
 
       const int midi_velocity = std::clamp<int> (lrint (note.velocity * 127), 0, 127);
       if (!mono_enabled)
@@ -296,6 +296,9 @@ MidiSynth::process_mod_value (const ModValueEvent& mod)
           voice->modulation[mod.control_input] = mod.value;
         }
     }
+
+  if (mod.clap_id == -1 && mod.key == -1 && mod.channel == -1)
+    global_modulation[mod.control_input] = mod.value;
 }
 
 void
