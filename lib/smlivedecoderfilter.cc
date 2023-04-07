@@ -110,8 +110,9 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
 
   auto start_smoothing = [&] (SmoothValue& smooth_value, float new_value, float speed_ms) {
     float abs_diff = std::abs (smooth_value.value - new_value);
+    int min_steps = abs_diff * mix_freq * 0.001f * speed_ms;
 
-    if (smooth_first || abs_diff < 1e-5)
+    if (smooth_first || min_steps == 0)
       {
         smooth_value.value = new_value;
         smooth_value.delta = 0;
@@ -119,7 +120,6 @@ LiveDecoderFilter::process (size_t n_values, float *audio)
       }
     else
       {
-        int min_steps = abs_diff * mix_freq * 0.001f * speed_ms;
         int steps = max<int> (min_steps, n_values);
         smooth_value.delta = (new_value - smooth_value.value) / steps;
         smooth_value.constant = false;
