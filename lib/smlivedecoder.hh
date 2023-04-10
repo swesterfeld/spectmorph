@@ -116,7 +116,8 @@ class LiveDecoder
                         float       *audio_out);
   void process_with_filter (size_t n_values,
                             const float *freq_in,
-                            float *audio_out);
+                            float *audio_out,
+                            bool ramp);
 
   LiveDecoder();
 public:

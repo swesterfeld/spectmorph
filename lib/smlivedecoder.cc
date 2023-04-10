@@ -681,7 +681,7 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
 }
 
 void
-LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *audio_out, bool ramp)
 {
   if (vibrato_enabled)
     {
@@ -693,7 +693,26 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
     }
 
   if (filter)
-    filter->process (n_values, audio_out);
+    {
+      if (ramp)
+        {
+          // the audio input for the filter can start at a non-zero value:
+          // use a 1ms ramp to reduce the "click" that is processed by the filter
+          uint ramp_len = current_mix_freq * 0.001f;
+
+          float audio_ramp[ramp_len];
+          float amp = 0;
+          float delta_amp = audio_out[0] / (ramp_len + 1);
+          for (uint i = 0; i < ramp_len; i++)
+            {
+              amp += delta_amp;
+              audio_ramp[i] = amp;
+            }
+
+          filter->process (ramp_len, audio_ramp);
+        }
+      filter->process (n_values, audio_out);
+    }
 }
 
 void
@@ -732,11 +751,11 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
           for (int i = 0; i < idelay; i++)
             junk_freq_in[i] = freq_in[0];
 
-          process_with_filter (idelay, junk_freq_in, junk_audio_out);
+          process_with_filter (idelay, junk_freq_in, junk_audio_out, true);
         }
       else
         {
-          process_with_filter (idelay, nullptr, junk_audio_out);
+          process_with_filter (idelay, nullptr, junk_audio_out, true);
         }
 
       filter_latency_compensation = false;
@@ -746,7 +765,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
     {
       size_t todo_values = min (n_values, max_n_values);
 
-      process_with_filter (todo_values, freq_in, audio_out);
+      process_with_filter (todo_values, freq_in, audio_out, false);
 
       if (freq_in)
         freq_in += todo_values;
