@@ -115,4 +115,38 @@ main (int argc, char **argv)
 
       return 0;
     }
+  if (argc == 8 && cmd == "ffade") // <freq> <reso> <drive> <n> <xfrq> <xphase>
+    {
+      LadderVCF laddervcf (/* oversample */ 4);
+
+      laddervcf.set_mode (LadderVCF::LP4);
+      laddervcf.set_freq (atof (argv[2]));
+      laddervcf.set_reso (atof (argv[3]));
+      laddervcf.set_drive (atof (argv[4]));
+
+      uint n = atoi (argv[5]);
+      double xfreq = atof (argv[6]);
+      double xphase = atof (argv[7]);
+
+      vector<float> in (48000);
+      for (size_t i = 0; i < in.size(); i++)
+        {
+          in[i] = sin (xphase * 2 * M_PI + i * xfreq * 2 * M_PI / 48000);
+        }
+      vector<float> fade_in;
+      for (size_t i = 0; i < n; i++)
+        {
+          fade_in.push_back (in[0] * i / n);
+        }
+      vector<float> fade_out = fade_in;
+      vector<float> out = in;
+
+      laddervcf.process_block (fade_out.size(), fade_out.data());
+      for (size_t i = 0; i < fade_in.size(); i++)
+        printf ("%f %f\n", fade_in[i], fade_out[i]);
+
+      laddervcf.process_block (out.size(), out.data());
+      for (size_t i = 0; i < in.size(); i++)
+        printf ("%f %f\n", in[i], out[i]);
+    }
 }
