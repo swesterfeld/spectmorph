@@ -5,6 +5,8 @@ NEWER TODOS:
 __ other release stuff __
 - spectmorph-instruments-0.6.0
 - build binaries
+- presets
+- possibly: screencast
 
 NEXT RELEASE:
 - handle XPARAM scaled parameters for modulation
