@@ -75,10 +75,10 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property_enum (&m_config.filter_ladder_mode, P_FILTER_LADDER_MODE, "Filter Ladder Mode", FILTER_LADDER_LP2, filter_ladder_mode_enum_info);
   add_property_enum (&m_config.filter_sk_mode, P_FILTER_SK_MODE, "Filter SK Mode", FILTER_SK_LP3, filter_sk_mode_enum_info);
   add_property (&m_config.filter_attack, P_FILTER_ATTACK, "Attack", "%.1f %%", 15, 0, 100);
-  add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 20, 0, 100);
-  add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 50, 0, 100);
+  add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 50, 0, 100);
+  add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 30, 0, 100);
   add_property (&m_config.filter_release, P_FILTER_RELEASE, "Release", "%.1f %%", 50, 0, 100);
-  add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 24, -60, 60);
+  add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 36, -60, 60);
   add_property (&m_config.filter_key_tracking, P_FILTER_KEY_TRACKING, "Key Tracking", "%.1f %%", 50, 0, 100);
 
   double cutoff_min = 20;
