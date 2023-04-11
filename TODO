@@ -2,9 +2,6 @@ NEWER TODOS:
 
 - code signing for macOS
 
-__ dsp __
-- maybe use different defaults for filter
-
 __ other release stuff __
 - spectmorph-instruments-0.6.0
 - build binaries
