@@ -7,7 +7,7 @@ $ xcode-select --install
 
 You also need these brew packages
 
-$ brew install autoconf-archive automake ccache libao pkg-config libtool
+$ brew install autoconf-archive automake ccache libao pkg-config libtool gtk-doc
 
 Finally: edit macos/sdk-options.sh
 
