@@ -40,11 +40,11 @@ mkdir -p $SRCDIR $BUILDD
 
 . sdk-options.sh
 PREFIX=$PWD/prefix
-GLOBAL_CFLAGS="-isysroot $SDK_DIRECTORY -mmacosx-version-min=$SDK_MINVERSION"
-GLOBAL_LDFLAGS="-L$PREFIX/lib"
+GLOBAL_LDFLAGS="$SDK_OPTIONS -L$PREFIX/lib"
 MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG="pkg-config --static"
 
 src zlib-1.2.11 tar.gz https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
 
@@ -67,34 +67,37 @@ src fftw-3.3.7 tar.gz http://www.fftw.org/fftw-3.3.7.tar.gz
 autoconfbuild --disable-fortran --enable-single --enable-threads --with-combined-threads
 
 src libffi-3.4.2 tar.gz https://github.com/libffi/libffi/releases/download/v3.4.2/libffi-3.4.2.tar.gz
-autoconfbuild
+autoconfbuild --disable-shared
 
 src gettext-0.19.8.1 tar.xz https://ftp.gnu.org/gnu/gettext/gettext-0.19.8.1.tar.xz
-autoconfbuild "--disable-silent-rules" "--disable-debug" \
+autoconfbuild --disable-shared "--disable-silent-rules" "--disable-debug" \
               "--with-included-gettext" "--with-included-glib" "--with-included-libcroco" "--with-included-libunistring" "--with-emacs" \
               "--disable-java" "--disable-csharp" "--without-git" "--without-cvs" "--without-xz"
 
 src glib-2.56.1 tar.xz https://download.gnome.org/sources/glib/2.56/glib-2.56.1.tar.xz
-autoconfbuild --enable-static --with-pcre=internal
+autoconfbuild --disable-shared --with-pcre=internal --disable-compile-warnings
 
 src freetype-2.5.5 tar.gz https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz
-autoconfbuild --with-harfbuzz=no --with-png=no --with-bzip2=no
+autoconfbuild --disable-shared --with-harfbuzz=no --with-png=no --with-bzip2=no
 
 src pixman-0.34.0 tar.gz https://www.cairographics.org/releases/pixman-0.34.0.tar.gz
-patch -p1 < ../../pixman-0.34.0.diff
-autoconfbuild
+patch -p1 < ../../pixman-0.34.0-notest.diff
+autoreconf -i
+autoconfbuild --disable-shared
 
 src cairo-1.15.10 tar.xz https://cairographics.org/snapshots/cairo-1.15.10.tar.xz
-autoconfbuild
+patch -p1 < ../../cairo-1.15.10-notest.diff
+autoreconf -i
+autoconfbuild --disable-shared
 
 src libogg-1.3.3 tar.xz http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz
-autoconfbuild
+autoconfbuild --disable-shared
 
 src libvorbis-1.3.6 tar.xz http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz
-autoconfbuild
+autoconfbuild --disable-shared
 
 src flac-1.3.2 tar.xz https://ftp.osuosl.org/pub/xiph/releases/flac/flac-1.3.2.tar.xz
-autoconfbuild --enable-static
+autoconfbuild --disable-shared
 
 src libsndfile-1.0.28 tar.gz http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.28.tar.gz
-autoconfbuild
+autoconfbuild --disable-shared

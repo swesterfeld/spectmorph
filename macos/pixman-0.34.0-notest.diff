@@ -1,0 +1,9 @@
+diff -u pixman-0.34.0/Makefile.am.orig pixman-0.34.0/Makefile.am
+--- pixman-0.34.0/Makefile.am.orig 2015-06-30 11:48:31
++++ pixman-0.34.0/Makefile.am	2023-04-13 14:19:03
+@@ -1,4 +1,4 @@
+-SUBDIRS = pixman demos test
++SUBDIRS = pixman demos # test
+ 
+ pkgconfigdir=$(libdir)/pkgconfig
+ pkgconfig_DATA=pixman-1.pc

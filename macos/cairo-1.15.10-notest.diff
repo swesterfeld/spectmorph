@@ -1,0 +1,11 @@
+--- cairo-1.15.10/Makefile.am.orig	2023-04-13 15:01:49
++++ cairo-1.15.10/Makefile.am	2023-04-13 15:02:02
+@@ -20,7 +20,7 @@
+ SUBDIRS = src doc util
+ # libpng is required for our test programs
+ if CAIRO_HAS_PNG_FUNCTIONS
+-SUBDIRS += boilerplate test perf
++SUBDIRS += boilerplate # test perf
+ endif
+ 
+ configure: cairo-version.h
