@@ -72,15 +72,13 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   start_skip_enabled (false),
   mix_freq (mix_freq),
   noise_seed (-1),
-  sse_samples (NULL),
+  sse_samples (block_size),
   vibrato_enabled (false)
 {
   leak_debugger.add (this);
 
   init_aa_filter();
   set_unison_voices (1, 0);
-
-  sse_samples = new AlignedArray<float, 16> (block_size);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
@@ -99,11 +97,6 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source, float mix_freq) :
 
 LiveDecoder::~LiveDecoder()
 {
-  if (sse_samples)
-    {
-      delete sse_samples;
-      sse_samples = NULL;
-    }
   leak_debugger.del (this);
 }
 
@@ -160,7 +153,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       if (start_skip_enabled)
         zero_values_at_start_scaled += block_size / 2;
 
-      zero_float_block (block_size, &(*sse_samples)[0]);
+      zero_float_block (block_size, &sse_samples[0]);
 
       if (noise_seed != -1)
         noise_decoder.set_seed (noise_seed);
@@ -298,8 +291,8 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
         {
           double want_freq = current_freq;
 
-          std::copy (&(*sse_samples)[block_size / 2], &(*sse_samples)[block_size], &(*sse_samples)[0]);
-          zero_float_block (block_size / 2, &(*sse_samples)[block_size / 2]);
+          std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
+          zero_float_block (block_size / 2, &sse_samples[block_size / 2]);
 
           if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
@@ -481,7 +474,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
-                  float *samples = &(*sse_samples)[0];
+                  float *samples = &sse_samples[0];
                   ifft_synth.get_samples (samples, IFFTSynth::ADD);
                 }
             }
@@ -508,7 +501,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           else if (time_ms < audio->attack_end_ms)
             {
-              audio_out[i++] = (*sse_samples)[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+              audio_out[i++] = sse_samples[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
               pos++;
               env_pos += portamento_env_step;
               have_samples--;
@@ -517,7 +510,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             {
               size_t can_copy = min (have_samples, n_values - i);
 
-              memcpy (audio_out + i, &(*sse_samples)[pos], sizeof (float) * can_copy);
+              memcpy (audio_out + i, &sse_samples[pos], sizeof (float) * can_copy);
               i += can_copy;
               pos += can_copy;
               env_pos += can_copy * portamento_env_step;

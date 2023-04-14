@@ -67,7 +67,7 @@ class LiveDecoder
 
   int                 noise_seed;
 
-  AlignedArray<float,16> *sse_samples;
+  AlignedArray<float,16> sse_samples;
 
   // unison
   int                 unison_voices;
