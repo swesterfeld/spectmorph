@@ -43,7 +43,7 @@ private:
 
     MorphGridModule  *module;
 
-    void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+    void retrigger (int channel, float freq, int midi_velocity);
     Audio* audio();
     AudioBlock *audio_block (size_t index);
   } my_source;

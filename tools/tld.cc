@@ -48,7 +48,7 @@ main (int argc, char **argv)
   int priority = adjust_priority();
   const double ns_per_sec = 1e9;
 
-  LiveDecoder decoder (&smset);
+  LiveDecoder decoder (&smset, 48000);
   if (argc == 4 && (string (argv[3]) == "avg" || string (argv[3]) == "avg-all"))
     {
       float ns_per_sample[5] = { 0, };
@@ -67,7 +67,7 @@ main (int argc, char **argv)
               vector<float> audio_out (n);
 
               // avoid measuring setup time
-              decoder.retrigger (0, freq, 127, 48000);
+              decoder.retrigger (0, freq, 127);
               decoder.process (n, nullptr, &audio_out[0]);
 
               double best_time = 1e7;
@@ -76,7 +76,7 @@ main (int argc, char **argv)
                   double start_t = get_time();
                   for (int l = 0; l < runs; l++)
                     {
-                      decoder.retrigger (0, freq, 127, 48000);
+                      decoder.retrigger (0, freq, 127);
                       decoder.process (n, nullptr, &audio_out[0]);
                     }
                   double end_t = get_time();
@@ -102,7 +102,7 @@ main (int argc, char **argv)
       float audio_out[n];
 
       // avoid measuring setup time
-      decoder.retrigger (0, freq, 127, 48000);
+      decoder.retrigger (0, freq, 127);
       decoder.process (n, nullptr, audio_out);
 
       double best_time = 1e7;
@@ -111,7 +111,7 @@ main (int argc, char **argv)
           double start_t = get_time();
           for (int l = 0; l < runs; l++)
             {
-              decoder.retrigger (0, freq, 127, 48000);
+              decoder.retrigger (0, freq, 127);
               decoder.process (n, nullptr, audio_out);
             }
           double end_t = get_time();
@@ -127,7 +127,7 @@ main (int argc, char **argv)
       const int bits = 16;
 
       vector<float> audio_out (SR * 20);
-      decoder.retrigger (0, freq, 127, SR);
+      decoder.retrigger (0, freq, 127);
       decoder.process (audio_out.size(), nullptr, &audio_out[0]);
 
       std::string export_wav = "tld.wav";
@@ -148,7 +148,7 @@ main (int argc, char **argv)
           const int runs = 40;
           for (int l = 0; l < runs; l++)
             {
-              decoder.retrigger (0, freq, 127, 48000);
+              decoder.retrigger (0, freq, 127);
               decoder.process (n, nullptr, &audio_out[0]);
             }
           double end_t = get_time();

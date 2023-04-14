@@ -201,7 +201,7 @@ class ConstBlockSource : public LiveDecoderSource
   Audio      my_audio;
   AudioBlock my_audio_block;
 public:
-  ConstBlockSource (const AudioBlock& block)
+  ConstBlockSource (const AudioBlock& block, float mix_freq)
     : my_audio_block (block)
   {
     my_audio.frame_size_ms = 40;
@@ -210,15 +210,15 @@ public:
     my_audio.attack_end_ms = 20;
     my_audio.zeropad = 4;
     my_audio.loop_type = Audio::LOOP_NONE;
+    my_audio.mix_freq = mix_freq;
 
     if (my_audio_block.noise.empty())
       {
         my_audio_block.noise.resize (32); // all 0, no noise
       }
   }
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+  void retrigger (int channel, float freq, int midi_velocity)
   {
-    my_audio.mix_freq = mix_freq;
     my_audio.fundamental_freq = freq;
   }
   Audio *audio()
@@ -242,12 +242,12 @@ test_spect()
 
   push_partial_f (audio_block, 1, 1, 0.9);
 
-  ConstBlockSource source (audio_block);
+  ConstBlockSource source (audio_block, mix_freq);
 
-  LiveDecoder live_decoder (&source);
+  LiveDecoder live_decoder (&source, mix_freq);
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   freq = synth.quantized_freq (freq);
-  live_decoder.retrigger (0, freq, 127, mix_freq);
+  live_decoder.retrigger (0, freq, 127);
 
   vector<float> samples (block_size * 100);
   live_decoder.process (samples.size(), nullptr, &samples[0]);
@@ -291,13 +291,13 @@ test_phase()
 
   push_partial_f (audio_block, 1, 1, 0.9);
 
-  ConstBlockSource source (audio_block);
+  ConstBlockSource source (audio_block, mix_freq);
 
   vector<float> samples (1024);
 
-  LiveDecoder live_decoder (&source);
+  LiveDecoder live_decoder (&source, mix_freq);
   live_decoder.enable_noise (false);
-  live_decoder.retrigger (0, freq, 127, mix_freq);
+  live_decoder.retrigger (0, freq, 127);
   for (size_t block = 0; block < 10000000; block++)
     {
       live_decoder.process (samples.size(), nullptr, &samples[0]);
@@ -330,14 +330,14 @@ test_saw_perf()
   double t[2];
   for (int i = 0; i < 2; i++)
     {
-      ConstBlockSource source (audio_block);
+      ConstBlockSource source (audio_block, mix_freq);
 
-      LiveDecoder live_decoder (&source);
+      LiveDecoder live_decoder (&source, mix_freq);
       live_decoder.enable_noise (false);
       live_decoder.enable_sines (i == 1);
       live_decoder.enable_debug_fft_perf (i == 0);
       live_decoder.precompute_tables (mix_freq);
-      live_decoder.retrigger (0, freq, 127, mix_freq);
+      live_decoder.retrigger (0, freq, 127);
 
       double start, end;
 

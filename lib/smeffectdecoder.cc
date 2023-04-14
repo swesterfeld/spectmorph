@@ -75,7 +75,7 @@ class EffectDecoderSource : public LiveDecoderSource
 public:
   explicit EffectDecoderSource (LiveDecoderSource *source);
 
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
+  void retrigger (int channel, float freq, int midi_velocity) override;
   Audio* audio() override;
   AudioBlock* audio_block (size_t index) override;
 
@@ -85,9 +85,9 @@ public:
 }
 
 void
-EffectDecoderSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+EffectDecoderSource::retrigger (int channel, float freq, int midi_velocity)
 {
-  source->retrigger (channel, freq, midi_velocity, mix_freq);
+  source->retrigger (channel, freq, midi_velocity);
 }
 
 Audio*
@@ -122,12 +122,12 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.loop_type            = Audio::LOOP_NONE;
 }
 
-EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source) :
+EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source, float mix_freq) :
   output_module (output_module),
   original_source (source),
   skip_source (new EffectDecoderSource (source))
 {
-  chain_decoder.reset (new LiveDecoder (original_source));
+  chain_decoder.reset (new LiveDecoder (original_source, mix_freq));
   use_skip_source = false;
 }
 
@@ -142,7 +142,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     {
       if (!use_skip_source) // enable skip source
         {
-          chain_decoder.reset (new LiveDecoder (skip_source.get()));
+          chain_decoder.reset (new LiveDecoder (skip_source.get(), mix_freq));
           chain_decoder->enable_start_skip (true);
           use_skip_source = true;
         }
@@ -162,7 +162,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     {
       if (use_skip_source) // use original source (no skip)
         {
-          chain_decoder.reset (new LiveDecoder (original_source));
+          chain_decoder.reset (new LiveDecoder (original_source, mix_freq));
           use_skip_source = false;
         }
       adsr_envelope.reset();
@@ -196,7 +196,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 }
 
 void
-EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+EffectDecoder::retrigger (int channel, float freq, int midi_velocity)
 {
   g_assert (chain_decoder);
 
@@ -210,7 +210,7 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_
   else
     simple_envelope->retrigger();
 
-  chain_decoder->retrigger (channel, freq, midi_velocity, mix_freq);
+  chain_decoder->retrigger (channel, freq, midi_velocity);
 }
 
 void

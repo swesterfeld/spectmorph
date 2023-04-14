@@ -63,26 +63,26 @@ MorphLinearModule::set_config (const MorphOperatorConfig *op_cfg)
 }
 
 void
-MorphLinearModule::MySource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+MorphLinearModule::MySource::retrigger (int channel, float freq, int midi_velocity)
 {
   if (module->left_mod && module->left_mod->source())
     {
-      module->left_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+      module->left_mod->source()->retrigger (channel, freq, midi_velocity);
     }
 
   if (module->right_mod && module->right_mod->source())
     {
-      module->right_mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+      module->right_mod->source()->retrigger (channel, freq, midi_velocity);
     }
 
   if (module->have_left_source)
     {
-      module->left_source.retrigger (channel, freq, midi_velocity, mix_freq);
+      module->left_source.retrigger (channel, freq, midi_velocity);
     }
 
   if (module->have_right_source)
     {
-      module->right_source.retrigger (channel, freq, midi_velocity, mix_freq);
+      module->right_source.retrigger (channel, freq, midi_velocity);
     }
 }
 

@@ -19,7 +19,7 @@ using std::max;
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSourceModule");
 
 void
-MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity)
 {
   Audio  *best_audio = nullptr;
   float   best_diff  = 1e10;
