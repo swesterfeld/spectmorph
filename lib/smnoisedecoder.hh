@@ -19,6 +19,7 @@ class NoiseDecoder
   size_t block_size;
 
   float *cos_window;
+  float *interpolated_spectrum;
 
   Random random_gen;
   NoiseBandPartition *noise_band_partition;

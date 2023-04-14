@@ -51,11 +51,16 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
 
   cos_window = win;
 
+  // 8 values before and after spectrum required by apply_window/SSE
+  interpolated_spectrum = FFT::new_array_float (block_size + 18) + 8;
+
   assert (block_size == next_power2 (block_size));
 }
 
 NoiseDecoder::~NoiseDecoder()
 {
+  FFT::free_array_float (interpolated_spectrum - 8);
+
   if (noise_band_partition)
     {
       delete noise_band_partition;
@@ -86,9 +91,6 @@ NoiseDecoder::process (const AudioBlock& audio_block,
 
   assert (noise_band_partition->n_bands() == audio_block.noise.size());
   assert (noise_band_partition->n_spectrum_bins() == block_size + 2);
-
-  // 8 values before and after spectrum required by apply_window/SSE
-  float *interpolated_spectrum = FFT::new_array_float (block_size + 18) + 8;
 
   const double Eww = 0.375; // expected value of the energy of the window
   const double norm = mix_freq / (Eww * block_size);
@@ -152,7 +154,6 @@ NoiseDecoder::process (const AudioBlock& audio_block,
 
       FFT::free_array_float (in);
     }
-  FFT::free_array_float (interpolated_spectrum - 8);
 }
 
 void
