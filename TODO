@@ -13,6 +13,7 @@ NEXT RELEASE:
 - does mono work well with clap / clap ids?
 - non-linear modulation mapping
 - visual feedback for adsr envelope
+- reduce amount of allocations in RT thread
 - try to get old performance from new inner loop
 - performance tests
 - maybe treat std::sin, std::cos like std::fabs
