@@ -23,6 +23,9 @@
 #include <poll.h>
 #include <errno.h>
 
+//#define SM_MALLOC_TRACER 1
+#include "smmalloctracer.hh"
+
 using namespace SpectMorph;
 
 using std::vector;
@@ -157,10 +160,12 @@ main (int argc, char **argv)
 
   window.set_close_callback ([&]() { quit = true; });
 
+  MallocTracer malloc_tracer;
   while (!quit)
     {
       event_loop.wait_event_fps();
       event_loop.process_events();
+      malloc_tracer.print_stats();
     }
   jack_client_close (client);
   return 0;

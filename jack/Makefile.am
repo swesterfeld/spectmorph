@@ -7,7 +7,7 @@ SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
 bin_PROGRAMS = smjack
 
-smjack_SOURCES = smjack.cc smjack.hh
+smjack_SOURCES = smjack.cc smjack.hh smmalloctracer.hh
 smjack_LDADD = $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
 
 lib_LTLIBRARIES = libspectmorphjack.la
