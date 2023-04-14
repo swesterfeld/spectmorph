@@ -63,7 +63,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   encoder.save (sm_file);
 
   WavSet wav_set;
-  LiveDecoder decoder (&wav_set);
+  LiveDecoder decoder (&wav_set, enc_params.mix_freq);
 
   WavSetWave new_wave;
   new_wave.midi_note = 60; // doesn't matter
@@ -80,7 +80,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   decoder.enable_noise (false);
   for (double freq = 10; freq < 70000; freq = min (freq * 1.1, freq + 10))
     {
-      decoder.retrigger (0, freq, 127, enc_params.mix_freq);
+      decoder.retrigger (0, freq, 127);
       decoder.process (audio_out.size(), nullptr, &audio_out[0]);
       float peak = 0;
       for (size_t i = 0; i < audio_out.size(); i++)
