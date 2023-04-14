@@ -43,16 +43,16 @@ InstEditSynth::take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set)
     {
       if (voice.layer == 0)
         {
-          voice.decoder.reset (new LiveDecoder (wav_set.get()));
+          voice.decoder.reset (new LiveDecoder (wav_set.get(), mix_freq));
         }
       if (voice.layer == 1)
         {
-          voice.decoder.reset (new LiveDecoder (wav_set.get()));
+          voice.decoder.reset (new LiveDecoder (wav_set.get(), mix_freq));
           voice.decoder->enable_original_samples (true);
         }
       if (voice.layer == 2)
         {
-          voice.decoder.reset (new LiveDecoder (ref_wav_set.get()));
+          voice.decoder.reset (new LiveDecoder (ref_wav_set.get(), mix_freq));
         }
     }
 }
@@ -70,7 +70,7 @@ InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int
     {
       if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
         {
-          voice.decoder->retrigger (0, note_to_freq (note), 127, mix_freq);
+          voice.decoder->retrigger (0, note_to_freq (note), 127);
           voice.decoder_factor = 1;
           voice.state = State::ON;
           voice.channel = channel;
