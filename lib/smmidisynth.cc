@@ -41,6 +41,7 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   voices.clear();
   voices.resize (n_voices);
   active_voices.reserve (n_voices);
+  events.reserve (1024);
 
   for (size_t i = 0; i < n_voices; i++)
     {
