@@ -33,12 +33,12 @@ class EffectDecoder
   float                                 current_freq = 440;
 
 public:
-  EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source);
+  EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source, float mix_freq);
   ~EffectDecoder();
 
   void set_config (const MorphOutput::Config *cfg, float mix_freq);
 
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+  void retrigger (int channel, float freq, int midi_velocity);
   void process (size_t       n_values,
                 const float *freq_in,
                 float       *audio_out);
