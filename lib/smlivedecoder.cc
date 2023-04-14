@@ -57,7 +57,7 @@ truncate_phase (double phase)
   return phase;
 }
 
-LiveDecoder::LiveDecoder() :
+LiveDecoder::LiveDecoder (float mix_freq) :
   smset (NULL),
   audio (NULL),
   ifft_synth (NULL),
@@ -69,23 +69,33 @@ LiveDecoder::LiveDecoder() :
   original_samples_enabled (false),
   loop_enabled (true),
   start_skip_enabled (false),
+  mix_freq (mix_freq),
   noise_seed (-1),
   sse_samples (NULL),
   vibrato_enabled (false)
 {
+  leak_debugger.add (this);
+
   init_aa_filter();
   set_unison_voices (1, 0);
-  leak_debugger.add (this);
+
+  block_size = NoiseDecoder::preferred_block_size (mix_freq);
+
+  noise_decoder = new NoiseDecoder (mix_freq, block_size);
+  ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  sse_samples = new AlignedArray<float, 16> (block_size);
+
+  pp_inter = PolyPhaseInter::the(); // do not delete
 }
 
-LiveDecoder::LiveDecoder (WavSet *smset) :
-  LiveDecoder()
+LiveDecoder::LiveDecoder (WavSet *smset, float mix_freq) :
+  LiveDecoder (mix_freq)
 {
   this->smset = smset;
 }
 
-LiveDecoder::LiveDecoder (LiveDecoderSource *source) :
-  LiveDecoder()
+LiveDecoder::LiveDecoder (LiveDecoderSource *source, float mix_freq) :
+  LiveDecoder (mix_freq)
 {
   this->source = source;
 }
@@ -111,14 +121,14 @@ LiveDecoder::~LiveDecoder()
 }
 
 void
-LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
 {
   Audio *best_audio = 0;
   double best_diff = 1e10;
 
   if (source)
     {
-      source->retrigger (channel, freq, midi_velocity, mix_freq);
+      source->retrigger (channel, freq, midi_velocity);
       best_audio = source->audio();
     }
   else
@@ -157,30 +167,16 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
       loop_end_scaled = audio->loop_end * mix_freq / audio->mix_freq;
       loop_point = (get_loop_type() == Audio::LOOP_NONE) ? -1 : audio->loop_start;
 
-      block_size = NoiseDecoder::preferred_block_size (mix_freq);
-
       /* start skip: skip the first half block to avoid fade-in at start
        * this will produce clicks unless an external envelope is applied
        */
       if (start_skip_enabled)
         zero_values_at_start_scaled += block_size / 2;
 
-      if (noise_decoder)
-        delete noise_decoder;
-      noise_decoder = new NoiseDecoder (mix_freq, block_size);
+      zero_float_block (block_size, &(*sse_samples)[0]);
 
       if (noise_seed != -1)
         noise_decoder->set_seed (noise_seed);
-
-      if (ifft_synth)
-        delete ifft_synth;
-      ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
-
-      if (sse_samples)
-        delete sse_samples;
-      sse_samples = new AlignedArray<float, 16> (block_size);
-
-      pp_inter = PolyPhaseInter::the(); // do not delete
 
       have_samples = 0;
       pos = 0;
@@ -213,7 +209,6 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity, float mix_fr
     }
   filter_latency_compensation = true;
   current_freq = freq;
-  current_mix_freq = mix_freq;
 }
 
 size_t
@@ -267,7 +262,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
        */
       bool need_resample = true;
       const double phase_inc = (current_freq / audio->fundamental_freq) *
-                               (audio->mix_freq / current_mix_freq);
+                               (audio->mix_freq / mix_freq);
       if (fabs (phase_inc - 1.0) < 1e-6)
         need_resample = false;
 
@@ -275,7 +270,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
         {
           double want_freq = current_freq;
           double phase_inc = (want_freq / audio->fundamental_freq) *
-                             (audio->mix_freq / current_mix_freq);
+                             (audio->mix_freq / mix_freq);
 
           int ipos = original_sample_pos;
           float frac = original_sample_pos - ipos;
@@ -375,9 +370,9 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 
               if (sines_enabled)
                 {
-                  const double phase_factor = block_size * M_PI / current_mix_freq;
+                  const double phase_factor = block_size * M_PI / mix_freq;
                   const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                  const double filter_min_freq = filter_fact * current_mix_freq;
+                  const double filter_min_freq = filter_fact * mix_freq;
 
                   size_t old_partial = 0;
                   for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
@@ -394,7 +389,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                       const double portamento_freq = freq * max (portamento_stretch, 1.0f);
                       if (portamento_freq > filter_min_freq)
                         {
-                          double norm_freq = portamento_freq / current_mix_freq;
+                          double norm_freq = portamento_freq / mix_freq;
                           if (norm_freq > 0.5)
                             {
                               // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
@@ -516,7 +511,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
       if (env_pos >= zero_values_at_start_scaled)
         {
           // decode envelope
-          const double time_ms = env_pos * 1000.0 / current_mix_freq;
+          const double time_ms = env_pos * 1000.0 / mix_freq;
           if (time_ms < audio->attack_start_ms)
             {
               audio_out[i++] = 0;
@@ -650,12 +645,12 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
   float vib_freq_in[n_values];
 
   /* how many samples has the attack phase? */
-  const float attack_samples  = vibrato_attack / 1000.0 * current_mix_freq;
+  const float attack_samples  = vibrato_attack / 1000.0 * mix_freq;
 
   /* compute per sample envelope increment */
   const float vibrato_env_inc   = attack_samples > 1.0 ? 1.0 / attack_samples : 1.0;
 
-  const float vibrato_phase_inc = vibrato_frequency / current_mix_freq * 2 * M_PI;
+  const float vibrato_phase_inc = vibrato_frequency / mix_freq * 2 * M_PI;
   const float vibrato_depth_factor = pow (2, vibrato_depth / 1200.0) - 1;
 
   for (size_t i = 0; i < n_values; i++)
@@ -698,7 +693,7 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
         {
           // the audio input for the filter can start at a non-zero value:
           // use a 1ms ramp to reduce the "click" that is processed by the filter
-          uint ramp_len = current_mix_freq * 0.001f;
+          uint ramp_len = mix_freq * 0.001f;
 
           float audio_ramp[ramp_len];
           float amp = 0;
@@ -958,7 +953,7 @@ LiveDecoder::time_offset_ms() const
    * information for jitter-free timing.
    */
   assert (in_process);
-  return 1000 * (env_pos - start_env_pos) / current_mix_freq;
+  return 1000 * (env_pos - start_env_pos) / mix_freq;
 }
 
 void

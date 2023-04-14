@@ -55,7 +55,7 @@ class LiveDecoder
   size_t              loop_end_scaled;
   int                 loop_point;
   float               current_freq;
-  float               current_mix_freq;
+  float               mix_freq;
 
   size_t              have_samples;
   size_t              block_size;
@@ -83,9 +83,6 @@ class LiveDecoder
   float               vibrato_attack;
   float               vibrato_phase;   // state
   float               vibrato_env;     // state
-
-  // filter
-  std::function<void()> filter_callback;
 
   // timing related
   double              start_env_pos = 0;
@@ -119,10 +116,10 @@ class LiveDecoder
                             float *audio_out,
                             bool ramp);
 
-  LiveDecoder();
+  LiveDecoder (float mix_freq);
 public:
-  LiveDecoder (WavSet *smset);
-  LiveDecoder (LiveDecoderSource *source);
+  LiveDecoder (WavSet *smset, float mix_freq);
+  LiveDecoder (LiveDecoderSource *source, float mix_freq);
   ~LiveDecoder();
 
   void enable_noise (bool ne);
@@ -137,7 +134,7 @@ public:
   void set_filter (LiveDecoderFilter *filter);
 
   static void precompute_tables (float mix_freq);
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq);
+  void retrigger (int channel, float freq, int midi_velocity);
   void process (size_t       n_values,
                 const float *freq_in,
                 float       *audio_out);
