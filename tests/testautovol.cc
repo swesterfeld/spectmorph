@@ -14,7 +14,7 @@ class ConstBlockSource : public LiveDecoderSource
   Audio      my_audio;
   AudioBlock my_audio_block;
 public:
-  ConstBlockSource (const AudioBlock& block)
+  ConstBlockSource (const AudioBlock& block, float mix_freq)
     : my_audio_block (block)
   {
     my_audio.frame_size_ms = 40;
@@ -23,15 +23,15 @@ public:
     my_audio.attack_end_ms = 20;
     my_audio.zeropad = 4;
     my_audio.loop_type = Audio::LOOP_NONE;
+    my_audio.mix_freq = mix_freq;
 
     if (my_audio_block.noise.empty())
       {
         my_audio_block.noise.resize (32); // all 0, no noise
       }
   }
-  void retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+  void retrigger (int channel, float freq, int midi_velocity)
   {
-    my_audio.mix_freq = mix_freq;
     my_audio.fundamental_freq = freq;
   }
   Audio *audio()
@@ -92,10 +92,10 @@ run_test (int n_sines, int n_noise, int mix_freq)
   if (n_noise > 2)
     set_noise_f (audio_block, 26, 0.1);
 
-  ConstBlockSource source (audio_block);
-  LiveDecoder live_decoder (&source);
+  ConstBlockSource source (audio_block, mix_freq);
+  LiveDecoder live_decoder (&source, mix_freq);
   //live_decoder.set_noise_seed (42);
-  live_decoder.retrigger (0, 440, 127, mix_freq);
+  live_decoder.retrigger (0, 440, 127);
 
   vector<float> samples (mix_freq * 10);
   live_decoder.process (samples.size(), nullptr, &samples[0]);
