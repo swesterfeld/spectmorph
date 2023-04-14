@@ -257,7 +257,7 @@ main (int argc, char **argv)
       exit (1);
     }
 
-  LiveDecoder decoder (&smset);
+  LiveDecoder decoder (&smset, options.rate);
 
   decoder.enable_original_samples (options.enable_original_samples);
   decoder.enable_sines (options.sines_enabled);
@@ -287,7 +287,7 @@ main (int argc, char **argv)
     }
 
   vector<float> audio_out (len);
-  decoder.retrigger (0, options.freq, 127, options.rate);
+  decoder.retrigger (0, options.freq, 127);
   decoder.process (audio_out.size(), freq_in.size() ? &freq_in[0] : nullptr, &audio_out[0]);
 
   // hacky way to remove tail silence
