@@ -37,7 +37,7 @@ class LiveDecoder
 
   size_t              block_size;
   IFFTSynth           ifft_synth;
-  NoiseDecoder       *noise_decoder;
+  NoiseDecoder        noise_decoder;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
   LiveDecoderFilter  *filter = nullptr;

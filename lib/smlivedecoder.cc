@@ -62,7 +62,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   audio (NULL),
   block_size (NoiseDecoder::preferred_block_size (mix_freq)),
   ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING),
-  noise_decoder (NULL),
+  noise_decoder (mix_freq, block_size),
   source (NULL),
   sines_enabled (true),
   noise_enabled (true),
@@ -80,7 +80,6 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   init_aa_filter();
   set_unison_voices (1, 0);
 
-  noise_decoder = new NoiseDecoder (mix_freq, block_size);
   sse_samples = new AlignedArray<float, 16> (block_size);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
@@ -100,11 +99,6 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source, float mix_freq) :
 
 LiveDecoder::~LiveDecoder()
 {
-  if (noise_decoder)
-    {
-      delete noise_decoder;
-      noise_decoder = NULL;
-    }
   if (sse_samples)
     {
       delete sse_samples;
@@ -169,7 +163,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       zero_float_block (block_size, &(*sse_samples)[0]);
 
       if (noise_seed != -1)
-        noise_decoder->set_seed (noise_seed);
+        noise_decoder.set_seed (noise_seed);
 
       have_samples = 0;
       pos = 0;
@@ -483,7 +477,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               last_pstate = &new_pstate;
 
               if (noise_enabled)
-                noise_decoder->process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
+                noise_decoder.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
