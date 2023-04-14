@@ -32,7 +32,7 @@ SimpleWavSetSource::set_wav_set (WavSet *new_wav_set)
 }
 
 void
-SimpleWavSetSource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+SimpleWavSetSource::retrigger (int channel, float freq, int midi_velocity)
 {
   Audio *best_audio = NULL;
   float  best_diff  = 1e10;

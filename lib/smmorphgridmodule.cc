@@ -73,7 +73,7 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
 }
 
 void
-MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity, float mix_freq)
+MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity)
 {
   for (int x = 0; x < module->cfg->width; x++)
     {
@@ -83,11 +83,11 @@ MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity
 
           if (node.mod && node.mod->source())
             {
-              node.mod->source()->retrigger (channel, freq, midi_velocity, mix_freq);
+              node.mod->source()->retrigger (channel, freq, midi_velocity);
             }
           if (node.has_source)
             {
-              node.source.retrigger (channel, freq, midi_velocity, mix_freq);
+              node.source.retrigger (channel, freq, midi_velocity);
             }
         }
     }

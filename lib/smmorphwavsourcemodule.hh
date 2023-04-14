@@ -27,7 +27,7 @@ class MorphWavSourceModule : public MorphOperatorModule
   public:
     MorphWavSourceModule   *module = nullptr;
 
-    void retrigger (int channel, float freq, int midi_velocity, float mix_freq) override;
+    void retrigger (int channel, float freq, int midi_velocity) override;
     Audio *audio() override;
     AudioBlock *audio_block (size_t index) override;
 

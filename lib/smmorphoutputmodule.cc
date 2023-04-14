@@ -61,7 +61,7 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
             delete out_decoders[ch];
           if (mod)
             {
-              dec = new EffectDecoder (this, mod->source());
+              dec = new EffectDecoder (this, mod->source(), morph_plan_voice->mix_freq());
             }
         }
 
@@ -165,7 +165,7 @@ MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq
     {
       if (out_decoders[port])
         {
-          out_decoders[port]->retrigger (channel, freq, midi_velocity, morph_plan_voice->mix_freq());
+          out_decoders[port]->retrigger (channel, freq, midi_velocity);
         }
     }
   morph_plan_voice->reset_value (time_info);
