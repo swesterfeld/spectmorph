@@ -60,7 +60,8 @@ truncate_phase (double phase)
 LiveDecoder::LiveDecoder (float mix_freq) :
   smset (NULL),
   audio (NULL),
-  ifft_synth (NULL),
+  block_size (NoiseDecoder::preferred_block_size (mix_freq)),
+  ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING),
   noise_decoder (NULL),
   source (NULL),
   sines_enabled (true),
@@ -79,10 +80,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   init_aa_filter();
   set_unison_voices (1, 0);
 
-  block_size = NoiseDecoder::preferred_block_size (mix_freq);
-
   noise_decoder = new NoiseDecoder (mix_freq, block_size);
-  ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   sse_samples = new AlignedArray<float, 16> (block_size);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
@@ -102,11 +100,6 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source, float mix_freq) :
 
 LiveDecoder::~LiveDecoder()
 {
-  if (ifft_synth)
-    {
-      delete ifft_synth;
-      ifft_synth = NULL;
-    }
   if (noise_decoder)
     {
       delete noise_decoder;
@@ -351,7 +344,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 
               assert (audio_block.freqs.size() == audio_block.mags.size());
 
-              ifft_synth->clear_partials();
+              ifft_synth.clear_partials();
 
               // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
               bool lps_zero = (last_pstate == &pstate[0]);
@@ -453,7 +446,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                               if (DEBUG)
                                 printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
                             }
-                          ifft_synth->render_partial (freq, mag, phase);
+                          ifft_synth.render_partial (freq, mag, phase);
                         }
                       else
                         {
@@ -475,7 +468,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                                   phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
                                 }
 
-                              ifft_synth->render_partial (freq * unison_freq_factor[i], mag, phase);
+                              ifft_synth.render_partial (freq * unison_freq_factor[i], mag, phase);
 
                               unison_new_phases.push_back (phase);
                             }
@@ -490,12 +483,12 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               last_pstate = &new_pstate;
 
               if (noise_enabled)
-                noise_decoder->process (audio_block, ifft_synth->fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
+                noise_decoder->process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
                   float *samples = &(*sse_samples)[0];
-                  ifft_synth->get_samples (samples, IFFTSynth::ADD);
+                  ifft_synth.get_samples (samples, IFFTSynth::ADD);
                 }
             }
           else

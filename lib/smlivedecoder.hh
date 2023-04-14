@@ -35,7 +35,8 @@ class LiveDecoder
   WavSet             *smset;
   Audio              *audio;
 
-  IFFTSynth          *ifft_synth;
+  size_t              block_size;
+  IFFTSynth           ifft_synth;
   NoiseDecoder       *noise_decoder;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
@@ -58,7 +59,6 @@ class LiveDecoder
   float               mix_freq;
 
   size_t              have_samples;
-  size_t              block_size;
   size_t              pos;
   double              env_pos;
   size_t              frame_idx;
