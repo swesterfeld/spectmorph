@@ -17,7 +17,7 @@ class Source : public LiveDecoderSource
 public:
   Source (Audio *my_audio);
 
-  void retrigger (int, float, int, float);
+  void retrigger (int, float, int);
   Audio* audio();
   AudioBlock* audio_block (size_t index);
 };
@@ -28,7 +28,7 @@ Source::Source (Audio *audio) :
 }
 
 void
-Source::retrigger (int, float, int, float)
+Source::retrigger (int, float, int)
 {
 }
 
@@ -126,17 +126,17 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
       new_decoder_audio = audio->clone();
 
       new_decoder_source = new Source (new_decoder_audio);
-      new_decoder = new LiveDecoder (new_decoder_source);
+      new_decoder = new LiveDecoder (new_decoder_source, jack_mix_freq);
 
       new_decoder->enable_original_samples (use_samples);
-      new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
+      new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127);
 
       // touch decoder in non-RT-thread to precompute tables & co
       vector<float> samples (10000);
       new_decoder->process (samples.size(), nullptr, &samples[0]);
 
       // finally setup decoder for JACK thread
-      new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127, jack_mix_freq);
+      new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127);
     }
   update_decoder (new_decoder, new_decoder_audio, new_decoder_source);
 }
