@@ -242,8 +242,8 @@ Navigator::on_selection_changed()
   wav_data.reset (new WavData());
   if (spectmorph_signal_active())
     {
-      LiveDecoder decoder (&wset);
-      decoder.retrigger (channel, audio->fundamental_freq, 127, audio->mix_freq);
+      LiveDecoder decoder (&wset, audio->mix_freq);
+      decoder.retrigger (channel, audio->fundamental_freq, 127);
       decoded_samples.resize (audio->sample_count);
       decoder.process (decoded_samples.size(), nullptr, &decoded_samples[0]);
       wav_data->load (decoded_samples, 1, audio->mix_freq, 32);
