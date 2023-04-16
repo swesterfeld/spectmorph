@@ -15,7 +15,7 @@ echo "======= $(pwd) ======="
 
 function autoconfbuild {
 set -e
-	autoconfconf $@
+	autoconfconf $@ $SDK_AUTOCONF_BUILD
 	make $MAKEFLAGS
 	make install
 }
@@ -38,9 +38,17 @@ BUILDD=$PWD/build
 
 mkdir -p $SRCDIR $BUILDD
 
+export SDK_TARGET=$1
 . sdk-options.sh
+
+if [ -z "$SDK_AUTOCONF_BUILD" ]; then
+  echo "target arch '$SDK_TARGET' not supported"
+  exit 1
+fi
+
 PREFIX=$PWD/prefix
 GLOBAL_CFLAGS="$SDK_OPTIONS"
+GLOBAL_CXXFLAGS="$SDK_OPTIONS"
 GLOBAL_LDFLAGS="-L$PREFIX/lib"
 MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
@@ -60,7 +68,7 @@ src libpng-1.6.34 tar.xz https://downloads.sourceforge.net/project/libpng/libpng
 CFLAGS="${GLOBAL_CFLAGS}" \
 CPPFLAGS="-I$PREFIX/include" \
 LDFLAGS="${GLOBAL_LDFLAGS}" \
-./configure --prefix=$PREFIX --disable-shared --with-zlib-prefix=$PREFIX
+./configure $SDK_AUTOCONF_BUILD --prefix=$PREFIX --disable-shared --with-zlib-prefix=$PREFIX
 make $MAKEFLAGS
 make install
 
