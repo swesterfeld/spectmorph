@@ -441,8 +441,8 @@ MC_PROG_CC_SUPPORTS_OPTION([-ffast-math], [
   AM_CXXFLAGS="$AM_CXXFLAGS -ffast-math"
 ])
 
-gcc_target_sse="-msse -msse2 -msse3 -mmmx"
-MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
+#gcc_target_sse="-msse -msse2 -msse3 -mmmx"
+# MC_PROG_CC_SUPPORTS_OPTION([$gcc_target_sse],     [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_target_sse" ])
 
 gcc_optimize_extra="-funroll-loops -ftree-vectorize -finline-functions -ftracer -ftree-loop-distribution -ftree-loop-ivcanon -ftree-loop-im -minline-all-stringops"
 MC_PROG_CC_SUPPORTS_OPTION([$gcc_optimize_extra], [ AM_CXXFLAGS="$AM_CXXFLAGS $gcc_optimize_extra" ])

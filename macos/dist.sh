@@ -35,12 +35,30 @@ cp -rv instruments SpectMorph.clap/Contents/Resources || die "error: cp instrume
 cp -rv PkgInfo SpectMorph.clap/Contents || die "error: cp ...pkginfo"
 cat Info.plist | sed s/vst/clap/g > SpectMorph.clap/Contents/Info.plist || die "error: gen info"
 
-## codesign
-codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" SpectMorph.vst --timestamp
-codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" SpectMorph.clap --timestamp
+make_pkg()
+{
+  NAME=$1
+  INSTDIR=$2
+  IDENT=$3
+
+  codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" $NAME --timestamp
+
+  rm -rf installer-tmp/$NAME
+  mkdir -p installer-tmp/$NAME
+
+  mv $NAME installer-tmp/$NAME
+  pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/$NAME --identifier $IDENT --version ${PACKAGE_VERSION} --install-location "$INSTDIR" "$NAME.pkg"
+
+  rm -rf installer-tmp/$NAME
+}
+
+make_pkg SpectMorph.vst /Library/Audio/Plug-Ins/VST org.spectmorph.vst.SpectMorph.pkg
+make_pkg SpectMorph.clap /Library/Audio/Plug-Ins/CLAP org.spectmorph.clap.SpectMorph.pkg
+
+productbuild --synthesize --package SpectMorph.clap.pkg --package SpectMorph.vst.pkg SpectMorph.xml
+productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --distribution SpectMorph.xml SpectMorph-${PACKAGE_VERSION}.pkg
 
 rm -f SpectMorph-${PACKAGE_VERSION}.zip
-zip -r SpectMorph-${PACKAGE_VERSION}.zip SpectMorph.vst SpectMorph.clap || die "error: zip"
+zip -r SpectMorph-${PACKAGE_VERSION}.zip SpectMorph-${PACKAGE_VERSION}.pkg || die "error: zip"
 
-# cp -av SpectMorph.vst ~/Library/Audio/Plug-Ins/VST
-# cp -av SpectMorph.clap ~/Library/Audio/Plug-Ins/CLAP
+rm SpectMorph.xml SpectMorph.vst.pkg SpectMorph.clap.pkg
