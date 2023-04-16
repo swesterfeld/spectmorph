@@ -37,7 +37,6 @@ apt-get source libsndfile
 apt-get source zlib1g
 apt-get source libffi
 apt-get source glib2.0
-apt-get source libao
 apt-get source libpng
 apt-get source pixman
 apt-get source freetype
@@ -69,10 +68,6 @@ autoconfbuild --disable-shared
 
 cd $SRCDIR/glib2.0-2.48.2
 autoconfbuild --disable-shared --with-pcre=internal
-
-# FIXME: could be removed from spectmorph-vst/lv2 deps
-cd $SRCDIR/libao-1.1.0
-autoconfbuild --disable-shared
 
 cd $SRCDIR/libpng-1.2.54
 autoconfbuild --disable-shared

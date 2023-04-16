@@ -33,7 +33,7 @@ ENV PKG_CONFIG_PATH=/spectmorph/static/prefix/lib/pkgconfig
 ENV PKG_CONFIG="pkg-config --static"
 RUN cd static && ./build-deps.sh
 ENV CPPFLAGS="-I/spectmorph/static/prefix/include"
-RUN ./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --with-fonts
+RUN ./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --with-fonts
 RUN make clean
 RUN make -j16
 RUN make install
