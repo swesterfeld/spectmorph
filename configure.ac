@@ -317,6 +317,16 @@ fi
 AM_CONDITIONAL([COND_WITH_QT], [test "x$with_qt" != "xno"])
 dnl -------------------------------------------------------------------------
 
+dnl -------------- libao support is optional --------------------------------
+AC_ARG_WITH([ao], [AS_HELP_STRING([--with-ao], [build tools which need libao])])
+if test "x$with_ao" != "xno"; then
+  dnl this check will abort if libao is not found
+  AC_AO_REQUIREMENTS
+  with_ao=yes
+fi
+AM_CONDITIONAL([COND_WITH_AO], [test "x$with_ao" != "xno"])
+dnl -------------------------------------------------------------------------
+
 dnl allow setting location of the instruments tarball (default in data/ dir)
 AC_ARG_WITH([instruments], [AS_HELP_STRING([--with-instruments=FILE], [use custom instruments tarball])],,with_instruments=no)
 
@@ -379,7 +389,6 @@ AM_CONDITIONAL([COND_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 
-AC_AO_REQUIREMENTS
 AC_FREETYPE_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
@@ -490,8 +499,9 @@ echo "--------------------------------------------------------------------------
 echo "$PACKAGE_NAME $PACKAGE_VERSION"
 echo "---------------------------------------------------------------------------"
 echo "  LV2 plug-in support  . .: $with_lv2"
-echo "  JACK support   . . . . .: $with_jack"
+echo "  JACK support . . . . . .: $with_jack"
 echo "  Qt5 available  . . . . .: $with_qt"
+echo "  libao support  . . . . .: $with_ao"
 echo "  Fonts . . . . . . . . . : $with_fonts"
 
 if test "x$with_instruments" != "xno"; then
