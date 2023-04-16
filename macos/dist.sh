@@ -62,3 +62,6 @@ rm -f SpectMorph-${PACKAGE_VERSION}.zip
 zip -r SpectMorph-${PACKAGE_VERSION}.zip SpectMorph-${PACKAGE_VERSION}.pkg || die "error: zip"
 
 rm SpectMorph.xml SpectMorph.vst.pkg SpectMorph.clap.pkg
+
+### xcrun notarytool submit SpectMorph-0.5.2-test1.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --wait
+### xcrun stapler staple SpectMorph-0.5.2-test1.pkg
