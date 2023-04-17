@@ -103,14 +103,17 @@ patch -p1 < ../../cairo-1.15.10-notest.diff
 autoreconf -i
 autoconfbuild --disable-shared --disable-xlib --disable-xcb
 
-src libogg-1.3.3 tar.xz http://downloads.xiph.org/releases/ogg/libogg-1.3.3.tar.xz
+src libogg-1.3.5 tar.xz https://github.com/xiph/ogg/releases/download/v1.3.5/libogg-1.3.5.tar.xz
 autoconfbuild --disable-shared
 
-src libvorbis-1.3.6 tar.xz http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.6.tar.xz
+src libvorbis-1.3.7 tar.xz https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.xz
 autoconfbuild --disable-shared
 
-src flac-1.3.2 tar.xz https://ftp.osuosl.org/pub/xiph/releases/flac/flac-1.3.2.tar.xz
+src flac-1.4.2 tar.xz https://github.com/xiph/flac/releases/download/1.4.2/flac-1.4.2.tar.xz
 autoconfbuild --disable-shared
 
-src libsndfile-1.0.28 tar.gz http://www.mega-nerd.com/libsndfile/files/libsndfile-1.0.28.tar.gz
+src opus-1.3.1 tar.gz https://archive.mozilla.org/pub/opus/opus-1.3.1.tar.gz
+autoconfbuild --disable-shared
+
+src libsndfile-1.2.0 tar.xz https://github.com/libsndfile/libsndfile/releases/download/1.2.0/libsndfile-1.2.0.tar.xz
 autoconfbuild --disable-shared
