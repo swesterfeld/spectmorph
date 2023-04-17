@@ -36,8 +36,6 @@ function src {
 SRCDIR=$PWD/src
 BUILDD=$PWD/build
 
-mkdir -p $SRCDIR $BUILDD
-
 export SDK_TARGET=$1
 . sdk-options.sh
 
@@ -54,6 +52,12 @@ MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 export PKG_CONFIG="pkg-config --static"
+
+if [ "x$2" = "xclean" ]; then
+  rm -rf $PREFIX $BUILDD
+fi
+
+mkdir -p $SRCDIR $BUILDD
 
 src zlib-1.2.11 tar.gz https://github.com/madler/zlib/archive/refs/tags/v1.2.11.tar.gz
 

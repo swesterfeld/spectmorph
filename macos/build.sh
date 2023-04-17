@@ -32,5 +32,9 @@ cd $MACOS_DIR || die "cd macos_dir"
 
 source ./config.sh || die "source config.sh"
 
+if [ "x$2" = "xclean" ]; then
+  make -C.. clean || die "make clean failed"
+fi
+
 make -j9 -C.. || die "make failed"
 make -C.. install || die "make install failed"
