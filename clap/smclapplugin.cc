@@ -732,7 +732,7 @@ clap_init (const char *p)
 
   sm_plugin_init();
 
-  SM_SET_OS_DATA_DIR ("clap");
+  SM_SET_OS_DATA_DIR();
 
   return true;
 }
