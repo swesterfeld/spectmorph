@@ -83,8 +83,9 @@ std::string sm_get_cache_dir();
 
 #ifdef SM_OS_MACOS
 std::string sm_mac_documents_dir();
-std::string sm_mac_application_support_dir();
-void set_macos_data_dir (const std::string& plugin_format);
+std::string sm_mac_application_support_dir_user();
+std::string sm_mac_application_support_dir_system();
+void set_macos_data_dir();
 #endif
 
 enum DocumentsDir
@@ -162,20 +163,20 @@ void set_windows_data_dir (HMODULE hInstance);
 #endif
 
 #ifdef SM_OS_WINDOWS
-#define SM_SET_OS_DATA_DIR(plugin_format) set_windows_data_dir (hInstance)
+#define SM_SET_OS_DATA_DIR() set_windows_data_dir (hInstance)
 #endif
 
 #ifdef SM_OS_MACOS
-#define SM_SET_OS_DATA_DIR(plugin_format) set_macos_data_dir (plugin_format)
+#define SM_SET_OS_DATA_DIR() set_macos_data_dir()
 #endif
 
 #ifdef SM_OS_LINUX
 
 #ifdef SM_STATIC_LINUX
-#define SM_SET_OS_DATA_DIR(plugin_format) set_static_linux_data_dir()
+#define SM_SET_OS_DATA_DIR() set_static_linux_data_dir()
 #else
 // on linux (not statically linked), plugin data directory is defined during build
-#define SM_SET_OS_DATA_DIR(plugin_format)
+#define SM_SET_OS_DATA_DIR()
 #endif
 
 #endif

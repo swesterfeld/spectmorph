@@ -350,36 +350,15 @@ set_windows_data_dir (HMODULE hInstance)
 static string
 spectmorph_user_data_dir()
 {
-  return sm_mac_application_support_dir() + "/SpectMorph";
+  return sm_mac_application_support_dir_user() + "/SpectMorph";
 }
 
 void
-set_macos_data_dir (const string& plugin_format)
+set_macos_data_dir()
 {
-  string bundle = string_printf ("org.spectmorph.%s.SpectMorph", plugin_format.c_str());
-  CFStringRef bundle_str_ref = CFStringCreateWithCString (kCFAllocatorDefault, bundle.c_str(), kCFStringEncodingMacRoman);
-  CFBundleRef ref = CFBundleGetBundleWithIdentifier (bundle_str_ref);
-
-  if(ref)
-    {
-      CFURLRef url = CFBundleCopyBundleURL (ref);
-      if (url)
-        {
-          char path[1024];
-
-          CFURLGetFileSystemRepresentation (url, true, (UInt8 *) path, 1024);
-          CFRelease (url);
-
-          sm_debug ("macOS bundle path: '%s'\n", path);
-
-          string pkg_data_dir = path;
-          pkg_data_dir += "/Contents/Resources";
-
-          sm_debug ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
-          sm_set_pkg_data_dir (pkg_data_dir);
-        }
-    }
-  CFRelease (bundle_str_ref);
+  string pkg_data_dir = sm_mac_application_support_dir_system() + "/SpectMorph";
+  sm_debug ("macOS data dir: '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
 }
 #endif
 

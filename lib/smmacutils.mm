@@ -18,9 +18,17 @@ sm_mac_documents_dir()
 }
 
 std::string
-sm_mac_application_support_dir()
+sm_mac_application_support_dir_user()
 {
   NSArray *paths = NSSearchPathForDirectoriesInDomains (NSApplicationSupportDirectory, NSUserDomainMask, YES);
+  NSString *applicationSupportDirectory = [paths objectAtIndex:0];
+  return [applicationSupportDirectory UTF8String];
+}
+
+std::string
+sm_mac_application_support_dir_system()
+{
+  NSArray *paths = NSSearchPathForDirectoriesInDomains (NSApplicationSupportDirectory, NSSystemDomainMask, YES);
   NSString *applicationSupportDirectory = [paths objectAtIndex:0];
   return [applicationSupportDirectory UTF8String];
 }
