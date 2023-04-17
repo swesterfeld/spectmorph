@@ -46,10 +46,40 @@ cp -rv $PREFIX/share/spectmorph/templates installer-tmp/SpectMorph.data/SpectMor
 pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/SpectMorph.data --identifier "org.spectmorph.data.SpectMorph.pkg" --version ${PACKAGE_VERSION} --install-location "/tmp/SpectMorph.data" --scripts DataInstallerScript SpectMorph.data.pkg
 rm -rf installer-tmp/SpectMorph.data
 
-productbuild --synthesize --package SpectMorph.clap.pkg --package SpectMorph.vst.pkg --package SpectMorph.data.pkg SpectMorph.xml
-productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --distribution SpectMorph.xml SpectMorph-${PACKAGE_VERSION}.pkg
+cat > installer-tmp/distribution.xml << EOH
+<?xml version="1.0" encoding="utf-8"?>
+<installer-gui-script minSpecVersion="1">
+    <title>SpectMorph ${PACKAGE_VERSION}</title>
+    <license file="$PWD/gpl-3.0.rtf" />
+    <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg"/>
+    <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg"/>
+    <pkg-ref id="org.spectmorph.data.SpectMorph.pkg"/>
+    <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64" rootVolumeOnly="true"/>
+    <choices-outline>
+        <line choice="default">
+            <line choice="org.spectmorph.clap.SpectMorph.pkg"/>
+            <line choice="org.spectmorph.vst.SpectMorph.pkg"/>
+            <line choice="org.spectmorph.data.SpectMorph.pkg"/>
+        </line>
+    </choices-outline>
+    <choice id="default"/>
+    <choice id="org.spectmorph.clap.SpectMorph.pkg" visible="false">
+        <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg"/>
+    </choice>
+    <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.clap.pkg</pkg-ref>
+    <choice id="org.spectmorph.vst.SpectMorph.pkg" visible="false">
+        <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg"/>
+    </choice>
+    <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.vst.pkg</pkg-ref>
+    <choice id="org.spectmorph.data.SpectMorph.pkg" visible="false">
+        <pkg-ref id="org.spectmorph.data.SpectMorph.pkg"/>
+    </choice>
+    <pkg-ref id="org.spectmorph.data.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.data.pkg</pkg-ref>
+</installer-gui-script>
+EOH
+productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --distribution installer-tmp/distribution.xml SpectMorph-${PACKAGE_VERSION}.pkg
 
-rm SpectMorph.xml SpectMorph.vst.pkg SpectMorph.clap.pkg SpectMorph.data.pkg
+rm -rf installer-tmp SpectMorph.vst.pkg SpectMorph.clap.pkg SpectMorph.data.pkg
 
 ### xcrun notarytool submit SpectMorph-0.5.2-test1.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --wait
 ### xcrun stapler staple SpectMorph-0.5.2-test1.pkg
