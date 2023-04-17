@@ -14,54 +14,42 @@ source config.sh
 SMDIR=spectmorph
 SMDIR_CROSS=../../cross/spectmorph/macos/spectmorph
 
-### VST
-rm -rf ./SpectMorph.vst/*
-mkdir -p SpectMorph.vst/Contents/MacOS SpectMorph.vst/Contents/Resources || die "error: mkdir SpectMorph.vst/..."
-lipo -create -output SpectMorph.vst/Contents/MacOS/SpectMorph \
-                     $SMDIR/lib/vst/SpectMorph.so \
-                     $SMDIR_CROSS/lib/vst/SpectMorph.so || die "error: lipo SpectMorph"
-cp -rv $PREFIX/share/spectmorph/templates SpectMorph.vst/Contents/Resources || die "error: cp templates"
-cp -rv instruments SpectMorph.vst/Contents/Resources || die "error: cp instruments"
-cp -rv Info.plist PkgInfo SpectMorph.vst/Contents || die "error: cp ...info"
-
-### CLAP
-rm -rf ./SpectMorph.clap/*
-mkdir -p SpectMorph.clap/Contents/MacOS SpectMorph.clap/Contents/Resources || die "error: mkdir SpectMorph.clap/..."
-lipo -create -output SpectMorph.clap/Contents/MacOS/SpectMorph \
-                     $SMDIR/lib/clap/SpectMorph.clap \
-                     $SMDIR_CROSS/lib/clap/SpectMorph.clap || die "error: lipo SpectMorph"
-cp -rv $PREFIX/share/spectmorph/templates SpectMorph.clap/Contents/Resources || die "error: cp templates"
-cp -rv instruments SpectMorph.clap/Contents/Resources || die "error: cp instruments"
-cp -rv PkgInfo SpectMorph.clap/Contents || die "error: cp ...pkginfo"
-cat Info.plist | sed s/vst/clap/g > SpectMorph.clap/Contents/Info.plist || die "error: gen info"
-
 make_pkg()
 {
-  NAME=$1
+  SHORT=$1
+  NAME=SpectMorph.$SHORT
   INSTDIR=$2
-  IDENT=$3
-
-  codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" $NAME --timestamp
+  SONAME=$3
+  IDENT=$4
 
   rm -rf installer-tmp/$NAME
-  mkdir -p installer-tmp/$NAME
+  mkdir -p installer-tmp/$NAME/$NAME/Contents/MacOS installer-tmp/$NAME/$NAME/Contents/Resources || die "error: mkdir SpectMorph.vst/..."
+  lipo -create -output installer-tmp/$NAME/$NAME/Contents/MacOS/SpectMorph \
+                       $SMDIR/lib/$SHORT/$SONAME \
+                       $SMDIR_CROSS/lib/$SHORT/$SONAME || die "error: lipo SpectMorph"
+  cp -rv PkgInfo installer-tmp/$NAME/$NAME/Contents || die "error: cp ...pkginfo"
+  cat Info.plist | sed "s/vst/$SHORT/g" > installer-tmp/$NAME/$NAME/Contents/Info.plist || die "error: gen info"
 
-  mv $NAME installer-tmp/$NAME
+  codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" installer-tmp/$NAME/$NAME --timestamp
+
   pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/$NAME --identifier $IDENT --version ${PACKAGE_VERSION} --install-location "$INSTDIR" "$NAME.pkg"
 
   rm -rf installer-tmp/$NAME
 }
 
-make_pkg SpectMorph.vst /Library/Audio/Plug-Ins/VST org.spectmorph.vst.SpectMorph.pkg
-make_pkg SpectMorph.clap /Library/Audio/Plug-Ins/CLAP org.spectmorph.clap.SpectMorph.pkg
+make_pkg vst /Library/Audio/Plug-Ins/VST SpectMorph.so org.spectmorph.vst.SpectMorph.pkg
+make_pkg clap /Library/Audio/Plug-Ins/CLAP SpectMorph.clap org.spectmorph.clap.SpectMorph.pkg
 
-productbuild --synthesize --package SpectMorph.clap.pkg --package SpectMorph.vst.pkg SpectMorph.xml
+mkdir -p installer-tmp/SpectMorph.data/SpectMorph
+cp -rv instruments installer-tmp/SpectMorph.data/SpectMorph || die "error: cp instruments"
+cp -rv $PREFIX/share/spectmorph/templates installer-tmp/SpectMorph.data/SpectMorph || die "error: cp templates"
+pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/SpectMorph.data --identifier "org.spectmorph.data.SpectMorph.pkg" --version ${PACKAGE_VERSION} --install-location "/tmp/SpectMorph.data" --scripts DataInstallerScript SpectMorph.data.pkg
+rm -rf installer-tmp/SpectMorph.data
+
+productbuild --synthesize --package SpectMorph.clap.pkg --package SpectMorph.vst.pkg --package SpectMorph.data.pkg SpectMorph.xml
 productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --distribution SpectMorph.xml SpectMorph-${PACKAGE_VERSION}.pkg
 
-rm -f SpectMorph-${PACKAGE_VERSION}.zip
-zip -r SpectMorph-${PACKAGE_VERSION}.zip SpectMorph-${PACKAGE_VERSION}.pkg || die "error: zip"
-
-rm SpectMorph.xml SpectMorph.vst.pkg SpectMorph.clap.pkg
+rm SpectMorph.xml SpectMorph.vst.pkg SpectMorph.clap.pkg SpectMorph.data.pkg
 
 ### xcrun notarytool submit SpectMorph-0.5.2-test1.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --wait
 ### xcrun stapler staple SpectMorph-0.5.2-test1.pkg
