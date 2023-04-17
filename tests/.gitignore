@@ -48,6 +48,13 @@ testinstbuild
 testuindexperf
 testwavdata
 testzip
+testnotifyperf
+testpandaperf
+testpropperf
+testsmdirs
+testsse
+testladdervcf
+testlfo
 test*.exe
 .libs
 .deps
