@@ -472,7 +472,7 @@ extern "C" AEffect *VSTPluginMain (audioMasterCallback audioMaster)
       VST_DEBUG ("Host: %s\n", hostProductString);
     }
 
-  SM_SET_OS_DATA_DIR ("vst");
+  SM_SET_OS_DATA_DIR();
 
   AEffect *effect = (AEffect *)calloc(1, sizeof(AEffect));
   effect->magic = kEffectMagic;
