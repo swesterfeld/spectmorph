@@ -295,11 +295,19 @@ save(LV2_Handle                instance,
     }
   auto abstract_path = [map_path](string path)
     {
-      if (map_path)
+      if (map_path && path != "")
         {
           char *abstract_path = map_path->abstract_path (map_path->handle, path.c_str());
-          path = abstract_path;
-          free (abstract_path);
+          if (abstract_path)
+            {
+              path = abstract_path;
+              free (abstract_path);
+            }
+          else
+            {
+              LV2_DEBUG ("abstract_path returned NULL for path '%s'\n", path.c_str());
+              path = "";
+            }
         }
       return path;
     };
@@ -354,11 +362,19 @@ restore(LV2_Handle                  instance,
     }
   auto absolute_path = [map_path](string path)
     {
-      if (map_path)
+      if (map_path && path != "")
         {
           char *absolute_path = map_path->absolute_path (map_path->handle, path.c_str());
-          path = absolute_path;
-          free (absolute_path);
+          if (absolute_path)
+            {
+              path = absolute_path;
+              free (absolute_path);
+            }
+          else
+            {
+              LV2_DEBUG ("absolute_path returned NULL for path '%s'\n", path.c_str());
+              path = "";
+            }
         }
       return path;
     };
