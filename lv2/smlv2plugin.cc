@@ -62,6 +62,18 @@ set_static_linux_data_dir()
 }
 #endif
 
+#ifdef SM_OS_WINDOWS
+HMODULE hInstance;
+
+extern "C" {
+BOOL WINAPI DllMain (HINSTANCE hInst, DWORD dwReason, LPVOID lpvReserved)
+{
+  hInstance = hInst;
+  return 1;
+}
+} // extern "C"
+#endif
+
 static LV2_Handle
 instantiate (const LV2_Descriptor*     descriptor,
              double                    rate,
@@ -69,9 +81,8 @@ instantiate (const LV2_Descriptor*     descriptor,
              const LV2_Feature* const* features)
 {
   sm_plugin_init();
-#ifdef SM_STATIC_LINUX
-  set_static_linux_data_dir();
-#endif
+
+  SM_SET_OS_DATA_DIR();
 
   LV2Plugin *self = new LV2Plugin (rate);
 
