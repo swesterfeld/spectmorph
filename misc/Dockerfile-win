@@ -1,9 +1,9 @@
 FROM ubuntu:22.04
 
-RUN true && apt-get update
+RUN apt-get update
 RUN apt-get -y install wget build-essential autoconf automake \
                libtool-bin pkg-config gettext autoconf-archive \
-               xz-utils nsis
+               xz-utils nsis meson
 
 RUN wget -q https://github.com/swesterfeld/spectmorph-mxe/releases/download/2023-03-19/spectmorph-mxe-2023-03-19.tar.xz
 RUN tar xf spectmorph-mxe-2023-03-19.tar.xz
@@ -13,7 +13,12 @@ WORKDIR /spectmorph
 
 ENV PATH /mxe/usr/bin:$PATH
 RUN mkdir -p /usr/local/spectmorph-win
+RUN cd windows; ./build-deps.sh
+ENV LV2_CFLAGS=-I/spectmorph/windows/prefix/include
+ENV LV2_LIBS=-L/spectmorph/windows/prefix/lib
 RUN ./autogen.sh --prefix=/usr/local/spectmorph-win --disable-shared --without-qt --with-fonts --host=x86_64-w64-mingw32.static
+RUN make clean
 RUN make -j$(nproc)
 RUN make -Cvst install
 RUN make -Cclap install
+RUN make -Clv2 install

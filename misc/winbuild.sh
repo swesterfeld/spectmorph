@@ -10,6 +10,7 @@ if [ "x$1" == "xsetup" ]; then
     source ./config.sh
     cp -av setup-spectmorph-${PACKAGE_VERSION}.exe /data'
 else
-  docker run -v $PWD:/data -t spectmorph-dbuild-win cp -av /usr/local/spectmorph-win/lib/vst/SpectMorph.dll /data/SpectMorph.dll
-  docker run -v $PWD:/data -t spectmorph-dbuild-win cp -av /usr/local/spectmorph-win/lib/clap/SpectMorph.clap /data/SpectMorph.clap
+  docker run -v $PWD:/data -t spectmorph-dbuild-win cp -av /usr/local/spectmorph-win/lib/vst/SpectMorph.dll /data/
+  docker run -v $PWD:/data -t spectmorph-dbuild-win cp -av /usr/local/spectmorph-win/lib/clap/SpectMorph.clap /data/
+  docker run -v $PWD:/data -t spectmorph-dbuild-win cp -rav /usr/local/spectmorph-win/lib/lv2/spectmorph.lv2 /data/
 fi
