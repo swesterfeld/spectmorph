@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
+AM_CXXFLAGS += $(LV2_CFLAGS) $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
@@ -38,3 +38,13 @@ spectmorph_lv2.so.static:
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
+
+if COND_WINDOWS
+install-exec-hook: spectmorph_lv2.dll
+	mkdir -p $(DESTDIR)$(spectmorph_lv2dir)
+	cp spectmorph_lv2.dll $(DESTDIR)$(spectmorph_lv2dir)
+
+spectmorph_lv2.dll:
+	$(CXX) -shared -o spectmorph_lv2.dll -I$(top_builddir) $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
+endif
