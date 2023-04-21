@@ -7,12 +7,17 @@ CLEANFILES =
 STATIC_PLUGIN_LIBS = \
   $(top_builddir)/glui/.libs/libspectmorphglui.a \
   $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
-  $(top_builddir)/lib/.libs/libspectmorph.a
+  $(top_builddir)/lib/.libs/libspectmorph.a \
+  $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(FREETYPE_LIBS) $(SNDFILE_LIBS) $(ZLIB_LIBS)
+
+if COND_LINUX
+STATIC_PLUGIN_LIBS += $(GL_LIBS)
+endif
 
 if COND_WINDOWS
-STATIC_PLUGIN_LIBS += $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) -logg -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
+STATIC_PLUGIN_LIBS += -lopengl32 -lgdi32 -luser32 -lcomdlg32 -luuid -liconv
 endif
 
 if COND_MACOS
-STATIC_PLUGIN_LIBS += $(FFTW_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(FREETYPE_LIBS) $(SNDFILE_LIBS) $(ZLIB_LIBS) -liconv -lm -framework Cocoa -framework OpenGL
+STATIC_PLUGIN_LIBS += -liconv -lm -framework Cocoa -framework OpenGL
 endif

@@ -42,9 +42,7 @@ spectmorph_lv2.so: $(PLUGIN_DEPS)
 spectmorph_lv2.so.static: $(PLUGIN_DEPS)
 	$(CXX) -shared -o spectmorph_lv2.so.static $(PLUGIN_SRCS) \
 	        -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
-		$(STATIC_PLUGIN_LIBS) \
-		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
-		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
+		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(STATIC_PLUGIN_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
 endif
 
