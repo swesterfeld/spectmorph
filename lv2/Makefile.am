@@ -5,47 +5,51 @@ AM_CXXFLAGS += $(LV2_CFLAGS) $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(to
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
 
-SMHDRS = smlv2common.hh smlv2plugin.hh smlv2ui.hh
-
 spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 
 plugindir = $(spectmorph_lv2dir)
-plugin_LTLIBRARIES = spectmorph_lv2.la
-
-spectmorph_lv2_la_SOURCES = smlv2plugin.cc smlv2ui.cc $(SMHDRS)
-spectmorph_lv2_la_LIBADD  = $(SPECTMORPH_LIBS) $(SPECTMORPH_GLUI_LIBS)
-spectmorph_lv2_la_LDFLAGS = -module -avoid-version -disable-static
 
 spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 
-CLEANFILES += spectmorph.ttl spectmorph_lv2.so.static
+CLEANFILES += spectmorph_lv2.$(PLUGIN_EXT) spectmorph.ttl spectmorph_lv2.so.static
 spectmorph.ttl: $(top_builddir)/config.status
 
-EXTRA_DIST += manifest.ttl ldscript.map
+EXTRA_DIST += smlv2common.hh smlv2plugin.cc smlv2plugin.hh smlv2ui.cc smlv2ui.hh ldscript.map
 
-# we only want to install the .so file; not the .la file
-install-data-hook:
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.la
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.a
+all-local: spectmorph_lv2.$(PLUGIN_EXT)
+
+install-exec-hook: spectmorph_lv2.$(PLUGIN_EXT)
+	mkdir -p $(DESTDIR)$(spectmorph_lv2dir)
+	cp spectmorph_lv2.$(PLUGIN_EXT) $(DESTDIR)$(spectmorph_lv2dir)
 
 uninstall-hook:
-	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.so
+	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.$(PLUGIN_EXT)
 
-spectmorph_lv2.so.static:
+PLUGIN_DEPS = $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+	$(srcdir)/smlv2common.hh $(srcdir)/smlv2plugin.hh $(srcdir)/smlv2ui.hh
+	$(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
+
+if COND_LINUX
+spectmorph_lv2.so: $(PLUGIN_DEPS)
+	$(CXX) -fPIC -DPIC -shared -o spectmorph_lv2.so -I$(top_builddir) $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+        $(CXXFLAGS) $(AM_CXXFLAGS) \
+	$(top_builddir)/lib/.libs/libspectmorph.so \
+	$(top_builddir)/glui/.libs/libspectmorphglui.so \
+	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
+	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
+
+spectmorph_lv2.so.static: $(PLUGIN_DEPS)
 	$(CXX) -shared -o spectmorph_lv2.so.static $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
 	        -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 		$(STATIC_PLUGIN_LIBS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 		$(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(SNDFILE_LIBS) $(GL_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
+endif
 
 if COND_WINDOWS
-install-exec-hook: spectmorph_lv2.dll
-	mkdir -p $(DESTDIR)$(spectmorph_lv2dir)
-	$(STRIP) spectmorph_lv2.dll
-	cp spectmorph_lv2.dll $(DESTDIR)$(spectmorph_lv2dir)
-
-spectmorph_lv2.dll:
+spectmorph_lv2.dll: $(PLUGIN_DEPS)
 	$(CXX) -shared -o spectmorph_lv2.dll -I$(top_builddir) $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
+	$(STRIP) spectmorph_lv2.dll
 endif
