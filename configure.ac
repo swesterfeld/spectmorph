@@ -389,6 +389,21 @@ AM_CONDITIONAL([COND_LINUX], [test "$build_linux" = "yes"])
 AM_CONDITIONAL([COND_WINDOWS], [test "$build_windows" = "yes"])
 AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 
+if test "$build_linux" = "yes"; then
+  PLUGIN_EXT=so
+  LV2_UI_TYPE=X11UI
+fi
+if test "$build_windows" = "yes"; then
+  PLUGIN_EXT=dll
+  LV2_UI_TYPE=WindowsUI
+fi
+if test "$build_macos" = "yes"; then
+  PLUGIN_EXT=dylib
+  LV2_UI_TYPE=CocoaUI
+fi
+AC_SUBST(PLUGIN_EXT)
+AC_SUBST(LV2_UI_TYPE)
+
 AC_FREETYPE_REQUIREMENTS
 AC_CAIRO_REQUIREMENTS
 AC_SNDFILE_REQUIREMENTS
@@ -489,7 +504,8 @@ vst/vestige/Makefile data/Makefile data/templates/Makefile data/fonts/Makefile i
 clap/Makefile 3rdparty/clap/helpers/Makefile 3rdparty/clap/private/Makefile
 3rdparty/clap/Makefile 3rdparty/clap/ext/Makefile 3rdparty/clap/ext/draft/Makefile
 tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
-windows/config.sh macos/config.sh macos/Info.plist static/config.sh static/install.sh
+lv2/manifest.ttl windows/config.sh macos/config.sh macos/Info.plist
+static/config.sh static/install.sh
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
