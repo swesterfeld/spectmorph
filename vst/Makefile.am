@@ -25,7 +25,7 @@ CLEANFILES += spectmorph_vst.$(PLUGIN_EXT) spectmorph_vst.so.static
 
 PLUGIN_SRCS = $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc
 PLUGIN_DEPS = $(PLUGIN_SRCS) \
-	$(srcdir)/smvstcommon.hh $(srcdir)/smvstplugin.hh $(srcdir)/smvstui.hh $(srcdir)/smvstresize.hh
+	$(srcdir)/smvstcommon.hh $(srcdir)/smvstplugin.hh $(srcdir)/smvstui.hh $(srcdir)/smvstresize.hh \
 	$(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
 
 if COND_LINUX

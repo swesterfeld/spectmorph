@@ -24,7 +24,7 @@ uninstall-hook:
 
 PLUGIN_SRCS = $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc
 PLUGIN_DEPS = $(PLUGIN_SRCS) \
-	$(srcdir)/smlv2common.hh $(srcdir)/smlv2plugin.hh $(srcdir)/smlv2ui.hh
+	$(srcdir)/smlv2common.hh $(srcdir)/smlv2plugin.hh $(srcdir)/smlv2ui.hh \
 	$(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
 
 if COND_LINUX

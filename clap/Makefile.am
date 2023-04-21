@@ -16,15 +16,17 @@ install-exec-hook: SpectMorph.clap
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_clapdir)/SpectMorph.clap
 
+PLUGIN_DEPS = $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
+
 if COND_LINUX
-SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
+SpectMorph.clap: $(PLUGIN_DEPS)
 	$(CXX) -fPIC -DPIC -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc $(CXXFLAGS) $(AM_CXXFLAGS) \
 	$(top_builddir)/lib/.libs/libspectmorph.so \
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
 	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 
-SpectMorph.clap.static:
+SpectMorph.clap.static: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.clap.static -I$(top_builddir) $(srcdir)/smclapplugin.cc \
 	       -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(STATIC_PLUGIN_LIBS) \
@@ -32,13 +34,13 @@ SpectMorph.clap.static:
 endif
 
 if COND_WINDOWS
-SpectMorph.clap: $(srcdir)/smclapplugin.cc
+SpectMorph.clap: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
 
 if COND_MACOS
-SpectMorph.clap: $(plugin_LTLIBRARIES)
+SpectMorph.clap: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
