@@ -4,7 +4,7 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 
 spectmorph_clapdir = $(libdir)/clap
 
-CLEANFILES += SpectMorph.clap
+CLEANFILES += SpectMorph.clap SpectMorph.clap.static
 EXTRA_DIST += smclapplugin.cc ldscript.map
 
 all-local: SpectMorph.clap
@@ -21,7 +21,7 @@ SpectMorph.clap: $(srcdir)/smclapplugin.cc $(top_builddir)/lib/libspectmorph.la 
 	$(CXX) -fPIC -DPIC -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc $(CXXFLAGS) $(AM_CXXFLAGS) \
 	$(top_builddir)/lib/.libs/libspectmorph.so \
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
-	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
+	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 
 SpectMorph.clap.static:

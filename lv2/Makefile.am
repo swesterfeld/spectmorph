@@ -2,9 +2,6 @@ include $(top_srcdir)/Makefile.decl
 
 AM_CXXFLAGS += $(LV2_CFLAGS) $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
-SPECTMORPH_GLUI_LIBS = $(top_builddir)/glui/libspectmorphglui.la
-
 spectmorph_lv2dir = $(libdir)/lv2/spectmorph.lv2
 
 plugindir = $(spectmorph_lv2dir)
@@ -36,7 +33,7 @@ spectmorph_lv2.so: $(PLUGIN_DEPS)
         $(CXXFLAGS) $(AM_CXXFLAGS) \
 	$(top_builddir)/lib/.libs/libspectmorph.so \
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
-	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(SNDFILE_LIBS) \
+	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 
 spectmorph_lv2.so.static: $(PLUGIN_DEPS)
