@@ -12,9 +12,6 @@ spectmorph_vstdir = $(libdir)/vst
 
 plugindir = $(spectmorph_vstdir)
 
-testlink: testlink.cc
-	$(CXX) -o /dev/null testlink.cc $(SMVSTSOURCES) $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(BSE_LIBS) -L../lib/.libs -lspectmorph -L../glui/.libs -lspectmorphglui
-
 all-local: spectmorph_vst.$(PLUGIN_EXT)
 
 install-exec-hook: spectmorph_vst.$(PLUGIN_EXT)
