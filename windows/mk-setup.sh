@@ -82,8 +82,17 @@ EOH
 cat >> $SETUP_NSI << EOH
   SetOutPath \$pluginDir
   File SpectMorph.dll
-  File SpectMorph.clap
   CreateShortCut "\$pluginDir\\SpectMorph.data.lnk" "\$INSTDIR"
+
+  SetOutPath \$COMMONFILES64\\CLAP
+  File SpectMorph.clap
+  CreateShortCut "\$COMMONFILES64\\CLAP\\SpectMorph.data.lnk" "\$INSTDIR"
+
+  SetOutPath \$COMMONFILES64\\LV2\\spectmorph.lv2
+  File spectmorph.lv2\\manifest.ttl
+  File spectmorph.lv2\\spectmorph.ttl
+  File spectmorph.lv2\\spectmorph_lv2.dll
+  CreateShortCut "\$COMMONFILES64\\LV2\\spectmorph.lv2\\SpectMorph.data.lnk" "\$INSTDIR"
 
   WriteUninstaller "\$INSTDIR\\Uninstall.exe"
 
@@ -123,8 +132,14 @@ cat >> $SETUP_NSI << EOH
   Delete "\$INSTDIR\\PluginDir.txt"
   RMDir "\$INSTDIR"
   Delete "\$pluginDir\\SpectMorph.dll"
-  Delete "\$pluginDir\\SpectMorph.clap"
   Delete "\$pluginDir\\SpectMorph.data.lnk"
+  Delete "\$COMMONFILES64\\CLAP\\SpectMorph.clap"
+  Delete "\$COMMONFILES64\\CLAP\\SpectMorph.data.lnk"
+  Delete "\$COMMONFILES64\\LV2\\spectmorph.lv2\\manifest.ttl"
+  Delete "\$COMMONFILES64\\LV2\\spectmorph.lv2\\spectmorph.ttl"
+  Delete "\$COMMONFILES64\\LV2\\spectmorph.lv2\\spectmorph_lv2.dll"
+  Delete "\$COMMONFILES64\\LV2\\spectmorph.lv2\\SpectMorph.data.lnk"
+  RMDir "\$COMMONFILES64\\LV2\\spectmorph.lv2"
 SectionEnd
 
 ; uninstall needs to know in which vst plugin dir SpectMorph.dll was installed
