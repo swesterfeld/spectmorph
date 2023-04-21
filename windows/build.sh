@@ -13,6 +13,7 @@ make -j$(nproc) -C.. || die "make failed"
 make -C.. install || die "make install failed"
 cp -v $PREFIX/lib/vst/SpectMorph.dll . || die "error: cp SpectMorph.dll"
 cp -v $PREFIX/lib/clap/SpectMorph.clap . || die "error: cp SpectMorph.clap"
+cp -rv $PREFIX/lib/lv2/spectmorph.lv2 . || die "error: cp spectmorph.lv2"
 
 for DIR in templates fonts
 do
