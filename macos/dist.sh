@@ -8,6 +8,7 @@ die()
 }
 
 set -x
+set -e
 
 source config.sh
 
@@ -40,6 +41,16 @@ make_pkg()
 make_pkg vst /Library/Audio/Plug-Ins/VST SpectMorph.so org.spectmorph.vst.SpectMorph.pkg
 make_pkg clap /Library/Audio/Plug-Ins/CLAP SpectMorph.clap org.spectmorph.clap.SpectMorph.pkg
 
+rm -rf installer-tmp/SpectMorph.lv2
+mkdir -p installer-tmp/SpectMorph.lv2/spectmorph.lv2
+cp $SMDIR/lib/lv2/spectmorph.lv2/*.ttl installer-tmp/SpectMorph.lv2/spectmorph.lv2
+lipo -create -output installer-tmp/SpectMorph.lv2/spectmorph.lv2/spectmorph_lv2.dylib \
+  $SMDIR/lib/lv2/spectmorph.lv2/spectmorph_lv2.dylib \
+  $SMDIR_CROSS/lib/lv2/spectmorph.lv2/spectmorph_lv2.dylib
+codesign -s "Developer ID Application: Stefan Westerfeld (ZA556HAPK8)" installer-tmp/SpectMorph.lv2/spectmorph.lv2/* --timestamp
+pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/SpectMorph.lv2 \
+         --identifier org.spectmorph.lv2.SpectMorph.pkg --version ${PACKAGE_VERSION} --install-location /Library/Audio/Plug-Ins/LV2 "SpectMorph.lv2.pkg"
+
 mkdir -p installer-tmp/SpectMorph.data/SpectMorph
 cp -rv instruments installer-tmp/SpectMorph.data/SpectMorph || die "error: cp instruments"
 cp -rv $PREFIX/share/spectmorph/templates installer-tmp/SpectMorph.data/SpectMorph || die "error: cp templates"
@@ -52,25 +63,35 @@ cat > installer-tmp/distribution.xml << EOH
     <title>SpectMorph ${PACKAGE_VERSION}</title>
     <license file="$PWD/gpl-3.0.rtf" />
     <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg"/>
+    <pkg-ref id="org.spectmorph.lv2.SpectMorph.pkg"/>
     <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg"/>
     <pkg-ref id="org.spectmorph.data.SpectMorph.pkg"/>
     <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64" rootVolumeOnly="true"/>
     <choices-outline>
         <line choice="default">
             <line choice="org.spectmorph.clap.SpectMorph.pkg"/>
+            <line choice="org.spectmorph.lv2.SpectMorph.pkg"/>
             <line choice="org.spectmorph.vst.SpectMorph.pkg"/>
             <line choice="org.spectmorph.data.SpectMorph.pkg"/>
         </line>
     </choices-outline>
     <choice id="default"/>
+
     <choice id="org.spectmorph.clap.SpectMorph.pkg" visible="false">
         <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg"/>
     </choice>
     <pkg-ref id="org.spectmorph.clap.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.clap.pkg</pkg-ref>
+
+    <choice id="org.spectmorph.lv2.SpectMorph.pkg" visible="false">
+        <pkg-ref id="org.spectmorph.lv2.SpectMorph.pkg"/>
+    </choice>
+    <pkg-ref id="org.spectmorph.lv2.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.lv2.pkg</pkg-ref>
+
     <choice id="org.spectmorph.vst.SpectMorph.pkg" visible="false">
         <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg"/>
     </choice>
     <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg" version="${PACKAGE_VERSION}" onConclusion="none">SpectMorph.vst.pkg</pkg-ref>
+
     <choice id="org.spectmorph.data.SpectMorph.pkg" visible="false">
         <pkg-ref id="org.spectmorph.data.SpectMorph.pkg"/>
     </choice>
@@ -79,7 +100,7 @@ cat > installer-tmp/distribution.xml << EOH
 EOH
 productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --distribution installer-tmp/distribution.xml SpectMorph-${PACKAGE_VERSION}.pkg
 
-rm -rf installer-tmp SpectMorph.vst.pkg SpectMorph.clap.pkg SpectMorph.data.pkg
+rm -rf installer-tmp SpectMorph.clap.pkg SpectMorph.lv2.pkg SpectMorph.vst.pkg SpectMorph.data.pkg
 
 ### xcrun notarytool submit SpectMorph-0.5.2-test1.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --wait
 ### xcrun stapler staple SpectMorph-0.5.2-test1.pkg
