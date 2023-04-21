@@ -42,6 +42,7 @@ spectmorph_lv2.so.static:
 if COND_WINDOWS
 install-exec-hook: spectmorph_lv2.dll
 	mkdir -p $(DESTDIR)$(spectmorph_lv2dir)
+	$(STRIP) spectmorph_lv2.dll
 	cp spectmorph_lv2.dll $(DESTDIR)$(spectmorph_lv2dir)
 
 spectmorph_lv2.dll:
