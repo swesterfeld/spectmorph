@@ -117,3 +117,9 @@ autoconfbuild --disable-shared
 
 src libsndfile-1.2.0 tar.xz https://github.com/libsndfile/libsndfile/releases/download/1.2.0/libsndfile-1.2.0.tar.xz
 autoconfbuild --disable-shared
+
+src lv2-1.18.10 tar.gz https://github.com/lv2/lv2/archive/refs/tags/v1.18.10.tar.gz
+meson setup build --prefix $PREFIX
+cd build
+meson compile
+meson install

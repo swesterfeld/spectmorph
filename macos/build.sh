@@ -27,7 +27,7 @@ CFLAGS="$SDK_OPTIONS -I$DEPS_PREFIX/include" \
 CXXFLAGS="$CFLAGS" \
 OBJCFLAGS="$CFLAGS" \
 OBJCXXFLAGS="$CFLAGS" \
-./autogen.sh $SDK_AUTOCONF_BUILD --prefix=$SM_PREFIX --without-qt --without-lv2 --without-jack --without-ao --disable-shared || die "configure failed"
+./autogen.sh $SDK_AUTOCONF_BUILD --prefix=$SM_PREFIX --without-qt --without-jack --without-ao --disable-shared || die "configure failed"
 cd $MACOS_DIR || die "cd macos_dir"
 
 source ./config.sh || die "source config.sh"
