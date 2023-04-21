@@ -112,7 +112,7 @@
     ] .
 
 <http://spectmorph.org/plugins/spectmorph#ui>
-  a ui:X11UI;
+  a ui:@LV2_UI_TYPE@;
 
   lv2:extensionData   ui:idleInterface ;
   lv2:requiredFeature ui:idleInterface ;
