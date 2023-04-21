@@ -57,6 +57,6 @@ endif
 
 if COND_MACOS
 spectmorph_lv2.dylib: $(PLUGIN_DEPS)
-	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(PLUGIN_SRCS) -exported_symbols_list macos_export_symbols -static \
+	$(CXX) -shared -o spectmorph_lv2.dylib -I$(top_builddir) $(PLUGIN_SRCS) -exported_symbols_list macos_export_symbols -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
