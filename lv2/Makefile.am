@@ -25,13 +25,14 @@ install-exec-hook: spectmorph_lv2.$(PLUGIN_EXT)
 uninstall-hook:
 	rm -f $(DESTDIR)$(spectmorph_lv2dir)/spectmorph_lv2.$(PLUGIN_EXT)
 
-PLUGIN_DEPS = $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+PLUGIN_SRCS = $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc
+PLUGIN_DEPS = $(PLUGIN_SRCS) \
 	$(srcdir)/smlv2common.hh $(srcdir)/smlv2plugin.hh $(srcdir)/smlv2ui.hh
 	$(top_builddir)/lib/libspectmorph.la $(top_builddir)/glui/libspectmorphglui.la
 
 if COND_LINUX
 spectmorph_lv2.so: $(PLUGIN_DEPS)
-	$(CXX) -fPIC -DPIC -shared -o spectmorph_lv2.so -I$(top_builddir) $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+	$(CXX) -fPIC -DPIC -shared -o spectmorph_lv2.so -I$(top_builddir) $(PLUGIN_SRCS) \
         $(CXXFLAGS) $(AM_CXXFLAGS) \
 	$(top_builddir)/lib/.libs/libspectmorph.so \
 	$(top_builddir)/glui/.libs/libspectmorphglui.so \
@@ -39,7 +40,7 @@ spectmorph_lv2.so: $(PLUGIN_DEPS)
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 
 spectmorph_lv2.so.static: $(PLUGIN_DEPS)
-	$(CXX) -shared -o spectmorph_lv2.so.static $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc \
+	$(CXX) -shared -o spectmorph_lv2.so.static $(PLUGIN_SRCS) \
 	        -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 		$(STATIC_PLUGIN_LIBS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
@@ -49,7 +50,13 @@ endif
 
 if COND_WINDOWS
 spectmorph_lv2.dll: $(PLUGIN_DEPS)
-	$(CXX) -shared -o spectmorph_lv2.dll -I$(top_builddir) $(srcdir)/smlv2plugin.cc $(srcdir)/smlv2ui.cc -static \
+	$(CXX) -shared -o spectmorph_lv2.dll -I$(top_builddir) $(PLUGIN_SRCS) -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 	$(STRIP) spectmorph_lv2.dll
+endif
+
+if COND_MACOS
+spectmorph_lv2.dylib: $(PLUGIN_DEPS)
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(PLUGIN_SRCS) -exported_symbols_list macos_export_symbols -static \
+		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
