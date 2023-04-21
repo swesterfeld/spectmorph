@@ -12,6 +12,6 @@
   rdfs:seeAlso <spectmorph.ttl> .
 
 <http://spectmorph.org/plugins/spectmorph#ui>
-  a ui:X11UI;
+  a ui:@LV2_UI_TYPE@;
   ui:binary <spectmorph_lv2.@PLUGIN_EXT@>;
   rdfs:seeAlso <spectmorph.ttl> .
