@@ -54,6 +54,7 @@ if COND_WINDOWS
 SpectMorph.dll: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
+	$(STRIP) SpectMorph.dll
 endif
 if COND_MACOS
 SpectMorph.dylib: $(PLUGIN_DEPS)

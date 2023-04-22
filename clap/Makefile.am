@@ -37,6 +37,7 @@ if COND_WINDOWS
 SpectMorph.clap: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
+	$(STRIP) SpectMorph.clap
 endif
 
 if COND_MACOS
