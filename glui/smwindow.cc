@@ -722,12 +722,21 @@ Window::on_event (const PuglEvent* event)
 static MouseButton
 to_mouse_button (unsigned pugl_button)
 {
+#ifdef SM_OS_MACOS
+  switch (pugl_button)
+  {
+    case 1: return LEFT_BUTTON;
+    case 2: return RIGHT_BUTTON;
+    case 3: return MIDDLE_BUTTON;
+  }
+#else
   switch (pugl_button)
   {
     case 1: return LEFT_BUTTON;
     case 2: return MIDDLE_BUTTON;
     case 3: return RIGHT_BUTTON;
   }
+#endif
   return NO_BUTTON;
 }
 
