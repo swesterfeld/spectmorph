@@ -171,6 +171,7 @@ void set_windows_data_dir (HMODULE hInstance);
 #endif
 
 #ifdef SM_OS_LINUX
+void set_static_linux_data_dir();
 
 #ifdef SM_STATIC_LINUX
 #define SM_SET_OS_DATA_DIR() set_static_linux_data_dir()
