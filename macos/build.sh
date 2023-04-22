@@ -8,6 +8,7 @@ die()
 }
 
 set -x
+set -e
 
 export SDK_TARGET=$1
 . sdk-options.sh
@@ -33,6 +34,7 @@ cd $MACOS_DIR || die "cd macos_dir"
 source ./config.sh || die "source config.sh"
 
 if [ "x$2" = "xclean" ]; then
+  rm -rf $SM_PREFIX
   make -C.. clean || die "make clean failed"
 fi
 
