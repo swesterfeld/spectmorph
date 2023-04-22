@@ -80,8 +80,10 @@ MorphWavSourceView::on_edit()
   // after this line, inst edit window is owned by parent window
   window()->set_popup_window (inst_edit_window);
 
-  inst_edit_window->set_close_callback ([this,  synth_interface]()
+  inst_edit_window->set_close_callback ([this, synth_interface, inst_edit_window]()
     {
+      // not safe to access instrument pointer after window has been closed
+      inst_edit_window->clear_edit_instrument();
       window()->set_popup_window (nullptr);
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
       on_edit_close();

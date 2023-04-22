@@ -106,6 +106,8 @@ public:
   InstEditWindow (EventLoop& event_loop, Instrument *edit_instrument, SynthInterface *synth_interface, Window *parent_window = nullptr);
   ~InstEditWindow();
 
+  void clear_edit_instrument();
+
   void on_clear();
   void on_revert();
   void on_add_sample_clicked();

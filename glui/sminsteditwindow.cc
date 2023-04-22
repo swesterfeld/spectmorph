@@ -337,7 +337,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   connect (synth_interface->signal_notify_event, [this](SynthNotifyEvent *ne) {
     auto iev = dynamic_cast<InstEditVoiceEvent *> (ne);
-    if (iev)
+    if (iev && instrument)
       {
         vector<float> play_pointers;
 
@@ -836,6 +836,16 @@ InstEditWindow::set_playing (bool new_playing)
 
   playing = new_playing;
   play_button->set_icon (playing ? IconButton::STOP : IconButton::PLAY);
+}
+
+void
+InstEditWindow::clear_edit_instrument()
+{
+  /* this is called if the window is closed: after the close event
+   * we should no longer access the instrument because it could be
+   * deleted already
+   */
+  instrument = nullptr;
 }
 
 void
