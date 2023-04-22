@@ -38,7 +38,7 @@ make_pkg()
   rm -rf installer-tmp/$NAME
 }
 
-make_pkg vst /Library/Audio/Plug-Ins/VST SpectMorph.so org.spectmorph.vst.SpectMorph.pkg
+make_pkg vst /Library/Audio/Plug-Ins/VST SpectMorph.dylib org.spectmorph.vst.SpectMorph.pkg
 make_pkg clap /Library/Audio/Plug-Ins/CLAP SpectMorph.clap org.spectmorph.clap.SpectMorph.pkg
 
 rm -rf installer-tmp/SpectMorph.lv2
@@ -67,6 +67,7 @@ cat > installer-tmp/distribution.xml << EOH
     <pkg-ref id="org.spectmorph.vst.SpectMorph.pkg"/>
     <pkg-ref id="org.spectmorph.data.SpectMorph.pkg"/>
     <options customize="never" require-scripts="false" hostArchitectures="x86_64,arm64" rootVolumeOnly="true"/>
+    <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true"/>
     <choices-outline>
         <line choice="default">
             <line choice="org.spectmorph.clap.SpectMorph.pkg"/>
