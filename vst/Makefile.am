@@ -12,16 +12,23 @@ spectmorph_vstdir = $(libdir)/vst
 
 plugindir = $(spectmorph_vstdir)
 
-all-local: spectmorph_vst.$(PLUGIN_EXT)
+if COND_LINUX
+# need to keep compatibility for hosts which may rely on the binary name
+PLUGIN = spectmorph_vst.so
+else
+PLUGIN = SpectMorph.$(PLUGIN_EXT)
+endif
 
-install-exec-hook: spectmorph_vst.$(PLUGIN_EXT)
+all-local: $(PLUGIN)
+
+install-exec-hook: $(PLUGIN)
 	mkdir -p $(DESTDIR)$(spectmorph_vstdir)
-	cp spectmorph_vst.$(PLUGIN_EXT) $(DESTDIR)$(spectmorph_vstdir)
+	cp $(PLUGIN) $(DESTDIR)$(spectmorph_vstdir)
 
 uninstall-hook:
-	rm -f $(DESTDIR)$(spectmorph_vstdir)/spectmorph_vst.$(PLUGIN_EXT)
+	rm -f $(DESTDIR)$(spectmorph_vstdir)/$(PLUGIN)
 
-CLEANFILES += spectmorph_vst.$(PLUGIN_EXT) spectmorph_vst.so.static
+CLEANFILES += $(PLUGIN) spectmorph_vst.so.static
 
 PLUGIN_SRCS = $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc
 PLUGIN_DEPS = $(PLUGIN_SRCS) \
@@ -37,28 +44,19 @@ spectmorph_vst.so: $(PLUGIN_DEPS)
 	$(STATIC_CXX_LDFLAGS) $(LDFLAGS) \
 	-Wl,-rpath=$(libdir) -Wl,--version-script=$(srcdir)/ldscript.map
 
-spectmorph_vst.so.static:
+spectmorph_vst.so.static: $(PLUGIN_DEPS)
 	$(CXX) -shared -o spectmorph_vst.so.static $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc \
 	       -DSM_STATIC_LINUX $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) \
 		$(STATIC_CXX_LDFLAGS) $(LDFLAGS) $(STATIC_PLUGIN_LIBS) \
 		-Wl,--version-script=$(srcdir)/ldscript.map
 endif
-
 if COND_WINDOWS
-install-exec-hook: SpectMorph.dll
-	mkdir -p $(libdir)/vst
-	cp SpectMorph.dll $(libdir)/vst
-
-SpectMorph.dll: $(plugin_LTLIBRARIES)
+SpectMorph.dll: $(PLUGIN_DEPS)
 	$(CXX) -shared -o SpectMorph.dll $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
 if COND_MACOS
-install-exec-hook: SpectMorph.so
-	mkdir -p $(libdir)/vst
-	cp SpectMorph.so $(libdir)/vst
-
-SpectMorph.so: $(plugin_LTLIBRARIES)
-	$(CXX) -shared -o SpectMorph.so $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static \
+SpectMorph.dylib: $(PLUGIN_DEPS)
+	$(CXX) -shared -o SpectMorph.dylib $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static \
 	       $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
