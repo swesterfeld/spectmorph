@@ -51,17 +51,6 @@ LV2Plugin::LV2Plugin (double mix_freq) :
   project.set_state_changed_notify (true);
 }
 
-#ifdef SM_STATIC_LINUX
-static void
-set_static_linux_data_dir()
-{
-  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
-
-  LV2_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
-}
-#endif
-
 #ifdef SM_OS_WINDOWS
 HMODULE hInstance;
 
