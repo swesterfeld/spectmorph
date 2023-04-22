@@ -429,17 +429,6 @@ static float getParameter(AEffect *effect, int i)
   return plugin->get_parameter_scale((VstPlugin::Param) i);
 }
 
-#ifdef SM_STATIC_LINUX
-static void
-set_static_linux_data_dir()
-{
-  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
-
-  VST_DEBUG ("pkg data dir: '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
-}
-#endif
-
 #ifdef SM_OS_WINDOWS
 #include "windows.h"
 
