@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <stdint.h>
 
 // operating system: one of these three
 #if WIN32

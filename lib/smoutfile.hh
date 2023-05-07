@@ -4,6 +4,7 @@
 #define SPECTMORPH_OUT_FILE_HH
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <set>
