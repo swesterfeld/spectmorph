@@ -11,7 +11,7 @@ spectmorph_lv2_DATA = manifest.ttl spectmorph.ttl
 CLEANFILES += spectmorph_lv2.$(PLUGIN_EXT) spectmorph.ttl spectmorph_lv2.so.static
 spectmorph.ttl: $(top_builddir)/config.status
 
-EXTRA_DIST += smlv2common.hh smlv2plugin.cc smlv2plugin.hh smlv2ui.cc smlv2ui.hh ldscript.map
+EXTRA_DIST += smlv2common.hh smlv2plugin.cc smlv2plugin.hh smlv2ui.cc smlv2ui.hh ldscript.map macos_export_symbols
 
 all-local: spectmorph_lv2.$(PLUGIN_EXT)
 
@@ -52,6 +52,6 @@ endif
 
 if COND_MACOS
 spectmorph_lv2.dylib: $(PLUGIN_DEPS)
-	$(CXX) -shared -o spectmorph_lv2.dylib -I$(top_builddir) $(PLUGIN_SRCS) -exported_symbols_list macos_export_symbols -static \
+	$(CXX) -shared -o spectmorph_lv2.dylib -I$(top_builddir) $(PLUGIN_SRCS) -exported_symbols_list $(srcdir)/macos_export_symbols -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
