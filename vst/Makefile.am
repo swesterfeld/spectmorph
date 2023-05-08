@@ -58,6 +58,6 @@ SpectMorph.dll: $(PLUGIN_DEPS)
 endif
 if COND_MACOS
 SpectMorph.dylib: $(PLUGIN_DEPS)
-	$(CXX) -shared -o SpectMorph.dylib $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list macos_export_symbols -static \
+	$(CXX) -shared -o SpectMorph.dylib $(srcdir)/smvstplugin.cc $(srcdir)/smvstui.cc -exported_symbols_list $(srcdir)/macos_export_symbols -static \
 	       $(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
