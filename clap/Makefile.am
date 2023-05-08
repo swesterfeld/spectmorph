@@ -5,7 +5,7 @@ AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib 
 spectmorph_clapdir = $(libdir)/clap
 
 CLEANFILES += SpectMorph.clap SpectMorph.clap.static
-EXTRA_DIST += smclapplugin.cc ldscript.map
+EXTRA_DIST += smclapplugin.cc ldscript.map macos_export_symbols
 
 all-local: SpectMorph.clap
 
@@ -42,6 +42,6 @@ endif
 
 if COND_MACOS
 SpectMorph.clap: $(PLUGIN_DEPS)
-	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list macos_export_symbols -static \
+	$(CXX) -shared -o SpectMorph.clap -I$(top_builddir) $(srcdir)/smclapplugin.cc -exported_symbols_list $(srcdir)/macos_export_symbols -static \
 		$(AM_CFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) $(STATIC_PLUGIN_LIBS)
 endif
