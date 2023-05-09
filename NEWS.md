@@ -1,4 +1,62 @@
-Overview of Changes in spectmorph-0.5.2:
+## SpectMorph 0.6.0
+
+#### New features
+* New, more flexible modulation system
+* Added filter with different filter modes
+* Provide visual feedback for modulated properties
+* Provide signed .pkg installers for macOS (Intel and ARM)
+
+#### CLAP Plugin
+* Provide CLAP Plugin
+* Support for per-voice modulation
+* Support timestamped modulation/automation events
+
+#### LV2 Plugin
+* Support LV2 on all platforms
+* Fix crashes triggered by Carla (absolute_path/abstract_path returning NULL)
+* Support newer LV2 development headers
+
+#### Minor Changes
+* Support "Velocity" as modulation source
+* Make pitch bend range configurable
+* Sort midi events by timestamp to workaround Bitwig bug
+* Sliders now support shift+drag for fine editing
+* Support for Apple Silicon
+* Avoid crashes if XOpenIM / XCreateIC return NULL (#15).
+* Add dockerized MXE builds for windows, bump compiler version to gcc-12.
+* Bump minimum C++ standard to C++17
+* Fix build on riscv
+* Use GitHub CI for Linux, macOS and Windows
+* Change license from "LGPL v3 or later" to "LGPL v2.1 or later".
+* Minor fixes and cleanups
+
+#### Internals: Properties
+* Add generic property handling
+* Simplify load/save/gui for properties
+* Support modulatable properties using ModulationList
+* Add gui for editing property value and ModulationList
+* MorphPlan is no longer ref-counted, just one instance per Project
+* Introduced MorphOperatorConfig objects for cleaner/faster parameter updates
+
+#### Internals: Filter
+* Add two filter types: "Ladder" and "Sallen-Key" filter to output operator
+* Integrated PandaResampler for SIMD 4x filter oversampling
+* Support modulation with high time resolution for filter
+
+#### Internals: UI Toolkit
+* Support multiple update regions in UI toolkit
+* Optimize drawing for UI toolkit
+* Support "software sprites" for efficient visual feedback
+
+#### Internals: Optimizations
+* Pass wav set pointers (instead of strings) to morph linear/grid/source.
+* Avoid fmod() for phase truncation.
+* Build using -ffast-math
+* NotifyBuffer: fast dsp thread -> ui thread notifications (no malloc in dsp thread)
+* Avoid allocations in dsp thread in many cases (retrigger, noise decoder process)
+* Support optimized SIMD code on ARM (Apple Silicon), code from Peter Johnson
+
+## SpectMorph 0.5.2
 
 * Support bpm/beat synchronization for LFO
   - new presets using beat sync LFO: Mars / Saturn
@@ -15,7 +73,7 @@ Overview of Changes in spectmorph-0.5.2:
 * Fix loading floating point wav files
 * Minor fixes and cleanups
 
-Overview of Changes in spectmorph-0.5.1:
+## SpectMorph 0.5.1
 
 * Add new LFO modes (saw, square, random)
 * Support generic 64-bit linux binaries
@@ -29,7 +87,7 @@ Overview of Changes in spectmorph-0.5.1:
 * Thread race fix (JP Cimalando)
 * Minor fixes and cleanups
 
-Overview of Changes in spectmorph-0.5.0:
+## SpectMorph 0.5.0
 
 * Support user defined instruments
   - graphical instrument editor
@@ -43,7 +101,7 @@ Overview of Changes in spectmorph-0.5.0:
 * Integrate XML (pugixml) and ZIP (minizip) 3rd party code
 * Minor fixes and cleanups
 
-Overview of Changes in spectmorph-0.4.1:
+## SpectMorph 0.4.1
 
 * macOS is now supported: provide VST plugin for macOS >= 10.9
 * Include instruments in source tarball and packages
@@ -62,7 +120,7 @@ Overview of Changes in spectmorph-0.4.1:
 * Fix locale related problems when using atof()
 * Minor fixes and cleanups
 
-Overview of Changes in spectmorph-0.4.0:
+## SpectMorph 0.4.0
 
 * Windows is now supported: provide 64-bit Windows VST plugin
 * Plugin UI redesign
@@ -81,7 +139,7 @@ Overview of Changes in spectmorph-0.4.0:
 * LPC/LSF support removed
 * Some portability fixes for macOS (which however isn't supported yet)
 
-Overview of Changes in spectmorph-0.3.4:
+## SpectMorph 0.3.4
 
 * Added optional ADSR Envelope
 * Make LV2 and VST plugin stereo to allow supporting stereo in the future
@@ -91,7 +149,7 @@ Overview of Changes in spectmorph-0.3.4:
 * Fixed compilation for newer g++ >= 6 (std::fabs)
 * Get rid of some malloc() calls in linear morphing
 
-Overview of Changes in spectmorph-0.3.3:
+## SpectMorph 0.3.3
 
 * Added portamento:
   - VST: support MPE to perform per-voice pitch bend (can be used in Bitwig)
@@ -104,7 +162,7 @@ Overview of Changes in spectmorph-0.3.3:
   - don't link against Qt UI library when only QtCore is necessary
 * Compile fixes for g++-6.3
 
-Overview of Changes in spectmorph-0.3.2:
+## SpectMorph 0.3.2
 
 * Added new unison effect.
 * New instruments: pan-flute, synth-saw.
@@ -120,7 +178,7 @@ Overview of Changes in spectmorph-0.3.2:
 * Added debian package support.
 * LPC/LSF morphing code updates - but now disabled by default
 
-Overview of Changes in spectmorph-0.3.1:
+## SpectMorph 0.3.1
 
 * Added plugins for LV2 and VST api.
 * New instruments: bassoon, cello, bass-trombone, reed-organ.
@@ -142,7 +200,7 @@ Overview of Changes in spectmorph-0.3.1:
   - support global volume adjustment (instead of auto-volume)
 * Various bugfixes.
 
-Overview of Changes in spectmorph-0.3.0:
+## SpectMorph 0.3.0
 
 * Incompatible file format changes:
   - use 16-bit integer values for sine and noise data instead of floats
@@ -157,7 +215,7 @@ Overview of Changes in spectmorph-0.3.0:
 * Various bugfixes.
 * Performance improvements.
 
-Overview of Changes in spectmorph-0.2.0:
+## SpectMorph 0.2.0
 
 * implemented user defined morphing using a MorphPlan consisting of operators
   - graphical representation of the operators
@@ -189,7 +247,7 @@ Overview of Changes in spectmorph-0.2.0:
 * migrated man pages from Doxer to testbit.eu wiki (and use wikihtml2man.py)
 * performance improvements
 
-Overview of Changes in spectmorph-0.1.1:
+## SpectMorph 0.1.1
 
 * added tool for SoundFont (SF2) import: smsfimport
 * file format changes
@@ -215,7 +273,7 @@ Overview of Changes in spectmorph-0.1.1:
 * introduced anti-alias filter in LiveDecoder
 * cleanups, refactoring, bugfixes
 
-Overview of Changes in spectmorph-0.1.0:
+## SpectMorph 0.1.0
 
 * file format changes
   - instruments based on more than one sample can be shipped as one single file
@@ -232,7 +290,7 @@ Overview of Changes in spectmorph-0.1.0:
 * support setting smplay decoder mode via command line parameter
 * refactoring, cleanups
 
-Overview of Changes in spectmorph-0.0.3:
+## SpectMorph 0.0.3
 
 * added encoder algorithm to find attack envelope, this makes piano sound much
   more realistic
@@ -245,7 +303,7 @@ Overview of Changes in spectmorph-0.0.3:
 * documentation updates
 * refactoring, cleanups
 
-Overview of Changes in spectmorph-0.0.2:
+## SpectMorph 0.0.2
 
 * bugfixes
 * include proper phases, so phase-correct reconstruction of samples is possible
@@ -265,7 +323,7 @@ Overview of Changes in spectmorph-0.0.2:
 * added manual pages for smenc, smplay, smvisualize and smstrip
 * added overview document in docs directory
 
-Overview of Changes in spectmorph-0.0.1:
+## SpectMorph 0.0.1
 
 * initial public release with three programs
   - smenc       - builds model of a sample
