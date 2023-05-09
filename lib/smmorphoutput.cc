@@ -78,7 +78,7 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.filter_decay, P_FILTER_DECAY, "Decay", "%.1f %%", 50, 0, 100);
   add_property (&m_config.filter_sustain, P_FILTER_SUSTAIN, "Sustain", "%.1f %%", 30, 0, 100);
   add_property (&m_config.filter_release, P_FILTER_RELEASE, "Release", "%.1f %%", 50, 0, 100);
-  add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 36, -60, 60);
+  add_property (&m_config.filter_depth, P_FILTER_DEPTH, "Depth", "%.1f st", 36, -96, 96);
   add_property (&m_config.filter_key_tracking, P_FILTER_KEY_TRACKING, "Key Tracking", "%.1f %%", 50, 0, 100);
 
   double cutoff_min = 20;
