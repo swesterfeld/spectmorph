@@ -25,7 +25,7 @@
 * Avoid crashes if XOpenIM / XCreateIC return NULL (#15).
 * Add dockerized MXE builds for windows, bump compiler version to gcc-12.
 * Bump minimum C++ standard to C++17
-* Fix build on riscv
+* Fix build on RISC-V (#13)
 * Use GitHub CI for Linux, macOS and Windows
 * Change license from "LGPL v3 or later" to "LGPL v2.1 or later".
 * Minor fixes and cleanups
@@ -54,7 +54,7 @@
 * Build using -ffast-math
 * NotifyBuffer: fast dsp thread -> ui thread notifications (no malloc in dsp thread)
 * Avoid allocations in dsp thread in many cases (retrigger, noise decoder process)
-* Support optimized SIMD code on ARM (Apple Silicon), code from Peter Johnson
+* Support optimized SIMD code on ARM (Apple Silicon), code from Peter Johnson (#11)
 
 ## SpectMorph 0.5.2
 
