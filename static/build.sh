@@ -44,5 +44,12 @@ strip $OUT_DIR/vst/spectmorph_vst.so $OUT_DIR/lv2/spectmorph.lv2/spectmorph_lv2.
 cp -aiv install.sh $OUT_DIR
 chmod +x $OUT_DIR/install.sh
 
+# CHECK INSTRUMENT VERSION
+echo -n "### Instruments: "
+grep "version.*$PACKAGE_VERSION" $OUT_DIR/instruments/standard/index.smindex || {
+  echo "### Did not use appropriate instrument version: $PACKAGE_VERSION ###"
+  exit 1
+}
+
 # TARBALL
 tar cfvJ $OUT_DIR.tar.xz $OUT_DIR
