@@ -21,3 +21,7 @@ do
   rm ./$DIR/*
   cp -v $PREFIX/share/spectmorph/$DIR/* $DIR || die "error: cp $DIR"
 done
+
+# CHECK INSTRUMENT VERSION
+echo -n "### Instruments: "
+grep "version.*$PACKAGE_VERSION" instruments/standard/index.smindex || die "did not use appropriate instrument version: $PACKAGE_VERSION"
