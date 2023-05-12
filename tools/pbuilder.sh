@@ -2,9 +2,18 @@
 
 set -e
 
+if [ “$(id -u)” == “0” ] && [ "x$1" != "xroot" ]; then
+  echo "This script must be started as user."
+  exit 1
+fi
+
 if [ “$(id -u)” != “0” ]; then
-  echo "This script must be run as root." 2>&1
-  exec su -c "$0"
+  pushd ..
+  git pull
+  dpkg-buildpackage --no-sign -S
+  popd
+
+  exec su -c "$0 root"
 fi
 
 #----------------------------------------
@@ -14,16 +23,24 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-DSC=../../spectmorph_0.5.2.dsc
+VERSION=0.6.0
+DSC=../../spectmorph_${VERSION}.dsc
+if [ ! -f "../data/spectmorph-instruments-${VERSION}.tar.xz" ]; then
+  echo "You need to have an instrument tarball installed to build a package"
+  exit 1
+fi
+
+echo -n "### Instruments: "
+tar xf ../data/spectmorph-instruments-${VERSION}.tar.xz instruments/standard/index.smindex -O | grep "version \"${VERSION}\"" || {
+  echo instruments not valid
+  exit 1
+}
 
 unset CC
 unset CXX
 export DEB_BUILD_OPTIONS="parallel=$(nproc)"
-
-for NAME in \
-  xenial-i386 xenial-amd64 \
-  bionic-i386 bionic-amd64 \
-  focal-amd64
+export DISTS="focal-amd64 jammy-amd64"
+for NAME in $DISTS
 do
   DIST=${NAME%%-*}
   ARCH=${NAME#*-}
@@ -54,4 +71,9 @@ do
            --buildresult $BUILDRESULT  \
            --aptcache $APTCACHE   \
            $DSC
+done
+
+for NAME in $DISTS
+do
+  ls -l /var/cache/pbuilder/$NAME/result/spectmorph_${VERSION}*deb
 done
