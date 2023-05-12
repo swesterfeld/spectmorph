@@ -24,4 +24,4 @@ done
 
 # CHECK INSTRUMENT VERSION
 echo -n "### Instruments: "
-grep "version.*$PACKAGE_VERSION" instruments/standard/index.smindex || die "did not use appropriate instrument version: $PACKAGE_VERSION"
+grep "version \"$PACKAGE_VERSION\"" instruments/standard/index.smindex || die "did not use appropriate instrument version: $PACKAGE_VERSION"
