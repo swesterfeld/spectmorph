@@ -10,6 +10,8 @@ templates_DATA = \
   aurora.smplan                   \
   saturn.smplan                   \
   mars.smplan                     \
+  cheese-cake-bass.smplan	  \
+  liquid-silver.smplan		  \
   index.smpindex
 
 templatesdir = $(pkgdatadir)/templates

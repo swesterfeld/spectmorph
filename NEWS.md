@@ -19,6 +19,7 @@
 #### Minor Changes
 * Support "Velocity" as modulation source
 * Make pitch bend range configurable
+* New Presets with filter: "Cheese Cake Bass", "Liquid Silver"
 * Sort midi events by timestamp to workaround Bitwig bug
 * Sliders now support shift+drag for fine editing
 * Support for Apple Silicon
