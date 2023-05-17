@@ -51,11 +51,12 @@
 #define PUGL_LOCAL_CLOSE_MSG (WM_USER + 50)
 
 struct PuglInternalsImpl {
-	HWND     hwnd;
-	HDC      hdc;
-	HGLRC    hglrc;
-	WNDCLASS wc;
-	int      win_flags;
+	HWND        hwnd;
+	HDC         hdc;
+	PAINTSTRUCT paint;
+	HGLRC       hglrc;
+	WNDCLASS    wc;
+	int         win_flags;
 };
 
 LRESULT CALLBACK
@@ -88,8 +89,7 @@ puglInitInternals(void)
 void
 puglEnterContext(PuglView* view)
 {
-	PAINTSTRUCT ps;
-	BeginPaint(view->impl->hwnd, &ps);
+	BeginPaint(view->impl->hwnd, &view->impl->paint);
 
 #ifdef PUGL_HAVE_GL
 	if (view->ctx_type == PUGL_GL) {
@@ -108,8 +108,7 @@ puglLeaveContext(PuglView* view, bool flush)
 	}
 #endif
 
-	PAINTSTRUCT ps;
-	EndPaint(view->impl->hwnd, &ps);
+	EndPaint(view->impl->hwnd, &view->impl->paint);
 }
 
 int
