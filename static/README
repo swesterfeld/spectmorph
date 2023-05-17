@@ -1,0 +1,5 @@
+#### static linux build ####
+
+./autogen.sh
+cd static
+./build.sh
