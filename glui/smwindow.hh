@@ -82,6 +82,9 @@ protected:
   } sprite;
   void init_sprite();
 
+  bool macos_ctrl_click = false;
+  MouseButton to_mouse_button (const PuglEventButton& event);
+
 public:
   Window (EventLoop& event_loop, const std::string& title, int width, int height, PuglNativeWindow parent = 0, bool resize = false, PuglNativeWindow transient_parent = 0);
   virtual ~Window();

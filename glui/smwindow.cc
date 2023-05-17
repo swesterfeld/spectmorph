@@ -719,18 +719,42 @@ Window::on_event (const PuglEvent* event)
     }
 }
 
-static MouseButton
-to_mouse_button (unsigned pugl_button)
+MouseButton
+Window::to_mouse_button (const PuglEventButton& event)
 {
 #ifdef SM_OS_MACOS
-  switch (pugl_button)
+  switch (event.button)
   {
-    case 1: return LEFT_BUTTON;
+    case 1: /* map ctrl + left-click to right click */
+      if (event.type == PUGL_BUTTON_PRESS)
+        {
+          if (event.state & PUGL_MOD_CTRL)
+            {
+              macos_ctrl_click = true;
+              return RIGHT_BUTTON;
+            }
+          else
+            {
+              return LEFT_BUTTON;
+            }
+        }
+      else
+        {
+          if (macos_ctrl_click)
+            {
+              macos_ctrl_click = false;
+              return RIGHT_BUTTON;
+            }
+          else
+            {
+              return LEFT_BUTTON;
+            }
+        }
     case 2: return RIGHT_BUTTON;
     case 3: return MIDDLE_BUTTON;
   }
 #else
-  switch (pugl_button)
+  switch (event.button)
   {
     case 1: return LEFT_BUTTON;
     case 2: return MIDDLE_BUTTON;
@@ -746,11 +770,12 @@ Window::on_button_event (const PuglEventButton& event)
   const double ex = event.x / global_scale;
   const double ey = event.y / global_scale;
 
+  MouseButton button = to_mouse_button (event);
   if (event.type == PUGL_BUTTON_PRESS)
     {
       if (!mouse_buttons_pressed)
         mouse_widget = find_widget_xy (ex, ey);
-      mouse_buttons_pressed |= to_mouse_button (event.button);
+      mouse_buttons_pressed |= button;
 
       if (keyboard_focus_widget &&
           keyboard_focus_release_on_click &&
@@ -763,7 +788,7 @@ Window::on_button_event (const PuglEventButton& event)
       MouseEvent mouse_event;
       mouse_event.x = ex - mouse_widget->abs_x();
       mouse_event.y = ey - mouse_widget->abs_y();
-      mouse_event.button = to_mouse_button (event.button);
+      mouse_event.button = button;
       mouse_event.buttons = mouse_buttons_pressed;
       mouse_event.state = event.state;
 
@@ -780,13 +805,13 @@ Window::on_button_event (const PuglEventButton& event)
     }
   else /* event.type == PUGL_BUTTON_RELEASE */
     {
-      mouse_buttons_pressed &= ~to_mouse_button (event.button);
+      mouse_buttons_pressed &= ~button;
       if (mouse_widget)
         {
           MouseEvent mouse_event;
           mouse_event.x = ex - mouse_widget->abs_x();
           mouse_event.y = ey - mouse_widget->abs_y();
-          mouse_event.button = to_mouse_button (event.button);
+          mouse_event.button = button;
           mouse_event.buttons = mouse_buttons_pressed;
           mouse_event.state = event.state;
           mouse_widget->mouse_release (mouse_event);
