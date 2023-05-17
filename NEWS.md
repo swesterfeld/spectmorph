@@ -48,6 +48,7 @@
 * Support multiple update regions in UI toolkit
 * Optimize drawing for UI toolkit
 * Support "software sprites" for efficient visual feedback
+* Map Ctrl+Left Click to Right Click on macOS
 
 #### Internals: Optimizations
 * Pass wav set pointers (instead of strings) to morph linear/grid/source.
