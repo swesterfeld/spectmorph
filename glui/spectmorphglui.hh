@@ -37,6 +37,7 @@
 #include "smoperatorrolemap.hh"
 #include "smoutputadsrwidget.hh"
 #include "smparamlabel.hh"
+#include "smpathdialog.hh"
 #include "smprogressbar.hh"
 #include "smpropertyviewedit.hh"
 #include "smpropertyview.hh"
