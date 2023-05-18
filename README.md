@@ -1,6 +1,19 @@
 [![License][lgpl2.1-badge]][lgpl2.1-url]
 [![Test Build][testing-badge]][testing-url]
 
+About:
+======
+
+SpectMorph is a free software project which allows to analyze samples of
+musical instruments, and to combine them (morphing). It can be used to
+construct hybrid sounds, for instance a sound between a trumpet and a flute; or
+smooth transitions, for instance a sound that starts as a trumpet and then
+gradually changes to a flute. In its current version, SpectMorph ships with
+many ready-to-use instruments which can be combined using morphing.
+
+* The main website for this project is:
+    https://www.spectmorph.org
+
 Compiling SpectMorph:
 =====================
 
