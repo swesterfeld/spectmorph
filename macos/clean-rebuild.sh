@@ -8,6 +8,7 @@ git pull
 popd
 
 pushd ../../cross/spectmorph/macos
+rm -rf prefix build
 ./build-deps.sh x86_64 clean
 ./build.sh x86_64 clean
 popd
