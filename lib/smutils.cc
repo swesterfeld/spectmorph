@@ -366,18 +366,9 @@ set_macos_data_dir()
 void
 set_static_linux_data_dir()
 {
-  string pkg_data_dir = sm_get_user_dir (USER_DIR_DATA);
+  static string pkg_data_dir;
 
-  sm_debug ("static linux data dir: '%s'\n", pkg_data_dir.c_str());
-  sm_set_pkg_data_dir (pkg_data_dir);
-}
-
-static string
-spectmorph_user_data_dir()
-{
-  static string user_data_dir;
-
-  if (user_data_dir.empty())
+  if (pkg_data_dir.empty())
     {
       /*
        * Typically the plugin (with all its data files) will be installed in
@@ -399,19 +390,25 @@ spectmorph_user_data_dir()
       string path = real_path ? real_path : "/";
       free (real_path);
 
-      auto cut_path = [] (const string& path) { /* remove everything after the last "/" in path */
-        size_t n = 1;
-        for (size_t i = 1; i < path.size(); i++)
-          {
-            if (path[i] == '/')
-              n = i;
-          }
-          return path.substr (0, n);
+      auto dirname = [] (const string& path) { /* directory for path */
+        char *dir = g_path_get_dirname (path.c_str());
+        string s = dir;
+        g_free (dir);
+        return s;
       };
 
-      user_data_dir = cut_path (cut_path (path));
+      pkg_data_dir = dirname (dirname (path));
     }
-  return user_data_dir;
+
+  sm_debug ("static linux data dir: '%s'\n", pkg_data_dir.c_str());
+  sm_set_pkg_data_dir (pkg_data_dir);
+}
+
+static string
+spectmorph_user_data_dir()
+{
+  string dir = g_get_user_data_dir();
+  return dir + "/spectmorph";
 }
 #endif
 
