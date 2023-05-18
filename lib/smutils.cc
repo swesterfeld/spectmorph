@@ -375,8 +375,43 @@ set_static_linux_data_dir()
 static string
 spectmorph_user_data_dir()
 {
-  string dir = g_get_user_data_dir();
-  return dir + "/spectmorph";
+  static string user_data_dir;
+
+  if (user_data_dir.empty())
+    {
+      /*
+       * Typically the plugin (with all its data files) will be installed in
+       *
+       *   ~/.local/share/spectmorph
+       *
+       * but this could be different (if XDG_DATA_HOME was set during
+       * install.sh). To find the data directory, we look at the symlink
+       *
+       *   ~/.vst/spectmorph_vst.so => ~/.local/share/spectmorph/vst/spectmorph_vst.so
+       *
+       * This also works reliably if XDG_DATA_HOME does not point to the same
+       * directory than it was during installation (like in flatpak
+       * applications).
+       */
+      string vst_path = string (g_get_home_dir()) + "/.vst/spectmorph_vst.so";
+
+      char *real_path = realpath (vst_path.c_str(), nullptr);
+      string path = real_path ? real_path : "/";
+      free (real_path);
+
+      auto cut_path = [] (const string& path) { /* remove everything after the last "/" in path */
+        size_t n = 1;
+        for (size_t i = 1; i < path.size(); i++)
+          {
+            if (path[i] == '/')
+              n = i;
+          }
+          return path.substr (0, n);
+      };
+
+      user_data_dir = cut_path (cut_path (path));
+    }
+  return user_data_dir;
 }
 #endif
 

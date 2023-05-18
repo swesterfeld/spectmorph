@@ -24,6 +24,7 @@
 * Sliders now support shift+drag for fine editing
 * Support for Apple Silicon
 * Avoid crashes if XOpenIM / XCreateIC return NULL (#15).
+* Fix statically linked plugin data directory location (works in flatpak apps now).
 * Add dockerized MXE builds for windows, bump compiler version to gcc-12.
 * Bump minimum C++ standard to C++17
 * Fix build on RISC-V (#13)
