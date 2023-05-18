@@ -28,5 +28,5 @@ publish-docs:
 	cp manual.pdf $(DOCS_DIR)
 	cd $(top_srcdir); doxygen Doxyfile; cp -a html/* $(DOCS_DIR)/api
 	pandoc --base-header-level=3 -f markdown_github+pandoc_title_block-hard_line_breaks -t html --email-obfuscation=javascript $(top_srcdir)/README.md -o $(DOCS_DIR)/README.html
-	pandoc --base-header-level=3 -f markdown_github+pandoc_title_block-hard_line_breaks -t html --email-obfuscation=javascript $(top_srcdir)/NEWS.md -o $(DOCS_DIR)/NEWS.html
+	pandoc -f markdown_github+pandoc_title_block-hard_line_breaks -t html --email-obfuscation=javascript $(top_srcdir)/NEWS.md -o $(DOCS_DIR)/NEWS.html
 	cd $(DOCS_DIR) && find . -type f -print0 | xargs -0 git add
