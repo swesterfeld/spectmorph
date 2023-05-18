@@ -39,7 +39,7 @@ tar xf ../data/spectmorph-instruments-${VERSION}.tar.xz instruments/standard/ind
 unset CC
 unset CXX
 export DEB_BUILD_OPTIONS="parallel=$(nproc)"
-export DISTS="focal-amd64 jammy-amd64"
+export DISTS="focal-amd64"
 for NAME in $DISTS
 do
   DIST=${NAME%%-*}
