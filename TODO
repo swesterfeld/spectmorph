@@ -6,6 +6,7 @@ __ other release stuff __
 NEXT RELEASE:
 - spectmorph-instruments-0.6.1
 - handle XPARAM scaled parameters for modulation
+- update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 - JACK control-by-CC should use midi channel, too
