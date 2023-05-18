@@ -17,32 +17,23 @@ Configure should automatically determine via pkg-config whether the lv2
 development headers are available. When the LV2 plugin doesn't get built,
 install them.
 
-VST Plugin:
-===========
+Plugins:
+========
 
-The VST Plugin is available for Linux, macOS and 64-bit Windows, and should
-work in many different hosts, such as Bitwig, Renoise, Cubase and others. For
-Linux hosts that support LV2, using the SpectMorph LV2 plugin is the preferred
-way of integration.
+SpectMorph supports three different plugin formats,
 
-Controlling Morphing with Automation:
--------------------------------------
-The VST Plugin has four properties that can be automated by the host, called
-Control #1 ... Control #4. To use these, for instance for linear morphing,
-the Control Input can be set to "Control Signal #1" (or #2) in the UI. After
-that the host can change the morphing from left source to right source and
-back.
+ * CLAP plugin
+ * VST plugin
+ * LV2 plugin
 
-LV2 Plugin:
-===========
-
-SpectMorph provides a LV2 Plugin, which can be used together with Linux DAWs
-that support LV2, such as Ardour, Qtractor and others.
+for Linux, macOS (x86_64 and Apple Silicon) and 64-bit Windows, so it works in
+many different hosts, such as Ardour, Qtractor, Anklang, Bitwig, Renoise,
+Cubase, Ableton Live and others. For hosts that support CLAP, using the
+SpectMorph CLAP plugin is the preferred way of integration.
 
 Controlling Morphing with Automation:
 -------------------------------------
-
-The LV2 Plugin has four properties that can be automated by the host, called
+The plugin has four properties that can be automated by the host, called
 Control #1 ... Control #4. To use these, for instance for linear morphing,
 the Control Input can be set to "Control Signal #1" (or #2) in the UI. After
 that the host can change the morphing from left source to right source and
