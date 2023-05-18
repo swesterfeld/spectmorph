@@ -17,14 +17,15 @@ which can be combined using morphing. There is also an [Instrument
 Editor](#instrument-editor) which allows you to build your own instruments
 and create new sounds by morphing.
 
-SpectMorph can be used as a VST/LV2 plugin which can be loaded by many
+SpectMorph can be used as a CLAP/VST/LV2 plugin which can be loaded by many
 sequencers. It runs on pretty much every operating system:
 
- * Linux (VST/LV2/JACK)
- * macOS (64-bit VST)
- * Windows (64-bit VST)
+ * Linux (CLAP/VST/LV2/JACK)
+ * macOS (CLAP/VST/LV2), Apple Silicon and x86_64
+ * Windows (CLAP/VST/LV2), 64-bit
 
-SpectMorph is implemented in C++ and licensed under the GNU LGPL version 3.
+SpectMorph is implemented in C++ and licensed under the GNU LGPL version 2.1 or
+later.
 
 # User Interface
 
