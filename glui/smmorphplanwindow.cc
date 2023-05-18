@@ -7,6 +7,7 @@
 #include "smeventloop.hh"
 #include "smconfig.hh"
 #include "smtimer.hh"
+#include "smpathdialog.hh"
 
 using namespace SpectMorph;
 using std::string;
@@ -62,6 +63,8 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
 
   MenuItem *about_item = help_menu->add_item ("About...");
   connect (about_item->signal_clicked, this, &MorphPlanWindow::on_about_clicked);
+  MenuItem *show_paths = help_menu->add_item ("Show Paths...");
+  connect (show_paths->signal_clicked, this, &MorphPlanWindow::on_show_paths_clicked);
 
   grid.add_widget (menu_bar, 1, 1, 94, 3);
 
@@ -233,6 +236,14 @@ void
 MorphPlanWindow::on_about_clicked()
 {
   auto dialog = new AboutDialog (this);
+
+  dialog->run();
+}
+
+void
+MorphPlanWindow::on_show_paths_clicked()
+{
+  auto dialog = new PathDialog (this);
 
   dialog->run();
 }

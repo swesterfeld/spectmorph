@@ -56,6 +56,7 @@ public:
   void on_file_import_clicked();
   void on_file_export_clicked();
   void on_about_clicked();
+  void on_show_paths_clicked();
   void on_synth_notify_event (SynthNotifyEvent *ne);
 };
 

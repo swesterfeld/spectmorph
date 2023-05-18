@@ -50,7 +50,7 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smparamlabel.hh smeventloop.hh smprogressbar.hh sminsteditnote.hh \
 	 smsimplelines.hh smoperatorrolemap.hh smlistbox.hh \
 	 smcontrolview.hh smpropertyviewedit.hh smcontrolstatus.hh \
-	 smvoicestatus.hh
+	 smvoicestatus.hh smpathdialog.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
