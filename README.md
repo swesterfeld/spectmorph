@@ -1,5 +1,6 @@
 [![License][lgpl2.1-badge]][lgpl2.1-url]
 [![Test Build][testing-badge]][testing-url]
+[![Version][version-badge]][version-url]
 
 About:
 ======
@@ -106,3 +107,5 @@ for a tarball for your git version.
 [lgpl2.1-url]: https://github.com/swesterfeld/spectmorph/blob/master/COPYING
 [testing-badge]: https://img.shields.io/github/actions/workflow/status/swesterfeld/spectmorph/testing.yml?style=for-the-badge
 [testing-url]: https://github.com/swesterfeld/spectmorph/actions/workflows/testing.yml
+[version-badge]: https://img.shields.io/github/v/release/swesterfeld/spectmorph?label=version&style=for-the-badge
+[version-url]: https://github.com/swesterfeld/spectmorph/releases
