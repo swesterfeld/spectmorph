@@ -1,12 +1,8 @@
 NEWER TODOS:
-
-__ other release stuff __
-- build binaries
-
-NEXT RELEASE:
 - spectmorph-instruments-0.6.1
 - handle XPARAM scaled parameters for modulation
 - update manual
+- closing instrument editor without samples loaded causes crash
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 - JACK control-by-CC should use midi channel, too
