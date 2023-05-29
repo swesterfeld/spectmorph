@@ -49,8 +49,11 @@ class NotifyBuffer
   void
   read_simple (void *ptr, size_t size) // UI thread
   {
-    memcpy (ptr, &data[rpos], size);
-    rpos += size;
+    if (size)
+      {
+        memcpy (ptr, &data[rpos], size);
+        rpos += size;
+      }
   }
 public:
   NotifyBuffer() :
