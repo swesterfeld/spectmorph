@@ -134,15 +134,15 @@ OutFile::write_float_block (const string& s,
   write_raw_int (fb.size());
 
 #if G_BYTE_ORDER != G_LITTLE_ENDIAN
-  const int *fb_data = reinterpret_cast<const int *> (&fb[0]);
+  const int *fb_data = reinterpret_cast<const int *> (fb.data());
 
   vector<int> buffer (fb.size());
   for (size_t i = 0; i < fb.size(); i++)
     buffer[i] = GINT32_TO_LE (fb_data[i]); // little endian encoding
 
-  file->write (&buffer[0], buffer.size() * 4);
+  file->write (buffer.data(), buffer.size() * 4);
 #else
-  file->write (&fb[0], fb.size() * 4);
+  file->write (fb.data(), fb.size() * 4);
 #endif
 }
 
@@ -160,9 +160,9 @@ OutFile::write_uint16_block (const string& s,
   for (size_t i = 0; i < ib.size(); i++)
     buffer[i] = GUINT16_TO_LE (ib[i]); // little endian encoding
 
-  file->write (&buffer[0], buffer.size() * 2);
+  file->write (buffer.data(), buffer.size() * 2);
 #else
-  file->write (&ib[0], ib.size() * 2);
+  file->write (ib.data(), ib.size() * 2);
 #endif
 }
 
