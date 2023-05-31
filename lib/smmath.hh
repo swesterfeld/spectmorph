@@ -242,7 +242,7 @@ internal_fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, f
   table_params.phase = 0;
   table_params.mag = 1;
   table_params.mode = VectorSinParams::REPLACE;
-  fast_vector_sincos (table_params, incf_im[0].f, incf_im[0].f + (TABLE_SIZE * 4), incf_re[0].f);
+  fast_vector_sincos (table_params, incf_im[0].f, (float *) &incf_im[TABLE_SIZE], incf_re[0].f);
 
   // inner loop using SSE instructions
   int todo = sin_end - sin_begin;
@@ -266,7 +266,7 @@ internal_fast_vector_sincosf (const VectorSinParams& params, float *sin_begin, f
        *   state_re * inc_re - state_im * inc_im + i * (state_re * inc_im + state_im * inc_re)
        */
       F4Vector *new_im = reinterpret_cast<F4Vector *> (sin_begin + n);
-      F4Vector *new_re = reinterpret_cast<F4Vector *> (cos_begin + n);
+      F4Vector *new_re = NEED_COS ? reinterpret_cast<F4Vector *> (cos_begin + n) : nullptr;
       for (int k = 0; k < TABLE_SIZE; k++)
         {
           if (MODE == VectorSinParams::ADD)
