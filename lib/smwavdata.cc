@@ -69,13 +69,13 @@ WavData::load (std::function<SNDFILE* (SF_INFO *)> open_func)
   if (mask_format == SF_FORMAT_FLOAT || mask_format == SF_FORMAT_DOUBLE)
     {
       // for floating point wav files, we use the float data as provided by libsndfile
-      count = sf_readf_float (sndfile, &m_samples[0], sfinfo.frames);
+      count = sf_readf_float (sndfile, m_samples.data(), sfinfo.frames);
     }
   else
     {
       // for non-floating point wav files, we convert
       vector<int> isamples (sfinfo.frames * sfinfo.channels);
-      count = sf_readf_int (sndfile, &isamples[0], sfinfo.frames);
+      count = sf_readf_int (sndfile, isamples.data(), sfinfo.frames);
 
       /* reading a wav file and saving it again with the libsndfile float API will
        * change some values due to normalization issues:
@@ -341,7 +341,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func, OutFormat out_form
     }
 
   sf_count_t frames = m_samples.size() / m_n_channels;
-  sf_count_t count = sf_writef_int (sndfile, &isamples[0], frames);
+  sf_count_t count = sf_writef_int (sndfile, isamples.data(), frames);
 
   error = sf_error (sndfile);
   if (error)
