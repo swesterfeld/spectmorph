@@ -132,6 +132,8 @@ private:
     }
   };
 
+  constexpr static int  MAX_VOICES = 256;
+
   MorphPlanSynth        morph_plan_synth;
   InstEditSynth         m_inst_edit_synth;
 
