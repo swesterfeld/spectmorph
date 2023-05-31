@@ -38,6 +38,8 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   portamento_note_id (0),
   next_note_id (1)
 {
+  assert (n_voices <= MAX_VOICES);
+
   voices.clear();
   voices.resize (n_voices);
   active_voices.reserve (n_voices);
@@ -796,7 +798,7 @@ MidiSynth::notify_active_voice_status()
   if (m_notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
       // only report status for voices which are not SHADOW voices (mono)
-      Voice *voices[active_voices.size()];
+      Voice *voices[MAX_VOICES];
       uint   n_voices = 0;
 
       for (auto voice : active_voices)
@@ -810,13 +812,13 @@ MidiSynth::notify_active_voice_status()
 
       m_notify_buffer.write_int (ACTIVE_VOICE_STATUS_EVENT);
 
-      uintptr_t voice_seq[n_voices];
+      uintptr_t voice_seq[MAX_VOICES];
       for (uint i = 0; i < n_voices; i++)
         voice_seq[i] = (uintptr_t) voices[i]->mp_voice;
 
       m_notify_buffer.write_seq (voice_seq, n_voices);
 
-      float velocity_seq[n_voices];
+      float velocity_seq[MAX_VOICES];
       for (uint v = 0; v < n_voices; v++)
         velocity_seq[v] = voices[v]->mp_voice->velocity();
 
@@ -824,7 +826,7 @@ MidiSynth::notify_active_voice_status()
 
       for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
         {
-          float control_input_seq[n_voices];
+          float control_input_seq[MAX_VOICES];
 
           for (uint v = 0; v < n_voices; v++)
             control_input_seq[v] = std::clamp (control[i] + voices[v]->modulation[i], -1.f, 1.f);
