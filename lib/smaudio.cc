@@ -417,7 +417,7 @@ AudioBlock::sort_freqs()
 
   // sort partials by frequency
   const size_t N = freqs.size();
-  PartialData pvec[N];
+  PartialData pvec[N + AVOID_ARRAY_UB];
 
   for (size_t p = 0; p < N; p++)
     {

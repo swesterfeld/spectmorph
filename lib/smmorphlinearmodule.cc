@@ -196,7 +196,7 @@ MorphLinearModule::MySource::audio_block (size_t index)
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
 
-      MagData mds[left_block.freqs.size() + right_block.freqs.size()];
+      MagData mds[left_block.freqs.size() + right_block.freqs.size() + AVOID_ARRAY_UB];
       size_t  mds_size = 0;
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
@@ -221,8 +221,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
       size_t    left_freqs_size = left_block.freqs.size();
       size_t    right_freqs_size = right_block.freqs.size();
 
-      MorphUtils::FreqState   left_freqs[left_freqs_size];
-      MorphUtils::FreqState   right_freqs[right_freqs_size];
+      MorphUtils::FreqState   left_freqs[left_freqs_size + AVOID_ARRAY_UB];
+      MorphUtils::FreqState   right_freqs[right_freqs_size + AVOID_ARRAY_UB];
 
       init_freq_state (left_block.freqs, left_freqs);
       init_freq_state (right_block.freqs, right_freqs);

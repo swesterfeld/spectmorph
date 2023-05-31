@@ -58,6 +58,8 @@ std::string string_locale_printf (const char *format, ...) SPECTMORPH_PRINTF (1,
 
 void        sm_printf (const char *format, ...) SPECTMORPH_PRINTF (1, 2);
 
+static constexpr int AVOID_ARRAY_UB = 1; // add this to variable length array size (must be more than zero elements)
+
 enum InstallDir
 {
   INSTALL_DIR_BIN,
