@@ -46,7 +46,7 @@ normalize_phase (double phase)
 #define debug(...) SpectMorph::Debug::debug ("encoder", __VA_ARGS__)
 
 EncoderParams::EncoderParams() :
-  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size"}),
+  param_name_d ({"peak-width", "min-frame-periods", "min-frame-size", "steps-per-frame"}),
   param_name_s ({"window"})
 {
 }
@@ -200,15 +200,17 @@ EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_fre
   fundamental_freq = new_fundamental_freq;
 
   // --- frame size & step ---
-  double min_frame_periods, min_frame_size;
+  double min_frame_periods, min_frame_size, steps_per_frame;
   if (!get_param ("min-frame-periods", min_frame_periods))
     min_frame_periods = 4;  // default: at least 4 periods of the fundamental per frame
   if (!get_param ("min-frame-size", min_frame_size))
     min_frame_size = 40;    // default: at least 40ms frames
+  if (!get_param ("steps-per-frame", steps_per_frame))
+    steps_per_frame = 4;    // default: 4 steps per frame
 
   frame_size_ms = min_frame_size;
   frame_size_ms = max<float> (frame_size_ms, 1000 / fundamental_freq * min_frame_periods);
-  frame_step_ms = frame_size_ms / 4.0;
+  frame_step_ms = frame_size_ms / steps_per_frame;
 
   // --- convert block sizes in ms to sample counts ----
   frame_size = make_odd (mix_freq * 0.001 * frame_size_ms);
