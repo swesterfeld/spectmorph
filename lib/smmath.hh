@@ -431,7 +431,7 @@ double db_from_factor (double factor, double min_dB);
 
 #if defined (__i386__) && defined (__GNUC__)
 static inline int G_GNUC_CONST
-sm_ftoi (register float f)
+sm_ftoi (float f)
 {
   int r;
 
@@ -441,7 +441,7 @@ sm_ftoi (register float f)
   return r;
 }
 static inline int G_GNUC_CONST
-sm_dtoi (register double f)
+sm_dtoi (double f)
 {
   int r;
 
