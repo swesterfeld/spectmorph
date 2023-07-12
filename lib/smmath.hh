@@ -471,7 +471,7 @@ sm_round_positive (double d)
 inline int
 sm_round_positive (float f)
 {
-  return int (f + 0.5);
+  return int (f + 0.5f);
 }
 #endif
 
