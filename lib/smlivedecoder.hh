@@ -50,7 +50,7 @@ class LiveDecoder
   bool                loop_enabled;
   bool                start_skip_enabled;
 
-  size_t              frame_size, frame_step;
+  double              frame_step;
   size_t              zero_values_at_start_scaled;
   size_t              loop_start_scaled;
   size_t              loop_end_scaled;
