@@ -9,6 +9,7 @@
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
 #include "smrandom.hh"
+#include "config.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -1414,6 +1415,14 @@ Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
     return false;
 
   return true;
+}
+
+string
+Encoder::version() // changes if encoder algorithm changed (for cache invalidation)
+{
+  string version = PACKAGE_VERSION;
+  version += "-2023-07-26";
+  return version;
 }
 
 void

@@ -7,8 +7,6 @@
 #include "smmemout.hh"
 #include "smmain.hh"
 #include "smleakdebugger.hh"
-#include "config.h"
-
 #include <mutex>
 #include <cinttypes>
 #include <regex>
@@ -173,7 +171,7 @@ mk_version (const string& wav_data_hash, int midi_note, int iclipstart, int icli
   string depends;
 
   depends += wav_data_hash + "\n";
-  depends += string_printf ("%s\n", PACKAGE_VERSION);
+  depends += Encoder::version() + "\n";
   depends += string_printf ("%d\n", midi_note);
   depends += string_printf ("%d\n", iclipstart);
   depends += string_printf ("%d\n", iclipend);

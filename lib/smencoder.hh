@@ -160,6 +160,8 @@ public:
   bool encode (const WavData& wav_data, int channel, int optimization_level,
                bool attack, bool track_sines);
 
+  static std::string version(); // changes if encoder algorithm changed (for cache invalidation)
+
   void set_loop (Audio::LoopType loop_type, int loop_start, int loop_end);
   void set_loop_seconds (Audio::LoopType loop_type, double loop_start, double loop_end);
 
