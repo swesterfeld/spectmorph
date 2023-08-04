@@ -208,6 +208,8 @@ EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_fre
     min_frame_size = 40;    // default: at least 40ms frames
   if (!get_param ("steps-per-frame", steps_per_frame))
     steps_per_frame = 4;    // default: 4 steps per frame
+  if (steps_per_frame < 1)  // values below one don't make sense
+    steps_per_frame = 1;
 
   frame_size_ms = min_frame_size;
   frame_size_ms = max<float> (frame_size_ms, 1000 / fundamental_freq * min_frame_periods);
