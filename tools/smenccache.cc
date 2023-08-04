@@ -2,6 +2,7 @@
 
 #include "smmain.hh"
 #include "smutils.hh"
+#include "smencoder.hh"
 #include <string>
 #include <vector>
 
@@ -171,6 +172,11 @@ main (int argc, char **argv)
       vector<unsigned char> data;
       for (size_t i = 0; i < cmdargs.size(); i++)
         data.push_back (cmdargs[i]);
+      data.push_back (0);
+
+      /* hash encoder version */
+      for (auto vch : Encoder::version())
+        data.push_back (vch);
       data.push_back (0);
 
       int ch;
