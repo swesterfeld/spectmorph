@@ -1,3 +1,8 @@
+## SpectMorph NEXT
+
+#### Fixes
+* Fix crash if instrument editor is closed without any samples
+
 ## SpectMorph 0.6.0
 
 #### New features
