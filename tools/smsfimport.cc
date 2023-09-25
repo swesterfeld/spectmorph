@@ -1192,10 +1192,10 @@ import_preset (const string& import_name)
                 {
                   string path = get_current_dir() + "/" + w.path;
 
-                  SpectMorph::Sample *sample;
-                  SpectMorph::Error error = sminst.add_sample (path, &sample);
-                  if (sample)
+                  WavData wav_data;
+                  if (wav_data.load_mono (path))
                     {
+                      SpectMorph::Sample *sample = sminst.add_sample (wav_data, path);
                       sample->set_midi_note (w.midi_note);
 
                       auto r = loop_range[w.path];
@@ -1208,7 +1208,7 @@ import_preset (const string& import_name)
                     }
                   else
                     {
-                      fprintf (stderr, "%s: loading file '%s' failed: %s\n", options.program_name.c_str(), w.path.c_str(), error.message());
+                      fprintf (stderr, "%s: loading file '%s' failed: %s\n", options.program_name.c_str(), w.path.c_str(), wav_data.error_blurb());
                       exit (1);
                     }
                 }

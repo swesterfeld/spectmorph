@@ -128,7 +128,7 @@ private:
 public:
   Instrument();
 
-  Error       add_sample (const std::string& filename, Sample **sample);
+  Sample     *add_sample (const WavData& wav_data, const std::string& filename);
   Sample     *sample (size_t n) const;
   void        remove_sample();
   std::string gen_short_name (std::vector<std::unique_ptr<Sample>>& samples, const std::string& filename);
