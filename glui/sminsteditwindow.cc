@@ -460,6 +460,9 @@ InstEditWindow::load_sample (const string& filename)
 void
 InstEditWindow::on_samples_changed()
 {
+  if (!instrument) // during close we cannot access the instrument anymore
+    return;
+
   sample_combobox->clear();
   if (instrument->size() == 0)
     {
@@ -557,6 +560,9 @@ InstEditWindow::update_auto_checkboxes()
 void
 InstEditWindow::on_global_changed()
 {
+  if (!instrument) // during close we cannot access the instrument anymore
+    return;
+
   update_auto_checkboxes();
 
   name_line_edit->set_text (instrument->name());
