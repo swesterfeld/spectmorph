@@ -27,6 +27,7 @@ class CheckBox;
 class Button;
 class Timer;
 class ComboBox;
+class Slider;
 class SampleWidget;
 class SynthInterface;
 
@@ -73,10 +74,11 @@ class InstEditWindow : public Window
   Sample::Loop  text_to_loop (const std::string& text);
   std::string   loop_to_text (const Sample::Loop loop);
 
-  ComboBox *sample_combobox;
-  ScrollView *sample_scroll_view;
-  Label *hzoom_label;
-  Label *vzoom_label;
+  ComboBox    *sample_combobox;
+  ScrollView  *sample_scroll_view;
+  Label       *hzoom_label = nullptr;
+  Label       *vzoom_label = nullptr;
+  Slider      *hzoom_slider = nullptr;
   PlayMode play_mode = PlayMode::SPECTMORPH;
   ComboBox *play_mode_combobox;
   ComboBox *loop_combobox;
@@ -114,6 +116,7 @@ public:
   void on_remove_sample_clicked();
   void on_update_hzoom (float value);
   void on_update_vzoom (float value);
+  void on_drag_scroll (double cx, double dx, double dy);
   void on_show_hide_params();
   void on_show_hide_note();
   void on_import_clicked();

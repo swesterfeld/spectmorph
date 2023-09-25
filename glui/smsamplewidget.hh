@@ -56,6 +56,9 @@ private:
   Sample       *m_sample = nullptr;
   MarkerType    selected_marker = MARKER_NONE;
   bool          mouse_down = false;
+  double        mouse_click_x = 0;
+  double        mouse_click_y = 0;
+  double        mouse_click_pos = 0;
   DisplayTuning m_display_tuning;
 
   std::map<MarkerType, Rect> marker_rect;
@@ -298,7 +301,15 @@ public:
     if (mouse_down)
       {
         if (selected_marker == MARKER_NONE)
-          return;
+          {
+            double dx = event.x + abs_x() - mouse_click_x;
+            double dy = event.y - mouse_click_y;
+            mouse_click_x = event.x + abs_x();
+            mouse_click_y = event.y;
+
+            signal_drag_scroll (mouse_click_pos, dx, dy);
+            return;
+          }
 
         const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
         const double x_ms = sm_bound<double> (0, event.x / width() * sample_len_ms, sample_len_ms);
@@ -332,7 +343,12 @@ public:
   mouse_press (const MouseEvent& event) override
   {
     if (event.button == LEFT_BUTTON)
-      mouse_down = true;
+      {
+        mouse_down = true;
+        mouse_click_x = event.x + abs_x();
+        mouse_click_y = event.y;
+        mouse_click_pos = event.x / width();
+      }
   }
   void
   mouse_release (const MouseEvent& event) override
@@ -413,6 +429,7 @@ public:
   {
     update();
   }
+  Signal<double, double, double> signal_drag_scroll;
 };
 
 }

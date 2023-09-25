@@ -144,6 +144,19 @@ public:
     // reposition widget on screen if necessary
     on_scroll_bar_changed (0);
   }
+  void
+  change_widget_x_and_width (double cx, double dx, double width)
+  {
+    double old_width = scroll_widget->width();
+    scroll_widget->set_width (width);
+    double x = scroll_widget->x() + dx - (width - old_width) * cx;
+    double new_page_size = view_width / (scroll_widget->width() + 16);
+    h_scroll_bar->set_page_size (new_page_size);
+    double new_pos = (8 - x) / (scroll_widget->width() + 16);
+    new_pos = std::clamp (new_pos, 0.0, 1 - new_page_size);
+    h_scroll_bar->set_pos (new_pos);
+    on_scroll_bar_changed (0);
+  }
 };
 
 }

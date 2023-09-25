@@ -207,13 +207,14 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (sample_scroll_view, 1, 8, 91, 46);
 
   sample_widget = new SampleWidget (sample_scroll_view);
+  connect (sample_widget->signal_drag_scroll, this, &InstEditWindow::on_drag_scroll);
 
   grid.add_widget (sample_widget, 1, 1, 100, 42);
   sample_scroll_view->set_scroll_widget (sample_widget, true, false, /* center_zoom */ true);
 
   /*----- hzoom -----*/
   grid.add_widget (new Label (this, "HZoom"), 1, 54, 6, 3);
-  Slider *hzoom_slider = new Slider (this, 0.0);
+  hzoom_slider = new Slider (this, 0.0);
   grid.add_widget (hzoom_slider, 7, 54, 28, 3);
   connect (hzoom_slider->signal_value_changed, this, &InstEditWindow::on_update_hzoom);
 
@@ -621,6 +622,15 @@ void
 InstEditWindow::on_remove_sample_clicked()
 {
   instrument->remove_sample();
+}
+
+void
+InstEditWindow::on_drag_scroll (double cx, double dx, double dy)
+{
+  hzoom_slider->set_value (std::clamp<double> (hzoom_slider->value() - dy * 0.003, 0, 1));
+  double factor = pow (2, hzoom_slider->value() * 10);
+  sample_scroll_view->change_widget_x_and_width (cx, dx, 89 * factor * 8);
+  hzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
 }
 
 void
