@@ -448,13 +448,63 @@ InstEditWindow::load_sample (const string& filename)
 {
   if (filename != "")
     {
-      Error error = instrument->add_sample (filename, nullptr);
-      if (error)
+      /* try loading file */
+      WavData wav_data;
+      if (wav_data.load (filename))
+        {
+          if (wav_data.n_channels() == 2) /* stereo: ask user if we should perform stereo -> mono conversion */
+            {
+              auto dialog = new LoadStereoDialog (this);
+
+              connect (dialog->signal_result, [wav_data, filename, this] (LoadStereoDialog::Result result)
+                {
+                  /* we captured a copy of the wave data in this lambda */
+                  load_sample_convert_from_stereo (wav_data, filename, result);
+                });
+              dialog->run();
+            }
+          else if (wav_data.n_channels() == 1)
+            {
+              instrument->add_sample (wav_data, filename);
+            }
+          else
+            {
+              MessageBox::critical (this, "Error",
+                                    string_locale_printf ("Loading sample failed:\n'%s'\nUnsupported number of channels (%d).", filename.c_str(), wav_data.n_channels()));
+            }
+        }
+      else
         {
           MessageBox::critical (this, "Error",
-                                string_locale_printf ("Loading sample failed:\n'%s'\n%s.", filename.c_str(), error.message()));
+                                string_locale_printf ("Loading sample failed:\n'%s'\n%s.", filename.c_str(), wav_data.error_blurb()));
         }
     }
+}
+
+void
+InstEditWindow::load_sample_convert_from_stereo (const WavData& wav_data, const string& filename, LoadStereoDialog::Result result)
+{
+  const vector<float>& old_samples = wav_data.samples();
+  vector<float> mono_samples;
+
+  switch (result)
+    {
+      case LoadStereoDialog::Result::LEFT:
+        for (size_t i = 0; i < old_samples.size(); i += 2)
+          mono_samples.push_back (old_samples[i]);
+        break;
+      case LoadStereoDialog::Result::RIGHT:
+        for (size_t i = 1; i < old_samples.size(); i += 2)
+          mono_samples.push_back (old_samples[i]);
+        break;
+      case LoadStereoDialog::Result::MIX:
+        for (size_t i = 0; i < old_samples.size(); i += 2)
+          mono_samples.push_back ((old_samples[i] + old_samples[i + 1]) * 0.5f);
+        break;
+    }
+
+  WavData mono_wav_data (mono_samples, /* n_channels */ 1, wav_data.mix_freq(), wav_data.bit_depth());
+  instrument->add_sample (mono_wav_data, filename);
 }
 
 void

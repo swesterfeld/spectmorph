@@ -7,6 +7,7 @@
 #include "sminsteditnote.hh"
 #include "smbuilderthread.hh"
 #include "smwindow.hh"
+#include "smloadstereodialog.hh"
 
 #include <thread>
 
@@ -67,6 +68,7 @@ class InstEditWindow : public Window
 
   std::string   note_to_text (int i);
   void          load_sample (const std::string& filename);
+  void          load_sample_convert_from_stereo (const WavData& wav_data, const std::string& filename, LoadStereoDialog::Result result);
   void          on_samples_changed();
   void          on_marker_changed();
   void          update_auto_checkboxes();
