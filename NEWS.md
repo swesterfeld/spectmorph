@@ -1,5 +1,8 @@
 ## SpectMorph NEXT
 
+#### New features
+* Support click & drag in instrument editor sample to scroll & zoom (#22)
+
 #### Fixes
 * Fix crash if instrument editor is closed without any samples
 
