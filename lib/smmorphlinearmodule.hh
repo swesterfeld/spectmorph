@@ -30,10 +30,6 @@ class MorphLinearModule : public MorphOperatorModule
   {
     MorphLinearModule    *module;
 
-    // temporary data for morphing (avoid malloc by putting it here)
-    AudioBlock            left_block;
-    AudioBlock            right_block;
-
     void interp_mag_one (double interp, uint16_t *left, uint16_t *right);
     void retrigger (int channel, float freq, int midi_velocity);
     Audio* audio();

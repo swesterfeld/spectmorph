@@ -9,6 +9,7 @@
 #include "smlivedecoder.hh"
 #include "smmorphutils.hh"
 #include "smutils.hh"
+#include "smrtmemory.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -93,7 +94,7 @@ MorphLinearModule::MySource::audio()
 }
 
 static void
-dump_block (size_t index, const char *what, const AudioBlock& block)
+dump_block (size_t index, const char *what, const RTAudioBlock& block)
 {
   if (DEBUG)
     {
@@ -159,6 +160,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
   const double morphing = module->apply_modulation (module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
+
+  RTAudioBlock left_block (module->rt_memory_area()), right_block (module->rt_memory_area());
 
   Audio *left_audio = nullptr;
   Audio *right_audio = nullptr;
@@ -321,7 +324,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
     }
   else if (have_left) // only left source output present
     {
-      module->audio_block = left_block;
+      module->audio_block.freqs.assign (left_block.freqs.begin(), left_block.freqs.end());
+      module->audio_block.mags.assign (left_block.mags.begin(), left_block.mags.end());
+      module->audio_block.noise.assign (left_block.noise.begin(), left_block.noise.end());
+
       for (size_t i = 0; i < module->audio_block.noise.size(); i++)
         module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * (1 - interp));
       for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
@@ -331,7 +337,10 @@ MorphLinearModule::MySource::audio_block (size_t index)
     }
   else if (have_right) // only right source output present
     {
-      module->audio_block = right_block;
+      module->audio_block.freqs.assign (right_block.freqs.begin(), right_block.freqs.end());
+      module->audio_block.mags.assign (right_block.mags.begin(), right_block.mags.end());
+      module->audio_block.noise.assign (right_block.noise.begin(), right_block.noise.end());
+
       for (size_t i = 0; i < module->audio_block.noise.size(); i++)
         module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * interp);
       for (size_t i = 0; i < module->audio_block.freqs.size(); i++)

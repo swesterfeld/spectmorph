@@ -64,6 +64,16 @@ init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)
     }
 }
 
+void
+init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
+{
+  for (size_t i = 0; i < fint.size(); i++)
+    {
+      freq_state[i].freq_f = sm_ifreq2freq (fint[i]);
+      freq_state[i].used   = 0;
+    }
+}
+
 AudioBlock*
 get_normalized_block_ptr (LiveDecoderSource *source, double time_ms)
 {
@@ -112,6 +122,20 @@ get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out
   out_audio_block.noise  = block_ptr->noise;
   out_audio_block.mags   = block_ptr->mags;
   out_audio_block.freqs  = block_ptr->freqs;
+
+  return true;
+}
+
+bool
+get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block)
+{
+  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
+  if (!block_ptr)
+    return false;
+
+  out_audio_block.freqs.assign (block_ptr->freqs);
+  out_audio_block.mags.assign (block_ptr->mags);
+  out_audio_block.noise.assign (block_ptr->noise);
 
   return true;
 }
