@@ -7,6 +7,7 @@
 #include "smlivedecodersource.hh"
 #include "smrandom.hh"
 #include "smtimeinfo.hh"
+#include "smrtmemory.hh"
 
 #include <string>
 
@@ -31,6 +32,7 @@ protected:
   bool                                m_have_notify_value = false;
 
   Random *random_gen() const;
+  RTMemoryArea *rt_memory_area() const;
   TimeInfo time_info() const;
   float apply_modulation (const ModulationData& mod_data) const;
   void set_notify_value (float value);

@@ -6,22 +6,24 @@
 #include "smmorphoperatormodule.hh"
 #include "smmorphplanvoice.hh"
 #include "smeffectdecoder.hh"
+#include "smrtmemory.hh"
 
 namespace SpectMorph {
 
 class MorphOutputModule : public MorphOperatorModule
 {
-  const MorphOutput::Config         *cfg;
+  const MorphOutput::Config         *cfg = nullptr;
   std::vector<MorphOperatorModule *> out_ops;
   std::vector<EffectDecoder *>       out_decoders;
-  const TimeInfoGenerator           *time_info_gen;
+  const TimeInfoGenerator           *time_info_gen = nullptr;
+  RTMemoryArea                      *m_rt_memory_area = nullptr;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
   ~MorphOutputModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
-  void process (const TimeInfoGenerator& time_info, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
+  void process (const TimeInfoGenerator& time_info, RTMemoryArea& rt_memory_area, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);
   void retrigger (const TimeInfo& time_info, int channel, float freq, int midi_velocity);
   void release();
   bool done();
@@ -34,6 +36,7 @@ public:
   float filter_resonance_mod() const;
   float filter_drive_mod() const;
   TimeInfo compute_time_info() const;
+  RTMemoryArea *rt_memory_area() const;
 };
 
 }

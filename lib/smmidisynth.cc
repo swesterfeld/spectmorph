@@ -539,7 +539,8 @@ MidiSynth::process_audio (float *output, size_t n_values)
            */
           if (!output_module->done())
             {
-              output_module->process (m_time_info_gen, n_values, values, 1, freq_in);
+              output_module->process (m_time_info_gen, m_rt_memory_area, n_values, values, 1, freq_in);
+              m_rt_memory_area.free_all();
               for (size_t i = 0; i < n_values; i++)
                 output[i] += samples[i] * gain;
             }
