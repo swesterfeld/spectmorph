@@ -79,6 +79,9 @@ LiveDecoder::LiveDecoder (float mix_freq) :
 
   init_aa_filter();
   set_unison_voices (1, 0);
+  /* avoid malloc during synthesis */
+  pstate[0].reserve (PARTIAL_STATE_RESERVE);
+  pstate[1].reserve (PARTIAL_STATE_RESERVE);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
 }

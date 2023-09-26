@@ -17,6 +17,9 @@ namespace SpectMorph {
 class LiveDecoderFilter;
 class LiveDecoder
 {
+  /* maximum number of partials to expect */
+  static constexpr size_t PARTIAL_STATE_RESERVE = 2048;
+
   struct PartialState
   {
     float freq;
