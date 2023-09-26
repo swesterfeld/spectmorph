@@ -246,6 +246,7 @@ Player::compute_samples (vector<float>& samples)
 {
   double ppq_pos = 0;
   TimeInfoGenerator time_info_gen (voice->mix_freq());
+  RTMemoryArea rt_memory_area;
 
   uint64 audio_time_stamp = 0;
   const size_t STEP = 100;
@@ -291,7 +292,8 @@ Player::compute_samples (vector<float>& samples)
       synth.update_shared_state (time_info_gen.time_info (0));
 
       float *audio_out[1] = { &samples[i] };
-      voice->output()->process (time_info_gen, todo, audio_out, 1);
+      voice->output()->process (time_info_gen, rt_memory_area, todo, audio_out, 1);
+      rt_memory_area.free_all();
 
       audio_time_stamp += todo;
       ppq_pos += todo / voice->mix_freq() * (tempo / 60);
