@@ -35,11 +35,10 @@ next_power2 (size_t i)
  */
 NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
   mix_freq (mix_freq),
-  block_size (block_size)
+  block_size (block_size),
+  noise_band_partition (Audio::N_NOISE_BANDS, block_size + 2, mix_freq)
 {
   std::lock_guard lg (cos_window_mutex);
-
-  noise_band_partition = 0;
 
   float*& win = cos_window_for_block_size[block_size];
   if (!win)
@@ -60,12 +59,6 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
 NoiseDecoder::~NoiseDecoder()
 {
   FFT::free_array_float (interpolated_spectrum - 8);
-
-  if (noise_band_partition)
-    {
-      delete noise_band_partition;
-      noise_band_partition = 0;
-    }
 }
 
 void
@@ -86,16 +79,13 @@ NoiseDecoder::process (const RTAudioBlock& audio_block,
                        OutputMode          output_mode,
                        float               portamento_stretch)
 {
-  if (!noise_band_partition)
-    noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);
-
-  assert (noise_band_partition->n_bands() == audio_block.noise.size());
-  assert (noise_band_partition->n_spectrum_bins() == block_size + 2);
+  assert (noise_band_partition.n_bands() == audio_block.noise.size());
+  assert (noise_band_partition.n_spectrum_bins() == block_size + 2);
 
   const double Eww = 0.375; // expected value of the energy of the window
   const double norm = mix_freq / (Eww * block_size);
 
-  noise_band_partition->noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
+  noise_band_partition.noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
 
   if (portamento_stretch > 1.01) // avoid aliasing during portamento
     {
