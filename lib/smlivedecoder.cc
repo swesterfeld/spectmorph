@@ -487,6 +487,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           pos = 0;
           have_samples = block_size / 2;
+          rt_memory_area->free_all();
         }
 
       g_assert (have_samples > 0);
