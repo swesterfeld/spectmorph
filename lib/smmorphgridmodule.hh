@@ -29,23 +29,15 @@ private:
 
   // output
   Audio               audio;
-  AudioBlock          audio_block;
 
   struct MySource : public LiveDecoderSource
   {
-    // temporary blocks for morphing:
-    AudioBlock        audio_block_a;
-    AudioBlock        audio_block_b;
-    AudioBlock        audio_block_c;
-    AudioBlock        audio_block_d;
-    AudioBlock        audio_block_ab;
-    AudioBlock        audio_block_cd;
-
     MorphGridModule  *module;
 
     void retrigger (int channel, float freq, int midi_velocity);
     Audio* audio();
-    AudioBlock *audio_block (size_t index);
+    AudioBlock *audio_block (size_t index) override { return nullptr; }
+    bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
   } my_source;
 
 public:

@@ -6,12 +6,15 @@
 #include <cassert>
 
 #include "smmath.hh"
+#include "smutils.hh"
 
 namespace SpectMorph
 {
 
 class RTMemoryArea
 {
+  SPECTMORPH_CLASS_NON_COPYABLE (RTMemoryArea);
+
   std::vector<unsigned char> m_mem;
   std::vector<void *>        m_malloc_mem;
   size_t                     m_used = 0;
@@ -66,6 +69,8 @@ public:
 template<class T>
 class RTVector
 {
+  SPECTMORPH_CLASS_NON_COPYABLE (RTVector);
+
   RTMemoryArea *m_memory_area = nullptr;
   T            *m_start = nullptr;
   size_t        m_size = 0;
