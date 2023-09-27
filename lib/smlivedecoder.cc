@@ -83,6 +83,8 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   /* avoid malloc during synthesis */
   pstate[0].reserve (PARTIAL_STATE_RESERVE);
   pstate[1].reserve (PARTIAL_STATE_RESERVE);
+  unison_phases[0].reserve (PARTIAL_STATE_RESERVE * /* max unison voices */ 7);
+  unison_phases[1].reserve (PARTIAL_STATE_RESERVE * /* max unison voices */ 7);
 
   portamento_state.buffer.reserve (MAX_N_VALUES * 16 /* 4 octaves */ + 256 /* buffer shrink boundary */ + 100);
 
