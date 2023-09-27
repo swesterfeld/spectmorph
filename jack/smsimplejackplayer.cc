@@ -17,8 +17,8 @@ class Source : public LiveDecoderSource
 public:
   Source (Audio *my_audio);
 
-  void retrigger (int, float, int);
-  Audio* audio();
+  void retrigger (int, float, int) override;
+  Audio* audio() override;
   bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 };
 
