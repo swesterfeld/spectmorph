@@ -225,9 +225,11 @@ public:
   {
     return &my_audio;
   }
-  AudioBlock *audio_block (size_t index)
+  bool
+  rt_audio_block (size_t index, RTAudioBlock& out_block)
   {
-    return &my_audio_block;
+    out_block.assign (my_audio_block);
+    return true;
   }
 };
 
@@ -245,12 +247,13 @@ test_spect()
   ConstBlockSource source (audio_block, mix_freq);
 
   LiveDecoder live_decoder (&source, mix_freq);
+  RTMemoryArea rt_memory_area;
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
   freq = synth.quantized_freq (freq);
   live_decoder.retrigger (0, freq, 127);
 
   vector<float> samples (block_size * 100);
-  live_decoder.process (samples.size(), nullptr, &samples[0]);
+  live_decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
 
   size_t power2 = 1;
   while (power2 * 2 < (samples.size() - block_size * 2))
@@ -295,12 +298,13 @@ test_phase()
 
   vector<float> samples (1024);
 
+  RTMemoryArea rt_memory_area;
   LiveDecoder live_decoder (&source, mix_freq);
   live_decoder.enable_noise (false);
   live_decoder.retrigger (0, freq, 127);
   for (size_t block = 0; block < 10000000; block++)
     {
-      live_decoder.process (samples.size(), nullptr, &samples[0]);
+      live_decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
 
       float maxv = 0;
       for (size_t i = 0; i < samples.size(); i++)
@@ -332,6 +336,7 @@ test_saw_perf()
     {
       ConstBlockSource source (audio_block, mix_freq);
 
+      RTMemoryArea rt_memory_area;
       LiveDecoder live_decoder (&source, mix_freq);
       live_decoder.enable_noise (false);
       live_decoder.enable_sines (i == 1);
@@ -346,7 +351,7 @@ test_saw_perf()
         {
           start = get_time();
           for (int r = 0; r < RUNS; r++)
-            live_decoder.process (samples.size(), nullptr, &samples[0]);
+            live_decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
           end = get_time();
           t[i] = min (t[i], end - start);
         }

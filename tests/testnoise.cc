@@ -66,6 +66,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   encoder.save (sm_file);
 
   WavSet wav_set;
+  RTMemoryArea rt_memory_area;
   LiveDecoder decoder (&wav_set, enc_params.mix_freq);
 
   WavSetWave new_wave;
@@ -82,7 +83,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   float freq = 440;
   decoder.retrigger (0, freq, 127);
-  decoder.process (audio_out.size(), nullptr, &audio_out[0]);
+  decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
 }
 
 void
