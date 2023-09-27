@@ -56,8 +56,8 @@ MorphWavSourceModule::InstrumentSource::audio()
   return active_audio;
 }
 
-AudioBlock *
-MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
+bool
+MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   if (active_audio && module->cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
@@ -79,9 +79,14 @@ MorphWavSourceModule::InstrumentSource::audio_block (size_t index)
       index = sm_bound (start, sm_round_positive ((1 - position) * start + position * end), end);
     }
   if (active_audio && index < active_audio->contents.size())
-    return &active_audio->contents[index];
+    {
+      out_block.assign (active_audio->contents[index]);
+      return true;
+    }
   else
-    return nullptr;
+    {
+      return false;
+    }
 }
 
 void

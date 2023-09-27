@@ -184,11 +184,12 @@ decode (vector<float>& audio_out, int sr)
   Error error = wav_set.load ("testnoisesr.tmp.smset");
   assert (!error);
 
+  RTMemoryArea rt_memory_area;
   LiveDecoder decoder (&wav_set, sr);
 
   float freq = 440;
   decoder.retrigger (0, freq, 127);
-  decoder.process (audio_out.size(), nullptr, &audio_out[0]);
+  decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
 }
 
 void

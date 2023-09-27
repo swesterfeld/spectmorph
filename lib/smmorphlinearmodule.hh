@@ -24,20 +24,15 @@ class MorphLinearModule : public MorphOperatorModule
   bool                 have_right_source;
 
   Audio                audio;
-  AudioBlock           audio_block;
 
   struct MySource : public LiveDecoderSource
   {
     MorphLinearModule    *module;
 
-    // temporary data for morphing (avoid malloc by putting it here)
-    AudioBlock            left_block;
-    AudioBlock            right_block;
-
     void interp_mag_one (double interp, uint16_t *left, uint16_t *right);
-    void retrigger (int channel, float freq, int midi_velocity);
-    Audio* audio();
-    AudioBlock *audio_block (size_t index);
+    void retrigger (int channel, float freq, int midi_velocity) override;
+    Audio* audio() override;
+    bool rt_audio_block (size_t index, RTAudioBlock& block) override;
   } my_source;
 
 public:

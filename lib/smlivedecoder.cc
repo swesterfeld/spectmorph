@@ -5,6 +5,7 @@
 #include "smmath.hh"
 #include "smleakdebugger.hh"
 #include "smutils.hh"
+#include "smrtmemory.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -79,6 +80,9 @@ LiveDecoder::LiveDecoder (float mix_freq) :
 
   init_aa_filter();
   set_unison_voices (1, 0);
+  /* avoid malloc during synthesis */
+  pstate[0].reserve (PARTIAL_STATE_RESERVE);
+  pstate[1].reserve (PARTIAL_STATE_RESERVE);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
@@ -315,19 +319,19 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                 frame_idx = loop_point;
             }
 
-          AudioBlock *audio_block_ptr = NULL;
+          RTAudioBlock audio_block (rt_memory_area);
+          bool         have_audio_block = false;
           if (source)
             {
-              audio_block_ptr = source->audio_block (frame_idx);
+              have_audio_block = source->rt_audio_block (frame_idx, audio_block);
             }
           else if (frame_idx < audio->contents.size())
             {
-              audio_block_ptr = &audio->contents[frame_idx];
+              audio_block.assign (audio->contents[frame_idx]);
+              have_audio_block = true;
             }
-          if (audio_block_ptr)
+          if (have_audio_block)
             {
-              const AudioBlock& audio_block = *audio_block_ptr;
-
               assert (audio_block.freqs.size() == audio_block.mags.size());
 
               ifft_synth.clear_partials();
@@ -484,6 +488,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           pos = 0;
           have_samples = block_size / 2;
+          rt_memory_area->free_all();
         }
 
       g_assert (have_samples > 0);
@@ -690,7 +695,7 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
 }
 
 void
-LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process (RTMemoryArea& rt_memory_area, size_t n_values, const float *freq_in, float *audio_out)
 {
   if (!audio)   // nothing loaded
     {
@@ -698,6 +703,10 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
       done_state = DoneState::DONE;
       return;
     }
+  /* required during processing */
+  assert (!this->rt_memory_area);
+  this->rt_memory_area = &rt_memory_area;
+
   /* ensure that time_offset_ms() is only called during live decoder process */
   assert (!in_process);
   in_process = true;
@@ -765,6 +774,7 @@ LiveDecoder::process (size_t n_values, const float *freq_in, float *audio_out)
       if (i == orig_n_values)
         done_state = DoneState::DONE;
     }
+  this->rt_memory_area = nullptr;
   in_process = false;
 }
 

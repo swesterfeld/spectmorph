@@ -64,15 +64,25 @@ init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)
     }
 }
 
-AudioBlock*
-get_normalized_block_ptr (LiveDecoderSource *source, double time_ms)
+void
+init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
+{
+  for (size_t i = 0; i < fint.size(); i++)
+    {
+      freq_state[i].freq_f = sm_ifreq2freq (fint[i]);
+      freq_state[i].used   = 0;
+    }
+}
+
+bool
+get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block)
 {
   if (!source)
-    return nullptr;
+    return false;
 
   Audio *audio = source->audio();
   if (!audio)
-    return nullptr;
+    return false;
 
   if (audio->loop_type == Audio::LOOP_TIME_FORWARD)
     {
@@ -99,21 +109,7 @@ get_normalized_block_ptr (LiveDecoderSource *source, double time_ms)
       source_index = LiveDecoder::compute_loop_frame_index (source_index, audio);
     }
 
-  return source->audio_block (source_index);
-}
-
-bool
-get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out_audio_block)
-{
-  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
-  if (!block_ptr)
-    return false;
-
-  out_audio_block.noise  = block_ptr->noise;
-  out_audio_block.mags   = block_ptr->mags;
-  out_audio_block.freqs  = block_ptr->freqs;
-
-  return true;
+  return source->rt_audio_block (source_index, out_audio_block);
 }
 
 }

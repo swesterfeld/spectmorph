@@ -18,6 +18,7 @@ class SimpleJackPlayer
   jack_client_t      *jack_client;
 
   std::mutex          decoder_mutex;
+  RTMemoryArea       *decoder_rt_memory_area;   // decoder_mutex!
   LiveDecoder        *decoder;                  // decoder_mutex!
   Audio              *decoder_audio;            // decoder_mutex!
   LiveDecoderSource  *decoder_source;           // decoder_mutex!
@@ -28,7 +29,7 @@ class SimpleJackPlayer
   double              jack_mix_freq;
 
   void fade_out_blocking();
-  void update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source);
+  void update_decoder (RTMemoryArea *new_decoder_rt_memory_area, LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source);
 public:
   SimpleJackPlayer (const std::string& client_name);
   ~SimpleJackPlayer();

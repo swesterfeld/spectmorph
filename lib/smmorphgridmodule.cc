@@ -100,7 +100,7 @@ MorphGridModule::MySource::audio()
 }
 
 static bool
-get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, AudioBlock& out_audio_block)
+get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, RTAudioBlock& out_audio_block)
 {
   LiveDecoderSource *source = NULL;
 
@@ -150,11 +150,11 @@ interp_mag_one (double interp, uint16_t *left, uint16_t *right)
 }
 
 static void
-morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
+morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor)
 {
   const int ddb = sm_factor2delta_idb (factor);
 
-  out_block = in_block;
+  out_block.assign (in_block);
   for (size_t i = 0; i < out_block.noise.size(); i++)
     out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
 
@@ -165,9 +165,9 @@ morph_scale (AudioBlock& out_block, const AudioBlock& in_block, double factor)
 }
 
 static bool
-morph (AudioBlock& out_block,
-       bool have_left, const AudioBlock& left_block,
-       bool have_right, const AudioBlock& right_block,
+morph (RTAudioBlock& out_block,
+       bool have_left, const RTAudioBlock& left_block,
+       bool have_right, const RTAudioBlock& right_block,
        double morphing)
 {
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
@@ -186,12 +186,13 @@ morph (AudioBlock& out_block,
       return true;
     }
 
-  // clear result block
-  out_block.freqs.clear();
-  out_block.mags.clear();
+  // set out_block capacity
+  const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
+  out_block.freqs.set_capacity (max_partials);
+  out_block.mags.set_capacity (max_partials);
 
   // FIXME: lpc stuff
-  MagData mds[left_block.freqs.size() + right_block.freqs.size() + AVOID_ARRAY_UB];
+  MagData mds[max_partials + AVOID_ARRAY_UB];
   size_t  mds_size = 0;
   for (size_t i = 0; i < left_block.freqs.size(); i++)
     {
@@ -302,7 +303,7 @@ morph (AudioBlock& out_block,
           interp_mag_one (interp, NULL, &out_block.mags.back());
         }
     }
-  out_block.noise.clear();
+  out_block.noise.set_capacity (left_block.noise.size());
   for (size_t i = 0; i < left_block.noise.size(); i++)
     out_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
 
@@ -346,7 +347,7 @@ morph_delta_db (double left_db, double right_db, double morphing)
 }
 
 static void
-apply_delta_db (AudioBlock& block, double delta_db)
+apply_delta_db (RTAudioBlock& block, double delta_db)
 {
   const double factor = db_to_factor (delta_db);
   const int    ddb    = sm_factor2delta_idb (factor);
@@ -361,8 +362,8 @@ apply_delta_db (AudioBlock& block, double delta_db)
 
 }
 
-AudioBlock *
-MorphGridModule::MySource::audio_block (size_t index)
+bool
+MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   const double x_morphing = module->apply_modulation (module->cfg->x_morphing_mod);
   const double y_morphing = module->apply_modulation (module->cfg->y_morphing_mod);
@@ -372,6 +373,9 @@ MorphGridModule::MySource::audio_block (size_t index)
 
   if (module->cfg->height == 1)
     {
+      RTAudioBlock audio_block_a (module->rt_memory_area());
+      RTAudioBlock audio_block_b (module->rt_memory_area());
+
       /*
        *  A ---- B
        */
@@ -382,17 +386,24 @@ MorphGridModule::MySource::audio_block (size_t index)
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
-      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
-
-      double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, x_morph_params.morphing);
-
+      bool have_ab = morph (out_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
       if (have_ab)
-        apply_delta_db (module->audio_block, delta_db);
+        {
+          double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, x_morph_params.morphing);
 
-      return have_ab ? &module->audio_block : NULL;
+          apply_delta_db (out_block, delta_db);
+          return true;
+        }
+      else
+        {
+          return false;
+        }
     }
   else if (module->cfg->width == 1)
     {
+      RTAudioBlock audio_block_a (module->rt_memory_area());
+      RTAudioBlock audio_block_b (module->rt_memory_area());
+
       /*
        *  A
        *  |
@@ -406,17 +417,28 @@ MorphGridModule::MySource::audio_block (size_t index)
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
-      bool have_ab = morph (module->audio_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing);
-
-      double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, y_morph_params.morphing);
-
+      bool have_ab = morph (out_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing);
       if (have_ab)
-        apply_delta_db (module->audio_block, delta_db);
+        {
+          double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, y_morph_params.morphing);
 
-      return have_ab ? &module->audio_block : NULL;
+          apply_delta_db (out_block, delta_db);
+          return true;
+        }
+      else
+        {
+          return false;
+        }
     }
   else
     {
+      RTAudioBlock audio_block_a (module->rt_memory_area());
+      RTAudioBlock audio_block_b (module->rt_memory_area());
+      RTAudioBlock audio_block_c (module->rt_memory_area());
+      RTAudioBlock audio_block_d (module->rt_memory_area());
+      RTAudioBlock audio_block_ab (module->rt_memory_area());
+      RTAudioBlock audio_block_cd (module->rt_memory_area());
+
       /*
        *  A ---- B
        *  |      |
@@ -435,16 +457,21 @@ MorphGridModule::MySource::audio_block (size_t index)
 
       bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
       bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morph_params.morphing);
-      bool have_abcd = morph (module->audio_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morph_params.morphing);
-
-      double delta_db_ab = morph_delta_db (node_a.delta_db, node_b.delta_db, x_morph_params.morphing);
-      double delta_db_cd = morph_delta_db (node_c.delta_db, node_d.delta_db, x_morph_params.morphing);
-      double delta_db_abcd = morph_delta_db (delta_db_ab, delta_db_cd, y_morph_params.morphing);
+      bool have_abcd = morph (out_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morph_params.morphing);
 
       if (have_abcd)
-        apply_delta_db (module->audio_block, delta_db_abcd);
+        {
+          double delta_db_ab = morph_delta_db (node_a.delta_db, node_b.delta_db, x_morph_params.morphing);
+          double delta_db_cd = morph_delta_db (node_c.delta_db, node_d.delta_db, x_morph_params.morphing);
+          double delta_db_abcd = morph_delta_db (delta_db_ab, delta_db_cd, y_morph_params.morphing);
 
-      return have_abcd ? &module->audio_block : NULL;
+          apply_delta_db (out_block, delta_db_abcd);
+          return true;
+        }
+      else
+        {
+          return false;
+        }
     }
 }
 

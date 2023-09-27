@@ -6,6 +6,7 @@
 #include "smmorphplansynth.hh"
 #include "smnotifybuffer.hh"
 #include "sminsteditsynth.hh"
+#include "smrtmemory.hh"
 
 #include <array>
 
@@ -154,6 +155,7 @@ private:
   int                   next_note_id;
   bool                  inst_edit = false;
   bool                  m_control_by_cc = false;
+  RTMemoryArea          m_rt_memory_area;
   NotifyBuffer          m_notify_buffer;
   MidiSynthCallbacks   *m_process_callbacks = nullptr;
 

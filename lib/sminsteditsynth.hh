@@ -45,7 +45,7 @@ public:
   void process_note_on (int channel, int note, int clap_id, unsigned int layer);
   void process_note_off (int channel, int note, unsigned int layer);
 
-  void process (float *output, size_t n_values, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks);
+  void process (float *output, size_t n_values, RTMemoryArea& rt_memory_area, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks);
 };
 
 }

@@ -65,13 +65,18 @@ SimpleWavSetSource::audio()
   return active_audio;
 }
 
-AudioBlock *
-SimpleWavSetSource::audio_block (size_t index)
+bool
+SimpleWavSetSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   if (active_audio && index < active_audio->contents.size())
-    return &active_audio->contents[index];
+    {
+      out_block.assign (active_audio->contents[index]);
+      return true;
+    }
   else
-    return NULL;
+    {
+      return false;
+    }
 }
 
 MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :

@@ -116,13 +116,14 @@ MorphOutputModule::filter_drive_mod() const
 }
 
 void
-MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
+MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, RTMemoryArea& rt_memory_area, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
   g_return_if_fail (n_ports <= out_decoders.size());
 
   const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
 
   this->time_info_gen = &time_info_gen;
+  m_rt_memory_area = &rt_memory_area;
 
   for (size_t port = 0; port < n_ports; port++)
     {
@@ -130,7 +131,7 @@ MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, size_t n_sam
         {
           if (out_decoders[port] && !have_cycle)
             {
-              out_decoders[port]->process (n_samples, freq_in, values[port]);
+              out_decoders[port]->process (rt_memory_area, n_samples, freq_in, values[port]);
             }
           else
             {
@@ -140,6 +141,13 @@ MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, size_t n_sam
     }
 
   this->time_info_gen = nullptr;
+  m_rt_memory_area = nullptr;
+}
+
+RTMemoryArea *
+MorphOutputModule::rt_memory_area() const
+{
+  return m_rt_memory_area;
 }
 
 TimeInfo

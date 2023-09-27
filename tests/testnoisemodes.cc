@@ -37,9 +37,12 @@ main (int argc, char **argv)
     audio_block.noise.push_back (sm_factor2idb (white_noise_level * random.random_double_range (0.5, 1.0)));
 
   // NOISE DEBUG MODE
+  RTMemoryArea rt_memory_area;
+  RTAudioBlock rt_audio_block (&rt_memory_area);
+  rt_audio_block.assign (audio_block);
 
   noise_dec.set_seed (42);
-  noise_dec.process (audio_block, samples, NoiseDecoder::DEBUG_UNWINDOWED);
+  noise_dec.process (rt_audio_block, samples, NoiseDecoder::DEBUG_UNWINDOWED);
   for (size_t i = 0; i < block_size / 2; i++)
     {
       win_samples[i] = samples[i + block_size / 2];
@@ -64,7 +67,7 @@ main (int argc, char **argv)
       sm_enable_sse (sse);
       ifft_synth.clear_partials();
       noise_dec.set_seed (42);
-      noise_dec.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+      noise_dec.process (rt_audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
 
       vector<float> spectrum (ifft_synth.fft_buffer(), ifft_synth.fft_buffer() + block_size);
 

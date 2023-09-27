@@ -87,6 +87,13 @@ MorphOperatorModule::random_gen() const
   return morph_plan_voice->morph_plan_synth()->random_gen();
 }
 
+RTMemoryArea *
+MorphOperatorModule::rt_memory_area() const
+{
+  MorphOutputModule *output = morph_plan_voice->output();
+  return output->rt_memory_area();
+}
+
 TimeInfo
 MorphOperatorModule::time_info() const
 {

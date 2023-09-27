@@ -17,6 +17,9 @@ namespace SpectMorph {
 class LiveDecoderFilter;
 class LiveDecoder
 {
+  /* maximum number of partials to expect */
+  static constexpr size_t PARTIAL_STATE_RESERVE = 2048;
+
   struct PartialState
   {
     float freq;
@@ -40,6 +43,7 @@ class LiveDecoder
   NoiseDecoder        noise_decoder;
   LiveDecoderSource  *source;
   PolyPhaseInter     *pp_inter;
+  RTMemoryArea       *rt_memory_area = nullptr;
   LiveDecoderFilter  *filter = nullptr;
   bool                filter_latency_compensation;
 
@@ -135,9 +139,10 @@ public:
 
   static void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity);
-  void process (size_t       n_values,
-                const float *freq_in,
-                float       *audio_out);
+  void process (RTMemoryArea& rt_memory_area,
+                size_t        n_values,
+                const float  *freq_in,
+                float        *audio_out);
 
   double current_pos() const;
   double fundamental_note() const;

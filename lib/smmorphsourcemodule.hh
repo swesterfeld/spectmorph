@@ -20,9 +20,9 @@ public:
 
   void        set_wav_set (WavSet *wav_set);
 
-  void        retrigger (int channel, float freq, int midi_velocity);
-  Audio      *audio();
-  AudioBlock *audio_block (size_t index);
+  void        retrigger (int channel, float freq, int midi_velocity) override;
+  Audio      *audio() override;
+  bool        rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 };
 
 class MorphSourceModule : public MorphOperatorModule

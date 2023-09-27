@@ -38,9 +38,11 @@ public:
   {
     return &my_audio;
   }
-  AudioBlock *audio_block (size_t index)
+  bool
+  rt_audio_block (size_t index, RTAudioBlock& out_block)
   {
-    return &my_audio_block;
+    out_block.assign (my_audio_block);
+    return true;
   }
 };
 
@@ -94,11 +96,12 @@ run_test (int n_sines, int n_noise, int mix_freq)
 
   ConstBlockSource source (audio_block, mix_freq);
   LiveDecoder live_decoder (&source, mix_freq);
+  RTMemoryArea rt_memory_area;
   //live_decoder.set_noise_seed (42);
   live_decoder.retrigger (0, 440, 127);
 
   vector<float> samples (mix_freq * 10);
-  live_decoder.process (samples.size(), nullptr, &samples[0]);
+  live_decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
   samples.erase (samples.begin(), samples.begin() + mix_freq);
 
   AudioTool::Block2Energy b2e (mix_freq);

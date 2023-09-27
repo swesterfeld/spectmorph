@@ -77,7 +77,7 @@ public:
 
   void retrigger (int channel, float freq, int midi_velocity) override;
   Audio* audio() override;
-  AudioBlock* audio_block (size_t index) override;
+  bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 
   void set_skip (float m_skip);
 };
@@ -96,12 +96,12 @@ EffectDecoderSource::audio()
   return &m_audio;
 }
 
-AudioBlock*
-EffectDecoderSource::audio_block (size_t index)
+bool
+EffectDecoderSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   const double time_ms = index + m_skip; // 1ms frame step
 
-  return MorphUtils::get_normalized_block_ptr (source, time_ms);
+  return MorphUtils::get_normalized_block (source, time_ms, out_block);
 }
 
 void
@@ -214,12 +214,13 @@ EffectDecoder::retrigger (int channel, float freq, int midi_velocity)
 }
 
 void
-EffectDecoder::process (size_t       n_values,
-                        const float *freq_in,
-                        float       *audio_out)
+EffectDecoder::process (RTMemoryArea& rt_memory_area,
+                        size_t        n_values,
+                        const float  *freq_in,
+                        float        *audio_out)
 {
   g_assert (chain_decoder);
-  chain_decoder->process (n_values, freq_in, audio_out);
+  chain_decoder->process (rt_memory_area, n_values, freq_in, audio_out);
 
   if (adsr_envelope)
     adsr_envelope->process (n_values, audio_out);
