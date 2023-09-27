@@ -327,7 +327,8 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
             }
           else if (frame_idx < audio->contents.size())
             {
-              // FIXME audio_block_ptr = &audio->contents[frame_idx];
+              audio_block.assign (audio->contents[frame_idx]);
+              have_audio_block = true;
             }
           if (have_audio_block)
             {
