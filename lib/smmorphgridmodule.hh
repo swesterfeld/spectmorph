@@ -34,8 +34,8 @@ private:
   {
     MorphGridModule  *module;
 
-    void retrigger (int channel, float freq, int midi_velocity);
-    Audio* audio();
+    void retrigger (int channel, float freq, int midi_velocity) override;
+    Audio* audio() override;
     AudioBlock *audio_block (size_t index) override { return nullptr; }
     bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
   } my_source;
