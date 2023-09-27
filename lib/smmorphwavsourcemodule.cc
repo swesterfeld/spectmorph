@@ -80,10 +80,7 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
     }
   if (active_audio && index < active_audio->contents.size())
     {
-      out_block.freqs.assign (active_audio->contents[index].freqs);
-      out_block.mags.assign (active_audio->contents[index].mags);
-      out_block.noise.assign (active_audio->contents[index].noise);
-
+      out_block.assign (active_audio->contents[index]);
       return true;
     }
   else

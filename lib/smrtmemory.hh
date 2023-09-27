@@ -7,6 +7,7 @@
 
 #include "smmath.hh"
 #include "smutils.hh"
+#include "smaudio.hh"
 
 namespace SpectMorph
 {
@@ -145,6 +146,13 @@ public:
   }
   void
   assign (const RTAudioBlock& audio_block)
+  {
+    freqs.assign (audio_block.freqs);
+    mags.assign (audio_block.mags);
+    noise.assign (audio_block.noise);
+  }
+  void
+  assign (const AudioBlock& audio_block)
   {
     freqs.assign (audio_block.freqs);
     mags.assign (audio_block.mags);
