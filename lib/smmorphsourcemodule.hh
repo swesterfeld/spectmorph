@@ -22,7 +22,8 @@ public:
 
   void        retrigger (int channel, float freq, int midi_velocity);
   Audio      *audio();
-  AudioBlock *audio_block (size_t index);
+  AudioBlock *audio_block (size_t index) override;
+  bool        rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 };
 
 class MorphSourceModule : public MorphOperatorModule
