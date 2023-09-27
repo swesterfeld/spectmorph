@@ -91,6 +91,8 @@ public:
     LOOP_TIME_PING_PONG,
   };
 
+  static constexpr size_t N_NOISE_BANDS = 32;
+
   float    fundamental_freq         = 0;          //!< fundamental frequency (note which was encoded), or 0 if not available
   float    mix_freq                 = 0;          //!< mix freq (sampling rate) of the original audio data
   float    frame_size_ms            = 0;          //!< length of each audio frame in milliseconds

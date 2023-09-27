@@ -1098,7 +1098,7 @@ Encoder::approx_noise()
 
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
-      vector<double> noise_envelope (32);
+      vector<double> noise_envelope (Audio::N_NOISE_BANDS);
       vector<double> spectrum (audio_blocks[frame].noise.begin(), audio_blocks[frame].noise.end());
 
       /* A complex FFT would preserve the energy of the input signal exactly; the difference to
