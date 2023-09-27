@@ -32,7 +32,6 @@ class MorphLinearModule : public MorphOperatorModule
     void interp_mag_one (double interp, uint16_t *left, uint16_t *right);
     void retrigger (int channel, float freq, int midi_velocity) override;
     Audio* audio() override;
-    AudioBlock *audio_block (size_t index) override { return nullptr; }
     bool rt_audio_block (size_t index, RTAudioBlock& block) override;
   } my_source;
 

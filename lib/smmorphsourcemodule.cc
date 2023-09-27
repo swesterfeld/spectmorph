@@ -65,15 +65,6 @@ SimpleWavSetSource::audio()
   return active_audio;
 }
 
-AudioBlock *
-SimpleWavSetSource::audio_block (size_t index)
-{
-  if (active_audio && index < active_audio->contents.size())
-    return &active_audio->contents[index];
-  else
-    return NULL;
-}
-
 bool
 SimpleWavSetSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {

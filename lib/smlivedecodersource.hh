@@ -13,8 +13,7 @@ class LiveDecoderSource
 public:
   virtual void retrigger (int channel, float freq, int midi_velocity) = 0;
   virtual Audio *audio() = 0;
-  virtual AudioBlock *audio_block (size_t index) = 0;
-  virtual bool rt_audio_block (size_t index, RTAudioBlock& rt_audio_block) { return false; }
+  virtual bool rt_audio_block (size_t index, RTAudioBlock& rt_audio_block) = 0;
   virtual ~LiveDecoderSource();
 };
 
