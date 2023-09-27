@@ -111,7 +111,6 @@ InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_
           float samples[n_values];
 
           voice.decoder->process (rt_memory_area, n_values, nullptr, &samples[0]);
-          rt_memory_area.free_all();
 
           const float release_ms = 150;
           const float decrement = (1000.0 / mix_freq) / release_ms;
