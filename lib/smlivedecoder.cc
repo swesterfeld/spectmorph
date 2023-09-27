@@ -84,6 +84,8 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   pstate[0].reserve (PARTIAL_STATE_RESERVE);
   pstate[1].reserve (PARTIAL_STATE_RESERVE);
 
+  portamento_state.buffer.reserve (MAX_N_VALUES * 16 /* 4 octaves */ + 256 /* buffer shrink boundary */ + 100);
+
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
 
@@ -716,7 +718,7 @@ LiveDecoder::process (RTMemoryArea& rt_memory_area, size_t n_values, const float
    *  -> limit n_values to keep portamento stretch settings up-to-date
    *  -> provide accurate modulation data to filter
    */
-  const size_t max_n_values = 64;
+  const size_t max_n_values = MAX_N_VALUES;
   const size_t orig_n_values = n_values;
   const float *orig_audio_out = audio_out;
 
