@@ -31,6 +31,7 @@ private:
   std::string           wset_active_text;
   bool                  wset_edit;
   std::vector<float>    decoded_samples;
+  RTMemoryArea          rt_memory_area;
 
   std::unique_ptr<WavData> wav_data;
 
