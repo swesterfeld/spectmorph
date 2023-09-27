@@ -19,7 +19,7 @@ public:
 
   void retrigger (int, float, int);
   Audio* audio();
-  AudioBlock* audio_block (size_t index);
+  bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 };
 
 Source::Source (Audio *audio) :
@@ -38,13 +38,18 @@ Source::audio()
   return my_audio;
 }
 
-AudioBlock *
-Source::audio_block (size_t index)
+bool
+Source::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   if (my_audio && index < my_audio->contents.size())
-    return &my_audio->contents[index];
+    {
+      out_block.assign (my_audio->contents[index]);
+      return true;
+    }
   else
-    return NULL;
+    {
+      return false;
+    }
 }
 
 }
@@ -84,7 +89,7 @@ SimpleJackPlayer::process (jack_nframes_t nframes)
   float *audio_out = (jack_default_audio_sample_t *) jack_port_get_buffer (audio_out_port, nframes);
   if (decoder)
     {
-      decoder->process (nframes, nullptr, audio_out);
+      decoder->process (*decoder_rt_memory_area, nframes, nullptr, audio_out);
       for (size_t i = 0; i < nframes; i++)
         audio_out[i] *= decoder_volume;
     }
@@ -113,6 +118,7 @@ SimpleJackPlayer::process (jack_nframes_t nframes)
 void
 SimpleJackPlayer::play (Audio *audio, bool use_samples)
 {
+  RTMemoryArea      *new_decoder_rt_memory_area = nullptr;
   LiveDecoder       *new_decoder        = NULL;
   Audio             *new_decoder_audio  = NULL;
   LiveDecoderSource *new_decoder_source = NULL;
@@ -127,18 +133,19 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
 
       new_decoder_source = new Source (new_decoder_audio);
       new_decoder = new LiveDecoder (new_decoder_source, jack_mix_freq);
+      new_decoder_rt_memory_area = new RTMemoryArea();
 
       new_decoder->enable_original_samples (use_samples);
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127);
 
       // touch decoder in non-RT-thread to precompute tables & co
       vector<float> samples (10000);
-      new_decoder->process (samples.size(), nullptr, &samples[0]);
+      new_decoder->process (*new_decoder_rt_memory_area, samples.size(), nullptr, &samples[0]);
 
       // finally setup decoder for JACK thread
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127);
     }
-  update_decoder (new_decoder, new_decoder_audio, new_decoder_source);
+  update_decoder (new_decoder_rt_memory_area, new_decoder, new_decoder_audio, new_decoder_source);
 }
 
 void
@@ -148,8 +155,9 @@ SimpleJackPlayer::stop()
 }
 
 void
-SimpleJackPlayer::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source)
+SimpleJackPlayer::update_decoder (RTMemoryArea *new_decoder_rt_memory_area, LiveDecoder *new_decoder, Audio *new_decoder_audio, LiveDecoderSource *new_decoder_source)
 {
+  RTMemoryArea      *old_decoder_rt_memory_area;
   LiveDecoder       *old_decoder;
   Audio             *old_decoder_audio;
   LiveDecoderSource *old_decoder_source;
@@ -157,10 +165,12 @@ SimpleJackPlayer::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_a
   /* setup new player objects for JACK thread */
   decoder_mutex.lock();
 
+  old_decoder_rt_memory_area = decoder_rt_memory_area;
   old_decoder = decoder;
   old_decoder_source = decoder_source;
   old_decoder_audio = decoder_audio;
 
+  decoder_rt_memory_area = new_decoder_rt_memory_area;
   decoder = new_decoder;
   decoder_source = new_decoder_source;
   decoder_audio = new_decoder_audio;
@@ -169,6 +179,8 @@ SimpleJackPlayer::update_decoder (LiveDecoder *new_decoder, Audio *new_decoder_a
   decoder_mutex.unlock();
 
   /* delete old (no longer needed) player objects */
+  if (old_decoder_rt_memory_area)
+    delete old_decoder_rt_memory_area;
   if (old_decoder)
     delete old_decoder;
   if (old_decoder_audio)
@@ -189,7 +201,7 @@ SimpleJackPlayer::~SimpleJackPlayer()
   jack_client_close (jack_client);
 
   // delete old decoder objects (if any)
-  update_decoder (NULL, NULL, NULL);
+  update_decoder (nullptr, nullptr, nullptr, nullptr);
 }
 
 void
