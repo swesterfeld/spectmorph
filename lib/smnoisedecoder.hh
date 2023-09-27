@@ -25,6 +25,7 @@ class NoiseDecoder
   NoiseBandPartition noise_band_partition;
 
   void apply_window (float *spectrum, float *fft_buffer);
+  static float *make_k_array();
 
 public:
   NoiseDecoder (double mix_freq,

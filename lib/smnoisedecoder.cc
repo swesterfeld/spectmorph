@@ -47,8 +47,9 @@ NoiseDecoder::NoiseDecoder (double mix_freq, size_t block_size) :
       for (size_t i = 0; i < block_size; i++)
         win[i] = window_cos (2.0 * i / block_size - 1.0);
     }
-
   cos_window = win;
+
+  make_k_array();
 
   // 8 values before and after spectrum required by apply_window/SSE
   interpolated_spectrum = FFT::new_array_float (block_size + 18) + 8;
@@ -168,6 +169,39 @@ NoiseDecoder::preferred_block_size (double mix_freq)
   return bs;
 }
 
+float *
+NoiseDecoder::make_k_array()
+{
+  const float K0 = 0.35875;   // a0
+  const float K1 = 0.244145;  // a1 / 2
+  const float K2 = 0.07064;   // a2 / 2
+  const float K3 = 0.00584;   // a3 / 2
+
+  const size_t K_ARRAY_SIZE = 4 * 2 * 4;
+  static float *k_array = NULL;
+  if (!k_array)
+    {
+      k_array = FFT::new_array_float (K_ARRAY_SIZE);
+      const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
+      size_t fi = 0, si = 0;
+      for (size_t i = 0; i < K_ARRAY_SIZE; i++)
+        {
+          bool second = (i / 4) & 1;
+          if (second)
+            {
+              k_array[i] = ks[1 + fi / 2];
+              fi++;
+            }
+          else // second
+            {
+              k_array[i] = ks[si / 2];
+              si++;
+            }
+        }
+    }
+  return k_array;
+}
+
 void
 NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
 {
@@ -210,28 +244,6 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
 #if defined(__SSE__) || defined(SM_ARM_SSE) /* fast SSEified convolution */
   if (sm_sse())
     {
-      const size_t K_ARRAY_SIZE = 4 * 2 * 4;
-      static float *k_array = NULL;
-      if (!k_array)
-        {
-          k_array = FFT::new_array_float (K_ARRAY_SIZE);
-          const float ks[] = { 0, K3, K2, K1, K0, K1, K2, K3, 0 }; // convolution coefficients for BH92 window
-          size_t fi = 0, si = 0;
-          for (size_t i = 0; i < K_ARRAY_SIZE; i++)
-            {
-              bool second = (i / 4) & 1;
-              if (second)
-                {
-                  k_array[i] = ks[1 + fi / 2];
-                  fi++;
-                }
-              else // second
-                {
-                  k_array[i] = ks[si / 2];
-                  si++;
-                }
-            }
-          }
 #if 0
   for (size_t i = 0; i < K_ARRAY_SIZE; i++)
     {
@@ -242,7 +254,7 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
   printf ("================\n");
 #endif
       const __m128 *in = reinterpret_cast<__m128 *> (expand_in);
-      const __m128 *k = reinterpret_cast<__m128 *> (k_array);
+      const __m128 *k = reinterpret_cast<__m128 *> (make_k_array());
       const __m128 k0 = k[0];
       const __m128 k1 = k[1];
       const __m128 k2 = k[2];
