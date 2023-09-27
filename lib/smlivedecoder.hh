@@ -19,6 +19,7 @@ class LiveDecoder
 {
   static constexpr size_t PARTIAL_STATE_RESERVE = 2048; // maximum number of partials to expect
   static constexpr size_t MAX_N_VALUES = 64;            // maximum number of values to process at once
+  static constexpr size_t MAX_UNISON_VOICES = 7;        // maximum number of unison voices
 
   struct PartialState
   {
