@@ -113,20 +113,6 @@ get_normalized_block_ptr (LiveDecoderSource *source, double time_ms)
 }
 
 bool
-get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out_audio_block)
-{
-  AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);
-  if (!block_ptr)
-    return false;
-
-  out_audio_block.noise  = block_ptr->noise;
-  out_audio_block.mags   = block_ptr->mags;
-  out_audio_block.freqs  = block_ptr->freqs;
-
-  return true;
-}
-
-bool
 get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block)
 {
   AudioBlock *block_ptr = MorphUtils::get_normalized_block_ptr (source, time_ms);

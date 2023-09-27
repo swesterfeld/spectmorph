@@ -28,7 +28,6 @@ void init_freq_state (const std::vector<uint16_t>& fint, FreqState *freq_state);
 void init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state);
 
 AudioBlock* get_normalized_block_ptr (LiveDecoderSource *source, double time_ms);
-bool get_normalized_block (LiveDecoderSource *source, double time_ms, AudioBlock& out_audio_block);
 bool get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block);
 
 }
