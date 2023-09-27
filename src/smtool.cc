@@ -167,7 +167,8 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
   new_wave.audio = noloop_audio;
   smset.waves.push_back (new_wave);
 
-  LiveDecoder decoder (&smset, audio.mix_freq);
+  LiveDecoder  decoder (&smset, audio.mix_freq);
+  RTMemoryArea rt_memory_area;
   // we need reproducable noise to get the same energy every time
   decoder.set_noise_seed (42);
   decoder.retrigger (0, audio.fundamental_freq, 127);
@@ -181,7 +182,7 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
     {
       samples.resize (audio.sample_count);
     }
-  decoder.process (samples.size(), nullptr, &samples[0]);
+  decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
 
   double energy = 0;
   size_t energy_norm = 0;

@@ -259,6 +259,7 @@ main (int argc, char **argv)
   size_t noise_block_size = NoiseDecoder::preferred_block_size (format.rate);
   NoiseDecoder noise_decoder (format.rate, noise_block_size);
   SineDecoder  sine_decoder (audio.fundamental_freq, format.rate, frame_size, frame_step, mode);
+  RTMemoryArea rt_memory_area;
 
   if (mode != SineDecoder::MODE_TRACKING)
     {
@@ -355,7 +356,10 @@ main (int argc, char **argv)
 
       if (options.noise_enabled && idx < end_point)
         {
-          noise_decoder.process (audio.contents[idx], &decoded_residue[0]);
+          RTAudioBlock rt_audio_block (&rt_memory_area);
+          rt_audio_block.assign (audio.contents[idx]);
+
+          noise_decoder.process (rt_audio_block, &decoded_residue[0]);
           for (size_t i = 0; i < noise_block_size; i++)
             sample[pos + i] += decoded_residue[i];
         }
