@@ -584,7 +584,8 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
         }
       events.clear();
 
-      m_inst_edit_synth.process (output, n_values, m_notify_buffer, process_callbacks);
+      m_inst_edit_synth.process (output, n_values, m_rt_memory_area, m_notify_buffer, process_callbacks);
+      m_rt_memory_area.free_all();
       return;
     }
 

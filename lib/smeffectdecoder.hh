@@ -39,9 +39,10 @@ public:
   void set_config (const MorphOutput::Config *cfg, float mix_freq);
 
   void retrigger (int channel, float freq, int midi_velocity);
-  void process (size_t       n_values,
-                const float *freq_in,
-                float       *audio_out);
+  void process (RTMemoryArea& rt_memory_area,
+                size_t        n_values,
+                const float  *freq_in,
+                float        *audio_out);
   void release();
   bool done();
 

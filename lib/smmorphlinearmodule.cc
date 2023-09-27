@@ -152,8 +152,8 @@ MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint
     }
 }
 
-AudioBlock *
-MorphLinearModule::MySource::audio_block (size_t index)
+bool
+MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_audio_block)
 {
   bool have_left = false, have_right = false;
 
@@ -193,13 +193,14 @@ MorphLinearModule::MySource::audio_block (size_t index)
     {
       assert (left_audio && right_audio);
 
-      module->audio_block.freqs.clear();
-      module->audio_block.mags.clear();
+      const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
+      out_audio_block.freqs.set_capacity (max_partials);
+      out_audio_block.mags.set_capacity (max_partials);
 
       dump_block (index, "A", left_block);
       dump_block (index, "B", right_block);
 
-      MagData mds[left_block.freqs.size() + right_block.freqs.size() + AVOID_ARRAY_UB];
+      MagData mds[max_partials + AVOID_ARRAY_UB];
       size_t  mds_size = 0;
       for (size_t i = 0; i < left_block.freqs.size(); i++)
         {
@@ -284,8 +285,8 @@ MorphLinearModule::MySource::audio_block (size_t index)
                 {
                   mag = (1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j);
                 }
-              module->audio_block.freqs.push_back (freq);
-              module->audio_block.mags.push_back (sm_factor2idb (mag));
+              out_audio_block.freqs.push_back (freq);
+              out_audio_block.mags.push_back (sm_factor2idb (mag));
 
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_freqs[i].used = 1;
@@ -296,59 +297,58 @@ MorphLinearModule::MySource::audio_block (size_t index)
         {
           if (!left_freqs[i].used)
             {
-              module->audio_block.freqs.push_back (left_block.freqs[i]);
-              module->audio_block.mags.push_back (left_block.mags[i]);
+              out_audio_block.freqs.push_back (left_block.freqs[i]);
+              out_audio_block.mags.push_back (left_block.mags[i]);
 
-              interp_mag_one (interp, &module->audio_block.mags.back(), NULL);
+              interp_mag_one (interp, &out_audio_block.mags.back(), NULL);
             }
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
         {
           if (!right_freqs[i].used)
             {
-              module->audio_block.freqs.push_back (right_block.freqs[i]);
-              module->audio_block.mags.push_back (right_block.mags[i]);
+              out_audio_block.freqs.push_back (right_block.freqs[i]);
+              out_audio_block.mags.push_back (right_block.mags[i]);
 
-              interp_mag_one (interp, NULL, &module->audio_block.mags.back());
+              interp_mag_one (interp, NULL, &out_audio_block.mags.back());
             }
         }
       assert (left_block.noise.size() == right_block.noise.size());
 
-      module->audio_block.noise.clear();
+      out_audio_block.noise.set_capacity (left_block.noise.size());
       for (size_t i = 0; i < left_block.noise.size(); i++)
-        module->audio_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
+        out_audio_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
 
-      module->audio_block.sort_freqs();
+      out_audio_block.sort_freqs();
 
-      return &module->audio_block;
+      return true;
     }
   else if (have_left) // only left source output present
     {
-      module->audio_block.freqs.assign (left_block.freqs.begin(), left_block.freqs.end());
-      module->audio_block.mags.assign (left_block.mags.begin(), left_block.mags.end());
-      module->audio_block.noise.assign (left_block.noise.begin(), left_block.noise.end());
+      out_audio_block.assign (left_block);
 
-      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
-        module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * (1 - interp));
-      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
-        interp_mag_one (interp, &module->audio_block.mags[i], NULL);
+      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
+        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * (1 - interp));
+      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
+        interp_mag_one (interp, &out_audio_block.mags[i], NULL);
 
-      return &module->audio_block;
+      return true;
     }
   else if (have_right) // only right source output present
     {
-      module->audio_block.freqs.assign (right_block.freqs.begin(), right_block.freqs.end());
-      module->audio_block.mags.assign (right_block.mags.begin(), right_block.mags.end());
-      module->audio_block.noise.assign (right_block.noise.begin(), right_block.noise.end());
+      out_audio_block.assign (right_block);
 
-      for (size_t i = 0; i < module->audio_block.noise.size(); i++)
-        module->audio_block.noise[i] = sm_factor2idb (module->audio_block.noise_f (i) * interp);
-      for (size_t i = 0; i < module->audio_block.freqs.size(); i++)
-        interp_mag_one (interp, NULL, &module->audio_block.mags[i]);
+      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
+        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * interp);
+      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
+        interp_mag_one (interp, NULL, &out_audio_block.mags[i]);
 
-      return &module->audio_block;
+      return true;
     }
-  return NULL;
+  else
+    {
+      return false;
+    }
 }
 
 LiveDecoderSource *

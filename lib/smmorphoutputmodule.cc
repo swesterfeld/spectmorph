@@ -131,7 +131,7 @@ MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, RTMemoryArea
         {
           if (out_decoders[port] && !have_cycle)
             {
-              out_decoders[port]->process (n_samples, freq_in, values[port]);
+              out_decoders[port]->process (rt_memory_area, n_samples, freq_in, values[port]);
             }
           else
             {

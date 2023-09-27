@@ -81,10 +81,10 @@ NoiseDecoder::set_seed (int seed)
  * \param audio_block   AudioBlock to be decoded
  */
 void
-NoiseDecoder::process (const AudioBlock& audio_block,
-                       float            *samples,
-                       OutputMode        output_mode,
-                       float             portamento_stretch)
+NoiseDecoder::process (const RTAudioBlock& audio_block,
+                       float              *samples,
+                       OutputMode          output_mode,
+                       float               portamento_stretch)
 {
   if (!noise_band_partition)
     noise_band_partition = new NoiseBandPartition (audio_block.noise.size(), block_size + 2, mix_freq);

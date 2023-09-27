@@ -5,7 +5,7 @@
 
 #include "smrandom.hh"
 #include "smnoisebandpartition.hh"
-#include "smaudio.hh"
+#include "smrtmemory.hh"
 
 namespace SpectMorph
 {
@@ -34,7 +34,7 @@ public:
   enum OutputMode { REPLACE, ADD, FFT_SPECTRUM, DEBUG_UNWINDOWED, DEBUG_NO_OUTPUT };
 
   void set_seed (int seed);
-  void process (const AudioBlock& audio_block,
+  void process (const RTAudioBlock& audio_block,
                 float *samples,
                 OutputMode output_mode = REPLACE,
                 float portamento_stretch = 1.0);

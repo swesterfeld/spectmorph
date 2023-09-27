@@ -3,6 +3,9 @@
 #pragma once
 
 #include <vector>
+#include <cassert>
+
+#include "smmath.hh"
 
 namespace SpectMorph
 {
@@ -66,16 +69,28 @@ class RTVector
   RTMemoryArea *m_memory_area = nullptr;
   T            *m_start = nullptr;
   size_t        m_size = 0;
+  size_t        m_capacity = 0;
 public:
   RTVector (RTMemoryArea *memory_area) :
     m_memory_area (memory_area)
   {
   }
   void
-  assign (std::vector<T>& vec)
+  assign (const std::vector<T>& vec)
   {
-    m_start = (T *) m_memory_area->alloc (sizeof (T) * vec.size());
+    assert (m_size == 0 && m_capacity == 0);
+
+    set_capacity (vec.size());
     std::copy (vec.begin(), vec.end(), m_start);
+    m_size = vec.size();
+  }
+  void
+  assign (const RTVector<T>& vec)
+  {
+    assert (m_size == 0 && m_capacity == 0);
+
+    set_capacity (vec.size());
+    std::copy (vec.m_start, vec.m_start + vec.m_size, m_start);
     m_size = vec.size();
   }
   size_t
@@ -83,20 +98,34 @@ public:
   {
     return m_size;
   }
+  void
+  set_capacity (size_t capacity)
+  {
+    assert (m_size == 0 && m_capacity == 0);
+
+    m_start = (T *) m_memory_area->alloc (sizeof (T) * capacity);
+    m_capacity = capacity;
+  }
+  void
+  push_back (const T& t)
+  {
+    assert (m_size < m_capacity);
+    m_start[m_size++] = t;
+  }
+  T&
+  back()
+  {
+    return m_start[m_size - 1];
+  }
+  T&
+  operator[] (size_t idx)
+  {
+    return m_start[idx];
+  }
   const T&
   operator[] (size_t idx) const
   {
     return m_start[idx];
-  }
-  T *
-  begin()
-  {
-    return m_start;
-  }
-  T *
-  end()
-  {
-    return m_start + m_size;
   }
 };
 
@@ -108,6 +137,13 @@ public:
     mags (memory_area),
     noise (memory_area)
   {
+  }
+  void
+  assign (const RTAudioBlock& audio_block)
+  {
+    freqs.assign (audio_block.freqs);
+    mags.assign (audio_block.mags);
+    noise.assign (audio_block.noise);
   }
   RTVector<uint16_t> freqs;
   RTVector<uint16_t> mags;
@@ -130,6 +166,8 @@ public:
   {
     return sm_idb2factor (noise[i]);
   }
+
+  void sort_freqs();
 };
 
 }

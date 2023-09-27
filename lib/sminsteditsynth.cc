@@ -92,7 +92,7 @@ InstEditSynth::process_note_off (int channel, int note, unsigned int layer)
 }
 
 void
-InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks)
+InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_area, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks)
 {
   InstEditVoiceEvent::Voice iev[voices.size()];
   int                       iev_len = 0;
@@ -110,7 +110,8 @@ InstEditSynth::process (float *output, size_t n_values, NotifyBuffer& notify_buf
 
           float samples[n_values];
 
-          voice.decoder->process (n_values, nullptr, &samples[0]);
+          voice.decoder->process (rt_memory_area, n_values, nullptr, &samples[0]);
+          rt_memory_area.free_all();
 
           const float release_ms = 150;
           const float decrement = (1000.0 / mix_freq) / release_ms;

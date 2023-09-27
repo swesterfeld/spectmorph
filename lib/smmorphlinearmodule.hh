@@ -24,7 +24,6 @@ class MorphLinearModule : public MorphOperatorModule
   bool                 have_right_source;
 
   Audio                audio;
-  AudioBlock           audio_block;
 
   struct MySource : public LiveDecoderSource
   {
@@ -33,7 +32,8 @@ class MorphLinearModule : public MorphOperatorModule
     void interp_mag_one (double interp, uint16_t *left, uint16_t *right);
     void retrigger (int channel, float freq, int midi_velocity);
     Audio* audio();
-    AudioBlock *audio_block (size_t index);
+    AudioBlock *audio_block (size_t index) { return nullptr; }
+    bool rt_audio_block (size_t index, RTAudioBlock& block) override;
   } my_source;
 
 public:
