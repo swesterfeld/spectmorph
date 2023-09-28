@@ -7,8 +7,6 @@
 #include <glib.h>
 #include <assert.h>
 
-#define CHANNEL_OP_COUNT 4
-
 using namespace SpectMorph;
 
 using std::string;
@@ -17,24 +15,14 @@ using std::vector;
 static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
 
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
-  MorphOperatorModule (voice)
+  MorphOperatorModule (voice),
+  decoder (this,  morph_plan_voice->mix_freq())
 {
-  out_ops.resize (CHANNEL_OP_COUNT);
-  out_decoders.resize (CHANNEL_OP_COUNT);
-
   leak_debugger.add (this);
 }
 
 MorphOutputModule::~MorphOutputModule()
 {
-  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
-    {
-      if (out_decoders[ch])
-        {
-          delete out_decoders[ch];
-          out_decoders[ch] = NULL;
-        }
-    }
   leak_debugger.del (this);
 }
 
@@ -44,33 +32,11 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphOutput::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
 
-  for (size_t ch = 0; ch < CHANNEL_OP_COUNT; ch++)
-    {
-      EffectDecoder *dec = NULL;
+  /* FIXME: is this safe for detecting whether the source has changed? */
+  MorphOperatorModule *mod = morph_plan_voice->module (cfg->channel_ops[0]);
+  LiveDecoderSource *source = mod ? mod->source() : nullptr;
 
-      MorphOperatorModule *mod = morph_plan_voice->module (cfg->channel_ops[ch]);
-
-      if (mod == out_ops[ch]) // same source
-        {
-          dec = out_decoders[ch];
-          // keep decoder as it is
-        }
-      else
-        {
-          if (out_decoders[ch])
-            delete out_decoders[ch];
-          if (mod)
-            {
-              dec = new EffectDecoder (this, mod->source(), morph_plan_voice->mix_freq());
-            }
-        }
-
-      if (dec)
-        dec->set_config (cfg, morph_plan_voice->mix_freq());
-
-      out_ops[ch] = mod;
-      out_decoders[ch] = dec;
-    }
+  decoder.set_config (cfg, source, morph_plan_voice->mix_freq());
 }
 
 bool
@@ -118,27 +84,15 @@ MorphOutputModule::filter_drive_mod() const
 void
 MorphOutputModule::process (const TimeInfoGenerator& time_info_gen, RTMemoryArea& rt_memory_area, size_t n_samples, float **values, size_t n_ports, const float *freq_in)
 {
-  g_return_if_fail (n_ports <= out_decoders.size());
-
   const bool have_cycle = morph_plan_voice->morph_plan_synth()->have_cycle();
 
   this->time_info_gen = &time_info_gen;
   m_rt_memory_area = &rt_memory_area;
 
-  for (size_t port = 0; port < n_ports; port++)
-    {
-      if (values[port])
-        {
-          if (out_decoders[port] && !have_cycle)
-            {
-              out_decoders[port]->process (rt_memory_area, n_samples, freq_in, values[port]);
-            }
-          else
-            {
-              zero_float_block (n_samples, values[port]);
-            }
-        }
-    }
+  if (!have_cycle)
+    decoder.process (rt_memory_area, n_samples, freq_in, values[0]);
+  else
+    zero_float_block (n_samples, values[0]);
 
   this->time_info_gen = nullptr;
   m_rt_memory_area = nullptr;
@@ -153,13 +107,8 @@ MorphOutputModule::rt_memory_area() const
 TimeInfo
 MorphOutputModule::compute_time_info() const
 {
-  /* this is not really correct, but as long as we only have one decoder, it should work */
-  for (auto dec : out_decoders)
-    {
-      assert (time_info_gen);
-      return time_info_gen->time_info (dec->time_offset_ms());
-    }
-  return time_info_gen->time_info (0);
+  assert (time_info_gen);
+  return time_info_gen->time_info (decoder.time_offset_ms());
 }
 
 void
@@ -169,37 +118,19 @@ MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq
   if (have_cycle)
     return;
 
-  for (size_t port = 0; port < CHANNEL_OP_COUNT; port++)
-    {
-      if (out_decoders[port])
-        {
-          out_decoders[port]->retrigger (channel, freq, midi_velocity);
-        }
-    }
+  decoder.retrigger (channel, freq, midi_velocity);
   morph_plan_voice->reset_value (time_info);
 }
 
 void
 MorphOutputModule::release()
 {
-  for (auto dec : out_decoders)
-    {
-      if (dec)
-        dec->release();
-    }
+  decoder.release();
 }
 
 bool
 MorphOutputModule::done()
 {
   // done means: the signal will be only zeros from here
-  bool done = true;
-
-  for (auto dec : out_decoders)
-    {
-      // we're done if all decoders are done
-      if (dec)
-        done = done && dec->done();
-    }
-  return done;
+  return decoder.done();
 }

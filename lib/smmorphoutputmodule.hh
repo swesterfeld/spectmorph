@@ -13,10 +13,9 @@ namespace SpectMorph {
 class MorphOutputModule : public MorphOperatorModule
 {
   const MorphOutput::Config         *cfg = nullptr;
-  std::vector<MorphOperatorModule *> out_ops;
-  std::vector<EffectDecoder *>       out_decoders;
   const TimeInfoGenerator           *time_info_gen = nullptr;
   RTMemoryArea                      *m_rt_memory_area = nullptr;
+  EffectDecoder                      decoder;
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
