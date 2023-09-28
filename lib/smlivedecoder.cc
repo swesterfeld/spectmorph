@@ -199,6 +199,16 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
   current_freq = freq;
 }
 
+void
+LiveDecoder::set_source (LiveDecoderSource *source)
+{
+  if (source != this->source)
+    {
+      this->source = source;
+      audio = nullptr; /* stop playback */
+    }
+}
+
 size_t
 LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 {

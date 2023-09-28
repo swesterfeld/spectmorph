@@ -121,8 +121,8 @@ class LiveDecoder
                             float *audio_out,
                             bool ramp);
 
-  LiveDecoder (float mix_freq);
 public:
+  LiveDecoder (float mix_freq);
   LiveDecoder (WavSet *smset, float mix_freq);
   LiveDecoder (LiveDecoderSource *source, float mix_freq);
   ~LiveDecoder();
@@ -137,6 +137,7 @@ public:
   void set_unison_voices (int voices, float detune);
   void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
   void set_filter (LiveDecoderFilter *filter);
+  void set_source (LiveDecoderSource *source);
 
   static void precompute_tables (float mix_freq);
   void retrigger (int channel, float freq, int midi_velocity);
