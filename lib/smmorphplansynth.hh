@@ -14,6 +14,8 @@ namespace SpectMorph {
 
 class MorphPlanVoice;
 class MorphModuleSharedState;
+class MorphOperatorModule;
+class MorphOutputModule;
 
 class MorphPlanSynth {
 protected:
@@ -28,6 +30,16 @@ protected:
   bool            m_have_cycle = false;
 
 public:
+  struct OpModule {
+    std::unique_ptr<MorphOperatorModule> module;
+    MorphOperator::PtrID ptr_id;
+    MorphOperatorConfig *config = nullptr;
+  };
+  struct FullUpdateVoice
+  {
+    MorphOutputModule    *output_module = nullptr;
+    std::vector<OpModule> new_modules;
+  };
   struct Update
   {
     struct Op
@@ -41,6 +53,7 @@ public:
     std::vector<Op> ops;
     std::vector<MorphOperatorConfigP> new_configs;
     std::vector<MorphOperatorConfigP> old_configs;
+    std::vector<FullUpdateVoice> voice_full_updates;
   };
   typedef std::shared_ptr<Update> UpdateP;
 

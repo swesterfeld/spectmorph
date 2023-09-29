@@ -3,6 +3,7 @@
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
 #include "smleakdebugger.hh"
+#include "smmorphoutputmodule.hh"
 
 using namespace SpectMorph;
 
@@ -103,6 +104,34 @@ MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
   update->cheap = (update_ids == m_last_update_ids) && (plan.id() == m_last_plan_id);
   m_last_update_ids = update_ids;
   m_last_plan_id = plan.id();
+  if (!update->cheap)
+    {
+      update->voice_full_updates.resize (voices.size());
+      for (size_t i = 0; i < voices.size(); i++)
+        {
+          for (const auto& op : update->ops)
+            {
+              OpModule op_module;
+
+              // avoid creating modules in audio thread by doing it here
+              op_module.module.reset (MorphOperatorModule::create (op.type, voices[i]));
+              op_module.ptr_id = op.ptr_id;
+              op_module.config = op.config;
+
+              if (op_module.module)
+                {
+                  op_module.module->set_ptr_id (update->ops[i].ptr_id);
+
+                  if (op.type == "SpectMorph::MorphOutput")
+                    update->voice_full_updates[i].output_module = dynamic_cast<MorphOutputModule *> (op_module.module.get());
+
+                  update->voice_full_updates[i].new_modules.push_back (std::move (op_module));
+                }
+              else
+                g_warning ("operator type %s lacks MorphOperatorModule\n", op.type.c_str());
+            }
+        }
+    }
 
   return update;
 }
@@ -128,7 +157,7 @@ MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
       free_shared_state();
 
       for (size_t i = 0; i < voices.size(); i++)
-        voices[i]->full_update (update);
+        voices[i]->full_update (update->voice_full_updates[i]);
     }
 }
 

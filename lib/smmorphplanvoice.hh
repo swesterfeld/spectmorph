@@ -15,21 +15,14 @@ class MorphPlanSynth;
 
 class MorphPlanVoice {
 protected:
-  struct OpModule {
-    MorphOperatorModule *module = nullptr;
-    MorphOperator::PtrID ptr_id;
-    MorphOperatorConfig *config = nullptr;
-  };
-  std::vector<OpModule> modules;
+  std::vector<MorphPlanSynth::OpModule> modules;
 
   std::vector<double>           m_control_input;
-  MorphOutputModule            *m_output;
+  MorphOutputModule            *m_output = nullptr;
   float                         m_mix_freq;
   float                         m_velocity;
   MorphPlanSynth               *m_morph_plan_synth;
 
-  void clear_modules();
-  void create_modules (MorphPlanSynth::UpdateP update);
   void configure_modules();
 
 public:
@@ -37,7 +30,7 @@ public:
   ~MorphPlanVoice();
 
   void cheap_update (MorphPlanSynth::UpdateP update);
-  void full_update (MorphPlanSynth::UpdateP update);
+  void full_update (MorphPlanSynth::FullUpdateVoice& full_update_voice);
 
   MorphOperatorModule *module (const MorphOperatorPtr& ptr);
 
