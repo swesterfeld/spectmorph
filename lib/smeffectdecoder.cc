@@ -88,7 +88,8 @@ public:
 void
 EffectDecoderSource::retrigger (int channel, float freq, int midi_velocity)
 {
-  m_source->retrigger (channel, freq, midi_velocity);
+  if (m_source)
+    m_source->retrigger (channel, freq, midi_velocity);
 }
 
 Audio*
