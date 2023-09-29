@@ -133,7 +133,7 @@ EffectDecoder::EffectDecoder (MorphOutputModule *output_module, float mix_freq) 
   output_module (output_module),
   chain_decoder (mix_freq)
 {
-  skip_source.reset (new EffectDecoderSource);
+  skip_source.reset (new EffectDecoderSource());
   adsr_envelope.reset (new ADSREnvelope());
   simple_envelope.reset (new SimpleEnvelope (mix_freq));
 }
