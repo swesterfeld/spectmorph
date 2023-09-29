@@ -25,6 +25,7 @@
 
 // #define SM_MALLOC_TRACER 1
 // #define SM_MALLOC_TRACER_BACKTRACE 1
+// #define SM_MALLOC_TRACER_GROUP 1
 #include "smmalloctracer.hh"
 
 using namespace SpectMorph;
