@@ -8,7 +8,7 @@
 * Fix crash if instrument editor is closed without any samples
 
 #### Internals: Optimizations
-* Reduce allocations in dsp thread (RTMemoryArea)
+* Significantly reduce number of allocations done in DSP thread
 
 ## SpectMorph 0.6.0
 

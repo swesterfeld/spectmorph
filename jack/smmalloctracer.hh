@@ -16,41 +16,53 @@ int memalign_count = 0;
 int free_count = 0;
 int malloc_counting = 0;
 
+static std::map<std::string, int> backtraces;
+
 extern "C" {
 
 static inline void
 print_backtrace (const char *what)
 {
+  using SpectMorph::string_printf;
+
 #ifdef SM_MALLOC_TRACER_BACKTRACE
   void *callstack[10];
   malloc_counting = 0;
 
-  printf ("\n===== %s =====\n", what);
-  int frames = backtrace (callstack, sizeof (callstack) / sizeof (callstack[0]));
-  char **strs = backtrace_symbols (callstack, frames);
+  {
+    std::string s = string_printf ("\n===== %s =====\n", what);
+    int frames = backtrace (callstack, sizeof (callstack) / sizeof (callstack[0]));
+    char **strs = backtrace_symbols (callstack, frames);
 
-  for (int i = 0; i < frames; ++i)
-    {
-      std::string orig = strs[i];
-      int status = -1;
+    for (int i = 0; i < frames; ++i)
+      {
+        std::string orig = strs[i];
+        int status = -1;
 
-      char *fn_start = strchr (strs[i], '(');
-      char *fn_end = strchr (strs[i], '+');
-      if (fn_start && fn_end)
-        {
-          *fn_end = 0;
+        char *fn_start = strchr (strs[i], '(');
+        char *fn_end = strchr (strs[i], '+');
+        if (fn_start && fn_end)
+          {
+            *fn_end = 0;
 
-          char* demangled = abi::__cxa_demangle (fn_start + 1, nullptr, nullptr, &status);
-          if (status == 0)
-            {
-              printf ("%s\n", demangled);
-              free (demangled);
-            }
-        }
-      if (status != 0)
-        printf ("%s\n", orig.c_str());
-    }
-  free (strs);
+            char* demangled = abi::__cxa_demangle (fn_start + 1, nullptr, nullptr, &status);
+            if (status == 0)
+              {
+                s += string_printf ("%s\n", demangled);
+                free (demangled);
+              }
+          }
+        if (status != 0)
+          s += string_printf ("%s\n", orig.c_str());
+      }
+    free (strs);
+
+#ifdef SM_MALLOC_TRACER_GROUP
+    backtraces[s]++;
+#else
+    printf ("%s", s.c_str());
+#endif
+  }
 
   malloc_counting = 1;
 #endif
@@ -133,6 +145,10 @@ public:
   {
 #ifdef SM_MALLOC_TRACER
     malloc_counting = 0;
+    for (auto [bt, count] : backtraces)
+      {
+        printf ("[[[[%d]]]]\n%s\n\n", count, bt.c_str());
+      }
 #endif
   }
   void

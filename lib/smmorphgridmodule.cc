@@ -46,28 +46,25 @@ MorphGridModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphGrid::Config *> (op_cfg);
   g_return_if_fail (cfg != NULL);
 
-  input_node.resize (cfg->width);
-
   for (int x = 0; x < cfg->width; x++)
     {
-      input_node[x].resize (cfg->height);
       for (int y = 0; y < cfg->height; y++)
         {
           const MorphGridNode& node = cfg->input_node[x][y];
 
-          input_node[x][y].mod = morph_plan_voice->module (node.op);
+          input_nodes (x, y).mod = morph_plan_voice->module (node.op);
 
           if (node.wav_set)
             {
-              input_node[x][y].source.set_wav_set (node.wav_set);
-              input_node[x][y].has_source = true;
+              input_nodes (x, y).source.set_wav_set (node.wav_set);
+              input_nodes (x, y).has_source = true;
             }
           else
             {
-              input_node[x][y].has_source = false;
+              input_nodes (x, y).has_source = false;
             }
 
-          input_node[x][y].delta_db = node.delta_db;
+          input_nodes (x, y).delta_db = node.delta_db;
         }
     }
 }
@@ -79,7 +76,7 @@ MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity
     {
       for (int y = 0; y < module->cfg->height; y++)
         {
-          InputNode& node = module->input_node[x][y];
+          InputNode& node = module->input_nodes (x, y);
 
           if (node.mod && node.mod->source())
             {
@@ -380,8 +377,8 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
        *  A ---- B
        */
 
-      InputNode& node_a = module->input_node[x_morph_params.start][0];
-      InputNode& node_b = module->input_node[x_morph_params.end  ][0];
+      InputNode& node_a = module->input_nodes (x_morph_params.start, 0);
+      InputNode& node_b = module->input_nodes (x_morph_params.end,   0);
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
@@ -411,8 +408,8 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
        *  B
        */
 
-      InputNode& node_a = module->input_node[0][y_morph_params.start];
-      InputNode& node_b = module->input_node[0][y_morph_params.end  ];
+      InputNode& node_a = module->input_nodes (0, y_morph_params.start);
+      InputNode& node_b = module->input_nodes (0, y_morph_params.end);
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
@@ -445,10 +442,10 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
        *  |      |
        *  C ---- D
        */
-      InputNode& node_a = module->input_node[x_morph_params.start][y_morph_params.start];
-      InputNode& node_b = module->input_node[x_morph_params.end  ][y_morph_params.start];
-      InputNode& node_c = module->input_node[x_morph_params.start][y_morph_params.end  ];
-      InputNode& node_d = module->input_node[x_morph_params.end  ][y_morph_params.end  ];
+      InputNode& node_a = module->input_nodes (x_morph_params.start, y_morph_params.start);
+      InputNode& node_b = module->input_nodes (x_morph_params.end,   y_morph_params.start);
+      InputNode& node_c = module->input_nodes (x_morph_params.start, y_morph_params.end);
+      InputNode& node_d = module->input_nodes (x_morph_params.end,   y_morph_params.end);
 
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);

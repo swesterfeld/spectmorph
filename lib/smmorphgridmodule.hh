@@ -25,7 +25,17 @@ public:
 private:
   const MorphGrid::Config *cfg = nullptr;
 
-  std::vector< std::vector<InputNode> > input_node;
+  struct InputNodeMatrix {
+    static constexpr int MAX_DIM = 7;
+    std::array<InputNode, MAX_DIM * MAX_DIM> data;
+  public:
+    InputNode&
+    operator() (int x, int y)
+    {
+      assert (x < MAX_DIM && y < MAX_DIM);
+      return data[x + y * MAX_DIM];
+    }
+  } input_nodes;
 
   // output
   Audio               audio;

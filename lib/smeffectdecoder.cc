@@ -69,17 +69,18 @@ public:
 
 class EffectDecoderSource : public LiveDecoderSource
 {
-  LiveDecoderSource *source;
+  LiveDecoderSource *m_source = nullptr;
   Audio              m_audio;
   float              m_skip;
 public:
-  explicit EffectDecoderSource (LiveDecoderSource *source);
+  EffectDecoderSource();
 
   void retrigger (int channel, float freq, int midi_velocity) override;
   Audio* audio() override;
   bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 
   void set_skip (float m_skip);
+  void set_source (LiveDecoderSource *source);
 };
 
 }
@@ -87,7 +88,8 @@ public:
 void
 EffectDecoderSource::retrigger (int channel, float freq, int midi_velocity)
 {
-  source->retrigger (channel, freq, midi_velocity);
+  if (m_source)
+    m_source->retrigger (channel, freq, midi_velocity);
 }
 
 Audio*
@@ -101,7 +103,7 @@ EffectDecoderSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   const double time_ms = index + m_skip; // 1ms frame step
 
-  return MorphUtils::get_normalized_block (source, time_ms, out_block);
+  return MorphUtils::get_normalized_block (m_source, time_ms, out_block);
 }
 
 void
@@ -110,8 +112,13 @@ EffectDecoderSource::set_skip (float skip)
   m_skip = skip;
 }
 
-EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
-  source (source),
+void
+EffectDecoderSource::set_source (LiveDecoderSource *source)
+{
+  m_source = source;
+}
+
+EffectDecoderSource::EffectDecoderSource() :
   m_skip (0)
 {
   m_audio.fundamental_freq     = 440;
@@ -122,13 +129,13 @@ EffectDecoderSource::EffectDecoderSource (LiveDecoderSource *source) :
   m_audio.loop_type            = Audio::LOOP_NONE;
 }
 
-EffectDecoder::EffectDecoder (MorphOutputModule *output_module, LiveDecoderSource *source, float mix_freq) :
+EffectDecoder::EffectDecoder (MorphOutputModule *output_module, float mix_freq) :
   output_module (output_module),
-  original_source (source),
-  skip_source (new EffectDecoderSource (source))
+  chain_decoder (mix_freq)
 {
-  chain_decoder.reset (new LiveDecoder (original_source, mix_freq));
-  use_skip_source = false;
+  skip_source.reset (new EffectDecoderSource());
+  adsr_envelope.reset (new ADSREnvelope());
+  simple_envelope.reset (new SimpleEnvelope (mix_freq));
 }
 
 EffectDecoder::~EffectDecoder()
@@ -136,21 +143,17 @@ EffectDecoder::~EffectDecoder()
 }
 
 void
-EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
+EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *source, float mix_freq)
 {
+  adsr_enabled = cfg->adsr;
+
   if (cfg->adsr)
     {
-      if (!use_skip_source) // enable skip source
-        {
-          chain_decoder.reset (new LiveDecoder (skip_source.get(), mix_freq));
-          chain_decoder->enable_start_skip (true);
-          use_skip_source = true;
-        }
-      skip_source->set_skip (cfg->adsr_skip);
+      chain_decoder.set_source (skip_source.get());
+      chain_decoder.enable_start_skip (true);
 
-      simple_envelope.reset();
-      if (!adsr_envelope)
-        adsr_envelope.reset (new ADSREnvelope());
+      skip_source->set_source (source);
+      skip_source->set_skip (cfg->adsr_skip);
 
       adsr_envelope->set_config (cfg->adsr_attack,
                                  cfg->adsr_decay,
@@ -160,26 +163,19 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
     }
   else
     {
-      if (use_skip_source) // use original source (no skip)
-        {
-          chain_decoder.reset (new LiveDecoder (original_source, mix_freq));
-          use_skip_source = false;
-        }
-      adsr_envelope.reset();
-
-      if (!simple_envelope)
-        simple_envelope.reset (new SimpleEnvelope (mix_freq));
+      chain_decoder.set_source (source);
+      chain_decoder.enable_start_skip (false);
     }
 
-  chain_decoder->enable_noise (cfg->noise);
-  chain_decoder->enable_sines (cfg->sines);
+  chain_decoder.enable_noise (cfg->noise);
+  chain_decoder.enable_sines (cfg->sines);
 
   if (cfg->unison) // unison?
-    chain_decoder->set_unison_voices (cfg->unison_voices, cfg->unison_detune);
+    chain_decoder.set_unison_voices (cfg->unison_voices, cfg->unison_detune);
   else
-    chain_decoder->set_unison_voices (1, 0);
+    chain_decoder.set_unison_voices (1, 0);
 
-  chain_decoder->set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
+  chain_decoder.set_vibrato (cfg->vibrato, cfg->vibrato_depth, cfg->vibrato_frequency, cfg->vibrato_attack);
 
   if (cfg->filter)
     {
@@ -187,10 +183,10 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
       if (!filter_enabled)
         live_decoder_filter.retrigger (sm_freq_to_note (current_freq));
 
-      chain_decoder->set_filter (&live_decoder_filter);
+      chain_decoder.set_filter (&live_decoder_filter);
     }
   else
-    chain_decoder->set_filter (nullptr);
+    chain_decoder.set_filter (nullptr);
 
   filter_enabled = cfg->filter;
 }
@@ -198,19 +194,17 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, float mix_freq)
 void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity)
 {
-  g_assert (chain_decoder);
-
   if (filter_enabled)
     live_decoder_filter.retrigger (sm_freq_to_note (freq));
 
   current_freq = freq;
 
-  if (adsr_envelope)
+  if (adsr_enabled)
     adsr_envelope->retrigger();
   else
     simple_envelope->retrigger();
 
-  chain_decoder->retrigger (channel, freq, midi_velocity);
+  chain_decoder.retrigger (channel, freq, midi_velocity);
 }
 
 void
@@ -219,10 +213,9 @@ EffectDecoder::process (RTMemoryArea& rt_memory_area,
                         const float  *freq_in,
                         float        *audio_out)
 {
-  g_assert (chain_decoder);
-  chain_decoder->process (rt_memory_area, n_values, freq_in, audio_out);
+  chain_decoder.process (rt_memory_area, n_values, freq_in, audio_out);
 
-  if (adsr_envelope)
+  if (adsr_enabled)
     adsr_envelope->process (n_values, audio_out);
   else
     simple_envelope->process (n_values, audio_out);
@@ -231,7 +224,7 @@ EffectDecoder::process (RTMemoryArea& rt_memory_area,
 void
 EffectDecoder::release()
 {
-  if (adsr_envelope)
+  if (adsr_enabled)
     adsr_envelope->release();
   else
     simple_envelope->release();
@@ -243,7 +236,7 @@ EffectDecoder::release()
 bool
 EffectDecoder::done()
 {
-  if (adsr_envelope)
+  if (adsr_enabled)
     return adsr_envelope->done();
   else
     return simple_envelope->done();
@@ -252,5 +245,5 @@ EffectDecoder::done()
 double
 EffectDecoder::time_offset_ms() const
 {
-  return chain_decoder->time_offset_ms();
+  return chain_decoder.time_offset_ms();
 }

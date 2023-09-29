@@ -18,7 +18,6 @@ static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
 
 MorphPlanVoice::MorphPlanVoice (float mix_freq, MorphPlanSynth *synth) :
   m_control_input (MorphPlan::N_CONTROL_INPUTS),
-  m_output (NULL),
   m_mix_freq (mix_freq),
   m_morph_plan_synth (synth)
 {
@@ -32,51 +31,8 @@ MorphPlanVoice::configure_modules()
     modules[i].module->set_config (modules[i].config);
 }
 
-void
-MorphPlanVoice::create_modules (MorphPlanSynth::UpdateP update)
-{
-  for (auto& op : update->ops)
-    {
-      MorphOperatorModule *module = MorphOperatorModule::create (op.type, this);
-
-      if (!module)
-        {
-          g_warning ("operator type %s lacks MorphOperatorModule\n", op.type.c_str());
-        }
-      else
-        {
-          module->set_ptr_id (op.ptr_id);
-
-          OpModule op_module;
-
-          op_module.module = module;
-          op_module.ptr_id = op.ptr_id;
-          op_module.config = op.config;
-
-          modules.push_back (op_module);
-
-          if (op.type == "SpectMorph::MorphOutput")
-            m_output = dynamic_cast<MorphOutputModule *> (module);
-        }
-    }
-}
-
-void
-MorphPlanVoice::clear_modules()
-{
-  for (size_t i = 0; i < modules.size(); i++)
-    {
-      assert (modules[i].module != NULL);
-      delete modules[i].module;
-    }
-  modules.clear();
-
-  m_output = NULL;
-}
-
 MorphPlanVoice::~MorphPlanVoice()
 {
-  clear_modules();
   leak_debugger.del (this);
 }
 
@@ -93,20 +49,26 @@ MorphPlanVoice::module (const MorphOperatorPtr& ptr)
 
   for (size_t i = 0; i < modules.size(); i++)
     if (modules[i].ptr_id == ptr_id)
-      return modules[i].module;
+      return modules[i].module.get();
 
   return NULL;
 }
 
 void
-MorphPlanVoice::full_update (MorphPlanSynth::UpdateP update)
+MorphPlanVoice::full_update (MorphPlanSynth::FullUpdateVoice& full_update_voice)
 {
   /* This will loose the original state information which means the audio
    * will not transition smoothely. However, this should only occur for plan
    * changes, not parameter updates.
    */
-  clear_modules();
-  create_modules (update);
+
+  // exchange old modules with new modules
+  //  - avoids allocating any memory here (in audio thread)
+  //  - avoids freeing any memory here (in audio thread), this is done later when the update structure is freed
+  modules.swap (full_update_voice.new_modules);
+  m_output = full_update_voice.output_module;
+
+  // reconfigure modules
   configure_modules();
 }
 
@@ -115,7 +77,7 @@ MorphPlanVoice::cheap_update (MorphPlanSynth::UpdateP update)
 {
   g_return_if_fail (update->ops.size() == modules.size());
 
-  // exchange old operators with new operators
+  // set new configs from update
   for (size_t i = 0; i < modules.size(); i++)
     {
       assert (modules[i].ptr_id == update->ops[i].ptr_id);
@@ -195,7 +157,7 @@ MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
   VoiceOpValuesEvent::Voice voices[modules.size()];
   int n = 0;
 
-  for (const OpModule& m : modules)
+  for (const MorphPlanSynth::OpModule& m : modules)
     {
       float notify_value;
 
