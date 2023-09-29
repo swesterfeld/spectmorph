@@ -28,9 +28,12 @@ class MorphLFOModule : public MorphOperatorModule
 
   struct SharedState : public MorphModuleSharedState
   {
+    bool     initialized = false;
     LFOState global_lfo_state;
   };
-  SharedState *shared_state;
+  SharedState *shared_state = nullptr;
+  MorphModuleSharedState *create_shared_state() override;
+  void set_shared_state (MorphModuleSharedState *new_shared_state) override;
 
   void update_lfo_value (LFOState& state, const TimeInfo& time_info);
   void restart_lfo (LFOState& state, const TimeInfo& time_info);

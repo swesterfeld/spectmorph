@@ -20,7 +20,8 @@ class MorphOutputModule;
 class MorphPlanSynth {
 protected:
   std::vector<MorphPlanVoice *> voices;
-  std::map<MorphOperator::PtrID, MorphModuleSharedState *> m_shared_state;
+  std::vector<std::unique_ptr<MorphModuleSharedState>> voices_shared_states;
+
   std::vector<std::string>                        m_last_update_ids;
   std::string                                     m_last_plan_id;
   std::vector<MorphOperatorConfigP>               m_active_configs;
@@ -54,6 +55,7 @@ public:
     std::vector<MorphOperatorConfigP> new_configs;
     std::vector<MorphOperatorConfigP> old_configs;
     std::vector<FullUpdateVoice> voice_full_updates;
+    std::vector<std::unique_ptr<MorphModuleSharedState>> new_shared_states; // full updates only
   };
   typedef std::shared_ptr<Update> UpdateP;
 
@@ -63,11 +65,7 @@ public:
   UpdateP prepare_update (const MorphPlan& new_plan);
   void apply_update (UpdateP update);
 
-  MorphModuleSharedState *shared_state (MorphOperator::PtrID ptr_id);
-  void set_shared_state (MorphOperator::PtrID ptr_id, MorphModuleSharedState *shared_state);
-
   void update_shared_state (const TimeInfo& time_info);
-  void free_shared_state();
 
   MorphPlanVoice *voice (size_t i) const;
 

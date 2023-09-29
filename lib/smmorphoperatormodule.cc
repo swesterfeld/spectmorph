@@ -81,6 +81,17 @@ MorphOperatorModule::update_shared_state (const TimeInfo& time_info)
 {
 }
 
+MorphModuleSharedState *
+MorphOperatorModule::create_shared_state()
+{
+  return nullptr;
+}
+
+void
+MorphOperatorModule::set_shared_state (MorphModuleSharedState *new_shared_state)
+{
+}
+
 Random *
 MorphOperatorModule::random_gen() const
 {

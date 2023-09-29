@@ -36,21 +36,28 @@ normalize_phase (double phase)
   return fmod (phase + 1, 1);
 }
 
+MorphModuleSharedState *
+MorphLFOModule::create_shared_state()
+{
+  return new SharedState();
+}
+
+void
+MorphLFOModule::set_shared_state (MorphModuleSharedState *new_shared_state)
+{
+  shared_state = dynamic_cast<SharedState *> (new_shared_state);
+  assert (shared_state);
+}
+
 void
 MorphLFOModule::set_config (const MorphOperatorConfig *op_cfg)
 {
   cfg = dynamic_cast<const MorphLFO::Config *> (op_cfg);
 
-  MorphPlanSynth *synth = morph_plan_voice->morph_plan_synth();
-  if (synth)
+  if (!shared_state->initialized)
     {
-      shared_state = dynamic_cast<SharedState *> (synth->shared_state (m_ptr_id));
-      if (!shared_state)
-        {
-          shared_state = new SharedState();
-          restart_lfo (shared_state->global_lfo_state, /* start from zero time */ TimeInfo());
-          synth->set_shared_state (m_ptr_id, shared_state);
-        }
+      restart_lfo (shared_state->global_lfo_state, /* start from zero time */ TimeInfo());
+      shared_state->initialized = true;
     }
 }
 

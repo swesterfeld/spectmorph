@@ -26,8 +26,6 @@ MorphPlanSynth::~MorphPlanSynth()
 {
   leak_debugger.del (this);
 
-  free_shared_state();
-
   for (size_t i = 0; i < voices.size(); i++)
     delete voices[i];
 
@@ -107,14 +105,17 @@ MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
   if (!update->cheap)
     {
       update->voice_full_updates.resize (voices.size());
-      for (size_t i = 0; i < voices.size(); i++)
+      update->new_shared_states.resize (update->ops.size());
+
+      for (size_t voice = 0; voice < voices.size(); voice++)
         {
-          for (const auto& op : update->ops)
+          for (size_t mod_index = 0; mod_index < update->ops.size(); mod_index++)
             {
+              const auto& op = update->ops[mod_index];
               OpModule op_module;
 
               // avoid creating modules in audio thread by doing it here
-              op_module.module.reset (MorphOperatorModule::create (op.type, voices[i]));
+              op_module.module.reset (MorphOperatorModule::create (op.type, voices[voice]));
               op_module.ptr_id = op.ptr_id;
               op_module.config = op.config;
 
@@ -122,10 +123,16 @@ MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
                 {
                   op_module.module->set_ptr_id (op.ptr_id);
 
-                  if (op.type == "SpectMorph::MorphOutput")
-                    update->voice_full_updates[i].output_module = dynamic_cast<MorphOutputModule *> (op_module.module.get());
+                  /* setup one shared state structure for all voices */
+                  if (voice == 0)
+                    update->new_shared_states[mod_index].reset (op_module.module->create_shared_state());
+                  if (update->new_shared_states[mod_index])
+                    op_module.module->set_shared_state (update->new_shared_states[mod_index].get());
 
-                  update->voice_full_updates[i].new_modules.push_back (std::move (op_module));
+                  if (op.type == "SpectMorph::MorphOutput")
+                    update->voice_full_updates[voice].output_module = dynamic_cast<MorphOutputModule *> (op_module.module.get());
+
+                  update->voice_full_updates[voice].new_modules.push_back (std::move (op_module));
                 }
               else
                 g_warning ("operator type %s lacks MorphOperatorModule\n", op.type.c_str());
@@ -154,7 +161,7 @@ MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
     }
   else
     {
-      free_shared_state();
+      voices_shared_states.swap (update->new_shared_states);
 
       for (size_t i = 0; i < voices.size(); i++)
         voices[i]->full_update (update->voice_full_updates[i]);
@@ -167,18 +174,6 @@ MorphPlanSynth::update_shared_state (const TimeInfo& time_info)
   if (voices.empty())
     return;
   voices[0]->update_shared_state (time_info);
-}
-
-MorphModuleSharedState *
-MorphPlanSynth::shared_state (MorphOperator::PtrID ptr_id)
-{
-  return m_shared_state[ptr_id];
-}
-
-void
-MorphPlanSynth::set_shared_state (MorphOperator::PtrID ptr_id, MorphModuleSharedState *shared_state)
-{
-  m_shared_state[ptr_id] = shared_state;
 }
 
 float
@@ -207,12 +202,4 @@ bool
 MorphPlanSynth::have_cycle() const
 {
   return m_have_cycle;
-}
-
-void
-MorphPlanSynth::free_shared_state()
-{
-  for (auto si = m_shared_state.begin(); si != m_shared_state.end(); si++)
-    delete si->second;
-  m_shared_state.clear();
 }

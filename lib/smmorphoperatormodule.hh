@@ -45,6 +45,8 @@ public:
   virtual float value();
   virtual void reset_value (const TimeInfo& time_info);
   virtual void update_shared_state (const TimeInfo& time_info);
+  virtual MorphModuleSharedState *create_shared_state();
+  virtual void set_shared_state (MorphModuleSharedState *new_shared_state);
 
   void set_ptr_id (MorphOperator::PtrID ptr_id);
   bool get_notify_value (float& value);
