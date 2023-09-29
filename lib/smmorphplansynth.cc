@@ -120,7 +120,7 @@ MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
 
               if (op_module.module)
                 {
-                  op_module.module->set_ptr_id (update->ops[i].ptr_id);
+                  op_module.module->set_ptr_id (op.ptr_id);
 
                   if (op.type == "SpectMorph::MorphOutput")
                     update->voice_full_updates[i].output_module = dynamic_cast<MorphOutputModule *> (op_module.module.get());
