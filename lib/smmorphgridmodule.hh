@@ -8,6 +8,8 @@
 #include "smwavset.hh"
 #include "smmorphsourcemodule.hh"
 
+#include <array>
+
 namespace SpectMorph
 {
 
