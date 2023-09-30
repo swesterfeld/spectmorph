@@ -312,11 +312,15 @@ public:
           }
 
         const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
-        const double x_ms = sm_bound<double> (0, event.x / width() * sample_len_ms, sample_len_ms);
+        double x_ms = sm_bound<double> (0, event.x / width() * sample_len_ms, sample_len_ms);
 
-        update_marker (selected_marker);
+        update_marker (selected_marker); // "undraw"
+                                         //
+        if (selected_marker == MARKER_LOOP_START) // don't allow moving loop start to a point before the start marker
+          x_ms = std::max (x_ms, m_sample->get_marker (MARKER_CLIP_START));
         m_sample->set_marker (selected_marker, x_ms);
-        update_marker (selected_marker);
+
+        update_marker (selected_marker); // "draw"
 
         /* enforce ordering constraints */
         std::vector<MarkerType> left, right;
