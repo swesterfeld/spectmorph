@@ -43,6 +43,14 @@ ControlEventVector::run_rt (Project *project)
     }
 }
 
+void
+ControlEventVector::destroy_all_events()
+{
+  events.clear();
+  clear = false;
+}
+
+
 bool
 Project::try_update_synth()
 {
@@ -183,6 +191,12 @@ Project::Project() :
 void
 Project::set_mix_freq (double mix_freq)
 {
+  /* if there are old control events, these cannot be executed anymore because we're
+   * deleting the MidiSynth they refer to; we don't need a lock here because
+   * this function is not supposed to be running while the audio thread is active
+   */
+  m_control_events.destroy_all_events();
+
   // not rt safe, needs to be called when synthesis thread is not running
   m_midi_synth.reset (new MidiSynth (mix_freq, 64));
   m_mix_freq = mix_freq;
@@ -190,7 +204,6 @@ Project::set_mix_freq (double mix_freq)
   // not rt safe either
   LiveDecoder::precompute_tables (mix_freq);
 
-  // FIXME: can this cause problems if an old plan change control event remained
   auto update = m_midi_synth->prepare_update (m_morph_plan);
   m_midi_synth->apply_update (update);
   m_midi_synth->set_gain (db_to_factor (m_volume));

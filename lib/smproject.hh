@@ -60,6 +60,7 @@ class ControlEventVector
 public:
   void take (SynthControlEvent *ev);
   void run_rt (Project *project);
+  void destroy_all_events();
 };
 
 class Project : public SignalReceiver
