@@ -22,9 +22,9 @@ protected:
   std::vector<MorphPlanVoice *> voices;
   std::vector<std::unique_ptr<MorphModuleSharedState>> voices_shared_states;
 
-  std::vector<std::string>                        m_last_update_ids;
-  std::string                                     m_last_plan_id;
-  std::vector<MorphOperatorConfigP>               m_active_configs;
+  std::vector<std::string>                          m_last_update_ids;
+  std::string                                       m_last_plan_id;
+  std::vector<std::unique_ptr<MorphOperatorConfig>> m_active_configs;
 
   float           m_mix_freq;
   Random          m_random_gen;
@@ -52,9 +52,8 @@ public:
     bool            cheap = false; // cheap update: same set of operators
     bool            have_cycle = false; // plan contains cycles?
     std::vector<Op> ops;
-    std::vector<MorphOperatorConfigP> new_configs;
-    std::vector<MorphOperatorConfigP> old_configs;
-    std::vector<FullUpdateVoice> voice_full_updates;
+    std::vector<std::unique_ptr<MorphOperatorConfig>>    new_configs;
+    std::vector<FullUpdateVoice>                         voice_full_updates;
     std::vector<std::unique_ptr<MorphModuleSharedState>> new_shared_states; // full updates only
   };
   typedef std::shared_ptr<Update> UpdateP;

@@ -84,15 +84,15 @@ MorphPlanSynth::prepare_update (const MorphPlan& plan) /* main thread */
 
   for (auto o : plan.operators())
     {
-      MorphOperatorConfigP config (o->clone_config());
-      update->new_configs.push_back (config);
+      MorphOperatorConfig *config = o->clone_config();
 
       Update::Op op = {
         .ptr_id = o->ptr_id(),
         .type   = o->type(),
-        .config = config.get()
+        .config = config
       };
       update->ops.push_back (op);
+      update->new_configs.emplace_back (config); // take ownership (unique_ptr)
     }
   sort (update->ops.begin(), update->ops.end(),
         [](const Update::Op& a, const Update::Op& b) { return a.ptr_id < b.ptr_id; });
@@ -150,8 +150,7 @@ MorphPlanSynth::apply_update (MorphPlanSynth::UpdateP update) /* audio thread */
    *  - configs required for current update should be kept alive (m_active_configs)
    *  - configs no longer needed should be freed, but not in audio thread
    */
-  update->old_configs = std::move (m_active_configs);
-  m_active_configs = std::move (update->new_configs);
+  m_active_configs.swap (update->new_configs);
   m_have_cycle = update->have_cycle;
 
   if (update->cheap)

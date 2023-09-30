@@ -19,8 +19,6 @@ struct MorphOperatorConfig
   virtual ~MorphOperatorConfig();
 };
 
-typedef std::shared_ptr<MorphOperatorConfig> MorphOperatorConfigP;
-
 class MorphOperatorView;
 class MorphPlan;
 class MorphOperatorPtr;
