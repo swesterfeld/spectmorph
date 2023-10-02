@@ -19,6 +19,7 @@ namespace SpectMorph
 class MorphWavSourceView : public MorphOperatorView
 {
   MorphWavSource   *morph_wav_source = nullptr;
+  ComboBox         *bank_combobox = nullptr;
   ComboBox         *instrument_combobox = nullptr;
   ProgressBar      *progress_bar = nullptr;
   Label            *instrument_label = nullptr;
@@ -30,6 +31,7 @@ class MorphWavSourceView : public MorphOperatorView
 
   void on_edit();
   void on_instrument_changed();
+  void on_bank_changed();
   void on_update_progress();
 
   std::string modified_check (bool& wav_source_update, bool& user_int_update);

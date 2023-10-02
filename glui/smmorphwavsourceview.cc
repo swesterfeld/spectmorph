@@ -25,6 +25,12 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
   morph_wav_source (morph_wav_source)
 {
+  bank_combobox = new ComboBox (body_widget);
+  for (auto bank : morph_wav_source->list_banks())
+    bank_combobox->add_item (bank);
+  bank_combobox->set_text (morph_wav_source->bank());
+  Button *banks_button = new Button (body_widget, "Banks...");
+
   instrument_label = new Label (body_widget, "Instrument");
   progress_bar = new ProgressBar (body_widget);
   instrument_combobox = new ComboBox (body_widget);
@@ -32,6 +38,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 
   update_instrument_list();
 
+  op_layout.add_row (3, new Label (body_widget, "Bank"), bank_combobox, banks_button);
   op_layout.add_row (3, progress_bar, instrument_combobox, edit_button);
 
   // PLAY MODE
@@ -45,7 +52,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   update_visible();
 
   instrument_label->set_x (0);
-  instrument_label->set_y (0);
+  instrument_label->set_y (3 * 8);
   instrument_label->set_width (progress_bar->width());
   instrument_label->set_height (progress_bar->height());
 
@@ -56,6 +63,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
 
   connect (timer->signal_timeout, this, &MorphWavSourceView::on_update_progress);
   connect (instrument_combobox->signal_item_changed, this, &MorphWavSourceView::on_instrument_changed);
+  connect (bank_combobox->signal_item_changed, this, &MorphWavSourceView::on_bank_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
 }
 
@@ -103,7 +111,7 @@ MorphWavSourceView::modified_check (bool& wav_source_update, bool& user_inst_upd
   auto project = morph_wav_source->morph_plan()->project();
 
   Instrument user_instrument;
-  user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+  user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
 
   string user_instrument_version = user_instrument.version();
   string wav_source_version = project->get_instrument (morph_wav_source)->version();
@@ -164,11 +172,11 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
   instrument->load (edit_inst_reader);
 
   /* update on disk copy */
-  string filename = project->user_instrument_index()->filename (morph_wav_source->instrument());
+  string filename = project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument());
   if (instrument->size())
     {
       // create directory only when needed (on write)
-      project->user_instrument_index()->create_instrument_dir();
+      project->user_instrument_index()->create_instrument_dir (morph_wav_source->bank());
 
       ZipWriter zip_writer (filename);
       instrument->save (zip_writer);
@@ -193,13 +201,31 @@ MorphWavSourceView::on_instrument_changed()
   Instrument *instrument = project->get_instrument (morph_wav_source);
   morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
 
-  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->instrument()));
+  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
   if (error)
     {
       /* most likely cause of error: this user instrument doesn't exist yet */
       instrument->clear();
     }
   project->rebuild (morph_wav_source);
+}
+
+void
+MorphWavSourceView::on_bank_changed()
+{
+  morph_wav_source->set_bank (bank_combobox->text());
+
+  auto project = morph_wav_source->morph_plan()->project();
+  Instrument *instrument = project->get_instrument (morph_wav_source);
+  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+  if (error)
+    {
+      /* most likely cause of error: this user instrument doesn't exist yet */
+      instrument->clear();
+    }
+  project->rebuild (morph_wav_source);
+
+  update_instrument_list();
 }
 
 void
@@ -227,7 +253,7 @@ MorphWavSourceView::update_instrument_list()
   instrument_combobox->clear();
   for (int i = 1; i <= 128; i++)
     {
-      string item = user_instrument_index->label (i);
+      string item = user_instrument_index->label (morph_wav_source->bank(), i);
       instrument_combobox->add_item (item);
     }
   Instrument *inst = project->get_instrument (morph_wav_source);
