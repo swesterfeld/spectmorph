@@ -32,10 +32,13 @@ public:
   };
   static constexpr auto P_PLAY_MODE = "play_mode";
   static constexpr auto P_POSITION  = "position";
+
+  static constexpr auto USER_BANK = "User";
 protected:
   Config      m_config;
 
   int         m_instrument = 1;
+  std::string m_bank = USER_BANK;
   std::string m_lv2_filename;
 
 public:
@@ -56,6 +59,11 @@ public:
 
   void        set_instrument (int inst);
   int         instrument();
+
+  void        set_bank (const std::string& bank);
+  std::string bank();
+
+  std::vector<std::string> list_banks();
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();

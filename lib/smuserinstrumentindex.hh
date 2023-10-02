@@ -11,30 +11,31 @@ namespace SpectMorph
 class UserInstrumentIndex
 {
 private:
-  std::string user_bank_dir;
+  std::string user_instruments_dir;
 
 public:
   UserInstrumentIndex()
   {
-    user_bank_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS) + "/User";
+    user_instruments_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS);
   }
   void
-  create_instrument_dir()
+  create_instrument_dir (const std::string& bank)
   {
-    /* if user bank directory doesn't exist, create it */
-    g_mkdir_with_parents (user_bank_dir.c_str(), 0775);
+    /* if bank directory doesn't exist, create it */
+    auto dir = user_instruments_dir + "/" + bank;
+    g_mkdir_with_parents (dir.c_str(), 0775);
   }
   std::string
-  filename (int number)
+  filename (const std::string& bank, int number)
   {
-    return string_printf ("%s/%d.sminst", user_bank_dir.c_str(), number);
+    return string_printf ("%s/%s/%d.sminst", user_instruments_dir.c_str(), bank.c_str(), number);
   }
   std::string
-  label (int number)
+  label (const std::string& bank, int number)
   {
     Instrument inst;
 
-    Error error = inst.load (filename (number), Instrument::LoadOptions::NAME_ONLY);
+    Error error = inst.load (filename (bank, number), Instrument::LoadOptions::NAME_ONLY);
     if (!error)
       return string_printf ("%03d %s", number, inst.name().c_str());
     else

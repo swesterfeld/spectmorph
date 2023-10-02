@@ -270,7 +270,7 @@ Project::on_operator_added (MorphOperator *op)
           /* load default instrument */
           Instrument *instrument = get_instrument (wav_source);
 
-          Error error = instrument->load (m_user_instrument_index.filename (wav_source->instrument()));
+          Error error = instrument->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
           rebuild (wav_source);
         }
     }
@@ -448,7 +448,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         }
       else
         {
-          inst->load (m_user_instrument_index.filename (wav_source->instrument())); /* ignore errors */
+          inst->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument())); /* ignore errors */
         }
     }
 
@@ -499,7 +499,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       // try load mapped path; if this fails, try user instrument dir
       Error error = inst->load (absolute_path (wav_source->lv2_filename()));
       if (error)
-        error = inst->load (m_user_instrument_index.filename (wav_source->instrument()));
+        error = inst->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
 
       // ignore error (if any): we still load preset if instrument is missing
       instrument_map[object_id].reset (inst);
@@ -548,7 +548,7 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 {
   for (auto wav_source : list_wav_sources())
     {
-      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->instrument()));
+      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
       wav_source->set_lv2_filename (lv2_filename);
     }
 

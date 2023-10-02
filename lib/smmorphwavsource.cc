@@ -64,6 +64,54 @@ MorphWavSource::instrument()
 }
 
 void
+MorphWavSource::set_bank (const string& bank)
+{
+  if (m_bank != bank)
+    {
+      m_bank = bank;
+      m_instrument = 1;
+
+      m_morph_plan->emit_plan_changed();
+    }
+}
+
+string
+MorphWavSource::bank()
+{
+  return m_bank;
+}
+
+static string
+tolower (const string& s)
+{
+  string lower;
+  for (auto c : s)
+    lower.push_back (tolower (c)); // will not work for utf8
+  return lower;
+}
+
+vector<string>
+MorphWavSource::list_banks()
+{
+  string inst_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS);
+  vector<string> banks, dir_contents;
+  read_dir (inst_dir, dir_contents); // ignore errors
+
+  for (auto entry : dir_contents)
+    {
+      string full_path = inst_dir + "/" + entry;
+      if (g_file_test (full_path.c_str(), G_FILE_TEST_IS_DIR))
+        banks.push_back (entry);
+    }
+
+  if (find (banks.begin(), banks.end(), USER_BANK) == banks.end())
+    banks.push_back (USER_BANK); // we always have a User bank
+
+  sort (banks.begin(), banks.end(), [] (auto& b1, auto& b2) { return tolower (b1) < tolower (b2); });
+  return banks;
+}
+
+void
 MorphWavSource::set_lv2_filename (const string& filename)
 {
   m_lv2_filename = filename;
@@ -97,6 +145,7 @@ MorphWavSource::save (OutFile& out_file)
   out_file.write_int ("object_id", m_config.object_id);
   out_file.write_int ("instrument", m_instrument);
   out_file.write_string ("lv2_filename", m_lv2_filename);
+  out_file.write_string ("bank", m_bank);
 
   return true;
 }
@@ -131,6 +180,10 @@ MorphWavSource::load (InFile& ifile)
           if (ifile.event_name() == "lv2_filename")
             {
               m_lv2_filename = ifile.event_data();
+            }
+          else if (ifile.event_name() == "bank")
+            {
+              m_bank = ifile.event_data();
             }
           else
             {
