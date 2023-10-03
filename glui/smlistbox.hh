@@ -64,6 +64,7 @@ public:
         items_per_page = items.size();
         scroll_bar->set_visible (false);
       }
+    update(); // if number of items changed, we definitely need to redraw
   }
   void
   draw (const DrawEvent& devent) override
