@@ -4,6 +4,7 @@
 
 #include "smwindow.hh"
 #include "smlistbox.hh"
+#include "smcreatebankwindow.hh"
 
 namespace SpectMorph
 {
@@ -13,7 +14,6 @@ class BankEditWindow : public Window
   MorphWavSource *morph_wav_source;
   UserInstrumentIndex *user_instrument_index = nullptr;
   ListBox *list_box;
-  Button *delete_button;
   std::vector<std::string> banks;
 public:
   BankEditWindow (Window *parent_window, const std::string& title, MorphWavSource *morph_wav_source) :
@@ -29,9 +29,13 @@ public:
     grid.add_widget (list_box, 1, yoffset, 58, 26);
     yoffset += 26;
 
-    delete_button = new Button (this, "Delete");
+    auto delete_button = new Button (this, "Delete");
     connect (delete_button->signal_clicked, this, &BankEditWindow::on_delete_clicked);
-    grid.add_widget (delete_button, 48, yoffset, 10, 3);
+    grid.add_widget (delete_button, 8, yoffset, 10, 3);
+
+    auto create_bank_button = new Button (this, "Create Bank");
+    connect (create_bank_button->signal_clicked, this, &BankEditWindow::on_create_bank_clicked);
+    grid.add_widget (create_bank_button, 48, yoffset, 10, 3);
 
     connect (user_instrument_index->signal_banks_changed, this, &BankEditWindow::on_banks_changed);
 
@@ -68,6 +72,14 @@ public:
               user_instrument_index->remove_bank (bank);
           });
       }
+  }
+  void
+  on_create_bank_clicked()
+  {
+    auto cwin = new CreateBankWindow (window(), user_instrument_index);
+
+    // after this line, rename window is owned by parent window
+    window()->set_popup_window (cwin);
   }
 };
 
