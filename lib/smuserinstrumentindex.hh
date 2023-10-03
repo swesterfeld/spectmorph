@@ -5,6 +5,8 @@
 
 #include "sminstrument.hh"
 
+#include <filesystem>
+
 namespace SpectMorph
 {
 
@@ -41,6 +43,34 @@ public:
     else
       return string_printf ("%03d ---", number);
   }
+  void
+  remove_bank (const std::string& bank)
+  {
+    std::error_code ec;
+    for (int i = 1; i <= 128; i++)
+      {
+        std::filesystem::remove (filename (bank, i), ec);
+      }
+    auto bank_directory = string_printf ("%s/%s", user_instruments_dir.c_str(), bank.c_str());
+    std::filesystem::remove (bank_directory, ec);
+
+    signal_banks_changed();
+  }
+  int
+  count (const std::string& bank)
+  {
+    int n_instruments = 0;
+    for (int i = 1; i <= 128; i++)
+      {
+        Instrument inst;
+
+        Error error = inst.load (filename (bank, i), Instrument::LoadOptions::NAME_ONLY);
+        if (!error)
+          n_instruments++;
+      }
+    return n_instruments;
+  }
+  Signal<> signal_banks_changed;
 };
 
 }
