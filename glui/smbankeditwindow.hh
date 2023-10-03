@@ -15,7 +15,7 @@ class BankEditWindow : public Window
   UserInstrumentIndex *user_instrument_index = nullptr;
   ListBox *list_box;
   std::vector<std::string> banks;
-  std::map<int, Label *> inst_label;
+  std::map<int, ClickableLabel *> inst_label;
   std::string active_bank;
 public:
   BankEditWindow (Window *parent_window, const std::string& title, MorphWavSource *morph_wav_source) :
@@ -52,12 +52,11 @@ public:
         {
           if (i <= 128)
             {
-              auto clickable_label = new PropertyViewLabel (this, "");
-              connect (clickable_label->signal_clicked, [this, i] () {
+              inst_label[i] = new ClickableLabel (this, "");
+              connect (inst_label[i]->signal_clicked, [this, i] () {
                 signal_instrument_clicked (active_bank, i);
               });
-              inst_label[i] = clickable_label;
-              grid.add_widget (clickable_label, 22 + 12.5 * x, 1 + 3 * y, 11.2, 2);
+              grid.add_widget (inst_label[i], 22 + 12.5 * x, 1 + 3 * y, 11.2, 2);
               i++;
             }
         }

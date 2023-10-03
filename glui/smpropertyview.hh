@@ -4,7 +4,7 @@
 #define SPECTMORPH_PROPERTY_VIEW_HH
 
 #include "smmorphoutput.hh"
-#include "smlabel.hh"
+#include "smclickablelabel.hh"
 #include "smslider.hh"
 #include "smcombobox.hh"
 #include "smcheckbox.hh"
@@ -17,50 +17,6 @@ namespace SpectMorph
 class OperatorLayout;
 class MorphPlanWindow;
 class ControlStatus;
-
-class PropertyViewLabel : public Label
-{
-  bool pressed = false;
-public:
-  PropertyViewLabel (Widget *parent, const std::string& text) :
-    Label (parent, text)
-  {
-  }
-  void
-  enter_event() override
-  {
-    set_bold (true);
-    update();
-  }
-  void
-  leave_event() override
-  {
-    set_bold (false);
-    update();
-  }
-  void
-  mouse_press (const MouseEvent& event) override
-  {
-    if (event.button == LEFT_BUTTON)
-      {
-        pressed = true;
-        update();
-      }
-  }
-  void
-  mouse_release (const MouseEvent& event) override
-  {
-    if (event.button != LEFT_BUTTON || !pressed)
-      return;
-
-    pressed = false;
-    update();
-
-    if (event.x >= 0 && event.y >= 0 && event.x < width() && event.y < height())
-      signal_clicked();
-  }
-  Signal<> signal_clicked;
-};
 
 class PropertyViewModLabel : public Widget
 {
@@ -161,7 +117,7 @@ class PropertyView : public SignalReceiver
   Slider   *slider = nullptr;
   ComboBox *combobox = nullptr;
   CheckBox *check_box = nullptr;
-  PropertyViewLabel *label  = nullptr;
+  ClickableLabel *label  = nullptr;
 
   ControlView control_view;
   ComboBoxOperator *control_combobox = nullptr;
