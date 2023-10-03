@@ -56,6 +56,13 @@ public:
 
     signal_banks_changed();
   }
+  void
+  create_bank (const std::string& bank)
+  {
+    create_instrument_dir (bank);
+
+    signal_banks_changed();
+  }
   int
   count (const std::string& bank)
   {
