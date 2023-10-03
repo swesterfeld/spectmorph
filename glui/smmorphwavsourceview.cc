@@ -12,6 +12,7 @@
 #include "smtimer.hh"
 #include "smoperatorlayout.hh"
 #include "smmessagebox.hh"
+#include "smbankeditwindow.hh"
 
 #include <unistd.h>
 #include <thread>
@@ -26,8 +27,6 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   morph_wav_source (morph_wav_source)
 {
   bank_combobox = new ComboBox (body_widget);
-  for (auto bank : morph_wav_source->list_banks())
-    bank_combobox->add_item (bank);
   bank_combobox->set_text (morph_wav_source->bank());
   Button *banks_button = new Button (body_widget, "Banks...");
 
@@ -36,6 +35,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   instrument_combobox = new ComboBox (body_widget);
   Button *edit_button = new Button (body_widget, "Edit");
 
+  on_banks_changed();
   update_instrument_list();
 
   op_layout.add_row (3, new Label (body_widget, "Bank"), bank_combobox, banks_button);
@@ -65,6 +65,8 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   connect (instrument_combobox->signal_item_changed, this, &MorphWavSourceView::on_instrument_changed);
   connect (bank_combobox->signal_item_changed, this, &MorphWavSourceView::on_bank_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
+  connect (banks_button->signal_clicked, this, &MorphWavSourceView::on_edit_banks);
+  connect (morph_wav_source->morph_plan()->project()->user_instrument_index()->signal_banks_changed, this, &MorphWavSourceView::on_banks_changed);
 }
 
 double
@@ -96,6 +98,27 @@ MorphWavSourceView::on_edit()
       synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
       on_edit_close();
     });
+}
+
+void
+MorphWavSourceView::on_edit_banks()
+{
+  auto bank_edit_window = new BankEditWindow (window(), "Edit Banks", morph_wav_source);
+
+  // after this line, inst edit window is owned by parent window
+  window()->set_popup_window (bank_edit_window);
+  bank_edit_window->set_close_callback ([this]()
+    {
+      window()->set_popup_window (nullptr);
+    });
+}
+
+void
+MorphWavSourceView::on_banks_changed()
+{
+  bank_combobox->clear();
+  for (auto bank : morph_wav_source->list_banks())
+    bank_combobox->add_item (bank);
 }
 
 string
