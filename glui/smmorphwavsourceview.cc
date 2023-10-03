@@ -111,6 +111,23 @@ MorphWavSourceView::on_edit_banks()
     {
       window()->set_popup_window (nullptr);
     });
+  connect (bank_edit_window->signal_instrument_clicked, [this](const string& bank, int i)
+    {
+      morph_wav_source->set_bank (bank);
+      morph_wav_source->set_instrument (i);
+      auto project = morph_wav_source->morph_plan()->project();
+      Instrument *instrument = project->get_instrument (morph_wav_source);
+      bank_combobox->set_text (morph_wav_source->bank());
+      Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+      if (error)
+        {
+          /* most likely cause of error: this user instrument doesn't exist yet */
+          instrument->clear();
+        }
+      project->rebuild (morph_wav_source);
+      update_instrument_list();
+      window()->set_popup_window (nullptr);
+    });
 }
 
 void

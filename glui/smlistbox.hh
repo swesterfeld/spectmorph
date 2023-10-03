@@ -18,6 +18,7 @@ class ListBox : public Widget
 public:
   Signal<> signal_item_clicked;
   Signal<> signal_item_double_clicked;
+  Signal<> signal_selected_item_changed;
 
   ListBox (Widget *parent)
     : Widget (parent)
@@ -135,11 +136,13 @@ public:
         if (event.double_click)
           {
             m_selected_item = highlight_item;
+            signal_selected_item_changed();
             signal_item_double_clicked();
           }
         else
           {
             m_selected_item = highlight_item;
+            signal_selected_item_changed();
             signal_item_clicked();
             update();
           }
@@ -151,6 +154,13 @@ public:
     if (scroll_bar->visible())
       return scroll_bar->scroll (dx, dy);
     return false;
+  }
+  void
+  set_selected_item (int i)
+  {
+    assert (i >= 0 && i < int (items.size()));
+    m_selected_item = i;
+    signal_selected_item_changed();
   }
   int
   selected_item()
@@ -164,6 +174,7 @@ public:
     m_selected_item = -1;
     highlight_item = -1;
     update_item_count();
+    signal_selected_item_changed();
   }
 };
 
