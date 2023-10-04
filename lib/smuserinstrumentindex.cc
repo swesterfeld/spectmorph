@@ -49,7 +49,8 @@ UserInstrumentIndex::update_instrument (const std::string& bank, int number, con
   else
     {
       /* instrument without any samples -> remove */
-      std::filesystem::remove (path);
+      std::error_code ec;
+      std::filesystem::remove (path, ec);
     }
 
   /* update wav sources and UI */
