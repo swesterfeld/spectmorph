@@ -53,29 +53,35 @@ MorphWavSource::object_id()
 }
 
 void
-MorphWavSource::set_instrument (int instrument)
+MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
 {
-  m_instrument = instrument;
+  if (m_bank != bank || m_instrument != instrument)
+    {
+      m_bank = bank;
+      m_instrument = instrument;
 
-  m_morph_plan->emit_plan_changed();
+      Project *project = morph_plan()->project();
+      Instrument *instrument = project->get_instrument (this);
+      UserInstrumentIndex *user_instrument_index = project->user_instrument_index();
+
+      Error error = instrument->load (user_instrument_index->filename (m_bank, m_instrument));
+      if (error)
+        {
+          /* most likely cause of error: this user instrument doesn't exist yet */
+          instrument->clear();
+        }
+      project->rebuild (this);
+
+      signal_labels_changed();
+
+      m_morph_plan->emit_plan_changed();
+    }
 }
 
 int
 MorphWavSource::instrument()
 {
   return m_instrument;
-}
-
-void
-MorphWavSource::set_bank (const string& bank)
-{
-  if (m_bank != bank)
-    {
-      m_bank = bank;
-      m_instrument = 1;
-
-      m_morph_plan->emit_plan_changed();
-    }
 }
 
 string
@@ -119,6 +125,8 @@ MorphWavSource::on_instrument_updated (const std::string& bank, int number, cons
         }
       project->rebuild (this);
       project->state_changed();
+
+      signal_labels_changed();
     }
 }
 

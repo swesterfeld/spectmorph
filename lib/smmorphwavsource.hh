@@ -58,16 +58,17 @@ public:
   void        set_object_id (int id);
   int         object_id();
 
-  void        set_instrument (int inst);
-  int         instrument();
+  void        set_bank_and_instrument (const std::string& bank, int inst);
 
-  void        set_bank (const std::string& bank);
+  int         instrument();
   std::string bank();
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
 
   void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
+
+  Signal<> signal_labels_changed;
 };
 
 }
