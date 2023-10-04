@@ -68,7 +68,9 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   connect (bank_combobox->signal_item_changed, this, &MorphWavSourceView::on_bank_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
   connect (banks_button->signal_clicked, this, &MorphWavSourceView::on_edit_banks);
+
   connect (user_instrument_index->signal_banks_changed, this, &MorphWavSourceView::on_banks_changed);
+  connect (user_instrument_index->signal_instrument_list_updated, this, &MorphWavSourceView::on_instrument_list_updated);
 }
 
 double
@@ -198,41 +200,12 @@ MorphWavSourceView::on_edit_close()
 void
 MorphWavSourceView::on_edit_save_changes (bool save_changes)
 {
-  if (!save_changes) /* do not save changes */
-    {
-      edit_instrument.reset();
-      return;
-    }
+  if (save_changes)
+    user_instrument_index->update_instrument (morph_wav_source->bank(),
+                                              morph_wav_source->instrument(),
+                                              *edit_instrument);
 
-  /* update copy in WavSource */
-  auto        project  = morph_wav_source->morph_plan()->project();
-  Instrument *instrument = project->get_instrument (morph_wav_source);
-
-  ZipWriter edit_inst_writer;
-  edit_instrument->save (edit_inst_writer);
-  ZipReader edit_inst_reader (edit_inst_writer.data());
-  instrument->load (edit_inst_reader);
-
-  /* update on disk copy */
-  string filename = user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument());
-  if (instrument->size())
-    {
-      // create directory only when needed (on write)
-      user_instrument_index->create_instrument_dir (morph_wav_source->bank());
-
-      ZipWriter zip_writer (filename);
-      instrument->save (zip_writer);
-    }
-  else
-    {
-      /* instrument without any samples -> remove */
-      unlink (filename.c_str());
-      instrument->clear();
-    }
   edit_instrument.reset();
-  update_instrument_list();
-  project->rebuild (morph_wav_source);
-  project->state_changed();
 }
 
 void
@@ -285,6 +258,13 @@ MorphWavSourceView::on_update_progress()
   progress_bar->set_visible (rebuild_active);
 }
 
+
+void
+MorphWavSourceView::on_instrument_list_updated (const string& bank)
+{
+  if (bank == morph_wav_source->bank())
+    update_instrument_list();
+}
 
 void
 MorphWavSourceView::update_instrument_list()
