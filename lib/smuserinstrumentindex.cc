@@ -2,6 +2,7 @@
 
 #include "smuserinstrumentindex.hh"
 #include "smmorphwavsource.hh"
+#include "smzip.hh"
 
 #include <filesystem>
 
@@ -35,7 +36,25 @@ UserInstrumentIndex::create_instrument_dir (const string& bank)
 void
 UserInstrumentIndex::update_instrument (const std::string& bank, int number, const Instrument& instrument)
 {
+  /* update on disk copy */
+  string path = filename (bank, number);
+  if (instrument.size())
+    {
+      // create directory only when needed (on write)
+      create_instrument_dir (bank);
+
+      ZipWriter zip_writer (path);
+      instrument.save (zip_writer);
+    }
+  else
+    {
+      /* instrument without any samples -> remove */
+      unlink (path.c_str());
+    }
+
+  /* update wav sources and UI */
   signal_instrument_updated (bank, number, &instrument);
+  signal_instrument_list_updated (bank);
 }
 
 string

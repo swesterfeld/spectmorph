@@ -13,10 +13,11 @@ class UserInstrumentIndex
 private:
   std::string user_instruments_dir;
 
+  void create_instrument_dir (const std::string& bank);
+
 public:
   UserInstrumentIndex();
 
-  void create_instrument_dir (const std::string& bank);
   void update_instrument (const std::string& bank, int number, const Instrument& instrument);
 
   std::string filename (const std::string& bank, int number);
@@ -30,6 +31,7 @@ public:
 
   Signal<>                                     signal_banks_changed;
   Signal<std::string, int, const Instrument *> signal_instrument_updated;
+  Signal<std::string>                          signal_instrument_list_updated;
 };
 
 }
