@@ -83,9 +83,12 @@ MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
 void
 MorphWavSource::on_bank_removed (const string& bank)
 {
-  m_bank = ""; // force re-read
+  if (bank == m_bank)
+    {
+      m_bank = ""; // force re-read
 
-  set_bank_and_instrument (MorphWavSource::USER_BANK, 1);
+      set_bank_and_instrument (MorphWavSource::USER_BANK, 1);
+    }
 }
 
 int
