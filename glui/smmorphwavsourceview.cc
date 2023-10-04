@@ -248,6 +248,8 @@ MorphWavSourceView::update_instrument_labels()
 {
   auto project  = morph_wav_source->morph_plan()->project();
 
+  update_instrument_list();
+
   bank_combobox->set_text (morph_wav_source->bank());
 
   Instrument *inst = project->get_instrument (morph_wav_source);
