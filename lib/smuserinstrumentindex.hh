@@ -11,35 +11,28 @@ namespace SpectMorph
 class UserInstrumentIndex
 {
 private:
-  std::string user_bank_dir;
+  std::string user_instruments_dir;
+
+  void create_instrument_dir (const std::string& bank);
 
 public:
-  UserInstrumentIndex()
-  {
-    user_bank_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS) + "/User";
-  }
-  void
-  create_instrument_dir()
-  {
-    /* if user bank directory doesn't exist, create it */
-    g_mkdir_with_parents (user_bank_dir.c_str(), 0775);
-  }
-  std::string
-  filename (int number)
-  {
-    return string_printf ("%s/%d.sminst", user_bank_dir.c_str(), number);
-  }
-  std::string
-  label (int number)
-  {
-    Instrument inst;
+  UserInstrumentIndex();
 
-    Error error = inst.load (filename (number), Instrument::LoadOptions::NAME_ONLY);
-    if (!error)
-      return string_printf ("%03d %s", number, inst.name().c_str());
-    else
-      return string_printf ("%03d ---", number);
-  }
+  void update_instrument (const std::string& bank, int number, const Instrument& instrument);
+
+  std::string filename (const std::string& bank, int number);
+  std::string label (const std::string& bank, int number);
+
+  int count (const std::string& bank);
+
+  void remove_bank (const std::string& bank);
+  void create_bank (const std::string& bank);
+  std::vector<std::string> list_banks();
+
+  Signal<>                                     signal_banks_changed;
+  Signal<std::string>                          signal_bank_removed;
+  Signal<std::string, int, const Instrument *> signal_instrument_updated;
+  Signal<std::string>                          signal_instrument_list_updated;
 };
 
 }

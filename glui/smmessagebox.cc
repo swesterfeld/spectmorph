@@ -96,6 +96,13 @@ MessageBox::MessageBox (Window *window, const string& title, const string& text,
       connect (button->signal_clicked, this, &Dialog::on_accept);
     }
 
+  if (buttons & Buttons::DELETE)
+    {
+      auto button = new Button (this, "Delete");
+      bwidgets.push_back (button);
+      connect (button->signal_clicked, this, &Dialog::on_accept);
+    }
+
   // buttons for reject (should appear on the right side)
   if (buttons & Buttons::REVERT)
     {

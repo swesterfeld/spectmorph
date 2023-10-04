@@ -46,7 +46,7 @@ PropertyView::PropertyView (Property& property, Widget *parent, MorphPlanWindow 
       slider = new Slider (parent, 0);
 
       slider->set_int_range (property.min(), property.max());
-      label = new PropertyViewLabel (parent, property.value_label());
+      label = new ClickableLabel (parent, property.value_label());
       slider->set_int_value (property.get());
 
       if (mod_list)

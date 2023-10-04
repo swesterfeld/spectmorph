@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smuserinstrumentindex.hh"
+#include "smmorphwavsource.hh"
 #include "smmain.hh"
 
 #include <stdio.h>
@@ -20,11 +21,11 @@ main (int argc, char **argv)
   int count = 0;
   for (int i = 0; i < 128; i++)
     {
-      const string label =  uidx.label (i);
+      const string label = uidx.label (MorphWavSource::USER_BANK, i);
       bool empty = label.size() > 3 && label.substr (label.size() - 3) == "---";
       if (!empty)
         {
-          printf ("%s\n", uidx.label (i).c_str());
+          printf ("%s\n", label.c_str());
           count++;
         }
     }

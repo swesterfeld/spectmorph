@@ -16,6 +16,7 @@ public:
     CANCEL = 2,
     SAVE = 4,
     REVERT = 8,
+    DELETE = 16
   };
 
   MessageBox (Window *window, const std::string& title, const std::string& text, Buttons buttons);

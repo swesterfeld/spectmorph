@@ -14,6 +14,7 @@ namespace SpectMorph
 
 class MorphWavSource;
 class Project;
+class Instrument;
 
 class MorphWavSource : public MorphOperator
 {
@@ -32,10 +33,13 @@ public:
   };
   static constexpr auto P_PLAY_MODE = "play_mode";
   static constexpr auto P_POSITION  = "position";
+
+  static constexpr auto USER_BANK = "User";
 protected:
   Config      m_config;
 
   int         m_instrument = 1;
+  std::string m_bank = USER_BANK;
   std::string m_lv2_filename;
 
 public:
@@ -54,13 +58,18 @@ public:
   void        set_object_id (int id);
   int         object_id();
 
-  void        set_instrument (int inst);
+  void        set_bank_and_instrument (const std::string& bank, int inst);
+
   int         instrument();
+  std::string bank();
 
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
 
-  void        on_operator_removed (MorphOperator *op);
+  void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
+  void        on_bank_removed (const std::string& bank);
+
+  Signal<> signal_labels_changed;
 };
 
 }

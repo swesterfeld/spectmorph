@@ -49,7 +49,7 @@ libspectmorph_la_SOURCES = smaudio.cc smencoder.cc smnoisedecoder.cc smsinedecod
 			   smwavsetbuilder.cc sminsteditsynth.cc sminstencoder.cc \
 			   sminstenccache.cc smaudiotool.cc sminstrument.cc smzip.cc smproject.cc \
 			   smbuilderthread.cc smproperty.cc smmodulationlist.cc smpandaresampler.cc \
-			   smlivedecoderfilter.cc smtimeinfo.cc smrtmemory.cc
+			   smlivedecoderfilter.cc smtimeinfo.cc smrtmemory.cc smuserinstrumentindex.cc
 
 libspectmorph_la_LIBADD = $(LTLIBICONV) $(LAPACK_LIBS) $(FFTW_LIBS) $(BSE_LIBS) $(SNDFILE_LIBS) $(top_builddir)/3rdparty/minizip/libminizip.la
 libspectmorph_la_LDFLAGS = -no-undefined
