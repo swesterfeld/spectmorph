@@ -17,6 +17,7 @@ public:
   UserInstrumentIndex();
 
   void create_instrument_dir (const std::string& bank);
+  void update_instrument (const std::string& bank, int number, const Instrument& instrument);
 
   std::string filename (const std::string& bank, int number);
   std::string label (const std::string& bank, int number);
@@ -27,7 +28,8 @@ public:
   void create_bank (const std::string& bank);
   std::vector<std::string> list_banks();
 
-  Signal<> signal_banks_changed;
+  Signal<>                                     signal_banks_changed;
+  Signal<std::string, int, const Instrument *> signal_instrument_updated;
 };
 
 }
