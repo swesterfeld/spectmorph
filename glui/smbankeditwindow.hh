@@ -75,7 +75,7 @@ public:
   {
     banks.clear();
     list_box->clear();
-    for (auto bank : morph_wav_source->list_banks())
+    for (auto bank : user_instrument_index->list_banks())
       {
         list_box->add_item (string_printf ("%s (%d)", bank.c_str(), user_instrument_index->count (bank)));
         banks.push_back (bank);

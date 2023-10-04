@@ -23,6 +23,7 @@ class MorphWavSourceView : public MorphOperatorView
   ComboBox         *instrument_combobox = nullptr;
   ProgressBar      *progress_bar = nullptr;
   Label            *instrument_label = nullptr;
+  UserInstrumentIndex *user_instrument_index = nullptr;
   std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
 
   Property         *prop_play_mode;

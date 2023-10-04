@@ -26,6 +26,8 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   MorphOperatorView (parent, morph_wav_source, morph_plan_window),
   morph_wav_source (morph_wav_source)
 {
+  user_instrument_index = morph_wav_source->morph_plan()->project()->user_instrument_index();
+
   bank_combobox = new ComboBox (body_widget);
   bank_combobox->set_text (morph_wav_source->bank());
   Button *banks_button = new Button (body_widget, "Banks...");
@@ -66,7 +68,7 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   connect (bank_combobox->signal_item_changed, this, &MorphWavSourceView::on_bank_changed);
   connect (edit_button->signal_clicked, this, &MorphWavSourceView::on_edit);
   connect (banks_button->signal_clicked, this, &MorphWavSourceView::on_edit_banks);
-  connect (morph_wav_source->morph_plan()->project()->user_instrument_index()->signal_banks_changed, this, &MorphWavSourceView::on_banks_changed);
+  connect (user_instrument_index->signal_banks_changed, this, &MorphWavSourceView::on_banks_changed);
 }
 
 double
@@ -118,7 +120,7 @@ MorphWavSourceView::on_edit_banks()
       auto project = morph_wav_source->morph_plan()->project();
       Instrument *instrument = project->get_instrument (morph_wav_source);
       bank_combobox->set_text (morph_wav_source->bank());
-      Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+      Error error = instrument->load (user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
       if (error)
         {
           /* most likely cause of error: this user instrument doesn't exist yet */
@@ -134,7 +136,7 @@ void
 MorphWavSourceView::on_banks_changed()
 {
   bank_combobox->clear();
-  for (auto bank : morph_wav_source->list_banks())
+  for (auto bank : user_instrument_index->list_banks())
     bank_combobox->add_item (bank);
 }
 
@@ -151,7 +153,7 @@ MorphWavSourceView::modified_check (bool& wav_source_update, bool& user_inst_upd
   auto project = morph_wav_source->morph_plan()->project();
 
   Instrument user_instrument;
-  user_instrument.load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+  user_instrument.load (user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
 
   string user_instrument_version = user_instrument.version();
   string wav_source_version = project->get_instrument (morph_wav_source)->version();
@@ -212,11 +214,11 @@ MorphWavSourceView::on_edit_save_changes (bool save_changes)
   instrument->load (edit_inst_reader);
 
   /* update on disk copy */
-  string filename = project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument());
+  string filename = user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument());
   if (instrument->size())
     {
       // create directory only when needed (on write)
-      project->user_instrument_index()->create_instrument_dir (morph_wav_source->bank());
+      user_instrument_index->create_instrument_dir (morph_wav_source->bank());
 
       ZipWriter zip_writer (filename);
       instrument->save (zip_writer);
@@ -241,7 +243,7 @@ MorphWavSourceView::on_instrument_changed()
   Instrument *instrument = project->get_instrument (morph_wav_source);
   morph_wav_source->set_instrument (atoi (instrument_combobox->text().c_str()));
 
-  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+  Error error = instrument->load (user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
   if (error)
     {
       /* most likely cause of error: this user instrument doesn't exist yet */
@@ -257,7 +259,7 @@ MorphWavSourceView::on_bank_changed()
 
   auto project = morph_wav_source->morph_plan()->project();
   Instrument *instrument = project->get_instrument (morph_wav_source);
-  Error error = instrument->load (project->user_instrument_index()->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
+  Error error = instrument->load (user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
   if (error)
     {
       /* most likely cause of error: this user instrument doesn't exist yet */
@@ -288,7 +290,6 @@ void
 MorphWavSourceView::update_instrument_list()
 {
   auto project  = morph_wav_source->morph_plan()->project();
-  auto user_instrument_index = project->user_instrument_index();
 
   instrument_combobox->clear();
   for (int i = 1; i <= 128; i++)
