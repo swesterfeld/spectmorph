@@ -67,6 +67,7 @@ public:
   std::string lv2_filename();
 
   void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
+  void        on_bank_removed (const std::string& bank);
 
   Signal<> signal_labels_changed;
 };

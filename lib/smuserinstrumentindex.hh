@@ -30,6 +30,7 @@ public:
   std::vector<std::string> list_banks();
 
   Signal<>                                     signal_banks_changed;
+  Signal<std::string>                          signal_bank_removed;
   Signal<std::string, int, const Instrument *> signal_instrument_updated;
   Signal<std::string>                          signal_instrument_list_updated;
 };

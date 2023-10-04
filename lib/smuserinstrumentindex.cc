@@ -86,6 +86,7 @@ UserInstrumentIndex::remove_bank (const string& bank)
   auto bank_directory = string_printf ("%s/%s", user_instruments_dir.c_str(), bank.c_str());
   std::filesystem::remove (bank_directory, ec);
 
+  signal_bank_removed (bank);
   signal_banks_changed();
 }
 

@@ -30,6 +30,7 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
 
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
   connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
+  connect (user_instrument_index->signal_bank_removed, this, &MorphWavSource::on_bank_removed);
 }
 
 MorphWavSource::~MorphWavSource()
@@ -76,6 +77,14 @@ MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
 
       m_morph_plan->emit_plan_changed();
     }
+}
+
+void
+MorphWavSource::on_bank_removed (const string& bank)
+{
+  m_bank = ""; // force re-read
+
+  set_bank_and_instrument (MorphWavSource::USER_BANK, 1);
 }
 
 int
