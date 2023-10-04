@@ -56,6 +56,7 @@ MorphWavSource::object_id()
 void
 MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
 {
+  instrument = std::clamp (instrument, 1, 128);
   if (m_bank != bank || m_instrument != instrument)
     {
       m_bank = bank;
