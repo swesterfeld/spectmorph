@@ -49,7 +49,7 @@ UserInstrumentIndex::update_instrument (const std::string& bank, int number, con
   else
     {
       /* instrument without any samples -> remove */
-      unlink (path.c_str());
+      std::filesystem::remove (path);
     }
 
   /* update wav sources and UI */
