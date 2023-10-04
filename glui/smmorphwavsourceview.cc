@@ -29,7 +29,6 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   user_instrument_index = morph_wav_source->morph_plan()->project()->user_instrument_index();
 
   bank_combobox = new ComboBox (body_widget);
-  bank_combobox->set_text (morph_wav_source->bank());
   Button *banks_button = new Button (body_widget, "Banks...");
 
   instrument_label = new Label (body_widget, "Instrument");
