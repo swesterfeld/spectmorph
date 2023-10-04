@@ -14,6 +14,7 @@ namespace SpectMorph
 
 class MorphWavSource;
 class Project;
+class Instrument;
 
 class MorphWavSource : public MorphOperator
 {
@@ -66,7 +67,7 @@ public:
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
 
-  void        on_operator_removed (MorphOperator *op);
+  void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
 };
 
 }

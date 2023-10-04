@@ -3,6 +3,8 @@
 #include "smmorphwavsource.hh"
 #include "smmorphplan.hh"
 #include "smleakdebugger.hh"
+#include "smproject.hh"
+#include "smzip.hh"
 
 using namespace SpectMorph;
 
@@ -26,7 +28,8 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   auto position = add_property (&m_config.position_mod, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
   position->modulation_list()->set_compat_type_and_op ("position_control_type", "position_op");
 
-  connect (morph_plan->signal_operator_removed, this, &MorphWavSource::on_operator_removed);
+  UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
+  connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
 }
 
 MorphWavSource::~MorphWavSource()
@@ -93,6 +96,30 @@ string
 MorphWavSource::lv2_filename()
 {
   return m_lv2_filename;
+}
+
+void
+MorphWavSource::on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument)
+{
+  if (bank == m_bank && number == m_instrument)
+    {
+      auto project  = m_morph_plan->project();
+      Instrument *instrument = project->get_instrument (this);
+
+      if (new_instrument->size())
+        {
+          ZipWriter new_inst_writer;
+          new_instrument->save (new_inst_writer);
+          ZipReader new_inst_reader (new_inst_writer.data());
+          instrument->load (new_inst_reader);
+        }
+      else
+        {
+          instrument->clear();
+        }
+      project->rebuild (this);
+      project->state_changed();
+    }
 }
 
 const char *
@@ -169,11 +196,6 @@ MorphWavSource::load (InFile& ifile)
       ifile.next_event();
     }
   return true;
-}
-
-void
-MorphWavSource::on_operator_removed (MorphOperator *op)
-{
 }
 
 MorphOperator::OutputType
