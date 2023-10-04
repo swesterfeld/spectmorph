@@ -11,7 +11,6 @@ namespace SpectMorph
 
 class BankEditWindow : public Window
 {
-  MorphWavSource *morph_wav_source;
   UserInstrumentIndex *user_instrument_index = nullptr;
   ListBox *list_box;
   std::vector<std::string> banks;
@@ -19,8 +18,7 @@ class BankEditWindow : public Window
   std::string active_bank;
 public:
   BankEditWindow (Window *parent_window, const std::string& title, MorphWavSource *morph_wav_source) :
-    Window (*parent_window->event_loop(), title, 768, 67 * 8, 0, false, parent_window->native_window()),
-    morph_wav_source (morph_wav_source)
+    Window (*parent_window->event_loop(), title, 768, 67 * 8, 0, false, parent_window->native_window())
   {
     user_instrument_index = morph_wav_source->morph_plan()->project()->user_instrument_index();
 
