@@ -11,6 +11,9 @@
 #include "pugl/pugl.h"
 #include "smsignal.hh"
 
+// Windows API headers #define DELETE
+#undef DELETE
+
 namespace SpectMorph
 {
 

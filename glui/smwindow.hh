@@ -4,7 +4,6 @@
 #define SPECTMORPH_WINDOW_HH
 
 #include "smwidget.hh"
-#include "pugl/pugl.h"
 #include "smnativefiledialog.hh"
 #include <memory>
 #include <functional>
