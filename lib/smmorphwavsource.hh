@@ -63,8 +63,6 @@ public:
   void        set_bank (const std::string& bank);
   std::string bank();
 
-  std::vector<std::string> list_banks();
-
   void        set_lv2_filename (const std::string& filename);
   std::string lv2_filename();
 
