@@ -109,7 +109,9 @@ public:
     send_control_event (
       [=] (Project *project)
         {
-          project->add_rebuild_result (object_id, event_data->wav_set.release());
+          // uses swap to assign the new unique ptr and ensure the old one gets freed
+          // outside the audio thread
+          project->add_rebuild_result (object_id, event_data->wav_set);
         },
         event_data);
   }

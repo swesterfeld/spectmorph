@@ -21,7 +21,6 @@ class MorphWavSourceModule : public MorphOperatorModule
   class InstrumentSource : public LiveDecoderSource
   {
     Audio                  *active_audio = nullptr;
-    std::shared_ptr<WavSet> wav_set;
     int                     object_id;
     Project                *project;
   public:

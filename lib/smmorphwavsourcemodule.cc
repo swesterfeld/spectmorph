@@ -24,10 +24,7 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
   Audio  *best_audio = nullptr;
   float   best_diff  = 1e10;
 
-  // we can not delete the old wav_set between retrigger() invocations
-  //  - LiveDecoder may keep a pointer to contained Audio* entries (which die if the WavSet is freed)
-  wav_set = project->get_wav_set (object_id);
-
+  WavSet *wav_set = project->get_wav_set (object_id);
   if (wav_set)
     {
       float note = sm_freq_to_note (freq);
@@ -53,12 +50,20 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
 Audio*
 MorphWavSourceModule::InstrumentSource::audio()
 {
+  WavSet *wav_set = project->get_wav_set (object_id);
+  if (!wav_set)
+    active_audio = nullptr;
+
   return active_audio;
 }
 
 bool
 MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
+  WavSet *wav_set = project->get_wav_set (object_id);
+  if (!wav_set)
+    active_audio = nullptr;
+
   if (active_audio && module->cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
     {
       const double position = module->apply_modulation (module->cfg->position_mod) * 0.01;
@@ -93,6 +98,9 @@ void
 MorphWavSourceModule::InstrumentSource::update_object_id (int object_id)
 {
   this->object_id = object_id;
+  WavSet *wav_set = project->get_wav_set (object_id);
+  if (!wav_set)
+    active_audio = nullptr;
 }
 
 void

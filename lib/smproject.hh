@@ -72,7 +72,7 @@ public:
   };
 
 private:
-  std::vector<std::shared_ptr<WavSet>> wav_sets;
+  std::vector<std::unique_ptr<WavSet>> wav_sets;
 
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
@@ -109,11 +109,11 @@ public:
   Instrument *get_instrument (MorphWavSource *wav_source);
 
   void rebuild (MorphWavSource *wav_source);
-  void add_rebuild_result (int object_id, WavSet *wav_set);
+  void add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set);
   void clear_wav_sets();
   bool rebuild_active (int object_id);
 
-  std::shared_ptr<WavSet> get_wav_set (int object_id);
+  WavSet *get_wav_set (int object_id);
 
   void synth_take_control_event (SynthControlEvent *event);
 

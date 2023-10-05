@@ -88,6 +88,10 @@ Project::rebuild (MorphWavSource *wav_source)
   WavSetBuilder *builder = new WavSetBuilder (instrument, /* keep_samples */ false);
   m_builder_thread.kill_jobs_by_id (object_id);
   synth_interface()->emit_add_rebuild_result (object_id, nullptr);
+  // trigger configuration update, this will ensure that the modules pick up
+  // the nullptr from the project, so that they will stop playing and not
+  // access the old WavSet anymore
+  m_morph_plan.emit_plan_changed();
   m_builder_thread.add_job (builder, object_id,
     [this, object_id] (WavSet *wav_set)
       {
@@ -104,13 +108,13 @@ Project::rebuild_active (int object_id)
 }
 
 void
-Project::add_rebuild_result (int object_id, WavSet *wav_set)
+Project::add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set)
 {
   size_t s = object_id + 1;
   if (s > wav_sets.size())
     wav_sets.resize (s);
 
-  wav_sets[object_id] = std::shared_ptr<WavSet> (wav_set);
+  wav_sets[object_id].swap (wav_set);
 }
 
 void
@@ -149,11 +153,11 @@ Project::get_instrument (MorphWavSource *wav_source)
   return instrument_map[wav_source->object_id()].get();
 }
 
-std::shared_ptr<WavSet>
+WavSet*
 Project::get_wav_set (int object_id)
 {
   if (size_t (object_id) < wav_sets.size())
-    return wav_sets[object_id];
+    return wav_sets[object_id].get();
   else
     return nullptr;
 }
