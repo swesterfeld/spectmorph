@@ -118,9 +118,9 @@ Project::add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set)
 }
 
 void
-Project::clear_wav_sets()
+Project::clear_wav_sets (vector<std::unique_ptr<WavSet>>& new_wav_sets)
 {
-  wav_sets.clear();
+  wav_sets.swap (new_wav_sets);
 }
 
 Instrument *

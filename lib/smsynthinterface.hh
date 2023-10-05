@@ -118,11 +118,18 @@ public:
   void
   emit_clear_wav_sets()
   {
+    struct EventData
+    {
+      std::vector<std::unique_ptr<WavSet>> wav_sets;
+    } *event_data = new EventData;
+
     send_control_event (
       [=] (Project *project)
         {
-          project->clear_wav_sets();
-        });
+          // uses swap to ensure that old wav_sets get freed outside the audio thread
+          project->clear_wav_sets (event_data->wav_sets);
+        },
+        event_data);
   }
   void
   generate_notify_events()
