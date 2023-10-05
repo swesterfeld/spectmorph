@@ -155,7 +155,7 @@ public:
     double new_pos = (8 - x) / (scroll_widget->width() + 16);
     new_pos = std::clamp (new_pos, 0.0, 1 - new_page_size);
     h_scroll_bar->set_pos (new_pos);
-    on_scroll_bar_changed (0);
+    on_widget_size_changed();
   }
 };
 
