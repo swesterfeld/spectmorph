@@ -16,7 +16,6 @@ InstEditSynth::InstEditSynth (float mix_freq) :
 {
   leak_debugger.add (this);
 
-  unsigned int voices_per_layer = 64;
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       for (unsigned int layer = 0; layer < n_layers; layer++)
@@ -34,27 +33,42 @@ InstEditSynth::~InstEditSynth()
   leak_debugger.del (this);
 }
 
-void
-InstEditSynth::take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set)
+InstEditSynth::Decoders
+InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set)
 {
-  wav_set.reset (new_wav_set);
-  ref_wav_set.reset (new_ref_wav_set);
-  for (auto& voice : voices)
+  // this code does not run in audio thread, so it can do the slow setup stuff (alloc memory)
+  Decoders decoders;
+
+  decoders.wav_set.reset (take_wav_set);
+  decoders.ref_wav_set.reset (take_ref_wav_set);
+  for (unsigned int v = 0; v < voices_per_layer; v++)
     {
-      if (voice.layer == 0)
-        {
-          voice.decoder.reset (new LiveDecoder (wav_set.get(), mix_freq));
-        }
-      if (voice.layer == 1)
-        {
-          voice.decoder.reset (new LiveDecoder (wav_set.get(), mix_freq));
-          voice.decoder->enable_original_samples (true);
-        }
-      if (voice.layer == 2)
-        {
-          voice.decoder.reset (new LiveDecoder (ref_wav_set.get(), mix_freq));
-        }
+      auto layer0_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
+
+      auto layer1_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
+      layer1_decoder->enable_original_samples (true);
+
+      auto layer2_decoder = new LiveDecoder (decoders.ref_wav_set.get(), mix_freq);
+
+      decoders.decoders.emplace_back (layer0_decoder);
+      decoders.decoders.emplace_back (layer1_decoder);
+      decoders.decoders.emplace_back (layer2_decoder);
     }
+  return decoders;
+}
+
+void
+InstEditSynth::swap_decoders (Decoders& new_decoders)
+{
+  // this code does run in audio thread, so it should avoid malloc() / free()
+  assert (new_decoders.decoders.size() == voices.size());
+
+  for (size_t vidx = 0; vidx < voices.size(); vidx++)
+    voices[vidx].decoder = new_decoders.decoders[vidx].get();
+
+  decoders.wav_set.swap (new_decoders.wav_set);
+  decoders.ref_wav_set.swap (new_decoders.ref_wav_set);
+  decoders.decoders.swap (new_decoders.decoders);
 }
 
 static double

@@ -15,32 +15,41 @@ struct MidiSynthCallbacks;
 
 class InstEditSynth
 {
+public:
+  struct Decoders {
+    std::unique_ptr<WavSet> wav_set;
+    std::unique_ptr<WavSet> ref_wav_set;
+    std::vector<std::unique_ptr<LiveDecoder>> decoders;
+  };
+private:
   enum class State {
     ON,
     RELEASE,
     IDLE
   };
   struct Voice {
-    State                        state = State::IDLE;
-    std::unique_ptr<LiveDecoder> decoder;
-    double                       decoder_factor = 0;
-    int                          note = 0;
-    unsigned int                 layer = 0;
-    int                          channel = 0;
-    int                          clap_id = -1;
+    State                      state = State::IDLE;
+    LiveDecoder               *decoder = nullptr;
+    double                     decoder_factor = 0;
+    int                        note = 0;
+    unsigned int               layer = 0;
+    int                        channel = 0;
+    int                        clap_id = -1;
   };
 
   static constexpr uint        n_layers = 3;
+  static constexpr uint        voices_per_layer = 64;
 
   float                        mix_freq;
-  std::unique_ptr<WavSet>      wav_set;
-  std::unique_ptr<WavSet>      ref_wav_set;
   std::vector<Voice>           voices;
+  Decoders                     decoders;
+
 public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
 
-  void take_wav_sets (WavSet *new_wav_set, WavSet *new_ref_wav_set);
+  Decoders create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set);
+  void swap_decoders (Decoders& decoders);
 
   void process_note_on (int channel, int note, int clap_id, unsigned int layer);
   void process_note_off (int channel, int note, unsigned int layer);

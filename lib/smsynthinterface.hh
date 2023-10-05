@@ -40,12 +40,10 @@ public:
     /* ownership of take_wav_set is transferred to the event */
     struct EventData
     {
-      std::unique_ptr<WavSet> wav_set;
-      std::unique_ptr<WavSet> ref_wav_set;
+      InstEditSynth::Decoders decoders;
     } *event_data = new EventData;
 
-    event_data->wav_set.reset (take_wav_set);
-    event_data->ref_wav_set.reset (take_ref_wav_set);
+    event_data->decoders = m_project->midi_synth()->inst_edit_synth()->create_decoders (take_wav_set, take_ref_wav_set);
 
     send_control_event (
       [=] (Project *project)
@@ -53,7 +51,7 @@ public:
           project->midi_synth()->set_inst_edit (active);
 
           if (active)
-            project->midi_synth()->inst_edit_synth()->take_wav_sets (event_data->wav_set.release(), event_data->ref_wav_set.release());
+            project->midi_synth()->inst_edit_synth()->swap_decoders (event_data->decoders);
         },
       event_data);
   }
