@@ -123,6 +123,9 @@ public:
       std::vector<std::unique_ptr<WavSet>> wav_sets;
     } *event_data = new EventData;
 
+    /* avoid malloc in audio threads if wav sets are added */
+    event_data->wav_sets.reserve (Project::WAV_SETS_RESERVE);
+
     send_control_event (
       [=] (Project *project)
         {

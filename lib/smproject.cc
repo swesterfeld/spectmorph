@@ -110,6 +110,7 @@ Project::rebuild_active (int object_id)
 void
 Project::add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set)
 {
+  // this function runs in audio thread
   size_t s = object_id + 1;
   if (s > wav_sets.size())
     wav_sets.resize (s);
@@ -120,6 +121,7 @@ Project::add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set)
 void
 Project::clear_wav_sets (vector<std::unique_ptr<WavSet>>& new_wav_sets)
 {
+  // this function runs in audio thread
   wav_sets.swap (new_wav_sets);
 }
 
@@ -190,6 +192,9 @@ Project::Project() :
   connect (m_morph_plan.signal_operator_removed, this, &Project::on_operator_removed);
 
   m_synth_interface.reset (new SynthInterface (this));
+
+  /* avoid malloc in audio threads if wav sets are added */
+  wav_sets.reserve (Project::WAV_SETS_RESERVE);
 }
 
 void

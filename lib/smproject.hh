@@ -71,6 +71,7 @@ public:
     REFERENCE
   };
 
+  static constexpr size_t WAV_SETS_RESERVE = 256;
 private:
   std::vector<std::unique_ptr<WavSet>> wav_sets;
 
