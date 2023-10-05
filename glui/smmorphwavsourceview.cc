@@ -190,10 +190,17 @@ void
 MorphWavSourceView::on_edit_save_changes (bool save_changes)
 {
   if (save_changes)
-    user_instrument_index->update_instrument (morph_wav_source->bank(),
-                                              morph_wav_source->instrument(),
-                                              *edit_instrument);
-
+    {
+      Error error = user_instrument_index->update_instrument (morph_wav_source->bank(),
+                                                              morph_wav_source->instrument(),
+                                                             *edit_instrument);
+      if (error)
+        {
+          auto filename = user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument());
+          MessageBox::critical (this, "Error",
+                                string_locale_printf ("Saving User Instrument Failed:\n\n'%s'\n\n%s.", filename.c_str(), error.message()));
+        }
+    }
   edit_instrument.reset();
 }
 

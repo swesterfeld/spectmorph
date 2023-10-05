@@ -113,7 +113,13 @@ public:
         confirm_box->run ([this, bank](bool delete_bank)
           {
             if (delete_bank)
-              user_instrument_index->remove_bank (bank);
+              {
+                Error error = user_instrument_index->remove_bank (bank);
+                if (error)
+                  MessageBox::critical (this, "Error",
+                                        string_locale_printf ("Deleting bank failed:\n\n'%s'\n\n%s.",
+                                                              user_instrument_index->bank_directory (bank).c_str(), error.message()));
+              }
           });
       }
   }
@@ -121,6 +127,12 @@ public:
   on_create_bank_clicked()
   {
     auto cwin = new CreateBankWindow (window(), user_instrument_index);
+    connect (cwin->signal_create_bank_error,
+      [this] (const std::string& bank, Error error) {
+        MessageBox::critical (this, "Error",
+                              string_locale_printf ("Creating bank '%s' failed:\n\n'%s'\n\n%s.", bank.c_str(),
+                                                    user_instrument_index->bank_directory (bank).c_str(), error.message()));
+        });
 
     // after this line, rename window is owned by parent window
     window()->set_popup_window (cwin);

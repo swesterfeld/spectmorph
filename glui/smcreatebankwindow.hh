@@ -65,7 +65,11 @@ public:
   void
   on_accept()
   {
-    user_instrument_index->create_bank (line_edit->text());
+    auto bank = line_edit->text();
+    Error error = user_instrument_index->create_bank (bank);
+
+    if (error)
+      signal_create_bank_error (bank, error);
 
     parent_window->set_popup_window (nullptr); // close this window
   }
@@ -86,6 +90,7 @@ public:
       }
     return !line_edit->text().empty();
   }
+  Signal<std::string, Error> signal_create_bank_error;
 };
 
 }
