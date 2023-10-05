@@ -31,6 +31,8 @@
   lv2:microVersion @MICRO_VERSION@;
   lv2:minorVersion @MINOR_VERSION@;
 
+  # SpectMorph is hard RT capable, however the instrument editor is not
+  lv2:optionalFeature lv2:hardRTCapable;
   lv2:requiredFeature urid:map;
   lv2:extensionData state:interface;
   ui:ui <http://spectmorph.org/plugins/spectmorph#ui>;
