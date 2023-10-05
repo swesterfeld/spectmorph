@@ -25,43 +25,57 @@ UserInstrumentIndex::UserInstrumentIndex()
   user_instruments_dir = sm_get_documents_dir (DOCUMENTS_DIR_INSTRUMENTS);
 }
 
-void
-UserInstrumentIndex::create_instrument_dir (const string& bank)
+Error
+UserInstrumentIndex::create_bank_directory (const string& bank)
 {
   /* if bank directory doesn't exist, create it */
-  auto dir = user_instruments_dir + "/" + bank;
-  g_mkdir_with_parents (dir.c_str(), 0775);
+  std::error_code ec;
+
+  std::filesystem::create_directories (bank_directory (bank), ec);
+  if (ec)
+    return Error (ec.message());
+  else
+    return Error::Code::NONE;
 }
 
-void
+Error
 UserInstrumentIndex::update_instrument (const std::string& bank, int number, const Instrument& instrument)
 {
+  Error error = Error::Code::NONE;
+
   /* update on disk copy */
   string path = filename (bank, number);
   if (instrument.size())
     {
       // create directory only when needed (on write)
-      create_instrument_dir (bank);
+      error = create_bank_directory (bank);
 
-      ZipWriter zip_writer (path);
-      instrument.save (zip_writer);
+      if (!error)
+        {
+          ZipWriter zip_writer (path);
+          error = instrument.save (zip_writer);
+        }
     }
   else
     {
       /* instrument without any samples -> remove */
       std::error_code ec;
       std::filesystem::remove (path, ec);
+      if (ec)
+        error = Error (ec.message());
     }
 
   /* update wav sources and UI */
   signal_instrument_updated (bank, number, &instrument);
   signal_instrument_list_updated (bank);
+
+  return error;
 }
 
 string
 UserInstrumentIndex::filename (const string& bank, int number)
 {
-  return string_printf ("%s/%s/%d.sminst", user_instruments_dir.c_str(), bank.c_str(), number);
+  return string_printf ("%s/%d.sminst", bank_directory (bank).c_str(), number);
 }
 
 string
@@ -76,27 +90,44 @@ UserInstrumentIndex::label (const string& bank, int number)
     return string_printf ("%03d ---", number);
 }
 
-void
+Error
 UserInstrumentIndex::remove_bank (const string& bank)
 {
+  Error error = Error::Code::NONE;
+  auto update_error = [&] (std::error_code ec) {
+    if (ec && !error)
+      error = Error (ec.message());
+  };
+
   std::error_code ec;
   for (int i = 1; i <= 128; i++)
     {
       std::filesystem::remove (filename (bank, i), ec);
+      update_error (ec);
     }
-  auto bank_directory = string_printf ("%s/%s", user_instruments_dir.c_str(), bank.c_str());
-  std::filesystem::remove (bank_directory, ec);
+  std::filesystem::remove (bank_directory (bank), ec);
+  update_error (ec);
 
   signal_bank_removed (bank);
   signal_banks_changed();
+
+  return error;
 }
 
-void
+string
+UserInstrumentIndex::bank_directory (const string& bank)
+{
+  return string_printf ("%s/%s", user_instruments_dir.c_str(), bank.c_str());
+}
+
+Error
 UserInstrumentIndex::create_bank (const string& bank)
 {
-  create_instrument_dir (bank);
+  Error error = create_bank_directory (bank);
 
   signal_banks_changed();
+
+  return error;
 }
 
 vector<string>
