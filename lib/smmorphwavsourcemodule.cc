@@ -95,18 +95,14 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
 }
 
 void
-MorphWavSourceModule::InstrumentSource::update_object_id (int object_id)
+MorphWavSourceModule::InstrumentSource::update_project_and_object_id (Project *new_project, int new_object_id)
 {
-  this->object_id = object_id;
+  project = new_project;
+  object_id = new_object_id;
+
   WavSet *wav_set = project->get_wav_set (object_id);
   if (!wav_set)
     active_audio = nullptr;
-}
-
-void
-MorphWavSourceModule::InstrumentSource::update_project (Project *p)
-{
-  project = p;
 }
 
 MorphWavSourceModule::MorphWavSourceModule (MorphPlanVoice *voice) :
@@ -133,6 +129,5 @@ MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 {
   cfg = dynamic_cast<const MorphWavSource::Config *> (op_cfg);
 
-  my_source.update_project (cfg->project);
-  my_source.update_object_id (cfg->object_id);
+  my_source.update_project_and_object_id (cfg->project, cfg->object_id);
 }

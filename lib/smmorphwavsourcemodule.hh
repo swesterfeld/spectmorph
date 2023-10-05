@@ -21,8 +21,8 @@ class MorphWavSourceModule : public MorphOperatorModule
   class InstrumentSource : public LiveDecoderSource
   {
     Audio                  *active_audio = nullptr;
-    int                     object_id;
-    Project                *project;
+    int                     object_id = 0;
+    Project                *project = nullptr;
   public:
     MorphWavSourceModule   *module = nullptr;
 
@@ -30,8 +30,7 @@ class MorphWavSourceModule : public MorphOperatorModule
     Audio *audio() override;
     bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
 
-    void update_project (Project *project);
-    void update_object_id (int object_id);
+    void update_project_and_object_id (Project *project, int object_id);
   };
 
   InstrumentSource my_source;
