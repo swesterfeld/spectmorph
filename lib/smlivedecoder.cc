@@ -712,6 +712,9 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
 void
 LiveDecoder::process (RTMemoryArea& rt_memory_area, size_t n_values, const float *freq_in, float *audio_out)
 {
+  if (source)
+    audio = source->audio();  // sources can stop providing audio data while playing
+
   if (!audio)   // nothing loaded
     {
       std::fill (audio_out, audio_out + n_values, 0);
