@@ -20,7 +20,7 @@ public:
   static PolyPhaseInter *the();
 
   double get_sample (const std::vector<float>& signal, double pos);
-  double get_sample_no_check (const std::vector<float>& signal, double pos);
+  double get_sample_no_check (const float *signal, double pos);
 
   size_t get_min_padding();
 };

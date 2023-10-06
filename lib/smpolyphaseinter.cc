@@ -36,7 +36,7 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
 
   if (ipos < MIN_PADDING || ipos + MIN_PADDING > int (signal.size()))
     {
-      vector<float> shift_signal (MIN_PADDING * 2);
+      std::array<float, MIN_PADDING * 2> shift_signal;
 
       // shift signal: ipos should be in the center of the generated input signal
       const int shift = shift_signal.size() / 2 - ipos;
@@ -47,18 +47,20 @@ PolyPhaseInter::get_sample (const vector<float>& signal, double pos)
 
           if (s >= 0 && s < (int)signal.size())
             shift_signal[i] = signal[s];
+          else
+            shift_signal[i] = 0;
         }
 
-      return get_sample_no_check (shift_signal, pos + shift);
+      return get_sample_no_check (shift_signal.data(), pos + shift);
     }
   else
     {
-      return get_sample_no_check (signal, pos);
+      return get_sample_no_check (signal.data(), pos);
     }
 }
 
 double
-PolyPhaseInter::get_sample_no_check (const vector<float>& signal, double pos)
+PolyPhaseInter::get_sample_no_check (const float *signal, double pos)
 {
   const int ipos = pos;
 

@@ -625,7 +625,7 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
 
       /* interpolate from buffer (portamento) */
       for (size_t i = 0; i < n_values; i++)
-        audio_out[i] = pp_inter->get_sample_no_check (buffer, pos[i]);
+        audio_out[i] = pp_inter->get_sample_no_check (buffer.data(), pos[i]);
     }
   else
     {
