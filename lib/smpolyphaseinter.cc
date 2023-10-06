@@ -3,6 +3,8 @@
 #include "smpolyphaseinter.hh"
 #include "smmath.hh"
 
+#include <array>
+
 #include <math.h>
 
 using namespace SpectMorph;
