@@ -236,7 +236,7 @@ speed_test()
   start = get_time();
   for (size_t k = 0; k < RUNS; k++)
     for (size_t i = PADDING; i < result.size(); i++)
-      result[i] = ppi->get_sample_no_check (signal, i * 0.987);
+      result[i] = ppi->get_sample_no_check (signal.data(), i * 0.987);
   end = get_time();
   t[0] = end - start;
 
