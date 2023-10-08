@@ -28,6 +28,8 @@
 // #define SM_MALLOC_TRACER_GROUP 1
 #include "smmalloctracer.hh"
 
+static constexpr bool TRACE_PROCESS_TIME = false;
+
 using namespace SpectMorph;
 
 using std::vector;
@@ -38,6 +40,10 @@ using std::min;
 int
 JackSynth::process (jack_nframes_t nframes)
 {
+  double t;
+  if (TRACE_PROCESS_TIME)
+    t = get_time();
+
   m_project->try_update_synth();
 
   float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
@@ -78,6 +84,8 @@ JackSynth::process (jack_nframes_t nframes)
 
   midi_synth->process (audio_out, nframes);
 
+  if (TRACE_PROCESS_TIME)
+    sm_printf ("%f %f\n", (get_time() - t) * 1000, nframes * 1000. / m_mix_freq);
   return 0;
 }
 
@@ -99,7 +107,8 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
   client (client),
   m_project (project)
 {
-  m_project->set_mix_freq (jack_get_sample_rate (client));
+  m_mix_freq = jack_get_sample_rate (client);
+  m_project->set_mix_freq (m_mix_freq);
 
   // JACK version of SpectMorph exports its control signal by CC#16,...
   m_project->midi_synth()->set_control_by_cc (true);

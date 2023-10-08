@@ -23,6 +23,7 @@ protected:
   std::vector<jack_port_t *>    output_ports;
 
   Project                      *m_project;
+  double                        m_mix_freq;
 
 public:
   JackSynth (jack_client_t *client, Project *project);
