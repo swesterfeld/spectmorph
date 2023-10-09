@@ -80,6 +80,7 @@ main (int argc, char **argv)
       return 1;
     }
   int midi_note = atoi (argv[3]);
+  int fuzzy = argc >= 5 ? atoi (argv[4]) : 0;
 
   Audio *audio_old = nullptr;
 
@@ -134,33 +135,73 @@ main (int argc, char **argv)
                     sm_printf ("===== BLOCK %zd ===== %zd %zd =====\n", i, audio_old->contents[i].freqs.size(), audio_new->contents[i].freqs.size());
                   }
               };
+              auto fuzzy_cmp = [fuzzy] (int a, int b) {
+                return std::abs (a - b) > fuzzy;
+              };
 
               bool id = true;
 
-              for (size_t j = 0; j < audio_old->contents[i].freqs.size(); j++)
+              for (;;)
                 {
-                  if (block_a.freqs[j] != block_b.freqs[j])
+                  int best_diff = 100;
+                  size_t best_j = 0, best_k = 0;
+                  for (size_t j = 0; j < block_a.freqs.size(); j++)
                     {
-                      print_block();
-                      sm_printf ("FFF  %zd %f %f %f\n", j, audio_old->contents[i].freqs_f (j), audio_new->contents[i].freqs_f(j),
-                                                      audio_old->contents[i].freqs_f (j) / audio_new->contents[i].freqs_f(j));
-                      id = false;
+                      for (size_t k = 0; k < block_b.freqs.size(); k++)
+                        {
+                          int of = block_a.freqs[j];
+                          int nf = block_b.freqs[k];
+                          if (of && nf && std::abs (of - nf) < best_diff)
+                            {
+                              best_diff = std::abs (of - nf);
+                              best_j = j;
+                              best_k = k;
+                            }
+                        }
                     }
-                  if (block_a.mags[j] != block_b.mags[j])
+                  if (best_diff < 100)
                     {
-                      print_block();
-                      sm_printf ("MMM  %zd %f %f %f # %f\n", j, block_a.mags_f (j), block_b.mags_f(j), block_a.mags_f (j) / block_b.mags_f(j),
-                                                        audio_old->contents[i].freqs_f (j) * audio_old->fundamental_freq);
-                      id = false;
+                      if (fuzzy_cmp (block_a.freqs[best_j], block_b.freqs[best_k]))
+                        {
+                          print_block();
+                          sm_printf ("FFF  %zd %f %f %f\n", best_j, audio_old->contents[i].freqs_f (best_j), audio_new->contents[i].freqs_f (best_k),
+                                                            audio_old->contents[i].freqs_f (best_j) / audio_new->contents[i].freqs_f (best_k));
+                          id = false;
+                        }
+                      if (fuzzy_cmp (block_a.mags[best_j], block_b.mags[best_k]))
+                        {
+                          print_block();
+                          sm_printf ("MMM  %zd %f %f %f # %f\n", best_j, block_a.mags_f (best_j), block_b.mags_f (best_k),
+                                                                         block_a.mags_f (best_j) / block_b.mags_f (best_k),
+                                                                         audio_old->contents[i].freqs_f (best_j) * audio_old->fundamental_freq);
+                          id = false;
+                        }
+                      block_a.freqs[best_j] = 0;
+                      block_b.freqs[best_k] = 0;
+                    }
+                  else
+                    {
+                      break;
                     }
                 }
+              auto dump_extra = [] (const char *str, auto block) {
+                for (size_t j = 0; j < block.freqs.size(); j++)
+                  {
+                    if (block.freqs[j])
+                      sm_printf ("%s  %zd %f %f\n", str, j, block.freqs_f (j), block.mags_f (j));
+                  }
+              };
+              dump_extra ("OLD", block_a);
+              dump_extra ("NEW", block_b);
+
               for (size_t j = 0; j < audio_old->contents[i].noise.size(); j++)
                 {
-                  if (block_a.noise[j] != block_b.noise[j])
+                  if (fuzzy_cmp (block_a.noise[j], block_b.noise[j]))
                     {
                       print_block();
-                      sm_printf ("NNN  %zd %f %f %f\n", j, block_a.noise_f (j), block_b.noise_f(j),
-                                                           block_a.noise_f (j) / block_b.noise_f(j));
+                      sm_printf ("NNN  %zd %f %f %f %d\n", j, block_a.noise_f (j), block_b.noise_f (j),
+                                                           block_a.noise_f (j) / block_b.noise_f (j),
+                                                           block_a.noise [j] - block_b.noise[j]);
                       id = false;
                     }
                 }
