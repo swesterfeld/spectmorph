@@ -61,6 +61,16 @@ meta_comp (int& exit_code, const string& str, int old_value, int new_value)
     }
 }
 
+void
+meta_comp (int& exit_code, const string& str, const string& old_value, const string& new_value)
+{
+  if (old_value != new_value)
+    {
+      printf ("# %s diff: old='%s' new='%s'\n", str.c_str(), old_value.c_str(), new_value.c_str());
+      exit_code = 1;
+    }
+}
+
 int
 main (int argc, char **argv)
 {
@@ -95,6 +105,9 @@ main (int argc, char **argv)
       audio_new = w.audio;
 
   int exit_code = 0;
+
+  meta_comp (exit_code, "name",       smset_old.name,       smset_new.name);
+  meta_comp (exit_code, "short_name", smset_old.short_name, smset_new.short_name);
 
   if (audio_old && audio_new)
     {
