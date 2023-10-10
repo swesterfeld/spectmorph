@@ -494,7 +494,7 @@ def export_instrument (inst_dir, builder_config, cmdline_args):
   system_or_die ("smwavset get-markers %s --loop-ms > %s" % (final_smset, export_loop_markers))
   loop_markers = parse_loop_markers (export_loop_markers)
 
-  instrument_node = ET.Element ("instrument", name=config.name)
+  instrument_node = ET.Element ("instrument", name=config.name, short_name=config.short_name)
   for sample in config.samples:
     midi_note = int (sample[0])
 
