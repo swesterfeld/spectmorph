@@ -103,5 +103,5 @@ productbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --d
 
 rm -rf installer-tmp SpectMorph.clap.pkg SpectMorph.lv2.pkg SpectMorph.vst.pkg SpectMorph.data.pkg
 
-xcrun notarytool submit SpectMorph-${PKG_VERSION}.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --password "$APPLE_NOTARIZATION_PASSWORD" --wait
-xcrun stapler staple SpectMorph-${PKG_VERSION}.pkg
+xcrun notarytool submit SpectMorph-${PACKAGE_VERSION}.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --password "$APPLE_NOTARIZATION_PASSWORD" --wait
+xcrun stapler staple SpectMorph-${PACKAGE_VERSION}.pkg
