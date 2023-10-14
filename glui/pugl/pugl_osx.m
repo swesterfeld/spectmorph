@@ -162,6 +162,8 @@ struct PuglInternalsImpl {
 	}
 
 	if (self) {
+		// we could implement UI scaling instead
+		[self setWantsBestResolutionOpenGLSurface: NO];
 		[[self openGLContext] makeCurrentContext];
 		[self reshape];
 	}
