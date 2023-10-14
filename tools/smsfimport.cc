@@ -1233,9 +1233,12 @@ import_preset (const string& import_name)
                   auto r = loop_range[w.path];
                   if (r.start >= 0 && r.end >= 0)
                     {
-                      sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
                       int start_frame = sm_round_positive (r.start / frame_step_ms + zero_values_at_start_ms / frame_step_ms);
-                      int len = sm_round_positive ((r.end - r.start) / frame_step_ms) - 1;
+                      int len = std::max (sm_round_positive ((r.end - r.start) / frame_step_ms) - 1, 0);
+                      if (len > 0)
+                        sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
+                      else
+                        sample->set_loop (SpectMorph::Sample::Loop::SINGLE_FRAME);
                       sample->set_marker (SpectMorph::MARKER_LOOP_START, start_frame * frame_step_ms - zero_values_at_start_ms);
                       sample->set_marker (SpectMorph::MARKER_LOOP_END,   (start_frame + len) * frame_step_ms - zero_values_at_start_ms);
                       printf ("note %d: loop length: %.2f ms - quantized: %.2f ms\n", w.midi_note, r.end - r.start, (len + 1) * frame_step_ms);
