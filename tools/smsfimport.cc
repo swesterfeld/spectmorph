@@ -19,6 +19,7 @@
 #include "smutils.hh"
 #include "smwavdata.hh"
 #include "sminstrument.hh"
+#include "smwavsetbuilder.hh"
 #include <stdlib.h>
 
 #if 1
@@ -35,26 +36,18 @@ using SpectMorph::GenericIn;
 using SpectMorph::JobQueue;
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
+using SpectMorph::WavSetBuilder;
 using SpectMorph::WavData;
 using SpectMorph::Main;
 
 using SpectMorph::string_printf;
+using SpectMorph::sm_round_positive;
 
 using std::string;
 using std::vector;
 using std::map;
 using std::sort;
 using std::set;
-
-static string
-get_current_dir()
-{
-  char *dir = g_get_current_dir();
-  string dir_str = dir;
-  g_free (dir);
-
-  return dir_str;
-}
 
 enum {
   GEN_PAN            = 17,
@@ -524,6 +517,7 @@ struct Options
   bool                debug;
   bool                mono_flat;
   bool                sminst = false;
+  double              sminst_steps_per_frame = -1;
   int                 max_jobs;
   string              config_filename;
   string              smenc;
@@ -605,6 +599,10 @@ Options::parse (int   *argc_p,
       else if (check_arg (argc, argv, &i, "--sminst"))
         {
           sminst = true;
+        }
+      else if (check_arg (argc, argv, &i, "--sminst-steps-per-frame", &opt_arg))
+        {
+          sminst_steps_per_frame = atof (opt_arg);
         }
     }
 
@@ -1103,7 +1101,7 @@ import_preset (const string& import_name)
                             {
                               printf (" sample %s orig_pitch %d root_key %d => midi_note %d\n", samples[id].name.c_str(), samples[id].origpitch, root_key, midi_note);
 
-                              string filename = string_printf ("sample%zd-%d.wav", id, midi_note);
+                              string filename = string_printf ("sample%zd-%d.flac", id, midi_note);
                               string smname = string_printf ("sample%zd-%d.sm", id, midi_note);
 
                               if (!is_encoded[smname])
@@ -1145,7 +1143,7 @@ import_preset (const string& import_name)
                                     }
                                   assert (padded_len == padded_sample.size());
                                   WavData wav_data (padded_sample, 1, samples[id].srate, 16);
-                                  if (!wav_data.save (filename))
+                                  if (!wav_data.save (filename, WavData::OutFormat::FLAC))
                                     {
                                       fprintf (stderr, "%s: export to file %s failed: %s\n", options.program_name.c_str(), filename.c_str(), wav_data.error_blurb());
                                       exit (1);
@@ -1188,23 +1186,15 @@ import_preset (const string& import_name)
 
               SpectMorph::Instrument sminst;
 
+              map<int, SpectMorph::Sample*> note_to_sample;
               for (auto w : wav_set.waves)
                 {
-                  string path = get_current_dir() + "/" + w.path;
-
                   WavData wav_data;
-                  if (wav_data.load_mono (path))
+                  if (wav_data.load_mono (w.path))
                     {
-                      SpectMorph::Sample *sample = sminst.add_sample (wav_data, path);
+                      SpectMorph::Sample *sample = sminst.add_sample (wav_data, w.path);
                       sample->set_midi_note (w.midi_note);
-
-                      auto r = loop_range[w.path];
-                      if (r.start >= 0 && r.end >= 0)
-                        {
-                          sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
-                          sample->set_marker (SpectMorph::MARKER_LOOP_START, r.start);
-                          sample->set_marker (SpectMorph::MARKER_LOOP_END,   r.end);
-                        }
+                      note_to_sample[w.midi_note] = sample;
                     }
                   else
                     {
@@ -1212,7 +1202,40 @@ import_preset (const string& import_name)
                       exit (1);
                     }
                 }
-              sminst.save (output_filename);
+              if (options.sminst_steps_per_frame > 0)
+                {
+                  SpectMorph::Instrument::EncoderEntry entry {"steps-per-frame", string_printf ("%.3g", options.sminst_steps_per_frame)};
+
+                  auto config = sminst.encoder_config();
+                  config.enabled = true;
+                  config.entries.emplace_back (entry);
+
+                  sminst.set_encoder_config (config);
+                }
+              /* we don't really need the full instrument here, but we need the frame stepping for optimal loop point quantization */
+              WavSetBuilder builder (&sminst, false);
+              std::unique_ptr<WavSet> smset (builder.run());
+              for (auto w : wav_set.waves)
+                {
+                  SpectMorph::Sample *sample = note_to_sample[w.midi_note];
+                  double frame_step_ms = 0;
+                  for (auto swave : smset->waves)
+                    if (swave.midi_note == w.midi_note)
+                      frame_step_ms = swave.audio->frame_step_ms;
+                  assert (sample && frame_step_ms > 0);
+
+                  auto r = loop_range[w.path];
+                  if (r.start >= 0 && r.end >= 0)
+                    {
+                      sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
+                      int start_frame = sm_round_positive (r.start / frame_step_ms);
+                      int len = sm_round_positive ((r.end - r.start) / frame_step_ms) - 1;
+                      sample->set_marker (SpectMorph::MARKER_LOOP_START, start_frame * frame_step_ms);
+                      sample->set_marker (SpectMorph::MARKER_LOOP_END,   (start_frame + len) * frame_step_ms);
+                      printf ("note %d: loop length: %.2f ms - quantized: %.2f ms\n", w.midi_note, r.end - r.start, (len + 1) * frame_step_ms);
+                    }
+                }
+              sminst.save ("instrument.xml");
             }
           else
             {
