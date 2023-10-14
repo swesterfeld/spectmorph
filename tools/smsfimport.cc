@@ -1212,26 +1212,32 @@ import_preset (const string& import_name)
 
                   sminst.set_encoder_config (config);
                 }
-              /* we don't really need the full instrument here, but we need the frame stepping for optimal loop point quantization */
+              /* we don't really need the full instrument here, but we need the
+               * frame stepping and zero_values_at_start for optimal loop point quantization */
               WavSetBuilder builder (&sminst, false);
               std::unique_ptr<WavSet> smset (builder.run());
               for (auto w : wav_set.waves)
                 {
                   SpectMorph::Sample *sample = note_to_sample[w.midi_note];
                   double frame_step_ms = 0;
+                  double zero_values_at_start_ms = 0;
+
                   for (auto swave : smset->waves)
                     if (swave.midi_note == w.midi_note)
-                      frame_step_ms = swave.audio->frame_step_ms;
+                      {
+                        frame_step_ms           = swave.audio->frame_step_ms;
+                        zero_values_at_start_ms = swave.audio->zero_values_at_start * 1000. / swave.audio->mix_freq;
+                      }
                   assert (sample && frame_step_ms > 0);
 
                   auto r = loop_range[w.path];
                   if (r.start >= 0 && r.end >= 0)
                     {
                       sample->set_loop (SpectMorph::Sample::Loop::FORWARD);
-                      int start_frame = sm_round_positive (r.start / frame_step_ms);
+                      int start_frame = sm_round_positive (r.start / frame_step_ms + zero_values_at_start_ms / frame_step_ms);
                       int len = sm_round_positive ((r.end - r.start) / frame_step_ms) - 1;
-                      sample->set_marker (SpectMorph::MARKER_LOOP_START, start_frame * frame_step_ms);
-                      sample->set_marker (SpectMorph::MARKER_LOOP_END,   (start_frame + len) * frame_step_ms);
+                      sample->set_marker (SpectMorph::MARKER_LOOP_START, start_frame * frame_step_ms - zero_values_at_start_ms);
+                      sample->set_marker (SpectMorph::MARKER_LOOP_END,   (start_frame + len) * frame_step_ms - zero_values_at_start_ms);
                       printf ("note %d: loop length: %.2f ms - quantized: %.2f ms\n", w.midi_note, r.end - r.start, (len + 1) * frame_step_ms);
                     }
                 }
