@@ -9,13 +9,6 @@
 namespace SpectMorph
 {
 
-enum class
-Orientation
-{
-  HORIZONTAL,
-  VERTICAL
-};
-
 class ScrollBar : public Widget
 {
   double m_page_size;
