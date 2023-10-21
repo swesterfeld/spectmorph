@@ -18,15 +18,17 @@ class Slider : public Widget
   int int_range_max = 0;
   bool shift_drag = false;
   double shift_drag_start_value = 0;
-  double shift_drag_start_x = 0;
+  MouseEvent shift_drag_start_event;
+  const Orientation orientation;
 
 public:
   Signal<double> signal_value_changed;
   Signal<int>    signal_int_value_changed;
 
-  Slider (Widget *parent, double value) :
+  Slider (Widget *parent, double value, Orientation orientation = Orientation::HORIZONTAL) :
     Widget (parent),
-    m_value (value)
+    m_value (value),
+    orientation (orientation)
   {
   }
   void
@@ -47,9 +49,8 @@ public:
     cairo_t *cr = devent.cr;
     DrawUtils du (cr);
 
-    double H = 6; // height of slider thing
+    double SIZE = 6; // height or width of the slider thing
     double C = 6;
-    double value_pos = C + (width() - C * 2) * m_value;
 
     Color slider_color_l = ThemeColor::SLIDER;
     if (enabled())
@@ -59,37 +60,62 @@ public:
       }
     else
       slider_color_l.set_rgb (0.4, 0.4, 0.4);
-    du.round_box (0, height() / 2 - H / 2, value_pos, H, 1, 2, slider_color_l.darker(), slider_color_l);
 
     Color slider_color_r (0.3, 0.3, 0.3);
     if (highlight)
       slider_color_r = slider_color_r.lighter();
-    du.round_box (value_pos, height() / 2 - H / 2, (width() - value_pos), H, 1, 2, slider_color_r.darker(), slider_color_r);
 
+    Color circle_color;
     if (enabled())
       {
         if (highlight || mouse_down)
-          cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+          circle_color.set_rgb (1.0, 1.0, 1.0);
         else
-          cairo_set_source_rgb (cr, 0.8, 0.8, 0.8);
+          circle_color.set_rgb (0.8, 0.8, 0.8);
       }
     else
       {
-        cairo_set_source_rgb (cr, 0.4, 0.4, 0.4);
+        circle_color.set_rgb (0.4, 0.4, 0.4);
       }
-    cairo_arc (cr, value_pos, height() / 2, C, 0, 2 * M_PI);
-    cairo_fill (cr);
+
+    if (orientation == Orientation::HORIZONTAL)
+      {
+        double value_pos = C + (width() - C * 2) * m_value;
+
+        du.round_box (0, height() / 2 - SIZE / 2,         value_pos, SIZE,             1, 2, slider_color_l.darker(), slider_color_l);
+        du.round_box (value_pos, height() / 2 - SIZE / 2, (width() - value_pos), SIZE, 1, 2, slider_color_r.darker(), slider_color_r);
+        du.circle    (value_pos, height() / 2, C, circle_color);
+      }
+    else
+      {
+        double value_pos = C + (height() - C * 2) * (1 - m_value);
+
+        du.round_box (width() / 2 - SIZE / 2, 0,         SIZE, value_pos,              1, 2, slider_color_l.darker(), slider_color_l);
+        du.round_box (width() / 2 - SIZE / 2, value_pos, SIZE, (height() - value_pos), 1, 2, slider_color_r.darker(), slider_color_r);
+        du.circle    (width() / 2, value_pos, C, circle_color);
+      }
   }
   void
-  slider_value_from_x (double x)
+  slider_value_from_event (const MouseEvent& event)
   {
     constexpr double shift_drag_speed = 8;
     constexpr double C = 6;
 
-    if (shift_drag)
-      m_value = sm_bound (0.0, shift_drag_start_value + (x - shift_drag_start_x) / (width() - C * 2) / shift_drag_speed, 1.0);
+    if (orientation == Orientation::HORIZONTAL)
+      {
+        if (shift_drag)
+          m_value = shift_drag_start_value + (event.x - shift_drag_start_event.x) / (width() - C * 2) / shift_drag_speed;
+        else
+          m_value = (event.x - C) / (width() - C * 2);
+      }
     else
-      m_value = sm_bound (0.0, (x - C) / (width() - C * 2), 1.0);
+      {
+        if (shift_drag)
+          m_value = shift_drag_start_value - (event.y - shift_drag_start_event.y) / (height() - C * 2) / shift_drag_speed;
+        else
+          m_value = 1 - (event.y - C) / (height() - C * 2);
+      }
+    m_value = std::clamp (m_value, 0.0, 1.0);
 
     /* optional: only allow discrete integer values */
     if (int_range_min != int_range_max)
@@ -107,7 +133,7 @@ public:
   {
     if (mouse_down)
       {
-        slider_value_from_x (event.x);
+        slider_value_from_event (event);
         update();
       }
   }
@@ -119,12 +145,12 @@ public:
         shift_drag = (event.state & PUGL_MOD_SHIFT);
         if (shift_drag)
           {
-            shift_drag_start_x = event.x;
+            shift_drag_start_event = event;
             shift_drag_start_value = m_value;
           }
         else
           {
-            slider_value_from_x (event.x);
+            slider_value_from_event (event);
           }
         mouse_down = true;
         update();

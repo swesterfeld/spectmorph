@@ -75,6 +75,13 @@ struct DrawUtils
     cairo_fill (cr);
   }
   void
+  circle (double x, double y, double radius, Color fill_color)
+  {
+    set_color (fill_color);
+    cairo_arc (cr, x, y, radius, 0, 2 * M_PI);
+    cairo_fill (cr);
+  }
+  void
   text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)
   {
     // draw label

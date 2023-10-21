@@ -35,6 +35,13 @@ enum UpdateStrategy {
   UPDATE_LOCAL
 };
 
+enum class
+Orientation
+{
+  HORIZONTAL,
+  VERTICAL
+};
+
 class Window;
 class ScrollView;
 class Timer;
