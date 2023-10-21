@@ -90,8 +90,8 @@ public:
       {
         double value_pos = C + (height() - C * 2) * (1 - m_value);
 
-        du.round_box (width() / 2 - SIZE / 2, 0,         SIZE, value_pos,              1, 2, slider_color_l.darker(), slider_color_l);
-        du.round_box (width() / 2 - SIZE / 2, value_pos, SIZE, (height() - value_pos), 1, 2, slider_color_r.darker(), slider_color_r);
+        du.round_box (width() / 2 - SIZE / 2, 0,         SIZE, value_pos,              1, 2, slider_color_r.darker(), slider_color_r);
+        du.round_box (width() / 2 - SIZE / 2, value_pos, SIZE, (height() - value_pos), 1, 2, slider_color_l.darker(), slider_color_l);
         du.circle    (width() / 2, value_pos, C, circle_color);
       }
   }
