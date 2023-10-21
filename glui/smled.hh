@@ -11,7 +11,7 @@ class Led : public Widget
   bool m_on;
 public:
 
-  Led (Widget *parent, bool on) :
+  Led (Widget *parent, bool on = false) :
     Widget (parent),
     m_on (on)
   {
