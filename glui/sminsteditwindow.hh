@@ -8,6 +8,7 @@
 #include "smbuilderthread.hh"
 #include "smwindow.hh"
 #include "smloadstereodialog.hh"
+#include "sminsteditvolume.hh"
 
 #include <thread>
 
@@ -70,7 +71,7 @@ class InstEditWindow : public Window
   void          load_sample (const std::string& filename);
   void          load_sample_convert_from_stereo (const WavData& wav_data, const std::string& filename, LoadStereoDialog::Result result);
   void          on_samples_changed();
-  void          on_marker_changed();
+  void          on_marker_or_volume_changed();
   void          update_auto_checkboxes();
   void          on_global_changed();
   Sample::Loop  text_to_loop (const std::string& text);
@@ -99,6 +100,7 @@ class InstEditWindow : public Window
   InstEditParams *inst_edit_params = nullptr;
   Button         *show_params_button = nullptr;
   InstEditNote   *inst_edit_note = nullptr;
+  InstEditVolume *inst_edit_volume = nullptr;
   Button         *show_pitch_button = nullptr;
 
 public:
@@ -121,6 +123,7 @@ public:
   void on_drag_scroll (double cx, double dx, double dy);
   void on_show_hide_params();
   void on_show_hide_note();
+  void on_show_hide_volume();
   void on_import_clicked();
   void on_export_clicked();
   void on_sample_changed();

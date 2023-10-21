@@ -51,7 +51,8 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 	 smsimplelines.hh smoperatorrolemap.hh smlistbox.hh \
 	 smcontrolview.hh smpropertyviewedit.hh smcontrolstatus.hh \
 	 smvoicestatus.hh smpathdialog.hh smloadstereodialog.hh \
-	 smbankeditwindow.hh smcreatebankwindow.hh smclickablelabel.hh
+	 smbankeditwindow.hh smcreatebankwindow.hh smclickablelabel.hh \
+	 sminsteditvolume.hh
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)

@@ -151,7 +151,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   /* attach to model */
   connect (instrument->signal_samples_changed, this, &InstEditWindow::on_samples_changed);
-  connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_changed);
+  connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_or_volume_changed);
+  connect (instrument->signal_volume_changed, this, &InstEditWindow::on_marker_or_volume_changed);
   connect (instrument->signal_global_changed, this, &InstEditWindow::on_global_changed);
 
   /* attach to backend */
@@ -372,12 +373,22 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
         if (iev->voices.size() > 0)
           text = note_to_text (iev->voices[0].note);
         playing_label->set_text (text);
+
         if (inst_edit_note)
           {
             vector<int> active_notes;
             for (const auto& voice : iev->voices)
               active_notes.push_back (voice.note);
             inst_edit_note->set_active_notes (active_notes);
+          }
+
+        if (inst_edit_volume)
+          {
+            vector<int> active_notes;
+            for (const auto& voice : iev->voices)
+              if (voice.layer == 0)
+                active_notes.push_back (lrint (voice.fundamental_note));
+            inst_edit_volume->set_active_notes (active_notes);
           }
       }
   });
@@ -433,6 +444,11 @@ InstEditWindow::~InstEditWindow()
     {
       delete inst_edit_note;
       inst_edit_note = nullptr;
+    }
+  if (inst_edit_volume)
+    {
+      delete inst_edit_volume;
+      inst_edit_volume = nullptr;
     }
 }
 
@@ -558,7 +574,7 @@ InstEditWindow::on_samples_changed()
 }
 
 void
-InstEditWindow::on_marker_changed()
+InstEditWindow::on_marker_or_volume_changed()
 {
   Sample *sample = instrument->sample (instrument->selected());
 
@@ -720,6 +736,7 @@ InstEditWindow::on_show_hide_params()
     {
       inst_edit_params = new InstEditParams (this, instrument, sample_widget);
       connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+      connect (inst_edit_params->signal_show_volume_editor, this, &InstEditWindow::on_show_hide_volume);
       connect (inst_edit_params->signal_closed, [this]() {
         inst_edit_params = nullptr;
       });
@@ -740,6 +757,24 @@ InstEditWindow::on_show_hide_note()
       connect (inst_edit_note->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_note->signal_closed, [this]() {
         inst_edit_note = nullptr;
+      });
+    }
+}
+
+void
+InstEditWindow::on_show_hide_volume()
+{
+  if (inst_edit_volume)
+    {
+      inst_edit_volume->delete_later();
+      inst_edit_volume = nullptr;
+    }
+  else
+    {
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface);
+      connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+      connect (inst_edit_volume->signal_closed, [this]() {
+        inst_edit_volume = nullptr;
       });
     }
 }
