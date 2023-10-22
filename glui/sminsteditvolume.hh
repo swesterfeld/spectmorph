@@ -4,6 +4,7 @@
 
 #include "smslider.hh"
 #include "smled.hh"
+#include "smaudiotool.hh"
 
 namespace SpectMorph
 {
@@ -17,11 +18,12 @@ class InstEditVolume : public Window
 
   std::vector<Widget *> sample_widgets;
 
-  struct NoteLed {
+  struct NoteWidgets {
     int note = 0;
     Led *led = nullptr;
+    Label *energy_delta_label = nullptr;
   };
-  std::vector<NoteLed> note_leds;
+  std::vector<NoteWidgets> note_widgets;
 
   static constexpr double global_min_db = -12;
   static constexpr double global_max_db = 36;
@@ -64,6 +66,7 @@ public:
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     on_samples_changed();
+    audio_updated();
     show();
   }
   static double
@@ -84,7 +87,7 @@ public:
     for (auto w : sample_widgets)
       w->delete_later();
     sample_widgets.clear();
-    note_leds.clear();
+    note_widgets.clear();
 
     std::vector<Sample *> samples;
     for (size_t i = 0; i < instrument->size(); i++)
@@ -104,11 +107,8 @@ public:
         update_db_label();
         y += 4;
 
-        NoteLed note_led;
-        note_led.note = sample->midi_note();
-        note_led.led = new Led (scroll_widget);
-        note_leds.push_back (note_led);
-        grid.add_widget (note_led.led, x + 0.5, y + 0.5, 2, 2);
+        Led *led = new Led (scroll_widget);
+        grid.add_widget (led, x + 0.5, y + 0.5, 2, 2);
         y += 3;
 
         Slider *slider = new Slider (scroll_widget, volume_to_slider (sample->volume(), sample_min_db, sample_max_db), Orientation::VERTICAL);
@@ -130,7 +130,19 @@ public:
         sample_widgets.push_back (button);
         y += 3;
 
+        Label *energy_delta_label = new Label (scroll_widget, "");
+        energy_delta_label->set_orientation (Orientation::VERTICAL);
+        grid.add_widget (energy_delta_label, x, y, 3, 4);
+        sample_widgets.push_back (label);
+        y += 5;
+
+        NoteWidgets widgets;
+        widgets.note = sample->midi_note();
+        widgets.led = led;
+        widgets.energy_delta_label = energy_delta_label;
+        note_widgets.push_back (widgets);
         x += 3;
+
         int note = sample->midi_note();
         connect (button->signal_pressed, [this, note]() {
           synth_interface->synth_inst_edit_note (note, true, 0);
@@ -158,10 +170,29 @@ public:
   void
   set_active_notes (const std::vector<int>& notes)
   {
-    for (auto& note_led : note_leds)
+    for (auto& widgets : note_widgets)
       {
-        bool on = std::find (notes.begin(), notes.end(), note_led.note) != notes.end();
-        note_led.led->set_on (on);
+        bool on = std::find (notes.begin(), notes.end(), widgets.note) != notes.end();
+        widgets.led->set_on (on);
+      }
+  }
+  void
+  audio_updated()
+  {
+    for (size_t i = 0; i < instrument->size(); i++)
+      {
+        Sample *sample = instrument->sample (i);
+        if (sample->audio)
+          {
+            const double energy = AudioTool::compute_energy (*sample->audio);
+            const double target_energy = 0.05;
+            const double factor = sqrt (energy / target_energy);
+            for (auto& widgets : note_widgets)
+              {
+                if (widgets.note == sample->midi_note())
+                  widgets.energy_delta_label->set_text (string_printf ("%.1f", db_from_factor (factor, -96)));
+              }
+          }
       }
   }
   Signal<> signal_toggle_play;

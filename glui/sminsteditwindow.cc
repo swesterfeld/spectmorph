@@ -963,4 +963,6 @@ InstEditWindow::on_have_audio (int note, Audio *audio)
         sample->audio.reset (audio->clone());
     }
   sample_widget->update();
+  if (inst_edit_volume)
+    inst_edit_volume->audio_updated();
 }
