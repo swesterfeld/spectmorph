@@ -43,13 +43,21 @@ public:
 
     FixedGrid grid;
 
+    Label  *global_volume_label = new Label (this, "");
+    global_volume_label->set_align (TextAlign::CENTER);
+    auto update_global_volume_label = [global_volume_label, instrument]() { global_volume_label->set_text (string_printf ("%.1f dB", instrument->global_volume())); };
+    update_global_volume_label();
+    connect (instrument->signal_volume_changed, update_global_volume_label);
+
+    grid.add_widget (global_volume_label, 1, 1, 6, 3);
+
     Slider *global_slider = new Slider (this, volume_to_slider (instrument->global_volume(), global_min_db, global_max_db), Orientation::VERTICAL);
-    grid.add_widget (global_slider, 1, 1, 3, 20);
+    grid.add_widget (global_slider, 2, 4, 3, 42);
     connect (global_slider->signal_value_changed,
              [this] (double value) { this->instrument->set_global_volume (slider_to_volume (value, global_min_db, global_max_db)); });
 
     scroll_view = new ScrollView (this);
-    grid.add_widget (scroll_view, 7, 1, 46, 46);
+    grid.add_widget (scroll_view, 7, 1, 52, 46);
 
     scroll_widget = new Widget (scroll_view);
     scroll_view->set_scroll_widget (scroll_widget, true, false);
@@ -83,10 +91,19 @@ public:
       samples.push_back (instrument->sample (i));
     std::reverse (samples.begin(), samples.end()); // instrument samples start with highest note
 
-    double x = 1;
+    double x = 0;
     for (auto sample : samples)
       {
         double y = 1;
+        Label *db_label = new Label (scroll_widget, "");
+        db_label->set_orientation (Orientation::VERTICAL);
+        grid.add_widget (db_label, x, y, 3, 4);
+
+        auto update_db_label = [db_label, sample]() { db_label->set_text (string_printf ("%.1f", sample->volume())); };
+        connect (instrument->signal_volume_changed, update_db_label);
+        update_db_label();
+        y += 4;
+
         NoteLed note_led;
         note_led.note = sample->midi_note();
         note_led.led = new Led (scroll_widget);
@@ -102,10 +119,10 @@ public:
                  [sample] (double value) { sample->set_volume (slider_to_volume (value, sample_min_db, sample_max_db)); });
 
         Label *label = new Label (scroll_widget, note_to_text (sample->midi_note()));
-        label->set_align (TextAlign::CENTER);
-        grid.add_widget (label, x, y, 3, 3);
+        label->set_orientation (Orientation::VERTICAL);
+        grid.add_widget (label, x, y, 3, 4);
         sample_widgets.push_back (label);
-        y += 3;
+        y += 5;
 
         Button *button = new Button (scroll_widget, "P");
         button->set_right_press (true);
