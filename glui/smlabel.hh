@@ -14,6 +14,7 @@ class Label : public Widget
   TextAlign     m_align = TextAlign::LEFT;
   bool          m_bold = false;
   Color         m_color = ThemeColor::TEXT;
+  Orientation   m_orientation = Orientation::HORIZONTAL;
 
 public:
   Label (Widget *parent, const std::string& text) :
@@ -33,7 +34,7 @@ public:
 
     du.set_color (text_color);
     du.bold = m_bold;
-    du.text (m_text, 0, 0, width(), height(), m_align);
+    du.text (m_text, 0, 0, width(), height(), m_align, m_orientation);
   }
   void
   set_bold (bool bold)
@@ -42,6 +43,15 @@ public:
       return;
 
     m_bold = bold;
+    update();
+  }
+  void
+  set_orientation (Orientation orientation)
+  {
+    if (m_orientation == orientation)
+      return;
+
+    m_orientation = orientation;
     update();
   }
   void
