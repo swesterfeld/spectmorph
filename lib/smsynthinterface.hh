@@ -59,6 +59,15 @@ public:
       event_data);
   }
   void
+  synth_inst_edit_gain (float gain)
+  {
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->midi_synth()->inst_edit_synth()->set_gain (gain);
+        });
+  }
+  void
   synth_inst_edit_note (int note, bool on, unsigned int layer)
   {
     send_control_event (

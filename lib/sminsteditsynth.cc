@@ -78,6 +78,12 @@ note_to_freq (int note)
 }
 
 void
+InstEditSynth::set_gain (float new_gain)
+{
+  gain = new_gain;
+}
+
+void
 InstEditSynth::process_note_on (int channel, int note, int clap_id, int layer)
 {
   if (layer == -1) /* layer -1: midi events */
@@ -140,14 +146,14 @@ InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_
             {
               if (voice.state == State::ON)
                 {
-                  output[i] += samples[i]; /* pass */
+                  output[i] += samples[i] * gain; /* pass */
                 }
               else if (voice.state == State::RELEASE)
                 {
                   voice.decoder_factor -= decrement;
 
                   if (voice.decoder_factor > 0)
-                    output[i] += samples[i] * voice.decoder_factor;
+                    output[i] += samples[i] * gain * voice.decoder_factor;
                   else
                     voice.state = State::IDLE;
                 }

@@ -41,6 +41,7 @@ private:
   static constexpr uint        voices_per_layer = 64;
 
   float                        mix_freq;
+  float                        gain = 1;
   std::vector<Voice>           voices;
   Decoders                     decoders;
 
@@ -51,6 +52,7 @@ public:
   Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference);
   void swap_decoders (Decoders& decoders);
 
+  void set_gain (float gain);
   void process_note_on (int channel, int note, int clap_id, int layer = -1);
   void process_note_off (int channel, int note, int layer = -1);
 
