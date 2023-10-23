@@ -35,7 +35,7 @@ public:
     m_project->synth_take_control_event (new InstFunc (func, []() {}));
   }
   void
-  synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *ref_wav_set)
+  synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference)
   {
     /* ownership:
      *  - take_wav_set is owned by the event
@@ -46,7 +46,7 @@ public:
       InstEditSynth::Decoders decoders;
     } *event_data = new EventData;
 
-    event_data->decoders = m_project->midi_synth()->inst_edit_synth()->create_decoders (take_wav_set, ref_wav_set);
+    event_data->decoders = m_project->midi_synth()->inst_edit_synth()->create_decoders (take_wav_set, ref_wav_set, midi_to_reference);
 
     send_control_event (
       [=] (Project *project)

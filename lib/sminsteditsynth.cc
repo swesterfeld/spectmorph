@@ -34,12 +34,13 @@ InstEditSynth::~InstEditSynth()
 }
 
 InstEditSynth::Decoders
-InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set)
+InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference)
 {
   // this code does not run in audio thread, so it can do the slow setup stuff (alloc memory)
   Decoders decoders;
 
   decoders.wav_set.reset (take_wav_set);
+  decoders.midi_to_reference = midi_to_reference;
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       auto layer0_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
@@ -65,6 +66,7 @@ InstEditSynth::swap_decoders (Decoders& new_decoders)
   for (size_t vidx = 0; vidx < voices.size(); vidx++)
     voices[vidx].decoder = new_decoders.decoders[vidx].get();
 
+  decoders.midi_to_reference = new_decoders.midi_to_reference;
   decoders.wav_set.swap (new_decoders.wav_set);
   decoders.decoders.swap (new_decoders.decoders);
 }
@@ -76,11 +78,18 @@ note_to_freq (int note)
 }
 
 void
-InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int layer)
+InstEditSynth::process_note_on (int channel, int note, int clap_id, int layer)
 {
+  if (layer == -1) /* layer -1: midi events */
+    {
+      if (decoders.midi_to_reference)
+        layer = 2;
+      else
+        layer = 0;
+    }
   for (auto& voice : voices)
     {
-      if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
+      if (voice.decoder && voice.state == State::IDLE && int (voice.layer) == layer)
         {
           voice.decoder->retrigger (0, note_to_freq (note), 127);
           voice.decoder_factor = 1;
@@ -94,11 +103,11 @@ InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int
 }
 
 void
-InstEditSynth::process_note_off (int channel, int note, unsigned int layer)
+InstEditSynth::process_note_off (int channel, int note, int layer)
 {
   for (auto& voice : voices)
     {
-      if (voice.state == State::ON && voice.channel == channel && voice.note == note && voice.layer == layer)
+      if (voice.state == State::ON && voice.channel == channel && voice.note == note && (int (voice.layer) == layer || layer == -1))
         voice.state = State::RELEASE;
     }
 }

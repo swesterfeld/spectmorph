@@ -19,6 +19,7 @@ public:
   struct Decoders {
     std::unique_ptr<WavSet> wav_set;
     std::vector<std::unique_ptr<LiveDecoder>> decoders;
+    bool midi_to_reference = false;
   };
 private:
   enum class State {
@@ -47,11 +48,11 @@ public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
 
-  Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set);
+  Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference);
   void swap_decoders (Decoders& decoders);
 
-  void process_note_on (int channel, int note, int clap_id, unsigned int layer);
-  void process_note_off (int channel, int note, unsigned int layer);
+  void process_note_on (int channel, int note, int clap_id, int layer = -1);
+  void process_note_off (int channel, int note, int layer = -1);
 
   void process (float *output, size_t n_values, RTMemoryArea& rt_memory_area, NotifyBuffer& notify_buffer, MidiSynthCallbacks *process_callbacks);
 };
