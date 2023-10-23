@@ -85,7 +85,7 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
 }
 
 void
-InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument, const string& reference)
+InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument, const string& reference, bool midi_to_reference)
 {
   WavSetBuilder *builder = new WavSetBuilder (instrument, true);
   builder->set_cache_group (cache_group.get());
@@ -97,6 +97,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instr
   result_wav_set.reset (nullptr);
 
   this->reference = reference;
+  this->midi_to_reference = midi_to_reference;
   builder_thread.add_job (builder, /* unused: object_id */ 0,
     [this] (WavSet *wav_set)
       {
@@ -131,7 +132,7 @@ InstEditBackend::on_timer()
 
       WavSet *ref_wav_set = WavSetRepo::the()->get (index.smset_dir() + "/" + reference);
 
-      synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set);
+      synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set, midi_to_reference);
     }
 }
 
@@ -575,7 +576,7 @@ InstEditWindow::on_samples_changed()
       time_label->set_text (string_printf ("%.3f s", time_s));
     }
   if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+    m_backend.switch_to_sample (sample, instrument, reference, midi_to_reference);
 }
 
 void
@@ -584,7 +585,7 @@ InstEditWindow::on_marker_or_volume_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+    m_backend.switch_to_sample (sample, instrument, reference, midi_to_reference);
 }
 
 void
@@ -596,8 +597,18 @@ InstEditWindow::on_reference_changed (const string& new_reference)
       Sample *sample = instrument->sample (instrument->selected());
 
       if (sample)
-        m_backend.switch_to_sample (sample, instrument, reference);
+        m_backend.switch_to_sample (sample, instrument, reference, midi_to_reference);
     }
+}
+
+void
+InstEditWindow::on_midi_to_reference_changed (bool new_midi_to_reference)
+{
+  midi_to_reference = new_midi_to_reference;
+  Sample *sample = instrument->sample (instrument->selected());
+
+  if (sample)
+    m_backend.switch_to_sample (sample, instrument, reference, midi_to_reference);
 }
 
 void
@@ -655,7 +666,7 @@ InstEditWindow::on_global_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+    m_backend.switch_to_sample (sample, instrument, reference, midi_to_reference);
 }
 
 Sample::Loop
@@ -790,12 +801,13 @@ InstEditWindow::on_show_hide_volume()
     }
   else
     {
-      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference);
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference);
       connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_volume->signal_closed, [this]() {
         inst_edit_volume = nullptr;
       });
       connect (inst_edit_volume->signal_reference_changed, this, &InstEditWindow::on_reference_changed);
+      connect (inst_edit_volume->signal_midi_to_reference_changed, this, &InstEditWindow::on_midi_to_reference_changed);
     }
 }
 

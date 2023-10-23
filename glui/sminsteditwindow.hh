@@ -44,6 +44,7 @@ class InstEditBackend
   bool                    result_updated = false;
   std::unique_ptr<WavSet> result_wav_set;
   std::string             reference;
+  bool                    midi_to_reference = false;
   SynthInterface         *synth_interface;
 
   std::unique_ptr<InstEncCache::Group> cache_group;
@@ -51,7 +52,7 @@ class InstEditBackend
 public:
   InstEditBackend (SynthInterface *synth_interface);
 
-  void switch_to_sample (const Sample *sample, const Instrument *instrument, const std::string& reference);
+  void switch_to_sample (const Sample *sample, const Instrument *instrument, const std::string& reference, bool midi_to_reference);
   bool have_builder();
   void on_timer();
 
@@ -76,6 +77,7 @@ class InstEditWindow : public Window
   void          update_auto_checkboxes();
   void          on_global_changed();
   void          on_reference_changed (const std::string& new_reference);
+  void          on_midi_to_reference_changed (bool new_midi_to_reference);
   Sample::Loop  text_to_loop (const std::string& text);
   std::string   loop_to_text (const Sample::Loop loop);
 
@@ -99,6 +101,7 @@ class InstEditWindow : public Window
   ProgressBar *progress_bar = nullptr;
   bool      playing = false;
   std::string     reference = "synth-saw.smset";
+  bool            midi_to_reference = false;
 
   InstEditParams *inst_edit_params = nullptr;
   Button         *show_params_button = nullptr;

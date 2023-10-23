@@ -84,7 +84,7 @@ void
 MorphWavSourceView::on_edit()
 {
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
-  synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
+  synth_interface->synth_inst_edit_update (true, nullptr, nullptr, false);
 
   Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
   edit_instrument.reset (instrument->clone());
@@ -100,7 +100,7 @@ MorphWavSourceView::on_edit()
       // not safe to access instrument pointer after window has been closed
       inst_edit_window->clear_edit_instrument();
       window()->set_popup_window (nullptr);
-      synth_interface->synth_inst_edit_update (false, nullptr, nullptr);
+      synth_interface->synth_inst_edit_update (false, nullptr, nullptr, false);
       on_edit_close();
     });
 }

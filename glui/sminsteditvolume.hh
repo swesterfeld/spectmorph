@@ -81,7 +81,7 @@ class InstEditVolume : public Window
   static constexpr double sample_min_db = -12;
   static constexpr double sample_max_db = 12;
 public:
-  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference) :
+  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference, bool midi_to_reference) :
     Window (*window->event_loop(), "SpectMorph - Instrument Volume Editor", 64 * 8, 52 * 8, 0, false, window->native_window()),
     instrument (instrument),
     synth_interface (synth_interface)
@@ -134,6 +134,19 @@ public:
       std::string smset = inst_index.label_to_smset (ref_inst_combobox->text());
       signal_reference_changed (smset);
     });
+
+    CheckBox *midi_to_reference_checkbox = new CheckBox (this, "Use Reference for Midi Input");
+    midi_to_reference_checkbox->set_checked (midi_to_reference);
+    grid.add_widget (midi_to_reference_checkbox, 22, 48.5, 20, 2);
+    connect (midi_to_reference_checkbox->signal_toggled, [this] (bool checked) {
+      signal_midi_to_reference_changed (checked);
+    });
+    Shortcut *midi_to_ref_shortcut = new Shortcut (this, ' ');
+    connect (midi_to_ref_shortcut->signal_activated, [midi_to_reference_checkbox, this]() {
+      midi_to_reference_checkbox->set_checked (!midi_to_reference_checkbox->checked());
+      signal_midi_to_reference_changed (midi_to_reference_checkbox->checked());
+    });
+
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     on_samples_changed();
@@ -249,9 +262,10 @@ public:
       for (size_t i = 0; i < instrument->size(); i++)
         instrument->sample (i)->set_volume (new_volume[i]);
   }
-  Signal<> signal_toggle_play;
-  Signal<> signal_closed;
+  Signal<>            signal_toggle_play;
+  Signal<>            signal_closed;
   Signal<std::string> signal_reference_changed;
+  Signal<bool>        signal_midi_to_reference_changed;
 };
 
 }
