@@ -73,13 +73,16 @@ class InstEditVolume : public Window
   };
   std::vector<VolumeEdit *> sample_widgets;
 
+  Index     inst_index;
+  ComboBox *ref_inst_combobox = nullptr;
+
   static constexpr double global_min_db = -12;
   static constexpr double global_max_db = 36;
   static constexpr double sample_min_db = -12;
   static constexpr double sample_max_db = 12;
 public:
-  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface) :
-    Window (*window->event_loop(), "SpectMorph - Instrument Volume Editor", 64 * 8, 9 * 40 + 6 * 8, 0, false, window->native_window()),
+  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference) :
+    Window (*window->event_loop(), "SpectMorph - Instrument Volume Editor", 64 * 8, 52 * 8, 0, false, window->native_window()),
     instrument (instrument),
     synth_interface (synth_interface)
   {
@@ -87,9 +90,6 @@ public:
       signal_closed();
       delete_later();
      });
-
-    Shortcut *play_shortcut = new Shortcut (this, ' ');
-    connect (play_shortcut->signal_activated, [this]() { signal_toggle_play(); });
 
     FixedGrid grid;
 
@@ -102,19 +102,38 @@ public:
     grid.add_widget (global_volume_label, 1, 1, 6, 3);
 
     Slider *global_slider = new Slider (this, volume_to_slider (instrument->global_volume(), global_min_db, global_max_db), Orientation::VERTICAL);
-    grid.add_widget (global_slider, 2, 4, 3, 42);
+    grid.add_widget (global_slider, 2, 4, 3, 40);
     connect (global_slider->signal_value_changed,
              [this] (double value) { this->instrument->set_global_volume (slider_to_volume (value, global_min_db, global_max_db)); });
 
     scroll_view = new ScrollView (this);
-    grid.add_widget (scroll_view, 7, 1, 52, 46);
+    grid.add_widget (scroll_view, 7, 1, 52, 43);
 
     scroll_widget = new Widget (scroll_view);
     scroll_view->set_scroll_widget (scroll_widget, true, false);
 
     reset_button = new Button (this, "Reset to Loop Energy");
     connect (reset_button->signal_clicked, this, &InstEditVolume::reset_to_loop_energy);
-    grid.add_widget (reset_button, 1, 48, 20, 3);
+    grid.add_widget (reset_button, 1, 45, 20, 3);
+
+    ref_inst_combobox = new ComboBox (this);
+    grid.add_widget (ref_inst_combobox, 1, 48, 20, 3);
+
+    inst_index.load_file ("instruments:standard");
+
+    for (auto group : inst_index.groups())
+      {
+        ref_inst_combobox->add_item (ComboBoxItem (group.group, true));
+        for (auto instrument : group.instruments)
+          {
+            ref_inst_combobox->add_item (ComboBoxItem (instrument.label));
+          }
+      }
+    ref_inst_combobox->set_text (inst_index.smset_to_label (reference));
+    connect  (ref_inst_combobox->signal_item_changed, [this]() {
+      std::string smset = inst_index.label_to_smset (ref_inst_combobox->text());
+      signal_reference_changed (smset);
+    });
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     on_samples_changed();
@@ -232,6 +251,7 @@ public:
   }
   Signal<> signal_toggle_play;
   Signal<> signal_closed;
+  Signal<std::string> signal_reference_changed;
 };
 
 }

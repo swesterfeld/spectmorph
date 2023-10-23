@@ -84,7 +84,7 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
 }
 
 void
-InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument)
+InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument, const string& reference)
 {
   WavSetBuilder *builder = new WavSetBuilder (instrument, true);
   builder->set_cache_group (cache_group.get());
@@ -95,6 +95,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instr
   result_updated = true;
   result_wav_set.reset (nullptr);
 
+  this->reference = reference;
   builder_thread.add_job (builder, /* unused: object_id */ 0,
     [this] (WavSet *wav_set)
       {
@@ -128,7 +129,7 @@ InstEditBackend::on_timer()
       index.load_file ("instruments:standard");
 
       WavSet *ref_wav_set = new WavSet();
-      ref_wav_set->load (index.smset_dir() + "/synth-saw.smset");
+      ref_wav_set->load (index.smset_dir() + "/" + reference);
 
       synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set);
     }
@@ -574,7 +575,7 @@ InstEditWindow::on_samples_changed()
       time_label->set_text (string_printf ("%.3f s", time_s));
     }
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
 }
 
 void
@@ -583,7 +584,20 @@ InstEditWindow::on_marker_or_volume_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
+}
+
+void
+InstEditWindow::on_reference_changed (const string& new_reference)
+{
+  if (new_reference != reference)
+    {
+      reference = new_reference;
+      Sample *sample = instrument->sample (instrument->selected());
+
+      if (sample)
+        m_backend.switch_to_sample (sample, instrument, reference);
+    }
 }
 
 void
@@ -641,7 +655,7 @@ InstEditWindow::on_global_changed()
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
 }
 
 Sample::Loop
@@ -776,11 +790,12 @@ InstEditWindow::on_show_hide_volume()
     }
   else
     {
-      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface);
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference);
       connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_volume->signal_closed, [this]() {
         inst_edit_volume = nullptr;
       });
+      connect (inst_edit_volume->signal_reference_changed, this, &InstEditWindow::on_reference_changed);
     }
 }
 
