@@ -254,10 +254,14 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (auto_tune_checkbox, 0, 6.5, 21, 2);
   connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
 
-  /*--- Instrument: edit ---*/
-  show_params_button = new Button (this, "Edit");
+  /*--- Instrument: edit volume / params ---*/
+  edit_volume_button = new Button (this, "Volume...");
+  grid.add_widget (edit_volume_button, 11, 3, 8, 3);
+  connect (edit_volume_button->signal_clicked, this, &InstEditWindow::on_show_hide_volume);
+
+  show_params_button = new Button (this, "Params...");
   connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
-  grid.add_widget (show_params_button, 21, 4, 6, 3);
+  grid.add_widget (show_params_button, 19, 3, 8, 3);
 
   /******************* SAMPLE *********************/
   grid.dx = 31;
@@ -632,6 +636,7 @@ InstEditWindow::on_global_changed()
   update_auto_checkboxes();
 
   name_line_edit->set_text (instrument->name());
+  edit_volume_button->set_visible (!instrument->auto_volume().enabled);
 
   Sample *sample = instrument->sample (instrument->selected());
 

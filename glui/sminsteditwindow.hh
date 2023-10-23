@@ -99,6 +99,7 @@ class InstEditWindow : public Window
 
   InstEditParams *inst_edit_params = nullptr;
   Button         *show_params_button = nullptr;
+  Button         *edit_volume_button = nullptr;
   InstEditNote   *inst_edit_note = nullptr;
   InstEditVolume *inst_edit_volume = nullptr;
   Button         *show_pitch_button = nullptr;
