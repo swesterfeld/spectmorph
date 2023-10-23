@@ -65,6 +65,7 @@ class InstEditWindow : public Window
   std::vector<unsigned char> revert_instrument_data;
   InstEditBackend m_backend;
   SynthInterface *synth_interface;
+  float         play_gain = 1;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
@@ -78,6 +79,7 @@ class InstEditWindow : public Window
   void          on_global_changed();
   void          on_reference_changed (const std::string& new_reference);
   void          on_midi_to_reference_changed (bool new_midi_to_reference);
+  void          on_gain_changed (float new_gain);
   Sample::Loop  text_to_loop (const std::string& text);
   std::string   loop_to_text (const Sample::Loop loop);
 

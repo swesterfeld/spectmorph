@@ -612,6 +612,13 @@ InstEditWindow::on_midi_to_reference_changed (bool new_midi_to_reference)
 }
 
 void
+InstEditWindow::on_gain_changed (float new_gain)
+{
+  synth_interface->synth_inst_edit_gain (new_gain);
+  play_gain = new_gain;
+}
+
+void
 InstEditWindow::update_auto_checkboxes()
 {
   /* update auto volume checkbox */
@@ -801,13 +808,14 @@ InstEditWindow::on_show_hide_volume()
     }
   else
     {
-      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference);
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference, play_gain);
       connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_volume->signal_closed, [this]() {
         inst_edit_volume = nullptr;
       });
       connect (inst_edit_volume->signal_reference_changed, this, &InstEditWindow::on_reference_changed);
       connect (inst_edit_volume->signal_midi_to_reference_changed, this, &InstEditWindow::on_midi_to_reference_changed);
+      connect (inst_edit_volume->signal_gain_changed, this, &InstEditWindow::on_gain_changed);
     }
 }
 

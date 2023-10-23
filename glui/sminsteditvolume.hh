@@ -16,6 +16,8 @@ class InstEditVolume : public Window
   ScrollView     *scroll_view = nullptr;
   Widget         *scroll_widget = nullptr;
   Button         *reset_button = nullptr;
+  Slider         *play_volume_slider = nullptr;
+  Label          *play_volume_value_label = nullptr;
 
   struct VolumeEdit : public Widget {
     Sample *sample = nullptr;
@@ -80,8 +82,10 @@ class InstEditVolume : public Window
   static constexpr double global_max_db = 36;
   static constexpr double sample_min_db = -12;
   static constexpr double sample_max_db = 12;
+  static constexpr double play_min_db = -36;
+  static constexpr double play_max_db = 12;
 public:
-  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference, bool midi_to_reference) :
+  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference, bool midi_to_reference, float play_gain) :
     Window (*window->event_loop(), "SpectMorph - Instrument Volume Editor", 64 * 8, 52 * 8, 0, false, window->native_window()),
     instrument (instrument),
     synth_interface (synth_interface)
@@ -147,6 +151,16 @@ public:
       signal_midi_to_reference_changed (midi_to_reference_checkbox->checked());
     });
 
+    double play_db = db_from_factor (play_gain, -96);
+    play_volume_slider = new Slider (this, volume_to_slider (play_db, play_min_db, play_max_db));
+    play_volume_value_label = new Label (this, "");
+    on_play_volume_changed (play_volume_slider->value());
+
+    connect (play_volume_slider->signal_value_changed, this, &InstEditVolume::on_play_volume_changed);
+
+    grid.add_widget (new Label (this, "Play Volume"), 22, 46, 10, 2);
+    grid.add_widget (play_volume_slider, 30, 46, 23, 2);
+    grid.add_widget (play_volume_value_label, 54, 46, 7, 2);
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     on_samples_changed();
@@ -162,6 +176,13 @@ public:
   slider_to_volume (double value, double min, double max)
   {
     return std::clamp (min + value * (max - min), min, max);
+  }
+  void
+  on_play_volume_changed (double value)
+  {
+    double volume_db = slider_to_volume (value, play_min_db, play_max_db);
+    play_volume_value_label->set_text (string_printf ("%.1f dB", volume_db));
+    signal_gain_changed (db_to_factor (volume_db));
   }
   void
   on_samples_changed()
@@ -266,6 +287,7 @@ public:
   Signal<>            signal_closed;
   Signal<std::string> signal_reference_changed;
   Signal<bool>        signal_midi_to_reference_changed;
+  Signal<float>       signal_gain_changed;
 };
 
 }
