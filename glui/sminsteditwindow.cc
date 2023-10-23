@@ -11,6 +11,7 @@
 #include "smslider.hh"
 #include "smsimplelines.hh"
 #include "smwavsetbuilder.hh"
+#include "smwavsetrepo.hh"
 #include "smsynthinterface.hh"
 #include "smscrollview.hh"
 #include "sminstenccache.hh"
@@ -128,8 +129,7 @@ InstEditBackend::on_timer()
       Index index;
       index.load_file ("instruments:standard");
 
-      WavSet *ref_wav_set = new WavSet();
-      ref_wav_set->load (index.smset_dir() + "/" + reference);
+      WavSet *ref_wav_set = WavSetRepo::the()->get (index.smset_dir() + "/" + reference);
 
       synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set);
     }
