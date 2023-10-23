@@ -18,7 +18,6 @@ class InstEditSynth
 public:
   struct Decoders {
     std::unique_ptr<WavSet> wav_set;
-    std::unique_ptr<WavSet> ref_wav_set;
     std::vector<std::unique_ptr<LiveDecoder>> decoders;
   };
 private:
@@ -48,7 +47,7 @@ public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
 
-  Decoders create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set);
+  Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set);
   void swap_decoders (Decoders& decoders);
 
   void process_note_on (int channel, int note, int clap_id, unsigned int layer);

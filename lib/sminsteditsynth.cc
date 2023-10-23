@@ -34,13 +34,12 @@ InstEditSynth::~InstEditSynth()
 }
 
 InstEditSynth::Decoders
-InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set)
+InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set)
 {
   // this code does not run in audio thread, so it can do the slow setup stuff (alloc memory)
   Decoders decoders;
 
   decoders.wav_set.reset (take_wav_set);
-  decoders.ref_wav_set.reset (take_ref_wav_set);
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       auto layer0_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
@@ -48,7 +47,7 @@ InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set)
       auto layer1_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
       layer1_decoder->enable_original_samples (true);
 
-      auto layer2_decoder = new LiveDecoder (decoders.ref_wav_set.get(), mix_freq);
+      auto layer2_decoder = new LiveDecoder (ref_wav_set, mix_freq);
 
       decoders.decoders.emplace_back (layer0_decoder);
       decoders.decoders.emplace_back (layer1_decoder);
@@ -67,7 +66,6 @@ InstEditSynth::swap_decoders (Decoders& new_decoders)
     voices[vidx].decoder = new_decoders.decoders[vidx].get();
 
   decoders.wav_set.swap (new_decoders.wav_set);
-  decoders.ref_wav_set.swap (new_decoders.ref_wav_set);
   decoders.decoders.swap (new_decoders.decoders);
 }
 
