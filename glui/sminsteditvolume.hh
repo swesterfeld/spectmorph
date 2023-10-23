@@ -15,15 +15,63 @@ class InstEditVolume : public Window
   SynthInterface *synth_interface = nullptr;
   ScrollView     *scroll_view = nullptr;
   Widget         *scroll_widget = nullptr;
+  Button         *reset_button = nullptr;
 
-  std::vector<Widget *> sample_widgets;
+  struct VolumeEdit : public Widget {
+    Sample *sample = nullptr;
+    Label  *db_label = nullptr;
+    Led    *led = nullptr;
+    Button *play_button = nullptr;
+    Slider *slider = nullptr;
+    Label  *energy_delta_label = nullptr;
+    VolumeEdit (Widget *parent, Instrument *instrument, Sample *sample) :
+      Widget (parent),
+      sample (sample)
+    {
+      FixedGrid grid;
+      double y = 0;
 
-  struct NoteWidgets {
-    int note = 0;
-    Led *led = nullptr;
-    Label *energy_delta_label = nullptr;
+      db_label = new Label (this, "");
+      db_label->set_orientation (Orientation::VERTICAL);
+      grid.add_widget (db_label, 0, y, 3, 4);
+      y += 4;
+
+      led = new Led (this);
+      grid.add_widget (led, 0.5, y + 0.5, 2, 2);
+      y += 3;
+
+      slider = new Slider (this, 0, Orientation::VERTICAL);
+      grid.add_widget (slider, 0, y, 3, 20);
+      y += 20;
+      connect (slider->signal_value_changed,
+               [sample] (double value) { sample->set_volume (slider_to_volume (value, sample_min_db, sample_max_db)); });
+
+      Label *label = new Label (this, note_to_text (sample->midi_note()));
+      label->set_orientation (Orientation::VERTICAL);
+      grid.add_widget (label, 0, y, 3, 4);
+      y += 5;
+
+      play_button = new Button (this, "P");
+      play_button->set_right_press (true);
+      grid.add_widget (play_button, 0, y, 3, 3);
+      y += 3;
+
+      energy_delta_label = new Label (this, "");
+      energy_delta_label->set_orientation (Orientation::VERTICAL);
+      grid.add_widget (energy_delta_label, 0, y, 3, 4);
+      y += 5;
+
+      connect (instrument->signal_volume_changed, this, &VolumeEdit::on_volume_changed);
+      on_volume_changed();
+    }
+    void
+    on_volume_changed()
+    {
+      db_label->set_text (string_printf ("%.1f", sample->volume()));
+      slider->set_value (volume_to_slider (sample->volume(), sample_min_db, sample_max_db));
+    }
   };
-  std::vector<NoteWidgets> note_widgets;
+  std::vector<VolumeEdit *> sample_widgets;
 
   static constexpr double global_min_db = -12;
   static constexpr double global_max_db = 36;
@@ -48,8 +96,8 @@ public:
     Label  *global_volume_label = new Label (this, "");
     global_volume_label->set_align (TextAlign::CENTER);
     auto update_global_volume_label = [global_volume_label, instrument]() { global_volume_label->set_text (string_printf ("%.1f dB", instrument->global_volume())); };
-    update_global_volume_label();
     connect (instrument->signal_volume_changed, update_global_volume_label);
+    update_global_volume_label();
 
     grid.add_widget (global_volume_label, 1, 1, 6, 3);
 
@@ -63,6 +111,10 @@ public:
 
     scroll_widget = new Widget (scroll_view);
     scroll_view->set_scroll_widget (scroll_widget, true, false);
+
+    reset_button = new Button (this, "Reset to Loop Energy");
+    connect (reset_button->signal_clicked, this, &InstEditVolume::reset_to_loop_energy);
+    grid.add_widget (reset_button, 1, 48, 20, 3);
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     on_samples_changed();
@@ -87,7 +139,6 @@ public:
     for (auto w : sample_widgets)
       w->delete_later();
     sample_widgets.clear();
-    note_widgets.clear();
 
     std::vector<Sample *> samples;
     for (size_t i = 0; i < instrument->size(); i++)
@@ -97,63 +148,22 @@ public:
     double x = 0;
     for (auto sample : samples)
       {
-        double y = 1;
-        Label *db_label = new Label (scroll_widget, "");
-        db_label->set_orientation (Orientation::VERTICAL);
-        grid.add_widget (db_label, x, y, 3, 4);
-
-        auto update_db_label = [db_label, sample]() { db_label->set_text (string_printf ("%.1f", sample->volume())); };
-        connect (instrument->signal_volume_changed, update_db_label);
-        update_db_label();
-        y += 4;
-
-        Led *led = new Led (scroll_widget);
-        grid.add_widget (led, x + 0.5, y + 0.5, 2, 2);
-        y += 3;
-
-        Slider *slider = new Slider (scroll_widget, volume_to_slider (sample->volume(), sample_min_db, sample_max_db), Orientation::VERTICAL);
-        grid.add_widget (slider, x, y, 3, 20);
-        y += 20;
-        sample_widgets.push_back (slider);
-        connect (slider->signal_value_changed,
-                 [sample] (double value) { sample->set_volume (slider_to_volume (value, sample_min_db, sample_max_db)); });
-
-        Label *label = new Label (scroll_widget, note_to_text (sample->midi_note()));
-        label->set_orientation (Orientation::VERTICAL);
-        grid.add_widget (label, x, y, 3, 4);
-        sample_widgets.push_back (label);
-        y += 5;
-
-        Button *button = new Button (scroll_widget, "P");
-        button->set_right_press (true);
-        grid.add_widget (button, x, y, 3, 3);
-        sample_widgets.push_back (button);
-        y += 3;
-
-        Label *energy_delta_label = new Label (scroll_widget, "");
-        energy_delta_label->set_orientation (Orientation::VERTICAL);
-        grid.add_widget (energy_delta_label, x, y, 3, 4);
-        sample_widgets.push_back (label);
-        y += 5;
-
-        NoteWidgets widgets;
-        widgets.note = sample->midi_note();
-        widgets.led = led;
-        widgets.energy_delta_label = energy_delta_label;
-        note_widgets.push_back (widgets);
+        VolumeEdit *volume_edit = new VolumeEdit (scroll_widget, instrument, sample);
+        grid.add_widget (volume_edit, x, 0, 3, 30);
+        sample_widgets.push_back (volume_edit);
         x += 3;
 
         int note = sample->midi_note();
-        connect (button->signal_pressed, [this, note]() {
+        connect (volume_edit->play_button->signal_pressed, [this, note]() {
           synth_interface->synth_inst_edit_note (note, true, 0);
         });
-        connect (button->signal_right_pressed, [this, note]() {
+        connect (volume_edit->play_button->signal_right_pressed, [this, note]() {
           synth_interface->synth_inst_edit_note (note, true, 2);
         });
-        connect (button->signal_released, [this, note]() {
+        connect (volume_edit->play_button->signal_released, [this, note]() {
           synth_interface->synth_inst_edit_note (note, false, 0);
         });
-        connect (button->signal_right_released, [this, note]() {
+        connect (volume_edit->play_button->signal_right_released, [this, note]() {
           synth_interface->synth_inst_edit_note (note, false, 2);
         });
       }
@@ -161,7 +171,7 @@ public:
     scroll_widget->set_width (x * 8);
     scroll_view->on_widget_size_changed();
   }
-  std::string
+  static std::string
   note_to_text (int i) /* FIXME: dedup? */
   {
     std::vector<std::string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
@@ -170,11 +180,16 @@ public:
   void
   set_active_notes (const std::vector<int>& notes)
   {
-    for (auto& widgets : note_widgets)
+    for (auto volume_edit : sample_widgets)
       {
-        bool on = std::find (notes.begin(), notes.end(), widgets.note) != notes.end();
-        widgets.led->set_on (on);
+        bool on = std::find (notes.begin(), notes.end(), volume_edit->sample->midi_note()) != notes.end();
+        volume_edit->led->set_on (on);
       }
+  }
+  void
+  set_analyzing (bool analyzing)
+  {
+    reset_button->set_enabled (!analyzing);
   }
   void
   audio_updated()
@@ -187,13 +202,33 @@ public:
             const double energy = AudioTool::compute_energy (*sample->audio);
             const double target_energy = 0.05;
             const double factor = sqrt (energy / target_energy);
-            for (auto& widgets : note_widgets)
+            for (auto volume_edit : sample_widgets)
               {
-                if (widgets.note == sample->midi_note())
-                  widgets.energy_delta_label->set_text (string_printf ("%.1f", db_from_factor (factor, -96)));
+                if (volume_edit->sample->midi_note() == sample->midi_note())
+                  volume_edit->energy_delta_label->set_text (string_printf ("%.1f", db_from_factor (factor, -96)));
               }
           }
       }
+  }
+  void
+  reset_to_loop_energy()
+  {
+    std::vector<double> new_volume;
+    for (size_t i = 0; i < instrument->size(); i++)
+      {
+        Sample *sample = instrument->sample (i);
+        if (sample->audio)
+          {
+            const double energy = AudioTool::compute_energy (*sample->audio);
+            const double target_energy = 0.05;
+            const double factor = sqrt (energy / target_energy);
+            new_volume.push_back (sample->volume() - db_from_factor (factor, -96));
+          }
+      }
+    /* if we had nullptr samples, analysis was still running */
+    if (new_volume.size() == instrument->size())
+      for (size_t i = 0; i < instrument->size(); i++)
+        instrument->sample (i)->set_volume (new_volume[i]);
   }
   Signal<> signal_toggle_play;
   Signal<> signal_closed;

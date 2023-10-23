@@ -901,6 +901,7 @@ InstEditWindow::on_loop_changed()
 void
 InstEditWindow::on_update_led()
 {
+  bool analyzing = m_backend.have_builder();
   if (m_backend.have_builder())
     {
       progress_label->set_text ("Analyzing");
@@ -911,6 +912,8 @@ InstEditWindow::on_update_led()
       progress_label->set_text ("Ready.");
       progress_bar->set_value (1.0);
     }
+  if (inst_edit_volume)
+    inst_edit_volume->set_analyzing (analyzing);
 }
 
 void
