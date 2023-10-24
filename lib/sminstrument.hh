@@ -50,6 +50,7 @@ private:
   int m_midi_note = 69;
   Instrument *instrument = nullptr;
   Loop m_loop = Loop::NONE;
+  double m_volume = 0;
 
   SharedP m_shared;
 
@@ -63,6 +64,9 @@ public:
 
   Loop    loop() const;
   void    set_loop (Loop loop);
+
+  double  volume() const;
+  void    set_volume (double volume);
 
   SharedP shared() const;
 
@@ -119,6 +123,7 @@ private:
   std::string   m_name = "untitled";
   std::string   m_short_name;
 
+  double        m_global_volume = 0;
   AutoVolume    m_auto_volume;
   AutoTune      m_auto_tune;
   EncoderConfig m_encoder_config;
@@ -154,8 +159,12 @@ public:
   Instrument *clone() const;
   void        update_order();
   void        marker_changed();
+  void        volume_changed();
 
   std::map<int, int> used_count() const;
+
+  double      global_volume() const;
+  void        set_global_volume (double new_volume);
 
   AutoVolume  auto_volume() const;
   void        set_auto_volume (const AutoVolume& new_value);
@@ -166,6 +175,7 @@ public:
   EncoderConfig encoder_config() const;
   void          set_encoder_config (const EncoderConfig& new_value);
 
+  Signal<> signal_volume_changed;
   Signal<> signal_samples_changed;
   Signal<> signal_marker_changed;
   Signal<> signal_global_changed;  // global auto volume, auto tune or advanced params changed

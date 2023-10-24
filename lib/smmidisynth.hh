@@ -234,10 +234,12 @@ struct InstEditVoiceEvent : public SynthNotifyEvent
     float fundamental_note;
   };
   InstEditVoiceEvent (NotifyBuffer& buffer) :
-    voices (buffer.read_seq<Voice>())
+    voices (buffer.read_seq<Voice>()),
+    peak (buffer.read_float())
   {
   }
   std::vector<Voice> voices;
+  float              peak;
 };
 
 struct VoiceOpValuesEvent : public SynthNotifyEvent

@@ -34,13 +34,12 @@ InstEditSynth::~InstEditSynth()
 }
 
 InstEditSynth::Decoders
-InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set)
+InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set)
 {
   // this code does not run in audio thread, so it can do the slow setup stuff (alloc memory)
   Decoders decoders;
 
   decoders.wav_set.reset (take_wav_set);
-  decoders.ref_wav_set.reset (take_ref_wav_set);
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       auto layer0_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
@@ -48,7 +47,7 @@ InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *take_ref_wav_set)
       auto layer1_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
       layer1_decoder->enable_original_samples (true);
 
-      auto layer2_decoder = new LiveDecoder (decoders.ref_wav_set.get(), mix_freq);
+      auto layer2_decoder = new LiveDecoder (ref_wav_set, mix_freq);
 
       decoders.decoders.emplace_back (layer0_decoder);
       decoders.decoders.emplace_back (layer1_decoder);
@@ -67,7 +66,6 @@ InstEditSynth::swap_decoders (Decoders& new_decoders)
     voices[vidx].decoder = new_decoders.decoders[vidx].get();
 
   decoders.wav_set.swap (new_decoders.wav_set);
-  decoders.ref_wav_set.swap (new_decoders.ref_wav_set);
   decoders.decoders.swap (new_decoders.decoders);
 }
 
@@ -78,11 +76,30 @@ note_to_freq (int note)
 }
 
 void
-InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int layer)
+InstEditSynth::set_gain (float new_gain)
 {
+  gain = new_gain;
+}
+
+void
+InstEditSynth::set_midi_to_reference (bool new_midi_to_reference)
+{
+  midi_to_reference = new_midi_to_reference;
+}
+
+void
+InstEditSynth::process_note_on (int channel, int note, int clap_id, int layer)
+{
+  if (layer == -1) /* layer -1: midi events */
+    {
+      if (midi_to_reference)
+        layer = 2;
+      else
+        layer = 0;
+    }
   for (auto& voice : voices)
     {
-      if (voice.decoder && voice.state == State::IDLE && voice.layer == layer)
+      if (voice.decoder && voice.state == State::IDLE && int (voice.layer) == layer)
         {
           voice.decoder->retrigger (0, note_to_freq (note), 127);
           voice.decoder_factor = 1;
@@ -96,11 +113,11 @@ InstEditSynth::process_note_on (int channel, int note, int clap_id, unsigned int
 }
 
 void
-InstEditSynth::process_note_off (int channel, int note, unsigned int layer)
+InstEditSynth::process_note_off (int channel, int note, int layer)
 {
   for (auto& voice : voices)
     {
-      if (voice.state == State::ON && voice.channel == channel && voice.note == note && voice.layer == layer)
+      if (voice.state == State::ON && voice.channel == channel && voice.note == note && (int (voice.layer) == layer || layer == -1))
         voice.state = State::RELEASE;
     }
 }
@@ -133,14 +150,14 @@ InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_
             {
               if (voice.state == State::ON)
                 {
-                  output[i] += samples[i]; /* pass */
+                  output[i] += samples[i] * gain; /* pass */
                 }
               else if (voice.state == State::RELEASE)
                 {
                   voice.decoder_factor -= decrement;
 
                   if (voice.decoder_factor > 0)
-                    output[i] += samples[i] * voice.decoder_factor;
+                    output[i] += samples[i] * gain * voice.decoder_factor;
                   else
                     voice.state = State::IDLE;
                 }
@@ -159,11 +176,16 @@ InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_
             }
         }
     }
+  for (size_t i = 0; i < n_values; i++)
+    max_peak = std::max (max_peak, std::abs (output[i]));
 
   if (notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
       notify_buffer.write_int (INST_EDIT_VOICE_EVENT);
       notify_buffer.write_seq (iev, iev_len);
+      notify_buffer.write_float (max_peak);
       notify_buffer.end_write();
+
+      max_peak = 0; // reset only if we can send peak to UI (accumulate otherwise)
     }
 }

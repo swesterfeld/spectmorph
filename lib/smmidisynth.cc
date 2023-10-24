@@ -574,11 +574,11 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
         {
           if (event.type == EVENT_NOTE_ON)
             {
-              m_inst_edit_synth.process_note_on (event.note.channel, event.note.key, event.note.clap_id, /* layer */ 0);
+              m_inst_edit_synth.process_note_on (event.note.channel, event.note.key, event.note.clap_id);
             }
           else if (event.type == EVENT_NOTE_OFF)
             {
-              m_inst_edit_synth.process_note_off (event.note.channel, event.note.key, /* layer */ 0);
+              m_inst_edit_synth.process_note_off (event.note.channel, event.note.key);
             }
         }
       events.clear();

@@ -11,6 +11,7 @@ using namespace SpectMorph;
 
 using pugi::xml_document;
 using pugi::xml_node;
+using pugi::xml_attribute;
 using pugi::xml_writer;
 
 using std::string;
@@ -77,6 +78,19 @@ Sample::set_midi_note (int note)
   instrument->update_order();
 }
 
+double
+Sample::volume() const
+{
+  return m_volume;
+}
+
+void
+Sample::set_volume (double volume)
+{
+  m_volume = volume;
+  instrument->volume_changed();
+}
+
 Sample::Loop
 Sample::loop () const
 {
@@ -132,7 +146,7 @@ Instrument::add_sample (const WavData& wav_data, const string& filename)
   sample->set_marker (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
   sample->set_marker (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
 
-  signal_samples_changed();
+  update_order(); // resort, emit signal_samples_changed()
 
   return sample;
 }
@@ -317,6 +331,10 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
       sample->short_name = gen_short_name (new_samples, filename);
       sample->set_midi_note (midi_note);
 
+      xml_attribute volume_attribute = sample_node.attribute ("volume");
+      if (volume_attribute)
+        sample->set_volume (sm_atof (volume_attribute.value()));
+
       xml_node clip_node = sample_node.child ("clip");
       if (clip_node)
         {
@@ -340,6 +358,11 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
           sample->set_marker (MARKER_LOOP_END, sm_atof (loop_node.attribute ("end").value()));
         }
     }
+
+  double new_global_volume = 0;
+  xml_attribute global_volume_attribute = inst_node.attribute ("global_volume");
+  if (global_volume_attribute)
+    new_global_volume = sm_atof (global_volume_attribute.value());
 
   // auto tune
   AutoTune new_auto_tune;
@@ -418,6 +441,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
   samples          = std::move (new_samples);
   m_name           = new_name;
   m_short_name     = new_short_name;
+  m_global_volume  = new_global_volume;
   m_auto_volume    = new_auto_volume;
   m_auto_tune      = new_auto_tune;
   m_encoder_config = new_encoder_config;
@@ -427,7 +451,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
     m_selected = -1;
   else
     m_selected = 0;
-  signal_samples_changed();
+  update_order(); // resort, emit signal_samples_changed()
   signal_global_changed();
 
   return Error::Code::NONE;
@@ -505,6 +529,8 @@ Instrument::save (const string& filename, ZipWriter *zip_writer) const
   xml_node inst_node = doc.append_child ("instrument");
   inst_node.append_attribute ("name").set_value (m_name.c_str());
   inst_node.append_attribute ("short_name").set_value (m_short_name.c_str());
+  inst_node.append_attribute ("global_volume").set_value (string_printf ("%.3f", m_global_volume).c_str());
+
   for (auto& sample : samples)
     {
       xml_node sample_node = inst_node.append_child ("sample");
@@ -513,6 +539,7 @@ Instrument::save (const string& filename, ZipWriter *zip_writer) const
       else
         sample_node.append_attribute ("filename").set_value (sample->filename.c_str());
       sample_node.append_attribute ("midi_note").set_value (sample->midi_note());
+      sample_node.append_attribute ("volume").set_value (string_printf ("%.3f", sample->volume()).c_str());
 
       xml_node clip_node = sample_node.append_child ("clip");
       clip_node.append_attribute ("start") = string_printf ("%.3f", sample->get_marker (MARKER_CLIP_START)).c_str();
@@ -675,12 +702,31 @@ Instrument::marker_changed()
   signal_marker_changed();
 }
 
+void
+Instrument::volume_changed()
+{
+  signal_volume_changed();
+}
+
 string
 Instrument::version()
 {
   ZipWriter writer;
   save (writer);
   return sha1_hash (&writer.data()[0], writer.data().size());
+}
+
+double
+Instrument::global_volume() const
+{
+  return m_global_volume;
+}
+
+void
+Instrument::set_global_volume (double new_value)
+{
+  m_global_volume = new_value;
+  signal_volume_changed();
 }
 
 Instrument::AutoVolume

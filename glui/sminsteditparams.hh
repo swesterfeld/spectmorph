@@ -27,6 +27,8 @@ class InstEditParams : public Window
   Label      *auto_volume_gain_label = nullptr;
   ParamLabel *auto_volume_gain_param_label = nullptr;
 
+  Button     *volume_editor_button = nullptr;
+
   CheckBox   *auto_tune_checkbox = nullptr;
   ComboBox   *auto_tune_method_combobox = nullptr;
   Label      *auto_tune_method_label = nullptr;
@@ -74,6 +76,9 @@ public:
 
     auto_volume_checkbox = new CheckBox (scroll_widget, "Auto Volume");
     connect (auto_volume_checkbox->signal_toggled, this, &InstEditParams::on_auto_volume_changed);
+
+    volume_editor_button = new Button (scroll_widget, "Show Volume Editor");
+    connect (volume_editor_button->signal_clicked, [this]() { signal_show_volume_editor(); });
 
     /*--- auto volume method ---*/
     auto_volume_method_combobox = new ComboBox (scroll_widget);
@@ -166,6 +171,7 @@ public:
     auto_volume_method_combobox->set_visible (auto_volume.enabled);
     auto_volume_gain_label->set_visible (auto_volume.enabled && auto_volume.method == Instrument::AutoVolume::GLOBAL);
     auto_volume_gain_param_label->set_visible (auto_volume.enabled && auto_volume.method == Instrument::AutoVolume::GLOBAL);
+    volume_editor_button->set_visible (!auto_volume.enabled);
 
     double y = 0;
     grid.add_widget (auto_volume_checkbox, 0, y, 20, 2);
@@ -181,6 +187,11 @@ public:
             grid.add_widget (auto_volume_gain_param_label, 11, y, 10, 3);
             y += 3;
           }
+      }
+    else
+      {
+        grid.add_widget (volume_editor_button, 2, y, 20, 3);
+        y += 3;
       }
     const auto auto_tune = instrument->auto_tune();
     auto_tune_method_label->set_visible (auto_tune.enabled);
@@ -451,6 +462,7 @@ public:
   }
   Signal<> signal_toggle_play;
   Signal<> signal_closed;
+  Signal<> signal_show_volume_editor;
 };
 
 }

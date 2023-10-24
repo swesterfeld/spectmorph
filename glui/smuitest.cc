@@ -31,6 +31,7 @@
 #include "smaboutdialog.hh"
 #include "smeventloop.hh"
 #include "smprogressbar.hh"
+#include "smlineedit.hh"
 
 using namespace SpectMorph;
 
@@ -77,9 +78,14 @@ public:
 class MainWindow : public Window
 {
 public:
-  MainWindow (EventLoop& event_loop, int width, int height, PuglNativeWindow win_id = 0, bool resize = true) :
+  MainWindow (EventLoop& event_loop, int width, int height, const string& mode, PuglNativeWindow win_id = 0, bool resize = true) :
     Window (event_loop, "SpectMorph UI Test", width, height, win_id, resize)
   {
+    if (mode == "labels")
+      {
+        setup_labels();
+        return;
+      }
     vector<string> sl_params { "Skip", "Attack", "Sustain", "Decay", "Release" };
     FixedGrid grid;
 
@@ -237,6 +243,68 @@ public:
     auto sprite_perf = new SpritePerf (this);
     grid.add_widget (sprite_perf, 36, 40, 5, 5);
   }
+  void
+  setup_labels()
+  {
+    FixedGrid grid;
+    auto widget = new Widget (this);
+    widget->set_background_color (Color (0.5, 0.5, 0.5));
+    grid.add_widget (widget, 5, 5, 10, 10);
+
+    auto label = new Label (this, "");
+    grid.add_widget (label, 5, 5, 10, 10);
+
+    LineEdit *line_edit = new LineEdit (this, "Start");
+    line_edit->set_click_to_focus (true);
+    grid.add_widget (line_edit, 5, 20, 20, 3);
+    label->set_text (line_edit->text());
+    connect (line_edit->signal_text_changed, [label, line_edit] (const string& text) { label->set_text (line_edit->text()); });
+
+    CheckBox *vertical_box = new CheckBox (this, "Vertical");
+    grid.add_widget (vertical_box, 5, 23, 20, 2);
+    connect (vertical_box->signal_toggled, [label, vertical_box] (bool) {
+      label->set_orientation (vertical_box->checked() ? Orientation::VERTICAL : Orientation::HORIZONTAL);
+    });
+    ComboBox *align_cb = new ComboBox (this);
+    align_cb->add_item ("Left");
+    align_cb->add_item ("Center");
+    align_cb->add_item ("Right");
+    align_cb->set_text ("Left");
+    grid.add_widget (align_cb, 5, 26, 20, 3);
+    connect (align_cb->signal_item_changed, [label, align_cb] () {
+      switch (align_cb->current_index())
+        {
+          case 0: label->set_align (TextAlign::LEFT); break;
+          case 1: label->set_align (TextAlign::CENTER); break;
+          case 2: label->set_align (TextAlign::RIGHT); break;
+        }
+    });
+    auto xslider = new Slider (this, 0);
+    xslider->set_int_range (2, 15);
+    xslider->set_int_value (10);
+    grid.add_widget (xslider, 5, 29, 20, 3);
+
+    auto yslider = new Slider (this, 0);
+    yslider->set_int_range (2, 10);
+    yslider->set_int_value (10);
+    grid.add_widget (yslider, 5, 32, 20, 3);
+
+    static int xvalue = 10, yvalue = 10;
+    connect (xslider->signal_int_value_changed, [label, widget, xslider, this] (int i) {
+      FixedGrid grid;
+      xvalue = i;
+      grid.add_widget (widget, 5, 5, xvalue, yvalue);
+      grid.add_widget (label, 5, 5, xvalue, yvalue);
+      update_full();
+    });
+    connect (yslider->signal_int_value_changed, [label, widget, yslider, this] (int i) {
+      FixedGrid grid;
+      yvalue = i;
+      grid.add_widget (widget, 5, 5, xvalue, yvalue);
+      grid.add_widget (label, 5, 5, xvalue, yvalue);
+      update_full();
+    });
+  }
 };
 
 using std::vector;
@@ -249,7 +317,7 @@ main (int argc, char **argv)
   bool quit = false;
 
   EventLoop event_loop;
-  MainWindow window (event_loop, 384, 384);
+  MainWindow window (event_loop, 384, 384, argc == 2 ? argv[1] : "");
 
   window.show();
   window.set_close_callback ([&]() { quit = true; });

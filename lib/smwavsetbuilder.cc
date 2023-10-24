@@ -22,6 +22,7 @@ WavSetBuilder::WavSetBuilder (const Instrument *instrument, bool keep_samples) :
   wav_set->name = instrument->name();
   wav_set->short_name = instrument->short_name();
 
+  global_volume = instrument->global_volume();
   auto_volume = instrument->auto_volume();
   auto_tune = instrument->auto_tune();
   encoder_config = instrument->encoder_config();
@@ -50,7 +51,8 @@ WavSetBuilder::add_sample (const Sample *sample)
   SampleData sd;
 
   sd.midi_note = sample->midi_note();
-  sd.shared = sample->shared();
+  sd.volume    = sample->volume();
+  sd.shared    = sample->shared();
 
   const double clip_adjust = std::max (0.0, sample->get_marker (MARKER_CLIP_START));
 
@@ -102,6 +104,7 @@ WavSetBuilder::run()
       wav_set->waves.push_back (new_wave);
     }
   apply_loop_settings();
+  apply_volume_settings();
   apply_auto_volume();
   apply_auto_tune();
 
@@ -115,6 +118,31 @@ void
 WavSetBuilder::set_kill_function (const std::function<bool()>& new_kill_function)
 {
   kill_function = new_kill_function;
+}
+
+void
+WavSetBuilder::apply_volume_settings()
+{
+  if (auto_volume.enabled)
+    return;
+
+  // build index for sample data vector
+  map<int, SampleData*> note_to_sd;
+  for (auto& sd : sample_data_vec)
+    note_to_sd[sd.midi_note] = &sd;
+
+  for (auto& wave : wav_set->waves)
+    {
+      SampleData *sd = note_to_sd[wave.midi_note];
+
+      if (!sd)
+        {
+          printf ("warning: no to sd mapping %d failed\n", wave.midi_note);
+          continue;
+        }
+
+      AudioTool::normalize_factor (db_to_factor (sd->volume + global_volume), *wave.audio);
+    }
 }
 
 void

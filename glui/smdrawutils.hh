@@ -82,7 +82,8 @@ struct DrawUtils
     cairo_fill (cr);
   }
   void
-  text (const std::string& text, double x, double y, double width, double height, TextAlign align = TextAlign::LEFT)
+  text (const std::string& text, double x, double y, double width, double height,
+        TextAlign align = TextAlign::LEFT, Orientation orientation = Orientation::HORIZONTAL)
   {
     // draw label
     cairo_set_font_size (cr, 11.0);
@@ -94,17 +95,37 @@ struct DrawUtils
     cairo_text_extents_t extents;
     cairo_text_extents (cr, text.c_str(), &extents);
 
-    double fy = height / 2 - font_extents.descent + font_extents.height / 2;
-    switch (align)
+    if (orientation == Orientation::HORIZONTAL)
       {
-        case TextAlign::LEFT:   cairo_move_to (cr, x, fy + y);
-                                break;
-        case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy + y);
-                                break;
-        case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy + y);
-                                break;
+        double fy = y + height / 2 - font_extents.descent + font_extents.height / 2;
+        switch (align)
+          {
+            case TextAlign::LEFT:   cairo_move_to (cr, x, fy);
+                                    break;
+            case TextAlign::CENTER: cairo_move_to (cr, x + (width / 2) - extents.x_bearing - extents.width / 2, fy);
+                                    break;
+            case TextAlign::RIGHT:  cairo_move_to (cr, x + width - extents.x_bearing - extents.width, fy);
+                                    break;
+          }
+        cairo_show_text (cr, text.c_str());
       }
-    cairo_show_text (cr, text.c_str());
+    else
+      {
+        double fx = x + width / 2 + font_extents.height / 2 - font_extents.descent;
+        switch (align)
+          {
+            case TextAlign::LEFT:   cairo_move_to (cr, fx, y + height);
+                                    break;
+            case TextAlign::CENTER: cairo_move_to (cr, fx, y + height / 2 + extents.x_bearing + extents.width / 2);
+                                    break;
+            case TextAlign::RIGHT:  cairo_move_to (cr, fx, y + extents.x_bearing + extents.width);
+                                    break;
+        }
+        cairo_save (cr);
+        cairo_rotate (cr, -M_PI / 2);
+        cairo_show_text (cr, text.c_str());
+        cairo_restore (cr);
+      }
   }
   cairo_text_extents_t
   text_extents (const std::string& text)

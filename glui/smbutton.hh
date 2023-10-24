@@ -13,16 +13,25 @@ class Button : public Widget
   std::string m_text;
   bool        highlight = false;
   bool        pressed = false;
+  bool        allow_right_press = false;
+  MouseButton button = NO_BUTTON;
 
 public:
   Signal<> signal_clicked;
   Signal<> signal_pressed;
   Signal<> signal_released;
+  Signal<> signal_right_pressed;
+  Signal<> signal_right_released;
 
   Button (Widget *parent, const std::string& text) :
     Widget (parent),
     m_text (text)
   {
+  }
+  void
+  set_right_press (bool right_press) /* allow right mouse button? */
+  {
+    allow_right_press = right_press;
   }
   void
   draw (const DrawEvent& devent) override
@@ -64,22 +73,37 @@ public:
   void
   mouse_press (const MouseEvent& event) override
   {
-    if (event.button == LEFT_BUTTON)
+    if (!pressed)
       {
-        pressed = true;
-        update();
-        signal_pressed();
+        if (event.button == LEFT_BUTTON)
+          {
+            pressed = true;
+            signal_pressed();
+          }
+        else if (event.button == RIGHT_BUTTON && allow_right_press)
+          {
+            pressed = true;
+            signal_right_pressed();
+          }
+        if (pressed)
+          {
+            button = event.button;
+            update();
+          }
       }
   }
   void
   mouse_release (const MouseEvent& event) override
   {
-    if (event.button != LEFT_BUTTON || !pressed)
+    if (event.button != button || !pressed)
       return;
 
     pressed = false;
     update();
-    signal_released();
+    if (event.button == LEFT_BUTTON)
+      signal_released();
+    else
+      signal_right_released();
 
     if (event.x >= 0 && event.y >= 0 && event.x < width() && event.y < height())
       signal_clicked();  // this must be the last line, as deletion can occur afterwards

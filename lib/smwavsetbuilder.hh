@@ -14,7 +14,8 @@ class WavSetBuilder
 {
   struct SampleData
   {
-    int           midi_note;
+    int          midi_note;
+    double       volume;
     Sample::Loop loop;
     double       clip_start_ms;
     double       clip_end_ms;
@@ -30,12 +31,14 @@ class WavSetBuilder
   std::function<bool()>      kill_function;
   bool killed();
 
+  double                     global_volume = 0;
   Instrument::AutoVolume     auto_volume;
   Instrument::AutoTune       auto_tune;
   Instrument::EncoderConfig  encoder_config;
   bool keep_samples;
 
   void apply_loop_settings();
+  void apply_volume_settings();
   void apply_auto_volume();
   void apply_auto_tune();
 

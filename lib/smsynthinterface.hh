@@ -35,15 +35,18 @@ public:
     m_project->synth_take_control_event (new InstFunc (func, []() {}));
   }
   void
-  synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *take_ref_wav_set)
+  synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *ref_wav_set)
   {
-    /* ownership of take_wav_set is transferred to the event */
+    /* ownership:
+     *  - take_wav_set is owned by the event
+     *  - ref_wav_set is _not_ owned and will not be freed
+     */
     struct EventData
     {
       InstEditSynth::Decoders decoders;
     } *event_data = new EventData;
 
-    event_data->decoders = m_project->midi_synth()->inst_edit_synth()->create_decoders (take_wav_set, take_ref_wav_set);
+    event_data->decoders = m_project->midi_synth()->inst_edit_synth()->create_decoders (take_wav_set, ref_wav_set);
 
     send_control_event (
       [=] (Project *project)
@@ -54,6 +57,24 @@ public:
             project->midi_synth()->inst_edit_synth()->swap_decoders (event_data->decoders);
         },
       event_data);
+  }
+  void
+  synth_inst_edit_gain (float gain)
+  {
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->midi_synth()->inst_edit_synth()->set_gain (gain);
+        });
+  }
+  void
+  synth_inst_edit_midi_to_reference (bool midi_to_reference)
+  {
+    send_control_event (
+      [=] (Project *project)
+        {
+          project->midi_synth()->inst_edit_synth()->set_midi_to_reference (midi_to_reference);
+        });
   }
   void
   synth_inst_edit_note (int note, bool on, unsigned int layer)

@@ -11,6 +11,7 @@
 #include "smslider.hh"
 #include "smsimplelines.hh"
 #include "smwavsetbuilder.hh"
+#include "smwavsetrepo.hh"
 #include "smsynthinterface.hh"
 #include "smscrollview.hh"
 #include "sminstenccache.hh"
@@ -84,7 +85,7 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
 }
 
 void
-InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument)
+InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument, const string& reference)
 {
   WavSetBuilder *builder = new WavSetBuilder (instrument, true);
   builder->set_cache_group (cache_group.get());
@@ -95,6 +96,7 @@ InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instr
   result_updated = true;
   result_wav_set.reset (nullptr);
 
+  this->reference = reference;
   builder_thread.add_job (builder, /* unused: object_id */ 0,
     [this] (WavSet *wav_set)
       {
@@ -127,8 +129,7 @@ InstEditBackend::on_timer()
       Index index;
       index.load_file ("instruments:standard");
 
-      WavSet *ref_wav_set = new WavSet();
-      ref_wav_set->load (index.smset_dir() + "/synth-saw.smset");
+      WavSet *ref_wav_set = WavSetRepo::the()->get (index.smset_dir() + "/" + reference);
 
       synth_interface->synth_inst_edit_update (true, result_wav_set.release(), ref_wav_set);
     }
@@ -151,7 +152,8 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   /* attach to model */
   connect (instrument->signal_samples_changed, this, &InstEditWindow::on_samples_changed);
-  connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_changed);
+  connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_or_volume_changed);
+  connect (instrument->signal_volume_changed, this, &InstEditWindow::on_marker_or_volume_changed);
   connect (instrument->signal_global_changed, this, &InstEditWindow::on_global_changed);
 
   /* attach to backend */
@@ -253,10 +255,14 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (auto_tune_checkbox, 0, 6.5, 21, 2);
   connect (auto_tune_checkbox->signal_toggled, this, &InstEditWindow::on_auto_tune_changed);
 
-  /*--- Instrument: edit ---*/
-  show_params_button = new Button (this, "Edit");
+  /*--- Instrument: edit volume / params ---*/
+  edit_volume_button = new Button (this, "Volume...");
+  grid.add_widget (edit_volume_button, 11, 3, 8, 3);
+  connect (edit_volume_button->signal_clicked, this, &InstEditWindow::on_show_hide_volume);
+
+  show_params_button = new Button (this, "Params...");
   connect (show_params_button->signal_clicked, this, &InstEditWindow::on_show_hide_params);
-  grid.add_widget (show_params_button, 21, 4, 6, 3);
+  grid.add_widget (show_params_button, 19, 3, 8, 3);
 
   /******************* SAMPLE *********************/
   grid.dx = 31;
@@ -372,12 +378,23 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
         if (iev->voices.size() > 0)
           text = note_to_text (iev->voices[0].note);
         playing_label->set_text (text);
+
         if (inst_edit_note)
           {
             vector<int> active_notes;
             for (const auto& voice : iev->voices)
               active_notes.push_back (voice.note);
             inst_edit_note->set_active_notes (active_notes);
+          }
+
+        if (inst_edit_volume)
+          {
+            vector<int> active_notes;
+            for (const auto& voice : iev->voices)
+              if (voice.layer == 0)
+                active_notes.push_back (lrint (voice.fundamental_note));
+            inst_edit_volume->set_active_notes (active_notes);
+            inst_edit_volume->add_peak (iev->peak);
           }
       }
   });
@@ -433,6 +450,11 @@ InstEditWindow::~InstEditWindow()
     {
       delete inst_edit_note;
       inst_edit_note = nullptr;
+    }
+  if (inst_edit_volume)
+    {
+      delete inst_edit_volume;
+      inst_edit_volume = nullptr;
     }
 }
 
@@ -554,16 +576,43 @@ InstEditWindow::on_samples_changed()
       time_label->set_text (string_printf ("%.3f s", time_s));
     }
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
 }
 
 void
-InstEditWindow::on_marker_changed()
+InstEditWindow::on_marker_or_volume_changed()
 {
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
+}
+
+void
+InstEditWindow::on_reference_changed (const string& new_reference)
+{
+  if (new_reference != reference)
+    {
+      reference = new_reference;
+      Sample *sample = instrument->sample (instrument->selected());
+
+      if (sample)
+        m_backend.switch_to_sample (sample, instrument, reference);
+    }
+}
+
+void
+InstEditWindow::on_midi_to_reference_changed (bool new_midi_to_reference)
+{
+  midi_to_reference = new_midi_to_reference;
+  synth_interface->synth_inst_edit_midi_to_reference (midi_to_reference);
+}
+
+void
+InstEditWindow::on_gain_changed (float new_gain)
+{
+  play_gain = new_gain;
+  synth_interface->synth_inst_edit_gain (play_gain);
 }
 
 void
@@ -616,11 +665,12 @@ InstEditWindow::on_global_changed()
   update_auto_checkboxes();
 
   name_line_edit->set_text (instrument->name());
+  edit_volume_button->set_visible (!instrument->auto_volume().enabled);
 
   Sample *sample = instrument->sample (instrument->selected());
 
   if (sample)
-    m_backend.switch_to_sample (sample, instrument);
+    m_backend.switch_to_sample (sample, instrument, reference);
 }
 
 Sample::Loop
@@ -720,6 +770,7 @@ InstEditWindow::on_show_hide_params()
     {
       inst_edit_params = new InstEditParams (this, instrument, sample_widget);
       connect (inst_edit_params->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+      connect (inst_edit_params->signal_show_volume_editor, this, &InstEditWindow::on_show_hide_volume);
       connect (inst_edit_params->signal_closed, [this]() {
         inst_edit_params = nullptr;
       });
@@ -741,6 +792,27 @@ InstEditWindow::on_show_hide_note()
       connect (inst_edit_note->signal_closed, [this]() {
         inst_edit_note = nullptr;
       });
+    }
+}
+
+void
+InstEditWindow::on_show_hide_volume()
+{
+  if (inst_edit_volume)
+    {
+      inst_edit_volume->delete_later();
+      inst_edit_volume = nullptr;
+    }
+  else
+    {
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference, play_gain);
+      connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
+      connect (inst_edit_volume->signal_closed, [this]() {
+        inst_edit_volume = nullptr;
+      });
+      connect (inst_edit_volume->signal_reference_changed, this, &InstEditWindow::on_reference_changed);
+      connect (inst_edit_volume->signal_midi_to_reference_changed, this, &InstEditWindow::on_midi_to_reference_changed);
+      connect (inst_edit_volume->signal_gain_changed, this, &InstEditWindow::on_gain_changed);
     }
 }
 
@@ -866,6 +938,7 @@ InstEditWindow::on_loop_changed()
 void
 InstEditWindow::on_update_led()
 {
+  bool analyzing = m_backend.have_builder();
   if (m_backend.have_builder())
     {
       progress_label->set_text ("Analyzing");
@@ -876,6 +949,8 @@ InstEditWindow::on_update_led()
       progress_label->set_text ("Ready.");
       progress_bar->set_value (1.0);
     }
+  if (inst_edit_volume)
+    inst_edit_volume->set_analyzing (analyzing);
 }
 
 void
@@ -928,4 +1003,6 @@ InstEditWindow::on_have_audio (int note, Audio *audio)
         sample->audio.reset (audio->clone());
     }
   sample_widget->update();
+  if (inst_edit_volume)
+    inst_edit_volume->audio_updated();
 }

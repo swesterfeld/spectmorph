@@ -379,6 +379,13 @@ public:
     if (v == m_visible)
       return;
 
+    if (!v)
+      {
+        /* invisible widgets are ignored during update, so if visibility is set to false
+         * we update before changing m_visible
+         */
+        update_with_children();
+      }
     m_visible = v;
     update_with_children();
   }

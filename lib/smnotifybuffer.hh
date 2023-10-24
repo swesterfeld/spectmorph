@@ -111,6 +111,11 @@ public:
   {
     write_simple (&i, sizeof (i));
   }
+  void
+  write_float (float f) // DSP thread
+  {
+    write_simple (&f, sizeof (f));
+  }
   template<class T> void
   write_seq (const T* items, size_t length) // DSP thread
   {
@@ -128,6 +133,13 @@ public:
     int i;
     read_simple (&i, sizeof (i));
     return i;
+  }
+  float
+  read_float() // UI thread
+  {
+    float f;
+    read_simple (&f, sizeof (f));
+    return f;
   }
   template<class T> std::vector<T>
   read_seq() // UI thread
