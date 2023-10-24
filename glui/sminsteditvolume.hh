@@ -6,6 +6,7 @@
 #include "smled.hh"
 #include "smaudiotool.hh"
 #include "smvumeter.hh"
+#include "smvolumeresetdialog.hh"
 
 namespace SpectMorph
 {
@@ -136,13 +137,13 @@ public:
              [this] (double value) { this->instrument->set_global_volume (slider_to_volume (value, global_min_db, global_max_db)); });
 
     scroll_view = new ScrollView (this);
-    grid.add_widget (scroll_view, 7, 1, 52, 43);
+    grid.add_widget (scroll_view, 7, 1, 56, 43);
 
     scroll_widget = new Widget (scroll_view);
     scroll_view->set_scroll_widget (scroll_widget, true, false);
 
-    reset_button = new Button (this, "Reset to Loop Energy");
-    connect (reset_button->signal_clicked, this, &InstEditVolume::reset_to_loop_energy);
+    reset_button = new Button (this, "Reset all Volumes");
+    connect (reset_button->signal_clicked, this, &InstEditVolume::show_volume_reset_dialog);
     grid.add_widget (reset_button, 1, 45, 20, 3);
 
     ref_inst_combobox = new ComboBox (this);
@@ -302,6 +303,25 @@ public:
       }
   }
   void
+  show_volume_reset_dialog()
+  {
+    auto dialog = new VolumeResetDialog (this);
+
+    connect (dialog->signal_result, [this] (VolumeResetDialog::Result result)
+      {
+        switch (result)
+          {
+            case VolumeResetDialog::Result::LOOP_ENERGY:    reset_to_loop_energy();
+                                                            break;
+            case VolumeResetDialog::Result::ZERO:           reset_volumes_to_zero();
+                                                            break;
+            case VolumeResetDialog::Result::REMOVE_AVERAGE: reset_remove_average();
+                                                            break;
+          }
+      });
+    dialog->run();
+  }
+  void
   reset_to_loop_energy()
   {
     std::vector<double> new_volume;
@@ -320,6 +340,25 @@ public:
     if (new_volume.size() == instrument->size())
       for (size_t i = 0; i < instrument->size(); i++)
         instrument->sample (i)->set_volume (new_volume[i]);
+  }
+  void
+  reset_volumes_to_zero()
+  {
+    for (size_t i = 0; i < instrument->size(); i++)
+      instrument->sample (i)->set_volume (0);
+    instrument->set_global_volume (0);
+  }
+  void
+  reset_remove_average()
+  {
+    double avg = 0;
+    for (size_t i = 0; i < instrument->size(); i++)
+      avg += instrument->sample (i)->volume();
+    avg /= instrument->size();
+
+    instrument->set_global_volume (instrument->global_volume() + avg);
+    for (size_t i = 0; i < instrument->size(); i++)
+      instrument->sample (i)->set_volume (instrument->sample (i)->volume() - avg);
   }
   void
   add_peak (float peak)
