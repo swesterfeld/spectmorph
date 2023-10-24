@@ -19,7 +19,6 @@ public:
   struct Decoders {
     std::unique_ptr<WavSet> wav_set;
     std::vector<std::unique_ptr<LiveDecoder>> decoders;
-    bool midi_to_reference = false;
   };
 private:
   enum class State {
@@ -42,6 +41,7 @@ private:
 
   float                        mix_freq;
   float                        gain = 1;
+  bool                         midi_to_reference = false;
   float                        max_peak = 0;
   std::vector<Voice>           voices;
   Decoders                     decoders;
@@ -50,10 +50,11 @@ public:
   InstEditSynth (float mix_freq);
   ~InstEditSynth();
 
-  Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference);
+  Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set);
   void swap_decoders (Decoders& decoders);
 
   void set_gain (float gain);
+  void set_midi_to_reference (bool new_midi_to_reference);
   void process_note_on (int channel, int note, int clap_id, int layer = -1);
   void process_note_off (int channel, int note, int layer = -1);
 

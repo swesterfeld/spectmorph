@@ -34,13 +34,12 @@ InstEditSynth::~InstEditSynth()
 }
 
 InstEditSynth::Decoders
-InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set, bool midi_to_reference)
+InstEditSynth::create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set)
 {
   // this code does not run in audio thread, so it can do the slow setup stuff (alloc memory)
   Decoders decoders;
 
   decoders.wav_set.reset (take_wav_set);
-  decoders.midi_to_reference = midi_to_reference;
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       auto layer0_decoder = new LiveDecoder (decoders.wav_set.get(), mix_freq);
@@ -66,7 +65,6 @@ InstEditSynth::swap_decoders (Decoders& new_decoders)
   for (size_t vidx = 0; vidx < voices.size(); vidx++)
     voices[vidx].decoder = new_decoders.decoders[vidx].get();
 
-  decoders.midi_to_reference = new_decoders.midi_to_reference;
   decoders.wav_set.swap (new_decoders.wav_set);
   decoders.decoders.swap (new_decoders.decoders);
 }
@@ -84,11 +82,17 @@ InstEditSynth::set_gain (float new_gain)
 }
 
 void
+InstEditSynth::set_midi_to_reference (bool new_midi_to_reference)
+{
+  midi_to_reference = new_midi_to_reference;
+}
+
+void
 InstEditSynth::process_note_on (int channel, int note, int clap_id, int layer)
 {
   if (layer == -1) /* layer -1: midi events */
     {
-      if (decoders.midi_to_reference)
+      if (midi_to_reference)
         layer = 2;
       else
         layer = 0;
