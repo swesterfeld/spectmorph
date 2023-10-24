@@ -172,11 +172,16 @@ InstEditSynth::process (float *output, size_t n_values, RTMemoryArea& rt_memory_
             }
         }
     }
+  for (size_t i = 0; i < n_values; i++)
+    max_peak = std::max (max_peak, std::abs (output[i]));
 
   if (notify_buffer.start_write()) // update notify buffer if GUI has fetched events
     {
       notify_buffer.write_int (INST_EDIT_VOICE_EVENT);
       notify_buffer.write_seq (iev, iev_len);
+      notify_buffer.write_float (max_peak);
       notify_buffer.end_write();
+
+      max_peak = 0; // reset only if we can send peak to UI (accumulate otherwise)
     }
 }

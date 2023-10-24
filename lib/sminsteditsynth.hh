@@ -42,6 +42,7 @@ private:
 
   float                        mix_freq;
   float                        gain = 1;
+  float                        max_peak = 0;
   std::vector<Voice>           voices;
   Decoders                     decoders;
 
