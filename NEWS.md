@@ -4,6 +4,7 @@
 * Support click & drag in instrument editor sample to scroll & zoom (#22).
 * Support stereo to mono conversion for files added in instrument editor (#14).
 * Support multiple banks for wav sources / instrument editor.
+* Add manual volume editing / normalization to instrument editor.
 
 #### Fixes
 * Fix crash if instrument editor is closed without any samples
