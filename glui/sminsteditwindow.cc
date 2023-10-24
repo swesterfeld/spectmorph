@@ -395,6 +395,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
               if (voice.layer == 0)
                 active_notes.push_back (lrint (voice.fundamental_note));
             inst_edit_volume->set_active_notes (active_notes);
+            inst_edit_volume->add_peak (iev->peak);
           }
       }
   });

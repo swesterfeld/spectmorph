@@ -21,6 +21,13 @@ class InstEditVolume : public Window
   Label          *global_volume_label = nullptr;
   Slider         *global_slider = nullptr;
   ComboBox       *ref_inst_combobox = nullptr;
+  Label          *peak_label = nullptr;
+
+  struct PeakAndTime {
+    float  peak = 0;
+    double peak_time = 0;
+  };
+  std::vector<PeakAndTime> peaks;
 
   struct VolumeEdit : public Widget {
     Instrument *instrument = nullptr;
@@ -175,6 +182,8 @@ public:
     grid.add_widget (new Label (this, "Play Volume"), 22, 46, 10, 2);
     grid.add_widget (play_volume_slider, 30, 46, 23, 2);
     grid.add_widget (play_volume_value_label, 54, 46, 7, 2);
+    peak_label = new Label (this, "");
+    grid.add_widget (peak_label, 54, 49, 7, 2);
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     connect (instrument->signal_global_changed, this, &InstEditVolume::on_global_changed);
@@ -305,6 +314,35 @@ public:
     if (new_volume.size() == instrument->size())
       for (size_t i = 0; i < instrument->size(); i++)
         instrument->sample (i)->set_volume (new_volume[i]);
+  }
+  void
+  add_peak (float peak)
+  {
+    double now = get_time();
+    PeakAndTime new_pt;
+    new_pt.peak_time = now;
+    new_pt.peak = peak;
+    peaks.push_back (new_pt);
+
+    /* remove all peaks older than one second */
+    auto it = std::remove_if (peaks.begin(), peaks.end(), [now] (auto& p) { return std::abs (p.peak_time - now) > 1; });
+    peaks.erase (it, peaks.end());
+
+    float max_peak = 0;
+    for (auto pt : peaks)
+      max_peak = std::max (max_peak, pt.peak);
+
+    if (max_peak > 1)
+      {
+        peak_label->set_color (Color (1.0, 0.0, 0.0));
+        peak_label->set_bold (true);
+      }
+    else
+      {
+        peak_label->set_color (ThemeColor::TEXT);
+        peak_label->set_bold (false);
+      }
+    peak_label->set_text (string_printf ("%.1f dB", db_from_factor (max_peak, -96)));
   }
   Signal<>            signal_toggle_play;
   Signal<>            signal_closed;
