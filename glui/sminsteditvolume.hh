@@ -34,6 +34,16 @@ class InstEditVolume : public Window
   float                    falling_peak = 0;
   double                   falling_peak_time = 0;
 
+  static std::string
+  simple_number_to_string (double number)
+  {
+    // avoid printing -0.0 for small negative values
+    std::string s = string_printf ("%.1f", number);
+    if (s == "-0.0")
+      return "0.0";
+    else
+      return s;
+  }
   struct VolumeEdit : public Widget {
     Instrument *instrument = nullptr;
     Sample     *sample = nullptr;
@@ -88,7 +98,7 @@ class InstEditVolume : public Window
     void
     on_volume_changed()
     {
-      db_label->set_text (string_printf ("%.1f", sample->volume()));
+      db_label->set_text (simple_number_to_string (sample->volume()));
       slider->set_value (volume_to_slider (sample->volume(), sample_min_db, sample_max_db));
     }
     void
@@ -297,7 +307,7 @@ public:
             for (auto volume_edit : sample_widgets)
               {
                 if (volume_edit->sample->midi_note() == sample->midi_note())
-                  volume_edit->energy_delta_label->set_text (string_printf ("%.1f", db_from_factor (factor, -96)));
+                  volume_edit->energy_delta_label->set_text (simple_number_to_string (db_from_factor (factor, -96)));
               }
           }
       }
