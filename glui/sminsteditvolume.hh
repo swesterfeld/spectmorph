@@ -5,6 +5,7 @@
 #include "smslider.hh"
 #include "smled.hh"
 #include "smaudiotool.hh"
+#include "smvumeter.hh"
 
 namespace SpectMorph
 {
@@ -22,12 +23,15 @@ class InstEditVolume : public Window
   Slider         *global_slider = nullptr;
   ComboBox       *ref_inst_combobox = nullptr;
   Label          *peak_label = nullptr;
+  VUMeter        *peak_meter = nullptr;
 
   struct PeakAndTime {
     float  peak = 0;
     double peak_time = 0;
   };
   std::vector<PeakAndTime> peaks;
+  float                    falling_peak = 0;
+  double                   falling_peak_time = 0;
 
   struct VolumeEdit : public Widget {
     Instrument *instrument = nullptr;
@@ -184,6 +188,8 @@ public:
     grid.add_widget (play_volume_value_label, 54, 46, 7, 2);
     peak_label = new Label (this, "");
     grid.add_widget (peak_label, 54, 49, 7, 2);
+    peak_meter = new VUMeter (this);
+    grid.add_widget (peak_meter, 44, 49, 9, 2);
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
     connect (instrument->signal_global_changed, this, &InstEditVolume::on_global_changed);
@@ -324,13 +330,23 @@ public:
     new_pt.peak = peak;
     peaks.push_back (new_pt);
 
-    /* remove all peaks older than one second */
-    auto it = std::remove_if (peaks.begin(), peaks.end(), [now] (auto& p) { return std::abs (p.peak_time - now) > 1; });
+    /* remove all peaks older than 500ms */
+    auto it = std::remove_if (peaks.begin(), peaks.end(), [now] (auto& p) { return std::abs (p.peak_time - now) > 0.5; });
     peaks.erase (it, peaks.end());
 
     float max_peak = 0;
     for (auto pt : peaks)
       max_peak = std::max (max_peak, pt.peak);
+
+    if (max_peak > falling_peak)
+      {
+        falling_peak = max_peak;
+      }
+    else
+      {
+        falling_peak = std::clamp (falling_peak * std::exp2 (-(now - falling_peak_time) * 100), 0.0, 1.0);
+      }
+    falling_peak_time = now;
 
     if (max_peak > 1)
       {
@@ -343,6 +359,7 @@ public:
         peak_label->set_bold (false);
       }
     peak_label->set_text (string_printf ("%.1f dB", db_from_factor (max_peak, -96)));
+    peak_meter->set_value (std::clamp (std::cbrt (std::max (max_peak, falling_peak)), 0.f, 1.f));
   }
   Signal<>            signal_toggle_play;
   Signal<>            signal_closed;
