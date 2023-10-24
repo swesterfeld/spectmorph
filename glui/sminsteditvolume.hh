@@ -18,16 +18,21 @@ class InstEditVolume : public Window
   Button         *reset_button = nullptr;
   Slider         *play_volume_slider = nullptr;
   Label          *play_volume_value_label = nullptr;
+  Label          *global_volume_label = nullptr;
+  Slider         *global_slider = nullptr;
+  ComboBox       *ref_inst_combobox = nullptr;
 
   struct VolumeEdit : public Widget {
-    Sample *sample = nullptr;
-    Label  *db_label = nullptr;
-    Led    *led = nullptr;
-    Button *play_button = nullptr;
-    Slider *slider = nullptr;
-    Label  *energy_delta_label = nullptr;
+    Instrument *instrument = nullptr;
+    Sample     *sample = nullptr;
+    Label      *db_label = nullptr;
+    Led        *led = nullptr;
+    Button     *play_button = nullptr;
+    Slider     *slider = nullptr;
+    Label      *energy_delta_label = nullptr;
     VolumeEdit (Widget *parent, Instrument *instrument, Sample *sample) :
       Widget (parent),
+      instrument (instrument),
       sample (sample)
     {
       FixedGrid grid;
@@ -64,6 +69,8 @@ class InstEditVolume : public Window
       y += 5;
 
       connect (instrument->signal_volume_changed, this, &VolumeEdit::on_volume_changed);
+      connect (instrument->signal_global_changed, this, &VolumeEdit::on_global_changed);
+      on_global_changed();
       on_volume_changed();
     }
     void
@@ -72,11 +79,18 @@ class InstEditVolume : public Window
       db_label->set_text (string_printf ("%.1f", sample->volume()));
       slider->set_value (volume_to_slider (sample->volume(), sample_min_db, sample_max_db));
     }
+    void
+    on_global_changed()
+    {
+      bool volume_edit = !instrument->auto_volume().enabled;
+      db_label->set_enabled (volume_edit);
+      slider->set_enabled (volume_edit);
+      energy_delta_label->set_enabled (volume_edit);
+    }
   };
   std::vector<VolumeEdit *> sample_widgets;
 
   Index     inst_index;
-  ComboBox *ref_inst_combobox = nullptr;
 
   static constexpr double global_min_db = -12;
   static constexpr double global_max_db = 36;
@@ -97,15 +111,15 @@ public:
 
     FixedGrid grid;
 
-    Label  *global_volume_label = new Label (this, "");
+    global_volume_label = new Label (this, "");
     global_volume_label->set_align (TextAlign::CENTER);
-    auto update_global_volume_label = [global_volume_label, instrument]() { global_volume_label->set_text (string_printf ("%.1f dB", instrument->global_volume())); };
+    auto update_global_volume_label = [instrument, this]() { global_volume_label->set_text (string_printf ("%.1f dB", instrument->global_volume())); };
     connect (instrument->signal_volume_changed, update_global_volume_label);
     update_global_volume_label();
 
     grid.add_widget (global_volume_label, 1, 1, 6, 3);
 
-    Slider *global_slider = new Slider (this, volume_to_slider (instrument->global_volume(), global_min_db, global_max_db), Orientation::VERTICAL);
+    global_slider = new Slider (this, volume_to_slider (instrument->global_volume(), global_min_db, global_max_db), Orientation::VERTICAL);
     grid.add_widget (global_slider, 2, 4, 3, 40);
     connect (global_slider->signal_value_changed,
              [this] (double value) { this->instrument->set_global_volume (slider_to_volume (value, global_min_db, global_max_db)); });
@@ -163,6 +177,8 @@ public:
     grid.add_widget (play_volume_value_label, 54, 46, 7, 2);
 
     connect (instrument->signal_samples_changed, this, &InstEditVolume::on_samples_changed);
+    connect (instrument->signal_global_changed, this, &InstEditVolume::on_global_changed);
+    on_global_changed();
     on_samples_changed();
     audio_updated();
     show();
@@ -183,6 +199,13 @@ public:
     double volume_db = slider_to_volume (value, play_min_db, play_max_db);
     play_volume_value_label->set_text (string_printf ("%.1f dB", volume_db));
     signal_gain_changed (db_to_factor (volume_db));
+  }
+  void
+  on_global_changed()
+  {
+    bool volume_edit = !instrument->auto_volume().enabled;
+    global_volume_label->set_enabled (volume_edit);
+    global_slider->set_enabled (volume_edit);
   }
   void
   on_samples_changed()
