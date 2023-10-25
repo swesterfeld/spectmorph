@@ -177,6 +177,7 @@ public:
 
   Signal<> signal_volume_changed;
   Signal<> signal_samples_changed;
+  Signal<> signal_selected_sample_changed;
   Signal<> signal_marker_changed;
   Signal<> signal_global_changed;  // global auto volume, auto tune or advanced params changed
 };

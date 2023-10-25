@@ -146,8 +146,7 @@ Instrument::add_sample (const WavData& wav_data, const string& filename)
   sample->set_marker (MARKER_LOOP_START, 0.4 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
   sample->set_marker (MARKER_LOOP_END, 0.6 * 1000.0 * wav_data.samples().size() / wav_data.mix_freq());
 
-  update_order(); // resort, emit signal_samples_changed()
-
+  update_order(); // resort, emit signal_samples_changed(), signal_selected_sample_changed()
   return sample;
 }
 
@@ -164,6 +163,7 @@ Instrument::remove_sample()
         m_selected = std::max (0, m_selected - 1);
 
       signal_samples_changed();
+      signal_selected_sample_changed();
     }
 }
 
@@ -221,7 +221,7 @@ Instrument::set_selected (int sel)
 {
   m_selected = sel;
 
-  signal_samples_changed();
+  signal_selected_sample_changed();
 }
 
 void
@@ -236,6 +236,7 @@ Instrument::clear()
   m_selected       = -1;
 
   signal_samples_changed();
+  signal_selected_sample_changed();
   signal_global_changed();
 }
 
@@ -451,7 +452,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
     m_selected = -1;
   else
     m_selected = 0;
-  update_order(); // resort, emit signal_samples_changed()
+  update_order(); // resort, emit signal_samples_changed(), signal_selected_sample_changed()
   signal_global_changed();
 
   return Error::Code::NONE;
@@ -682,6 +683,7 @@ Instrument::update_order()
       m_selected = n;
 
   signal_samples_changed();
+  signal_selected_sample_changed();
 }
 
 map<int, int>
