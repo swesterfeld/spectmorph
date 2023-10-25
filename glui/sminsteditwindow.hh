@@ -51,7 +51,7 @@ class InstEditBackend
 public:
   InstEditBackend (SynthInterface *synth_interface);
 
-  void switch_to_sample (const Sample *sample, const Instrument *instrument, const std::string& reference);
+  void update_instrument (const Instrument *instrument, const std::string& reference);
   bool have_builder();
   void on_timer();
 

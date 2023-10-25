@@ -85,7 +85,7 @@ InstEditBackend::InstEditBackend (SynthInterface *synth_interface) :
 }
 
 void
-InstEditBackend::switch_to_sample (const Sample *sample, const Instrument *instrument, const string& reference)
+InstEditBackend::update_instrument (const Instrument *instrument, const string& reference)
 {
   WavSetBuilder *builder = new WavSetBuilder (instrument, true);
   builder->set_cache_group (cache_group.get());
@@ -575,17 +575,13 @@ InstEditWindow::on_samples_changed()
       const double time_s = sample->wav_data().samples().size() / sample->wav_data().mix_freq();
       time_label->set_text (string_printf ("%.3f s", time_s));
     }
-  if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+  m_backend.update_instrument (instrument, reference);
 }
 
 void
 InstEditWindow::on_marker_or_volume_changed()
 {
-  Sample *sample = instrument->sample (instrument->selected());
-
-  if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+  m_backend.update_instrument (instrument, reference);
 }
 
 void
@@ -594,10 +590,7 @@ InstEditWindow::on_reference_changed (const string& new_reference)
   if (new_reference != reference)
     {
       reference = new_reference;
-      Sample *sample = instrument->sample (instrument->selected());
-
-      if (sample)
-        m_backend.switch_to_sample (sample, instrument, reference);
+      m_backend.update_instrument (instrument, reference);
     }
 }
 
@@ -667,10 +660,7 @@ InstEditWindow::on_global_changed()
   name_line_edit->set_text (instrument->name());
   edit_volume_button->set_visible (!instrument->auto_volume().enabled);
 
-  Sample *sample = instrument->sample (instrument->selected());
-
-  if (sample)
-    m_backend.switch_to_sample (sample, instrument, reference);
+  m_backend.update_instrument (instrument, reference);
 }
 
 Sample::Loop
