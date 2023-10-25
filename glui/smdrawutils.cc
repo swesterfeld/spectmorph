@@ -3,6 +3,7 @@
 #include "smdrawutils.hh"
 #include "smwindow.hh"
 #include "smconfig.hh"
+#include "smmain.hh"
 
 #include <map>
 
@@ -54,10 +55,41 @@ DrawUtils::static_text_extents (Window *window, const string& text)
   return extents;
 }
 
+namespace SpectMorph {
+
+struct GlobalFontData {
+  map<string, std::pair<bool, FT_Face>> ft_map;
+  std::unique_ptr<Config>               cfg;
+  bool                                  ft_init_ok = false;
+  FT_Library                             ft_library;
+
+  GlobalFontData() :
+    cfg (new Config())
+  {
+    ft_init_ok = (FT_Init_FreeType (&ft_library) == 0);
+  }
+  ~GlobalFontData()
+  {
+    if (ft_init_ok)
+      FT_Done_FreeType (ft_library);
+  }
+};
+
+}
+
 void
 DrawUtils::select_font_face (bool bold)
 {
-  static map<string, std::pair<bool, FT_Face>> ft_map;
+  static GlobalFontData *global_font_data = nullptr;
+  if (!global_font_data)
+    {
+      global_font_data = new GlobalFontData();
+      sm_global_free_func ([]()
+        {
+          delete global_font_data;
+          global_font_data = nullptr;
+        });
+    }
 
   string filename = sm_get_install_dir (INSTALL_DIR_FONTS);
   if (bold)
@@ -65,42 +97,36 @@ DrawUtils::select_font_face (bool bold)
   else
     filename += "/dejavu-lgc-sans.ttf";
 
-  static std::unique_ptr<Config> cfg;
-  if (!cfg)
-    cfg.reset (new Config());
-
   if (bold) /* config file overrides built-in defaults */
     {
-      if (cfg->font_bold() != "")
-        filename = cfg->font_bold();
+      if (global_font_data->cfg->font_bold() != "")
+        filename = global_font_data->cfg->font_bold();
     }
   else
     {
-      if (cfg->font() != "")
-        filename = cfg->font();
+      if (global_font_data->cfg->font() != "")
+        filename = global_font_data->cfg->font();
     }
 
-  if (ft_map.find (filename) == ft_map.end())
+  if (global_font_data->ft_map.find (filename) == global_font_data->ft_map.end())
     {
       FT_Face face;
-      FT_Library value;
-
-      if (FT_Init_FreeType (&value) == 0)
+      if (global_font_data->ft_init_ok)
         {
           /* only load each font once */
-          if (FT_New_Face (value, filename.c_str(), 0, &face) == 0)
+          if (FT_New_Face (global_font_data->ft_library, filename.c_str(), 0, &face) == 0)
             {
-              ft_map[filename] = std::make_pair (true, face);
+              global_font_data->ft_map[filename] = std::make_pair (true, face);
               sm_debug ("found font %s\n", filename.c_str());
             }
           else
             {
-              ft_map[filename].first = false; // don't try again
+              global_font_data->ft_map[filename].first = false; // don't try again
               sm_debug ("error loading font %s\n", filename.c_str());
             }
         }
     }
-  auto ft_map_entry = ft_map[filename];
+  auto ft_map_entry = global_font_data->ft_map[filename];
   if (ft_map_entry.first)
     {
       cairo_font_face_t *ct = cairo_ft_font_face_create_for_ft_face (ft_map_entry.second, 0);
