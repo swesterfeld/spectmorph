@@ -152,6 +152,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
 
   /* attach to model */
   connect (instrument->signal_samples_changed, this, &InstEditWindow::on_samples_changed);
+  connect (instrument->signal_selected_sample_changed, this, &InstEditWindow::on_selected_sample_changed);
   connect (instrument->signal_marker_changed, this, &InstEditWindow::on_marker_or_volume_changed);
   connect (instrument->signal_volume_changed, this, &InstEditWindow::on_marker_or_volume_changed);
   connect (instrument->signal_global_changed, this, &InstEditWindow::on_global_changed);
@@ -530,7 +531,7 @@ InstEditWindow::load_sample_convert_from_stereo (const WavData& wav_data, const 
 }
 
 void
-InstEditWindow::on_samples_changed()
+InstEditWindow::on_selected_sample_changed()
 {
   if (!instrument) // during close we cannot access the instrument anymore
     return;
@@ -575,6 +576,15 @@ InstEditWindow::on_samples_changed()
       const double time_s = sample->wav_data().samples().size() / sample->wav_data().mix_freq();
       time_label->set_text (string_printf ("%.3f s", time_s));
     }
+}
+
+void
+InstEditWindow::on_samples_changed()
+{
+  if (!instrument) // during close we cannot access the instrument anymore
+    return;
+
+  on_selected_sample_changed();
   m_backend.update_instrument (instrument, reference);
 }
 
@@ -847,7 +857,10 @@ InstEditWindow::on_sample_changed()
 {
   int idx = sample_combobox->current_index();
   if (idx >= 0)
-    instrument->set_selected (idx);
+    {
+      stop_playback();
+      instrument->set_selected (idx);
+    }
 }
 
 void
@@ -856,7 +869,10 @@ InstEditWindow::on_sample_up()
   int selected = instrument->selected();
 
   if (selected > 0)
-    instrument->set_selected (selected - 1);
+    {
+      stop_playback();
+      instrument->set_selected (selected - 1);
+    }
 }
 
 void
@@ -865,7 +881,17 @@ InstEditWindow::on_sample_down()
   int selected = instrument->selected();
 
   if (selected >= 0 && size_t (selected + 1) < instrument->size())
-    instrument->set_selected (selected + 1);
+    {
+      stop_playback();
+      instrument->set_selected (selected + 1);
+    }
+}
+
+void
+InstEditWindow::stop_playback()
+{
+  if (playing)
+    on_toggle_play();
 }
 
 void

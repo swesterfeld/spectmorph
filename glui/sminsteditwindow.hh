@@ -73,12 +73,14 @@ class InstEditWindow : public Window
   void          load_sample (const std::string& filename);
   void          load_sample_convert_from_stereo (const WavData& wav_data, const std::string& filename, LoadStereoDialog::Result result);
   void          on_samples_changed();
+  void          on_selected_sample_changed();
   void          on_marker_or_volume_changed();
   void          update_auto_checkboxes();
   void          on_global_changed();
   void          on_reference_changed (const std::string& new_reference);
   void          on_midi_to_reference_changed (bool new_midi_to_reference);
   void          on_gain_changed (float new_gain);
+  void          stop_playback();
   Sample::Loop  text_to_loop (const std::string& text);
   std::string   loop_to_text (const Sample::Loop loop);
 
