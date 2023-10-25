@@ -53,11 +53,14 @@ class InstEditVolume : public Window
     Button     *play_button = nullptr;
     Slider     *slider = nullptr;
     Label      *energy_delta_label = nullptr;
-    VolumeEdit (Widget *parent, Instrument *instrument, Sample *sample) :
+    int         sample_index;
+    VolumeEdit (Widget *parent, Instrument *instrument, int sample_index) :
       Widget (parent),
       instrument (instrument),
-      sample (sample)
+      sample_index (sample_index)
     {
+      sample = instrument->sample (sample_index);
+
       FixedGrid grid;
       double y = 0;
 
@@ -74,7 +77,7 @@ class InstEditVolume : public Window
       grid.add_widget (slider, 0, y, 3, 20);
       y += 20;
       connect (slider->signal_value_changed,
-               [sample] (double value) { sample->set_volume (slider_to_volume (value, sample_min_db, sample_max_db)); });
+               [this] (double value) { sample->set_volume (slider_to_volume (value, sample_min_db, sample_max_db)); });
 
       Label *label = new Label (this, note_to_text (sample->midi_note()));
       label->set_orientation (Orientation::VERTICAL);
@@ -158,7 +161,7 @@ public:
     grid.add_widget (reset_button, 1, 45, 20, 3);
 
     ref_inst_combobox = new ComboBox (this);
-    grid.add_widget (ref_inst_combobox, 1, 48, 20, 3);
+    grid.add_widget (ref_inst_combobox, 1, 48.5, 20, 3);
 
     inst_index.load_file ("instruments:standard");
 
@@ -178,7 +181,7 @@ public:
 
     CheckBox *midi_to_reference_checkbox = new CheckBox (this, "Midi->Ref");
     midi_to_reference_checkbox->set_checked (midi_to_reference);
-    grid.add_widget (midi_to_reference_checkbox, 22, 48.5, 12, 2);
+    grid.add_widget (midi_to_reference_checkbox, 22, 49, 12, 2);
     connect (midi_to_reference_checkbox->signal_toggled, [this] (bool checked) {
       signal_midi_to_reference_changed (checked);
     });
@@ -190,7 +193,7 @@ public:
 
     auto_select_checkbox = new CheckBox (this, "Auto Select");
     auto_select_checkbox->set_checked (true);
-    grid.add_widget (auto_select_checkbox, 32, 48.5, 10, 2);
+    grid.add_widget (auto_select_checkbox, 32, 49, 10, 2);
 
     double play_db = db_from_factor (play_gain, -96);
     play_volume_slider = new Slider (this, volume_to_slider (play_db, play_min_db, play_max_db));
@@ -248,24 +251,22 @@ public:
     sample_widgets.clear();
 
     double x = 0;
-    for (int index = int (instrument->size()) - 1; index >= 0; index--)
+    for (int sample_index = int (instrument->size()) - 1; sample_index >= 0; sample_index--)
       {
-        Sample *sample = instrument->sample (index);
-
-        VolumeEdit *volume_edit = new VolumeEdit (scroll_widget, instrument, sample);
+        VolumeEdit *volume_edit = new VolumeEdit (scroll_widget, instrument, sample_index);
         grid.add_widget (volume_edit, x, 0, 3, 30);
         sample_widgets.push_back (volume_edit);
         x += 3;
 
-        int note = sample->midi_note();
-        connect (volume_edit->play_button->signal_pressed, [this, index, note]() {
+        int note = instrument->sample (sample_index)->midi_note();
+        connect (volume_edit->play_button->signal_pressed, [this, sample_index, note]() {
           if (auto_select_checkbox->checked())
-            instrument->set_selected (index);
+            instrument->set_selected (sample_index);
           synth_interface->synth_inst_edit_note (note, true, 0);
         });
-        connect (volume_edit->play_button->signal_right_pressed, [this, index, note]() {
+        connect (volume_edit->play_button->signal_right_pressed, [this, sample_index, note]() {
           if (auto_select_checkbox->checked())
-            instrument->set_selected (index);
+            instrument->set_selected (sample_index);
           synth_interface->synth_inst_edit_note (note, true, 2);
         });
         connect (volume_edit->play_button->signal_released, [this, note]() {
@@ -291,6 +292,12 @@ public:
     for (auto volume_edit : sample_widgets)
       {
         bool on = std::find (notes.begin(), notes.end(), volume_edit->sample->midi_note()) != notes.end();
+        if (!volume_edit->led->on() && on)
+          {
+            /* note on event - a led that was previously off is now turned on */
+            if (auto_select_checkbox->checked())
+              instrument->set_selected (volume_edit->sample_index);
+          }
         volume_edit->led->set_on (on);
       }
   }
