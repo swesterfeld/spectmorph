@@ -25,6 +25,7 @@ class InstEditVolume : public Window
   ComboBox       *ref_inst_combobox = nullptr;
   Label          *peak_label = nullptr;
   VUMeter        *peak_meter = nullptr;
+  CheckBox       *auto_select_checkbox = nullptr;
 
   struct PeakAndTime {
     float  peak = 0;
@@ -175,9 +176,9 @@ public:
       signal_reference_changed (smset);
     });
 
-    CheckBox *midi_to_reference_checkbox = new CheckBox (this, "Use Reference for Midi Input");
+    CheckBox *midi_to_reference_checkbox = new CheckBox (this, "Midi->Ref");
     midi_to_reference_checkbox->set_checked (midi_to_reference);
-    grid.add_widget (midi_to_reference_checkbox, 22, 48.5, 20, 2);
+    grid.add_widget (midi_to_reference_checkbox, 22, 48.5, 12, 2);
     connect (midi_to_reference_checkbox->signal_toggled, [this] (bool checked) {
       signal_midi_to_reference_changed (checked);
     });
@@ -186,6 +187,10 @@ public:
       midi_to_reference_checkbox->set_checked (!midi_to_reference_checkbox->checked());
       signal_midi_to_reference_changed (midi_to_reference_checkbox->checked());
     });
+
+    auto_select_checkbox = new CheckBox (this, "Auto Select");
+    auto_select_checkbox->set_checked (true);
+    grid.add_widget (auto_select_checkbox, 32, 48.5, 10, 2);
 
     double play_db = db_from_factor (play_gain, -96);
     play_volume_slider = new Slider (this, volume_to_slider (play_db, play_min_db, play_max_db));
@@ -242,24 +247,25 @@ public:
       w->delete_later();
     sample_widgets.clear();
 
-    std::vector<Sample *> samples;
-    for (size_t i = 0; i < instrument->size(); i++)
-      samples.push_back (instrument->sample (i));
-    std::reverse (samples.begin(), samples.end()); // instrument samples start with highest note
-
     double x = 0;
-    for (auto sample : samples)
+    for (int index = int (instrument->size()) - 1; index >= 0; index--)
       {
+        Sample *sample = instrument->sample (index);
+
         VolumeEdit *volume_edit = new VolumeEdit (scroll_widget, instrument, sample);
         grid.add_widget (volume_edit, x, 0, 3, 30);
         sample_widgets.push_back (volume_edit);
         x += 3;
 
         int note = sample->midi_note();
-        connect (volume_edit->play_button->signal_pressed, [this, note]() {
+        connect (volume_edit->play_button->signal_pressed, [this, index, note]() {
+          if (auto_select_checkbox->checked())
+            instrument->set_selected (index);
           synth_interface->synth_inst_edit_note (note, true, 0);
         });
-        connect (volume_edit->play_button->signal_right_pressed, [this, note]() {
+        connect (volume_edit->play_button->signal_right_pressed, [this, index, note]() {
+          if (auto_select_checkbox->checked())
+            instrument->set_selected (index);
           synth_interface->synth_inst_edit_note (note, true, 2);
         });
         connect (volume_edit->play_button->signal_released, [this, note]() {
