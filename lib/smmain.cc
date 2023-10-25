@@ -18,6 +18,8 @@
 #endif
 
 using std::string;
+using std::vector;
+using std::function;
 
 namespace SpectMorph
 {
@@ -32,6 +34,8 @@ struct GlobalData
 
   std::thread::id ui_thread;
   std::thread::id dsp_thread;
+
+  vector<function<void()>> free_functions;
 };
 
 static GlobalData *global_data = nullptr;
@@ -73,6 +77,13 @@ sm_plugin_init()
 }
 
 void
+sm_global_free_func (function<void()> func)
+{
+  assert (global_data);
+  global_data->free_functions.emplace_back (func);
+}
+
+void
 sm_plugin_cleanup()
 {
   assert (sm_init_counter > 0);
@@ -110,6 +121,10 @@ GlobalData::GlobalData()
 
 GlobalData::~GlobalData()
 {
+  for (const auto& func : free_functions)
+    func();
+  free_functions.clear();
+
   FFT::cleanup();
   sm_debug ("GlobalData instance deleted\n");
 }

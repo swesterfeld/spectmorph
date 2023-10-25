@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_MAIN_HH
 #define SPECTMORPH_MAIN_HH
 
+#include <functional>
+
 namespace SpectMorph
 {
 
@@ -15,6 +17,7 @@ void sm_set_ui_thread();
 void sm_set_dsp_thread();
 bool sm_ui_thread();
 bool sm_dsp_thread();
+void sm_global_free_func (std::function<void()> func);
 
 class InstEncCache;
 class WavSetRepo;
