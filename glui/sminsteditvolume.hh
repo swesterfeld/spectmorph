@@ -120,8 +120,8 @@ class InstEditVolume : public Window
 
   static constexpr double global_min_db = -12;
   static constexpr double global_max_db = 36;
-  static constexpr double sample_min_db = -12;
-  static constexpr double sample_max_db = 12;
+  static constexpr double sample_min_db = -15;
+  static constexpr double sample_max_db = 15;
   static constexpr double play_min_db = -36;
   static constexpr double play_max_db = 12;
 public:
@@ -361,8 +361,11 @@ public:
       }
     /* if we had nullptr samples, analysis was still running */
     if (new_volume.size() == instrument->size())
-      for (size_t i = 0; i < instrument->size(); i++)
-        instrument->sample (i)->set_volume (new_volume[i]);
+      {
+        for (size_t i = 0; i < instrument->size(); i++)
+          instrument->sample (i)->set_volume (new_volume[i]);
+        reset_remove_average();
+      }
   }
   void
   reset_volumes_to_zero()
