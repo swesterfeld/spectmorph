@@ -7,6 +7,7 @@
 #include "smaudiotool.hh"
 #include "smvumeter.hh"
 #include "smvolumeresetdialog.hh"
+#include "sminsteditwindow.hh"
 
 namespace SpectMorph
 {
@@ -125,7 +126,8 @@ class InstEditVolume : public Window
   static constexpr double play_min_db = -36;
   static constexpr double play_max_db = 12;
 public:
-  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference, bool midi_to_reference, float play_gain) :
+  InstEditVolume (Window *window, Instrument *instrument, SynthInterface *synth_interface, const std::string& reference, bool midi_to_reference, float play_gain,
+      InstEditWindow *inst_edit_window) :
     Window (*window->event_loop(), "SpectMorph - Instrument Volume Editor", 64 * 8, 52 * 8, 0, false, window->native_window()),
     instrument (instrument),
     synth_interface (synth_interface)
@@ -192,8 +194,14 @@ public:
     });
 
     auto_select_checkbox = new CheckBox (this, "Auto Select");
-    auto_select_checkbox->set_checked (true);
+    auto_select_checkbox->set_checked (inst_edit_window->auto_select());
     grid.add_widget (auto_select_checkbox, 32, 49, 10, 2);
+    connect (inst_edit_window->signal_auto_select_changed, [this, inst_edit_window] () {
+      auto_select_checkbox->set_checked (inst_edit_window->auto_select());
+    });
+    connect (auto_select_checkbox->signal_toggled, [inst_edit_window] (bool auto_select) {
+      inst_edit_window->set_auto_select (auto_select);
+    });
 
     double play_db = db_from_factor (play_gain, -96);
     play_volume_slider = new Slider (this, volume_to_slider (play_db, play_min_db, play_max_db));
@@ -292,12 +300,6 @@ public:
     for (auto volume_edit : sample_widgets)
       {
         bool on = std::find (notes.begin(), notes.end(), volume_edit->sample->midi_note()) != notes.end();
-        if (!volume_edit->led->on() && on)
-          {
-            /* note on event - a led that was previously off is now turned on */
-            if (auto_select_checkbox->checked())
-              instrument->set_selected (volume_edit->sample_index);
-          }
         volume_edit->led->set_on (on);
       }
   }

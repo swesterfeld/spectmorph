@@ -16,6 +16,7 @@
 #include "smscrollview.hh"
 #include "sminstenccache.hh"
 #include "smzip.hh"
+#include "sminsteditvolume.hh"
 
 using namespace SpectMorph;
 
@@ -329,7 +330,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   /*--- Playback: playing ---*/
   playing_label = new Label (this, "");
   grid.add_widget (new Label (this, "Playing"), 7.5, 3, 10, 3);
-  grid.add_widget (playing_label, 15, 3, 10, 3);
+  grid.add_widget (playing_label, 13, 3, 10, 3);
+
+  /*--- Playback: auto select */
+  auto_select_checkbox = new CheckBox (this, "Auto Select");
+  grid.add_widget (auto_select_checkbox, 21, 3.5, 10, 2);
+  connect (auto_select_checkbox->signal_toggled, [this] (bool) { signal_auto_select_changed(); });
 
   /*--- Playback: progress ---*/
   progress_bar = new ProgressBar (this);
@@ -343,63 +349,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   connect (timer->signal_timeout, this, &InstEditWindow::on_update_led);
   timer->start (0);
 
-  connect (synth_interface->signal_notify_event, [this](SynthNotifyEvent *ne) {
-    auto iev = dynamic_cast<InstEditVoiceEvent *> (ne);
-    if (iev && instrument)
-      {
-        vector<float> play_pointers;
-
-        Sample *sample = instrument->sample (instrument->selected());
-        if (sample)
-          {
-            for (const auto& voice : iev->voices)
-              {
-                if (fabs (voice.fundamental_note - sample->midi_note()) < 0.1 &&
-                    voice.layer < 2) /* no play position pointer for reference */
-                  {
-                    double ppos = voice.current_pos;
-                    if (voice.layer == 0)
-                      {
-                        const double clip_start_ms = sample->get_marker (MARKER_CLIP_START);
-                        if (clip_start_ms > 0)
-                          ppos += clip_start_ms;
-                      }
-                    play_pointers.push_back (ppos);
-                  }
-              }
-          }
-        sample_widget->set_play_pointers (play_pointers);
-
-        /* this is not 100% accurate if external midi events also affect
-         * the state, but it should be good enough */
-        bool new_playing = iev->voices.size() > 0;
-        set_playing (new_playing);
-
-        string text = "---";
-        if (iev->voices.size() > 0)
-          text = note_to_text (iev->voices[0].note);
-        playing_label->set_text (text);
-
-        if (inst_edit_note)
-          {
-            vector<int> active_notes;
-            for (const auto& voice : iev->voices)
-              active_notes.push_back (voice.note);
-            inst_edit_note->set_active_notes (active_notes);
-          }
-
-        if (inst_edit_volume)
-          {
-            vector<int> active_notes;
-            for (const auto& voice : iev->voices)
-              if (voice.layer == 0)
-                active_notes.push_back (lrint (voice.fundamental_note));
-            inst_edit_volume->set_active_notes (active_notes);
-            inst_edit_volume->add_peak (iev->peak);
-          }
-      }
-  });
-
+  connect (synth_interface->signal_notify_event, this, &InstEditWindow::on_synth_notify_event);
   // use global coordinates again
   grid.dx = 0;
   grid.dy = 0;
@@ -528,6 +478,82 @@ InstEditWindow::load_sample_convert_from_stereo (const WavData& wav_data, const 
 
   WavData mono_wav_data (mono_samples, /* n_channels */ 1, wav_data.mix_freq(), wav_data.bit_depth());
   instrument->add_sample (mono_wav_data, filename);
+}
+
+void
+InstEditWindow::on_synth_notify_event (SynthNotifyEvent *notify_event)
+{
+  if (!instrument)
+    return;
+
+  auto iev = dynamic_cast<InstEditVoiceEvent *> (notify_event);
+  if (!iev)
+    return;
+
+  vector<float> play_pointers;
+
+  Sample *sample = instrument->sample (instrument->selected());
+  if (sample)
+    {
+      for (const auto& voice : iev->voices)
+        {
+          if (fabs (voice.fundamental_note - sample->midi_note()) < 0.1 &&
+              voice.layer < 2) /* no play position pointer for reference */
+            {
+              double ppos = voice.current_pos;
+              if (voice.layer == 0)
+                {
+                  const double clip_start_ms = sample->get_marker (MARKER_CLIP_START);
+                  if (clip_start_ms > 0)
+                    ppos += clip_start_ms;
+                }
+              play_pointers.push_back (ppos);
+            }
+        }
+    }
+  sample_widget->set_play_pointers (play_pointers);
+
+  /* this is not 100% accurate if external midi events also affect
+   * the state, but it should be good enough */
+  bool new_playing = iev->voices.size() > 0;
+  set_playing (new_playing);
+
+  string text = "---";
+  if (iev->voices.size() > 0)
+    text = note_to_text (iev->voices[0].note);
+  playing_label->set_text (text);
+
+  if (inst_edit_note)
+    {
+      vector<int> active_notes;
+      for (const auto& voice : iev->voices)
+        active_notes.push_back (voice.note);
+      inst_edit_note->set_active_notes (active_notes);
+    }
+
+  vector<int> layer0_active_notes;
+  for (const auto& voice : iev->voices)
+    if (voice.layer == 0)
+      {
+        int note = lrint (voice.fundamental_note);
+        layer0_active_notes.push_back (note);
+
+        if (auto_select_checkbox->checked() && !layer0_playing.count (note))
+          {
+            for (size_t i = 0; i < instrument->size(); i++)
+              if (instrument->sample (i)->midi_note() == note)
+                instrument->set_selected (i);
+          }
+      }
+  /* keep track of playing notes on layer 0 for auto select */
+  layer0_playing.clear();
+  layer0_playing.insert (layer0_active_notes.begin(), layer0_active_notes.end());
+
+  if (inst_edit_volume)
+    {
+      inst_edit_volume->set_active_notes (layer0_active_notes);
+      inst_edit_volume->add_peak (iev->peak);
+    }
 }
 
 void
@@ -805,7 +831,7 @@ InstEditWindow::on_show_hide_volume()
     }
   else
     {
-      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference, play_gain);
+      inst_edit_volume = new InstEditVolume (this, instrument, synth_interface, reference, midi_to_reference, play_gain, this);
       connect (inst_edit_volume->signal_toggle_play, this, &InstEditWindow::on_toggle_play);
       connect (inst_edit_volume->signal_closed, [this]() {
         inst_edit_volume = nullptr;
@@ -1021,4 +1047,20 @@ InstEditWindow::on_have_audio (int note, Audio *audio)
   sample_widget->update();
   if (inst_edit_volume)
     inst_edit_volume->audio_updated();
+}
+
+void
+InstEditWindow::set_auto_select (bool auto_select)
+{
+  if (auto_select != auto_select_checkbox->checked())
+    {
+      auto_select_checkbox->set_checked (auto_select);
+      signal_auto_select_changed();
+    }
+}
+
+bool
+InstEditWindow::auto_select() const
+{
+  return auto_select_checkbox->checked();
 }

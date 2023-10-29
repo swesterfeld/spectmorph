@@ -8,7 +8,6 @@
 #include "smbuilderthread.hh"
 #include "smwindow.hh"
 #include "smloadstereodialog.hh"
-#include "sminsteditvolume.hh"
 
 #include <thread>
 
@@ -35,6 +34,7 @@ class SynthInterface;
 
 class IconButton;
 class InstEditWindow;
+class InstEditVolume;
 class InstEditParams;
 class InstEditBackend
 {
@@ -64,7 +64,8 @@ class InstEditWindow : public Window
   std::vector<unsigned char> revert_instrument_data;
   InstEditBackend m_backend;
   SynthInterface *synth_interface;
-  float         play_gain = 1;
+  float           play_gain = 1;
+  std::set<int>   layer0_playing;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
@@ -72,6 +73,7 @@ class InstEditWindow : public Window
   std::string   note_to_text (int i);
   void          load_sample (const std::string& filename);
   void          load_sample_convert_from_stereo (const WavData& wav_data, const std::string& filename, LoadStereoDialog::Result result);
+  void          on_synth_notify_event (SynthNotifyEvent *notify_event);
   void          on_samples_changed();
   void          on_selected_sample_changed();
   void          on_marker_or_volume_changed();
@@ -97,6 +99,7 @@ class InstEditWindow : public Window
   LineEdit *name_line_edit = nullptr;
   CheckBox *auto_volume_checkbox = nullptr;
   CheckBox *auto_tune_checkbox = nullptr;
+  CheckBox *auto_select_checkbox = nullptr;
   IconButton  *play_button = nullptr;
   Button      *add_sample_button = nullptr;
   Button      *remove_sample_button = nullptr;
@@ -124,6 +127,9 @@ public:
 
   void clear_edit_instrument();
 
+  bool auto_select() const;
+  void set_auto_select (bool auto_select);
+
   void on_clear();
   void on_revert();
   void on_add_sample_clicked();
@@ -148,6 +154,8 @@ public:
   void on_toggle_play();
   void set_playing (bool new_playing);
   void on_have_audio (int note, Audio *audio);
+
+  Signal<> signal_auto_select_changed;
 };
 
 }
