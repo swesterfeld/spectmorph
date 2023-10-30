@@ -226,8 +226,12 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   grid.add_widget (hzoom_label, 36, 54, 10, 3);
 
   /*----- vzoom -----*/
+  vzoom_min_value = log10 (0.25);
+  vzoom_max_value = log10 (10);
+  double vzoom_def_value = log10 (1);
+
   grid.add_widget (new Label (this, "VZoom"), 51, 54, 6, 3);
-  Slider *vzoom_slider = new Slider (this, 0.0);
+  Slider *vzoom_slider = new Slider (this, (vzoom_def_value - vzoom_min_value) / (vzoom_max_value - vzoom_min_value));
   grid.add_widget (vzoom_slider, 57, 54, 28, 3);
   connect (vzoom_slider->signal_value_changed, this, &InstEditWindow::on_update_vzoom);
 
@@ -387,7 +391,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   // show complete wave
   on_update_hzoom (0);
 
-  on_update_vzoom (0);
+  on_update_vzoom (vzoom_slider->value());
 }
 
 InstEditWindow::~InstEditWindow()
@@ -779,7 +783,7 @@ void
 InstEditWindow::on_update_vzoom (float value)
 {
   FixedGrid grid;
-  double factor = pow (10, value);
+  double factor = pow (10, value * (vzoom_max_value - vzoom_min_value) + vzoom_min_value);
   sample_widget->set_vzoom (factor);
   vzoom_label->set_text (string_printf ("%.1f %%", factor * 100));
 }

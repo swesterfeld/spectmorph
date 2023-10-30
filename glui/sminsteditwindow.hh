@@ -66,6 +66,8 @@ class InstEditWindow : public Window
   SynthInterface *synth_interface;
   float           play_gain = 1;
   std::set<int>   layer0_playing;
+  double          vzoom_min_value;
+  double          vzoom_max_value;
 
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
