@@ -6,6 +6,7 @@ templates_DATA = \
   2-instruments-unison.smplan     \
   2x2-instruments-grid-gui.smplan \
   1-instrument.smplan             \
+  1-instrument-wav-source.smplan  \
   empty.smplan                    \
   aurora.smplan                   \
   saturn.smplan                   \
