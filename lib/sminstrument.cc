@@ -230,6 +230,7 @@ Instrument::clear()
   samples.clear();
   m_name           = "untitled";
   m_short_name     = "";
+  m_global_volume  = 0;
   m_auto_volume    = AutoVolume();
   m_auto_tune      = AutoTune();
   m_encoder_config = EncoderConfig();
