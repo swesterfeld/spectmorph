@@ -1,16 +1,31 @@
-## SpectMorph NEXT
+## SpectMorph 0.6.1
 
-#### New features
-* Support click & drag in instrument editor sample to scroll & zoom (#22).
-* Support stereo to mono conversion for files added in instrument editor (#14).
-* Support multiple banks for wav sources / instrument editor.
-* Add manual volume editing / normalization to instrument editor.
+#### Instrument Editor
+* Support click & drag sample to scroll & zoom (#22).
+* Support stereo to mono conversion when loading stereo samples (#14).
+* Add manual volume editing / normalization.
+* Implement automatic selection triggered by midi.
+
+#### New instruments
+* Bass Flute
+* Soprano Saxophone
+* Clarinet, Bass Clarinet
+* Tenor Trombone
+* Viola, Double Bass
+* Make samples and meta information for standard instruments available on github.
+
+#### Improvements
+* Support multiple banks for WavSources / instrument editor.
+* Avoid allocations in DSP thread to be hard RT capable.
+* Allow overriding analysis parameter for frame stepping to get higher time resolution.
 
 #### Fixes
-* Fix crash if instrument editor is closed without any samples
-
-#### Internals: Optimizations
-* Significantly reduce number of allocations done in DSP thread
+* Fix UI scaling problem on M1 macOS builds.
+* Fix crash if instrument editor is closed without any samples.
+* Fix cases of undefined behaviour.
+* Fix timing problems for long notes, reproduce long WavSource notes with exact tempo.
+* Fix use-after-free for outdated control events.
+* Fix freetype related memory leak.
 
 ## SpectMorph 0.6.0
 
