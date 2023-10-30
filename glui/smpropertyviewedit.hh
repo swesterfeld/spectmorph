@@ -38,7 +38,7 @@ protected:
   std::vector<ControlView *> control_views;
   std::vector<Widget *> mod_widgets;
 
-  int
+  static int
   window_height (Property& property)
   {
     if (property.modulation_list())
