@@ -101,7 +101,10 @@ location (like the original release tarball does).
 
 Note that if incompatible changes happen to the file format, the git version will
 no longer work with the released instruments set. In that case, feel free to ask
-for a tarball for your git version.
+for a tarball for your git version. The samples and the meta data for the instruments
+are available here:
+
+* [Instrument Repository on Github](https://github.com/swesterfeld/spectmorph-instruments)
 
 [lgpl2.1-badge]: https://img.shields.io/github/license/swesterfeld/spectmorph?style=for-the-badge
 [lgpl2.1-url]: https://github.com/swesterfeld/spectmorph/blob/master/COPYING
