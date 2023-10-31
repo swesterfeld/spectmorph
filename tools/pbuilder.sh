@@ -23,7 +23,7 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-VERSION=0.6.0
+VERSION=0.6.1
 DSC=../../spectmorph_${VERSION}.dsc
 if [ ! -f "../data/spectmorph-instruments-${VERSION}.tar.xz" ]; then
   echo "You need to have an instrument tarball installed to build a package"
