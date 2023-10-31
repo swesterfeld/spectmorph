@@ -458,7 +458,7 @@ overlapping analysis frames. By default 40ms frames are used (larger
 frames for lower notes), and a new analysis frame starts every 10ms.
 
 If a note is slowed down a lot (for instance using positional play with
-a slow LFO), there will now be enough analysis frames available for a
+a slow LFO), there will not be enough analysis frames available for a
 smooth playback. For these cases something like
 
     steps-per-frame=16
