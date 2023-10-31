@@ -221,7 +221,7 @@ by pressing the **Edit** button.
 ## User Instrument Storage
 
 In order to store user defined instruments, SpectMorph has a global list of 128
-instruments. Each slot can contain one user defined instrument.
+user defined instruments. Each slot can contain one user defined instrument.
 
 The instrument number can be set from the WavSource operator. It is important
 that you use an empty position for each new instrument.  Suppose you assigned
@@ -230,6 +230,12 @@ SpectMorph, slot number 7 will contain this instrument. As long as you are
 experimenting with a new instrument, you can change it in any way you like.
 However, as soon as you start using the instrument in a song, you should never
 change it again.
+
+Since 128 user instruments may not be enough for everybody, instruments are
+organized in banks. Banks can be created/selected and deleted from the
+WavSource operator. Each bank provides 128 instrument slots. You can create
+as many banks as you like, giving each bank a new name. Banks should not
+be deleted once you start using an instrument in a song.
 
 ## Samples
 
@@ -350,6 +356,20 @@ samples using some dB global dB level.
 
 This should only be used if "From Loop" did not produce a good result.
 
+### Manual Volumen Normalization
+
+If the automatic volume normalization does not work well for your input
+material, you can do it manually to ensure that all samples have the same
+volume using the builtin volume editor. You can compare the volume of your
+samples to a reference (preselected option: Synth Saw) by left/right clicking
+to play samples in the volume editor.
+
+It is also possible to reset all volumes to either zero or the "from loop"
+option. This is useful if the "from loop" volume normalization mostly
+works for your input material but you want to change the volume of some
+individual samples which are too loud or not loud enough compared to
+the other samples.
+
 ## Tuning
 
 From the midi note, SpectMorph computes the frequency a recorded note has.  So
@@ -419,6 +439,8 @@ does, usually there is no problem. Analysis parameters take the
 form, and although there are some possibilities here, there is only one worth
 mentioning.
 
+### min-frame-size
+
 The `min-frame-size` parameter can be used to set the shortest possible
 analysis frame. In general, analysis frames need to be longer if the sound has
 a low midi note, and shorter if the sound has a high midi note. Normally
@@ -428,3 +450,19 @@ SpectMorph uses 40ms frames as shortest possible value. In some cases setting
 
 produces better results for higher midi notes, possibly at the expense of
 larger data files.
+
+### steps-per-frame
+
+SpectMorph analyzes the audio in analysis frames of a certain length using
+overlapping analysis frames. By default 40ms frames are used (larger
+frames for lower notes), and a new analysis frame starts every 10ms.
+
+If a note is slowed down a lot (for instance using positional play with
+a slow LFO), there will now be enough analysis frames available for a
+smooth playback. For these cases something like
+
+    steps-per-frame=16
+
+can be used to increase the number of analysis frames available for smooth
+playback (for this example of `steps-per-frame` a new analysis frame would
+start every 2.5ms for 40ms frames).
