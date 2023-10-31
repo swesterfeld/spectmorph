@@ -1,17 +1,15 @@
 NEWER TODOS:
 - fix asan issues in PandaResampler
-- fix "crash" when setting steps-per-frame to 0
-- spectmorph-instruments-0.6.1
 - handle XPARAM scaled parameters for modulation
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 - JACK control-by-CC should use midi channel, too
 - non-linear modulation mapping
+- formant corrected playback
+- portamento could morph while sliding
 - visual feedback for adsr envelope
-- reduce amount of allocations in RT thread
 - try to get old performance from new inner loop
-- performance tests
 - could implement UI scaling for macOS
 - maybe treat std::sin, std::cos like std::fabs
 - maybe subharmonic tagging
@@ -24,12 +22,15 @@ NEWER TODOS:
 
 insts:
  - tuba
- - double bass
  - flute
 
 new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
+ - key track
+ - "wave" table
+ - envelope
+ - synthetic
 _________
 
 smenc:
