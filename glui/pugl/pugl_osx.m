@@ -597,6 +597,8 @@ puglCreateWindow(PuglView* view, const char* title)
 	if (view->parent) {
 		NSView* pview = (NSView*)view->parent;
 		[pview addSubview:impl->glview];
+		// required to get mouse move events in Ableton Live (and possibly other hosts)
+		[[pview window] setAcceptsMouseMovedEvents: YES];
 		[impl->glview setHidden:NO];
 	} else {
 		NSString* titleString = [[NSString alloc]
