@@ -634,6 +634,10 @@ puglCreateWindow(PuglView* view, const char* title)
                         // modal dialogs are usually centered on macOS
                         // (this window is not really modal, but at least centered)
                         [window center];
+                        // display new window above transient parent window
+                        NSView *tp_nsview = (NSView *) view->transient_parent;
+                        NSWindow *tp_window = [tp_nsview window];
+                        [tp_window addChildWindow: window ordered: NSWindowAbove];
                 }
 	}
 
