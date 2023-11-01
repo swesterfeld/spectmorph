@@ -37,6 +37,13 @@ public:
         [file_types_array addObject:[NSString stringWithUTF8String:extension.c_str()]];
       }
 
+    auto display_above_parent = [win_id] (auto panel)
+      {
+        // display dialog above parent window
+        NSView *tp_nsview = (NSView *) win_id;
+        NSWindow *tp_window = [tp_nsview window];
+        [tp_window addChildWindow: panel ordered: NSWindowAbove];
+      };
     if (open)
       {
         NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -46,6 +53,7 @@ public:
         [panel setAllowsMultipleSelection:NO];
         [panel setTitle:titleString];
         [panel setAllowedFileTypes:file_types_array];
+        display_above_parent (panel);
 
         [panel beginWithCompletionHandler:^(NSInteger result) {
           state = State::fail;
@@ -69,6 +77,7 @@ public:
 
         [panel setTitle:titleString];
         [panel setAllowedFileTypes:file_types_array];
+        display_above_parent (panel);
 
         [panel beginWithCompletionHandler:^(NSInteger result) {
           state = State::fail;
