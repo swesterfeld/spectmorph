@@ -20,6 +20,7 @@
 * Allow overriding analysis parameter for frame stepping to get higher time resolution.
 
 #### Fixes
+* Make UI work properly in Ableton Live (and possibly other hosts) on macOS.
 * Fix UI scaling problem on M1 macOS builds.
 * Fix crash if instrument editor is closed without any samples.
 * Fix cases of undefined behaviour.
