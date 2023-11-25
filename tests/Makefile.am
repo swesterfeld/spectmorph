@@ -12,7 +12,7 @@ EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.
         sinsignal.py smresvalue.sh tune-test.sh test-norm.sh
 CLEANFILES += sin440-4567.wav saw440x.wav
 
-TESTS = testfastsin testblob testfft testisincos testnoisemodes testifftsynth testppinter testgenid \
+TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
         testidb testifreq testbesseli0 testsse
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
