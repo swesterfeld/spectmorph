@@ -9,7 +9,7 @@
 namespace SpectMorph
 {
 
-class StdioOut : public GenericOut
+class StdioOut final : public GenericOut
 {
   FILE *file;
 
@@ -18,8 +18,8 @@ public:
   static GenericOut* open (const std::string& filename);
 
   ~StdioOut();
-  int put_byte (int c);
-  int write (const void *ptr, size_t size);
+  int put_byte (int c) override;
+  int write (const void *ptr, size_t size) override;
 };
 
 }

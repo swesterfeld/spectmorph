@@ -9,7 +9,7 @@
 namespace SpectMorph
 {
 
-class StdioSubIn : public GenericIn
+class StdioSubIn final : public GenericIn
 {
   FILE *file;
   size_t file_pos;
@@ -21,12 +21,12 @@ public:
 
   static GenericIn* open (const std::string& filename, size_t pos, size_t len);
 
-  int get_byte();     // like fgetc
-  int read (void *ptr, size_t size);
-  bool skip (size_t size);
+  int get_byte() override;     // like fgetc
+  int read (void *ptr, size_t size) override;
+  bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
-  size_t get_pos();
-  GenericIn *open_subfile (size_t pos, size_t len);
+  size_t get_pos() override;
+  GenericIn *open_subfile (size_t pos, size_t len) override;
 };
 
 }
