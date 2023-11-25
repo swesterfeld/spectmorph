@@ -23,6 +23,8 @@ build()
 # Tests using gcc
 export CC=gcc CXX=g++
 
+build --enable-asan --enable-debug-cxx
+
 build
 lv2lint http://spectmorph.org/plugins/spectmorph
 make -j `nproc` distcheck
