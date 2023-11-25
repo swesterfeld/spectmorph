@@ -468,7 +468,7 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
         op->save (op_of);
       }
 
-      of.write_blob ("data", &op_data[0], op_data.size());
+      of.write_blob ("data", op_data.data(), op_data.size());
       of.end_section();
     }
   if (params)

@@ -64,7 +64,7 @@ InstEncCache::cache_save_L (const string& key)
   buffer.write_start ("SpectMorphCache");
   buffer.write_string (cache_data.version.c_str());
   buffer.write_int (cache_data.data.size());
-  buffer.write_string (sha1_hash (&cache_data.data[0], cache_data.data.size()).c_str());
+  buffer.write_string (sha1_hash (cache_data.data.data(), cache_data.data.size()).c_str());
   buffer.write_end();
 
   vector<string> files;
@@ -144,9 +144,9 @@ InstEncCache::cache_try_load_L (const string& cache_key, const string& need_vers
   if (version == need_version)
     {
       vector<unsigned char> data (data_size);
-      if (in_file->read (&data[0], data.size()) == data_size)
+      if (in_file->read (data.data(), data.size()) == data_size)
         {
-          string load_data_hash = sha1_hash (&data[0], data.size());
+          string load_data_hash = sha1_hash (data.data(), data.size());
           if (load_data_hash == data_hash)
             {
               cache[cache_key].version = version;

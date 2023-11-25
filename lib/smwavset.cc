@@ -44,7 +44,7 @@ WavSet::save (const string& filename, bool embed_models)
 
           MemOut mem_out (&data);
           waves[i].audio->save (&mem_out);
-          of.write_blob ("audio", &data[0], data.size());
+          of.write_blob ("audio", data.data(), data.size());
         }
       else if (embed_models)
         {
@@ -57,7 +57,7 @@ WavSet::save (const string& filename, bool embed_models)
 
               do
                 {
-                  len = fread (&buffer[0], 1, buffer.size(), in);
+                  len = fread (buffer.data(), 1, buffer.size(), in);
                   if (len > 0)
                     data.insert (data.end(), buffer.begin(), buffer.begin() + len);
                 }
@@ -69,7 +69,7 @@ WavSet::save (const string& filename, bool embed_models)
                 }
               else
                 {
-                  of.write_blob ("audio", &data[0], data.size());
+                  of.write_blob ("audio", data.data(), data.size());
                 }
               fclose (in);
             }
