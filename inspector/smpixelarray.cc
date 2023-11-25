@@ -35,7 +35,7 @@ PixelArray::empty()
 int *
 PixelArray::get_pixels()
 {
-  return &pixels[0];
+  return pixels.data();
 }
 
 size_t
