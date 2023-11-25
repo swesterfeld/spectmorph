@@ -317,7 +317,7 @@ Audio::clone() const
   save (&audio_mo);
 
   Audio *audio_clone = new Audio();
-  GenericIn *in = MMapIn::open_mem (&audio_data[0], &audio_data[audio_data.size()]);
+  GenericIn *in = MMapIn::open_vector (audio_data);
   audio_clone->load (in);
   delete in;
 

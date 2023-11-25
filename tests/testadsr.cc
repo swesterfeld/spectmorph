@@ -16,7 +16,7 @@ void
 run (ADSREnvelope& adsr_envelope, size_t samples)
 {
   vector<float> input (samples, 1.0);
-  adsr_envelope.process (input.size(), &input[0]);
+  adsr_envelope.process (input.size(), input.data());
   for (auto v : input)
     printf ("%f\n", v);
 }

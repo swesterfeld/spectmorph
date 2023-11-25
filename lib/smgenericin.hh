@@ -59,7 +59,7 @@ public:
    *
    * \returns pointer to the memory, or NULL if input is not memory mapped
    */
-  virtual unsigned char *mmap_mem (size_t& remaining) = 0;
+  virtual const unsigned char *mmap_mem (size_t& remaining) = 0;
   /**
    * Open a new input stream that contains a part of the original file.
    *

@@ -186,7 +186,7 @@ VstPlugin::save_state (char **buffer)
   project.save (zip_writer, &params);
   chunk_data = zip_writer.data();
 
-  *buffer = reinterpret_cast<char *> (&chunk_data[0]);
+  *buffer = reinterpret_cast<char *> (chunk_data.data());
   return chunk_data.size();
 }
 
@@ -210,7 +210,7 @@ VstPlugin::load_state (char *buffer, size_t size)
       if (!HexString::decode (buffer, data))
         return;
 
-      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      GenericIn *in = MMapIn::open_vector (data);
       error = project.load_compat (in, &params);
       delete in;
     }

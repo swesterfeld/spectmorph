@@ -46,7 +46,7 @@ ZipReader::ZipReader (const std::vector<uint8_t>& data) :
   m_data (data)
 {
   mz_stream_mem_create (&read_mem_stream);
-  mz_stream_mem_set_buffer (read_mem_stream, (void *)&m_data[0], m_data.size());
+  mz_stream_mem_set_buffer (read_mem_stream, (void *)m_data.data(), m_data.size());
   mz_stream_open (read_mem_stream, NULL, MZ_OPEN_MODE_READ);
 
   void *ptr = mz_zip_reader_create (&reader);
@@ -165,7 +165,7 @@ ZipReader::read (const string& name)
 
   vector<uint8_t> result (file_info->uncompressed_size);
 
-  int32_t read = mz_zip_reader_entry_read (reader, &result[0], result.size());
+  int32_t read = mz_zip_reader_entry_read (reader, result.data(), result.size());
   if (read < 0)
     {
       m_error = read;

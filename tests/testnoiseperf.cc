@@ -52,7 +52,7 @@ main (int argc, char **argv)
               ifft_synth.clear_partials();
               noise_dec.process (rt_audio_block, ifft_synth.fft_buffer(), spect ? NoiseDecoder::FFT_SPECTRUM : NoiseDecoder::DEBUG_NO_OUTPUT);
               if (ifft)
-                ifft_synth.get_samples (&samples[0]);
+                ifft_synth.get_samples (samples.data());
             }
           double end = get_time();
           min_time[mode] = min (min_time[mode], end - start);

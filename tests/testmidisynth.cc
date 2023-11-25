@@ -34,7 +34,7 @@ main (int argc, char **argv)
 
   unsigned char note_on[3] = { 0x90, note, 100 };
   midi_synth.add_midi_event (0, note_on);
-  midi_synth.process (&output[0], output.size());
+  midi_synth.process (output.data(), output.size());
   for (auto f: output)
     sm_printf ("%.17g\n", f);
 
@@ -42,7 +42,7 @@ main (int argc, char **argv)
   midi_synth.add_midi_event (0, note_off);
   while (midi_synth.active_voice_count() > 0)
     {
-      midi_synth.process (&output[0], output.size());
+      midi_synth.process (output.data(), output.size());
       for (auto f: output)
         sm_printf ("%.17g\n", f);
     }

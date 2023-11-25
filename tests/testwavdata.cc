@@ -96,7 +96,7 @@ save_vec_test (WavData::OutFormat format, string ext)
 
   printf ("save ok: %s - size: %zd\n", ok ? "OK" : "FAIL", out.size());
   FILE *t = fopen (("testwd." + ext).c_str(), "w");
-  fwrite (&out[0], 1, out.size(), t);
+  fwrite (out.data(), 1, out.size(), t);
   fclose (t);
 
   WavData a;

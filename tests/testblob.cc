@@ -28,7 +28,7 @@ create_testblob()
 
   outfile.begin_section ("header");
   outfile.write_string ("name", "BLOB Test");
-  outfile.write_blob ("blob", &xdata[0], xdata.size());
+  outfile.write_blob ("blob", xdata.data(), xdata.size());
   outfile.end_section();
 }
 

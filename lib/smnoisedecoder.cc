@@ -103,7 +103,7 @@ NoiseDecoder::process (const RTAudioBlock& audio_block,
   else if (output_mode == DEBUG_UNWINDOWED)
     {
       float *in = FFT::new_array_float (block_size);
-      FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
+      FFT::fftsr_float (block_size, interpolated_spectrum, in);
       memcpy (samples, in, block_size * sizeof (float));
       FFT::free_array_float (in);
     }
@@ -113,7 +113,7 @@ NoiseDecoder::process (const RTAudioBlock& audio_block,
   else
     {
       float *in = FFT::new_array_float (block_size);
-      FFT::fftsr_float (block_size, &interpolated_spectrum[0], &in[0]);
+      FFT::fftsr_float (block_size, interpolated_spectrum, in);
 
       Block::mul (block_size, in, cos_window);
 
@@ -153,7 +153,7 @@ NoiseDecoder::precompute_tables()
   // trigger FFT planning which can be slow
   float *in = FFT::new_array_float (block_size);
   float *out = FFT::new_array_float (block_size);
-  FFT::fftsr_float (block_size, &in[0], &out[0]);
+  FFT::fftsr_float (block_size, in, out);
   FFT::free_array_float (in);
   FFT::free_array_float (out);
 }

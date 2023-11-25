@@ -140,7 +140,7 @@ SimpleJackPlayer::play (Audio *audio, bool use_samples)
 
       // touch decoder in non-RT-thread to precompute tables & co
       vector<float> samples (10000);
-      new_decoder->process (*new_decoder_rt_memory_area, samples.size(), nullptr, &samples[0]);
+      new_decoder->process (*new_decoder_rt_memory_area, samples.size(), nullptr, samples.data());
 
       // finally setup decoder for JACK thread
       new_decoder->retrigger (/* channel */ 0, audio->fundamental_freq, 127);

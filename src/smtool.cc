@@ -182,7 +182,7 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
     {
       samples.resize (audio.sample_count);
     }
-  decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
+  decoder.process (rt_memory_area, samples.size(), nullptr, samples.data());
 
   double energy = 0;
   size_t energy_norm = 0;

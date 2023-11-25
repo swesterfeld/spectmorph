@@ -83,7 +83,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
 
   float freq = 440;
   decoder.retrigger (0, freq, 127);
-  decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
+  decoder.process (rt_memory_area, audio_out.size(), nullptr, audio_out.data());
 }
 
 void
@@ -129,7 +129,7 @@ highpass (vector<float>& audio_in, vector<float>& audio_out, double cutoff_freq)
   g_printerr ("testnoise: highpass: not supported, need libbse to do this\n");
   g_assert_not_reached();
 #else
-  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), &audio_in[0], NULL);
+  GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, 44100, 440, audio_in.size(), audio_in.data(), NULL);
   Bse::Error error = gsl_data_handle_open (dhandle);
   assert (error == 0);
 

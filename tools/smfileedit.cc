@@ -166,7 +166,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
             // blob_ofile destructor run here
           }
 
-          ofile.write_blob (ifile.event_name(), &blob_data[0], blob_data.size());
+          ofile.write_blob (ifile.event_name(), blob_data.data(), blob_data.size());
           delete blob_in;
 
           output_blob_map[ifile.event_blob_sum()] = blob_data;
@@ -175,7 +175,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
         {
           vector<unsigned char>& blob_data = output_blob_map[ifile.event_blob_sum()];
 
-          ofile.write_blob (ifile.event_name(), &blob_data[0], blob_data.size());
+          ofile.write_blob (ifile.event_name(), blob_data.data(), blob_data.size());
         }
       else if (ifile.event() == InFile::READ_ERROR)
         {

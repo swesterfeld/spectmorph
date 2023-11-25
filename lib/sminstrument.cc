@@ -26,7 +26,7 @@ using std::map;
 Sample::Shared::Shared (const WavData& wav_data) :
   m_wav_data (wav_data)
 {
-  m_wav_data_hash = sha1_hash ((const guchar *) &wav_data.samples()[0], sizeof (float) * wav_data.samples().size());
+  m_wav_data_hash = sha1_hash ((const guchar *) wav_data.samples().data(), sizeof (float) * wav_data.samples().size());
 }
 
 string
@@ -273,7 +273,7 @@ Instrument::load (const string& filename, ZipReader *zip_reader, LoadOptions loa
       if (zip_reader->error())
         return Error ("No 'instrument.xml' found in input file");
 
-      auto result = doc.load_buffer (&xml[0], xml.size());
+      auto result = doc.load_buffer (xml.data(), xml.size());
 
       if (!result)
         return Error (result.description());
@@ -716,7 +716,7 @@ Instrument::version()
 {
   ZipWriter writer;
   save (writer);
-  return sha1_hash (&writer.data()[0], writer.data().size());
+  return sha1_hash (writer.data().data(), writer.data().size());
 }
 
 double

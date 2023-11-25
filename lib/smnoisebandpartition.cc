@@ -90,7 +90,7 @@ NoiseBandPartition::noise_envelope_to_spectrum (Random& random_gen, const RTVect
 
   zero_float_block (spectrum_size, spectrum);
 
-  const guint8 *random_data_byte = reinterpret_cast<guint8 *> (&random_data[0]);
+  const guint8 *random_data_byte = reinterpret_cast<guint8 *> (random_data);
 
   for (size_t b = 0; b < n_bands(); b++)
     {

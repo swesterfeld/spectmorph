@@ -252,7 +252,7 @@ main (int argc, char **argv)
           fprintf (stderr, "Unable to read 'plan.smplan' from input file");
           return 1;
         }
-      in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      in = MMapIn::open_vector (data);
     }
   else
     {
@@ -264,7 +264,7 @@ main (int argc, char **argv)
               fprintf (stderr, PROG_NAME ": error decoding string\n");
               return 1;
             }
-          in = MMapIn::open_mem (&data[0], &data[data.size()]);
+          in = MMapIn::open_vector (data);
         }
     }
   if (!in)

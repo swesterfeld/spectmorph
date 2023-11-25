@@ -69,7 +69,7 @@ main (int argc, char **argv)
 
               // avoid measuring setup time
               decoder.retrigger (0, freq, 127);
-              decoder.process (rt_memory_area, n, nullptr, &audio_out[0]);
+              decoder.process (rt_memory_area, n, nullptr, audio_out.data());
 
               double best_time = 1e7;
               for (int rep = 0; rep < 25; rep++)
@@ -78,7 +78,7 @@ main (int argc, char **argv)
                   for (int l = 0; l < runs; l++)
                     {
                       decoder.retrigger (0, freq, 127);
-                      decoder.process (rt_memory_area, n, nullptr, &audio_out[0]);
+                      decoder.process (rt_memory_area, n, nullptr, audio_out.data());
                     }
                   double end_t = get_time();
                   best_time = min (best_time, (end_t - start_t));
@@ -129,7 +129,7 @@ main (int argc, char **argv)
 
       vector<float> audio_out (SR * 20);
       decoder.retrigger (0, freq, 127);
-      decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
+      decoder.process (rt_memory_area, audio_out.size(), nullptr, audio_out.data());
 
       std::string export_wav = "tld.wav";
 
@@ -150,7 +150,7 @@ main (int argc, char **argv)
           for (int l = 0; l < runs; l++)
             {
               decoder.retrigger (0, freq, 127);
-              decoder.process (rt_memory_area, n, nullptr, &audio_out[0]);
+              decoder.process (rt_memory_area, n, nullptr, audio_out.data());
             }
           double end_t = get_time();
           sm_printf ("%d %.17g\n", n, (end_t - start_t) * ns_per_sec / n / runs);

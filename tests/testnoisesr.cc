@@ -67,7 +67,7 @@ NoiseGenerator::gen_noise (int sr)
   vector<float> out (5 * sr);
   WavData wav_data (noise_96000, 1, 96000, 32);
   MiniResampler mini_resampler (wav_data, 96000 / double (sr));
-  mini_resampler.read (0, out.size(), &out[0]);
+  mini_resampler.read (0, out.size(), out.data());
   return out;
 }
 
@@ -189,7 +189,7 @@ decode (vector<float>& audio_out, int sr)
 
   float freq = 440;
   decoder.retrigger (0, freq, 127);
-  decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
+  decoder.process (rt_memory_area, audio_out.size(), nullptr, audio_out.data());
 }
 
 void
@@ -201,7 +201,7 @@ decode_resample (vector<float>& audio_out, int sr)
 
   WavData wav_data (audio_high, 1, sr, 32);
   MiniResampler mini_resampler (wav_data, double (sr) / 48000.);
-  mini_resampler.read (0, audio_out.size(), &audio_out[0]);
+  mini_resampler.read (0, audio_out.size(), audio_out.data());
 }
 
 void
