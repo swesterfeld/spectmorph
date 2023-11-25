@@ -51,7 +51,7 @@ measure (const string& name, void (*func)(), bool is_complex)
   for (unsigned int i = 0; i < runs; i++)
     func();
   double end = get_time();
-  printf ("%s: %f clocks/sample\n", name.c_str(), ns_per_sec * (end - start) / (is_complex ? (block_size / 2) : block_size) / runs);
+  printf ("%s: %f ns/sample\n", name.c_str(), ns_per_sec * (end - start) / (is_complex ? (block_size / 2) : block_size) / runs);
 
   return (end - start);
 }
