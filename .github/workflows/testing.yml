@@ -19,7 +19,7 @@ jobs:
         MSG=$(git log -1 --format="%s")
         .github/workflows/ircbot.py -q -j "#Anklang" -n AnklangGH -U "$N" -D "$B" -S "$S" "$MSG" "$URL"
   macos:
-    runs-on: macos-11
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v3
     - name: Test Build
