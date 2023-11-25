@@ -16,8 +16,10 @@ build()
   echo "###############################################################################"
   ./autogen.sh "$@"
   make -j `nproc` V=1
-  make -j `nproc` check
-  cat tests/test-suite.log
+  if ! make -j `nproc` check; then
+    cat tests/test-suite.log
+    exit 1
+  fi
   make install
 }
 
