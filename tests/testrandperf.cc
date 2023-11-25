@@ -29,7 +29,7 @@ main (int argc, char **argv)
     {
       guint32 block[(bs + 3) / 4];
 
-      guint8 *block_b = reinterpret_cast<guint8 *>(&block[0]);
+      guint8 *block_b = reinterpret_cast<guint8 *>(block);
       for (int b = 0; b < bs; b++)
         block_b[b] = random.random_uint32();
     }

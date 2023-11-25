@@ -82,7 +82,7 @@ encode_decode (vector<float>& audio_in, vector<float>& audio_out)
   for (double freq = 10; freq < 70000; freq = min (freq * 1.1, freq + 10))
     {
       decoder.retrigger (0, freq, 127);
-      decoder.process (rt_memory_area, audio_out.size(), nullptr, &audio_out[0]);
+      decoder.process (rt_memory_area, audio_out.size(), nullptr, audio_out.data());
       float peak = 0;
       for (size_t i = 0; i < audio_out.size(); i++)
         {

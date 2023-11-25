@@ -101,7 +101,7 @@ run_test (int n_sines, int n_noise, int mix_freq)
   live_decoder.retrigger (0, 440, 127);
 
   vector<float> samples (mix_freq * 10);
-  live_decoder.process (rt_memory_area, samples.size(), nullptr, &samples[0]);
+  live_decoder.process (rt_memory_area, samples.size(), nullptr, samples.data());
   samples.erase (samples.begin(), samples.begin() + mix_freq);
 
   AudioTool::Block2Energy b2e (mix_freq);
