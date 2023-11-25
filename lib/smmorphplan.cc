@@ -527,20 +527,3 @@ MorphPlan::id() const
 {
   return m_id;
 }
-
-MorphPlan *
-MorphPlan::clone() const
-{
-  // create a deep copy (by saving/loading)
-  vector<unsigned char> plan_data;
-  MemOut                plan_mo (&plan_data);
-
-  save (&plan_mo);
-
-  MorphPlan *plan_clone = new MorphPlan (*m_project);
-  GenericIn *in = MMapIn::open_vector (plan_data);
-  plan_clone->load (in);
-  delete in;
-
-  return plan_clone;
-}

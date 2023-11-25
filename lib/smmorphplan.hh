@@ -66,8 +66,6 @@ public:
 
   void load_default();
 
-  MorphPlan *clone() const; // create a deep copy
-
   static std::string id_chars();
   static std::string generate_id();
 
