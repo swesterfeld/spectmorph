@@ -186,7 +186,7 @@ VstPlugin::save_state (char **buffer)
   project.save (zip_writer, &params);
   chunk_data = zip_writer.data();
 
-  *buffer = reinterpret_cast<char *> (&chunk_data[0]);
+  *buffer = reinterpret_cast<char *> (chunk_data.data());
   return chunk_data.size();
 }
 
