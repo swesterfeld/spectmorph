@@ -58,7 +58,7 @@ StdioIn::skip (size_t size)
   return false;
 }
 
-unsigned char*
+const unsigned char*
 StdioIn::mmap_mem (size_t& remaining)
 {
   return NULL;

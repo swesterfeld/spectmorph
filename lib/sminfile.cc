@@ -78,7 +78,7 @@ bool
 InFile::read_raw_string (string& str)
 {
   size_t remaining;
-  unsigned char *mem = file->mmap_mem (remaining);
+  const unsigned char *mem = file->mmap_mem (remaining);
   if (mem) /* fast variant of reading strings for the mmap case */
     {
       for (size_t i = 0; i < remaining; i++)
@@ -87,7 +87,7 @@ InFile::read_raw_string (string& str)
             {
               if (file->skip (i + 1))
                 {
-                  str.assign (reinterpret_cast <char *> (mem), i);
+                  str.assign (reinterpret_cast <const char *> (mem), i);
                   return true;
                 }
             }

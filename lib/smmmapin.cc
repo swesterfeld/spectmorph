@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+using std::vector;
+
 using namespace SpectMorph;
 
 static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
@@ -38,17 +40,23 @@ MMapIn::open (const std::string& filename)
 }
 
 GenericIn*
-MMapIn::open_mem (unsigned char *begin, unsigned char *end)
+MMapIn::open_mem (const unsigned char *begin, const unsigned char *end)
 {
   return new MMapIn (begin, end, nullptr);
 }
 
-MMapIn::MMapIn (unsigned char *mapfile, unsigned char *mapend, GMappedFile *gmf) :
+GenericIn*
+MMapIn::open_vector (const vector<unsigned char>& vec)
+{
+  return new MMapIn (vec.data(), vec.data() + vec.size(), nullptr);
+}
+
+MMapIn::MMapIn (const unsigned char *mapfile, const unsigned char *mapend, GMappedFile *gmf) :
   mapfile (mapfile),
   mapend (mapend),
   g_mapped_file (gmf)
 {
-  pos = static_cast<unsigned char *> (mapfile);
+  pos = static_cast<const unsigned char *> (mapfile);
 
   leak_debugger.add (this);
 }
@@ -97,7 +105,7 @@ MMapIn::skip (size_t size)
     }
 }
 
-unsigned char *
+const unsigned char *
 MMapIn::mmap_mem (size_t& remaining)
 {
   remaining = mapend - pos;

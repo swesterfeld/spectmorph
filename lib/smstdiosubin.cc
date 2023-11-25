@@ -82,7 +82,7 @@ StdioSubIn::skip (size_t size)
   return false;
 }
 
-unsigned char*
+const unsigned char*
 StdioSubIn::mmap_mem (size_t& remaining)
 {
   return NULL;

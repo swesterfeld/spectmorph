@@ -22,7 +22,7 @@ public:
   int get_byte();     // like fgetc
   int read (void *ptr, size_t size);
   bool skip (size_t size);
-  unsigned char *mmap_mem (size_t& remaining);
+  const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos();
   GenericIn *open_subfile (size_t pos, size_t len);
 };
