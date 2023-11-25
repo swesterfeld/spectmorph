@@ -16,14 +16,7 @@ using namespace SpectMorph;
 using std::map;
 using std::string;
 
-static bool enable_gsl_fft = false;
 static bool randomize_new_fft_arrays = false;
-
-void
-FFT::use_gsl_fft (bool new_enable_gsl_fft)
-{
-  enable_gsl_fft = new_enable_gsl_fft;
-}
 
 void
 FFT::debug_randomize_new_arrays (bool b)
