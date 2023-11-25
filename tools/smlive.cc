@@ -289,7 +289,7 @@ main (int argc, char **argv)
 
   vector<float> audio_out (len);
   decoder.retrigger (0, options.freq, 127);
-  decoder.process (rt_memory_area, audio_out.size(), freq_in.size() ? &freq_in[0] : nullptr, &audio_out[0]);
+  decoder.process (rt_memory_area, audio_out.size(), freq_in.size() ? freq_in.data() : nullptr, audio_out.data());
 
   // hacky way to remove tail silence
   while (!audio_out.empty() && audio_out.back() == 0)

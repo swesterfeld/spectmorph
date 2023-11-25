@@ -199,7 +199,7 @@ main (int argc, char **argv)
       while ((ch = fgetc (infile)) >= 0)
         data.push_back (ch);
 
-      char *sha256_sum = g_compute_checksum_for_data (G_CHECKSUM_SHA256, &data[0], data.size());
+      char *sha256_sum = g_compute_checksum_for_data (G_CHECKSUM_SHA256, data.data(), data.size());
 
       string cache_dir = sm_get_cache_dir() + "/smenccache";
       g_mkdir_with_parents (cache_dir.c_str(), 0775);
