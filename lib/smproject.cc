@@ -410,7 +410,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   if (error)
     {
       /* restore old plan/instruments if something went wrong */
-      GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      GenericIn *old_in = MMapIn::open_vector (data);
       m_morph_plan.load (old_in);
       delete old_in;
 
@@ -426,7 +426,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
   if (zip_reader.error())
     return Error ("Unable to read 'plan.smplan' from input file");
 
-  GenericIn *in = MMapIn::open_mem (&plan[0], &plan[plan.size()]);
+  GenericIn *in = MMapIn::open_vector (plan);
   Error error = m_morph_plan.load (in, params);
   delete in;
 
@@ -491,7 +491,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   if (!HexString::decode (plan_str, data))
     return;
 
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  GenericIn *in = MMapIn::open_vector (data);
   Error error = load_compat (in, nullptr);
   delete in;
 

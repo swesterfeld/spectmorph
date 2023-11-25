@@ -22,7 +22,6 @@ class MMapIn : public GenericIn
   ~MMapIn();
 public:
   static GenericIn* open (const std::string& filename);
-  static GenericIn* open_mem (const unsigned char *mem_start, const unsigned char *mem_end);
   static GenericIn* open_vector (const std::vector<unsigned char>& vec);
 
   int get_byte();     // like fgetc

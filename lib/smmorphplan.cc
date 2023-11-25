@@ -138,7 +138,7 @@ MorphPlan::set_plan_str (const string& str)
   if (!HexString::decode (str, data))
     return;
 
-  GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+  GenericIn *in = MMapIn::open_vector (data);
   load (in);
   delete in;
 }
@@ -247,7 +247,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 
                   delete blob_in; // close blob file handle
 
-                  GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
+                  GenericIn *in = MMapIn::open_vector (blob_data);
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
 
@@ -271,7 +271,7 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
 
-                  GenericIn *in = MMapIn::open_mem (&blob_data[0], &blob_data[blob_data.size()]);
+                  GenericIn *in = MMapIn::open_vector (blob_data);
                   InFile blob_infile (in);
                   load_op->load (blob_infile);
 
@@ -339,7 +339,7 @@ MorphPlan::load (GenericIn *in, ExtraParameters *params)
   /* restore old plan if something went wrong */
   if (error)
     {
-      GenericIn *old_in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      GenericIn *old_in = MMapIn::open_vector (data);
       load_internal (old_in);
       delete old_in;
     }
@@ -538,7 +538,7 @@ MorphPlan::clone() const
   save (&plan_mo);
 
   MorphPlan *plan_clone = new MorphPlan (*m_project);
-  GenericIn *in = MMapIn::open_mem (&plan_data[0], &plan_data[plan_data.size()]);
+  GenericIn *in = MMapIn::open_vector (plan_data);
   plan_clone->load (in);
   delete in;
 

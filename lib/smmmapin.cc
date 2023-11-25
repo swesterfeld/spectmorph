@@ -40,12 +40,6 @@ MMapIn::open (const std::string& filename)
 }
 
 GenericIn*
-MMapIn::open_mem (const unsigned char *begin, const unsigned char *end)
-{
-  return new MMapIn (begin, end, nullptr);
-}
-
-GenericIn*
 MMapIn::open_vector (const vector<unsigned char>& vec)
 {
   return new MMapIn (vec.data(), vec.data() + vec.size(), nullptr);

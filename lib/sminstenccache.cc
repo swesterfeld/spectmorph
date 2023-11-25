@@ -240,7 +240,7 @@ InstEncCache::cache_lookup (const string& cache_key, const string& version)
       vector<unsigned char>& data = cache[cache_key].data;
       cache[cache_key].read_stamp = cache_read_stamp++;
 
-      GenericIn *in = MMapIn::open_mem (&data[0], &data[data.size()]);
+      GenericIn *in = MMapIn::open_vector (data);
       Audio     *audio = new Audio;
       Error      error = audio->load (in);
 
