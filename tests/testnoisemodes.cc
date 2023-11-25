@@ -91,4 +91,11 @@ main (int argc, char **argv)
       assert (t_diff_max < 2e-6);
       assert (s_diff_max < 3e-9);
     }
+
+  FFT::free_array_float (samples);
+  FFT::free_array_float (win_samples);
+  FFT::free_array_float (cos_win_samples);
+  FFT::free_array_float (xwin_samples);
+  FFT::free_array_float (fft_samples);
+  FFT::free_array_float (dbg_spectrum);
 }
