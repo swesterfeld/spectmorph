@@ -1,4 +1,5 @@
 NEWER TODOS:
+- 1-instrument-wav-source contains the data - not a good idea!
 - fix asan issues in PandaResampler
 - handle XPARAM scaled parameters for modulation
 - update manual
