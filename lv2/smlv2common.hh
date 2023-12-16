@@ -33,6 +33,7 @@
 #endif
 
 #include <string>
+#include <set>
 
 #define SPECTMORPH_URI      "http://spectmorph.org/plugins/spectmorph"
 #define SPECTMORPH_UI_URI   SPECTMORPH_URI "#ui"
@@ -101,6 +102,23 @@ public:
     uris.time_beatsPerMinute  = map->map (map->handle, LV2_TIME__beatsPerMinute);
     uris.time_speed         = map->map (map->handle, LV2_TIME__speed);
     uris.time_Position      = map->map (map->handle, LV2_TIME__Position);
+  }
+  static void
+  detect_repeated_features (const LV2_Feature* const* features)
+  {
+    std::set<std::string> has_feature;
+    for (int i = 0; features[i]; i++)
+      {
+        if (has_feature.count (features[i]->URI))
+          {
+            fprintf (stderr, "SpectMorph: LV2 Plugin: feature '%s' is provided more than once by host\n", features[i]->URI);
+            fprintf (stderr, "  -> this is a host bug, possibly related to https://github.com/rncbc/qtractor/issues/427\n");
+          }
+        else
+          {
+            has_feature.insert (features[i]->URI);
+          }
+      }
   }
 };
 

@@ -75,6 +75,8 @@ instantiate (const LV2_Descriptor*     descriptor,
 
   LV2Plugin *self = new LV2Plugin (rate);
 
+  LV2Common::detect_repeated_features (features);
+
   LV2_URID_Map* map = NULL;
   for (int i = 0; features[i]; i++)
     {
@@ -285,6 +287,8 @@ save(LV2_Handle                instance,
 {
   LV2Plugin* self = static_cast <LV2Plugin *> (instance);
 
+  LV2Common::detect_repeated_features (features);
+
   LV2_State_Map_Path *map_path = nullptr;
 #ifdef LV2_STATE__freePath
   LV2_State_Free_Path *free_path = nullptr;
@@ -369,6 +373,8 @@ restore(LV2_Handle                  instance,
   uint32_t    type;
   uint32_t    valflags;
   const void* value;
+
+  LV2Common::detect_repeated_features (features);
 
   LV2_State_Map_Path *map_path = nullptr;
 #ifdef LV2_STATE__freePath

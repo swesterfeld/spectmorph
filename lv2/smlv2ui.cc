@@ -64,6 +64,8 @@ instantiate(const LV2UI_Descriptor*   descriptor,
 
   LV2_DEBUG ("instantiate called for ui\n");
 
+  LV2Common::detect_repeated_features (features);
+
   LV2Plugin *plugin = nullptr;
   PuglNativeWindow parent_win_id = 0;
   LV2_URID_Map* map    = nullptr;
