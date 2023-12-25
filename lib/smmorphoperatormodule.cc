@@ -8,6 +8,7 @@
 #include "smmorphsourcemodule.hh"
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphlfomodule.hh"
+#include "smmorphkeytrackmodule.hh"
 #include "smmorphplansynth.hh"
 #include "smleakdebugger.hh"
 
@@ -190,6 +191,7 @@ MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
   if (type == "SpectMorph::MorphWavSource") return new MorphWavSourceModule (voice);
   if (type == "SpectMorph::MorphOutput")    return new MorphOutputModule (voice);
   if (type == "SpectMorph::MorphLFO")       return new MorphLFOModule (voice);
+  if (type == "SpectMorph::MorphKeyTrack")  return new MorphKeyTrackModule (voice);
 
   return NULL;
 }

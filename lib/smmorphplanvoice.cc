@@ -125,6 +125,18 @@ MorphPlanVoice::velocity() const
   return m_velocity;
 }
 
+void
+MorphPlanVoice::set_current_freq (float current_freq)
+{
+  m_current_freq = current_freq;
+}
+
+float
+MorphPlanVoice::current_freq() const
+{
+  return m_current_freq;
+}
+
 float
 MorphPlanVoice::mix_freq() const
 {
