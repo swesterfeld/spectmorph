@@ -7,6 +7,7 @@
 #include "smmorphlinearview.hh"
 #include "smmorphlfoview.hh"
 #include "smmorphgridview.hh"
+#include "smmorphkeytrackview.hh"
 #include "smoperatorrolemap.hh"
 
 using namespace SpectMorph;
@@ -66,6 +67,10 @@ MorphPlanView::on_plan_changed()
       else if (type == "SpectMorph::MorphLFO")
         {
           op_view = new MorphLFOView (plan_parent, static_cast<MorphLFO *> (op), morph_plan_window);
+        }
+      else if (type == "SpectMorph::MorphKeyTrack")
+        {
+          op_view = new MorphKeyTrackView (plan_parent, static_cast<MorphKeyTrack *> (op), morph_plan_window);
         }
       else if (type == "SpectMorph::MorphGrid")
         {
