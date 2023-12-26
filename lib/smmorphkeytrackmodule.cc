@@ -30,8 +30,7 @@ MorphKeyTrackModule::set_config (const MorphOperatorConfig *op_cfg)
 float
 MorphKeyTrackModule::value()
 {
-  float v = std::clamp (sm_freq_to_note (morph_plan_voice->current_freq()) / 127, 0.f, 1.f);
-  v = std::clamp (cfg->curve (v) * 2 - 1, -1.f, 1.f);
+  float v = std::clamp (cfg->curve (sm_freq_to_note (morph_plan_voice->current_freq()) / 127) * 2 - 1, -1.f, 1.f);
   set_notify_value (v);
   return v;
 }

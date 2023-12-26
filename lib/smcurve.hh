@@ -22,11 +22,21 @@ struct Curve
   float
   operator() (float pos_x) const
   {
-    for (size_t i = 0; i < points.size() - 1; i++)
+    if (points.empty())
+      return 0;
+    for (int i = 0; i < int (points.size()) - 1; i++)
       {
-        if (points[i + 1].x >= pos_x)
+        if (points[i].x <= pos_x && points[i + 1].x >= pos_x)
           {
-            float frac = (pos_x - points[i].x) / (points[i + 1].x - points[i].x);
+            float dx = points[i + 1].x - points[i].x;
+            float frac = pos_x - points[i].x;
+            if (dx > 1e-5)
+              frac /= dx;
+            else
+              {
+                /* avoid division by zero */
+                frac = 0;
+              }
             float slope = points[i].slope;
 
             if (slope > 0)
@@ -37,7 +47,10 @@ struct Curve
             return points[i].y + frac * (points[i + 1].y - points[i].y);
           }
       }
-    return 0; // FIXME: not correct
+    if (pos_x < points.front().x)
+      return points.front().y;
+    else
+      return points.back().y;
   };
   void save (const std::string& identifier, OutFile& out_file);
   bool load (const std::string& identifier, InFile& in_file);
