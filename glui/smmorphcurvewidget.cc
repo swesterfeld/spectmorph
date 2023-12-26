@@ -2,6 +2,7 @@
 
 #include "smmorphcurvewidget.hh"
 #include "smdrawutils.hh"
+#include "smfixedgrid.hh"
 
 using namespace SpectMorph;
 
@@ -9,6 +10,33 @@ MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve) 
   Widget (parent),
   m_curve (initial_curve)
 {
+  x_grid_label = new CurveGridLabel (parent, initial_curve.grid_x);
+  y_grid_label = new CurveGridLabel (parent, initial_curve.grid_y);
+  cross_label = new Label (parent, "x");
+  cross_label->set_align (TextAlign::CENTER);
+  x_grid_label->set_bold (true);
+  x_grid_label->set_align (TextAlign::RIGHT);
+  y_grid_label->set_bold (true);
+  snap_checkbox = new CheckBox (parent, "Snap");
+  snap_checkbox->set_checked (initial_curve.snap);
+  connect (x_grid_label->signal_value_changed,
+    [this]() {
+      m_curve.grid_x = x_grid_label->n();
+      signal_curve_changed();
+      update();
+    });
+  connect (y_grid_label->signal_value_changed,
+    [this]() {
+      m_curve.grid_y = y_grid_label->n();
+      signal_curve_changed();
+      update();
+    });
+  connect (snap_checkbox->signal_toggled,
+    [this](bool checked) {
+      m_curve.snap = checked;
+      signal_curve_changed();
+      update();
+    });
 }
 
 
@@ -21,21 +49,52 @@ MorphCurveWidget::curve_point_to_xy (const Curve::Point& p)
 void
 MorphCurveWidget::draw (const DrawEvent& devent)
 {
+  FixedGrid grid;
+  double yoffset = height() / 8;
+  double xoffset = 1;
+  grid.add_widget (snap_checkbox, xoffset, yoffset, 6, 2);
+  xoffset += 6;
+  grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
+  xoffset += 2;
+  grid.add_widget (cross_label, xoffset, yoffset, 1, 2);
+  xoffset += 1;
+  grid.add_widget (y_grid_label, xoffset, yoffset, 2, 2);
+
   DrawUtils du (devent.cr);
   cairo_t *cr = devent.cr;
 
-  du.round_box (0, 0, width(), height(), 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
+  double status_y_pixels = 16;
+  du.round_box (0, 0, width(), height() - status_y_pixels, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
   start_x = 10;
   end_x = width() - 10;
-  start_y = height() - 10;
+  start_y = height() - 10 - status_y_pixels;
   end_y = 10;
 
+  cairo_set_line_width (cr, 1);
+  if (m_curve.snap)
+    {
+      Color grid_color (0.4, 0.4, 0.4);
+      du.set_color (grid_color);
+      for (int i = 0; i <= x_grid_label->n(); i++)
+        {
+          double x = start_x + (end_x - start_x) * i / m_curve.grid_x;
+          cairo_move_to (cr, x, start_y);
+          cairo_line_to (cr, x, end_y);
+          cairo_stroke (cr);
+        }
+      for (int i = 0; i <= y_grid_label->n(); i++)
+        {
+          double y = start_y + (end_y - start_y) * i / m_curve.grid_y;
+          cairo_move_to (cr, start_x, y);
+          cairo_line_to (cr, end_x, y);
+          cairo_stroke (cr);
+        }
+    }
   Color line_color (ThemeColor::SLIDER);
   line_color = line_color.lighter();
 
   du.set_color (line_color);
-  cairo_set_line_width (cr, 1);
   for (double x = start_x; x < end_x + 1; x += 1)
     {
       double y = start_y + m_curve ((x - start_x) / (end_x - start_x)) * (end_y - start_y);
@@ -140,6 +199,27 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
     }
 }
 
+double
+MorphCurveWidget::grid_snap (double p, double start_p, double end_p, int n)
+{
+  if (!m_curve.snap)
+    return p;
+
+  double best_diff = 15; // maximum distance in pixels to snap
+  double snap_p = p;
+  for (int i = 0; i <= n; i++)
+    {
+      double grid_p = start_p + (end_p - start_p) * i / n;
+      double diff = std::abs (grid_p - p);
+      if (diff < best_diff)
+        {
+          snap_p = grid_p;
+          best_diff = diff;
+        }
+    }
+  return snap_p;
+}
+
 void
 MorphCurveWidget::mouse_move (const MouseEvent& event)
 {
@@ -150,8 +230,11 @@ MorphCurveWidget::mouse_move (const MouseEvent& event)
 
   if (drag_index >= 0 && drag_type == DRAG_POINT)
     {
-      float px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
-      float py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
+      const double snap_x = grid_snap (event.x, start_x, end_x, m_curve.grid_x);
+      const double snap_y = grid_snap (event.y, start_y, end_y, m_curve.grid_y);
+
+      float px = std::clamp ((snap_x - start_x) / (end_x - start_x), 0.0, 1.0);
+      float py = std::clamp ((snap_y - start_y) / (end_y - start_y), 0.0, 1.0);
       if (drag_index == 0)
         px = 0;
       if (drag_index > 0)

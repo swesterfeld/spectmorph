@@ -4,9 +4,55 @@
 
 #include "smwidget.hh"
 #include "smcurve.hh"
+#include "smlabel.hh"
+#include "smcheckbox.hh"
 
 namespace SpectMorph
 {
+
+class CurveGridLabel : public Label
+{
+  int m_n = 1;
+  int drag_start_n = -1;
+  double drag_start_y;
+public:
+  CurveGridLabel (Widget *widget, int n) :
+    Label (widget, string_printf ("%d", n))
+  {
+    m_n = n;
+  }
+  int n() const { return m_n; }
+  void
+  mouse_press (const MouseEvent& event)
+  {
+    if (event.button == LEFT_BUTTON)
+      {
+        drag_start_y = event.y;
+        drag_start_n = m_n;
+      }
+  }
+  void
+  mouse_move (const MouseEvent& event)
+  {
+    if (drag_start_n >= 0)
+      {
+        int n = lrint (std::clamp ((drag_start_y - event.y) / 25 + drag_start_n, 1.0, 64.0));
+        if (n != m_n)
+          {
+            m_n = n;
+            set_text (string_printf ("%d", m_n));
+            signal_value_changed();
+          }
+      }
+  }
+  void
+  mouse_release (const MouseEvent& event)
+  {
+    if (event.button == LEFT_BUTTON)
+      drag_start_n = -1;
+  }
+  Signal<> signal_value_changed;
+};
 
 class MorphCurveWidget : public Widget
 {
@@ -34,6 +80,12 @@ class MorphCurveWidget : public Widget
   Point curve_point_to_xy (const Curve::Point& p);
   int find_closest_curve_index (const Point& p);
   int find_closest_segment_index (const Point& p);
+  CurveGridLabel *x_grid_label;
+  Label          *cross_label;
+  CurveGridLabel *y_grid_label;
+  CheckBox       *snap_checkbox;
+
+  double grid_snap (double p, double start_p, double end_p, int n);
 
 public:
   MorphCurveWidget (Widget *parent, const Curve& initial_curve);
