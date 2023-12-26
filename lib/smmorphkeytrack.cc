@@ -37,6 +37,7 @@ MorphKeyTrack::insert_order()
 bool
 MorphKeyTrack::save (OutFile& out_file)
 {
+  m_config.curve.save ("curve", out_file);
   return true;
 }
 
@@ -45,7 +46,7 @@ MorphKeyTrack::load (InFile& ifile)
 {
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (read_property_event (ifile))
+      if (read_property_event (ifile) || m_config.curve.load ("curve", ifile))
         {
           // property has been read, so we ignore the event
         }
