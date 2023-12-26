@@ -12,6 +12,11 @@ namespace SpectMorph
 
 struct Curve
 {
+  /* grid/snap settings for UI */
+  bool snap = true;
+  int  grid_x = 4;
+  int  grid_y = 4;
+  /* curve points */
   struct Point
   {
     float x = 0;
@@ -19,6 +24,7 @@ struct Curve
     float slope = 0;
   };
   std::vector<Point> points;
+  /* evaluate curve function */
   float
   operator() (float pos_x) const
   {
