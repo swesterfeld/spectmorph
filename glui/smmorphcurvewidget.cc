@@ -51,7 +51,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
     {
       auto p1 = m_curve.points[highlight_seg_index];
       auto p2 = m_curve.points[highlight_seg_index + 1];
-      auto p = Curve::Point ({0.5 * (p1.x + p2.x), m_curve (0.5 * (p1.x + p2.x))});
+      auto p = Curve::Point ({0.5f * (p1.x + p2.x), m_curve (0.5f * (p1.x + p2.x))});
       seg_handle = curve_point_to_xy (p);
       du.circle (seg_handle.x(), seg_handle.y(), 5, line_color);
     }
@@ -98,8 +98,8 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
             }
           else
             {
-              double px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
-              double py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
+              float px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
+              float py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
 
               m_curve.points.emplace_back (Curve::Point ({ px, py }));
               std::stable_sort (m_curve.points.begin(), m_curve.points.end(), [] (auto pa, auto pb) { return pa.x < pb.x; });
@@ -113,7 +113,7 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
             {
               auto p1 = m_curve.points[highlight_seg_index];
               auto p2 = m_curve.points[highlight_seg_index + 1];
-              auto p = Curve::Point ({0.5 * (p1.x + p2.x), m_curve (0.5 * (p1.x + p2.x))});
+              auto p = Curve::Point ({0.5f * (p1.x + p2.x), m_curve (0.5f * (p1.x + p2.x))});
               seg_handle = curve_point_to_xy (p);
               drag_slope_slope = m_curve.points[highlight_seg_index].slope;
               if (p1.y > p2.y)
@@ -150,8 +150,8 @@ MorphCurveWidget::mouse_move (const MouseEvent& event)
 
   if (drag_index >= 0 && drag_type == DRAG_POINT)
     {
-      double px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
-      double py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
+      float px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
+      float py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
       if (drag_index == 0)
         px = 0;
       if (drag_index > 0)
