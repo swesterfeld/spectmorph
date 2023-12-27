@@ -14,7 +14,9 @@ MorphEnvelope::MorphEnvelope (MorphPlan *morph_plan) :
   leak_debugger.add (this);
 
   m_config.curve.points.emplace_back (Curve::Point {0, 0});
-  m_config.curve.points.emplace_back (Curve::Point {1, 1});
+  m_config.curve.points.emplace_back (Curve::Point {0.5, 1});
+  m_config.curve.points.emplace_back (Curve::Point {1, 0});
+  m_config.curve.loop = Curve::Loop::SUSTAIN;
 }
 
 MorphEnvelope::~MorphEnvelope()
