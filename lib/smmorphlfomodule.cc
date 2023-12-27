@@ -84,7 +84,7 @@ MorphLFOModule::value()
 }
 
 void
-MorphLFOModule::reset_value (const TimeInfo& time_info)
+MorphLFOModule::note_on (const TimeInfo& time_info)
 {
   restart_lfo (local_lfo_state, time_info);
 }

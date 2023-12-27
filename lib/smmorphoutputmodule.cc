@@ -122,13 +122,14 @@ MorphOutputModule::retrigger (const TimeInfo& time_info, int channel, float freq
     return;
 
   decoder.retrigger (channel, freq, midi_velocity);
-  morph_plan_voice->reset_value (time_info);
+  morph_plan_voice->note_on (time_info);
 }
 
 void
 MorphOutputModule::release()
 {
   decoder.release();
+  morph_plan_voice->note_off();
 }
 
 bool

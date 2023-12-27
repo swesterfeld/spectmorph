@@ -43,7 +43,7 @@ public:
 
   void  set_config (const MorphOperatorConfig *cfg) override;
   float value() override;
-  void  reset_value (const TimeInfo& time_info) override;
+  void  note_on (const TimeInfo& time_info) override;
   void  update_shared_state (const TimeInfo& time_info) override;
 };
 }

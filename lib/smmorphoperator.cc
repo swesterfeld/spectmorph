@@ -267,6 +267,7 @@ MorphOperatorConfig::~MorphOperatorConfig()
 #include "smmorphwavsource.hh"
 #include "smmorphlfo.hh"
 #include "smmorphkeytrack.hh"
+#include "smmorphenvelope.hh"
 
 MorphOperator *
 MorphOperator::create (const string& type, MorphPlan *plan)
@@ -280,6 +281,7 @@ MorphOperator::create (const string& type, MorphPlan *plan)
   if (type == "SpectMorph::MorphOutput")      return new MorphOutput (plan);
   if (type == "SpectMorph::MorphLFO")         return new MorphLFO (plan);
   if (type == "SpectMorph::MorphKeyTrack")    return new MorphKeyTrack (plan);
+  if (type == "SpectMorph::MorphEnvelope")    return new MorphEnvelope (plan);
 
   return NULL;
 }

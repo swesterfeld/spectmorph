@@ -19,6 +19,9 @@ Curve::save (const std::string& identifier, OutFile& out_file)
   out_file.write_bool (identifier + ".snap", snap);
   out_file.write_int (identifier + ".grid_x", grid_x);
   out_file.write_int (identifier + ".grid_y", grid_y);
+  out_file.write_int (identifier + ".loop", int (loop));
+  out_file.write_int (identifier + ".loop_start", loop_start);
+  out_file.write_int (identifier + ".loop_end", loop_end);
   out_file.write_float_block (identifier + ".xs", xs);
   out_file.write_float_block (identifier + ".ys", ys);
   out_file.write_float_block (identifier + ".slopes", slopes);
@@ -47,6 +50,18 @@ Curve::load (const std::string& identifier, InFile& in_file)
       else if (in_file.event_name() == identifier + ".grid_y")
         {
           grid_y = in_file.event_int();
+        }
+      else if (in_file.event_name() == identifier + ".loop")
+        {
+          loop = Loop (in_file.event_int());
+        }
+      else if (in_file.event_name() == identifier + ".loop_start")
+        {
+          loop_start = in_file.event_int();
+        }
+      else if (in_file.event_name() == identifier + ".loop_end")
+        {
+          loop_end = in_file.event_int();
         }
       else
         {

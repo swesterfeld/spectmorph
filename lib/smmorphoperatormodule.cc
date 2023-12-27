@@ -9,6 +9,7 @@
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphlfomodule.hh"
 #include "smmorphkeytrackmodule.hh"
+#include "smmorphenvelopemodule.hh"
 #include "smmorphplansynth.hh"
 #include "smleakdebugger.hh"
 
@@ -52,7 +53,12 @@ MorphOperatorModule::value()
 }
 
 void
-MorphOperatorModule::reset_value (const TimeInfo& time_info)
+MorphOperatorModule::note_on (const TimeInfo& time_info)
+{
+}
+
+void
+MorphOperatorModule::note_off()
 {
 }
 
@@ -192,6 +198,7 @@ MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
   if (type == "SpectMorph::MorphOutput")    return new MorphOutputModule (voice);
   if (type == "SpectMorph::MorphLFO")       return new MorphLFOModule (voice);
   if (type == "SpectMorph::MorphKeyTrack")  return new MorphKeyTrackModule (voice);
+  if (type == "SpectMorph::MorphEnvelope")  return new MorphEnvelopeModule (voice);
 
   return NULL;
 }

@@ -39,6 +39,7 @@ public:
   void   set_control_input (int i, double value);
   void   set_velocity (float velocity);
   void   set_current_freq (float freq);
+  void   note_off();
 
   float velocity() const;
   float current_freq() const;
@@ -48,7 +49,7 @@ public:
   MorphPlanSynth *morph_plan_synth() const;
 
   void update_shared_state (const TimeInfo& time_info);
-  void reset_value (const TimeInfo& time_info);
+  void note_on (const TimeInfo& time_info);
   void fill_notify_buffer (NotifyBuffer& notify_buffer);
 };
 

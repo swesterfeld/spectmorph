@@ -24,6 +24,17 @@ struct Curve
     float slope = 0;
   };
   std::vector<Point> points;
+
+  enum class Loop {
+    NONE = 0,
+    SUSTAIN = 1,
+    FORWARD = 2,
+    PING_PONG = 3
+  };
+  Loop loop = Loop::NONE;
+  int loop_start = 1;
+  int loop_end = 1;
+
   /* evaluate curve function */
   float
   operator() (float pos_x) const

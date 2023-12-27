@@ -157,10 +157,17 @@ MorphPlanVoice::update_shared_state (const TimeInfo& time_info)
 }
 
 void
-MorphPlanVoice::reset_value (const TimeInfo& time_info)
+MorphPlanVoice::note_on (const TimeInfo& time_info)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    modules[i].module->reset_value (time_info);
+    modules[i].module->note_on (time_info);
+}
+
+void
+MorphPlanVoice::note_off()
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    modules[i].module->note_off();
 }
 
 void

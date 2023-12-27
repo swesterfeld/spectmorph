@@ -43,7 +43,8 @@ public:
   virtual void set_config (const MorphOperatorConfig *op_cfg) = 0;
   virtual LiveDecoderSource *source();
   virtual float value();
-  virtual void reset_value (const TimeInfo& time_info);
+  virtual void note_on (const TimeInfo& time_info);
+  virtual void note_off();
   virtual void update_shared_state (const TimeInfo& time_info);
   virtual MorphModuleSharedState *create_shared_state();
   virtual void set_shared_state (MorphModuleSharedState *new_shared_state);
