@@ -120,7 +120,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
   if (can_loop && m_curve.loop != Curve::Loop::NONE)
     {
       Color loop_marker_color = Color (0.7, 0.7, 1);
-      if (highlight_type == DRAG_MARKER && drag_loop_start)
+      if (highlight_type == DRAG_MARKER_START || highlight_type == DRAG_MARKER_BOTH)
         du.set_color (loop_marker_color.lighter());
       else
         du.set_color (loop_marker_color);
@@ -131,7 +131,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
       cairo_stroke (cr);
       if (m_curve.loop != Curve::Loop::SUSTAIN && m_curve.loop_start != m_curve.loop_end)
         {
-          if (highlight_type == DRAG_MARKER && !drag_loop_start)
+          if (highlight_type == DRAG_MARKER_END)
             du.set_color (loop_marker_color.lighter());
           else
             du.set_color (loop_marker_color);
@@ -246,10 +246,11 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
               if (highlight_type == DRAG_POINT)
                 {
                   drag_type = DRAG_POINT;
+                  drag_index = index;
                 }
-              else if (highlight_type == DRAG_MARKER)
+              else if (highlight_type == DRAG_MARKER_START || highlight_type == DRAG_MARKER_END || highlight_type == DRAG_MARKER_BOTH)
                 {
-                  drag_type = DRAG_MARKER;
+                  drag_type = highlight_type;
                 }
               else if (highlight_type == DRAG_SLOPE)
                 {
@@ -268,8 +269,6 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
 
                 }
             }
-
-          drag_index = index;
         }
       update();
     }
@@ -333,15 +332,42 @@ MorphCurveWidget::mouse_move (const MouseEvent& event)
       update();
       return;
     }
-  else if (drag_type == DRAG_MARKER)
+  else if (drag_type == DRAG_MARKER_START || drag_type == DRAG_MARKER_END || drag_type == DRAG_MARKER_BOTH)
     {
-      int idx = find_closest_segment_index (event_p);
+      double best_dist = 1e30;
+      int idx = -1;
+      for (size_t i = 0; i < m_curve.points.size(); i++)
+        {
+          Point curve_p = curve_point_to_xy (m_curve.points[i]);
+          double dist = std::abs (event_p.x() - curve_p.x());
+          if (dist < best_dist)
+            {
+              idx = i;
+              best_dist = dist;
+            }
+        }
       if (idx >= 0)
         {
-          if (drag_loop_start)
-            m_curve.loop_start = min (idx, m_curve.loop_end);
-          else
-            m_curve.loop_end = max (idx, m_curve.loop_start);
+          if (drag_type == DRAG_MARKER_START)
+            {
+              if (m_curve.loop == Curve::Loop::SUSTAIN)
+                {
+                  m_curve.loop_start = m_curve.loop_end = idx;
+                }
+              else
+                {
+                  m_curve.loop_start = min (idx, m_curve.loop_end);
+                }
+            }
+          else if (drag_type == DRAG_MARKER_END)
+            {
+              m_curve.loop_end = max (idx, m_curve.loop_start);
+            }
+          else /* DRAG_MARKER_BOTH */
+            {
+              m_curve.loop_start = min (idx, drag_marker);
+              m_curve.loop_end = max (idx, drag_marker);
+            }
           signal_curve_changed();
         }
       update();
@@ -425,19 +451,25 @@ MorphCurveWidget::update_highlight_type (const Point& p)
               double start_dist = std::abs (x - p.x());
               if (start_dist < 10)
                 {
-                  highlight_type = DRAG_MARKER;
+                  highlight_type = DRAG_MARKER_START;
                   drag_marker = m_curve.loop_start;
-                  drag_loop_start = true;
                 }
               if (m_curve.loop == Curve::Loop::FORWARD || m_curve.loop == Curve::Loop::PING_PONG)
                 {
                   double x = start_x + (end_x - start_x) * m_curve.points[m_curve.loop_end].x;
                   double end_dist = std::abs (x - p.x());
-                  if (end_dist < 10 && end_dist < start_dist)
+                  if (end_dist < 10)
                     {
-                      highlight_type = DRAG_MARKER;
-                      drag_marker = m_curve.loop_end;
-                      drag_loop_start = false;
+                      if (highlight_type == DRAG_MARKER_START && drag_marker == m_curve.loop_end)
+                        {
+                          /* special case: both loop markers are on the same point */
+                          highlight_type = DRAG_MARKER_BOTH;
+                        }
+                      else if (end_dist < start_dist)
+                        {
+                          highlight_type = DRAG_MARKER_END;
+                          drag_marker = m_curve.loop_end;
+                        }
                     }
                 }
             }

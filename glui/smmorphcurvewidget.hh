@@ -69,7 +69,6 @@ class MorphCurveWidget : public Widget
   int old_highlight_seg_index = -1;
   int drag_index = -1;
   int drag_marker = -1;
-  bool drag_loop_start = false;
   double drag_slope_y = 0;
   double drag_slope_slope = 0;
   double drag_slope_factor = 0;
@@ -78,7 +77,9 @@ class MorphCurveWidget : public Widget
     DRAG_NONE,
     DRAG_POINT,
     DRAG_SLOPE,
-    DRAG_MARKER
+    DRAG_MARKER_START,
+    DRAG_MARKER_END,
+    DRAG_MARKER_BOTH
   } drag_type = DRAG_NONE;
   DragType highlight_type = DRAG_NONE;
 
