@@ -68,16 +68,19 @@ class MorphCurveWidget : public Widget
   int highlight_seg_index = -1;
   int old_highlight_seg_index = -1;
   int drag_index = -1;
+  int drag_marker = -1;
+  bool drag_loop_start = false;
   double drag_slope_y = 0;
   double drag_slope_slope = 0;
   double drag_slope_factor = 0;
   bool highlight = false;
-  Point last_event_pos;
   enum DragType {
     DRAG_NONE,
     DRAG_POINT,
-    DRAG_SLOPE
+    DRAG_SLOPE,
+    DRAG_MARKER
   } drag_type = DRAG_NONE;
+  DragType highlight_type = DRAG_NONE;
 
   Point curve_point_to_xy (const Curve::Point& p);
   int find_closest_curve_index (const Point& p);
@@ -91,6 +94,8 @@ class MorphCurveWidget : public Widget
   double grid_snap (double p, double start_p, double end_p, int n);
   std::string loop_to_text (Curve::Loop loop);
   Curve::Loop text_to_loop (const std::string& text);
+
+  void update_highlight_type (const Point& p);
 
   void on_loop_changed();
   void on_update_geometry();
