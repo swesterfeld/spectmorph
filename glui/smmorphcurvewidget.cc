@@ -194,15 +194,36 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
             {
               // keep first and last point
               if (index > 0 && index < int (m_curve.points.size()) - 1)
-                m_curve.points.erase (m_curve.points.begin() + index);
+                {
+                  m_curve.points.erase (m_curve.points.begin() + index);
+                  if (index < m_curve.loop_start)
+                    m_curve.loop_start--;
+                  if (index < m_curve.loop_end)
+                    m_curve.loop_end--;
+                }
             }
           else
             {
               float px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
               float py = std::clamp ((event.y - start_y) / (end_y - start_y), 0.0, 1.0);
 
-              m_curve.points.emplace_back (Curve::Point ({ px, py }));
-              std::stable_sort (m_curve.points.begin(), m_curve.points.end(), [] (auto pa, auto pb) { return pa.x < pb.x; });
+              int insert_pos = -1;
+              for (int i = 0; i < int (m_curve.points.size()) - 1; i++)
+                {
+                  if (px < m_curve.points[i + 1].x && px > m_curve.points[i].x)
+                    {
+                      insert_pos = i;
+                      break;
+                    }
+                }
+              if (insert_pos >= 0)
+                {
+                  m_curve.points.insert (m_curve.points.begin() + insert_pos + 1, Curve::Point ({ px, py }));
+                  if (insert_pos < m_curve.loop_start)
+                    m_curve.loop_start++;
+                  if (insert_pos < m_curve.loop_end)
+                    m_curve.loop_end++;
+                }
             }
           signal_curve_changed();
         }
