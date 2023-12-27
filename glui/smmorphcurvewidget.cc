@@ -6,9 +6,12 @@
 
 using namespace SpectMorph;
 
-MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve) :
+using std::string;
+
+MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve, bool can_loop) :
   Widget (parent),
-  m_curve (initial_curve)
+  m_curve (initial_curve),
+  can_loop (can_loop)
 {
   x_grid_label = new CurveGridLabel (parent, initial_curve.grid_x);
   y_grid_label = new CurveGridLabel (parent, initial_curve.grid_y);
@@ -19,6 +22,16 @@ MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve) 
   y_grid_label->set_bold (true);
   snap_checkbox = new CheckBox (parent, "Snap");
   snap_checkbox->set_checked (initial_curve.snap);
+  if (can_loop)
+    {
+      loop_combobox = new ComboBox (this);
+      connect (loop_combobox->signal_item_changed, this, &MorphCurveWidget::on_loop_changed);
+      loop_combobox->add_item (loop_to_text (Curve::Loop::NONE));
+      loop_combobox->set_text (loop_to_text (m_curve.loop));
+      loop_combobox->add_item (loop_to_text (Curve::Loop::SUSTAIN));
+      loop_combobox->add_item (loop_to_text (Curve::Loop::FORWARD));
+      loop_combobox->add_item (loop_to_text (Curve::Loop::PING_PONG));
+    }
   connect (x_grid_label->signal_value_changed,
     [this]() {
       m_curve.grid_x = x_grid_label->n();
@@ -51,7 +64,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
 {
   FixedGrid grid;
   double yoffset = height() / 8;
-  double xoffset = 1;
+  double xoffset = 0;
   grid.add_widget (snap_checkbox, xoffset, yoffset, 6, 2);
   xoffset += 6;
   grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
@@ -59,6 +72,10 @@ MorphCurveWidget::draw (const DrawEvent& devent)
   grid.add_widget (cross_label, xoffset, yoffset, 1, 2);
   xoffset += 1;
   grid.add_widget (y_grid_label, xoffset, yoffset, 2, 2);
+  xoffset += 3;
+
+  if (can_loop)
+    grid.add_widget (loop_combobox, xoffset, yoffset - 1.5, 39 - xoffset, 3);
 
   DrawUtils du (devent.cr);
   cairo_t *cr = devent.cr;
@@ -91,6 +108,24 @@ MorphCurveWidget::draw (const DrawEvent& devent)
           cairo_stroke (cr);
         }
     }
+  /* draw loop markers */
+  if (can_loop && m_curve.loop != Curve::Loop::NONE)
+    {
+      Color loop_marker_color = Color (0.7, 0.7, 1);
+      du.set_color (loop_marker_color);
+      double x = start_x + (end_x - start_x) * m_curve.points[m_curve.loop_start].x;
+      cairo_move_to (cr, x, start_y);
+      cairo_line_to (cr, x, end_y);
+      cairo_stroke (cr);
+      if (m_curve.loop != Curve::Loop::SUSTAIN && m_curve.loop_start != m_curve.loop_end)
+        {
+          double x = start_x + (end_x - start_x) * m_curve.points[m_curve.loop_end].x;
+          cairo_move_to (cr, x, start_y);
+          cairo_line_to (cr, x, end_y);
+          cairo_stroke (cr);
+        }
+    }
+
   Color line_color (ThemeColor::SLIDER);
   line_color = line_color.lighter();
 
@@ -333,4 +368,40 @@ Curve
 MorphCurveWidget::curve() const
 {
   return m_curve;
+}
+
+void
+MorphCurveWidget::on_loop_changed()
+{
+  m_curve.loop = text_to_loop (loop_combobox->text());
+  signal_curve_changed();
+  update();
+}
+
+string
+MorphCurveWidget::loop_to_text (Curve::Loop loop)
+{
+  switch (loop)
+    {
+      case Curve::Loop::NONE:        return "No Loop";
+      case Curve::Loop::SUSTAIN:     return "Sustain Loop";
+      case Curve::Loop::FORWARD:     return "Forward Loop";
+      case Curve::Loop::PING_PONG:   return "Ping Pong Loop";
+    }
+  return ""; /* not found */
+}
+
+Curve::Loop
+MorphCurveWidget::text_to_loop (const string& text)
+{
+  for (int i = 0; ; i++)
+    {
+      Curve::Loop loop { i };
+      string txt = loop_to_text (loop);
+
+      if (txt == text)
+        return loop;
+      if (txt == "")
+        return Curve::Loop::NONE;
+    }
 }

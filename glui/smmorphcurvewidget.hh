@@ -6,6 +6,7 @@
 #include "smcurve.hh"
 #include "smlabel.hh"
 #include "smcheckbox.hh"
+#include "smcombobox.hh"
 
 namespace SpectMorph
 {
@@ -57,6 +58,7 @@ public:
 class MorphCurveWidget : public Widget
 {
   Curve m_curve;
+  bool can_loop = false;
   double start_x = 0;
   double start_y = 0;
   double end_x = 0;
@@ -84,11 +86,16 @@ class MorphCurveWidget : public Widget
   Label          *cross_label;
   CurveGridLabel *y_grid_label;
   CheckBox       *snap_checkbox;
+  ComboBox       *loop_combobox;
 
   double grid_snap (double p, double start_p, double end_p, int n);
+  std::string loop_to_text (Curve::Loop loop);
+  Curve::Loop text_to_loop (const std::string& text);
+
+  void on_loop_changed();
 
 public:
-  MorphCurveWidget (Widget *parent, const Curve& initial_curve);
+  MorphCurveWidget (Widget *parent, const Curve& initial_curve, bool can_loop);
 
   void draw (const DrawEvent& devent) override;
 
