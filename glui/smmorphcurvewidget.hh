@@ -93,6 +93,7 @@ class MorphCurveWidget : public Widget
   Curve::Loop text_to_loop (const std::string& text);
 
   void on_loop_changed();
+  void on_update_geometry();
 
 public:
   MorphCurveWidget (Widget *parent, const Curve& initial_curve, bool can_loop);

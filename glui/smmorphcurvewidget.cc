@@ -50,17 +50,13 @@ MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve, 
       signal_curve_changed();
       update();
     });
-}
-
-
-Point
-MorphCurveWidget::curve_point_to_xy (const Curve::Point& p)
-{
-  return Point (start_x + p.x * (end_x - start_x), start_y + p.y * (end_y - start_y));
+  on_update_geometry();
+  connect (signal_width_changed, this, &MorphCurveWidget::on_update_geometry);
+  connect (signal_height_changed, this, &MorphCurveWidget::on_update_geometry);
 }
 
 void
-MorphCurveWidget::draw (const DrawEvent& devent)
+MorphCurveWidget::on_update_geometry()
 {
   FixedGrid grid;
   double yoffset = height() / 8;
@@ -76,7 +72,17 @@ MorphCurveWidget::draw (const DrawEvent& devent)
 
   if (can_loop)
     grid.add_widget (loop_combobox, xoffset, yoffset - 1.5, 39 - xoffset, 3);
+}
 
+Point
+MorphCurveWidget::curve_point_to_xy (const Curve::Point& p)
+{
+  return Point (start_x + p.x * (end_x - start_x), start_y + p.y * (end_y - start_y));
+}
+
+void
+MorphCurveWidget::draw (const DrawEvent& devent)
+{
   DrawUtils du (devent.cr);
   cairo_t *cr = devent.cr;
 
