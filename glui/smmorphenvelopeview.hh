@@ -12,7 +12,7 @@ namespace SpectMorph
 
 class MorphEnvelopeView : public MorphOperatorView
 {
-  MorphEnvelope    *morph_key_track;
+  MorphEnvelope    *morph_envelope;
   MorphCurveWidget *curve_widget;
 
   OperatorLayout op_layout;

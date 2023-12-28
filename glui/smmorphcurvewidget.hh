@@ -7,6 +7,7 @@
 #include "smlabel.hh"
 #include "smcheckbox.hh"
 #include "smcombobox.hh"
+#include "smvoicestatus.hh"
 
 namespace SpectMorph
 {
@@ -83,6 +84,10 @@ class MorphCurveWidget : public Widget
   } drag_type = DRAG_NONE;
   DragType highlight_type = DRAG_NONE;
 
+  MorphOperator *control_op = nullptr;
+
+  std::vector<Curve::Point> voice_status_points;
+
   Point curve_point_to_xy (const Curve::Point& p);
   int find_closest_curve_index (const Point& p);
   int find_closest_segment_index (const Point& p);
@@ -102,7 +107,7 @@ class MorphCurveWidget : public Widget
   void on_update_geometry();
 
 public:
-  MorphCurveWidget (Widget *parent, const Curve& initial_curve, bool can_loop);
+  MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, bool can_loop);
 
   void draw (const DrawEvent& devent) override;
 
@@ -114,6 +119,8 @@ public:
   void leave_event() override;
 
   Curve curve() const;
+
+  void on_voice_status_changed (VoiceStatus *voice_status);
 
   Signal<> signal_curve_changed;
 };

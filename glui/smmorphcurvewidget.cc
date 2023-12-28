@@ -10,10 +10,11 @@ using std::string;
 using std::min;
 using std::max;
 
-MorphCurveWidget::MorphCurveWidget (Widget *parent, const Curve& initial_curve, bool can_loop) :
+MorphCurveWidget::MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, bool can_loop) :
   Widget (parent),
   m_curve (initial_curve),
-  can_loop (can_loop)
+  can_loop (can_loop),
+  control_op (control_op)
 {
   x_grid_label = new CurveGridLabel (parent, initial_curve.grid_x);
   y_grid_label = new CurveGridLabel (parent, initial_curve.grid_y);
@@ -185,6 +186,11 @@ MorphCurveWidget::draw (const DrawEvent& devent)
       if (highlight_type == DRAG_POINT && highlight_index == i)
         radius = 7;
       du.circle (p.x(), p.y(), radius, circle_color);
+    }
+  for (auto status_point : voice_status_points)
+    {
+      auto p = curve_point_to_xy (status_point);
+      du.circle (p.x(), p.y(), 7, circle_color);
     }
 }
 
@@ -532,4 +538,20 @@ MorphCurveWidget::text_to_loop (const string& text)
       if (txt == "")
         return Curve::Loop::NONE;
     }
+}
+
+void
+MorphCurveWidget::on_voice_status_changed (VoiceStatus *voice_status)
+{
+  voice_status_points.clear();
+  for (uint i = 0; i < voice_status->n_voices(); i++)
+    {
+      auto notify_values = voice_status->get_notify_values (control_op, i);
+      if (notify_values.size())
+        {
+          assert (notify_values.size() == 2);
+          voice_status_points.push_back (Curve::Point { notify_values[1], (notify_values[0] + 1) * 0.5f });
+        }
+    }
+  update();
 }
