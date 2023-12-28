@@ -97,6 +97,7 @@ class MorphCurveWidget : public Widget
   CheckBox       *snap_checkbox;
   ComboBox       *loop_combobox;
 
+  void redraw_voices();
   double grid_snap (double p, double start_p, double end_p, int n);
   std::string loop_to_text (Curve::Loop loop);
   Curve::Loop text_to_loop (const std::string& text);
