@@ -173,18 +173,18 @@ MorphPlanVoice::note_off()
 void
 MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
 {
-  VoiceOpValuesEvent::Voice voices[modules.size()];
+  VoiceOpValuesEvent::Voice voices[modules.size() * MorphOperatorModule::MAX_NOTIFY_VALUES];
   int n = 0;
 
   for (const MorphPlanSynth::OpModule& m : modules)
     {
-      float notify_value;
-
-      if (m.module->get_notify_value (notify_value))
+      uint count = 0;
+      const auto& notify_values = m.module->get_notify_values (count);
+      for (uint i = 0; i < count; i++)
         {
           voices[n].voice = (uintptr_t) this;
           voices[n].op    = m.ptr_id;
-          voices[n].value = notify_value;
+          voices[n].value = notify_values[i];
           n++;
         }
     }

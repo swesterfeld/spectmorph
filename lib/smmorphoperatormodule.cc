@@ -63,24 +63,18 @@ MorphOperatorModule::note_off()
 }
 
 void
-MorphOperatorModule::set_notify_value (float value)
+MorphOperatorModule::set_notify_value (uint pos, float value)
 {
-  m_notify_value = value;
-  m_have_notify_value = true;
+  m_notify_values[pos] = value;
+  if (pos + 1 > m_have_notify_values)
+    m_have_notify_values = pos + 1;
 }
 
-bool
-MorphOperatorModule::get_notify_value (float& value)
+const std::array<float, MorphOperatorModule::MAX_NOTIFY_VALUES>&
+MorphOperatorModule::get_notify_values (uint& count) const
 {
-  if (m_have_notify_value)
-    {
-      value = m_notify_value;
-      return true;
-    }
-  else
-    {
-      return false;
-    }
+  count = m_have_notify_values;
+  return m_notify_values;
 }
 
 void

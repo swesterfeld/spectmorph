@@ -89,7 +89,8 @@ MorphEnvelopeModule::value()
     direction = 1;
 
   float v = std::clamp (cfg->curve (phase) * 2 - 1, -1.f, 1.f);
-  set_notify_value (v);
+  set_notify_value (0, v);
+  set_notify_value (1, phase);
   return v;
 }
 

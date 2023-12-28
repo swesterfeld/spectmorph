@@ -70,14 +70,14 @@ MorphLFOModule::value()
     {
       auto lfo_state = shared_state->global_lfo_state;
       update_lfo_value (lfo_state, time);
-      set_notify_value (lfo_state.value);
+      set_notify_value (0, lfo_state.value);
 
       return lfo_state.value;
     }
   else
     {
       update_lfo_value (local_lfo_state, time);
-      set_notify_value (local_lfo_state.value);
+      set_notify_value (0, local_lfo_state.value);
 
       return local_lfo_state.value;
     }
