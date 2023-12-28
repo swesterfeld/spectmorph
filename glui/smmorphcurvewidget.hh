@@ -86,8 +86,6 @@ class MorphCurveWidget : public Widget
 
   MorphOperator *control_op = nullptr;
 
-  std::vector<Curve::Point> voice_status_points;
-
   Point curve_point_to_xy (const Curve::Point& p);
   int find_closest_curve_index (const Point& p);
   int find_closest_segment_index (const Point& p);
@@ -97,7 +95,6 @@ class MorphCurveWidget : public Widget
   CheckBox       *snap_checkbox;
   ComboBox       *loop_combobox;
 
-  void redraw_voices();
   double grid_snap (double p, double start_p, double end_p, int n);
   std::string loop_to_text (Curve::Loop loop);
   Curve::Loop text_to_loop (const std::string& text);

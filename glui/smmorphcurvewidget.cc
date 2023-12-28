@@ -187,15 +187,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
         radius = 7;
       du.circle (p.x(), p.y(), radius, circle_color);
     }
-
-  double spr_w, spr_h;
-  window()->get_sprite_size (spr_w, spr_h);
-
-  for (auto status_point : voice_status_points)
-    {
-      auto p = curve_point_to_xy (status_point);
-      window()->draw_sprite (this, p.x() - spr_w / 2, p.y() - spr_h / 2);
-    }
+  draw_sprites();
 }
 
 void
@@ -545,31 +537,18 @@ MorphCurveWidget::text_to_loop (const string& text)
 }
 
 void
-MorphCurveWidget::redraw_voices()
-{
-  double spr_w, spr_h;
-  window()->get_sprite_size (spr_w, spr_h);
-
-  for (auto status_point : voice_status_points)
-    {
-      auto p = curve_point_to_xy (status_point);
-      update (p.x() - spr_w / 2, p.y() - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
-    }
-}
-
-void
 MorphCurveWidget::on_voice_status_changed (VoiceStatus *voice_status)
 {
-  redraw_voices();
-  voice_status_points.clear();
+  clear_sprites();
   for (uint i = 0; i < voice_status->n_voices(); i++)
     {
       auto notify_values = voice_status->get_notify_values (control_op, i);
       if (notify_values.size())
         {
           assert (notify_values.size() == 2);
-          voice_status_points.push_back (Curve::Point { notify_values[1], (notify_values[0] + 1) * 0.5f });
+
+          auto curve_p = Curve::Point { notify_values[1], (notify_values[0] + 1) * 0.5f };
+          add_sprite (curve_point_to_xy (curve_p));
         }
     }
-  redraw_voices();
 }

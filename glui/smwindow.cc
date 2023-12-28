@@ -547,13 +547,11 @@ Window::init_sprite()
     }
 }
 
-void
-Window::get_sprite_size (double& w, double& h)
+std::pair<double, double>
+Window::get_sprite_size()
 {
   init_sprite();
-
-  w = sprite.width / global_scale;
-  h = sprite.height / global_scale;
+  return std::make_pair (sprite.width / global_scale, sprite.height / global_scale);
 }
 
 /*

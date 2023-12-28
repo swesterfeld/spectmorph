@@ -124,15 +124,7 @@ MorphGridWidget::draw (const DrawEvent& devent)
         }
     }
 
-  double spr_w, spr_h;
-  window()->get_sprite_size (spr_w, spr_h);
-
-  for (size_t v = 0; v < x_voice_values.size(); v++)
-    {
-      const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
-
-      window()->draw_sprite (this, p.x() - spr_w / 2, p.y() - spr_h / 2);
-    }
+  draw_sprites();
 
   if (prop_x_morphing.modulation_list()->main_control_type() == MorphOperator::CONTROL_GUI
   ||  prop_y_morphing.modulation_list()->main_control_type() == MorphOperator::CONTROL_GUI)
@@ -233,30 +225,17 @@ MorphGridWidget::on_grid_params_changed()
 }
 
 void
-MorphGridWidget::redraw_voices()
-{
-  double spr_w, spr_h;
-  window()->get_sprite_size (spr_w, spr_h);
-
-  for (size_t v = 0; v < x_voice_values.size(); v++)
-    {
-      const auto p = prop_to_pixel (x_voice_values[v], y_voice_values[v]);
-
-      update (p.x() - spr_w / 2, p.y() - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
-    }
-}
-
-void
 MorphGridWidget::on_voice_status_changed (VoiceStatus *voice_status)
 {
-  redraw_voices();
-  x_voice_values = voice_status->get_values (prop_x_morphing);
-  y_voice_values = voice_status->get_values (prop_y_morphing);
+  auto x_voice_values = voice_status->get_values (prop_x_morphing);
+  auto y_voice_values = voice_status->get_values (prop_y_morphing);
 
   if (morph_grid->width() == 1)
     std::fill (x_voice_values.begin(), x_voice_values.end(), 0);
   if (morph_grid->height() == 1)
     std::fill (y_voice_values.begin(), y_voice_values.end(), 0);
 
-  redraw_voices();
+  clear_sprites();
+  for (size_t v = 0; v < x_voice_values.size(); v++)
+    add_sprite (prop_to_pixel (x_voice_values[v], y_voice_values[v]));
 }

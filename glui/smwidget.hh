@@ -259,9 +259,13 @@ private:
   bool m_visible = true;
   Color m_background_color;
   std::vector<Timer *> timers;
+  std::vector<Point> m_sprites;
 
 protected:
   void remove_child (Widget *child);
+  void add_sprite (Point p);
+  void clear_sprites();
+  void draw_sprites();
 
 public:
   Widget *parent;
