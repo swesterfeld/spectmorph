@@ -13,6 +13,7 @@ class MorphEnvelopeModule : public MorphOperatorModule
   const MorphEnvelope::Config *cfg = nullptr;
   double last_time_ms = 0;
   double phase = 0;
+  double direction = 1;
   bool   seen_note_off = false;
 public:
   MorphEnvelopeModule (MorphPlanVoice *voice);
