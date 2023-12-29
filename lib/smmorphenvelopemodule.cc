@@ -66,20 +66,21 @@ MorphEnvelopeModule::value()
         }
       else if (cfg->curve.loop == Curve::Loop::PING_PONG)
         {
-          if (phase > loop_end || (phase < loop_start && direction == -1))
+          if ((phase > loop_end && direction == 1) || (phase < loop_start && direction == -1))
             {
               double pos = mod_pos (phase - loop_start, loop_len * 2);
               if (pos > loop_len)
                 {
-                  // backwards section of the ping-pong loop
+                  /* we need to change the direction of the playback because the modulo loop
+                   * position is now in the "reverse" part of the loop
+                   */
                   phase = loop_end - (pos - loop_len);
-                  direction = -1;
+                  direction *= -1;
                 }
               else
                 {
-                  // forwards section of the ping-pong loop
+                  /* the modulo loop position is in the same direction, just keep playing */
                   phase = loop_start + pos;
-                  direction = 1;
                 }
             }
         }
