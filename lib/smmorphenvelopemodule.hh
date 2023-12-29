@@ -15,6 +15,8 @@ class MorphEnvelopeModule : public MorphOperatorModule
   double phase = 0;
   double direction = 1;
   bool   seen_note_off = false;
+  bool   note_off_segment = false;
+  Curve::Point note_off_p1, note_off_p2;
 public:
   MorphEnvelopeModule (MorphPlanVoice *voice);
   ~MorphEnvelopeModule();

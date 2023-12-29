@@ -89,7 +89,13 @@ MorphEnvelopeModule::value()
   if (cfg->curve.loop != Curve::Loop::PING_PONG && direction == -1)
     direction = 1;
 
-  float v = std::clamp (cfg->curve (phase) * 2 - 1, -1.f, 1.f);
+  float v;
+  if (note_off_segment && phase <= note_off_p2.x)
+    v = Curve::evaluate2 (phase, note_off_p1, note_off_p2);
+  else
+    v = cfg->curve (phase);
+  v = std::clamp (v * 2 - 1, -1.f, 1.f);
+
   set_notify_value (0, v);
   set_notify_value (1, phase);
   return v;
@@ -102,6 +108,7 @@ MorphEnvelopeModule::note_on (const TimeInfo& time_info)
   direction = 1;
   last_time_ms = time_info.time_ms;
   seen_note_off = false;
+  note_off_segment = false;
 }
 
 void
@@ -109,4 +116,19 @@ MorphEnvelopeModule::note_off()
 {
   seen_note_off = true;
   direction = 1;
+  if (cfg->curve.loop != Curve::Loop::NONE)
+    {
+      double y = cfg->curve (phase);
+      phase = cfg->curve.points[cfg->curve.loop_end].x;
+
+      if (cfg->curve.loop_end + 1 < int (cfg->curve.points.size()))
+        {
+          /* for note off with a looping envelope we jump into the first segment
+           * after the loop end (if available) but start at the current y position */
+          note_off_p1 = cfg->curve.points[cfg->curve.loop_end];
+          note_off_p2 = cfg->curve.points[cfg->curve.loop_end + 1];
+          note_off_p1.y = y;
+          note_off_segment = true;
+        }
+    }
 }

@@ -35,6 +35,32 @@ struct Curve
   int loop_start = 1;
   int loop_end = 1;
 
+  /* evaluate curve function between two points */
+  static float
+  evaluate2 (float pos_x, const Point& p1, const Point& p2)
+  {
+    float dx = p2.x - p1.x;
+    float frac = pos_x - p1.x;
+    if (dx > 1e-5)
+      {
+        frac /= dx;
+        if (frac > 1)
+          frac = 1;
+      }
+    else
+      {
+        /* avoid division by zero */
+        frac = 0;
+      }
+    float slope = p1.slope;
+
+    if (slope > 0)
+      frac = std::pow (frac, slope * 3 + 1);
+    if (slope < 0)
+      frac = 1 - std::pow ((1 - frac), -slope * 3 + 1);
+
+    return p1.y + frac * (p2.y - p1.y);
+  }
   /* evaluate curve function */
   float
   operator() (float pos_x) const
@@ -44,25 +70,7 @@ struct Curve
     for (int i = 0; i < int (points.size()) - 1; i++)
       {
         if (points[i].x <= pos_x && points[i + 1].x >= pos_x)
-          {
-            float dx = points[i + 1].x - points[i].x;
-            float frac = pos_x - points[i].x;
-            if (dx > 1e-5)
-              frac /= dx;
-            else
-              {
-                /* avoid division by zero */
-                frac = 0;
-              }
-            float slope = points[i].slope;
-
-            if (slope > 0)
-              frac = std::pow (frac, slope * 3 + 1);
-            if (slope < 0)
-              frac = 1 - std::pow ((1 - frac), -slope * 3 + 1);
-
-            return points[i].y + frac * (points[i + 1].y - points[i].y);
-          }
+          return evaluate2 (pos_x, points[i], points[i + 1]);
       }
     if (pos_x < points.front().x)
       return points.front().y;
