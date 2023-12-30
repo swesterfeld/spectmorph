@@ -17,6 +17,32 @@ MorphEnvelope::MorphEnvelope (MorphPlan *morph_plan) :
   m_config.curve.points.emplace_back (Curve::Point {0.5, 1});
   m_config.curve.points.emplace_back (Curve::Point {1, 0});
   m_config.curve.loop = Curve::Loop::SUSTAIN;
+
+  EnumInfo unit_enum_info (
+    {
+      { UNIT_SECONDS,    "Seconds" },
+      { UNIT_MINUTES,    "Minutes" },
+      { UNIT_NOTE_1_1,   "1/1" },
+      { UNIT_NOTE_1_2,   "1/2" },
+      { UNIT_NOTE_1_4,   "1/4" },
+      { UNIT_NOTE_1_8,   "1/8" },
+      { UNIT_NOTE_1_16,  "1/16" },
+      { UNIT_NOTE_1_32,  "1/32" },
+      { UNIT_NOTE_1_1T,  "1/1 triplet" },
+      { UNIT_NOTE_1_2T,  "1/2 triplet" },
+      { UNIT_NOTE_1_4T,  "1/4 triplet" },
+      { UNIT_NOTE_1_8T,  "1/8 triplet" },
+      { UNIT_NOTE_1_16T, "1/16 triplet" },
+      { UNIT_NOTE_1_32T, "1/32 triplet" },
+      { UNIT_NOTE_1_1D,  "1/1 dotted" },
+      { UNIT_NOTE_1_2D,  "1/2 dotted" },
+      { UNIT_NOTE_1_4D,  "1/4 dotted" },
+      { UNIT_NOTE_1_8D,  "1/8 dotted" },
+      { UNIT_NOTE_1_16D, "1/16 dotted" },
+      { UNIT_NOTE_1_32D, "1/32 dotted" },
+    });
+  add_property_enum (&m_config.unit, P_UNIT, "Unit", UNIT_SECONDS, unit_enum_info);
+  add_property_log (&m_config.time, P_TIME, "Time", "%.3f", 1, 1 / 50., 50);
 }
 
 MorphEnvelope::~MorphEnvelope()

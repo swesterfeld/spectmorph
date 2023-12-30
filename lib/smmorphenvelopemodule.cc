@@ -46,9 +46,60 @@ MorphEnvelopeModule::value()
 {
   TimeInfo time = time_info();
 
-  if (time.time_ms > last_time_ms)
-    phase += (time.time_ms - last_time_ms) / 1000 * direction;
+  double time_unit = 0;
+  double beat_unit = 0;
+  switch (cfg->unit)
+    {
+      case MorphEnvelope::UNIT_SECONDS:
+        time_unit = 1;
+        break;
+      case MorphEnvelope::UNIT_MINUTES:
+        time_unit = 60;
+        break;
+      case MorphEnvelope::UNIT_NOTE_1_1:
+      case MorphEnvelope::UNIT_NOTE_1_2:
+      case MorphEnvelope::UNIT_NOTE_1_4:
+      case MorphEnvelope::UNIT_NOTE_1_8:
+      case MorphEnvelope::UNIT_NOTE_1_16:
+      case MorphEnvelope::UNIT_NOTE_1_32:
+        beat_unit = pow (2, (MorphEnvelope::UNIT_NOTE_1_4 - cfg->unit));
+        break;
+      case MorphEnvelope::UNIT_NOTE_1_1T:
+      case MorphEnvelope::UNIT_NOTE_1_2T:
+      case MorphEnvelope::UNIT_NOTE_1_4T:
+      case MorphEnvelope::UNIT_NOTE_1_8T:
+      case MorphEnvelope::UNIT_NOTE_1_16T:
+      case MorphEnvelope::UNIT_NOTE_1_32T:
+        beat_unit = pow (2, (MorphEnvelope::UNIT_NOTE_1_4T - cfg->unit)) * 2 / 3;
+        break;
+      case MorphEnvelope::UNIT_NOTE_1_1D:
+      case MorphEnvelope::UNIT_NOTE_1_2D:
+      case MorphEnvelope::UNIT_NOTE_1_4D:
+      case MorphEnvelope::UNIT_NOTE_1_8D:
+      case MorphEnvelope::UNIT_NOTE_1_16D:
+      case MorphEnvelope::UNIT_NOTE_1_32D:
+        beat_unit = pow (2, (MorphEnvelope::UNIT_NOTE_1_4D - cfg->unit)) * 3 / 2;
+        break;
+    }
+  if (time_unit > 0)
+    {
+      if (time.time_ms > last_time_ms)
+        phase += (time.time_ms - last_time_ms) / (1000 * cfg->time * time_unit) * direction;
+    }
+  else
+    {
+      if (time.ppq_pos > last_ppq_pos)
+        {
+          /* For beat relative timing, we want to know how long the note has been playing.
+           * Since there can be backwards jumps (caused by loop), we look at the delta
+           * values only.  There is a small error here, during jumps, but the
+           * result should be acceptable.
+           */
+          phase += (time.ppq_pos - last_ppq_pos) / (cfg->time * beat_unit) * direction;
+        }
+    }
   last_time_ms = time.time_ms;
+  last_ppq_pos = time.ppq_pos;
 
   if (!seen_note_off)
     {
@@ -107,6 +158,7 @@ MorphEnvelopeModule::note_on (const TimeInfo& time_info)
   phase = 0;
   direction = 1;
   last_time_ms = time_info.time_ms;
+  last_ppq_pos = time_info.ppq_pos;
   seen_note_off = false;
   note_off_segment = false;
 }
