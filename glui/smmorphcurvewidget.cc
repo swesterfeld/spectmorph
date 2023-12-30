@@ -155,13 +155,22 @@ MorphCurveWidget::draw (const DrawEvent& devent)
   line_color = line_color.lighter();
 
   du.set_color (line_color);
-  for (double x = start_x; x < end_x + 1; x += 1)
+  for (size_t i = 0; i + 1 < m_curve.points.size(); i++)
     {
-      double y = start_y + m_curve ((x - start_x) / (end_x - start_x)) * (end_y - start_y);
-      if (x == start_x)
-        cairo_move_to (cr, x, y);
+      double x1 = start_x + (end_x - start_x) * m_curve.points[i].x;
+      double x2 = start_x + (end_x - start_x) * m_curve.points[i + 1].x;
+      double y1 = start_y + (end_y - start_y) * m_curve.points[i].y;
+      double y2 = start_y + (end_y - start_y) * m_curve.points[i + 1].y;
+      if (i == 0)
+        cairo_move_to (cr, x1, y1);
       else
-        cairo_line_to (cr, x, y);
+        cairo_line_to (cr, x1, y1);
+      for (double xi = x1 + 1; xi <= x2 - 1; xi++)
+        {
+          double yi = start_y + m_curve ((xi - start_x) / (end_x - start_x)) * (end_y - start_y);
+          cairo_line_to (cr, xi, yi);
+        }
+      cairo_line_to (cr, x2, y2);
     }
   cairo_stroke (cr);
 
