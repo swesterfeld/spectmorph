@@ -109,7 +109,7 @@ public:
   void remove_shortcut (Shortcut *shortcut);
   Window *window() override;
   PuglNativeWindow native_window();
-  void get_sprite_size (double& width, double& height);
+  std::pair<double, double> get_sprite_size();
   void draw_sprite (Widget *widget, double x, double y);
 
   void fill_zoom_menu (Menu *menu);

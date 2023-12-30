@@ -60,6 +60,8 @@ MorphPlanWindow::MorphPlanWindow (EventLoop& event_loop,
   add_op_menu_item (op_menu, "Linear Morph", "SpectMorph::MorphLinear");
   add_op_menu_item (op_menu, "Grid Morph", "SpectMorph::MorphGrid");
   add_op_menu_item (op_menu, "LFO", "SpectMorph::MorphLFO");
+  add_op_menu_item (op_menu, "KeyTrack", "SpectMorph::MorphKeyTrack");
+  add_op_menu_item (op_menu, "Envelope", "SpectMorph::MorphEnvelope");
 
   MenuItem *about_item = help_menu->add_item ("About...");
   connect (about_item->signal_clicked, this, &MorphPlanWindow::on_about_clicked);

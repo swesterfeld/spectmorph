@@ -1,10 +1,10 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef SPECTMORPH_MORPH_LFO_HH
-#define SPECTMORPH_MORPH_LFO_HH
+#pragma once
 
 #include "smmorphoperator.hh"
 #include "smproperty.hh"
+#include "smcurve.hh"
 
 #include <string>
 
@@ -23,7 +23,8 @@ public:
     WAVE_SAW_DOWN       = 4,
     WAVE_SQUARE         = 5,
     WAVE_RANDOM_SH      = 6,
-    WAVE_RANDOM_LINEAR  = 7
+    WAVE_RANDOM_LINEAR  = 7,
+    WAVE_CUSTOM         = 8
   };
   enum Note {
     NOTE_32_1 = 1,
@@ -63,6 +64,7 @@ public:
     bool           beat_sync;
     Note           note;
     NoteMode       note_mode;
+    Curve          curve; // for wave type custom
   };
 protected:
   Config      m_config;
@@ -83,8 +85,10 @@ public:
 
   bool beat_sync() const;
   void set_beat_sync (bool beat_sync);
+
+  const Curve& curve() const;
+  void set_curve (const Curve& curve);
+  bool custom_shape() const;
 };
 
 }
-
-#endif

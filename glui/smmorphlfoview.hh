@@ -1,27 +1,28 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef SPECTMORPH_MORPH_LFO_VIEW_HH
-#define SPECTMORPH_MORPH_LFO_VIEW_HH
+#pragma once
 
 #include "smmorphoperatorview.hh"
 #include "smmorphlfo.hh"
 #include "smcomboboxoperator.hh"
 #include "smpropertyview.hh"
 #include "smoperatorlayout.hh"
+#include "smmorphcurvewidget.hh"
 
 namespace SpectMorph
 {
 
 class MorphLFOView : public MorphOperatorView
 {
-  MorphLFO  *morph_lfo;
+  MorphLFO         *morph_lfo = nullptr;
+  MorphCurveWidget *curve_widget = nullptr;
 
-  Label     *note_label;
-  Widget    *note_widget;
+  Label            *note_label = nullptr;
+  Widget           *note_widget = nullptr;
 
-  PropertyView *pv_frequency;
+  PropertyView     *pv_frequency = nullptr;
 
-  OperatorLayout op_layout;
+  OperatorLayout    op_layout;
 
   void update_visible() override;
 public:
@@ -31,5 +32,3 @@ public:
 };
 
 }
-
-#endif

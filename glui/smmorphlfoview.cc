@@ -15,7 +15,8 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   MorphOperatorView (parent, morph_lfo, morph_plan_window),
   morph_lfo (morph_lfo)
 {
-  add_property_view (MorphLFO::P_WAVE_TYPE, op_layout);
+  auto pv_wave_type = add_property_view (MorphLFO::P_WAVE_TYPE, op_layout);
+  connect (pv_wave_type->property()->signal_value_changed, this, &MorphLFOView::update_visible);
 
   pv_frequency = add_property_view (MorphLFO::P_FREQUENCY, op_layout);
 
@@ -60,6 +61,12 @@ MorphLFOView::MorphLFOView (Widget *parent, MorphLFO *morph_lfo, MorphPlanWindow
   grid.add_widget (sync_voices_box, 0, 0, 20, 2);
   grid.add_widget (beat_sync_box, 26, 0, 20, 2);
 
+  // CUSTOM SHAPE
+  curve_widget = new MorphCurveWidget (body_widget, morph_lfo, morph_lfo->curve(), MorphCurveWidget::Type::LFO);
+  connect (morph_plan_window->signal_voice_status_changed, curve_widget, &MorphCurveWidget::on_voice_status_changed);
+  connect (curve_widget->signal_curve_changed, [this] () { this->morph_lfo->set_curve (curve_widget->curve()); });
+  op_layout.add_fixed (39, 24, curve_widget);
+
   op_layout.activate();
   update_visible();
 }
@@ -76,6 +83,7 @@ MorphLFOView::update_visible()
   pv_frequency->set_visible (!morph_lfo->beat_sync());
   note_label->set_visible (morph_lfo->beat_sync());
   note_widget->set_visible (morph_lfo->beat_sync());
+  curve_widget->set_visible (morph_lfo->custom_shape());
 
   op_layout.activate();
   signal_size_changed();

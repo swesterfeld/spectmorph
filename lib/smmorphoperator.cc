@@ -266,18 +266,22 @@ MorphOperatorConfig::~MorphOperatorConfig()
 #include "smmorphsource.hh"
 #include "smmorphwavsource.hh"
 #include "smmorphlfo.hh"
+#include "smmorphkeytrack.hh"
+#include "smmorphenvelope.hh"
 
 MorphOperator *
 MorphOperator::create (const string& type, MorphPlan *plan)
 {
   g_return_val_if_fail (plan != NULL, NULL);
 
-  if (type == "SpectMorph::MorphSource") return new MorphSource (plan);
-  if (type == "SpectMorph::MorphWavSource") return new MorphWavSource (plan);
-  if (type == "SpectMorph::MorphLinear") return new MorphLinear (plan);
-  if (type == "SpectMorph::MorphGrid") return new MorphGrid (plan);
-  if (type == "SpectMorph::MorphOutput") return new MorphOutput (plan);
-  if (type == "SpectMorph::MorphLFO")    return new MorphLFO (plan);
+  if (type == "SpectMorph::MorphSource")      return new MorphSource (plan);
+  if (type == "SpectMorph::MorphWavSource")   return new MorphWavSource (plan);
+  if (type == "SpectMorph::MorphLinear")      return new MorphLinear (plan);
+  if (type == "SpectMorph::MorphGrid")        return new MorphGrid (plan);
+  if (type == "SpectMorph::MorphOutput")      return new MorphOutput (plan);
+  if (type == "SpectMorph::MorphLFO")         return new MorphLFO (plan);
+  if (type == "SpectMorph::MorphKeyTrack")    return new MorphKeyTrack (plan);
+  if (type == "SpectMorph::MorphEnvelope")    return new MorphEnvelope (plan);
 
   return NULL;
 }

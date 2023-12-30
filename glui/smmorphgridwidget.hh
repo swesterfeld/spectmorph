@@ -17,8 +17,6 @@ class MorphGridWidget : public Widget
 
   std::vector<int> x_coord;
   std::vector<int> y_coord;
-  std::vector<float> x_voice_values;
-  std::vector<float> y_voice_values;
   double start_x = 0;
   double start_y = 0;
   double end_x = 0;

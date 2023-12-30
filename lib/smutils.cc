@@ -503,6 +503,13 @@ get_time()
 }
 
 string
+note_to_text (int midi_note)
+{
+  vector<string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+  return string_printf ("%s%d", note_name[midi_note % 12].c_str(), midi_note / 12 - 2);
+}
+
+string
 to_utf8 (const u32string& str)
 {
   std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;

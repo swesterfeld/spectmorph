@@ -413,13 +413,6 @@ InstEditWindow::~InstEditWindow()
     }
 }
 
-string
-InstEditWindow::note_to_text (int i)
-{
-  vector<string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-  return string_printf ("%d  :  %s%d", i, note_name[i % 12].c_str(), i / 12 - 2);
-}
-
 void
 InstEditWindow::load_sample (const string& filename)
 {

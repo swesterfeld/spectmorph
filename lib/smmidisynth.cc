@@ -524,6 +524,11 @@ MidiSynth::process_audio (float *output, size_t n_values)
                 }
             }
           freq_in = frequencies;
+          voice->mp_voice->set_current_freq (frequencies[0]);
+        }
+      else
+        {
+          voice->mp_voice->set_current_freq (voice->freq);
         }
       if (voice->mono_type == Voice::MonoType::SHADOW)
         {

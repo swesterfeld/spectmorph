@@ -118,6 +118,15 @@ public:
 
     return property_values;
   }
+  std::vector<float>
+  get_notify_values (MorphOperator *control_op, uint voice)
+  {
+    std::vector<float> notify_values;
+    for (const auto& op_entry : control_value_map[voices[voice]])
+      if (op_entry.op == (uintptr_t) control_op)
+        notify_values.push_back (op_entry.value);
+    return notify_values;
+  }
   uint
   n_voices()
   {

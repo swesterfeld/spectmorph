@@ -125,6 +125,18 @@ MorphPlanVoice::velocity() const
   return m_velocity;
 }
 
+void
+MorphPlanVoice::set_current_freq (float current_freq)
+{
+  m_current_freq = current_freq;
+}
+
+float
+MorphPlanVoice::current_freq() const
+{
+  return m_current_freq;
+}
+
 float
 MorphPlanVoice::mix_freq() const
 {
@@ -145,27 +157,34 @@ MorphPlanVoice::update_shared_state (const TimeInfo& time_info)
 }
 
 void
-MorphPlanVoice::reset_value (const TimeInfo& time_info)
+MorphPlanVoice::note_on (const TimeInfo& time_info)
 {
   for (size_t i = 0; i < modules.size(); i++)
-    modules[i].module->reset_value (time_info);
+    modules[i].module->note_on (time_info);
+}
+
+void
+MorphPlanVoice::note_off()
+{
+  for (size_t i = 0; i < modules.size(); i++)
+    modules[i].module->note_off();
 }
 
 void
 MorphPlanVoice::fill_notify_buffer (NotifyBuffer& buffer)
 {
-  VoiceOpValuesEvent::Voice voices[modules.size()];
+  VoiceOpValuesEvent::Voice voices[modules.size() * MorphOperatorModule::MAX_NOTIFY_VALUES];
   int n = 0;
 
   for (const MorphPlanSynth::OpModule& m : modules)
     {
-      float notify_value;
-
-      if (m.module->get_notify_value (notify_value))
+      uint count = 0;
+      const auto& notify_values = m.module->get_notify_values (count);
+      for (uint i = 0; i < count; i++)
         {
           voices[n].voice = (uintptr_t) this;
           voices[n].op    = m.ptr_id;
-          voices[n].value = notify_value;
+          voices[n].value = notify_values[i];
           n++;
         }
     }

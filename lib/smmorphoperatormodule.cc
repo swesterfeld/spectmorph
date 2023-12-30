@@ -8,6 +8,8 @@
 #include "smmorphsourcemodule.hh"
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphlfomodule.hh"
+#include "smmorphkeytrackmodule.hh"
+#include "smmorphenvelopemodule.hh"
 #include "smmorphplansynth.hh"
 #include "smleakdebugger.hh"
 
@@ -51,29 +53,28 @@ MorphOperatorModule::value()
 }
 
 void
-MorphOperatorModule::reset_value (const TimeInfo& time_info)
+MorphOperatorModule::note_on (const TimeInfo& time_info)
 {
 }
 
 void
-MorphOperatorModule::set_notify_value (float value)
+MorphOperatorModule::note_off()
 {
-  m_notify_value = value;
-  m_have_notify_value = true;
 }
 
-bool
-MorphOperatorModule::get_notify_value (float& value)
+void
+MorphOperatorModule::set_notify_value (uint pos, float value)
 {
-  if (m_have_notify_value)
-    {
-      value = m_notify_value;
-      return true;
-    }
-  else
-    {
-      return false;
-    }
+  m_notify_values[pos] = value;
+  if (pos + 1 > m_have_notify_values)
+    m_have_notify_values = pos + 1;
+}
+
+const std::array<float, MorphOperatorModule::MAX_NOTIFY_VALUES>&
+MorphOperatorModule::get_notify_values (uint& count) const
+{
+  count = m_have_notify_values;
+  return m_notify_values;
 }
 
 void
@@ -190,6 +191,8 @@ MorphOperatorModule::create (const std::string& type, MorphPlanVoice *voice)
   if (type == "SpectMorph::MorphWavSource") return new MorphWavSourceModule (voice);
   if (type == "SpectMorph::MorphOutput")    return new MorphOutputModule (voice);
   if (type == "SpectMorph::MorphLFO")       return new MorphLFOModule (voice);
+  if (type == "SpectMorph::MorphKeyTrack")  return new MorphKeyTrackModule (voice);
+  if (type == "SpectMorph::MorphEnvelope")  return new MorphEnvelopeModule (voice);
 
   return NULL;
 }

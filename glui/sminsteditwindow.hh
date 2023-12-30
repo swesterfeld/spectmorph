@@ -72,7 +72,6 @@ class InstEditWindow : public Window
   SampleWidget *sample_widget;
   ComboBox *midi_note_combobox = nullptr;
 
-  std::string   note_to_text (int i);
   void          load_sample (const std::string& filename);
   void          load_sample_convert_from_stereo (const WavData& wav_data, const std::string& filename, LoadStereoDialog::Result result);
   void          on_synth_notify_event (SynthNotifyEvent *notify_event);

@@ -19,9 +19,10 @@ protected:
 
   std::vector<double>           m_control_input;
   MorphOutputModule            *m_output = nullptr;
-  float                         m_mix_freq;
-  float                         m_velocity;
-  MorphPlanSynth               *m_morph_plan_synth;
+  float                         m_mix_freq = 0;
+  float                         m_current_freq = 0;
+  float                         m_velocity = 0;
+  MorphPlanSynth               *m_morph_plan_synth = nullptr;
 
   void configure_modules();
 
@@ -37,15 +38,18 @@ public:
   double control_input (double value, MorphOperator::ControlType ctype, MorphOperatorModule *module);
   void   set_control_input (int i, double value);
   void   set_velocity (float velocity);
+  void   set_current_freq (float freq);
+  void   note_off();
 
   float velocity() const;
+  float current_freq() const;
   float mix_freq() const;
 
   MorphOutputModule *output();
   MorphPlanSynth *morph_plan_synth() const;
 
   void update_shared_state (const TimeInfo& time_info);
-  void reset_value (const TimeInfo& time_info);
+  void note_on (const TimeInfo& time_info);
   void fill_notify_buffer (NotifyBuffer& notify_buffer);
 };
 

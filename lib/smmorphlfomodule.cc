@@ -70,21 +70,23 @@ MorphLFOModule::value()
     {
       auto lfo_state = shared_state->global_lfo_state;
       update_lfo_value (lfo_state, time);
-      set_notify_value (lfo_state.value);
+      set_notify_value (0, lfo_state.value);
+      set_notify_value (1, lfo_state.phase);
 
       return lfo_state.value;
     }
   else
     {
       update_lfo_value (local_lfo_state, time);
-      set_notify_value (local_lfo_state.value);
+      set_notify_value (0, local_lfo_state.value);
+      set_notify_value (1, local_lfo_state.phase);
 
       return local_lfo_state.value;
     }
 }
 
 void
-MorphLFOModule::reset_value (const TimeInfo& time_info)
+MorphLFOModule::note_on (const TimeInfo& time_info)
 {
   restart_lfo (local_lfo_state, time_info);
 }
@@ -194,6 +196,10 @@ MorphLFOModule::update_lfo_value (LFOState& state, const TimeInfo& time_info)
   else if (cfg->wave_type == MorphLFO::WAVE_RANDOM_LINEAR)
     {
       state.value = state.last_random_value * (1 - state.phase) + state.random_value * state.phase;
+    }
+  else if (cfg->wave_type == MorphLFO::WAVE_CUSTOM)
+    {
+      state.value = std::clamp (cfg->curve (state.phase) * 2 - 1, -1.f, 1.f);
     }
   else
     {

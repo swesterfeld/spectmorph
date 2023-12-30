@@ -222,6 +222,31 @@ Widget::remove_timer (Timer *timer)
   timers.erase (std::remove (timers.begin(), timers.end(), timer), timers.end());
 }
 
+void
+Widget::add_sprite (Point p)
+{
+  auto [spr_w, spr_h] = window()->get_sprite_size();
+  update (p.x() - spr_w / 2, p.y() - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
+  m_sprites.push_back (p);
+}
+
+void
+Widget::draw_sprites()
+{
+  auto [spr_w, spr_h] = window()->get_sprite_size();
+  for (auto p : m_sprites)
+    window()->draw_sprite (this, p.x() - spr_w / 2, p.y() - spr_h / 2);
+}
+
+void
+Widget::clear_sprites()
+{
+  auto [spr_w, spr_h] = window()->get_sprite_size();
+  for (auto p : m_sprites)
+    update (p.x() - spr_w / 2, p.y() - spr_h / 2, spr_w, spr_h, UPDATE_LOCAL);
+  m_sprites.clear();
+}
+
 /* Color conversion from Rapicorn */
 // This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 void
