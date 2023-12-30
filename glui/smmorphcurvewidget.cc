@@ -62,19 +62,19 @@ void
 MorphCurveWidget::on_update_geometry()
 {
   FixedGrid grid;
-  double yoffset = height() / 8;
+  double yoffset = height() / 8 - 1.5;
   double xoffset = 0;
-  grid.add_widget (snap_checkbox, xoffset, yoffset - 1, 6, 2);
+  grid.add_widget (snap_checkbox, xoffset, yoffset, 6, 2);
   xoffset += 6;
-  grid.add_widget (x_grid_label, xoffset, yoffset - 1, 2, 2);
+  grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
   xoffset += 2;
-  grid.add_widget (cross_label, xoffset, yoffset - 1, 1, 2);
+  grid.add_widget (cross_label, xoffset, yoffset, 1, 2);
   xoffset += 1;
-  grid.add_widget (y_grid_label, xoffset, yoffset - 1, 2, 2);
+  grid.add_widget (y_grid_label, xoffset, yoffset, 2, 2);
   xoffset += 3;
 
   if (type == Type::ENVELOPE)
-    grid.add_widget (loop_combobox, xoffset, yoffset - 1.5, 39 - xoffset, 3);
+    grid.add_widget (loop_combobox, xoffset, yoffset - 0.5, 39 - xoffset, 3);
 }
 
 Point
@@ -89,7 +89,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
   DrawUtils du (devent.cr);
   cairo_t *cr = devent.cr;
 
-  double status_y_pixels = 16;
+  double status_y_pixels = 8 * 2.5;
   du.round_box (0, 0, width(), height() - status_y_pixels, 1, 5, Color (0.4, 0.4, 0.4), Color (0.3, 0.3, 0.3));
 
   start_x = 10;
