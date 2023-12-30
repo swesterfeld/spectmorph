@@ -15,6 +15,10 @@ MorphEnvelopeView::MorphEnvelopeView (Widget *parent, MorphEnvelope *envelope, M
   connect (morph_plan_window->signal_voice_status_changed, curve_widget, &MorphCurveWidget::on_voice_status_changed);
   connect (curve_widget->signal_curve_changed, [this] () { morph_envelope->set_curve (curve_widget->curve()); });
   op_layout.add_fixed (39, 24, curve_widget);
+
+  add_property_view (MorphEnvelope::P_UNIT, op_layout);
+  add_property_view (MorphEnvelope::P_TIME, op_layout);
+
   op_layout.activate();
 }
 
