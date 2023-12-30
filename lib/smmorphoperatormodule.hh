@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef SPECTMORPH_MORPH_OPERATOR_MODULE_HH
-#define SPECTMORPH_MORPH_OPERATOR_MODULE_HH
+#pragma once
 
 #include "smmorphoperator.hh"
 #include "smlivedecodersource.hh"
@@ -9,6 +8,7 @@
 #include "smtimeinfo.hh"
 #include "smrtmemory.hh"
 
+#include <array>
 #include <string>
 
 namespace SpectMorph
@@ -59,5 +59,3 @@ public:
 };
 
 }
-
-#endif
