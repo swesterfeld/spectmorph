@@ -65,6 +65,7 @@ MorphEnvelope::insert_order()
 bool
 MorphEnvelope::save (OutFile& out_file)
 {
+  write_properties (out_file);
   m_config.curve.save ("curve", out_file);
   return true;
 }
