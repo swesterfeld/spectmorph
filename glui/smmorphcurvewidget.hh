@@ -96,11 +96,12 @@ private:
   Point curve_point_to_xy (const Curve::Point& p);
   int find_closest_curve_index (const Point& p);
   int find_closest_segment_index (const Point& p);
-  CurveGridLabel *x_grid_label;
-  Label          *cross_label;
-  CurveGridLabel *y_grid_label;
-  CheckBox       *snap_checkbox;
-  ComboBox       *loop_combobox;
+  CurveGridLabel *x_grid_label = nullptr;
+  Label          *cross_label = nullptr;
+  CurveGridLabel *y_grid_label = nullptr;
+  CheckBox       *snap_checkbox = nullptr;
+  ComboBox       *loop_combobox = nullptr;
+  Label          *note_label = nullptr;
 
   double grid_snap (double p, double start_p, double end_p, int n);
   std::string loop_to_text (Curve::Loop loop);

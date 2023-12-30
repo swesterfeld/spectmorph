@@ -35,6 +35,10 @@ MorphCurveWidget::MorphCurveWidget (Widget *parent, MorphOperator *control_op, c
       loop_combobox->add_item (loop_to_text (Curve::Loop::FORWARD));
       loop_combobox->add_item (loop_to_text (Curve::Loop::PING_PONG));
     }
+  if (type == Type::KEY_TRACK)
+    {
+      note_label = new Label (this, "");
+    }
   connect (x_grid_label->signal_value_changed,
     [this]() {
       m_curve.grid_x = x_grid_label->n();
@@ -75,6 +79,8 @@ MorphCurveWidget::on_update_geometry()
 
   if (type == Type::ENVELOPE)
     grid.add_widget (loop_combobox, xoffset, yoffset - 0.5, 39 - xoffset, 3);
+  if (type == Type::KEY_TRACK)
+    grid.add_widget (note_label, xoffset, yoffset, 8, 2);
 }
 
 Point
@@ -187,15 +193,23 @@ MorphCurveWidget::draw (const DrawEvent& devent)
       du.circle (seg_handle.x(), seg_handle.y(), radius, line_color);
     }
 
+  string note_label_text;
+
   auto circle_color = Color (1, 1, 1);
   for (int i = 0; i < int (m_curve.points.size()); i++)
     {
       auto p = curve_point_to_xy (m_curve.points[i]);
       double radius = 5;
       if (highlight_type == DRAG_POINT && highlight_index == i && highlight)
-        radius = 7;
+        {
+          radius = 7;
+          int midi_note = sm_round_positive (m_curve.points[i].x * 127);
+          note_label_text = string_printf ("%d  :  %s", midi_note, note_to_text (midi_note).c_str());
+        }
       du.circle (p.x(), p.y(), radius, circle_color);
     }
+  if (note_label)
+    note_label->set_text (note_label_text);
   draw_sprites();
 }
 
