@@ -58,8 +58,15 @@ public:
 
 class MorphCurveWidget : public Widget
 {
+public:
+  enum class Type {
+    ENVELOPE,
+    LFO,
+    KEY_TRACK
+  };
+private:
   Curve m_curve;
-  bool can_loop = false;
+  Type type = Type::KEY_TRACK;
   double start_x = 0;
   double start_y = 0;
   double end_x = 0;
@@ -105,7 +112,7 @@ class MorphCurveWidget : public Widget
   void on_update_geometry();
 
 public:
-  MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, bool can_loop);
+  MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, Type type);
 
   void draw (const DrawEvent& devent) override;
 

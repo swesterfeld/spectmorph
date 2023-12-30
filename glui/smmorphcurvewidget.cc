@@ -10,22 +10,22 @@ using std::string;
 using std::min;
 using std::max;
 
-MorphCurveWidget::MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, bool can_loop) :
+MorphCurveWidget::MorphCurveWidget (Widget *parent, MorphOperator *control_op, const Curve& initial_curve, Type type) :
   Widget (parent),
   m_curve (initial_curve),
-  can_loop (can_loop),
+  type (type),
   control_op (control_op)
 {
-  x_grid_label = new CurveGridLabel (parent, initial_curve.grid_x);
-  y_grid_label = new CurveGridLabel (parent, initial_curve.grid_y);
-  cross_label = new Label (parent, "x");
+  x_grid_label = new CurveGridLabel (this, initial_curve.grid_x);
+  y_grid_label = new CurveGridLabel (this, initial_curve.grid_y);
+  cross_label = new Label (this, "x");
   cross_label->set_align (TextAlign::CENTER);
   x_grid_label->set_bold (true);
   x_grid_label->set_align (TextAlign::RIGHT);
   y_grid_label->set_bold (true);
-  snap_checkbox = new CheckBox (parent, "Snap");
+  snap_checkbox = new CheckBox (this, "Snap");
   snap_checkbox->set_checked (initial_curve.snap);
-  if (can_loop)
+  if (type == Type::ENVELOPE)
     {
       loop_combobox = new ComboBox (this);
       connect (loop_combobox->signal_item_changed, this, &MorphCurveWidget::on_loop_changed);
@@ -64,16 +64,16 @@ MorphCurveWidget::on_update_geometry()
   FixedGrid grid;
   double yoffset = height() / 8;
   double xoffset = 0;
-  grid.add_widget (snap_checkbox, xoffset, yoffset, 6, 2);
+  grid.add_widget (snap_checkbox, xoffset, yoffset - 1, 6, 2);
   xoffset += 6;
-  grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
+  grid.add_widget (x_grid_label, xoffset, yoffset - 1, 2, 2);
   xoffset += 2;
-  grid.add_widget (cross_label, xoffset, yoffset, 1, 2);
+  grid.add_widget (cross_label, xoffset, yoffset - 1, 1, 2);
   xoffset += 1;
-  grid.add_widget (y_grid_label, xoffset, yoffset, 2, 2);
+  grid.add_widget (y_grid_label, xoffset, yoffset - 1, 2, 2);
   xoffset += 3;
 
-  if (can_loop)
+  if (type == Type::ENVELOPE)
     grid.add_widget (loop_combobox, xoffset, yoffset - 1.5, 39 - xoffset, 3);
 }
 
@@ -118,7 +118,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
         }
     }
   /* draw loop markers */
-  if (can_loop && m_curve.loop != Curve::Loop::NONE)
+  if (type == Type::ENVELOPE && m_curve.loop != Curve::Loop::NONE)
     {
       Color loop_marker_color = Color (0.7, 0.7, 1);
       if (highlight_type == DRAG_MARKER_START || highlight_type == DRAG_MARKER_BOTH)
@@ -183,7 +183,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
     {
       auto p = curve_point_to_xy (m_curve.points[i]);
       double radius = 5;
-      if (highlight_type == DRAG_POINT && highlight_index == i)
+      if (highlight_type == DRAG_POINT && highlight_index == i && highlight)
         radius = 7;
       du.circle (p.x(), p.y(), radius, circle_color);
     }
@@ -319,6 +319,14 @@ MorphCurveWidget::mouse_move (const MouseEvent& event)
         px = 1;
       m_curve.points[drag_index].x = px;
       m_curve.points[drag_index].y = py;
+      if (type == Type::LFO)
+        {
+          // sync first and last point
+          if (drag_index == 0)
+            m_curve.points.back().y = py;
+          if (drag_index == int (m_curve.points.size()) - 1)
+            m_curve.points.front().y = py;
+        }
       signal_curve_changed();
       update();
       return;

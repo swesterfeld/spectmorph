@@ -11,7 +11,7 @@ MorphEnvelopeView::MorphEnvelopeView (Widget *parent, MorphEnvelope *envelope, M
   MorphOperatorView (parent, envelope, morph_plan_window),
   morph_envelope (envelope)
 {
-  curve_widget = new MorphCurveWidget (body_widget, envelope, morph_envelope->curve(), /* can_loop */ true);
+  curve_widget = new MorphCurveWidget (body_widget, envelope, morph_envelope->curve(), MorphCurveWidget::Type::ENVELOPE);
   connect (morph_plan_window->signal_voice_status_changed, curve_widget, &MorphCurveWidget::on_voice_status_changed);
   connect (curve_widget->signal_curve_changed, [this] () { morph_envelope->set_curve (curve_widget->curve()); });
   op_layout.add_fixed (39, 24, curve_widget);
