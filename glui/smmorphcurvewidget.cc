@@ -454,7 +454,12 @@ MorphCurveWidget::mouse_release (const MouseEvent& event)
 void
 MorphCurveWidget::update_highlight_type (const Point& p)
 {
-  highlight_seg_index = -1;
+  int old_highlight_type = highlight_type;
+  int old_highlight_index = highlight_index;
+  int old_highlight_seg_index = highlight_seg_index;
+  int old_drag_marker = drag_marker;
+
+  drag_marker = -1;
   highlight_type = DRAG_NONE;
 
   int index = find_closest_curve_index (p);
@@ -508,7 +513,15 @@ MorphCurveWidget::update_highlight_type (const Point& p)
             }
         }
     }
-  update(); // can be done cheaper
+  if (old_highlight_type != highlight_type)
+    update();
+  if (highlight_type == DRAG_POINT && old_highlight_index != highlight_index)
+    update();
+  if (old_highlight_seg_index != highlight_seg_index)
+    update();
+  if (highlight_type == DRAG_MARKER_START || highlight_type == DRAG_MARKER_END || highlight_type == DRAG_MARKER_BOTH)
+    if (old_drag_marker != drag_marker)
+      update();
 }
 
 void

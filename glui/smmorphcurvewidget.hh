@@ -72,9 +72,7 @@ private:
   double end_x = 0;
   double end_y = 0;
   int highlight_index = -1;
-  int old_highlight_index = -1;
   int highlight_seg_index = -1;
-  int old_highlight_seg_index = -1;
   int drag_index = -1;
   int drag_marker = -1;
   double drag_slope_y = 0;
