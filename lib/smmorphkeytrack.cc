@@ -13,6 +13,7 @@ MorphKeyTrack::MorphKeyTrack (MorphPlan *morph_plan) :
 {
   leak_debugger.add (this);
 
+  m_config.curve.grid_x = 1;
   m_config.curve.points.emplace_back (Curve::Point {0, 0});
   m_config.curve.points.emplace_back (Curve::Point {1, 1});
 }
