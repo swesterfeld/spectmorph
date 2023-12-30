@@ -288,12 +288,6 @@ public:
     scroll_widget->set_width (x * 8);
     scroll_view->on_widget_size_changed();
   }
-  static std::string
-  note_to_text (int i) /* FIXME: dedup? */
-  {
-    std::vector<std::string> note_name { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-    return string_printf ("%s%d", note_name[i % 12].c_str(), i / 12 - 2);
-  }
   void
   set_active_notes (const std::vector<int>& notes)
   {
