@@ -24,7 +24,8 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
       { WAVE_SAW_DOWN,       "Saw Down" },
       { WAVE_SQUARE,         "Square" },
       { WAVE_RANDOM_SH,      "Random Sample & Hold" },
-      { WAVE_RANDOM_LINEAR,  "Random Linear" }
+      { WAVE_RANDOM_LINEAR,  "Random Linear" },
+      { WAVE_CUSTOM,         "Custom Shape" }
     });
   EnumInfo note_enum_info (
     {
@@ -63,6 +64,14 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   add_property_enum (&m_config.note, P_NOTE, "Note", NOTE_1_4, note_enum_info);
   add_property_enum (&m_config.note_mode, P_NOTE_MODE, "Note Mode", NOTE_MODE_STRAIGHT, note_mode_enum_info);
 
+  m_config.curve.points.emplace_back (Curve::Point {0, 0});
+  m_config.curve.points.emplace_back (Curve::Point {0, 1, -0.6});
+  m_config.curve.points.emplace_back (Curve::Point {0.5, 0});
+  m_config.curve.points.emplace_back (Curve::Point {0.5, 0.75, -0.6});
+  m_config.curve.points.emplace_back (Curve::Point {0.75, 0});
+  m_config.curve.points.emplace_back (Curve::Point {0.75, 0.5, -0.6});
+  m_config.curve.points.emplace_back (Curve::Point {1, 0});
+
   leak_debugger.add (this);
 }
 
@@ -89,6 +98,7 @@ MorphLFO::save (OutFile& out_file)
   write_properties (out_file);
   out_file.write_bool ("sync_voices", m_config.sync_voices);
   out_file.write_bool ("beat_sync", m_config.beat_sync);
+  m_config.curve.save ("curve", out_file);
 
   return true;
 }
@@ -98,7 +108,7 @@ MorphLFO::load (InFile& ifile)
 {
   while (ifile.event() != InFile::END_OF_FILE)
     {
-      if (read_property_event (ifile))
+      if (read_property_event (ifile) || m_config.curve.load ("curve", ifile))
         {
           // property has been read, so we ignore the event
         }
@@ -160,6 +170,25 @@ MorphLFO::set_beat_sync (bool beat_sync)
   m_config.beat_sync = beat_sync;
 
   m_morph_plan->emit_plan_changed();
+}
+
+const Curve&
+MorphLFO::curve() const
+{
+  return m_config.curve;
+}
+
+void
+MorphLFO::set_curve (const Curve& curve)
+{
+  m_config.curve = curve;
+  m_morph_plan->emit_plan_changed();
+}
+
+bool
+MorphLFO::custom_shape() const
+{
+  return m_config.wave_type == WAVE_CUSTOM;
 }
 
 MorphOperatorConfig *
