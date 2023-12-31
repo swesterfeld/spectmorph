@@ -1,5 +1,6 @@
 NEWER TODOS:
 - 1-instrument-wav-source contains the data - not a good idea!
+- LV2 archive storage doesn't seem to work
 - fix asan issues in PandaResampler
 - handle XPARAM scaled parameters for modulation
 - update manual
