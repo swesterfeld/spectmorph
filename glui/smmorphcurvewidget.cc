@@ -204,7 +204,7 @@ MorphCurveWidget::draw (const DrawEvent& devent)
         {
           radius = 7;
           int midi_note = sm_round_positive (m_curve.points[i].x * 127);
-          note_label_text = string_printf ("%d  :  %s", midi_note, note_to_text (midi_note).c_str());
+          note_label_text = note_to_text_verbose (midi_note);
         }
       du.circle (p.x(), p.y(), radius, circle_color);
     }

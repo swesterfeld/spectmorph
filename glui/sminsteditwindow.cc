@@ -279,7 +279,7 @@ InstEditWindow::InstEditWindow (EventLoop& event_loop, Instrument *edit_instrume
   connect (midi_note_combobox->signal_item_changed, this, &InstEditWindow::on_midi_note_changed);
 
   for (int i = 127; i >= 0; i--)
-    midi_note_combobox->add_item (note_to_text (i));
+    midi_note_combobox->add_item (note_to_text_verbose (i));
 
   grid.add_widget (new Label (this, "Midi Note"), 0, 0, 7, 3);
   grid.add_widget (midi_note_combobox, 8, 0, 12, 3);
@@ -517,7 +517,7 @@ InstEditWindow::on_synth_notify_event (SynthNotifyEvent *notify_event)
 
   string text = "---";
   if (iev->voices.size() > 0)
-    text = note_to_text (iev->voices[0].note);
+    text = note_to_text_verbose (iev->voices[0].note);
   playing_label->set_text (text);
 
   if (inst_edit_note)
@@ -568,7 +568,7 @@ InstEditWindow::on_selected_sample_changed()
   for (size_t i = 0; i < instrument->size(); i++)
     {
       Sample *sample = instrument->sample (i);
-      string text = string_printf ("%s  :  %s", note_to_text (sample->midi_note()).c_str(), sample->short_name.c_str());
+      string text = string_printf ("%s  :  %s", note_to_text_verbose (sample->midi_note()).c_str(), sample->short_name.c_str());
 
       int c = used_count[sample->midi_note()];
       if (c > 1)
@@ -593,7 +593,7 @@ InstEditWindow::on_selected_sample_changed()
     }
   else
     {
-      midi_note_combobox->set_text (note_to_text (sample->midi_note()));
+      midi_note_combobox->set_text (note_to_text_verbose (sample->midi_note()));
       loop_combobox->set_text (loop_to_text (sample->loop()));
 
       const double time_s = sample->wav_data().samples().size() / sample->wav_data().mix_freq();
@@ -926,7 +926,7 @@ InstEditWindow::on_midi_note_changed()
     return;
   for (int i = 0; i < 128; i++)
     {
-      if (midi_note_combobox->text() == note_to_text (i))
+      if (midi_note_combobox->text() == note_to_text_verbose (i))
         {
           sample->set_midi_note (i);
         }
