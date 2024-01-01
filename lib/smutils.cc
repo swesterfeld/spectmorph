@@ -510,6 +510,12 @@ note_to_text (int midi_note)
 }
 
 string
+note_to_text_verbose (int midi_note)
+{
+  return string_printf ("%d  :  %s", midi_note, note_to_text (midi_note).c_str());
+}
+
+string
 to_utf8 (const u32string& str)
 {
   std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
