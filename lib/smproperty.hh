@@ -180,11 +180,11 @@ class IntVecProperty : public Property
   std::string   m_label;
   std::string   m_format;
 public:
-  Type type() { return Type::INT; }
-  int min()   { return 0; }
-  int max()   { return m_valid_values.size() - 1; }
+  Type type() override { return Type::INT; }
+  int min() override   { return 0; }
+  int max() override   { return m_valid_values.size() - 1; }
   int
-  get()
+  get() override
   {
     for (size_t i = 0; i < m_valid_values.size(); i++)
       if (*m_value == m_valid_values[i])
@@ -194,7 +194,7 @@ public:
     return 0;
   }
   void
-  set (int v)
+  set (int v) override
   {
     *m_value = m_valid_values[std::clamp (v, min(), max())];
     signal_value_changed();
@@ -205,20 +205,20 @@ public:
     *m_value = m_default;
     signal_value_changed();
   }
-  std::string label() { return m_label; }
+  std::string label() override { return m_label; }
 
   std::string
-  value_label()
+  value_label() override
   {
     return string_locale_printf (m_format.c_str(), *m_value);
   }
   std::string
-  get_edit_str()
+  get_edit_str() override
   {
     return string_locale_printf ("%d", *m_value);
   }
   void
-  set_edit_str (const std::string& s)
+  set_edit_str (const std::string& s) override
   {
     int i = atoi (s.c_str());
     size_t best_idx = 0;
@@ -241,12 +241,12 @@ public:
     *value = def;
   }
   void
-  save (OutFile& out_file)
+  save (OutFile& out_file) override
   {
     out_file.write_int (m_identifier, *m_value);
   }
   bool
-  load (InFile& in_file)
+  load (InFile& in_file) override
   {
     if (in_file.event() == InFile::INT)
       {
@@ -266,10 +266,10 @@ class BoolProperty : public Property
   bool          m_default;
   std::string   m_label;
 public:
-  Type type()       { return Type::BOOL; }
-  int min()         { return 0; }
-  int max()         { return 1; }
-  int get()         { return *m_value; }
+  Type type() override { return Type::BOOL; }
+  int min() override   { return 0; }
+  int max() override   { return 1; }
+  int get() override   { return *m_value; }
 
   BoolProperty (MorphOperator *op, bool *value, const std::string& identifier, const std::string& label, bool def) :
     Property (op, identifier),
@@ -279,16 +279,16 @@ public:
   {
     *value = def;
   }
-  std::string label() { return m_label; }
+  std::string label() override { return m_label; }
 
   std::string
-  value_label()
+  value_label() override
   {
     return "";
   }
 
   void
-  set (int v)
+  set (int v) override
   {
     *m_value = v ? true : false;
     signal_value_changed();
@@ -300,12 +300,12 @@ public:
     signal_value_changed();
   }
   void
-  save (OutFile& out_file)
+  save (OutFile& out_file) override
   {
     out_file.write_bool (m_identifier, *m_value);
   }
   bool
-  load (InFile& in_file)
+  load (InFile& in_file) override
   {
     if (in_file.event() == InFile::BOOL)
       {
@@ -376,11 +376,12 @@ public:
         m_max_value = std::max (item.value, m_max_value);
       }
   }
-  Type type() { return Type::ENUM; }
-  int min() { return m_min_value; }
-  int max() { return m_max_value; }
-  int get() { return m_read_func(); }
-  void set (int v)
+  Type type() override { return Type::ENUM; }
+  int min() override { return m_min_value; }
+  int max() override { return m_max_value; }
+  int get() override { return m_read_func(); }
+  void
+  set (int v) override
   {
     m_write_func (v);
     signal_value_changed();
@@ -391,16 +392,16 @@ public:
     m_write_func (m_default);
     signal_value_changed();
   }
-  std::string label() { return m_label; }
-  std::string value_label() { return "-"; }
-  virtual const EnumInfo *enum_info() const { return &m_enum_info; }
+  std::string label() override { return m_label; }
+  std::string value_label() override { return "-"; }
+  virtual const EnumInfo *enum_info() const override { return &m_enum_info; }
   void
-  save (OutFile& out_file)
+  save (OutFile& out_file) override
   {
     out_file.write_int (m_identifier, m_read_func());
   }
   bool
-  load (InFile& in_file)
+  load (InFile& in_file) override
   {
     if (in_file.event() == InFile::INT)
       {
