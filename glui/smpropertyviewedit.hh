@@ -88,8 +88,11 @@ protected:
     connect (slider->signal_double_click, [this] {
       this->property.reset_to_default();
     });
-    connect (line_edit->signal_return_pressed, [&]() {
-      property.set_edit_str (line_edit->text());
+    connect (line_edit->signal_return_pressed, [this] {
+      if (line_edit_changed)
+        this->property.set_edit_str (line_edit->text());
+      else
+        on_accept();
     });
     connect (property.signal_value_changed, [this] {
       slider->set_int_value (this->property.get());
