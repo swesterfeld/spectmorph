@@ -232,7 +232,16 @@ MorphCurveWidget::draw (const DrawEvent& devent)
       du.circle (p.x(), p.y(), radius, circle_color);
     }
   if (note_label)
-    note_label->set_text (note_label_text);
+    {
+      auto note_label_color = Color (1, 1, 1);
+      if (drag_type == DRAG_NONE && highlight)
+        {
+          note_label_color = note_label_color.darker();
+          note_label_text = note_to_text_verbose (hover_note);
+        }
+      note_label->set_color (note_label_color);
+      note_label->set_text (note_label_text);
+    }
   draw_sprites();
 }
 
@@ -435,6 +444,16 @@ MorphCurveWidget::mouse_move (const MouseEvent& event)
         }
       update();
       return;
+    }
+  else if (drag_type == DRAG_NONE)
+    {
+      float px = std::clamp ((event.x - start_x) / (end_x - start_x), 0.0, 1.0);
+      int new_hover_note = sm_round_positive (px * 127);
+      if (new_hover_note != hover_note)
+        {
+          hover_note = new_hover_note;
+          update();
+        }
     }
   update_highlight_type (Point (event.x, event.y));
 }

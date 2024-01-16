@@ -75,6 +75,7 @@ private:
   int highlight_seg_index = -1;
   int drag_index = -1;
   int drag_marker = -1;
+  int hover_note = -1;
   double drag_slope_y = 0;
   double drag_slope_slope = 0;
   double drag_slope_factor = 0;
