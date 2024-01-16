@@ -794,8 +794,15 @@ Window::on_button_event (const PuglEventButton& event)
       mouse_event.double_click = (event.time - last_click_time < 0.4 &&
                                   event.button == last_click_button &&
                                   pos.distance (last_click_pos) < 15);
-
-      last_click_time = event.time;
+      if (mouse_event.double_click)
+        {
+          // after a double click, the next click is a single click
+          last_click_time = 0;
+        }
+      else
+        {
+          last_click_time = event.time;
+        }
       last_click_button = event.button;
       last_click_pos = pos;
 
