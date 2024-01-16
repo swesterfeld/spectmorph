@@ -290,14 +290,14 @@ public:
     grid.add_widget (yslider, 5, 32, 20, 3);
 
     static int xvalue = 10, yvalue = 10;
-    connect (xslider->signal_int_value_changed, [label, widget, xslider, this] (int i) {
+    connect (xslider->signal_int_value_changed, [label, widget, this] (int i) {
       FixedGrid grid;
       xvalue = i;
       grid.add_widget (widget, 5, 5, xvalue, yvalue);
       grid.add_widget (label, 5, 5, xvalue, yvalue);
       update_full();
     });
-    connect (yslider->signal_int_value_changed, [label, widget, yslider, this] (int i) {
+    connect (yslider->signal_int_value_changed, [label, widget, this] (int i) {
       FixedGrid grid;
       yvalue = i;
       grid.add_widget (widget, 5, 5, xvalue, yvalue);
