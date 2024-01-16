@@ -24,6 +24,7 @@ class Slider : public Widget
 public:
   Signal<double> signal_value_changed;
   Signal<int>    signal_int_value_changed;
+  Signal<>       signal_double_click;
 
   Slider (Widget *parent, double value, Orientation orientation = Orientation::HORIZONTAL) :
     Widget (parent),
@@ -142,18 +143,25 @@ public:
   {
     if (event.button == LEFT_BUTTON)
       {
-        shift_drag = (event.state & PUGL_MOD_SHIFT);
-        if (shift_drag)
+        if (event.double_click)
           {
-            shift_drag_start_event = event;
-            shift_drag_start_value = m_value;
+            signal_double_click();
           }
         else
           {
-            slider_value_from_event (event);
+            shift_drag = (event.state & PUGL_MOD_SHIFT);
+            if (shift_drag)
+              {
+                shift_drag_start_event = event;
+                shift_drag_start_value = m_value;
+              }
+            else
+              {
+                slider_value_from_event (event);
+              }
+            mouse_down = true;
+            update();
           }
-        mouse_down = true;
-        update();
       }
   }
   void
