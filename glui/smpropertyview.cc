@@ -62,6 +62,7 @@ PropertyView::PropertyView (Property& property, Widget *parent, MorphPlanWindow 
         }
       connect (label->signal_clicked, this, &PropertyView::on_edit_details);
       connect (slider->signal_int_value_changed, this, &PropertyView::on_value_changed);
+      connect (slider->signal_double_click, this, &PropertyView::on_reset_to_default);
       connect (property.signal_value_changed, this, &PropertyView::on_update_value);
 
       op_layout.add_row (2, title, slider, label);
@@ -203,6 +204,12 @@ PropertyView::on_value_changed (int value)
 {
   m_property.set (value);
   label->set_text (m_property.value_label());
+}
+
+void
+PropertyView::on_reset_to_default()
+{
+  m_property.reset_to_default();
 }
 
 void

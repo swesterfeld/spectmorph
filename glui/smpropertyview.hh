@@ -130,6 +130,7 @@ class PropertyView : public SignalReceiver
   MorphPlanWindow *window = nullptr;
 
   void on_value_changed (int new_value);
+  void on_reset_to_default();
 
 public:
   PropertyView (Property& property, Widget *parent, MorphPlanWindow *window, OperatorLayout& layout);

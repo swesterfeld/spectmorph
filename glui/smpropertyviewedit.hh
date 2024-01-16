@@ -84,11 +84,15 @@ protected:
     connect (line_edit->signal_text_changed, [this](std::string s) { line_edit_changed = true; });
     connect (slider->signal_int_value_changed, [this] (int i) {
       this->property.set (i);
-      update_line_edit_text();
+    });
+    connect (slider->signal_double_click, [this] {
+      this->property.reset_to_default();
     });
     connect (line_edit->signal_return_pressed, [&]() {
       property.set_edit_str (line_edit->text());
-      slider->set_int_value (property.get());
+    });
+    connect (property.signal_value_changed, [this] {
+      slider->set_int_value (this->property.get());
       update_line_edit_text();
     });
 
