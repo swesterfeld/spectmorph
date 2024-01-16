@@ -38,6 +38,7 @@ MorphCurveWidget::MorphCurveWidget (Widget *parent, MorphOperator *control_op, c
   if (type == Type::KEY_TRACK)
     {
       note_label = new Label (this, "");
+      x_grid_label->set_visible (false);
     }
   connect (x_grid_label->signal_value_changed,
     [this]() {
@@ -70,8 +71,11 @@ MorphCurveWidget::on_update_geometry()
   double xoffset = 0;
   grid.add_widget (snap_checkbox, xoffset, yoffset, 6, 2);
   xoffset += 6;
-  grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
-  xoffset += 2;
+  if (x_grid_label->visible())
+    {
+      grid.add_widget (x_grid_label, xoffset, yoffset, 2, 2);
+      xoffset += 2;
+    }
   grid.add_widget (cross_label, xoffset, yoffset, 1, 2);
   xoffset += 1;
   grid.add_widget (y_grid_label, xoffset, yoffset, 2, 2);
@@ -103,23 +107,42 @@ MorphCurveWidget::draw (const DrawEvent& devent)
   start_y = height() - 10 - status_y_pixels;
   end_y = 10;
 
-  cairo_set_line_width (cr, 1);
+  Color grid_color (0.4, 0.4, 0.4);
+  du.set_color (grid_color);
+  cairo_rectangle (cr, start_x, end_y, end_x - start_x, start_y - end_y);
+  cairo_stroke (cr);
   if (m_curve.snap)
     {
-      Color grid_color (0.4, 0.4, 0.4);
       du.set_color (grid_color);
-      for (int i = 0; i <= x_grid_label->n(); i++)
+      if (type != Type::KEY_TRACK)
         {
-          double x = start_x + (end_x - start_x) * i / m_curve.grid_x;
-          cairo_move_to (cr, x, start_y);
-          cairo_line_to (cr, x, end_y);
-          cairo_stroke (cr);
+          for (int i = 1; i < x_grid_label->n(); i++)
+            {
+              double x = start_x + (end_x - start_x) * i / m_curve.grid_x;
+              cairo_move_to (cr, x, start_y);
+              cairo_line_to (cr, x, end_y);
+              cairo_stroke (cr);
+            }
         }
-      for (int i = 0; i <= y_grid_label->n(); i++)
+      for (int i = 1; i < y_grid_label->n(); i++)
         {
           double y = start_y + (end_y - start_y) * i / m_curve.grid_y;
           cairo_move_to (cr, start_x, y);
           cairo_line_to (cr, end_x, y);
+          cairo_stroke (cr);
+        }
+    }
+  if (type == Type::KEY_TRACK)
+    {
+      for (int note = 12; note < 128; note += 12)
+        {
+          if (note == 60)
+            du.set_color (ThemeColor::MENU_ITEM);
+          else
+            du.set_color (grid_color);
+          double x = start_x + (end_x - start_x) * note / 127;
+          cairo_move_to (cr, x, start_y);
+          cairo_line_to (cr, x, end_y);
           cairo_stroke (cr);
         }
     }
