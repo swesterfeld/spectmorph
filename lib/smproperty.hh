@@ -44,6 +44,7 @@ public:
   virtual int         max() = 0;
   virtual int         get() = 0;
   virtual void        set (int v) = 0;
+  virtual void        reset_to_default() = 0;
 
   virtual std::string label() = 0;
   virtual std::string value_label() = 0;
@@ -96,6 +97,7 @@ public:
 class IntProperty : public Property
 {
   int          *m_value;
+  int           m_default;
   int           m_min_value;
   int           m_max_value;
   std::string   m_label;
@@ -110,6 +112,7 @@ public:
                int def, int mn, int mx) :
     Property (op, identifier),
     m_value (value),
+    m_default (def),
     m_min_value (mn),
     m_max_value (mx),
     m_label (label),
@@ -144,6 +147,12 @@ public:
     signal_value_changed();
   }
   void
+  reset_to_default() override
+  {
+    *m_value = m_default;
+    signal_value_changed();
+  }
+  void
   save (OutFile& out_file) override
   {
     out_file.write_int (m_identifier, *m_value);
@@ -166,6 +175,7 @@ public:
 class IntVecProperty : public Property
 {
   int *m_value;
+  int  m_default;
   std::vector<int> m_valid_values;
   std::string   m_label;
   std::string   m_format;
@@ -187,6 +197,12 @@ public:
   set (int v)
   {
     *m_value = m_valid_values[std::clamp (v, min(), max())];
+    signal_value_changed();
+  }
+  void
+  reset_to_default() override
+  {
+    *m_value = m_default;
     signal_value_changed();
   }
   std::string label() { return m_label; }
@@ -217,6 +233,7 @@ public:
                   int def, const std::vector<int>& valid_values) :
     Property (op, identifier),
     m_value (value),
+    m_default (def),
     m_valid_values (valid_values),
     m_label (label),
     m_format (format)
@@ -246,6 +263,7 @@ public:
 class BoolProperty : public Property
 {
   bool         *m_value;
+  bool          m_default;
   std::string   m_label;
 public:
   Type type()       { return Type::BOOL; }
@@ -256,6 +274,7 @@ public:
   BoolProperty (MorphOperator *op, bool *value, const std::string& identifier, const std::string& label, bool def) :
     Property (op, identifier),
     m_value (value),
+    m_default (def),
     m_label (label)
   {
     *value = def;
@@ -272,6 +291,12 @@ public:
   set (int v)
   {
     *m_value = v ? true : false;
+    signal_value_changed();
+  }
+  void
+  reset_to_default() override
+  {
+    *m_value = m_default;
     signal_value_changed();
   }
   void
@@ -322,6 +347,7 @@ class EnumProperty : public Property
   EnumInfo                  m_enum_info;
   std::function<int()>      m_read_func;
   std::function<void(int)>  m_write_func;
+  int                       m_default;
   int                       m_min_value;
   int                       m_max_value;
 public:
@@ -336,7 +362,8 @@ public:
     m_label (label),
     m_enum_info (ei),
     m_read_func (read_func),
-    m_write_func (write_func)
+    m_write_func (write_func),
+    m_default (def)
   {
     m_write_func (def);
 
@@ -356,6 +383,12 @@ public:
   void set (int v)
   {
     m_write_func (v);
+    signal_value_changed();
+  }
+  void
+  reset_to_default() override
+  {
+    m_write_func (m_default);
     signal_value_changed();
   }
   std::string label() { return m_label; }
@@ -385,6 +418,7 @@ class FloatProperty : public Property
 {
 protected:
   float        *m_value;
+  float         m_default;
   const Range   m_range;
   const Scale   m_scale;
   std::string   m_label;
@@ -393,6 +427,7 @@ protected:
 public:
   FloatProperty (MorphOperator *op,
                  float *value,
+                 float  default_value,
                  const Range& range,
                  Scale scale,
                  const std::string& identifier,
@@ -400,11 +435,13 @@ public:
                  const std::string& format) :
     Property (op, identifier),
     m_value (value),
+    m_default (default_value),
     m_range (range),
     m_scale (scale),
     m_label (label),
     m_format (format)
   {
+    *m_value = m_default;
   }
   Type type() override { return Type::FLOAT; }
   int min() override   { return 0; }
@@ -417,7 +454,12 @@ public:
     *m_value = m_range.clamp (ui2value (v / 1000.));
     signal_value_changed();
   }
-
+  void
+  reset_to_default () override
+  {
+    *m_value = m_default;
+    signal_value_changed();
+  }
   float
   get_float() const override
   {
@@ -503,9 +545,8 @@ public:
                float def_value,
                float min_value,
                float max_value) :
-    FloatProperty (op, value, { min_value, max_value }, Scale::LOG, identifier, label, format)
+    FloatProperty (op, value, def_value, { min_value, max_value }, Scale::LOG, identifier, label, format)
   {
-    *value = def_value;
   }
 
   double
@@ -531,9 +572,8 @@ public:
                   float def_value,
                   double min_value,
                   double max_value) :
-    FloatProperty (op, value, { min_value, max_value }, Scale::LINEAR, identifier, label, format)
+    FloatProperty (op, value, def_value, { min_value, max_value }, Scale::LINEAR, identifier, label, format)
   {
-    *value = def_value;
   }
   double
   value2ui (double v)
@@ -560,10 +600,9 @@ public:
                   float min_value,
                   float max_value,
                   double slope) :
-    FloatProperty (op, value, { min_value, max_value }, /* FIXME: FILTER */ Scale::NONE, identifier, label, format),
+    FloatProperty (op, value, def_value, { min_value, max_value }, /* FIXME: FILTER */ Scale::NONE, identifier, label, format),
     m_slope (slope)
   {
-    *value = def_value;
   }
   double
   value2ui (double v)
