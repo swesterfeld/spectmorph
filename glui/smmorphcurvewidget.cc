@@ -226,7 +226,14 @@ MorphCurveWidget::mouse_press (const MouseEvent& event)
 
       if (event.double_click)
         {
-          if (point_handle.distance (Point (event.x, event.y)) < 10) // delete old point
+          if (highlight_type == DRAG_SLOPE)
+            {
+              if (highlight_seg_index >= 0 && highlight_seg_index < int (m_curve.points.size()) - 1)
+                {
+                  m_curve.points[highlight_seg_index].slope = 0;
+                }
+            }
+          else if (point_handle.distance (Point (event.x, event.y)) < 10) // delete old point
             {
               // keep first and last point
               if (index > 0 && index < int (m_curve.points.size()) - 1)
