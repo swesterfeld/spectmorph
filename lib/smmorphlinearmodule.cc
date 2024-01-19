@@ -96,7 +96,7 @@ MorphLinearModule::MySource::audio()
 }
 
 static bool
-morph (RTAudioBlock& out_audio_block,
+morph (RTAudioBlock& out_block,
        bool have_left, const RTAudioBlock& left_block,
        bool have_right, const RTAudioBlock& right_block,
        double morphing, MorphUtils::MorphMode morph_mode)
@@ -108,18 +108,19 @@ morph (RTAudioBlock& out_audio_block,
 
   if (!have_left) // nothing + interp * right = interp * right
     {
-      MorphUtils::morph_scale (out_audio_block, right_block, interp, morph_mode);
+      MorphUtils::morph_scale (out_block, right_block, interp, morph_mode);
       return true;
     }
   if (!have_right) // (1 - interp) * left + nothing = (1 - interp) * left
     {
-      MorphUtils::morph_scale (out_audio_block, left_block, 1 - interp, morph_mode);
+      MorphUtils::morph_scale (out_block, left_block, 1 - interp, morph_mode);
       return true;
     }
 
+  // set out_block capacity
   const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
-  out_audio_block.freqs.set_capacity (max_partials);
-  out_audio_block.mags.set_capacity (max_partials);
+  out_block.freqs.set_capacity (max_partials);
+  out_block.mags.set_capacity (max_partials);
 
   MagData mds[max_partials + AVOID_ARRAY_UB];
 
@@ -152,11 +153,20 @@ morph (RTAudioBlock& out_audio_block,
         }
       if (match)
         {
-          double freq;
-
-          /* prefer frequency of louder partial */
+          /* prefer frequency of louder partial:
+           *
+           * if the magnitudes are similar, mfact will be close to 1, and freq will become approx.
+           *
+           *   freq = (1 - interp) * lfreq + interp * rfreq
+           *
+           * if the magnitudes are very different, mfact will be close to 0, and freq will become
+           *
+           *   freq ~= lfreq         // if left partial is louder
+           *   freq ~= rfreq         // if right partial is louder
+           */
           const double lfreq = left_block.freqs[i];
           const double rfreq = right_block.freqs[j];
+          double freq;
 
           if (left_block.mags[i] > right_block.mags[j])
             {
@@ -183,8 +193,8 @@ morph (RTAudioBlock& out_audio_block,
             {
               mag_idb = sm_factor2idb ((1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j));
             }
-          out_audio_block.freqs.push_back (freq);
-          out_audio_block.mags.push_back (mag_idb);
+          out_block.freqs.push_back (freq);
+          out_block.mags.push_back (mag_idb);
 
           left_freqs[i].used = 1;
           right_freqs[j].used = 1;
@@ -194,29 +204,29 @@ morph (RTAudioBlock& out_audio_block,
     {
       if (!left_freqs[i].used)
         {
-          out_audio_block.freqs.push_back (left_block.freqs[i]);
-          out_audio_block.mags.push_back (left_block.mags[i]);
+          out_block.freqs.push_back (left_block.freqs[i]);
+          out_block.mags.push_back (left_block.mags[i]);
 
-          interp_mag_one (interp, &out_audio_block.mags.back(), NULL, morph_mode);
+          interp_mag_one (interp, &out_block.mags.back(), NULL, morph_mode);
         }
     }
   for (size_t i = 0; i < right_block.freqs.size(); i++)
     {
       if (!right_freqs[i].used)
         {
-          out_audio_block.freqs.push_back (right_block.freqs[i]);
-          out_audio_block.mags.push_back (right_block.mags[i]);
+          out_block.freqs.push_back (right_block.freqs[i]);
+          out_block.mags.push_back (right_block.mags[i]);
 
-          interp_mag_one (interp, NULL, &out_audio_block.mags.back(), morph_mode);
+          interp_mag_one (interp, NULL, &out_block.mags.back(), morph_mode);
         }
     }
   assert (left_block.noise.size() == right_block.noise.size());
 
-  out_audio_block.noise.set_capacity (left_block.noise.size());
+  out_block.noise.set_capacity (left_block.noise.size());
   for (size_t i = 0; i < left_block.noise.size(); i++)
-    out_audio_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
+    out_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
 
-  out_audio_block.sort_freqs();
+  out_block.sort_freqs();
 
   return true;
 }
