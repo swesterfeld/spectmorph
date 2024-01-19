@@ -119,140 +119,6 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, RTAu
 namespace
 {
 
-}
-
-static bool
-morph (RTAudioBlock& out_block,
-       bool have_left, const RTAudioBlock& left_block,
-       bool have_right, const RTAudioBlock& right_block,
-       double morphing)
-{
-  const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
-  const MorphUtils::MorphMode morph_mode = MorphUtils::MorphMode::DB_LINEAR;
-
-  if (!have_left && !have_right) // nothing + nothing = nothing
-    return false;
-
-  if (!have_left) // nothing + interp * right = interp * right
-    {
-      MorphUtils::morph_scale (out_block, right_block, interp, morph_mode);
-      return true;
-    }
-  if (!have_right) // (1 - interp) * left + nothing = (1 - interp) * left
-    {
-      MorphUtils::morph_scale (out_block, left_block, 1 - interp, morph_mode);
-      return true;
-    }
-
-  // set out_block capacity
-  const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
-  out_block.freqs.set_capacity (max_partials);
-  out_block.mags.set_capacity (max_partials);
-
-  MagData mds[max_partials + AVOID_ARRAY_UB];
-
-  size_t mds_size = MorphUtils::init_mag_data (mds, left_block, right_block);
-  size_t left_freqs_size = left_block.freqs.size();
-  size_t right_freqs_size = right_block.freqs.size();
-
-  MorphUtils::FreqState   left_freqs[left_freqs_size + AVOID_ARRAY_UB];
-  MorphUtils::FreqState   right_freqs[right_freqs_size + AVOID_ARRAY_UB];
-
-  init_freq_state (left_block.freqs, left_freqs);
-  init_freq_state (right_block.freqs, right_freqs);
-
-  for (size_t m = 0; m < mds_size; m++)
-    {
-      size_t i, j;
-      bool match = false;
-      if (mds[m].block == MagData::BLOCK_LEFT)
-        {
-          i = mds[m].index;
-
-          if (!left_freqs[i].used)
-            match = MorphUtils::find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
-        }
-      else // (mds[m].block == MagData::BLOCK_RIGHT)
-        {
-          j = mds[m].index;
-          if (!right_freqs[j].used)
-            match = MorphUtils::find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
-        }
-      if (match)
-        {
-          /* prefer frequency of louder partial:
-           *
-           * if the magnitudes are similar, mfact will be close to 1, and freq will become approx.
-           *
-           *   freq = (1 - interp) * lfreq + interp * rfreq
-           *
-           * if the magnitudes are very different, mfact will be close to 0, and freq will become
-           *
-           *   freq ~= lfreq         // if left partial is louder
-           *   freq ~= rfreq         // if right partial is louder
-           */
-          const double lfreq = left_block.freqs[i];
-          const double rfreq = right_block.freqs[j];
-          double freq;
-
-          if (left_block.mags[i] > right_block.mags[j])
-            {
-              const double mfact = right_block.mags_f (j) / left_block.mags_f (i);
-
-              freq = lfreq + mfact * interp * (rfreq - lfreq);
-            }
-          else
-            {
-              const double mfact = left_block.mags_f (i) / right_block.mags_f (j);
-
-              freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
-            }
-          // FIXME: lpc
-          // FIXME: non-db
-
-          const uint16_t lmag_idb = max (left_block.mags[i], SM_IDB_CONST_M96);
-          const uint16_t rmag_idb = max (right_block.mags[j], SM_IDB_CONST_M96);
-          const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
-
-          out_block.freqs.push_back (freq);
-          out_block.mags.push_back (mag_idb);
-
-          left_freqs[i].used = 1;
-          right_freqs[j].used = 1;
-        }
-    }
-  for (size_t i = 0; i < left_freqs_size; i++)
-    {
-      if (!left_freqs[i].used)
-        {
-          out_block.freqs.push_back (left_block.freqs[i]);
-          out_block.mags.push_back (left_block.mags[i]);
-
-          interp_mag_one (interp, &out_block.mags.back(), NULL, morph_mode);
-        }
-    }
-  for (size_t i = 0; i < right_freqs_size; i++)
-    {
-      if (!right_freqs[i].used)
-        {
-          out_block.freqs.push_back (right_block.freqs[i]);
-          out_block.mags.push_back (right_block.mags[i]);
-
-          interp_mag_one (interp, NULL, &out_block.mags.back(), morph_mode);
-        }
-    }
-  out_block.noise.set_capacity (left_block.noise.size());
-  for (size_t i = 0; i < left_block.noise.size(); i++)
-    out_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
-
-  out_block.sort_freqs();
-  return true;
-}
-
-
-namespace
-{
-
 struct LocalMorphParams
 {
   int     start;
@@ -305,6 +171,7 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
 {
   const double x_morphing = module->apply_modulation (module->cfg->x_morphing_mod);
   const double y_morphing = module->apply_modulation (module->cfg->y_morphing_mod);
+  const MorphUtils::MorphMode morph_mode = MorphUtils::MorphMode::DB_LINEAR;
 
   const LocalMorphParams x_morph_params = global_to_local_params (x_morphing, module->cfg->width);
   const LocalMorphParams y_morph_params = global_to_local_params (y_morphing, module->cfg->height);
@@ -324,7 +191,7 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
-      bool have_ab = morph (out_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
+      bool have_ab = MorphUtils::morph (out_block, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing, morph_mode);
       if (have_ab)
         {
           double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, x_morph_params.morphing);
@@ -355,7 +222,7 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
       bool have_a = get_normalized_block (node_a, index, audio_block_a);
       bool have_b = get_normalized_block (node_b, index, audio_block_b);
 
-      bool have_ab = morph (out_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing);
+      bool have_ab = MorphUtils::morph (out_block, have_a, audio_block_a, have_b, audio_block_b, y_morph_params.morphing, morph_mode);
       if (have_ab)
         {
           double delta_db = morph_delta_db (node_a.delta_db, node_b.delta_db, y_morph_params.morphing);
@@ -393,9 +260,9 @@ MorphGridModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_block
       bool have_c = get_normalized_block (node_c, index, audio_block_c);
       bool have_d = get_normalized_block (node_d, index, audio_block_d);
 
-      bool have_ab = morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing);
-      bool have_cd = morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morph_params.morphing);
-      bool have_abcd = morph (out_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morph_params.morphing);
+      bool have_ab = MorphUtils::morph (audio_block_ab, have_a, audio_block_a, have_b, audio_block_b, x_morph_params.morphing, morph_mode);
+      bool have_cd = MorphUtils::morph (audio_block_cd, have_c, audio_block_c, have_d, audio_block_d, x_morph_params.morphing, morph_mode);
+      bool have_abcd = MorphUtils::morph (out_block, have_ab, audio_block_ab, have_cd, audio_block_cd, y_morph_params.morphing, morph_mode);
 
       if (have_abcd)
         {
