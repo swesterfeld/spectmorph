@@ -114,30 +114,6 @@ dump_line (size_t index, const char *what, double start, double end)
     }
 }
 
-void
-MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)
-{
-  if (module->cfg->db_linear)
-    {
-      const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
-      const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
-
-      const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
-
-      if (left)
-        *left = mag_idb;
-      if (right)
-        *right = mag_idb;
-    }
-  else
-    {
-      if (left)
-        *left = sm_factor2idb ((1 - interp) * sm_idb2factor (*left));
-      if (right)
-        *right = sm_factor2idb (interp * sm_idb2factor (*right));
-    }
-}
-
 bool
 MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_audio_block)
 {
@@ -146,6 +122,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
   const double morphing = module->apply_modulation (module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
+  const auto   morph_mode = module->cfg->db_linear ? MorphUtils::MorphMode::DB_LINEAR : MorphUtils::MorphMode::LINEAR;
 
   RTAudioBlock left_block (module->rt_memory_area()), right_block (module->rt_memory_area());
 
@@ -263,7 +240,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
               out_audio_block.freqs.push_back (left_block.freqs[i]);
               out_audio_block.mags.push_back (left_block.mags[i]);
 
-              interp_mag_one (interp, &out_audio_block.mags.back(), NULL);
+              interp_mag_one (interp, &out_audio_block.mags.back(), NULL, morph_mode);
             }
         }
       for (size_t i = 0; i < right_block.freqs.size(); i++)
@@ -273,7 +250,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
               out_audio_block.freqs.push_back (right_block.freqs[i]);
               out_audio_block.mags.push_back (right_block.mags[i]);
 
-              interp_mag_one (interp, NULL, &out_audio_block.mags.back());
+              interp_mag_one (interp, NULL, &out_audio_block.mags.back(), morph_mode);
             }
         }
       assert (left_block.noise.size() == right_block.noise.size());
@@ -293,7 +270,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
       for (size_t i = 0; i < out_audio_block.noise.size(); i++)
         out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * (1 - interp));
       for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, &out_audio_block.mags[i], NULL);
+        interp_mag_one (interp, &out_audio_block.mags[i], NULL, morph_mode);
 
       return true;
     }
@@ -304,7 +281,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
       for (size_t i = 0; i < out_audio_block.noise.size(); i++)
         out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * interp);
       for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, NULL, &out_audio_block.mags[i]);
+        interp_mag_one (interp, NULL, &out_audio_block.mags[i], morph_mode);
 
       return true;
     }

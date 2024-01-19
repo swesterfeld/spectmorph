@@ -8,6 +8,7 @@
 using std::vector;
 using std::sort;
 using std::min;
+using std::max;
 
 namespace SpectMorph
 {
@@ -101,6 +102,31 @@ init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
       freq_state[i].used   = 0;
     }
 }
+
+void
+interp_mag_one (double interp, uint16_t *left, uint16_t *right, MorphMode mode)
+{
+  if (mode == MorphMode::DB_LINEAR)
+    {
+      const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
+      const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
+
+      const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
+
+      if (left)
+        *left = mag_idb;
+      if (right)
+        *right = mag_idb;
+    }
+  else
+    {
+      if (left)
+        *left = sm_factor2idb ((1 - interp) * sm_idb2factor (*left));
+      if (right)
+        *right = sm_factor2idb (interp * sm_idb2factor (*right));
+    }
+}
+
 
 bool
 get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block)

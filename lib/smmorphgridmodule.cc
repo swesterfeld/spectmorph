@@ -120,21 +120,7 @@ namespace
 {
 
 static void
-interp_mag_one (double interp, uint16_t *left, uint16_t *right)
-{
-  const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
-  const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
-
-  const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
-
-  if (left)
-    *left = mag_idb;
-  if (right)
-    *right = mag_idb;
-}
-
-static void
-morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor)
+morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor, MorphUtils::MorphMode mode)
 {
   const int ddb = sm_factor2delta_idb (factor);
 
@@ -143,7 +129,7 @@ morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double facto
     out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
 
   for (size_t i = 0; i < out_block.freqs.size(); i++)
-    interp_mag_one (factor, NULL, &out_block.mags[i]);
+    interp_mag_one (factor, NULL, &out_block.mags[i], mode);
 }
 
 }
@@ -155,18 +141,19 @@ morph (RTAudioBlock& out_block,
        double morphing)
 {
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
+  const MorphUtils::MorphMode morph_mode = MorphUtils::MorphMode::DB_LINEAR;
 
   if (!have_left && !have_right) // nothing + nothing = nothing
     return false;
 
   if (!have_left) // nothing + interp * right = interp * right
     {
-      morph_scale (out_block, right_block, interp);
+      morph_scale (out_block, right_block, interp, morph_mode);
       return true;
     }
   if (!have_right) // (1 - interp) * left + nothing = (1 - interp) * left
     {
-      morph_scale (out_block, left_block, 1 - interp);
+      morph_scale (out_block, left_block, 1 - interp, morph_mode);
       return true;
     }
 
@@ -254,7 +241,7 @@ morph (RTAudioBlock& out_block,
           out_block.freqs.push_back (left_block.freqs[i]);
           out_block.mags.push_back (left_block.mags[i]);
 
-          interp_mag_one (interp, &out_block.mags.back(), NULL);
+          interp_mag_one (interp, &out_block.mags.back(), NULL, morph_mode);
         }
     }
   for (size_t i = 0; i < right_freqs_size; i++)
@@ -264,7 +251,7 @@ morph (RTAudioBlock& out_block,
           out_block.freqs.push_back (right_block.freqs[i]);
           out_block.mags.push_back (right_block.mags[i]);
 
-          interp_mag_one (interp, NULL, &out_block.mags.back());
+          interp_mag_one (interp, NULL, &out_block.mags.back(), morph_mode);
         }
     }
   out_block.noise.set_capacity (left_block.noise.size());
