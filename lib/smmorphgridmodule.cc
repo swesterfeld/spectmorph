@@ -17,6 +17,8 @@ using std::max;
 using std::vector;
 using std::string;
 using std::sort;
+using SpectMorph::MorphUtils::md_cmp;
+using SpectMorph::MorphUtils::MagData;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
@@ -116,21 +118,6 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, RTAu
 
 namespace
 {
-struct MagData
-{
-  enum {
-    BLOCK_LEFT  = 0,
-    BLOCK_RIGHT = 1
-  }       block;
-  size_t   index;
-  uint16_t mag;
-};
-
-static bool
-md_cmp (const MagData& m1, const MagData& m2)
-{
-  return m1.mag > m2.mag;  // sort with biggest magnitude first
-}
 
 static void
 interp_mag_one (double interp, uint16_t *left, uint16_t *right)

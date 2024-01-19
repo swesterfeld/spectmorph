@@ -17,6 +17,22 @@ namespace SpectMorph
 namespace MorphUtils
 {
 
+struct MagData
+{
+  enum {
+    BLOCK_LEFT  = 0,
+    BLOCK_RIGHT = 1
+  }        block;
+  size_t   index;
+  uint16_t mag;
+};
+
+static inline bool
+md_cmp (const MagData& m1, const MagData& m2)
+{
+  return m1.mag > m2.mag;  // sort with biggest magnitude first
+}
+
 struct FreqState
 {
   float freq_f;
