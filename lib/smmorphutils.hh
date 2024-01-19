@@ -17,17 +17,16 @@ namespace SpectMorph
 namespace MorphUtils
 {
 
-struct FreqState
-{
-  float freq_f;
-  int   used;
+enum class MorphMode {
+  LINEAR,
+  DB_LINEAR
 };
 
-bool find_match (float freq, const FreqState *freq_state, size_t freq_state_size, size_t *index);
-void init_freq_state (const std::vector<uint16_t>& fint, FreqState *freq_state);
-void init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state);
+bool morph (RTAudioBlock& out_block,
+            bool have_left, const RTAudioBlock& left_block,
+            bool have_right, const RTAudioBlock& right_block,
+            double morphing, MorphUtils::MorphMode morph_mode);
 
-AudioBlock* get_normalized_block_ptr (LiveDecoderSource *source, double time_ms);
 bool get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block);
 
 }

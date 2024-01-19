@@ -93,262 +93,39 @@ MorphLinearModule::MySource::audio()
   return &module->audio;
 }
 
-static void
-dump_block (size_t index, const char *what, const RTAudioBlock& block)
-{
-  if (DEBUG)
-    {
-      for (size_t i = 0; i < block.freqs.size(); i++)
-        sm_printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs_f (i), block.mags_f (i));
-    }
-}
-
-static void
-dump_line (size_t index, const char *what, double start, double end)
-{
-  if (DEBUG)
-    {
-      sm_printf ("%zd:%s %.17g %.17g\n", index, what, start, end);
-    }
-}
-
-struct MagData
-{
-  enum {
-    BLOCK_LEFT  = 0,
-    BLOCK_RIGHT = 1
-  }        block;
-  size_t   index;
-  uint16_t mag;
-};
-
-static bool
-md_cmp (const MagData& m1, const MagData& m2)
-{
-  return m1.mag > m2.mag;  // sort with biggest magnitude first
-}
-
-void
-MorphLinearModule::MySource::interp_mag_one (double interp, uint16_t *left, uint16_t *right)
-{
-  if (module->cfg->db_linear)
-    {
-      const uint16_t lmag_idb = max<uint16_t> (left ? *left : 0, SM_IDB_CONST_M96);
-      const uint16_t rmag_idb = max<uint16_t> (right ? *right : 0, SM_IDB_CONST_M96);
-
-      const uint16_t mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
-
-      if (left)
-        *left = mag_idb;
-      if (right)
-        *right = mag_idb;
-    }
-  else
-    {
-      if (left)
-        *left = sm_factor2idb ((1 - interp) * sm_idb2factor (*left));
-      if (right)
-        *right = sm_factor2idb (interp * sm_idb2factor (*right));
-    }
-}
-
 bool
 MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_audio_block)
 {
   bool have_left = false, have_right = false;
 
   const double morphing = module->apply_modulation (module->cfg->morphing_mod);
-  const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
   const double time_ms = index; // 1ms frame step
+  const auto   morph_mode = module->cfg->db_linear ? MorphUtils::MorphMode::DB_LINEAR : MorphUtils::MorphMode::LINEAR;
 
   RTAudioBlock left_block (module->rt_memory_area()), right_block (module->rt_memory_area());
 
-  Audio *left_audio = nullptr;
-  Audio *right_audio = nullptr;
   if (module->left_mod && module->left_mod->source())
     {
       have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
-      left_audio = module->left_mod->source()->audio();
     }
 
   if (module->right_mod && module->right_mod->source())
     {
       have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
-      right_audio = module->right_mod->source()->audio();
     }
 
   if (module->have_left_source)
     {
       have_left = MorphUtils::get_normalized_block (&module->left_source, time_ms, left_block);
-      left_audio = module->left_source.audio();
     }
 
   if (module->have_right_source)
     {
       have_right = MorphUtils::get_normalized_block (&module->right_source, time_ms, right_block);
-      right_audio = module->right_source.audio();
     }
 
-  if (have_left && have_right) // true morph: both sources present
-    {
-      assert (left_audio && right_audio);
+  return MorphUtils::morph (out_audio_block, have_left, left_block, have_right, right_block, morphing, morph_mode);
 
-      const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
-      out_audio_block.freqs.set_capacity (max_partials);
-      out_audio_block.mags.set_capacity (max_partials);
-
-      dump_block (index, "A", left_block);
-      dump_block (index, "B", right_block);
-
-      MagData mds[max_partials + AVOID_ARRAY_UB];
-      size_t  mds_size = 0;
-      for (size_t i = 0; i < left_block.freqs.size(); i++)
-        {
-          MagData& md = mds[mds_size];
-
-          md.block = MagData::BLOCK_LEFT;
-          md.index = i;
-          md.mag   = left_block.mags[i];
-          mds_size++;
-        }
-      for (size_t i = 0; i < right_block.freqs.size(); i++)
-        {
-          MagData& md = mds[mds_size];
-
-          md.block = MagData::BLOCK_RIGHT;
-          md.index = i;
-          md.mag   = right_block.mags[i];
-          mds_size++;
-        }
-      sort (mds, mds + mds_size, md_cmp);
-
-      size_t    left_freqs_size = left_block.freqs.size();
-      size_t    right_freqs_size = right_block.freqs.size();
-
-      MorphUtils::FreqState   left_freqs[left_freqs_size + AVOID_ARRAY_UB];
-      MorphUtils::FreqState   right_freqs[right_freqs_size + AVOID_ARRAY_UB];
-
-      init_freq_state (left_block.freqs, left_freqs);
-      init_freq_state (right_block.freqs, right_freqs);
-
-      for (size_t m = 0; m < mds_size; m++)
-        {
-          size_t i, j;
-          bool match = false;
-          if (mds[m].block == MagData::BLOCK_LEFT)
-            {
-              i = mds[m].index;
-
-              if (!left_freqs[i].used)
-                match = MorphUtils::find_match (left_freqs[i].freq_f, right_freqs, right_freqs_size, &j);
-            }
-          else // (mds[m].block == MagData::BLOCK_RIGHT)
-            {
-              j = mds[m].index;
-              if (!right_freqs[j].used)
-                match = MorphUtils::find_match (right_freqs[j].freq_f, left_freqs, left_freqs_size, &i);
-            }
-          if (match)
-            {
-              double freq;
-
-              /* prefer frequency of louder partial */
-              const double lfreq = left_block.freqs[i];
-              const double rfreq = right_block.freqs[j];
-
-              if (left_block.mags[i] > right_block.mags[j])
-                {
-                  const double mfact = right_block.mags_f (j) / left_block.mags_f (i);
-
-                  freq = lfreq + mfact * interp * (rfreq - lfreq);
-                }
-              else
-                {
-                  const double mfact = left_block.mags_f (i) / right_block.mags_f (j);
-
-                  freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
-                }
-
-              double mag;
-              if (module->cfg->db_linear)
-                {
-                  // FIXME: this could be faster if we avoided db conversion (see grid morph)
-
-                  double lmag_db = db_from_factor (left_block.mags_f (i), -100);
-                  double rmag_db = db_from_factor (right_block.mags_f (j), -100);
-
-                  double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
-
-                  mag = db_to_factor (mag_db);
-                }
-              else
-                {
-                  mag = (1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j);
-                }
-              out_audio_block.freqs.push_back (freq);
-              out_audio_block.mags.push_back (sm_factor2idb (mag));
-
-              dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
-              left_freqs[i].used = 1;
-              right_freqs[j].used = 1;
-            }
-        }
-      for (size_t i = 0; i < left_block.freqs.size(); i++)
-        {
-          if (!left_freqs[i].used)
-            {
-              out_audio_block.freqs.push_back (left_block.freqs[i]);
-              out_audio_block.mags.push_back (left_block.mags[i]);
-
-              interp_mag_one (interp, &out_audio_block.mags.back(), NULL);
-            }
-        }
-      for (size_t i = 0; i < right_block.freqs.size(); i++)
-        {
-          if (!right_freqs[i].used)
-            {
-              out_audio_block.freqs.push_back (right_block.freqs[i]);
-              out_audio_block.mags.push_back (right_block.mags[i]);
-
-              interp_mag_one (interp, NULL, &out_audio_block.mags.back());
-            }
-        }
-      assert (left_block.noise.size() == right_block.noise.size());
-
-      out_audio_block.noise.set_capacity (left_block.noise.size());
-      for (size_t i = 0; i < left_block.noise.size(); i++)
-        out_audio_block.noise.push_back (sm_factor2idb ((1 - interp) * left_block.noise_f (i) + interp * right_block.noise_f (i)));
-
-      out_audio_block.sort_freqs();
-
-      return true;
-    }
-  else if (have_left) // only left source output present
-    {
-      out_audio_block.assign (left_block);
-
-      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
-        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * (1 - interp));
-      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, &out_audio_block.mags[i], NULL);
-
-      return true;
-    }
-  else if (have_right) // only right source output present
-    {
-      out_audio_block.assign (right_block);
-
-      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
-        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * interp);
-      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, NULL, &out_audio_block.mags[i]);
-
-      return true;
-    }
-  else
-    {
-      return false;
-    }
 }
 
 LiveDecoderSource *
