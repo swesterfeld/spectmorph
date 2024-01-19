@@ -6,6 +6,7 @@
 #include <algorithm>
 
 using std::vector;
+using std::sort;
 using std::min;
 
 namespace SpectMorph
@@ -53,6 +54,33 @@ find_match (float freq, const FreqState *freq_state, size_t freq_state_size, siz
     }
   return false;
 }
+
+size_t
+init_mag_data (MagData *mds, const RTAudioBlock& left_block, const RTAudioBlock& right_block)
+{
+  size_t mds_size = 0;
+  for (size_t i = 0; i < left_block.freqs.size(); i++)
+    {
+      MagData& md = mds[mds_size];
+
+      md.block = MagData::BLOCK_LEFT;
+      md.index = i;
+      md.mag   = left_block.mags[i];
+      mds_size++;
+    }
+  for (size_t i = 0; i < right_block.freqs.size(); i++)
+    {
+      MagData& md = mds[mds_size];
+
+      md.block = MagData::BLOCK_RIGHT;
+      md.index = i;
+      md.mag   = right_block.mags[i];
+      mds_size++;
+    }
+  sort (mds, mds + mds_size, md_cmp);
+  return mds_size;
+}
+
 
 void
 init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)

@@ -40,6 +40,7 @@ struct FreqState
 };
 
 bool find_match (float freq, const FreqState *freq_state, size_t freq_state_size, size_t *index);
+size_t init_mag_data (MagData *mds, const RTAudioBlock& left_block, const RTAudioBlock& right_block);
 void init_freq_state (const std::vector<uint16_t>& fint, FreqState *freq_state);
 void init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state);
 

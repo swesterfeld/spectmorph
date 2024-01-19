@@ -187,29 +187,10 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
       dump_block (index, "B", right_block);
 
       MagData mds[max_partials + AVOID_ARRAY_UB];
-      size_t  mds_size = 0;
-      for (size_t i = 0; i < left_block.freqs.size(); i++)
-        {
-          MagData& md = mds[mds_size];
 
-          md.block = MagData::BLOCK_LEFT;
-          md.index = i;
-          md.mag   = left_block.mags[i];
-          mds_size++;
-        }
-      for (size_t i = 0; i < right_block.freqs.size(); i++)
-        {
-          MagData& md = mds[mds_size];
-
-          md.block = MagData::BLOCK_RIGHT;
-          md.index = i;
-          md.mag   = right_block.mags[i];
-          mds_size++;
-        }
-      sort (mds, mds + mds_size, md_cmp);
-
-      size_t    left_freqs_size = left_block.freqs.size();
-      size_t    right_freqs_size = right_block.freqs.size();
+      size_t mds_size = MorphUtils::init_mag_data (mds, left_block, right_block);
+      size_t left_freqs_size = left_block.freqs.size();
+      size_t right_freqs_size = right_block.freqs.size();
 
       MorphUtils::FreqState   left_freqs[left_freqs_size + AVOID_ARRAY_UB];
       MorphUtils::FreqState   right_freqs[right_freqs_size + AVOID_ARRAY_UB];
