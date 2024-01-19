@@ -119,19 +119,6 @@ get_normalized_block (MorphGridModule::InputNode& input_node, size_t index, RTAu
 namespace
 {
 
-static void
-morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor, MorphUtils::MorphMode mode)
-{
-  const int ddb = sm_factor2delta_idb (factor);
-
-  out_block.assign (in_block);
-  for (size_t i = 0; i < out_block.noise.size(); i++)
-    out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
-
-  for (size_t i = 0; i < out_block.freqs.size(); i++)
-    interp_mag_one (factor, NULL, &out_block.mags[i], mode);
-}
-
 }
 
 static bool
@@ -148,12 +135,12 @@ morph (RTAudioBlock& out_block,
 
   if (!have_left) // nothing + interp * right = interp * right
     {
-      morph_scale (out_block, right_block, interp, morph_mode);
+      MorphUtils::morph_scale (out_block, right_block, interp, morph_mode);
       return true;
     }
   if (!have_right) // (1 - interp) * left + nothing = (1 - interp) * left
     {
-      morph_scale (out_block, left_block, 1 - interp, morph_mode);
+      MorphUtils::morph_scale (out_block, left_block, 1 - interp, morph_mode);
       return true;
     }
 

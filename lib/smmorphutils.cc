@@ -127,6 +127,18 @@ interp_mag_one (double interp, uint16_t *left, uint16_t *right, MorphMode mode)
     }
 }
 
+void
+morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor, MorphUtils::MorphMode mode)
+{
+  const int ddb = sm_factor2delta_idb (factor);
+
+  out_block.assign (in_block);
+  for (size_t i = 0; i < out_block.noise.size(); i++)
+    out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
+
+  for (size_t i = 0; i < out_block.freqs.size(); i++)
+    interp_mag_one (factor, NULL, &out_block.mags[i], mode);
+}
 
 bool
 get_normalized_block (LiveDecoderSource *source, double time_ms, RTAudioBlock& out_audio_block)

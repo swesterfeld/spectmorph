@@ -265,24 +265,12 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
     }
   else if (have_left) // only left source output present
     {
-      out_audio_block.assign (left_block);
-
-      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
-        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * (1 - interp));
-      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, &out_audio_block.mags[i], NULL, morph_mode);
-
+      MorphUtils::morph_scale (out_audio_block, left_block, 1 - interp, morph_mode);
       return true;
     }
   else if (have_right) // only right source output present
     {
-      out_audio_block.assign (right_block);
-
-      for (size_t i = 0; i < out_audio_block.noise.size(); i++)
-        out_audio_block.noise[i] = sm_factor2idb (out_audio_block.noise_f (i) * interp);
-      for (size_t i = 0; i < out_audio_block.mags.size(); i++)
-        interp_mag_one (interp, NULL, &out_audio_block.mags[i], morph_mode);
-
+      MorphUtils::morph_scale (out_audio_block, right_block, interp, morph_mode);
       return true;
     }
   else
