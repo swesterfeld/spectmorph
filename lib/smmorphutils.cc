@@ -115,7 +115,7 @@ init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
     }
 }
 
-void
+static void
 interp_mag_one (double interp, uint16_t *left, uint16_t *right, MorphMode mode)
 {
   if (mode == MorphMode::DB_LINEAR)
@@ -139,7 +139,7 @@ interp_mag_one (double interp, uint16_t *left, uint16_t *right, MorphMode mode)
     }
 }
 
-void
+static void
 morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double factor, MorphUtils::MorphMode mode)
 {
   const int ddb = sm_factor2delta_idb (factor);
