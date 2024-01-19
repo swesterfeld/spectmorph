@@ -16,13 +16,35 @@ namespace SpectMorph
 namespace MorphUtils
 {
 
+struct MagData
+{
+  enum {
+    BLOCK_LEFT  = 0,
+    BLOCK_RIGHT = 1
+  }        block;
+  size_t   index;
+  uint16_t mag;
+};
+
+static inline bool
+md_cmp (const MagData& m1, const MagData& m2)
+{
+  return m1.mag > m2.mag;  // sort with biggest magnitude first
+}
+
+struct FreqState
+{
+  float freq_f;
+  int   used;
+};
+
 static bool
 fs_cmp (const FreqState& fs1, const FreqState& fs2)
 {
   return fs1.freq_f < fs2.freq_f;
 }
 
-bool
+static bool
 find_match (float freq, const FreqState *freq_state, size_t freq_state_size, size_t *index)
 {
   const float freq_start = freq - 0.5;
@@ -56,7 +78,7 @@ find_match (float freq, const FreqState *freq_state, size_t freq_state_size, siz
   return false;
 }
 
-size_t
+static size_t
 init_mag_data (MagData *mds, const RTAudioBlock& left_block, const RTAudioBlock& right_block)
 {
   size_t mds_size = 0;
@@ -83,17 +105,7 @@ init_mag_data (MagData *mds, const RTAudioBlock& left_block, const RTAudioBlock&
 }
 
 
-void
-init_freq_state (const vector<uint16_t>& fint, FreqState *freq_state)
-{
-  for (size_t i = 0; i < fint.size(); i++)
-    {
-      freq_state[i].freq_f = sm_ifreq2freq (fint[i]);
-      freq_state[i].used   = 0;
-    }
-}
-
-void
+static void
 init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
 {
   for (size_t i = 0; i < fint.size(); i++)

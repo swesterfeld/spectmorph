@@ -17,8 +17,6 @@ using std::max;
 using std::vector;
 using std::string;
 using std::sort;
-using SpectMorph::MorphUtils::md_cmp;
-using SpectMorph::MorphUtils::MagData;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
 
