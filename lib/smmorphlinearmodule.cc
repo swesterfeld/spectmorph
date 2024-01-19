@@ -236,24 +236,20 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
                   freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
                 }
 
-              double mag;
+              uint16_t mag_idb;
               if (module->cfg->db_linear)
                 {
-                  // FIXME: this could be faster if we avoided db conversion (see grid morph)
+                  const uint16_t lmag_idb = max (left_block.mags[i], SM_IDB_CONST_M96);
+                  const uint16_t rmag_idb = max (right_block.mags[j], SM_IDB_CONST_M96);
 
-                  double lmag_db = db_from_factor (left_block.mags_f (i), -100);
-                  double rmag_db = db_from_factor (right_block.mags_f (j), -100);
-
-                  double mag_db = (1 - interp) * lmag_db + interp * rmag_db;
-
-                  mag = db_to_factor (mag_db);
+                  mag_idb = sm_round_positive ((1 - interp) * lmag_idb + interp * rmag_idb);
                 }
               else
                 {
-                  mag = (1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j);
+                  mag_idb = sm_factor2idb ((1 - interp) * left_block.mags_f (i) + interp * right_block.mags_f (j));
                 }
               out_audio_block.freqs.push_back (freq);
-              out_audio_block.mags.push_back (sm_factor2idb (mag));
+              out_audio_block.mags.push_back (mag_idb);
 
               dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_freqs[i].used = 1;
