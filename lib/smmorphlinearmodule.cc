@@ -95,73 +95,18 @@ MorphLinearModule::MySource::audio()
   return &module->audio;
 }
 
-static void
-dump_block (size_t index, const char *what, const RTAudioBlock& block)
+static bool
+morph (RTAudioBlock& out_audio_block,
+       bool have_left, const RTAudioBlock& left_block,
+       bool have_right, const RTAudioBlock& right_block,
+       double morphing, MorphUtils::MorphMode morph_mode)
 {
-  if (DEBUG)
-    {
-      for (size_t i = 0; i < block.freqs.size(); i++)
-        sm_printf ("%zd:%s %.17g %.17g\n", index, what, block.freqs_f (i), block.mags_f (i));
-    }
-}
-
-static void
-dump_line (size_t index, const char *what, double start, double end)
-{
-  if (DEBUG)
-    {
-      sm_printf ("%zd:%s %.17g %.17g\n", index, what, start, end);
-    }
-}
-
-bool
-MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_audio_block)
-{
-  bool have_left = false, have_right = false;
-
-  const double morphing = module->apply_modulation (module->cfg->morphing_mod);
   const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
-  const double time_ms = index; // 1ms frame step
-  const auto   morph_mode = module->cfg->db_linear ? MorphUtils::MorphMode::DB_LINEAR : MorphUtils::MorphMode::LINEAR;
-
-  RTAudioBlock left_block (module->rt_memory_area()), right_block (module->rt_memory_area());
-
-  Audio *left_audio = nullptr;
-  Audio *right_audio = nullptr;
-  if (module->left_mod && module->left_mod->source())
-    {
-      have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
-      left_audio = module->left_mod->source()->audio();
-    }
-
-  if (module->right_mod && module->right_mod->source())
-    {
-      have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
-      right_audio = module->right_mod->source()->audio();
-    }
-
-  if (module->have_left_source)
-    {
-      have_left = MorphUtils::get_normalized_block (&module->left_source, time_ms, left_block);
-      left_audio = module->left_source.audio();
-    }
-
-  if (module->have_right_source)
-    {
-      have_right = MorphUtils::get_normalized_block (&module->right_source, time_ms, right_block);
-      right_audio = module->right_source.audio();
-    }
-
   if (have_left && have_right) // true morph: both sources present
     {
-      assert (left_audio && right_audio);
-
       const size_t max_partials = left_block.freqs.size() + right_block.freqs.size();
       out_audio_block.freqs.set_capacity (max_partials);
       out_audio_block.mags.set_capacity (max_partials);
-
-      dump_block (index, "A", left_block);
-      dump_block (index, "B", right_block);
 
       MagData mds[max_partials + AVOID_ARRAY_UB];
 
@@ -214,7 +159,7 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
                 }
 
               uint16_t mag_idb;
-              if (module->cfg->db_linear)
+              if (morph_mode == MorphUtils::MorphMode::DB_LINEAR)
                 {
                   const uint16_t lmag_idb = max (left_block.mags[i], SM_IDB_CONST_M96);
                   const uint16_t rmag_idb = max (right_block.mags[j], SM_IDB_CONST_M96);
@@ -228,7 +173,6 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
               out_audio_block.freqs.push_back (freq);
               out_audio_block.mags.push_back (mag_idb);
 
-              dump_line (index, "L", left_block.freqs[i], right_block.freqs[j]);
               left_freqs[i].used = 1;
               right_freqs[j].used = 1;
             }
@@ -277,6 +221,41 @@ MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_aud
     {
       return false;
     }
+}
+
+bool
+MorphLinearModule::MySource::rt_audio_block (size_t index, RTAudioBlock& out_audio_block)
+{
+  bool have_left = false, have_right = false;
+
+  const double morphing = module->apply_modulation (module->cfg->morphing_mod);
+  const double time_ms = index; // 1ms frame step
+  const auto   morph_mode = module->cfg->db_linear ? MorphUtils::MorphMode::DB_LINEAR : MorphUtils::MorphMode::LINEAR;
+
+  RTAudioBlock left_block (module->rt_memory_area()), right_block (module->rt_memory_area());
+
+  if (module->left_mod && module->left_mod->source())
+    {
+      have_left = MorphUtils::get_normalized_block (module->left_mod->source(), time_ms, left_block);
+    }
+
+  if (module->right_mod && module->right_mod->source())
+    {
+      have_right = MorphUtils::get_normalized_block (module->right_mod->source(), time_ms, right_block);
+    }
+
+  if (module->have_left_source)
+    {
+      have_left = MorphUtils::get_normalized_block (&module->left_source, time_ms, left_block);
+    }
+
+  if (module->have_right_source)
+    {
+      have_right = MorphUtils::get_normalized_block (&module->right_source, time_ms, right_block);
+    }
+
+  return morph (out_audio_block, have_left, left_block, have_right, right_block, morphing, morph_mode);
+
 }
 
 LiveDecoderSource *
