@@ -33,3 +33,6 @@ rebuild-meta-headers:
 	make -Clib rebuild-spectmorph-hh
 	make -Cglui rebuild-spectmorphglui-hh
 	make -Cgui rebuild-spectmorphgui-hh
+
+tidy:
+	clang-tidy-17 $(shell git ls-tree --name-only HEAD -r | grep -v ^3rdparty | grep -e '.cc') -- -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO $(BSE_CFLAGS) -std=c++17 -I. -I3rdparty/minizip -I3rdparty -Ilib -Iglui -Isrc -Igui -Ijack $(CAIRO_CFLAGS) $(QT_CFLAGS)
