@@ -87,8 +87,6 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   unison_phases[1].reserve (PARTIAL_STATE_RESERVE * MAX_UNISON_VOICES);
   unison_freq_factor.reserve (MAX_UNISON_VOICES);
 
-  portamento_state.buffer.reserve (MAX_N_VALUES * 16 /* 4 octaves */ + 256 /* buffer shrink boundary */ + 100);
-
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
 
@@ -185,13 +183,6 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       unison_phases[0].clear();
       unison_phases[1].clear();
 
-      // setup portamento state
-      assert (PortamentoState::DELTA >= pp_inter->get_min_padding());
-
-      portamento_state.pos = PortamentoState::DELTA;
-      portamento_state.buffer.resize (PortamentoState::DELTA);
-      portamento_state.active = false;
-
       // setup vibrato state
       vibrato_phase = 0;
       vibrato_env = 0;
@@ -249,7 +240,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamento_stretch)
+LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out, float portamento_stretch)
 {
   assert (audio); // need selected (triggered) audio to use this function
 
@@ -306,7 +297,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
   unsigned int i = 0;
   while (i < n_values)
     {
-      if (have_samples == 0)
+      if (pos >= have_samples)
         {
           double want_freq = current_freq;
 
@@ -503,6 +494,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                     }
                   ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
                   std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
+                  std::fill (&sse_samples[block_size / 2], &sse_samples[block_size], 0.f);
 #if 0
 #endif
 
@@ -546,7 +538,8 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               if (done_state == DoneState::ACTIVE)
                 done_state = DoneState::ALMOST_DONE;
             }
-          pos = 0;
+          if (pos != 0) // pos == 0 => initial refill
+            pos -= block_size / 2;
           have_samples = block_size / 2;
           rt_memory_area->free_all();
         }
@@ -561,17 +554,22 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               audio_out[i++] = 0;
               pos++;
               env_pos += portamento_env_step;
-              have_samples--;
             }
           else if (time_ms < audio->attack_end_ms)
             {
               audio_out[i++] = sse_samples[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
               pos++;
               env_pos += portamento_env_step;
-              have_samples--;
             }
           else // envelope is 1 -> copy data efficiently
             {
+              int ipos = pos;
+              float frac = pos - ipos;
+              audio_out[i] = sse_samples[ipos] * (1 - frac) + sse_samples[ipos + 1] * frac;
+              pos += freq_in[i] / (current_freq * old_portamento_stretch);
+              i++;
+              env_pos += portamento_env_step;
+#if 0
               size_t can_copy = min (have_samples, n_values - i);
 
               memcpy (audio_out + i, &sse_samples[pos], sizeof (float) * can_copy);
@@ -579,6 +577,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
               pos += can_copy;
               env_pos += can_copy * portamento_env_step;
               have_samples -= can_copy;
+#endif
             }
         }
       else
@@ -586,52 +585,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
           // skip sample
           pos++;
           env_pos += portamento_env_step;
-          have_samples--;
         }
-    }
-}
-
-static bool
-portamento_check (size_t n_values, const float *freq_in, float current_freq)
-{
-  /* if any value in freq_in differs from current_freq => need portamento */
-  for (size_t i = 0; i < n_values; i++)
-    {
-      if (fabs (freq_in[i] / current_freq - 1) > 0.0001) // very small frequency difference (less than one cent)
-        return true;
-    }
-
-  /* all freq_in[i] are (approximately) current_freq => no portamento */
-  return false;
-}
-
-void
-LiveDecoder::portamento_grow (double end_pos, float portamento_stretch)
-{
-  /* produce input samples until current_pos */
-  const int TODO = int (end_pos) + PortamentoState::DELTA - int (portamento_state.buffer.size());
-  if (TODO > 0)
-    {
-      const size_t START = portamento_state.buffer.size();
-
-      portamento_state.buffer.resize (portamento_state.buffer.size() + TODO);
-      process_internal (TODO, &portamento_state.buffer[START], portamento_stretch);
-    }
-  portamento_state.pos = end_pos;
-}
-
-void
-LiveDecoder::portamento_shrink()
-{
-  vector<float>& buffer = portamento_state.buffer;
-
-  /* avoid infinite state */
-  if (buffer.size() > 256)
-    {
-      const int shrink_buffer = buffer.size() - 2 * PortamentoState::DELTA; // only keep 2 * DELTA samples
-
-      buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
-      portamento_state.pos -= shrink_buffer;
     }
 }
 
@@ -640,48 +594,16 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
 {
   assert (audio); // need selected (triggered) audio to use this function
 
-  const double start_pos = portamento_state.pos;
-  const vector<float>& buffer = portamento_state.buffer;
-
-  if (!portamento_state.active)
+  float fake_freq_in[n_values];
+  if (!freq_in)
     {
-      if (freq_in && portamento_check (n_values, freq_in, current_freq))
-        portamento_state.active = true;
+      std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
+      freq_in = fake_freq_in;
     }
-  if (portamento_state.active)
-    {
-      float fake_freq_in[n_values];
-      if (!freq_in)
-        {
-          std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
-          freq_in = fake_freq_in;
-        }
 
-      double pos[n_values], end_pos = start_pos, current_step = 1;
+  double pstretch = freq_in[0] / current_freq;
 
-      /* FIXME: take into account that we buffer samples computed with different portamento_stretch values */
-      for (size_t i = 0; i < n_values; i++)
-        {
-          pos[i] = end_pos;
-
-          current_step = freq_in[i] / current_freq / old_portamento_stretch;
-          end_pos += current_step;
-        }
-      portamento_grow (end_pos, current_step);
-
-      /* interpolate from buffer (portamento) */
-      for (size_t i = 0; i < n_values; i++)
-        audio_out[i] = pp_inter->get_sample_no_check (buffer.data(), pos[i]);
-    }
-  else
-    {
-      /* no portamento: just compute & copy values */
-      portamento_grow (start_pos + n_values, 1);
-
-      const float *start = &buffer[sm_round_positive (start_pos)];
-      std::copy (start, start + n_values, audio_out);
-    }
-  portamento_shrink();
+  process_internal (n_values, freq_in, audio_out, pstretch);
 }
 
 void

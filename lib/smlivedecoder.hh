@@ -29,14 +29,6 @@ class LiveDecoder
   };
   std::vector<PartialState> pstate[2], *last_pstate;
 
-  struct PortamentoState {
-    std::vector<float> buffer;
-    double             pos;
-    bool               active;
-
-    enum { DELTA = 32 };
-  } portamento_state;
-
   WavSet             *smset;
   Audio              *audio;
 
@@ -65,7 +57,7 @@ class LiveDecoder
   float               mix_freq;
 
   size_t              have_samples;
-  size_t              pos;
+  double              pos;
   double              env_pos;
   size_t              frame_idx;
   double              original_sample_pos;
@@ -106,11 +98,9 @@ class LiveDecoder
   Audio::LoopType     get_loop_type();
 
   void process_internal (size_t       n_values,
+                         const float *freq_in,
                          float       *audio_out,
                          float        portamento_stretch);
-
-  void portamento_grow (double end_pos, float portamento_stretch);
-  void portamento_shrink();
 
   void process_portamento (size_t       n_values,
                            const float *freq_in,
