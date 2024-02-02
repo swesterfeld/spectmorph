@@ -317,6 +317,43 @@ test_phase()
 }
 
 void
+test_portamento()
+{
+  const double mix_freq = 48000;
+
+  AudioBlock audio_block;
+
+  push_partial_f (audio_block, 1, 1, 0.9);
+
+  ConstBlockSource source (audio_block, mix_freq);
+
+
+  RTMemoryArea rt_memory_area;
+  LiveDecoder live_decoder (&source, mix_freq);
+  live_decoder.enable_noise (false);
+
+  double freq = 440;
+  live_decoder.retrigger (0, freq, 127);
+
+  vector<float> freq_in (5 * mix_freq);
+  int porta_samples = mix_freq * 0.2;
+  for (size_t i = 0; i < freq_in.size(); i++)
+    {
+      freq_in[i] = freq;
+      if (i > mix_freq * 1.5 && i < mix_freq * 1.5 + porta_samples)
+        freq *= pow (2, 1.0/porta_samples);
+      if (i > mix_freq * 2.5 && i < mix_freq * 2.5 + porta_samples)
+        freq /= pow (2, 1.0/porta_samples);
+    }
+
+  vector<float> samples (freq_in.size());
+  live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+
+  for (auto s : samples)
+    sm_printf ("%f\n", s);
+}
+
+void
 test_saw_perf()
 {
   double mix_freq = 48000;
@@ -391,6 +428,11 @@ main (int argc, char **argv)
   if (argc == 2 && strcmp (argv[1], "phase") == 0)
     {
       test_phase();
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "portamento") == 0)
+    {
+      test_portamento();
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
