@@ -24,6 +24,7 @@ class LiveDecoder
   struct PartialState
   {
     float freq;
+    float mag;
     float phase;
   };
   std::vector<PartialState> pstate[2], *last_pstate;
@@ -69,6 +70,7 @@ class LiveDecoder
   size_t              frame_idx;
   double              original_sample_pos;
   double              original_samples_norm_factor;
+  float               old_portamento_stretch;
 
   int                 noise_seed;
 

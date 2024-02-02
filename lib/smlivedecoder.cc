@@ -172,6 +172,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       env_pos = 0;
       original_sample_pos = 0;
       original_samples_norm_factor = db_to_factor (audio->original_samples_norm_db);
+      old_portamento_stretch = 1;
 
       done_state = DoneState::ACTIVE;
 
@@ -309,8 +310,10 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
         {
           double want_freq = current_freq;
 
+#if 0
           std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
           zero_float_block (block_size / 2, &sse_samples[block_size / 2]);
+#endif
 
           if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
@@ -446,12 +449,12 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                               const double lfreq = old_pstate[old_partial].freq;
                               const double lphase = old_pstate[old_partial].phase;
 
-                              phase = truncate_phase (lphase + lfreq * phase_factor);
+                              phase = truncate_phase (lphase + lfreq * phase_factor * old_portamento_stretch);
 
                               if (DEBUG)
                                 printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
                             }
-                          ifft_synth.render_partial (freq, mag, phase);
+                          //ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
                         }
                       else
                         {
@@ -464,7 +467,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                                   const double lfreq = old_pstate[old_partial].freq;
                                   const double lphase = unison_old_phases[old_partial * unison_voices + i];
 
-                                  phase = truncate_phase (lphase + lfreq * phase_factor * unison_freq_factor[i]);
+                                  phase = truncate_phase (lphase + lfreq * phase_factor * unison_freq_factor[i] * portamento_stretch);
                                 }
                               else
                                 {
@@ -473,7 +476,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                                   phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
                                 }
 
-                              ifft_synth.render_partial (freq * unison_freq_factor[i], mag, phase);
+                              //ifft_synth.render_partial (freq * unison_freq_factor[i] * portamento_stretch, mag, phase);
 
                               unison_new_phases.push_back (phase);
                             }
@@ -481,12 +484,53 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
 
                       PartialState ps;
                       ps.freq = freq;
+                      ps.mag = mag;
                       ps.phase = phase;
                       new_pstate.push_back (ps);
                     }
+                  zero_float_block (block_size, &sse_samples[0]);
+                  for (auto ps : old_pstate)
+                    {
+                      // phase at center of the block
+                      auto phase = ps.phase + ps.freq * phase_factor * old_portamento_stretch;
+                      // phase at start of the block
+                      phase -= ps.freq * phase_factor * portamento_stretch;
+                      while (phase < 0)
+                        phase += 2 * M_PI;
+                      phase = truncate_phase (phase);
+
+                      ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, phase);
+                    }
+                  ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
+                  std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
+#if 0
+#endif
+
+#if 0
+                  for (auto ps : old_pstate)
+                    for (uint i = 0; i < block_size / 2; i++)
+                      {
+                        auto phase = truncate_phase (ps.phase + ps.freq * phase_factor * old_portamento_stretch);
+                        sse_samples[i] += sin (i * ps.freq * portamento_stretch / mix_freq * 2 * M_PI + phase) * ps.mag * window_cos ((block_size / 2.0 - i) / (block_size / 2.0) - 1);
+                      }
+#endif
+                  ifft_synth.clear_partials();
+                  for (auto ps : new_pstate)
+                    {
+                      ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, ps.phase);
+                    }
+                  ifft_synth.get_samples (&sse_samples[0], IFFTSynth::ADD);
+#if 0
+                    for (int i = 0; i < block_size / 2; i++)
+                      {
+                        sse_samples[i] += sin (i * ps.freq * portamento_stretch / mix_freq * 2 * M_PI + ps.phase) * ps.mag * window_cos (i / (block_size / 2.0) - 1);
+                      }
+#endif
                 }
               last_pstate = &new_pstate;
+              old_portamento_stretch = portamento_stretch;
 
+#if 0
               if (noise_enabled)
                 noise_decoder.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
 
@@ -495,6 +539,7 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
                   float *samples = &sse_samples[0];
                   ifft_synth.get_samples (samples, IFFTSynth::ADD);
                 }
+#endif
             }
           else
             {
@@ -621,11 +666,17 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
           current_step = freq_in[i] / current_freq;
           end_pos += current_step;
         }
+      portamento_grow (start_pos + n_values, current_step);
+
+      const float *start = &buffer[sm_round_positive (start_pos)];
+      std::copy (start, start + n_values, audio_out);
+#if 0
       portamento_grow (end_pos, current_step);
 
       /* interpolate from buffer (portamento) */
       for (size_t i = 0; i < n_values; i++)
         audio_out[i] = pp_inter->get_sample_no_check (buffer.data(), pos[i]);
+#endif
     }
   else
     {
