@@ -659,24 +659,19 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
 
       double pos[n_values], end_pos = start_pos, current_step = 1;
 
+      /* FIXME: take into account that we buffer samples computed with different portamento_stretch values */
       for (size_t i = 0; i < n_values; i++)
         {
           pos[i] = end_pos;
 
-          current_step = freq_in[i] / current_freq;
+          current_step = freq_in[i] / current_freq / old_portamento_stretch;
           end_pos += current_step;
         }
-      portamento_grow (start_pos + n_values, current_step);
-
-      const float *start = &buffer[sm_round_positive (start_pos)];
-      std::copy (start, start + n_values, audio_out);
-#if 0
       portamento_grow (end_pos, current_step);
 
       /* interpolate from buffer (portamento) */
       for (size_t i = 0; i < n_values; i++)
         audio_out[i] = pp_inter->get_sample_no_check (buffer.data(), pos[i]);
-#endif
     }
   else
     {
