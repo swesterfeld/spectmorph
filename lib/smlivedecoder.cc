@@ -240,7 +240,7 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out, float portamento_stretch)
+LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out)
 {
   assert (audio); // need selected (triggered) audio to use this function
 
@@ -293,7 +293,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
       return;
     }
 
-  const double portamento_env_step = 1 / portamento_stretch;
+  const double portamento_env_step = 1 / old_portamento_stretch;
   unsigned int i = 0;
   while (i < n_values)
     {
@@ -341,6 +341,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           if (have_audio_block)
             {
+              float portamento_stretch = freq_in[i] / current_freq;
               assert (audio_block.freqs.size() == audio_block.mags.size());
 
               ifft_synth.clear_partials();
@@ -600,10 +601,7 @@ LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *a
       std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
       freq_in = fake_freq_in;
     }
-
-  double pstretch = freq_in[0] / current_freq;
-
-  process_internal (n_values, freq_in, audio_out, pstretch);
+  process_internal (n_values, freq_in, audio_out);
 }
 
 void
