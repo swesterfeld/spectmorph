@@ -441,7 +441,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                               const double lfreq = old_pstate[old_partial].freq;
                               const double lphase = old_pstate[old_partial].phase;
 
-                              phase = truncate_phase (lphase + lfreq * phase_factor * old_portamento_stretch);
+                              phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor);
 
                               if (DEBUG)
                                 printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
@@ -484,9 +484,9 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                   for (auto ps : old_pstate)
                     {
                       // phase at center of the block
-                      auto phase = ps.phase + ps.freq * phase_factor * old_portamento_stretch;
+                      auto phase = ps.phase + ifft_synth.quantized_freq (ps.freq * old_portamento_stretch) * phase_factor;
                       // phase at start of the block
-                      phase -= ps.freq * phase_factor * portamento_stretch;
+                      phase -= ifft_synth.quantized_freq (ps.freq * portamento_stretch) * phase_factor;
                       while (phase < 0)
                         phase += 2 * M_PI;
                       phase = truncate_phase (phase);
