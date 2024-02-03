@@ -521,7 +521,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
 #endif
                 }
               last_pstate = &new_pstate;
-              old_portamento_stretch = portamento_stretch;
 
 #if 0
               if (noise_enabled)
@@ -533,14 +532,20 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                   ifft_synth.get_samples (samples, IFFTSynth::ADD);
                 }
 #endif
+              if (pos != 0) // pos == 0 => initial refill
+                {
+                  pos -= block_size / 2;
+                  /* adjust remaining fractional position matching to new stretch */
+                  pos *= old_portamento_stretch / portamento_stretch;
+                }
+              old_portamento_stretch = portamento_stretch;
             }
           else
             {
+              /* FIXME: need to generate null sample block here (setup pos, clear out samples) */
               if (done_state == DoneState::ACTIVE)
                 done_state = DoneState::ALMOST_DONE;
             }
-          if (pos != 0) // pos == 0 => initial refill
-            pos -= block_size / 2;
           have_samples = block_size / 2;
           rt_memory_area->free_all();
         }
