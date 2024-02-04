@@ -355,7 +355,7 @@ test_portamento()
 }
 
 void
-test_portaslide (float dest_freq)
+test_portaslide()
 {
   const double mix_freq = 48000;
 
@@ -377,12 +377,20 @@ test_portaslide (float dest_freq)
   for (size_t i = 0; i < freq_in.size(); i++)
     {
       freq_in[i] = freq;
-      if (i > mix_freq && freq < mix_freq * 20000)
-        freq *= pow (2, 2.0 / mix_freq);
+      if (i > mix_freq && freq < 20000)
+        freq *= pow (2, 1. / 9000); //2.0 / mix_freq);
     }
 
   vector<float> samples (freq_in.size());
   live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+#if 0
+  double phase = 0;
+  for (size_t i = 0; i < samples.size(); i++)
+    {
+      samples[i] = sin (phase);
+      phase += 2 * M_PI * freq_in[i] / 48000;
+    }
+#endif
 
   // upsample factor 2
   using namespace PandaResampler;
@@ -390,49 +398,76 @@ test_portaslide (float dest_freq)
   vector<float> up_samples (samples.size() * 2);
   r2.process_block (samples.data(), samples.size(), up_samples.data());
 
+  auto pp_inter = PolyPhaseInter::the();
+
   vector<float> rsamples, rfreqs;
   double pos = 0;
   while (pos < samples.size())
     {
       int ipos = pos;
-      int spos = pos * 2;
-      float sfrac = pos * 2 - spos;
-      rsamples.push_back (up_samples[spos] * (1 - sfrac) + sfrac * (up_samples[spos + 1]));
+      rsamples.push_back (pp_inter->get_sample (up_samples, pos * 2));
       rfreqs.push_back (freq_in[ipos]);
       pos += test_freq / freq_in[ipos];
     }
 
-  const size_t fft_size = 1024 * 16;
-  size_t start = fft_size * 5;
-  while (start + fft_size < rsamples.size() && rfreqs[start] < dest_freq)
-    start++;
+  for (float dest_freq = 110; dest_freq < 18000; dest_freq *= 1.01)
+    {
+      const size_t fft_size = 1024 * 16;
+      size_t start = fft_size * 5;
+      while (start + fft_size < rsamples.size() && rfreqs[start] < dest_freq)
+        start++;
 
-  vector<float> wsig;
-  for (size_t i = 0; i < fft_size; i++)
-    wsig.push_back (window_blackman (2.0 * i / fft_size - 1.0) * rsamples[start + i]);
+      double ww = 0;
+      vector<float> wsig;
+      for (size_t i = 0; i < fft_size; i++)
+        {
+          double win = window_blackman_harris_92 (2.0 * i / fft_size - 1.0);
+          wsig.push_back (win * rsamples[start + i]);
+          ww += win;
+        }
 
 #if 0
-  for (size_t i = 0; i < fft_size; i++)
-    sm_printf ("%zd %f\n", i, wsig[i]);
+      for (size_t i = 0; i < fft_size; i++)
+        sm_printf ("%zd %f\n", i, wsig[i]);
 #endif
 
-  float *spect = FFT::new_array_float (fft_size);
-  FFT::fftar_float (fft_size, &wsig[0], spect);
+      float *spect = FFT::new_array_float (fft_size);
+      FFT::fftar_float (fft_size, &wsig[0], spect);
 
-  double max_mag = 0;
-  for (size_t d = 0; d < fft_size; d += 2)
-    {
-      double re = spect[d];
-      double im = spect[d+1];
-      max_mag = max (sqrt (re * re + im * im), max_mag);
+      int main_lobe = 0;
+      float db_max = -96;
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          double db = db_from_factor (sqrt (re * re + im * im) / ww * 2, -96);
+          if (db > db_max)
+            {
+              main_lobe = d;
+              db_max = db;
+            }
+        }
+      float db_side = -96;
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          double db = db_from_factor (sqrt (re * re + im * im) / ww * 2, -96);
+          int delta = std::abs (main_lobe - int (d)) / 2;
+          if (delta > 4 && db > db_side) // blackman harris window has 9 bins main lobe width
+            db_side = db;
+        }
+      sm_printf ("%f %f %f\n", dest_freq, db_max, db_side);
+#if 0
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          sm_printf ("%f %.17g\n", (d * mix_freq / 2.0) / fft_size, sqrt (re * re + im * im) / ww * 2);
+        }
+#endif
+      FFT::free_array_float (spect);
     }
-  for (size_t d = 0; d < fft_size; d += 2)
-    {
-      double re = spect[d] / max_mag;
-      double im = spect[d+1] / max_mag;
-      sm_printf ("%f %.17g\n", (d * mix_freq / 2.0) / fft_size, sqrt (re * re + im * im));
-    }
-  FFT::free_array_float (spect);
 }
 
 void
@@ -518,12 +553,11 @@ main (int argc, char **argv)
       return 0;
     }
   /*
-   * portaslite <freq>
    * generate a sine sweep over all frequencies to test portamento interpolation quality
    */
-  if (argc == 3 && strcmp (argv[1], "portaslide") == 0)
+  if (argc == 2 && strcmp (argv[1], "portaslide") == 0)
     {
-      test_portaslide (atof (argv[2]));
+      test_portaslide();
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
