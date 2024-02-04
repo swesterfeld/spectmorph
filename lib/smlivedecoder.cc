@@ -293,7 +293,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
       return;
     }
 
-  const double portamento_env_step = 1 / old_portamento_stretch;
   unsigned int i = 0;
   while (i < n_values)
     {
@@ -578,20 +577,20 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             {
               audio_out[i++] = 0;
               pos++;
-              env_pos += portamento_env_step;
+              env_pos++;
             }
           else if (time_ms < audio->attack_end_ms)
             {
               audio_out[i++] = sse_samples[pos + block_size / 2] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
               pos++;
-              env_pos += portamento_env_step;
+              env_pos++;
             }
           else // envelope is 1 -> copy data efficiently
             {
               audio_out[i] = pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos);
               pos += freq_in[i] / (current_freq * old_portamento_stretch);
               i++;
-              env_pos += portamento_env_step;
+              env_pos++;
 #if 0
               size_t can_copy = min (have_samples, n_values - i);
 
@@ -607,7 +606,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
         {
           // skip sample
           pos++;
-          env_pos += portamento_env_step;
+          env_pos++;
         }
     }
 }
