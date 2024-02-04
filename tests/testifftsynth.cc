@@ -7,6 +7,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smutils.hh"
+#include "smpandaresampler.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -354,6 +355,87 @@ test_portamento()
 }
 
 void
+test_portaslide (float dest_freq)
+{
+  const double mix_freq = 48000;
+
+  AudioBlock audio_block;
+
+  push_partial_f (audio_block, 1, 1, 0.9);
+
+  ConstBlockSource source (audio_block, mix_freq);
+
+  RTMemoryArea rt_memory_area;
+  LiveDecoder live_decoder (&source, mix_freq);
+  live_decoder.enable_noise (false);
+
+  const double test_freq = 120;
+  double freq = test_freq;
+  live_decoder.retrigger (0, freq, 127);
+
+  vector<float> freq_in (5 * mix_freq);
+  for (size_t i = 0; i < freq_in.size(); i++)
+    {
+      freq_in[i] = freq;
+      if (i > mix_freq && freq < mix_freq * 20000)
+        freq *= pow (2, 2.0 / mix_freq);
+    }
+
+  vector<float> samples (freq_in.size());
+  live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+
+  // upsample factor 2
+  using namespace PandaResampler;
+  Resampler2 r2 (Resampler2::UP, 2, Resampler2::PREC_144DB);
+  vector<float> up_samples (samples.size() * 2);
+  r2.process_block (samples.data(), samples.size(), up_samples.data());
+
+  vector<float> rsamples, rfreqs;
+  double pos = 0;
+  while (pos < samples.size())
+    {
+      int ipos = pos;
+      int spos = pos * 2;
+      float sfrac = pos * 2 - spos;
+      rsamples.push_back (up_samples[spos] * (1 - sfrac) + sfrac * (up_samples[spos + 1]));
+      rfreqs.push_back (freq_in[ipos]);
+      pos += test_freq / freq_in[ipos];
+    }
+
+  const size_t fft_size = 1024 * 16;
+  size_t start = fft_size * 5;
+  while (start + fft_size < rsamples.size() && rfreqs[start] < dest_freq)
+    start++;
+
+  vector<float> wsig;
+  for (size_t i = 0; i < fft_size; i++)
+    wsig.push_back (window_blackman (2.0 * i / fft_size - 1.0) * rsamples[start + i]);
+
+#if 0
+  for (size_t i = 0; i < fft_size; i++)
+    sm_printf ("%zd %f\n", i, wsig[i]);
+#endif
+
+  float *spect = FFT::new_array_float (fft_size);
+  FFT::fftar_float (fft_size, &wsig[0], spect);
+
+  double max_mag = 0;
+  for (size_t d = 0; d < fft_size; d += 2)
+    {
+      double re = spect[d];
+      double im = spect[d+1];
+      max_mag = max (sqrt (re * re + im * im), max_mag);
+    }
+  for (size_t d = 0; d < fft_size; d += 2)
+    {
+      double re = spect[d] / max_mag;
+      double im = spect[d+1] / max_mag;
+      sm_printf ("%f %.17g\n", (d * mix_freq / 2.0) / fft_size, sqrt (re * re + im * im));
+    }
+  FFT::free_array_float (spect);
+}
+
+void
 test_saw_perf()
 {
   double mix_freq = 48000;
@@ -433,6 +515,15 @@ main (int argc, char **argv)
   if (argc == 2 && strcmp (argv[1], "portamento") == 0)
     {
       test_portamento();
+      return 0;
+    }
+  /*
+   * portaslite <freq>
+   * generate a sine sweep over all frequencies to test portamento interpolation quality
+   */
+  if (argc == 3 && strcmp (argv[1], "portaslide") == 0)
+    {
+      test_portaslide (atof (argv[2]));
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
