@@ -376,16 +376,16 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       double mag         = audio_block.mags_f (partial);
                       double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
-                      // portamento:
-                      //  - portamento_stretch > 1 means we read out faster
-                      //  => this means the aliasing starts at lower frequencies
-                      const double portamento_freq = freq * max (portamento_stretch, 1.0f);
+                      // portamento: FIXME: is using freq_in[i] directly here the best way?
+                      const double portamento_freq = audio_block.freqs_f (partial) * freq_in[i];
                       if (portamento_freq > filter_min_freq)
                         {
                           double norm_freq = portamento_freq / mix_freq;
                           if (norm_freq > 0.5)
                             {
                               // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
+                              // FIXME: this may not work as expected with new style portamento, because we change the
+                              // rate of the resynthesis dynamically
                               break;
                             }
                           else
