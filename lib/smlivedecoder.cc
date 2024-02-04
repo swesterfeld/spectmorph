@@ -446,7 +446,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                               if (DEBUG)
                                 printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
                             }
-                          //ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
                         }
                       else
                         {
@@ -459,7 +458,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                                   const double lfreq = old_pstate[old_partial].freq;
                                   const double lphase = unison_old_phases[old_partial * unison_voices + i];
 
-                                  phase = truncate_phase (lphase + lfreq * phase_factor * unison_freq_factor[i] * portamento_stretch);
+                                  phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor);
                                 }
                               else
                                 {
@@ -467,9 +466,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
 
                                   phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
                                 }
-
-                              //ifft_synth.render_partial (freq * unison_freq_factor[i] * portamento_stretch, mag, phase);
-
                               unison_new_phases.push_back (phase);
                             }
                         }
@@ -481,42 +477,67 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       new_pstate.push_back (ps);
                     }
                   zero_float_block (block_size * 3 / 2, &sse_samples[0]);
-                  for (auto ps : old_pstate)
+                  if (unison_voices == 1)
                     {
-                      // phase at center of the block
-                      auto phase = ps.phase + ifft_synth.quantized_freq (ps.freq * old_portamento_stretch) * phase_factor;
-                      // phase at start of the block
-                      phase -= ifft_synth.quantized_freq (ps.freq * portamento_stretch) * phase_factor;
-                      while (phase < 0)
-                        phase += 2 * M_PI;
-                      phase = truncate_phase (phase);
+                      for (auto ps : old_pstate)
+                        {
+                          // phase at center of the block
+                          auto phase = ps.phase + ifft_synth.quantized_freq (ps.freq * old_portamento_stretch) * phase_factor;
+                          // phase at start of the block
+                          phase -= ifft_synth.quantized_freq (ps.freq * portamento_stretch) * phase_factor;
+                          while (phase < 0)
+                            phase += 2 * M_PI;
+                          phase = truncate_phase (phase);
 
-                      ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, phase);
+                          ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, phase);
+                        }
+                    }
+                  else
+                    {
+                      for (size_t p = 0; p < old_pstate.size(); p++)
+                        {
+                          const auto& ps = old_pstate[p];
+                          for (int i = 0; i < unison_voices; i++)
+                            {
+                              // phase at center of the block
+                              auto phase = unison_old_phases[p * unison_voices + i];
+                              phase += ifft_synth.quantized_freq (ps.freq * unison_freq_factor[i] * old_portamento_stretch) * phase_factor;
+                              // phase at start of the block
+                              phase -= ifft_synth.quantized_freq (ps.freq * unison_freq_factor[i] * portamento_stretch) * phase_factor;
+
+                              while (phase < 0)
+                                phase += 2 * M_PI;
+                              phase = truncate_phase (phase);
+
+                              ifft_synth.render_partial (ps.freq * unison_freq_factor[i] * portamento_stretch, ps.mag, phase);
+                            }
+                        }
                     }
                   ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
-#if 0
-#endif
 
-#if 0
-                  for (auto ps : old_pstate)
-                    for (uint i = 0; i < block_size / 2; i++)
-                      {
-                        auto phase = truncate_phase (ps.phase + ps.freq * phase_factor * old_portamento_stretch);
-                        sse_samples[i] += sin (i * ps.freq * portamento_stretch / mix_freq * 2 * M_PI + phase) * ps.mag * window_cos ((block_size / 2.0 - i) / (block_size / 2.0) - 1);
-                      }
-#endif
                   ifft_synth.clear_partials();
-                  for (auto ps : new_pstate)
+
+                  if (unison_voices == 1)
                     {
-                      ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, ps.phase);
+                      for (auto ps : new_pstate)
+                        ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, ps.phase);
                     }
+                  else
+                    {
+                      for (size_t p = 0; p < new_pstate.size(); p++)
+                        {
+                          const auto& ps = new_pstate[p];
+
+                          for (int i = 0; i < unison_voices; i++)
+                            {
+                              ifft_synth.render_partial (ps.freq * unison_freq_factor[i] * portamento_stretch,
+                                                         ps.mag,
+                                                         unison_new_phases[p * unison_voices + i]);
+                            }
+                        }
+                    }
+
                   ifft_synth.get_samples (&sse_samples[block_size / 2], IFFTSynth::ADD);
-#if 0
-                    for (int i = 0; i < block_size / 2; i++)
-                      {
-                        sse_samples[i] += sin (i * ps.freq * portamento_stretch / mix_freq * 2 * M_PI + ps.phase) * ps.mag * window_cos (i / (block_size / 2.0) - 1);
-                      }
-#endif
                 }
               last_pstate = &new_pstate;
 
