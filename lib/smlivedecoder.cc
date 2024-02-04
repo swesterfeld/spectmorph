@@ -73,7 +73,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   start_skip_enabled (false),
   mix_freq (mix_freq),
   noise_seed (-1),
-  sse_samples (block_size),
+  sse_samples (block_size * 3 / 2),
   vibrato_enabled (false)
 {
   leak_debugger.add (this);
@@ -159,7 +159,7 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       if (start_skip_enabled)
         zero_values_at_start_scaled += block_size / 2;
 
-      zero_float_block (block_size, &sse_samples[0]);
+      zero_float_block (block_size * 3 / 2, &sse_samples[0]);
 
       if (noise_seed != -1)
         noise_decoder.set_seed (noise_seed);
@@ -480,7 +480,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       ps.phase = phase;
                       new_pstate.push_back (ps);
                     }
-                  zero_float_block (block_size, &sse_samples[0]);
+                  zero_float_block (block_size * 3 / 2, &sse_samples[0]);
                   for (auto ps : old_pstate)
                     {
                       // phase at center of the block
@@ -494,8 +494,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, phase);
                     }
                   ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
-                  std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
-                  std::fill (&sse_samples[block_size / 2], &sse_samples[block_size], 0.f);
 #if 0
 #endif
 
@@ -512,7 +510,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                     {
                       ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, ps.phase);
                     }
-                  ifft_synth.get_samples (&sse_samples[0], IFFTSynth::ADD);
+                  ifft_synth.get_samples (&sse_samples[block_size / 2], IFFTSynth::ADD);
 #if 0
                     for (int i = 0; i < block_size / 2; i++)
                       {
@@ -563,15 +561,13 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           else if (time_ms < audio->attack_end_ms)
             {
-              audio_out[i++] = sse_samples[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+              audio_out[i++] = sse_samples[pos + block_size / 2] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
               pos++;
               env_pos += portamento_env_step;
             }
           else // envelope is 1 -> copy data efficiently
             {
-              int ipos = pos;
-              float frac = pos - ipos;
-              audio_out[i] = sse_samples[ipos] * (1 - frac) + sse_samples[ipos + 1] * frac;
+              audio_out[i] = pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos);
               pos += freq_in[i] / (current_freq * old_portamento_stretch);
               i++;
               env_pos += portamento_env_step;
