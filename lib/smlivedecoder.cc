@@ -477,6 +477,10 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                     }
                   auto render_old_partial = [&] (double freq, double mag, double phase)
                     {
+                      // bandlimiting: do not render partials above nyquist frequency
+                      if (freq * portamento_stretch > 0.495 * mix_freq)
+                        return;
+
                       // phase at center of the block
                       phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
                       // phase at start of the block
