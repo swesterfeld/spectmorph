@@ -475,41 +475,31 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       ps.phase = phase;
                       new_pstate.push_back (ps);
                     }
+                  auto render_old_partial = [&] (double freq, double mag, double phase)
+                    {
+                      // phase at center of the block
+                      phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
+                      // phase at start of the block
+                      phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
+                      while (phase < 0)
+                        phase += 2 * M_PI;
+                      phase = truncate_phase (phase);
+
+                      ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
+                    };
+
                   zero_float_block (block_size * 3 / 2, &sse_samples[0]);
                   if (unison_voices == 1)
                     {
                       for (auto ps : old_pstate)
-                        {
-                          // phase at center of the block
-                          auto phase = ps.phase + ifft_synth.quantized_freq (ps.freq * old_portamento_stretch) * phase_factor;
-                          // phase at start of the block
-                          phase -= ifft_synth.quantized_freq (ps.freq * portamento_stretch) * phase_factor;
-                          while (phase < 0)
-                            phase += 2 * M_PI;
-                          phase = truncate_phase (phase);
-
-                          ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, phase);
-                        }
+                        render_old_partial (ps.freq, ps.mag, ps.phase);
                     }
                   else
                     {
                       for (size_t p = 0; p < old_pstate.size(); p++)
                         {
-                          const auto& ps = old_pstate[p];
                           for (int i = 0; i < unison_voices; i++)
-                            {
-                              // phase at center of the block
-                              auto phase = unison_old_phases[p * unison_voices + i];
-                              phase += ifft_synth.quantized_freq (ps.freq * unison_freq_factor[i] * old_portamento_stretch) * phase_factor;
-                              // phase at start of the block
-                              phase -= ifft_synth.quantized_freq (ps.freq * unison_freq_factor[i] * portamento_stretch) * phase_factor;
-
-                              while (phase < 0)
-                                phase += 2 * M_PI;
-                              phase = truncate_phase (phase);
-
-                              ifft_synth.render_partial (ps.freq * unison_freq_factor[i] * portamento_stretch, ps.mag, phase);
-                            }
+                            render_old_partial (old_pstate[p].freq * unison_freq_factor[i], old_pstate[p].mag, unison_old_phases[p * unison_voices + i]);
                         }
                     }
                   ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
@@ -525,12 +515,10 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                     {
                       for (size_t p = 0; p < new_pstate.size(); p++)
                         {
-                          const auto& ps = new_pstate[p];
-
                           for (int i = 0; i < unison_voices; i++)
                             {
-                              ifft_synth.render_partial (ps.freq * unison_freq_factor[i] * portamento_stretch,
-                                                         ps.mag,
+                              ifft_synth.render_partial (new_pstate[p].freq * unison_freq_factor[i] * portamento_stretch,
+                                                         new_pstate[p].mag,
                                                          unison_new_phases[p * unison_voices + i]);
                             }
                         }
