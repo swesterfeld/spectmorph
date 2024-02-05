@@ -303,11 +303,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
         {
           double want_freq = current_freq;
 
-#if 0
-          std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
-          zero_float_block (block_size / 2, &sse_samples[block_size / 2]);
-#endif
-
           if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
             {
               size_t xenv_pos = env_pos;
@@ -345,8 +340,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             {
               float portamento_stretch = freq_in[i] / current_freq;
               assert (audio_block.freqs.size() == audio_block.mags.size());
-
-              ifft_synth.clear_partials();
 
               // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
               bool lps_zero = (last_pstate == &pstate[0]);
@@ -478,38 +471,53 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                       ps.phase = phase;
                       new_pstate.push_back (ps);
                     }
-                  auto render_old_partial = [&] (double freq, double mag, double phase)
+
+                  /* check if there is a relevant difference between old portamento stretch and new portamento stretch
+                   * if not we can use the old synthesis results and overlap/add with the new output (which is faster)
+                   */
+                  const float delta = 1 / 2000.;
+                  if (std::abs (old_portamento_stretch / portamento_stretch - 1) > delta)
                     {
-                      // bandlimiting: do not render partials above nyquist frequency
-                      if (freq * portamento_stretch > 0.495 * mix_freq)
-                        return;
+                      ifft_synth.clear_partials();
 
-                      // phase at center of the block
-                      phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
-                      // phase at start of the block
-                      phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
-                      while (phase < 0)
-                        phase += 2 * M_PI;
-                      phase = truncate_phase (phase);
+                      auto render_old_partial = [&] (double freq, double mag, double phase)
+                        {
+                          // bandlimiting: do not render partials above nyquist frequency
+                          if (freq * portamento_stretch > 0.495 * mix_freq)
+                            return;
 
-                      ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
-                    };
+                          // phase at center of the block
+                          phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
+                          // phase at start of the block
+                          phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
+                          while (phase < 0)
+                            phase += 2 * M_PI;
+                          phase = truncate_phase (phase);
 
-                  zero_float_block (block_size * 3 / 2, &sse_samples[0]);
-                  if (unison_voices == 1)
-                    {
-                      for (auto ps : old_pstate)
-                        render_old_partial (ps.freq, ps.mag, ps.phase);
+                          ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
+                        };
+                      if (unison_voices == 1)
+                        {
+                          for (auto ps : old_pstate)
+                            render_old_partial (ps.freq, ps.mag, ps.phase);
+                        }
+                      else
+                        {
+                          for (size_t p = 0; p < old_pstate.size(); p++)
+                            {
+                              for (int i = 0; i < unison_voices; i++)
+                                render_old_partial (old_pstate[p].freq * unison_freq_factor[i], old_pstate[p].mag, unison_old_phases[p * unison_voices + i]);
+                            }
+                        }
+                      ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
                     }
                   else
                     {
-                      for (size_t p = 0; p < old_pstate.size(); p++)
-                        {
-                          for (int i = 0; i < unison_voices; i++)
-                            render_old_partial (old_pstate[p].freq * unison_freq_factor[i], old_pstate[p].mag, unison_old_phases[p * unison_voices + i]);
-                        }
+                      /* we only need half a block from the last IFFT synthesis + the amount of padding our interpolation algorithm needs */
+                      auto padding = pp_inter->get_min_padding();
+                      std::copy_n (&sse_samples[block_size - padding], block_size / 2 + padding, &sse_samples[block_size / 2 - padding]);
                     }
-                  ifft_synth.get_samples (&sse_samples[0], IFFTSynth::REPLACE);
+                  zero_float_block (block_size / 2, &sse_samples[block_size]);
 
                   ifft_synth.clear_partials();
 
