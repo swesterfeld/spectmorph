@@ -516,7 +516,7 @@ LiveDecoder::gen_sines (float freq_in)
 }
 
 void
-LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *audio_out)
+LiveDecoder::process_internal (size_t n_values, const float *freq_in, const float *vib_freq_in, float *audio_out)
 {
   assert (audio); // need selected (triggered) audio to use this function
 
@@ -613,7 +613,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           else // envelope is 1 -> copy data efficiently
             {
-              const float pos_increment = freq_in[i] / (current_freq * old_portamento_stretch);
+              const float pos_increment = vib_freq_in[i] / (current_freq * old_portamento_stretch);
               const float noise = noise_samples[noise_index++];
               const float delta = 1 / 2000.f;
 
@@ -671,20 +671,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
 }
 
 void
-LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *audio_out)
-{
-  assert (audio); // need selected (triggered) audio to use this function
-
-  float fake_freq_in[n_values];
-  if (!freq_in)
-    {
-      std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
-      freq_in = fake_freq_in;
-    }
-  process_internal (n_values, freq_in, audio_out);
-}
-
-void
 LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audio_out)
 {
   float vib_freq_in[n_values];
@@ -717,19 +703,25 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
     }
   vibrato_phase = fmod (vibrato_phase, 2 * M_PI);
 
-  process_portamento (n_values, vib_freq_in, audio_out);
+  process_internal (n_values, freq_in, vib_freq_in, audio_out);
 }
 
 void
 LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *audio_out, bool ramp)
 {
+  float fake_freq_in[n_values];
+  if (!freq_in)
+    {
+      std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
+      freq_in = fake_freq_in;
+    }
   if (vibrato_enabled)
     {
       process_vibrato (n_values, freq_in, audio_out);
     }
   else
     {
-      process_portamento (n_values, freq_in, audio_out);
+      process_internal (n_values, freq_in, freq_in, audio_out);
     }
 
   if (filter)

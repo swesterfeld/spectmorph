@@ -105,11 +105,9 @@ class LiveDecoder
 
   void process_internal (size_t       n_values,
                          const float *freq_in,
+                         const float *vib_freq_in,
                          float       *audio_out);
 
-  void process_portamento (size_t       n_values,
-                           const float *freq_in,
-                           float       *audio_out);
   void process_vibrato (size_t       n_values,
                         const float *freq_in,
                         float       *audio_out);
