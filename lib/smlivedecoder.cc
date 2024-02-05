@@ -600,9 +600,42 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           else // envelope is 1 -> copy data efficiently
             {
-              audio_out[i] = pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos) + noise_samples[noise_index++];
-              pos += freq_in[i] / (current_freq * old_portamento_stretch);
-              i++;
+              const float pos_increment = freq_in[i] / (current_freq * old_portamento_stretch);
+              const float noise = noise_samples[noise_index++];
+              const float delta = 1 / 2000.f;
+
+              if (std::abs (pos_increment - 1) < delta)
+                {
+                  const int ipos = int (pos);
+                  float frac = pos - ipos;
+                  if (frac < delta)
+                    {
+                      /* replay speed is close to 1 and frac is small, so we don't need to interpolate at all */
+                      audio_out[i++] = noise + sse_samples[block_size / 2 + pos];
+                      pos += 1;
+                    }
+                  else
+                    {
+                      /* replay speed is close 1 and frac is not small: we need to interpolate because jumping from the
+                       * interpolated stream to copying would introduce a phase jump - however, we increment pos
+                       * a little less than requested to make make frac for the next sample a bit smaller, eventually
+                       * allowing us to skip interpolation later
+                       */
+                      audio_out[i++] = noise + pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos);
+
+                      frac -= delta;
+                      if (frac < 0)
+                        frac = 0;
+                      pos = ipos + 1 + frac;
+                    }
+
+                }
+              else
+                {
+                  /* replay speed is not close to 1, so we need to interpolate here */
+                  audio_out[i++] = noise + pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos);
+                  pos += pos_increment;
+                }
               env_pos++;
 #if 0
               size_t can_copy = min (have_samples, n_values - i);
