@@ -3,6 +3,7 @@
 #include "smmorphplanvoice.hh"
 #include "smmorphplansynth.hh"
 #include "smmorphoutputmodule.hh"
+#include "smmorphwavsource.hh"
 #include "smmorphlinear.hh"
 #include "smmorphgrid.hh"
 #include "smmain.hh"
@@ -228,7 +229,14 @@ Player::load_plan (const string& filename)
         linear_op = dynamic_cast<MorphLinear *> (op);
       else if (op->type_name() == "Grid")
         grid_op = dynamic_cast<MorphGrid *> (op);
+      else if (op->type_name() == "WavSource")
+        {
+          auto wav_source = dynamic_cast<MorphWavSource *> (op);
+          while (project.rebuild_active (wav_source->object_id()))
+             usleep (10 * 1000);
+        }
     }
+  project.try_update_synth();
 }
 
 void
