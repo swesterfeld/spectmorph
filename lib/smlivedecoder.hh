@@ -67,7 +67,7 @@ class LiveDecoder
 
   int                 noise_seed;
 
-  AlignedArray<float,16> sse_samples;
+  AlignedArray<float,16> sine_samples;
   AlignedArray<float,16> noise_samples;
 
   std::array<uint16_t, Audio::N_NOISE_BANDS> noise_envelope;
@@ -100,6 +100,8 @@ class LiveDecoder
   DoneState           done_state = DoneState::DONE;
 
   Audio::LoopType     get_loop_type();
+
+  void gen_sines (float freq);
 
   void process_internal (size_t       n_values,
                          const float *freq_in,
