@@ -75,18 +75,17 @@ NoiseDecoder::set_seed (int seed)
  * \param audio_block   AudioBlock to be decoded
  */
 void
-NoiseDecoder::process (const RTAudioBlock& audio_block,
+NoiseDecoder::process (const uint16_t     *noise_envelope,
                        float              *samples,
                        OutputMode          output_mode,
                        float               portamento_stretch)
 {
-  assert (noise_band_partition.n_bands() == audio_block.noise.size());
   assert (noise_band_partition.n_spectrum_bins() == block_size + 2);
 
   const double Eww = 0.375; // expected value of the energy of the window
   const double norm = mix_freq / (Eww * block_size);
 
-  noise_band_partition.noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
+  noise_band_partition.noise_envelope_to_spectrum (random_gen, noise_envelope, interpolated_spectrum, sqrt (norm) / 2);
 
   if (portamento_stretch > 1.01) // avoid aliasing during portamento
     {

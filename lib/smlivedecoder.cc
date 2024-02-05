@@ -74,6 +74,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   mix_freq (mix_freq),
   noise_seed (-1),
   sse_samples (block_size * 3 / 2),
+  noise_samples (block_size),
   vibrato_enabled (false)
 {
   leak_debugger.add (this);
@@ -160,11 +161,13 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
         zero_values_at_start_scaled += block_size / 2;
 
       zero_float_block (block_size * 3 / 2, &sse_samples[0]);
+      zero_float_block (block_size, &noise_samples[0]);
 
       if (noise_seed != -1)
         noise_decoder.set_seed (noise_seed);
 
       have_samples = 0;
+      noise_index = block_size / 2; // need to generate noise immediately
       pos = 0;
       frame_idx = 0;
       env_pos = 0;
@@ -533,8 +536,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
               last_pstate = &new_pstate;
 
 #if 0
-              if (noise_enabled)
-                noise_decoder.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
 
               if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
                 {
@@ -549,6 +550,8 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
                   pos *= old_portamento_stretch / portamento_stretch;
                 }
               old_portamento_stretch = portamento_stretch;
+              assert (audio_block.noise.size() == noise_envelope.size());
+              std::copy_n (audio_block.noise.data(), noise_envelope.size(), noise_envelope.begin());
             }
           else
             {
@@ -558,6 +561,22 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           have_samples = block_size / 2;
           rt_memory_area->free_all();
+        }
+      if (noise_index == block_size / 2)
+        {
+          if (noise_enabled)
+            {
+              ifft_synth.clear_partials();
+              std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
+              zero_float_block (block_size / 2, &noise_samples[block_size / 2]);
+              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, 1);
+              ifft_synth.get_samples (&noise_samples[0], IFFTSynth::ADD);
+            }
+          else
+            {
+              zero_float_block (block_size / 2, &noise_samples[0]);
+            }
+          noise_index = 0;
         }
 
       g_assert (have_samples > 0);
@@ -573,13 +592,15 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, float *aud
             }
           else if (time_ms < audio->attack_end_ms)
             {
-              audio_out[i++] = sse_samples[pos + block_size / 2] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+              const double volume = (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+
+              audio_out[i++] = (sse_samples[pos + block_size / 2] + noise_samples[noise_index++]) * volume;
               pos++;
               env_pos++;
             }
           else // envelope is 1 -> copy data efficiently
             {
-              audio_out[i] = pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos);
+              audio_out[i] = pp_inter->get_sample_no_check (&sse_samples[0], block_size / 2 + pos) + noise_samples[noise_index++];
               pos += freq_in[i] / (current_freq * old_portamento_stretch);
               i++;
               env_pos++;

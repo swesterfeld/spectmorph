@@ -57,6 +57,7 @@ class LiveDecoder
   float               mix_freq;
 
   size_t              have_samples;
+  size_t              noise_index;
   double              pos;
   double              env_pos;
   size_t              frame_idx;
@@ -67,6 +68,9 @@ class LiveDecoder
   int                 noise_seed;
 
   AlignedArray<float,16> sse_samples;
+  AlignedArray<float,16> noise_samples;
+
+  std::array<uint16_t, Audio::N_NOISE_BANDS> noise_envelope;
 
   // unison
   int                 unison_voices;
