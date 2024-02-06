@@ -485,6 +485,13 @@ LiveDecoder::gen_sines (float freq_in)
 
           ifft_synth.get_samples (&sine_samples[block_size / 2], IFFTSynth::ADD);
         }
+      else
+        {
+          // copy the remaining samples of the last IFFT synthesis (if any), and zero out the rest
+          auto padding = pp_inter->get_min_padding();
+          std::copy_n (&sine_samples[block_size - padding], block_size / 2 + padding, &sine_samples[block_size / 2 - padding]);
+          zero_float_block (block_size / 2, &sine_samples[block_size]);
+        }
       last_pstate = &new_pstate;
 
 #if 0
