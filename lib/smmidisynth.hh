@@ -90,6 +90,13 @@ private:
 
   typedef std::array<float, MorphPlan::N_CONTROL_INPUTS> ModArray;
 
+  static constexpr int  MIDI_CHANNELS = 16;
+  struct MidiChannelState
+  {
+    float pitch_bend_freq_factor = 1;
+  };
+  std::array<MidiChannelState, MIDI_CHANNELS> channel_state;
+
   class Voice
   {
   public:
@@ -172,7 +179,7 @@ private:
   void process_note_on (const NoteEvent& note);
   void process_note_off (int channel, int midi_note);
   void process_midi_controller (int controller, int value);
-  void process_pitch_bend (int channel, double semi_tones);
+  void process_pitch_bend (int channel, float value);
   void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
   void kill_all_active_voices();

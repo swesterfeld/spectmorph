@@ -129,7 +129,7 @@ MidiSynth::process_note_on (const NoteEvent& note)
   if (voice)
     {
       voice->freq              = freq_from_note (note.key);
-      voice->pitch_bend_freq   = voice->freq;
+      voice->pitch_bend_freq   = voice->freq * channel_state[note.channel].pitch_bend_freq_factor;
       voice->pitch_bend_factor = 0;
       voice->pitch_bend_steps  = 0;
       voice->state             = Voice::STATE_ON;
@@ -217,9 +217,10 @@ MidiSynth::update_mono_voice()
             }
           else if (shadow_midi_note_id != portamento_note_id)
             {
+              const float freq_factor = channel_state[mvoice->channel].pitch_bend_freq_factor;
               portamento_note_id = shadow_midi_note_id;
 
-              start_pitch_bend (mvoice, freq_from_note (shadow_midi_note), portamento_glide);
+              start_pitch_bend (mvoice, freq_from_note (shadow_midi_note) * freq_factor, portamento_glide);
             }
         }
     }
@@ -364,15 +365,21 @@ MidiSynth::process_midi_controller (int controller, int value)
 }
 
 void
-MidiSynth::process_pitch_bend (int channel, double semi_tones)
+MidiSynth::process_pitch_bend (int channel, float value)
 {
+  const MorphOutputModule *output = voices[0].mp_voice->output();
+
+  float semi_tones = value * output->pitch_bend_range();
+  float freq_factor = std::exp2 (semi_tones / 12);
+
+  channel_state[channel].pitch_bend_freq_factor = freq_factor;
   for (auto voice : active_voices)
     {
       if (voice->state == Voice::STATE_ON && voice->channel == channel)
         {
           const double glide_ms = 20.0; /* 20ms smoothing (avoid frequency jumps) */
 
-          start_pitch_bend (voice, voice->freq * pow (2, semi_tones / 12), glide_ms);
+          start_pitch_bend (voice, voice->freq * freq_factor, glide_ms);
         }
     }
 }
@@ -671,11 +678,8 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
             break;
           case EVENT_PITCH_BEND:
             {
-              const MorphOutputModule *output = voices[0].mp_voice->output();
-              float semi_tones = event.pitch_bend.value * output->pitch_bend_range();
-
-              MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, semi_tones);
-              process_pitch_bend (event.pitch_bend.channel, semi_tones);
+              MIDI_DEBUG ("%" PRIu64 " | pitch bend event: %.2f semi tones\n", audio_time_stamp, event.pitch_bend.value);
+              process_pitch_bend (event.pitch_bend.channel, event.pitch_bend.value);
             }
             break;
           case EVENT_CC:
