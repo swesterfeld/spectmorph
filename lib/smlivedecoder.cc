@@ -507,9 +507,13 @@ LiveDecoder::gen_sines (float freq_in)
     }
   else
     {
-      /* FIXME: need to generate null sample block here (setup pos, clear out samples) */
+      pos = 0;
       if (done_state == DoneState::ACTIVE)
-        done_state = DoneState::ALMOST_DONE;
+        {
+          done_state = DoneState::ALMOST_DONE;
+          zero_float_block (block_size * 3 / 2, &sine_samples[0]);
+          zero_float_block (block_size / 2, &noise_samples[0]);
+        }
     }
   have_samples = block_size / 2;
   rt_memory_area->free_all();
@@ -588,7 +592,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
 
       if (noise_index == block_size / 2)
         {
-          if (noise_enabled)
+          if (noise_enabled && done_state == DoneState::ACTIVE)
             {
               ifft_synth.clear_partials();
               std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
