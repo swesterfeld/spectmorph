@@ -12,6 +12,18 @@ using namespace SpectMorph;
 using std::max;
 using std::vector;
 
+void
+swap_half_blocks (float *samples, size_t block_size)
+{
+  float out_samples[block_size];
+  for (size_t i = 0; i < block_size / 2; i++)
+    {
+      out_samples[i] = samples[i + block_size / 2];
+      out_samples[i + block_size / 2] = samples[i];
+    }
+  std::copy_n (out_samples, block_size, samples);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -57,15 +69,34 @@ main (int argc, char **argv)
   float *dbg_spectrum = FFT::new_array_float (block_size);
   FFT::fftar_float (block_size, xwin_samples, dbg_spectrum);
 
-  // NOISE IFFT MODE
+  // Check IFFT NOISE with hanning window
+  ifft_synth.clear_partials();
+  noise_dec.set_seed (42);
+  noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_HANNING);
+  zero_float_block (block_size, fft_samples);
+  FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), fft_samples);
+  swap_half_blocks (fft_samples, block_size);
+  float hann_diff_max = 0;
+  for (size_t i = 0; i < block_size; i++)
+    {
+      hann_diff_max = max (hann_diff_max, fabs (cos_win_samples[i] - fft_samples[i]));
+#if 0
+      sm_printf ("%f #W\n", cos_win_samples[i]);
+      sm_printf ("%f #H\n", fft_samples[i]);
+#endif
+    }
+  printf ("noise test: hann_diff_max=%.17g\n", hann_diff_max);
+  assert (hann_diff_max < 2e-7);
+
+  // NOISE IFFT MODE: BH92 spectrum
   for (int sse = 0; sse < 2; sse++)
     {
       sm_enable_sse (sse);
       ifft_synth.clear_partials();
       noise_dec.set_seed (42);
-      noise_dec.process (audio_block.noise.data(), ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM);
+      noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_BH92);
 
-      vector<float> spectrum (ifft_synth.fft_buffer(), ifft_synth.fft_buffer() + block_size);
+      vector<float> spectrum (ifft_synth.fft_input(), ifft_synth.fft_input() + block_size);
 
       ifft_synth.get_samples (fft_samples);
 
