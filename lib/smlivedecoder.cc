@@ -596,8 +596,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
           if (noise_enabled && done_state == DoneState::ACTIVE)
             {
               /* generate hann-windowed noise using IFFT */
-              zero_float_block (block_size, ifft_synth.fft_input());
-              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_HANNING, 1);
+              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING, 1);
               FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
 
               /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */

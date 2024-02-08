@@ -95,13 +95,13 @@ NoiseDecoder::process (const uint16_t     *noise_envelope,
     }
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
-  if (output_mode == FFT_SPECTRUM_BH92)
+  if (output_mode == ADD_SPECTRUM_BH92)
     {
       apply_window_bh92 (interpolated_spectrum, samples);
     }
-  else if (output_mode == FFT_SPECTRUM_HANNING)
+  else if (output_mode == SET_SPECTRUM_HANNING)
     {
-      apply_window_hanning (interpolated_spectrum, samples);
+      apply_window_hanning_overwrite (interpolated_spectrum, samples);
     }
   else if (output_mode == DEBUG_UNWINDOWED)
     {
@@ -355,7 +355,7 @@ NoiseDecoder::apply_window_bh92 (float *spectrum, float *fft_buffer)
 }
 
 void
-NoiseDecoder::apply_window_hanning (float *spectrum, float *fft_buffer)
+NoiseDecoder::apply_window_hanning_overwrite (float *spectrum, float *fft_buffer)
 {
   float *expand_in = spectrum - 8;
 
@@ -391,19 +391,15 @@ NoiseDecoder::apply_window_hanning (float *spectrum, float *fft_buffer)
   const float K0 = 0.5;   // a0
   const float K1 = 0.25;  // a1 / 2
 
-  {
-    alignas (16) float spectrum[block_size + 2]; // SSE alignment
-    for (size_t i = 8; i < block_size + 2 + 8; i += 2)
-      {
-        float out_re = K0 * expand_in[i];
-        float out_im = K0 * expand_in[i + 1];
+  for (size_t i = 8; i < block_size + 2 + 8; i += 2)
+    {
+      float out_re = K0 * expand_in[i];
+      float out_im = K0 * expand_in[i + 1];
 
-        out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
-        out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
-        spectrum[i-8] = out_re;
-        spectrum[i-7] = out_im;
-      }
-    spectrum[1] = spectrum[block_size];
-    Block::add (block_size, fft_buffer, spectrum);
-  }
+      out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
+      out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
+      fft_buffer[i-8] = out_re;
+      fft_buffer[i-7] = out_im;
+    }
+  fft_buffer[1] = fft_buffer[block_size];
 }
