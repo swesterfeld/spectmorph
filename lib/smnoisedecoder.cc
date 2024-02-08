@@ -365,12 +365,6 @@ NoiseDecoder::apply_window_hanning_overwrite (float *spectrum, float *fft_buffer
   // BS+1
   expand_in[10 + block_size] = spectrum[block_size - 2];
   expand_in[11 + block_size] = -spectrum[block_size - 1];
-  // BS+2
-  expand_in[12 + block_size] = spectrum[block_size - 4];
-  expand_in[13 + block_size] = -spectrum[block_size - 3];
-  // BS+3
-  expand_in[14 + block_size] = spectrum[block_size - 6];
-  expand_in[15 + block_size] = -spectrum[block_size - 5];
 
   // 0
   expand_in[8] = spectrum[0];
@@ -378,15 +372,6 @@ NoiseDecoder::apply_window_hanning_overwrite (float *spectrum, float *fft_buffer
   // -1
   expand_in[6] = spectrum[2];
   expand_in[7] = -spectrum[3];
-  // -2
-  expand_in[4] = spectrum[4];
-  expand_in[5] = -spectrum[5];
-  // -3
-  expand_in[2] = spectrum[6];
-  expand_in[3] = -spectrum[7];
-  // -4 (expand_in[0] and expand_in[1] will be multiplied with 0 and added to the fft_buffer, and therefore should not be NaN)
-  expand_in[0] = 0.0;
-  expand_in[1] = 0.0;
 
   const float K0 = 0.5;   // a0
   const float K1 = 0.25;  // a1 / 2
