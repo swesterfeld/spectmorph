@@ -47,9 +47,15 @@ public:
   }
 
   float*
-  fft_buffer()
+  fft_input()
   {
     return fft_in;
+  }
+
+  float*
+  fft_output()
+  {
+    return fft_out;
   }
 
   inline void render_partial (double freq, double mag, double phase);

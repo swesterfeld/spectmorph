@@ -6,6 +6,8 @@
 #include "smleakdebugger.hh"
 #include "smutils.hh"
 #include "smrtmemory.hh"
+#include "smfft.hh"
+#include "smblockutils.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -494,14 +496,6 @@ LiveDecoder::gen_sines (float freq_in)
         }
       last_pstate = &new_pstate;
 
-#if 0
-
-      if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
-        {
-          float *samples = &sse_samples[0];
-          ifft_synth.get_samples (samples, IFFTSynth::ADD);
-        }
-#endif
       if (pos != 0) // pos == 0 => initial refill
         {
           pos -= block_size / 2;
@@ -601,11 +595,15 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
         {
           if (noise_enabled && done_state == DoneState::ACTIVE)
             {
-              ifft_synth.clear_partials();
+              /* generate hann-windowed noise using IFFT */
+              zero_float_block (block_size, ifft_synth.fft_input());
+              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_HANNING, 1);
+              FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
+
+              /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
               std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
-              zero_float_block (block_size / 2, &noise_samples[block_size / 2]);
-              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, 1);
-              ifft_synth.get_samples (&noise_samples[0], IFFTSynth::ADD);
+              Block::add (block_size / 2, &noise_samples[0], ifft_synth.fft_output() + block_size / 2);
+              std::copy (ifft_synth.fft_output(), ifft_synth.fft_output() + block_size / 2, &noise_samples[block_size / 2]);
             }
           else
             {

@@ -95,9 +95,13 @@ NoiseDecoder::process (const uint16_t     *noise_envelope,
     }
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
-  if (output_mode == FFT_SPECTRUM)
+  if (output_mode == FFT_SPECTRUM_BH92)
     {
-      apply_window (interpolated_spectrum, samples);
+      apply_window_bh92 (interpolated_spectrum, samples);
+    }
+  else if (output_mode == FFT_SPECTRUM_HANNING)
+    {
+      apply_window_hanning (interpolated_spectrum, samples);
     }
   else if (output_mode == DEBUG_UNWINDOWED)
     {
@@ -202,7 +206,7 @@ NoiseDecoder::make_k_array()
 }
 
 void
-NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
+NoiseDecoder::apply_window_bh92 (float *spectrum, float *fft_buffer)
 {
   float *expand_in = spectrum - 8;
 
@@ -348,4 +352,58 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
       spectrum[1] = spectrum[block_size];
       Block::add (block_size, fft_buffer, spectrum);
     }
+}
+
+void
+NoiseDecoder::apply_window_hanning (float *spectrum, float *fft_buffer)
+{
+  float *expand_in = spectrum - 8;
+
+  // BS
+  expand_in[8 + block_size] = spectrum[1];
+  expand_in[9 + block_size] = 0;
+  // BS+1
+  expand_in[10 + block_size] = spectrum[block_size - 2];
+  expand_in[11 + block_size] = -spectrum[block_size - 1];
+  // BS+2
+  expand_in[12 + block_size] = spectrum[block_size - 4];
+  expand_in[13 + block_size] = -spectrum[block_size - 3];
+  // BS+3
+  expand_in[14 + block_size] = spectrum[block_size - 6];
+  expand_in[15 + block_size] = -spectrum[block_size - 5];
+
+  // 0
+  expand_in[8] = spectrum[0];
+  expand_in[9] = 0;
+  // -1
+  expand_in[6] = spectrum[2];
+  expand_in[7] = -spectrum[3];
+  // -2
+  expand_in[4] = spectrum[4];
+  expand_in[5] = -spectrum[5];
+  // -3
+  expand_in[2] = spectrum[6];
+  expand_in[3] = -spectrum[7];
+  // -4 (expand_in[0] and expand_in[1] will be multiplied with 0 and added to the fft_buffer, and therefore should not be NaN)
+  expand_in[0] = 0.0;
+  expand_in[1] = 0.0;
+
+  const float K0 = 0.5;   // a0
+  const float K1 = 0.25;  // a1 / 2
+
+  {
+    alignas (16) float spectrum[block_size + 2]; // SSE alignment
+    for (size_t i = 8; i < block_size + 2 + 8; i += 2)
+      {
+        float out_re = K0 * expand_in[i];
+        float out_im = K0 * expand_in[i + 1];
+
+        out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
+        out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
+        spectrum[i-8] = out_re;
+        spectrum[i-7] = out_im;
+      }
+    spectrum[1] = spectrum[block_size];
+    Block::add (block_size, fft_buffer, spectrum);
+  }
 }
