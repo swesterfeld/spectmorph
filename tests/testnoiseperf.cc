@@ -46,7 +46,7 @@ main (int argc, char **argv)
           for (int r = 0; r < RUNS; r++)
             {
               ifft_synth.clear_partials();
-              noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), spect ? NoiseDecoder::FFT_SPECTRUM_BH92 : NoiseDecoder::DEBUG_NO_OUTPUT);
+              noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), spect ? NoiseDecoder::ADD_SPECTRUM_BH92 : NoiseDecoder::DEBUG_NO_OUTPUT);
               if (ifft)
                 ifft_synth.get_samples (samples.data());
             }

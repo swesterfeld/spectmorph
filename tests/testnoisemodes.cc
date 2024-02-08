@@ -70,9 +70,8 @@ main (int argc, char **argv)
   FFT::fftar_float (block_size, xwin_samples, dbg_spectrum);
 
   // Check IFFT NOISE with hanning window
-  ifft_synth.clear_partials();
   noise_dec.set_seed (42);
-  noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_HANNING);
+  noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING);
   zero_float_block (block_size, fft_samples);
   FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), fft_samples);
   swap_half_blocks (fft_samples, block_size);
@@ -94,7 +93,7 @@ main (int argc, char **argv)
       sm_enable_sse (sse);
       ifft_synth.clear_partials();
       noise_dec.set_seed (42);
-      noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::FFT_SPECTRUM_BH92);
+      noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::ADD_SPECTRUM_BH92);
 
       vector<float> spectrum (ifft_synth.fft_input(), ifft_synth.fft_input() + block_size);
 
