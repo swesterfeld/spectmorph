@@ -56,7 +56,6 @@ class LiveDecoder
   float               current_freq;
   float               mix_freq;
 
-  size_t              have_samples;
   size_t              noise_index;
   double              pos;
   double              env_pos;

@@ -168,9 +168,8 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       if (noise_seed != -1)
         noise_decoder.set_seed (noise_seed);
 
-      have_samples = 0;
       noise_index = block_size / 2; // need to generate noise immediately
-      pos = 0;
+      pos = block_size / 2; // need to generate sines immediately
       frame_idx = 0;
       env_pos = 0;
       original_sample_pos = 0;
@@ -496,12 +495,10 @@ LiveDecoder::gen_sines (float freq_in)
         }
       last_pstate = &new_pstate;
 
-      if (pos != 0) // pos == 0 => initial refill
-        {
-          pos -= block_size / 2;
-          /* adjust remaining fractional position matching to new stretch */
-          pos *= old_portamento_stretch / portamento_stretch;
-        }
+      pos -= block_size / 2;
+      /* adjust remaining fractional position matching to new stretch */
+      pos *= old_portamento_stretch / portamento_stretch;
+
       old_portamento_stretch = portamento_stretch;
       assert (audio_block.noise.size() == noise_envelope.size());
       std::copy_n (audio_block.noise.data(), noise_envelope.size(), noise_envelope.begin());
@@ -516,7 +513,6 @@ LiveDecoder::gen_sines (float freq_in)
           zero_float_block (block_size / 2, &noise_samples[0]);
         }
     }
-  have_samples = block_size / 2;
   rt_memory_area->free_all();
 }
 
@@ -588,7 +584,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
   unsigned int i = 0;
   while (i < n_values)
     {
-      if (pos >= have_samples)
+      if (pos >= block_size / 2)
         gen_sines (freq_in[i]);
 
       if (noise_index == block_size / 2)
@@ -611,7 +607,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
           noise_index = 0;
         }
 
-      g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
           // decode envelope
