@@ -646,9 +646,8 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
                       if (vib_freq_is_constant)
                         todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values - i });
 
-                      int sine_index = block_size / 2 + ipos;
-                      for (int k = 0; k < todo; k++)
-                        audio_out[i + k] = noise_samples[noise_index + k] + sine_samples[sine_index + k];
+                      const int sine_index = block_size / 2 + ipos;
+                      Block::sum2 (todo, audio_out + i, &noise_samples[noise_index], &sine_samples[sine_index]);
 
                       i += todo;
                       pos += todo;
