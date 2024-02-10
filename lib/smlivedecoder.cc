@@ -627,19 +627,17 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
             }
           else // envelope is 1 -> copy data efficiently
             {
-              const float pos_increment = vib_freq_in[i] / (current_freq * old_portamento_stretch);
               const float delta = 1 / 2000.f;
+              const float vib_freq_factor = 1 / (current_freq * old_portamento_stretch);
 
-              if (std::abs (pos_increment - 1) < delta)
+              if (vib_freq_is_constant && std::abs (vib_freq_in[i] * vib_freq_factor - 1) < delta)
                 {
                   const int ipos = int (pos);
                   float frac = pos - ipos;
                   if (frac < delta)
                     {
                       /* replay speed is close to 1 and frac is small, so we don't need to interpolate at all */
-                      int todo = 1;
-                      if (vib_freq_is_constant)
-                        todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values - i });
+                      int todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values - i });
 
                       const int sine_index = block_size / 2 + ipos;
                       Block::sum2 (todo, audio_out + i, &noise_samples[noise_index], &sine_samples[sine_index]);
@@ -667,10 +665,20 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
                 }
               else
                 {
-                  /* replay speed is not close to 1, so we need to interpolate here */
-                  audio_out[i++] = noise_samples[noise_index++] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
-                  pos += pos_increment;
-                  env_pos++;
+                  const int todo = min (block_size / 2 - noise_index, n_values - i);
+                  int k = 0;
+                  while (k < todo)
+                    {
+                      audio_out[i + k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
+                      pos += vib_freq_in[i + k] * vib_freq_factor;
+                      k++;
+
+                      if (pos >= block_size / 2)
+                        break;
+                    }
+                  i += k;
+                  noise_index += k;
+                  env_pos += k;
                 }
             }
         }
