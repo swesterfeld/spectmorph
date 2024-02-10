@@ -516,6 +516,78 @@ LiveDecoder::gen_sines (float freq_in)
   rt_memory_area->free_all();
 }
 
+size_t
+LiveDecoder::write_audio_out (size_t n_values, float *audio_out, const float *vib_freq_in)
+{
+  float last_vib = vib_freq_in[0];
+  bool  vib_freq_is_constant = true;
+  for (unsigned int v = 1; v < n_values; v++)
+    {
+      if (last_vib != vib_freq_in[v])
+        {
+          vib_freq_is_constant = false;
+          break;
+        }
+    }
+
+  const float delta = 1 / 2000.f;
+  const float vib_freq_factor = 1 / (current_freq * old_portamento_stretch);
+
+  int k = 0;
+  if (vib_freq_is_constant && std::abs (vib_freq_in[k] * vib_freq_factor - 1) < delta)
+    {
+      const int ipos = int (pos);
+      float frac = pos - ipos;
+
+      int todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values });
+      if (frac < delta)
+        {
+          /* replay speed is close to 1 and frac is small, so we don't need to interpolate at all */
+          const int sine_index = block_size / 2 + ipos;
+          Block::sum2 (todo, audio_out, &noise_samples[noise_index], &sine_samples[sine_index]);
+
+          k = todo;
+          pos += todo;
+        }
+      else
+        {
+          while (k < todo)
+            {
+              /* replay speed is close 1 and frac is not small: we need to interpolate because jumping from the
+               * interpolated stream to copying would introduce a phase jump - however, we increment pos
+               * a little less than requested to make make frac for the next sample a bit smaller, eventually
+               * allowing us to skip interpolation later
+               */
+              audio_out[k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
+              k++;
+
+              frac -= delta;
+              if (frac < 0)
+                frac = 0;
+
+              pos = int (pos) + 1 + frac;
+            }
+        }
+    }
+  else
+    {
+      const int todo = min (block_size / 2 - noise_index, n_values);
+      while (k < todo)
+        {
+          audio_out[k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
+          pos += vib_freq_in[k] * vib_freq_factor;
+          k++;
+
+          if (pos >= block_size / 2)
+            break;
+        }
+    }
+  noise_index += k;
+  env_pos += k;
+
+  return k;
+}
+
 void
 LiveDecoder::process_internal (size_t n_values, const float *freq_in, const float *vib_freq_in, float *audio_out)
 {
@@ -570,17 +642,6 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
       return;
     }
 
-  float last_vib = vib_freq_in[0];
-  bool  vib_freq_is_constant = true;
-  for (unsigned int v = 0; v < n_values; v++)
-    {
-      if (last_vib != vib_freq_in[v])
-        {
-          vib_freq_is_constant = false;
-          break;
-        }
-    }
-
   unsigned int i = 0;
   while (i < n_values)
     {
@@ -627,61 +688,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
             }
           else // envelope is 1 -> copy data efficiently
             {
-              const float delta = 1 / 2000.f;
-              const float vib_freq_factor = 1 / (current_freq * old_portamento_stretch);
-
-              int k = 0;
-              if (vib_freq_is_constant && std::abs (vib_freq_in[i] * vib_freq_factor - 1) < delta)
-                {
-                  const int ipos = int (pos);
-                  float frac = pos - ipos;
-
-                  int todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values - i });
-                  if (frac < delta)
-                    {
-                      /* replay speed is close to 1 and frac is small, so we don't need to interpolate at all */
-                      const int sine_index = block_size / 2 + ipos;
-                      Block::sum2 (todo, audio_out + i, &noise_samples[noise_index], &sine_samples[sine_index]);
-
-                      k = todo;
-                      pos += todo;
-                    }
-                  else
-                    {
-                      while (k < todo)
-                        {
-                          /* replay speed is close 1 and frac is not small: we need to interpolate because jumping from the
-                           * interpolated stream to copying would introduce a phase jump - however, we increment pos
-                           * a little less than requested to make make frac for the next sample a bit smaller, eventually
-                           * allowing us to skip interpolation later
-                           */
-                          audio_out[i + k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
-                          k++;
-
-                          frac -= delta;
-                          if (frac < 0)
-                            frac = 0;
-
-                          pos = int (pos) + 1 + frac;
-                        }
-                    }
-                }
-              else
-                {
-                  const int todo = min (block_size / 2 - noise_index, n_values - i);
-                  while (k < todo)
-                    {
-                      audio_out[i + k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
-                      pos += vib_freq_in[i + k] * vib_freq_factor;
-                      k++;
-
-                      if (pos >= block_size / 2)
-                        break;
-                    }
-                }
-              i += k;
-              noise_index += k;
-              env_pos += k;
+              i += write_audio_out (n_values - i, audio_out + i, vib_freq_in + i);
             }
         }
       else
