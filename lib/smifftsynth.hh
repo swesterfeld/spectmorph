@@ -62,7 +62,7 @@ public:
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
   void precompute_tables();
 
-  double quantized_freq (double freq);
+  inline double quantized_freq (double freq);
 };
 
 struct IFFTSynthTable
@@ -141,6 +141,16 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
             }
         }
     }
+}
+
+inline double
+IFFTSynth::quantized_freq (double mf_freq)
+{
+  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
+  const double qfreq = freq256 * (1 / 256.0);
+  const double mf_qfreq = qfreq / block_size * mix_freq;
+
+  return mf_qfreq;
 }
 
 }
