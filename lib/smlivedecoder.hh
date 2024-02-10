@@ -101,6 +101,7 @@ class LiveDecoder
   Audio::LoopType     get_loop_type();
 
   void   gen_sines (float freq);
+  void   gen_noise();
   size_t write_audio_out (size_t n_values, float *audio_out, const float *vib_freq_in);
 
   void process_internal (size_t       n_values,

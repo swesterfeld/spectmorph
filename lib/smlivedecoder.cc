@@ -516,6 +516,27 @@ LiveDecoder::gen_sines (float freq_in)
   rt_memory_area->free_all();
 }
 
+void
+LiveDecoder::gen_noise()
+{
+  if (noise_enabled && done_state == DoneState::ACTIVE)
+    {
+      /* generate hann-windowed noise using IFFT */
+      noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING, 1);
+      FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
+
+      /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
+      std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
+      Block::add (block_size / 2, &noise_samples[0], ifft_synth.fft_output() + block_size / 2);
+      std::copy (ifft_synth.fft_output(), ifft_synth.fft_output() + block_size / 2, &noise_samples[block_size / 2]);
+    }
+  else
+    {
+      zero_float_block (block_size / 2, &noise_samples[0]);
+    }
+  noise_index = 0;
+}
+
 size_t
 LiveDecoder::write_audio_out (size_t n_values, float *audio_out, const float *vib_freq_in)
 {
@@ -649,24 +670,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
         gen_sines (freq_in[i]);
 
       if (noise_index == block_size / 2)
-        {
-          if (noise_enabled && done_state == DoneState::ACTIVE)
-            {
-              /* generate hann-windowed noise using IFFT */
-              noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING, 1);
-              FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
-
-              /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
-              std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
-              Block::add (block_size / 2, &noise_samples[0], ifft_synth.fft_output() + block_size / 2);
-              std::copy (ifft_synth.fft_output(), ifft_synth.fft_output() + block_size / 2, &noise_samples[block_size / 2]);
-            }
-          else
-            {
-              zero_float_block (block_size / 2, &noise_samples[0]);
-            }
-          noise_index = 0;
-        }
+        gen_noise();
 
       if (env_pos >= zero_values_at_start_scaled)
         {
