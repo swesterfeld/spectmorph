@@ -701,6 +701,7 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
           // skip sample
           pos++;
           env_pos++;
+          noise_index++;
         }
     }
 }
