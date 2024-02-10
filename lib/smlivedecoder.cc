@@ -674,26 +674,27 @@ LiveDecoder::process_internal (size_t n_values, const float *freq_in, const floa
 
       if (env_pos >= zero_values_at_start_scaled)
         {
-          // decode envelope
-          const double time_ms = env_pos * 1000.0 / mix_freq;
-          if (time_ms < audio->attack_start_ms)
-            {
-              audio_out[i++] = 0;
-              pos++;
-              env_pos++;
-            }
-          else if (time_ms < audio->attack_end_ms)
-            {
-              const double volume = (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+          /* note: need to assign time_ms before write_audio_out, because write_audio_out increments env_pos */
+          const double env_pos_to_ms = 1000.0 / mix_freq;
+          double time_ms = env_pos * env_pos_to_ms;
+          size_t end_i = i + write_audio_out (n_values - i, audio_out + i, vib_freq_in + i);
 
-              audio_out[i++] = (sine_samples[pos + block_size / 2] + noise_samples[noise_index++]) * volume;
-              pos++;
-              env_pos++;
-            }
-          else // envelope is 1 -> copy data efficiently
+          while (time_ms < audio->attack_end_ms && i < end_i)
             {
-              i += write_audio_out (n_values - i, audio_out + i, vib_freq_in + i);
+              // decode envelope
+              if (time_ms < audio->attack_start_ms)
+                {
+                  audio_out[i++] = 0;
+                }
+              else
+                {
+                  const double volume = (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+
+                  audio_out[i++] *= volume;
+                }
+              time_ms += env_pos_to_ms;
             }
+          i = end_i;
         }
       else
         {
