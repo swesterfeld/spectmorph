@@ -186,7 +186,7 @@ test_negative_phase()
 
   double max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
-    max_diff = max (max_diff, std::abs (double (samples1[i] - samples2[i])));
+    max_diff = max (max_diff, std::abs (double (samples1[i]) - samples2[i]));
   sm_printf ("# test_negative_phase: %.17g\n", max_diff);
   assert (max_diff < 1e-8);
 }
