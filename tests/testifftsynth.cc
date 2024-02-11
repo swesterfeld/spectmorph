@@ -154,7 +154,7 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
-      max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
+      max_diff = max (max_diff, std::abs (double (samples[i]) - aligned_decoded_sines[i] * window[i]));
       //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
   if (verbose)
@@ -164,6 +164,33 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   if (frequency_diff)
     *frequency_diff = fabs (freq - vsparams.freq); // frequency diff due to quantization
 }
+
+void
+test_negative_phase()
+{
+  const double mix_freq = 48000;
+  const size_t block_size = 1024;
+
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92);
+
+  vector<float> samples1 (block_size);
+  vector<float> samples2 (block_size);
+
+  synth.clear_partials();
+  synth.render_partial (440, 1, 0.33);
+  synth.get_samples (&samples1[0]);
+
+  synth.clear_partials();
+  synth.render_partial (440, 1, -2 * M_PI + 0.33);
+  synth.get_samples (&samples2[0]);
+
+  double max_diff = 0;
+  for (size_t i = 0; i < block_size; i++)
+    max_diff = max (max_diff, std::abs (double (samples1[i] - samples2[i])));
+  sm_printf ("# test_negative_phase: %.17g\n", max_diff);
+  assert (max_diff < 1e-8);
+}
+
 
 void
 test_accs()
@@ -624,4 +651,5 @@ main (int argc, char **argv)
   assert (max_freq_diff < 0.1);
 
   test_portaslide (false);
+  test_negative_phase();
 }
