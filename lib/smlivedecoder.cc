@@ -52,7 +52,7 @@ fmatch (double f1, double f2)
 static inline double
 truncate_phase (double phase)
 {
-  // truncate phase to interval [0:2*pi]; like fmod (phase, 2 * M_PI) but faster
+  // truncate phase to interval [-2*pi:2*pi]; like fmod (phase, 2 * M_PI) but faster
   phase *= 1 / (2 * M_PI);
   phase -= int (phase);
   phase *= 2 * M_PI;
@@ -430,8 +430,7 @@ LiveDecoder::gen_sines (float freq_in)
                   phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
                   // phase at start of the block
                   phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
-                  while (phase < 0)
-                    phase += 2 * M_PI;
+
                   phase = truncate_phase (phase);
 
                   ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
