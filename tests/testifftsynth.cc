@@ -355,7 +355,7 @@ test_portamento()
 }
 
 void
-test_portaslide()
+test_portaslide (bool verbose)
 {
   const double mix_freq = 48000;
 
@@ -410,6 +410,9 @@ test_portaslide()
       pos += test_freq / freq_in[ipos];
     }
 
+  float db_side_low = -96, db_side_high = -96;
+  float db_main_range_min = 96;
+  float db_main_range_max = -96;
   for (float dest_freq = 110; dest_freq < 18000; dest_freq *= 1.01)
     {
       const size_t fft_size = 1024 * 16;
@@ -457,7 +460,16 @@ test_portaslide()
           if (delta > 4 && db > db_side) // blackman harris window has 9 bins main lobe width
             db_side = db;
         }
-      sm_printf ("%f %f %f\n", dest_freq, db_max, db_side);
+      if (verbose)
+        sm_printf ("%f %f %f\n", dest_freq, db_max, db_side);
+      if (dest_freq < 16000)
+        {
+          db_side_low = max (db_side_low, db_side);
+        }
+      else
+        db_side_high = max (db_side_high, db_side);
+      db_main_range_min = min (db_main_range_min, db_max);
+      db_main_range_max = max (db_main_range_max, db_max);
 #if 0
       for (size_t d = 0; d < fft_size; d += 2)
         {
@@ -468,6 +480,13 @@ test_portaslide()
 #endif
       FFT::free_array_float (spect);
     }
+  sm_printf ("# Portamento: db_side_low   = %f\n", db_side_low);
+  sm_printf ("# Portamento: db_side_high  = %f\n", db_side_high);
+  sm_printf ("# Portamento: db_main_range = %f .. %f\n", db_main_range_min, db_main_range_max);
+  assert (db_side_low < -71);
+  assert (db_side_high < -55);
+  assert (db_main_range_min > -0.19);
+  assert (db_main_range_max < 0);
 }
 
 void
@@ -557,7 +576,7 @@ main (int argc, char **argv)
    */
   if (argc == 2 && strcmp (argv[1], "portaslide") == 0)
     {
-      test_portaslide();
+      test_portaslide (true);
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
@@ -579,4 +598,6 @@ main (int argc, char **argv)
   printf ("# IFFTSynth: max_freq_diff = %.17g\n", max_freq_diff);
   assert (max_output_diff < 9e-5);
   assert (max_freq_diff < 0.1);
+
+  test_portaslide (false);
 }
