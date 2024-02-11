@@ -72,6 +72,9 @@ struct IFFTSynthTable
   float             *win_scale;
 };
 
+/*
+ * phase can be in range [-2*pi..2*pi]
+ */
 inline void
 IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
@@ -86,8 +89,10 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 
   // rotation for initial phase; scaling for magnitude
 
-  /* the following block computes sincos (phase + phase_adjust) */
-  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)));
+  /* the following block computes sincos (phase + phase_adjust)
+   *  - we add 2 * SIN_TABLE_SIZE here to support negative phases
+   */
+  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)) + 2 * SIN_TABLE_SIZE);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
