@@ -246,8 +246,6 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 void
 LiveDecoder::gen_sines (float freq_in)
 {
-  double want_freq = current_freq;
-
   if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
     {
       size_t xenv_pos = env_pos;
@@ -310,13 +308,12 @@ LiveDecoder::gen_sines (float freq_in)
           size_t old_partial = 0;
           for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
             {
-              const double freq = audio_block.freqs_f (partial) * want_freq;
+              const double freq = audio_block.freqs_f (partial) * current_freq;
 
               // anti alias filter:
               double mag         = audio_block.mags_f (partial);
               double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
-              // portamento: FIXME: is using freq_in[i] directly here the best way?
               const double portamento_freq = audio_block.freqs_f (partial) * freq_in;
               if (portamento_freq > filter_min_freq)
                 {
@@ -324,8 +321,6 @@ LiveDecoder::gen_sines (float freq_in)
                   if (norm_freq > 0.5)
                     {
                       // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
-                      // FIXME: this may not work as expected with new style portamento, because we change the
-                      // rate of the resynthesis dynamically
                       break;
                     }
                   else
