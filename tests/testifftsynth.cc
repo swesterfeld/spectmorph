@@ -318,7 +318,7 @@ test_phase()
 }
 
 void
-test_portamento()
+test_portamento (bool expected)
 {
   const double mix_freq = 48000;
 
@@ -348,10 +348,29 @@ test_portamento()
     }
 
   vector<float> samples (freq_in.size());
-  live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+  if (expected) // expected result: sin wave
+    {
+      double phase = 0;
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          samples[i] = sin (phase);
+          phase += 2 * M_PI * freq_in[i] / 48000;
+        }
+    }
+  else // actual result using live decoder
+    {
+      live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+    }
 
-  for (auto s : samples)
-    sm_printf ("%f\n", s);
+  for (size_t i = 0; i < samples.size(); i++)
+    {
+      int dist_start = i;
+      int dist_end = samples.size() - i;
+      int dist = min (dist_start, dist_end);
+      /* fade at the boundaries */
+      double vol = min (dist / 4800., 1.);
+      sm_printf ("%f\n", samples[i] * vol);
+    }
 }
 
 void
@@ -568,7 +587,12 @@ main (int argc, char **argv)
     }
   if (argc == 2 && strcmp (argv[1], "portamento") == 0)
     {
-      test_portamento();
+      test_portamento (false);
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "portamento_sin") == 0)
+    {
+      test_portamento (true);
       return 0;
     }
   /*
