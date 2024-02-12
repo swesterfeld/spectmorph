@@ -34,7 +34,7 @@ main (int argc, char **argv)
 
   AudioBlock audio_block;
   NoiseDecoder noise_dec (mix_freq, block_size);
-  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
   Random    random;
 
   float *samples = FFT::new_array_float (block_size);
@@ -71,7 +71,7 @@ main (int argc, char **argv)
 
   // Check IFFT NOISE with hanning window
   noise_dec.set_seed (42);
-  noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING);
+  noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANN);
   zero_float_block (block_size, fft_samples);
   FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), fft_samples);
   swap_half_blocks (fft_samples, block_size);

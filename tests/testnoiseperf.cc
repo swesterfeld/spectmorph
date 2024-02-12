@@ -23,7 +23,7 @@ main (int argc, char **argv)
 
   AudioBlock audio_block;
   NoiseDecoder noise_dec (mix_freq, block_size);
-  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
   Random    random;
 
   random.set_seed (42);

@@ -37,7 +37,7 @@ perf_test()
   vector<float> samples (block_size);
   vector<float> window (block_size);
 
-  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
   vector<double> freq_mag_phase;
 
@@ -276,7 +276,7 @@ test_spect()
 
   LiveDecoder live_decoder (&source, mix_freq);
   RTMemoryArea rt_memory_area;
-  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
   freq = synth.quantized_freq (freq);
   live_decoder.retrigger (0, freq, 127);
 
