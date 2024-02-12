@@ -34,7 +34,7 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
     else
       result = "FAIL";
 
-    print result, fdiff, adiff;
+    print result, "test-porta", fdiff, adiff;
   }'
 )
 echo $DIFFS | grep FAIL && die "portamento test failed"
