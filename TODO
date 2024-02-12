@@ -1,4 +1,5 @@
 NEWER TODOS:
+- portamento should also affect filter cutoff (key tracking)
 - 1-instrument-wav-source contains the data - not a good idea!
 - LV2 archive storage doesn't seem to work
 - fix asan issues in PandaResampler
