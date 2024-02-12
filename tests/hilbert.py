@@ -19,5 +19,9 @@ amplitude_envelope = np.abs (analytic_signal)
 instantaneous_phase = np.unwrap (np.angle (analytic_signal))
 instantaneous_frequency = (np.diff (instantaneous_phase) / (2.0 * np.pi) * 48000)
 
-for i in range (analytic_signal.shape[0] - 1):
+skip = 0
+if len (sys.argv) == 2:
+  skip = int (sys.argv[1])
+
+for i in range (skip, analytic_signal.shape[0] - 1 - skip):
   print (analytic_signal[i].real, analytic_signal[i].imag, amplitude_envelope[i], instantaneous_frequency[i])

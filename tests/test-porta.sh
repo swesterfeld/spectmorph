@@ -6,10 +6,8 @@ set -e
 
 EXIT=0
 
-$TESTIFFTSYNTH portamento | $HILBERT > test-porta-live-h.txt
-tail -n +5001 test-porta-live-h.txt | head -n -5000 > test-porta-live.txt
-$TESTIFFTSYNTH portamento_sin | $HILBERT > test-porta-sin-h.txt
-tail -n +5001 test-porta-sin-h.txt | head -n -5000 > test-porta-sin.txt
+$TESTIFFTSYNTH portamento | $HILBERT 2000 > test-porta-live.txt
+$TESTIFFTSYNTH portamento_sin | $HILBERT 2000 > test-porta-sin.txt
 DIFFS=$(
 paste test-porta-live.txt test-porta-sin.txt | awk '
   function abs(x) {
@@ -40,6 +38,6 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
 echo $DIFFS | grep FAIL && die "portamento test failed"
 echo $DIFFS | grep OK || die "portamento test failed"
 
-rm test-porta-live.txt test-porta-live-h.txt test-porta-sin.txt test-porta-sin-h.txt
+rm test-porta-live.txt test-porta-sin.txt
 
 exit $EXIT
