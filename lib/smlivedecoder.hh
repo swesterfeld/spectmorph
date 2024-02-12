@@ -11,6 +11,7 @@
 #include "smalignedarray.hh"
 #include <vector>
 #include <functional>
+#include <array>
 
 namespace SpectMorph {
 
