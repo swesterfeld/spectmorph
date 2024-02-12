@@ -6,6 +6,8 @@
 #include "smleakdebugger.hh"
 #include "smutils.hh"
 #include "smrtmemory.hh"
+#include "smfft.hh"
+#include "smblockutils.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -50,7 +52,7 @@ fmatch (double f1, double f2)
 static inline double
 truncate_phase (double phase)
 {
-  // truncate phase to interval [0:2*pi]; like fmod (phase, 2 * M_PI) but faster
+  // truncate phase to interval [-2*pi:2*pi]; like fmod (phase, 2 * M_PI) but faster
   phase *= 1 / (2 * M_PI);
   phase -= int (phase);
   phase *= 2 * M_PI;
@@ -62,7 +64,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   smset (NULL),
   audio (NULL),
   block_size (NoiseDecoder::preferred_block_size (mix_freq)),
-  ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING),
+  ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN),
   noise_decoder (mix_freq, block_size),
   source (NULL),
   sines_enabled (true),
@@ -73,7 +75,8 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   start_skip_enabled (false),
   mix_freq (mix_freq),
   noise_seed (-1),
-  sse_samples (block_size),
+  sine_samples (block_size * 3 / 2),
+  noise_samples (block_size),
   vibrato_enabled (false)
 {
   leak_debugger.add (this);
@@ -86,8 +89,6 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   unison_phases[0].reserve (PARTIAL_STATE_RESERVE * MAX_UNISON_VOICES);
   unison_phases[1].reserve (PARTIAL_STATE_RESERVE * MAX_UNISON_VOICES);
   unison_freq_factor.reserve (MAX_UNISON_VOICES);
-
-  portamento_state.buffer.reserve (MAX_N_VALUES * 16 /* 4 octaves */ + 256 /* buffer shrink boundary */ + 100);
 
   pp_inter = PolyPhaseInter::the(); // do not delete
 }
@@ -161,17 +162,19 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       if (start_skip_enabled)
         zero_values_at_start_scaled += block_size / 2;
 
-      zero_float_block (block_size, &sse_samples[0]);
+      zero_float_block (block_size * 3 / 2, &sine_samples[0]);
+      zero_float_block (block_size, &noise_samples[0]);
 
       if (noise_seed != -1)
         noise_decoder.set_seed (noise_seed);
 
-      have_samples = 0;
-      pos = 0;
+      noise_index = block_size / 2; // need to generate noise immediately
+      pos = block_size / 2; // need to generate sines immediately
       frame_idx = 0;
       env_pos = 0;
       original_sample_pos = 0;
       original_samples_norm_factor = db_to_factor (audio->original_samples_norm_db);
+      old_portamento_stretch = 1;
 
       done_state = DoneState::ACTIVE;
 
@@ -183,13 +186,6 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       // reset unison phases
       unison_phases[0].clear();
       unison_phases[1].clear();
-
-      // setup portamento state
-      assert (PortamentoState::DELTA >= pp_inter->get_min_padding());
-
-      portamento_state.pos = PortamentoState::DELTA;
-      portamento_state.buffer.resize (PortamentoState::DELTA);
-      portamento_state.active = false;
 
       // setup vibrato state
       vibrato_phase = 0;
@@ -248,7 +244,367 @@ LiveDecoder::compute_loop_frame_index (size_t frame_idx, Audio *audio)
 }
 
 void
-LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamento_stretch)
+LiveDecoder::gen_sines (float freq_in)
+{
+  if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
+    {
+      size_t xenv_pos = env_pos;
+
+      if (xenv_pos > loop_start_scaled)
+        {
+          xenv_pos = (xenv_pos - loop_start_scaled) % (loop_end_scaled - loop_start_scaled);
+          xenv_pos += loop_start_scaled;
+        }
+      frame_idx = xenv_pos / frame_step;
+    }
+  else if (get_loop_type() == Audio::LOOP_FRAME_FORWARD || get_loop_type() == Audio::LOOP_FRAME_PING_PONG)
+    {
+      frame_idx = compute_loop_frame_index (env_pos / frame_step, audio);
+    }
+  else
+    {
+      frame_idx = env_pos / frame_step;
+      if (loop_point != -1 && frame_idx > size_t (loop_point)) /* if in loop mode: loop current frame */
+        frame_idx = loop_point;
+    }
+
+  RTAudioBlock audio_block (rt_memory_area);
+  bool         have_audio_block = false;
+  if (source)
+    {
+      have_audio_block = source->rt_audio_block (frame_idx, audio_block);
+    }
+  else if (frame_idx < audio->contents.size())
+    {
+      audio_block.assign (audio->contents[frame_idx]);
+      have_audio_block = true;
+    }
+  if (have_audio_block)
+    {
+      float portamento_stretch = freq_in / current_freq;
+      assert (audio_block.freqs.size() == audio_block.mags.size());
+
+      // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
+      bool lps_zero = (last_pstate == &pstate[0]);
+      vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
+      const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
+      vector<float>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
+      const vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
+
+      if (unison_voices != 1)
+        {
+          // check unison phases size corresponds to old partial state size
+          assert (unison_voices * old_pstate.size() == unison_old_phases.size());
+        }
+      new_pstate.clear();         // clear old partial state
+      unison_new_phases.clear();  // and old unison phase information
+
+      if (sines_enabled)
+        {
+          const double phase_factor = block_size * M_PI / mix_freq;
+          const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+          const double filter_min_freq = filter_fact * mix_freq;
+
+          size_t old_partial = 0;
+          for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
+            {
+              const double freq = audio_block.freqs_f (partial) * current_freq;
+
+              // anti alias filter:
+              double mag         = audio_block.mags_f (partial);
+              double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
+
+              const double portamento_freq = audio_block.freqs_f (partial) * freq_in;
+              if (portamento_freq > filter_min_freq)
+                {
+                  double norm_freq = portamento_freq / mix_freq;
+                  if (norm_freq > 0.5)
+                    {
+                      // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
+                      break;
+                    }
+                  else
+                    {
+                      // between filter_fact and 0.5 (db linear filter)
+                      int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
+                      if (index >= 0)
+                        {
+                          if (index < ANTIALIAS_FILTER_TABLE_SIZE)
+                            mag *= antialias_filter_table[index];
+                          else
+                            mag = 0;
+                        }
+                      else
+                        {
+                          // filter magnitude is supposed to be 1.0
+                        }
+                    }
+                }
+
+              /*
+               * increment old_partial as long as there is a better candidate (closer to freq)
+               */
+              bool freq_match = false;
+              if (!old_pstate.empty())
+                {
+                  double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
+
+                  while ((old_partial + 1) < old_pstate.size())
+                    {
+                      double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
+                      if (fdiff < best_fdiff)
+                        {
+                          old_partial++;
+                          best_fdiff = fdiff;
+                        }
+                      else
+                        {
+                          break;
+                        }
+                    }
+                  const double lfreq = old_pstate[old_partial].freq;
+                  freq_match = fmatch (lfreq, freq);
+                }
+              if (DEBUG)
+                printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
+
+              if (unison_voices == 1)
+                {
+                  if (freq_match)
+                    {
+                      // matching freq -> compute new phase
+                      const double lfreq = old_pstate[old_partial].freq;
+                      const double lphase = old_pstate[old_partial].phase;
+
+                      phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor);
+
+                      if (DEBUG)
+                        printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
+                    }
+                }
+              else
+                {
+                  mag *= unison_gain;
+
+                  for (int i = 0; i < unison_voices; i++)
+                    {
+                      if (freq_match)
+                        {
+                          const double lfreq = old_pstate[old_partial].freq;
+                          const double lphase = unison_old_phases[old_partial * unison_voices + i];
+
+                          phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor);
+                        }
+                      else
+                        {
+                          // randomize start phase for unison
+
+                          phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
+                        }
+                      unison_new_phases.push_back (phase);
+                    }
+                }
+
+              PartialState ps;
+              ps.freq = freq;
+              ps.mag = mag;
+              ps.phase = phase;
+              new_pstate.push_back (ps);
+            }
+
+          /* check if there is a relevant difference between old portamento stretch and new portamento stretch
+           * if not we can use the old synthesis results and overlap/add with the new output (which is faster)
+           */
+          const float delta = 1 / 2000.;
+          if (std::abs (old_portamento_stretch / portamento_stretch - 1) > delta)
+            {
+              ifft_synth.clear_partials();
+
+              auto render_old_partial = [&] (double freq, double mag, double phase)
+                {
+                  // bandlimiting: do not render partials above nyquist frequency
+                  if (freq * portamento_stretch > 0.495 * mix_freq)
+                    return;
+
+                  // phase at center of the block
+                  phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
+                  // phase at start of the block
+                  phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
+
+                  phase = truncate_phase (phase);
+
+                  ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
+                };
+              if (unison_voices == 1)
+                {
+                  for (auto ps : old_pstate)
+                    render_old_partial (ps.freq, ps.mag, ps.phase);
+                }
+              else
+                {
+                  for (size_t p = 0; p < old_pstate.size(); p++)
+                    {
+                      for (int i = 0; i < unison_voices; i++)
+                        render_old_partial (old_pstate[p].freq * unison_freq_factor[i], old_pstate[p].mag, unison_old_phases[p * unison_voices + i]);
+                    }
+                }
+              ifft_synth.get_samples (&sine_samples[0], IFFTSynth::REPLACE);
+            }
+          else
+            {
+              /* we only need half a block from the last IFFT synthesis + the amount of padding our interpolation algorithm needs */
+              auto padding = pp_inter->get_min_padding();
+              std::copy_n (&sine_samples[block_size - padding], block_size / 2 + padding, &sine_samples[block_size / 2 - padding]);
+            }
+          zero_float_block (block_size / 2, &sine_samples[block_size]);
+
+          ifft_synth.clear_partials();
+
+          if (unison_voices == 1)
+            {
+              for (auto ps : new_pstate)
+                ifft_synth.render_partial (ps.freq * portamento_stretch, ps.mag, ps.phase);
+            }
+          else
+            {
+              for (size_t p = 0; p < new_pstate.size(); p++)
+                {
+                  for (int i = 0; i < unison_voices; i++)
+                    {
+                      ifft_synth.render_partial (new_pstate[p].freq * unison_freq_factor[i] * portamento_stretch,
+                                                 new_pstate[p].mag,
+                                                 unison_new_phases[p * unison_voices + i]);
+                    }
+                }
+            }
+
+          ifft_synth.get_samples (&sine_samples[block_size / 2], IFFTSynth::ADD);
+        }
+      else
+        {
+          // copy the remaining samples of the last IFFT synthesis (if any), and zero out the rest
+          auto padding = pp_inter->get_min_padding();
+          std::copy_n (&sine_samples[block_size - padding], block_size / 2 + padding, &sine_samples[block_size / 2 - padding]);
+          zero_float_block (block_size / 2, &sine_samples[block_size]);
+        }
+      last_pstate = &new_pstate;
+
+      pos -= block_size / 2;
+      /* adjust remaining fractional position matching to new stretch */
+      pos *= old_portamento_stretch / portamento_stretch;
+
+      old_portamento_stretch = portamento_stretch;
+      assert (audio_block.noise.size() == noise_envelope.size());
+      std::copy_n (audio_block.noise.data(), noise_envelope.size(), noise_envelope.begin());
+    }
+  else
+    {
+      pos = 0;
+      if (done_state == DoneState::ACTIVE)
+        {
+          done_state = DoneState::ALMOST_DONE;
+          zero_float_block (block_size * 3 / 2, &sine_samples[0]);
+          zero_float_block (block_size / 2, &noise_samples[0]);
+        }
+    }
+  rt_memory_area->free_all();
+}
+
+void
+LiveDecoder::gen_noise()
+{
+  if (noise_enabled && done_state == DoneState::ACTIVE)
+    {
+      /* generate hann-windowed noise using IFFT */
+      noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANN, 1);
+      FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
+
+      /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
+      std::copy (&noise_samples[block_size / 2], &noise_samples[block_size], &noise_samples[0]);
+      Block::add (block_size / 2, &noise_samples[0], ifft_synth.fft_output() + block_size / 2);
+      std::copy (ifft_synth.fft_output(), ifft_synth.fft_output() + block_size / 2, &noise_samples[block_size / 2]);
+    }
+  else
+    {
+      zero_float_block (block_size / 2, &noise_samples[0]);
+    }
+  noise_index = 0;
+}
+
+size_t
+LiveDecoder::write_audio_out (size_t n_values, float *audio_out, const float *vib_freq_in)
+{
+  float last_vib = vib_freq_in[0];
+  bool  vib_freq_is_constant = true;
+  for (unsigned int v = 1; v < n_values; v++)
+    {
+      if (last_vib != vib_freq_in[v])
+        {
+          vib_freq_is_constant = false;
+          break;
+        }
+    }
+
+  const float delta = 1 / 2000.f;
+  const float vib_freq_factor = 1 / (current_freq * old_portamento_stretch);
+
+  int k = 0;
+  if (vib_freq_is_constant && std::abs (vib_freq_in[k] * vib_freq_factor - 1) < delta)
+    {
+      const int ipos = int (pos);
+      float frac = pos - ipos;
+
+      int todo = min ({ block_size / 2 - ipos, block_size / 2 - noise_index, n_values });
+      if (frac < delta)
+        {
+          /* replay speed is close to 1 and frac is small, so we don't need to interpolate at all */
+          const int sine_index = block_size / 2 + ipos;
+          Block::sum2 (todo, audio_out, &noise_samples[noise_index], &sine_samples[sine_index]);
+
+          k = todo;
+          pos += todo;
+        }
+      else
+        {
+          while (k < todo)
+            {
+              /* replay speed is close 1 and frac is not small: we need to interpolate because jumping from the
+               * interpolated stream to copying would introduce a phase jump - however, we increment pos
+               * a little less than requested to make make frac for the next sample a bit smaller, eventually
+               * allowing us to skip interpolation later
+               */
+              audio_out[k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
+              k++;
+
+              frac -= delta;
+              if (frac < 0)
+                frac = 0;
+
+              pos = int (pos) + 1 + frac;
+            }
+        }
+    }
+  else
+    {
+      const int todo = min (block_size / 2 - noise_index, n_values);
+      while (k < todo)
+        {
+          audio_out[k] = noise_samples[noise_index + k] + pp_inter->get_sample_no_check (&sine_samples[0], block_size / 2 + pos);
+          pos += vib_freq_in[k] * vib_freq_factor;
+          k++;
+
+          if (pos >= block_size / 2)
+            break;
+        }
+    }
+  noise_index += k;
+  env_pos += k;
+
+  return k;
+}
+
+void
+LiveDecoder::process_internal (size_t n_values, const float *freq_in, const float *vib_freq_in, float *audio_out)
 {
   assert (audio); // need selected (triggered) audio to use this function
 
@@ -301,341 +657,47 @@ LiveDecoder::process_internal (size_t n_values, float *audio_out, float portamen
       return;
     }
 
-  const double portamento_env_step = 1 / portamento_stretch;
   unsigned int i = 0;
   while (i < n_values)
     {
-      if (have_samples == 0)
-        {
-          double want_freq = current_freq;
+      if (pos >= block_size / 2)
+        gen_sines (freq_in[i]);
 
-          std::copy (&sse_samples[block_size / 2], &sse_samples[block_size], &sse_samples[0]);
-          zero_float_block (block_size / 2, &sse_samples[block_size / 2]);
+      if (noise_index == block_size / 2)
+        gen_noise();
 
-          if (get_loop_type() == Audio::LOOP_TIME_FORWARD)
-            {
-              size_t xenv_pos = env_pos;
-
-              if (xenv_pos > loop_start_scaled)
-                {
-                  xenv_pos = (xenv_pos - loop_start_scaled) % (loop_end_scaled - loop_start_scaled);
-                  xenv_pos += loop_start_scaled;
-                }
-              frame_idx = xenv_pos / frame_step;
-            }
-          else if (get_loop_type() == Audio::LOOP_FRAME_FORWARD || get_loop_type() == Audio::LOOP_FRAME_PING_PONG)
-            {
-              frame_idx = compute_loop_frame_index (env_pos / frame_step, audio);
-            }
-          else
-            {
-              frame_idx = env_pos / frame_step;
-              if (loop_point != -1 && frame_idx > size_t (loop_point)) /* if in loop mode: loop current frame */
-                frame_idx = loop_point;
-            }
-
-          RTAudioBlock audio_block (rt_memory_area);
-          bool         have_audio_block = false;
-          if (source)
-            {
-              have_audio_block = source->rt_audio_block (frame_idx, audio_block);
-            }
-          else if (frame_idx < audio->contents.size())
-            {
-              audio_block.assign (audio->contents[frame_idx]);
-              have_audio_block = true;
-            }
-          if (have_audio_block)
-            {
-              assert (audio_block.freqs.size() == audio_block.mags.size());
-
-              ifft_synth.clear_partials();
-
-              // point n_pstate to pstate[0] and pstate[1] alternately (one holds points to last state and the other points to new state)
-              bool lps_zero = (last_pstate == &pstate[0]);
-              vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
-              const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
-              vector<float>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
-              const vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
-
-              if (unison_voices != 1)
-                {
-                  // check unison phases size corresponds to old partial state size
-                  assert (unison_voices * old_pstate.size() == unison_old_phases.size());
-                }
-              new_pstate.clear();         // clear old partial state
-              unison_new_phases.clear();  // and old unison phase information
-
-              if (sines_enabled)
-                {
-                  const double phase_factor = block_size * M_PI / mix_freq;
-                  const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-                  const double filter_min_freq = filter_fact * mix_freq;
-
-                  size_t old_partial = 0;
-                  for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
-                    {
-                      const double freq = audio_block.freqs_f (partial) * want_freq;
-
-                      // anti alias filter:
-                      double mag         = audio_block.mags_f (partial);
-                      double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
-
-                      // portamento:
-                      //  - portamento_stretch > 1 means we read out faster
-                      //  => this means the aliasing starts at lower frequencies
-                      const double portamento_freq = freq * max (portamento_stretch, 1.0f);
-                      if (portamento_freq > filter_min_freq)
-                        {
-                          double norm_freq = portamento_freq / mix_freq;
-                          if (norm_freq > 0.5)
-                            {
-                              // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
-                              break;
-                            }
-                          else
-                            {
-                              // between filter_fact and 0.5 (db linear filter)
-                              int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
-                              if (index >= 0)
-                                {
-                                  if (index < ANTIALIAS_FILTER_TABLE_SIZE)
-                                    mag *= antialias_filter_table[index];
-                                  else
-                                    mag = 0;
-                                }
-                              else
-                                {
-                                  // filter magnitude is supposed to be 1.0
-                                }
-                            }
-                        }
-
-                      /*
-                       * increment old_partial as long as there is a better candidate (closer to freq)
-                       */
-                      bool freq_match = false;
-                      if (!old_pstate.empty())
-                        {
-                          double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
-
-                          while ((old_partial + 1) < old_pstate.size())
-                            {
-                              double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
-                              if (fdiff < best_fdiff)
-                                {
-                                  old_partial++;
-                                  best_fdiff = fdiff;
-                                }
-                              else
-                                {
-                                  break;
-                                }
-                            }
-                          const double lfreq = old_pstate[old_partial].freq;
-                          freq_match = fmatch (lfreq, freq);
-                        }
-                      if (DEBUG)
-                        printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
-
-                      if (unison_voices == 1)
-                        {
-                          if (freq_match)
-                            {
-                              // matching freq -> compute new phase
-                              const double lfreq = old_pstate[old_partial].freq;
-                              const double lphase = old_pstate[old_partial].phase;
-
-                              phase = truncate_phase (lphase + lfreq * phase_factor);
-
-                              if (DEBUG)
-                                printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
-                            }
-                          ifft_synth.render_partial (freq, mag, phase);
-                        }
-                      else
-                        {
-                          mag *= unison_gain;
-
-                          for (int i = 0; i < unison_voices; i++)
-                            {
-                              if (freq_match)
-                                {
-                                  const double lfreq = old_pstate[old_partial].freq;
-                                  const double lphase = unison_old_phases[old_partial * unison_voices + i];
-
-                                  phase = truncate_phase (lphase + lfreq * phase_factor * unison_freq_factor[i]);
-                                }
-                              else
-                                {
-                                  // randomize start phase for unison
-
-                                  phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
-                                }
-
-                              ifft_synth.render_partial (freq * unison_freq_factor[i], mag, phase);
-
-                              unison_new_phases.push_back (phase);
-                            }
-                        }
-
-                      PartialState ps;
-                      ps.freq = freq;
-                      ps.phase = phase;
-                      new_pstate.push_back (ps);
-                    }
-                }
-              last_pstate = &new_pstate;
-
-              if (noise_enabled)
-                noise_decoder.process (audio_block, ifft_synth.fft_buffer(), NoiseDecoder::FFT_SPECTRUM, portamento_stretch);
-
-              if (noise_enabled || sines_enabled || debug_fft_perf_enabled)
-                {
-                  float *samples = &sse_samples[0];
-                  ifft_synth.get_samples (samples, IFFTSynth::ADD);
-                }
-            }
-          else
-            {
-              if (done_state == DoneState::ACTIVE)
-                done_state = DoneState::ALMOST_DONE;
-            }
-          pos = 0;
-          have_samples = block_size / 2;
-          rt_memory_area->free_all();
-        }
-
-      g_assert (have_samples > 0);
       if (env_pos >= zero_values_at_start_scaled)
         {
-          // decode envelope
-          const double time_ms = env_pos * 1000.0 / mix_freq;
-          if (time_ms < audio->attack_start_ms)
-            {
-              audio_out[i++] = 0;
-              pos++;
-              env_pos += portamento_env_step;
-              have_samples--;
-            }
-          else if (time_ms < audio->attack_end_ms)
-            {
-              audio_out[i++] = sse_samples[pos] * (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
-              pos++;
-              env_pos += portamento_env_step;
-              have_samples--;
-            }
-          else // envelope is 1 -> copy data efficiently
-            {
-              size_t can_copy = min (have_samples, n_values - i);
+          /* note: need to assign time_ms before write_audio_out, because write_audio_out increments env_pos */
+          const double env_pos_to_ms = 1000.0 / mix_freq;
+          double time_ms = env_pos * env_pos_to_ms;
+          size_t end_i = i + write_audio_out (n_values - i, audio_out + i, vib_freq_in + i);
 
-              memcpy (audio_out + i, &sse_samples[pos], sizeof (float) * can_copy);
-              i += can_copy;
-              pos += can_copy;
-              env_pos += can_copy * portamento_env_step;
-              have_samples -= can_copy;
+          while (time_ms < audio->attack_end_ms && i < end_i)
+            {
+              // decode envelope
+              if (time_ms < audio->attack_start_ms)
+                {
+                  audio_out[i++] = 0;
+                }
+              else
+                {
+                  const double volume = (time_ms - audio->attack_start_ms) / (audio->attack_end_ms - audio->attack_start_ms);
+
+                  audio_out[i++] *= volume;
+                }
+              time_ms += env_pos_to_ms;
             }
+          i = end_i;
         }
       else
         {
           // skip sample
           pos++;
-          env_pos += portamento_env_step;
-          have_samples--;
+          env_pos++;
+          noise_index++;
         }
     }
-}
-
-static bool
-portamento_check (size_t n_values, const float *freq_in, float current_freq)
-{
-  /* if any value in freq_in differs from current_freq => need portamento */
-  for (size_t i = 0; i < n_values; i++)
-    {
-      if (fabs (freq_in[i] / current_freq - 1) > 0.0001) // very small frequency difference (less than one cent)
-        return true;
-    }
-
-  /* all freq_in[i] are (approximately) current_freq => no portamento */
-  return false;
-}
-
-void
-LiveDecoder::portamento_grow (double end_pos, float portamento_stretch)
-{
-  /* produce input samples until current_pos */
-  const int TODO = int (end_pos) + PortamentoState::DELTA - int (portamento_state.buffer.size());
-  if (TODO > 0)
-    {
-      const size_t START = portamento_state.buffer.size();
-
-      portamento_state.buffer.resize (portamento_state.buffer.size() + TODO);
-      process_internal (TODO, &portamento_state.buffer[START], portamento_stretch);
-    }
-  portamento_state.pos = end_pos;
-}
-
-void
-LiveDecoder::portamento_shrink()
-{
-  vector<float>& buffer = portamento_state.buffer;
-
-  /* avoid infinite state */
-  if (buffer.size() > 256)
-    {
-      const int shrink_buffer = buffer.size() - 2 * PortamentoState::DELTA; // only keep 2 * DELTA samples
-
-      buffer.erase (buffer.begin(), buffer.begin() + shrink_buffer);
-      portamento_state.pos -= shrink_buffer;
-    }
-}
-
-void
-LiveDecoder::process_portamento (size_t n_values, const float *freq_in, float *audio_out)
-{
-  assert (audio); // need selected (triggered) audio to use this function
-
-  const double start_pos = portamento_state.pos;
-  const vector<float>& buffer = portamento_state.buffer;
-
-  if (!portamento_state.active)
-    {
-      if (freq_in && portamento_check (n_values, freq_in, current_freq))
-        portamento_state.active = true;
-    }
-  if (portamento_state.active)
-    {
-      float fake_freq_in[n_values];
-      if (!freq_in)
-        {
-          std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
-          freq_in = fake_freq_in;
-        }
-
-      double pos[n_values], end_pos = start_pos, current_step = 1;
-
-      for (size_t i = 0; i < n_values; i++)
-        {
-          pos[i] = end_pos;
-
-          current_step = freq_in[i] / current_freq;
-          end_pos += current_step;
-        }
-      portamento_grow (end_pos, current_step);
-
-      /* interpolate from buffer (portamento) */
-      for (size_t i = 0; i < n_values; i++)
-        audio_out[i] = pp_inter->get_sample_no_check (buffer.data(), pos[i]);
-    }
-  else
-    {
-      /* no portamento: just compute & copy values */
-      portamento_grow (start_pos + n_values, 1);
-
-      const float *start = &buffer[sm_round_positive (start_pos)];
-      std::copy (start, start + n_values, audio_out);
-    }
-  portamento_shrink();
 }
 
 void
@@ -671,19 +733,25 @@ LiveDecoder::process_vibrato (size_t n_values, const float *freq_in, float *audi
     }
   vibrato_phase = fmod (vibrato_phase, 2 * M_PI);
 
-  process_portamento (n_values, vib_freq_in, audio_out);
+  process_internal (n_values, freq_in, vib_freq_in, audio_out);
 }
 
 void
 LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *audio_out, bool ramp)
 {
+  float fake_freq_in[n_values];
+  if (!freq_in)
+    {
+      std::fill (fake_freq_in, fake_freq_in + n_values, current_freq);
+      freq_in = fake_freq_in;
+    }
   if (vibrato_enabled)
     {
       process_vibrato (n_values, freq_in, audio_out);
     }
   else
     {
-      process_portamento (n_values, freq_in, audio_out);
+      process_internal (n_values, freq_in, freq_in, audio_out);
     }
 
   if (filter)
@@ -839,7 +907,7 @@ LiveDecoder::precompute_tables (float mix_freq)
   size_t block_size = NoiseDecoder::preferred_block_size (mix_freq);
 
   NoiseDecoder noise_decoder (mix_freq, block_size);
-  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
   noise_decoder.precompute_tables();
   ifft_synth.precompute_tables();

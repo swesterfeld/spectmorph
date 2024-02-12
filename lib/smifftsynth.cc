@@ -120,16 +120,6 @@ IFFTSynth::get_samples (float      *samples,
     }
 }
 
-double
-IFFTSynth::quantized_freq (double mf_freq)
-{
-  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
-  const double qfreq = freq256 * (1 / 256.0);
-  const double mf_qfreq = qfreq / block_size * mix_freq;
-
-  return mf_qfreq;
-}
-
 void
 IFFTSynth::precompute_tables()
 {

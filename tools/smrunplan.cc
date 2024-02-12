@@ -183,6 +183,7 @@ class Player
   Project         project;
   MorphPlan      *plan;
   MorphPlanSynth  synth;
+  RTMemoryArea    rt_memory_area;
 public:
   Player();
 
@@ -254,7 +255,6 @@ Player::compute_samples (vector<float>& samples)
 {
   double ppq_pos = 0;
   TimeInfoGenerator time_info_gen (voice->mix_freq());
-  RTMemoryArea rt_memory_area;
 
   uint64 audio_time_stamp = 0;
   const size_t STEP = 100;

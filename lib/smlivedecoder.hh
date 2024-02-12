@@ -24,17 +24,10 @@ class LiveDecoder
   struct PartialState
   {
     float freq;
+    float mag;
     float phase;
   };
   std::vector<PartialState> pstate[2], *last_pstate;
-
-  struct PortamentoState {
-    std::vector<float> buffer;
-    double             pos;
-    bool               active;
-
-    enum { DELTA = 32 };
-  } portamento_state;
 
   WavSet             *smset;
   Audio              *audio;
@@ -63,16 +56,20 @@ class LiveDecoder
   float               current_freq;
   float               mix_freq;
 
-  size_t              have_samples;
-  size_t              pos;
+  size_t              noise_index;
+  double              pos;
   double              env_pos;
   size_t              frame_idx;
   double              original_sample_pos;
   double              original_samples_norm_factor;
+  float               old_portamento_stretch;
 
   int                 noise_seed;
 
-  AlignedArray<float,16> sse_samples;
+  AlignedArray<float,16> sine_samples;
+  AlignedArray<float,16> noise_samples;
+
+  std::array<uint16_t, Audio::N_NOISE_BANDS> noise_envelope;
 
   // unison
   int                 unison_voices;
@@ -103,16 +100,15 @@ class LiveDecoder
 
   Audio::LoopType     get_loop_type();
 
+  void   gen_sines (float freq);
+  void   gen_noise();
+  size_t write_audio_out (size_t n_values, float *audio_out, const float *vib_freq_in);
+
   void process_internal (size_t       n_values,
-                         float       *audio_out,
-                         float        portamento_stretch);
+                         const float *freq_in,
+                         const float *vib_freq_in,
+                         float       *audio_out);
 
-  void portamento_grow (double end_pos, float portamento_stretch);
-  void portamento_shrink();
-
-  void process_portamento (size_t       n_values,
-                           const float *freq_in,
-                           float       *audio_out);
   void process_vibrato (size_t       n_values,
                         const float *freq_in,
                         float       *audio_out);

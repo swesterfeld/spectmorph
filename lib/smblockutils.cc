@@ -5,30 +5,6 @@
 using namespace SpectMorph;
 
 void
-Block::add (guint           n_values,
-            float          *ovalues,
-            const float    *ivalues)
-{
-  // auto vectorization for simple cases is quite good these days,
-  // so we don't provide an SSE intrinsics implementation
-
-  for (guint i = 0; i < n_values; i++)
-    ovalues[i] += ivalues[i];
-}
-
-void
-Block::mul (guint           n_values,
-            float          *ovalues,
-            const float    *ivalues)
-{
-  // auto vectorization for simple cases is quite good these days,
-  // so we don't provide an SSE intrinsics implementation
-
-  for (guint i = 0; i < n_values; i++)
-    ovalues[i] *= ivalues[i];
-}
-
-void
 Block::range (guint           n_values,
               const float    *ivalues,
               float&          min_value,

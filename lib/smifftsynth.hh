@@ -34,7 +34,7 @@ class IFFTSynth
   static std::vector<float> sin_table;
 
 public:
-  enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANNING };
+  enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANN };
   enum OutputMode { REPLACE, ADD };
 
   IFFTSynth (size_t block_size, double mix_freq, WindowType win_type);
@@ -47,16 +47,22 @@ public:
   }
 
   float*
-  fft_buffer()
+  fft_input()
   {
     return fft_in;
+  }
+
+  float*
+  fft_output()
+  {
+    return fft_out;
   }
 
   inline void render_partial (double freq, double mag, double phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
   void precompute_tables();
 
-  double quantized_freq (double freq);
+  inline double quantized_freq (double freq);
 };
 
 struct IFFTSynthTable
@@ -66,6 +72,9 @@ struct IFFTSynthTable
   float             *win_scale;
 };
 
+/*
+ * phase can be in range [-2*pi..2*pi]
+ */
 inline void
 IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 {
@@ -80,8 +89,10 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
 
   // rotation for initial phase; scaling for magnitude
 
-  /* the following block computes sincos (phase + phase_adjust) */
-  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)));
+  /* the following block computes sincos (phase + phase_adjust)
+   *  - we add 2 * SIN_TABLE_SIZE here to support negative phases
+   */
+  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)) + 2 * SIN_TABLE_SIZE);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
@@ -135,6 +146,16 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
             }
         }
     }
+}
+
+inline double
+IFFTSynth::quantized_freq (double mf_freq)
+{
+  const int freq256 = sm_round_positive (mf_freq * freq256_factor);
+  const double qfreq = freq256 * (1 / 256.0);
+  const double mf_qfreq = qfreq / block_size * mix_freq;
+
+  return mf_qfreq;
 }
 
 }

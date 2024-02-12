@@ -9,7 +9,7 @@ SMRESVALUE = $(srcdir)/smresvalue.sh
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
-        sinsignal.py smresvalue.sh tune-test.sh test-norm.sh
+        sinsignal.py smresvalue.sh tune-test.sh test-norm.sh test-porta.sh hilbert.py
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
@@ -175,7 +175,7 @@ testcurve_SOURCES = testcurve.cc
 testcurve_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
-       TXT-sin100-test TXT-sin140-test tune-test test-norm
+       TXT-sin100-test TXT-sin140-test tune-test test-norm test-porta
 
 saw440-test:
 	@$(SMRESVALUE) saw440.wav 3000 24000 44100 440
@@ -220,3 +220,6 @@ tune-test:
 
 test-norm:
 	$(top_srcdir)/tests/test-norm.sh
+
+test-porta:
+	$(top_srcdir)/tests/test-porta.sh

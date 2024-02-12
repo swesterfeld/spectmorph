@@ -23,16 +23,12 @@ main (int argc, char **argv)
 
   AudioBlock audio_block;
   NoiseDecoder noise_dec (mix_freq, block_size);
-  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
   Random    random;
 
   random.set_seed (42);
-  for (int i = 0; i < 32; i++)
+  for (size_t i = 0; i < Audio::N_NOISE_BANDS; i++)
     audio_block.noise.push_back (sm_factor2idb (random.random_double_range (0.1, 1.0)));
-
-  RTMemoryArea rt_memory_area;
-  RTAudioBlock rt_audio_block (&rt_memory_area);
-  rt_audio_block.assign (audio_block);
 
   const int RUNS = 20000, REPS = 13;
 
@@ -50,7 +46,7 @@ main (int argc, char **argv)
           for (int r = 0; r < RUNS; r++)
             {
               ifft_synth.clear_partials();
-              noise_dec.process (rt_audio_block, ifft_synth.fft_buffer(), spect ? NoiseDecoder::FFT_SPECTRUM : NoiseDecoder::DEBUG_NO_OUTPUT);
+              noise_dec.process (audio_block.noise.data(), ifft_synth.fft_input(), spect ? NoiseDecoder::ADD_SPECTRUM_BH92 : NoiseDecoder::DEBUG_NO_OUTPUT);
               if (ifft)
                 ifft_synth.get_samples (samples.data());
             }

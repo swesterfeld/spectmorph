@@ -87,7 +87,7 @@ SineDecoder::process (const AudioBlock& block,
       const size_t block_size = frame_size;
 
       if (!ifft_synth)
-        ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+        ifft_synth = new IFFTSynth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
       ifft_synth->clear_partials();
       for (size_t i = 0; i < block.freqs.size(); i++)

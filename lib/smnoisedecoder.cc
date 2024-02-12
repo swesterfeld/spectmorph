@@ -75,18 +75,17 @@ NoiseDecoder::set_seed (int seed)
  * \param audio_block   AudioBlock to be decoded
  */
 void
-NoiseDecoder::process (const RTAudioBlock& audio_block,
+NoiseDecoder::process (const uint16_t     *noise_envelope,
                        float              *samples,
                        OutputMode          output_mode,
                        float               portamento_stretch)
 {
-  assert (noise_band_partition.n_bands() == audio_block.noise.size());
   assert (noise_band_partition.n_spectrum_bins() == block_size + 2);
 
   const double Eww = 0.375; // expected value of the energy of the window
   const double norm = mix_freq / (Eww * block_size);
 
-  noise_band_partition.noise_envelope_to_spectrum (random_gen, audio_block.noise, interpolated_spectrum, sqrt (norm) / 2);
+  noise_band_partition.noise_envelope_to_spectrum (random_gen, noise_envelope, interpolated_spectrum, sqrt (norm) / 2);
 
   if (portamento_stretch > 1.01) // avoid aliasing during portamento
     {
@@ -96,9 +95,13 @@ NoiseDecoder::process (const RTAudioBlock& audio_block,
     }
 
   interpolated_spectrum[1] = interpolated_spectrum[block_size];
-  if (output_mode == FFT_SPECTRUM)
+  if (output_mode == ADD_SPECTRUM_BH92)
     {
-      apply_window (interpolated_spectrum, samples);
+      apply_window_bh92 (interpolated_spectrum, samples);
+    }
+  else if (output_mode == SET_SPECTRUM_HANN)
+    {
+      apply_window_hann_overwrite (interpolated_spectrum, samples);
     }
   else if (output_mode == DEBUG_UNWINDOWED)
     {
@@ -203,7 +206,7 @@ NoiseDecoder::make_k_array()
 }
 
 void
-NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
+NoiseDecoder::apply_window_bh92 (float *spectrum, float *fft_buffer)
 {
   float *expand_in = spectrum - 8;
 
@@ -349,4 +352,39 @@ NoiseDecoder::apply_window (float *spectrum, float *fft_buffer)
       spectrum[1] = spectrum[block_size];
       Block::add (block_size, fft_buffer, spectrum);
     }
+}
+
+void
+NoiseDecoder::apply_window_hann_overwrite (float *spectrum, float *fft_buffer)
+{
+  float *expand_in = spectrum - 8;
+
+  // BS
+  expand_in[8 + block_size] = spectrum[1];
+  expand_in[9 + block_size] = 0;
+  // BS+1
+  expand_in[10 + block_size] = spectrum[block_size - 2];
+  expand_in[11 + block_size] = -spectrum[block_size - 1];
+
+  // 0
+  expand_in[8] = spectrum[0];
+  expand_in[9] = 0;
+  // -1
+  expand_in[6] = spectrum[2];
+  expand_in[7] = -spectrum[3];
+
+  const float K0 = 0.5;   // a0
+  const float K1 = 0.25;  // a1 / 2
+
+  for (size_t i = 8; i < block_size + 2 + 8; i += 2)
+    {
+      float out_re = K0 * expand_in[i];
+      float out_im = K0 * expand_in[i + 1];
+
+      out_re += K1 * (expand_in[i - 2] + expand_in[i + 2]);
+      out_im += K1 * (expand_in[i - 1] + expand_in[i + 3]);
+      fft_buffer[i-8] = out_re;
+      fft_buffer[i-7] = out_im;
+    }
+  fft_buffer[1] = fft_buffer[block_size];
 }

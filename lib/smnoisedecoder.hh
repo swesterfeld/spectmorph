@@ -24,7 +24,8 @@ class NoiseDecoder
   Random random_gen;
   NoiseBandPartition noise_band_partition;
 
-  void apply_window (float *spectrum, float *fft_buffer);
+  void apply_window_bh92 (float *spectrum, float *fft_buffer);
+  void apply_window_hann_overwrite (float *spectrum, float *fft_buffer);
   static float *make_k_array();
 
 public:
@@ -32,10 +33,10 @@ public:
                 size_t block_size);
   ~NoiseDecoder();
 
-  enum OutputMode { REPLACE, ADD, FFT_SPECTRUM, DEBUG_UNWINDOWED, DEBUG_NO_OUTPUT };
+  enum OutputMode { REPLACE, ADD, ADD_SPECTRUM_BH92, SET_SPECTRUM_HANN, DEBUG_UNWINDOWED, DEBUG_NO_OUTPUT };
 
   void set_seed (int seed);
-  void process (const RTAudioBlock& audio_block,
+  void process (const uint16_t *noise_envelope,
                 float *samples,
                 OutputMode output_mode = REPLACE,
                 float portamento_stretch = 1.0);

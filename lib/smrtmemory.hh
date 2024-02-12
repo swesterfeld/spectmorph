@@ -104,6 +104,11 @@ public:
   {
     return m_size;
   }
+  T *
+  data() const
+  {
+    return m_start;
+  }
   void
   set_capacity (size_t capacity)
   {

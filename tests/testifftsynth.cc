@@ -7,6 +7,7 @@
 #include "smmain.hh"
 #include "smfft.hh"
 #include "smutils.hh"
+#include "smpandaresampler.hh"
 
 #include <stdio.h>
 #include <assert.h>
@@ -36,7 +37,7 @@ perf_test()
   vector<float> samples (block_size);
   vector<float> window (block_size);
 
-  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
   vector<double> freq_mag_phase;
 
@@ -153,7 +154,7 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   max_diff = 0;
   for (size_t i = 0; i < block_size; i++)
     {
-      max_diff = max (max_diff, double (samples[i]) - aligned_decoded_sines[i] * window[i]);
+      max_diff = max (max_diff, std::abs (double (samples[i]) - aligned_decoded_sines[i] * window[i]));
       //printf ("%zd %.17g %.17g\n", i, samples[i], aligned_decoded_sines[i] * window[i]);
     }
   if (verbose)
@@ -163,6 +164,33 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   if (frequency_diff)
     *frequency_diff = fabs (freq - vsparams.freq); // frequency diff due to quantization
 }
+
+void
+test_negative_phase()
+{
+  const double mix_freq = 48000;
+  const size_t block_size = 1024;
+
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92);
+
+  vector<float> samples1 (block_size);
+  vector<float> samples2 (block_size);
+
+  synth.clear_partials();
+  synth.render_partial (440, 1, 0.33);
+  synth.get_samples (&samples1[0]);
+
+  synth.clear_partials();
+  synth.render_partial (440, 1, -2 * M_PI + 0.33);
+  synth.get_samples (&samples2[0]);
+
+  double max_diff = 0;
+  for (size_t i = 0; i < block_size; i++)
+    max_diff = max (max_diff, std::abs (double (samples1[i]) - samples2[i]));
+  sm_printf ("# test_negative_phase: %.17g\n", max_diff);
+  assert (max_diff < 1e-8);
+}
+
 
 void
 test_accs()
@@ -248,7 +276,7 @@ test_spect()
 
   LiveDecoder live_decoder (&source, mix_freq);
   RTMemoryArea rt_memory_area;
-  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
   freq = synth.quantized_freq (freq);
   live_decoder.retrigger (0, freq, 127);
 
@@ -317,7 +345,7 @@ test_phase()
 }
 
 void
-test_portamento()
+test_portamento (bool expected)
 {
   const double mix_freq = 48000;
 
@@ -347,10 +375,164 @@ test_portamento()
     }
 
   vector<float> samples (freq_in.size());
-  live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+  if (expected) // expected result: sin wave
+    {
+      double phase = 0;
+      for (size_t i = 0; i < samples.size(); i++)
+        {
+          samples[i] = sin (phase);
+          phase += 2 * M_PI * freq_in[i] / 48000;
+        }
+    }
+  else // actual result using live decoder
+    {
+      live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+    }
 
-  for (auto s : samples)
-    sm_printf ("%f\n", s);
+  for (size_t i = 0; i < samples.size(); i++)
+    {
+      int dist_start = i;
+      int dist_end = samples.size() - i;
+      int dist = min (dist_start, dist_end);
+      /* fade at the boundaries */
+      double vol = min (dist / 4800., 1.);
+      sm_printf ("%f\n", samples[i] * vol);
+    }
+}
+
+void
+test_portaslide (bool verbose)
+{
+  const double mix_freq = 48000;
+
+  AudioBlock audio_block;
+
+  push_partial_f (audio_block, 1, 1, 0.9);
+
+  ConstBlockSource source (audio_block, mix_freq);
+
+  RTMemoryArea rt_memory_area;
+  LiveDecoder live_decoder (&source, mix_freq);
+  live_decoder.enable_noise (false);
+
+  const double test_freq = 120;
+  double freq = test_freq;
+  live_decoder.retrigger (0, freq, 127);
+
+  vector<float> freq_in (5 * mix_freq);
+  for (size_t i = 0; i < freq_in.size(); i++)
+    {
+      freq_in[i] = freq;
+      if (i > mix_freq && freq < 20000)
+        freq *= pow (2, 1. / 9000); //2.0 / mix_freq);
+    }
+
+  vector<float> samples (freq_in.size());
+  live_decoder.process (rt_memory_area, samples.size(), freq_in.data(), samples.data());
+#if 0
+  double phase = 0;
+  for (size_t i = 0; i < samples.size(); i++)
+    {
+      samples[i] = sin (phase);
+      phase += 2 * M_PI * freq_in[i] / 48000;
+    }
+#endif
+
+  // upsample factor 2
+  using namespace PandaResampler;
+  Resampler2 r2 (Resampler2::UP, 2, Resampler2::PREC_144DB);
+  vector<float> up_samples (samples.size() * 2);
+  r2.process_block (samples.data(), samples.size(), up_samples.data());
+
+  auto pp_inter = PolyPhaseInter::the();
+
+  vector<float> rsamples, rfreqs;
+  double pos = 0;
+  while (pos < samples.size())
+    {
+      int ipos = pos;
+      rsamples.push_back (pp_inter->get_sample (up_samples, pos * 2));
+      rfreqs.push_back (freq_in[ipos]);
+      pos += test_freq / freq_in[ipos];
+    }
+
+  float db_side_low = -96, db_side_high = -96;
+  float db_main_range_min = 96;
+  float db_main_range_max = -96;
+  for (float dest_freq = 110; dest_freq < 18000; dest_freq *= 1.01)
+    {
+      const size_t fft_size = 1024 * 16;
+      size_t start = fft_size * 5;
+      while (start + fft_size < rsamples.size() && rfreqs[start] < dest_freq)
+        start++;
+
+      double ww = 0;
+      vector<float> wsig;
+      for (size_t i = 0; i < fft_size; i++)
+        {
+          double win = window_blackman_harris_92 (2.0 * i / fft_size - 1.0);
+          wsig.push_back (win * rsamples[start + i]);
+          ww += win;
+        }
+
+#if 0
+      for (size_t i = 0; i < fft_size; i++)
+        sm_printf ("%zd %f\n", i, wsig[i]);
+#endif
+
+      float *spect = FFT::new_array_float (fft_size);
+      FFT::fftar_float (fft_size, &wsig[0], spect);
+
+      int main_lobe = 0;
+      float db_max = -96;
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          double db = db_from_factor (sqrt (re * re + im * im) / ww * 2, -96);
+          if (db > db_max)
+            {
+              main_lobe = d;
+              db_max = db;
+            }
+        }
+      float db_side = -96;
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          double db = db_from_factor (sqrt (re * re + im * im) / ww * 2, -96);
+          int delta = std::abs (main_lobe - int (d)) / 2;
+          if (delta > 4 && db > db_side) // blackman harris window has 9 bins main lobe width
+            db_side = db;
+        }
+      if (verbose)
+        sm_printf ("%f %f %f\n", dest_freq, db_max, db_side);
+      if (dest_freq < 16000)
+        {
+          db_side_low = max (db_side_low, db_side);
+        }
+      else
+        db_side_high = max (db_side_high, db_side);
+      db_main_range_min = min (db_main_range_min, db_max);
+      db_main_range_max = max (db_main_range_max, db_max);
+#if 0
+      for (size_t d = 0; d < fft_size; d += 2)
+        {
+          double re = spect[d];
+          double im = spect[d+1];
+          sm_printf ("%f %.17g\n", (d * mix_freq / 2.0) / fft_size, sqrt (re * re + im * im) / ww * 2);
+        }
+#endif
+      FFT::free_array_float (spect);
+    }
+  sm_printf ("# Portamento: db_side_low   = %f\n", db_side_low);
+  sm_printf ("# Portamento: db_side_high  = %f\n", db_side_high);
+  sm_printf ("# Portamento: db_main_range = %f .. %f\n", db_main_range_min, db_main_range_max);
+  assert (db_side_low < -71);
+  assert (db_side_high < -55);
+  assert (db_main_range_min > -0.19);
+  assert (db_main_range_max < 0);
 }
 
 void
@@ -432,7 +614,20 @@ main (int argc, char **argv)
     }
   if (argc == 2 && strcmp (argv[1], "portamento") == 0)
     {
-      test_portamento();
+      test_portamento (false);
+      return 0;
+    }
+  if (argc == 2 && strcmp (argv[1], "portamento_sin") == 0)
+    {
+      test_portamento (true);
+      return 0;
+    }
+  /*
+   * generate a sine sweep over all frequencies to test portamento interpolation quality
+   */
+  if (argc == 2 && strcmp (argv[1], "portaslide") == 0)
+    {
+      test_portaslide (true);
       return 0;
     }
   const bool verbose = (argc == 2 && strcmp (argv[1], "verbose") == 0);
@@ -454,4 +649,7 @@ main (int argc, char **argv)
   printf ("# IFFTSynth: max_freq_diff = %.17g\n", max_freq_diff);
   assert (max_output_diff < 9e-5);
   assert (max_freq_diff < 0.1);
+
+  test_portaslide (false);
+  test_negative_phase();
 }
