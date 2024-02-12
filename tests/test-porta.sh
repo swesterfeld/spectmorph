@@ -29,7 +29,7 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
     adiff = max(adiff, abs($3 - $7));
   }
   END {
-    if (fdiff > 0.1 && fdiff < 0.7 && adiff > 0.0001 && adiff < 0.0015)
+    if (fdiff > 0.1 && fdiff < 0.609 && adiff > 0.0001 && adiff < 0.0012)
       result = "OK";
     else
       result = "FAIL";
@@ -37,8 +37,8 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
     print result, fdiff, adiff;
   }'
 )
-echo $DIFFS | grep FAIL && exit 1
-echo $DIFFS
+echo $DIFFS | grep FAIL && die "portamento test failed"
+echo $DIFFS | grep OK || die "portamento test failed"
 
 rm test-porta-live.txt test-porta-live-h.txt test-porta-sin.txt test-porta-sin-h.txt
 
