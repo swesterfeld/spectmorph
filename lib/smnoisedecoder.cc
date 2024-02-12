@@ -99,9 +99,9 @@ NoiseDecoder::process (const uint16_t     *noise_envelope,
     {
       apply_window_bh92 (interpolated_spectrum, samples);
     }
-  else if (output_mode == SET_SPECTRUM_HANNING)
+  else if (output_mode == SET_SPECTRUM_HANN)
     {
-      apply_window_hanning_overwrite (interpolated_spectrum, samples);
+      apply_window_hann_overwrite (interpolated_spectrum, samples);
     }
   else if (output_mode == DEBUG_UNWINDOWED)
     {
@@ -355,7 +355,7 @@ NoiseDecoder::apply_window_bh92 (float *spectrum, float *fft_buffer)
 }
 
 void
-NoiseDecoder::apply_window_hanning_overwrite (float *spectrum, float *fft_buffer)
+NoiseDecoder::apply_window_hann_overwrite (float *spectrum, float *fft_buffer)
 {
   float *expand_in = spectrum - 8;
 

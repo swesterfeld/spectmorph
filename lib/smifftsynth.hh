@@ -34,7 +34,7 @@ class IFFTSynth
   static std::vector<float> sin_table;
 
 public:
-  enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANNING };
+  enum WindowType { WIN_BLACKMAN_HARRIS_92, WIN_HANN };
   enum OutputMode { REPLACE, ADD };
 
   IFFTSynth (size_t block_size, double mix_freq, WindowType win_type);

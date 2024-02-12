@@ -64,7 +64,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   smset (NULL),
   audio (NULL),
   block_size (NoiseDecoder::preferred_block_size (mix_freq)),
-  ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING),
+  ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN),
   noise_decoder (mix_freq, block_size),
   source (NULL),
   sines_enabled (true),
@@ -516,7 +516,7 @@ LiveDecoder::gen_noise()
   if (noise_enabled && done_state == DoneState::ACTIVE)
     {
       /* generate hann-windowed noise using IFFT */
-      noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANNING, 1);
+      noise_decoder.process (noise_envelope.data(), ifft_synth.fft_input(), NoiseDecoder::SET_SPECTRUM_HANN, 1);
       FFT::fftsr_destructive_float (block_size, ifft_synth.fft_input(), ifft_synth.fft_output());
 
       /* perform overlap-add (in the IFFT output, the first and second half of the windowed noise signal is swapped) */
@@ -907,7 +907,7 @@ LiveDecoder::precompute_tables (float mix_freq)
   size_t block_size = NoiseDecoder::preferred_block_size (mix_freq);
 
   NoiseDecoder noise_decoder (mix_freq, block_size);
-  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANNING);
+  IFFTSynth ifft_synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
   noise_decoder.precompute_tables();
   ifft_synth.precompute_tables();
