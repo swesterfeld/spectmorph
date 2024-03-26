@@ -7,6 +7,8 @@
 #include "smmorphwavsource.hh"
 #include "smmicroconf.hh"
 
+#include <unistd.h>
+
 using namespace SpectMorph;
 
 using std::vector;
