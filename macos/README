@@ -14,3 +14,8 @@ Finally: edit macos/sdk-options.sh
 $ cd macos
 $ ./build-deps.sh
 $ ./build.sh
+
+Build cross compiled version:
+
+$ cd macos
+$ ./clean-rebuild.sh # nodeps
