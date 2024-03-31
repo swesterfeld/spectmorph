@@ -14,6 +14,11 @@ public:
   virtual void retrigger (int channel, float freq, int midi_velocity) = 0;
   virtual Audio *audio() = 0;
   virtual bool rt_audio_block (size_t index, RTAudioBlock& rt_audio_block) = 0;
+  virtual void
+  set_portamento_freq (float freq)
+  {
+    /* should be reimplemented by non-trivial sources */
+  }
   virtual ~LiveDecoderSource();
 };
 
