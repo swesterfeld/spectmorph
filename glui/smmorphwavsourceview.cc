@@ -51,6 +51,12 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   // POSITION
   pv_position = add_property_view (MorphWavSource::P_POSITION, op_layout);
 
+  // FORMANT CORRECT
+  add_property_view (MorphWavSource::P_FORMANT_CORRECT, op_layout);
+  add_property_view (MorphWavSource::P_FUZZY_RESYNTH, op_layout);
+  add_property_view (MorphWavSource::P_MAX_FUZZY_RESYNTH, op_layout);
+  add_property_view (MorphWavSource::P_FUZZY_RESYNTH_FREQ, op_layout);
+
   update_visible();
 
   instrument_label->set_x (0);
