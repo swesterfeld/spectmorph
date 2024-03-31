@@ -1416,6 +1416,10 @@ Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
   if (killed ("sort"))
     return false;
 
+  estimate_spectral_envelope();
+  if (killed ("spectral_envelope"))
+    return false;
+
   return true;
 }
 
@@ -1423,7 +1427,7 @@ string
 Encoder::version() // changes if encoder algorithm changed (for cache invalidation)
 {
   string version = PACKAGE_VERSION;
-  version += "-2023-07-26";
+  version += "-2024-03-24";
   return version;
 }
 
@@ -1499,6 +1503,61 @@ convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
     inoise[i] = sm_factor2idb (noise[i]);
 }
 
+static void
+convert_env (const EncoderBlock& eblock, AudioBlock& ablock)
+{
+  ablock.env.clear();
+  for (size_t i = 0; i < eblock.env.size(); i++)
+    ablock.env.push_back (sm_factor2idb (eblock.env[i]));
+
+  ablock.env_f0 = eblock.env_f0;
+}
+
+void
+Encoder::estimate_spectral_envelope()
+{
+  const auto mix_freq = enc_params.mix_freq;
+  const auto block_size = enc_params.block_size;
+  const auto zeropad = enc_params.zeropad;
+  // figure out normalization for window
+  double window_weight = 0;
+  for (size_t i = 0; i < enc_params.frame_size; i++)
+    window_weight += enc_params.window[i];
+  const double window_scale = 2.0 / window_weight;
+
+  for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
+    {
+      double fundamental;
+
+      {
+        /* this is a bit hacky because fundamental frequency estimation is
+         * implemented on AudioBlock, but we only have an EncoderBlock at this
+         * point - to we convert freqs/mags to an audio block and throw the
+         * block away after fundamental frequency estimation */
+        AudioBlock ablock;
+        convert_freqs_mags_phases (*ai, ablock, enc_params);
+        fundamental = ablock.estimate_fundamental (3);
+      }
+
+      ai->env_f0 = fundamental;
+      vector<float> senv;
+      for (size_t i = 0; i < ai->original_fft.size(); i += 2)
+        {
+          double re = ai->original_fft[i];
+          double im = ai->original_fft[i + 1];
+          double mag = sqrt (re * re + im * im) * window_scale;
+          double bin_freq = i * mix_freq / 2 / block_size / zeropad;
+          double rfreq = bin_freq / enc_params.fundamental_freq / fundamental;
+          int rifreq = sm_round_positive (rfreq);
+          if (rifreq >= int (senv.size()))
+            senv.resize (rifreq + 1);
+          if (mag > senv[rifreq])
+            senv[rifreq] = mag;
+        }
+      ai->env = senv;
+    }
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -1533,6 +1592,7 @@ Encoder::save_as_audio()
       AudioBlock block;
       convert_freqs_mags_phases (*ai, block, enc_params);
       convert_noise (ai->noise, block.noise);
+      convert_env (*ai, block);
       block.original_fft = ai->original_fft;
       block.debug_samples = ai->debug_samples;
       audio->contents.push_back (block);
