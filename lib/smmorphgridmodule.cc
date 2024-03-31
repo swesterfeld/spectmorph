@@ -90,6 +90,28 @@ MorphGridModule::MySource::retrigger (int channel, float freq, int midi_velocity
     }
 }
 
+void
+MorphGridModule::MySource::set_portamento_freq (float freq)
+{
+  for (int x = 0; x < module->cfg->width; x++)
+    {
+      for (int y = 0; y < module->cfg->height; y++)
+        {
+          InputNode& node = module->input_nodes (x, y);
+
+          if (node.mod && node.mod->source())
+            {
+              node.mod->source()->set_portamento_freq (freq);
+            }
+          if (node.has_source)
+            {
+              node.source.set_portamento_freq (freq);
+            }
+        }
+    }
+}
+
+
 Audio*
 MorphGridModule::MySource::audio()
 {
