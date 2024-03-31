@@ -87,6 +87,22 @@ MorphLinearModule::MySource::retrigger (int channel, float freq, int midi_veloci
     }
 }
 
+void
+MorphLinearModule::MySource::set_portamento_freq (float freq)
+{
+  if (module->left_mod && module->left_mod->source())
+    module->left_mod->source()->set_portamento_freq (freq);
+
+  if (module->right_mod && module->right_mod->source())
+    module->right_mod->source()->set_portamento_freq (freq);
+
+  if (module->have_left_source)
+    module->left_source.set_portamento_freq (freq);
+
+  if (module->have_right_source)
+    module->right_source.set_portamento_freq (freq);
+}
+
 Audio*
 MorphLinearModule::MySource::audio()
 {
