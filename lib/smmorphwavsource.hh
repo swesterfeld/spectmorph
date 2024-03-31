@@ -23,16 +23,30 @@ public:
     PLAY_MODE_STANDARD        = 1,
     PLAY_MODE_CUSTOM_POSITION = 2
   };
+  enum FormantCorrection {
+    FORMANT_REPITCH = 1,
+    FORMANT_SPECTRAL = 2,
+    FORMANT_ENVELOPE = 3,
+    FORMANT_RESYNTH = 4
+  };
   struct Config : public MorphOperatorConfig
   {
     Project          *project = nullptr;
 
     int               object_id = 0;
-    PlayMode          play_mode             = PLAY_MODE_STANDARD;
+    PlayMode          play_mode = PLAY_MODE_STANDARD;
     ModulationData    position_mod;
+    FormantCorrection formant_correct = FORMANT_REPITCH;
+    float             fuzzy_resynth;
+    float             max_fuzzy_resynth;
+    float             fuzzy_resynth_freq;
   };
   static constexpr auto P_PLAY_MODE = "play_mode";
   static constexpr auto P_POSITION  = "position";
+  static constexpr auto P_FORMANT_CORRECT  = "formant_correct";
+  static constexpr auto P_FUZZY_RESYNTH  = "fuzzy_resynth";
+  static constexpr auto P_MAX_FUZZY_RESYNTH  = "max_fuzzy_resynth";
+  static constexpr auto P_FUZZY_RESYNTH_FREQ  = "fuzzy_resynth_freq";
 
   static constexpr auto USER_BANK = "User";
 protected:

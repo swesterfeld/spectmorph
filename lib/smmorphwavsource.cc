@@ -28,6 +28,18 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   auto position = add_property (&m_config.position_mod, P_POSITION, "Position", "%.1f %%", 50, 0, 100);
   position->modulation_list()->set_compat_type_and_op ("position_control_type", "position_op");
 
+  EnumInfo formant_correct_enum_info (
+    {
+      { FORMANT_REPITCH, "Repitch" },
+      { FORMANT_SPECTRAL, "Spectral" },
+      { FORMANT_ENVELOPE, "Envelope" },
+      { FORMANT_RESYNTH, "Resynth" }
+    });
+  add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECT, "Formants", FORMANT_REPITCH, formant_correct_enum_info);
+  add_property (&m_config.fuzzy_resynth, P_FUZZY_RESYNTH, "Fuzzy Resynth", "%.3f Cent", 1, 0, 30);
+  add_property (&m_config.max_fuzzy_resynth, P_MAX_FUZZY_RESYNTH, "Fuzzy Max", "%.3f Cent", 50, 0, 200);
+  add_property_log (&m_config.fuzzy_resynth_freq, P_FUZZY_RESYNTH_FREQ, "Fuzzy Freq", "%.1f Hz", 10, 1, 100);
+
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
   connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
   connect (user_instrument_index->signal_bank_removed, this, &MorphWavSource::on_bank_removed);
