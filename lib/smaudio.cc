@@ -144,6 +144,13 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
               else
                 printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
             }
+          else if (section == "frame")
+            {
+              if (ifile.event_name() == "env_f0")
+                audio_block->env_f0 = ifile.event_float();
+              else
+                printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
+            }
           else
             assert (false);
         }
@@ -205,6 +212,10 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else if (ifile.event_name() == "phases")
             {
               audio_block->phases = ib;
+            }
+          else if (ifile.event_name() == "env")
+            {
+              audio_block->env = ib;
             }
           else if (ifile.event_name() == "noise")
             {
@@ -300,6 +311,8 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.write_uint16_block ("freqs", contents[i].freqs);
       of.write_uint16_block ("mags", contents[i].mags);
       of.write_uint16_block ("phases", contents[i].phases);
+      of.write_uint16_block ("env", contents[i].env);
+      of.write_float ("env_f0", contents[i].env_f0);
       of.write_float_block ("original_fft", contents[i].original_fft);
       of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();

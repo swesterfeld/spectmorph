@@ -31,6 +31,8 @@ public:
   std::vector<uint16_t> freqs;       //!< frequencies of the sine components of this frame
   std::vector<uint16_t> mags;        //!< magnitudes of the sine components
   std::vector<uint16_t> phases;      //!< phases of the sine components
+  std::vector<uint16_t> env;         //!< spectral envelope for formant correction
+  float                 env_f0 = 1;  //!< fundamental frequency of the spectral envelope
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 
@@ -54,6 +56,12 @@ public:
   {
     const double factor = 2.0 * M_PI / 65536.0;
     return phases[i] * factor;
+  }
+
+  double
+  env_f (size_t i) const
+  {
+    return sm_idb2factor (env[i]);
   }
 
   double
