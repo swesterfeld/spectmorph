@@ -80,6 +80,10 @@ main (int argc, char **argv)
             {
               midi_synth.set_control_input (i, d);
             }
+          else if (script_parser.command ("pitch_expression", ch, i, d))
+            {
+              midi_synth.add_pitch_expression_event (0, d, ch, i);
+            }
           else
             {
               script_parser.die_if_unknown();
