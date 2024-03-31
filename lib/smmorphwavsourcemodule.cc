@@ -15,8 +15,163 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::max;
+using std::min;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSourceModule");
+
+void
+VoiceSource::set_ratio (double ratio)
+{
+  m_ratio = ratio;
+}
+
+void
+VoiceSource::retrigger()
+{
+  gen_detune_factors (detune_factors);
+  gen_detune_factors (next_detune_factors);
+}
+
+void
+VoiceSource::gen_detune_factors (vector<float>& factors)
+{
+  factors.resize (400);
+  for (int i = 1; i < 400; i++)
+    {
+      double fuzzy_high = pow (2, fuzzy_resynth / 1200);
+      double fuzzy_low = 1 / fuzzy_high;
+      double fuzzy_high_bound = 1 + (pow (2, max_fuzzy_resynth / 1200) - 1) / i;
+      double fuzzy_low_bound = 1 / fuzzy_high_bound;
+
+      factors[i] = detune_random.random_double_range (max (fuzzy_low, fuzzy_low_bound), min (fuzzy_high, fuzzy_high_bound));
+    }
+}
+
+void
+VoiceSource::advance (double time_ms)
+{
+  fuzzy_frac += 0.001 * time_ms * fuzzy_resynth_freq;
+}
+
+void
+VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
+{
+  AudioBlock block (in_block);
+  vector<float> bin_freq (FFT_SIZE, -1);
+  vector<int>   bin_index (FFT_SIZE, -1);
+  vector<float> bin_mag (FFT_SIZE);
+
+  // minimize frequency assignment error for vibrato (and other input with detuned blocks)
+  const double tune_factor = 1.0 / block.estimate_fundamental (3);
+
+  /* compute energy before formant correction */
+  double e1 = 0;
+  for (size_t i = 0; i < block.mags.size(); i++)
+    {
+      double mag = block.mags_f (i);
+      e1 += mag * mag;
+    }
+  if (mode == MorphWavSource::FORMANT_SPECTRAL)
+    {
+      for (size_t i = 0; i < block.freqs.size(); i++)
+        {
+          float freq = block.freqs_f (i) * tune_factor;
+          float mag  = block.mags_f (i);
+          int   ifreq = sm_round_positive (freq);
+          if (ifreq > 0 && ifreq < FFT_SIZE / 2 && mag > bin_mag[ifreq])
+            {
+              bin_mag[ifreq] = mag;
+              bin_index[ifreq] = i;
+              bin_freq[ifreq] = freq;
+            }
+        }
+      for (size_t i = 0; i < block.freqs.size(); i++)
+        {
+          if (bin_index[i] >= 0)
+            {
+              double p = bin_freq[i] * m_ratio;
+              int ip = p;
+              double frac = p - ip;
+              auto bmag = [&] (int i) {
+                if (i > 0 && i < int (bin_mag.size()))
+                  return bin_mag[i];
+                return 0.0f;
+              };
+              double new_mag  = bmag (ip) * (1 - frac) + bmag (ip + 1) * frac;
+              block.mags[bin_index[i]] = sm_factor2idb (new_mag);
+            }
+        }
+    }
+  else if (mode == MorphWavSource::FORMANT_ENVELOPE)
+    {
+      const double e_tune_factor = 1 / block.env_f0;
+
+      static int F = 0;
+      for (size_t i = 0; i < block.freqs.size(); i++)
+        {
+          auto emag = [&] (int i) {
+            if (i > 0 && i < int (block.env.size()))
+              return block.env_f (i);
+            return 0.0;
+          };
+          auto emag_inter  = [&] (double p) {
+            int ip = p;
+            double frac = p - ip;
+            return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
+          };
+          double freq = block.freqs_f (i) * e_tune_factor;
+          double old_env_mag = emag_inter (freq);
+          double new_env_mag = emag_inter (freq * m_ratio);
+          sm_printf ("%d %.17g %.17g\n", F, freq, block.mags_f (i));
+          if (freq < 0.5)
+            block.mags[i] = block.mags_f (i) * 0.0001;
+          else
+            block.mags[i] = sm_factor2idb (block.mags_f (i) / old_env_mag * new_env_mag);
+        }
+      F++;
+    }
+  else if (mode == MorphWavSource::FORMANT_RESYNTH)
+    {
+      block.mags.clear();
+      block.freqs.clear();
+      double ff = 1 / tune_factor;
+      if (fuzzy_frac > 1)
+        {
+          detune_factors.swap (next_detune_factors);
+          gen_detune_factors (next_detune_factors);
+          fuzzy_frac -= int (fuzzy_frac);
+        }
+      for (int i = 1; i < 400; i++)
+        {
+          auto emag = [&] (int i) {
+            if (i > 0 && i < int (block.env.size()))
+              return block.env_f (i);
+            return 0.0;
+          };
+          auto emag_inter  = [&] (double p) {
+            int ip = p;
+            double frac = p - ip;
+            return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
+          };
+          block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
+          block.mags.push_back (sm_factor2idb (emag_inter (i * m_ratio)));
+        }
+    }
+  /* compute energy after formant correction */
+  double e2 = 0;
+  for (size_t i = 0; i < block.mags.size(); i++)
+    {
+      double mag = block.mags_f (i);
+      e2 += mag * mag;
+    }
+  /* normalize block energy */
+  // TODO: are the thresholds good enough?
+  const double threshold = 1e-9;
+  double norm = (e2 > threshold && e2 > threshold) ? sqrt (e1 / e2) : 1;
+  for (size_t i = 0; i < block.mags.size(); i++)
+    block.mags[i] = sm_factor2idb (block.mags_f (i) * norm);
+  out_block.assign (block);
+}
 
 void
 MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity)
@@ -45,6 +200,11 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
         }
     }
   active_audio = best_audio;
+  if (best_audio)
+    {
+      voice_source.set_ratio (freq / best_audio->fundamental_freq);
+      voice_source.retrigger();
+    }
 }
 
 Audio*
@@ -85,13 +245,27 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
     }
   if (active_audio && index < active_audio->contents.size())
     {
-      out_block.assign (active_audio->contents[index]);
+      if (module->cfg->formant_correct == MorphWavSource::FORMANT_REPITCH)
+        out_block.assign (active_audio->contents[index]);
+      else
+        {
+          voice_source.advance (module->time_info().time_ms - last_time_ms);
+          last_time_ms = module->time_info().time_ms;
+          voice_source.process_block (active_audio->contents[index], out_block);
+        }
       return true;
     }
   else
     {
       return false;
     }
+}
+
+void
+MorphWavSourceModule::InstrumentSource::update_voice_source (const MorphWavSource::Config *config)
+{
+  voice_source.set_mode (config->formant_correct);
+  voice_source.set_fuzzy_resynth (config->fuzzy_resynth, config->max_fuzzy_resynth, config->fuzzy_resynth_freq);
 }
 
 void
@@ -130,4 +304,5 @@ MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
   cfg = dynamic_cast<const MorphWavSource::Config *> (op_cfg);
 
   my_source.update_project_and_object_id (cfg->project, cfg->object_id);
+  my_source.update_voice_source (cfg);
 }
