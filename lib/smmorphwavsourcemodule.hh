@@ -53,7 +53,9 @@ public:
   void
   set_fuzzy_resynth (float new_fuzzy_resynth, float new_max_fuzzy_resynth, float new_fuzzy_resynth_freq)
   {
-    fuzzy_resynth = new_fuzzy_resynth;
+    /* non-linear mapping from percent to cent: allow better control for small cent values */
+    double f = new_fuzzy_resynth * 0.01;
+    fuzzy_resynth = (f + 2 * f * f) * 16 / 3;
     max_fuzzy_resynth = new_max_fuzzy_resynth;
     fuzzy_resynth_freq = new_fuzzy_resynth_freq;
   }
