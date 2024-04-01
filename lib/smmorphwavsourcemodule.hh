@@ -7,7 +7,6 @@
 #include "smwavset.hh"
 #include "smproject.hh"
 #include "smmorphwavsource.hh"
-#include "smfft.hh"
 #include <memory>
 
 namespace SpectMorph
@@ -16,12 +15,8 @@ namespace SpectMorph
 class MorphWavSourceModule;
 
 struct VoiceSource {
-  int FFT_SIZE = 0;
   double m_ratio = 0;
   int max_partials = 0;
-  float *fft_freqs = nullptr;
-  float *new_fft_freqs = nullptr;
-  float *fft_samples = nullptr;
   // FIXME: default
   MorphWavSource::FormantCorrection mode;
   float fuzzy_resynth = 0;
@@ -31,19 +26,6 @@ struct VoiceSource {
   void gen_detune_factors (std::vector<float>& factors);
   Random detune_random;
 public:
-  VoiceSource(int fs) :
-    FFT_SIZE (fs),
-    fft_freqs (FFT::new_array_float (FFT_SIZE)),
-    new_fft_freqs (FFT::new_array_float (FFT_SIZE)),
-    fft_samples (FFT::new_array_float (FFT_SIZE))
-  {
-  }
-  ~VoiceSource()
-  {
-    FFT::free_array_float (fft_freqs);
-    FFT::free_array_float (new_fft_freqs);
-    FFT::free_array_float (fft_samples);
-  }
   void
   set_mode (MorphWavSource::FormantCorrection new_mode)
   {
@@ -81,10 +63,6 @@ class MorphWavSourceModule : public MorphOperatorModule
   public:
     MorphWavSourceModule   *module = nullptr;
 
-    InstrumentSource() :
-      voice_source (512)
-    {
-    }
     void
     set_portamento_freq (float freq) override
     {

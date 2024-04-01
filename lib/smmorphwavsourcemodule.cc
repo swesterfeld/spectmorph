@@ -59,12 +59,6 @@ void
 VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
 {
   AudioBlock block (in_block);
-  vector<float> bin_freq (FFT_SIZE, -1);
-  vector<int>   bin_index (FFT_SIZE, -1);
-  vector<float> bin_mag (FFT_SIZE);
-
-  // minimize frequency assignment error for vibrato (and other input with detuned blocks)
-  const double tune_factor = 1.0 / block.estimate_fundamental (3);
 
   /* compute energy before formant correction */
   double e1 = 0;
@@ -75,6 +69,14 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
     }
   if (mode == MorphWavSource::FORMANT_SPECTRAL)
     {
+      const int FFT_SIZE = 1024;
+      vector<float> bin_freq (FFT_SIZE, -1);
+      vector<int>   bin_index (FFT_SIZE, -1);
+      vector<float> bin_mag (FFT_SIZE);
+
+      // minimize frequency assignment error for vibrato (and other input with detuned blocks)
+      const double tune_factor = 1.0 / block.estimate_fundamental (3);
+
       for (size_t i = 0; i < block.freqs.size(); i++)
         {
           float freq = block.freqs_f (i) * tune_factor;
@@ -134,7 +136,7 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
     {
       block.mags.clear();
       block.freqs.clear();
-      double ff = 1 / tune_factor;
+      double ff = block.env_f0;
       if (fuzzy_frac > 1)
         {
           detune_factors.swap (next_detune_factors);
