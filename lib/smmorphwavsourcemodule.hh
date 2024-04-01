@@ -18,6 +18,7 @@ class MorphWavSourceModule;
 struct VoiceSource {
   int FFT_SIZE = 0;
   double m_ratio = 0;
+  int max_partials = 0;
   float *fft_freqs = nullptr;
   float *new_fft_freqs = nullptr;
   float *fft_samples = nullptr;
@@ -54,6 +55,11 @@ public:
     /* non-linear mapping from percent to cent: allow better control for small cent values */
     double f = new_fuzzy_resynth * 0.01;
     fuzzy_resynth = (f + 2 * f * f) * 16 / 3;
+  }
+  void
+  set_max_partials (int new_max_partials)
+  {
+    max_partials = new_max_partials;
   }
   void advance (double time_ms);
   void retrigger();

@@ -155,6 +155,8 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
           };
           block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
           block.mags.push_back (sm_factor2idb (emag_inter (i * m_ratio)));
+          if (i * m_ratio > max_partials)
+            break;
         }
     }
   /* compute energy after formant correction */
@@ -203,6 +205,7 @@ MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int 
   if (best_audio)
     {
       voice_source.set_ratio (freq / best_audio->fundamental_freq);
+      voice_source.set_max_partials (24000 / best_audio->fundamental_freq);
       voice_source.retrigger();
     }
 }
