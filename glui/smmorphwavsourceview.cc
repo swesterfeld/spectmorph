@@ -52,10 +52,10 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   pv_position = add_property_view (MorphWavSource::P_POSITION, op_layout);
 
   // FORMANT CORRECT
-  add_property_view (MorphWavSource::P_FORMANT_CORRECT, op_layout);
-  add_property_view (MorphWavSource::P_FUZZY_RESYNTH, op_layout);
-  add_property_view (MorphWavSource::P_MAX_FUZZY_RESYNTH, op_layout);
-  add_property_view (MorphWavSource::P_FUZZY_RESYNTH_FREQ, op_layout);
+  auto pv_formant_correct = add_property_view (MorphWavSource::P_FORMANT_CORRECT, op_layout);
+  prop_formant_correct = pv_formant_correct->property();
+  connect (prop_formant_correct->signal_value_changed, this, &MorphWavSourceView::update_visible);
+  pv_fuzzy_resynth = add_property_view (MorphWavSource::P_FUZZY_RESYNTH, op_layout);
 
   update_visible();
 
@@ -277,6 +277,9 @@ MorphWavSourceView::update_visible()
 {
   bool custom_position = (prop_play_mode->get() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION);
   pv_position->set_visible (custom_position);
+
+  bool resynth = (prop_formant_correct->get() == MorphWavSource::FORMANT_RESYNTH);
+  pv_fuzzy_resynth->set_visible (resynth);
 
   op_layout.activate();
   signal_size_changed();

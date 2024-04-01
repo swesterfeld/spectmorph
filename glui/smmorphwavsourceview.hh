@@ -26,8 +26,10 @@ class MorphWavSourceView : public MorphOperatorView
   UserInstrumentIndex *user_instrument_index = nullptr;
   std::unique_ptr<Instrument> edit_instrument; // temporary copy used for editing
 
-  Property         *prop_play_mode;
-  PropertyView     *pv_position;
+  Property         *prop_play_mode = nullptr;
+  PropertyView     *pv_position = nullptr;
+  Property         *prop_formant_correct = nullptr;
+  PropertyView     *pv_fuzzy_resynth = nullptr;
   OperatorLayout    op_layout;
 
   void on_edit();
