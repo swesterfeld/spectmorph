@@ -38,8 +38,6 @@ public:
     ModulationData    position_mod;
     FormantCorrection formant_correct = FORMANT_REPITCH;
     float             fuzzy_resynth;
-    float             max_fuzzy_resynth;
-    float             fuzzy_resynth_freq;
   };
   static constexpr auto P_PLAY_MODE = "play_mode";
   static constexpr auto P_POSITION  = "position";

@@ -35,6 +35,7 @@ VoiceSource::retrigger()
 void
 VoiceSource::gen_detune_factors (vector<float>& factors)
 {
+  const double max_fuzzy_resynth = 50; // cent
   factors.resize (400);
   for (int i = 1; i < 400; i++)
     {
@@ -50,6 +51,7 @@ VoiceSource::gen_detune_factors (vector<float>& factors)
 void
 VoiceSource::advance (double time_ms)
 {
+  const double fuzzy_resynth_freq = detune_random.random_double_range (6, 10); // Hz
   fuzzy_frac += 0.001 * time_ms * fuzzy_resynth_freq;
 }
 
@@ -265,7 +267,7 @@ void
 MorphWavSourceModule::InstrumentSource::update_voice_source (const MorphWavSource::Config *config)
 {
   voice_source.set_mode (config->formant_correct);
-  voice_source.set_fuzzy_resynth (config->fuzzy_resynth, config->max_fuzzy_resynth, config->fuzzy_resynth_freq);
+  voice_source.set_fuzzy_resynth (config->fuzzy_resynth);
 }
 
 void

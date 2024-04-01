@@ -37,8 +37,6 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
     });
   add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECT, "Formants", FORMANT_REPITCH, formant_correct_enum_info);
   add_property (&m_config.fuzzy_resynth, P_FUZZY_RESYNTH, "Fuzzy Resynth", "%.1f %%", 20, 0, 100);
-  add_property (&m_config.max_fuzzy_resynth, P_MAX_FUZZY_RESYNTH, "Fuzzy Max", "%.3f Cent", 50, 0, 200);
-  add_property_log (&m_config.fuzzy_resynth_freq, P_FUZZY_RESYNTH_FREQ, "Fuzzy Freq", "%.1f Hz", 8, 1, 100);
 
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
   connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
