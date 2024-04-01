@@ -58,29 +58,29 @@ VoiceSource::advance (double time_ms)
 void
 VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
 {
-  AudioBlock block (in_block);
-
   /* compute energy before formant correction */
   double e1 = 0;
-  for (size_t i = 0; i < block.mags.size(); i++)
+  for (size_t i = 0; i < in_block.mags.size(); i++)
     {
-      double mag = block.mags_f (i);
+      double mag = in_block.mags_f (i);
       e1 += mag * mag;
     }
   if (mode == MorphWavSource::FORMANT_SPECTRAL)
     {
+      out_block.assign (in_block);
+
       const int FFT_SIZE = 1024;
       vector<float> bin_freq (FFT_SIZE, -1);
       vector<int>   bin_index (FFT_SIZE, -1);
       vector<float> bin_mag (FFT_SIZE);
 
       // minimize frequency assignment error for vibrato (and other input with detuned blocks)
-      const double tune_factor = 1.0 / block.estimate_fundamental (3);
+      const double tune_factor = 1.0 / in_block.env_f0;
 
-      for (size_t i = 0; i < block.freqs.size(); i++)
+      for (size_t i = 0; i < out_block.freqs.size(); i++)
         {
-          float freq = block.freqs_f (i) * tune_factor;
-          float mag  = block.mags_f (i);
+          float freq = out_block.freqs_f (i) * tune_factor;
+          float mag  = out_block.mags_f (i);
           int   ifreq = sm_round_positive (freq);
           if (ifreq > 0 && ifreq < FFT_SIZE / 2 && mag > bin_mag[ifreq])
             {
@@ -89,7 +89,7 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
               bin_freq[ifreq] = freq;
             }
         }
-      for (size_t i = 0; i < block.freqs.size(); i++)
+      for (size_t i = 0; i < out_block.freqs.size(); i++)
         {
           if (bin_index[i] >= 0)
             {
@@ -102,19 +102,20 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
                 return 0.0f;
               };
               double new_mag  = bmag (ip) * (1 - frac) + bmag (ip + 1) * frac;
-              block.mags[bin_index[i]] = sm_factor2idb (new_mag);
+              out_block.mags[bin_index[i]] = sm_factor2idb (new_mag);
             }
         }
     }
   else if (mode == MorphWavSource::FORMANT_ENVELOPE)
     {
-      const double e_tune_factor = 1 / block.env_f0;
+      const double e_tune_factor = 1 / in_block.env_f0;
 
-      for (size_t i = 0; i < block.freqs.size(); i++)
+      out_block.assign (in_block);
+      for (size_t i = 0; i < out_block.freqs.size(); i++)
         {
           auto emag = [&] (int i) {
-            if (i > 0 && i < int (block.env.size()))
-              return block.env_f (i);
+            if (i > 0 && i < int (in_block.env.size()))
+              return in_block.env_f (i);
             return 0.0;
           };
           auto emag_inter  = [&] (double p) {
@@ -122,21 +123,22 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
             double frac = p - ip;
             return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
           };
-          double freq = block.freqs_f (i) * e_tune_factor;
+          double freq = out_block.freqs_f (i) * e_tune_factor;
           double old_env_mag = emag_inter (freq);
           double new_env_mag = emag_inter (freq * m_ratio);
 
           if (freq < 0.5)
-            block.mags[i] = block.mags_f (i) * 0.0001;
+            out_block.mags[i] = sm_factor2idb (in_block.mags_f (i) * 0.0001);
           else
-            block.mags[i] = sm_factor2idb (block.mags_f (i) / old_env_mag * new_env_mag);
+            out_block.mags[i] = sm_factor2idb (in_block.mags_f (i) / old_env_mag * new_env_mag);
         }
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
-      block.mags.clear();
-      block.freqs.clear();
-      double ff = block.env_f0;
+      out_block.mags.set_capacity (400);
+      out_block.freqs.set_capacity (400);
+      out_block.noise.assign (in_block.noise);
+      double ff = in_block.env_f0;
       if (fuzzy_frac > 1)
         {
           detune_factors.swap (next_detune_factors);
@@ -146,8 +148,8 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
       for (int i = 1; i < 400; i++)
         {
           auto emag = [&] (int i) {
-            if (i > 0 && i < int (block.env.size()))
-              return block.env_f (i);
+            if (i > 0 && i < int (in_block.env.size()))
+              return in_block.env_f (i);
             return 0.0;
           };
           auto emag_inter  = [&] (double p) {
@@ -155,26 +157,25 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
             double frac = p - ip;
             return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
           };
-          block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
-          block.mags.push_back (sm_factor2idb (emag_inter (i * m_ratio)));
+          out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
+          out_block.mags.push_back (sm_factor2idb (emag_inter (i * m_ratio)));
           if (i * m_ratio > max_partials)
             break;
         }
     }
   /* compute energy after formant correction */
   double e2 = 0;
-  for (size_t i = 0; i < block.mags.size(); i++)
+  for (size_t i = 0; i < out_block.mags.size(); i++)
     {
-      double mag = block.mags_f (i);
+      double mag = out_block.mags_f (i);
       e2 += mag * mag;
     }
   /* normalize block energy */
   // TODO: are the thresholds good enough?
   const double threshold = 1e-9;
   double norm = (e2 > threshold && e2 > threshold) ? sqrt (e1 / e2) : 1;
-  for (size_t i = 0; i < block.mags.size(); i++)
-    block.mags[i] = sm_factor2idb (block.mags_f (i) * norm);
-  out_block.assign (block);
+  for (size_t i = 0; i < out_block.mags.size(); i++)
+    out_block.mags[i] = sm_factor2idb (out_block.mags_f (i) * norm);
 }
 
 void

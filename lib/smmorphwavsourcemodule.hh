@@ -14,7 +14,7 @@ namespace SpectMorph
 
 class MorphWavSourceModule;
 
-struct VoiceSource {
+class VoiceSource {
   double m_ratio = 0;
   int max_partials = 0;
   // FIXME: default
@@ -26,6 +26,11 @@ struct VoiceSource {
   void gen_detune_factors (std::vector<float>& factors);
   Random detune_random;
 public:
+  VoiceSource()
+  {
+    detune_factors.reserve (400);
+    next_detune_factors.reserve (400);
+  }
   void
   set_mode (MorphWavSource::FormantCorrection new_mode)
   {
