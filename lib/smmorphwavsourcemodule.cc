@@ -108,7 +108,6 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
     {
       const double e_tune_factor = 1 / block.env_f0;
 
-      static int F = 0;
       for (size_t i = 0; i < block.freqs.size(); i++)
         {
           auto emag = [&] (int i) {
@@ -124,13 +123,12 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
           double freq = block.freqs_f (i) * e_tune_factor;
           double old_env_mag = emag_inter (freq);
           double new_env_mag = emag_inter (freq * m_ratio);
-          sm_printf ("%d %.17g %.17g\n", F, freq, block.mags_f (i));
+
           if (freq < 0.5)
             block.mags[i] = block.mags_f (i) * 0.0001;
           else
             block.mags[i] = sm_factor2idb (block.mags_f (i) / old_env_mag * new_env_mag);
         }
-      F++;
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
