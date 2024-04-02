@@ -58,45 +58,70 @@ VoiceSource::advance (double time_ms)
 void
 VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
 {
-  /* compute energy before formant correction */
-  double e1 = 0;
-  for (size_t i = 0; i < in_block.mags.size(); i++)
-    {
-      double mag = in_block.mags_f (i);
-      e1 += mag * mag;
-    }
+  auto emag = [&] (int i) {
+    if (i > 0 && i < int (in_block.env.size()))
+      return in_block.env_f (i);
+    return 0.0;
+  };
+  auto emag_inter = [&] (double p) {
+    int ip = p;
+    double frac = p - ip;
+    return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
+  };
+  auto set_mags = [&] (double *mags, size_t mags_count) {
+    /* compute energy before formant correction */
+    double e1 = 0;
+    for (size_t i = 0; i < in_block.mags.size(); i++)
+      {
+        double mag = in_block.mags_f (i);
+        e1 += mag * mag;
+      }
+    /* compute energy after formant correction */
+    double e2 = 0;
+    for (size_t i = 0; i < mags_count; i++)
+      {
+        double mag = mags[i];
+        e2 += mag * mag;
+      }
+
+    const double threshold = 1e-9;
+    double norm = (e2 > threshold) ? sqrt (e1 / e2) : 1;
+
+    /* generate normalized block mags */
+    assert (out_block.freqs.size() == mags_count);
+    out_block.mags.set_capacity (mags_count);
+    for (size_t i = 0; i < mags_count; i++)
+      {
+        out_block.mags.push_back (sm_factor2idb (mags[i] * norm));
+      }
+  };
+  out_block.noise.assign (in_block.noise);
   if (mode == MorphWavSource::FORMANT_ENVELOPE)
     {
-      const double e_tune_factor = 1 / in_block.env_f0;
+      out_block.freqs.assign (in_block.freqs);
 
-      out_block.assign (in_block);
+      const double e_tune_factor = 1 / in_block.env_f0;
+      double mags[out_block.freqs.size()];
+
       for (size_t i = 0; i < out_block.freqs.size(); i++)
         {
-          auto emag = [&] (int i) {
-            if (i > 0 && i < int (in_block.env.size()))
-              return in_block.env_f (i);
-            return 0.0;
-          };
-          auto emag_inter  = [&] (double p) {
-            int ip = p;
-            double frac = p - ip;
-            return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
-          };
           double freq = out_block.freqs_f (i) * e_tune_factor;
           double old_env_mag = emag_inter (freq);
           double new_env_mag = emag_inter (freq * m_ratio);
 
           if (freq < 0.5)
-            out_block.mags[i] = sm_factor2idb (in_block.mags_f (i) * 0.0001);
+            mags[i] = in_block.mags_f (i) * 0.0001;
           else
-            out_block.mags[i] = sm_factor2idb (in_block.mags_f (i) / old_env_mag * new_env_mag);
+            mags[i] = in_block.mags_f (i) / old_env_mag * new_env_mag;
         }
+      set_mags (mags, in_block.mags.size());
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
-      out_block.mags.set_capacity (400);
       out_block.freqs.set_capacity (400);
-      out_block.noise.assign (in_block.noise);
+      double mags[400];
+      size_t mags_count = 0;
+
       double ff = in_block.env_f0;
       if (fuzzy_frac > 1)
         {
@@ -106,35 +131,17 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
         }
       for (int i = 1; i < 400; i++)
         {
-          auto emag = [&] (int i) {
-            if (i > 0 && i < int (in_block.env.size()))
-              return in_block.env_f (i);
-            return 0.0;
-          };
-          auto emag_inter  = [&] (double p) {
-            int ip = p;
-            double frac = p - ip;
-            return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
-          };
           out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
-          out_block.mags.push_back (sm_factor2idb (emag_inter (i * m_ratio)));
+          mags[mags_count++] = emag_inter (i * m_ratio);
           if (i * m_ratio > max_partials)
             break;
         }
+      set_mags (mags, mags_count);
     }
-  /* compute energy after formant correction */
-  double e2 = 0;
-  for (size_t i = 0; i < out_block.mags.size(); i++)
+  else
     {
-      double mag = out_block.mags_f (i);
-      e2 += mag * mag;
+      g_assert_not_reached();
     }
-  /* normalize block energy */
-  // TODO: are the thresholds good enough?
-  const double threshold = 1e-9;
-  double norm = (e2 > threshold && e2 > threshold) ? sqrt (e1 / e2) : 1;
-  for (size_t i = 0; i < out_block.mags.size(); i++)
-    out_block.mags[i] = sm_factor2idb (out_block.mags_f (i) * norm);
 }
 
 void
