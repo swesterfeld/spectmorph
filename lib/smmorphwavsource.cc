@@ -31,7 +31,6 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   EnumInfo formant_correct_enum_info (
     {
       { FORMANT_REPITCH, "Repitch" },
-      { FORMANT_SPECTRAL, "Spectral" },
       { FORMANT_ENVELOPE, "Envelope" },
       { FORMANT_RESYNTH, "Resynth" }
     });

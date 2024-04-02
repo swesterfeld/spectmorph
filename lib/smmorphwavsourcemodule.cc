@@ -65,48 +65,7 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
       double mag = in_block.mags_f (i);
       e1 += mag * mag;
     }
-  if (mode == MorphWavSource::FORMANT_SPECTRAL)
-    {
-      out_block.assign (in_block);
-
-      const int FFT_SIZE = 1024;
-      vector<float> bin_freq (FFT_SIZE, -1);
-      vector<int>   bin_index (FFT_SIZE, -1);
-      vector<float> bin_mag (FFT_SIZE);
-
-      // minimize frequency assignment error for vibrato (and other input with detuned blocks)
-      const double tune_factor = 1.0 / in_block.env_f0;
-
-      for (size_t i = 0; i < out_block.freqs.size(); i++)
-        {
-          float freq = out_block.freqs_f (i) * tune_factor;
-          float mag  = out_block.mags_f (i);
-          int   ifreq = sm_round_positive (freq);
-          if (ifreq > 0 && ifreq < FFT_SIZE / 2 && mag > bin_mag[ifreq])
-            {
-              bin_mag[ifreq] = mag;
-              bin_index[ifreq] = i;
-              bin_freq[ifreq] = freq;
-            }
-        }
-      for (size_t i = 0; i < out_block.freqs.size(); i++)
-        {
-          if (bin_index[i] >= 0)
-            {
-              double p = bin_freq[i] * m_ratio;
-              int ip = p;
-              double frac = p - ip;
-              auto bmag = [&] (int i) {
-                if (i > 0 && i < int (bin_mag.size()))
-                  return bin_mag[i];
-                return 0.0f;
-              };
-              double new_mag  = bmag (ip) * (1 - frac) + bmag (ip + 1) * frac;
-              out_block.mags[bin_index[i]] = sm_factor2idb (new_mag);
-            }
-        }
-    }
-  else if (mode == MorphWavSource::FORMANT_ENVELOPE)
+  if (mode == MorphWavSource::FORMANT_ENVELOPE)
     {
       const double e_tune_factor = 1 / in_block.env_f0;
 

@@ -25,9 +25,8 @@ public:
   };
   enum FormantCorrection {
     FORMANT_REPITCH = 1,
-    FORMANT_SPECTRAL = 2,
-    FORMANT_ENVELOPE = 3,
-    FORMANT_RESYNTH = 4
+    FORMANT_ENVELOPE = 2,
+    FORMANT_RESYNTH = 3
   };
   struct Config : public MorphOperatorConfig
   {
