@@ -98,14 +98,15 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
   out_block.noise.assign (in_block.noise);
   if (mode == MorphWavSource::FORMANT_ENVELOPE)
     {
-      out_block.freqs.assign (in_block.freqs);
-
+      out_block.freqs.set_capacity (in_block.freqs.size());
       const double e_tune_factor = 1 / in_block.env_f0;
-      double mags[out_block.freqs.size()];
+      double mags[in_block.freqs.size()];
 
-      for (size_t i = 0; i < out_block.freqs.size(); i++)
+      for (size_t i = 0; i < in_block.freqs.size(); i++)
         {
-          double freq = out_block.freqs_f (i) * e_tune_factor;
+          out_block.freqs.push_back (in_block.freqs[i]);
+
+          double freq = in_block.freqs_f (i) * e_tune_factor;
           double old_env_mag = emag_inter (freq);
           double new_env_mag = emag_inter (freq * m_ratio);
 
@@ -113,8 +114,11 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
             mags[i] = in_block.mags_f (i) * 0.0001;
           else
             mags[i] = in_block.mags_f (i) / old_env_mag * new_env_mag;
+
+          if (freq * m_ratio > max_partials)
+            break;
         }
-      set_mags (mags, in_block.mags.size());
+      set_mags (mags, out_block.freqs.size());
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
