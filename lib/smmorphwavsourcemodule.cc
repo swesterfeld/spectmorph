@@ -122,8 +122,9 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
-      out_block.freqs.set_capacity (400);
-      double mags[400];
+      int partials = std::min (sm_round_positive (max_partials / m_ratio) + 1, 400);
+      out_block.freqs.set_capacity (partials);
+      double mags[partials];
       size_t mags_count = 0;
 
       double ff = in_block.env_f0;
@@ -140,12 +141,10 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
       if (next_detune_factors.empty())
         gen_detune_factors (next_detune_factors);
 
-      for (int i = 1; i < 400; i++)
+      for (int i = 1; i < partials; i++)
         {
           out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
           mags[mags_count++] = emag_inter (i * m_ratio);
-          if (i * m_ratio > max_partials)
-            break;
         }
       set_mags (mags, mags_count);
     }
