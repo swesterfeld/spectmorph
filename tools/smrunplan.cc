@@ -31,6 +31,7 @@ struct Options
   vector<double>      fade_env;
   bool                quiet;
   bool                perf;
+  bool                perf_note_on = false;
   bool                normalize;
   double              gain;
   int                 rate;
@@ -129,6 +130,10 @@ Options::parse (int   *argc_p,
         {
           perf = true;
         }
+      else if (check_arg (argc, argv, &i, "--perf-note-on"))
+        {
+          perf_note_on = true;
+        }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
           gain = sm_atof (opt_arg);
@@ -163,6 +168,7 @@ Options::print_usage ()
   printf (" -e, --fade-env <envelope>   fade morphing according to envelope\n");
   printf (" -n, --normalize             normalize output samples\n");
   printf (" -p, --perf                  run performance test\n");
+  printf (" --perf-note-on              run note on performance test\n");
   printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
@@ -343,6 +349,28 @@ main (int argc, char **argv)
       const double ns_per_sec = 1e9;
       sm_printf ("%6.2f ns/sample\n", (end - start) * ns_per_sec / (RUNS * samples.size()));
       sm_printf ("%6.2f bogo-voices\n", double (RUNS * samples.size()) / options.rate / (end - start));
+
+      return 0;
+    }
+  else if (options.perf_note_on)
+    {
+      samples.resize (64);
+      player.compute_samples (samples); // warmup
+
+      double start = get_time();
+
+      const size_t RUNS = 100000;
+      for (size_t i = 0; i < RUNS; i++)
+        {
+          player.retrigger();
+          player.compute_samples (samples);
+        }
+
+      double end = get_time();
+
+      const double ns_per_sec = 1e9;
+      sm_printf ("%6.2f ns/note_on\n", (end - start) * ns_per_sec / RUNS);
+      sm_printf ("%6.2f note_on per 64 samples\n", 64. / 48000 / ((end - start) / RUNS));
 
       return 0;
     }
