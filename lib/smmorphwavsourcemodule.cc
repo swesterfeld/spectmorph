@@ -28,8 +28,8 @@ VoiceSource::set_ratio (double ratio)
 void
 VoiceSource::retrigger()
 {
-  gen_detune_factors (detune_factors);
-  gen_detune_factors (next_detune_factors);
+  detune_factors.clear();
+  next_detune_factors.clear();
 }
 
 void
@@ -130,9 +130,16 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
       if (fuzzy_frac > 1)
         {
           detune_factors.swap (next_detune_factors);
-          gen_detune_factors (next_detune_factors);
+          next_detune_factors.clear();
           fuzzy_frac -= int (fuzzy_frac);
         }
+
+      if (detune_factors.empty())
+        gen_detune_factors (detune_factors);
+
+      if (next_detune_factors.empty())
+        gen_detune_factors (next_detune_factors);
+
       for (int i = 1; i < 400; i++)
         {
           out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
