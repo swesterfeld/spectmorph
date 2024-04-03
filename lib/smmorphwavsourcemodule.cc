@@ -33,11 +33,16 @@ VoiceSource::retrigger()
 }
 
 void
-VoiceSource::gen_detune_factors (vector<float>& factors)
+VoiceSource::gen_detune_factors (vector<float>& factors, size_t partials)
 {
+  if (factors.size() >= partials)
+    return;
+
+  size_t start = max<size_t> (1, factors.size());
+  factors.resize (partials);
+
   const double max_fuzzy_resynth = 50; // cent
-  factors.resize (400);
-  for (int i = 1; i < 400; i++)
+  for (size_t i = start; i < partials; i++)
     {
       double fuzzy_high = pow (2, fuzzy_resynth / 1200);
       double fuzzy_low = 1 / fuzzy_high;
@@ -135,11 +140,8 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
           fuzzy_frac -= int (fuzzy_frac);
         }
 
-      if (detune_factors.empty())
-        gen_detune_factors (detune_factors);
-
-      if (next_detune_factors.empty())
-        gen_detune_factors (next_detune_factors);
+      gen_detune_factors (detune_factors, partials);
+      gen_detune_factors (next_detune_factors, partials);
 
       for (int i = 1; i < partials; i++)
         {

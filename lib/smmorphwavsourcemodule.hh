@@ -23,7 +23,7 @@ class VoiceSource {
   double fuzzy_frac = 0;
   std::vector<float> detune_factors;
   std::vector<float> next_detune_factors;
-  void gen_detune_factors (std::vector<float>& factors);
+  void gen_detune_factors (std::vector<float>& factors, size_t partials);
   Random detune_random;
 public:
   VoiceSource()
