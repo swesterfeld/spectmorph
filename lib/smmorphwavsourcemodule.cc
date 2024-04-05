@@ -19,6 +19,12 @@ using std::min;
 
 static LeakDebugger leak_debugger ("SpectMorph::MorphWavSourceModule");
 
+VoiceSource::VoiceSource()
+{
+  detune_factors.reserve (RESYNTH_MAX_PARTIALS);
+  next_detune_factors.reserve (RESYNTH_MAX_PARTIALS);
+}
+
 void
 VoiceSource::set_ratio (double ratio)
 {
@@ -63,6 +69,11 @@ VoiceSource::advance (double time_ms)
 void
 VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
 {
+  if (mode == MorphWavSource::FORMANT_REPITCH)
+    {
+      out_block.assign (in_block);
+      return;
+    }
   auto emag = [&] (int i) {
     if (i > 0 && i < int (in_block.env.size()))
       return in_block.env_f (i);
@@ -127,7 +138,7 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
     }
   else if (mode == MorphWavSource::FORMANT_RESYNTH)
     {
-      int partials = std::min (sm_round_positive (max_partials / m_ratio) + 1, 400);
+      int partials = std::min (sm_round_positive (max_partials / m_ratio) + 1, RESYNTH_MAX_PARTIALS);
       out_block.freqs.set_capacity (partials);
       double mags[partials];
       size_t mags_count = 0;
@@ -229,14 +240,9 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
     }
   if (active_audio && index < active_audio->contents.size())
     {
-      if (module->cfg->formant_correct == MorphWavSource::FORMANT_REPITCH)
-        out_block.assign (active_audio->contents[index]);
-      else
-        {
-          voice_source.advance (module->time_info().time_ms - last_time_ms);
-          last_time_ms = module->time_info().time_ms;
-          voice_source.process_block (active_audio->contents[index], out_block);
-        }
+      voice_source.advance (module->time_info().time_ms - last_time_ms);
+      last_time_ms = module->time_info().time_ms;
+      voice_source.process_block (active_audio->contents[index], out_block);
       return true;
     }
   else

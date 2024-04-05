@@ -15,10 +15,10 @@ namespace SpectMorph
 class MorphWavSourceModule;
 
 class VoiceSource {
+  static constexpr int RESYNTH_MAX_PARTIALS = 1000;
   double m_ratio = 0;
   int max_partials = 0;
-  // FIXME: default
-  MorphWavSource::FormantCorrection mode;
+  MorphWavSource::FormantCorrection mode = MorphWavSource::FORMANT_REPITCH;
   float fuzzy_resynth = 0;
   double fuzzy_frac = 0;
   std::vector<float> detune_factors;
@@ -26,11 +26,7 @@ class VoiceSource {
   void gen_detune_factors (std::vector<float>& factors, size_t partials);
   Random detune_random;
 public:
-  VoiceSource()
-  {
-    detune_factors.reserve (400);
-    next_detune_factors.reserve (400);
-  }
+  VoiceSource();
   void
   set_mode (MorphWavSource::FormantCorrection new_mode)
   {
