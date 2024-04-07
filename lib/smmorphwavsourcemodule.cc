@@ -47,12 +47,13 @@ VoiceSource::gen_detune_factors (vector<float>& factors, size_t partials)
   size_t start = max<size_t> (1, factors.size());
   factors.resize (partials);
 
-  const double max_fuzzy_resynth = 50; // cent
+  const double max_fuzzy_resynth_delta = 0.029302236643492028782; // 50 cent (2**(50./1200) - 1)
+  const double fuzzy_high = exp2 (fuzzy_resynth / 1200.0);
+  const double fuzzy_low = 1 / fuzzy_high;
+
   for (size_t i = start; i < partials; i++)
     {
-      double fuzzy_high = pow (2, fuzzy_resynth / 1200);
-      double fuzzy_low = 1 / fuzzy_high;
-      double fuzzy_high_bound = 1 + (pow (2, max_fuzzy_resynth / 1200) - 1) / i;
+      double fuzzy_high_bound = 1 + max_fuzzy_resynth_delta / i;
       double fuzzy_low_bound = 1 / fuzzy_high_bound;
 
       factors[i] = detune_random.random_double_range (max (fuzzy_low, fuzzy_low_bound), min (fuzzy_high, fuzzy_high_bound));
