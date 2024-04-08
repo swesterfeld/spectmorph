@@ -57,12 +57,12 @@ class MorphWavSourceModule : public MorphOperatorModule
   class InstrumentSource : public LiveDecoderSource
   {
     VoiceSource             voice_source;
-    double                  last_time_ms = 0;
     Audio                  *active_audio = nullptr;
     int                     object_id = 0;
     Project                *project = nullptr;
   public:
     MorphWavSourceModule   *module = nullptr;
+    double                  last_time_ms = 0;
 
     void
     set_portamento_freq (float freq) override
@@ -85,6 +85,7 @@ public:
   ~MorphWavSourceModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
+  void note_on (const TimeInfo& time_info) override;
   LiveDecoderSource *source();
 };
 

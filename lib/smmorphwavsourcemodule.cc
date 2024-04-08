@@ -36,6 +36,7 @@ VoiceSource::retrigger()
 {
   detune_factors.clear();
   next_detune_factors.clear();
+  fuzzy_frac = detune_random.random_double_range (0, 1);
 }
 
 void
@@ -296,4 +297,10 @@ MorphWavSourceModule::set_config (const MorphOperatorConfig *op_cfg)
 
   my_source.update_project_and_object_id (cfg->project, cfg->object_id);
   my_source.update_voice_source (cfg);
+}
+
+void
+MorphWavSourceModule::note_on (const TimeInfo& time_info)
+{
+  my_source.last_time_ms = time_info.time_ms;
 }
