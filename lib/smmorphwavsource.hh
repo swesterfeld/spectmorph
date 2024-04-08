@@ -38,12 +38,10 @@ public:
     FormantCorrection formant_correct = FORMANT_REPITCH;
     float             fuzzy_resynth;
   };
-  static constexpr auto P_PLAY_MODE = "play_mode";
-  static constexpr auto P_POSITION  = "position";
-  static constexpr auto P_FORMANT_CORRECT  = "formant_correct";
-  static constexpr auto P_FUZZY_RESYNTH  = "fuzzy_resynth";
-  static constexpr auto P_MAX_FUZZY_RESYNTH  = "max_fuzzy_resynth";
-  static constexpr auto P_FUZZY_RESYNTH_FREQ  = "fuzzy_resynth_freq";
+  static constexpr auto P_PLAY_MODE       = "play_mode";
+  static constexpr auto P_POSITION        = "position";
+  static constexpr auto P_FORMANT_CORRECT = "formant_correct";
+  static constexpr auto P_FUZZY_RESYNTH   = "fuzzy_resynth";
 
   static constexpr auto USER_BANK = "User";
 protected:
