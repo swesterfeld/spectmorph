@@ -233,11 +233,15 @@ EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_fre
 
   /* compute encoder window */
   window.resize (block_size);
+  window_weight = 0;
 
   for (size_t i = 0; i < window.size(); i++)
     {
       if (i < frame_size)
-        window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+        {
+          window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+          window_weight += window[i];
+        }
       else
         window[i] = 0;
     }
@@ -388,13 +392,7 @@ Encoder::search_local_maxima()
   const size_t frame_size = enc_params.frame_size;
   const int    zeropad    = enc_params.zeropad;
   const double mix_freq   = enc_params.mix_freq;
-  const auto&  window     = enc_params.window;
-
-  // figure out normalization for window
-  double window_weight = 0;
-  for (size_t i = 0; i < frame_size; i++)
-    window_weight += window[i];
-  const double window_scale = 2.0 / window_weight;
+  const double window_scale = 2.0 / enc_params.window_weight;
 
   // initialize tracksel structure
   frame_tracksels.clear();
@@ -751,7 +749,7 @@ float_vector_delta (AIter ai, AIter aend, BIter bi)
 }
 
 static void
-refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
+refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, const vector<float>& window, double window_weight)
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
@@ -763,11 +761,6 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   vector<float> good_freqs;
   vector<float> good_mags;
   vector<float> good_phases;
-
-  // figure out normalization for window
-  double window_weight = 0;
-  for (size_t i = 0; i < frame_size; i++)
-    window_weight += window[i];
 
   for (size_t i = 0; i < audio_block.freqs.size(); i++)
     {
@@ -943,7 +936,7 @@ Encoder::optimize_partials (int optimization_level)
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       if (optimization_level >= 1) // redo FFT estmates, only better
-        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window);
+        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window, enc_params.window_weight);
 
       remove_small_partials (audio_blocks[frame]);
 
@@ -1519,11 +1512,7 @@ Encoder::estimate_spectral_envelope()
   const auto mix_freq = enc_params.mix_freq;
   const auto block_size = enc_params.block_size;
   const auto zeropad = enc_params.zeropad;
-  // figure out normalization for window
-  double window_weight = 0;
-  for (size_t i = 0; i < enc_params.frame_size; i++)
-    window_weight += enc_params.window[i];
-  const double window_scale = 2.0 / window_weight;
+  const double window_scale = 2.0 / enc_params.window_weight;
 
   for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
     {

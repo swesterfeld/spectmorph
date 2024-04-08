@@ -58,6 +58,9 @@ public:
   /** window to be used for analysis (needs to have block_size entries) */
   std::vector<float> window;
 
+  /** sum of all entries of the window */
+  double  window_weight = 0;
+
   /** allow termination during encode() */
   std::function<bool()> kill_function;
 
