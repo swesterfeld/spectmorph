@@ -37,6 +37,7 @@ VoiceSource::retrigger()
   detune_factors.clear();
   next_detune_factors.clear();
   fuzzy_frac = detune_random.random_double_range (0, 1);
+  fuzzy_resynth_freq = detune_random.random_double_range (RESYNTH_MIN_FREQ, RESYNTH_MAX_FREQ);
 }
 
 void
@@ -64,7 +65,6 @@ VoiceSource::gen_detune_factors (vector<float>& factors, size_t partials)
 void
 VoiceSource::advance (double time_ms)
 {
-  const double fuzzy_resynth_freq = detune_random.random_double_range (6, 10); // Hz
   fuzzy_frac += 0.001 * time_ms * fuzzy_resynth_freq;
 }
 
@@ -151,6 +151,7 @@ VoiceSource::process_block (const AudioBlock& in_block, RTAudioBlock& out_block)
           detune_factors.swap (next_detune_factors);
           next_detune_factors.clear();
           fuzzy_frac -= int (fuzzy_frac);
+          fuzzy_resynth_freq = detune_random.random_double_range (RESYNTH_MIN_FREQ, RESYNTH_MAX_FREQ);
         }
 
       gen_detune_factors (detune_factors, partials);

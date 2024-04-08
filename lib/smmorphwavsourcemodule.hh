@@ -16,10 +16,13 @@ class MorphWavSourceModule;
 
 class VoiceSource {
   static constexpr int RESYNTH_MAX_PARTIALS = 1000;
+  static constexpr double RESYNTH_MIN_FREQ = 6;
+  static constexpr double RESYNTH_MAX_FREQ = 10;
   double m_ratio = 0;
   int max_partials = 0;
   MorphWavSource::FormantCorrection mode = MorphWavSource::FORMANT_REPITCH;
   float fuzzy_resynth = 0;
+  double fuzzy_resynth_freq = 0;
   double fuzzy_frac = 0;
   std::vector<float> detune_factors;
   std::vector<float> next_detune_factors;
