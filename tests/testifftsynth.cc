@@ -259,6 +259,11 @@ public:
     out_block.assign (my_audio_block);
     return true;
   }
+  void
+  set_portamento_freq (float freq)
+  {
+    // ignore
+  }
 };
 
 void
