@@ -79,6 +79,12 @@ SimpleWavSetSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
     }
 }
 
+void
+SimpleWavSetSource::set_portamento_freq (float freq)
+{
+  // FIXME: support formant correction?
+}
+
 MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
