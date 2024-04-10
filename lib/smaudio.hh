@@ -37,7 +37,7 @@ public:
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 
   void    sort_freqs();
-  double  estimate_fundamental (int n_partials = 1, double *mag = nullptr) const;
+  double  estimate_fundamental (int n_partials = 1) const;
 
   double
   freqs_f (size_t i) const

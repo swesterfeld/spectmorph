@@ -8,6 +8,7 @@
 #include "smmemout.hh"
 #include "smmmapin.hh"
 #include "smwavsetrepo.hh"
+#include "smaudiotool.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -448,43 +449,11 @@ AudioBlock::sort_freqs()
 }
 
 double
-AudioBlock::estimate_fundamental (int n_partials, double *mag) const
+AudioBlock::estimate_fundamental (int n_partials) const
 {
-  g_return_val_if_fail (n_partials >= 1 && n_partials <= 3, 1.0);
+  AudioTool::FundamentalEst f_est;
+  for (size_t p = 0; p < freqs.size(); p++)
+    f_est.add_partial (freqs_f (p), mags_f (p));
 
-  double est_freq = 0, est_mag = 0;
-
-  auto update_estimate = [&] (int n, double freq_min, double freq_max)
-    {
-      if (n > n_partials)
-        return;
-
-      double best_freq = 0, best_mag = 0;
-
-      for (size_t p = 0; p < mags.size(); p++)
-        {
-          if (freqs_f (p) > freq_min && freqs_f (p) < freq_max && mags_f (p) > best_mag)
-            {
-              best_mag = mags_f (p);
-              best_freq = freqs_f (p) / n;
-            }
-        }
-      if (best_mag > 0)
-        {
-          est_mag += best_mag;
-          est_freq += best_freq * best_mag;
-        }
-    };
-
-  update_estimate (1, 0.8, 1.25);
-  update_estimate (2, 1.5, 2.5);
-  update_estimate (3, 2.5, 3.5);
-
-  if (mag)
-    *mag = est_mag;
-
-  if (est_mag > 0)
-    return est_freq / est_mag;
-  else
-    return 1;
+  return f_est.fundamental (n_partials);
 }
