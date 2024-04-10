@@ -188,3 +188,37 @@ AudioTool::auto_tune_smooth (Audio& audio, int partials, double smooth_ms, doubl
       apply_auto_tune_factor (audio.contents[f], tune_factor);
     }
 }
+
+void
+AudioTool::FundamentalEst::add_partial (double freq, double mag)
+{
+  auto update_estimate = [&] (int n, double freq_min, double freq_max)
+    {
+      if (freq > freq_min && freq < freq_max && mag > m_best_mag[n])
+        {
+          m_best_freq[n] = freq / n;
+          m_best_mag[n] = mag;
+        }
+    };
+  update_estimate (1, 0.8, 1.25);
+  update_estimate (2, 1.5, 2.5);
+  update_estimate (3, 2.5, 3.5);
+}
+
+double
+AudioTool::FundamentalEst::fundamental (int n_partials) const
+{
+  g_return_val_if_fail (n_partials >= 1 && n_partials <= 3, 1.0);
+
+  double fsum = 0, msum = 0;
+  for (int i = 1; i <= n_partials; i++)
+    {
+      fsum += m_best_freq[i] * m_best_mag[i];
+      msum += m_best_mag[i];
+    }
+
+  if (msum > 0)
+    return fsum / msum;
+  else
+    return 1;
+}

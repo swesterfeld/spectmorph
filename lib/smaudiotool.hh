@@ -29,6 +29,16 @@ public:
   double energy (const AudioBlock& block);
 };
 
+class FundamentalEst
+{
+  // 1 extra element to make code more readable: best_freq[1] / best_mag[1] corresponds to partial 1
+  std::array<double, 4> m_best_freq {};
+  std::array<double, 4> m_best_mag {};
+public:
+  void   add_partial (double freq, double mag);
+  double fundamental (int n_partials) const;
+};
+
 }
 
 }
