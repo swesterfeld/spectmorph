@@ -111,7 +111,6 @@ MorphGridModule::MySource::set_portamento_freq (float freq)
     }
 }
 
-
 Audio*
 MorphGridModule::MySource::audio()
 {
