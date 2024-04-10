@@ -1,4 +1,11 @@
 NEWER TODOS:
+VoiceSource:
+- better names for WavSource formant correction
+- better names inside VoiceSource; rename VoiceSource
+- [maybe] support formant correction for Source
+- experiments for handling freq < 1 in spectral envelope
+- experiments for start phase randomization
+Other:
 - portamento should also affect filter cutoff (key tracking)
 - 1-instrument-wav-source contains the data - not a good idea!
 - LV2 archive storage doesn't seem to work
