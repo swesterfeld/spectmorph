@@ -2,7 +2,7 @@ FROM archlinux
 
 RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm \
-    gcc clang make automake autoconf pkg-config \
+    gcc clang make automake autoconf libtool pkg-config \
     libsndfile fftw autoconf-archive qt5-base libao \
     jack2 cairo lv2lint python3 python-scipy
 
