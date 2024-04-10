@@ -5,6 +5,8 @@
 
 #include "smaudio.hh"
 
+#include <array>
+
 namespace SpectMorph
 {
 
