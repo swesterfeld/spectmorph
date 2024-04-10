@@ -9,6 +9,7 @@
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
 #include "smrandom.hh"
+#include "smaudiotool.hh"
 #include "config.h"
 
 #include <math.h>
@@ -1516,19 +1517,11 @@ Encoder::estimate_spectral_envelope()
 
   for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
     {
-      double fundamental;
+      AudioTool::FundamentalEst f_est;
+      for (size_t i = 0; i < ai->freqs.size(); i++)
+        f_est.add_partial (ai->freqs[i] / enc_params.fundamental_freq, ai->mags[i]);
 
-      {
-        /* this is a bit hacky because fundamental frequency estimation is
-         * implemented on AudioBlock, but we only have an EncoderBlock at this
-         * point - to we convert freqs/mags to an audio block and throw the
-         * block away after fundamental frequency estimation */
-        AudioBlock ablock;
-        convert_freqs_mags_phases (*ai, ablock, enc_params);
-        fundamental = ablock.estimate_fundamental (3);
-      }
-
-      ai->env_f0 = fundamental;
+      const double fundamental = f_est.fundamental (3);
       vector<float> senv;
       for (size_t i = 0; i < ai->original_fft.size(); i += 2)
         {
@@ -1543,7 +1536,8 @@ Encoder::estimate_spectral_envelope()
           if (mag > senv[rifreq])
             senv[rifreq] = mag;
         }
-      ai->env = senv;
+      ai->env    = senv;
+      ai->env_f0 = fundamental;
     }
 }
 
