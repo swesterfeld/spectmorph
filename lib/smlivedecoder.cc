@@ -272,6 +272,7 @@ LiveDecoder::gen_sines (float freq_in)
   bool         have_audio_block = false;
   if (source)
     {
+      source->set_portamento_freq (freq_in);
       have_audio_block = source->rt_audio_block (frame_idx, audio_block);
     }
   else if (frame_idx < audio->contents.size())

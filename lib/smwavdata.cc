@@ -213,7 +213,6 @@ virtual_seek (sf_count_t offset, int whence, void *data)
 static sf_count_t
 virtual_read (void *ptr, sf_count_t count, void *data)
 {
-  /* FIXME: need to implement reading, too */
   VirtualData *vdata = static_cast<VirtualData *> (data);
 
   int rcount = 0;

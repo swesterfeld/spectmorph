@@ -9,6 +9,7 @@
 #include "smblockutils.hh"
 #include "smalignedarray.hh"
 #include "smrandom.hh"
+#include "smaudiotool.hh"
 #include "config.h"
 
 #include <math.h>
@@ -233,11 +234,15 @@ EncoderParams::setup_params (const WavData& wav_data, double new_fundamental_fre
 
   /* compute encoder window */
   window.resize (block_size);
+  window_weight = 0;
 
   for (size_t i = 0; i < window.size(); i++)
     {
       if (i < frame_size)
-        window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+        {
+          window[i] = window_cos (2.0 * i / (frame_size - 1) - 1.0);
+          window_weight += window[i];
+        }
       else
         window[i] = 0;
     }
@@ -388,13 +393,7 @@ Encoder::search_local_maxima()
   const size_t frame_size = enc_params.frame_size;
   const int    zeropad    = enc_params.zeropad;
   const double mix_freq   = enc_params.mix_freq;
-  const auto&  window     = enc_params.window;
-
-  // figure out normalization for window
-  double window_weight = 0;
-  for (size_t i = 0; i < frame_size; i++)
-    window_weight += window[i];
-  const double window_scale = 2.0 / window_weight;
+  const double window_scale = 2.0 / enc_params.window_weight;
 
   // initialize tracksel structure
   frame_tracksels.clear();
@@ -751,7 +750,7 @@ float_vector_delta (AIter ai, AIter aend, BIter bi)
 }
 
 static void
-refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, const vector<float>& window)
+refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, const vector<float>& window, double window_weight)
 {
   const size_t frame_size = audio_block.debug_samples.size();
 
@@ -763,11 +762,6 @@ refine_sine_params_fast (EncoderBlock& audio_block, double mix_freq, int frame, 
   vector<float> good_freqs;
   vector<float> good_mags;
   vector<float> good_phases;
-
-  // figure out normalization for window
-  double window_weight = 0;
-  for (size_t i = 0; i < frame_size; i++)
-    window_weight += window[i];
 
   for (size_t i = 0; i < audio_block.freqs.size(); i++)
     {
@@ -943,7 +937,7 @@ Encoder::optimize_partials (int optimization_level)
   for (uint64 frame = 0; frame < audio_blocks.size(); frame++)
     {
       if (optimization_level >= 1) // redo FFT estmates, only better
-        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window);
+        refine_sine_params_fast (audio_blocks[frame], mix_freq, frame, enc_params.window, enc_params.window_weight);
 
       remove_small_partials (audio_blocks[frame]);
 
@@ -1416,6 +1410,10 @@ Encoder::encode (const WavData& wav_data, int channel, int optimization_level,
   if (killed ("sort"))
     return false;
 
+  estimate_spectral_envelope();
+  if (killed ("spectral_envelope"))
+    return false;
+
   return true;
 }
 
@@ -1423,7 +1421,7 @@ string
 Encoder::version() // changes if encoder algorithm changed (for cache invalidation)
 {
   string version = PACKAGE_VERSION;
-  version += "-2023-07-26";
+  version += "-2024-03-24";
   return version;
 }
 
@@ -1499,6 +1497,50 @@ convert_noise (const vector<float>& noise, vector<uint16_t>& inoise)
     inoise[i] = sm_factor2idb (noise[i]);
 }
 
+static void
+convert_env (const EncoderBlock& eblock, AudioBlock& ablock)
+{
+  ablock.env.clear();
+  for (size_t i = 0; i < eblock.env.size(); i++)
+    ablock.env.push_back (sm_factor2idb (eblock.env[i]));
+
+  ablock.env_f0 = eblock.env_f0;
+}
+
+void
+Encoder::estimate_spectral_envelope()
+{
+  const auto mix_freq = enc_params.mix_freq;
+  const auto block_size = enc_params.block_size;
+  const auto zeropad = enc_params.zeropad;
+  const double window_scale = 2.0 / enc_params.window_weight;
+
+  for (vector<EncoderBlock>::iterator ai = audio_blocks.begin(); ai != audio_blocks.end(); ai++)
+    {
+      AudioTool::FundamentalEst f_est;
+      for (size_t i = 0; i < ai->freqs.size(); i++)
+        f_est.add_partial (ai->freqs[i] / enc_params.fundamental_freq, ai->mags[i]);
+
+      const double fundamental = f_est.fundamental (3);
+      vector<float> senv;
+      for (size_t i = 0; i < ai->original_fft.size(); i += 2)
+        {
+          double re = ai->original_fft[i];
+          double im = ai->original_fft[i + 1];
+          double mag = sqrt (re * re + im * im) * window_scale;
+          double bin_freq = i * mix_freq / 2 / block_size / zeropad;
+          double rfreq = bin_freq / enc_params.fundamental_freq / fundamental;
+          int rifreq = sm_round_positive (rfreq);
+          if (rifreq >= int (senv.size()))
+            senv.resize (rifreq + 1);
+          if (mag > senv[rifreq])
+            senv[rifreq] = mag;
+        }
+      ai->env    = senv;
+      ai->env_f0 = fundamental;
+    }
+}
+
 /**
  * This function saves the data produced by the encoder to a SpectMorph file.
  */
@@ -1533,6 +1575,7 @@ Encoder::save_as_audio()
       AudioBlock block;
       convert_freqs_mags_phases (*ai, block, enc_params);
       convert_noise (ai->noise, block.noise);
+      convert_env (*ai, block);
       block.original_fft = ai->original_fft;
       block.debug_samples = ai->debug_samples;
       audio->contents.push_back (block);

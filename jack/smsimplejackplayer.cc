@@ -20,6 +20,7 @@ public:
   void retrigger (int, float, int) override;
   Audio* audio() override;
   bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
+  void set_portamento_freq (float freq) override;
 };
 
 Source::Source (Audio *audio) :
@@ -50,6 +51,12 @@ Source::rt_audio_block (size_t index, RTAudioBlock& out_block)
     {
       return false;
     }
+}
+
+void
+Source::set_portamento_freq (float freq)
+{
+  // ignore
 }
 
 }

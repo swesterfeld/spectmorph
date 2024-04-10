@@ -72,6 +72,10 @@ AudioTool::normalize_factor (double norm, Audio& audio)
       vector<uint16_t>& noise = audio.contents[f].noise;
       for (size_t i = 0; i < noise.size(); i++)
         noise[i] = sm_bound<int> (0, noise[i] + norm_delta_idb, 65535);
+
+      vector<uint16_t>& env = audio.contents[f].env;
+      for (size_t i = 0; i < env.size(); i++)
+        env[i] = sm_bound<int> (0, env[i] + norm_delta_idb, 65535);
     }
 
   // store normalization in order to replay original samples normalized
@@ -137,18 +141,21 @@ AudioTool::get_auto_tune_factor (Audio& audio, double& tune_factor)
 }
 
 void
+AudioTool::apply_auto_tune_factor (AudioBlock& audio_block, double tune_factor)
+{
+  for (size_t n = 0; n < audio_block.freqs.size(); n++)
+    {
+      const double freq = audio_block.freqs_f (n) * tune_factor;
+      audio_block.freqs[n] = sm_freq2ifreq (freq);
+    }
+  audio_block.env_f0 *= tune_factor;
+}
+
+void
 AudioTool::apply_auto_tune_factor (Audio& audio, double tune_factor)
 {
-  for (size_t f = 0; f < audio.contents.size(); f++)
-    {
-      AudioBlock& block = audio.contents[f];
-
-      for (size_t n = 0; n < block.freqs.size(); n++)
-        {
-          const double freq = block.freqs_f (n) * tune_factor;
-          block.freqs[n] = sm_freq2ifreq (freq);
-        }
-    }
+  for (auto& audio_block : audio.contents)
+    apply_auto_tune_factor (audio_block, tune_factor);
 }
 
 void
@@ -178,12 +185,40 @@ AudioTool::auto_tune_smooth (Audio& audio, int partials, double smooth_ms, doubl
       double dest_freq = (freq_vector[f] / smooth_freq - 1) * interp + 1;
       const double tune_factor = dest_freq / freq_vector[f];
 
-      AudioBlock& block = audio.contents[f];
-
-      for (size_t p = 0; p < block.freqs.size(); p++)
-        {
-          const double freq = block.freqs_f (p) * tune_factor;
-          block.freqs[p] = sm_freq2ifreq (freq);
-        }
+      apply_auto_tune_factor (audio.contents[f], tune_factor);
     }
+}
+
+void
+AudioTool::FundamentalEst::add_partial (double freq, double mag)
+{
+  auto update_estimate = [&] (int n, double freq_min, double freq_max)
+    {
+      if (freq > freq_min && freq < freq_max && mag > m_best_mag[n])
+        {
+          m_best_freq[n] = freq / n;
+          m_best_mag[n] = mag;
+        }
+    };
+  update_estimate (1, 0.8, 1.25);
+  update_estimate (2, 1.5, 2.5);
+  update_estimate (3, 2.5, 3.5);
+}
+
+double
+AudioTool::FundamentalEst::fundamental (int n_partials) const
+{
+  g_return_val_if_fail (n_partials >= 1 && n_partials <= 3, 1.0);
+
+  double fsum = 0, msum = 0;
+  for (int i = 1; i <= n_partials; i++)
+    {
+      fsum += m_best_freq[i] * m_best_mag[i];
+      msum += m_best_mag[i];
+    }
+
+  if (msum > 0)
+    return fsum / msum;
+  else
+    return 1;
 }

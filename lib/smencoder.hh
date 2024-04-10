@@ -58,6 +58,9 @@ public:
   /** window to be used for analysis (needs to have block_size entries) */
   std::vector<float> window;
 
+  /** sum of all entries of the window */
+  double  window_weight = 0;
+
   /** allow termination during encode() */
   std::function<bool()> kill_function;
 
@@ -94,6 +97,8 @@ public:
   std::vector<float> freqs;          //!< frequencies of the sine components of this frame
   std::vector<float> mags;           //!< magnitudes of the sine components
   std::vector<float> phases;         //!< phases of the sine components
+  std::vector<float> env;            //!< spectral envelope for formant correction
+  float              env_f0 = 1;     //!< fundamental frequency of the spectral envelope
   std::vector<float> original_fft;   //!< original zeropadded FFT data - for debugging only
   std::vector<float> debug_samples;  //!< original audio samples for this frame - for debugging only
 };
@@ -132,6 +137,7 @@ class Encoder
   void approx_noise();
   void compute_attack_params();
   void sort_freqs();
+  void estimate_spectral_envelope();
 
   inline bool
   killed (const char *where, uint64_t z = 0)

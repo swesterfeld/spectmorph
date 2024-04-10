@@ -246,11 +246,7 @@ WavSetBuilder::apply_auto_tune()
               const double est_freq = block.estimate_fundamental (auto_tune.partials);
               const double tune_factor = 1.0 / est_freq;
 
-              for (size_t p = 0; p < block.freqs.size(); p++)
-                {
-                  const double freq = block.freqs_f (p) * tune_factor;
-                  block.freqs[p] = sm_freq2ifreq (freq);
-                }
+              AudioTool::apply_auto_tune_factor (block, tune_factor);
             }
         }
       if (auto_tune.method == Instrument::AutoTune::SMOOTH)

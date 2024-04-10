@@ -8,6 +8,7 @@
 #include "smmemout.hh"
 #include "smmmapin.hh"
 #include "smwavsetrepo.hh"
+#include "smaudiotool.hh"
 #include <fcntl.h>
 #include <errno.h>
 #include <stdio.h>
@@ -144,6 +145,13 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
               else
                 printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
             }
+          else if (section == "frame")
+            {
+              if (ifile.event_name() == "env_f0")
+                audio_block->env_f0 = ifile.event_float();
+              else
+                printf ("unhandled float %s  %s\n", section.c_str(), ifile.event_name().c_str());
+            }
           else
             assert (false);
         }
@@ -205,6 +213,10 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
           else if (ifile.event_name() == "phases")
             {
               audio_block->phases = ib;
+            }
+          else if (ifile.event_name() == "env")
+            {
+              audio_block->env = ib;
             }
           else if (ifile.event_name() == "noise")
             {
@@ -300,6 +312,8 @@ SpectMorph::Audio::save (GenericOut *file) const
       of.write_uint16_block ("freqs", contents[i].freqs);
       of.write_uint16_block ("mags", contents[i].mags);
       of.write_uint16_block ("phases", contents[i].phases);
+      of.write_uint16_block ("env", contents[i].env);
+      of.write_float ("env_f0", contents[i].env_f0);
       of.write_float_block ("original_fft", contents[i].original_fft);
       of.write_float_block ("debug_samples", contents[i].debug_samples);
       of.end_section();
@@ -435,43 +449,11 @@ AudioBlock::sort_freqs()
 }
 
 double
-AudioBlock::estimate_fundamental (int n_partials, double *mag) const
+AudioBlock::estimate_fundamental (int n_partials) const
 {
-  g_return_val_if_fail (n_partials >= 1 && n_partials <= 3, 1.0);
+  AudioTool::FundamentalEst f_est;
+  for (size_t p = 0; p < freqs.size(); p++)
+    f_est.add_partial (freqs_f (p), mags_f (p));
 
-  double est_freq = 0, est_mag = 0;
-
-  auto update_estimate = [&] (int n, double freq_min, double freq_max)
-    {
-      if (n > n_partials)
-        return;
-
-      double best_freq = 0, best_mag = 0;
-
-      for (size_t p = 0; p < mags.size(); p++)
-        {
-          if (freqs_f (p) > freq_min && freqs_f (p) < freq_max && mags_f (p) > best_mag)
-            {
-              best_mag = mags_f (p);
-              best_freq = freqs_f (p) / n;
-            }
-        }
-      if (best_mag > 0)
-        {
-          est_mag += best_mag;
-          est_freq += best_freq * best_mag;
-        }
-    };
-
-  update_estimate (1, 0.8, 1.25);
-  update_estimate (2, 1.5, 2.5);
-  update_estimate (3, 2.5, 3.5);
-
-  if (mag)
-    *mag = est_mag;
-
-  if (est_mag > 0)
-    return est_freq / est_mag;
-  else
-    return 1;
+  return f_est.fundamental (n_partials);
 }

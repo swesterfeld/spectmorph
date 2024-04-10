@@ -78,6 +78,7 @@ public:
   void retrigger (int channel, float freq, int midi_velocity) override;
   Audio* audio() override;
   bool rt_audio_block (size_t index, RTAudioBlock& out_block) override;
+  void set_portamento_freq (float freq) override;
 
   void set_skip (float m_skip);
   void set_source (LiveDecoderSource *source);
@@ -104,6 +105,13 @@ EffectDecoderSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
   const double time_ms = index + m_skip; // 1ms frame step
 
   return MorphUtils::get_normalized_block (m_source, time_ms, out_block);
+}
+
+void
+EffectDecoderSource::set_portamento_freq (float freq)
+{
+  if (m_source)
+    m_source->set_portamento_freq (freq);
 }
 
 void
