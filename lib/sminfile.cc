@@ -1,6 +1,7 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "sminfile.hh"
+#include "smutils.hh"
 #include <assert.h>
 #include <glib.h>
 
@@ -366,9 +367,31 @@ InFile::open_blob()
  * \returns current event name
  */
 string
-InFile::event_name()
+InFile::event_name() const
 {
   return current_event_str;
+}
+
+string
+InFile::event_type() const
+{
+  switch (current_event)
+    {
+      case Event::FLOAT:          return "float";
+      case Event::INT:            return "int";
+      case Event::BOOL:           return "bool";
+      case Event::STRING:         return "string";
+      case Event::FLOAT_BLOCK:    return "float_block";
+      case Event::UINT16_BLOCK:   return "uint16_block";
+      case Event::BLOB:           return "blob";
+      case Event::BLOB_REF:       return "blob_ref";
+      case Event::NONE:           return "none";
+      case Event::END_OF_FILE:    return "end_of_file";
+      case Event::BEGIN_SECTION:  return "begin_section";
+      case Event::END_SECTION:    return "end_section";
+      case Event::READ_ERROR:     return "read_error";
+    }
+  return string_printf ("unknown_type_%d\n", current_event);
 }
 
 /**
