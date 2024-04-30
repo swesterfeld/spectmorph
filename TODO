@@ -30,6 +30,9 @@ Other:
 - vibrato could have delay property
 - possibly add MPE timbre
 
+INTERESTING BRANCHES:
+- morph-source-formant-correction: add formant correction to MorphSource
+
 insts:
  - tuba
  - flute
