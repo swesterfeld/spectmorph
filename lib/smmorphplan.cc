@@ -249,7 +249,14 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 
                   GenericIn *in = MMapIn::open_vector (blob_data);
                   InFile blob_infile (in);
-                  load_op->load (blob_infile);
+                  bool read_ok = load_op->load (blob_infile);
+                  if (!read_ok)
+                    {
+                      string msg = string_printf ("%s: something went wrong during load\n", load_op->type_name().c_str());
+                      g_printerr ("%s", msg.c_str());
+                      sm_debug ("%s", msg.c_str());
+                      // don't abort loading - ignore load errors here, at least doing things as good as we can
+                    }
 
                   delete in; // close memory file handle
 
