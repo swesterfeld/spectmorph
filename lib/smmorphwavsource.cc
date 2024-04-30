@@ -180,6 +180,7 @@ MorphWavSource::save (OutFile& out_file)
 bool
 MorphWavSource::load (InFile& ifile)
 {
+  bool read_ok = true;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (read_property_event (ifile))
@@ -198,8 +199,7 @@ MorphWavSource::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad int\n");
-              return false;
+              report_bad_event (read_ok, ifile);
             }
         }
       else if (ifile.event() == InFile::STRING)
@@ -214,18 +214,16 @@ MorphWavSource::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad string\n");
-              return false;
+              report_bad_event (read_ok, ifile);
             }
         }
       else
         {
-          g_printerr ("bad event\n");
-          return false;
+          report_bad_event (read_ok, ifile);
         }
       ifile.next_event();
     }
-  return true;
+  return read_ok;
 }
 
 MorphOperator::OutputType
