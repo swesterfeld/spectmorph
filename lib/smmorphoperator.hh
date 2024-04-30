@@ -114,6 +114,7 @@ public:
   void write_properties (OutFile& out_file);
   bool read_property_event (InFile& in_file);
   void read_properties_post_load (OpNameMap& op_name_map);
+  void report_bad_event (bool& read_ok, const InFile& in_file);
 
   MorphPlan *morph_plan();
 
