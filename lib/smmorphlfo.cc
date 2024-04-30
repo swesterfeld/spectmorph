@@ -106,6 +106,7 @@ MorphLFO::save (OutFile& out_file)
 bool
 MorphLFO::load (InFile& ifile)
 {
+  bool read_ok = true;
   while (ifile.event() != InFile::END_OF_FILE)
     {
       if (read_property_event (ifile) || m_config.curve.load ("curve", ifile))
@@ -124,18 +125,16 @@ MorphLFO::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad bool\n");
-              return false;
+              report_bad_event (read_ok, ifile);
             }
         }
       else
         {
-          g_printerr ("bad event\n");
-          return false;
+          report_bad_event (read_ok, ifile);
         }
       ifile.next_event();
     }
-  return true;
+  return read_ok;
 }
 
 MorphOperator::OutputType
