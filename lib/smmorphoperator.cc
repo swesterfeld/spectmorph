@@ -256,6 +256,15 @@ MorphOperator::read_properties_post_load (OpNameMap& op_name_map)
     }
 }
 
+void
+MorphOperator::report_bad_event (bool& read_ok, const InFile& in_file)
+{
+  string msg = string_printf ("%s: bad event while loading: %s %s\n", type_name().c_str(), in_file.event_type().c_str(), in_file.event_name().c_str());
+  g_printerr ("%s", msg.c_str());
+  sm_debug ("%s", msg.c_str());
+  read_ok = false;
+}
+
 MorphOperatorConfig::~MorphOperatorConfig()
 {
 }

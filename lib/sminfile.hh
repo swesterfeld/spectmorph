@@ -88,7 +88,8 @@ public:
     return file != NULL;
   }
   Event        event();
-  std::string  event_name();
+  std::string  event_name() const;
+  std::string  event_type() const;
   float        event_float();
   int          event_int();
   bool         event_bool();

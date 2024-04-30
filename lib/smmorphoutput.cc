@@ -138,6 +138,7 @@ MorphOutput::save (OutFile& out_file)
 bool
 MorphOutput::load (InFile& ifile)
 {
+  bool read_ok = true;
   load_channel_op_names.clear();
 
   while (ifile.event() != InFile::END_OF_FILE)
@@ -154,18 +155,16 @@ MorphOutput::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad string\n");
-              return false;
+              report_bad_event (read_ok, ifile);
             }
         }
       else
         {
-          g_printerr ("bad event\n");
-          return false;
+          report_bad_event (read_ok, ifile);
         }
       ifile.next_event();
     }
-  return true;
+  return read_ok;
 }
 
 void
