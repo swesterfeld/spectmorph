@@ -85,6 +85,7 @@ MorphGrid::save (OutFile& out_file)
 bool
 MorphGrid::load (InFile& ifile)
 {
+  bool read_ok = true;
   map<string, pair<int, int> > delta_db_map;
 
   load_map.clear();
@@ -113,8 +114,7 @@ MorphGrid::load (InFile& ifile)
             }
           else
             {
-              g_printerr ("bad int\n");
-              return false;
+              report_bad_event (read_ok, ifile);
             }
         }
       else if (ifile.event() == InFile::FLOAT)
@@ -132,14 +132,16 @@ MorphGrid::load (InFile& ifile)
                 }
             }
           map<string, pair<int, int> >::const_iterator it = delta_db_map.find (ifile.event_name());
-          if (it == delta_db_map.end())
+          if (it != delta_db_map.end())
             {
-              g_printerr ("bad float\n");
-              return false;
+              const int x = it->second.first;
+              const int y = it->second.second;
+              m_config.input_node[x][y].delta_db = ifile.event_float();
             }
-          const int x = it->second.first;
-          const int y = it->second.second;
-          m_config.input_node[x][y].delta_db = ifile.event_float();
+          else
+            {
+              report_bad_event (read_ok, ifile);
+            }
         }
       else if (ifile.event() == InFile::STRING)
         {
@@ -149,12 +151,11 @@ MorphGrid::load (InFile& ifile)
         }
       else
         {
-          g_printerr ("bad event\n");
-          return false;
+          report_bad_event (read_ok, ifile);
         }
       ifile.next_event();
     }
-  return true;
+  return read_ok;
 }
 
 void
