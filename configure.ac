@@ -184,7 +184,9 @@ AC_DEFUN([AC_FFTW_CHECK],
     SPECTMORPH_HAVE_FFTW=1
     if test $SPECTMORPH_HAVE_FFTW -gt 0; then
       fftw_save_CFLAGS="$CFLAGS"
+      fftw_save_LDFLAGS="$LDFLAGS"
       CFLAGS="$CFLAGS $FFTW_CFLAGS"
+      LDFLAGS="$LDFLAGS $FFTW_LIBS"
       AC_MSG_CHECKING([whether FFTW is recent enough])
         AC_COMPILE_IFELSE([
           AC_LANG_SOURCE([
@@ -215,6 +217,7 @@ AC_DEFUN([AC_FFTW_CHECK],
         FFTW_LIBS="-lfftw3f_threads $FFTW_LIBS"
       ])
       CFLAGS="$fftw_save_CFLAGS"
+      LDFLAGS="$fftw_save_LDFLAGS"
     fi
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW, $SPECTMORPH_HAVE_FFTW, [Whether libfftw3 is available])
     AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_FFTW_THREADSAFE, $SPECTMORPH_HAVE_FFTW_THREADSAFE, [Whether fftw3 supports threadsafe planner api])
