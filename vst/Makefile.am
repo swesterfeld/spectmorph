@@ -2,7 +2,7 @@ include $(top_srcdir)/Makefile.decl
 
 SUBDIRS = vestige
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
+AM_CXXFLAGS += $(BSE_CFLAGS) $(SNDFILE_CFLAGS) $(JACK_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/glui $(CFLAG_VISIBILITY)
 
 EXTRA_DIST += macos_export_symbols testlink.cc ldscript.map \
   smvstplugin.hh smvstui.hh smvstcommon.hh smvstresize.hh \
