@@ -170,7 +170,8 @@ compute_energy (const Audio& audio, double percent, bool from_loop)
   LiveDecoder  decoder (&smset, audio.mix_freq);
   RTMemoryArea rt_memory_area;
   // we need reproducable noise to get the same energy every time
-  decoder.set_noise_seed (42);
+  decoder.set_random_seed (42);
+  decoder.enable_start_phase_rand (false);
   decoder.retrigger (0, audio.fundamental_freq, 127);
   vector<float> samples;
   if (from_loop)
