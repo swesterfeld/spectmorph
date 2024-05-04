@@ -44,6 +44,7 @@ class LiveDecoder
 
   bool                sines_enabled;
   bool                noise_enabled;
+  bool                start_phase_rand_enabled = true;
   bool                debug_fft_perf_enabled;
   bool                original_samples_enabled;
   bool                loop_enabled;
@@ -65,7 +66,8 @@ class LiveDecoder
   double              original_samples_norm_factor;
   float               old_portamento_stretch;
 
-  int                 noise_seed;
+  int                 random_seed;
+  Random              phase_random_gen;
 
   AlignedArray<float,16> sine_samples;
   AlignedArray<float,16> noise_samples;
@@ -77,7 +79,6 @@ class LiveDecoder
   std::vector<float>  unison_phases[2];
   std::vector<float>  unison_freq_factor;
   float               unison_gain;
-  Random              unison_phase_random_gen;
 
   // vibrato
   bool                vibrato_enabled;
@@ -126,11 +127,12 @@ public:
 
   void enable_noise (bool ne);
   void enable_sines (bool se);
+  void enable_start_phase_rand (bool sr);
   void enable_debug_fft_perf (bool dfp);
   void enable_original_samples (bool eos);
   void enable_loop (bool eloop);
   void enable_start_skip (bool ess);
-  void set_noise_seed (int seed);
+  void set_random_seed (int seed);
   void set_unison_voices (int voices, float detune);
   void set_vibrato (bool enable_vibrato, float depth, float frequency, float attack);
   void set_filter (LiveDecoderFilter *filter);
