@@ -21,7 +21,7 @@ LiveDecoderFilter::LiveDecoderFilter()
 }
 
 void
-LiveDecoderFilter::retrigger (float note)
+LiveDecoderFilter::retrigger()
 {
   ladder_filter.reset();
   sk_filter.reset();
@@ -29,7 +29,6 @@ LiveDecoderFilter::retrigger (float note)
   dc_blocker.reset (20, mix_freq, 2);
 
   smooth_first = true;
-  current_note = note;
 }
 
 void
@@ -103,7 +102,7 @@ LiveDecoderFilter::set_config (MorphOutputModule *output_module, const MorphOutp
 }
 
 void
-LiveDecoderFilter::process (size_t n_values, float *audio)
+LiveDecoderFilter::process (size_t n_values, float *audio, float current_note)
 {
   if (!n_values)
     return;

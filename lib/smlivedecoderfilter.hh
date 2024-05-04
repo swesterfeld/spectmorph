@@ -26,7 +26,6 @@ class LiveDecoderFilter
   SmoothValue               resonance_smooth;
   SmoothValue               drive_smooth;
   bool                      smooth_first = false;
-  float                     current_note = 60;
   float                     key_tracking = 0;
   FlexADSR                  envelope;
   float                     depth_octaves = 0;
@@ -44,9 +43,9 @@ class LiveDecoderFilter
 public:
   LiveDecoderFilter();
 
-  void retrigger (float note);
+  void retrigger();
   void release();
-  void process (size_t n_values, float *audio);
+  void process (size_t n_values, float *audio, float current_note);
 
   void set_config (MorphOutputModule *output_module, const MorphOutput::Config *cfg, float mix_freq);
 

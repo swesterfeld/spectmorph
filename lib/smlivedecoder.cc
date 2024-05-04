@@ -757,6 +757,7 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
 
   if (filter)
     {
+      const float current_note = sm_freq_to_note (freq_in[0]);
       if (ramp)
         {
           // the audio input for the filter can start at a non-zero value:
@@ -772,9 +773,9 @@ LiveDecoder::process_with_filter (size_t n_values, const float *freq_in, float *
               audio_ramp[i] = amp;
             }
 
-          filter->process (ramp_len, audio_ramp);
+          filter->process (ramp_len, audio_ramp, current_note);
         }
-      filter->process (n_values, audio_out);
+      filter->process (n_values, audio_out, current_note);
     }
 }
 

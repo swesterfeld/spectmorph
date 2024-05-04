@@ -189,7 +189,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *so
     {
       live_decoder_filter.set_config (output_module, cfg, mix_freq);
       if (!filter_enabled)
-        live_decoder_filter.retrigger (sm_freq_to_note (current_freq));
+        live_decoder_filter.retrigger();
 
       chain_decoder.set_filter (&live_decoder_filter);
     }
@@ -203,7 +203,7 @@ void
 EffectDecoder::retrigger (int channel, float freq, int midi_velocity)
 {
   if (filter_enabled)
-    live_decoder_filter.retrigger (sm_freq_to_note (freq));
+    live_decoder_filter.retrigger();
 
   current_freq = freq;
 
