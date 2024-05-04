@@ -2,8 +2,6 @@ NEWER TODOS:
 VoiceSource:
 - better names for WavSource formant correction
 - better names inside VoiceSource; rename VoiceSource
-- [maybe] support formant correction for Source
-- implement start phase randomization
 Other:
 - 1-instrument-wav-source contains the data - not a good idea!
 - LV2 archive storage doesn't seem to work
@@ -14,8 +12,6 @@ Other:
 - LV2 window resizing doesn't work in Ardour7
 - JACK control-by-CC should use midi channel, too
 - non-linear modulation mapping
-- formant corrected playback
-- portamento could morph while sliding
 - visual feedback for adsr envelope
 - try to get old performance from new inner loop
 - could implement UI scaling for macOS
@@ -28,7 +24,9 @@ Other:
 - vibrato could have delay property
 - possibly add MPE timbre
 NEXT RELEASE:
+- [maybe] support formant correction for Source
 - experiments for handling freq < 1 in spectral envelope
+- portamento could morph while sliding
 INTERESTING BRANCHES:
 - morph-source-formant-correction: add formant correction to MorphSource
 

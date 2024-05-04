@@ -367,6 +367,7 @@ test_portamento (bool expected)
 
   double freq = 440;
   live_decoder.retrigger (0, freq, 127);
+  live_decoder.enable_start_phase_rand (false);
 
   vector<float> freq_in (5 * mix_freq);
   int porta_samples = mix_freq * 0.2;

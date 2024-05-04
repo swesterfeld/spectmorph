@@ -74,7 +74,7 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   loop_enabled (true),
   start_skip_enabled (false),
   mix_freq (mix_freq),
-  noise_seed (-1),
+  random_seed (-1),
   sine_samples (block_size * 3 / 2),
   noise_samples (block_size),
   vibrato_enabled (false)
@@ -165,8 +165,11 @@ LiveDecoder::retrigger (int channel, float freq, int midi_velocity)
       zero_float_block (block_size * 3 / 2, &sine_samples[0]);
       zero_float_block (block_size, &noise_samples[0]);
 
-      if (noise_seed != -1)
-        noise_decoder.set_seed (noise_seed);
+      if (random_seed != -1)
+        {
+          noise_decoder.set_seed (random_seed);
+          phase_random_gen.set_seed (random_seed);
+        }
 
       noise_index = block_size / 2; // need to generate noise immediately
       pos = block_size / 2; // need to generate sines immediately
@@ -313,7 +316,6 @@ LiveDecoder::gen_sines (float freq_in)
 
               // anti alias filter:
               double mag         = audio_block.mags_f (partial);
-              double phase       = 0; //atan2 (smag, cmag); FIXME: Does initial phase matter? I think not.
 
               const double portamento_freq = audio_block.freqs_f (partial) * freq_in;
               if (portamento_freq > filter_min_freq)
@@ -369,6 +371,7 @@ LiveDecoder::gen_sines (float freq_in)
               if (DEBUG)
                 printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
 
+              double phase = 0;
               if (unison_voices == 1)
                 {
                   if (freq_match)
@@ -381,6 +384,11 @@ LiveDecoder::gen_sines (float freq_in)
 
                       if (DEBUG)
                         printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
+                    }
+                  else
+                    {
+                      if (start_phase_rand_enabled)
+                        phase = phase_random_gen.random_double_range (0, 2 * M_PI); // randomize start phase
                     }
                 }
               else
@@ -398,9 +406,7 @@ LiveDecoder::gen_sines (float freq_in)
                         }
                       else
                         {
-                          // randomize start phase for unison
-
-                          phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
+                          phase = phase_random_gen.random_double_range (0, 2 * M_PI); // always randomize start phase for unison
                         }
                       unison_new_phases.push_back (phase);
                     }
@@ -880,6 +886,12 @@ LiveDecoder::enable_sines (bool es)
 }
 
 void
+LiveDecoder::enable_start_phase_rand (bool sr)
+{
+  start_phase_rand_enabled = sr;
+}
+
+void
 LiveDecoder::enable_debug_fft_perf (bool dfp)
 {
   debug_fft_perf_enabled = dfp;
@@ -918,10 +930,10 @@ LiveDecoder::precompute_tables (float mix_freq)
 }
 
 void
-LiveDecoder::set_noise_seed (int seed)
+LiveDecoder::set_random_seed (int seed)
 {
   assert (seed >= -1);
-  noise_seed = seed;
+  random_seed = seed;
 }
 
 Audio::LoopType
@@ -979,7 +991,7 @@ LiveDecoder::set_unison_voices (int voices, float detune)
         {
           /* since the position of the partials changed, randomization is really
            * the best we can do here */
-          phase = unison_phase_random_gen.random_double_range (0, 2 * M_PI);
+          phase = phase_random_gen.random_double_range (0, 2 * M_PI);
         }
     }
 }

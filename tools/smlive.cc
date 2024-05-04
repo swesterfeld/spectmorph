@@ -265,7 +265,7 @@ main (int argc, char **argv)
   decoder.enable_noise (options.noise_enabled);
 
   if (options.deterministic_random)
-    decoder.set_noise_seed (0x123456);
+    decoder.set_random_seed (0x123456);
 
   size_t len;
   if (options.loop > 0)
