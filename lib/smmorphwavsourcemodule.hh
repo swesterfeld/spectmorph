@@ -87,9 +87,9 @@ public:
   MorphWavSourceModule (MorphPlanVoice *voice);
   ~MorphWavSourceModule();
 
-  void set_config (const MorphOperatorConfig *op_cfg);
+  void set_config (const MorphOperatorConfig *op_cfg) override;
   void note_on (const TimeInfo& time_info) override;
-  LiveDecoderSource *source();
+  LiveDecoderSource *source() override;
 };
 
 }
