@@ -1,4 +1,4 @@
-AC_INIT([spectmorph],[0.6.1])
+AC_INIT([spectmorph],[1.0.0-beta1])
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
@@ -10,16 +10,6 @@ CFLAGS="$saved_CFLAGS" ; CXXFLAGS="$saved_CXXFLAGS"
 LT_INIT
 AC_PROG_OBJC
 AC_PROG_OBJCXX
-
-dnl Version splitted
-
-[MAJOR_VERSION=`echo $PACKAGE_VERSION | cut -d . -f 1`]
-[MINOR_VERSION=`echo $PACKAGE_VERSION | cut -d . -f 2`]
-[MICRO_VERSION=`echo $PACKAGE_VERSION | cut -d . -f 3`]
-
-AC_SUBST(MAJOR_VERSION)
-AC_SUBST(MINOR_VERSION)
-AC_SUBST(MICRO_VERSION)
 
 dnl
 dnl Define package requirements.
