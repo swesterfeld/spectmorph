@@ -1,4 +1,13 @@
 AC_INIT([spectmorph],[1.0.0-beta1])
+
+LV2_MINOR_VERSION=7
+
+dnl we don't try to map our version numbers to lv2, instead we increment lv2 minor
+dnl version for every single release, and keep micro version at zero
+dnl see also: https://lv2plug.in/ns/lv2core#minorVersion
+
+AC_SUBST(LV2_MINOR_VERSION)
+
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
