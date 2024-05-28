@@ -8,6 +8,14 @@ dnl see also: https://lv2plug.in/ns/lv2core#minorVersion
 
 AC_SUBST(LV2_MINOR_VERSION)
 
+CLAP_PLUGIN_VERSION=`echo $PACKAGE_VERSION | sed s/-beta/Beta/g;sed s/-alpha/Alpha/g`
+dnl from clap SDK: https://github.com/free-audio/clap/blob/main/include/clap/plugin.h
+dnl version is an arbitrary string which describes a plugin,
+dnl it is useful for the host to understand and be able to compare two different
+dnl version strings, so here is a regex like expression which is likely to be
+dnl understood by most hosts: MAJOR(.MINOR(.REVISION)?)?( (Alpha|Beta) XREV)?
+AC_DEFINE_UNQUOTED(CLAP_PLUGIN_VERSION, ["$CLAP_PLUGIN_VERSION"], [CLAP plugin version])
+
 AC_CONFIG_SRCDIR([src/smenc.cc])
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])

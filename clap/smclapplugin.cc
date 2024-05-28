@@ -38,7 +38,7 @@ clap_plugin_descriptor clap_plugin_desc = {CLAP_VERSION,
                                             "https://www.spectmorph.org",
                                             "",
                                             "",
-                                            VERSION,
+                                            CLAP_PLUGIN_VERSION,
                                             "Spectral Audio Morphing",
                                             features};
 
