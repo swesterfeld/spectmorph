@@ -2,12 +2,12 @@
 
 set -e
 
-if [ “$(id -u)” == “0” ] && [ "x$1" != "xroot" ]; then
+if [ "$(id -u)" == "0" ] && [ "x$1" != "xroot" ]; then
   echo "This script must be started as user."
   exit 1
 fi
 
-if [ “$(id -u)” != “0” ]; then
+if [ "$(id -u)" != "0" ]; then
   pushd ..
   git pull
   dpkg-buildpackage --no-sign -S
@@ -23,8 +23,18 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-VERSION=0.6.1
-DSC=../../spectmorph_${VERSION}.dsc
+VERSION=1.0.0-beta1
+
+# change 1.2.3-beta1 => 1.2.3~beta1 to get the correct version sorting order for .deb version
+DEB_VERSION="$(echo $VERSION | sed s/-/~/g)"
+XDEB_VERSION=$(cat ../debian/changelog | head -1 | sed "s/.*(\(.*\)).*/\1/g")
+
+if [ "$DEB_VERSION" != "$XDEB_VERSION" ]; then
+  echo "Debian version $DEB_VERSION and changelog version $XDEB_VERSION must match."
+  exit 1
+fi
+
+DSC=../../spectmorph_${DEB_VERSION}.dsc
 if [ ! -f "../data/spectmorph-instruments-${VERSION}.tar.xz" ]; then
   echo "You need to have an instrument tarball installed to build a package"
   exit 1
@@ -75,5 +85,5 @@ done
 
 for NAME in $DISTS
 do
-  ls -l /var/cache/pbuilder/$NAME/result/spectmorph_${VERSION}*deb
+  ls -l /var/cache/pbuilder/$NAME/result/spectmorph_${DEB_VERSION}*deb
 done
