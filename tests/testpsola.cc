@@ -56,7 +56,7 @@ main (int argc, char **argv)
   int synthesis_len = analysis_len * freq / dest_freq;
   vector<float> synth_data (5 * SR);
   double block_index = 0;
-  while (x < synth_data.size())
+  while (x < int (synth_data.size()))
     {
       AudioBlock block (audio->contents[LiveDecoder::compute_loop_frame_index (block_index, audio)]);
       vector<float> out = synth_block (block);
