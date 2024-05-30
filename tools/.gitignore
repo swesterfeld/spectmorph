@@ -17,6 +17,5 @@ smlive
 smfcompare
 *.o
 *.pyc
-moc_*.cc
 .deps
 .libs
