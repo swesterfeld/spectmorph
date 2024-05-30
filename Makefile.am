@@ -3,21 +3,19 @@ include $(top_srcdir)/Makefile.decl
 AUTOMAKE_OPTIONS = 1.9 dist-bzip2 no-dist-gzip
 ACLOCAL_AMFLAGS = -I m4 -Wno-portability
 
-SUBDIRS = 3rdparty lib glui vst clap src tests
+SUBDIRS = 3rdparty lib glui vst clap src tests docs data
 
 if COND_WITH_LV2
   SUBDIRS += lv2
 endif
 
 if COND_WITH_JACK
-  SUBDIRS += jack instedit
+  SUBDIRS += jack instedit tools
 
 if COND_WITH_QT
   SUBDIRS += inspector
 endif
 endif
-
-SUBDIRS += tools docs data
 
 EXTRA_DIST += DESIGN README.md TODO Doxyfile
 
