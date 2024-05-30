@@ -3,6 +3,10 @@
 #pragma once
 
 #include "smdialog.hh"
+#include "smlineedit.hh"
+#include "smfixedgrid.hh"
+#include "smlabel.hh"
+#include "smbutton.hh"
 
 namespace SpectMorph
 {
