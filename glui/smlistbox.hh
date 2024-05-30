@@ -3,6 +3,8 @@
 #ifndef SPECTMORPH_LISTBOX_HH
 #define SPECTMORPH_LISTBOX_HH
 
+#include "smscrollbar.hh"
+
 namespace SpectMorph
 {
 

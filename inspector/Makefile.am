@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(GLIB_CFLAGS) $(JACK_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui \
+AM_CXXFLAGS += $(GLIB_CFLAGS) $(JACK_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src \
              -I$(top_srcdir)/jack
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la
@@ -9,21 +9,22 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 SMMOCS = moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
          moc_smtimefreqwindow.cc moc_smfftparamwindow.cc moc_smfftthread.cc moc_smcwt.cc \
          moc_smtimefreqview.cc moc_smspectrumwindow.cc moc_smspectrumview.cc \
-         moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc
+         moc_smnavigatorwindow.cc moc_smtimefreqwinview.cc moc_smsampleview.cc moc_smzoomcontroller.cc
 
 CLEANFILES += $(SMMOCS)
 
 SMHDRS = smspectrumview.hh smspectrumwindow.hh smpixelarray.hh smtimefreqview.hh \
          smnavigator.hh smtimefreqwindow.hh smfftparamwindow.hh smfftthread.hh \
          smcommon.hh smcwt.hh smsamplewindow.hh smplayerwindow.hh \
-         smnavigatorwindow.hh smsamplewinview.hh smtimefreqwinview.hh
+         smnavigatorwindow.hh smsamplewinview.hh smtimefreqwinview.hh \
+         smzoomcontroller.hh smsampleview.hh
 
 SMSRCS = smspectrumview.cc \
          smspectrumwindow.cc smpixelarray.cc smtimefreqview.cc \
          smnavigator.cc smtimefreqwindow.cc \
          smfftparamwindow.cc smfftthread.cc smcwt.cc smsamplewindow.cc \
          smplayerwindow.cc smnavigatorwindow.cc \
-         smsamplewinview.cc smtimefreqwinview.cc
+         smsamplewinview.cc smtimefreqwinview.cc smzoomcontroller.cc smsampleview.cc
 
 noinst_PROGRAMS = testinspector
 noinst_LTLIBRARIES = libsminspector.la
@@ -80,3 +81,9 @@ moc_smnavigatorwindow.cc: smnavigatorwindow.hh
 
 moc_smtimefreqwinview.cc: smtimefreqwinview.hh
 	$(MOC) $(srcdir)/smtimefreqwinview.hh > moc_smtimefreqwinview.cc
+
+moc_smsampleview.cc: smsampleview.hh
+	$(MOC) $(srcdir)/smsampleview.hh > moc_smsampleview.cc
+
+moc_smzoomcontroller.cc: smzoomcontroller.hh
+	$(MOC) $(srcdir)/smzoomcontroller.hh > moc_smzoomcontroller.cc

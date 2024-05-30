@@ -8,4 +8,4 @@ Name: SpectMorph
 Description: SpectMorph sound morphing library
 Version: @VERSION@
 Libs: -L${libdir} -lspectmorph
-Cflags: -I${includedir}/spectmorph/smcore
+Cflags: -I${includedir}/spectmorph/smcore @GLIB_CFLAGS@

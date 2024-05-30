@@ -5,6 +5,10 @@
 #include "smwindow.hh"
 #include "smlistbox.hh"
 #include "smcreatebankwindow.hh"
+#include "smbutton.hh"
+#include "smclickablelabel.hh"
+#include "smsimplelines.hh"
+#include "smmessagebox.hh"
 
 namespace SpectMorph
 {
