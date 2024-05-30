@@ -36,9 +36,6 @@ testblob_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 testgenid_SOURCES = testgenid.cc
 testgenid_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
-testfft_SOURCES = testfft.cc
-testfft_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
-
 testfftperf_SOURCES = testfftperf.cc
 testfftperf_LDADD = $(SPECTMORPH_LIBS) $(BSE_LIBS)
 
