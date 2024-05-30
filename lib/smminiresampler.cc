@@ -6,10 +6,6 @@
 
 #include "config.h"
 
-#if SPECTMORPH_HAVE_BSE
-#include <bse/gsldatautils.hh>
-#endif
-
 using std::vector;
 using std::min;
 
@@ -17,10 +13,9 @@ using namespace SpectMorph;
 
 MiniResampler::MiniResampler (const WavData& wav_data, double speedup_factor)
 {
-#if !SPECTMORPH_HAVE_BSE
   g_printerr ("SpectMorph::MiniResampler: not supported without libbse\n");
   g_assert_not_reached();
-#else
+#if 0
   const vector<float>& samples = wav_data.samples();
   GslDataHandle *dhandle = gsl_data_handle_new_mem (1, 32, wav_data.mix_freq(), 440, samples.size(), &samples[0], NULL);
 
