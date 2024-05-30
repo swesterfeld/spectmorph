@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
+AM_CXXFLAGS += $(GLIB_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
@@ -17,7 +17,7 @@ lib_LTLIBRARIES = libspectmorphgui.la
 libspectmorphgui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 nodist_libspectmorphgui_la_SOURCES = $(SMMOCS)
 libspectmorphgui_la_CXXFLAGS = $(AM_CXXFLAGS)
-libspectmorphgui_la_LIBADD = $(BSE_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
+libspectmorphgui_la_LIBADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS) $(QT_LIBS)
 
 smguiincludedir = $(includedir)/spectmorph/smgui
 smguiinclude_HEADERS = $(SMHDRS) spectmorphgui.hh

@@ -8,7 +8,7 @@ STATIC_PLUGIN_LIBS = \
   $(top_builddir)/glui/.libs/libspectmorphglui.a \
   $(top_builddir)/glui/pugl/.libs/libspectmorphpugl.a \
   $(top_builddir)/lib/.libs/libspectmorph.a \
-  $(BSE_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(FREETYPE_LIBS) $(SNDFILE_LIBS) $(ZLIB_LIBS)
+  $(GLIB_LIBS) $(FFTW_LIBS) $(CAIRO_LIBS) $(FREETYPE_LIBS) $(SNDFILE_LIBS) $(ZLIB_LIBS)
 
 if COND_LINUX
 STATIC_PLUGIN_LIBS += $(GL_LIBS)

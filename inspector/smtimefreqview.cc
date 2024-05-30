@@ -120,39 +120,6 @@ TimeFreqView::set_position (int new_position)
   Q_EMIT spectrum_changed();
 }
 
-#if 0
-void
-TimeFreqView::load (const string& filename)
-{
-  BseErrorType error;
-  BseWaveFileInfo *wave_file_info = bse_wave_file_info_load (filename.c_str(), &error);
-  if (!wave_file_info)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-
-  BseWaveDsc *waveDsc = bse_wave_dsc_load (wave_file_info, 0, FALSE, &error);
-  if (!waveDsc)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-
-  GslDataHandle *dhandle = bse_wave_handle_create (waveDsc, 0, &error);
-  if (!dhandle)
-    {
-      fprintf (stderr, "%s: can't open the input file %s: %s\n", options.program_name.c_str(), filename.c_str(), bse_error_blurb (error));
-      exit (1);
-    }
-  AnalysisParams params;
-  params.transform_type = SM_TRANSFORM_FFT;
-  params.frame_size_ms = 40;
-  params.frame_step_ms = 10;
-  load (dhandle, filename, NULL, params);
-}
-#endif
-
 int
 TimeFreqView::get_frames()
 {

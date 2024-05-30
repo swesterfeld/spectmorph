@@ -48,35 +48,6 @@ Debian users: aptitude install libglib2.0-dev
     AC_SUBST(GLIB_LIBS)
 ])
 dnl
-dnl libbse
-dnl
-AC_DEFUN([AC_BSE_REQUIREMENTS],
-[
-    dnl check for libbse only if --with-beast was used
-    if test "x$with_beast" = "xyes"; then
-        PKG_CHECK_MODULES(BSE, [[bse >= 0.9]])
-    else
-        with_beast=no
-    fi
-    if test "x$with_beast" = "xno"; then
-        SPECTMORPH_HAVE_BSE=0
-
-        BSE_CFLAGS="$GLIB_CFLAGS"
-        BSE_LIBS="$GLIB_LIBS"
-    else
-        SPECTMORPH_HAVE_BSE=1
-
-        BSE_VERSION=`pkg-config --modversion bse`
-        AC_SUBST(BSE_VERSION)
-        bseplugindir=`pkg-config --variable=plugindir bse`
-        AC_SUBST(bseplugindir)
-    fi
-    AC_SUBST(BSE_CFLAGS)
-    AC_SUBST(BSE_LIBS)
-    AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_BSE, $SPECTMORPH_HAVE_BSE, [Whether libbse is available])
-    AM_CONDITIONAL([COND_WITH_BEAST], [test "$with_beast" != no])
-])
-dnl
 dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
@@ -293,13 +264,6 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 # Check requirement sets
 AC_GLIB_REQUIREMENTS
-
-dnl -------------------- libbse dependency can be disabled -------------------
-AC_ARG_WITH([beast], AS_HELP_STRING([--with-beast], [developer only: build against libbse]))
-
-AC_BSE_REQUIREMENTS
-
-dnl -------------------------------------------------------------------------
 
 dnl -------------------- lv2 support is optional ----------------------------
 AC_ARG_WITH([lv2], [AS_HELP_STRING([--with-lv2], [build support for LV2])])
@@ -540,11 +504,6 @@ if test "x$asan_flags_ok" != "xno"; then
 fi
 
 echo "  Install prefix . . . . .: $prefix"
-
-if test "x$with_beast" = "xyes"; then
-  echo
-  echo "  * building against libbse (this is a developer only option, not recommended)"
-fi
 echo
 echo "Now type 'make', followed by 'make install' as root."
 echo
