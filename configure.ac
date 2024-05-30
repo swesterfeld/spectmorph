@@ -471,12 +471,12 @@ MC_PROG_CC_SUPPORTS_OPTION([$asan_flags], [
 
 AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile 3rdparty/hiir/Makefile
-lib/Makefile gui/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
+lib/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile
 glui/Makefile glui/pugl/Makefile jack/Makefile inspector/Makefile lv2/Makefile vst/Makefile
 vst/vestige/Makefile data/Makefile data/templates/Makefile data/fonts/Makefile instedit/Makefile
 clap/Makefile 3rdparty/clap/helpers/Makefile 3rdparty/clap/private/Makefile
 3rdparty/clap/Makefile 3rdparty/clap/ext/Makefile 3rdparty/clap/ext/draft/Makefile
-tools/sminstbuilder spectmorph.pc spectmorphgui.pc spectmorphglui.pc lv2/spectmorph.ttl
+tools/sminstbuilder spectmorph.pc spectmorphglui.pc lv2/spectmorph.ttl
 lv2/manifest.ttl windows/config.sh macos/config.sh macos/Info.plist
 static/config.sh static/install.sh
 ])
