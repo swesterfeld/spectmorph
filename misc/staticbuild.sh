@@ -2,6 +2,7 @@
 
 set -e
 
+type gettext || apt-get install -y gettext
 ./autogen.sh
 cd static
 source ./config.sh
