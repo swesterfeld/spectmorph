@@ -58,18 +58,18 @@ SMHDRS = smlabel.hh smslider.hh smwidget.hh smwindow.hh smframe.hh \
 
 libspectmorphglui_la_SOURCES = $(SMSRCS) $(SMHDRS)
 libspectmorphglui_la_CXXFLAGS = $(AM_CXXFLAGS)
-libspectmorphglui_la_LIBADD = $(SPECTMORPH_LIBS) $(PUGL_LIBS) $(FREETYPE_LIBS) $(CAIRO_LIBS) $(BSE_LIBS)
+libspectmorphglui_la_LIBADD = $(SPECTMORPH_LIBS) $(PUGL_LIBS) $(FREETYPE_LIBS) $(CAIRO_LIBS) $(GLIB_LIBS)
 libspectmorphglui_la_LDFLAGS = -no-undefined $(PUGL_LDFLAGS)
 libspectmorphglui_la_LIBTOOLFLAGS = --tag CXX
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(SNDFILE_CFLAGS) $(FREETYPE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
+AM_CXXFLAGS += $(GLIB_CFLAGS) $(SNDFILE_CFLAGS) $(FREETYPE_CFLAGS) $(CAIRO_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/glui -DPUGL_HAVE_GL -DPUGL_HAVE_CAIRO -I$(top_srcdir)/vst
 
 smuitest_SOURCES = smuitest.cc
-smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smuitest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smuitest_LDFLAGS = $(PUGL_LDFLAGS)
 
 smscrolltest_SOURCES = smscrolltest.cc
-smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(BSE_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
+smscrolltest_LDADD = libspectmorphglui.la $(SPECTMORPH_LIBS) $(GLIB_LIBS) $(CAIRO_LIBS) $(PUGL_LIBS)
 smscrolltest_LDFLAGS = $(PUGL_LDFLAGS)
 
 noinst_PROGRAMS = smuitest smscrolltest
