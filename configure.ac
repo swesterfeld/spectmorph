@@ -52,23 +52,17 @@ dnl libqt5
 dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
 [
-    PKG_CHECK_MODULES(QTCORE, [Qt5Core >= 5.0.0],[:],[
-      AC_MSG_ERROR([You need to install Qt5 to build this package.
-
-You can manually disable Qt5 using --without-qt (in this case some tools will not be built).
-      ])
-    ])
-    PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0],[:],[
-      AC_MSG_ERROR([You need to install Qt5 to build this package.])
-    ])
-    QTCORE_CFLAGS="-DQT_NO_EMIT $QTCORE_CFLAGS"
-    QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
-    AC_SUBST(QTCORE_CFLAGS)
-    AC_SUBST(QTCORE_LIBS)
-    AC_SUBST(QT_CFLAGS)
-    AC_SUBST(QT_LIBS)
-    MOC=`pkg-config --variable host_bins Qt5Core`/moc
-    AC_SUBST(MOC)
+    PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0], [with_qt="yes"], [with_qt="no"])
+    if test "x$with_qt" = "yes"; then
+      QTCORE_CFLAGS="-DQT_NO_EMIT $QTCORE_CFLAGS"
+      QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
+      AC_SUBST(QTCORE_CFLAGS)
+      AC_SUBST(QTCORE_LIBS)
+      AC_SUBST(QT_CFLAGS)
+      AC_SUBST(QT_LIBS)
+      MOC=`pkg-config --variable host_bins Qt5Core`/moc
+      AC_SUBST(MOC)
+    fi
 ])
 dnl
 dnl libao
@@ -281,12 +275,10 @@ fi
 AM_CONDITIONAL([COND_WITH_JACK], [test "x$with_jack" != "xno"])
 dnl -------------------------------------------------------------------------
 
-dnl -------------- qt support can be disabled manually ----------------------
+dnl -------------- qt support is optional -----------------------------------
 AC_ARG_WITH([qt], [AS_HELP_STRING([--with-qt], [build tools which need Qt5])])
 if test "x$with_qt" != "xno"; then
-  dnl this check will abort if Qt5 is not found
   AC_QT_REQUIREMENTS
-  with_qt=yes
 fi
 AM_CONDITIONAL([COND_WITH_QT], [test "x$with_qt" != "xno"])
 dnl -------------------------------------------------------------------------
