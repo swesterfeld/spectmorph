@@ -6,6 +6,7 @@
 #include "smmorphoperator.hh"
 #include "smmodulationlist.hh"
 #include "smproperty.hh"
+#include "smformantcorrection.hh"
 
 #include <string>
 
@@ -23,20 +24,15 @@ public:
     PLAY_MODE_STANDARD        = 1,
     PLAY_MODE_CUSTOM_POSITION = 2
   };
-  enum FormantCorrection {
-    FORMANT_REPITCH = 1,
-    FORMANT_ENVELOPE = 2,
-    FORMANT_RESYNTH = 3
-  };
   struct Config : public MorphOperatorConfig
   {
     Project          *project = nullptr;
 
-    int               object_id = 0;
-    PlayMode          play_mode = PLAY_MODE_STANDARD;
-    ModulationData    position_mod;
-    FormantCorrection formant_correct = FORMANT_REPITCH;
-    float             fuzzy_resynth;
+    int                     object_id = 0;
+    PlayMode                play_mode = PLAY_MODE_STANDARD;
+    ModulationData          position_mod;
+    FormantCorrection::Mode formant_correct = FormantCorrection::MODE_REPITCH;
+    float                   fuzzy_resynth;
   };
   static constexpr auto P_PLAY_MODE       = "play_mode";
   static constexpr auto P_POSITION        = "position";

@@ -30,11 +30,11 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
 
   EnumInfo formant_correct_enum_info (
     {
-      { FORMANT_REPITCH, "Repitch" },
-      { FORMANT_ENVELOPE, "Envelope" },
-      { FORMANT_RESYNTH, "Resynth" }
+      { FormantCorrection::MODE_REPITCH,                    "Repitch" },
+      { FormantCorrection::MODE_PRESERVE_SPECTRAL_ENVELOPE, "Preserve Spectral Envelope" },
+      { FormantCorrection::MODE_HARMONIC_RESYNTHESIS,       "Harmonic Resynthesis" }
     });
-  add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECT, "Formants", FORMANT_REPITCH, formant_correct_enum_info);
+  add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECT, "Formants", FormantCorrection::MODE_REPITCH, formant_correct_enum_info);
   add_property (&m_config.fuzzy_resynth, P_FUZZY_RESYNTH, "Fuzzy Resynth", "%.1f %%", 20, 0, 100);
 
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
