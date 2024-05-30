@@ -18,6 +18,12 @@ jobs:
         N="$(git log -1 --format="%cL")" && B="$(git branch --show-current)"
         MSG=$(git log -1 --format="%s")
         .github/workflows/ircbot.py -q -j "#Anklang" -n AnklangGH -U "$N" -D "$B" -S "$S" "$MSG" "$URL"
+  linux-static:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test Build
+      run: misc/staticbuild.sh
   macos:
     runs-on: macos-latest
     steps:
