@@ -13,10 +13,6 @@
 #include <locale.h>
 #include <thread>
 
-#if SPECTMORPH_HAVE_BSE
-#include <bse/bsemain.hh>
-#endif
-
 using std::string;
 using std::vector;
 using std::function;
@@ -133,9 +129,6 @@ Main::Main (int *argc_p, char ***argv_p)
 {
   /* internationalized string printf */
   setlocale (LC_ALL, "");
-#if SPECTMORPH_HAVE_BSE
-  bse_init_inprocess (argc_p, *argv_p, NULL);
-#endif
   sm_plugin_init();
 }
 
