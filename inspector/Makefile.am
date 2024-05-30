@@ -3,7 +3,7 @@ include $(top_srcdir)/Makefile.decl
 AM_CXXFLAGS += $(GLIB_CFLAGS) $(JACK_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src \
              -I$(top_srcdir)/jack
 
-SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la
+SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
 SMMOCS = moc_smnavigator.cc moc_smsamplewindow.cc moc_smsamplewinview.cc moc_smplayerwindow.cc \
