@@ -53,7 +53,7 @@ dnl
 AC_DEFUN([AC_QT_REQUIREMENTS],
 [
     PKG_CHECK_MODULES(QT, [Qt5Core >= 5.0.0 Qt5Gui >= 5.0.0 Qt5Widgets >= 5.0.0], [with_qt="yes"], [with_qt="no"])
-    if test "x$with_qt" = "yes"; then
+    if test "x$with_qt" = "xyes"; then
       QTCORE_CFLAGS="-DQT_NO_EMIT $QTCORE_CFLAGS"
       QT_CFLAGS="-DQT_NO_EMIT $QT_CFLAGS"
       AC_SUBST(QTCORE_CFLAGS)
