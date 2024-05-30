@@ -3,7 +3,7 @@
 set -e
 
 sudo apt-get install -y gettext
-./autogen.sh
+./autogen.sh --without-ao
 cd static
 source ./config.sh
 cd ..
