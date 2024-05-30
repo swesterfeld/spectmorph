@@ -278,7 +278,7 @@ MorphWavSourceView::update_visible()
   bool custom_position = (prop_play_mode->get() == MorphWavSource::PLAY_MODE_CUSTOM_POSITION);
   pv_position->set_visible (custom_position);
 
-  bool resynth = (prop_formant_correct->get() == MorphWavSource::FORMANT_RESYNTH);
+  bool resynth = (prop_formant_correct->get() == FormantCorrection::MODE_HARMONIC_RESYNTHESIS);
   pv_fuzzy_resynth->set_visible (resynth);
 
   op_layout.activate();
