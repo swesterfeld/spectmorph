@@ -2,7 +2,7 @@
 
 set -e
 
-sudo apt-get install -y gettext libsndfile1-dev libfftw3-dev
+sudo apt-get install -y gettext libsndfile1-dev libfftw3-dev libgl-dev
 ./autogen.sh --without-ao
 cd static
 source ./config.sh
