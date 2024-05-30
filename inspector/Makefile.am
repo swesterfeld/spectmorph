@@ -1,6 +1,6 @@
 include $(top_srcdir)/Makefile.decl
 
-AM_CXXFLAGS += $(BSE_CFLAGS) $(JACK_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui \
+AM_CXXFLAGS += $(GLIB_CFLAGS) $(JACK_CFLAGS) $(SNDFILE_CFLAGS) $(QT_CFLAGS) -I$(top_srcdir)/lib -I$(top_srcdir)/src -I$(top_srcdir)/gui \
              -I$(top_srcdir)/jack
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la $(top_builddir)/gui/libspectmorphgui.la
@@ -35,11 +35,11 @@ nodist_libsminspector_la_SOURCES = $(SMMOCS)
 libsminspector_la_CXXFLAGS = $(AM_CXXFLAGS)
 
 sminspector_SOURCES = sminspector.cc
-sminspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
+sminspector_LDADD = libsminspector.la $(GLIB_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
 sminspector_CXXFLAGS = $(AM_CXXFLAGS)
 
 testinspector_SOURCES = testinspector.cc
-testinspector_LDADD = libsminspector.la $(BSE_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
+testinspector_LDADD = libsminspector.la $(GLIB_LIBS) $(JACK_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS) $(QT_LIBS)
 testinspector_CXXFLAGS = $(AM_CXXFLAGS)
 
 moc_smnavigator.cc: smnavigator.hh
