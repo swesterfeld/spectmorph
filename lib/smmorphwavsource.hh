@@ -34,10 +34,10 @@ public:
     FormantCorrection::Mode formant_correct = FormantCorrection::MODE_REPITCH;
     float                   fuzzy_resynth;
   };
-  static constexpr auto P_PLAY_MODE       = "play_mode";
-  static constexpr auto P_POSITION        = "position";
-  static constexpr auto P_FORMANT_CORRECT = "formant_correct";
-  static constexpr auto P_FUZZY_RESYNTH   = "fuzzy_resynth";
+  static constexpr auto P_PLAY_MODE          = "play_mode";
+  static constexpr auto P_POSITION           = "position";
+  static constexpr auto P_FORMANT_CORRECTION = "formant_correction";
+  static constexpr auto P_FUZZY_FREQS        = "fuzzy_freqs";
 
   static constexpr auto USER_BANK = "User";
 protected:

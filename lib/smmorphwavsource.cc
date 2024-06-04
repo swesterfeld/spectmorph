@@ -34,8 +34,8 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
       { FormantCorrection::MODE_PRESERVE_SPECTRAL_ENVELOPE, "Preserve Spectral Envelope" },
       { FormantCorrection::MODE_HARMONIC_RESYNTHESIS,       "Harmonic Resynthesis" }
     });
-  add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECT, "Formants", FormantCorrection::MODE_REPITCH, formant_correct_enum_info);
-  add_property (&m_config.fuzzy_resynth, P_FUZZY_RESYNTH, "Fuzzy Resynth", "%.1f %%", 20, 0, 100);
+  add_property_enum (&m_config.formant_correct, P_FORMANT_CORRECTION, "Formants", FormantCorrection::MODE_REPITCH, formant_correct_enum_info);
+  add_property (&m_config.fuzzy_resynth, P_FUZZY_FREQS, "Fuzzy Freqs", "%.1f %%", 20, 0, 100);
 
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
   connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
