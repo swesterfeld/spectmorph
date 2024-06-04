@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <smmatharm.hh>
 
+#include "smutils.hh"
+
 #ifdef __SSE__
 #include <xmmintrin.h>
 #endif
@@ -544,6 +546,76 @@ sm_clamp (const T& value, const T& min_value, const T& max_value)
 {
   return std::min (std::max (value, min_value), max_value);
 }
+
+////////////// start: code based on log2 code from Anklang/ASE by Tim Janik
+// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
+
+/** Union to compartmentalize an IEEE-754 float.
+ * IEEE 754 single precision floating point layout:
+ * ```
+ *        31 30           23 22            0
+ * +--------+---------------+---------------+
+ * | s 1bit | e[30:23] 8bit | f[22:0] 23bit |
+ * +--------+---------------+---------------+
+ * B0------------------->B1------->B2-->B3-->
+ * ```
+ */
+union FloatIEEE754 {
+  float         v_float;
+  struct {
+#if   __BYTE_ORDER == __LITTLE_ENDIAN
+    uint mantissa : 23, biased_exponent : 8, sign : 1;
+#elif __BYTE_ORDER == __BIG_ENDIAN
+    uint sign : 1, biased_exponent : 8, mantissa : 23;
+#endif
+  } mpn;
+  static constexpr const int   BIAS = 127;                       ///< Exponent bias.
+};
+
+/** Fast approximation of logarithm to base 2.
+ * The parameter `x` is the exponent within `[1.1e-38…2^127]`.
+ * Within `1e-7…+1`, the error stays below 3.8e-6 which corresponds to a sample
+ * precision of 18 bit. When `x` is an exact power of 2, the error approaches
+ * zero. With FMA instructions and `-ffast-math enabled`, execution times should
+ * be below 10ns on 3GHz machines.
+ */
+
+extern inline void
+fast_log2 (float *value, int count)
+{
+  while (count)
+    {
+      const int block_size = 4096; // guarantee fixed amount of stack space
+      int i[block_size];
+      int todo = std::min (count, block_size);
+      for (int k = 0; k < todo; k++)
+        {
+          FloatIEEE754 u { value[k] };                     // v_float = 2^(biased_exponent-127) * mantissa
+          i[k] = u.mpn.biased_exponent - FloatIEEE754::BIAS; // extract exponent without bias
+          u.mpn.biased_exponent = FloatIEEE754::BIAS;   // reset to 2^0 so v_float is mantissa in [1..2]
+          value[k] = u.v_float;
+        }
+      for (int k = 0; k < todo; k++)
+        {
+          float r, x = value[k] - 1.0f;
+          // x=[0..1]; r = log2 (x + 1);
+          // h=0.0113916; // offset to reduce error at origin
+          // f=(1/log(2)) * log(x+1); dom=[0-h;1+h]; p=remez(f, 6, dom, 1);
+          // p = p - p(0); // discard non-0 offset
+          // err=p-f; plot(err,[0;1]); plot(f,p,dom); // result in sollya
+          r = x *  -0.0259366993544709205147977455165000143561553284592936f;
+          r = x * (+0.122047857676447181074792747820717519424533931189428f + r);
+          r = x * (-0.27814297685064327713977752916286528359628147166014f + r);
+          r = x * (+0.45764712300320092992105460899527194244236573556309f + r);
+          r = x * (-0.71816105664624015087225994551041120290062342459945f + r);
+          r = x * (+1.44254540258782520489769598315182363877204824648687f + r);
+          value[k] = i[k] + r; // log2 (i) + log2 (x)
+        }
+      value += todo;
+      count -= todo;
+    }
+}
+////////////// end: code based on log2 code from Anklang/ASE by Tim Janik
 
 } // namespace SpectMorph
 
