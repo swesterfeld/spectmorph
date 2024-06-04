@@ -8,6 +8,19 @@
 
 #include <assert.h>
 
+#define ASSERT_PRINTF(cond, fmt, ...) do { \
+    auto test_output = string_printf (fmt "\n", ##__VA_ARGS__); \
+    if (!(cond)) { \
+        fprintf(stderr, "Assertion failed: %s\n", #cond); \
+        fprintf(stderr, "  %s", test_output.c_str()); \
+        fprintf(stderr, "  File: %s, Line: %d\n", __FILE__, __LINE__); \
+        abort(); \
+    }  \
+    else { \
+      printf("%s", test_output.c_str()); \
+    } \
+  } while (0)
+
 using namespace SpectMorph;
 using std::max;
 using std::vector;
@@ -84,8 +97,7 @@ main (int argc, char **argv)
       sm_printf ("%f #H\n", fft_samples[i]);
 #endif
     }
-  printf ("noise test: hann_diff_max=%.17g\n", hann_diff_max);
-  assert (hann_diff_max < 2e-7);
+  ASSERT_PRINTF (hann_diff_max < 2e-7, "noise test: hann_diff_max=%.17g", hann_diff_max);
 
   // NOISE IFFT MODE: BH92 spectrum
   for (int sse = 0; sse < 2; sse++)
@@ -112,10 +124,8 @@ main (int argc, char **argv)
       float s_diff_max = 0;
       for (size_t i = 0; i < block_size; i++)
         s_diff_max = max (s_diff_max, fabs (spectrum[i] - dbg_spectrum[i] / block_size));
-      printf ("noise test: sse=%d t_diff_max=%.17g\n", sse, t_diff_max);
-      printf ("noise test: sse=%d s_diff_max=%.17g\n", sse, s_diff_max);
-      assert (t_diff_max < 2e-6);
-      assert (s_diff_max < 3e-9);
+      ASSERT_PRINTF (t_diff_max < 2e-6, "noise test: sse=%d t_diff_max=%.17g", sse, t_diff_max);
+      ASSERT_PRINTF (s_diff_max < 3e-9, "noise test: sse=%d s_diff_max=%.17g", sse, s_diff_max);
     }
 
   FFT::free_array_float (samples);
