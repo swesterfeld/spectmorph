@@ -52,10 +52,10 @@ MorphWavSourceView::MorphWavSourceView (Widget *parent, MorphWavSource *morph_wa
   pv_position = add_property_view (MorphWavSource::P_POSITION, op_layout);
 
   // FORMANT CORRECT
-  auto pv_formant_correct = add_property_view (MorphWavSource::P_FORMANT_CORRECT, op_layout);
+  auto pv_formant_correct = add_property_view (MorphWavSource::P_FORMANT_CORRECTION, op_layout);
   prop_formant_correct = pv_formant_correct->property();
   connect (prop_formant_correct->signal_value_changed, this, &MorphWavSourceView::update_visible);
-  pv_fuzzy_resynth = add_property_view (MorphWavSource::P_FUZZY_RESYNTH, op_layout);
+  pv_fuzzy_resynth = add_property_view (MorphWavSource::P_FUZZY_FREQS, op_layout);
 
   update_visible();
 
