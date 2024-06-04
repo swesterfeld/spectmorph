@@ -15,9 +15,9 @@ FormantCorrection::FormantCorrection()
 }
 
 void
-FormantCorrection::set_ratio (double ratio)
+FormantCorrection::set_ratio (double new_ratio)
 {
-  m_ratio = ratio;
+  ratio = new_ratio;
 }
 
 void
@@ -135,21 +135,21 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
 
           double freq = in_block.freqs_f (i) * e_tune_factor;
           double old_env_mag = emag_inter (freq);
-          double new_env_mag = emag_inter (freq * m_ratio);
+          double new_env_mag = emag_inter (freq * ratio);
 
           if (freq < 0.5)
             mags[i] = in_block.mags_f (i) * 0.0001;
           else
             mags[i] = in_block.mags_f (i) / old_env_mag * new_env_mag;
 
-          if (freq * m_ratio > max_partials)
+          if (freq * ratio > max_partials)
             break;
         }
       set_mags (mags, out_block.freqs.size());
     }
   else if (mode == MODE_HARMONIC_RESYNTHESIS)
     {
-      int partials = std::min (sm_round_positive (max_partials / m_ratio) + 1, RESYNTH_MAX_PARTIALS);
+      int partials = std::min (sm_round_positive (max_partials / ratio) + 1, RESYNTH_MAX_PARTIALS);
       out_block.freqs.set_capacity (partials);
       double mags[partials];
       size_t mags_count = 0;
@@ -169,7 +169,7 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
       for (int i = 1; i < partials; i++)
         {
           out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
-          mags[mags_count++] = emag_inter (i * m_ratio);
+          mags[mags_count++] = emag_inter (i * ratio);
         }
       set_mags (mags, mags_count);
     }
