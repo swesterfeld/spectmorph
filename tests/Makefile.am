@@ -21,7 +21,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity testinstbuild testautovol testwavdata testzip testuindexperf \
 	testlfo testsmdirs testladdervcf testpandaperf testnotifyperf testpropperf testroundperf \
-	testpsola testcurve
+	testpsola testcurve testblockmath
 
 if !COND_WINDOWS
 noinst_PROGRAMS += testjobqueue
@@ -170,6 +170,9 @@ testpsola_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 testcurve_SOURCES = testcurve.cc
 testcurve_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
+
+testblockmath_SOURCES = testblockmath.cc
+testblockmath_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm test-porta
