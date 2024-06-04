@@ -17,7 +17,11 @@ build()
   ./autogen.sh "$@"
   make -j `nproc` V=1
   if ! make -j `nproc` check; then
-    cat tests/test-suite.log
+    for LOG in $(find tests -iname '*.log')
+    do
+      echo "===== $LOG ====="
+      cat $LOG
+    done
     exit 1
   fi
   make install
