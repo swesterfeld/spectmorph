@@ -128,24 +128,25 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
       out_block.freqs.set_capacity (in_block.freqs.size());
       const double e_tune_factor = 1 / in_block.env_f0;
       double mags[in_block.freqs.size()];
+      size_t count = 0;
 
       for (size_t i = 0; i < in_block.freqs.size(); i++)
         {
-          out_block.freqs.push_back (in_block.freqs[i]);
-
           double freq = in_block.freqs_f (i) * e_tune_factor;
-          double old_env_mag = emag_inter (freq);
-          double new_env_mag = emag_inter (freq * ratio);
 
-          if (freq < 0.5)
-            mags[i] = in_block.mags_f (i) * 0.0001;
-          else
-            mags[i] = in_block.mags_f (i) / old_env_mag * new_env_mag;
+          if (freq > 0.5)
+            {
+              double old_env_mag = emag_inter (freq);
+              double new_env_mag = emag_inter (freq * ratio);
+
+              out_block.freqs.push_back (in_block.freqs[i]);
+              mags[count++] = in_block.mags_f (i) / old_env_mag * new_env_mag;;
+            }
 
           if (freq * ratio > max_partials)
             break;
         }
-      set_mags (mags, out_block.freqs.size());
+      set_mags (mags, count);
     }
   else if (mode == MODE_HARMONIC_RESYNTHESIS)
     {
