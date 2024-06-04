@@ -20,8 +20,8 @@ main (int argc, char **argv)
 {
   Main main (&argc, &argv);
 
-  const unsigned int runs = 10000000;
-  const double clocks_per_sec = 2500.0 * 1000 * 1000;
+  const unsigned int runs = 100000000;
+  const double ns_per_sec = 1000.0 * 1000 * 1000;
   double start;
 
   // warmup
@@ -50,8 +50,8 @@ main (int argc, char **argv)
     global_int += sm_factor2idb (i);
   const double t_factor2idb = get_time() - start;
 
-  printf ("%9.4f ifreq2freq\n", clocks_per_sec * t_ifreq2freq / runs);
-  printf ("%9.4f freq2ifreq\n", clocks_per_sec * t_freq2ifreq / runs);
-  printf ("%9.4f idb2factor\n", clocks_per_sec * t_idb2factor / runs);
-  printf ("%9.4f factor2idb\n", clocks_per_sec * t_factor2idb / runs);
+  printf ("%9.4f ifreq2freq\n", ns_per_sec * t_ifreq2freq / runs);
+  printf ("%9.4f freq2ifreq\n", ns_per_sec * t_freq2ifreq / runs);
+  printf ("%9.4f idb2factor\n", ns_per_sec * t_idb2factor / runs);
+  printf ("%9.4f factor2idb\n", ns_per_sec * t_factor2idb / runs);
 }
