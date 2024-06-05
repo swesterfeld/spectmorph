@@ -47,6 +47,19 @@ sm_freq2ifreq (double freq)
   return sm_bound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
 }
 
+#define FAC_LOG2F 4158.88308335967f
+
+void
+sm_freq2ifreqs (double *freqs, uint n_freqs, uint16_t *out)
+{
+  float tmp[n_freqs];
+  for (uint i = 0; i < n_freqs; i++)
+    tmp[i] = freqs[i];
+  fast_log2 (tmp, n_freqs);
+  for (uint i = 0; i < n_freqs; i++)
+    out[i] = sm_bound (0, sm_round_positive (tmp[i] * FAC_LOG2F + float (ADD)), 65535);
+}
+
 double
 sm_ifreq2freq_slow (uint16_t ifreq)
 {

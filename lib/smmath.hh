@@ -497,6 +497,7 @@ void     sm_math_init();
 
 uint16_t sm_freq2ifreq (double freq);
 double   sm_ifreq2freq_slow (uint16_t ifreq);
+void     sm_freq2ifreqs (double *freqs, uint n_freqs, uint16_t *out);
 
 inline double
 sm_idb2factor (uint16_t idb)
