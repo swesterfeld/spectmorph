@@ -17,9 +17,9 @@ float global_f = 0;
 double
 perf (bool fl2, int N)
 {
-  vector<float> block (4096);
+  vector<float> block (N);
   float f = 0.01;
-  const unsigned int runs = 10000000;
+  const unsigned int runs = 200'000'000 / std::max (N, 16);
   double start = get_time();
   for (unsigned int i = 0; i < runs; i++)
     {
