@@ -38,6 +38,20 @@ sm_idb2factor_slow (uint16_t idb)
   return db_to_factor (db);
 }
 
+void
+sm_factor2idbs (double *factors, uint n_factors, uint16_t *out)
+{
+  float tmp[n_factors];
+  for (uint i = 0; i < n_factors; i++)
+    tmp[i] = std::max (factors[i], 1e-25);
+
+  fast_log2 (tmp, n_factors);
+
+  static float factor = 20 * 64 * 0.301029995663981; /* log(2)/log(10) */
+  for (uint i = 0; i < n_factors; i++)
+    out[i] = sm_round_positive (tmp[i] * factor + float (512 * 64));
+}
+
 #define FAC 6000.0
 #define ADD (3 * FAC)
 
