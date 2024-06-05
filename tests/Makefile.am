@@ -13,7 +13,7 @@ EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq testbesseli0 testsse
+        testidb testifreq testbesseli0 testsse testblockmath
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testparamupdate testloopindex testoutfileperf \
@@ -21,7 +21,7 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
         testblockperf testlowpass1 testxparam testmidisynth testadsr testadsrdecay testsignal \
 	teststrformat testvelocity testinstbuild testautovol testwavdata testzip testuindexperf \
 	testlfo testsmdirs testladdervcf testpandaperf testnotifyperf testpropperf testroundperf \
-	testpsola testcurve testblockmath
+	testpsola testcurve
 
 if !COND_WINDOWS
 noinst_PROGRAMS += testjobqueue
