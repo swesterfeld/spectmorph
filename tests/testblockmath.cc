@@ -41,6 +41,36 @@ perf (bool fl2, unsigned int N)
   return (end - start) / runs / N;
 }
 
+int global_i;
+
+double
+freqperf (bool fast, unsigned int N)
+{
+  vector<double>   freqs (N);
+  vector<uint16_t> ifreqs (N);
+  for (size_t i = 0; i < freqs.size(); i++)
+    freqs[i] = sm_ifreq2freq (i % 12345 + 3456);
+
+  const unsigned int runs = 200'000'000 / std::max<uint> (N, 16);
+  double start = get_time();
+  for (unsigned int i = 0; i < runs; i++)
+    {
+      for (size_t i = 0; i < N; i++)
+        {
+          global_i += ifreqs[i];
+        }
+      if (fast)
+        sm_freq2ifreqs (freqs.data(), freqs.size(), ifreqs.data());
+      else
+        {
+          for (size_t i = 0; i < N; i++)
+            ifreqs[i] = sm_freq2ifreq (freqs[i]);
+        }
+    }
+  double end = get_time();
+  return (end - start) / runs / N;
+}
+
 int
 main (int argc, char **argv)
 {
@@ -66,6 +96,14 @@ main (int argc, char **argv)
         }
       sm_printf ("max_err = %g\n", max_err);
       assert (max_err < 3.82e-6);
+
+      vector<double> freqs (65536);
+      vector<uint16_t> ifreqs (65536);
+      for (size_t i = 0; i < freqs.size(); i++)
+        freqs[i] = sm_ifreq2freq (i);
+      sm_freq2ifreqs (freqs.data(), freqs.size(), ifreqs.data());
+      for (size_t i = 0; i < freqs.size(); i++)
+        printf ("%zd -> %fi -> %d\n", i, freqs[i], ifreqs[i]);
     }
   if (argc == 2 && !strcmp (argv[1], "perf"))
     {
@@ -74,6 +112,8 @@ main (int argc, char **argv)
           sm_printf ("N=%d\n", N);
           sm_printf ("%9.4f fast_log2\n", 1e9 * perf (true, N));
           sm_printf ("%9.4f log2f\n", 1e9 * perf (false, N));
+          sm_printf ("%9.4f freq2ifreqs (block)\n", 1e9 * freqperf (true, N));
+          sm_printf ("%9.4f freq2ifreq\n", 1e9 * freqperf (false, N));
         }
     }
 }
