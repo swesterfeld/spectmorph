@@ -116,11 +116,11 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
 
     /* generate normalized block mags */
     assert (out_block.freqs.size() == mags_count);
-    out_block.mags.set_capacity (mags_count);
     for (size_t i = 0; i < mags_count; i++)
-      {
-        out_block.mags.push_back (sm_factor2idb (mags[i] * norm));
-      }
+      mags[i] *= norm;
+    uint16_t imags[mags_count];
+    sm_factor2idbs (mags, mags_count, imags);
+    out_block.mags.assign (imags, imags + mags_count);
   };
   out_block.noise.assign (in_block.noise);
   if (mode == MODE_PRESERVE_SPECTRAL_ENVELOPE)
