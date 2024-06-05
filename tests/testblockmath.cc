@@ -44,7 +44,7 @@ perf (bool fl2, unsigned int N)
 int global_i;
 
 double
-freqperf (bool fast, unsigned int N)
+freq_perf (bool fast, unsigned int N)
 {
   vector<double>   freqs (N);
   vector<uint16_t> ifreqs (N);
@@ -65,6 +65,34 @@ freqperf (bool fast, unsigned int N)
         {
           for (size_t i = 0; i < N; i++)
             ifreqs[i] = sm_freq2ifreq (freqs[i]);
+        }
+    }
+  double end = get_time();
+  return (end - start) / runs / N;
+}
+
+double
+mag_perf (bool fast, unsigned int N)
+{
+  vector<double>   mags (N);
+  vector<uint16_t> imags (N);
+  for (size_t i = 0; i < mags.size(); i++)
+    mags[i] = sm_idb2factor (i % 12345 + 3456);
+
+  const unsigned int runs = 200'000'000 / std::max<uint> (N, 16);
+  double start = get_time();
+  for (unsigned int i = 0; i < runs; i++)
+    {
+      for (size_t i = 0; i < N; i++)
+        {
+          global_i += imags[i];
+        }
+      if (fast)
+        sm_factor2idbs (mags.data(), mags.size(), imags.data());
+      else
+        {
+          for (size_t i = 0; i < N; i++)
+            imags[i] = sm_factor2idb (mags[i]);
         }
     }
   double end = get_time();
@@ -103,7 +131,21 @@ main (int argc, char **argv)
         freqs[i] = sm_ifreq2freq (i);
       sm_freq2ifreqs (freqs.data(), freqs.size(), ifreqs.data());
       for (size_t i = 0; i < freqs.size(); i++)
-        printf ("%zd -> %fi -> %d\n", i, freqs[i], ifreqs[i]);
+        {
+          assert (i == ifreqs[i]);
+          // printf ("F %zd -> %f -> %d\n", i, freqs[i], ifreqs[i]);
+        }
+
+      vector<double> mags (65536);
+      vector<uint16_t> imags (65536);
+      for (size_t i = 0; i < mags.size(); i++)
+        mags[i] = sm_idb2factor (i);
+      sm_factor2idbs (mags.data(), mags.size(), imags.data());
+      for (size_t i = 0; i < mags.size(); i++)
+        {
+          assert (imags[i] == sm_factor2idb (mags[i]));
+          // printf ("M %zd -> %f -> %d\n", i, mags[i], imags[i]);
+        }
     }
   if (argc == 2 && !strcmp (argv[1], "perf"))
     {
@@ -112,8 +154,10 @@ main (int argc, char **argv)
           sm_printf ("N=%d\n", N);
           sm_printf ("%9.4f fast_log2\n", 1e9 * perf (true, N));
           sm_printf ("%9.4f log2f\n", 1e9 * perf (false, N));
-          sm_printf ("%9.4f freq2ifreqs (block)\n", 1e9 * freqperf (true, N));
-          sm_printf ("%9.4f freq2ifreq\n", 1e9 * freqperf (false, N));
+          sm_printf ("%9.4f freq2ifreqs (block)\n", 1e9 * freq_perf (true, N));
+          sm_printf ("%9.4f freq2ifreq\n", 1e9 * freq_perf (false, N));
+          sm_printf ("%9.4f factor2idbs (block)\n", 1e9 * mag_perf (true, N));
+          sm_printf ("%9.4f factor2idb\n", 1e9 * mag_perf (false, N));
         }
     }
 }
