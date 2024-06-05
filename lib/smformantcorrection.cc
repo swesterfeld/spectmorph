@@ -151,7 +151,8 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
   else if (mode == MODE_HARMONIC_RESYNTHESIS)
     {
       int partials = std::min (sm_round_positive (max_partials / ratio) + 1, RESYNTH_MAX_PARTIALS);
-      out_block.freqs.set_capacity (partials);
+      double freqs[partials];
+      uint16_t ifreqs[partials];
       double mags[partials];
       size_t mags_count = 0;
 
@@ -169,9 +170,11 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
 
       for (int i = 1; i < partials; i++)
         {
-          out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
+          freqs[mags_count] = i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac);
           mags[mags_count++] = emag_inter (i * ratio);
         }
+      sm_freq2ifreqs (freqs, mags_count, ifreqs);
+      out_block.freqs.assign (ifreqs, ifreqs + mags_count);
       set_mags (mags, mags_count);
     }
   else
