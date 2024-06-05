@@ -27,7 +27,7 @@ perf (bool fl2, int N)
         {
           global_f += block[i];
           block[i] = f;
-          f += 0.001;
+          f += 0.001f;
         }
       if (fl2)
         fast_log2 (block.data(), N);
