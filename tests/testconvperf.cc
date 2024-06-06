@@ -12,7 +12,7 @@
 using namespace SpectMorph;
 using std::vector;
 
-double global_var;
+float global_var;
 int global_int;
 
 int
