@@ -1,7 +1,4 @@
 NEWER TODOS:
-VoiceSource:
-- better names for WavSource formant correction
-- better names inside VoiceSource; rename VoiceSource
 Other:
 - presets for 1.0.0
 - 1-instrument-wav-source contains the data - not a good idea!
