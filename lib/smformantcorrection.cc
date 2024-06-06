@@ -134,13 +134,13 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
         {
           float freq = in_block.freqs_f (i) * e_tune_factor;
 
-          if (freq > 0.5)
+          if (freq > 0.65)
             {
               float old_env_mag = emag_inter (freq);
               float new_env_mag = emag_inter (freq * ratio);
 
               out_block.freqs.push_back (in_block.freqs[i]);
-              mags[count++] = in_block.mags_f (i) / old_env_mag * new_env_mag;;
+              mags[count++] = in_block.mags_f (i) / old_env_mag * new_env_mag;
             }
 
           if (freq * ratio > max_partials)
