@@ -420,6 +420,7 @@ test_portaslide (bool verbose)
   RTMemoryArea rt_memory_area;
   LiveDecoder live_decoder (&source, mix_freq);
   live_decoder.enable_noise (false);
+  live_decoder.enable_start_phase_rand (false);
 
   const double test_freq = 120;
   double freq = test_freq;
