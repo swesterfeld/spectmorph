@@ -46,7 +46,7 @@ int global_i;
 double
 freq_perf (bool fast, unsigned int N)
 {
-  vector<double>   freqs (N);
+  vector<float>    freqs (N);
   vector<uint16_t> ifreqs (N);
   for (size_t i = 0; i < freqs.size(); i++)
     freqs[i] = sm_ifreq2freq (i % 12345 + 3456);
@@ -74,7 +74,7 @@ freq_perf (bool fast, unsigned int N)
 double
 mag_perf (bool fast, unsigned int N)
 {
-  vector<double>   mags (N);
+  vector<float>    mags (N);
   vector<uint16_t> imags (N);
   for (size_t i = 0; i < mags.size(); i++)
     mags[i] = sm_idb2factor (i % 12345 + 3456);
@@ -125,7 +125,7 @@ main (int argc, char **argv)
       sm_printf ("max_err = %g\n", max_err);
       assert (max_err < 3.82e-6);
 
-      vector<double> freqs (65536);
+      vector<float>    freqs (65536);
       vector<uint16_t> ifreqs (65536);
       for (size_t i = 0; i < freqs.size(); i++)
         freqs[i] = sm_ifreq2freq (i);
@@ -136,7 +136,7 @@ main (int argc, char **argv)
           // printf ("F %zd -> %f -> %d\n", i, freqs[i], ifreqs[i]);
         }
 
-      vector<double> mags (65536);
+      vector<float>    mags (65536);
       vector<uint16_t> imags (65536);
       for (size_t i = 0; i < mags.size(); i++)
         mags[i] = sm_idb2factor (i);
