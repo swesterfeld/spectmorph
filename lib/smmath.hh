@@ -497,14 +497,15 @@ void     sm_math_init();
 
 uint16_t sm_freq2ifreq (double freq);
 double   sm_ifreq2freq_slow (uint16_t ifreq);
+void     sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out);
 
-inline double
+inline float
 sm_idb2factor (uint16_t idb)
 {
   return MathTables::idb2f_high[idb >> 8] * MathTables::idb2f_low[idb & 0xff];
 }
 
-inline double
+inline float
 sm_ifreq2freq (uint16_t ifreq)
 {
   return MathTables::ifreq2f_high[ifreq >> 8] * MathTables::ifreq2f_low[ifreq & 0xff];
@@ -523,6 +524,8 @@ sm_factor2idb (double factor)
 
   return sm_round_positive (db * 64 + 512 * 64);
 }
+
+void sm_factor2idbs (float *factors, uint n_factors, uint16_t *out);
 
 double sm_lowpass1_factor (double mix_freq, double freq);
 double sm_xparam (double x, double slope);

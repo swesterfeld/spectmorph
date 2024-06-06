@@ -38,6 +38,20 @@ sm_idb2factor_slow (uint16_t idb)
   return db_to_factor (db);
 }
 
+void
+sm_factor2idbs (float *factors, uint n_factors, uint16_t *out)
+{
+  float tmp[n_factors];
+  for (uint i = 0; i < n_factors; i++)
+    tmp[i] = std::max (factors[i], 1e-25f);
+
+  fast_log2 (tmp, n_factors);
+
+  static float factor = 20 * 64 * 0.301029995663981; /* log(2)/log(10) */
+  for (uint i = 0; i < n_factors; i++)
+    out[i] = sm_round_positive (tmp[i] * factor + float (512 * 64));
+}
+
 #define FAC 6000.0
 #define ADD (3 * FAC)
 
@@ -45,6 +59,19 @@ uint16_t
 sm_freq2ifreq (double freq)
 {
   return sm_bound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
+}
+
+#define FAC_LOG2F 4158.88308335967f
+
+void
+sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out)
+{
+  float tmp[n_freqs];
+  for (uint i = 0; i < n_freqs; i++)
+    tmp[i] = freqs[i];
+  fast_log2 (tmp, n_freqs);
+  for (uint i = 0; i < n_freqs; i++)
+    out[i] = sm_bound (0, sm_round_positive (tmp[i] * FAC_LOG2F + float (ADD)), 65535);
 }
 
 double

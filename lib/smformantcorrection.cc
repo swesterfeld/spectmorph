@@ -15,7 +15,7 @@ FormantCorrection::FormantCorrection()
 }
 
 void
-FormantCorrection::set_ratio (double new_ratio)
+FormantCorrection::set_ratio (float new_ratio)
 {
   ratio = new_ratio;
 }
@@ -88,56 +88,56 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
   auto emag = [&] (int i) {
     if (i > 0 && i < int (in_block.env.size()))
       return in_block.env_f (i);
-    return 0.0;
+    return 0.0f;
   };
-  auto emag_inter = [&] (double p) {
+  auto emag_inter = [&] (float p) {
     int ip = p;
-    double frac = p - ip;
+    float frac = p - ip;
     return emag (ip) * (1 - frac) + emag (ip + 1) * frac;
   };
-  auto set_mags = [&] (double *mags, size_t mags_count) {
+  auto set_mags = [&] (float *mags, size_t mags_count) {
     /* compute energy before formant correction */
-    double e1 = 0;
+    float e1 = 0;
     for (size_t i = 0; i < in_block.mags.size(); i++)
       {
-        double mag = in_block.mags_f (i);
+        float mag = in_block.mags_f (i);
         e1 += mag * mag;
       }
     /* compute energy after formant correction */
-    double e2 = 0;
+    float e2 = 0;
     for (size_t i = 0; i < mags_count; i++)
       {
-        double mag = mags[i];
+        float mag = mags[i];
         e2 += mag * mag;
       }
 
-    const double threshold = 1e-9;
-    double norm = (e2 > threshold) ? sqrt (e1 / e2) : 1;
+    const float threshold = 1e-9;
+    float norm = (e2 > threshold) ? sqrt (e1 / e2) : 1;
 
     /* generate normalized block mags */
     assert (out_block.freqs.size() == mags_count);
-    out_block.mags.set_capacity (mags_count);
     for (size_t i = 0; i < mags_count; i++)
-      {
-        out_block.mags.push_back (sm_factor2idb (mags[i] * norm));
-      }
+      mags[i] *= norm;
+    uint16_t imags[mags_count];
+    sm_factor2idbs (mags, mags_count, imags);
+    out_block.mags.assign (imags, imags + mags_count);
   };
   out_block.noise.assign (in_block.noise);
   if (mode == MODE_PRESERVE_SPECTRAL_ENVELOPE)
     {
       out_block.freqs.set_capacity (in_block.freqs.size());
-      const double e_tune_factor = 1 / in_block.env_f0;
-      double mags[in_block.freqs.size()];
+      const float e_tune_factor = 1 / in_block.env_f0;
+      float mags[in_block.freqs.size()];
       size_t count = 0;
 
       for (size_t i = 0; i < in_block.freqs.size(); i++)
         {
-          double freq = in_block.freqs_f (i) * e_tune_factor;
+          float freq = in_block.freqs_f (i) * e_tune_factor;
 
           if (freq > 0.5)
             {
-              double old_env_mag = emag_inter (freq);
-              double new_env_mag = emag_inter (freq * ratio);
+              float old_env_mag = emag_inter (freq);
+              float new_env_mag = emag_inter (freq * ratio);
 
               out_block.freqs.push_back (in_block.freqs[i]);
               mags[count++] = in_block.mags_f (i) / old_env_mag * new_env_mag;;
@@ -151,11 +151,12 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
   else if (mode == MODE_HARMONIC_RESYNTHESIS)
     {
       int partials = std::min (sm_round_positive (max_partials / ratio) + 1, RESYNTH_MAX_PARTIALS);
-      out_block.freqs.set_capacity (partials);
-      double mags[partials];
+      float freqs[partials];
+      uint16_t ifreqs[partials];
+      float mags[partials];
       size_t mags_count = 0;
 
-      double ff = in_block.env_f0;
+      float ff = in_block.env_f0;
       if (fuzzy_frac > 1)
         {
           detune_factors.swap (next_detune_factors);
@@ -169,9 +170,11 @@ FormantCorrection::process_block (const AudioBlock& in_block, RTAudioBlock& out_
 
       for (int i = 1; i < partials; i++)
         {
-          out_block.freqs.push_back (sm_freq2ifreq (i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac)));
+          freqs[mags_count] = i * ff * (detune_factors[i] * (1 - fuzzy_frac) + next_detune_factors[i] * fuzzy_frac);
           mags[mags_count++] = emag_inter (i * ratio);
         }
+      sm_freq2ifreqs (freqs, mags_count, ifreqs);
+      out_block.freqs.assign (ifreqs, ifreqs + mags_count);
       set_mags (mags, mags_count);
     }
   else

@@ -84,20 +84,23 @@ public:
   void
   assign (const std::vector<T>& vec)
   {
-    assert (m_size == 0 && m_capacity == 0);
-
-    set_capacity (vec.size());
-    std::copy (vec.begin(), vec.end(), m_start);
-    m_size = vec.size();
+    assign (vec.begin(), vec.end());
   }
   void
   assign (const RTVector<T>& vec)
   {
+    assign (vec.m_start, vec.m_start + vec.m_size);
+  }
+  template<class It>
+  void
+  assign (It start_it, It end_it)
+  {
     assert (m_size == 0 && m_capacity == 0);
 
-    set_capacity (vec.size());
-    std::copy (vec.m_start, vec.m_start + vec.m_size, m_start);
-    m_size = vec.size();
+    size_t size = end_it - start_it;
+    set_capacity (size);
+    std::copy (start_it, end_it, m_start);
+    m_size = size;
   }
   size_t
   size() const

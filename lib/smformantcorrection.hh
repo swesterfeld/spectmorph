@@ -24,12 +24,12 @@ private:
   static constexpr double RESYNTH_MIN_FREQ = 6;
   static constexpr double RESYNTH_MAX_FREQ = 10;
 
-  double             ratio = 0;
+  float              ratio = 0;
   int                max_partials = 0;
   Mode               mode = MODE_REPITCH;
   float              fuzzy_resynth = 0;
   double             fuzzy_resynth_freq = 0;
-  double             fuzzy_frac = 0;
+  float              fuzzy_frac = 0;
   std::vector<float> detune_factors;
   std::vector<float> next_detune_factors;
   Random             detune_random;
@@ -41,7 +41,7 @@ public:
   void set_mode (Mode new_mode);
   void set_fuzzy_resynth (float new_fuzzy_resynth);
   void set_max_partials (int new_max_partials);
-  void set_ratio (double ratio);
+  void set_ratio (float ratio);
 
   void advance (double time_ms);
   void retrigger();
