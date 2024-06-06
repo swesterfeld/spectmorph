@@ -14,6 +14,16 @@ namespace SpectMorph
 class Random
 {
   Pcg32Rng rand_gen;
+  template<class T>
+  inline T
+  random_real_range (T begin, T end)
+  {
+    const uint32_t  rand_max = 0xffffffff;    // Pcg32Rng output: complete 32-bit values
+    const uint32_t  r = random_uint32();
+    const T         scale = 1 / (T (rand_max) + 1);
+
+    return r * scale * (end - begin) + begin;
+  }
 public:
   Random();
 
@@ -22,11 +32,12 @@ public:
   inline double
   random_double_range (double begin, double end)
   {
-    const uint32_t  rand_max = 0xffffffff;    // Pcg32Rng output: complete 32-bit values
-    const uint32_t  r = random_uint32();
-    const double    scale = 1.0 / (double (rand_max) + 1.0);
-
-    return r * scale * (end - begin) + begin;
+    return random_real_range<double> (begin, end);
+  }
+  inline float
+  random_float_range (float begin, float end)
+  {
+    return random_real_range<float> (begin, end);
   }
   inline uint32_t
   random_uint32()
