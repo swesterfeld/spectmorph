@@ -50,7 +50,7 @@ find_match (float freq, const FreqState *freq_state, size_t freq_state_size, siz
   const float freq_start = freq - 0.5;
   const float freq_end   = freq + 0.5;
 
-  double min_diff = 1e20;
+  float min_diff = 1e20;
   size_t best_index = 0; // initialized to avoid compiler warning
 
   FreqState start_freq_state = {freq_start, 0};
@@ -61,7 +61,7 @@ find_match (float freq, const FreqState *freq_state, size_t freq_state_size, siz
     {
       if (!freq_state[i].used)
         {
-          double diff = fabs (freq - freq_state[i].freq_f);
+          float diff = std::abs (freq - freq_state[i].freq_f);
           if (diff < min_diff)
             {
               best_index = i;
@@ -116,7 +116,7 @@ init_freq_state (const RTVector<uint16_t>& fint, FreqState *freq_state)
 }
 
 static void
-interp_mag_one (double interp, uint16_t *left, uint16_t *right, MorphMode mode)
+interp_mag_one (float interp, uint16_t *left, uint16_t *right, MorphMode mode)
 {
   if (mode == MorphMode::DB_LINEAR)
     {
@@ -196,7 +196,7 @@ morph (RTAudioBlock& out_block,
        bool have_right, const RTAudioBlock& right_block,
        double morphing, MorphUtils::MorphMode morph_mode)
 {
-  const double interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
+  const float interp = (morphing + 1) / 2; /* examples => 0: only left; 0.5 both equally; 1: only right */
 
   if (!have_left && !have_right) // nothing + nothing = nothing
     return false;
@@ -259,19 +259,19 @@ morph (RTAudioBlock& out_block,
            *   freq ~= lfreq         // if left partial is louder
            *   freq ~= rfreq         // if right partial is louder
            */
-          const double lfreq = left_block.freqs[i];
-          const double rfreq = right_block.freqs[j];
-          double freq;
+          const float lfreq = left_block.freqs[i];
+          const float rfreq = right_block.freqs[j];
+          float freq;
 
           if (left_block.mags[i] > right_block.mags[j])
             {
-              const double mfact = right_block.mags_f (j) / left_block.mags_f (i);
+              const float mfact = right_block.mags_f (j) / left_block.mags_f (i);
 
               freq = lfreq + mfact * interp * (rfreq - lfreq);
             }
           else
             {
-              const double mfact = left_block.mags_f (i) / right_block.mags_f (j);
+              const float mfact = left_block.mags_f (i) / right_block.mags_f (j);
 
               freq = rfreq + mfact * (1 - interp) * (lfreq - rfreq);
             }

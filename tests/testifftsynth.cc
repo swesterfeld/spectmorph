@@ -653,7 +653,7 @@ main (int argc, char **argv)
     }
   printf ("# IFFTSynth: max_output_diff = %.17g\n", max_output_diff);
   printf ("# IFFTSynth: max_freq_diff = %.17g\n", max_freq_diff);
-  assert (max_output_diff < 9e-5);
+  assert (max_output_diff < 1.5e-04);
   assert (max_freq_diff < 0.1);
 
   test_portaslide (false);

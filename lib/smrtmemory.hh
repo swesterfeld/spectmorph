@@ -170,19 +170,19 @@ public:
   RTVector<uint16_t> mags;
   RTVector<uint16_t> noise;
 
-  double
+  float
   freqs_f (size_t i) const
   {
     return sm_ifreq2freq (freqs[i]);
   }
 
-  double
+  float
   mags_f (size_t i) const
   {
     return sm_idb2factor (mags[i]);
   }
 
-  double
+  float
   noise_f (size_t i) const
   {
     return sm_idb2factor (noise[i]);

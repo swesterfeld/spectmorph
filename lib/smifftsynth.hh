@@ -18,9 +18,9 @@ class IFFTSynth
 
   int                zero_padding;
   size_t             block_size;
-  double             mix_freq;
-  double             freq256_factor;
-  double             mag_norm;
+  float              mix_freq;
+  float              freq256_factor;
+  float              mag_norm;
 
   float             *fft_in;
   float             *fft_out;
@@ -58,11 +58,11 @@ public:
     return fft_out;
   }
 
-  inline void render_partial (double freq, double mag, double phase);
+  inline void render_partial (float freq, float mag, float phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
   void precompute_tables();
 
-  inline double quantized_freq (double freq);
+  inline float quantized_freq (float freq);
 };
 
 struct IFFTSynthTable
@@ -76,7 +76,7 @@ struct IFFTSynthTable
  * phase can be in range [-2*pi..2*pi]
  */
 inline void
-IFFTSynth::render_partial (double mf_freq, double mag, double phase)
+IFFTSynth::render_partial (float mf_freq, float mag, float phase)
 {
   const int range = 4;
 
@@ -92,7 +92,7 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
   /* the following block computes sincos (phase + phase_adjust)
    *  - we add 2 * SIN_TABLE_SIZE here to support negative phases
    */
-  int iarg = sm_round_positive (phase * (SIN_TABLE_SIZE / (2 * M_PI)) + 2 * SIN_TABLE_SIZE);
+  int iarg = sm_round_positive (phase * float (SIN_TABLE_SIZE / (2 * M_PI)) + 2 * SIN_TABLE_SIZE);
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
@@ -148,12 +148,12 @@ IFFTSynth::render_partial (double mf_freq, double mag, double phase)
     }
 }
 
-inline double
-IFFTSynth::quantized_freq (double mf_freq)
+inline float
+IFFTSynth::quantized_freq (float mf_freq)
 {
   const int freq256 = sm_round_positive (mf_freq * freq256_factor);
-  const double qfreq = freq256 * (1 / 256.0);
-  const double mf_qfreq = qfreq / block_size * mix_freq;
+  const float qfreq = freq256 * float (1 / 256.0);
+  const float mf_qfreq = qfreq / block_size * mix_freq;
 
   return mf_qfreq;
 }

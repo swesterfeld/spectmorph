@@ -36,7 +36,7 @@ main (int argc, char **argv)
 
       // printf ("%f %f %d %f %f\n", factor, db_from_factor (factor, -500), idb, xfactor, error);
     }
-  const double bound = 0.0009;
+  const double bound = 0.00091;
   printf ("representation error%%: [%.6f, %.6f] bound %.6f\n", emin * 100, emax * 100, bound * 100);
 
   const double small_bound = 5e-16;

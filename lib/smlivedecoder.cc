@@ -43,19 +43,19 @@ init_aa_filter()
     }
 }
 
-static inline double
-fmatch (double f1, double f2)
+static inline float
+fmatch (float f1, float f2)
 {
-  return f2 < (f1 * 1.05) && f2 > (f1 * 0.95);
+  return f2 < (f1 * 1.05f) && f2 > (f1 * 0.95f);
 }
 
-static inline double
-truncate_phase (double phase)
+static inline float
+truncate_phase (float phase)
 {
   // truncate phase to interval [-2*pi:2*pi]; like fmod (phase, 2 * M_PI) but faster
-  phase *= 1 / (2 * M_PI);
+  phase *= float (1 / (2 * M_PI));
   phase -= int (phase);
-  phase *= 2 * M_PI;
+  phase *= float (2 * M_PI);
 
   return phase;
 }
@@ -305,22 +305,22 @@ LiveDecoder::gen_sines (float freq_in)
 
       if (sines_enabled)
         {
-          const double phase_factor = block_size * M_PI / mix_freq;
-          const double filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
-          const double filter_min_freq = filter_fact * mix_freq;
+          const float phase_factor = block_size * M_PI / mix_freq;
+          const float filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
+          const float filter_min_freq = filter_fact * mix_freq;
 
           size_t old_partial = 0;
           for (size_t partial = 0; partial < audio_block.freqs.size(); partial++)
             {
-              const double freq = audio_block.freqs_f (partial) * current_freq;
+              const float freq = audio_block.freqs_f (partial) * current_freq;
 
               // anti alias filter:
-              double mag         = audio_block.mags_f (partial);
+              float mag        = audio_block.mags_f (partial);
 
-              const double portamento_freq = audio_block.freqs_f (partial) * freq_in;
+              const float portamento_freq = audio_block.freqs_f (partial) * freq_in;
               if (portamento_freq > filter_min_freq)
                 {
-                  double norm_freq = portamento_freq / mix_freq;
+                  float norm_freq = portamento_freq / mix_freq;
                   if (norm_freq > 0.5)
                     {
                       // above nyquist freq -> since partials are sorted, there is nothing more to do for this frame
@@ -329,7 +329,7 @@ LiveDecoder::gen_sines (float freq_in)
                   else
                     {
                       // between filter_fact and 0.5 (db linear filter)
-                      int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5 - filter_fact));
+                      int index = sm_round_positive (ANTIALIAS_FILTER_TABLE_SIZE * (norm_freq - filter_fact) / (0.5f - filter_fact));
                       if (index >= 0)
                         {
                           if (index < ANTIALIAS_FILTER_TABLE_SIZE)
@@ -350,11 +350,11 @@ LiveDecoder::gen_sines (float freq_in)
               bool freq_match = false;
               if (!old_pstate.empty())
                 {
-                  double best_fdiff = fabs (old_pstate[old_partial].freq - freq);
+                  float best_fdiff = std::abs (old_pstate[old_partial].freq - freq);
 
                   while ((old_partial + 1) < old_pstate.size())
                     {
-                      double fdiff = fabs (old_pstate[old_partial + 1].freq - freq);
+                      float fdiff = std::abs (old_pstate[old_partial + 1].freq - freq);
                       if (fdiff < best_fdiff)
                         {
                           old_partial++;
@@ -365,20 +365,20 @@ LiveDecoder::gen_sines (float freq_in)
                           break;
                         }
                     }
-                  const double lfreq = old_pstate[old_partial].freq;
+                  const float lfreq = old_pstate[old_partial].freq;
                   freq_match = fmatch (lfreq, freq);
                 }
               if (DEBUG)
                 printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
 
-              double phase = 0;
+              float phase = 0;
               if (unison_voices == 1)
                 {
                   if (freq_match)
                     {
                       // matching freq -> compute new phase
-                      const double lfreq = old_pstate[old_partial].freq;
-                      const double lphase = old_pstate[old_partial].phase;
+                      const float lfreq = old_pstate[old_partial].freq;
+                      const float lphase = old_pstate[old_partial].phase;
 
                       phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor);
 
@@ -388,7 +388,7 @@ LiveDecoder::gen_sines (float freq_in)
                   else
                     {
                       if (start_phase_rand_enabled)
-                        phase = phase_random_gen.random_double_range (0, 2 * M_PI); // randomize start phase
+                        phase = phase_random_gen.random_float_range (0, 2 * M_PI); // randomize start phase
                     }
                 }
               else
@@ -399,14 +399,14 @@ LiveDecoder::gen_sines (float freq_in)
                     {
                       if (freq_match)
                         {
-                          const double lfreq = old_pstate[old_partial].freq;
-                          const double lphase = unison_old_phases[old_partial * unison_voices + i];
+                          const float lfreq = old_pstate[old_partial].freq;
+                          const float lphase = unison_old_phases[old_partial * unison_voices + i];
 
                           phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor);
                         }
                       else
                         {
-                          phase = phase_random_gen.random_double_range (0, 2 * M_PI); // always randomize start phase for unison
+                          phase = phase_random_gen.random_float_range (0, 2 * M_PI); // always randomize start phase for unison
                         }
                       unison_new_phases.push_back (phase);
                     }
@@ -427,7 +427,7 @@ LiveDecoder::gen_sines (float freq_in)
             {
               ifft_synth.clear_partials();
 
-              auto render_old_partial = [&] (double freq, double mag, double phase)
+              auto render_old_partial = [&] (float freq, float mag, float phase)
                 {
                   // bandlimiting: do not render partials above nyquist frequency
                   if (freq * portamento_stretch > 0.495 * mix_freq)
@@ -991,7 +991,7 @@ LiveDecoder::set_unison_voices (int voices, float detune)
         {
           /* since the position of the partials changed, randomization is really
            * the best we can do here */
-          phase = phase_random_gen.random_double_range (0, 2 * M_PI);
+          phase = phase_random_gen.random_float_range (0, 2 * M_PI);
         }
     }
 }
