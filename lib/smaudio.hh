@@ -39,32 +39,32 @@ public:
   void    sort_freqs();
   double  estimate_fundamental (int n_partials = 1) const;
 
-  double
+  float
   freqs_f (size_t i) const
   {
     return sm_ifreq2freq (freqs[i]);
   }
 
-  double
+  float
   mags_f (size_t i) const
   {
     return sm_idb2factor (mags[i]);
   }
 
-  double
+  float
   phases_f (size_t i) const
   {
-    const double factor = 2.0 * M_PI / 65536.0;
+    const float factor = 2.0 * M_PI / 65536.0;
     return phases[i] * factor;
   }
 
-  double
+  float
   env_f (size_t i) const
   {
     return sm_idb2factor (env[i]);
   }
 
-  double
+  float
   noise_f (size_t i) const
   {
     return sm_idb2factor (noise[i]);
