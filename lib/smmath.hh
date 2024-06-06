@@ -495,7 +495,7 @@ double   sm_idb2factor_slow (uint16_t idb);
 
 void     sm_math_init();
 
-uint16_t sm_freq2ifreq (double freq);
+uint16_t sm_freq2ifreq (float freq);
 double   sm_ifreq2freq_slow (uint16_t ifreq);
 void     sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out);
 
@@ -512,7 +512,7 @@ sm_ifreq2freq (uint16_t ifreq)
 }
 
 inline uint16_t
-sm_factor2idb (double factor)
+sm_factor2idb (float factor)
 {
   /* 1e-25 is about the smallest factor we can properly represent as integer, as
    *
@@ -520,7 +520,7 @@ sm_factor2idb (double factor)
    *
    * so we map every factor that is smaller, like 0, to this value
    */
-  const double db = 20 * log10 (std::max (factor, 1e-25));
+  const float db = 20 * std::log10 (std::max (factor, 1e-25f));
 
   return sm_round_positive (db * 64 + 512 * 64);
 }

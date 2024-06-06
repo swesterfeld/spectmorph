@@ -52,13 +52,13 @@ sm_factor2idbs (float *factors, uint n_factors, uint16_t *out)
     out[i] = sm_round_positive (tmp[i] * factor + float (512 * 64));
 }
 
-#define FAC 6000.0
+#define FAC 6000.0f
 #define ADD (3 * FAC)
 
 uint16_t
-sm_freq2ifreq (double freq)
+sm_freq2ifreq (float freq)
 {
-  return sm_bound (0, sm_round_positive (log (freq) * FAC + ADD), 65535);
+  return sm_bound (0, sm_round_positive (std::log (freq) * FAC + ADD), 65535);
 }
 
 #define FAC_LOG2F 4158.88308335967f
