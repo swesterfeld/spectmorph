@@ -23,8 +23,7 @@ namespace SpectMorph {
 }
 
 IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
-  block_size (block_size),
-  mix_freq (mix_freq)
+  block_size (block_size)
 {
   std::lock_guard lg (table_mutex);
 
@@ -86,6 +85,7 @@ IFFTSynth::IFFTSynth (size_t block_size, double mix_freq, WindowType win_type) :
   fft_in = FFT::new_array_float (block_size);
   fft_out = FFT::new_array_float (block_size);
   freq256_factor = 1 / mix_freq * block_size * zero_padding;
+  freq256_to_qfreq = mix_freq / 256.0 / block_size;
   mag_norm = 0.5 / block_size;
 }
 

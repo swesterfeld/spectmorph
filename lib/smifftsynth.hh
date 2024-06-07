@@ -18,8 +18,8 @@ class IFFTSynth
 
   int                zero_padding;
   size_t             block_size;
-  float              mix_freq;
   float              freq256_factor;
+  float              freq256_to_qfreq;
   float              mag_norm;
 
   float             *fft_in;
@@ -152,10 +152,7 @@ inline float
 IFFTSynth::quantized_freq (float mf_freq)
 {
   const int freq256 = sm_round_positive (mf_freq * freq256_factor);
-  const float qfreq = freq256 * float (1 / 256.0);
-  const float mf_qfreq = qfreq / block_size * mix_freq;
-
-  return mf_qfreq;
+  return freq256 * freq256_to_qfreq;
 }
 
 }
