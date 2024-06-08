@@ -73,6 +73,8 @@ Resampler2::Resampler2 (Mode      mode,
   use_sse_if_available_ = use_sse_if_available;
   filter_ = filter;
 
+  PANDA_RESAMPLER_CHECK (ratio == 1 || ratio == 2 || ratio == 4 || ratio == 8);
+
   init_stage (impl_x2, 2);
   init_stage (impl_x4, 4);
   init_stage (impl_x8, 8);
@@ -322,7 +324,7 @@ fir_test_filter_sse (bool       verbose,
       double avg_diff = 0.0;
       for (int i = 0; i < 4; i++)
 	{
-	  double diff = fir_process_one_sample<double> (&random_mem[i], &taps[0], order) - out[i];
+	  double diff = fir_process_one_sample<double> (&random_mem[i], taps.data(), order) - out[i];
 	  avg_diff += fabs (diff);
 	}
       avg_diff /= (order + 1);
@@ -389,7 +391,10 @@ protected:
     uint i = 0;
     if (USE_SSE)
       {
-	while (i + 3 < n_input_samples)
+        /* (i + 6) -> need to take into account that the filter needs to access
+         * some samples after the end of the input data
+         */
+	while (i + 6 < n_input_samples)
 	  {
 	    process_4samples_aligned (&input[i], &output[i*2]);
 	    i += 4;
@@ -532,7 +537,10 @@ class Resampler2::Downsampler2 final : public Resampler2::Impl {
     uint i = 0;
     if (USE_SSE)
       {
-	while (i + 3 < n_output_samples)
+        /* (i + 6) -> need to take into account that the filter needs to access
+         * some samples after the end of the input data
+         */
+	while (i + 6 < n_output_samples)
 	  {
 	    process_4samples_aligned<ODD_STEPPING> (&input_even[i], &input_odd[i * ODD_STEPPING], &output[i]);
 	    i += 4;
