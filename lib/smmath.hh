@@ -583,26 +583,23 @@ union FloatIEEE754 {
  */
 
 extern inline void
-fast_log2 (float *value, int count)
+fast_log2 (float *values, int n_values)
 {
   const int block_size = 4096; // guarantee fixed amount of stack space
-  int i[block_size];
-  while (count)
+  int fexp[block_size];
+  while (n_values)
     {
-      int todo = std::min (count, block_size);
-      int *value_i = reinterpret_cast<int *> (value);
+      int todo = std::min (n_values, block_size);
+      int *values_i = reinterpret_cast<int *> (values);
       for (int k = 0; k < todo; k++)
         {
-          // extract exponent without bias
           const int EXPONENT_MASK = 0x7F800000;
-          i[k] = ((value_i[k] & EXPONENT_MASK) >> 23) - FloatIEEE754::BIAS;
-          // reset exponent to 2^0 so v_float is mantissa in [1..2]
-          value_i[k] &= ~EXPONENT_MASK;
-          value_i[k] |=  FloatIEEE754::BIAS << 23;
+          fexp[k] = ((values_i[k] & EXPONENT_MASK) >> 23) - FloatIEEE754::BIAS;    // extract exponent without bias
+          values_i[k] = (values_i[k] & ~EXPONENT_MASK) | FloatIEEE754::BIAS << 23; // reset exponent to 2^0 so v_float is mantissa in [1..2]
         }
       for (int k = 0; k < todo; k++)
         {
-          float r, x = value[k] - 1.0f;
+          float r, x = values[k] - 1.0f;
           // x=[0..1]; r = log2 (x + 1);
           // h=0.0113916; // offset to reduce error at origin
           // f=(1/log(2)) * log(x+1); dom=[0-h;1+h]; p=remez(f, 6, dom, 1);
@@ -614,10 +611,10 @@ fast_log2 (float *value, int count)
           r = x * (+0.45764712300320092992105460899527194244236573556309f + r);
           r = x * (-0.71816105664624015087225994551041120290062342459945f + r);
           r = x * (+1.44254540258782520489769598315182363877204824648687f + r);
-          value[k] = i[k] + r; // log2 (i) + log2 (x)
+          values[k] = fexp[k] + r; // log2 (i) + log2 (x)
         }
-      value += todo;
-      count -= todo;
+      values += todo;
+      n_values -= todo;
     }
 }
 ////////////// end: code based on log2 code from Anklang/ASE by Tim Janik
