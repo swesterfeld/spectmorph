@@ -585,17 +585,20 @@ union FloatIEEE754 {
 extern inline void
 fast_log2 (float *value, int count)
 {
+  const int block_size = 4096; // guarantee fixed amount of stack space
+  int i[block_size];
   while (count)
     {
-      const int block_size = 4096; // guarantee fixed amount of stack space
-      int i[block_size];
       int todo = std::min (count, block_size);
+      int *value_i = reinterpret_cast<int *> (value);
       for (int k = 0; k < todo; k++)
         {
-          FloatIEEE754 u { value[k] };                     // v_float = 2^(biased_exponent-127) * mantissa
-          i[k] = u.mpn.biased_exponent - FloatIEEE754::BIAS; // extract exponent without bias
-          u.mpn.biased_exponent = FloatIEEE754::BIAS;   // reset to 2^0 so v_float is mantissa in [1..2]
-          value[k] = u.v_float;
+          // extract exponent without bias
+          const int EXPONENT_MASK = 0x7F800000;
+          i[k] = ((value_i[k] & EXPONENT_MASK) >> 23) - FloatIEEE754::BIAS;
+          // reset exponent to 2^0 so v_float is mantissa in [1..2]
+          value_i[k] &= ~EXPONENT_MASK;
+          value_i[k] |=  FloatIEEE754::BIAS << 23;
         }
       for (int k = 0; k < todo; k++)
         {
