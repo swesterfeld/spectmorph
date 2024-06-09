@@ -551,7 +551,6 @@ sm_clamp (const T& value, const T& min_value, const T& max_value)
 }
 
 ////////////// start: code based on log2 code from Anklang/ASE by Tim Janik
-// This Source Code Form is licensed MPL-2.0: http://mozilla.org/MPL/2.0
 
 /** Union to compartmentalize an IEEE-754 float.
  * IEEE 754 single precision floating point layout:
