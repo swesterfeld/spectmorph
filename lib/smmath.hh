@@ -594,7 +594,7 @@ fast_log2 (float *values, int n_values)
       for (int k = 0; k < todo; k++)
         {
           const int EXPONENT_MASK = 0x7F800000;
-          fexp[k] = ((values_i[k] & EXPONENT_MASK) >> 23) - FloatIEEE754::BIAS;    // extract exponent without bias
+          fexp[k] = (values_i[k] >> 23) - FloatIEEE754::BIAS;                      // extract exponent without bias (rely on sign bit == 0)
           values_i[k] = (values_i[k] & ~EXPONENT_MASK) | FloatIEEE754::BIAS << 23; // reset exponent to 2^0 so v_float is mantissa in [1..2]
         }
       for (int k = 0; k < todo; k++)
