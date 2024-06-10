@@ -256,7 +256,7 @@ public:
 struct Widget : public SignalReceiver
 {
 private:
-  LeakDebugger2 leak_debugger2 { "SpectMorph::Widget" };
+  LeakDebugger leak_debugger { "SpectMorph::Widget" };
 
   bool m_enabled = true;
   bool m_visible = true;

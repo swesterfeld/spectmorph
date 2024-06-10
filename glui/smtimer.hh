@@ -10,7 +10,7 @@ namespace SpectMorph
 
 class Timer : public SignalReceiver
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::Timer" };
+  LeakDebugger leak_debugger { "SpectMorph::Timer" };
 
   Widget *widget = nullptr;
   int     interval_ms = -1;
