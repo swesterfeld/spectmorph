@@ -10,7 +10,7 @@ namespace SpectMorph
 
 class MorphEnvelope : public MorphOperator
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphEnvelope" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphEnvelope" };
 
 public:
   static constexpr auto P_TIME = "time";

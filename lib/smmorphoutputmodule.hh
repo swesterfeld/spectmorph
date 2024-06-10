@@ -13,7 +13,7 @@ namespace SpectMorph {
 
 class MorphOutputModule : public MorphOperatorModule
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphOutputModule" };
+  LeakDebugger                       leak_debugger { "SpectMorph::MorphOutputModule" };
 
   const MorphOutput::Config         *cfg = nullptr;
   const TimeInfoGenerator           *time_info_gen = nullptr;

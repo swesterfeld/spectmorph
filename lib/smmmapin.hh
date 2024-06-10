@@ -14,7 +14,7 @@ namespace SpectMorph
 
 class MMapIn final : public GenericIn
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MMapIn" };
+  LeakDebugger         leak_debugger { "SpectMorph::MMapIn" };
 
   const unsigned char *mapfile;
   const unsigned char *mapend;

@@ -15,7 +15,7 @@ class MorphLFO;
 
 class MorphLFO : public MorphOperator
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphLFO" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphLFO" };
 public:
   enum WaveType {
     WAVE_SINE           = 1,

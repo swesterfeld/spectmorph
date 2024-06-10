@@ -13,7 +13,7 @@ namespace SpectMorph
 
 class MemOut final : public GenericOut
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MemOut" };
+  LeakDebugger leak_debugger { "SpectMorph::MemOut" };
 
   std::vector<unsigned char> *output;
 

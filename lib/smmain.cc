@@ -25,12 +25,12 @@ struct GlobalData
   GlobalData();
   ~GlobalData();
 
-  LeakDebuggerList2 leak_debugger_list2; /* needs to be the first member to track leaks for the other members */
+  LeakDebuggerList  leak_debugger_list; /* needs to be the first member to track leaks for the other members */
   InstEncCache      inst_enc_cache;
   WavSetRepo        wav_set_repo;
 
-  std::thread::id ui_thread;
-  std::thread::id dsp_thread;
+  std::thread::id   ui_thread;
+  std::thread::id   dsp_thread;
 
   vector<function<void()>> free_functions;
 };

@@ -4,34 +4,32 @@
 #define SPECTMORPH_LEAK_DEBUGGER_HH
 
 #include <set>
-#include <map>
 #include <string>
 #include <mutex>
-#include <functional>
 
 namespace SpectMorph
 {
 
-class LeakDebugger2
+class LeakDebugger
 {
   std::string m_type;
 public:
-  LeakDebugger2 (const std::string& type);
-  ~LeakDebugger2();
+  LeakDebugger (const std::string& type);
+  ~LeakDebugger();
 
   std::string type() const { return m_type; }
 };
 
-class LeakDebuggerList2
+class LeakDebuggerList
 {
   std::mutex                mutex;
-  std::set<LeakDebugger2 *> objects;
+  std::set<LeakDebugger *> objects;
 public:
-  LeakDebuggerList2();
-  ~LeakDebuggerList2();
+  LeakDebuggerList();
+  ~LeakDebuggerList();
 
-  void add (LeakDebugger2 *leak_debugger2);
-  void del (LeakDebugger2 *leak_debugger2);
+  void add (LeakDebugger *leak_debugger);
+  void del (LeakDebugger *leak_debugger);
 };
 
 }

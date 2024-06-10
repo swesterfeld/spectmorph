@@ -24,7 +24,7 @@ struct MorphGridNode
 
 class MorphGrid : public MorphOperator
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphGrid" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphGrid" };
 
 public:
   struct Config : public MorphOperatorConfig

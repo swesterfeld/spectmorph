@@ -18,7 +18,7 @@ class MorphOperatorModule;
 class MorphOutputModule;
 
 class MorphPlanSynth {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphPlanSynth" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphPlanSynth" };
 
 protected:
   std::vector<MorphPlanVoice *> voices;

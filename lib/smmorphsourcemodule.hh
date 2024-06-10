@@ -28,7 +28,7 @@ public:
 
 class MorphSourceModule : public MorphOperatorModule
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphSourceModule" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphSourceModule" };
 
 protected:
   SimpleWavSetSource my_source;

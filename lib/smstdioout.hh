@@ -12,7 +12,7 @@ namespace SpectMorph
 
 class StdioOut final : public GenericOut
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::StdioOut" };
+  LeakDebugger leak_debugger { "SpectMorph::StdioOut" };
 
   FILE *file;
 

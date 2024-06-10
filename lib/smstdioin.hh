@@ -12,7 +12,7 @@ namespace SpectMorph
 
 class StdioIn final : public GenericIn
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::StdioIn" };
+  LeakDebugger leak_debugger { "SpectMorph::StdioIn" };
 
   FILE        *file;
   std::string  filename;

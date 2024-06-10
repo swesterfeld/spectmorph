@@ -17,7 +17,7 @@ class MorphWavSourceModule;
 
 class MorphWavSourceModule : public MorphOperatorModule
 {
-  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphWavSourceModule" };
+  LeakDebugger leak_debugger { "SpectMorph::MorphWavSourceModule" };
 
   const MorphWavSource::Config *cfg = nullptr;
 

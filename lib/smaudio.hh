@@ -88,7 +88,7 @@ enum AudioLoadOptions
 class Audio
 {
   SPECTMORPH_CLASS_NON_COPYABLE (Audio);
-  LeakDebugger2 leak_debugger2 { "SpectMorph::Audio" };
+  LeakDebugger leak_debugger { "SpectMorph::Audio" };
 public:
   Audio();
   enum LoopType {
