@@ -22,10 +22,14 @@ main (int argc, char **argv)
 
   const char *index;
   if (argc == 1)
-    index = "instruments:standard";
+    {
+      index = "instruments:standard";
+    }
   else if (argc == 2)
-    index = argv[1];
-  if (argc > 2)
+    {
+      index = argv[1];
+    }
+  else
     {
       printf ("usage: %s <smindex-file>\n", argv[0]);
       exit (1);
