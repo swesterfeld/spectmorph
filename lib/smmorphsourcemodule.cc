@@ -4,7 +4,6 @@
 #include "smmorphsource.hh"
 #include "smmorphplan.hh"
 #include "smwavsetrepo.hh"
-#include "smleakdebugger.hh"
 #include <glib.h>
 
 using namespace SpectMorph;
@@ -12,8 +11,6 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 using std::max;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphSourceModule");
 
 SimpleWavSetSource::SimpleWavSetSource() :
   wav_set (NULL),
@@ -88,12 +85,6 @@ SimpleWavSetSource::set_portamento_freq (float freq)
 MorphSourceModule::MorphSourceModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  leak_debugger.add (this);
-}
-
-MorphSourceModule::~MorphSourceModule()
-{
-  leak_debugger.del (this);
 }
 
 LiveDecoderSource *

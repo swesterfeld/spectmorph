@@ -1,12 +1,9 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smstdioout.hh"
-#include "smleakdebugger.hh"
 #include <stdio.h>
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::StdioOut");
 
 GenericOut*
 StdioOut::open (const std::string& filename)
@@ -22,7 +19,6 @@ StdioOut::open (const std::string& filename)
 StdioOut::StdioOut (FILE *file)
   : file (file)
 {
-  leak_debugger.add (this);
 }
 
 StdioOut::~StdioOut()
@@ -32,7 +28,6 @@ StdioOut::~StdioOut()
       fclose (file);
       file = NULL;
     }
-  leak_debugger.del (this);
 }
 
 int

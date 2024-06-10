@@ -4,7 +4,6 @@
 #include "smoutfile.hh"
 #include "sminfile.hh"
 #include "smstdioout.hh"
-#include "smleakdebugger.hh"
 #include "smmemout.hh"
 #include "smmmapin.hh"
 #include "smwavsetrepo.hh"
@@ -19,7 +18,9 @@ using std::vector;
 
 using namespace SpectMorph;
 
-static LeakDebugger leak_debugger ("SpectMorph::Audio");
+Audio::Audio()
+{
+}
 
 /**
  * This function loads a SM-File.
@@ -239,16 +240,6 @@ SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
       ifile.next_event();
     }
   return Error::Code::NONE;
-}
-
-SpectMorph::Audio::Audio()
-{
-  leak_debugger.add (this);
-}
-
-Audio::~Audio()
-{
-  leak_debugger.del (this);
 }
 
 /**

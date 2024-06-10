@@ -2,7 +2,6 @@
 
 #include "smmorphplanvoice.hh"
 #include "smmorphoutputmodule.hh"
-#include "smleakdebugger.hh"
 #include "smmidisynth.hh"
 #include <assert.h>
 #include <map>
@@ -14,14 +13,11 @@ using std::sort;
 using std::map;
 using std::max;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphPlanVoice");
-
 MorphPlanVoice::MorphPlanVoice (float mix_freq, MorphPlanSynth *synth) :
   m_control_input (MorphPlan::N_CONTROL_INPUTS),
   m_mix_freq (mix_freq),
   m_morph_plan_synth (synth)
 {
-  leak_debugger.add (this);
 }
 
 void
@@ -29,11 +25,6 @@ MorphPlanVoice::configure_modules()
 {
   for (size_t i = 0; i < modules.size(); i++)
     modules[i].module->set_config (modules[i].config);
-}
-
-MorphPlanVoice::~MorphPlanVoice()
-{
-  leak_debugger.del (this);
 }
 
 MorphOutputModule *

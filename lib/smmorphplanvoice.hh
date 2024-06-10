@@ -30,7 +30,6 @@ protected:
 
 public:
   MorphPlanVoice (float mix_freq, MorphPlanSynth *synth);
-  ~MorphPlanVoice();
 
   void cheap_update (MorphPlanSynth::UpdateP update);
   void full_update (MorphPlanSynth::FullUpdateVoice& full_update_voice);

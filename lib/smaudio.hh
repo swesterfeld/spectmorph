@@ -91,8 +91,6 @@ class Audio
   LeakDebugger2 leak_debugger2 { "SpectMorph::Audio" };
 public:
   Audio();
-  ~Audio();
-
   enum LoopType {
     LOOP_NONE = 0,
     LOOP_FRAME_FORWARD,

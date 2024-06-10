@@ -32,25 +32,6 @@ public:
 
   void add (LeakDebugger2 *leak_debugger2);
   void del (LeakDebugger2 *leak_debugger2);
-  int count (const std::string& type);
-};
-
-class LeakDebugger
-{
-  std::mutex               mutex;
-  std::map<void *, int>    ptr_map;
-  std::string              type;
-  std::function<void()>    cleanup_function;
-
-  void ptr_add (void *p);
-  void ptr_del (void *p);
-
-public:
-  LeakDebugger (const std::string& name, std::function<void()> cleanup_function = nullptr);
-  ~LeakDebugger();
-
-  template<class T> void add (T *instance) { ptr_add (static_cast<void *> (instance)); }
-  template<class T> void del (T *instance) { ptr_del (static_cast<void *> (instance)); }
 };
 
 }

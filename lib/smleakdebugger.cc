@@ -15,73 +15,6 @@ using std::map;
 
 static LeakDebuggerList2 *leak_debugger_list2 = nullptr;
 
-void
-LeakDebugger::ptr_add (void *p)
-{
-  if (DEBUG)
-    {
-      assert (sm_init_done());
-
-      std::lock_guard<std::mutex> lock (mutex);
-
-      if (ptr_map[p] != 0)
-        g_critical ("LeakDebugger: invalid registration of object type %s detected; ptr_map[p] is %d\n",
-                    type.c_str(), ptr_map[p]);
-
-      ptr_map[p]++;
-      if (!leak_debugger_list2->count (type))
-        printf ("please port %s to new leak debugger\n", type.c_str());
-    }
-}
-
-void
-LeakDebugger::ptr_del (void *p)
-{
-  if (DEBUG)
-    {
-      assert (sm_init_done());
-
-      std::lock_guard<std::mutex> lock (mutex);
-
-      if (ptr_map[p] != 1)
-        g_critical ("LeakDebugger: invalid deletion of object type %s detected; ptr_map[p] is %d\n",
-                    type.c_str(), ptr_map[p]);
-
-      ptr_map[p]--;
-    }
-}
-
-LeakDebugger::LeakDebugger (const string& name, std::function<void()> cleanup_function) :
-  type (name),
-  cleanup_function (cleanup_function)
-{
-}
-
-LeakDebugger::~LeakDebugger()
-{
-  if (DEBUG)
-    {
-      if (cleanup_function)
-        cleanup_function();
-
-      int alive = 0;
-
-      for (map<void *, int>::iterator pi = ptr_map.begin(); pi != ptr_map.end(); pi++)
-        {
-          if (pi->second != 0)
-            {
-              assert (pi->second == 1);
-              alive++;
-            }
-        }
-      if (alive)
-        {
-          g_printerr ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
-          sm_debug ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
-        }
-    }
-}
-
 LeakDebugger2::LeakDebugger2 (const string& type) :
   m_type (type)
 {
@@ -146,16 +79,4 @@ LeakDebuggerList2::del (LeakDebugger2 *leak_debugger2)
 
   if (!objects.erase (leak_debugger2))
     g_critical ("LeakDebugger2: invalid deletion of object type %s detected\n", leak_debugger2->type().c_str());
-}
-
-int
-LeakDebuggerList2::count (const string& type)
-{
-  /* FIXME: remove me later */
-  int count = 0;
-  for (auto object : objects)
-    if (object->type() == type)
-      count++;
-
-  return count;
 }

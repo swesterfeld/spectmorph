@@ -2,23 +2,14 @@
 
 #include "smmorphkeytrackmodule.hh"
 #include "smmorphkeytrack.hh"
-#include "smleakdebugger.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
 
 using namespace SpectMorph;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphKeyTrackModule");
-
 MorphKeyTrackModule::MorphKeyTrackModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  leak_debugger.add (this);
-}
-
-MorphKeyTrackModule::~MorphKeyTrackModule()
-{
-  leak_debugger.del (this);
 }
 
 void

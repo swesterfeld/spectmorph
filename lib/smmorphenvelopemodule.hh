@@ -22,7 +22,6 @@ class MorphEnvelopeModule : public MorphOperatorModule
   Curve::Point note_off_p1, note_off_p2;
 public:
   MorphEnvelopeModule (MorphPlanVoice *voice);
-  ~MorphEnvelopeModule();
 
   void  set_config (const MorphOperatorConfig *cfg) override;
   float value() override;

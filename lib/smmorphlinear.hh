@@ -35,7 +35,6 @@ protected:
 
 public:
   MorphLinear (MorphPlan *morph_plan);
-  ~MorphLinear();
 
   // inherited from MorphOperator
   const char        *type() override;

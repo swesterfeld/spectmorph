@@ -22,7 +22,6 @@ class MorphOutputModule : public MorphOperatorModule
 
 public:
   MorphOutputModule (MorphPlanVoice *voice);
-  ~MorphOutputModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
   void process (const TimeInfoGenerator& time_info, RTMemoryArea& rt_memory_area, size_t n_samples, float **values, size_t n_ports, const float *freq_in = nullptr);

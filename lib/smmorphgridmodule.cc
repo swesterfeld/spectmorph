@@ -3,7 +3,6 @@
 #include "smmorphgridmodule.hh"
 #include "smmorphgrid.hh"
 #include "smmorphplanvoice.hh"
-#include "smleakdebugger.hh"
 #include "smmath.hh"
 #include "smlivedecoder.hh"
 #include "smmorphutils.hh"
@@ -18,13 +17,9 @@ using std::vector;
 using std::string;
 using std::sort;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphGridModule");
-
 MorphGridModule::MorphGridModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  leak_debugger.add (this);
-
   my_source.module = this;
 
   audio.fundamental_freq     = 440;
@@ -33,11 +28,6 @@ MorphGridModule::MorphGridModule (MorphPlanVoice *voice) :
   audio.frame_step_ms        = 1;
   audio.zeropad              = 4;
   audio.loop_type            = Audio::LOOP_NONE;
-}
-
-MorphGridModule::~MorphGridModule()
-{
-  leak_debugger.del (this);
 }
 
 void

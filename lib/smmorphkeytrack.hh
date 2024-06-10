@@ -21,7 +21,6 @@ protected:
   Config m_config;
 public:
   MorphKeyTrack (MorphPlan *morph_plan);
-  ~MorphKeyTrack();
 
   // inherited from MorphOperator
   const char        *type() override;

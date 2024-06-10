@@ -56,7 +56,6 @@ private:
 
 public:
   MorphGridModule (MorphPlanVoice *voice);
-  ~MorphGridModule();
 
   void set_config (const MorphOperatorConfig *cfg);
   LiveDecoderSource *source();

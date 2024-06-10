@@ -5,7 +5,6 @@
 #include "smmorphplan.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
-#include "smleakdebugger.hh"
 #include "smlivedecoder.hh"
 #include "smmorphutils.hh"
 #include "smutils.hh"
@@ -21,8 +20,6 @@ using std::min;
 using std::max;
 using std::sort;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphLinearModule");
-
 #define DEBUG (0)
 
 MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
@@ -36,13 +33,6 @@ MorphLinearModule::MorphLinearModule (MorphPlanVoice *voice) :
   audio.frame_step_ms        = 1;
   audio.zeropad              = 4;
   audio.loop_type            = Audio::LOOP_NONE;
-
-  leak_debugger.add (this);
-}
-
-MorphLinearModule::~MorphLinearModule()
-{
-  leak_debugger.del (this);
 }
 
 void

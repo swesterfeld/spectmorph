@@ -49,7 +49,6 @@ class MorphWavSourceModule : public MorphOperatorModule
 
 public:
   MorphWavSourceModule (MorphPlanVoice *voice);
-  ~MorphWavSourceModule();
 
   void set_config (const MorphOperatorConfig *op_cfg) override;
   void note_on (const TimeInfo& time_info) override;

@@ -125,7 +125,6 @@ public:
   LiveDecoder (float mix_freq);
   LiveDecoder (WavSet *smset, float mix_freq);
   LiveDecoder (LiveDecoderSource *source, float mix_freq);
-  ~LiveDecoder();
 
   void enable_noise (bool ne);
   void enable_sines (bool se);

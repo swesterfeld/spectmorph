@@ -2,7 +2,6 @@
 
 #include "smmorphlfo.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 
 #include <assert.h>
 
@@ -10,8 +9,6 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphLFO");
 
 MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
@@ -71,13 +68,6 @@ MorphLFO::MorphLFO (MorphPlan *morph_plan) :
   m_config.curve.points.emplace_back (Curve::Point {0.75, 0});
   m_config.curve.points.emplace_back (Curve::Point {0.75, 0.5, -0.6});
   m_config.curve.points.emplace_back (Curve::Point {1, 0});
-
-  leak_debugger.add (this);
-}
-
-MorphLFO::~MorphLFO()
-{
-  leak_debugger.del (this);
 }
 
 const char *

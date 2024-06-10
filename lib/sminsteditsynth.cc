@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "sminsteditsynth.hh"
-#include "smleakdebugger.hh"
 #include "smmidisynth.hh"
 
 using namespace SpectMorph;
@@ -9,13 +8,9 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-static LeakDebugger leak_debugger ("SpectMorph::InstEditSynth");
-
 InstEditSynth::InstEditSynth (float mix_freq) :
   mix_freq (mix_freq)
 {
-  leak_debugger.add (this);
-
   for (unsigned int v = 0; v < voices_per_layer; v++)
     {
       for (unsigned int layer = 0; layer < n_layers; layer++)
@@ -26,11 +21,6 @@ InstEditSynth::InstEditSynth (float mix_freq) :
           voices.push_back (std::move (voice));
         }
     }
-}
-
-InstEditSynth::~InstEditSynth()
-{
-  leak_debugger.del (this);
 }
 
 InstEditSynth::Decoders

@@ -3,7 +3,6 @@
 #include "smmorphoutputmodule.hh"
 #include "smmorphoutput.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 #include <glib.h>
 #include <assert.h>
 
@@ -12,18 +11,10 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphOutputModule");
-
 MorphOutputModule::MorphOutputModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice),
   decoder (this,  morph_plan_voice->mix_freq())
 {
-  leak_debugger.add (this);
-}
-
-MorphOutputModule::~MorphOutputModule()
-{
-  leak_debugger.del (this);
 }
 
 void

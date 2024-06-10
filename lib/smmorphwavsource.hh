@@ -50,7 +50,6 @@ protected:
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
-  ~MorphWavSource();
 
   // inherited from MorphOperator
   const char *type() override;

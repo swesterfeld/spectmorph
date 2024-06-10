@@ -4,7 +4,6 @@
 #include "smmorphlfo.hh"
 #include "smmorphplan.hh"
 #include "smwavsetrepo.hh"
-#include "smleakdebugger.hh"
 #include "smmorphplanvoice.hh"
 #include "smmorphplansynth.hh"
 #include "smmath.hh"
@@ -15,19 +14,10 @@ using std::string;
 using std::vector;
 using std::max;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphLFOModule");
-
 MorphLFOModule::MorphLFOModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  leak_debugger.add (this);
-
   shared_state = NULL;
-}
-
-MorphLFOModule::~MorphLFOModule()
-{
-  leak_debugger.del (this);
 }
 
 static double

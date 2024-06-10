@@ -35,7 +35,6 @@ protected:
 
 public:
   MorphSourceModule (MorphPlanVoice *voice);
-  ~MorphSourceModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
   LiveDecoderSource *source();

@@ -1,14 +1,11 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smstdiosubin.hh"
-#include "smleakdebugger.hh"
 
 #include <stdio.h>
 #include <assert.h>
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::StdioSubIn");
 
 GenericIn*
 StdioSubIn::open (const std::string& filename, size_t pos, size_t len)
@@ -27,15 +24,12 @@ StdioSubIn::StdioSubIn (FILE *file, size_t pos, size_t len) :
   fseek (file, pos, SEEK_SET);
   file_pos = 0;
   file_len = len;
-
-  leak_debugger.add (this);
 }
 
 StdioSubIn::~StdioSubIn()
 {
   assert (file);
   fclose (file);
-  leak_debugger.del (this);
 }
 
 int

@@ -48,7 +48,6 @@ protected:
   Config m_config;
 public:
   MorphEnvelope (MorphPlan *morph_plan);
-  ~MorphEnvelope();
 
   // inherited from MorphOperator
   const char        *type() override;

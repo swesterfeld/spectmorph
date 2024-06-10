@@ -2,17 +2,12 @@
 
 #include "smmorphenvelope.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphEnvelope");
 
 MorphEnvelope::MorphEnvelope (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  leak_debugger.add (this);
-
   m_config.curve.points.emplace_back (Curve::Point {0, 0});
   m_config.curve.points.emplace_back (Curve::Point {0.5, 1});
   m_config.curve.points.emplace_back (Curve::Point {1, 0});
@@ -43,11 +38,6 @@ MorphEnvelope::MorphEnvelope (MorphPlan *morph_plan) :
     });
   add_property_enum (&m_config.unit, P_UNIT, "Unit", UNIT_SECONDS, unit_enum_info);
   add_property_log (&m_config.time, P_TIME, "Time", "%.3f", 1, 1 / 50., 50);
-}
-
-MorphEnvelope::~MorphEnvelope()
-{
-  leak_debugger.del (this);
 }
 
 const char *
