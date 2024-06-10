@@ -6,12 +6,15 @@
 #include <string>
 #include <vector>
 #include "smgenericout.hh"
+#include "smleakdebugger.hh"
 
 namespace SpectMorph
 {
 
 class MemOut final : public GenericOut
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MemOut" };
+
   std::vector<unsigned char> *output;
 
 public:

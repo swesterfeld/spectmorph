@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphKeyTrackModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphKeyTrackModule" };
+
   const MorphKeyTrack::Config *cfg = nullptr;
 public:
   MorphKeyTrackModule (MorphPlanVoice *voice);

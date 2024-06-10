@@ -17,6 +17,8 @@ class MorphWavSourceModule;
 
 class MorphWavSourceModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphWavSourceModule" };
+
   const MorphWavSource::Config *cfg = nullptr;
 
   class InstrumentSource : public LiveDecoderSource

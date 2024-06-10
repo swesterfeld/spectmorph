@@ -14,6 +14,7 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphLinear" };
 public:
   struct Config : public MorphOperatorConfig
   {

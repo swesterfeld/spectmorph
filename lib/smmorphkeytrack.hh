@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphKeyTrack : public MorphOperator
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphKeyTrack" };
+
 public:
   struct Config : public MorphOperatorConfig
   {

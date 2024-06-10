@@ -15,6 +15,8 @@ namespace SpectMorph
 
 class MorphGridModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphGridModule" };
+
 public:
   struct InputNode
   {

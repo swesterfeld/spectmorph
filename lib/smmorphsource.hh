@@ -13,6 +13,7 @@ namespace SpectMorph
 
 class MorphSource : public MorphOperator
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphSource" };
 public:
   struct Config : public MorphOperatorConfig
   {

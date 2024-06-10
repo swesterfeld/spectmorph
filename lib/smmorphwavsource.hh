@@ -19,6 +19,7 @@ class Instrument;
 
 class MorphWavSource : public MorphOperator
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphWavSource" };
 public:
   enum PlayMode {
     PLAY_MODE_STANDARD        = 1,

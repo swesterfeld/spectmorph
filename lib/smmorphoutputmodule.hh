@@ -7,11 +7,14 @@
 #include "smmorphplanvoice.hh"
 #include "smeffectdecoder.hh"
 #include "smrtmemory.hh"
+#include "smleakdebugger.hh"
 
 namespace SpectMorph {
 
 class MorphOutputModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphOutputModule" };
+
   const MorphOutput::Config         *cfg = nullptr;
   const TimeInfoGenerator           *time_info_gen = nullptr;
   RTMemoryArea                      *m_rt_memory_area = nullptr;

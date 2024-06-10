@@ -5,12 +5,15 @@
 
 #include <string>
 #include "smgenericout.hh"
+#include "smleakdebugger.hh"
 
 namespace SpectMorph
 {
 
 class StdioOut final : public GenericOut
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::StdioOut" };
+
   FILE *file;
 
   StdioOut (FILE *file);

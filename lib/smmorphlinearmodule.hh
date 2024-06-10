@@ -14,6 +14,8 @@ namespace SpectMorph
 
 class MorphLinearModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphLinearModule" };
+
   const MorphLinear::Config *cfg = nullptr;
 
   MorphOperatorModule *left_mod;

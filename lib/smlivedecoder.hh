@@ -22,6 +22,8 @@ class LiveDecoder
   static constexpr size_t MAX_N_VALUES = 64;            // maximum number of values to process at once
   static constexpr size_t MAX_UNISON_VOICES = 7;        // maximum number of unison voices
 
+  LeakDebugger2 leak_debugger2 { "SpectMorph::LiveDecoder" };
+
   struct PartialState
   {
     float freq;

@@ -12,6 +12,8 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphLFOModule" };
+
   const MorphLFO::Config *cfg = nullptr;
 
   struct LFOState

@@ -18,6 +18,7 @@ class MorphOutput;
 
 class MorphOutput : public MorphOperator
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphOutput" };
 public:
   enum FilterType {
     FILTER_TYPE_LADDER = 1,

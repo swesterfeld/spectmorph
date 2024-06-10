@@ -9,6 +9,7 @@
 #include "smgenericout.hh"
 #include "smmath.hh"
 #include "smutils.hh"
+#include "smleakdebugger.hh"
 
 #define SPECTMORPH_BINARY_FILE_VERSION   14
 #define SPECTMORPH_SUPPORT_MULTI_CHANNEL 0
@@ -87,6 +88,7 @@ enum AudioLoadOptions
 class Audio
 {
   SPECTMORPH_CLASS_NON_COPYABLE (Audio);
+  LeakDebugger2 leak_debugger2 { "SpectMorph::Audio" };
 public:
   Audio();
   ~Audio();

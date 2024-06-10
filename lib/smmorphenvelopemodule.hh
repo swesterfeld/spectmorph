@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphEnvelopeModule : public MorphOperatorModule
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::MorphEnvelopeModule" };
+
   const MorphEnvelope::Config *cfg = nullptr;
   double last_time_ms = 0;
   double last_ppq_pos = 0;

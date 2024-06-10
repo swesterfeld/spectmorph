@@ -15,8 +15,11 @@ namespace SpectMorph
 
 class InstEncCache
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::InstEncCache" };
+
   struct CacheData
   {
+    LeakDebugger2              leak_debugger2 { "SpectMorph::InstEncCache::CacheData" };
     std::string                version;
     std::vector<unsigned char> data;
     uint64                     read_stamp = 0;
