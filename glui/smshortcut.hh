@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class Shortcut
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::Shortcut" };
+
   Window *window     = nullptr;
   PuglMod mod        = PuglMod (0);
   bool    mod_check  = false;

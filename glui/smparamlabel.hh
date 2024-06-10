@@ -12,6 +12,7 @@ namespace SpectMorph
 
 class ParamLabelModel
 {
+  LeakDebugger2 leak_debugger2 { "SpectMorph::ParamLabelModel" };
 public:
   ParamLabelModel();
   virtual ~ParamLabelModel();
