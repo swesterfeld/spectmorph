@@ -2,7 +2,6 @@
 
 #include "smmorphoutput.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 
 #include <assert.h>
 
@@ -12,8 +11,6 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphOutput");
 
 MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
@@ -96,13 +93,6 @@ MorphOutput::MorphOutput (MorphPlan *morph_plan) :
   add_property (&m_config.vibrato_depth, P_VIBRATO_DEPTH, "Depth", "%.2f Cent", 10, 0, 50);
   add_property_log (&m_config.vibrato_frequency, P_VIBRATO_FREQUENCY, "Frequency", "%.3f Hz", 4, 1, 15);
   add_property (&m_config.vibrato_attack, P_VIBRATO_ATTACK, "Attack", "%.2f ms", 0, 0, 1000);
-
-  leak_debugger.add (this);
-}
-
-MorphOutput::~MorphOutput()
-{
-  leak_debugger.del (this);
 }
 
 const char *

@@ -10,7 +10,6 @@
 #include "smmorphoutput.hh"
 #include "smmorphlinear.hh"
 #include "smhexstring.hh"
-#include "smleakdebugger.hh"
 #include "smutils.hh"
 
 #include <map>
@@ -22,15 +21,11 @@ using std::string;
 using std::vector;
 using std::map;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphPlan");
-
 MorphPlan::MorphPlan (Project& project) :
   m_project (&project)
 {
   in_restore = false;
   m_id = generate_id();
-
-  leak_debugger.add (this);
 }
 
 /**
@@ -58,8 +53,6 @@ MorphPlan::~MorphPlan()
   assert (!in_restore);
 
   clear();
-
-  leak_debugger.del (this);
 }
 
 bool

@@ -15,6 +15,7 @@ class MorphLFO;
 
 class MorphLFO : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphLFO" };
 public:
   enum WaveType {
     WAVE_SINE           = 1,
@@ -70,7 +71,6 @@ protected:
   Config      m_config;
 public:
   MorphLFO (MorphPlan *morph_plan);
-  ~MorphLFO();
 
   // inherited from MorphOperator
   const char        *type() override;

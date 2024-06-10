@@ -18,6 +18,8 @@ class MorphOperatorModule;
 class MorphOutputModule;
 
 class MorphPlanSynth {
+  LeakDebugger leak_debugger { "SpectMorph::MorphPlanSynth" };
+
 protected:
   std::vector<MorphPlanVoice *> voices;
   std::vector<std::unique_ptr<MorphModuleSharedState>> voices_shared_states;

@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphKeyTrack : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphKeyTrack" };
+
 public:
   struct Config : public MorphOperatorConfig
   {
@@ -19,7 +21,6 @@ protected:
   Config m_config;
 public:
   MorphKeyTrack (MorphPlan *morph_plan);
-  ~MorphKeyTrack();
 
   // inherited from MorphOperator
   const char        *type() override;

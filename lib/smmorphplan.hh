@@ -16,6 +16,8 @@ class Project;
 
 class MorphPlan : public SignalReceiver
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphPlan" };
+
 public:
   class ExtraParameters
   {

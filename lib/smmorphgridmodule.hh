@@ -15,6 +15,8 @@ namespace SpectMorph
 
 class MorphGridModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphGridModule" };
+
 public:
   struct InputNode
   {
@@ -54,7 +56,6 @@ private:
 
 public:
   MorphGridModule (MorphPlanVoice *voice);
-  ~MorphGridModule();
 
   void set_config (const MorphOperatorConfig *cfg);
   LiveDecoderSource *source();

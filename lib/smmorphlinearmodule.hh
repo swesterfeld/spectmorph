@@ -14,6 +14,8 @@ namespace SpectMorph
 
 class MorphLinearModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphLinearModule" };
+
   const MorphLinear::Config *cfg = nullptr;
 
   MorphOperatorModule *left_mod;
@@ -37,7 +39,6 @@ class MorphLinearModule : public MorphOperatorModule
 
 public:
   MorphLinearModule (MorphPlanVoice *voice);
-  ~MorphLinearModule();
 
   void set_config (const MorphOperatorConfig *cfg);
   LiveDecoderSource *source();

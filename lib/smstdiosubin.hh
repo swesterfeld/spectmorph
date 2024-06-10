@@ -5,12 +5,15 @@
 
 #include <string>
 #include "smgenericin.hh"
+#include "smleakdebugger.hh"
 
 namespace SpectMorph
 {
 
 class StdioSubIn final : public GenericIn
 {
+  LeakDebugger leak_debugger { "SpectMorph::StdioSubIn" };
+
   FILE *file;
   size_t file_pos;
   size_t file_len;

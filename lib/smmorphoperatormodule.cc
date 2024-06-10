@@ -11,12 +11,15 @@
 #include "smmorphkeytrackmodule.hh"
 #include "smmorphenvelopemodule.hh"
 #include "smmorphplansynth.hh"
-#include "smleakdebugger.hh"
 
 using namespace SpectMorph;
 
 using std::string;
 using std::vector;
+
+MorphModuleSharedState::~MorphModuleSharedState()
+{
+}
 
 MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
   morph_plan_voice (voice)
@@ -26,18 +29,6 @@ MorphOperatorModule::MorphOperatorModule (MorphPlanVoice *voice) :
 MorphOperatorModule::~MorphOperatorModule()
 {
   // virtual destructor to allow subclass deletion
-}
-
-static LeakDebugger shared_state_leak_debugger ("SpectMorph::MorphModuleSharedState");
-
-MorphModuleSharedState::MorphModuleSharedState()
-{
-  shared_state_leak_debugger.add (this);
-}
-
-MorphModuleSharedState::~MorphModuleSharedState()
-{
-  shared_state_leak_debugger.del (this);
 }
 
 LiveDecoderSource *

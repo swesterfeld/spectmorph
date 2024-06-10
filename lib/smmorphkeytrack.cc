@@ -2,25 +2,15 @@
 
 #include "smmorphkeytrack.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphKeyTrack");
 
 MorphKeyTrack::MorphKeyTrack (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  leak_debugger.add (this);
-
   m_config.curve.grid_x = 1;
   m_config.curve.points.emplace_back (Curve::Point {0, 0});
   m_config.curve.points.emplace_back (Curve::Point {1, 1});
-}
-
-MorphKeyTrack::~MorphKeyTrack()
-{
-  leak_debugger.del (this);
 }
 
 const char *

@@ -24,6 +24,8 @@ struct MorphGridNode
 
 class MorphGrid : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphGrid" };
+
 public:
   struct Config : public MorphOperatorConfig
   {
@@ -48,7 +50,6 @@ protected:
   void update_size();
 public:
   MorphGrid (MorphPlan *morph_plan);
-  ~MorphGrid();
 
   // inherited from MorphOperator
   const char        *type() override;

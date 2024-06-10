@@ -15,6 +15,7 @@ struct MidiSynthCallbacks;
 
 class InstEditSynth
 {
+  LeakDebugger leak_debugger { "SpectMorph::InstEditSynth" };
 public:
   struct Decoders {
     std::unique_ptr<WavSet> wav_set;
@@ -48,7 +49,6 @@ private:
 
 public:
   InstEditSynth (float mix_freq);
-  ~InstEditSynth();
 
   Decoders create_decoders (WavSet *take_wav_set, WavSet *ref_wav_set);
   void swap_decoders (Decoders& decoders);

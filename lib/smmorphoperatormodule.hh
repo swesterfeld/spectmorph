@@ -18,8 +18,8 @@ class MorphPlanVoice;
 
 class MorphModuleSharedState
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphModuleSharedState" };
 public:
-  MorphModuleSharedState();
   virtual ~MorphModuleSharedState();
 };
 

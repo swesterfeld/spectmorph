@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmmapin.hh"
-#include "smleakdebugger.hh"
 #include "smutils.hh"
 
 #include <sys/types.h>
@@ -16,8 +15,6 @@
 using std::vector;
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::MMapIn");
 
 GenericIn*
 MMapIn::open (const std::string& filename)
@@ -51,16 +48,12 @@ MMapIn::MMapIn (const unsigned char *mapfile, const unsigned char *mapend, GMapp
   g_mapped_file (gmf)
 {
   pos = static_cast<const unsigned char *> (mapfile);
-
-  leak_debugger.add (this);
 }
 
 MMapIn::~MMapIn()
 {
   if (g_mapped_file)
     g_mapped_file_unref (g_mapped_file);
-
-  leak_debugger.del (this);
 }
 
 int

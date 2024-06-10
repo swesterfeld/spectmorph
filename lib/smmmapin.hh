@@ -7,12 +7,15 @@
 #include <vector>
 #include <glib.h>
 #include "smgenericin.hh"
+#include "smleakdebugger.hh"
 
 namespace SpectMorph
 {
 
 class MMapIn final : public GenericIn
 {
+  LeakDebugger         leak_debugger { "SpectMorph::MMapIn" };
+
   const unsigned char *mapfile;
   const unsigned char *mapend;
   const unsigned char *pos;

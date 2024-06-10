@@ -18,6 +18,7 @@ class MorphOutput;
 
 class MorphOutput : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphOutput" };
 public:
   enum FilterType {
     FILTER_TYPE_LADDER = 1,
@@ -138,7 +139,6 @@ protected:
 
 public:
   MorphOutput (MorphPlan *morph_plan);
-  ~MorphOutput();
 
   // inherited from MorphOperator
   const char        *type() override;

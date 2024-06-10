@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphEnvelopeModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphEnvelopeModule" };
+
   const MorphEnvelope::Config *cfg = nullptr;
   double last_time_ms = 0;
   double last_ppq_pos = 0;
@@ -20,7 +22,6 @@ class MorphEnvelopeModule : public MorphOperatorModule
   Curve::Point note_off_p1, note_off_p2;
 public:
   MorphEnvelopeModule (MorphPlanVoice *voice);
-  ~MorphEnvelopeModule();
 
   void  set_config (const MorphOperatorConfig *cfg) override;
   float value() override;

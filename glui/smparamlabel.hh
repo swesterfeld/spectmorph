@@ -12,8 +12,8 @@ namespace SpectMorph
 
 class ParamLabelModel
 {
+  LeakDebugger leak_debugger { "SpectMorph::ParamLabelModel" };
 public:
-  ParamLabelModel();
   virtual ~ParamLabelModel();
 
   virtual std::string value_text() = 0;

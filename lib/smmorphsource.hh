@@ -13,6 +13,7 @@ namespace SpectMorph
 
 class MorphSource : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphSource" };
 public:
   struct Config : public MorphOperatorConfig
   {
@@ -23,7 +24,6 @@ protected:
   std::string m_smset;
 public:
   MorphSource (MorphPlan *morph_plan);
-  ~MorphSource();
 
   // inherited from MorphOperator
   const char        *type() override;

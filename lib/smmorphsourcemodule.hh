@@ -28,12 +28,13 @@ public:
 
 class MorphSourceModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphSourceModule" };
+
 protected:
   SimpleWavSetSource my_source;
 
 public:
   MorphSourceModule (MorphPlanVoice *voice);
-  ~MorphSourceModule();
 
   void set_config (const MorphOperatorConfig *op_cfg);
   LiveDecoderSource *source();

@@ -2,7 +2,6 @@
 
 #include "smmorphwavsource.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 #include "smproject.hh"
 #include "smzip.hh"
 
@@ -11,13 +10,9 @@ using namespace SpectMorph;
 using std::string;
 using std::vector;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphWavSource");
-
 MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  leak_debugger.add (this);
-
   EnumInfo play_mode_enum_info (
     {
       { PLAY_MODE_STANDARD,        "Standard" },
@@ -40,11 +35,6 @@ MorphWavSource::MorphWavSource (MorphPlan *morph_plan) :
   UserInstrumentIndex *user_instrument_index = morph_plan->project()->user_instrument_index();
   connect (user_instrument_index->signal_instrument_updated, this, &MorphWavSource::on_instrument_updated);
   connect (user_instrument_index->signal_bank_removed, this, &MorphWavSource::on_bank_removed);
-}
-
-MorphWavSource::~MorphWavSource()
-{
-  leak_debugger.del (this);
 }
 
 void

@@ -19,6 +19,7 @@ class Instrument;
 
 class MorphWavSource : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphWavSource" };
 public:
   enum PlayMode {
     PLAY_MODE_STANDARD        = 1,
@@ -49,7 +50,6 @@ protected:
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
-  ~MorphWavSource();
 
   // inherited from MorphOperator
   const char *type() override;

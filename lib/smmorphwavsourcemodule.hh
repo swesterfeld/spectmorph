@@ -17,6 +17,8 @@ class MorphWavSourceModule;
 
 class MorphWavSourceModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphWavSourceModule" };
+
   const MorphWavSource::Config *cfg = nullptr;
 
   class InstrumentSource : public LiveDecoderSource
@@ -47,7 +49,6 @@ class MorphWavSourceModule : public MorphOperatorModule
 
 public:
   MorphWavSourceModule (MorphPlanVoice *voice);
-  ~MorphWavSourceModule();
 
   void set_config (const MorphOperatorConfig *op_cfg) override;
   void note_on (const TimeInfo& time_info) override;

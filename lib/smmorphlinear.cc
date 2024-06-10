@@ -3,7 +3,6 @@
 #include "smmorphlinear.hh"
 #include "smmorphplan.hh"
 #include "smproperty.hh"
-#include "smleakdebugger.hh"
 #include "smwavsetrepo.hh"
 
 #include <assert.h>
@@ -12,8 +11,6 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphLinear");
 
 MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
@@ -24,13 +21,6 @@ MorphLinear::MorphLinear (MorphPlan *morph_plan) :
   morphing->modulation_list()->set_compat_type_and_op ("control_type", "control");
 
   m_config.db_linear = false;
-
-  leak_debugger.add (this);
-}
-
-MorphLinear::~MorphLinear()
-{
-  leak_debugger.del (this);
 }
 
 const char *

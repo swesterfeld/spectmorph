@@ -12,6 +12,8 @@ namespace SpectMorph
 
 class MorphLFOModule : public MorphOperatorModule
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphLFOModule" };
+
   const MorphLFO::Config *cfg = nullptr;
 
   struct LFOState
@@ -39,7 +41,6 @@ class MorphLFOModule : public MorphOperatorModule
   void restart_lfo (LFOState& state, const TimeInfo& time_info);
 public:
   MorphLFOModule (MorphPlanVoice *voice);
-  ~MorphLFOModule();
 
   void  set_config (const MorphOperatorConfig *cfg) override;
   float value() override;

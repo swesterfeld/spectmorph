@@ -2,7 +2,6 @@
 
 #include "smmorphplansynth.hh"
 #include "smmorphplanvoice.hh"
-#include "smleakdebugger.hh"
 #include "smmorphoutputmodule.hh"
 
 using namespace SpectMorph;
@@ -11,21 +10,15 @@ using std::map;
 using std::vector;
 using std::string;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphPlanSynth");
-
 MorphPlanSynth::MorphPlanSynth (float mix_freq, size_t n_voices) :
   m_mix_freq (mix_freq)
 {
-  leak_debugger.add (this);
-
   for (size_t i = 0; i < n_voices; i++)
     voices.push_back (new MorphPlanVoice (m_mix_freq, this));
 }
 
 MorphPlanSynth::~MorphPlanSynth()
 {
-  leak_debugger.del (this);
-
   for (size_t i = 0; i < voices.size(); i++)
     delete voices[i];
 

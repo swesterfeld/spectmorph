@@ -3,7 +3,6 @@
 #include "smlivedecoder.hh"
 #include "smlivedecoderfilter.hh"
 #include "smmath.hh"
-#include "smleakdebugger.hh"
 #include "smutils.hh"
 #include "smrtmemory.hh"
 #include "smfft.hh"
@@ -17,8 +16,6 @@ using namespace SpectMorph;
 using std::vector;
 using std::min;
 using std::max;
-
-static LeakDebugger leak_debugger ("SpectMorph::LiveDecoder");
 
 #define ANTIALIAS_FILTER_TABLE_SIZE 256
 
@@ -79,8 +76,6 @@ LiveDecoder::LiveDecoder (float mix_freq) :
   noise_samples (block_size),
   vibrato_enabled (false)
 {
-  leak_debugger.add (this);
-
   init_aa_filter();
   set_unison_voices (1, 0);
   /* avoid malloc during synthesis */
@@ -103,11 +98,6 @@ LiveDecoder::LiveDecoder (LiveDecoderSource *source, float mix_freq) :
   LiveDecoder (mix_freq)
 {
   this->source = source;
-}
-
-LiveDecoder::~LiveDecoder()
-{
-  leak_debugger.del (this);
 }
 
 void

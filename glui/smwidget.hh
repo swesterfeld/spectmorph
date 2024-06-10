@@ -10,6 +10,7 @@
 
 #include "pugl/pugl.h"
 #include "smsignal.hh"
+#include "smleakdebugger.hh"
 
 // Windows API headers #define DELETE
 #undef DELETE
@@ -255,6 +256,8 @@ public:
 struct Widget : public SignalReceiver
 {
 private:
+  LeakDebugger leak_debugger { "SpectMorph::Widget" };
+
   bool m_enabled = true;
   bool m_visible = true;
   Color m_background_color;

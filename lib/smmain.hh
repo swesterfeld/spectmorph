@@ -24,8 +24,8 @@ class WavSetRepo;
 
 namespace Global
 {
-  InstEncCache *inst_enc_cache();
-  WavSetRepo   *wav_set_repo();
+  InstEncCache      *inst_enc_cache();
+  WavSetRepo        *wav_set_repo();
 }
 
 class Main

@@ -10,6 +10,8 @@ namespace SpectMorph
 
 class MorphEnvelope : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphEnvelope" };
+
 public:
   static constexpr auto P_TIME = "time";
   static constexpr auto P_UNIT = "unit";
@@ -46,7 +48,6 @@ protected:
   Config m_config;
 public:
   MorphEnvelope (MorphPlan *morph_plan);
-  ~MorphEnvelope();
 
   // inherited from MorphOperator
   const char        *type() override;

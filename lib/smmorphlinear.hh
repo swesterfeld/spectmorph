@@ -14,6 +14,7 @@ namespace SpectMorph
 
 class MorphLinear : public MorphOperator
 {
+  LeakDebugger leak_debugger { "SpectMorph::MorphLinear" };
 public:
   struct Config : public MorphOperatorConfig
   {
@@ -34,7 +35,6 @@ protected:
 
 public:
   MorphLinear (MorphPlan *morph_plan);
-  ~MorphLinear();
 
   // inherited from MorphOperator
   const char        *type() override;

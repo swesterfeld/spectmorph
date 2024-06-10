@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smwidget.hh"
-#include "smleakdebugger.hh"
 #include "smwindow.hh"
 #include "smscrollview.hh"
 #include "smeventloop.hh"
@@ -14,13 +13,9 @@ using std::string;
 using std::max;
 using std::min;
 
-static LeakDebugger leak_debugger ("SpectMorph::Widget");
-
 Widget::Widget (Widget *parent, double x, double y, double width, double height) :
   parent (parent), m_x (x), m_y (y), m_width (width), m_height (height)
 {
-  leak_debugger.add (this);
-
   if (parent)
     parent->children.push_back (this);
 
@@ -49,7 +44,6 @@ Widget::~Widget()
 
   if (parent)
     parent->remove_child (this);
-  leak_debugger.del (this);
 }
 
 void

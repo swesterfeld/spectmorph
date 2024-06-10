@@ -5,75 +5,77 @@
 #include "smdebug.hh"
 #include <assert.h>
 #include <glib.h>
-
-#define DEBUG (1)
+#include <map>
 
 using namespace SpectMorph;
 
 using std::string;
 using std::map;
 
-void
-LeakDebugger::ptr_add (void *p)
+static LeakDebuggerList *leak_debugger_list = nullptr;
+
+LeakDebugger::LeakDebugger (const string& type) :
+  m_type (type)
 {
-  if (DEBUG)
+  if (leak_debugger_list)
     {
-      assert (sm_init_done());
-
-      std::lock_guard<std::mutex> lock (mutex);
-
-      if (ptr_map[p] != 0)
-        g_critical ("LeakDebugger: invalid registration of object type %s detected; ptr_map[p] is %d\n",
-                    type.c_str(), ptr_map[p]);
-
-      ptr_map[p]++;
+      leak_debugger_list->add (this);
     }
-}
-
-void
-LeakDebugger::ptr_del (void *p)
-{
-  if (DEBUG)
+  else
     {
-      assert (sm_init_done());
-
-      std::lock_guard<std::mutex> lock (mutex);
-
-      if (ptr_map[p] != 1)
-        g_critical ("LeakDebugger: invalid deletion of object type %s detected; ptr_map[p] is %d\n",
-                    type.c_str(), ptr_map[p]);
-
-      ptr_map[p]--;
+      g_critical ("LeakDebugger: constructor: ld_list not available, object type %s\n", m_type.c_str());
     }
-}
-
-LeakDebugger::LeakDebugger (const string& name, std::function<void()> cleanup_function) :
-  type (name),
-  cleanup_function (cleanup_function)
-{
 }
 
 LeakDebugger::~LeakDebugger()
 {
-  if (DEBUG)
+  if (leak_debugger_list)
     {
-      if (cleanup_function)
-        cleanup_function();
-
-      int alive = 0;
-
-      for (map<void *, int>::iterator pi = ptr_map.begin(); pi != ptr_map.end(); pi++)
-        {
-          if (pi->second != 0)
-            {
-              assert (pi->second == 1);
-              alive++;
-            }
-        }
-      if (alive)
-        {
-          g_printerr ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
-          sm_debug ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), alive);
-        }
+      leak_debugger_list->del (this);
     }
+  else
+    {
+      g_critical ("LeakDebugger: destructor: ld_list not available, object type %s\n", m_type.c_str());
+    }
+}
+
+LeakDebuggerList::LeakDebuggerList()
+{
+  g_return_if_fail (!leak_debugger_list);
+  leak_debugger_list = this;
+}
+
+LeakDebuggerList::~LeakDebuggerList()
+{
+  g_return_if_fail (leak_debugger_list);
+  leak_debugger_list = nullptr;
+
+  map<string, int> count_map;
+  for (auto object : objects)      // ideally this should be empty (all objects deleted)
+    count_map[object->type()]++;
+
+  for (auto [type, count] : count_map)
+    {
+      g_printerr ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), count);
+      sm_debug ("LeakDebugger (%s) => %d objects remaining\n", type.c_str(), count);
+    }
+}
+
+void
+LeakDebuggerList::add (LeakDebugger *leak_debugger)
+{
+  std::lock_guard<std::mutex> lock (mutex);
+
+  auto result = objects.insert (leak_debugger);
+  if (!result.second)
+    g_critical ("LeakDebugger: invalid registration of object type %s detected\n", leak_debugger->type().c_str());
+}
+
+void
+LeakDebuggerList::del (LeakDebugger *leak_debugger)
+{
+  std::lock_guard<std::mutex> lock (mutex);
+
+  if (!objects.erase (leak_debugger))
+    g_critical ("LeakDebugger: invalid deletion of object type %s detected\n", leak_debugger->type().c_str());
 }

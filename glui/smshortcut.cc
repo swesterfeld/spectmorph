@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smshortcut.hh"
-#include "smleakdebugger.hh"
 #include "smdialog.hh"
 #include "smfixedgrid.hh"
 #include "smlabel.hh"
@@ -10,8 +9,6 @@
 using namespace SpectMorph;
 
 using std::string;
-
-static LeakDebugger leak_debugger ("SpectMorph::Shortcut");
 
 /* In this implementation, shortcuts belong to a window (not a widget).
  *
@@ -25,16 +22,12 @@ Shortcut::Shortcut (Window *window, PuglMod mod, uint32_t character) :
   mod_check (true),
   character (character)
 {
-  leak_debugger.add (this);
-
   window->add_shortcut (this);
 }
 
 Shortcut::~Shortcut()
 {
   window->remove_shortcut (this);
-
-  leak_debugger.del (this);
 }
 
 
@@ -42,8 +35,6 @@ Shortcut::Shortcut (Window *window, uint32_t character) :
   window (window),
   character (character)
 {
-  leak_debugger.add (this);
-
   if (character >= 0xe000)
     {
       /* for keys like F1 or arrows, check that mod == 0 (to allow Shift+F1) */

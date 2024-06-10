@@ -3,30 +3,33 @@
 #ifndef SPECTMORPH_LEAK_DEBUGGER_HH
 #define SPECTMORPH_LEAK_DEBUGGER_HH
 
-#include <map>
+#include <set>
 #include <string>
 #include <mutex>
-#include <functional>
 
 namespace SpectMorph
 {
 
 class LeakDebugger
 {
-  std::mutex               mutex;
-  std::map<void *, int>    ptr_map;
-  std::string              type;
-  std::function<void()>    cleanup_function;
-
-  void ptr_add (void *p);
-  void ptr_del (void *p);
-
+  std::string m_type;
 public:
-  LeakDebugger (const std::string& name, std::function<void()> cleanup_function = nullptr);
+  LeakDebugger (const std::string& type);
   ~LeakDebugger();
 
-  template<class T> void add (T *instance) { ptr_add (static_cast<void *> (instance)); }
-  template<class T> void del (T *instance) { ptr_del (static_cast<void *> (instance)); }
+  std::string type() const { return m_type; }
+};
+
+class LeakDebuggerList
+{
+  std::mutex                mutex;
+  std::set<LeakDebugger *> objects;
+public:
+  LeakDebuggerList();
+  ~LeakDebuggerList();
+
+  void add (LeakDebugger *leak_debugger);
+  void del (LeakDebugger *leak_debugger);
 };
 
 }

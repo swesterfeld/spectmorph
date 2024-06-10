@@ -1,7 +1,6 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smmorphgrid.hh"
-#include "smleakdebugger.hh"
 #include "smmorphplan.hh"
 #include "smwavset.hh"
 #include "smwavsetrepo.hh"
@@ -17,13 +16,9 @@ using std::map;
 using std::pair;
 using std::make_pair;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphGrid");
-
 MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   MorphOperator (morph_plan)
 {
-  leak_debugger.add (this);
-
   connect (morph_plan->signal_operator_removed, this, &MorphGrid::on_operator_removed);
 
   m_config.width = 2;
@@ -37,11 +32,6 @@ MorphGrid::MorphGrid (MorphPlan *morph_plan) :
   y_morphing->modulation_list()->set_compat_type_and_op ("y_control_type", "y_control_op");
 
   update_size();
-}
-
-MorphGrid::~MorphGrid()
-{
-  leak_debugger.del (this);
 }
 
 const char *

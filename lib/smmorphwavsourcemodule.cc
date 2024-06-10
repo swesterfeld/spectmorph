@@ -3,7 +3,6 @@
 #include "smmorphwavsourcemodule.hh"
 #include "smmorphwavsource.hh"
 #include "smmorphplan.hh"
-#include "smleakdebugger.hh"
 #include "sminstrument.hh"
 #include "smwavsetbuilder.hh"
 #include "smmorphplanvoice.hh"
@@ -14,8 +13,6 @@ using namespace SpectMorph;
 
 using std::string;
 using std::vector;
-
-static LeakDebugger leak_debugger ("SpectMorph::MorphWavSourceModule");
 
 void
 MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity)
@@ -123,13 +120,6 @@ MorphWavSourceModule::MorphWavSourceModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
   my_source.module = this;
-
-  leak_debugger.add (this);
-}
-
-MorphWavSourceModule::~MorphWavSourceModule()
-{
-  leak_debugger.del (this);
 }
 
 LiveDecoderSource *

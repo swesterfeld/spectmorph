@@ -1,12 +1,9 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
 #include "smtimer.hh"
-#include "smleakdebugger.hh"
 #include "smeventloop.hh"
 
 using namespace SpectMorph;
-
-static LeakDebugger leak_debugger ("SpectMorph::Timer");
 
 /* Each timer belongs to a widget.
  *
@@ -21,8 +18,6 @@ static LeakDebugger leak_debugger ("SpectMorph::Timer");
 Timer::Timer (Widget *widget) :
   widget (widget)
 {
-  leak_debugger.add (this);
-
   widget->add_timer (this);
   connect (widget->window()->event_loop()->signal_before_process, this, &Timer::process_events);
 }
@@ -30,8 +25,6 @@ Timer::Timer (Widget *widget) :
 Timer::~Timer()
 {
   widget->remove_timer (this);
-
-  leak_debugger.del (this);
 }
 
 void

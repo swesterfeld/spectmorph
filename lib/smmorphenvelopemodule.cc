@@ -2,7 +2,6 @@
 
 #include "smmorphenvelopemodule.hh"
 #include "smmorphenvelope.hh"
-#include "smleakdebugger.hh"
 #include "smmorphplanvoice.hh"
 #include "smmath.hh"
 
@@ -10,17 +9,9 @@ using namespace SpectMorph;
 
 using std::max;
 
-static LeakDebugger leak_debugger ("SpectMorph::MorphEnvelopeModule");
-
 MorphEnvelopeModule::MorphEnvelopeModule (MorphPlanVoice *voice) :
   MorphOperatorModule (voice)
 {
-  leak_debugger.add (this);
-}
-
-MorphEnvelopeModule::~MorphEnvelopeModule()
-{
-  leak_debugger.del (this);
 }
 
 void
