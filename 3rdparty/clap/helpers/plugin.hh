@@ -5,10 +5,11 @@
 #include <mutex>
 #include <queue>
 #include <string>
-#include <string_view>
 #include <vector>
 
-#include <clap/clap.h>
+#include <clap/all.h>
+
+#include "version-check.hh"
 
 #include "checking-level.hh"
 #include "host-proxy.hh"
@@ -22,17 +23,17 @@ namespace clap { namespace helpers {
    template <MisbehaviourHandler h, CheckingLevel l>
    class Plugin {
    public:
-      const clap_plugin *clapPlugin() noexcept { return &_plugin; }
-
-   protected:
-      Plugin(const clap_plugin_descriptor *desc, const clap_host *host);
-      virtual ~Plugin() = default;
-
       // not copyable, not moveable
       Plugin(const Plugin &) = delete;
       Plugin(Plugin &&) = delete;
       Plugin &operator=(const Plugin &) = delete;
       Plugin &operator=(Plugin &&) = delete;
+
+      const clap_plugin *clapPlugin() noexcept { return &_plugin; }
+
+   protected:
+      Plugin(const clap_plugin_descriptor *desc, const clap_host *host);
+      virtual ~Plugin() = default;
 
       /////////////////////////
       // Methods to override //
@@ -55,6 +56,7 @@ namespace clap { namespace helpers {
       virtual void reset() noexcept {}
       virtual void onMainThread() noexcept {}
       virtual const void *extension(const char *id) noexcept { return nullptr; }
+      virtual bool enableDraftExtensions() const noexcept { return false; }
 
       //---------------------//
       // clap_plugin_latency //
@@ -103,7 +105,11 @@ namespace clap { namespace helpers {
       // clap_plugin_preset_load //
       //-------------------------//
       virtual bool implementsPresetLoad() const noexcept { return false; }
-      virtual bool presetLoadFromFile(const char *path) noexcept { return false; }
+      virtual bool presetLoadFromLocation(uint32_t location_kind,
+                                          const char *location,
+                                          const char *load_key) noexcept {
+         return false;
+      }
 
       //------------------------//
       // clap_plugin_track_info //
@@ -120,12 +126,29 @@ namespace clap { namespace helpers {
       audioPortsInfo(uint32_t index, bool isInput, clap_audio_port_info *info) const noexcept {
          return false;
       }
+
+      //--------------------------------//
+      // clap_plugin_audio_ports_config //
+      //--------------------------------//
+      virtual bool implementsAudioPortsConfig() const noexcept { return false; }
       virtual uint32_t audioPortsConfigCount() const noexcept { return 0; }
       virtual bool audioPortsGetConfig(uint32_t index,
                                        clap_audio_ports_config *config) const noexcept {
          return false;
       }
       virtual bool audioPortsSetConfig(clap_id configId) noexcept { return false; }
+
+      //------------------------------------//
+      // clap_plugin_audio_ports_activation //
+      //------------------------------------//
+      virtual bool implementsAudioPortsActivation() const noexcept { return false; }
+      virtual bool audioPortsActivationCanActivateWhileProcessing() const noexcept { return false; }
+      virtual bool audioPortsActivationSetActive(bool is_input,
+                                                 uint32_t port_index,
+                                                 bool is_active,
+                                                 uint32_t sample_size) noexcept {
+         return false;
+      }
 
       //--------------------//
       // clap_plugin_params //
@@ -145,19 +168,36 @@ namespace clap { namespace helpers {
       }
       virtual void paramsFlush(const clap_input_events *in,
                                const clap_output_events *out) noexcept {}
+
+      // This method is meant for implementing contract checking, it isn't part of CLAP.
+      // The default implementation will be slow, so consider overriding it with a faster one.
+      // Returns -1 if the parameter isn't found.
+      virtual int32_t getParamIndexForParamId(clap_id paramId) const noexcept;
       virtual bool isValidParamId(clap_id paramId) const noexcept;
+      virtual bool getParamInfoForParamId(clap_id paramId, clap_param_info *info) const noexcept;
+
+      //------------------------------//
+      // clap_plugin_param_indication //
+      //------------------------------//
+      virtual bool implementsParamIndication() const noexcept { return false; }
+      virtual void paramIndicationSetMapping(clap_id param_id,
+                                             bool has_mapping,
+                                             const clap_color_t *color,
+                                             const char *label,
+                                             const char *description) noexcept {}
+      virtual void paramIndicationSetAutomation(clap_id param_id,
+                                                uint32_t automation_state,
+                                                const clap_color_t *color) noexcept {}
 
       //----------------------------//
-      // clap_plugin_quick_controls //
+      // clap_plugin_remote_controls //
       //----------------------------//
-      virtual bool implementQuickControls() const noexcept { return false; }
-      virtual uint32_t quickControlsPageCount() noexcept { return 0; }
-      virtual bool quickControlsPageGet(uint32_t pageIndex,
-                                        clap_quick_controls_page *page) noexcept {
+      virtual bool implementRemoteControls() const noexcept { return false; }
+      virtual uint32_t remoteControlsPageCount() noexcept { return 0; }
+      virtual bool remoteControlsPageGet(uint32_t pageIndex,
+                                         clap_remote_controls_page *page) noexcept {
          return false;
       }
-      virtual void quickControlsSelectPage(clap_id pageId) noexcept {}
-      virtual clap_id quickControlsSelectedPage() noexcept { return CLAP_INVALID_ID; }
 
       //------------------------//
       // clap_plugin_note_ports //
@@ -173,8 +213,8 @@ namespace clap { namespace helpers {
       // clap_plugin_note_name //
       //-----------------------//
       virtual bool implementsNoteName() const noexcept { return false; }
-      virtual int noteNameCount() noexcept { return 0; }
-      virtual bool noteNameGet(int index, clap_note_name *noteName) noexcept { return false; }
+      virtual uint32_t noteNameCount() noexcept { return 0; }
+      virtual bool noteNameGet(uint32_t index, clap_note_name *noteName) noexcept { return false; }
 
       //---------------------------//
       // clap_plugin_timer_support //
@@ -186,7 +226,7 @@ namespace clap { namespace helpers {
       // clap_plugin_posix_fd_support //
       //------------------------------//
       virtual bool implementsPosixFdSupport() const noexcept { return false; }
-      virtual void onPosixFd(int fd, int flags) noexcept {}
+      virtual void onPosixFd(int fd, clap_posix_fd_flags_t flags) noexcept {}
 
       //-----------------//
       // clap_plugin_gui //
@@ -212,11 +252,47 @@ namespace clap { namespace helpers {
       virtual bool guiSetParent(const clap_window *window) noexcept { return false; }
       virtual bool guiSetTransient(const clap_window *window) noexcept { return false; }
 
+      //--------------------------//
+      // clap_plugin_context_menu //
+      //--------------------------//
+      virtual bool implementsContextMenu() const noexcept { return false; }
+      virtual bool contextMenuPopulate(const clap_context_menu_target_t *target,
+                                       const clap_context_menu_builder_t *builder) noexcept {
+         return false;
+      }
+      virtual bool contextMenuPerform(const clap_context_menu_target_t *target,
+                                      clap_id action_id) noexcept {
+         return false;
+      }
+
+      //--------------------------------//
+      // clap_plugin_resource_directory //
+      //--------------------------------//
+      virtual bool implementsResourceDirectory() const noexcept { return false; }
+      virtual void resourceDirectorySetDirectory(const char *path, bool isShared) noexcept {}
+      virtual void resourceDirectoryCollect(bool all) noexcept {}
+      virtual uint32_t resourceDirectoryGetFilesCount() const noexcept { return 0; }
+      virtual int32_t
+      resourceDirectoryGetFilePath(uint32_t index, char *path, uint32_t pathSize) const noexcept {
+         return -1;
+      }
+
       //------------------------//
       // clap_plugin_voice_info //
       //------------------------//
       virtual bool implementsVoiceInfo() const noexcept { return false; }
       virtual bool voiceInfoGet(clap_voice_info *info) noexcept { return false; }
+
+      //------------------//
+      // clap_plugin_undo //
+      //------------------//
+      virtual bool implementsUndo() const noexcept { return false; }
+      virtual void undoGetDeltaProperties(clap_undo_delta_properties_t *properties) noexcept {}
+      virtual bool undoCanUseDeltaFormatVersion(clap_id format_version) noexcept { return false; }
+      virtual bool
+      undoApplyDelta(clap_id format_version, const void *delta, size_t delta_size) noexcept { return false; }
+      virtual void
+      undoSetContextInfo(uint64_t flags, const char *undo_name, const char *redo_name) noexcept {}
 
       /////////////
       // Logging //
@@ -252,10 +328,6 @@ namespace clap { namespace helpers {
       // This actually runs callbacks on the main thread, you should not need to call it
       void runCallbacksOnMainThread();
 
-      template <typename T>
-      void initInterface(const T *&ptr, const char *id) noexcept;
-      void initInterfaces() noexcept;
-
       static uint32_t compareAudioPortsInfo(const clap_audio_port_info &a,
                                             const clap_audio_port_info &b) noexcept;
 
@@ -264,7 +336,7 @@ namespace clap { namespace helpers {
       //////////////////////
       bool isActive() const noexcept { return _isActive; }
       bool isProcessing() const noexcept { return _isProcessing; }
-      int sampleRate() const noexcept {
+      double sampleRate() const noexcept {
          assert(_isActive && "sample rate is only known if the plugin is active");
          assert(_sampleRate > 0);
          return _sampleRate;
@@ -276,6 +348,8 @@ namespace clap { namespace helpers {
       HostProxy<h, l> _host;
 
    private:
+      void ensureInitialized(const char *method) const noexcept;
+
       /////////////////////
       // CLAP Interfaces //
       /////////////////////
@@ -324,7 +398,10 @@ namespace clap { namespace helpers {
                                        uint32_t context) noexcept;
 
       // clap_plugin_preset
-      static bool clapPresetLoadFromFile(const clap_plugin *plugin, const char *path) noexcept;
+      static bool clapPresetLoadFromLocation(const clap_plugin *plugin,
+                                             uint32_t location_kind,
+                                             const char *location,
+                                             const char *load_key) noexcept;
 
       // clap_plugin_track_info
       static void clapTrackInfoChanged(const clap_plugin *plugin) noexcept;
@@ -340,6 +417,15 @@ namespace clap { namespace helpers {
                                           uint32_t index,
                                           clap_audio_ports_config *config) noexcept;
       static bool clapAudioPortsSetConfig(const clap_plugin *plugin, clap_id config_id) noexcept;
+
+      // clap_plugin_audio_ports_activation
+      static bool
+      clapAudioPortsActivationCanActivateWhileProcessing(const clap_plugin_t *plugin) noexcept;
+      static bool clapAudioPortsActivationSetActive(const clap_plugin_t *plugin,
+                                                    bool is_input,
+                                                    uint32_t port_index,
+                                                    bool is_active,
+                                                    uint32_t sample_size) noexcept;
 
       // clap_plugin_params
       static uint32_t clapParamsCount(const clap_plugin *plugin) noexcept;
@@ -361,11 +447,23 @@ namespace clap { namespace helpers {
                                   const clap_input_events *in,
                                   const clap_output_events *out) noexcept;
 
-      // clap_plugin_quick_controls
-      static uint32_t clapQuickControlsPageCount(const clap_plugin *plugin) noexcept;
-      static bool clapQuickControlsPageGet(const clap_plugin *plugin,
-                                           uint32_t page_index,
-                                           clap_quick_controls_page *page) noexcept;
+      // clap_plugin_param_indication
+      static void clapParamIndicationSetMapping(const clap_plugin_t *plugin,
+                                                clap_id param_id,
+                                                bool has_mapping,
+                                                const clap_color_t *color,
+                                                const char *label,
+                                                const char *description) noexcept;
+      static void clapParamIndicationSetAutomation(const clap_plugin_t *plugin,
+                                                   clap_id param_id,
+                                                   uint32_t automation_state,
+                                                   const clap_color_t *color) noexcept;
+
+      // clap_plugin_remote_controls
+      static uint32_t clapRemoteControlsPageCount(const clap_plugin *plugin) noexcept;
+      static bool clapRemoteControlsPageGet(const clap_plugin *plugin,
+                                            uint32_t page_index,
+                                            clap_remote_controls_page *page) noexcept;
 
       // clap_plugin_note_port
       static uint32_t clapNotePortsCount(const clap_plugin *plugin, bool is_input) noexcept;
@@ -416,29 +514,69 @@ namespace clap { namespace helpers {
 
       static bool clapVoiceInfoGet(const clap_plugin *plugin, clap_voice_info *info) noexcept;
 
+      // clap_plugin_context_menu
+      static bool clapContextMenuPopulate(const clap_plugin_t *plugin,
+                                          const clap_context_menu_target_t *target,
+                                          const clap_context_menu_builder_t *builder) noexcept;
+
+      static bool clapContextMenuPerform(const clap_plugin_t *plugin,
+                                         const clap_context_menu_target_t *target,
+                                         clap_id action_id) noexcept;
+
+      // clap_plugin_resource_directory
+      static void clapResourceDirectorySetDirectory(const clap_plugin_t *plugin,
+                                                    const char *path,
+                                                    bool is_shared) noexcept;
+      static void clapResourceDirectoryCollect(const clap_plugin_t *plugin, bool all) noexcept;
+      static uint32_t clapResourceDirectoryGetFilesCount(const clap_plugin_t *plugin) noexcept;
+      static int32_t clapResourceDirectoryGetFilePath(const clap_plugin_t *plugin,
+                                                      uint32_t index,
+                                                      char *path,
+                                                      uint32_t path_size) noexcept;
+
+      // clap_plugin_undo
+      static void clapUndoGetDeltaProperties(const clap_plugin_t *plugin,
+                                             clap_undo_delta_properties_t *properties) noexcept;
+      static bool clapUndoCanUseDeltaFormatVersion(const clap_plugin_t *plugin,
+                                                   clap_id format_version) noexcept;
+      static bool clapUndoApplyDelta(const clap_plugin_t *plugin,
+                                     clap_id format_version,
+                                     const void *delta,
+                                     size_t delta_size) noexcept;
+      static void clapUndoSetContextInfo(const clap_plugin_t *plugin,
+                                         uint64_t flags,
+                                         const char *undo_name,
+                                         const char *redo_name) noexcept;
+
       // interfaces
-      static const clap_plugin_render _pluginRender;
-      static const clap_plugin_thread_pool _pluginThreadPool;
-      static const clap_plugin_state _pluginState;
-      static const clap_plugin_state_context _pluginStateContext;
-      static const clap_plugin_preset_load _pluginPresetLoad;
-      static const clap_plugin_track_info _pluginTrackInfo;
       static const clap_plugin_audio_ports _pluginAudioPorts;
       static const clap_plugin_audio_ports_config _pluginAudioPortsConfig;
-      static const clap_plugin_params _pluginParams;
-      static const clap_plugin_quick_controls _pluginQuickControls;
-      static const clap_plugin_latency _pluginLatency;
-      static const clap_plugin_note_ports _pluginNotePorts;
-      static const clap_plugin_note_name _pluginNoteName;
-      static const clap_plugin_timer_support _pluginTimerSupport;
-      static const clap_plugin_posix_fd_support _pluginPosixFdSupport;
+      static const clap_plugin_audio_ports_activation _pluginAudioPortsActivation;
       static const clap_plugin_gui _pluginGui;
-      static const clap_plugin_voice_info _pluginVoiceInfo;
+      static const clap_plugin_latency _pluginLatency;
+      static const clap_plugin_note_name _pluginNoteName;
+      static const clap_plugin_note_ports _pluginNotePorts;
+      static const clap_plugin_params _pluginParams;
+      static const clap_plugin_param_indication _pluginParamIndication;
+      static const clap_plugin_posix_fd_support _pluginPosixFdSupport;
+      static const clap_plugin_preset_load _pluginPresetLoad;
+      static const clap_plugin_remote_controls _pluginRemoteControls;
+      static const clap_plugin_render _pluginRender;
+      static const clap_plugin_state _pluginState;
+      static const clap_plugin_state_context _pluginStateContext;
       static const clap_plugin_tail _pluginTail;
+      static const clap_plugin_thread_pool _pluginThreadPool;
+      static const clap_plugin_timer_support _pluginTimerSupport;
+      static const clap_plugin_track_info _pluginTrackInfo;
+      static const clap_plugin_voice_info _pluginVoiceInfo;
+      static const clap_plugin_context_menu _pluginContextMenu;
+      static const clap_plugin_resource_directory _pluginResourceDirectory;
+      static const clap_plugin_undo _pluginUndo;
 
       // state
       bool _wasInitialized = false;
       bool _isActive = false;
+      bool _isBeingActivated = false;
       bool _isProcessing = false;
       bool _isBeingDestroyed = false;
       double _sampleRate = 0;
@@ -448,7 +586,7 @@ namespace clap { namespace helpers {
       bool _isGuiFloating = false;
       bool _isGuiEmbedded = false;
 
-      std::mutex _mainThredCallbacksLock;
-      std::queue<std::function<void()>> _mainThredCallbacks;
+      std::mutex _mainThreadCallbacksLock;
+      std::queue<std::function<void()>> _mainThreadCallbacks;
    };
 }} // namespace clap::helpers

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../plugin.h"
+#include "../plugin.h"
 
 // This extension can be used to specify the channel mapping used by the plugin.
 //
@@ -24,7 +24,11 @@
 // 3. host calls clap_plugin_surround->get_channel_map()
 // 4. host activates the plugin and can start processing audio
 
-static CLAP_CONSTEXPR const char CLAP_EXT_SURROUND[] = "clap.surround.draft/1";
+static CLAP_CONSTEXPR const char CLAP_EXT_SURROUND[] = "clap.surround/4";
+
+// The latest draft is 100% compatible.
+// This compat ID may be removed in 2026.
+static CLAP_CONSTEXPR const char CLAP_EXT_SURROUND_COMPAT[] = "clap.surround.draft/4";
 
 static CLAP_CONSTEXPR const char CLAP_PORT_SURROUND[] = "surround";
 
@@ -54,32 +58,28 @@ enum {
 };
 
 typedef struct clap_plugin_surround {
-   // Stores into the channel_map array, the surround identifer of each channels.
-   // Returns the number of elements stored in channel_map
+   // Checks if a given channel mask is supported.
+   // The channel mask is a bitmask, for example:
+   //   (1 << CLAP_SURROUND_FL) | (1 << CLAP_SURROUND_FR) | ...
    // [main-thread]
-   uint32_t (*get_channel_map)(const clap_plugin_t *plugin,
-                               bool                 is_input,
-                               uint32_t             port_index,
-                               uint8_t             *channel_map,
-                               uint32_t             channel_map_capacity);
+   bool(CLAP_ABI *is_channel_mask_supported)(const clap_plugin_t *plugin, uint64_t channel_mask);
 
-   // Informs the plugin that the host preferred channel map has changed.
+   // Stores the surround identifier of each channel into the channel_map array.
+   // Returns the number of elements stored in channel_map.
+   // channel_map_capacity must be greater or equal to the channel count of the given port.
    // [main-thread]
-   void (*changed)(const clap_plugin_t *plugin);
+   uint32_t(CLAP_ABI *get_channel_map)(const clap_plugin_t *plugin,
+                                       bool                 is_input,
+                                       uint32_t             port_index,
+                                       uint8_t             *channel_map,
+                                       uint32_t             channel_map_capacity);
 } clap_plugin_surround_t;
 
 typedef struct clap_host_surround {
    // Informs the host that the channel map has changed.
    // The channel map can only change when the plugin is de-activated.
    // [main-thread]
-   void (*changed)(const clap_host_t *host);
-
-   // Ask the host what is the prefered/project surround channel map.
-   // [main-thread]
-   void (*get_preferred_channel_map)(const clap_host_t *host,
-                                     uint8_t           *channel_map,
-                                     uint32_t           channel_map_capacity,
-                                     uint32_t          *channel_count);
+   void(CLAP_ABI *changed)(const clap_host_t *host);
 } clap_host_surround_t;
 
 #ifdef __cplusplus
