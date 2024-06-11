@@ -136,9 +136,9 @@ MorphPlanWindow::add_op_menu_item (Menu *op_menu, const std::string& text, const
 
 
 Error
-MorphPlanWindow::load (const std::string& filename)
+MorphPlanWindow::load (const std::string& filename, bool load_wav_souces)
 {
-  Error error = m_morph_plan->project()->load (filename);
+  Error error = m_morph_plan->project()->load (filename, load_wav_souces);
 
   if (!error)
     set_filename (filename);
@@ -162,7 +162,7 @@ MorphPlanWindow::on_load_preset (const std::string& rel_filename)
 {
   std::string filename = sm_get_install_dir (INSTALL_DIR_TEMPLATES) + "/" + rel_filename;
 
-  Error error = load (filename);
+  Error error = load (filename, false);
   if (error)
     {
         MessageBox::critical (this, "Error",
@@ -177,7 +177,7 @@ MorphPlanWindow::on_file_import_clicked()
   open_file_dialog ("Select SpectMorph Preset to import", formats, [=](string filename) {
     if (filename != "")
       {
-        Error error = load (filename);
+        Error error = load (filename, true);
 
         if (error)
           {

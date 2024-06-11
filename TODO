@@ -2,7 +2,6 @@ NEWER TODOS:
 1.0.0-beta1:
 - presets for 1.0.0
 - update clap 3rdparty code
-- 1-instrument-wav-source contains the data - not a good idea!
 - LV2 archive storage doesn't seem to work
 - new video tutorial
 - update manual

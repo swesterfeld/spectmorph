@@ -97,7 +97,7 @@ private:
 
   std::vector<MorphWavSource *> list_wav_sources();
 
-  Error load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
+  Error load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool load_wav_sources);
   void  post_load();
 
   void on_plan_changed();
@@ -151,8 +151,8 @@ public:
 
   Error save (const std::string& filename);
   Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
-  Error load (const std::string& filename);
-  Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params);
+  Error load (const std::string& filename, bool load_wav_sources = true);
+  Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool load_wav_sources = true);
   Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
 
   std::string save_plan_lv2 (std::function<std::string(std::string)> abstract_path);
