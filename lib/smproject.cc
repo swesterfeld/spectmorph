@@ -367,7 +367,7 @@ Project::post_load()
 }
 
 Error
-Project::load (const string& filename)
+Project::load (const string& filename, bool load_wav_sources)
 {
   if (ZipReader::is_zip (filename))
     {
@@ -375,10 +375,11 @@ Project::load (const string& filename)
       if (zip_reader.error())
         return zip_reader.error();
 
-      return load (zip_reader, nullptr);
+      return load (zip_reader, nullptr, load_wav_sources);
     }
   else
     {
+      assert (!load_wav_sources); /* we only need this for preset loading, which are in new format */
       GenericIn *file = GenericIn::open (filename);
       if (file)
         {
@@ -395,7 +396,7 @@ Project::load (const string& filename)
 }
 
 Error
-Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
+Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool load_wav_sources)
 {
   /* backup old plan */
   vector<unsigned char> data;
@@ -406,7 +407,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
   map<int, std::unique_ptr<Instrument>> old_instrument_map;
   old_instrument_map.swap (instrument_map);
 
-  Error error = load_internal (zip_reader, params);
+  Error error = load_internal (zip_reader, params, load_wav_sources);
   if (error)
     {
       /* restore old plan/instruments if something went wrong */
@@ -420,7 +421,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
 }
 
 Error
-Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params)
+Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool load_wav_sources)
 {
   vector<uint8_t> plan = zip_reader.read ("plan.smplan");
   if (zip_reader.error())
@@ -440,7 +441,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
       Instrument *inst = new Instrument();
       instrument_map[object_id].reset (inst);
 
-      if (m_storage_model == StorageModel::COPY)
+      if (m_storage_model == StorageModel::COPY && load_wav_sources)
         {
           string inst_file = string_printf ("instrument%d.sminst", object_id);
           vector<uint8_t> inst_data = zip_reader.read (inst_file);
