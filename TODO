@@ -1,7 +1,6 @@
 NEWER TODOS:
 1.0.0-beta1:
 - presets for 1.0.0
-- update clap 3rdparty code
 - LV2 archive storage doesn't seem to work
 - new video tutorial
 - update manual
