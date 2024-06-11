@@ -8,7 +8,6 @@ NEWER TODOS:
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
-- JACK control-by-CC should use midi channel, too
 Other:
 - handle XPARAM scaled parameters for modulation
 - non-linear modulation mapping
