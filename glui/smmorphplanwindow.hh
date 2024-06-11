@@ -29,7 +29,7 @@ class MorphPlanWindow : public Window
 
   void add_op_menu_item (Menu *op_menu, const std::string& text, const std::string& op_name);
 
-  Error load (const std::string& filename);
+  Error load (const std::string& filename, bool load_wav_sources);
   Error save (const std::string& filename);
 public:
   void
