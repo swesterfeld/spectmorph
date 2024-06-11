@@ -45,18 +45,19 @@ typedef struct clap_process {
    const clap_event_transport_t *transport;
 
    // Audio buffers, they must have the same count as specified
-   // by clap_plugin_audio_ports->get_count().
-   // The index maps to clap_plugin_audio_ports->get_info().
+   // by clap_plugin_audio_ports->count().
+   // The index maps to clap_plugin_audio_ports->get().
+   // Input buffer and its contents are read-only.
    const clap_audio_buffer_t *audio_inputs;
    clap_audio_buffer_t       *audio_outputs;
    uint32_t                   audio_inputs_count;
    uint32_t                   audio_outputs_count;
 
-   // Input and output events.
-   //
-   // Events must be sorted by time.
    // The input event list can't be modified.
+   // Input read-only event list. The host will deliver these sorted in sample order.
    const clap_input_events_t  *in_events;
+
+   // Output event list. The plugin must insert events in sample sorted order when inserting events
    const clap_output_events_t *out_events;
 } clap_process_t;
 

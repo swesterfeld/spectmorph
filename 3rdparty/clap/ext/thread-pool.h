@@ -7,8 +7,8 @@
 /// This extension lets the plugin use the host's thread pool.
 ///
 /// The plugin must provide @ref clap_plugin_thread_pool, and the host may provide @ref
-/// clap_host_thread_pool. If it doesn't, the plugin should process its data by its own means. In the
-/// worst case, a single threaded for-loop.
+/// clap_host_thread_pool. If it doesn't, the plugin should process its data by its own means. In
+/// the worst case, a single threaded for-loop.
 ///
 /// Simple example with N voices to process
 ///
@@ -46,7 +46,7 @@ extern "C" {
 
 typedef struct clap_plugin_thread_pool {
    // Called by the thread pool
-   void (*exec)(const clap_plugin_t *plugin, uint32_t task_index);
+   void(CLAP_ABI *exec)(const clap_plugin_t *plugin, uint32_t task_index);
 } clap_plugin_thread_pool_t;
 
 typedef struct clap_host_thread_pool {
@@ -58,7 +58,7 @@ typedef struct clap_host_thread_pool {
    // The host should check that the plugin is within the process call, and if not, reject the exec
    // request.
    // [audio-thread]
-   bool (*request_exec)(const clap_host_t *host, uint32_t num_tasks);
+   bool(CLAP_ABI *request_exec)(const clap_host_t *host, uint32_t num_tasks);
 } clap_host_thread_pool_t;
 
 #ifdef __cplusplus
