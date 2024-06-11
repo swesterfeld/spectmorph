@@ -32,7 +32,6 @@ MidiSynth::MidiSynth (double mix_freq, size_t n_voices) :
   m_inst_edit_synth (mix_freq),
   m_mix_freq (mix_freq),
   m_time_info_gen (mix_freq),
-  pedal_down (false),
   audio_time_stamp (0),
   mono_enabled (false),
   portamento_note_id (0),
@@ -274,7 +273,7 @@ MidiSynth::process_note_off (int channel, int midi_note)
     {
       if (voice->state == Voice::STATE_ON && voice->channel == channel && voice->midi_note == midi_note)
         {
-          if (pedal_down)
+          if (channel_state[voice->channel].pedal_down)
             {
               voice->pedal = true;
             }
@@ -317,15 +316,16 @@ MidiSynth::process_mod_value (const ModValueEvent& mod)
 void
 MidiSynth::process_midi_controller (int channel, int controller, int value)
 {
+  auto& cst = channel_state[channel];
   if (controller == SM_MIDI_CTL_SUSTAIN)
     {
-      pedal_down = value > 0x40;
-      if (!pedal_down)
+      cst.pedal_down = value > 0x40;
+      if (!cst.pedal_down)
         {
           /* release voices which are sustained due to the pedal */
           for (auto voice : active_voices)
             {
-              if (voice->pedal && voice->state == Voice::STATE_ON)
+              if (voice->channel == channel && voice->pedal && voice->state == Voice::STATE_ON)
                 {
                   voice->state = Voice::STATE_RELEASE;
 
@@ -359,16 +359,15 @@ MidiSynth::process_midi_controller (int channel, int controller, int value)
   if (m_control_by_cc)
     {
       const float value_f = sm_bound (-1.0, (value / 127.) * 2 - 1, 1.0);
-      auto& cst_control = channel_state[channel].control;
       switch (controller)
         {
-          case SM_MIDI_CTL_CONTROL_1: cst_control[0] = value_f;
+          case SM_MIDI_CTL_CONTROL_1: cst.control[0] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_2: cst_control[1] = value_f;
+          case SM_MIDI_CTL_CONTROL_2: cst.control[1] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_3: cst_control[2] = value_f;
+          case SM_MIDI_CTL_CONTROL_3: cst.control[2] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_4: cst_control[3] = value_f;
+          case SM_MIDI_CTL_CONTROL_4: cst.control[3] = value_f;
                                       break;
         }
     }

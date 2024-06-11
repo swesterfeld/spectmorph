@@ -94,8 +94,10 @@ private:
   static constexpr int  MIDI_CHANNELS = 16;
   struct MidiChannelState
   {
-    float        pitch_bend_freq_factor = 1;
     ControlArray control {};
+
+    float        pitch_bend_freq_factor = 1;
+    bool         pedal_down = false;
   };
   std::array<MidiChannelState, MIDI_CHANNELS> channel_state;
 
@@ -155,7 +157,6 @@ private:
   double                m_tempo = 120;
   double                m_ppq_pos = 0;
   TimeInfoGenerator     m_time_info_gen;
-  bool                  pedal_down;
   uint64                audio_time_stamp;
   bool                  mono_enabled;
   float                 portamento_glide;
