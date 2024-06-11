@@ -112,6 +112,15 @@ MidiSynth::freq_from_note (float note)
   return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
+float
+MidiSynth::voice_control (const Voice *voice, int c)
+{
+  if (m_control_by_cc)
+    return channel_state[voice->channel].control[c];
+  else
+    return std::clamp (control[c] + voice->modulation[c], -1.f, 1.f);
+}
+
 void
 MidiSynth::process_note_on (const NoteEvent& note)
 {
@@ -306,7 +315,7 @@ MidiSynth::process_mod_value (const ModValueEvent& mod)
 }
 
 void
-MidiSynth::process_midi_controller (int controller, int value)
+MidiSynth::process_midi_controller (int channel, int controller, int value)
 {
   if (controller == SM_MIDI_CTL_SUSTAIN)
     {
@@ -329,7 +338,7 @@ MidiSynth::process_midi_controller (int controller, int value)
   if (controller == SM_MIDI_CTL_ALL_NOTES_OFF)
     {
       /* release sustain pedal, otherwise note off events will have no effect */
-      process_midi_controller (SM_MIDI_CTL_SUSTAIN, 0);
+      process_midi_controller (channel, SM_MIDI_CTL_SUSTAIN, 0);
 
       /* check which notes are active */
       std::set<std::pair<int, int>> channel_note_set;
@@ -350,15 +359,16 @@ MidiSynth::process_midi_controller (int controller, int value)
   if (m_control_by_cc)
     {
       const float value_f = sm_bound (-1.0, (value / 127.) * 2 - 1, 1.0);
+      auto& cst_control = channel_state[channel].control;
       switch (controller)
         {
-          case SM_MIDI_CTL_CONTROL_1: control[0] = value_f;
+          case SM_MIDI_CTL_CONTROL_1: cst_control[0] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_2: control[1] = value_f;
+          case SM_MIDI_CTL_CONTROL_2: cst_control[1] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_3: control[2] = value_f;
+          case SM_MIDI_CTL_CONTROL_3: cst_control[2] = value_f;
                                       break;
-          case SM_MIDI_CTL_CONTROL_4: control[3] = value_f;
+          case SM_MIDI_CTL_CONTROL_4: cst_control[3] = value_f;
                                       break;
         }
     }
@@ -483,6 +493,7 @@ MidiSynth::add_midi_event (size_t offset, const unsigned char *midi_data)
       Event event;
       event.offset = offset;
       event.type = EVENT_CC;
+      event.cc.channel = channel;
       event.cc.controller = midi_data[1];
       event.cc.value = midi_data[2];
       events.push_back (event);
@@ -511,10 +522,8 @@ MidiSynth::process_audio (float *output, size_t n_values)
 
   for (Voice *voice : active_voices)
     {
-      voice->mp_voice->set_control_input (0, std::clamp (control[0] + voice->modulation[0], -1.f, 1.f));
-      voice->mp_voice->set_control_input (1, std::clamp (control[1] + voice->modulation[1], -1.f, 1.f));
-      voice->mp_voice->set_control_input (2, std::clamp (control[2] + voice->modulation[2], -1.f, 1.f));
-      voice->mp_voice->set_control_input (3, std::clamp (control[3] + voice->modulation[3], -1.f, 1.f));
+      for (int c = 0; c < MorphPlan::N_CONTROL_INPUTS; c++)
+        voice->mp_voice->set_control_input (c, voice_control (voice, c));
 
       const float gain = voice->gain * m_gain;
       const float *freq_in = nullptr;
@@ -685,7 +694,7 @@ MidiSynth::process (float *output, size_t n_values, MidiSynthCallbacks *process_
           case EVENT_CC:
             {
               MIDI_DEBUG ("%" PRIu64 " | controller event, %d %d\n", audio_time_stamp, event.cc.controller, event.cc.value);
-              process_midi_controller (event.cc.controller, event.cc.value);
+              process_midi_controller (event.cc.channel, event.cc.controller, event.cc.value);
             }
             break;
         }
@@ -833,12 +842,12 @@ MidiSynth::notify_active_voice_status()
 
       m_notify_buffer.write_seq (velocity_seq, n_voices);
 
-      for (int i = 0; i < MorphPlan::N_CONTROL_INPUTS; i++)
+      for (int c = 0; c < MorphPlan::N_CONTROL_INPUTS; c++)
         {
           float control_input_seq[MAX_VOICES];
 
           for (uint v = 0; v < n_voices; v++)
-            control_input_seq[v] = std::clamp (control[i] + voices[v]->modulation[i], -1.f, 1.f);
+            control_input_seq[v] = voice_control (voices[v], c);
 
           m_notify_buffer.write_seq (control_input_seq, n_voices);
         }

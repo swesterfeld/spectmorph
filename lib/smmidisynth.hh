@@ -69,6 +69,7 @@ private:
   };
   struct CCEvent
   {
+    int   channel;
     int   controller;
     int   value;
   };
@@ -88,12 +89,13 @@ private:
   };
   std::vector<Event>  events;
 
-  typedef std::array<float, MorphPlan::N_CONTROL_INPUTS> ModArray;
+  typedef std::array<float, MorphPlan::N_CONTROL_INPUTS> ControlArray;
 
   static constexpr int  MIDI_CHANNELS = 16;
   struct MidiChannelState
   {
-    float pitch_bend_freq_factor = 1;
+    float        pitch_bend_freq_factor = 1;
+    ControlArray control {};
   };
   std::array<MidiChannelState, MIDI_CHANNELS> channel_state;
 
@@ -125,14 +127,13 @@ private:
     int          note_id;
     int          clap_id;
 
-    ModArray     modulation;
+    ControlArray modulation {};
 
     Voice() :
       mp_voice (NULL),
       state (STATE_IDLE),
       pedal (false)
     {
-      modulation.fill (0);
     }
     ~Voice()
     {
@@ -148,7 +149,7 @@ private:
   std::vector<Voice>    voices;
   std::vector<Voice *>  idle_voices;
   std::vector<Voice *>  active_voices;
-  ModArray              global_modulation;
+  ControlArray          global_modulation {};
   double                m_mix_freq;
   double                m_gain = 1;
   double                m_tempo = 120;
@@ -173,12 +174,13 @@ private:
   bool    update_mono_voice();
   float   freq_from_note (float note);
   void    notify_active_voice_status();
+  float   voice_control (const Voice *voice, int c);
 
   void set_mono_enabled (bool new_value);
   void process_audio (float *output, size_t n_values);
   void process_note_on (const NoteEvent& note);
   void process_note_off (int channel, int midi_note);
-  void process_midi_controller (int controller, int value);
+  void process_midi_controller (int channel, int controller, int value);
   void process_pitch_bend (int channel, float value);
   void process_mod_value (const ModValueEvent& mod);
   void start_pitch_bend (Voice *voice, double dest_freq, double time_ms);
