@@ -11,7 +11,7 @@ EXTRA_DIST = string-sizes.h private/macros.h private/std.h events.h \
   ext/surround.h ext/track-info.h ext/note-ports.h \
   ext/audio-ports-config.h ext/thread-pool.h ext/state.h \
   ext/param-indication.h ext/gui.h ext/ambisonic.h ext/note-name.h \
-  ext/voice-info.h ext/render.h clap.h .Makefile.am.swp color.h \
+  ext/voice-info.h ext/render.h clap.h color.h \
   fixedpoint.h helpers/macros.hh helpers/preset-discovery-provider.hxx \
   helpers/plugin-proxy.hxx helpers/context-menu-builder.hh \
   helpers/host-proxy.hh helpers/misbehaviour-handler.hh \
