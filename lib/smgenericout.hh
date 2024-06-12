@@ -1,9 +1,9 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef SPECTMORPH_GENERIC_OUT_HH
-#define SPECTMORPH_GENERIC_OUT_HH
+#pragma once
 
 #include <string>
+#include <memory>
 
 namespace SpectMorph
 {
@@ -36,6 +36,6 @@ public:
   virtual int write (const void *ptr, size_t size) = 0;
 };
 
-}
+typedef std::shared_ptr<GenericOut> GenericOutP;
 
-#endif /* SPECTMORPH_GENERIC_OUT_HH */
+}

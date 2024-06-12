@@ -17,8 +17,9 @@ class MemOut final : public GenericOut
 
   std::vector<unsigned char> *output;
 
-public:
   MemOut (std::vector<unsigned char> *output);
+public:
+  static GenericOutP open (std::vector<unsigned char> *output);
 
   int put_byte (int c) override;
   int write (const void *ptr, size_t size) override;

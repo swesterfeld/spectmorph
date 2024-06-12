@@ -5,15 +5,15 @@
 
 using namespace SpectMorph;
 
-GenericOut*
+GenericOutP
 StdioOut::open (const std::string& filename)
 {
   FILE *file = fopen (filename.c_str(), "wb");
 
   if (file)
-    return new StdioOut (file);
+    return GenericOutP (new StdioOut (file));
   else
-    return NULL;
+    return nullptr;
 }
 
 StdioOut::StdioOut (FILE *file)
