@@ -241,9 +241,7 @@ void
 InstEncCache::cache_add (const string& cache_key, const string& version, const Audio *audio)
 {
   vector<unsigned char> data;
-  MemOut                audio_mem_out (&data);
-
-  audio->save (&audio_mem_out);
+  audio->save (MemOut::open (&data));
 
   // LOCK cache: store entry
   std::lock_guard<std::mutex> lg (cache_mutex);

@@ -42,8 +42,7 @@ WavSet::save (const string& filename, bool embed_models)
         {
           vector<unsigned char> data;
 
-          MemOut mem_out (&data);
-          waves[i].audio->save (&mem_out);
+          waves[i].audio->save (MemOut::open (&data));
           of.write_blob ("audio", data.data(), data.size());
         }
       else if (embed_models)

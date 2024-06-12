@@ -248,9 +248,7 @@ Project::on_plan_changed()
    */
   // create a deep copy (by saving/loading)
   vector<unsigned char> plan_data;
-  MemOut                plan_mo (&plan_data);
-
-  m_morph_plan.save (&plan_mo);
+  m_morph_plan.save (MemOut::open (&plan_data));
 
   if (plan_data != m_last_plan_data)
     {
@@ -397,8 +395,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool l
 {
   /* backup old plan */
   vector<unsigned char> data;
-  MemOut mo (&data);
-  m_morph_plan.save (&mo);
+  m_morph_plan.save (MemOut::open (&data));
 
   /* backup old instruments */
   map<int, std::unique_ptr<Instrument>> old_instrument_map;
@@ -520,8 +517,7 @@ Error
 Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
 {
   vector<unsigned char> data;
-  MemOut mo (&data);
-  m_morph_plan.save (&mo, params);
+  m_morph_plan.save (MemOut::open (&data), params);
 
   zip_writer.add ("plan.smplan", data);
   for (auto wav_source : list_wav_sources())
@@ -554,8 +550,7 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
     }
 
   vector<unsigned char> data;
-  MemOut mo (&data);
-  m_morph_plan.save (&mo);
+  m_morph_plan.save (MemOut::open (&data));
 
   clear_lv2_filenames();
 

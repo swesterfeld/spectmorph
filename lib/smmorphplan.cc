@@ -321,8 +321,7 @@ MorphPlan::load (GenericInP in, ExtraParameters *params)
 {
   /* backup old plan */
   vector<unsigned char> data;
-  MemOut mo (&data);
-  save (&mo);
+  save (MemOut::open (&data));
 
   Error error = load_internal (in, params);
 
@@ -430,7 +429,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 }
 
 Error
-MorphPlan::save (GenericOut *file, ExtraParameters *params) const
+MorphPlan::save (GenericOutP file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
   // of.write_string ("index", index_filename); (index loading is disabled)
@@ -445,10 +444,9 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
       of.write_bool ("folded", op->folded());
 
       vector<unsigned char> op_data;
-      MemOut                op_mo (&op_data);
       // need an OutFile destructor run before op_data is ready
       {
-        OutFile op_of (&op_mo, op->type(), SPECTMORPH_BINARY_FILE_VERSION);
+        OutFile op_of (MemOut::open (&op_data), op->type(), SPECTMORPH_BINARY_FILE_VERSION);
         op->save (op_of);
       }
 

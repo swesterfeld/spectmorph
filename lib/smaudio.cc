@@ -248,20 +248,17 @@ SpectMorph::Audio::load (GenericInP file, AudioLoadOptions load_options)
 Error
 SpectMorph::Audio::save (const string& filename) const
 {
-  GenericOut *out = StdioOut::open (filename);
+  GenericOutP out = StdioOut::open (filename);
   if (!out)
     {
       fprintf (stderr, "error: can't open output file '%s'.\n", filename.c_str());
       exit (1);
     }
-  Error result = save (out);
-  delete out; // close file
-
-  return result;
+  return save (out);
 }
 
 Error
-SpectMorph::Audio::save (GenericOut *file) const
+SpectMorph::Audio::save (GenericOutP file) const
 {
   OutFile of (file, "SpectMorph::Audio", SPECTMORPH_BINARY_FILE_VERSION);
   assert (of.open_ok());
@@ -314,9 +311,7 @@ Audio::clone() const
 {
   // create a deep copy (by saving/loading)
   vector<unsigned char> audio_data;
-  MemOut                audio_mo (&audio_data);
-
-  save (&audio_mo);
+  save (MemOut::open (&audio_data));
 
   Audio *audio_clone = new Audio();
   audio_clone->load (MMapIn::open_vector (audio_data));
