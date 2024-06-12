@@ -380,13 +380,10 @@ Project::load (const string& filename, bool load_wav_sources)
   else
     {
       assert (!load_wav_sources); /* we only need this for preset loading, which are in new format */
-      GenericIn *file = GenericIn::open (filename);
+      GenericInP file = GenericIn::open (filename);
       if (file)
         {
-          Error error = load_compat (file, nullptr);
-          delete file;
-
-          return error;
+          return load_compat (file, nullptr);
         }
       else
         {
@@ -411,10 +408,7 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool l
   if (error)
     {
       /* restore old plan/instruments if something went wrong */
-      GenericIn *old_in = MMapIn::open_vector (data);
-      m_morph_plan.load (old_in);
-      delete old_in;
-
+      m_morph_plan.load (MMapIn::open_vector (data));
       instrument_map.swap (old_instrument_map);
     }
   return error;
@@ -427,10 +421,9 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
   if (zip_reader.error())
     return Error ("Unable to read 'plan.smplan' from input file");
 
-  GenericIn *in = MMapIn::open_vector (plan);
-  Error error = m_morph_plan.load (in, params);
-  delete in;
+  GenericInP in = MMapIn::open_vector (plan);
 
+  Error error = m_morph_plan.load (in, params);
   if (error)
     return error;
 
@@ -469,7 +462,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
 }
 
 Error
-Project::load_compat (GenericIn *in, MorphPlan::ExtraParameters *params)
+Project::load_compat (GenericInP in, MorphPlan::ExtraParameters *params)
 {
   Error error = m_morph_plan.load (in, params);
 
@@ -492,10 +485,8 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   if (!HexString::decode (plan_str, data))
     return;
 
-  GenericIn *in = MMapIn::open_vector (data);
+  GenericInP in = MMapIn::open_vector (data);
   Error error = load_compat (in, nullptr);
-  delete in;
-
   if (error)
     return;
 

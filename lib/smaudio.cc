@@ -32,18 +32,15 @@ Audio::Audio()
 Error
 SpectMorph::Audio::load (const string& filename, AudioLoadOptions load_options)
 {
-  GenericIn *file = GenericIn::open (filename);
+  GenericInP file = GenericIn::open (filename);
   if (!file)
     return Error::Code::FILE_NOT_FOUND;
 
-  Error result = load (file, load_options);
-  delete file;
-
-  return result;
+  return load (file, load_options);
 }
 
 Error
-SpectMorph::Audio::load (GenericIn *file, AudioLoadOptions load_options)
+SpectMorph::Audio::load (GenericInP file, AudioLoadOptions load_options)
 {
   SpectMorph::AudioBlock *audio_block = NULL;
 
@@ -322,10 +319,7 @@ Audio::clone() const
   save (&audio_mo);
 
   Audio *audio_clone = new Audio();
-  GenericIn *in = MMapIn::open_vector (audio_data);
-  audio_clone->load (in);
-  delete in;
-
+  audio_clone->load (MMapIn::open_vector (audio_data));
   return audio_clone;
 }
 

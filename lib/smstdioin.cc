@@ -10,13 +10,13 @@ using namespace SpectMorph;
 
 using std::string;
 
-GenericIn*
+GenericInP
 StdioIn::open (const string& filename)
 {
   FILE *file = fopen (filename.c_str(), "rb");
 
   if (file)
-    return new StdioIn (file, filename);
+    return GenericInP (new StdioIn (file, filename));
   else
     return NULL;
 }
@@ -65,7 +65,7 @@ StdioIn::get_pos()
   return ftell (file);
 }
 
-GenericIn *
+GenericInP
 StdioIn::open_subfile (size_t pos, size_t len)
 {
   return StdioSubIn::open (filename, pos, len);

@@ -7,16 +7,16 @@
 
 using std::string;
 using std::vector;
-using SpectMorph::InFile;
-using SpectMorph::GenericIn;
+
+namespace SpectMorph
+{
 
 /**
  * Create InFile object for reading a file.
  *
  * \param filename name of the file
  */
-InFile::InFile (const string& filename) :
-  file_delete (true)
+InFile::InFile (const string& filename)
 {
   file = GenericIn::open (filename);
   current_event = NONE;
@@ -29,21 +29,11 @@ InFile::InFile (const string& filename) :
  *
  * \param file the input stream object to read data from
  */
-InFile::InFile (GenericIn *file) :
-  file (file),
-  file_delete (false)
+InFile::InFile (GenericInP file) :
+  file (file)
 {
   current_event = NONE;
   read_file_type_and_version();
-}
-
-InFile::~InFile()
-{
-  if (file && file_delete)
-    {
-      delete file;
-      file = NULL;
-    }
 }
 
 void
@@ -355,7 +345,7 @@ InFile::skip_raw_uint16_block()
  * is responsible for freeing the GenericIn object when done. NULL will be returned on
  * error.
  */
-GenericIn *
+GenericInP
 InFile::open_blob()
 {
   return file->open_subfile (current_event_blob_pos, current_event_blob_size);
@@ -506,4 +496,6 @@ int
 InFile::file_version()
 {
   return m_file_version;
+}
+
 }

@@ -16,7 +16,7 @@ using std::vector;
 
 using namespace SpectMorph;
 
-GenericIn*
+GenericInP
 MMapIn::open (const std::string& filename)
 {
   if (getenv ("SPECTMORPH_NOMMAP"))
@@ -28,7 +28,7 @@ MMapIn::open (const std::string& filename)
       unsigned char *bytes  = reinterpret_cast<unsigned char *> (g_mapped_file_get_contents (gmf));
       size_t         length = g_mapped_file_get_length (gmf);
 
-      return new MMapIn (bytes, bytes + length, gmf);
+      return GenericInP (new MMapIn (bytes, bytes + length, gmf));
     }
   else
     {
@@ -36,10 +36,10 @@ MMapIn::open (const std::string& filename)
     }
 }
 
-GenericIn*
+GenericInP
 MMapIn::open_vector (const vector<unsigned char>& vec)
 {
-  return new MMapIn (vec.data(), vec.data() + vec.size(), nullptr);
+  return GenericInP (new MMapIn (vec.data(), vec.data() + vec.size(), nullptr));
 }
 
 MMapIn::MMapIn (const unsigned char *mapfile, const unsigned char *mapend, GMappedFile *gmf) :
@@ -105,8 +105,8 @@ MMapIn::get_pos()
   return pos - mapfile;
 }
 
-GenericIn *
+GenericInP
 MMapIn::open_subfile (size_t pos, size_t len)
 {
-  return new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */);
+  return GenericInP (new MMapIn (mapfile + pos, mapfile + pos + len, nullptr /* no mapped file */));
 }
