@@ -158,10 +158,8 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
           InFile blob_ifile (blob_in);
 
           vector<unsigned char> blob_data;
-          MemOut                blob_mo (&blob_data);
-
           {
-            OutFile blob_ofile (&blob_mo, blob_ifile.file_type(), blob_ifile.file_version());
+            OutFile blob_ofile (MemOut::open (&blob_data), blob_ifile.file_type(), blob_ifile.file_version());
             process_file (property + ".", blob_ifile, blob_ofile);
             // blob_ofile destructor run here
           }
@@ -275,10 +273,9 @@ main (int argc, char **argv)
   OutFile *ofile = NULL;
 
   vector<unsigned char> data;
-  MemOut mo (&data);
   if (edit2hex)
     {
-      ofile = new OutFile (&mo, ifile.file_type(), ifile.file_version());
+      ofile = new OutFile (MemOut::open (&data), ifile.file_type(), ifile.file_version());
     }
   else
     {
