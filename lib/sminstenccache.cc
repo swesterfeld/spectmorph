@@ -92,7 +92,7 @@ ends_with (const string& value, const string& ending)
 void
 InstEncCache::cache_try_load_L (const string& cache_key, const string& need_version)
 {
-  GenericIn *in_file = nullptr;
+  GenericInP in_file;
   string     abs_filename;
 
   vector<string> files;
@@ -146,7 +146,6 @@ InstEncCache::cache_try_load_L (const string& cache_key, const string& need_vers
             }
         }
     }
-  delete in_file;
 }
 
 static string
@@ -227,11 +226,8 @@ InstEncCache::cache_lookup (const string& cache_key, const string& version)
       vector<unsigned char>& data = cache[cache_key].data;
       cache[cache_key].read_stamp = cache_read_stamp++;
 
-      GenericIn *in = MMapIn::open_vector (data);
       Audio     *audio = new Audio;
-      Error      error = audio->load (in);
-
-      delete in;
+      Error      error = audio->load (MMapIn::open_vector (data));
 
       if (!error)
         return audio;
@@ -245,9 +241,7 @@ void
 InstEncCache::cache_add (const string& cache_key, const string& version, const Audio *audio)
 {
   vector<unsigned char> data;
-  MemOut                audio_mem_out (&data);
-
-  audio->save (&audio_mem_out);
+  audio->save (MemOut::open (&data));
 
   // LOCK cache: store entry
   std::lock_guard<std::mutex> lg (cache_mutex);

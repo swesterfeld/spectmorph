@@ -149,7 +149,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
         }
       else if (ifile.event() == InFile::BLOB)
         {
-          GenericIn *blob_in = ifile.open_blob();
+          GenericInP blob_in = ifile.open_blob();
           if (!blob_in)
             {
               fprintf (stderr, PROG_NAME ": error opening input\n");
@@ -158,16 +158,13 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
           InFile blob_ifile (blob_in);
 
           vector<unsigned char> blob_data;
-          MemOut                blob_mo (&blob_data);
-
           {
-            OutFile blob_ofile (&blob_mo, blob_ifile.file_type(), blob_ifile.file_version());
+            OutFile blob_ofile (MemOut::open (&blob_data), blob_ifile.file_type(), blob_ifile.file_version());
             process_file (property + ".", blob_ifile, blob_ofile);
             // blob_ofile destructor run here
           }
 
           ofile.write_blob (ifile.event_name(), blob_data.data(), blob_data.size());
-          delete blob_in;
 
           output_blob_map[ifile.event_blob_sum()] = blob_data;
         }
@@ -266,7 +263,7 @@ main (int argc, char **argv)
       return 1;
     }
 
-  GenericIn *in = StdioIn::open (options.in_file);
+  GenericInP in = StdioIn::open (options.in_file);
   if (!in)
     {
       fprintf (stderr, PROG_NAME ": error opening input\n");
@@ -276,10 +273,9 @@ main (int argc, char **argv)
   OutFile *ofile = NULL;
 
   vector<unsigned char> data;
-  MemOut mo (&data);
   if (edit2hex)
     {
-      ofile = new OutFile (&mo, ifile.file_type(), ifile.file_version());
+      ofile = new OutFile (MemOut::open (&data), ifile.file_type(), ifile.file_version());
     }
   else
     {
@@ -288,7 +284,6 @@ main (int argc, char **argv)
 
   process_file ("", ifile, *ofile);
 
-  delete in;
   delete ofile;
 
   bool all_used = true;

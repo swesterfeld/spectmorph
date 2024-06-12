@@ -4,20 +4,18 @@
 #include "smmmapin.hh"
 #include "smstdioin.hh"
 
-using SpectMorph::GenericIn;
-using SpectMorph::MMapIn;
-using SpectMorph::StdioIn;
 using std::string;
+using namespace SpectMorph;
 
 /**
  * Open a file for reading, using memory mapping if possible, stdio based reading otherwise.
  *
  * \returns the newly created GenericIn object, or NULL on error
  */
-GenericIn*
+GenericInP
 GenericIn::open (const std::string& filename)
 {
-  GenericIn *file = MMapIn::open (filename);
+  GenericInP file = MMapIn::open (filename);
   if (!file)
     file = StdioIn::open (filename);
   return file;

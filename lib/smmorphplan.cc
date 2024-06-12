@@ -131,13 +131,11 @@ MorphPlan::set_plan_str (const string& str)
   if (!HexString::decode (str, data))
     return;
 
-  GenericIn *in = MMapIn::open_vector (data);
-  load (in);
-  delete in;
+  load (MMapIn::open_vector (data));
 }
 
 Error
-MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
+MorphPlan::load_internal (GenericInP in, ExtraParameters *params)
 {
   in_restore = true;
 
@@ -232,16 +230,13 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
                       break;
                     }
 
-                  GenericIn *blob_in = ifile.open_blob();
+                  GenericInP blob_in = ifile.open_blob();
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
                   int ch;
                   while ((ch = blob_in->get_byte()) >= 0)
                     blob_data.push_back (ch);
 
-                  delete blob_in; // close blob file handle
-
-                  GenericIn *in = MMapIn::open_vector (blob_data);
-                  InFile blob_infile (in);
+                  InFile blob_infile (MMapIn::open_vector (blob_data));
                   bool read_ok = load_op->load (blob_infile);
                   if (!read_ok)
                     {
@@ -250,8 +245,6 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
                       sm_debug ("%s", msg.c_str());
                       // don't abort loading - ignore load errors here, at least doing things as good as we can
                     }
-
-                  delete in; // close memory file handle
 
                   add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
                 }
@@ -271,11 +264,8 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
 
                   vector<unsigned char>& blob_data = blob_data_map[ifile.event_blob_sum()];
 
-                  GenericIn *in = MMapIn::open_vector (blob_data);
-                  InFile blob_infile (in);
+                  InFile blob_infile (MMapIn::open_vector (blob_data));
                   load_op->load (blob_infile);
-
-                  delete in; // close memory file handle
 
                   add_operator (load_op, ADD_POS_END, load_name, load_id, load_folded);
                 }
@@ -327,22 +317,17 @@ MorphPlan::load_internal (GenericIn *in, ExtraParameters *params)
  * \returns Error::NONE if everything worked, an error otherwise
  */
 Error
-MorphPlan::load (GenericIn *in, ExtraParameters *params)
+MorphPlan::load (GenericInP in, ExtraParameters *params)
 {
   /* backup old plan */
   vector<unsigned char> data;
-  MemOut mo (&data);
-  save (&mo);
+  save (MemOut::open (&data));
 
   Error error = load_internal (in, params);
 
   /* restore old plan if something went wrong */
   if (error)
-    {
-      GenericIn *old_in = MMapIn::open_vector (data);
-      load_internal (old_in);
-      delete old_in;
-    }
+    load_internal (MMapIn::open_vector (data));
 
   emit_plan_changed();
   emit_index_changed();
@@ -355,12 +340,10 @@ MorphPlan::load_default()
 {
   string filename = sm_get_default_plan();
 
-  GenericIn *in = StdioIn::open (filename);
+  GenericInP in = StdioIn::open (filename);
   if (in)
     {
       Error error = load (in);
-      delete in;
-
       if (!error)
         return;
     }
@@ -446,7 +429,7 @@ MorphPlan::move (MorphOperator *op, MorphOperator *op_next)
 }
 
 Error
-MorphPlan::save (GenericOut *file, ExtraParameters *params) const
+MorphPlan::save (GenericOutP file, ExtraParameters *params) const
 {
   OutFile of (file, "SpectMorph::MorphPlan", SPECTMORPH_BINARY_FILE_VERSION);
   // of.write_string ("index", index_filename); (index loading is disabled)
@@ -461,10 +444,9 @@ MorphPlan::save (GenericOut *file, ExtraParameters *params) const
       of.write_bool ("folded", op->folded());
 
       vector<unsigned char> op_data;
-      MemOut                op_mo (&op_data);
       // need an OutFile destructor run before op_data is ready
       {
-        OutFile op_of (&op_mo, op->type(), SPECTMORPH_BINARY_FILE_VERSION);
+        OutFile op_of (MemOut::open (&op_data), op->type(), SPECTMORPH_BINARY_FILE_VERSION);
         op->save (op_of);
       }
 

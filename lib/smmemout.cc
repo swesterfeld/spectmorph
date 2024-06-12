@@ -12,6 +12,12 @@ MemOut::MemOut (vector<unsigned char> *output)
 {
 }
 
+GenericOutP
+MemOut::open (vector<unsigned char> *output)
+{
+  return GenericOutP (new MemOut (output));
+}
+
 int
 MemOut::put_byte (int c)
 {

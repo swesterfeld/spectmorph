@@ -42,8 +42,7 @@ WavSet::save (const string& filename, bool embed_models)
         {
           vector<unsigned char> data;
 
-          MemOut mem_out (&data);
-          waves[i].audio->save (&mem_out);
+          waves[i].audio->save (MemOut::open (&data));
           of.write_blob ("audio", data.data(), data.size());
         }
       else if (embed_models)
@@ -198,12 +197,10 @@ WavSet::load (const string& filename, AudioLoadOptions load_options)
                   assert (wave);
                   assert (!wave->audio);
 
-                  GenericIn *blob_in = ifile.open_blob();
+                  GenericInP blob_in = ifile.open_blob();
 
                   wave->audio = new Audio();
                   wave->audio->load (blob_in, load_options);
-
-                  delete blob_in; // close input file
 
                   blob_map[ifile.event_blob_sum()] = wave->audio;
                 }

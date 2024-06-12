@@ -107,7 +107,7 @@ Options::print_usage ()
 
 
 static void
-display_file (GenericIn *in, int indent = 0)
+display_file (GenericInP in, int indent = 0)
 {
   InFile ifile (in);
   sm_printf ("%sfile header {\n", spaces (indent).c_str());
@@ -189,14 +189,13 @@ display_file (GenericIn *in, int indent = 0)
           sm_printf ("%s", spaces (indent).c_str());
           sm_printf ("blob %s {\n", ifile.event_name().c_str());
 
-          GenericIn *blob_in = ifile.open_blob();
+          GenericInP blob_in = ifile.open_blob();
           if (!blob_in)
             {
               fprintf (stderr, PROG_NAME ": error opening input\n");
               exit (1);
             }
           display_file (blob_in, indent + 2);
-          delete blob_in;
 
           sm_printf ("%s}\n", spaces (indent).c_str());
         }
@@ -204,7 +203,7 @@ display_file (GenericIn *in, int indent = 0)
         {
           sm_printf ("%s", spaces (indent).c_str());
           sm_printf ("blob_ref %s {\n", ifile.event_name().c_str());
-          GenericIn *blob_in = ifile.open_blob();
+          GenericInP blob_in = ifile.open_blob();
           if (!blob_in)
             {
               fprintf (stderr, PROG_NAME ": error opening input\n");
@@ -240,7 +239,7 @@ main (int argc, char **argv)
     }
 
   vector<unsigned char> data;
-  GenericIn *in;
+  GenericInP in;
 
   if (ZipReader::is_zip (argv[1]))
     {
@@ -273,5 +272,4 @@ main (int argc, char **argv)
       return 1;
     }
   display_file (in);
-  delete in;
 }

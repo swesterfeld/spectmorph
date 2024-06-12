@@ -17,8 +17,7 @@ class MorphOperatorPtr;
 
 class OutFile
 {
-  GenericOut           *file;
-  bool                  delete_file;
+  GenericOutP           file;
   std::set<std::string> stored_blobs;
 
 protected:
@@ -28,7 +27,7 @@ protected:
 
 public:
   OutFile (const std::string& filename, const std::string& file_type, int file_version);
-  OutFile (GenericOut *outfile, const std::string& file_type, int file_version);
+  OutFile (GenericOutP outfile, const std::string& file_type, int file_version);
 
   bool
   open_ok()

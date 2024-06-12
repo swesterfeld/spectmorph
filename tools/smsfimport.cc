@@ -33,6 +33,7 @@ debug (const char *fmt, ...)
 
 /* avoid problems with SpectMorph::Instrument and SpectMorph::Sample */
 using SpectMorph::GenericIn;
+using SpectMorph::GenericInP;
 using SpectMorph::JobQueue;
 using SpectMorph::WavSet;
 using SpectMorph::WavSetWave;
@@ -70,7 +71,7 @@ struct Generator
   int range_min;
   int range_max;
 
-  void read (GenericIn *in);
+  void read (GenericInP in);
 };
 
 struct Zone
@@ -122,7 +123,7 @@ vector<Generator>   instrument_gen;
 vector<Sample>      samples;
 
 string
-read_fourcc (GenericIn *in)
+read_fourcc (GenericInP in)
 {
   string fcc;
 
@@ -136,7 +137,7 @@ read_fourcc (GenericIn *in)
 }
 
 int
-read_ui32 (GenericIn *in)
+read_ui32 (GenericInP in)
 {
   int c0 = in->get_byte();
   int c1 = in->get_byte();
@@ -147,7 +148,7 @@ read_ui32 (GenericIn *in)
 }
 
 int
-read_ui16 (GenericIn *in)
+read_ui16 (GenericInP in)
 {
   int c0 = in->get_byte();
   int c1 = in->get_byte();
@@ -156,7 +157,7 @@ read_ui16 (GenericIn *in)
 }
 
 int
-read_si16 (GenericIn *in)
+read_si16 (GenericInP in)
 {
   int c0 = in->get_byte();
   int c1 = int (char (in->get_byte()));
@@ -165,7 +166,7 @@ read_si16 (GenericIn *in)
 }
 
 string
-read_string (GenericIn *in, int len)
+read_string (GenericInP in, int len)
 {
   string result;
 
@@ -182,7 +183,7 @@ read_string (GenericIn *in, int len)
 }
 
 string
-read_fixed_string (GenericIn *in, int len)
+read_fixed_string (GenericInP in, int len)
 {
   string result;
   bool   eos = false;
@@ -201,7 +202,7 @@ read_fixed_string (GenericIn *in, int len)
 }
 
 void
-Generator::read (GenericIn *in)
+Generator::read (GenericInP in)
 {
   generator = read_ui16 (in);
   range_min = range_max = amount = 0;
@@ -221,7 +222,7 @@ Generator::read (GenericIn *in)
 }
 
 void
-read_ifil (GenericIn *in, int len)
+read_ifil (GenericInP in, int len)
 {
   assert (len == 4);
   int major = read_ui16 (in);
@@ -230,63 +231,63 @@ read_ifil (GenericIn *in, int len)
 }
 
 void
-read_INAM (GenericIn *in, int len)
+read_INAM (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("name '%s'\n", result.c_str());
 }
 
 void
-read_isng (GenericIn *in, int len)
+read_isng (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("target '%s'\n", result.c_str());
 }
 
 void
-read_IPRD (GenericIn *in, int len)
+read_IPRD (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("product '%s'\n", result.c_str());
 }
 
 void
-read_IENG (GenericIn *in, int len)
+read_IENG (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("engineer '%s'\n", result.c_str());
 }
 
 void
-read_ISFT (GenericIn *in, int len)
+read_ISFT (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("tool '%s'\n", result.c_str());
 }
 
 void
-read_ICRD (GenericIn *in, int len)
+read_ICRD (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("creation date '%s'\n", result.c_str());
 }
 
 void
-read_ICMT (GenericIn *in, int len)
+read_ICMT (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("comment '%s'\n", result.c_str());
 }
 
 void
-read_ICOP (GenericIn *in, int len)
+read_ICOP (GenericInP in, int len)
 {
   string result = read_string (in, len);
   debug ("copyright '%s'\n", result.c_str());
 }
 
 void
-read_phdr (GenericIn *in, int len)
+read_phdr (GenericInP in, int len)
 {
   debug ("phdr len = %d\n", len);
 
@@ -311,7 +312,7 @@ read_phdr (GenericIn *in, int len)
 }
 
 void
-read_pbag (GenericIn *in, int len)
+read_pbag (GenericInP in, int len)
 {
   debug ("pbag len = %d\n", len);
   while (len >= 4)
@@ -328,7 +329,7 @@ read_pbag (GenericIn *in, int len)
 }
 
 void
-read_pmod (GenericIn *in, int len)
+read_pmod (GenericInP in, int len)
 {
   debug ("pmod len = %d\n", len);
   while (len >= 10)
@@ -343,7 +344,7 @@ read_pmod (GenericIn *in, int len)
 }
 
 void
-read_pgen (GenericIn *in, int len)
+read_pgen (GenericInP in, int len)
 {
   debug ("pgen len = %d\n", len);
   while (len >= 4)
@@ -359,7 +360,7 @@ read_pgen (GenericIn *in, int len)
 }
 
 void
-read_inst (GenericIn *in, int len)
+read_inst (GenericInP in, int len)
 {
   debug ("inst len = %d\n", len);
   while (len >= 22)
@@ -376,7 +377,7 @@ read_inst (GenericIn *in, int len)
 }
 
 void
-read_ibag (GenericIn *in, int len)
+read_ibag (GenericInP in, int len)
 {
   debug ("ibag len = %d\n", len);
   while (len >= 4)
@@ -393,7 +394,7 @@ read_ibag (GenericIn *in, int len)
 }
 
 void
-read_imod (GenericIn *in, int len)
+read_imod (GenericInP in, int len)
 {
   debug ("imod len = %d\n", len);
   while (len >= 10)
@@ -408,7 +409,7 @@ read_imod (GenericIn *in, int len)
 }
 
 void
-read_igen (GenericIn *in, int len)
+read_igen (GenericInP in, int len)
 {
   debug ("igen len = %d\n", len);
   while (len >= 4)
@@ -424,7 +425,7 @@ read_igen (GenericIn *in, int len)
 }
 
 void
-read_shdr (GenericIn *in, int len)
+read_shdr (GenericInP in, int len)
 {
   debug ("shdr len = %d\n", len);
   while (len >= 46)
@@ -669,7 +670,7 @@ Options::print_usage ()
 int
 read_sf2 (const string& filename)
 {
-  GenericIn *in = GenericIn::open (filename.c_str());
+  GenericInP in = GenericIn::open (filename.c_str());
   if (!in)
     {
       fprintf (stderr, "%s: error opening file %s\n", options.program_name.c_str(), filename.c_str());
@@ -862,7 +863,6 @@ read_sf2 (const string& filename)
       printf ("Sample %s\n", si->name.c_str());
     }
 #endif
-  delete in;
   return 0;
 }
 

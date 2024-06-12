@@ -15,27 +15,19 @@ using namespace SpectMorph;
 OutFile::OutFile (const string& filename, const string& file_type, int file_version)
 {
   file = StdioOut::open (filename);
-  delete_file = true;
   write_file_type_and_version (file_type, file_version);
 }
 
-OutFile::OutFile (GenericOut *outfile, const string& file_type, int file_version)
+OutFile::OutFile (GenericOutP outfile, const string& file_type, int file_version)
 {
   file = outfile;
-  delete_file = false;
   write_file_type_and_version (file_type, file_version);
 }
 
 OutFile::~OutFile()
 {
-  if (file != NULL)
-    {
-      file->put_byte ('Z');  // eof
-      if (delete_file)
-        delete file;
-
-      file = NULL;
-    }
+  if (file)
+    file->put_byte ('Z');  // eof
 }
 
 void

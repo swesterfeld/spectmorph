@@ -18,7 +18,7 @@ class StdioOut final : public GenericOut
 
   StdioOut (FILE *file);
 public:
-  static GenericOut* open (const std::string& filename);
+  static GenericOutP open (const std::string& filename);
 
   ~StdioOut();
   int put_byte (int c) override;

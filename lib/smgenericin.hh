@@ -1,12 +1,16 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
-#ifndef SPECTMORPH_GENERIC_IN_HH
-#define SPECTMORPH_GENERIC_IN_HH
+#pragma once
 
 #include <string>
+#include <memory>
 
 namespace SpectMorph
 {
+
+class GenericIn;
+
+typedef std::shared_ptr<GenericIn> GenericInP;
 
 /**
  * \brief Generic Input Stream
@@ -17,7 +21,7 @@ namespace SpectMorph
 class GenericIn
 {
 public:
-  static GenericIn* open (const std::string& filename);
+  static GenericInP open (const std::string& filename);
 
   virtual ~GenericIn();
   /**
@@ -68,9 +72,7 @@ public:
    *
    * \returns a GenericIn object with the subfile or NULL on error (open failed)
    */
-  virtual GenericIn *open_subfile (size_t pos, size_t len) = 0;
+  virtual GenericInP open_subfile (size_t pos, size_t len) = 0;
 };
 
 }
-
-#endif /* SPECTMORPH_GENERIC_IN_HH */
