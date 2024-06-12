@@ -149,7 +149,7 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
         }
       else if (ifile.event() == InFile::BLOB)
         {
-          GenericIn *blob_in = ifile.open_blob();
+          GenericInP blob_in = ifile.open_blob();
           if (!blob_in)
             {
               fprintf (stderr, PROG_NAME ": error opening input\n");
@@ -167,7 +167,6 @@ process_file (const string& property_prefix, InFile& ifile, OutFile& ofile)
           }
 
           ofile.write_blob (ifile.event_name(), blob_data.data(), blob_data.size());
-          delete blob_in;
 
           output_blob_map[ifile.event_blob_sum()] = blob_data;
         }
@@ -266,7 +265,7 @@ main (int argc, char **argv)
       return 1;
     }
 
-  GenericIn *in = StdioIn::open (options.in_file);
+  GenericInP in = StdioIn::open (options.in_file);
   if (!in)
     {
       fprintf (stderr, PROG_NAME ": error opening input\n");
@@ -288,7 +287,6 @@ main (int argc, char **argv)
 
   process_file ("", ifile, *ofile);
 
-  delete in;
   delete ofile;
 
   bool all_used = true;
