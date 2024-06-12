@@ -60,14 +60,13 @@ read_testblob()
       else if (infile.event() == InFile::BLOB)
         {
           contents += "<blob>";
-          GenericIn *in_blob = infile.open_blob();
+          GenericInP in_blob = infile.open_blob();
           assert (in_blob);
           for (size_t i = 0; i < xdata.size(); i++)
             {
               assert (in_blob->get_byte() == xdata[i]);
             }
           assert (in_blob->get_byte() == EOF);
-          delete in_blob; // close subfile handle
         }
       else
         {
