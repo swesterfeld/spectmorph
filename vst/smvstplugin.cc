@@ -210,9 +210,7 @@ VstPlugin::load_state (char *buffer, size_t size)
       if (!HexString::decode (buffer, data))
         return;
 
-      GenericIn *in = MMapIn::open_vector (data);
-      error = project.load_compat (in, &params);
-      delete in;
+      error = project.load_compat (MMapIn::open_vector (data), &params);
     }
 
   if (!error)  /* if loading failed, keep values as they are */
