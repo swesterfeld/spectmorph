@@ -18,16 +18,17 @@ class StdioIn final : public GenericIn
   std::string  filename;
 
   StdioIn (FILE *file, const std::string& filename);
-  ~StdioIn();
 public:
-  static GenericIn* open (const std::string& filename);
+  ~StdioIn();
+
+  static GenericInP open (const std::string& filename);
 
   int get_byte() override;     // like fgetc
   int read (void *ptr, size_t size) override;
   bool skip (size_t size) override;
   const unsigned char *mmap_mem (size_t& remaining) override;
   size_t get_pos() override;
-  GenericIn *open_subfile (size_t pos, size_t len) override;
+  GenericInP open_subfile (size_t pos, size_t len) override;
 };
 
 }

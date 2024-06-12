@@ -43,8 +43,7 @@ public:
   };
 
 protected:
-  GenericIn            *file;
-  bool                  file_delete;
+  GenericInP            file;
   Event                 current_event;
   std::string           current_event_str;
   bool                  current_event_bool;
@@ -74,8 +73,7 @@ protected:
 
 public:
   InFile (const std::string& filename);
-  InFile (GenericIn *file);
-  ~InFile();
+  InFile (GenericInP file);
 
   /**
    * Check if file open succeeded.
@@ -103,7 +101,7 @@ public:
   std::string  file_type();
   int          file_version();
 
-  GenericIn   *open_blob();
+  GenericInP   open_blob();
 };
 
 }

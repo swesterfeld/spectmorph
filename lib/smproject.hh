@@ -153,7 +153,7 @@ public:
   Error save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params);
   Error load (const std::string& filename, bool load_wav_sources = true);
   Error load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool load_wav_sources = true);
-  Error load_compat (GenericIn *in, MorphPlan::ExtraParameters *params);
+  Error load_compat (GenericInP in, MorphPlan::ExtraParameters *params);
 
   std::string save_plan_lv2 (std::function<std::string(std::string)> abstract_path);
   void        load_plan_lv2 (std::function<std::string(std::string)> absolute_path, const std::string& plan);

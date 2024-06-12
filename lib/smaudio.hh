@@ -118,7 +118,7 @@ public:
   std::vector<AudioBlock> contents;               //!< the actual frame data
 
   Error load (const std::string& filename, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
-  Error load (SpectMorph::GenericIn *file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
+  Error load (SpectMorph::GenericInP file, AudioLoadOptions load_options = AUDIO_LOAD_DEBUG);
   Error save (const std::string& filename) const;
   Error save (SpectMorph::GenericOut *file) const;
 
