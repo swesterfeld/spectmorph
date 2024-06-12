@@ -5,9 +5,7 @@
 #include "smstdioin.hh"
 
 using std::string;
-
-namespace SpectMorph
-{
+using namespace SpectMorph;
 
 /**
  * Open a file for reading, using memory mapping if possible, stdio based reading otherwise.
@@ -25,6 +23,4 @@ GenericIn::open (const std::string& filename)
 
 GenericIn::~GenericIn()
 {
-}
-
 }
