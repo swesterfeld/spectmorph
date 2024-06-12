@@ -7,9 +7,7 @@
 
 using std::string;
 using std::vector;
-
-namespace SpectMorph
-{
+using namespace SpectMorph;
 
 /**
  * Create InFile object for reading a file.
@@ -496,6 +494,4 @@ int
 InFile::file_version()
 {
   return m_file_version;
-}
-
 }
