@@ -351,8 +351,6 @@ Project::list_wav_sources()
 void
 Project::post_load()
 {
-  clear_lv2_filenames();
-
   m_builder_thread.kill_all_jobs();
   synth_interface()->emit_clear_wav_sets();
   for (auto wav_source : list_wav_sources())
@@ -483,10 +481,11 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
     return;
 
   GenericInP in = MMapIn::open_vector (data);
-  Error error = load_compat (in, nullptr);
+  Error error = m_morph_plan.load (in, nullptr);
   if (error)
     return;
 
+  instrument_map.clear();
   // LV2 doesn't include instruments
   for (auto wav_source : list_wav_sources())
     {
@@ -502,6 +501,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       // ignore error (if any): we still load preset if instrument is missing
       instrument_map[object_id].reset (inst);
     }
+  clear_lv2_filenames();
   post_load();
 }
 
