@@ -63,7 +63,7 @@ public:
   void emit_plan_changed();
   void emit_index_changed();
 
-  Error save (GenericOut *file, ExtraParameters *params = nullptr) const;
+  Error save (GenericOutP file, ExtraParameters *params = nullptr) const;
   Error load (GenericInP in, ExtraParameters *params = nullptr);
 
   void load_default();
