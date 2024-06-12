@@ -28,9 +28,8 @@ main (int argc, char **argv)
     {
       vector<unsigned char> data;
       data.reserve (6 * 10000 * 1000);
-      MemOut  mem_out (&data);
 
-      OutFile outfile (&mem_out, "SpectMorph::TestBlob", 42);
+      OutFile outfile (MemOut::open (&data), "SpectMorph::TestBlob", 42);
 
       vector<float> fblock;
       for (size_t i = 0; i < 1000; i++)
