@@ -112,7 +112,7 @@ private:
 public:
   Project();
 
-  Instrument *get_instrument (MorphWavSource *wav_source);
+  InstrumentMapEntry& lookup_instrument (MorphWavSource *wav_source);
   void set_lv2_absolute_path (MorphWavSource *wav_source, const std::string& path);
 
   void rebuild (MorphWavSource *wav_source);

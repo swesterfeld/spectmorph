@@ -62,7 +62,7 @@ MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
       m_instrument = instrument;
 
       Project *project = morph_plan()->project();
-      Instrument *instrument = project->get_instrument (this);
+      Instrument *instrument = project->lookup_instrument (this).instrument.get();
       UserInstrumentIndex *user_instrument_index = project->user_instrument_index();
 
       string filename = user_instrument_index->filename (m_bank, m_instrument);
@@ -125,7 +125,7 @@ MorphWavSource::on_instrument_updated (const std::string& bank, int number, cons
   if (bank == m_bank && number == m_instrument)
     {
       auto project  = m_morph_plan->project();
-      Instrument *instrument = project->get_instrument (this);
+      Instrument *instrument = project->lookup_instrument (this).instrument.get();
 
       if (new_instrument->size())
         {

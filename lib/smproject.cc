@@ -127,8 +127,8 @@ Project::clear_wav_sets (vector<std::unique_ptr<WavSet>>& new_wav_sets)
   wav_sets.swap (new_wav_sets);
 }
 
-Instrument *
-Project::get_instrument (MorphWavSource *wav_source)
+Project::InstrumentMapEntry&
+Project::lookup_instrument (MorphWavSource *wav_source)
 {
   if (wav_source->object_id() == 0) /* create if not used */
     {
@@ -154,7 +154,7 @@ Project::get_instrument (MorphWavSource *wav_source)
       m_instrument_map[object_id].instrument.reset (new Instrument());
     }
 
-  return m_instrument_map[wav_source->object_id()].instrument.get();
+  return m_instrument_map[wav_source->object_id()];
 }
 
 WavSet*
@@ -277,12 +277,12 @@ Project::on_operator_added (MorphOperator *op)
       if (wav_source->object_id() == 0)
         {
           /* load default instrument */
-          Instrument *instrument = get_instrument (wav_source);
+          auto& map_entry = lookup_instrument (wav_source);
 
           string filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
-          Error error = instrument->load (filename);
+          Error error = map_entry.instrument->load (filename);
           if (!error)
-            m_instrument_map[wav_source->object_id()].lv2_absolute_path = filename;
+            map_entry.lv2_absolute_path = filename;
 
           rebuild (wav_source);
         }
@@ -546,13 +546,13 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
   for (auto wav_source : list_wav_sources())
     {
       // must do this before using object_id (lazy creation)
-      Instrument *instrument = get_instrument (wav_source);
+      auto& map_entry = lookup_instrument (wav_source);
 
       int    object_id = wav_source->object_id();
       string inst_file = string_printf ("instrument%d.sminst", object_id);
 
       ZipWriter   mem_zip;
-      instrument->save (mem_zip);
+      map_entry.instrument->save (mem_zip);
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
@@ -568,9 +568,8 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 {
   for (auto wav_source : list_wav_sources())
     {
-      // must do this before using object_id (lazy creation)
-      get_instrument (wav_source);
-      string absolute_path = m_instrument_map[wav_source->object_id()].lv2_absolute_path;
+      auto& map_entry = lookup_instrument (wav_source);
+      string absolute_path = map_entry.lv2_absolute_path;
 
       string filename = abstract_path (absolute_path);
       wav_source->set_lv2_abstract_path (filename);
@@ -601,9 +600,7 @@ Project::clear_lv2_filenames()
 void
 Project::set_lv2_absolute_path (MorphWavSource *wav_source, const string& path)
 {
-  // must do this before using object_id (lazy creation)
-  get_instrument (wav_source);
-  m_instrument_map[wav_source->object_id()].lv2_absolute_path = path;
+  lookup_instrument (wav_source).lv2_absolute_path = path;
 
   Debug::debug ("lv2", "edit '%s':\n", wav_source->name().c_str());
   Debug::debug ("lv2", " - absolute path: '%s'\n", path.c_str());
