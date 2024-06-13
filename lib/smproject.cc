@@ -11,6 +11,8 @@
 #include "smproject.hh"
 #include "smhexstring.hh"
 
+#include <filesystem>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -490,19 +492,24 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       Instrument *inst = new Instrument();
 
       // try load mapped path; if this fails, try user instrument dir
-      sm_debug ("abstract path: '%s'\n", wav_source->lv2_abstract_path().c_str());
       string filename = absolute_path (wav_source->lv2_abstract_path());
+
       Error error = inst->load (filename);
-      sm_debug ("trying load '%s' => '%s'\n", filename.c_str(), error.message());
+
+      Debug::debug ("lv2", "load '%s':\n", wav_source->name().c_str());
+      Debug::debug ("lv2", " - abstract path: '%s'\n", wav_source->lv2_abstract_path().c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (filename).c_str());
+      Debug::debug ("lv2", " - trying load absolute path: '%s' => '%s'\n", filename.c_str(), error.message());
+
       if (error)
         {
           filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
           error = inst->load (filename);
-          sm_debug ("trying load '%s' => '%s'\n", filename.c_str(), error.message());
+
+          Debug::debug ("lv2", " - trying load user instrument: '%s' => '%s'\n", filename.c_str(), error.message());
+
           if (error)
-            {
-              filename = "";
-            }
+            filename = "";
         }
 
       // ignore error (if any): we still load preset if instrument is missing
@@ -560,6 +567,11 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 
       string filename = abstract_path (absolute_path);
       wav_source->set_lv2_abstract_path (filename);
+
+      Debug::debug ("lv2", "save '%s':\n", wav_source->name().c_str());
+      Debug::debug ("lv2", " - absolute path: '%s'\n", absolute_path.c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (absolute_path).c_str());
+      Debug::debug ("lv2", " - abstract path: '%s'\n", filename.c_str());
     }
 
   vector<unsigned char> data;
@@ -585,4 +597,8 @@ Project::set_lv2_absolute_path (MorphWavSource *wav_source, const string& path)
   // must do this before using object_id (lazy creation)
   get_instrument (wav_source);
   m_instrument_map[wav_source->object_id()].lv2_absolute_path = path;
+
+  Debug::debug ("lv2", "edit '%s':\n", wav_source->name().c_str());
+  Debug::debug ("lv2", " - absolute path: '%s'\n", path.c_str());
+  Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (path).c_str());
 }

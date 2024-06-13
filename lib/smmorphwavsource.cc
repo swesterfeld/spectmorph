@@ -112,7 +112,6 @@ void
 MorphWavSource::set_lv2_abstract_path (const string& path)
 {
   m_lv2_abstract_path = path;
-  sm_debug ("set %s abstract path: '%s'\n", m_name.c_str(), m_lv2_abstract_path.c_str());
 
   m_morph_plan->emit_plan_changed();
 }
@@ -211,7 +210,6 @@ MorphWavSource::load (InFile& ifile)
           if (ifile.event_name() == "lv2_filename")
             {
               m_lv2_abstract_path = ifile.event_data();
-              sm_debug ("read %s abstract path: '%s'\n", m_name.c_str(), m_lv2_abstract_path.c_str());
             }
           else if (ifile.event_name() == "bank")
             {
