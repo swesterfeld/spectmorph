@@ -152,6 +152,7 @@ Project::lookup_instrument (MorphWavSource *wav_source)
 
       wav_source->set_object_id (object_id);
       m_instrument_map[object_id].instrument.reset (new Instrument());
+      m_instrument_map[object_id].lv2_absolute_path = "";
     }
 
   return m_instrument_map[wav_source->object_id()];
@@ -303,6 +304,7 @@ Project::on_operator_removed (MorphOperator *op)
         {
           /* free instrument data */
           m_instrument_map[object_id].instrument.reset (nullptr);
+          m_instrument_map[object_id].lv2_absolute_path = "";
 
           /* stop rebuild jobs (if any) */
           m_builder_thread.kill_jobs_by_id (object_id);

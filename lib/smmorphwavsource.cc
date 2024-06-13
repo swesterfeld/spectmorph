@@ -134,7 +134,7 @@ MorphWavSource::on_instrument_updated (const std::string& bank, int number, cons
           ZipReader new_inst_reader (new_inst_writer.data());
           instrument->load (new_inst_reader);
 
-          // point lv2 sbsolute path back to user instrument dir to save the changed version
+          // point lv2 absolute path back to user instrument dir to save the changed version
           UserInstrumentIndex *user_instrument_index = project->user_instrument_index();
           project->set_lv2_absolute_path (this, user_instrument_index->filename (m_bank, m_instrument));
         }
