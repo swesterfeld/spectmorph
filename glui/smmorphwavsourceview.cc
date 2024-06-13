@@ -92,7 +92,7 @@ MorphWavSourceView::on_edit()
   SynthInterface *synth_interface = morph_plan_window->synth_interface();
   synth_interface->synth_inst_edit_update (true, nullptr, nullptr);
 
-  Instrument *instrument = morph_wav_source->morph_plan()->project()->get_instrument (morph_wav_source);
+  Instrument *instrument = morph_wav_source->morph_plan()->project()->lookup_instrument (morph_wav_source).instrument.get();
   edit_instrument.reset (instrument->clone());
 
   InstEditWindow *inst_edit_window = new InstEditWindow (*window()->event_loop(), edit_instrument.get(), synth_interface, window());
@@ -153,7 +153,7 @@ MorphWavSourceView::modified_check (bool& wav_source_update, bool& user_inst_upd
   user_instrument.load (user_instrument_index->filename (morph_wav_source->bank(), morph_wav_source->instrument()));
 
   string user_instrument_version = user_instrument.version();
-  string wav_source_version = project->get_instrument (morph_wav_source)->version();
+  string wav_source_version = project->lookup_instrument (morph_wav_source).instrument->version();
   string edit_instrument_version = edit_instrument->version();
 
   wav_source_update = edit_instrument_version != wav_source_version;
@@ -265,7 +265,7 @@ MorphWavSourceView::update_instrument_labels()
 
   bank_combobox->set_text (morph_wav_source->bank());
 
-  Instrument *inst = project->get_instrument (morph_wav_source);
+  Instrument *inst = project->lookup_instrument (morph_wav_source).instrument.get();
   if (inst && inst->size())
     instrument_combobox->set_text (string_printf ("%03d %s", morph_wav_source->instrument(), inst->name().c_str()));
   else

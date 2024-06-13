@@ -11,6 +11,8 @@
 #include "smproject.hh"
 #include "smhexstring.hh"
 
+#include <filesystem>
+
 using namespace SpectMorph;
 
 using std::string;
@@ -80,7 +82,7 @@ void
 Project::rebuild (MorphWavSource *wav_source)
 {
   const int   object_id  = wav_source->object_id();
-  Instrument *instrument = instrument_map[object_id].get();
+  Instrument *instrument = m_instrument_map[object_id].instrument.get();
 
   if (!instrument)
     return;
@@ -125,8 +127,8 @@ Project::clear_wav_sets (vector<std::unique_ptr<WavSet>>& new_wav_sets)
   wav_sets.swap (new_wav_sets);
 }
 
-Instrument *
-Project::get_instrument (MorphWavSource *wav_source)
+Project::InstrumentMapEntry&
+Project::lookup_instrument (MorphWavSource *wav_source)
 {
   if (wav_source->object_id() == 0) /* create if not used */
     {
@@ -138,7 +140,7 @@ Project::get_instrument (MorphWavSource *wav_source)
 
           if (object_id)
             {
-              assert (instrument_map[object_id]); /* can only be used if it has a map entry */
+              assert (m_instrument_map[object_id].instrument); /* can only be used if it has a map entry */
 
               used_object_ids.insert (object_id);
             }
@@ -149,10 +151,11 @@ Project::get_instrument (MorphWavSource *wav_source)
         object_id++;
 
       wav_source->set_object_id (object_id);
-      instrument_map[object_id].reset (new Instrument());
+      m_instrument_map[object_id].instrument.reset (new Instrument());
+      m_instrument_map[object_id].lv2_absolute_path = "";
     }
 
-  return instrument_map[wav_source->object_id()].get();
+  return m_instrument_map[wav_source->object_id()];
 }
 
 WavSet*
@@ -275,9 +278,13 @@ Project::on_operator_added (MorphOperator *op)
       if (wav_source->object_id() == 0)
         {
           /* load default instrument */
-          Instrument *instrument = get_instrument (wav_source);
+          auto& map_entry = lookup_instrument (wav_source);
 
-          Error error = instrument->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
+          string filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
+          Error error = map_entry.instrument->load (filename);
+          if (!error)
+            map_entry.lv2_absolute_path = filename;
+
           rebuild (wav_source);
         }
     }
@@ -296,7 +303,8 @@ Project::on_operator_removed (MorphOperator *op)
       if (object_id)
         {
           /* free instrument data */
-          instrument_map[object_id].reset (nullptr);
+          m_instrument_map[object_id].instrument.reset (nullptr);
+          m_instrument_map[object_id].lv2_absolute_path = "";
 
           /* stop rebuild jobs (if any) */
           m_builder_thread.kill_jobs_by_id (object_id);
@@ -351,8 +359,6 @@ Project::list_wav_sources()
 void
 Project::post_load()
 {
-  clear_lv2_filenames();
-
   m_builder_thread.kill_all_jobs();
   synth_interface()->emit_clear_wav_sets();
   for (auto wav_source : list_wav_sources())
@@ -377,7 +383,6 @@ Project::load (const string& filename, bool load_wav_sources)
     }
   else
     {
-      assert (!load_wav_sources); /* we only need this for preset loading, which are in new format */
       GenericInP file = GenericIn::open (filename);
       if (file)
         {
@@ -398,15 +403,15 @@ Project::load (ZipReader& zip_reader, MorphPlan::ExtraParameters *params, bool l
   m_morph_plan.save (MemOut::open (&data));
 
   /* backup old instruments */
-  map<int, std::unique_ptr<Instrument>> old_instrument_map;
-  old_instrument_map.swap (instrument_map);
+  InstrumentMap old_instrument_map;
+  old_instrument_map.swap (m_instrument_map);
 
   Error error = load_internal (zip_reader, params, load_wav_sources);
   if (error)
     {
       /* restore old plan/instruments if something went wrong */
       m_morph_plan.load (MMapIn::open_vector (data));
-      instrument_map.swap (old_instrument_map);
+      m_instrument_map.swap (old_instrument_map);
     }
   return error;
 }
@@ -418,9 +423,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
   if (zip_reader.error())
     return Error ("Unable to read 'plan.smplan' from input file");
 
-  GenericInP in = MMapIn::open_vector (plan);
-
-  Error error = m_morph_plan.load (in, params);
+  Error error = m_morph_plan.load (MMapIn::open_vector (plan), params);
   if (error)
     return error;
 
@@ -429,7 +432,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
       const int object_id = wav_source->object_id();
 
       Instrument *inst = new Instrument();
-      instrument_map[object_id].reset (inst);
+      m_instrument_map[object_id].instrument.reset (inst);
 
       if (m_storage_model == StorageModel::COPY && load_wav_sources)
         {
@@ -448,7 +451,10 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         }
       else
         {
-          inst->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument())); /* ignore errors */
+          string filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
+          error = inst->load (filename); /* still load preset on error */
+          if (!error)
+            m_instrument_map[object_id].lv2_absolute_path = filename;
         }
     }
 
@@ -465,7 +471,7 @@ Project::load_compat (GenericInP in, MorphPlan::ExtraParameters *params)
 
   if (!error)
     {
-      instrument_map.clear();
+      m_instrument_map.clear();
       post_load();
     }
 
@@ -482,11 +488,11 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   if (!HexString::decode (plan_str, data))
     return;
 
-  GenericInP in = MMapIn::open_vector (data);
-  Error error = load_compat (in, nullptr);
+  Error error = m_morph_plan.load (MMapIn::open_vector (data), nullptr);
   if (error)
     return;
 
+  m_instrument_map.clear();
   // LV2 doesn't include instruments
   for (auto wav_source : list_wav_sources())
     {
@@ -495,13 +501,32 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
       Instrument *inst = new Instrument();
 
       // try load mapped path; if this fails, try user instrument dir
-      Error error = inst->load (absolute_path (wav_source->lv2_filename()));
+      string filename = absolute_path (wav_source->lv2_abstract_path());
+
+      Error error = inst->load (filename);
+
+      Debug::debug ("lv2", "load '%s':\n", wav_source->name().c_str());
+      Debug::debug ("lv2", " - abstract path: '%s'\n", wav_source->lv2_abstract_path().c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (filename).c_str());
+      Debug::debug ("lv2", " - trying load absolute path: '%s' => '%s'\n", filename.c_str(), error.message());
+
       if (error)
-        error = inst->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
+        {
+          filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
+          error = inst->load (filename);
+
+          Debug::debug ("lv2", " - trying load user instrument: '%s' => '%s'\n", filename.c_str(), error.message());
+
+          if (error)
+            filename = "";
+        }
 
       // ignore error (if any): we still load preset if instrument is missing
-      instrument_map[object_id].reset (inst);
+      auto& map_entry = m_instrument_map[object_id];
+      map_entry.instrument.reset (inst);
+      map_entry.lv2_absolute_path = filename;
     }
+  clear_lv2_filenames();
   post_load();
 }
 
@@ -523,13 +548,13 @@ Project::save (ZipWriter& zip_writer, MorphPlan::ExtraParameters *params)
   for (auto wav_source : list_wav_sources())
     {
       // must do this before using object_id (lazy creation)
-      Instrument *instrument = get_instrument (wav_source);
+      auto& map_entry = lookup_instrument (wav_source);
 
       int    object_id = wav_source->object_id();
       string inst_file = string_printf ("instrument%d.sminst", object_id);
 
       ZipWriter   mem_zip;
-      instrument->save (mem_zip);
+      map_entry.instrument->save (mem_zip);
       zip_writer.add (inst_file, mem_zip.data(), ZipWriter::Compress::STORE);
     }
 
@@ -545,8 +570,16 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 {
   for (auto wav_source : list_wav_sources())
     {
-      string lv2_filename = abstract_path (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
-      wav_source->set_lv2_filename (lv2_filename);
+      auto& map_entry = lookup_instrument (wav_source);
+      string absolute_path = map_entry.lv2_absolute_path;
+
+      string filename = abstract_path (absolute_path);
+      wav_source->set_lv2_abstract_path (filename);
+
+      Debug::debug ("lv2", "save '%s':\n", wav_source->name().c_str());
+      Debug::debug ("lv2", " - absolute path: '%s'\n", absolute_path.c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (absolute_path).c_str());
+      Debug::debug ("lv2", " - abstract path: '%s'\n", filename.c_str());
     }
 
   vector<unsigned char> data;
@@ -561,7 +594,17 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 void
 Project::clear_lv2_filenames()
 {
-  /* lv2 filenames should only be set for the morph plan saved during lv2 save */
+  /* lv2 abstract path should only be set for the morph plan saved during lv2 load/save */
   for (auto wav_source : list_wav_sources())
-    wav_source->set_lv2_filename ("");
+    wav_source->set_lv2_abstract_path ("");
+}
+
+void
+Project::set_lv2_absolute_path (MorphWavSource *wav_source, const string& path)
+{
+  lookup_instrument (wav_source).lv2_absolute_path = path;
+
+  Debug::debug ("lv2", "edit '%s':\n", wav_source->name().c_str());
+  Debug::debug ("lv2", " - absolute path: '%s'\n", path.c_str());
+  Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (path).c_str());
 }

@@ -46,7 +46,9 @@ protected:
 
   int         m_instrument = 1;
   std::string m_bank = USER_BANK;
-  std::string m_lv2_filename;
+
+  /* only used in LV2 plugin */
+  std::string m_lv2_abstract_path;
 
 public:
   MorphWavSource (MorphPlan *morph_plan);
@@ -68,8 +70,8 @@ public:
   int         instrument();
   std::string bank();
 
-  void        set_lv2_filename (const std::string& filename);
-  std::string lv2_filename();
+  void        set_lv2_abstract_path (const std::string& path);
+  std::string lv2_abstract_path();
 
   void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
   void        on_bank_removed (const std::string& bank);
