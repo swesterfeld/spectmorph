@@ -279,7 +279,11 @@ Project::on_operator_added (MorphOperator *op)
           /* load default instrument */
           Instrument *instrument = get_instrument (wav_source);
 
-          Error error = instrument->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument()));
+          string filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
+          Error error = instrument->load (filename);
+          if (!error)
+            m_instrument_map[wav_source->object_id()].lv2_absolute_path = filename;
+
           rebuild (wav_source);
         }
     }
@@ -445,7 +449,10 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
         }
       else
         {
-          inst->load (m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument())); /* ignore errors */
+          string filename = m_user_instrument_index.filename (wav_source->bank(), wav_source->instrument());
+          error = inst->load (filename); /* still load preset on error */
+          if (!error)
+            m_instrument_map[object_id].lv2_absolute_path = filename;
         }
     }
 

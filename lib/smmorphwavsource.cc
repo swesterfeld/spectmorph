@@ -67,16 +67,13 @@ MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
 
       string filename = user_instrument_index->filename (m_bank, m_instrument);
       Error error = instrument->load (filename);
-      if (!error)
-        {
-          project->set_lv2_absolute_path (this, filename);
-        }
-      else
+      if (error)
         {
           /* most likely cause of error: this user instrument doesn't exist yet */
           instrument->clear();
-          project->set_lv2_absolute_path (this, "");
+          filename = "";
         }
+      project->set_lv2_absolute_path (this, filename);
       project->rebuild (this);
 
       signal_labels_changed();
