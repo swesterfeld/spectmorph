@@ -14,6 +14,7 @@ templates_DATA = \
   cheese-cake-bass.smplan	  \
   liquid-silver.smplan		  \
   keytrack-choir-ah-oh.smplan     \
+  stringbrass-fusion.smplan       \
   index.smpindex
 
 templatesdir = $(pkgdatadir)/templates
