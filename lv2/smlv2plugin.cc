@@ -69,6 +69,8 @@ instantiate (const LV2_Descriptor*     descriptor,
              const char*               bundle_path,
              const LV2_Feature* const* features)
 {
+  Debug::set_filename ("smlv2plugin.log");
+
   sm_plugin_init();
 
   SM_SET_OS_DATA_DIR();
