@@ -415,9 +415,7 @@ Project::load_internal (ZipReader& zip_reader, MorphPlan::ExtraParameters *param
   if (zip_reader.error())
     return Error ("Unable to read 'plan.smplan' from input file");
 
-  GenericInP in = MMapIn::open_vector (plan);
-
-  Error error = m_morph_plan.load (in, params);
+  Error error = m_morph_plan.load (MMapIn::open_vector (plan), params);
   if (error)
     return error;
 
@@ -479,8 +477,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
   if (!HexString::decode (plan_str, data))
     return;
 
-  GenericInP in = MMapIn::open_vector (data);
-  Error error = m_morph_plan.load (in, nullptr);
+  Error error = m_morph_plan.load (MMapIn::open_vector (data), nullptr);
   if (error)
     return;
 
