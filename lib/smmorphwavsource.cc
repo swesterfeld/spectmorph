@@ -65,11 +65,17 @@ MorphWavSource::set_bank_and_instrument (const string& bank, int instrument)
       Instrument *instrument = project->get_instrument (this);
       UserInstrumentIndex *user_instrument_index = project->user_instrument_index();
 
-      Error error = instrument->load (user_instrument_index->filename (m_bank, m_instrument));
-      if (error)
+      string filename = user_instrument_index->filename (m_bank, m_instrument);
+      Error error = instrument->load (filename);
+      if (!error)
+        {
+          project->set_lv2_absolute_path (this, filename);
+        }
+      else
         {
           /* most likely cause of error: this user instrument doesn't exist yet */
           instrument->clear();
+          project->set_lv2_absolute_path (this, "");
         }
       project->rebuild (this);
 
@@ -103,17 +109,18 @@ MorphWavSource::bank()
 }
 
 void
-MorphWavSource::set_lv2_filename (const string& filename)
+MorphWavSource::set_lv2_abstract_path (const string& path)
 {
-  m_lv2_filename = filename;
+  m_lv2_abstract_path = path;
+  sm_debug ("set %s abstract path: '%s'\n", m_name.c_str(), m_lv2_abstract_path.c_str());
 
   m_morph_plan->emit_plan_changed();
 }
 
 string
-MorphWavSource::lv2_filename()
+MorphWavSource::lv2_abstract_path()
 {
-  return m_lv2_filename;
+  return m_lv2_abstract_path;
 }
 
 void
@@ -130,10 +137,15 @@ MorphWavSource::on_instrument_updated (const std::string& bank, int number, cons
           new_instrument->save (new_inst_writer);
           ZipReader new_inst_reader (new_inst_writer.data());
           instrument->load (new_inst_reader);
+
+          // point lv2 sbsolute path back to user instrument dir to save the changed version
+          UserInstrumentIndex *user_instrument_index = project->user_instrument_index();
+          project->set_lv2_absolute_path (this, user_instrument_index->filename (m_bank, m_instrument));
         }
       else
         {
           instrument->clear();
+          project->set_lv2_absolute_path (this, "");
         }
       project->rebuild (this);
       project->state_changed();
@@ -161,7 +173,8 @@ MorphWavSource::save (OutFile& out_file)
 
   out_file.write_int ("object_id", m_config.object_id);
   out_file.write_int ("instrument", m_instrument);
-  out_file.write_string ("lv2_filename", m_lv2_filename);
+  // compat: old projects save the abstract path as "lv2_filename", so we keep it that way
+  out_file.write_string ("lv2_filename", m_lv2_abstract_path);
   out_file.write_string ("bank", m_bank);
 
   return true;
@@ -194,9 +207,11 @@ MorphWavSource::load (InFile& ifile)
         }
       else if (ifile.event() == InFile::STRING)
         {
+          // compat: old projects save ithe abstract path as "lv2_filename", so we keep it that way
           if (ifile.event_name() == "lv2_filename")
             {
-              m_lv2_filename = ifile.event_data();
+              m_lv2_abstract_path = ifile.event_data();
+              sm_debug ("read %s abstract path: '%s'\n", m_name.c_str(), m_lv2_abstract_path.c_str());
             }
           else if (ifile.event_name() == "bank")
             {

@@ -93,7 +93,12 @@ private:
   UserInstrumentIndex         m_user_instrument_index;
   BuilderThread               m_builder_thread;
 
-  std::map<int, std::unique_ptr<Instrument>> instrument_map;
+  struct InstrumentMapEntry {
+    std::unique_ptr<Instrument> instrument;
+    std::string                 lv2_absolute_path;
+  };
+  typedef std::map<int, InstrumentMapEntry> InstrumentMap;
+  InstrumentMap               m_instrument_map;
 
   std::vector<MorphWavSource *> list_wav_sources();
 
@@ -108,6 +113,7 @@ public:
   Project();
 
   Instrument *get_instrument (MorphWavSource *wav_source);
+  void set_lv2_absolute_path (MorphWavSource *wav_source, const std::string& path);
 
   void rebuild (MorphWavSource *wav_source);
   void add_rebuild_result (int object_id, std::unique_ptr<WavSet>& wav_set);
