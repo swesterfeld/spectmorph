@@ -535,13 +535,6 @@ float  sm_freq_to_note (float freq);
 double sm_bessel_i0 (double x);
 double velocity_to_gain (double velocity, double vrange_db);
 
-template<typename T>
-inline const T&
-sm_clamp (const T& value, const T& min_value, const T& max_value)
-{
-  return std::min (std::max (value, min_value), max_value);
-}
-
 ////////////// start: code based on log2 code from Anklang/ASE by Tim Janik
 
 /** Union to compartmentalize an IEEE-754 float.

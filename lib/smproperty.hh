@@ -87,7 +87,7 @@ public:
     double
     clamp (double value) const
     {
-      return sm_clamp (value, min_value, max_value);
+      return std::clamp (value, min_value, max_value);
     }
   };
   virtual Range float_range() { return Range (min(), max()); }

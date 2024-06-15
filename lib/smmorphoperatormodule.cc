@@ -170,7 +170,7 @@ MorphOperatorModule::apply_modulation (const ModulationData& mod_data) const
       default:
         value = base + mod_data.value_scale * value;
     }
-  return sm_clamp<float> (value, mod_data.min_value, mod_data.max_value);
+  return std::clamp<float> (value, mod_data.min_value, mod_data.max_value);
 }
 
 MorphOperatorModule*
