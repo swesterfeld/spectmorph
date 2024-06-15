@@ -146,7 +146,7 @@ morph_scale (RTAudioBlock& out_block, const RTAudioBlock& in_block, double facto
 
   out_block.assign (in_block);
   for (size_t i = 0; i < out_block.noise.size(); i++)
-    out_block.noise[i] = sm_bound<int> (0, out_block.noise[i] + ddb, 65535);
+    out_block.noise[i] = std::clamp (out_block.noise[i] + ddb, 0, 65535);
 
   for (size_t i = 0; i < out_block.freqs.size(); i++)
     interp_mag_one (factor, NULL, &out_block.mags[i], mode);
