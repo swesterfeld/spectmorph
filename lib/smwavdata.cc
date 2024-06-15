@@ -206,7 +206,7 @@ virtual_seek (sf_count_t offset, int whence, void *data)
     }
 
   /* can't seek beyond eof */
-  vdata->offset = sm_bound<sf_count_t> (0, vdata->offset, vdata->mem->size());
+  vdata->offset = std::clamp<sf_count_t> (vdata->offset, 0, vdata->mem->size());
   return vdata->offset;
 }
 
@@ -336,7 +336,7 @@ WavData::save (std::function<SNDFILE* (SF_INFO *)> open_func, OutFormat out_form
       const double min_value = -0x80000000LL;
       const double max_value =  0x7FFFFFFF;
 
-      isamples[i] = lrint (sm_bound<double> (min_value, m_samples[i] * norm, max_value));
+      isamples[i] = lrint (std::clamp (m_samples[i] * norm, min_value, max_value));
     }
 
   sf_count_t frames = m_samples.size() / m_n_channels;
