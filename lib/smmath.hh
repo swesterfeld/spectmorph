@@ -535,14 +535,6 @@ float  sm_freq_to_note (float freq);
 double sm_bessel_i0 (double x);
 double velocity_to_gain (double velocity, double vrange_db);
 
-/* FIXME: FILTER: get rid of sm_bound */
-template<typename T>
-inline const T&
-sm_bound (const T& min_value, const T& value, const T& max_value)
-{
-  return std::min (std::max (value, min_value), max_value);
-}
-
 template<typename T>
 inline const T&
 sm_clamp (const T& value, const T& min_value, const T& max_value)
