@@ -194,8 +194,8 @@ MorphGridWidget::mouse_move (const MouseEvent& event)
       double dx = (event.x - start_x) / double (end_x - start_x) * 2.0 - 1.0;
       double dy = (event.y - start_y) / double (end_y - start_y) * 2.0 - 1.0;
 
-      morph_grid->set_x_morphing (sm_bound (-1.0, dx, 1.0));
-      morph_grid->set_y_morphing (sm_bound (-1.0, dy, 1.0));
+      morph_grid->set_x_morphing (std::clamp (dx, -1.0, 1.0));
+      morph_grid->set_y_morphing (std::clamp (dy, -1.0, 1.0));
 
       signal_grid_params_changed();
     }

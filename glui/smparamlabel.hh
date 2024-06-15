@@ -57,14 +57,14 @@ public:
   {
     value = sm_atof_any (t.c_str());
 
-    value = sm_bound (min_value, value, max_value);
+    value = std::clamp (value, min_value, max_value);
 
     signal_value_changed (value);
   }
   void
   set_value (double v)
   {
-    value = sm_bound (min_value, v, max_value);
+    value = std::clamp (v, min_value, max_value);
 
     signal_update_display();
   }
@@ -103,14 +103,14 @@ public:
   {
     value = atoi (t.c_str());
 
-    value = sm_bound (min_value, value, max_value);
+    value = std::clamp (value, min_value, max_value);
 
     signal_value_changed (value);
   }
   void
   set_value (int i)
   {
-    value = sm_bound (min_value, i, max_value);
+    value = std::clamp (i, min_value, max_value);
 
     signal_update_display();
   }

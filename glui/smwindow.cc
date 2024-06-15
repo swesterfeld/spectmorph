@@ -280,10 +280,10 @@ struct IRect
   void
   clip (int width, int height)
   {
-    x = sm_bound (0, x, width);
-    y = sm_bound (0, y, height);
-    w = sm_bound (0, w, width - x);
-    h = sm_bound (0, h, height - y);
+    x = std::clamp (x, 0, width);
+    y = std::clamp (y, 0, height);
+    w = std::clamp (w, 0, width - x);
+    h = std::clamp (h, 0, height - y);
   }
 };
 

@@ -128,7 +128,7 @@ struct ComboBoxMenu : public Widget
   void
   mouse_move (const MouseEvent& event) override
   {
-    int new_selected_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size() - 1);
+    int new_selected_item = std::clamp<int> (first_item + (event.y - px_starty) / 16, 0, items.size() - 1);
 
     int best_item = -1;
     for (int i = 0; i < int (items.size()); i++)

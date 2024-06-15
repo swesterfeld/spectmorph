@@ -83,7 +83,7 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
           start = active_audio->loop_start;
           end = active_audio->loop_end;
         }
-      index = sm_bound (start, sm_round_positive ((1 - position) * start + position * end), end);
+      index = std::clamp (sm_round_positive ((1 - position) * start + position * end), start, end);
     }
   if (active_audio && index < active_audio->contents.size())
     {

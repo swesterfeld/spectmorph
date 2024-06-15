@@ -83,9 +83,9 @@ WavSetBuilder::run()
       /* if we have a loop, the loop end determines the real end of the recording */
       int iclipend = wav_data.n_values();
       if (sd.loop == Sample::Loop::NONE)
-        iclipend = sm_bound<int> (0, sm_round_positive (sd.clip_end_ms * wav_data.mix_freq() / 1000.0), wav_data.n_values());
+        iclipend = std::clamp<int> (sm_round_positive (sd.clip_end_ms * wav_data.mix_freq() / 1000.0), 0, wav_data.n_values());
 
-      int iclipstart = sm_bound<int> (0, sm_round_positive (sd.clip_start_ms * wav_data.mix_freq() / 1000.0), iclipend);
+      int iclipstart = std::clamp (sm_round_positive (sd.clip_start_ms * wav_data.mix_freq() / 1000.0), 0, iclipend);
 
 
       WavSetWave new_wave;
@@ -167,8 +167,8 @@ WavSetBuilder::apply_loop_settings()
 
       const int last_frame        = audio->contents.size() ? (audio->contents.size() - 1) : 0;
       const double zero_values_ms = audio->zero_values_at_start / audio->mix_freq * 1000.0;
-      const int loop_start        = sm_bound<int> (0, lrint ((zero_values_ms + sd->loop_start_ms) / audio->frame_step_ms), last_frame);
-      const int loop_end          = sm_bound<int> (0, lrint ((zero_values_ms + sd->loop_end_ms) / audio->frame_step_ms), last_frame);
+      const int loop_start        = std::clamp<int> (lrint ((zero_values_ms + sd->loop_start_ms) / audio->frame_step_ms), 0, last_frame);
+      const int loop_end          = std::clamp<int> (lrint ((zero_values_ms + sd->loop_end_ms) / audio->frame_step_ms), 0, last_frame);
 
       if (sd->loop == Sample::Loop::NONE)
         {
