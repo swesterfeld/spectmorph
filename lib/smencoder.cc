@@ -1473,7 +1473,7 @@ convert_freqs_mags_phases (const EncoderBlock& eblock, AudioBlock& ablock, const
       // => normalize to interval [0..2*pi]
       xphase = normalize_phase (xphase);
 
-      const uint16_t iphase = sm_bound<int> (0, sm_round_positive (xphase / 2 / M_PI * 65536), 65535);
+      const uint16_t iphase = std::clamp (sm_round_positive (xphase / 2 / M_PI * 65536), 0, 65535);
 
       // corner frequencies are most likely not part of the sound, but analysis
       // errors; so we don't save the smallest/largest possible freq
