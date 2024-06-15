@@ -28,7 +28,7 @@ public:
     if (new_value < -0.5)
       m_value = -1;
     else
-      m_value = sm_bound (0.0, new_value, 1.0);
+      m_value = std::clamp (new_value, 0.0, 1.0);
     update();
   }
   double
