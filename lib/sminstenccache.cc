@@ -194,8 +194,8 @@ InstEncCache::encode (Group *group, const WavData& wav_data, const string& wav_d
   vector<float> clipped_samples = wav_data.samples();
 
   /* sanity checks for clipping boundaries */
-  iclipend   = sm_bound<int> (0, iclipend,  clipped_samples.size());
-  iclipstart = sm_bound<int> (0, iclipstart, iclipend);
+  iclipend   = std::clamp<int> (iclipend,  0, clipped_samples.size());
+  iclipstart = std::clamp<int> (iclipstart, 0, iclipend);
 
   /* do the clipping */
   clipped_samples.erase (clipped_samples.begin() + iclipend, clipped_samples.end());
