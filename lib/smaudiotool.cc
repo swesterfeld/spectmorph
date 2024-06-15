@@ -42,10 +42,10 @@ AudioTool::compute_energy (const Audio& audio)
   if (audio.loop_type == Audio::LoopType::LOOP_FRAME_FORWARD ||
       audio.loop_type == Audio::LoopType::LOOP_FRAME_PING_PONG)
     {
-      start = sm_bound<int> (start, audio.loop_start, end);
+      start = std::clamp<int> (audio.loop_start, start, end);
 
       // last loop block is also used for normalization => (loop_end + 1)
-      end   = sm_bound<int> (start, audio.loop_end + 1, end);
+      end   = std::clamp<int> (audio.loop_end + 1, start, end);
     }
 
   AudioTool::Block2Energy block2energy (48000);
@@ -61,21 +61,21 @@ AudioTool::compute_energy (const Audio& audio)
 void
 AudioTool::normalize_factor (double norm, Audio& audio)
 {
-  const int    norm_delta_idb   = sm_factor2delta_idb (norm);
+  const int norm_delta_idb = sm_factor2delta_idb (norm);
 
   for (size_t f = 0; f < audio.contents.size(); f++)
     {
       vector<uint16_t>& mags = audio.contents[f].mags;
       for (size_t i = 0; i < mags.size(); i++)
-        mags[i] = sm_bound<int> (0, mags[i] + norm_delta_idb, 65535);
+        mags[i] = std::clamp (mags[i] + norm_delta_idb, 0, 65535);
 
       vector<uint16_t>& noise = audio.contents[f].noise;
       for (size_t i = 0; i < noise.size(); i++)
-        noise[i] = sm_bound<int> (0, noise[i] + norm_delta_idb, 65535);
+        noise[i] = std::clamp (noise[i] + norm_delta_idb, 0, 65535);
 
       vector<uint16_t>& env = audio.contents[f].env;
       for (size_t i = 0; i < env.size(); i++)
-        env[i] = sm_bound<int> (0, env[i] + norm_delta_idb, 65535);
+        env[i] = std::clamp (env[i] + norm_delta_idb, 0, 65535);
     }
 
   // store normalization in order to replay original samples normalized
