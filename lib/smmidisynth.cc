@@ -358,7 +358,7 @@ MidiSynth::process_midi_controller (int channel, int controller, int value)
     }
   if (m_control_by_cc)
     {
-      const float value_f = sm_bound (-1.0, (value / 127.) * 2 - 1, 1.0);
+      const float value_f = std::clamp ((value / 127.) * 2 - 1, -1.0, 1.0);
       switch (controller)
         {
           case SM_MIDI_CTL_CONTROL_1: cst.control[0] = value_f;
