@@ -147,8 +147,8 @@ public:
 
         if (sel_point > 0)
           {
-            double new_x_percent = sm_bound (0.0, 100.0 * (event.x - ps[sel_point - 1].x()) / yspace, 100.0);
-            double new_y_percent = sm_bound (0.0, 100.0 * (1.0 - (event.y - pad) / yspace), 100.0);
+            double new_x_percent = std::clamp (100.0 * (event.x - ps[sel_point - 1].x()) / yspace, 0.0, 100.0);
+            double new_y_percent = std::clamp (100.0 * (1.0 - (event.y - pad) / yspace), 0.0, 100.0);
 
             if (sel_point == 1) // A
               prop_attack->set_float (new_x_percent);
