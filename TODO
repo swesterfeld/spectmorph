@@ -9,6 +9,7 @@ NEWER TODOS:
 - jack should have two outputs
 - split log2 in block/non block version
 - cleanup clamp variants
+- bass, tenor and soprano ah, oh, ih
 Other:
 - handle XPARAM scaled parameters for modulation
 - non-linear modulation mapping
