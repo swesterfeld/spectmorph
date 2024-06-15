@@ -106,7 +106,7 @@ public:
   void
   highlight_item_from_event (const MouseEvent& event)
   {
-    int new_highlight_item = sm_bound<int> (0, first_item + (event.y - px_starty) / 16, items.size());
+    int new_highlight_item = std::clamp<int> (first_item + (event.y - px_starty) / 16, 0, items.size());
 
     if (new_highlight_item == (int) items.size()) /* highlight nothing */
       new_highlight_item = -1;
