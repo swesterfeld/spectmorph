@@ -56,7 +56,7 @@ push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
 {
   block.freqs.push_back (sm_freq2ifreq (freq_f));
   block.mags.push_back (sm_factor2idb (mag_f));
-  block.phases.push_back (sm_bound<int> (0, sm_round_positive (phase_f / 2 / M_PI * 65536), 65535));
+  block.phases.push_back (std::clamp (sm_round_positive (phase_f / 2 / M_PI * 65536), 0, 65535));
 }
 
 void
