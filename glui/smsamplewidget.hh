@@ -312,7 +312,7 @@ public:
           }
 
         const double sample_len_ms = m_sample->wav_data().samples().size() / m_sample->wav_data().mix_freq() * 1000.0;
-        double x_ms = sm_bound<double> (0, event.x / width() * sample_len_ms, sample_len_ms);
+        double x_ms = std::clamp (event.x / width() * sample_len_ms, 0.0, sample_len_ms);
 
         update_marker (selected_marker); // "undraw"
                                          //
