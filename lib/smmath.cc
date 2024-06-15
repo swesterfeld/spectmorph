@@ -58,7 +58,7 @@ sm_factor2idbs (float *factors, uint n_factors, uint16_t *out)
 uint16_t
 sm_freq2ifreq (float freq)
 {
-  return sm_bound (0, sm_round_positive (std::log (freq) * FAC + ADD), 65535);
+  return std::clamp (sm_round_positive (std::log (freq) * FAC + ADD), 0, 65535);
 }
 
 #define FAC_LOG2F 4158.88308335967f
@@ -71,7 +71,7 @@ sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out)
     tmp[i] = freqs[i];
   fast_log2 (tmp, n_freqs);
   for (uint i = 0; i < n_freqs; i++)
-    out[i] = sm_bound (0, sm_round_positive (tmp[i] * FAC_LOG2F + float (ADD)), 65535);
+    out[i] = std::clamp (sm_round_positive (tmp[i] * FAC_LOG2F + float (ADD)), 0, 65535);
 }
 
 double
