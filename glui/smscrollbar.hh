@@ -32,7 +32,7 @@ public:
     m_pos (0),
     orientation (orientation)
   {
-    m_page_size = sm_bound<double> (0, page_size, 1);
+    m_page_size = std::clamp (page_size, 0.0, 1.0);
   }
   void
   draw (const DrawEvent& devent) override
@@ -102,7 +102,7 @@ public:
               new_pos = m_pos + m_page_size;
           }
 
-        new_pos = sm_bound (0.0, new_pos, 1 - m_page_size);
+        new_pos = std::clamp (new_pos, 0.0, 1 - m_page_size);
         if (m_pos != new_pos)
           {
             m_pos = new_pos;
@@ -128,7 +128,7 @@ public:
         else
           m_pos = old_pos + (event.x - mouse_x) / width();
 
-        m_pos = sm_bound (0.0, m_pos, 1 - m_page_size);
+        m_pos = std::clamp (m_pos, 0.0, 1 - m_page_size);
         signal_position_changed (m_pos);
         update();
       }
@@ -141,7 +141,7 @@ public:
   bool
   scroll (double dx, double dy) override
   {
-    m_pos = sm_bound<double> (0, m_pos - scroll_factor * m_page_size * dy, 1 - m_page_size);
+    m_pos = std::clamp (m_pos - scroll_factor * m_page_size * dy, 0.0, 1 - m_page_size);
 
     signal_position_changed (m_pos);
     update();
@@ -183,7 +183,7 @@ public:
     if (m_page_size == new_page_size)
       return;
 
-    new_page_size = sm_bound<double> (0, new_page_size, 1);
+    new_page_size = std::clamp (new_page_size, 0.0, 1.0);
 
     if (m_center_zoom)
       {
@@ -193,7 +193,7 @@ public:
       {
         m_pos = m_pos / m_page_size * new_page_size;
       }
-    m_pos = sm_bound<double> (0, m_pos, 1 - new_page_size);
+    m_pos = std::clamp (m_pos, 0.0, 1 - new_page_size);
 
     m_page_size = new_page_size;
 
