@@ -144,10 +144,10 @@ global_to_local_params (double global_morphing, int node_count)
   const double interp = (global_morphing + 1) / 2 * (node_count - 1);
 
   // find the two adjecant nodes (double -> integer position)
-  result.start = sm_bound<int> (0, interp, (node_count - 1));
-  result.end   = sm_bound<int> (0, result.start + 1, (node_count - 1));
+  result.start = std::clamp<int> (interp, 0, (node_count - 1));
+  result.end   = std::clamp<int> (result.start + 1, 0, (node_count - 1));
 
-  const double interp_frac = sm_bound (0.0, interp - result.start, 1.0); /* position between adjecant nodes */
+  const double interp_frac = std::clamp (interp - result.start, 0.0, 1.0); /* position between adjecant nodes */
   result.morphing = interp_frac * 2 - 1; /* normalize fractional part to range -1.0 ... 1.0 */
   return result;
 }
@@ -167,10 +167,10 @@ apply_delta_db (RTAudioBlock& block, double delta_db)
 
   // apply delta db volume to partials & noise
   for (size_t i = 0; i < block.mags.size(); i++)
-    block.mags[i] = sm_bound<int> (0, block.mags[i] + ddb, 65535);
+    block.mags[i] = std::clamp (block.mags[i] + ddb, 0, 65535);
 
   for (size_t i = 0; i < block.noise.size(); i++)
-    block.noise[i] = sm_bound<int> (0, block.noise[i] + ddb, 65535);
+    block.noise[i] = std::clamp (block.noise[i] + ddb, 0, 65535);
 }
 
 }
