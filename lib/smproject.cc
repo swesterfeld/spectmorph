@@ -507,7 +507,7 @@ Project::load_plan_lv2 (std::function<string(string)> absolute_path, const strin
 
       Debug::debug ("lv2", "load '%s':\n", wav_source->name().c_str());
       Debug::debug ("lv2", " - abstract path: '%s'\n", wav_source->lv2_abstract_path().c_str());
-      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (filename).c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (filename).string().c_str());
       Debug::debug ("lv2", " - trying load absolute path: '%s' => '%s'\n", filename.c_str(), error.message());
 
       if (error)
@@ -578,7 +578,7 @@ Project::save_plan_lv2 (std::function<string(string)> abstract_path)
 
       Debug::debug ("lv2", "save '%s':\n", wav_source->name().c_str());
       Debug::debug ("lv2", " - absolute path: '%s'\n", absolute_path.c_str());
-      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (absolute_path).c_str());
+      Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (absolute_path).string().c_str());
       Debug::debug ("lv2", " - abstract path: '%s'\n", filename.c_str());
     }
 
@@ -606,5 +606,5 @@ Project::set_lv2_absolute_path (MorphWavSource *wav_source, const string& path)
 
   Debug::debug ("lv2", "edit '%s':\n", wav_source->name().c_str());
   Debug::debug ("lv2", " - absolute path: '%s'\n", path.c_str());
-  Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (path).c_str());
+  Debug::debug ("lv2", " - canonical path: '%s'\n", std::filesystem::weakly_canonical (path).string().c_str());
 }
