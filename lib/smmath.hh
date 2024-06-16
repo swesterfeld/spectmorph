@@ -82,7 +82,7 @@ internal_fast_vector_sin (const VectorSinParams& params, Iterator begin, Iterato
   const double phase_inc = params.freq / params.mix_freq * 2 * M_PI;
   const double inc_re = cos (phase_inc);
   const double inc_im = sin (phase_inc);
-  int n = 0;
+  uint n = 0;
 
   double state_re;
   double state_im;
