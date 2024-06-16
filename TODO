@@ -5,7 +5,6 @@ NEWER TODOS:
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
-- bump toolchain
 - jack should have two outputs
 - split log2 in block/non block version
 - cleanup clamp variants
