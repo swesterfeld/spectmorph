@@ -30,7 +30,7 @@ perf (bool fl2, unsigned int N)
           f += 0.001f;
         }
       if (fl2)
-        fast_log2 (block.data(), N);
+        fast_log2_block (block.data(), N);
       else
         {
           for (size_t i = 0; i < N; i++)
@@ -116,7 +116,7 @@ main (int argc, char **argv)
           expect[k] = d;
           x[k] = exp2 (d);
         }
-      fast_log2 (x.data(), x.size());
+      fast_log2_block (x.data(), x.size());
       double max_err = 0;
       for (size_t k = 0; k < K; k++)
         {

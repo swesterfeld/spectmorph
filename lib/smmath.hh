@@ -567,34 +567,43 @@ union FloatIEEE754 {
  * be below 10ns on 3GHz machines.
  */
 
-extern inline void
-fast_log2 (float *values, int n_values)
+static inline float
+fast_log2 (float value)
 {
-  /* this loop is written in a way that both, gcc and clang should auto vectorize it */
-  for (int k = 0; k < n_values; k++)
-    {
-      const int EXPONENT_MASK = 0x7F800000;
-      int iv;
-      memcpy (&iv, &values[k], sizeof (float));              // iv = *(int *) &values[k]
-      int fexp = (iv >> 23) - FloatIEEE754::BIAS;            // extract exponent without bias (rely on sign bit == 0)
-      iv = (iv & ~EXPONENT_MASK) | FloatIEEE754::BIAS << 23; // reset exponent to 2^0 so v_float is mantissa in [1..2]
-      float r, x;
-      memcpy (&x, &iv, sizeof (float));                      // x = *(float *) &iv;
-      x -= 1;
-      // x=[0..1]; r = log2 (x + 1);
-      // h=0.0113916; // offset to reduce error at origin
-      // f=(1/log(2)) * log(x+1); dom=[0-h;1+h]; p=remez(f, 6, dom, 1);
-      // p = p - p(0); // discard non-0 offset
-      // err=p-f; plot(err,[0;1]); plot(f,p,dom); // result in sollya
-      r = x *  -0.0259366993544709205147977455165000143561553284592936f;
-      r = x * (+0.122047857676447181074792747820717519424533931189428f + r);
-      r = x * (-0.27814297685064327713977752916286528359628147166014f + r);
-      r = x * (+0.45764712300320092992105460899527194244236573556309f + r);
-      r = x * (-0.71816105664624015087225994551041120290062342459945f + r);
-      r = x * (+1.44254540258782520489769598315182363877204824648687f + r);
-      values[k] = fexp + r; // log2 (i) + log2 (x)
-    }
+  const int EXPONENT_MASK = 0x7F800000;
+  int iv;
+  memcpy (&iv, &value, sizeof (float));                 // iv = *(int *) &values[k]
+  int fexp = (iv >> 23) - FloatIEEE754::BIAS;            // extract exponent without bias (rely on sign bit == 0)
+  iv = (iv & ~EXPONENT_MASK) | FloatIEEE754::BIAS << 23; // reset exponent to 2^0 so v_float is mantissa in [1..2]
+  float r, x;
+  memcpy (&x, &iv, sizeof (float));                      // x = *(float *) &iv
+  x -= 1;
+  // x=[0..1]; r = log2 (x + 1);
+  // h=0.0113916; // offset to reduce error at origin
+  // f=(1/log(2)) * log(x+1); dom=[0-h;1+h]; p=remez(f, 6, dom, 1);
+  // p = p - p(0); // discard non-0 offset
+  // err=p-f; plot(err,[0;1]); plot(f,p,dom); // result in sollya
+  r = x *  -0.0259366993544709205147977455165000143561553284592936f;
+  r = x * (+0.122047857676447181074792747820717519424533931189428f + r);
+  r = x * (-0.27814297685064327713977752916286528359628147166014f + r);
+  r = x * (+0.45764712300320092992105460899527194244236573556309f + r);
+  r = x * (-0.71816105664624015087225994551041120290062342459945f + r);
+  r = x * (+1.44254540258782520489769598315182363877204824648687f + r);
+  return fexp + r; // log2 (i) + log2 (x)
 }
+
+/** compute fast_log2 for a block of values
+ *
+ * This is often faster than computing individual values, because fast_log2 and this
+ * function are written in a way that both, gcc and clang should auto vectorize it
+ */
+extern inline void
+fast_log2_block (float *values, int n_values)
+{
+  for (int k = 0; k < n_values; k++)
+    values[k] = fast_log2 (values[k]);
+}
+
 ////////////// end: code based on log2 code from Anklang/ASE by Tim Janik
 
 } // namespace SpectMorph
