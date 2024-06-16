@@ -68,8 +68,8 @@ sm_freq2ifreqs (float *freqs, uint n_freqs, uint16_t *out)
 {
   float tmp[n_freqs];
   for (uint i = 0; i < n_freqs; i++)
-    tmp[i] = freqs[i];
-  fast_log2_block (tmp, n_freqs);
+    tmp[i] = fast_log2 (freqs[i]);   // compiler should auto vectorize this loop
+
   for (uint i = 0; i < n_freqs; i++)
     out[i] = std::clamp (sm_round_positive (tmp[i] * FAC_LOG2F + float (ADD)), 0, 65535);
 }
