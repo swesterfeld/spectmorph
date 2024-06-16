@@ -25,7 +25,7 @@ mkdir -p $SRCDIR $BUILDD
 PREFIX=$PWD/prefix
 GLOBAL_CFLAGS="-fPIC -DPIC"
 GLOBAL_LDFLAGS="-L$PREFIX/lib"
-MAKEFLAGS="-j16"
+MAKEFLAGS="-j$(nproc)"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 
