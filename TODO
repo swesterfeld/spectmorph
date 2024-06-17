@@ -4,7 +4,6 @@ NEWER TODOS:
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
-- jack should have two outputs
 Other:
 - handle XPARAM scaled parameters for modulation
 - non-linear modulation mapping
