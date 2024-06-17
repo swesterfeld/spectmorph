@@ -38,7 +38,7 @@ using std::max;
 using std::min;
 
 int
-JackSynth::process (jack_nframes_t nframes)
+JackSynth::process (jack_nframes_t n_frames)
 {
   double t;
   if (TRACE_PROCESS_TIME)
@@ -46,7 +46,8 @@ JackSynth::process (jack_nframes_t nframes)
 
   m_project->try_update_synth();
 
-  float       *audio_out    = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], nframes);
+  float       *audio_out_left   = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[0], n_frames);
+  float       *audio_out_right  = (jack_default_audio_sample_t *) jack_port_get_buffer (output_ports[1], n_frames);
 
   MidiSynth   *midi_synth   = m_project->midi_synth();
 
@@ -71,7 +72,7 @@ JackSynth::process (jack_nframes_t nframes)
         }
     }
 
-  void* port_buf = jack_port_get_buffer (input_port, nframes);
+  void* port_buf = jack_port_get_buffer (input_port, n_frames);
   jack_nframes_t event_count = jack_midi_get_event_count (port_buf);
 
   for (jack_nframes_t event_index = 0; event_index < event_count; event_index++)
@@ -82,15 +83,18 @@ JackSynth::process (jack_nframes_t nframes)
       midi_synth->add_midi_event (in_event.time, in_event.buffer);
     }
 
-  midi_synth->process (audio_out, nframes);
+  midi_synth->process (audio_out_left, n_frames);
+
+  // proper stereo support will be added later
+  std::copy (audio_out_left, audio_out_left + n_frames, audio_out_right);
 
   if (TRACE_PROCESS_TIME)
-    sm_printf ("%f %f\n", (get_time() - t) * 1000, nframes * 1000. / m_mix_freq);
+    sm_printf ("%f %f\n", (get_time() - t) * 1000, n_frames * 1000. / m_mix_freq);
   return 0;
 }
 
 int
-jack_process (jack_nframes_t nframes, void *arg)
+jack_process (jack_nframes_t n_frames, void *arg)
 {
   static bool first = true;
   if (first)
@@ -100,7 +104,7 @@ jack_process (jack_nframes_t nframes, void *arg)
     }
 
   JackSynth *instance = reinterpret_cast<JackSynth *> (arg);
-  return instance->process (nframes);
+  return instance->process (n_frames);
 }
 
 JackSynth::JackSynth (jack_client_t *client, Project *project) :
@@ -116,7 +120,8 @@ JackSynth::JackSynth (jack_client_t *client, Project *project) :
   jack_set_process_callback (client, jack_process, this);
 
   input_port = jack_port_register (client, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
-  output_ports.push_back (jack_port_register (client, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
+  output_ports.push_back (jack_port_register (client, "audio_out_left", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
+  output_ports.push_back (jack_port_register (client, "audio_out_right", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0));
 
   if (jack_activate (client))
     {
