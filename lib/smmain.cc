@@ -16,6 +16,7 @@
 using std::string;
 using std::vector;
 using std::function;
+using std::min;
 
 namespace SpectMorph
 {
@@ -128,6 +129,23 @@ GlobalData::~GlobalData()
 
 Main::Main (int *argc_p, char ***argv_p)
 {
+  /* support --debug-in-test-program option for make check */
+  int&   argc = *argc_p;
+  char** argv = *argv_p;
+
+  int i = 1, j = 1;
+  while (i < argc)
+    {
+      if (!strcmp ("--debug-in-test-program", argv[i]))
+        FFT::debug_in_test_program (true);
+      else
+        argv[j++] = argv[i];
+      i++;
+    }
+  argc = j;
+  while (j < argc)
+    argv[j++] = nullptr;
+
   /* internationalized string printf */
   setlocale (LC_ALL, "");
   sm_plugin_init();
