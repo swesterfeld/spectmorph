@@ -15,7 +15,7 @@ jobs:
       if: always()
       with:
         name: test-logs
-        path: tests/*.log
+        path: test-logs.tar.xz
     - name: Ping IRC
       if: always()
       run: |
@@ -29,6 +29,11 @@ jobs:
     - uses: actions/checkout@v3
     - name: Test Arch Linux Build
       run: misc/archbuild.sh
+    - uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-logs-arch
+        path: test-logs.tar.xz
   linux-static:
     runs-on: ubuntu-latest
     steps:
