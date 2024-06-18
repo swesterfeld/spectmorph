@@ -6,8 +6,8 @@ set -e
 
 EXIT=0
 
-$TESTIFFTSYNTH portamento | $HILBERT 2000 > test-porta-live.txt
-$TESTIFFTSYNTH portamento_sin | $HILBERT 2000 > test-porta-sin.txt
+$TESTIFFTSYNTH portamento | tee test-porta-live.log | $HILBERT 2000 > test-porta-live.txt
+$TESTIFFTSYNTH portamento_sin | tee test-porta-sin.log | $HILBERT 2000 > test-porta-sin.txt
 DIFFS=$(
 paste test-porta-live.txt test-porta-sin.txt | awk '
   function abs(x) {
@@ -42,7 +42,7 @@ echo $DIFFS | grep FAIL && {
 }
 echo $DIFFS | grep OK ||  die "portamento test failed"
 
-rm -f test-porta.log
+rm -f test-porta.log test-porta-live.log test-porta-sin.log
 rm test-porta-live.txt test-porta-sin.txt
 
 exit $EXIT
