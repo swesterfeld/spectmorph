@@ -55,6 +55,7 @@ FFT::new_array_float (size_t N)
 
   if (fft_in_test_program)
     {
+      /* catches uninitialized reads on newly allocated fft buffer */
       for (size_t i = 0; i < N_2; i++)
         result[i] = g_random_double_range (-1, 1);
     }
