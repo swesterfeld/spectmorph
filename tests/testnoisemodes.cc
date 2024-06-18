@@ -41,6 +41,7 @@ int
 main (int argc, char **argv)
 {
   Main main (&argc, &argv);
+  FFT::debug_in_test_program (true);
 
   double mix_freq = 48000;
   size_t block_size = 1024;

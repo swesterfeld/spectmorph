@@ -592,7 +592,7 @@ int
 main (int argc, char **argv)
 {
   Main main (&argc, &argv);
-  FFT::debug_randomize_new_arrays (true); // catches uninitialized reads on newly allocated fft buffer
+  FFT::debug_in_test_program (true);
 
   if (argc == 2 && strcmp (argv[1], "perf") == 0)
     {

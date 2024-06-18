@@ -1,8 +1,8 @@
 # program locations
 
-SMENC=@top_builddir@/src/smenc
-SMPLAY=@top_builddir@/src/smplay
-SMTOOL=@top_builddir@/src/smtool
+SMENC="@top_builddir@/src/smenc --debug-in-test-program"
+SMPLAY="@top_builddir@/src/smplay --debug-in-test-program"
+SMTOOL="@top_builddir@/src/smtool --debug-in-test-program"
 WAV2ASCII=@top_builddir@/tools/wav2ascii
 TESTIFFTSYNTH=@top_builddir@/tests/testifftsynth
 
@@ -12,6 +12,10 @@ SN_DELTA=@top_srcdir@/tests/sn_delta.py
 AVG_ENERGY=@top_srcdir@/tests/avg_energy.py
 WHITENOISE=@top_srcdir@/tests/whitenoise.py
 HILBERT=@top_srcdir@/tests/hilbert.py
+
+# enforce reproducable tests
+
+export SPECTMORPH_MAKE_CHECK=1
 
 # common shell functions
 

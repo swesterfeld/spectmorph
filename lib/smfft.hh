@@ -22,7 +22,7 @@ void   fftsr_destructive_float (size_t N, float *in, float *out, PlanMode plan_m
 void   fftac_float (size_t N, float *in, float *out, PlanMode plan_mode = PLAN_PATIENT);
 void   fftsc_float (size_t N, float *in, float *out, PlanMode plan_mode = PLAN_PATIENT);
 
-void   debug_randomize_new_arrays (bool enabled);
+void   debug_in_test_program (bool enabled);
 
 void   init();
 void   cleanup();

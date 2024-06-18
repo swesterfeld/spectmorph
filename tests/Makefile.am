@@ -12,6 +12,8 @@ EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.
         sinsignal.py smresvalue.sh tune-test.sh test-norm.sh test-porta.sh hilbert.py
 CLEANFILES += sin440-4567.wav saw440x.wav
 
+TESTS_ENVIRONMENT = SPECTMORPH_MAKE_CHECK=1
+
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
         testidb testifreq testbesseli0 testsse testblockmath
 
