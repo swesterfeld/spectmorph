@@ -16,12 +16,12 @@ using namespace SpectMorph;
 using std::map;
 using std::string;
 
-static bool randomize_new_fft_arrays = false;
+static bool fft_in_test_program = false;
 
 void
-FFT::debug_randomize_new_arrays (bool b)
+FFT::debug_in_test_program (bool b)
 {
-  randomize_new_fft_arrays = b;
+  fft_in_test_program = b;
 }
 
 #if SPECTMORPH_HAVE_FFTW
@@ -53,7 +53,7 @@ FFT::new_array_float (size_t N)
 
   float *result = (float *) fftwf_malloc (sizeof (float) * N_2);
 
-  if (randomize_new_fft_arrays)
+  if (fft_in_test_program)
     {
       for (size_t i = 0; i < N_2; i++)
         result[i] = g_random_double_range (-1, 1);
@@ -72,6 +72,13 @@ static map<int, fftwf_plan> fftar_float_plan;
 static int
 plan_flags (FFT::PlanMode plan_mode)
 {
+  /* avoid planning in make check, because this would make the test runs
+   * non-deterministic as planning could choose different algorithms each time
+   * (for instance in CI runs)
+   */
+  if (fft_in_test_program)
+    plan_mode = FFT::PLAN_ESTIMATE;
+
   switch (plan_mode)
     {
     case FFT::PLAN_PATIENT:    return (FFTW_PATIENT | FFTW_PRESERVE_INPUT | FFTW_WISDOM_ONLY);
@@ -285,22 +292,31 @@ FFT::init()
   load_wisdom();
 }
 
+static void
+cleanup_fft_plans (map<int, fftwf_plan>& plan_map)
+{
+  if (plan_map.size())
+    {
+      if (getenv ("SPECTMORPH_MAKE_CHECK") && !fft_in_test_program)
+        {
+          fprintf (stderr, "FFT::debug_in_test_program() should be used for unit tests\n");
+          exit (1);
+        }
+    }
+  for (auto& plan_entry : plan_map)
+    fftwf_destroy_plan (plan_entry.second);
+
+  plan_map.clear();
+}
+
 void
 FFT::cleanup()
 {
-  typedef map<int, fftwf_plan> PlanMap;
-
-  auto cleanup_plans = [](PlanMap& plan_map) {
-    for (auto& plan_entry : plan_map)
-      fftwf_destroy_plan (plan_entry.second);
-
-    plan_map.clear();
-  };
-  cleanup_plans (fftar_float_plan);
-  cleanup_plans (fftsr_float_plan);
-  cleanup_plans (fftsr_destructive_float_plan);
-  cleanup_plans (fftac_float_plan);
-  cleanup_plans (fftsc_float_plan);
+  cleanup_fft_plans (fftar_float_plan);
+  cleanup_fft_plans (fftsr_float_plan);
+  cleanup_fft_plans (fftsr_destructive_float_plan);
+  cleanup_fft_plans (fftac_float_plan);
+  cleanup_fft_plans (fftsc_float_plan);
 }
 
 #else
