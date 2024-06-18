@@ -8,5 +8,3 @@ RUN pacman -S --noconfirm \
 
 ADD . /spectmorph
 WORKDIR /spectmorph
-
-RUN misc/build.sh

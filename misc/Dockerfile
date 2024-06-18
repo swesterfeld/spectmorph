@@ -10,5 +10,3 @@ RUN apt-get update && apt-get install -y \
 
 ADD . /spectmorph
 WORKDIR /spectmorph
-
-RUN misc/build.sh

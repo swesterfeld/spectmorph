@@ -22,6 +22,7 @@ build()
       echo "===== $LOG ====="
       cat $LOG
     done
+    tar cJf /output/test-logs.tar.xz $(find tests -iname '*.log')
     exit 1
   fi
   make install
