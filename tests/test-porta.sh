@@ -35,9 +35,14 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
     print result, "test-porta", fdiff, adiff;
   }'
 )
-echo $DIFFS | grep FAIL && die "portamento test failed"
-echo $DIFFS | grep OK || die "portamento test failed"
 
+echo $DIFFS | grep FAIL && {
+  paste test-porta-live.txt test-porta-sin.txt > test-porta.log
+  die "portamento test failed"
+}
+echo $DIFFS | grep OK ||  die "portamento test failed"
+
+rm -f test-porta.log
 rm test-porta-live.txt test-porta-sin.txt
 
 exit $EXIT
