@@ -359,7 +359,7 @@ LiveDecoder::gen_sines (float freq_in)
                       const float lfreq = old_pstate[old_partial].freq;
                       const uint lphase = old_pstate[old_partial].phase;
 
-                      phase = lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor;
+                      phase = lphase + int64_t (ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor);
 
                       if (DEBUG)
                         printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
@@ -381,7 +381,7 @@ LiveDecoder::gen_sines (float freq_in)
                           const float lfreq = old_pstate[old_partial].freq;
                           const uint lphase = unison_old_phases[old_partial * unison_voices + i];
 
-                          phase = lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor;
+                          phase = lphase + int64_t (ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor);
                         }
                       else
                         {
@@ -413,9 +413,9 @@ LiveDecoder::gen_sines (float freq_in)
                     return;
 
                   // phase at center of the block
-                  phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
+                  phase += int64_t (ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor);
                   // phase at start of the block
-                  phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
+                  phase -= int64_t (ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor);
 
                   ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
                 };
