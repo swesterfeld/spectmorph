@@ -31,7 +31,7 @@ push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
 uint
 phase_to_uint (double phase)
 {
-  return phase * IFFTSynth::phase_to_uint_factor();
+  return int64_t (phase * IFFTSynth::phase_to_uint_factor());
 }
 
 void
