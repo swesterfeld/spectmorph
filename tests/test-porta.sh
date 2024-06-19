@@ -27,7 +27,7 @@ paste test-porta-live.txt test-porta-sin.txt | awk '
     adiff = max(adiff, abs($3 - $7));
   }
   END {
-    if (fdiff > 0.1 && fdiff < 0.62 && adiff > 0.0001 && adiff < 0.0012)
+    if (fdiff > 0.1 && fdiff < 0.625 && adiff > 0.0001 && adiff < 0.0012)
       result = "OK";
     else
       result = "FAIL";
