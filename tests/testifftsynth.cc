@@ -28,6 +28,12 @@ push_partial_f (AudioBlock& block, double freq_f, double mag_f, double phase_f)
   block.phases.push_back (std::clamp (sm_round_positive (phase_f / 2 / M_PI * 65536), 0, 65535));
 }
 
+uint
+phase_to_uint (double phase)
+{
+  return phase * IFFTSynth::phase_to_uint_factor();
+}
+
 void
 perf_test()
 {
@@ -39,7 +45,8 @@ perf_test()
 
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_HANN);
 
-  vector<double> freq_mag_phase;
+  vector<float> freq_mag;
+  vector<uint>  uphase;
 
   const double freq  = 440;
   const double mag   = 0.1;
@@ -47,9 +54,9 @@ perf_test()
 
   const double clocks_per_sec = 2500.0 * 1000 * 1000;
 
-  freq_mag_phase.push_back (freq);
-  freq_mag_phase.push_back (mag);
-  freq_mag_phase.push_back (phase);
+  freq_mag.push_back (freq);
+  freq_mag.push_back (mag);
+  uphase.push_back (phase_to_uint (phase));
 
   int RUNS = 1000 * 1000 * 5;
   double start, end, t;
@@ -60,7 +67,7 @@ perf_test()
     {
       start = get_time();
       for (int r = 0; r < RUNS; r++)
-        synth.render_partial (freq_mag_phase[0], freq_mag_phase[1], freq_mag_phase[2]);
+        synth.render_partial (freq_mag[0], freq_mag[1], uphase[0]);
       end = get_time();
       t = min (t, end - start);
     }
@@ -120,7 +127,7 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   IFFTSynth synth (block_size, mix_freq, IFFTSynth::WIN_BLACKMAN_HARRIS_92);
 
   synth.clear_partials();
-  synth.render_partial (freq, mag, phase);
+  synth.render_partial (freq, mag, phase_to_uint (phase));
   synth.get_samples (&samples[0]);
 
   VectorSinParams vsparams;
@@ -147,7 +154,7 @@ accuracy_test (double freq, double mag, double phase, double mix_freq, bool verb
   fast_vector_sinf (vsparams, &aligned_decoded_sines[0], &aligned_decoded_sines[block_size]);
 
   synth.clear_partials();
-  synth.render_partial (freq, mag, phase);
+  synth.render_partial (freq, mag, phase_to_uint (phase));
   synth.get_samples (&samples[0]);
 
   //printf ("# qfreq = %.17g\n", vsparams.freq);
@@ -177,11 +184,11 @@ test_negative_phase()
   vector<float> samples2 (block_size);
 
   synth.clear_partials();
-  synth.render_partial (440, 1, 0.33);
+  synth.render_partial (440, 1, phase_to_uint (0.33));
   synth.get_samples (&samples1[0]);
 
   synth.clear_partials();
-  synth.render_partial (440, 1, -2 * M_PI + 0.33);
+  synth.render_partial (440, 1, phase_to_uint (-2 * M_PI + 0.33));
   synth.get_samples (&samples2[0]);
 
   double max_diff = 0;
@@ -556,7 +563,7 @@ test_saw_perf()
     push_partial_f (audio_block, partial, 1.0 / partial, 0.9);
 
   vector<float> samples (block_size * 100);
-  const int RUNS = 50;
+  const int RUNS = 500;
   double t[2];
   for (int i = 0; i < 2; i++)
     {

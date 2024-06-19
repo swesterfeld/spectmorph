@@ -28,7 +28,7 @@ class LiveDecoder
   {
     float freq;
     float mag;
-    float phase;
+    uint  phase;
   };
   std::vector<PartialState> pstate[2], *last_pstate;
 
@@ -78,7 +78,7 @@ class LiveDecoder
 
   // unison
   int                 unison_voices;
-  std::vector<float>  unison_phases[2];
+  std::vector<uint>   unison_phases[2];
   std::vector<float>  unison_freq_factor;
   float               unison_gain;
 

@@ -46,17 +46,6 @@ fmatch (float f1, float f2)
   return f2 < (f1 * 1.05f) && f2 > (f1 * 0.95f);
 }
 
-static inline float
-truncate_phase (float phase)
-{
-  // truncate phase to interval [-2*pi:2*pi]; like fmod (phase, 2 * M_PI) but faster
-  phase *= float (1 / (2 * M_PI));
-  phase -= int (phase);
-  phase *= float (2 * M_PI);
-
-  return phase;
-}
-
 LiveDecoder::LiveDecoder (float mix_freq) :
   smset (NULL),
   audio (NULL),
@@ -282,8 +271,8 @@ LiveDecoder::gen_sines (float freq_in)
       bool lps_zero = (last_pstate == &pstate[0]);
       vector<PartialState>& new_pstate = lps_zero ? pstate[1] : pstate[0];
       const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
-      vector<float>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
-      const vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
+      vector<uint>& unison_new_phases = lps_zero ? unison_phases[1] : unison_phases[0];
+      const vector<uint>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
 
       if (unison_voices != 1)
         {
@@ -295,7 +284,7 @@ LiveDecoder::gen_sines (float freq_in)
 
       if (sines_enabled)
         {
-          const float phase_factor = block_size * M_PI / mix_freq;
+          const float phase_factor = block_size * M_PI / mix_freq * ifft_synth.phase_to_uint_factor();
           const float filter_fact = 18000.0 / 44100.0;  // for 44.1 kHz, filter at 18 kHz (higher mix freq => higher filter)
           const float filter_min_freq = filter_fact * mix_freq;
 
@@ -361,16 +350,16 @@ LiveDecoder::gen_sines (float freq_in)
               if (DEBUG)
                 printf ("%d:F %.17g %.17g\n", int (env_pos), freq, mag);
 
-              float phase = 0;
+              uint phase = 0;
               if (unison_voices == 1)
                 {
                   if (freq_match)
                     {
                       // matching freq -> compute new phase
                       const float lfreq = old_pstate[old_partial].freq;
-                      const float lphase = old_pstate[old_partial].phase;
+                      const uint lphase = old_pstate[old_partial].phase;
 
-                      phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor);
+                      phase = lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch) * phase_factor;
 
                       if (DEBUG)
                         printf ("%d:L %.17g %.17g %.17g\n", int (env_pos), lfreq, freq, mag);
@@ -378,7 +367,7 @@ LiveDecoder::gen_sines (float freq_in)
                   else
                     {
                       if (start_phase_rand_enabled)
-                        phase = phase_random_gen.random_float_range (0, 2 * M_PI); // randomize start phase
+                        phase = phase_random_gen.random_uint32(); // randomize start phase
                     }
                 }
               else
@@ -390,13 +379,13 @@ LiveDecoder::gen_sines (float freq_in)
                       if (freq_match)
                         {
                           const float lfreq = old_pstate[old_partial].freq;
-                          const float lphase = unison_old_phases[old_partial * unison_voices + i];
+                          const uint lphase = unison_old_phases[old_partial * unison_voices + i];
 
-                          phase = truncate_phase (lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor);
+                          phase = lphase + ifft_synth.quantized_freq (lfreq * old_portamento_stretch * unison_freq_factor[i]) * phase_factor;
                         }
                       else
                         {
-                          phase = phase_random_gen.random_float_range (0, 2 * M_PI); // always randomize start phase for unison
+                          phase = phase_random_gen.random_uint32(); // always randomize start phase for unison
                         }
                       unison_new_phases.push_back (phase);
                     }
@@ -417,7 +406,7 @@ LiveDecoder::gen_sines (float freq_in)
             {
               ifft_synth.clear_partials();
 
-              auto render_old_partial = [&] (float freq, float mag, float phase)
+              auto render_old_partial = [&] (float freq, float mag, uint phase)
                 {
                   // bandlimiting: do not render partials above nyquist frequency
                   if (freq * portamento_stretch > 0.495 * mix_freq)
@@ -427,8 +416,6 @@ LiveDecoder::gen_sines (float freq_in)
                   phase += ifft_synth.quantized_freq (freq * old_portamento_stretch) * phase_factor;
                   // phase at start of the block
                   phase -= ifft_synth.quantized_freq (freq * portamento_stretch) * phase_factor;
-
-                  phase = truncate_phase (phase);
 
                   ifft_synth.render_partial (freq * portamento_stretch, mag, phase);
                 };
@@ -971,17 +958,17 @@ LiveDecoder::set_unison_voices (int voices, float detune)
   /* resize unison phase array to match pstate */
   const bool lps_zero = (last_pstate == &pstate[0]);
   const vector<PartialState>& old_pstate = lps_zero ? pstate[0] : pstate[1];
-  vector<float>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
+  vector<uint>& unison_old_phases = lps_zero ? unison_phases[0] : unison_phases[1];
 
   if (unison_old_phases.size() != old_pstate.size() * unison_voices)
     {
       unison_old_phases.resize (old_pstate.size() * unison_voices);
 
-      for (float& phase : unison_old_phases)
+      for (uint& phase : unison_old_phases)
         {
           /* since the position of the partials changed, randomization is really
            * the best we can do here */
-          phase = phase_random_gen.random_float_range (0, 2 * M_PI);
+          phase = phase_random_gen.random_uint32();
         }
     }
 }
