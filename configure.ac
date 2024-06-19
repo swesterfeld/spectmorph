@@ -461,6 +461,17 @@ MC_PROG_CC_SUPPORTS_OPTION([$asan_flags], [
 ])
 ])
 
+dnl -------------------- undefined behaviour sanitizer ----------------------
+AC_ARG_ENABLE([ubsan], [AS_HELP_STRING([--enable-ubsan], [build using undefined behaviour sanitizer])],
+[
+  CXXFLAGS="$CXXFLAGS -fsanitize=undefined -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
+  LDFLAGS="$LDFLAGS -lubsan"
+],
+[
+  enable_ubsan=no
+])
+dnl -------------------------------------------------------------------------
+
 AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile 3rdparty/hiir/Makefile 3rdparty/clap/Makefile
 lib/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile clap/Makefile
@@ -491,6 +502,10 @@ fi
 
 if test "x$asan_flags_ok" != "xno"; then
   echo "  Address Sanitizer  . . .: $asan_flags"
+fi
+
+if test "x$enable_ubsan" != "xno"; then
+  echo "  UB Sanitizer . . . . . .: $enable_ubsan"
 fi
 
 echo "  Install prefix . . . . .: $prefix"
