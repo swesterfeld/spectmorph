@@ -32,6 +32,7 @@ struct Options
   bool                quiet;
   bool                perf;
   bool                perf_note_on = false;
+  int                 perf_runs = -1;
   bool                normalize;
   double              gain;
   int                 rate;
@@ -134,6 +135,10 @@ Options::parse (int   *argc_p,
         {
           perf_note_on = true;
         }
+      else if (check_arg (argc, argv, &i, "--perf-runs", &opt_arg))
+        {
+          perf_runs = atoi (opt_arg);
+        }
       else if (check_arg (argc, argv, &i, "--gain", &opt_arg) || check_arg (argc, argv, &i, "-g", &opt_arg))
         {
           gain = sm_atof (opt_arg);
@@ -169,6 +174,7 @@ Options::print_usage ()
   printf (" -n, --normalize             normalize output samples\n");
   printf (" -p, --perf                  run performance test\n");
   printf (" --perf-note-on              run note on performance test\n");
+  printf (" --perf-runs <runs>          set number of runs for perf test\n");
   printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
@@ -340,7 +346,7 @@ main (int argc, char **argv)
       double start = get_time();
 
       // at 100 bogo-voices, test should run 10 seconds
-      const size_t RUNS = max<int> (1, options.rate * 1000 / samples.size());
+      const size_t RUNS = options.perf_runs > 0 ? options.perf_runs : max<int> (1, options.rate * 1000 / samples.size());
       for (size_t i = 0; i < RUNS; i++)
         player.compute_samples (samples);
 
