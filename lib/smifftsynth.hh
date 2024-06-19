@@ -57,8 +57,13 @@ public:
   {
     return fft_out;
   }
+  static constexpr float
+  phase_to_uint_factor()
+  {
+    return (1LL << 32) / (2 * M_PI); /* conversion factor from [0..2*M_PI] to uint phase */
+  }
 
-  inline void render_partial (float freq, float mag, float phase);
+  inline void render_partial (float freq, float mag, uint phase);
   void get_samples (float *samples, OutputMode output_mode = REPLACE);
   void precompute_tables();
 
@@ -76,7 +81,7 @@ struct IFFTSynthTable
  * phase can be in range [-2*pi..2*pi]
  */
 inline void
-IFFTSynth::render_partial (float mf_freq, float mag, float phase)
+IFFTSynth::render_partial (float mf_freq, float mag, uint phase)
 {
   const int range = 4;
 
@@ -89,14 +94,13 @@ IFFTSynth::render_partial (float mf_freq, float mag, float phase)
 
   // rotation for initial phase; scaling for magnitude
 
-  /* the following block computes sincos (phase + phase_adjust)
-   *  - we add 2 * SIN_TABLE_SIZE here to support negative phases
-   */
-  int iarg = sm_round_positive (phase * float (SIN_TABLE_SIZE / (2 * M_PI)) + 2 * SIN_TABLE_SIZE);
+  /* the following block computes sincos (phase + phase_adjust) */
+  static constexpr uint div = (1LL << 32) / SIN_TABLE_SIZE;
+  uint iarg = (phase + div / 2) / div;
 
   // adjust phase to get the same output like vector sin (smmath.hh)
   // phase_adjust = freq256 * (M_PI / 256.0) - M_PI / 2;
-  int iphase_adjust = freq256 * SIN_TABLE_SIZE / 512 + (SIN_TABLE_SIZE - SIN_TABLE_SIZE / 4);
+  uint iphase_adjust = freq256 * SIN_TABLE_SIZE / 512 + (SIN_TABLE_SIZE - SIN_TABLE_SIZE / 4);
   iarg += iphase_adjust;
 
   const float phase_rsmag = sin_table [iarg & SIN_TABLE_MASK] * nmag;
