@@ -563,7 +563,7 @@ test_saw_perf()
     push_partial_f (audio_block, partial, 1.0 / partial, 0.9);
 
   vector<float> samples (block_size * 100);
-  const int RUNS = 50;
+  const int RUNS = 500;
   double t[2];
   for (int i = 0; i < 2; i++)
     {
