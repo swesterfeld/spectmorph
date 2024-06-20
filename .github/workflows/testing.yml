@@ -45,7 +45,7 @@ jobs:
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
     - name: Test Linux Build with Sanitizers
-      run: misc/debianbuild.sh --enable-asan --enable-ubsan
+      run: misc/debianbuild.sh --enable-asan --enable-ubsan --enable-debug-cxx
     - uses: actions/upload-artifact@v4
       if: always()
       with:
@@ -58,7 +58,7 @@ jobs:
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
     - name: Test Arch Linux Build with Sanitizers
-      run: misc/archbuild.sh --enable-asan --enable-ubsan
+      run: misc/archbuild.sh --enable-asan --enable-ubsan --enable-debug-cxx
     - uses: actions/upload-artifact@v4
       if: always()
       with:
