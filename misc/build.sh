@@ -37,10 +37,19 @@ export CCACHE_MAXSIZE=1G
 # Tests using gcc
 export CC="ccache gcc" CXX="ccache g++"
 
+git clone https://git.open-music-kontrollers.ch/~hp/lv2lint
+cd lv2lint
+git checkout -b stable-0.16.2 0.16.2
+meson -Delf-tests=enabled build
+cd build
+ninja
+ninja install
+cd ../..
+
 build "$@" --enable-debug-cxx
 
 if [ $# -eq 0 ]; then
-  lv2lint http://spectmorph.org/plugins/spectmorph
+  lv2lint -E warn -E note http://spectmorph.org/plugins/spectmorph
 fi
 
 make -j `nproc` distcheck
@@ -51,5 +60,5 @@ export CC="ccache clang"  CXX="ccache clang++"
 build "$@"
 
 if [ $# -eq 0 ]; then
-  lv2lint http://spectmorph.org/plugins/spectmorph
+  lv2lint -E warn -E note http://spectmorph.org/plugins/spectmorph
 fi
