@@ -32,9 +32,7 @@ insts:
 new operators:
  - crossfade by midi note -> control (bass-trombone / trumpet inst)
  - tremolo
- - key track
  - "wave" table
- - envelope
  - synthetic
 _________
 
