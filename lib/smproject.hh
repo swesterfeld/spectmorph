@@ -11,9 +11,6 @@
 #include "smuserinstrumentindex.hh"
 #include "smnotifybuffer.hh"
 
-#include <thread>
-#include <mutex>
-
 namespace SpectMorph
 {
 
@@ -56,11 +53,24 @@ public:
 class ControlEventVector
 {
   std::vector<std::unique_ptr<SynthControlEvent>> events;
+  std::atomic_flag locked_flag = ATOMIC_FLAG_INIT;
   bool clear = false;
 public:
   void take (SynthControlEvent *ev);
   void run_rt (Project *project);
   void destroy_all_events();
+
+  /* the synthesis thread will not block if try_lock fails
+   *
+   * the ui thread will block to enqueue events, parameter changes (in form of
+   * a new morph plan, volume, ...) and so on
+   *
+   * if the synthesis thread can obtain a lock, it will then be able to process
+   * these events to update its internal state and also send notifications back
+   * to the ui
+   */
+  bool try_lock();
+  void unlock();
 };
 
 class Project : public SignalReceiver
@@ -83,10 +93,9 @@ private:
   bool                        m_state_changed_notify = false;
   StorageModel                m_storage_model = StorageModel::COPY;
 
-  std::mutex                  m_synth_mutex;
-  ControlEventVector          m_control_events;          // protected by synth mutex
-  NotifyBuffer                m_notify_buffer;           // protected by synth mutex
-  bool                        m_state_changed = false;   // protected by synth mutex
+  ControlEventVector          m_control_events;          // protected by ControlEventVector::try_lock/unlock
+  NotifyBuffer                m_notify_buffer;           // protected by ControlEventVector::try_lock/unlock
+  bool                        m_state_changed = false;   // protected by ControlEventVector::try_lock/unlock
 
   std::unique_ptr<SynthInterface> m_synth_interface;
 
@@ -124,22 +133,6 @@ public:
 
   void synth_take_control_event (SynthControlEvent *event);
 
-  std::mutex&
-  synth_mutex()
-  {
-    /* the synthesis thread will typically not block on synth_mutex
-     * instead, it tries locking it, and if that fails, continues
-     *
-     * the ui thread will block on the synth_mutex to enqueue events,
-     * parameter changes (in form of a new morph plan, volume, ...)
-     * and so on
-     *
-     * if the synthesis thread can obtain a lock, it will then be
-     * able to process these events to update its internal state
-     * and also send notifications back to the ui
-     */
-    return m_synth_mutex;
-  }
   bool try_update_synth();
   void set_mix_freq (double mix_freq);
   void set_storage_model (StorageModel model);

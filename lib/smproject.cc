@@ -52,6 +52,21 @@ ControlEventVector::destroy_all_events()
   clear = false;
 }
 
+/*
+ * do not use a std::mutex here because it may not be hard RT safe to
+ * try_lock() / unlock() it (depending on how the mutex is implemented)
+ */
+bool
+ControlEventVector::try_lock()
+{
+  return !locked_flag.test_and_set();
+}
+
+void
+ControlEventVector::unlock()
+{
+  locked_flag.clear();
+}
 
 bool
 Project::try_update_synth()
@@ -60,13 +75,13 @@ Project::try_update_synth()
   // handle synth updates (if locking is possible without blocking)
   //  - apply new parameters
   //  - process events
-  if (m_synth_mutex.try_lock())
+  if (m_control_events.try_lock())
     {
       m_control_events.run_rt (this);
       state_changed = m_state_changed;
       m_state_changed = false;
 
-      m_synth_mutex.unlock();
+      m_control_events.unlock();
     }
   return state_changed;
 }
@@ -74,8 +89,16 @@ Project::try_update_synth()
 void
 Project::synth_take_control_event (SynthControlEvent *event)
 {
-  std::lock_guard<std::mutex> lg (m_synth_mutex);
+  while (!m_control_events.try_lock())
+    {
+      // this doesn't happen very often and we are in the non-RT thread, so we
+      // can block it for some time
+      //  => wait for less than one frame drawing time until trying again
+      float fps = 240;
+      usleep (1000 * 1000 / fps);
+    }
   m_control_events.take (event);
+  m_control_events.unlock();
 }
 
 void
