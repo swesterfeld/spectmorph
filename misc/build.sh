@@ -28,17 +28,21 @@ build()
   make install
 }
 
+# fail in make check if UB sanitizer produces error
+export UBSAN_OPTIONS=halt_on_error=1
+
 # Tests using gcc
 export CC=gcc CXX=g++
 
-build --enable-asan --enable-debug-cxx
+build "$@" --enable-debug-cxx
 
-build
-lv2lint http://spectmorph.org/plugins/spectmorph
+[ $# -eq 0 ] && lv2lint http://spectmorph.org/plugins/spectmorph
+
 make -j `nproc` distcheck
 
 # Tests clang
 export CC=clang CXX=clang++
 
-build
-lv2lint http://spectmorph.org/plugins/spectmorph
+build "$@"
+
+[ $# -eq 0 ] && lv2lint http://spectmorph.org/plugins/spectmorph
