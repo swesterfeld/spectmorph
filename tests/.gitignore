@@ -55,6 +55,10 @@ testsmdirs
 testsse
 testladdervcf
 testlfo
+testblockmath
+testcurve
+testpsola
+testroundperf
 test*.exe
 .libs
 .deps
