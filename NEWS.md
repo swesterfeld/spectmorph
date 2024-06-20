@@ -20,18 +20,19 @@
 * Fix invalid access to past last vector element (#24).
 * Make PandaResampler work without problems in ASAN builds.
 * Refactor leak debugger to fix possible crashes caused by global destructors.
-* Do not ship sample data in 1 instrument WavSource preset.
+* Do not ship sample data in "1 Instrument WavSource" preset.
 
 #### Internals: Improvements
 * Generate and store spectral envelopes in each AudioBlock for formant correction.
 * Improve the strategy for portamento synthesis (more accurate and less CPU usage).
 * Propagate portamento frequency to sources.
 * Randomize start phase per default to improve "Harmonic Resynthesis" quality.
-* Add fast vectorizable log2 approximation (based on Tims version from Anklang).
 * JACK: use two audio outputs to be able to implement stereo support later on.
+* Add fast vectorizable log2 approximation (based on Tims version from Anklang).
 * Phases in LiveDecoder, IFFTSynth: change from float to uint for performance reasons.
 * Various minor performance optimizations.
 * Use newer compilers: g++-14 for windows, g++-13 for static linux plugins.
+* Avoid using std::mutex in hard RT code.
 
 #### Internals: Minor Changes
 * Refactoring:
