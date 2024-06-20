@@ -31,8 +31,11 @@ build()
 # fail in make check if UB sanitizer produces error
 export UBSAN_OPTIONS=halt_on_error=1
 
+export CCACHE_DIR=/output/ccache
+export CCACHE_MAXSIZE=1G
+
 # Tests using gcc
-export CC=gcc CXX=g++
+export CC="ccache gcc" CXX="ccache g++"
 
 build "$@" --enable-debug-cxx
 
@@ -43,7 +46,7 @@ fi
 make -j `nproc` distcheck
 
 # Tests clang
-export CC=clang CXX=clang++
+export CC="ccache clang"  CXX="ccache clang++"
 
 build "$@"
 
