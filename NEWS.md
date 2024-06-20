@@ -1,3 +1,50 @@
+## SpectMorph 1.0.0 beta1
+
+#### New Features
+
+* WavSource: support two formant preserving algorithms for repitching vocals.
+* New operators:
+  - KeyTrack - can be used to combine instruments by note range.
+  - Envelope - to generate arbitary modulation envelopes.
+* User defined curve editor for KeyTrack, Envelope and LFO.
+* Add presets using the new operators:
+  - KeyTrack Choir Ah/Oh
+  - StringBrass Fusion
+* JACK CC values are now interpreted per channel (allows polyphonic modulation).
+* Support double click to reset properties to default value.
+
+#### Fixes
+* Apply midi channel bend to new voices.
+* Make portamento affect filter cutoff key tracking.
+* Fix problems with WavSource paths stored by LV2 plugin (make Ardour archives work).
+* Fix invalid access to past last vector element (#24).
+* Make PandaResampler work without problems in ASAN builds.
+* Refactor leak debugger to fix possible crashes caused by global destructors.
+* Do not ship sample data in 1 instrument WavSource preset.
+
+#### Internals: Improvements
+* Generate and store spectral envelopes in each AudioBlock for formant correction.
+* Improve the strategy for portamento synthesis (more accurate and less CPU usage).
+* Propagate portamento frequency to sources.
+* Randomize start phase per default to improve "Harmonic Resynthesis" quality.
+* Add fast vectorizable log2 approximation (based on Tims version from Anklang).
+* JACK: use two audio outputs to be able to implement stereo support later on.
+* Phases in LiveDecoder, IFFTSynth: change from float to uint for performance reasons.
+* Various minor performance optimizations.
+* Use newer compilers: g++-14 for windows, g++-13 for static linux plugins.
+
+#### Internals: Minor Changes
+* Refactoring:
+  - Deduplicate morphing code from MorphGrid and MorphLinear.
+  - Use shared pointers for GenericIn/GenericOut classes (RAII).
+  - Get rid of `sm_clamp` / `sm_bound` (-> std::clamp).
+* Improve CI support (use debug-cxx, asan, ubsan, test static build, avoid fftw planning).
+* Validate LV2 feature arrays.
+* Support user defined scripts in testmidisynth test.
+* Improve error messages for preset loader.
+* Build cleanups: remove libbse code, simplify Qt build (remove smsampleedit).
+* Update CLAP version to 1.2.1.
+
 ## SpectMorph 0.6.1
 
 #### Instrument Editor
