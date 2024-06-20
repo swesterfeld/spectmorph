@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 build()
 {
-  if [ -f "./configure" ]; then
+  if [ -f "./Makefile" ]; then
     make uninstall
     make distclean
   fi
@@ -36,7 +36,9 @@ export CC=gcc CXX=g++
 
 build "$@" --enable-debug-cxx
 
-[ $# -eq 0 ] && lv2lint http://spectmorph.org/plugins/spectmorph
+if [ $# -eq 0 ]; then
+  lv2lint http://spectmorph.org/plugins/spectmorph
+fi
 
 make -j `nproc` distcheck
 
@@ -45,4 +47,6 @@ export CC=clang CXX=clang++
 
 build "$@"
 
-[ $# -eq 0 ] && lv2lint http://spectmorph.org/plugins/spectmorph
+if [ $# -eq 0 ]; then
+  lv2lint http://spectmorph.org/plugins/spectmorph
+fi
