@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "debianbuild-${{hashFiles ('misc/*')}}" }
     - name: Test Linux Build
       run: misc/debianbuild.sh
     - uses: actions/upload-artifact@v4
@@ -27,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "archbuild-${{hashFiles ('misc/*')}}" }
     - name: Test Arch Linux Build
       run: misc/archbuild.sh
     - uses: actions/upload-artifact@v4
@@ -38,6 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "debianbuild-${{hashFiles ('misc/*')}}" }
     - name: Test Linux Build with Sanitizers
       run: misc/debianbuild.sh --enable-asan --enable-ubsan
     - uses: actions/upload-artifact@v4
@@ -49,6 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "archbuild-${{hashFiles ('misc/*')}}" }
     - name: Test Arch Linux Build with Sanitizers
       run: misc/archbuild.sh --enable-asan --enable-ubsan
     - uses: actions/upload-artifact@v4
