@@ -4,7 +4,7 @@ RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm \
     gcc clang make automake autoconf libtool pkg-config \
     libsndfile fftw autoconf-archive qt5-base libao \
-    jack2 cairo lv2lint python3 python-scipy ccache
+    jack2 cairo git python3 python-scipy ccache meson lv2 lilv
 
 ADD . /spectmorph
 WORKDIR /spectmorph
