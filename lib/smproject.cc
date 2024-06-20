@@ -11,6 +11,8 @@
 #include "smproject.hh"
 #include "smhexstring.hh"
 
+#include <unistd.h>
+
 #include <filesystem>
 
 using namespace SpectMorph;
