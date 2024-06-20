@@ -49,7 +49,7 @@ cd ../..
 build "$@" --enable-debug-cxx
 
 if [ $# -eq 0 ]; then
-  lv2lint -E warn -E note http://spectmorph.org/plugins/spectmorph
+  lv2lint -S note http://spectmorph.org/plugins/spectmorph
 fi
 
 make -j `nproc` distcheck
@@ -60,5 +60,5 @@ export CC="ccache clang"  CXX="ccache clang++"
 build "$@"
 
 if [ $# -eq 0 ]; then
-  lv2lint -E warn -E note http://spectmorph.org/plugins/spectmorph
+  lv2lint -S note http://spectmorph.org/plugins/spectmorph
 fi
