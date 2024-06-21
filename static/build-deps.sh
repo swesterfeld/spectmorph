@@ -8,7 +8,7 @@ echo "======= $(pwd) ======="
   CFLAGS="${GLOBAL_CFLAGS:+ $GLOBAL_CFLAGS}" \
   CXXFLAGS="${GLOBAL_CXXFLAGS:+ $GLOBAL_CXXFLAGS}" \
   LDFLAGS="${GLOBAL_LDFLAGS:+ $GLOBAL_LDFLAGS}" \
-  ./configure --disable-dependency-tracking --prefix=$PREFIX $@
+  ./configure --disable-dependency-tracking --prefix=$PREFIX $@ || ( cat config.log; exit 1 )
 }
 
 function autoconfbuild {
