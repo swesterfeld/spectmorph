@@ -11,21 +11,14 @@ RUN apt-get update && apt-get install -y build-essential \
  dpkg-dev autoconf-archive libtool libjack-jackd2-dev lv2-dev \
  curl g++-13 libtool-bin gettext quilt libx11-dev libxext-dev \
  mesa-common-dev libgl-dev meson python3-setuptools
-
-ENV CC gcc-13
-ENV CXX g++-13
+RUN apt-get install ccache sudo
 
 ADD . /spectmorph
 WORKDIR /spectmorph
 
-ENV PKG_CONFIG_PATH=/spectmorph/static/prefix/lib/pkgconfig:/spectmorph/static/prefix/lib/x86_64-linux-gnu/pkgconfig
-ENV PKG_CONFIG="pkg-config --static"
-RUN cd static && ./build-deps.sh
-ENV CPPFLAGS="-I/spectmorph/static/prefix/include"
-RUN ./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --with-fonts
-RUN make clean
-RUN make -j$(nproc)
-RUN make install
-RUN cd lv2 && rm -f spectmorph_lv2.so.static && make spectmorph_lv2.so.static
-RUN cd vst && rm -f spectmorph_vst.so.static && make spectmorph_vst.so.static
-RUN cd clap && rm -f SpectMorph.clap.static && make SpectMorph.clap.static
+# Become non-root
+RUN groupadd --gid 1000 builder \
+  && useradd --uid 1000 --gid 1000 --create-home --shell /bin/bash builder \
+  && echo "builder ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/builder \
+  && chown -R builder:builder /spectmorph
+USER builder
