@@ -28,3 +28,4 @@ grep "version \"$PACKAGE_VERSION\"" $OUT_DIR/instruments/standard/index.smindex 
 
 # TARBALL
 tar cfvJ $OUT_DIR.tar.xz $OUT_DIR
+rm -r $OUT_DIR
