@@ -35,9 +35,12 @@ cd ..
 # TEMPLATES / INSTRUMENTS
 cp -av \
   /usr/local/spectmorph/share/spectmorph/templates \
-  /usr/local/spectmorph/share/spectmorph/instruments \
   /usr/local/spectmorph/share/spectmorph/fonts \
   /data
+
+if [ -d /usr/local/spectmorph/share/spectmorph/instruments ]; then
+  cp -av /usr/local/spectmorph/share/spectmorph/instruments /data
+fi
 
 # VST
 mkdir -p /data/vst
