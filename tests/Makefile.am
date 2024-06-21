@@ -15,7 +15,7 @@ CLEANFILES += sin440-4567.wav saw440x.wav
 TESTS_ENVIRONMENT = SPECTMORPH_MAKE_CHECK=1
 
 TESTS = testfastsin testblob testisincos testnoisemodes testifftsynth testppinter testgenid \
-        testidb testifreq testbesseli0 testsse testblockmath
+        testidb testifreq testbesseli0 testsse testblockmath testceventlock
 
 noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaafilter testnoiseperf \
         testparamupdate testloopindex testoutfileperf \
@@ -175,6 +175,9 @@ testcurve_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 testblockmath_SOURCES = testblockmath.cc
 testblockmath_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
+
+testceventlock_SOURCES = testceventlock.cc
+testceventlock_LDADD = $(SPECTMORPH_LIBS) $(GLIB_LIBS)
 
 check: saw440-test saw440x-test sin440-test sin440-4567-test TXT-saw440-test TXT-sin440-test TXT-sin440-4567-test \
        TXT-sin100-test TXT-sin140-test tune-test test-norm test-porta
