@@ -2,6 +2,8 @@
 
 #include "smproject.hh"
 
+#include <unistd.h>
+
 using std::vector;
 
 using namespace SpectMorph;
