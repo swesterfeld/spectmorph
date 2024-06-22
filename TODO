@@ -5,6 +5,8 @@ NEWER TODOS:
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
 Other:
+- stereo unison
+- experiment with smooth tuning for formant correction to reduce artifacts
 - handle XPARAM scaled parameters for modulation
 - non-linear modulation mapping
 - visual feedback for adsr envelope
