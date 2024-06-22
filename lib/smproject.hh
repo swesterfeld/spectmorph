@@ -88,6 +88,7 @@ private:
   std::unique_ptr<MidiSynth>  m_midi_synth;
   double                      m_mix_freq = 0;
   double                      m_volume = -6;
+  int                         m_random_seed = -1;
   MorphPlan                   m_morph_plan;
   std::vector<unsigned char>  m_last_plan_data;
   bool                        m_state_changed_notify = false;
@@ -141,6 +142,8 @@ public:
 
   void set_volume (double new_volume);
   double volume() const;
+
+  void set_random_seed (int seed);
 
   NotifyBuffer *notify_buffer();
   SynthInterface *synth_interface() const;
