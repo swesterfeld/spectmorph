@@ -12,7 +12,7 @@ bin_PROGRAMS = smsfimport smenccache
 bin_SCRIPTS  = sminstbuilder
 
 noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smrunplan \
-		  smfileedit smevalplayer smfcompare
+		  smfileedit smfcompare
 
 ascii2wav_SOURCES = ascii2wav.cc
 ascii2wav_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
@@ -49,9 +49,12 @@ smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
 smrunplan_CXXFLAGS = $(AM_CXXFLAGS)
 
+if COND_WITH_JACK
 smevalplayer_SOURCES = smevalplayer.cc
 smevalplayer_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS) $(SPECTMORPH_JACK_LIBS)
 smevalplayer_CXXFLAGS = $(AM_CXXFLAGS) -I$(top_srcdir)/jack
+noinst_PROGRAMS += smevalplayer
+endif
 
 smfcompare_SOURCES = smfcompare.cc
 smfcompare_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)

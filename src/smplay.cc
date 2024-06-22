@@ -2,7 +2,6 @@
 
 #include <fcntl.h>
 #include <errno.h>
-#include <ao/ao.h>
 #include <assert.h>
 #include <math.h>
 
@@ -14,6 +13,10 @@
 #include "smwavdata.hh"
 #include "smaudio.hh"
 #include "config.h"
+
+#if SPECTMORPH_HAVE_AO
+#include <ao/ao.h>
+#endif
 
 #include <list>
 
@@ -214,17 +217,19 @@ main (int argc, char **argv)
     }
 
   SpectMorph::Audio& audio = *audio_ptr;
-  ao_sample_format format = { 0, };
 
-  format.bits = 16;
-  format.rate = options.rate;
-  format.channels = 1;
-  format.byte_format = AO_FMT_NATIVE;
-
+#if SPECTMORPH_HAVE_AO
   ao_device *play_device = NULL;
 
   if (options.export_wav == "")   /* open audio only if we need to play something */
     {
+      ao_sample_format format = { 0, };
+
+      format.bits = 16;
+      format.rate = options.rate;
+      format.channels = 1;
+      format.byte_format = AO_FMT_NATIVE;
+
       ao_initialize();
 
       ao_option *ao_options = NULL;
@@ -235,9 +240,10 @@ main (int argc, char **argv)
           exit(1);
         }
     }
+#endif
 
-  size_t frame_size = audio.frame_size_ms * format.rate / 1000;
-  size_t frame_step = audio.frame_step_ms * format.rate / 1000;
+  size_t frame_size = audio.frame_size_ms * options.rate / 1000;
+  size_t frame_step = audio.frame_step_ms * options.rate / 1000;
 
   size_t block_size = 1;
   while (block_size < frame_size)
@@ -256,9 +262,9 @@ main (int argc, char **argv)
 
   SineDecoder::Mode mode = options.decoder_mode;
 
-  size_t noise_block_size = NoiseDecoder::preferred_block_size (format.rate);
-  NoiseDecoder noise_decoder (format.rate, noise_block_size);
-  SineDecoder  sine_decoder (audio.fundamental_freq, format.rate, frame_size, frame_step, mode);
+  size_t noise_block_size = NoiseDecoder::preferred_block_size (options.rate);
+  NoiseDecoder noise_decoder (options.rate, noise_block_size);
+  SineDecoder  sine_decoder (audio.fundamental_freq, options.rate, frame_size, frame_step, mode);
 
   if (mode != SineDecoder::MODE_TRACKING)
     {
@@ -389,6 +395,7 @@ main (int argc, char **argv)
 
   if (options.export_wav == "")     /* no export -> play */
     {
+#if SPECTMORPH_HAVE_AO
       bool clip_err = false;
       pos = 0;
       while (pos < sample.size())
@@ -415,6 +422,9 @@ main (int argc, char **argv)
           pos += todo;
         }
       ao_close (play_device);
+#endif
+      fprintf (stderr, "error: %s was compiled without libao support (use --export <filename>)\n", options.program_name.c_str());
+      exit (1);
     }
   else /* export wav */
     {

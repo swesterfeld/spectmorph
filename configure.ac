@@ -291,6 +291,12 @@ if test "x$with_ao" != "xno"; then
   with_ao=yes
 fi
 AM_CONDITIONAL([COND_WITH_AO], [test "x$with_ao" != "xno"])
+if test "x$with_ao" != "xno"; then
+  SPECTMORPH_HAVE_AO=1
+else
+  SPECTMORPH_HAVE_AO=0
+fi
+AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_AO, $SPECTMORPH_HAVE_AO, [Whether libao is available])
 dnl -------------------------------------------------------------------------
 
 dnl allow setting location of the instruments tarball (default in data/ dir)

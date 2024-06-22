@@ -15,6 +15,7 @@ export CPPFLAGS="-I/spectmorph/static/prefix/include"
 ./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --with-fonts
 make clean
 make -j$(nproc)
+make -j$(nproc) check
 sudo make install
 
 cd lv2
