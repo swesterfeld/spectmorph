@@ -8,7 +8,7 @@ SPECTMORPH_JACK_LIBS = $(top_builddir)/jack/libspectmorphjack.la
 
 EXTRA_DIST += delta.py smeval.py smutils.py polyphasefir.py
 
-bin_PROGRAMS = smenccache
+bin_PROGRAMS =
 bin_SCRIPTS  = sminstbuilder
 
 noinst_PROGRAMS = ascii2wav wav2ascii imiscutter tld smfiledump smrunplan \
@@ -26,7 +26,11 @@ imiscutter_LDADD   = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
 if !COND_WINDOWS
 smsfimport_SOURCES = smsfimport.cc
 smsfimport_LDADD   = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
-bin_PROGRAMS += smsfimport
+
+smenccache_SOURCES = smenccache.cc
+smenccache_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
+
+bin_PROGRAMS += smsfimport smenccache
 endif
 
 smfiledump_SOURCES = smfiledump.cc
@@ -44,9 +48,6 @@ smlive_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS) $(AO_LIBS)
 smlive_CXXFLAGS = $(AM_CXXFLAGS) $(AO_CFLAGS)
 noinst_PROGRAMS += smlive
 endif
-
-smenccache_SOURCES = smenccache.cc
-smenccache_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
 
 smrunplan_SOURCES = smrunplan.cc
 smrunplan_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
