@@ -79,6 +79,13 @@ jobs:
     - name: Test macOS Build
       shell: bash
       run: misc/macbuild.sh
+  macos-sanitizers:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test macOS Build
+      shell: bash
+      run: misc/macbuild.sh --enable-asan --enable-ubsan
   windows:
     runs-on: ubuntu-latest
     steps:
