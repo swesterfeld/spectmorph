@@ -9,7 +9,8 @@ SMRESVALUE = $(srcdir)/smresvalue.sh
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
 EXTRA_DIST += saw440.wav sin440.wav sin440.py saw440x.py avg_energy.py sn_delta.py whitenoise.py \
-        sinsignal.py smresvalue.sh tune-test.sh test-norm.sh test-porta.sh hilbert.py
+        sinsignal.py smresvalue.sh tune-test.sh test-norm.sh test-porta.sh hilbert.py \
+	post-install-test.sh
 CLEANFILES += sin440-4567.wav saw440x.wav
 
 TESTS_ENVIRONMENT = SPECTMORPH_MAKE_CHECK=1

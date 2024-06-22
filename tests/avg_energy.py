@@ -11,7 +11,7 @@ def read_samples():
   line_number = 1
   for line in sys.stdin.readlines():
     if line[0] != "#":      # skip comments
-      if (line_number >= start_line) and (line_number <= end_line):
+      if (line_number >= start_line) and ((line_number <= end_line) or end_line < 0):
         result += [ float (line) ]
       line_number += 1
   return result
