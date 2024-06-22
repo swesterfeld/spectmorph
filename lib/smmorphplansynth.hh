@@ -30,6 +30,7 @@ protected:
 
   float           m_mix_freq;
   Random          m_random_gen;
+  int             m_random_seed = -1;
   bool            m_have_cycle = false;
 
 public:
@@ -74,6 +75,8 @@ public:
   bool    have_output() const;
   Random *random_gen();
   bool    have_cycle() const;
+  void    set_random_seed (int seed);
+  int     random_seed() const;
 };
 
 }

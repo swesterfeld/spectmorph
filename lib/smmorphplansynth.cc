@@ -180,6 +180,20 @@ MorphPlanSynth::random_gen()
   return &m_random_gen;
 }
 
+void
+MorphPlanSynth::set_random_seed (int seed)
+{
+  m_random_seed = seed;
+  if (seed != -1)
+    m_random_gen.set_seed (seed);
+}
+
+int
+MorphPlanSynth::random_seed() const
+{
+  return m_random_seed;
+}
+
 bool
 MorphPlanSynth::have_output() const
 {
