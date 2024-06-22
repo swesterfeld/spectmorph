@@ -26,6 +26,12 @@ noinst_PROGRAMS = $(TESTS) testrandom testfftperf testnoise testrandperf testaaf
 	testlfo testsmdirs testladdervcf testpandaperf testnotifyperf testpropperf testroundperf \
 	testpsola testcurve
 
+REFS = ref/1-instrument.ref ref/2-instruments-linear-gui.ref ref/2-instruments-linear-lfo.ref \
+       ref/2-instruments-unison.ref ref/2x2-instruments-grid-gui.ref ref/aurora.ref ref/cheese-cake-bass.ref \
+       ref/empty.ref ref/keytrack-choir-ah-oh.ref ref/liquid-silver.ref ref/mars.ref ref/saturn.ref ref/stringbrass-fusion.ref
+
+EXTRA_DIST += $(REFS)
+
 if !COND_WINDOWS
 noinst_PROGRAMS += testjobqueue
 endif
@@ -229,3 +235,6 @@ test-norm:
 
 test-porta:
 	$(top_srcdir)/tests/test-porta.sh
+
+list-refs:
+	@echo $(REFS)
