@@ -211,6 +211,7 @@ public:
 
   void set_inst_edit (bool inst_edit);
   void set_gain (double gain);
+  void set_random_seed (int seed);
   void set_control_by_cc (bool control_by_cc);
   InstEditSynth *inst_edit_synth();
   NotifyBuffer *notify_buffer();
