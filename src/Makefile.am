@@ -4,7 +4,7 @@ AM_CXXFLAGS += $(GLIB_CFLAGS) $(AO_CFLAGS) $(SNDFILE_CFLAGS) -I$(top_srcdir)/lib
 
 SPECTMORPH_LIBS = $(top_builddir)/lib/libspectmorph.la
 
-bin_PROGRAMS = smenc smtool smstrip
+bin_PROGRAMS = smenc smtool smstrip smplay
 
 if !COND_WINDOWS
 # smwavset needs job queue
@@ -16,11 +16,8 @@ SMHDRS = stwutils.hh
 smenc_SOURCES = smenc.cc $(SMHDRS)
 smenc_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
 
-if COND_WITH_AO
 smplay_SOURCES = smplay.cc $(SMHDRS)
 smplay_LDADD = $(GLIB_LIBS) $(AO_LIBS) $(SPECTMORPH_LIBS)
-bin_PROGRAMS += smplay
-endif
 
 smtool_SOURCES = smtool.cc $(SMHDRS)
 smtool_LDADD = $(GLIB_LIBS) $(SPECTMORPH_LIBS)
