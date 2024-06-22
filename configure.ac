@@ -1,9 +1,11 @@
 AC_INIT([spectmorph],[1.0.0-beta1])
-
-LV2_MINOR_VERSION=7
+INST_DATE=2024-06-22
+LV2_MINOR_VERSION=8
 
 dnl we don't try to map our version numbers to lv2, instead we increment lv2 minor
-dnl version for every single release, and keep micro version at zero
+dnl version for every single release, and keep micro version at zero, number
+dnl must be even to indicate stable version
+dnl
 dnl see also: https://lv2plug.in/ns/lv2core#minorVersion
 
 AC_SUBST(LV2_MINOR_VERSION)
@@ -490,6 +492,27 @@ static/config.sh static/install.sh
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
 
+# instrument downloader
+dnl -------------------------------------------------------------------------
+AC_ARG_WITH([download-instruments], [AS_HELP_STRING([--with-download-instruments], [download instrument archive])],,with_download_instruments=no)
+if test "x$with_download_instruments" = "xyes"; then
+  echo
+  echo -n "downloading / updating instruments ($INST_DATE / $PACKAGE_VERSION)..."
+  cd data
+  DOWNLOAD_URL=https://github.com/swesterfeld/spectmorph-instruments/releases/download/$INST_DATE/spectmorph-instruments-$PACKAGE_VERSION.tar.xz;
+  if wget -q -c $DOWNLOAD_URL; then
+    echo " done"
+  else
+    echo " failed"
+    echo
+    AC_MSG_ERROR([failed to download:
+  $DOWNLOAD_URL
+])
+  fi
+  cd ..
+fi
+dnl -------------------------------------------------------------------------
+
 # Output summary message
 
 echo
@@ -504,6 +527,10 @@ echo "  Fonts . . . . . . . . . : $with_fonts"
 
 if test "x$with_instruments" != "xno"; then
   echo "  Instruments  . . . . . .: $INSTRUMENTS_ARCHIVE"
+fi
+
+if test ! -f $INSTRUMENTS_ARCHIVE; then
+  echo "  Instruments  . . . . . .: missing (use --with-download-instruments to fix this)"
 fi
 
 if test "x$asan_flags_ok" != "xno"; then
