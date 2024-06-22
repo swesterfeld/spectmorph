@@ -9,7 +9,9 @@
 
 #include <stdio.h>
 #include <assert.h>
+#ifndef SM_OS_WINDOWS
 #include <sys/resource.h>
+#endif
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
@@ -23,8 +25,12 @@ using std::min;
 int
 adjust_priority()
 {
+#ifdef SM_OS_WINDOWS
+  return 0;
+#else
   setpriority (PRIO_PROCESS, getpid(), -20);
   return getpriority (PRIO_PROCESS, getpid());
+#endif
 }
 
 int
