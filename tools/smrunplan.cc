@@ -36,6 +36,7 @@ struct Options
   bool                normalize;
   double              gain;
   int                 rate;
+  bool                deterministic_random = false;
 
   Options ();
   void parse (int *argc_p, char **argv_p[]);
@@ -147,6 +148,10 @@ Options::parse (int   *argc_p,
         {
           rate = atoi (opt_arg);
         }
+      else if (check_arg (argc, argv, &i, "--det-random"))
+        {
+          deterministic_random = true;
+        }
     }
 
   /* resort argc/argv */
@@ -178,6 +183,7 @@ Options::print_usage ()
   printf (" -l, --len <len>             set output sample len\n");
   printf (" -m, --midi-note <note>      set midi note to use\n");
   printf (" -q, --quiet                 suppress audio output\n");
+  printf (" --det-random                use deterministic/reproducable random generator\n");
   printf ("\n");
 }
 
@@ -217,6 +223,13 @@ Player::Player() :
 void
 Player::load_plan (const string& filename)
 {
+  if (options.deterministic_random)
+    {
+      /* FIXME: this looks odd */
+      project.set_random_seed (0x123456);
+      synth.set_random_seed (0x123456);
+    }
+
   project.set_mix_freq (options.rate);
 
   Error error = project.load (filename);
