@@ -26,6 +26,9 @@ build()
     exit 1
   fi
   make install
+  cd tests
+  ./post-install-test.sh
+  cd ..
 }
 
 # fail in make check if UB sanitizer produces error
@@ -46,7 +49,7 @@ ninja
 ninja install
 cd ../..
 
-build "$@"
+build --with-download-instruments "$@"
 
 if [ $# -eq 0 ]; then
   lv2lint -S note http://spectmorph.org/plugins/spectmorph
