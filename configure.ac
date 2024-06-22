@@ -473,7 +473,9 @@ dnl -------------------- undefined behaviour sanitizer ----------------------
 AC_ARG_ENABLE([ubsan], [AS_HELP_STRING([--enable-ubsan], [build using undefined behaviour sanitizer])],
 [
   CXXFLAGS="$CXXFLAGS -fsanitize=undefined -fno-omit-frame-pointer -fstack-protector-all -fno-inline"
-  LDFLAGS="$LDFLAGS -lubsan"
+  if test "$build_macos" = "no"; then
+    LDFLAGS="$LDFLAGS -lubsan"
+  fi
 ],
 [
   enable_ubsan=no
