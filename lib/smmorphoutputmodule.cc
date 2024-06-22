@@ -26,11 +26,12 @@ MorphOutputModule::set_config (const MorphOperatorConfig *op_cfg)
   MorphOperatorModule *mod = morph_plan_voice->module (cfg->channel_ops[0]);
   LiveDecoderSource *source = mod ? mod->source() : nullptr;
 
+  int random_seed = morph_plan_voice->morph_plan_synth()->random_seed();
   /* since the source is part of a module (and modules get newly created in
    * main thread and then replaced in audio thread), comparing the pointer to
    * the source in the LiveDecoder is enough to see if the source changed
    */
-  decoder.set_config (cfg, source, morph_plan_voice->mix_freq());
+  decoder.set_config (cfg, source, morph_plan_voice->mix_freq(), random_seed);
 }
 
 bool

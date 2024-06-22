@@ -237,6 +237,7 @@ Project::set_mix_freq (double mix_freq)
   // not rt safe, needs to be called when synthesis thread is not running
   m_midi_synth.reset (new MidiSynth (mix_freq, 64));
   m_mix_freq = mix_freq;
+  m_midi_synth->set_random_seed (m_random_seed);
 
   // not rt safe either
   LiveDecoder::precompute_tables (mix_freq);
@@ -363,6 +364,15 @@ Project::set_volume (double volume)
   m_synth_interface->emit_update_gain (db_to_factor (m_volume));
 
   signal_volume_changed (m_volume);
+}
+
+void
+Project::set_random_seed (int seed)
+{
+  // need to set random seed directly after creation
+  g_return_if_fail (m_mix_freq == 0);
+
+  m_random_seed = seed;
 }
 
 vector<MorphWavSource *>

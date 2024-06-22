@@ -810,6 +810,12 @@ MidiSynth::set_control_by_cc (bool control_by_cc)
 }
 
 void
+MidiSynth::set_random_seed (int seed)
+{
+  morph_plan_synth.set_random_seed (seed);
+}
+
+void
 MidiSynth::notify_active_voice_status()
 {
   if (m_notify_buffer.start_write()) // update notify buffer if GUI has fetched events

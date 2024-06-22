@@ -151,7 +151,7 @@ EffectDecoder::~EffectDecoder()
 }
 
 void
-EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *source, float mix_freq)
+EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *source, float mix_freq, int random_seed)
 {
   adsr_enabled = cfg->adsr;
 
@@ -177,6 +177,7 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *so
 
   chain_decoder.enable_noise (cfg->noise);
   chain_decoder.enable_sines (cfg->sines);
+  chain_decoder.set_random_seed (random_seed);
 
   if (cfg->unison) // unison?
     chain_decoder.set_unison_voices (cfg->unison_voices, cfg->unison_detune);
