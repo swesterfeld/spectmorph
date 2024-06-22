@@ -59,6 +59,7 @@ testblockmath
 testcurve
 testpsola
 testroundperf
+testceventlock
 test*.exe
 .libs
 .deps
