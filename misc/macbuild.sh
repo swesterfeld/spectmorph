@@ -7,7 +7,7 @@ export PATH="$(brew --prefix python)/bin:$PATH"
 ./autogen.sh
 make -j `sysctl -n hw.ncpu`
 make check
-make install
+sudo make install
 cd tests
 ./post-install-test.sh
 cd ..
