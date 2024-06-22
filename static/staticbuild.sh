@@ -12,11 +12,14 @@ cd static
 ./build-deps.sh
 cd ..
 export CPPFLAGS="-I/spectmorph/static/prefix/include"
-./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --with-fonts
+./autogen.sh --prefix=/usr/local/spectmorph --with-static-cxx --without-qt --without-jack --without-ao --with-fonts --with-download-instruments
 make clean
 make -j$(nproc)
 make -j$(nproc) check
 sudo make install
+cd tests
+./post-install-test.sh
+cd ..
 
 cd lv2
 rm -f spectmorph_lv2.so.static

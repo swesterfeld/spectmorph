@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y build-essential \
  dpkg-dev autoconf-archive libtool libjack-jackd2-dev lv2-dev \
  curl g++-13 libtool-bin gettext quilt libx11-dev libxext-dev \
  mesa-common-dev libgl-dev meson python3-setuptools ccache sudo \
- python3-scipy
+ python3-scipy wget
 
 ADD . /spectmorph
 WORKDIR /spectmorph
