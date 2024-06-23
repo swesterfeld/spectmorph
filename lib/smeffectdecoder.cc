@@ -177,7 +177,13 @@ EffectDecoder::set_config (const MorphOutput::Config *cfg, LiveDecoderSource *so
 
   chain_decoder.enable_noise (cfg->noise);
   chain_decoder.enable_sines (cfg->sines);
+
   chain_decoder.set_random_seed (random_seed);
+  if (random_seed != -1)
+    {
+      // to make this as reproducable as possible, newly started partials should not be randomized at all
+      chain_decoder.enable_start_phase_rand (false);
+    }
 
   if (cfg->unison) // unison?
     chain_decoder.set_unison_voices (cfg->unison_voices, cfg->unison_detune);
