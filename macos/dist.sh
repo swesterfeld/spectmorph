@@ -12,12 +12,12 @@ set -e
 
 source config.sh
 
-# CHECK INSTRUMENT VERSION
-echo -n "### Instruments: "
-grep "version \"$PACKAGE_VERSION\"" instruments/standard/index.smindex || die "did not use appropriate instrument version: $PACKAGE_VERSION"
-
 SMDIR=spectmorph
 SMDIR_CROSS=../../cross/spectmorph/macos/spectmorph
+
+# CHECK INSTRUMENT VERSION
+echo -n "### Instruments: "
+grep "version \"$PACKAGE_VERSION\"" $SMDIR/share/spectmorph/instruments/standard/index.smindex || die "did not use appropriate instrument version: $PACKAGE_VERSION"
 
 make_pkg()
 {
@@ -56,7 +56,7 @@ pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root 
          --identifier org.spectmorph.lv2.SpectMorph.pkg --version ${PACKAGE_VERSION} --install-location /Library/Audio/Plug-Ins/LV2 "SpectMorph.lv2.pkg"
 
 mkdir -p installer-tmp/SpectMorph.data/SpectMorph
-cp -rv instruments installer-tmp/SpectMorph.data/SpectMorph || die "error: cp instruments"
+cp -rv $SMDIR/share/spectmorph/instruments installer-tmp/SpectMorph.data/SpectMorph || die "error: cp instruments"
 cp -rv $PREFIX/share/spectmorph/templates installer-tmp/SpectMorph.data/SpectMorph || die "error: cp templates"
 pkgbuild --sign "Developer ID Installer: Stefan Westerfeld (ZA556HAPK8)" --root installer-tmp/SpectMorph.data --identifier "org.spectmorph.data.SpectMorph.pkg" --version ${PACKAGE_VERSION} --install-location "/tmp/SpectMorph.data" --scripts DataInstallerScript SpectMorph.data.pkg
 rm -rf installer-tmp/SpectMorph.data
@@ -109,3 +109,5 @@ rm -rf installer-tmp SpectMorph.clap.pkg SpectMorph.lv2.pkg SpectMorph.vst.pkg S
 
 xcrun notarytool submit SpectMorph-${PACKAGE_VERSION}.pkg --apple-id stefan@space.twc.de --team-id ZA556HAPK8 --password "$APPLE_NOTARIZATION_PASSWORD" --wait
 xcrun stapler staple SpectMorph-${PACKAGE_VERSION}.pkg
+
+# over ssh: security unlock-keychain

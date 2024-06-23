@@ -40,5 +40,9 @@ if [ "x$2" = "xclean" ]; then
   make -C.. clean || die "make clean failed"
 fi
 
-make -j9 -C.. || die "make failed"
-make -C.. install || die "make install failed"
+cd ..
+make -j9 || die "make failed"
+make -j9 check || die "make check failed"
+make install || die "make install failed"
+cd tests
+./post-install-test.sh || die "post install test failed"

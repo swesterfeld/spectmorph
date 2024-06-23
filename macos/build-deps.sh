@@ -52,6 +52,8 @@ MAKEFLAGS="-j9"
 PATH=$PWD/prefix/bin:$PATH
 export PKG_CONFIG_PATH=$PREFIX/lib/pkgconfig:$PKG_CONFIG_PATH
 export PKG_CONFIG="pkg-config --static"
+export CC="ccache clang"
+export CXX="ccache clang++"
 
 if [ "x$2" = "xclean" ]; then
   rm -rf $PREFIX $BUILDD
