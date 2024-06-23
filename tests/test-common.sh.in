@@ -14,8 +14,10 @@ WHITENOISE=@top_srcdir@/tests/whitenoise.py
 HILBERT=@top_srcdir@/tests/hilbert.py
 
 # enforce reproducable tests
-
 export SPECTMORPH_MAKE_CHECK=1
+
+# disable macOS number format internationalization (awk)
+export LANG=C
 
 # common shell functions
 
