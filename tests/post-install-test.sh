@@ -2,13 +2,22 @@
 
 source ./test-common.sh
 
+set -e pipefail
+
 TESTS=0
 TESTS_OK=0
 
 echo === post install test ===
 for PRESET in $(make list-refs | sed 's,ref/,,g;s,\.ref,,g')
 do
-  ../tools/smrunplan --debug-in-test-program --det-random ../data/templates/$PRESET.smplan 2>/dev/null |
+  # we need to test without unison for the actual test, however we run in full unison
+  # mode without validating the output to trigger asan/ubsan problems
+  ../tools/smrunplan --debug-in-test-program ../data/templates/$PRESET.smplan -q 2>/dev/null
+
+  DISABLE_UNISON=$(../tools/smfileedit list ../data/templates/$PRESET.smplan |grep 'unison\[0\]=true' |sed 's/true/false/g')
+  ../tools/smfileedit edit ../data/templates/$PRESET.smplan test.smplan $DISABLE_UNISON
+
+  ../tools/smrunplan --debug-in-test-program --det-random test.smplan 2>/dev/null |
     ../tests/avg_energy.py -1 -1 > $PRESET.tmp
 
   if ! test -f ref/$PRESET.ref; then
