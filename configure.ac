@@ -350,14 +350,18 @@ AM_CONDITIONAL([COND_MACOS], [test "$build_macos" = "yes"])
 if test "$build_linux" = "yes"; then
   PLUGIN_EXT=so
   LV2_UI_TYPE=X11UI
+  SHA1SUM=sha1sum
+  AC_GL_REQUIREMENTS
 fi
 if test "$build_windows" = "yes"; then
   PLUGIN_EXT=dll
   LV2_UI_TYPE=WindowsUI
+  SHA1SUM=sha1sum
 fi
 if test "$build_macos" = "yes"; then
   PLUGIN_EXT=dylib
   LV2_UI_TYPE=CocoaUI
+  SHA1SUM=shasum
 fi
 AC_SUBST(PLUGIN_EXT)
 AC_SUBST(LV2_UI_TYPE)
@@ -368,9 +372,6 @@ AC_SNDFILE_REQUIREMENTS
 AC_MAN_REQUIREMENTS
 AC_FFTW_CHECK
 AC_ZLIB_REQUIREMENTS
-if test "$build_linux" = "yes"; then
-  AC_GL_REQUIREMENTS
-fi
 AM_ICONV
 
 AM_CFLAGS=""
@@ -475,7 +476,7 @@ AC_ARG_WITH([download-instruments], [AS_HELP_STRING([--with-download-instruments
 if test "x$with_download_instruments" = "xyes"; then
   # if we already have the correct version, no download is necessary
   if test -f $INSTRUMENTS_ARCHIVE; then
-    ACTUAL_SHA1SUM=$(sha1sum $INSTRUMENTS_ARCHIVE | awk '{print $1}')
+    ACTUAL_SHA1SUM=$($SHA1SUM $INSTRUMENTS_ARCHIVE | awk '{print $1}')
     if test "x$ACTUAL_SHA1SUM" != "x$INST_SHA1SUM"; then
       rm $INSTRUMENTS_ARCHIVE
     fi
@@ -496,7 +497,7 @@ fi
 # instrument checksum verification
 if test -f $INSTRUMENTS_ARCHIVE; then
   AC_MSG_CHECKING([if instruments checksum is correct])
-  ACTUAL_SHA1SUM=$(sha1sum $INSTRUMENTS_ARCHIVE | awk '{print $1}')
+  ACTUAL_SHA1SUM=$($SHA1SUM $INSTRUMENTS_ARCHIVE | awk '{print $1}')
   if test "x$ACTUAL_SHA1SUM" != "x$INST_SHA1SUM"; then
     AC_MSG_RESULT([no])
     AC_MSG_ERROR([SHA-1 checksum verification of $INSTRUMENTS_ARCHIVE failed!])
