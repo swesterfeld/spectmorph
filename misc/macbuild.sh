@@ -7,6 +7,10 @@ export PATH="$(brew --prefix python)/bin:$PATH"
 export UBSAN_OPTIONS=halt_on_error=1
 export NPROC=$(sysctl -n hw.ncpu)
 
+export CCACHE_DIR=$PWD/ccache
+export CCACHE_MAXSIZE=1G
+export CC="ccache clang" CXX="ccache clang++"
+
 if [[ "$1" == "sanitize" ]]; then
   ./autogen.sh --with-download-instruments --enable-asan --enable-ubsan --without-jack
 
