@@ -7,6 +7,7 @@
 #include "smhexstring.hh"
 #include "smutils.hh"
 #include "smmath.hh"
+#include "smzip.hh"
 
 #include <map>
 
@@ -263,11 +264,32 @@ main (int argc, char **argv)
       return 1;
     }
 
-  GenericInP in = StdioIn::open (options.in_file);
-  if (!in)
+  GenericInP in;
+  vector<unsigned char> zip_smplan;
+  if (ZipReader::is_zip (options.in_file))
     {
-      fprintf (stderr, PROG_NAME ": error opening input\n");
-      return 1;
+      ZipReader zip_reader (options.in_file);
+
+      for (auto name : zip_reader.filenames())
+        if (name != "plan.smplan")
+          fprintf (stderr, "smfileedit: warning: zip support is incomplete, ignored: '%s'\n", name.c_str());
+
+      zip_smplan = zip_reader.read ("plan.smplan");
+      if (zip_reader.error())
+        {
+          fprintf (stderr, PROG_NAME ": unable to read 'plan.smplan' from input file (%s)", zip_reader.error().message());
+          return 1;
+        }
+      in = MMapIn::open_vector (zip_smplan);
+    }
+  else
+    {
+      in = StdioIn::open (options.in_file);
+      if (!in)
+        {
+          fprintf (stderr, PROG_NAME ": error opening input\n");
+          return 1;
+        }
     }
   InFile ifile (in);
   OutFile *ofile = NULL;
