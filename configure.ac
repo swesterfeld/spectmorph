@@ -1,5 +1,6 @@
 AC_INIT([spectmorph],[1.0.0-beta1])
-INST_DATE=2024-06-22
+INST_TAG=2024-06-22
+INST_SHA1SUM=36a9734ab91133ed75fd69b89459090efcb0ee2e
 LV2_MINOR_VERSION=8
 
 dnl we don't try to map our version numbers to lv2, instead we increment lv2 minor
@@ -302,24 +303,6 @@ fi
 AC_DEFINE_UNQUOTED(SPECTMORPH_HAVE_AO, $SPECTMORPH_HAVE_AO, [Whether libao is available])
 dnl -------------------------------------------------------------------------
 
-dnl allow setting location of the instruments tarball (default in data/ dir)
-AC_ARG_WITH([instruments], [AS_HELP_STRING([--with-instruments=FILE], [use custom instruments tarball])],,with_instruments=no)
-
-if test "x$with_instruments" != "xno"; then
-  # translate relative path to absolute path
-  with_instruments_dir=`dirname $with_instruments`
-  with_instruments_file=`basename $with_instruments`
-
-  INSTRUMENTS_ARCHIVE=`cd $with_instruments_dir && echo $PWD`/$with_instruments_file
-  if test ! -f $INSTRUMENTS_ARCHIVE; then
-    AC_MSG_ERROR([invalid instrument tarball path: $with_instruments])
-  fi
-else
-  INSTRUMENTS_ARCHIVE=`cd $srcdir && echo $PWD`/data/spectmorph-instruments-$VERSION.tar.xz
-fi
-AC_SUBST(INSTRUMENTS_ARCHIVE)
-dnl -------------------------------------------------------------------------
-
 dnl -------------------------------------------------------------------------
 AC_ARG_WITH([fonts], [AS_HELP_STRING([--with-fonts], [include fonts in installation])],,with_fonts=no)
 AM_CONDITIONAL([COND_WITH_FONTS], [test "x$with_fonts" != "xno"])
@@ -483,6 +466,47 @@ AC_ARG_ENABLE([ubsan], [AS_HELP_STRING([--enable-ubsan], [build using undefined 
 ])
 dnl -------------------------------------------------------------------------
 
+dnl -------------------------------------------------------------------------
+INSTRUMENTS_ARCHIVE=`cd $srcdir && echo $PWD`/data/spectmorph-instruments-$VERSION.tar.xz
+AC_SUBST(INSTRUMENTS_ARCHIVE)
+
+# instrument downloader
+AC_ARG_WITH([download-instruments], [AS_HELP_STRING([--with-download-instruments], [download instrument archive])],,with_download_instruments=no)
+if test "x$with_download_instruments" = "xyes"; then
+  # if we already have the correct version, no download is necessary
+  if test -f $INSTRUMENTS_ARCHIVE; then
+    ACTUAL_SHA1SUM=$(sha1sum $INSTRUMENTS_ARCHIVE | awk '{print $1}')
+    if test "x$ACTUAL_SHA1SUM" != "x$INST_SHA1SUM"; then
+      rm $INSTRUMENTS_ARCHIVE
+    fi
+  fi
+  if ! test -f $INSTRUMENTS_ARCHIVE; then
+    echo
+    AC_MSG_NOTICE([downloading instruments ($INST_TAG)...])
+    cd data
+    DOWNLOAD_URL=https://github.com/swesterfeld/spectmorph-instruments/releases/download/$INST_TAG/spectmorph-instruments-$PACKAGE_VERSION.tar.xz;
+    if ! wget -q $DOWNLOAD_URL; then
+      AC_MSG_ERROR([Failed to download: $DOWNLOAD_URL])
+    fi
+    cd ..
+    echo
+  fi
+fi
+
+# instrument checksum verification
+if test -f $INSTRUMENTS_ARCHIVE; then
+  AC_MSG_CHECKING([if instruments checksum is correct])
+  ACTUAL_SHA1SUM=$(sha1sum $INSTRUMENTS_ARCHIVE | awk '{print $1}')
+  if test "x$ACTUAL_SHA1SUM" != "x$INST_SHA1SUM"; then
+    AC_MSG_RESULT([no])
+    AC_MSG_ERROR([SHA-1 checksum verification of $INSTRUMENTS_ARCHIVE failed!])
+  else
+    AC_MSG_RESULT([yes])
+  fi
+fi
+
+dnl -------------------------------------------------------------------------
+
 AC_CONFIG_FILES([Makefile
 3rdparty/Makefile 3rdparty/minizip/Makefile 3rdparty/hiir/Makefile 3rdparty/clap/Makefile
 lib/Makefile src/Makefile tools/Makefile tests/Makefile docs/Makefile clap/Makefile
@@ -494,27 +518,6 @@ static/config.sh static/install.sh
 ])
 AC_CONFIG_FILES([tests/test-common.sh])
 AC_OUTPUT
-
-# instrument downloader
-dnl -------------------------------------------------------------------------
-AC_ARG_WITH([download-instruments], [AS_HELP_STRING([--with-download-instruments], [download instrument archive])],,with_download_instruments=no)
-if test "x$with_download_instruments" = "xyes"; then
-  echo
-  echo -n "downloading / updating instruments ($INST_DATE / $PACKAGE_VERSION)..."
-  cd data
-  DOWNLOAD_URL=https://github.com/swesterfeld/spectmorph-instruments/releases/download/$INST_DATE/spectmorph-instruments-$PACKAGE_VERSION.tar.xz;
-  if wget -q -c $DOWNLOAD_URL; then
-    echo " done"
-  else
-    echo " failed"
-    echo
-    AC_MSG_ERROR([failed to download:
-  $DOWNLOAD_URL
-])
-  fi
-  cd ..
-fi
-dnl -------------------------------------------------------------------------
 
 # Output summary message
 
@@ -528,12 +531,10 @@ echo "  Qt5 available  . . . . .: $with_qt"
 echo "  libao support  . . . . .: $with_ao"
 echo "  Fonts . . . . . . . . . : $with_fonts"
 
-if test "x$with_instruments" != "xno"; then
-  echo "  Instruments  . . . . . .: $INSTRUMENTS_ARCHIVE"
-fi
-
 if test ! -f $INSTRUMENTS_ARCHIVE; then
   echo "  Instruments  . . . . . .: missing (use --with-download-instruments to fix this)"
+else
+  echo "  Instruments  . . . . . .: yes"
 fi
 
 if test "x$asan_flags_ok" != "xno"; then
