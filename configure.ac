@@ -72,7 +72,8 @@ dnl
 AC_DEFUN([AC_AO_REQUIREMENTS],
 [
     PKG_CHECK_MODULES(AO, ao,[:],[
-      AC_MSG_ERROR([You need to install libao to build this package.
+      AC_MSG_ERROR([It is recommended to install libao to build this package.
+You can disable libao using the --without-ao configure option.
 
 Debian users: aptitude install libao-dev
 ])
