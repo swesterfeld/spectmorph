@@ -7,6 +7,8 @@ set -e pipefail
 TESTS=0
 TESTS_OK=0
 
+make # need to build before calling list-refs to get clean output
+
 echo === post install test ===
 for PRESET in $(make list-refs | sed 's,ref/,,g;s,\.ref,,g')
 do
