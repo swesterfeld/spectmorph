@@ -3,6 +3,7 @@
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
+- lv2lint issues
 
 1.0.0 (-beta2)?:
 - debug difference between aurora mac aarch64-apple-darwin23.5.0 + sanitizers and linux
