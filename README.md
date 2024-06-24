@@ -24,6 +24,9 @@ To compile SpectMorph, use the usual
     make
     make install
 
+If you get a message that the instruments are missing, you can use the
+`--with-download-instruments` configure option to fix this (see below).
+
 LV2 Support:
 ------------
 
@@ -64,46 +67,25 @@ Controlling Morphing with CCs:
 The control inputs (Control Signal #1 ... Control Signal #4) are mapped to the
 midi CC controls (General Purpose Controller 1..4).
 
-Packaging Instruments:
-======================
+SpectMorph Instruments:
+=======================
 
-If you are a packager, packages should install the standard instrument set to a
-system-wide location. The instrument location is prefix dependant. If
-SpectMorph is installed in
+SpectMorph has a set of instruments which ship with official releases. These
+are required to use SpectMorph. The instruments are included in all binary
+releases. If you are building from the original source tarball, the
+instruments are also included (in the `data` directory).
 
-    /usr
+If you're building from git, you will need to download the instruments before
+installing SpectMorph. The easiest way to do so is using:
 
-then the instruments should go to
+    $ ./autogen.sh --with-download-instruments
 
-    /usr/share/spectmorph/instruments
+which will download the correct version of instruments automatically. You can
+also download the appropriate version of the instruments from the releases of
+the `spectmorph-instruments` git repository and store them in the `data`
+directory before building SpectMorph:
 
-If you are building from the original source tarball, this should work automatically,
-the instruments are bundled and will be installed during
-
-    $ make install
-
-Installing Instruments for Git:
-===============================
-
-If you're building from git, you are responsible for obtaining a copy of the standard
-instrument tarball. Extract the SpectMorph release source tarball. The location will
-be something like
-
-    spectmorph-0.4.1/data/spectmorph-instruments-0.4.1.tar.xz
-
-You can either ensure that these instruments live in (`$XDG_DATA_HOME/spectmorph`):
-
-    ~/.local/share/spectmorph/instruments/standard
-
-or copy the instrment tarball to the data directory of your git checkout. In this
-case SpectMorph will automatically install the instruments to the system-wide
-location (like the original release tarball does).
-
-Note that if incompatible changes happen to the file format, the git version will
-no longer work with the released instruments set. In that case, feel free to ask
-for a tarball for your git version. The samples and the meta data for the instruments
-are available here:
-
+* [Instrument Releases](https://github.com/swesterfeld/spectmorph-instruments/releases)
 * [Instrument Repository on Github](https://github.com/swesterfeld/spectmorph-instruments)
 
 [lgpl2.1-badge]: https://img.shields.io/github/license/swesterfeld/spectmorph?style=for-the-badge
