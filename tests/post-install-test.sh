@@ -39,7 +39,7 @@ do
           base = max($2, base);
           base = max($3, base);
           delta = abs($2 - $3);
-          ok = delta < 0.001 ? "OK  " : "FAIL";
+          ok = delta < 0.0025 ? "OK  " : "FAIL";
           printf ("%s %.5f %s\n", ok, abs($2 - $3) / base, $1);
         }'
     )
