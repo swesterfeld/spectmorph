@@ -1,12 +1,22 @@
-NEWER TODOS:
 1.0.0-beta1:
 - new video tutorial
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
-Other:
-- stereo unison
+
+1.0.0 (-beta2)?:
+- debug difference between aurora mac aarch64-apple-darwin23.5.0 + sanitizers and linux
+- implement spectral centroid feature
+- allow unison audio tests with static phase reset
 - experiment with smooth tuning for formant correction to reduce artifacts
+
+NEXT RELEASE:
+- [maybe] support formant correction for Source
+- stereo unison
+- experiments for handling freq < 1 in spectral envelope (bass boost)
+- portamento could morph while sliding
+
+Other:
 - handle XPARAM scaled parameters for modulation
 - non-linear modulation mapping
 - visual feedback for adsr envelope
@@ -20,10 +30,7 @@ Other:
 - better spectral subtract [1]
 - vibrato could have delay property
 - possibly add MPE timbre
-NEXT RELEASE:
-- [maybe] support formant correction for Source
-- experiments for handling freq < 1 in spectral envelope
-- portamento could morph while sliding
+
 INTERESTING BRANCHES:
 - morph-source-formant-correction: add formant correction to MorphSource
 
