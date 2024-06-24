@@ -3,7 +3,7 @@ FROM ubuntu:22.04
 RUN apt-get update
 RUN apt-get -y install wget build-essential autoconf automake \
                libtool-bin pkg-config gettext autoconf-archive \
-               xz-utils nsis meson
+               xz-utils nsis meson wine
 
 RUN wget -q https://github.com/swesterfeld/spectmorph-mxe/releases/download/2024-06-16/spectmorph-mxe-2024-06-16.tar.xz
 RUN tar xf spectmorph-mxe-2024-06-16.tar.xz
@@ -22,3 +22,5 @@ RUN make -j$(nproc)
 RUN make -Cvst install
 RUN make -Cclap install
 RUN make -Clv2 install
+RUN make -Cdata install
+RUN cd tests; ./post-install-test.sh wine
