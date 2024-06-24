@@ -70,7 +70,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*', 'static/*')}}" }
-    - name: Test Build
+    - name: Test Static Build
       run: misc/staticbuild.sh
   macos:
     runs-on: macos-latest
@@ -87,7 +87,25 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/cache@v4
       with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
-    - name: Test macOS Build
+    - name: Test macOS Build with Sanitizers
+      shell: bash
+      run: misc/macbuild.sh sanitize
+  macos-13:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
+    - name: Test macOS 13 build
+      shell: bash
+      run: misc/macbuild.sh
+  macos-13-sanitizers:
+    runs-on: macos-13
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v4
+      with: { path: "ccache", key: "${{ github.job }}-${{hashFiles ('misc/*')}}" }
+    - name: Test macOS 13 build with Sanitizers
       shell: bash
       run: misc/macbuild.sh sanitize
   windows:
