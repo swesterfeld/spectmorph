@@ -1,5 +1,11 @@
 // Licensed GNU LGPL v2.1 or later: http://www.gnu.org/licenses/lgpl-2.1.html
 
+#include "smutils.hh"
+
+#ifdef SM_OS_MACOS
+#define GL_SILENCE_DEPRECATION 1
+#endif
+
 #include "pugl/gl.h"
 #if !__APPLE__
 #include "GL/glext.h"
@@ -11,7 +17,6 @@
 #include "smconfig.hh"
 #include "smshortcut.hh"
 #include "smeventloop.hh"
-#include "smutils.hh"
 #include "pugl/cairo_gl.h"
 #include <map>
 #include <math.h>
