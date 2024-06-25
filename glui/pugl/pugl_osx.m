@@ -172,6 +172,7 @@ struct PuglInternalsImpl {
 
 - (void) reshape
 {
+	[super reshape];
 	[[self openGLContext] update];
 
 	if (!puglview) {
@@ -225,6 +226,11 @@ struct PuglInternalsImpl {
 			&puglview->impl->cairo_gl, puglview->width, puglview->height);
 	}
 #endif
+}
+
+- (BOOL) acceptsFirstMouse:(NSEvent *)event
+{
+	return YES;
 }
 
 - (BOOL) acceptsFirstResponder
@@ -599,6 +605,8 @@ puglCreateWindow(PuglView* view, const char* title)
 		[pview addSubview:impl->glview];
 		// required to get mouse move events in Ableton Live (and possibly other hosts)
 		[[pview window] setAcceptsMouseMovedEvents: YES];
+		// focus our view (required to get events from the beginning in Bitwig)
+		[[pview window] makeFirstResponder:impl->glview];
 		[impl->glview setHidden:NO];
 	} else {
 		NSString* titleString = [[NSString alloc]
