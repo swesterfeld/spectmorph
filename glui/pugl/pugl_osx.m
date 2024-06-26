@@ -166,6 +166,7 @@ struct PuglInternalsImpl {
 		[self setWantsBestResolutionOpenGLSurface: NO];
 		[[self openGLContext] makeCurrentContext];
 		[self reshape];
+                [NSOpenGLContext clearCurrentContext];
 	}
 	return self;
 }
