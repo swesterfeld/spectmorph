@@ -17,6 +17,7 @@
 * Apply midi channel bend to new voices.
 * Make portamento affect filter cutoff key tracking.
 * Fix problems with WavSource paths stored by LV2 plugin (make Ardour archives work).
+* Fix getting the initial click events / focus plugin UI on macOS under Bitwig.
 * Fix invalid access to past last vector element (#24).
 * Make PandaResampler work without problems in ASAN builds.
 * Refactor leak debugger to fix possible crashes caused by global destructors.
@@ -31,7 +32,9 @@
 * Add fast vectorizable log2 approximation (based on Tims version from Anklang).
 * Phases in LiveDecoder, IFFTSynth: change from float to uint for performance reasons.
 * Various minor performance optimizations.
+* Minor LV2 meta data updates (port groups, avoid port resizing extension).
 * Use newer compilers: g++-14 for windows, g++-13 for static linux plugins.
+* Support automatically downloading instruments from configure.
 * Avoid using std::mutex in hard RT code.
 
 #### Internals: Minor Changes
@@ -40,6 +43,7 @@
   - Use shared pointers for GenericIn/GenericOut classes (RAII).
   - Get rid of `sm_clamp` / `sm_bound` (-> std::clamp).
 * Improve CI support (use debug-cxx, asan, ubsan, test static build, avoid fftw planning).
+* Add post install test which tests audio output for all presets after installation.
 * Validate LV2 feature arrays.
 * Support user defined scripts in testmidisynth test.
 * Improve error messages for preset loader.
