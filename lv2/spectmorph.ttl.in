@@ -15,6 +15,7 @@
 @prefix rsz:   <http://lv2plug.in/ns/ext/resize-port#> .
 @prefix state: <http://lv2plug.in/ns/ext/state#> .
 @prefix time:  <http://lv2plug.in/ns/ext/time#> .
+@prefix pg:    <http://lv2plug.in/ns/ext/port-groups#> .
 
 <http://spectmorph.org/plugins/spectmorph>
   a lv2:Plugin,
@@ -92,14 +93,18 @@
         lv2:OutputPort;
       lv2:index 5;
       lv2:symbol "left_out";
-      lv2:name "Left Output"
+      lv2:name "Left Output";
+      pg:group <http://spectmorph.org/plugins/spectmorph#portGroup_stereo_out>;
+      lv2:designation pg:left ;
     ],
     [
       a lv2:AudioPort,
         lv2:OutputPort;
       lv2:index 6;
       lv2:symbol "right_out";
-      lv2:name "Right Output"
+      lv2:name "Right Output";
+      pg:group <http://spectmorph.org/plugins/spectmorph#portGroup_stereo_out>;
+      lv2:designation pg:right ;
     ],
     [
       a lv2:OutputPort ,
@@ -128,3 +133,9 @@
       lv2:symbol "notify";
       ui:notifyType atom:Object
     ].
+
+<http://spectmorph.org/plugins/spectmorph#portGroup_stereo_out>
+  a pg:StereoGroup, pg:OutputGroup ;
+  lv2:symbol "stereo_out" ;
+  rdfs:label "Stereo Output" ;
+  .
