@@ -1,5 +1,4 @@
 1.0.0-beta1:
-- new video tutorial
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
