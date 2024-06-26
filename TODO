@@ -1,14 +1,14 @@
 1.0.0-beta1:
+
+1.0.0 (-beta2)?:
 - update manual
 - does mono work well with clap / clap ids?
 - LV2 window resizing doesn't work in Ardour7
-- lv2lint issues
-
-1.0.0 (-beta2)?:
 - debug difference between aurora mac aarch64-apple-darwin23.5.0 + sanitizers and linux
 - implement spectral centroid feature
 - allow unison audio tests with static phase reset
 - experiment with smooth tuning for formant correction to reduce artifacts
+- try using smooth (1/3 octave?) formant envelopes to reduce artifacts
 
 NEXT RELEASE:
 - [maybe] support formant correction for Source
