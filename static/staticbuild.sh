@@ -39,12 +39,9 @@ cd ..
 # TEMPLATES / INSTRUMENTS
 cp -av \
   /usr/local/spectmorph/share/spectmorph/templates \
+  /usr/local/spectmorph/share/spectmorph/instruments \
   /usr/local/spectmorph/share/spectmorph/fonts \
   /data
-
-if [ -d /usr/local/spectmorph/share/spectmorph/instruments ]; then
-  cp -av /usr/local/spectmorph/share/spectmorph/instruments /data
-fi
 
 # VST
 mkdir -p /data/vst
@@ -60,3 +57,5 @@ cp -av lv2/spectmorph_lv2.so.static /data/lv2/spectmorph.lv2/spectmorph_lv2.so
 cp -av \
   /usr/local/spectmorph/lib/lv2/spectmorph.lv2/spectmorph.ttl \
   /usr/local/spectmorph/lib/lv2/spectmorph.lv2/manifest.ttl /data/lv2/spectmorph.lv2
+
+chown -R 1000:1000 /data
