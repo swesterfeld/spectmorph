@@ -1,3 +1,9 @@
+spectmorph (1.0.0~beta1) focal; urgency=medium
+
+  * new package for spectmorph 1.0.0-beta1
+
+ -- Stefan Westerfeld <stefan@space.twc.de>  Wed, 26 Jun 2024 19:32:39 +0200
+
 spectmorph (0.6.1) focal; urgency=medium
 
   * new package for spectmorph 0.6.1
