@@ -89,23 +89,27 @@ lv2:
 
 ------------ NEW RELEASE ------------
 
-- git tag
+- spectmorph-instruments (edit & run misc/make-dist-docker.sh, tag, github release)
+- spectmorph (update INST_TAG)
 - debian updates
 - pbuilder
 - make distcheck
-- instruments.tar.xz (in evaluation/: make-dist)
 - update NEWS
+- spectmorph git tag
+- github release
+  - windows installer
+  - static linux
+  - macOS pkg
+  - release tarball
+  - deb
 - update spectmorph.org
   - rebuild docs
-  - release tarball
-  - debs
-- freshcode
-- blog
-- google+
-- facebook
+  - update pages (download...)
 - release announcement mailing lists
-- mail arch linux maintainer (AUR)
-- test builds on gentoo and ubuntu 17.04
+- blog
+- freshcode
+- mastodon
+- twitter (x)
 
 ------------------------------------
 
