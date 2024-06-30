@@ -89,8 +89,12 @@ autoconfbuild --disable-shared "--disable-silent-rules" "--disable-debug" \
               "--with-included-gettext" "--with-included-glib" "--with-included-libcroco" "--with-included-libunistring" "--with-emacs" \
               "--disable-java" "--disable-csharp" "--without-git" "--without-cvs" "--without-xz"
 
-src glib-2.56.1 tar.xz https://download.gnome.org/sources/glib/2.56/glib-2.56.1.tar.xz
-autoconfbuild --disable-shared --with-pcre=internal --disable-compile-warnings
+src glib-2.81.0 tar.xz https://download.gnome.org/sources/glib/2.81/glib-2.81.0.tar.xz
+CFLAGS="${GLOBAL_CFLAGS}" \
+LDFLAGS="${GLOBAL_LDFLAGS}" \
+meson setup build --force-fallback-for libpcre2-8 --prefix $PREFIX -Ddefault_library=static
+meson compile -C build
+meson install -C build
 
 src freetype-2.5.5 tar.gz https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz
 autoconfbuild --disable-shared --with-harfbuzz=no --with-png=no --with-bzip2=no
@@ -109,6 +113,8 @@ src libogg-1.3.5 tar.xz https://github.com/xiph/ogg/releases/download/v1.3.5/lib
 autoconfbuild --disable-shared
 
 src libvorbis-1.3.7 tar.xz https://github.com/xiph/vorbis/releases/download/v1.3.7/libvorbis-1.3.7.tar.xz
+patch -p0 < ../../vorbis-cputype.diff
+autoreconf -i
 autoconfbuild --disable-shared
 
 src flac-1.4.2 tar.xz https://github.com/xiph/flac/releases/download/1.4.2/flac-1.4.2.tar.xz
