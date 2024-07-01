@@ -311,7 +311,6 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 
 - (void)mouseEntered:(NSEvent*)theEvent
 {
-	[self updateTrackingAreas];
 }
 
 - (void)mouseExited:(NSEvent*)theEvent
@@ -389,7 +388,6 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 		(unsigned)[event buttonNumber] + 1
 	};
 	puglDispatchEvent(puglview, (PuglEvent*)&ev);
-	[self updateTrackingAreas];
 }
 
 - (void) rightMouseDown:(NSEvent*)event
@@ -414,8 +412,6 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 
 - (void) scrollWheel:(NSEvent*)event
 {
-	[self updateTrackingAreas];
-
 	const NSPoint         wloc = [self eventLocation:event];
 	const NSPoint         rloc = [NSEvent mouseLocation];
 	const PuglEventScroll ev   =  {
@@ -432,7 +428,6 @@ keySymToSpecial(PuglView* view, NSEvent* ev)
 		[event deltaY]
 	};
 	puglDispatchEvent(puglview, (PuglEvent*)&ev);
-	[self updateTrackingAreas];
 }
 
 - (void) keyDown:(NSEvent*)event
@@ -649,6 +644,8 @@ puglCreateWindow(PuglView* view, const char* title)
                         [tp_window addChildWindow: window ordered: NSWindowAbove];
                 }
 	}
+
+	[impl->glview updateTrackingAreas];
 
 	return 0;
 }
