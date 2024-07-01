@@ -20,6 +20,18 @@ set -e
 	make install
 }
 
+function mesonbuild {
+  set -e
+  CPPFLAGS="-I${PREFIX}/include${GLOBAL_CPPFLAGS:+ $GLOBAL_CPPFLAGS}" \
+  CFLAGS="${GLOBAL_CFLAGS}" \
+  CXXFLAGS="${GLOBAL_CXXFLAGS:+ $GLOBAL_CXXFLAGS}" \
+  OBJCFLAGS="${GLOBAL_CFLAGS}" \
+  LDFLAGS="${GLOBAL_LDFLAGS}" \
+  meson setup build --prefix $PREFIX $@
+  meson compile -C build
+  meson install -C build
+}
+
 function download {
 	echo "--- Downloading.. ${SRCDIR}/$1 $2"
 	test -f ${SRCDIR}/$1 || curl -k -L -o ${SRCDIR}/$1 $2
@@ -90,11 +102,7 @@ autoconfbuild --disable-shared "--disable-silent-rules" "--disable-debug" \
               "--disable-java" "--disable-csharp" "--without-git" "--without-cvs" "--without-xz"
 
 src glib-2.81.0 tar.xz https://download.gnome.org/sources/glib/2.81/glib-2.81.0.tar.xz
-CFLAGS="${GLOBAL_CFLAGS}" \
-LDFLAGS="${GLOBAL_LDFLAGS}" \
-meson setup build --force-fallback-for libpcre2-8 --prefix $PREFIX -Ddefault_library=static
-meson compile -C build
-meson install -C build
+mesonbuild --force-fallback-for libpcre2-8 -Ddefault_library=static -Dtests=false
 
 src freetype-2.5.5 tar.gz https://sourceforge.net/projects/freetype/files/freetype2/2.5.5/freetype-2.5.5.tar.gz
 autoconfbuild --disable-shared --with-harfbuzz=no --with-png=no --with-bzip2=no
@@ -127,7 +135,4 @@ src libsndfile-1.2.0 tar.xz https://github.com/libsndfile/libsndfile/releases/do
 autoconfbuild --disable-shared
 
 src lv2-1.18.10 tar.gz https://github.com/lv2/lv2/archive/refs/tags/v1.18.10.tar.gz
-meson setup build --prefix $PREFIX
-cd build
-meson compile
-meson install
+mesonbuild
