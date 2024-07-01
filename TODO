@@ -127,3 +127,32 @@ analyzed.
 
 Noise very close to the partial would normally not be audible anyways, as
 it should be masked.
+
+------------------------------------
+
+== List of plugin tests before releases: ==
+
+1. create SpectMorph CLAP plugin
+
+3. basic ui:
+ - do ui elements change color if you move over them without clicking?
+ - checkboxes work?
+ - sliders work?
+ - menus work?
+ - can you rename an operator?
+
+4. does the default preset produce sound?
+
+5. switching to 2x2 grid morph using ui preset
+ - does mouse interaction work with grid work & sound correctly?
+
+6. load keytrack choir ah/oh preset
+ - does key tracking work?
+ - do you get visual feedback (grey dots in keytrack operator/grid)
+ - does changing control #1 from outside the plugin morph ah <-> oh?
+
+7. create new user defined instrument
+ - does set loop range / name / midi note / tuning work?
+ - does play work?
+ - does play position pointer move properly while playing?
+ - does it work in WavSource after saving it?
