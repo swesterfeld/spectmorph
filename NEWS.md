@@ -1,3 +1,10 @@
+## SpectMorph 1.0.0 beta2
+
+#### Updates for macOS
+* Plugin user interface now works correctly on macOS 14 (#28).
+* Update clang++ compiler version on macOS.
+* Minimum supported macOS version is now macOS 11.
+
 ## SpectMorph 1.0.0 beta1
 
 #### New Features
