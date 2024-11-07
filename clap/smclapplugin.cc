@@ -700,7 +700,15 @@ const struct clap_plugin_factory clap_factory = {
   clap_create_plugin,
 };
 
-static const void *get_factory(const char *factory_id) { return &clap_factory; }
+static const void *get_factory(const char *factory_id)
+{
+  if (strcmp (factory_id, CLAP_PLUGIN_FACTORY_ID))
+    {
+      // Only clap_plugin_factory is supported
+      return nullptr;
+    }
+  return &clap_factory;
+}
 
 #ifdef SM_OS_WINDOWS
 HMODULE hInstance;
