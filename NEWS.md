@@ -1,3 +1,7 @@
+## SpectMorph 1.0.0 beta3
+
+* Fix CLAP's get factory implementation (#30).
+
 ## SpectMorph 1.0.0 beta2
 
 #### Updates for macOS
