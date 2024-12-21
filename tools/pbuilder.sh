@@ -23,7 +23,7 @@ fi
 # CCACHEDIR=/var/cache/pbuilder/ccache
 #----------------------------------------
 
-VERSION=1.0.0-beta1
+VERSION=1.0.0-beta2
 
 # change 1.2.3-beta1 => 1.2.3~beta1 to get the correct version sorting order for .deb version
 DEB_VERSION="$(echo $VERSION | sed s/-/~/g)"
