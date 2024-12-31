@@ -22,6 +22,7 @@ using std::vector;
 using std::set;
 using std::map;
 
+/* need to have a lock while running this function */
 void
 ControlEventVector::take (SynthControlEvent *ev)
 {
@@ -35,23 +36,32 @@ ControlEventVector::take (SynthControlEvent *ev)
   events.emplace_back (ev);
 }
 
+/* need to have a lock while running this function */
 void
 ControlEventVector::run_rt (Project *project)
 {
   if (!clear)
     {
       for (const auto& ev : events)
-        ev->run_rt (project);
+        if (ev)
+          ev->run_rt (project);
 
       clear = true;
     }
 }
 
+/* need to have a lock while running this function */
 void
-ControlEventVector::destroy_all_events()
+ControlEventVector::destroy_events (SynthControlEvent::Type event_type)
 {
-  events.clear();
-  clear = false;
+  for (auto& ev : events)
+    {
+      if (ev->event_type() == event_type)
+        {
+          // reset event unique_ptr to nullptr: free event, nullptr events are not executed by run_rt()
+          ev.reset();
+        }
+    }
 }
 
 /*
@@ -62,6 +72,19 @@ bool
 ControlEventVector::try_lock()
 {
   return !locked_flag.test_and_set();
+}
+
+void
+ControlEventVector::wait_for_lock()
+{
+  while (!try_lock())
+    {
+      // this doesn't happen very often and we are in a non-RT thread, so we
+      // can block it for some time
+      //  => wait for less than one frame drawing time until trying again
+      float fps = 240;
+      usleep (1000 * 1000 / fps);
+    }
 }
 
 void
@@ -91,14 +114,7 @@ Project::try_update_synth()
 void
 Project::synth_take_control_event (SynthControlEvent *event)
 {
-  while (!m_control_events.try_lock())
-    {
-      // this doesn't happen very often and we are in the non-RT thread, so we
-      // can block it for some time
-      //  => wait for less than one frame drawing time until trying again
-      float fps = 240;
-      usleep (1000 * 1000 / fps);
-    }
+  m_control_events.wait_for_lock();
   m_control_events.take (event);
   m_control_events.unlock();
 }
@@ -228,11 +244,17 @@ Project::Project() :
 void
 Project::set_mix_freq (double mix_freq)
 {
-  /* if there are old control events, these cannot be executed anymore because we're
-   * deleting the MidiSynth they refer to; we don't need a lock here because
-   * this function is not supposed to be running while the audio thread is active
+  /* We are creating a new MidiSynth instance here, which means that old
+   * APPLY_UPDATE events can't be executed anymore (because they refer
+   * to the old MidiSynth instance).
+   *
+   * On the other hand, WavSetBuilder / BuilderThread events should always be
+   * executed, so we can't simply discard all events - so we discard
+   * APPLY_UPDATE events only.
    */
-  m_control_events.destroy_all_events();
+  m_control_events.wait_for_lock();
+  m_control_events.destroy_events (SynthControlEvent::Type::APPLY_UPDATE);
+  m_control_events.unlock();
 
   // not rt safe, needs to be called when synthesis thread is not running
   m_midi_synth.reset (new MidiSynth (mix_freq, 64));

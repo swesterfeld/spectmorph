@@ -21,32 +21,39 @@ class MorphWavSource;
 class SynthControlEvent
 {
 public:
-  virtual void run_rt (Project *project) = 0;
-  virtual
-  ~SynthControlEvent()
+  enum class Type
   {
-  }
-};
+    APPLY_UPDATE,       // apply update events need to be discarded if MidiSynth is changed
+    GENERIC             // generic events are guaranteed to be executed
+  };
 
-struct InstFunc : public SynthControlEvent
-{
-  std::function<void(Project *)> func;
-  std::function<void()>          free_func;
+private:
+  std::function<void(Project *)> m_func;
+  std::function<void()>          m_free_func;
+  Type                           m_event_type;
+
 public:
-  InstFunc (const std::function<void(Project *)>& func,
-            const std::function<void()>& free_func) :
-    func (func),
-    free_func (free_func)
+  SynthControlEvent (const std::function<void(Project *)>& func,
+                     const std::function<void()>& free_func,
+                     Type event_type) :
+    m_func (func),
+    m_free_func (free_func),
+    m_event_type (event_type)
   {
-  }
-  ~InstFunc()
-  {
-    free_func();
   }
   void
   run_rt (Project *project)
   {
-    func (project);
+    m_func (project);
+  }
+  Type
+  event_type()
+  {
+    return m_event_type;
+  }
+  ~SynthControlEvent()
+  {
+    m_free_func();
   }
 };
 
@@ -58,7 +65,7 @@ class ControlEventVector
 public:
   void take (SynthControlEvent *ev);
   void run_rt (Project *project);
-  void destroy_all_events();
+  void destroy_events (SynthControlEvent::Type event_type);
 
   /* the synthesis thread will not block if try_lock fails
    *
@@ -70,6 +77,9 @@ public:
    * to the ui
    */
   bool try_lock();
+
+  /* wait until lock is available */
+  void wait_for_lock();
   void unlock();
 };
 

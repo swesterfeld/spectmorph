@@ -25,14 +25,14 @@ public:
   }
   template<class DATA>
   void
-  send_control_event (const std::function<void(Project *)>& func, DATA *data = nullptr)
+  send_control_event (const std::function<void(Project *)>& func, DATA *data, SynthControlEvent::Type event_type)
   {
-    m_project->synth_take_control_event (new InstFunc (func, [data]() { delete data;}));
+    m_project->synth_take_control_event (new SynthControlEvent (func, [data]() { delete data;}, event_type));
   }
   void
-  send_control_event (const std::function<void(Project *)>& func)
+  send_control_event (const std::function<void(Project *)>& func, SynthControlEvent::Type event_type)
   {
-    m_project->synth_take_control_event (new InstFunc (func, []() {}));
+    m_project->synth_take_control_event (new SynthControlEvent (func, []() {}, event_type));
   }
   void
   synth_inst_edit_update (bool active, WavSet *take_wav_set, WavSet *ref_wav_set)
@@ -56,7 +56,8 @@ public:
           if (active)
             project->midi_synth()->inst_edit_synth()->swap_decoders (event_data->decoders);
         },
-      event_data);
+      event_data,
+      SynthControlEvent::Type::GENERIC);
   }
   void
   synth_inst_edit_gain (float gain)
@@ -65,7 +66,8 @@ public:
       [=] (Project *project)
         {
           project->midi_synth()->inst_edit_synth()->set_gain (gain);
-        });
+        },
+      SynthControlEvent::Type::GENERIC);
   }
   void
   synth_inst_edit_midi_to_reference (bool midi_to_reference)
@@ -74,7 +76,8 @@ public:
       [=] (Project *project)
         {
           project->midi_synth()->inst_edit_synth()->set_midi_to_reference (midi_to_reference);
-        });
+        },
+      SynthControlEvent::Type::GENERIC);
   }
   void
   synth_inst_edit_note (int note, bool on, unsigned int layer)
@@ -86,7 +89,8 @@ public:
             project->midi_synth()->inst_edit_synth()->process_note_on (/* channel */ 0, note, /* clap id */ -1, layer);
           else
             project->midi_synth()->inst_edit_synth()->process_note_off (/* channel */ 0, note, layer);
-        });
+        },
+      SynthControlEvent::Type::GENERIC);
   }
   void
   emit_apply_update (MorphPlanSynth::UpdateP update)
@@ -103,7 +107,8 @@ public:
         {
           project->midi_synth()->apply_update (event_data->update);
         },
-      event_data);
+      event_data,
+      SynthControlEvent::Type::APPLY_UPDATE);
   }
   void
   emit_update_gain (double gain)
@@ -112,11 +117,13 @@ public:
       [=] (Project *project)
         {
           project->midi_synth()->set_gain (gain);
-        });
+        },
+      SynthControlEvent::Type::GENERIC);
   }
   void
   emit_add_rebuild_result (int object_id, WavSet *take_wav_set)
   {
+
     /* ownership of take_wav_set is transferred to the event */
     struct EventData
     {
@@ -132,7 +139,8 @@ public:
           // outside the audio thread
           project->add_rebuild_result (object_id, event_data->wav_set);
         },
-        event_data);
+      event_data,
+      SynthControlEvent::Type::GENERIC);
   }
   void
   emit_clear_wav_sets()
@@ -151,7 +159,8 @@ public:
           // uses swap to ensure that old wav_sets get freed outside the audio thread
           project->clear_wav_sets (event_data->wav_sets);
         },
-        event_data);
+        event_data,
+      SynthControlEvent::Type::GENERIC);
   }
   void
   generate_notify_events()
