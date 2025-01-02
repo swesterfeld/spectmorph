@@ -56,10 +56,17 @@ ControlEventVector::destroy_events (SynthControlEvent::Type event_type)
 {
   for (auto& ev : events)
     {
-      if (ev->event_type() == event_type)
+      if (ev)
         {
-          // reset event unique_ptr to nullptr: free event, nullptr events are not executed by run_rt()
-          ev.reset();
+          if (ev->event_type() == event_type)
+            {
+              // reset event unique_ptr to nullptr: free event
+              //
+              // nullptr events ignored by
+              //   - run_rt()
+              //   - destroy_events()
+              ev.reset();
+            }
         }
     }
 }
