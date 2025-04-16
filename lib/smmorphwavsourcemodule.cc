@@ -89,7 +89,26 @@ MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlo
     {
       formant_correction.advance (module->time_info().time_ms - last_time_ms);
       last_time_ms = module->time_info().time_ms;
-      formant_correction.process_block (active_audio->contents[index], out_block);
+
+      // FIXME: Vocalizer: not RT safe
+      // ----------------------------------------------------------
+      AudioBlock block = active_audio->contents[index];
+      const int norm_delta_idb = sm_factor2delta_idb (volume_factor);
+
+      vector<uint16_t>& mags = block.mags;
+      for (size_t i = 0; i < mags.size(); i++)
+        mags[i] = std::clamp (mags[i] + norm_delta_idb, 0, 65535);
+
+      vector<uint16_t>& noise = block.noise;
+      for (size_t i = 0; i < noise.size(); i++)
+        noise[i] = std::clamp (noise[i] + norm_delta_idb, 0, 65535);
+
+      vector<uint16_t>& env = block.env;
+      for (size_t i = 0; i < env.size(); i++)
+        env[i] = std::clamp (env[i] + norm_delta_idb, 0, 65535);
+      // ----------------------------------------------------------
+
+      formant_correction.process_block (block, out_block);
       return true;
     }
   else
@@ -103,6 +122,7 @@ MorphWavSourceModule::InstrumentSource::update_voice_source (const MorphWavSourc
 {
   formant_correction.set_mode (config->formant_correct);
   formant_correction.set_fuzzy_resynth (config->fuzzy_resynth);
+  volume_factor = config->volume_factor;
 }
 
 void

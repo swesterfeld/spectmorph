@@ -34,6 +34,7 @@ public:
     ModulationData          position_mod;
     FormantCorrection::Mode formant_correct = FormantCorrection::MODE_REPITCH;
     float                   fuzzy_resynth;
+    double                  volume_factor = 1;
   };
   static constexpr auto P_PLAY_MODE          = "play_mode";
   static constexpr auto P_POSITION           = "position";
@@ -72,6 +73,8 @@ public:
 
   void        set_lv2_abstract_path (const std::string& path);
   std::string lv2_abstract_path();
+
+  void        set_volume_factor (double volume_factor);
 
   void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
   void        on_bank_removed (const std::string& bank);

@@ -120,6 +120,14 @@ MorphWavSource::lv2_abstract_path()
 }
 
 void
+MorphWavSource::set_volume_factor (double volume_factor)
+{
+  m_config.volume_factor = volume_factor;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+void
 MorphWavSource::on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument)
 {
   if (bank == m_bank && number == m_instrument)

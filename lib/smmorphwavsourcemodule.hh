@@ -24,6 +24,7 @@ class MorphWavSourceModule : public MorphOperatorModule
   class InstrumentSource : public LiveDecoderSource
   {
     FormantCorrection       formant_correction;
+    double                  volume_factor = 1;
     Audio                  *active_audio = nullptr;
     int                     object_id = 0;
     Project                *project = nullptr;
