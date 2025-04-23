@@ -17,11 +17,11 @@ using std::vector;
 void
 MorphWavSourceModule::InstrumentSource::retrigger (int channel, float freq, int midi_velocity)
 {
-  Audio  *best_audio = nullptr;
+  Audio  *best_audio = override_audio;
   float   best_diff  = 1e10;
 
   WavSet *wav_set = project->get_wav_set (object_id);
-  if (wav_set)
+  if (wav_set && !override_audio)
     {
       float note = sm_freq_to_note (freq);
       for (vector<WavSetWave>::iterator wi = wav_set->waves.begin(); wi != wav_set->waves.end(); wi++)
@@ -53,7 +53,7 @@ Audio*
 MorphWavSourceModule::InstrumentSource::audio()
 {
   WavSet *wav_set = project->get_wav_set (object_id);
-  if (!wav_set)
+  if (!wav_set && !override_audio)
     active_audio = nullptr;
 
   return active_audio;
@@ -63,7 +63,7 @@ bool
 MorphWavSourceModule::InstrumentSource::rt_audio_block (size_t index, RTAudioBlock& out_block)
 {
   WavSet *wav_set = project->get_wav_set (object_id);
-  if (!wav_set)
+  if (!wav_set && !override_audio)
     active_audio = nullptr;
 
   if (active_audio && module->cfg->play_mode == MorphWavSource::PLAY_MODE_CUSTOM_POSITION)
@@ -123,6 +123,7 @@ MorphWavSourceModule::InstrumentSource::update_voice_source (const MorphWavSourc
   formant_correction.set_mode (config->formant_correct);
   formant_correction.set_fuzzy_resynth (config->fuzzy_resynth);
   volume_factor = config->volume_factor;
+  override_audio = config->override_audio;
 }
 
 void

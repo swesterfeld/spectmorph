@@ -128,6 +128,14 @@ MorphWavSource::set_volume_factor (double volume_factor)
 }
 
 void
+MorphWavSource::set_override_audio (Audio *audio)
+{
+  m_config.override_audio = audio;
+
+  m_morph_plan->emit_plan_changed();
+}
+
+void
 MorphWavSource::on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument)
 {
   if (bank == m_bank && number == m_instrument)
