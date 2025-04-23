@@ -27,6 +27,7 @@ class MorphWavSourceModule : public MorphOperatorModule
     double                  volume_factor = 1;
     Audio                  *active_audio = nullptr;
     int                     object_id = 0;
+    Audio                  *override_audio = nullptr;
     Project                *project = nullptr;
   public:
     MorphWavSourceModule   *module = nullptr;

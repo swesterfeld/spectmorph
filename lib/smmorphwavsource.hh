@@ -30,6 +30,7 @@ public:
     Project          *project = nullptr;
 
     int                     object_id = 0;
+    Audio                  *override_audio = nullptr;
     PlayMode                play_mode = PLAY_MODE_STANDARD;
     ModulationData          position_mod;
     FormantCorrection::Mode formant_correct = FormantCorrection::MODE_REPITCH;
@@ -75,6 +76,7 @@ public:
   std::string lv2_abstract_path();
 
   void        set_volume_factor (double volume_factor);
+  void        set_override_audio (Audio *audio);
 
   void        on_instrument_updated (const std::string& bank, int number, const Instrument *new_instrument);
   void        on_bank_removed (const std::string& bank);
