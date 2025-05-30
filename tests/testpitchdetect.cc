@@ -136,6 +136,75 @@ sine_detect (double mix_freq, const vector<float>& signal)
   return partials;
 }
 
+
+void
+pitch_detect_twm (const vector<SineDetectPartial>& partials)
+{
+  size_t N = 10;
+  double A_max = 0;
+  double min_error = 1e9;
+  double best_freq = 0;
+  vector<double> freqs, mags, fc;
+  for (auto p : partials)
+    {
+      A_max = std::max (A_max, p.mag);
+      sm_printf ("%f %f #P\n", p.freq, p.mag);
+      freqs.push_back (p.freq);
+      mags.push_back (p.mag);
+    }
+#if 0
+  for (float freq = 10; freq < 4000; freq *= 1.01)
+    fc.push_back (freq);
+  auto tc = TWM_p (freqs, mags, fc);
+
+  sm_printf ("TWM_p: %f %f\n", tc.first, tc.second);
+#endif
+
+  for (float freq = 10; freq < 4000; freq *= 1.01)
+    {
+      const double p = 0.5;
+      const double q = 1.4;
+      const double r = 0.5;
+      const double rho = 0.33;
+
+      double error_p2m = 0;
+
+      for (int n = 1; n <= N; n++)
+        {
+          float f_harm = n * freq;
+          size_t best_index = 0;
+          double best_diff = 1000000;
+          for (size_t i = 0; i < partials.size(); i++)
+            {
+              if (std::abs (partials[i].freq - f_harm) < best_diff)
+                {
+                  best_diff = std::abs (partials[i].freq - f_harm);
+                  best_index = i;
+                }
+            }
+          error_p2m += best_diff * pow (f_harm, -p)
+                    + partials[best_index].mag / A_max * (q * best_diff * pow (f_harm, -p) - r);
+        }
+      double error_m2p = 0;
+
+      for (int n = 0; n < std::min<int> (partials.size(), 10); n++)
+        {
+          double n_harmonic = std::max (round (partials[n].freq / freq), 1.0);
+          double freq_distance = std::abs (partials[n].freq - n_harmonic * freq);
+          error_m2p += freq_distance * pow (partials[n].freq, -p)
+                    + partials[n].mag / A_max * (q * freq_distance * pow (partials[n].freq, -p) - r);
+        }
+      double error = error_p2m / N + error_m2p * rho / N;
+      sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
+      if (error < min_error)
+        {
+          best_freq = freq;
+          min_error = error;
+        }
+    }
+  printf ("best_freq %f, error %f\n", best_freq, min_error);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -147,7 +216,8 @@ main (int argc, char **argv)
   bool ok = wav_data.load (argv[1]);
   assert (ok);
 
-  for (int ssz = 99; ssz < 8192; ssz = int (ssz * 1.2))
+  //for (int ssz = 99; ssz < 8192; ssz = int (ssz * 1.2))
+  int ssz = 515;
     {
       if (ssz % 2 == 0)
         ssz += 1;
@@ -160,7 +230,8 @@ main (int argc, char **argv)
         {
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
-      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += 256)
+      //for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += 256)
+      size_t offset = 10000;
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
           //printf ("%zd\n", offset);
@@ -181,6 +252,7 @@ main (int argc, char **argv)
               //sm_printf ("%zd %.10f %.10f %.10f #%zd\n", i, signal, out, signal - out, offset / 256);
             }
           //printf ("%f Hz - %f\n", p.freq, p.mag);
+          pitch_detect_twm (partials);
         }
         sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
     }
