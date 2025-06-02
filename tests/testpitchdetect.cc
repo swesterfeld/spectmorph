@@ -169,11 +169,11 @@ golden_section_search (std::function<double(double)> f, double a, double b, doub
   return (b + a) / 2;
 }
 
-void
+std::pair<double, double>
 pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
   if (partials.size() == 0)
-    return;
+    return std::make_pair (-1.0, -1.0);
 
   size_t N = 10;
   double A_max = 0;
@@ -287,6 +287,13 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
         }
     }
   sm_printf ("best_freq_opt %f, best_err_opt %f\n", best_freq_opt, best_err_opt);
+  return std::make_pair (best_freq_opt, best_err_opt);
+}
+
+static double
+note_to_freq (int note)
+{
+  return 440 * exp (log (2) * (note - 69) / 12.0);
 }
 
 int
@@ -300,6 +307,7 @@ main (int argc, char **argv)
   bool ok = wav_data.load (argv[1]);
   assert (ok);
 
+  vector<double> freqs;
   //for (int ssz = 99; ssz < 8192; ssz = int (ssz * 1.2))
   int ssz = 515;
     {
@@ -336,8 +344,28 @@ main (int argc, char **argv)
               //sm_printf ("%zd %.10f %.10f %.10f #%zd\n", i, signal, out, signal - out, offset / 256);
             }
           //printf ("%f Hz - %f\n", p.freq, p.mag);
-          pitch_detect_twm (partials);
+          auto [twm_freq, twm_err] = pitch_detect_twm (partials);
+          if (twm_freq > 0)
+            freqs.push_back (twm_freq);
         }
         sm_printf ("%d %f\n", ssz, 10 * log10 (snr_signal_power / snr_delta_power));
     }
+  int best_note = 0;
+  double best_err = 1e300;
+  for (int note = 0; note < 128; note++)
+    {
+      double freq = note_to_freq (note);
+      double ferr = 0;
+
+      for (auto f : freqs)
+        {
+          ferr += std::abs (freq - f);
+        }
+      if (ferr < best_err)
+        {
+          best_err = ferr;
+          best_note = note;
+        }
+    }
+  sm_printf ("%d\n", best_note);
 }
