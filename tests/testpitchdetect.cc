@@ -140,6 +140,9 @@ sine_detect (double mix_freq, const vector<float>& signal)
 void
 pitch_detect_twm (const vector<SineDetectPartial>& partials)
 {
+  if (partials.size() == 0)
+    return;
+
   size_t N = 10;
   double A_max = 0;
   double min_error = 1e9;
@@ -160,7 +163,9 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
   sm_printf ("TWM_p: %f %f\n", tc.first, tc.second);
 #endif
 
-  for (float freq = 10; freq < 4000; freq *= 1.01)
+  vector<double> error_grid;
+  vector<double> freq_grid;
+  auto get_error = [&] (double freq)
     {
       const double p = 0.5;
       const double q = 1.4;
@@ -195,14 +200,70 @@ pitch_detect_twm (const vector<SineDetectPartial>& partials)
                     + partials[n].mag / A_max * (q * freq_distance * pow (partials[n].freq, -p) - r);
         }
       double error = error_p2m / N + error_m2p * rho / N;
-      sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
+      //sm_printf ("%f %f %f %f #E\n", freq, error_p2m, error_m2p, error);
       if (error < min_error)
         {
           best_freq = freq;
           min_error = error;
         }
+      return error;
+    };
+  const double scan_grid_factor = 1.05;
+  for (float freq = 10; freq < 4000; freq *= scan_grid_factor)
+    {
+      freq_grid.push_back (freq);
+      error_grid.push_back (get_error (freq));
     }
-  printf ("best_freq %f, error %f\n", best_freq, min_error);
+  sm_printf ("best_freq %f, error %f\n", best_freq, min_error);
+
+  vector<double> freq_opt, err_opt;
+  for (size_t i = 1; i + 2 < error_grid.size(); i++)
+    {
+      const auto [e1, e2, e3, e4] = std::tie (error_grid[i - 1], error_grid[i], error_grid[i + 1],  error_grid[i + 2]);
+      if ((e1 > e2 && e2 < e3) || (e1 > e2 && e2 == e3 && e3 < e4))
+        {
+          sm_printf ("found local minimum: %f error %f\n", freq_grid[i], error_grid[i]);
+          double step = sqrt (scan_grid_factor);
+          double e = error_grid[i];
+          double freq = freq_grid[i];
+          for (int j = 0; j < 10; j++)
+            {
+              double f1 = freq / step;
+              double f2 = freq * step;
+              double e1 = get_error (f1);
+              double e2 = get_error (f2);
+              bool reduce_step = true;
+              if (e1 < e)
+                {
+                  freq = f1;
+                  e = e1;
+                  reduce_step = false;
+                }
+              if (e2 < e)
+                {
+                  freq = f2;
+                  e = e2;
+                  reduce_step = false;
+                }
+              sm_printf ("step=%f freq=%f err=%f\n", step, freq, e);
+              if (reduce_step)
+                step = sqrt (step);
+            }
+          freq_opt.push_back (freq);
+          err_opt.push_back (e);
+        }
+    }
+  double best_err_opt = 1e9;
+  double best_freq_opt = 1e9;
+  for (size_t i = 0; i < freq_opt.size(); i++)
+    {
+      if (err_opt[i] < best_err_opt)
+        {
+          best_freq_opt = freq_opt[i];
+          best_err_opt = err_opt[i];
+        }
+    }
+  sm_printf ("best_freq_opt %f, best_err_opt %f\n", best_freq_opt, best_err_opt);
 }
 
 int
@@ -230,8 +291,8 @@ main (int argc, char **argv)
         {
           window[i] = window_cos ((i - window.size() * 0.5) / (window.size() * 0.5));
         }
-      //for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += 256)
-      size_t offset = 10000;
+      for (size_t offset = 0; offset + ssz < wav_data.samples().size(); offset += 256)
+      //size_t offset = 10000;
         {
           vector<float> single_frame (wav_data.samples().begin() + offset, wav_data.samples().begin() + offset + ssz);
           //printf ("%zd\n", offset);
